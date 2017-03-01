@@ -6,6 +6,7 @@ import { createNodeShape } from './shapes'
 import { assignProps } from './props'
 
 
+//用到objEmpty
 
 /**
  * append node

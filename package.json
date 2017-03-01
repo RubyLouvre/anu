@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/RubyLouvre/anu/issues"
   },
-  "homepage": "https://github.com/RubyLouvre/anu#readme"
+  "homepage": "https://github.com/RubyLouvre/anu#readme",
+  "devDependencies": {
+    "rollup": "^0.41.4",
+    "rollup-plugin-replace": "^1.1.1"
+  }
 }

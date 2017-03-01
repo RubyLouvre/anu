@@ -1,8 +1,8 @@
 /**
  * The diff algorithm
  */
-import { emptyNode, removeNode, createNode, replaceNode, appendNode } from VNode
-import applyComponentHook from './lifecycle'
+import { emptyNode, removeNode, createNode, replaceNode, appendNode } from './vnode'
+import applyComponentHook from './component/lifecycle'
 
 /**
  * reconcile nodes

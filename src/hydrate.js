@@ -1,5 +1,15 @@
 import { extractComponentNode } from './extract'
 import { assignProps } from './props'
+// 用到objEmpty
+/** 
+/ * 
+/ * @export
+/ * @param {any} parent
+/ * @param {any} subject
+/ * @param {any} index
+/ * @param {any} parentVNode
+/ * @param {any} component
+/ */
 /**
  * According to the generated virtual DOM element node, 
  * or all children from the parent node to extract a matching element nodes,

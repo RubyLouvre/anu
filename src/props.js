@@ -16,6 +16,13 @@ export function assignDefaultProps(defaultProps, props) {
     }
 }
 
+function refs(ref, component, element) {
+    if (typeof ref === 'function') {
+        ref.call(component, element);
+    } else {
+        (component.refs = component.refs || {})[ref] = element;
+    }
+}
 
 /**
  * assign prop for create element

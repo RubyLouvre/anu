@@ -1,23 +1,27 @@
 // https://github.com/snabbdom/snabbdom/blob/master/src/h.ts
 // https://github.com/thysultan/dio.js
+import { createEmptyShape, createPortalShape, createComponentShape, createTextShape } from './shapes'
 
+import { createElement } from './element/createElement'
+import createClass from './component/createClass'
+import { assignDefaultProps } from './props'
 
+//用到objEmpty, arrEmpty
 /**
  * extract render node
  *
  * @param  {Component} component
  * @return {VNode}
  */
-function extractRenderNode(component) {
-
-
-    return extractVirtualNode(
-        component.render(component.props, component.state, component),
-        component
-    );
-
-
-    // error thrown
+export function extractRenderNode(component) {
+    try {
+        return extractVirtualNode(
+            component.render(component.props, component.state, component),
+            component
+        );
+    } catch (e) {
+        return createEmptyShape()
+    }
 
 }
 
@@ -28,7 +32,7 @@ function extractRenderNode(component) {
  * @param  {Component}                  component
  * @return {VNode}
  */
-function extractVirtualNode(subject, component) {
+export function extractVirtualNode(subject, component) {
     // empty
     if (subject == null) {
         return createEmptyShape();
@@ -107,12 +111,7 @@ function extractVirtualNode(subject, component) {
     }
     // unsupported render types, fail gracefully
     else {
-        return componentRenderBoundary(
-            component,
-            'render',
-            subject.constructor.name,
-            ''
-        );
+        return createEmptyShape()
     }
 }
 
@@ -124,7 +123,7 @@ function extractVirtualNode(subject, component) {
  * @param  {Object<string, any>} props
  * @return {VNode}
  */
-function extractFunctionNode(type, props) {
+export function extractFunctionNode(type, props) {
     try {
         var vnode;
         var func = type['--func'] !== void 0;
@@ -141,7 +140,7 @@ function extractFunctionNode(type, props) {
                     type['--func'] = true;
                 }
             } catch (e) {
-                vnode = componentErrorBoundary(e, type, 'function');
+                vnode = createEmptyShape()
             }
         }
 
@@ -149,7 +148,7 @@ function extractFunctionNode(type, props) {
     }
     // error thrown
     catch (error) {
-        return componentErrorBoundary(error, type, 'function');
+        return createEmptyShape()
     }
 }
 
@@ -163,7 +162,7 @@ function extractFunctionNode(type, props) {
  * @param  {VNode?}     parent
  * @return {VNode} 
  */
-function extractComponentNode(subject, instance, parent) {
+export function extractComponentNode(subject, instance, parent) {
     /** @type {Component} */
     var owner;
 

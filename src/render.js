@@ -5,6 +5,7 @@ import hydrate from './hydrate'
 import { createComponentShape } from './shapes'
 import { appendNode, createNode } from './vnode'
 
+//用到objEmpty, arrEmpty
 
 /**
  * render

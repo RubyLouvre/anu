@@ -1,6 +1,7 @@
 /**
  * To quickly create a series of virtual DOM
  */
+//用到objEmpty, arrEmpty
 
 /**
  * component shape

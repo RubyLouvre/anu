@@ -3,8 +3,7 @@ import { assignDefaultProps } from '../props'
 import { extractRenderNode } from '../extract'
 import { replaceRootNode } from '../vnode'
 import { reconcileNodes } from '../reconcile'
-
-
+//用到objEmpty
 /**
  * Component class
  *
@@ -12,7 +11,7 @@ import { reconcileNodes } from '../reconcile'
  * 
  * @param {Object<string, any>=} props
  */
-function Component(props) {
+export default function Component(props) {
     // initial props
     if (props === objEmpty) {
         props = {}
