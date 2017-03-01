@@ -1,0 +1,22 @@
+{
+  "name": "anu",
+  "version": "1.0.0",
+  "description": "a mini react-like framework",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RubyLouvre/anu.git"
+  },
+  "keywords": [
+    "react-like"
+  ],
+  "author": "RubyLouvre",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/RubyLouvre/anu/issues"
+  },
+  "homepage": "https://github.com/RubyLouvre/anu#readme"
+}
