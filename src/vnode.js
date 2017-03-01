@@ -1,6 +1,11 @@
 //Apply a variety of  APIs to operate VNode
 
-import { componentMountBoundary } from './lifecycle'
+import applyComponentHook from './component/lifecycle'
+import { extractComponentNode } from './extract'
+import { createNodeShape } from './shapes'
+import { assignProps } from './props'
+
+
 
 /**
  * append node
@@ -13,19 +18,13 @@ import { componentMountBoundary } from './lifecycle'
 export function appendNode(newType, newNode, parentNode, nextNode) {
 
     var instance = newNode.instance
-    var ok = newType === 2 && instance
         // lifecycle, componentWillMount
-    if (ok && instance.componentWillMount) {
-        instance.componentWillMount(nextNode)
-    }
-
-    // append element
+    applyComponentHook(instance, 0, nextNode)
+        // append element
     parentNode.appendChild(nextNode)
 
     // lifecycle, componentDidMount
-    if (ok && instance.componentDidMount) {
-        instance.componentDidMount(nextNode)
-    }
+    applyComponentHook(instance, 1, nextNode)
 }
 
 
@@ -39,30 +38,12 @@ export function createDOMNode(type, component) {
     try {
         return document.createElement(type);
     } catch (error) {
-        return createDOMNodeError(
-            componentRenderBoundary(component, 'element', type, error),
-            component
-        );
+        return document.createComment('create element fail');
+
     }
 }
 
-/**
- * create error state DOMNode
- * 
- * @param  {VNode}      vnode
- * @param  {Component?} component
- * @return {Node}
- */
-export function createDOMNodeError(vnode, component) {
-    // empty, null/undefined
-    if (vnode == null) { //应该还有false
-        return createNode(createEmptyShape(), null, null);
-    }
-    // string, number, element, array
-    else {
-        return createNode(createElement('@', null, vnode), component, null);
-    }
-}
+
 
 /**
  * create namespaced DOMNode
@@ -75,10 +56,7 @@ export function createDOMNodeNS(namespace, type, component) {
     try {
         return document.createElementNS(namespace, type);
     } catch (error) {
-        return createDOMNodeError(
-            componentRenderBoundary(component, 'element', type, error),
-            component
-        );
+        return document.createComment('create element fail');
     }
 }
 
@@ -93,20 +71,16 @@ export function createDOMNodeNS(namespace, type, component) {
  */
 export function insertNode(newType, newNode, prevNode, parentNode, nextNode) {
     var instance = newNode.instance
-    var ok = newType === 2 && instance
 
     // lifecycle, componentWillMount
-    if (ok && instance.componentWillMount) {
-        instance.componentWillMount(nextNode);
-    }
+    applyComponentHook(instance, 0, nextNode)
+
 
     // insert element
-    parentNode.insertBefore(nextNode, prevNode);
+    parentNode.insertBefore(nextNode, prevNode)
 
     // lifecycle, componentDidMount
-    if (ok && instance.componentDidMount) {
-        instance.componentDidMount(nextNode);
-    }
+    applyComponentHook(instance, 1, nextNode)
 }
 
 /**
@@ -119,9 +93,8 @@ export function insertNode(newType, newNode, prevNode, parentNode, nextNode) {
 export function removeNode(oldType, oldNode, parentNode) {
     // lifecycle, componentWillUnmount
     var instance = oldNode.instance
-    if (oldType === 2 && instance && instance.componentWillUnmount) {
-        instance.componentWillUnmount(oldNode.DOMNode);
-    }
+    applyComponentHook(instance, 6, oldNode.DOMNode)
+
 
     // remove element
     parentNode.removeChild(oldNode.DOMNode);
@@ -143,24 +116,19 @@ export function removeNode(oldType, oldNode, parentNode) {
 export function replaceNode(newType, oldType, newNode, oldNode, parentNode, nextNode) {
     // lifecycle, componentWillUnmount
     var instance = oldNode.instance
-    if (oldType === 2 && instance && instance.componentWillUnmount) {
-        instance.componentWillUnmount(oldNode.DOMNode);
-    }
+    applyComponentHook(instance, 6, oldNode.DOMNode)
 
     // lifecycle, componentWillMount
     instance = newNode.instance
-    var ok = newType === 2 && instance
-    if (ok && instance.componentWillMount) {
-        instance.componentWillMount(nextNode);
-    }
+
+    applyComponentHook(instance, 0, nextNode)
 
     // replace element
     parentNode.replaceChild(nextNode, oldNode.DOMNode);
 
     // lifecycle, componentDidmount
-    if (ok && instance.componentDidMount) {
-        instance.componentDidMount(nextNode);
-    }
+    applyComponentHook(instance, 1, nextNode)
+
 
     // clear references
     oldNode.DOMNode = null;
@@ -190,7 +158,7 @@ export function replaceRootNode(newNode, oldNode, newType, oldType, component) {
 
     //  stylesheet
     if (newType !== 3 && component.stylesheet !== void 0) {
-        createScopedStylesheet(component, component.constructor, newNode.DOMNode);
+        //  createScopedStylesheet(component, component.constructor, newNode.DOMNode);
     }
 }
 
@@ -211,9 +179,7 @@ export function emptyNode(oldNode, oldLength) {
         oldChild = children[i];
         var instance = oldChild.instance
             // lifecycle, componentWillUnmount
-        if (oldChild.Type === 2 && instance && instance.componentWillUnmount) {
-            instance.componentWillUnmount(oldChild.DOMNode);
-        }
+        applyComponentHook(instance, 6, oldChild.DOMNode)
 
         // clear references
         oldChild.DOMNode = null;
@@ -328,7 +294,7 @@ export function createNode(subject, component, namespace) {
 
         // stylesheets
         if (nodeType === 2 && component.stylesheet !== void 0 && type !== 'noscript' && type !== '#text') {
-            createScopedStylesheet(component, subject.type, element);
+            // createScopedStylesheet(component, subject.type, element);
         }
     }
 
@@ -358,7 +324,7 @@ export function createNode(subject, component, namespace) {
     return element;
 }
 
-function cloneNode(subject) {
+export function cloneNode(subject) {
     return createNodeShape(
         subject.Type,
         subject.type,

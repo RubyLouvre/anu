@@ -1,7 +1,3 @@
-export default {
-    vnodes: function(obj) { return obj }
-}
-
 // https://github.com/snabbdom/snabbdom/blob/master/src/h.ts
 // https://github.com/thysultan/dio.js
 
@@ -13,18 +9,16 @@ export default {
  * @return {VNode}
  */
 function extractRenderNode(component) {
-    try {
 
-        return extractVirtualNode(
-            component.render(component.props, component.state, component),
-            component
-        );
 
-    }
+    return extractVirtualNode(
+        component.render(component.props, component.state, component),
+        component
+    );
+
+
     // error thrown
-    catch (error) {
-        return componentErrorBoundary(error, component, 'render');
-    }
+
 }
 
 /**

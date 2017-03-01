@@ -1,5 +1,9 @@
+import { extractComponentNode } from './extract'
+import { assignProps } from './props'
 /**
- * 根据虚拟DOM生成，或从父节点中的孩子中抽离 相匹配的DOM节点，并放到其DOMNode属性中
+ * According to the generated virtual DOM element node, 
+ * or all children from the parent node to extract a matching element nodes,
+ *  then this node into a virtual DOM DOMNode properties
  * 
  * @param  {Node}       parent
  * @param  {VNode}      subject
@@ -7,7 +11,7 @@
  * @param  {VNode}      parentNode
  * @param  {?Component} component
  */
-function hydrate(parent, subject, index, parentVNode, component) {
+export default function hydrate(parent, subject, index, parentVNode, component) {
     var newNode = subject.Type === 2 ? extractComponentNode(subject, null, null) : subject;
 
     var nodeType = newNode.Type;

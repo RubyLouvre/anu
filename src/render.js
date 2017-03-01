@@ -1,3 +1,11 @@
+import applyComponentHook from './component/lifecycle'
+import createClass from './component/createClass'
+
+import hydrate from './hydrate'
+import { createComponentShape } from './shapes'
+import { appendNode, createNode } from './vnode'
+
+
 /**
  * render
  *
@@ -9,7 +17,7 @@
  * @param  {boolean=}                                       hydration
  * @return {function(Object=)}
  */
-function render(subject, target, callback, hydration) {
+export default function render(subject, target, callback, hydration) {
     var initial = true;
     var nodeType = 2;
 
@@ -32,10 +40,7 @@ function render(subject, target, callback, hydration) {
             // update props
             if (newProps !== void 0) {
                 // component with shouldComponentUpdate
-                if (
-                    typeof component.shouldComponentUpdate === 'function' &&
-                    component.shouldComponentUpdate(newProps, component.state) === false
-                ) {
+                if (applyComponentHook(component, 3, newProps, component.state) === false) {
                     // exit early
                     return renderer;
                 }
@@ -62,8 +67,8 @@ function render(subject, target, callback, hydration) {
     // array/component/function
     else if (subject.Type === void 0) {
         // array
-        if (subject.constructor === Array) {
-            vnode = createElement('@', null, subject);
+        if (Array.isArray(subject)) {
+            throw 'The first argument can\'t be an array'
         }
         // component/function
         else {
@@ -84,12 +89,6 @@ function render(subject, target, callback, hydration) {
     if (target != null && target.nodeType != null) {
         // target is a dom element
         element = target === document ? docuemnt.body : target;
-    } else {
-        // selector
-        target = document.querySelector(target);
-
-        // default to document.body if no match/document
-        element = (target === null || target === document) ? document.body : target;
     }
 
     // hydration

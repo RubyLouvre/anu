@@ -12,7 +12,7 @@ import applyComponentHook from './lifecycle'
  * @param  {number} newNodeType
  * @param  {number} oldNodeType
  */
-function reconcileNodes(newNode, oldNode, newNodeType, oldNodeType) {
+export function reconcileNodes(newNode, oldNode, newNodeType, oldNodeType) {
     // If both are equal, then quit immediately
     if (newNode === oldNode) {
         return;
