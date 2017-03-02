@@ -5,7 +5,9 @@
 
 export let objEmpty = {};
 export let arrEmpty = [];
-
+export let nsMath = 'http://www.w3.org/1998/Math/MathML';
+export let nsXlink = 'http://www.w3.org/1999/xlink';
+export let nsSvg = 'http://www.w3.org/2000/svg';
 
 /**
  * component shape

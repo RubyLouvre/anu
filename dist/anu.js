@@ -11,7 +11,9 @@
 
     let objEmpty = {};
     let arrEmpty = [];
-
+    let nsMath = 'http://www.w3.org/1998/Math/MathML';
+    let nsXlink = 'http://www.w3.org/1999/xlink';
+    let nsSvg = 'http://www.w3.org/2000/svg';
 
     /**
      * component shape
@@ -72,28 +74,6 @@
             type: 'noscript',
             props: objEmpty,
             children: [],
-            DOMNode: null,
-            instance: null,
-            index: 0,
-            nodeName: null,
-            key: void 0
-        };
-    }
-
-    /**
-     * fragment shape
-     *
-     * @public
-     * 
-     * @param  {VNode[]} children
-     * @return {VNode}
-     */
-    function createFragmentShape(children) {
-        return {
-            Type: 1,
-            type: 'fragment',
-            props: fragProps,
-            children: children,
             DOMNode: null,
             instance: null,
             index: 0,
@@ -249,9 +229,7 @@
             }
         }
 
-        var nsMath = 'http://www.w3.org/1998/Math/MathML';
-        var nsXlink = 'http://www.w3.org/1999/xlink';
-        var nsSvg = 'http://www.w3.org/2000/svg';
+
 
         var typeOf = typeof type;
 
@@ -260,9 +238,7 @@
             if (props === null) {
                 props = {};
             }
-            if (type === '@') {
-                return createFragmentShape(children);
-            }
+
             // svg and math namespaces
             if (type === 'svg') {
                 props.xmlns = nsSvg;
@@ -335,11 +311,6 @@
     }
 
     /**
-     * there are all kinds of methods of handling VNode props
-     */
-
-
-    /**
      * assign default props
      * 
      * @param  {Object<string, any>} defaultProps
@@ -387,9 +358,71 @@
             }
         }
     }
+
+    function addEventListener(el, type, fn) {
+        if (el.addEventListener) {
+            el.addEventListener(type, fn)
+        } else if (el.attachEvent) {
+            el.attachEvent('on' + type, fn)
+        }
+
+    }
     var ron = /^on[A-Z]\w+$/
+    var rskipProps = /^(children|key|on[A-Z]\w+)$/;
+
     function isEventProp(name) {
         return ron.test(name)
+    }
+
+    /**
+     * patch props
+     * 
+     * @param  {VNode} newNode
+     * @param  {VNode} oldNode
+     */
+    function patchProps(newNode, oldNode) {
+        var newProps = newNode.props;
+        var oldProps = oldNode.props;
+        var namespace = newNode.props.xmlns || '';
+        var target = oldNode.DOMNode;
+        var updated = false;
+
+        // diff newProps
+        for (var newName in newNode.props) {
+
+            if (!rskipProps.test(newName)) {
+                var newValue = newProps[newName];
+                var oldValue = oldProps[newName];
+
+                if (newValue != null && oldValue !== newValue) {
+                    updateProp(target, true, newName, newValue, namespace);
+
+                    if (updated === false) {
+                        updated = true;
+                    }
+                }
+            }
+        }
+
+        // diff oldProps
+        for (var oldName in oldNode.props) {
+
+            if (!rskipProps.test(oldName)) {
+                var newValue = newProps[oldName];
+
+                if (newValue == null) {
+                    updateProp(target, false, oldName, '', namespace);
+
+                    if (updated === false) {
+                        updated = true;
+                    }
+                }
+            }
+        }
+
+        if (updated) {
+            oldNode.props = newNode.props;
+        }
     }
 
     /**
@@ -642,7 +675,7 @@
      * @param  {VNode?}     parent
      * @return {VNode} 
      */
-    function extractComponentNode$1(subject, instance, parent) {
+    function extractComponentNode(subject, instance, parent) {
         /** @type {Component} */
         var owner;
 
@@ -700,7 +733,7 @@
 
         // if render returns a component, extract component recursive
         if (vnode.Type === 2) {
-            vnode = extractComponentNode$1(vnode, component, parent || subject);
+            vnode = extractComponentNode(vnode, component, parent || subject);
         }
 
         // if keyed, assign key to vnode
@@ -940,7 +973,7 @@
         }
         // create DOMNode
         else {
-            vnode = nodeType === 2 ? extractComponentNode$1(subject, null, null) : subject;
+            vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
         }
 
         var Type = vnode.Type;
@@ -1425,12 +1458,12 @@
      * 
      * @param {Object<string, any>=} props
      */
-    function Component$1(props) {
+    function Component(props) {
         // initial props
         if (props === objEmpty) {
             props = {}
         }
-
+        // |this| used uninitialized in Hello class constructor
         // assign props
         if (props !== objEmpty) {
             // hydrate default props
@@ -1463,7 +1496,8 @@
      * 
      * @type {Object<string, function>}
      */
-    Component$1.prototype = {
+    Component.prototype = {
+        constructor: Component,
         setState: setState,
         forceUpdate: forceUpdate
     };
@@ -1616,16 +1650,16 @@
             }
 
             // extend Component
-            Component$1.call(this, props);
+            Component.call(this, props);
         }
 
         // extends shape
         component.prototype = shape;
 
         // extends Component class
-        shape.setState = Component$1.prototype.setState;
-        shape.forceUpdate = Component$1.prototype.forceUpdate;
-        component.constructor = Component$1;
+        shape.setState = Component.prototype.setState;
+        shape.forceUpdate = Component.prototype.forceUpdate;
+        component.constructor = Component;
 
         // function shape, cache component
         if (func) {
@@ -1670,7 +1704,7 @@
      * @param  {?Component} component
      */
     function hydrate(parent, subject, index, parentVNode, component) {
-        var newNode = subject.Type === 2 ? extractComponentNode$1(subject, null, null) : subject;
+        var newNode = subject.Type === 2 ? extractComponentNode(subject, null, null) : subject;
 
         var nodeType = newNode.Type;
         var type = newNode.type; //标签名
@@ -1821,15 +1855,18 @@
                 component.forceUpdate();
             }
 
-            return renderer;
+            return component // renderer;
         }
 
         // exit early
         if (browser === false) {
             return renderer;
         }
-
-        // Object
+        // Try to convert the first parameter to the virtual DOM
+        // h('type', null, []) ==> createElementShape
+        // h(Scoller, null, []) === > createComponentShape
+        // Booleans, Null, and Undefined ==> createEmptyShape
+        // String, Number ===> createTextShape
         if (subject.render !== void 0) {
             vnode = createComponentShape(createClass(subject, null), objEmpty, arrEmpty);
         }
@@ -1849,7 +1886,7 @@
             vnode = subject;
         }
 
-        // element
+        // Encapsulated into components, in order to use forceUpdate inside the render
         if (vnode.Type !== 2) {
             vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty);
         }
@@ -1859,7 +1896,6 @@
             // target is a dom element
             element = target === document ? docuemnt.body : target;
         }
-
         // hydration
         if (hydration != null && hydration !== false) {
             // dispatch hydration
@@ -1872,7 +1908,11 @@
             component = vnode.instance;
         } else {
             // destructive mount
-            hydration === false && (element.textContent = '');
+            if (hydration === false) {
+                while (element.firstChild) {
+                    element.removeChild(element.firstChild)
+                }
+            }
 
             renderer();
         }
@@ -1882,7 +1922,7 @@
             callback.call(component, vnode.DOMNode || target);
         }
 
-        return renderer;
+        return component //renderer;
     }
 
     var index = {
@@ -1894,7 +1934,7 @@
         isValidElement,
 
         createClass,
-        Component: Component$1,
+        Component,
 
         render
     }

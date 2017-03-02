@@ -2,7 +2,7 @@
  * there are all kinds of methods of handling VNode props
  */
 
-
+import { nsSvg, nsMath, nsXlink } from './shapes'
 /**
  * assign default props
  * 
@@ -51,6 +51,15 @@ export function assignProps(target, props, onlyEvents, component) {
         }
     }
 }
+
+function addEventListener(el, type, fn) {
+    if (el.addEventListener) {
+        el.addEventListener(type, fn)
+    } else if (el.attachEvent) {
+        el.attachEvent('on' + type, fn)
+    }
+
+}
 var ron = /^on[A-Z]\w+$/
 var rskipProps = /^(children|key|on[A-Z]\w+)$/;
 
@@ -64,7 +73,7 @@ export function isEventProp(name) {
  * @param  {VNode} newNode
  * @param  {VNode} oldNode
  */
-function patchProps(newNode, oldNode) {
+export function patchProps(newNode, oldNode) {
     var newProps = newNode.props;
     var oldProps = oldNode.props;
     var namespace = newNode.props.xmlns || '';

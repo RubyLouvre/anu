@@ -53,15 +53,18 @@ export default function render(subject, target, callback, hydration) {
             component.forceUpdate();
         }
 
-        return renderer;
+        return component // renderer;
     }
 
     // exit early
     if (browser === false) {
         return renderer;
     }
-
-    // Object
+    // Try to convert the first parameter to the virtual DOM
+    // h('type', null, []) ==> createElementShape
+    // h(Scoller, null, []) === > createComponentShape
+    // Booleans, Null, and Undefined ==> createEmptyShape
+    // String, Number ===> createTextShape
     if (subject.render !== void 0) {
         vnode = createComponentShape(createClass(subject, null), objEmpty, arrEmpty);
     }
@@ -81,7 +84,7 @@ export default function render(subject, target, callback, hydration) {
         vnode = subject;
     }
 
-    // element
+    // Encapsulated into components, in order to use forceUpdate inside the render
     if (vnode.Type !== 2) {
         vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty);
     }
@@ -91,7 +94,6 @@ export default function render(subject, target, callback, hydration) {
         // target is a dom element
         element = target === document ? docuemnt.body : target;
     }
-
     // hydration
     if (hydration != null && hydration !== false) {
         // dispatch hydration
@@ -104,7 +106,11 @@ export default function render(subject, target, callback, hydration) {
         component = vnode.instance;
     } else {
         // destructive mount
-        hydration === false && (element.textContent = '');
+        if (hydration === false) {
+            while (element.firstChild) {
+                element.removeChild(element.firstChild)
+            }
+        }
 
         renderer();
     }
@@ -114,5 +120,5 @@ export default function render(subject, target, callback, hydration) {
         callback.call(component, vnode.DOMNode || target);
     }
 
-    return renderer;
+    return component //renderer;
 }

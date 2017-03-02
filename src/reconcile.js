@@ -4,7 +4,8 @@
 import { emptyNode, removeNode, createNode, replaceNode, appendNode } from './vnode'
 import applyComponentHook from './component/lifecycle'
 import { nodeEmpty } from './shapes'
-
+import { extractComponentNode } from './extract'
+import { patchProps } from './props'
 /**
  * reconcile nodes
  *  

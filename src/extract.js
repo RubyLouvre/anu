@@ -3,7 +3,7 @@
 import { createEmptyShape, createPortalShape, createComponentShape, createTextShape } from './shapes'
 
 import { createElement } from './element/createElement'
-import createClass from './component/createClass'
+import { createClass, Component } from './component/index'
 import { assignDefaultProps } from './props'
 import { objEmpty, arrEmpty } from './shapes'
 

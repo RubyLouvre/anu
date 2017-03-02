@@ -17,7 +17,7 @@ export default function Component(props) {
     if (props === objEmpty) {
         props = {}
     }
-
+    // |this| used uninitialized in Hello class constructor
     // assign props
     if (props !== objEmpty) {
         // hydrate default props
@@ -51,6 +51,7 @@ export default function Component(props) {
  * @type {Object<string, function>}
  */
 Component.prototype = {
+    constructor: Component,
     setState: setState,
     forceUpdate: forceUpdate
 };

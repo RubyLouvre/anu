@@ -1,4 +1,4 @@
-import { createElementShape, createEmptyShape, createComponentShape, createFragmentShape } from '../shapes'
+import { nsMath, nsSvg, createElementShape, createEmptyShape, createComponentShape, createFragmentShape } from '../shapes'
 import createChild from './createChild'
 /**
  * create virtual element
@@ -38,9 +38,7 @@ export function createElement(type, props) {
         }
     }
 
-    var nsMath = 'http://www.w3.org/1998/Math/MathML';
-    var nsXlink = 'http://www.w3.org/1999/xlink';
-    var nsSvg = 'http://www.w3.org/2000/svg';
+
 
     var typeOf = typeof type;
 
@@ -49,9 +47,7 @@ export function createElement(type, props) {
         if (props === null) {
             props = {};
         }
-        if (type === '@') {
-            return createFragmentShape(children);
-        }
+
         // svg and math namespaces
         if (type === 'svg') {
             props.xmlns = nsSvg;
