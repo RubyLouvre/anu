@@ -2,10 +2,10 @@ import applyComponentHook from './component/lifecycle'
 import createClass from './component/createClass'
 
 import hydrate from './hydrate'
-import { createComponentShape } from './shapes'
+import { createComponentShape, objEmpty, arrEmpty } from './shapes'
 import { appendNode, createNode } from './vnode'
-
-//用到objEmpty, arrEmpty
+var browser = typeof window === 'object' && !!window.document
+    //用到objEmpty, arrEmpty
 
 /**
  * render

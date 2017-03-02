@@ -2,7 +2,7 @@
 
 import applyComponentHook from './component/lifecycle'
 import { extractComponentNode } from './extract'
-import { createNodeShape } from './shapes'
+import { createNodeShape, objEmpty } from './shapes'
 import { assignProps } from './props'
 
 

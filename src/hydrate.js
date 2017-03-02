@@ -1,5 +1,7 @@
 import { extractComponentNode } from './extract'
 import { assignProps } from './props'
+import { objEmpty } from './shapes'
+
 // 用到objEmpty
 /** 
 / * 

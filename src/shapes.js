@@ -3,6 +3,10 @@
  */
 //用到objEmpty, arrEmpty
 
+export let objEmpty = {};
+export let arrEmpty = [];
+
+
 /**
  * component shape
  *
@@ -189,3 +193,5 @@ export function createTextShape(text) {
         key: void 0
     };
 }
+
+export var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0);

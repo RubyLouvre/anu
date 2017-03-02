@@ -3,6 +3,7 @@ import { assignDefaultProps } from '../props'
 import { extractRenderNode } from '../extract'
 import { replaceRootNode } from '../vnode'
 import { reconcileNodes } from '../reconcile'
+import { objEmpty, arrEmpty } from '../shapes'
 //用到objEmpty
 /**
  * Component class

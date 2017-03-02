@@ -5,6 +5,7 @@ import { createEmptyShape, createPortalShape, createComponentShape, createTextSh
 import { createElement } from './element/createElement'
 import createClass from './component/createClass'
 import { assignDefaultProps } from './props'
+import { objEmpty, arrEmpty } from './shapes'
 
 //用到objEmpty, arrEmpty
 /**
@@ -82,7 +83,7 @@ export function extractVirtualNode(subject, component) {
                     if (subject['--listening'] !== true) {
                         subject.then(function resolveStreamComponent() {
                             component.forceUpdate();
-                        }).catch(funcEmpty);
+                        }).catch(function() {});
 
                         subject['--listening'] = true;
                     }

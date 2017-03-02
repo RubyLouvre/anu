@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="description" content="dio.js - hello world">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Dio.js - playground</title>
+    <script src='./dist/anu.js'></script>
+    <script>
+        function main() {
+            return {
+
+                componentWillMount: function() {
+                    console.log('00000')
+                },
+
+                render: function() {
+                    return h('h1', {
+                        onClick: function() {
+                            console.log('333')
+                        }
+                    }, this.props.value, [1, 2, 3, 4].map(function(el) {
+                        return h('span', {}, el)
+                    }));
+                }
+            };
+        }
+
+        anu.render(main)({
+            value: 'Hello World'
+        });
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>

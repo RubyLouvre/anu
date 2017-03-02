@@ -1,6 +1,7 @@
 import { createEmptyShape } from '../shapes'
 import { createElement } from '../element/index'
 import { extractVirtualNode } from '../extract'
+import Component from './Component'
 
 /**
  * create class

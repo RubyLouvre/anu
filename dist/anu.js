@@ -1,13 +1,17 @@
-(function(global, factory) {
+(function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-        typeof define === 'function' && define.amd ? define(factory) :
-        (global.anu = factory());
-}(this, function() {
+    typeof define === 'function' && define.amd ? define(factory) :
+    (global.anu = factory());
+}(this, function () {
 
     /**
      * To quickly create a series of virtual DOM
      */
     //用到objEmpty, arrEmpty
+
+    let objEmpty = {};
+    let arrEmpty = [];
+
 
     /**
      * component shape
@@ -112,7 +116,7 @@
      * @param  {any}                         key
      * @return {VNode}
      */
-    function createNodeShape$1(Type, type, props, children, DOMNode, instance, index, nodeName, key) {
+    function createNodeShape(Type, type, props, children, DOMNode, instance, index, nodeName, key) {
         return {
             Type: Type,
             type: type,
@@ -170,6 +174,8 @@
             key: void 0
         };
     }
+
+    var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0);
 
     //用到objEmpty, arrEmpty
 
@@ -382,7 +388,6 @@
         }
     }
     var ron = /^on[A-Z]\w+$/
-
     function isEventProp(name) {
         return ron.test(name)
     }
@@ -557,7 +562,7 @@
                         if (subject['--listening'] !== true) {
                             subject.then(function resolveStreamComponent() {
                                 component.forceUpdate();
-                            }).catch(funcEmpty);
+                            }).catch(function() {});
 
                             subject['--listening'] = true;
                         }
@@ -626,6 +631,8 @@
             return createEmptyShape()
         }
     }
+
+
 
     /**
      * extract component node
@@ -716,101 +723,6 @@
 
         return vnode;
     }
-
-    /**
-     * create class
-     *
-     * @public
-     * 
-     * @param  {(Object<string, any>|function(createElement): (Object<string, any>|function))} subject
-     * @param  {Object<string, any>=} props
-     * @return {function(new:Component, Object<string, any>)}
-     */
-    function createClass(subject, props) {
-        // empty class
-        if (subject == null) {
-            subject = createEmptyShape();
-        }
-
-        // component cache
-        if (subject.COMPCache !== void 0) {
-            return subject.COMPCache;
-        }
-
-        // is function?
-        var func = typeof subject === 'function';
-
-        // extract shape of component
-        var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
-        var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
-        var construct = false;
-
-        var vnode;
-        var constructor;
-        var render;
-
-        // numbers, strings, arrays
-        if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
-            shape = extractVirtualNode(shape, { props: props });
-        }
-
-        // elements/functions
-        if (type !== 0) {
-            // render method
-            render = type === 1 ? (vnode = shape, function() { return vnode; }) : shape;
-
-            // new shape
-            shape = { render: render };
-        } else {
-            if (construct = shape.hasOwnProperty('constructor')) {
-                constructor = shape.constructor
-            }
-
-            // create render method if one does not exist
-            if (typeof shape.render !== 'function') {
-                shape.render = function() { return createEmptyShape(); };
-            }
-        }
-
-        // create component class
-        function component(props) {
-            // constructor
-            if (construct) {
-                constructor.call(this, props);
-            }
-
-            // extend Component
-            Component.call(this, props);
-        }
-
-        // extends shape
-        component.prototype = shape;
-
-        // extends Component class
-        shape.setState = Component.prototype.setState;
-        shape.forceUpdate = Component.prototype.forceUpdate;
-        component.constructor = Component;
-
-        // function shape, cache component
-        if (func) {
-            shape.constructor = subject;
-            subject.COMPCache = component;
-        }
-
-        // stylesheet namespaced
-        if (func || shape.stylesheet !== void 0) {
-            // displayName / function name / random string
-            shape.displayName = (
-                shape.displayName ||
-                (func ? subject.name : false) ||
-                ((Math.random() + 1).toString(36).substr(2, 5))
-            );
-        }
-
-        return component;
-    }
-
-    // https://github.com/atom/etch/blob/master/lib/patch.js
 
     var componentHooks = {
         '0': 'componentWillMount',
@@ -1128,7 +1040,7 @@
     }
 
     function cloneNode$1(subject) {
-        return createNodeShape$1(
+        return createNodeShape(
             subject.Type,
             subject.type,
             subject.props,
@@ -1641,6 +1553,101 @@
         }
     }
 
+    /**
+     * create class
+     *
+     * @public
+     * 
+     * @param  {(Object<string, any>|function(createElement): (Object<string, any>|function))} subject
+     * @param  {Object<string, any>=} props
+     * @return {function(new:Component, Object<string, any>)}
+     */
+    function createClass(subject, props) {
+        // empty class
+        if (subject == null) {
+            subject = createEmptyShape();
+        }
+
+        // component cache
+        if (subject.COMPCache !== void 0) {
+            return subject.COMPCache;
+        }
+
+        // is function?
+        var func = typeof subject === 'function';
+
+        // extract shape of component
+        var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
+        var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
+        var construct = false;
+
+        var vnode;
+        var constructor;
+        var render;
+
+        // numbers, strings, arrays
+        if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
+            shape = extractVirtualNode(shape, { props: props });
+        }
+
+        // elements/functions
+        if (type !== 0) {
+            // render method
+            render = type === 1 ? (vnode = shape, function() { return vnode; }) : shape;
+
+            // new shape
+            shape = { render: render };
+        } else {
+            if (construct = shape.hasOwnProperty('constructor')) {
+                constructor = shape.constructor
+            }
+
+            // create render method if one does not exist
+            if (typeof shape.render !== 'function') {
+                shape.render = function() { return createEmptyShape(); };
+            }
+        }
+
+        // create component class
+        function component(props) {
+            // constructor
+            if (construct) {
+                constructor.call(this, props);
+            }
+
+            // extend Component
+            Component$1.call(this, props);
+        }
+
+        // extends shape
+        component.prototype = shape;
+
+        // extends Component class
+        shape.setState = Component$1.prototype.setState;
+        shape.forceUpdate = Component$1.prototype.forceUpdate;
+        component.constructor = Component$1;
+
+        // function shape, cache component
+        if (func) {
+            shape.constructor = subject;
+            subject.COMPCache = component;
+        }
+
+        // stylesheet namespaced
+        if (func || shape.stylesheet !== void 0) {
+            // displayName / function name / random string
+            shape.displayName = (
+                shape.displayName ||
+                (func ? subject.name : false) ||
+                ((Math.random() + 1).toString(36).substr(2, 5))
+            );
+        }
+
+        return component;
+    }
+
+    // https://github.com/atom/etch/blob/master/lib/patch.js
+
     // 用到objEmpty
     /** 
     / * 
@@ -1765,7 +1772,8 @@
         }
     }
 
-    //用到objEmpty, arrEmpty
+    var browser = typeof window === 'object' && !!window.document
+        //用到objEmpty, arrEmpty
 
     /**
      * render
@@ -1877,12 +1885,10 @@
         return renderer;
     }
 
-    var objEmpty$1 = {};
-    var arrEmpty$1 = [];
-    var nodeEmpty$1 = createNodeShape(0, '', objEmpty$1, arrEmpty$1, null, null, 0, null, void 0);
     var index = {
         cloneElement,
         createElement,
+        h: createElement,
 
         createFactory,
         isValidElement,

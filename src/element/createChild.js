@@ -1,4 +1,4 @@
-import { createPortalShape, createComponentShape, createTextShape } from '../shapes'
+import { objEmpty, arrEmpty, createPortalShape, createComponentShape, createTextShape } from '../shapes'
 //用到objEmpty, arrEmpty
 
 export default function createChild(child, children, index) {
