@@ -25,7 +25,6 @@ export default function createClass(subject, props) {
 
     // is function?
     var func = typeof subject === 'function';
-
     // extract shape of component
     var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
     var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
@@ -34,7 +33,6 @@ export default function createClass(subject, props) {
     var vnode;
     var constructor;
     var render;
-
     // numbers, strings, arrays
     if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
         shape = extractVirtualNode(shape, { props: props });

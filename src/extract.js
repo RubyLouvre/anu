@@ -14,7 +14,7 @@ import { objEmpty, arrEmpty } from './shapes'
  * @param  {Component} component
  * @return {VNode}
  */
-export function extractRenderNode(component) {
+export function applyComponentRender(component) {
     try {
         return extractVirtualNode(
             component.render(component.props, component.state, component),
@@ -35,84 +35,55 @@ export function extractRenderNode(component) {
  */
 export function extractVirtualNode(subject, component) {
     // empty
-    if (subject == null) {
-        return createEmptyShape();
-    }
+    var type = Object.prototype.toString.call(subject).slice(8, -1)
+    switch (type) {
+        // booleans
+        case 'Boolean':
+        case 'Null':
+        case 'Undefined':
+            return createEmptyShape();
+        case 'Array':
+            return createEmptyShape();
+        case 'String':
+        case 'Number':
+            return createTextShape(subject);
+        case 'Function':
+            // stream
+            if (subject.then != null && typeof subject.then === 'function') {
+                if (subject['--listening'] !== true) {
+                    subject.then(function resolveStreamComponent() {
+                        component.forceUpdate();
+                    }).catch(function() {});
 
-    // element
-    if (subject.Type !== void 0) {
-        return subject;
-    }
-
-    // portal
-    if (subject.nodeType !== void 0) {
-        return (
-            subject = createPortalShape(subject, objEmpty, arrEmpty),
-            subject.Type = 5,
-            subject
-        );
-    }
-
-    switch (subject.constructor) {
-        // component
-        case Component:
-            {
+                    subject['--listening'] = true;
+                }
+                return extractVirtualNode(subject(), component);
+            }
+            // component
+            else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
                 return createComponentShape(subject, objEmpty, arrEmpty);
             }
-            // booleans
-        case Boolean:
-            {
-                return createEmptyShape();
+            // function
+            else {
+                return extractVirtualNode(subject(component != null ? component.props : {}), component);
             }
-            // fragment
-        case Array:
-            {
-                return createElement('@', null, subject);
+            break
+            // component
+        default:
+            if (subject.Type) {
+                return subject
             }
-            // string/number
-        case String:
-        case Number:
-            {
-                return createTextShape(subject);
-            }
-            // component/function
-        case Function:
-            {
-                // stream
-                if (subject.then != null && typeof subject.then === 'function') {
-                    if (subject['--listening'] !== true) {
-                        subject.then(function resolveStreamComponent() {
-                            component.forceUpdate();
-                        }).catch(function() {});
-
-                        subject['--listening'] = true;
-                    }
-
-                    return extractVirtualNode(subject(), component);
-                }
-                // component
-                else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
-                    return createComponentShape(subject, objEmpty, arrEmpty);
-                }
-                // function
-                else {
-                    return extractVirtualNode(subject(component != null ? component.props : {}), component);
-                }
+            if (subject instanceof Component) {
+                return createComponentShape(subject, objEmpty, arrEmpty);
             }
 
-    }
-
-
-    // component descriptor
-    if (typeof subject.render === 'function') {
-        return (
-            subject.COMPCache ||
-            createComponentShape(subject.COMPCache = createClass(subject, null), objEmpty, arrEmpty)
-        );
-    }
-    // unsupported render types, fail gracefully
-    else {
-        return createEmptyShape()
+            if (typeof subject.render === 'function') {
+                return (
+                    subject.COMPCache ||
+                    createComponentShape(subject.COMPCache = createClass(subject, null), objEmpty, arrEmpty)
+                );
+            }
+            return createEmptyShape();
     }
 }
 
@@ -164,17 +135,13 @@ export function extractFunctionNode(type, props) {
  * @return {VNode} 
  */
 export function extractComponentNode(subject, instance, parent) {
-    /** @type {Component} */
     var owner;
 
-    /** @type {VNode} */
     var vnode;
 
-    /** @type {(Component|function(new:Component, Object<string, any>))} */
     var type = subject.type;
 
-    /** @type {Object<string, any>} */
-    var props = subject.props;
+    var props = subject.props
 
     // default props
     if (type.defaultProps !== void 0) {
@@ -212,12 +179,11 @@ export function extractComponentNode(subject, instance, parent) {
     else {
         owner = type;
     }
-
     // create component instance
     var component = subject.instance = new owner(props);
 
-    // retrieve vnode
-    var vnode = extractRenderNode(component);
+    // get render vnodes
+    var vnode = applyComponentRender(component);
 
     // if render returns a component, extract component recursive
     if (vnode.Type === 2) {

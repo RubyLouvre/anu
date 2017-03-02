@@ -8,32 +8,13 @@
     <script>
         var h = anu.createElement
         class Hello extends anu.Component {
-            constructor() {
-                super() //Must write, or throw ReferenceError: |this| used uninitialized in Hello class constructor
-                this.handleClick = this.handleClick.bind(this)
-            }
-            componentWillMount() {
-                console.log('准备插入DOM树')
-            }
-            handleClick() {
-                this.setState({
-                    title: new Date - 0,
-                    child: new Date - 1
-                })
-            }
-            static className() {
-                return 'Point';
-            }
             render() {
-                return h('div', {
-                    title: this.state.title,
-                    onClick: this.handleClick
-                }, this.state.child || "x")
+                return `司徒正美`
             }
         }
 
         function main() {
-            return h('h2', null, false, 'A', '你好', h(Hello), h('p'))
+            return Hello // h('h2', null, false, 'A', '你好', h(Hello), h('p'))
         }
         window.onload = function() {
             //render4个参数， vnode, container, callback, clearContainer

@@ -56,3 +56,11 @@
 </html>
 ```
 
+数组的定义方式 
+```javascript
+ class Hello extends anu.Component {
+    render() {
+        return 1984
+    }
+}
+```

@@ -1,10 +1,9 @@
 import applyComponentHook from './lifecycle'
 import { assignDefaultProps } from '../props'
-import { extractRenderNode } from '../extract'
+import { applyComponentRender } from '../extract'
 import { replaceRootNode } from '../vnode'
 import { reconcileNodes } from '../reconcile'
 import { objEmpty, arrEmpty } from '../shapes'
-//用到objEmpty
 /**
  * Component class
  *
@@ -17,26 +16,23 @@ export default function Component(props) {
     if (props === objEmpty) {
         props = {}
     }
-    // |this| used uninitialized in Hello class constructor
     // assign props
     if (props !== objEmpty) {
-        // hydrate default props
+        // apply getDefaultProps Hook
         if (this.getDefaultProps) {
-            assignDefaultProps(applyComponentHook(this, -1, props), props);
+            assignDefaultProps(applyComponentHook(this, -2, props), props);
         }
-
+        // apply componentWillReceiveProps Hook
         applyComponentHook(this, 2, props)
 
         this.props = props;
+    } else {
+        //apply getInitialState Hooks
+        this.props = this.props || applyComponentHook(this, -2, null) || {}
     }
-    // default props
-    else {
-        this.props = this.props || applyComponentHook(this, -1, null) || {}
-    }
-
 
     // assign state
-    this.state = this.state || applyComponentHook(this, -2, null) || {}
+    this.state = this.state || applyComponentHook(this, -1, null) || {}
 
 
     this.refs = null;
@@ -111,7 +107,7 @@ function forceUpdate(callback) {
 
 
     var oldNode = this['--vnode'];
-    var newNode = extractRenderNode(this);
+    var newNode = applyComponentRender(this)
 
     var newType = newNode.Type;
     var oldType = oldNode.Type;

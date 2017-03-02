@@ -17,7 +17,7 @@ import { assignProps } from './props'
  * @param {Node}   nextNode
  */
 export function appendNode(newType, newNode, parentNode, nextNode) {
-
+    console.log('appendNode', nextNode)
     var instance = newNode.instance
         // lifecycle, componentWillMount
     applyComponentHook(instance, 0, nextNode)
@@ -208,40 +208,25 @@ export function createNode(subject, component, namespace) {
 
     var vnode;
     var element;
-
-    var portal = false;
-
     // DOMNode exists
     if (subject.DOMNode !== null) {
         element = subject.DOMNode;
-
-        // portal
-        if (portal = (nodeType === 4 || nodeType === 5)) {
-            element = (vnode = subject).DOMNode = (nodeType === 4 ? element.cloneNode(true) : element);
-        }
         // hoisted
-        else {
-            return subject.DOMNode = element.cloneNode(true);
-        }
-    }
-    // create DOMNode
-    else {
+
+        return subject.DOMNode = element.cloneNode(true);
+
+    } else { // create DOMNode
+        console.log('创建vnode')
         vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
     }
 
     var Type = vnode.Type;
     var children = vnode.children;
+    console.log('新vnode的类型', Type)
 
-    if (portal === false) {
-        // text		
-        if (Type === 3) {
-            return vnode.DOMNode = subject.DOMNode = document.createTextNode(children);
-        }
-        // portal
-        else if (Type === 4 || Type === 5) {
-            element = vnode.DOMNode;
-            portal = true;
-        }
+    // text		
+    if (Type === 3) {
+        return vnode.DOMNode = subject.DOMNode = document.createTextNode(children);
     }
 
     var type = vnode.type;
@@ -262,23 +247,23 @@ export function createNode(subject, component, namespace) {
         thrown = component['--throw'];
     }
 
-    if (portal === false) {
-        // create namespaced element
-        if (namespace !== null) {
-            // if undefined, assign svg namespace
-            if (props.xmlns === void 0) {
-                props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace);
-            }
 
-            element = createDOMNodeNS(namespace, type, component);
-        }
-        // create html element
-        else {
-            element = createDOMNode(type, component);
+    // create namespaced element
+    if (namespace !== null) {
+        // if undefined, assign svg namespace
+        if (props.xmlns === void 0) {
+            props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace);
         }
 
-        vnode.DOMNode = subject.DOMNode = element;
+        element = createDOMNodeNS(namespace, type, component);
     }
+    // create html element
+    else {
+        element = createDOMNode(type, component);
+    }
+
+    vnode.DOMNode = subject.DOMNode = element;
+
 
     if (instance) {
         // avoid appending children if an error was thrown while creating a DOMNode

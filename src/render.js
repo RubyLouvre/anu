@@ -30,6 +30,7 @@ export default function render(subject, target, callback, hydration) {
     function renderer(newProps) {
         if (initial) {
             // dispatch mount
+            // vnode.Type, vnode, container, vnode.DOMNode
             appendNode(nodeType, vnode, container, createNode(vnode, null, null));
 
             // register mount has been dispatched
@@ -76,6 +77,7 @@ export default function render(subject, target, callback, hydration) {
         }
         // component/function
         else {
+            console.log('如果用户传入一个函数')
             vnode = createComponentShape(subject, objEmpty, arrEmpty);
         }
     }

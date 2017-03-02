@@ -526,7 +526,7 @@
      * @param  {Component} component
      * @return {VNode}
      */
-    function extractRenderNode(component) {
+    function applyComponentRender(component) {
         try {
             return extractVirtualNode(
                 component.render(component.props, component.state, component),
@@ -547,84 +547,55 @@
      */
     function extractVirtualNode(subject, component) {
         // empty
-        if (subject == null) {
-            return createEmptyShape();
-        }
+        var type = Object.prototype.toString.call(subject).slice(8, -1)
+        switch (type) {
+            // booleans
+            case 'Boolean':
+            case 'Null':
+            case 'Undefined':
+                return createEmptyShape();
+            case 'Array':
+                return createEmptyShape();
+            case 'String':
+            case 'Number':
+                return createTextShape(subject);
+            case 'Function':
+                // stream
+                if (subject.then != null && typeof subject.then === 'function') {
+                    if (subject['--listening'] !== true) {
+                        subject.then(function resolveStreamComponent() {
+                            component.forceUpdate();
+                        }).catch(function() {});
 
-        // element
-        if (subject.Type !== void 0) {
-            return subject;
-        }
-
-        // portal
-        if (subject.nodeType !== void 0) {
-            return (
-                subject = createPortalShape(subject, objEmpty, arrEmpty),
-                subject.Type = 5,
-                subject
-            );
-        }
-
-        switch (subject.constructor) {
-            // component
-            case Component:
-                {
+                        subject['--listening'] = true;
+                    }
+                    return extractVirtualNode(subject(), component);
+                }
+                // component
+                else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
                     return createComponentShape(subject, objEmpty, arrEmpty);
                 }
-                // booleans
-            case Boolean:
-                {
-                    return createEmptyShape();
+                // function
+                else {
+                    return extractVirtualNode(subject(component != null ? component.props : {}), component);
                 }
-                // fragment
-            case Array:
-                {
-                    return createElement('@', null, subject);
+                break
+                // component
+            default:
+                if (subject.Type) {
+                    return subject
                 }
-                // string/number
-            case String:
-            case Number:
-                {
-                    return createTextShape(subject);
-                }
-                // component/function
-            case Function:
-                {
-                    // stream
-                    if (subject.then != null && typeof subject.then === 'function') {
-                        if (subject['--listening'] !== true) {
-                            subject.then(function resolveStreamComponent() {
-                                component.forceUpdate();
-                            }).catch(function() {});
-
-                            subject['--listening'] = true;
-                        }
-
-                        return extractVirtualNode(subject(), component);
-                    }
-                    // component
-                    else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
-                        return createComponentShape(subject, objEmpty, arrEmpty);
-                    }
-                    // function
-                    else {
-                        return extractVirtualNode(subject(component != null ? component.props : {}), component);
-                    }
+                if (subject instanceof Component) {
+                    return createComponentShape(subject, objEmpty, arrEmpty);
                 }
 
-        }
-
-
-        // component descriptor
-        if (typeof subject.render === 'function') {
-            return (
-                subject.COMPCache ||
-                createComponentShape(subject.COMPCache = createClass(subject, null), objEmpty, arrEmpty)
-            );
-        }
-        // unsupported render types, fail gracefully
-        else {
-            return createEmptyShape()
+                if (typeof subject.render === 'function') {
+                    return (
+                        subject.COMPCache ||
+                        createComponentShape(subject.COMPCache = createClass(subject, null), objEmpty, arrEmpty)
+                    );
+                }
+                return createEmptyShape();
         }
     }
 
@@ -676,17 +647,13 @@
      * @return {VNode} 
      */
     function extractComponentNode(subject, instance, parent) {
-        /** @type {Component} */
         var owner;
 
-        /** @type {VNode} */
         var vnode;
 
-        /** @type {(Component|function(new:Component, Object<string, any>))} */
         var type = subject.type;
 
-        /** @type {Object<string, any>} */
-        var props = subject.props;
+        var props = subject.props
 
         // default props
         if (type.defaultProps !== void 0) {
@@ -724,12 +691,11 @@
         else {
             owner = type;
         }
-
         // create component instance
         var component = subject.instance = new owner(props);
 
-        // retrieve vnode
-        var vnode = extractRenderNode(component);
+        // get render vnodes
+        var vnode = applyComponentRender(component);
 
         // if render returns a component, extract component recursive
         if (vnode.Type === 2) {
@@ -776,6 +742,33 @@
         }
     }
 
+    /**
+     * ------------------ The Life-Cycle of a Composite Component ------------------
+     *
+     * - constructor: Initialization of state. The instance is now retained.
+     *   - componentWillMount
+     *   - render
+     *   - [children's constructors]
+     *     - [children's componentWillMount and render]
+     *     - [children's componentDidMount]
+     *     - componentDidMount
+     *
+     *       Update Phases:
+     *       - componentWillReceiveProps (only called if parent updated)
+     *       - shouldComponentUpdate
+     *         - componentWillUpdate
+     *           - render
+     *           - [children's constructors or receive props phases]
+     *         - componentDidUpdate
+     *
+     *     - componentWillUnmount
+     *     - [children's componentWillUnmount]
+     *   - [children destroyed]
+     * - (destroyed): The instance is now blank, released by React and ready for GC.
+     *
+     * -----------------------------------------------------------------------------
+     */
+
     //用到objEmpty
 
     /**
@@ -787,7 +780,7 @@
      * @param {Node}   nextNode
      */
     function appendNode(newType, newNode, parentNode, nextNode) {
-
+        console.log('appendNode', nextNode)
         var instance = newNode.instance
             // lifecycle, componentWillMount
         applyComponentHook(instance, 0, nextNode)
@@ -955,40 +948,25 @@
 
         var vnode;
         var element;
-
-        var portal = false;
-
         // DOMNode exists
         if (subject.DOMNode !== null) {
             element = subject.DOMNode;
-
-            // portal
-            if (portal = (nodeType === 4 || nodeType === 5)) {
-                element = (vnode = subject).DOMNode = (nodeType === 4 ? element.cloneNode(true) : element);
-            }
             // hoisted
-            else {
-                return subject.DOMNode = element.cloneNode(true);
-            }
-        }
-        // create DOMNode
-        else {
+
+            return subject.DOMNode = element.cloneNode(true);
+
+        } else { // create DOMNode
+            console.log('创建vnode')
             vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
         }
 
         var Type = vnode.Type;
         var children = vnode.children;
+        console.log('新vnode的类型', Type)
 
-        if (portal === false) {
-            // text		
-            if (Type === 3) {
-                return vnode.DOMNode = subject.DOMNode = document.createTextNode(children);
-            }
-            // portal
-            else if (Type === 4 || Type === 5) {
-                element = vnode.DOMNode;
-                portal = true;
-            }
+        // text		
+        if (Type === 3) {
+            return vnode.DOMNode = subject.DOMNode = document.createTextNode(children);
         }
 
         var type = vnode.type;
@@ -1009,23 +987,23 @@
             thrown = component['--throw'];
         }
 
-        if (portal === false) {
-            // create namespaced element
-            if (namespace !== null) {
-                // if undefined, assign svg namespace
-                if (props.xmlns === void 0) {
-                    props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace);
-                }
 
-                element = createDOMNodeNS(namespace, type, component);
-            }
-            // create html element
-            else {
-                element = createDOMNode(type, component);
+        // create namespaced element
+        if (namespace !== null) {
+            // if undefined, assign svg namespace
+            if (props.xmlns === void 0) {
+                props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace);
             }
 
-            vnode.DOMNode = subject.DOMNode = element;
+            element = createDOMNodeNS(namespace, type, component);
         }
+        // create html element
+        else {
+            element = createDOMNode(type, component);
+        }
+
+        vnode.DOMNode = subject.DOMNode = element;
+
 
         if (instance) {
             // avoid appending children if an error was thrown while creating a DOMNode
@@ -1450,7 +1428,6 @@
         oldNode.children = reconciled;
     }
 
-    //用到objEmpty
     /**
      * Component class
      *
@@ -1463,26 +1440,23 @@
         if (props === objEmpty) {
             props = {}
         }
-        // |this| used uninitialized in Hello class constructor
         // assign props
         if (props !== objEmpty) {
-            // hydrate default props
+            // apply getDefaultProps Hook
             if (this.getDefaultProps) {
-                assignDefaultProps(applyComponentHook(this, -1, props), props);
+                assignDefaultProps(applyComponentHook(this, -2, props), props);
             }
-
+            // apply componentWillReceiveProps Hook
             applyComponentHook(this, 2, props)
 
             this.props = props;
+        } else {
+            //apply getInitialState Hooks
+            this.props = this.props || applyComponentHook(this, -2, null) || {}
         }
-        // default props
-        else {
-            this.props = this.props || applyComponentHook(this, -1, null) || {}
-        }
-
 
         // assign state
-        this.state = this.state || applyComponentHook(this, -2, null) || {}
+        this.state = this.state || applyComponentHook(this, -1, null) || {}
 
 
         this.refs = null;
@@ -1557,7 +1531,7 @@
 
 
         var oldNode = this['--vnode'];
-        var newNode = extractRenderNode(this);
+        var newNode = applyComponentRender(this)
 
         var newType = newNode.Type;
         var oldType = oldNode.Type;
@@ -1609,7 +1583,6 @@
 
         // is function?
         var func = typeof subject === 'function';
-
         // extract shape of component
         var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
         var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
@@ -1618,7 +1591,6 @@
         var vnode;
         var constructor;
         var render;
-
         // numbers, strings, arrays
         if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
             shape = extractVirtualNode(shape, { props: props });
@@ -1815,7 +1787,7 @@
      * @public
      * 
      * @param  {(Component|VNode|function|Object<string, any>)} subject
-     * @param  {(Node|string)=}                                 target
+     * @param  {(Node)=}                                 target
      * @param  {function(this:Component, Node)=}                callback
      * @param  {boolean=}                                       hydration
      * @return {function(Object=)}
@@ -1826,13 +1798,14 @@
 
         var component;
         var vnode;
-        var element;
+        var container;
 
         // renderer
         function renderer(newProps) {
             if (initial) {
                 // dispatch mount
-                appendNode(nodeType, vnode, element, createNode(vnode, null, null));
+                // vnode.Type, vnode, container, vnode.DOMNode
+                appendNode(nodeType, vnode, container, createNode(vnode, null, null));
 
                 // register mount has been dispatched
                 initial = false;
@@ -1863,7 +1836,7 @@
             return renderer;
         }
         // Try to convert the first parameter to the virtual DOM
-        // h('type', null, []) ==> createElementShape
+        // h('type', null, []) ==> createcontainerShape
         // h(Scoller, null, []) === > createComponentShape
         // Booleans, Null, and Undefined ==> createEmptyShape
         // String, Number ===> createTextShape
@@ -1878,10 +1851,11 @@
             }
             // component/function
             else {
+                console.log('如果用户传入一个函数')
                 vnode = createComponentShape(subject, objEmpty, arrEmpty);
             }
         }
-        // element/component
+        // container/component
         else {
             vnode = subject;
         }
@@ -1893,13 +1867,13 @@
 
         // mount
         if (target != null && target.nodeType != null) {
-            // target is a dom element
-            element = target === document ? docuemnt.body : target;
+            // target is a dom container
+            container = target === document ? docuemnt.body : target;
         }
         // hydration
         if (hydration != null && hydration !== false) {
             // dispatch hydration
-            hydrate(element, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
+            hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
 
             // register mount has been dispatched
             initial = false;
@@ -1909,8 +1883,8 @@
         } else {
             // destructive mount
             if (hydration === false) {
-                while (element.firstChild) {
-                    element.removeChild(element.firstChild)
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild)
                 }
             }
 
