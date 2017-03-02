@@ -13,7 +13,7 @@ var browser = typeof window === 'object' && !!window.document
  * @public
  * 
  * @param  {(Component|VNode|function|Object<string, any>)} subject
- * @param  {(Node|string)=}                                 target
+ * @param  {(Node)=}                                 target
  * @param  {function(this:Component, Node)=}                callback
  * @param  {boolean=}                                       hydration
  * @return {function(Object=)}
@@ -24,13 +24,13 @@ export default function render(subject, target, callback, hydration) {
 
     var component;
     var vnode;
-    var element;
+    var container;
 
     // renderer
     function renderer(newProps) {
         if (initial) {
             // dispatch mount
-            appendNode(nodeType, vnode, element, createNode(vnode, null, null));
+            appendNode(nodeType, vnode, container, createNode(vnode, null, null));
 
             // register mount has been dispatched
             initial = false;
@@ -61,7 +61,7 @@ export default function render(subject, target, callback, hydration) {
         return renderer;
     }
     // Try to convert the first parameter to the virtual DOM
-    // h('type', null, []) ==> createElementShape
+    // h('type', null, []) ==> createcontainerShape
     // h(Scoller, null, []) === > createComponentShape
     // Booleans, Null, and Undefined ==> createEmptyShape
     // String, Number ===> createTextShape
@@ -79,7 +79,7 @@ export default function render(subject, target, callback, hydration) {
             vnode = createComponentShape(subject, objEmpty, arrEmpty);
         }
     }
-    // element/component
+    // container/component
     else {
         vnode = subject;
     }
@@ -91,13 +91,13 @@ export default function render(subject, target, callback, hydration) {
 
     // mount
     if (target != null && target.nodeType != null) {
-        // target is a dom element
-        element = target === document ? docuemnt.body : target;
+        // target is a dom container
+        container = target === document ? docuemnt.body : target;
     }
     // hydration
     if (hydration != null && hydration !== false) {
         // dispatch hydration
-        hydrate(element, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
+        hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
 
         // register mount has been dispatched
         initial = false;
@@ -107,8 +107,8 @@ export default function render(subject, target, callback, hydration) {
     } else {
         // destructive mount
         if (hydration === false) {
-            while (element.firstChild) {
-                element.removeChild(element.firstChild)
+            while (container.firstChild) {
+                container.removeChild(container.firstChild)
             }
         }
 

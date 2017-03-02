@@ -33,7 +33,7 @@
         }
 
         function main() {
-            return h('h2', null, 'A', '你好', h(Hello), h('p'))
+            return h('h2', null, false, 'A', '你好', h(Hello), h('p'))
         }
         window.onload = function() {
             //render4个参数， vnode, container, callback, clearContainer
