@@ -4,32 +4,29 @@ import { applyComponentRender } from '../extract'
 import { replaceRootNode } from '../vnode'
 import { reconcileNodes } from '../reconcile'
 import { objEmpty, arrEmpty } from '../shapes'
+
 /**
  * Component class
- *
- * @public
  * 
- * @param {Object<string, any>=} props
+ * @public
+ * @export
+ * @param {Object} props
  */
 export default function Component(props) {
     // initial props
     if (props === objEmpty) {
         props = {}
     }
-    // assign props
-    if (props !== objEmpty) {
-        // apply getDefaultProps Hook
-        if (this.getDefaultProps) {
-            assignDefaultProps(applyComponentHook(this, -2, props), props);
-        }
-        // apply componentWillReceiveProps Hook
-        applyComponentHook(this, 2, props)
-
-        this.props = props;
-    } else {
-        //apply getInitialState Hooks
-        this.props = this.props || applyComponentHook(this, -2, null) || {}
+    // apply getDefaultProps Hook
+    if (this.getDefaultProps) {
+        var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
+        assignDefaultProps(defaultProps, props)
     }
+
+    // apply componentWillReceiveProps Hook
+    applyComponentHook(this, 2, props)
+
+    this.props = props
 
     // assign state
     this.state = this.state || applyComponentHook(this, -1, null) || {}
@@ -81,15 +78,18 @@ function setState(newState, callback) {
 
 
 /**
- * update state, hoisted to avoid `for in` deopts
  * 
- * @param {Object} oldState
- * @param {Object} newState
+ * @param {Object|function} oldState
+ * @param {any} newState
  */
 function updateState(oldState, newState) {
     if (oldState != null) {
-        for (var name in newState) {
-            oldState[name] = newState[name];
+        if (typeof newState === 'function') {
+            newState(oldState)
+        } else {
+            for (var name in newState) {
+                oldState[name] = newState[name];
+            }
         }
     }
 }
