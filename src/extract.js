@@ -36,6 +36,7 @@ export function applyComponentRender(component) {
 export function extractVirtualNode(subject, component) {
     // empty
     var type = Object.prototype.toString.call(subject).slice(8, -1)
+    console.log(type, '1111')
     switch (type) {
         // booleans
         case 'Boolean':
@@ -59,7 +60,7 @@ export function extractVirtualNode(subject, component) {
                 }
                 return extractVirtualNode(subject(), component);
             }
-            // component
+            // component constructor
             else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
                 return createComponentShape(subject, objEmpty, arrEmpty);
             }
@@ -68,15 +69,17 @@ export function extractVirtualNode(subject, component) {
                 return extractVirtualNode(subject(component != null ? component.props : {}), component);
             }
             break
-            // component
+
         default:
+            //VNode
             if (subject.Type) {
                 return subject
             }
+            //  component instance
             if (subject instanceof Component) {
                 return createComponentShape(subject, objEmpty, arrEmpty);
             }
-
+            //plain object with render
             if (typeof subject.render === 'function') {
                 return (
                     subject.COMPCache ||
@@ -97,6 +100,7 @@ export function extractVirtualNode(subject, component) {
  */
 export function extractFunctionNode(type, props) {
     try {
+        console.log('extractFunctionNode')
         var vnode;
         var func = type['--func'] !== void 0;
 
@@ -163,8 +167,9 @@ export function extractComponentNode(subject, instance, parent) {
     if (type.COMPCache !== void 0) {
         owner = type.COMPCache;
     }
-    // function components
+    // Stateless Component
     else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
+        console.log('Stateless Component')
         vnode = extractFunctionNode(type, props);
 
         if (vnode.Type === void 0) {

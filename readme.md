@@ -64,3 +64,37 @@
     }
 }
 ```
+套嵌的组件
+```javascript
+var h = anu.createElement
+class World extends anu.Component {
+    render() {
+        return 'world'
+    }
+}
+class Hello extends anu.Component {
+    render() {
+        return World
+    }
+}
+window.onload = function() {
+    //render4个参数， vnode, container, callback, clearContainer
+    var result = anu.render(Hello, document.body, null, false)
+    console.log(result)
+}
+```
+
+```JAVASCRIPT
+ var h = anu.createElement
+
+function HelloComponent(props /* context */ ) {
+    return h('div', {}, 'Hello', props.name)
+}
+window.onload = function() {
+    //render4个参数， vnode, container, callback, clearContainer
+    var result = anu.render(h(HelloComponent, {
+        name: '111'
+    }), document.body, null, false)
+    console.log(result)
+}
+```

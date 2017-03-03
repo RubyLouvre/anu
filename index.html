@@ -7,18 +7,15 @@
     <script src='./dist/anu.js'></script>
     <script>
         var h = anu.createElement
-        class Hello extends anu.Component {
-            render() {
-                return `司徒正美`
-            }
-        }
 
-        function main() {
-            return Hello // h('h2', null, false, 'A', '你好', h(Hello), h('p'))
+        function HelloComponent(props /* context */ ) {
+            return h('div', {}, 'Hello', props.name)
         }
         window.onload = function() {
             //render4个参数， vnode, container, callback, clearContainer
-            var result = anu.render(main(), document.body, null, false)
+            var result = anu.render(h(HelloComponent, {
+                name: '111'
+            }), document.body, null, false)
             console.log(result)
         }
     </script>

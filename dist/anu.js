@@ -548,6 +548,7 @@
     function extractVirtualNode(subject, component) {
         // empty
         var type = Object.prototype.toString.call(subject).slice(8, -1)
+        console.log(type, '1111')
         switch (type) {
             // booleans
             case 'Boolean':
@@ -571,7 +572,7 @@
                     }
                     return extractVirtualNode(subject(), component);
                 }
-                // component
+                // component constructor
                 else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
                     return createComponentShape(subject, objEmpty, arrEmpty);
                 }
@@ -580,15 +581,17 @@
                     return extractVirtualNode(subject(component != null ? component.props : {}), component);
                 }
                 break
-                // component
+
             default:
+                //VNode
                 if (subject.Type) {
                     return subject
                 }
+                //  component instance
                 if (subject instanceof Component) {
                     return createComponentShape(subject, objEmpty, arrEmpty);
                 }
-
+                //plain object with render
                 if (typeof subject.render === 'function') {
                     return (
                         subject.COMPCache ||
@@ -609,6 +612,7 @@
      */
     function extractFunctionNode(type, props) {
         try {
+            console.log('extractFunctionNode')
             var vnode;
             var func = type['--func'] !== void 0;
 
@@ -677,6 +681,7 @@
         }
         // function components
         else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
+            console.log('Stateless Component', type)
             vnode = extractFunctionNode(type, props);
 
             if (vnode.Type === void 0) {
@@ -1430,30 +1435,26 @@
 
     /**
      * Component class
-     *
-     * @public
      * 
-     * @param {Object<string, any>=} props
+     * @public
+     * @export
+     * @param {Object} props
      */
     function Component(props) {
         // initial props
         if (props === objEmpty) {
             props = {}
         }
-        // assign props
-        if (props !== objEmpty) {
-            // apply getDefaultProps Hook
-            if (this.getDefaultProps) {
-                assignDefaultProps(applyComponentHook(this, -2, props), props);
-            }
-            // apply componentWillReceiveProps Hook
-            applyComponentHook(this, 2, props)
-
-            this.props = props;
-        } else {
-            //apply getInitialState Hooks
-            this.props = this.props || applyComponentHook(this, -2, null) || {}
+        // apply getDefaultProps Hook
+        if (this.getDefaultProps) {
+            var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
+            assignDefaultProps(defaultProps, props)
         }
+
+        // apply componentWillReceiveProps Hook
+        applyComponentHook(this, 2, props)
+
+        this.props = props
 
         // assign state
         this.state = this.state || applyComponentHook(this, -1, null) || {}
@@ -1505,15 +1506,18 @@
 
 
     /**
-     * update state, hoisted to avoid `for in` deopts
      * 
-     * @param {Object} oldState
-     * @param {Object} newState
+     * @param {Object|function} oldState
+     * @param {any} newState
      */
     function updateState(oldState, newState) {
         if (oldState != null) {
-            for (var name in newState) {
-                oldState[name] = newState[name];
+            if (typeof newState === 'function') {
+                newState(oldState)
+            } else {
+                for (var name in newState) {
+                    oldState[name] = newState[name];
+                }
             }
         }
     }
