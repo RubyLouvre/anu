@@ -36,7 +36,7 @@ export function applyComponentRender(component) {
 export function extractVirtualNode(subject, component) {
     // empty
     var type = Object.prototype.toString.call(subject).slice(8, -1)
-    console.log(type, '1111')
+    console.log(type, '1111', subject.Type)
     switch (type) {
         // booleans
         case 'Boolean':
@@ -152,7 +152,6 @@ export function extractComponentNode(subject, instance, parent) {
         // clone default props if props is not an empty object, else use defaultProps as props
         props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps);
     }
-
     // assign children to props if not empty
     if (subject.children.length !== 0) {
         // prevents mutating the empty object constant
@@ -167,9 +166,8 @@ export function extractComponentNode(subject, instance, parent) {
     if (type.COMPCache !== void 0) {
         owner = type.COMPCache;
     }
-    // Stateless Component
+    // Stateless functional component
     else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
-        console.log('Stateless Component')
         vnode = extractFunctionNode(type, props);
 
         if (vnode.Type === void 0) {

@@ -216,13 +216,11 @@ export function createNode(subject, component, namespace) {
         return subject.DOMNode = element.cloneNode(true);
 
     } else { // create DOMNode
-        console.log('创建vnode')
         vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
     }
 
     var Type = vnode.Type;
     var children = vnode.children;
-    console.log('新vnode的类型', Type)
 
     // text		
     if (Type === 3) {

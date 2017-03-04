@@ -548,7 +548,7 @@
     function extractVirtualNode(subject, component) {
         // empty
         var type = Object.prototype.toString.call(subject).slice(8, -1)
-        console.log(type, '1111')
+        console.log(type, '1111', subject.Type)
         switch (type) {
             // booleans
             case 'Boolean':
@@ -664,7 +664,6 @@
             // clone default props if props is not an empty object, else use defaultProps as props
             props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps);
         }
-
         // assign children to props if not empty
         if (subject.children.length !== 0) {
             // prevents mutating the empty object constant
@@ -679,9 +678,8 @@
         if (type.COMPCache !== void 0) {
             owner = type.COMPCache;
         }
-        // function components
+        // Stateless functional component
         else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
-            console.log('Stateless Component', type)
             vnode = extractFunctionNode(type, props);
 
             if (vnode.Type === void 0) {
@@ -961,13 +959,11 @@
             return subject.DOMNode = element.cloneNode(true);
 
         } else { // create DOMNode
-            console.log('创建vnode')
             vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
         }
 
         var Type = vnode.Type;
         var children = vnode.children;
-        console.log('新vnode的类型', Type)
 
         // text		
         if (Type === 3) {
@@ -1840,29 +1836,10 @@
             return renderer;
         }
         // Try to convert the first parameter to the virtual DOM
-        // h('type', null, []) ==> createcontainerShape
-        // h(Scoller, null, []) === > createComponentShape
-        // Booleans, Null, and Undefined ==> createEmptyShape
-        // String, Number ===> createTextShape
-        if (subject.render !== void 0) {
-            vnode = createComponentShape(createClass(subject, null), objEmpty, arrEmpty);
-        }
-        // array/component/function
-        else if (subject.Type === void 0) {
-            // array
-            if (Array.isArray(subject)) {
-                throw 'The first argument can\'t be an array'
-            }
-            // component/function
-            else {
-                console.log('如果用户传入一个函数')
-                vnode = createComponentShape(subject, objEmpty, arrEmpty);
-            }
-        }
-        // container/component
-        else {
-            vnode = subject;
-        }
+
+
+        vnode = extractVirtualNode(subject)
+
 
         // Encapsulated into components, in order to use forceUpdate inside the render
         if (vnode.Type !== 2) {

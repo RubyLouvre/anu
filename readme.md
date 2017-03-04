@@ -83,7 +83,7 @@ window.onload = function() {
     console.log(result)
 }
 ```
-
+Stateless functional components 
 ```JAVASCRIPT
  var h = anu.createElement
 

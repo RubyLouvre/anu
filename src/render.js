@@ -4,6 +4,7 @@ import createClass from './component/createClass'
 import hydrate from './hydrate'
 import { createComponentShape, objEmpty, arrEmpty } from './shapes'
 import { appendNode, createNode } from './vnode'
+import { extractVirtualNode } from './extract'
 var browser = typeof window === 'object' && !!window.document
     //用到objEmpty, arrEmpty
 
@@ -62,29 +63,10 @@ export default function render(subject, target, callback, hydration) {
         return renderer;
     }
     // Try to convert the first parameter to the virtual DOM
-    // h('type', null, []) ==> createcontainerShape
-    // h(Scoller, null, []) === > createComponentShape
-    // Booleans, Null, and Undefined ==> createEmptyShape
-    // String, Number ===> createTextShape
-    if (subject.render !== void 0) {
-        vnode = createComponentShape(createClass(subject, null), objEmpty, arrEmpty);
-    }
-    // array/component/function
-    else if (subject.Type === void 0) {
-        // array
-        if (Array.isArray(subject)) {
-            throw 'The first argument can\'t be an array'
-        }
-        // component/function
-        else {
-            console.log('如果用户传入一个函数')
-            vnode = createComponentShape(subject, objEmpty, arrEmpty);
-        }
-    }
-    // container/component
-    else {
-        vnode = subject;
-    }
+
+
+    vnode = extractVirtualNode(subject)
+
 
     // Encapsulated into components, in order to use forceUpdate inside the render
     if (vnode.Type !== 2) {
