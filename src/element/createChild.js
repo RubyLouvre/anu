@@ -5,30 +5,30 @@ export default function createChild(child, children, index) {
     if (child != null) {
         // vnode
         if (child.Type !== void 0) {
-            children[index++] = child;
+            children[index++] = child
         }
         // portal
         else if (child.nodeType !== void 0) {
-            children[index++] = createPortalShape(child, objEmpty, arrEmpty);
+            children[index++] = createPortalShape(child, objEmpty, arrEmpty)
         } else {
-            var type = typeof child;
+            var type = typeof child
 
             // function/component
             if (type === 'function') {
-                children[index++] = createComponentShape(child, objEmpty, arrEmpty);
+                children[index++] = createComponentShape(child, objEmpty, arrEmpty)
             }
             // array
             else if (type === 'object') {
                 for (var i = 0, length = child.length; i < length; i++) {
-                    index = createChild(child[i], children, index);
+                    index = createChild(child[i], children, index)
                 }
             }
             // text
             else {
-                children[index++] = createTextShape(type !== 'boolean' ? child : '');
+                children[index++] = createTextShape(type !== 'boolean' ? child : '')
             }
         }
     }
 
-    return index;
+    return index
 }

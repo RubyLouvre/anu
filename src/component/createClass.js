@@ -15,27 +15,27 @@ import Component from './Component'
 export default function createClass(subject, props) {
     // empty class
     if (subject == null) {
-        subject = createEmptyShape();
+        subject = createEmptyShape()
     }
 
     // component cache
     if (subject.COMPCache !== void 0) {
-        return subject.COMPCache;
+        return subject.COMPCache
     }
 
     // is function?
-    var func = typeof subject === 'function';
-    // extract shape of component
-    var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
-    var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
-    var construct = false;
+    var func = typeof subject === 'function'
+        // extract shape of component
+    var shape = func ? (subject(createElement) || createEmptyShape()) : subject
+    var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0)
+    var construct = false
 
-    var vnode;
-    var constructor;
-    var render;
-    // numbers, strings, arrays
+    var vnode
+    var constructor
+    var render
+        // numbers, strings, arrays
     if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
-        shape = extractVirtualNode(shape, { props: props });
+        shape = extractVirtualNode(shape, { props: props })
     }
 
     // elements/functions
@@ -52,7 +52,7 @@ export default function createClass(subject, props) {
 
         // create render method if one does not exist
         if (typeof shape.render !== 'function') {
-            shape.render = function() { return createEmptyShape(); };
+            shape.render = function() { return createEmptyShape() }
         }
     }
 
@@ -60,25 +60,25 @@ export default function createClass(subject, props) {
     function component(props) {
         // constructor
         if (construct) {
-            constructor.call(this, props);
+            constructor.call(this, props)
         }
 
         // extend Component
-        Component.call(this, props);
+        Component.call(this, props)
     }
 
     // extends shape
-    component.prototype = shape;
+    component.prototype = shape
 
     // extends Component class
-    shape.setState = Component.prototype.setState;
-    shape.forceUpdate = Component.prototype.forceUpdate;
-    component.constructor = Component;
+    shape.setState = Component.prototype.setState
+    shape.forceUpdate = Component.prototype.forceUpdate
+    component.constructor = Component
 
     // function shape, cache component
     if (func) {
-        shape.constructor = subject;
-        subject.COMPCache = component;
+        shape.constructor = subject
+        subject.COMPCache = component
     }
 
     // stylesheet namespaced
@@ -88,10 +88,10 @@ export default function createClass(subject, props) {
             shape.displayName ||
             (func ? subject.name : false) ||
             ((Math.random() + 1).toString(36).substr(2, 5))
-        );
+        )
     }
 
-    return component;
+    return component
 }
 
 // https://github.com/atom/etch/blob/master/lib/patch.js

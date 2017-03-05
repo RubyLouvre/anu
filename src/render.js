@@ -20,39 +20,39 @@ var browser = typeof window === 'object' && !!window.document
  * @return {function(Object=)}
  */
 export default function render(subject, target, callback, hydration) {
-    var initial = true;
-    var nodeType = 2;
+    var initial = true
+    var nodeType = 2
 
-    var component;
-    var vnode;
-    var container;
+    var component
+    var vnode
+    var container
 
     // renderer
     function renderer(newProps) {
         if (initial) {
             // dispatch mount
             // vnode.Type, vnode, container, vnode.DOMNode
-            appendNode(nodeType, vnode, container, createNode(vnode, null, null));
+            appendNode(nodeType, vnode, container, createNode(vnode, null, null))
 
             // register mount has been dispatched
-            initial = false;
+            initial = false
 
             // assign component instance
-            component = vnode.instance;
+            component = vnode.instance
         } else {
             // update props
             if (newProps !== void 0) {
                 // component with shouldComponentUpdate
                 if (applyComponentHook(component, 3, newProps, component.state) === false) {
                     // exit early
-                    return renderer;
+                    return renderer
                 }
 
-                component.props = newProps;
+                component.props = newProps
             }
 
             // update component
-            component.forceUpdate();
+            component.forceUpdate()
         }
 
         return component // renderer;
@@ -60,7 +60,7 @@ export default function render(subject, target, callback, hydration) {
 
     // exit early
     if (browser === false) {
-        return renderer;
+        return renderer
     }
     // Try to convert the first parameter to the virtual DOM
 
@@ -70,38 +70,38 @@ export default function render(subject, target, callback, hydration) {
 
     // Encapsulated into components, in order to use forceUpdate inside the render
     if (vnode.Type !== 2) {
-        vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty);
+        vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty)
     }
 
     // mount
     if (target != null && target.nodeType != null) {
         // target is a dom container
-        container = target === document ? docuemnt.body : target;
+        container = target === document ? docuemnt.body : target
     }
     // hydration
     if (hydration != null && hydration !== false) {
         // dispatch hydration
-        hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
+        hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null)
 
         // register mount has been dispatched
-        initial = false;
+        initial = false
 
         // assign component
-        component = vnode.instance;
+        component = vnode.instance
     } else {
         // destructive mount
-        if (hydration === false) {
-            while (container.firstChild) {
-                container.removeChild(container.firstChild)
-            }
+        //  if (hydration === false) {
+        while (container.firstChild) {
+            container.removeChild(container.firstChild)
         }
+        //   }
 
-        renderer();
+        renderer()
     }
 
     // if present call root components context, passing root node as argument
     if (callback && typeof callback === 'function') {
-        callback.call(component, vnode.DOMNode || target);
+        callback.call(component, vnode.DOMNode || target)
     }
 
     return component //renderer;

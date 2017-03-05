@@ -32,9 +32,9 @@ export default function Component(props) {
     this.state = this.state || applyComponentHook(this, -1, null) || {}
 
 
-    this.refs = null;
+    this.refs = null
 
-    this['--vnode'] = null;
+    this['--vnode'] = null
 }
 
 
@@ -47,7 +47,7 @@ Component.prototype = {
     constructor: Component,
     setState: setState,
     forceUpdate: forceUpdate
-};
+}
 
 
 /**
@@ -65,7 +65,7 @@ function setState(newState, callback) {
     }
 
     // update state
-    updateState(this.state, newState);
+    updateState(this.state, newState)
 
     // callback
     if (typeof callback === 'function') {
@@ -73,7 +73,7 @@ function setState(newState, callback) {
     }
 
     // update component
-    this.forceUpdate();
+    this.forceUpdate()
 }
 
 
@@ -88,7 +88,7 @@ function updateState(oldState, newState) {
             newState(oldState)
         } else {
             for (var name in newState) {
-                oldState[name] = newState[name];
+                oldState[name] = newState[name]
             }
         }
     }
@@ -106,25 +106,25 @@ function forceUpdate(callback) {
     applyComponentHook(this, 4, this.props, this.state)
 
 
-    var oldNode = this['--vnode'];
+    var oldNode = this['--vnode']
     var newNode = applyComponentRender(this)
 
-    var newType = newNode.Type;
-    var oldType = oldNode.Type;
+    var newType = newNode.Type
+    var oldType = oldNode.Type
 
     // different root node
     if (newNode.type !== oldNode.nodeName) {
-        replaceRootNode(newNode, oldNode, newType, oldType, this);
+        replaceRootNode(newNode, oldNode, newType, oldType, this)
     }
     // patch node
     else {
         // element root node
         if (oldType !== 3) {
-            reconcileNodes(newNode, oldNode, newType, 1);
+            reconcileNodes(newNode, oldNode, newType, 1)
         }
         // text root node
         else if (newNode.children !== oldNode.children) {
-            oldNode.DOMNode.nodeValue = oldNode.children = newNode.children;
+            oldNode.DOMNode.nodeValue = oldNode.children = newNode.children
         }
     }
 

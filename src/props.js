@@ -18,9 +18,9 @@ export function assignDefaultProps(defaultProps, props) {
 
 function refs(ref, component, element) {
     if (typeof ref === 'function') {
-        ref.call(component, element);
+        ref.call(component, element)
     } else {
-        (component.refs = component.refs || {})[ref] = element;
+        ;(component.refs = component.refs || {})[ref] = element
     }
 }
 
@@ -34,20 +34,20 @@ function refs(ref, component, element) {
  */
 export function assignProps(target, props, onlyEvents, component) {
     for (var name in props) {
-        var value = props[name];
+        var value = props[name]
 
         // refs
         if (name === 'ref' && value != null) {
-            refs(value, component, target);
+            refs(value, component, target)
         }
         // events
         else if (isEventProp(name)) {
-            addEventListener(target, name.substring(2).toLowerCase(), value, component);
+            addEventListener(target, name.substring(2).toLowerCase(), value, component)
         }
         // attributes
         else if (onlyEvents === false && name !== 'key' && name !== 'children') {
             // add attribute
-            updateProp(target, true, name, value, props.xmlns);
+            updateProp(target, true, name, value, props.xmlns)
         }
     }
 }
@@ -61,7 +61,7 @@ function addEventListener(el, type, fn) {
 
 }
 var ron = /^on[A-Z]\w+$/
-var rskipProps = /^(children|key|on[A-Z]\w+)$/;
+var rskipProps = /^(children|key|on[A-Z]\w+)$/
 
 export function isEventProp(name) {
     return ron.test(name)
@@ -74,24 +74,24 @@ export function isEventProp(name) {
  * @param  {VNode} oldNode
  */
 export function patchProps(newNode, oldNode) {
-    var newProps = newNode.props;
-    var oldProps = oldNode.props;
-    var namespace = newNode.props.xmlns || '';
-    var target = oldNode.DOMNode;
-    var updated = false;
+    var newProps = newNode.props
+    var oldProps = oldNode.props
+    var namespace = newNode.props.xmlns || ''
+    var target = oldNode.DOMNode
+    var updated = false
 
     // diff newProps
     for (var newName in newNode.props) {
 
         if (!rskipProps.test(newName)) {
-            var newValue = newProps[newName];
-            var oldValue = oldProps[newName];
+            var newValue = newProps[newName]
+            var oldValue = oldProps[newName]
 
             if (newValue != null && oldValue !== newValue) {
-                updateProp(target, true, newName, newValue, namespace);
+                updateProp(target, true, newName, newValue, namespace)
 
                 if (updated === false) {
-                    updated = true;
+                    updated = true
                 }
             }
         }
@@ -101,20 +101,20 @@ export function patchProps(newNode, oldNode) {
     for (var oldName in oldNode.props) {
 
         if (!rskipProps.test(oldName)) {
-            var newValue = newProps[oldName];
+            var newValue = newProps[oldName]
 
             if (newValue == null) {
-                updateProp(target, false, oldName, '', namespace);
+                updateProp(target, false, oldName, '', namespace)
 
                 if (updated === false) {
-                    updated = true;
+                    updated = true
                 }
             }
         }
     }
 
     if (updated) {
-        oldNode.props = newNode.props;
+        oldNode.props = newNode.props
     }
 }
 
@@ -131,59 +131,59 @@ export function updateProp(target, set, name, value, namespace) {
 
     // avoid xmlns namespaces
     if ((value === nsSvg || value === nsMath)) {
-        return;
+        return
     }
 
     // if xlink:href set, exit, 
     if (name === 'xlink:href') {
-        target[(set ? 'set' : 'remove') + 'AttributeNS'](nsXlink, 'href', value);
-        return;
+        target[(set ? 'set' : 'remove') + 'AttributeNS'](nsXlink, 'href', value)
+        return
     }
 
-    var svg = false;
+    var svg = false
 
     // svg element, default to class instead of className
     if (namespace === nsSvg) {
-        svg = true;
+        svg = true
 
         if (name === 'className') {
-            name = 'class';
+            name = 'class'
         } else {
-            name = name;
+            name = name
         }
     }
     // html element, default to className instead of class
     else {
         if (name === 'class') {
-            name = 'className';
+            name = 'className'
         }
     }
 
-    var destination = target[name];
-    var defined = value != null && value !== false;
+    var destination = target[name]
+    var defined = value != null && value !== false
 
     // objects
     if (defined && typeof value === 'object') {
-        destination === void 0 ? target[name] = value : updatePropObject(name, value, destination);
+        destination === void 0 ? target[name] = value : updatePropObject(name, value, destination)
     }
     // primitives `string, number, boolean`
     else {
         // id, className, style, etc..
         if (destination !== void 0 && svg === false) {
             if (name === 'style') {
-                target.style.cssText = value;
+                target.style.cssText = value
             } else {
-                target[name] = value;
+                target[name] = value
             }
         }
         // set/remove Attribute
         else {
             if (defined && set) {
                 // assign an empty value with boolean `true` values
-                target.setAttribute(name, value === true ? '' : value);
+                target.setAttribute(name, value === true ? '' : value)
             } else {
                 // removes attributes with false/null/undefined values
-                target.removeAttribute(name);
+                target.removeAttribute(name)
             }
         }
     }
@@ -198,16 +198,16 @@ export function updateProp(target, set, name, value, namespace) {
  */
 export function updatePropObject(parent, prop, target) {
     for (var name in prop) {
-        var value = prop[name] || null;
+        var value = prop[name] || null
 
         // assign if target object has property
         if (name in target) {
-            target[name] = value;
+            target[name] = value
         }
         // style properties that don't exist on CSSStyleDeclaration
         else if (parent === 'style') {
             // assign/remove
-            value ? target.setProperty(name, value, null) : target.removeProperty(name);
+            value ? target.setProperty(name, value, null) : target.removeProperty(name)
         }
     }
 }

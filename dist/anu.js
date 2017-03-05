@@ -9,11 +9,11 @@
      */
     //用到objEmpty, arrEmpty
 
-    let objEmpty = {};
-    let arrEmpty = [];
-    let nsMath = 'http://www.w3.org/1998/Math/MathML';
-    let nsXlink = 'http://www.w3.org/1999/xlink';
-    let nsSvg = 'http://www.w3.org/2000/svg';
+    let objEmpty = {}
+    let arrEmpty = []
+    let nsMath = 'http://www.w3.org/1998/Math/MathML'
+    let nsXlink = 'http://www.w3.org/1999/xlink'
+    let nsSvg = 'http://www.w3.org/2000/svg'
 
     /**
      * component shape
@@ -36,7 +36,7 @@
             index: 0,
             nodeName: null,
             key: props !== objEmpty ? props.key : void 0
-        };
+        }
     }
 
     /**
@@ -60,7 +60,7 @@
             index: 0,
             nodeName: null,
             key: props !== objEmpty ? props.key : void 0
-        };
+        }
     }
 
     /**
@@ -79,7 +79,7 @@
             index: 0,
             nodeName: null,
             key: void 0
-        };
+        }
     }
 
     /**
@@ -107,7 +107,7 @@
             index: index,
             nodeName: nodeName,
             key: key
-        };
+        }
     }
 
 
@@ -130,7 +130,7 @@
             index: 0,
             nodeName: null,
             key: props !== objEmpty ? props.key : void 0
-        };
+        }
     }
 
     /**
@@ -152,10 +152,10 @@
             index: 0,
             nodeName: null,
             key: void 0
-        };
+        }
     }
 
-    var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0);
+    var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0)
 
     //用到objEmpty, arrEmpty
 
@@ -163,32 +163,32 @@
         if (child != null) {
             // vnode
             if (child.Type !== void 0) {
-                children[index++] = child;
+                children[index++] = child
             }
             // portal
             else if (child.nodeType !== void 0) {
-                children[index++] = createPortalShape(child, objEmpty, arrEmpty);
+                children[index++] = createPortalShape(child, objEmpty, arrEmpty)
             } else {
-                var type = typeof child;
+                var type = typeof child
 
                 // function/component
                 if (type === 'function') {
-                    children[index++] = createComponentShape(child, objEmpty, arrEmpty);
+                    children[index++] = createComponentShape(child, objEmpty, arrEmpty)
                 }
                 // array
                 else if (type === 'object') {
                     for (var i = 0, length = child.length; i < length; i++) {
-                        index = createChild(child[i], children, index);
+                        index = createChild(child[i], children, index)
                     }
                 }
                 // text
                 else {
-                    children[index++] = createTextShape(type !== 'boolean' ? child : '');
+                    children[index++] = createTextShape(type !== 'boolean' ? child : '')
                 }
             }
         }
 
-        return index;
+        return index
     }
 
     /**
@@ -204,16 +204,16 @@
 
     function createElement(type, props) {
         if (type == null) {
-            return createEmptyShape();
+            return createEmptyShape()
         }
         var length = arguments.length
         var children = []
 
-        var index = 0;
+        var index = 0
 
         // construct children
         for (var i = 2; i < length; i++) {
-            var child = arguments[i];
+            var child = arguments[i]
 
             // only add non null/undefined children
             if (child != null) {
@@ -221,37 +221,37 @@
                 if (child.constructor === Array) {
                     // add array child
                     for (var j = 0, len = child.length; j < len; j++) {
-                        index = createChild(child[j], children, index);
+                        index = createChild(child[j], children, index)
                     }
                 } else {
-                    index = createChild(child, children, index);
+                    index = createChild(child, children, index)
                 }
             }
         }
 
 
 
-        var typeOf = typeof type;
+        var typeOf = typeof type
 
         if (typeOf === 'string') {
 
             if (props === null) {
-                props = {};
+                props = {}
             }
 
             // svg and math namespaces
             if (type === 'svg') {
-                props.xmlns = nsSvg;
+                props.xmlns = nsSvg
             } else if (type === 'math') {
-                props.xmlns = nsMath;
+                props.xmlns = nsMath
             }
 
-            return createElementShape(type, props, children);
+            return createElementShape(type, props, children)
 
         } else if (typeOf === 'function') {
-            return createComponentShape(type, props, children);
+            return createComponentShape(type, props, children)
         } else if (type.Type != null) {
-            return cloneElement(type, props, children);
+            return cloneElement(type, props, children)
         }
 
     }
@@ -267,37 +267,37 @@
      * @return {VNode}
      */
     function cloneElement(subject, newProps, newChildren) {
-        var type = subject.type;
-        var props = subject.props;
-        var children = newChildren || subject.children;
+        var type = subject.type
+        var props = subject.props
+        var children = newChildren || subject.children
 
-        newProps = newProps || {};
+        newProps = newProps || {}
 
         // copy old props
         for (var name in subject.props) {
             if (newProps[name] === void 0) {
-                newProps[name] = props[name];
+                newProps[name] = props[name]
             }
         }
 
         // replace children
         if (newChildren !== void 0) {
-            var length = newChildren.length;
+            var length = newChildren.length
 
             // if not empty, copy
             if (length > 0) {
-                var index = 0;
+                var index = 0
 
-                children = [];
+                children = []
 
                 // copy old children
                 for (var i = 0; i < length; i++) {
-                    index = createChild(newChildren[i], children, index);
+                    index = createChild(newChildren[i], children, index)
                 }
             }
         }
 
-        return createElement(type, newProps, children);
+        return createElement(type, newProps, children)
     }
 
     function createFactory(type, props) {
@@ -325,9 +325,9 @@
 
     function refs(ref, component, element) {
         if (typeof ref === 'function') {
-            ref.call(component, element);
+            ref.call(component, element)
         } else {
-            (component.refs = component.refs || {})[ref] = element;
+            ;(component.refs = component.refs || {})[ref] = element
         }
     }
 
@@ -341,20 +341,20 @@
      */
     function assignProps(target, props, onlyEvents, component) {
         for (var name in props) {
-            var value = props[name];
+            var value = props[name]
 
             // refs
             if (name === 'ref' && value != null) {
-                refs(value, component, target);
+                refs(value, component, target)
             }
             // events
             else if (isEventProp(name)) {
-                addEventListener(target, name.substring(2).toLowerCase(), value, component);
+                addEventListener(target, name.substring(2).toLowerCase(), value, component)
             }
             // attributes
             else if (onlyEvents === false && name !== 'key' && name !== 'children') {
                 // add attribute
-                updateProp(target, true, name, value, props.xmlns);
+                updateProp(target, true, name, value, props.xmlns)
             }
         }
     }
@@ -368,7 +368,7 @@
 
     }
     var ron = /^on[A-Z]\w+$/
-    var rskipProps = /^(children|key|on[A-Z]\w+)$/;
+    var rskipProps = /^(children|key|on[A-Z]\w+)$/
 
     function isEventProp(name) {
         return ron.test(name)
@@ -381,24 +381,24 @@
      * @param  {VNode} oldNode
      */
     function patchProps(newNode, oldNode) {
-        var newProps = newNode.props;
-        var oldProps = oldNode.props;
-        var namespace = newNode.props.xmlns || '';
-        var target = oldNode.DOMNode;
-        var updated = false;
+        var newProps = newNode.props
+        var oldProps = oldNode.props
+        var namespace = newNode.props.xmlns || ''
+        var target = oldNode.DOMNode
+        var updated = false
 
         // diff newProps
         for (var newName in newNode.props) {
 
             if (!rskipProps.test(newName)) {
-                var newValue = newProps[newName];
-                var oldValue = oldProps[newName];
+                var newValue = newProps[newName]
+                var oldValue = oldProps[newName]
 
                 if (newValue != null && oldValue !== newValue) {
-                    updateProp(target, true, newName, newValue, namespace);
+                    updateProp(target, true, newName, newValue, namespace)
 
                     if (updated === false) {
-                        updated = true;
+                        updated = true
                     }
                 }
             }
@@ -408,20 +408,20 @@
         for (var oldName in oldNode.props) {
 
             if (!rskipProps.test(oldName)) {
-                var newValue = newProps[oldName];
+                var newValue = newProps[oldName]
 
                 if (newValue == null) {
-                    updateProp(target, false, oldName, '', namespace);
+                    updateProp(target, false, oldName, '', namespace)
 
                     if (updated === false) {
-                        updated = true;
+                        updated = true
                     }
                 }
             }
         }
 
         if (updated) {
-            oldNode.props = newNode.props;
+            oldNode.props = newNode.props
         }
     }
 
@@ -438,59 +438,59 @@
 
         // avoid xmlns namespaces
         if ((value === nsSvg || value === nsMath)) {
-            return;
+            return
         }
 
         // if xlink:href set, exit, 
         if (name === 'xlink:href') {
-            target[(set ? 'set' : 'remove') + 'AttributeNS'](nsXlink, 'href', value);
-            return;
+            target[(set ? 'set' : 'remove') + 'AttributeNS'](nsXlink, 'href', value)
+            return
         }
 
-        var svg = false;
+        var svg = false
 
         // svg element, default to class instead of className
         if (namespace === nsSvg) {
-            svg = true;
+            svg = true
 
             if (name === 'className') {
-                name = 'class';
+                name = 'class'
             } else {
-                name = name;
+                name = name
             }
         }
         // html element, default to className instead of class
         else {
             if (name === 'class') {
-                name = 'className';
+                name = 'className'
             }
         }
 
-        var destination = target[name];
-        var defined = value != null && value !== false;
+        var destination = target[name]
+        var defined = value != null && value !== false
 
         // objects
         if (defined && typeof value === 'object') {
-            destination === void 0 ? target[name] = value : updatePropObject(name, value, destination);
+            destination === void 0 ? target[name] = value : updatePropObject(name, value, destination)
         }
         // primitives `string, number, boolean`
         else {
             // id, className, style, etc..
             if (destination !== void 0 && svg === false) {
                 if (name === 'style') {
-                    target.style.cssText = value;
+                    target.style.cssText = value
                 } else {
-                    target[name] = value;
+                    target[name] = value
                 }
             }
             // set/remove Attribute
             else {
                 if (defined && set) {
                     // assign an empty value with boolean `true` values
-                    target.setAttribute(name, value === true ? '' : value);
+                    target.setAttribute(name, value === true ? '' : value)
                 } else {
                     // removes attributes with false/null/undefined values
-                    target.removeAttribute(name);
+                    target.removeAttribute(name)
                 }
             }
         }
@@ -505,16 +505,16 @@
      */
     function updatePropObject(parent, prop, target) {
         for (var name in prop) {
-            var value = prop[name] || null;
+            var value = prop[name] || null
 
             // assign if target object has property
             if (name in target) {
-                target[name] = value;
+                target[name] = value
             }
             // style properties that don't exist on CSSStyleDeclaration
             else if (parent === 'style') {
                 // assign/remove
-                value ? target.setProperty(name, value, null) : target.removeProperty(name);
+                value ? target.setProperty(name, value, null) : target.removeProperty(name)
             }
         }
     }
@@ -531,7 +531,7 @@
             return extractVirtualNode(
                 component.render(component.props, component.state, component),
                 component
-            );
+            )
         } catch (e) {
             return createEmptyShape()
         }
@@ -548,37 +548,36 @@
     function extractVirtualNode(subject, component) {
         // empty
         var type = Object.prototype.toString.call(subject).slice(8, -1)
-        console.log(type, '1111', subject.Type)
         switch (type) {
             // booleans
             case 'Boolean':
             case 'Null':
             case 'Undefined':
-                return createEmptyShape();
+                return createEmptyShape()
             case 'Array':
-                return createEmptyShape();
+                return createEmptyShape()
             case 'String':
             case 'Number':
-                return createTextShape(subject);
+                return createTextShape(subject)
             case 'Function':
                 // stream
                 if (subject.then != null && typeof subject.then === 'function') {
                     if (subject['--listening'] !== true) {
                         subject.then(function resolveStreamComponent() {
-                            component.forceUpdate();
-                        }).catch(function() {});
+                            component.forceUpdate()
+                        }).catch(function() {})
 
-                        subject['--listening'] = true;
+                        subject['--listening'] = true
                     }
-                    return extractVirtualNode(subject(), component);
+                    return extractVirtualNode(subject(), component)
                 }
                 // component constructor
                 else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
-                    return createComponentShape(subject, objEmpty, arrEmpty);
+                    return createComponentShape(subject, objEmpty, arrEmpty)
                 }
                 // function
                 else {
-                    return extractVirtualNode(subject(component != null ? component.props : {}), component);
+                    return extractVirtualNode(subject(component != null ? component.props : {}), component)
                 }
                 break
 
@@ -589,16 +588,16 @@
                 }
                 //  component instance
                 if (subject instanceof Component) {
-                    return createComponentShape(subject, objEmpty, arrEmpty);
+                    return createComponentShape(subject, objEmpty, arrEmpty)
                 }
                 //plain object with render
                 if (typeof subject.render === 'function') {
                     return (
                         subject.COMPCache ||
                         createComponentShape(subject.COMPCache = createClass(subject, null), objEmpty, arrEmpty)
-                    );
+                    )
                 }
-                return createEmptyShape();
+                return createEmptyShape()
         }
     }
 
@@ -612,27 +611,26 @@
      */
     function extractFunctionNode(type, props) {
         try {
-            console.log('extractFunctionNode')
-            var vnode;
-            var func = type['--func'] !== void 0;
+            var vnode
+            var func = type['--func'] !== void 0
 
             if (func === false) {
-                vnode = type(createElement);
+                vnode = type(createElement)
             }
 
             if (func || vnode.Type !== void 0) {
                 try {
-                    vnode = type(props);
+                    vnode = type(props)
 
                     if (func === false) {
-                        type['--func'] = true;
+                        type['--func'] = true
                     }
                 } catch (e) {
                     vnode = createEmptyShape()
                 }
             }
 
-            return vnode;
+            return vnode
         }
         // error thrown
         catch (error) {
@@ -651,79 +649,79 @@
      * @return {VNode} 
      */
     function extractComponentNode(subject, instance, parent) {
-        var owner;
+        var owner
 
-        var vnode;
+        var vnode
 
-        var type = subject.type;
+        var type = subject.type
 
         var props = subject.props
 
         // default props
         if (type.defaultProps !== void 0) {
             // clone default props if props is not an empty object, else use defaultProps as props
-            props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps);
+            props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps)
         }
         // assign children to props if not empty
         if (subject.children.length !== 0) {
             // prevents mutating the empty object constant
             if (props === objEmpty) {
-                props = { children: subject.children };
+                props = { children: subject.children }
             } else {
-                props.children = subject.children;
+                props.children = subject.children
             }
         }
 
         // cached component
         if (type.COMPCache !== void 0) {
-            owner = type.COMPCache;
+            owner = type.COMPCache
         }
         // Stateless functional component
         else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
-            vnode = extractFunctionNode(type, props);
+            vnode = extractFunctionNode(type, props)
 
             if (vnode.Type === void 0) {
                 // create component
-                owner = createClass(vnode, props);
+                owner = createClass(vnode, props)
             } else {
                 // pure function
-                return vnode;
+                return vnode
             }
         }
         // class / createClass components
         else {
-            owner = type;
+            owner = type
         }
         // create component instance
-        var component = subject.instance = new owner(props);
+        var component = subject.instance = new owner(props)
 
         // get render vnodes
-        var vnode = applyComponentRender(component);
+        var vnode = applyComponentRender(component)
 
         // if render returns a component, extract component recursive
         if (vnode.Type === 2) {
-            vnode = extractComponentNode(vnode, component, parent || subject);
+            vnode = extractComponentNode(vnode, component, parent || subject)
         }
 
         // if keyed, assign key to vnode
         if (subject.key !== void 0 && vnode.key === void 0) {
-            vnode.key = subject.key;
+            vnode.key = subject.key
         }
 
         // replace props and children
         subject.props = vnode.props
-        subject.children = vnode.children;
+        subject.children = vnode.children
 
         // recursive component
         if (instance !== null) {
-            component['--vnode'] = parent;
+            component['--vnode'] = parent
         } else {
-            component['--vnode'] = subject;
+            component['--vnode'] = subject
 
-            subject.nodeName = vnode.type;
+            subject.nodeName = vnode.type
         }
 
-        return vnode;
+        return vnode
     }
 
     var componentHooks = {
@@ -783,7 +781,6 @@
      * @param {Node}   nextNode
      */
     function appendNode(newType, newNode, parentNode, nextNode) {
-        console.log('appendNode', nextNode)
         var instance = newNode.instance
             // lifecycle, componentWillMount
         applyComponentHook(instance, 0, nextNode)
@@ -803,9 +800,9 @@
      */
     function createDOMNode(type, component) {
         try {
-            return document.createElement(type);
+            return document.createElement(type)
         } catch (error) {
-            return document.createComment('create element fail');
+            return document.createComment('create element fail')
 
         }
     }
@@ -821,9 +818,9 @@
      */
     function createDOMNodeNS(namespace, type, component) {
         try {
-            return document.createElementNS(namespace, type);
+            return document.createElementNS(namespace, type)
         } catch (error) {
-            return document.createComment('create element fail');
+            return document.createComment('create element fail')
         }
     }
 
@@ -841,10 +838,10 @@
 
 
         // remove element
-        parentNode.removeChild(oldNode.DOMNode);
+        parentNode.removeChild(oldNode.DOMNode)
 
         // clear references
-        oldNode.DOMNode = null;
+        oldNode.DOMNode = null
     }
 
     /**
@@ -868,14 +865,14 @@
         applyComponentHook(instance, 0, nextNode)
 
         // replace element
-        parentNode.replaceChild(nextNode, oldNode.DOMNode);
+        parentNode.replaceChild(nextNode, oldNode.DOMNode)
 
         // lifecycle, componentDidmount
         applyComponentHook(instance, 1, nextNode)
 
 
         // clear references
-        oldNode.DOMNode = null;
+        oldNode.DOMNode = null
     }
 
     /**
@@ -888,17 +885,17 @@
      * @param  {Component} component
      */
     function replaceRootNode(newNode, oldNode, newType, oldType, component) {
-        var refDOMNode = oldNode.DOMNode;
-        var newProps = newNode.props;
+        var refDOMNode = oldNode.DOMNode
+        var newProps = newNode.props
 
         // replace node
-        refDOMNode.parentNode.replaceChild(createNode(newNode, component, null), refDOMNode);
+        refDOMNode.parentNode.replaceChild(createNode(newNode, component, null), refDOMNode)
 
         // hydrate new node
-        oldNode.props = newProps;
-        oldNode.nodeName = newNode.nodeName || newNode.type;
-        oldNode.children = newNode.children;
-        oldNode.DOMNode = newNode.DOMNode;
+        oldNode.props = newProps
+        oldNode.nodeName = newNode.nodeName || newNode.type
+        oldNode.children = newNode.children
+        oldNode.DOMNode = newNode.DOMNode
 
         //  stylesheet
         if (newType !== 3 && component.stylesheet !== void 0) {
@@ -914,22 +911,22 @@
      * @param {number} oldLength
      */
     function emptyNode(oldNode, oldLength) {
-        var children = oldNode.children;
-        var parentNode = oldNode.DOMNode;
-        var oldChild;
+        var children = oldNode.children
+        var parentNode = oldNode.DOMNode
+        var oldChild
 
         // umount children
         for (var i = 0; i < oldLength; i++) {
-            oldChild = children[i];
+            oldChild = children[i]
             var instance = oldChild.instance
                 // lifecycle, componentWillUnmount
             applyComponentHook(instance, 6, oldChild.DOMNode)
 
             // clear references
-            oldChild.DOMNode = null;
+            oldChild.DOMNode = null
         }
 
-        parentNode.textContent = '';
+        parentNode.textContent = ''
     }
 
 
@@ -942,50 +939,50 @@
      * @return {Node}
      */
     function createNode(subject, component, namespace) {
-        var nodeType = subject.Type;
+        var nodeType = subject.Type
 
         // create text node element	
         if (nodeType === 3) {
-            return subject.DOMNode = document.createTextNode(subject.children);
+            return subject.DOMNode = document.createTextNode(subject.children)
         }
 
-        var vnode;
-        var element;
-        // DOMNode exists
+        var vnode
+        var element
+            // DOMNode exists
         if (subject.DOMNode !== null) {
-            element = subject.DOMNode;
-            // hoisted
+            element = subject.DOMNode
+                // hoisted
 
-            return subject.DOMNode = element.cloneNode(true);
+            return subject.DOMNode = element.cloneNode(true)
 
         } else { // create DOMNode
-            vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject;
+            vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject
         }
 
-        var Type = vnode.Type;
-        var children = vnode.children;
+        var Type = vnode.Type
+        var children = vnode.children
 
         // text		
         if (Type === 3) {
-            return vnode.DOMNode = subject.DOMNode = document.createTextNode(children);
+            return vnode.DOMNode = subject.DOMNode = document.createTextNode(children)
         }
 
-        var type = vnode.type;
-        var props = vnode.props;
-        var length = children.length;
+        var type = vnode.type
+        var props = vnode.props
+        var length = children.length
 
-        var instance = subject.instance !== null;
-        var thrown = 0;
+        var instance = subject.instance !== null
+        var thrown = 0
 
         // assign namespace
         if (props.xmlns !== void 0) {
-            namespace = props.xmlns;
+            namespace = props.xmlns
         }
 
         // has a component instance, hydrate component instance
         if (instance) {
-            component = subject.instance;
-            thrown = component['--throw'];
+            component = subject.instance
+            thrown = component['--throw']
         }
 
 
@@ -993,30 +990,30 @@
         if (namespace !== null) {
             // if undefined, assign svg namespace
             if (props.xmlns === void 0) {
-                props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace);
+                props === objEmpty ? (props = { xmlns: namespace }) : (props.xmlns = namespace)
             }
 
-            element = createDOMNodeNS(namespace, type, component);
+            element = createDOMNodeNS(namespace, type, component)
         }
         // create html element
         else {
-            element = createDOMNode(type, component);
+            element = createDOMNode(type, component)
         }
 
-        vnode.DOMNode = subject.DOMNode = element;
+        vnode.DOMNode = subject.DOMNode = element
 
 
         if (instance) {
             // avoid appending children if an error was thrown while creating a DOMNode
             if (thrown !== component['--throw']) {
-                return vnode.DOMNode = subject.DOMNode = element;
+                return vnode.DOMNode = subject.DOMNode = element
             }
 
-            vnode = component['--vnode'];
+            vnode = component['--vnode']
 
             // hydrate
             if (vnode.DOMNode === null) {
-                vnode.DOMNode = element;
+                vnode.DOMNode = element
             }
 
             // stylesheets
@@ -1029,26 +1026,26 @@
         if (length !== 0) {
             // append children
             for (var i = 0; i < length; i++) {
-                var newChild = children[i];
+                var newChild = children[i]
 
                 // hoisted, clone
                 if (newChild.DOMNode !== null) {
-                    newChild = children[i] = cloneNode$1(newChild);
+                    newChild = children[i] = cloneNode$1(newChild)
                 }
 
                 // append child
-                appendNode(newChild.Type, newChild, element, createNode(newChild, component, namespace));
+                appendNode(newChild.Type, newChild, element, createNode(newChild, component, namespace))
             }
         }
 
         // has props
         if (props !== objEmpty) {
             // props and events
-            assignProps(element, props, false, component);
+            assignProps(element, props, false, component)
         }
 
         // cache DOM reference
-        return element;
+        return element
     }
 
     function cloneNode$1(subject) {
@@ -1062,7 +1059,7 @@
             0,
             null,
             void 0
-        );
+        )
     }
 
     /**
@@ -1076,26 +1073,26 @@
     function reconcileNodes(newNode, oldNode, newNodeType, oldNodeType) {
         // If both are equal, then quit immediately
         if (newNode === oldNode) {
-            return;
+            return
         }
 
         // extract node from possible component node
-        var currentNode = newNodeType === 2 ? extractComponentNode(newNode, null, null) : newNode;
+        var currentNode = newNodeType === 2 ? extractComponentNode(newNode, null, null) : newNode
 
         // a component
         if (oldNodeType === 2) {
             // retrieve components
-            var oldComponent = oldNode.instance;
-            var newComponent = newNode.instance;
+            var oldComponent = oldNode.instance
+            var newComponent = newNode.instance
 
             // retrieve props
-            var newProps = newComponent.props;
-            var newState = newComponent.state;
+            var newProps = newComponent.props
+            var newState = newComponent.state
 
             // Trigger shouldComponentUpdate hook
             if (applyComponentHook(oldComponent, 3, newProps, newState) === false) {
                 // exit early
-                return;
+                return
             }
 
             // Trigger componentWillUpdate hook
@@ -1103,71 +1100,71 @@
         }
 
         // children
-        var newChildren = currentNode.children;
-        var oldChildren = oldNode.children;
+        var newChildren = currentNode.children
+        var oldChildren = oldNode.children
 
         // children length
-        var newLength = newChildren.length;
-        var oldLength = oldChildren.length;
+        var newLength = newChildren.length
+        var oldLength = oldChildren.length
 
         // no children
         if (newLength === 0) {
             // remove all children if old children is not already cleared
             if (oldLength !== 0) {
-                emptyNode(oldNode, oldLength);
-                oldNode.children = newChildren;
+                emptyNode(oldNode, oldLength)
+                oldNode.children = newChildren
             }
         } else {
             // has children
             // new node has children
-            var parentNode = oldNode.DOMNode;
+            var parentNode = oldNode.DOMNode
 
             // when keyed, the position that dirty keys begin
-            var position = 0;
+            var position = 0
 
             // non-keyed until the first dirty key is found
-            var keyed = false;
+            var keyed = false
 
             // un-initialized key hash maps
-            var oldKeys;
-            var newKeys;
+            var oldKeys
+            var newKeys
 
-            var newKey;
-            var oldKey;
+            var newKey
+            var oldKey
 
             // the highest point of interest
-            var length = newLength > oldLength ? newLength : oldLength;
+            var length = newLength > oldLength ? newLength : oldLength
 
             // children nodes
-            var newChild;
-            var oldChild;
+            var newChild
+            var oldChild
 
             // children types
-            var newType;
-            var oldType;
+            var newType
+            var oldType
 
             // for loop, the end point being which ever is the 
             // greater value between new length and old length
             for (var i = 0; i < length; i++) {
                 // avoid accessing out of bounds index and Type where unnecessary
-                newType = i < newLength ? (newChild = newChildren[i]).Type : (newChild = nodeEmpty, 0);
-                oldType = i < oldLength ? (oldChild = oldChildren[i]).Type : (oldChild = nodeEmpty, 0);
+                newType = i < newLength ? (newChild = newChildren[i]).Type : (newChild = nodeEmpty, 0)
+                oldType = i < oldLength ? (oldChild = oldChildren[i]).Type : (oldChild = nodeEmpty, 0)
 
                 if (keyed) {
                     // push keys
                     if (newType !== 0) {
-                        newKeys[newChild.key] = (newChild.index = i, newChild);
+                        newKeys[newChild.key] = (newChild.index = i, newChild)
                     }
 
                     if (oldType !== 0) {
-                        oldKeys[oldChild.key] = (oldChild.index = i, oldChild);
+                        oldKeys[oldChild.key] = (oldChild.index = i, oldChild)
                     }
                 }
                 // remove
                 else if (newType === 0) {
-                    removeNode(oldType, oldChildren.pop(), parentNode);
+                    removeNode(oldType, oldChildren.pop(), parentNode)
 
-                    oldLength--;
+                    oldLength--
                 }
                 // add
                 else if (oldType === 0) {
@@ -1176,26 +1173,26 @@
                         oldChildren[oldLength++] = newChild,
                         parentNode,
                         createNode(newChild, null, null)
-                    );
+                    )
                 }
                 // text
                 else if (newType === 3 && oldType === 3) {
                     if (newChild.children !== oldChild.children) {
-                        oldChild.DOMNode.nodeValue = oldChild.children = newChild.children;
+                        oldChild.DOMNode.nodeValue = oldChild.children = newChild.children
                     }
                 }
                 // key
                 else if ((newKey = newChild.key) !== (oldKey = oldChild.key)) {
-                    keyed = true;
-                    position = i;
+                    keyed = true
+                    position = i
 
                     // map of key
-                    newKeys = {};
-                    oldKeys = {};
+                    newKeys = {}
+                    oldKeys = {}
 
                     // push keys
-                    newKeys[newKey] = (newChild.index = i, newChild);
-                    oldKeys[oldKey] = (oldChild.index = i, oldChild);
+                    newKeys[newKey] = (newChild.index = i, newChild)
+                    oldKeys[oldKey] = (oldChild.index = i, oldChild)
                 }
                 // replace
                 else if (newChild.type !== oldChild.type) {
@@ -1206,11 +1203,11 @@
                         oldChild,
                         parentNode,
                         createNode(newChild, null, null)
-                    );
+                    )
                 }
                 // noop
                 else {
-                    reconcileNodes(newChild, oldChild, newType, oldType);
+                    reconcileNodes(newChild, oldChild, newType, oldType)
                 }
             }
 
@@ -1226,13 +1223,13 @@
                     oldLength,
                     position,
                     length
-                );
+                )
             }
         }
 
         // props objects of the two nodes are not equal, patch
         if (currentNode.props !== oldNode.props) {
-            patchProps(currentNode, oldNode);
+            patchProps(currentNode, oldNode)
         }
 
         // component with componentDidUpdate
@@ -1255,99 +1252,99 @@
      * @param {number}                 length
      */
     function reconcileKeys(newKeys, oldKeys, parentNode, newNode, oldNode, newLength, oldLength, position, length) {
-        var reconciled = new Array(newLength);
+        var reconciled = new Array(newLength)
 
         // children
-        var newChildren = newNode.children;
-        var oldChildren = oldNode.children;
+        var newChildren = newNode.children
+        var oldChildren = oldNode.children
 
         // child nodes
-        var newChild;
-        var oldChild;
+        var newChild
+        var oldChild
 
         // DOM nodes
-        var nextNode;
-        var prevNode;
+        var nextNode
+        var prevNode
 
         // keys
-        var key;
+        var key
 
         // offsets
-        var added = 0;
-        var removed = 0;
-        var i = 0;
-        var index = 0;
-        var offset = 0;
-        var moved = 0;
+        var added = 0
+        var removed = 0
+        var i = 0
+        var index = 0
+        var offset = 0
+        var moved = 0
 
         // reconcile leading nodes
         if (position !== 0) {
             for (; i < position; i++) {
-                reconciled[i] = oldChildren[i];
+                reconciled[i] = oldChildren[i]
             }
         }
 
         // reconcile trailing nodes
         for (i = 0; i < length; i++) {
-            newChild = newChildren[index = (newLength - 1) - i];
-            oldChild = oldChildren[(oldLength - 1) - i];
+            newChild = newChildren[index = (newLength - 1) - i]
+            oldChild = oldChildren[(oldLength - 1) - i]
 
             if (newChild.key === oldChild.key) {
-                reconciled[index] = oldChild;
+                reconciled[index] = oldChild
 
                 // trim trailing node
-                length--;
+                length--
             } else {
-                break;
+                break
             }
         }
 
         // reconcile inverted nodes
         if (newLength === oldLength) {
             for (i = position; i < length; i++) {
-                newChild = newChildren[index = (newLength - 1) - i];
-                oldChild = oldChildren[i];
+                newChild = newChildren[index = (newLength - 1) - i]
+                oldChild = oldChildren[i]
 
                 if (index !== i && newChild.key === oldChild.key) {
-                    newChild = oldChildren[index];
+                    newChild = oldChildren[index]
 
-                    nextNode = oldChild.DOMNode;
-                    prevNode = newChild.DOMNode;
+                    nextNode = oldChild.DOMNode
+                    prevNode = newChild.DOMNode
 
                     // adjacent nodes
                     if (index - i === 1) {
-                        parentNode.insertBefore(prevNode, nextNode);
+                        parentNode.insertBefore(prevNode, nextNode)
                     } else {
                         // move first node to inverted postion
-                        parentNode.insertBefore(nextNode, prevNode);
+                        parentNode.insertBefore(nextNode, prevNode)
 
-                        nextNode = prevNode;
-                        prevNode = oldChildren[i + 1].DOMNode;
+                        nextNode = prevNode
+                        prevNode = oldChildren[i + 1].DOMNode
 
                         // move second node to inverted position
-                        parentNode.insertBefore(nextNode, prevNode);
+                        parentNode.insertBefore(nextNode, prevNode)
                     }
 
                     // trim leading node
-                    position = i;
+                    position = i
 
                     // trim trailing node
-                    length--;
+                    length--
 
                     // hydrate
-                    reconciled[i] = newChild;
-                    reconciled[index] = oldChild;
+                    reconciled[i] = newChild
+                    reconciled[index] = oldChild
                 } else {
-                    break;
+                    break
                 }
             }
 
             // single remaining node
             if (length - i === 1) {
-                reconciled[i] = oldChildren[i];
-                oldNode.children = reconciled;
+                reconciled[i] = oldChildren[i]
+                oldNode.children = reconciled
 
-                return;
+                return
             }
         }
 
@@ -1355,23 +1352,23 @@
         for (i = position; i < length; i++) {
             // old children
             if (i < oldLength) {
-                oldChild = oldChildren[i];
-                newChild = newKeys[oldChild.key];
+                oldChild = oldChildren[i]
+                newChild = newKeys[oldChild.key]
 
                 if (newChild === void 0) {
-                    removeNode(oldChild.Type, oldChild, parentNode);
-                    removed++;
+                    removeNode(oldChild.Type, oldChild, parentNode)
+                    removed++
                 }
             }
 
             // new children
             if (i < newLength) {
-                newChild = newChildren[i];
-                oldChild = oldKeys[newChild.key];
+                newChild = newChildren[i]
+                oldChild = oldKeys[newChild.key]
 
                 // new
                 if (oldChild === void 0) {
-                    nextNode = createNode(newChild, null, null);
+                    nextNode = createNode(newChild, null, null)
 
                     // insert
                     if (i < oldLength + added) {
@@ -1381,7 +1378,7 @@
                             oldChildren[i - added].DOMNode,
                             parentNode,
                             nextNode
-                        );
+                        )
                     }
                     // append
                     else {
@@ -1390,43 +1387,43 @@
                             newChild,
                             parentNode,
                             nextNode
-                        );
+                        )
                     }
 
-                    reconciled[i] = newChild;
-                    added++;
+                    reconciled[i] = newChild
+                    added++
                 }
                 // old
                 else {
-                    index = oldChild.index;
-                    offset = index - removed;
+                    index = oldChild.index
+                    offset = index - removed
 
                     // moved
                     if (offset !== i) {
-                        key = oldChildren[offset].key;
+                        key = oldChildren[offset].key
 
                         // not moving to a removed index
                         if (newKeys[key] !== void 0) {
-                            offset = i - added;
+                            offset = i - added
 
                             // not identical keys
                             if (newChild.key !== oldChildren[offset].key) {
-                                nextNode = oldChild.DOMNode;
-                                prevNode = oldChildren[offset - (moved++)].DOMNode;
+                                nextNode = oldChild.DOMNode
+                                prevNode = oldChildren[offset - (moved++)].DOMNode
 
                                 if (prevNode !== nextNode) {
-                                    parentNode.insertBefore(nextNode, prevNode);
+                                    parentNode.insertBefore(nextNode, prevNode)
                                 }
                             }
                         }
                     }
 
-                    reconciled[i] = oldChild;
+                    reconciled[i] = oldChild
                 }
             }
         }
 
-        oldNode.children = reconciled;
+        oldNode.children = reconciled
     }
 
     /**
@@ -1456,9 +1453,9 @@
         this.state = this.state || applyComponentHook(this, -1, null) || {}
 
 
-        this.refs = null;
+        this.refs = null
 
-        this['--vnode'] = null;
+        this['--vnode'] = null
     }
 
 
@@ -1471,7 +1468,7 @@
         constructor: Component,
         setState: setState,
         forceUpdate: forceUpdate
-    };
+    }
 
 
     /**
@@ -1489,7 +1486,7 @@
         }
 
         // update state
-        updateState(this.state, newState);
+        updateState(this.state, newState)
 
         // callback
         if (typeof callback === 'function') {
@@ -1497,7 +1494,7 @@
         }
 
         // update component
-        this.forceUpdate();
+        this.forceUpdate()
     }
 
 
@@ -1512,7 +1509,7 @@
                 newState(oldState)
             } else {
                 for (var name in newState) {
-                    oldState[name] = newState[name];
+                    oldState[name] = newState[name]
                 }
             }
         }
@@ -1530,25 +1527,25 @@
         applyComponentHook(this, 4, this.props, this.state)
 
 
-        var oldNode = this['--vnode'];
+        var oldNode = this['--vnode']
         var newNode = applyComponentRender(this)
 
-        var newType = newNode.Type;
-        var oldType = oldNode.Type;
+        var newType = newNode.Type
+        var oldType = oldNode.Type
 
         // different root node
         if (newNode.type !== oldNode.nodeName) {
-            replaceRootNode(newNode, oldNode, newType, oldType, this);
+            replaceRootNode(newNode, oldNode, newType, oldType, this)
         }
         // patch node
         else {
             // element root node
             if (oldType !== 3) {
-                reconcileNodes(newNode, oldNode, newType, 1);
+                reconcileNodes(newNode, oldNode, newType, 1)
             }
             // text root node
             else if (newNode.children !== oldNode.children) {
-                oldNode.DOMNode.nodeValue = oldNode.children = newNode.children;
+                oldNode.DOMNode.nodeValue = oldNode.children = newNode.children
             }
         }
 
@@ -1573,27 +1570,27 @@
     function createClass(subject, props) {
         // empty class
         if (subject == null) {
-            subject = createEmptyShape();
+            subject = createEmptyShape()
         }
 
         // component cache
         if (subject.COMPCache !== void 0) {
-            return subject.COMPCache;
+            return subject.COMPCache
         }
 
         // is function?
-        var func = typeof subject === 'function';
-        // extract shape of component
-        var shape = func ? (subject(createElement) || createEmptyShape()) : subject;
-        var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0);
-        var construct = false;
+        var func = typeof subject === 'function'
+            // extract shape of component
+        var shape = func ? (subject(createElement) || createEmptyShape()) : subject
+        var type = func && typeof shape === 'function' ? 2 : (shape.Type != null ? 1 : 0)
+        var construct = false
 
-        var vnode;
-        var constructor;
-        var render;
-        // numbers, strings, arrays
+        var vnode
+        var constructor
+        var render
+            // numbers, strings, arrays
         if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
-            shape = extractVirtualNode(shape, { props: props });
+            shape = extractVirtualNode(shape, { props: props })
         }
 
         // elements/functions
@@ -1610,7 +1607,7 @@
 
             // create render method if one does not exist
             if (typeof shape.render !== 'function') {
-                shape.render = function() { return createEmptyShape(); };
+                shape.render = function() { return createEmptyShape() }
             }
         }
 
@@ -1618,25 +1615,25 @@
         function component(props) {
             // constructor
             if (construct) {
-                constructor.call(this, props);
+                constructor.call(this, props)
             }
 
             // extend Component
-            Component.call(this, props);
+            Component.call(this, props)
         }
 
         // extends shape
-        component.prototype = shape;
+        component.prototype = shape
 
         // extends Component class
-        shape.setState = Component.prototype.setState;
-        shape.forceUpdate = Component.prototype.forceUpdate;
-        component.constructor = Component;
+        shape.setState = Component.prototype.setState
+        shape.forceUpdate = Component.prototype.forceUpdate
+        component.constructor = Component
 
         // function shape, cache component
         if (func) {
-            shape.constructor = subject;
-            subject.COMPCache = component;
+            shape.constructor = subject
+            subject.COMPCache = component
         }
 
         // stylesheet namespaced
@@ -1646,10 +1643,10 @@
                 shape.displayName ||
                 (func ? subject.name : false) ||
                 ((Math.random() + 1).toString(36).substr(2, 5))
-            );
+            )
         }
 
-        return component;
+        return component
     }
 
     // https://github.com/atom/etch/blob/master/lib/patch.js
@@ -1676,14 +1673,14 @@
      * @param  {?Component} component
      */
     function hydrate(parent, subject, index, parentVNode, component) {
-        var newNode = subject.Type === 2 ? extractComponentNode(subject, null, null) : subject;
+        var newNode = subject.Type === 2 ? extractComponentNode(subject, null, null) : subject
 
-        var nodeType = newNode.Type;
-        var type = newNode.type; //标签名
+        var nodeType = newNode.Type
+        var type = newNode.type //标签名
 
-        var childNodes = parent.childNodes;
-        var element = childNodes[index];
-        var nodeName = element.nodeName;
+        var childNodes = parent.childNodes
+        var element = childNodes[index]
+        var nodeName = element.nodeName
 
         // DOMNode type does not match
         if (type !== nodeName.toLowerCase()) {
@@ -1692,88 +1689,88 @@
                 // find a DOMNode match
                 for (var i = 0, l = childNodes.length; i < l; i++) {
                     if ((element = childNodes[i]).nodeName.toLowerCase() === type) {
-                        break;
+                        break
                     }
                 }
             } else {
                 // whitespace
                 if (nodeName === '#text' && element.nodeValue.trim() === '') {
-                    parent.removeChild(element);
+                    parent.removeChild(element)
                 }
 
-                element = childNodes[index];
+                element = childNodes[index]
             }
         }
 
         // newNode is not a textNode, hydrate its children
         if (nodeType !== 3) {
-            var props = newNode.props;
-            var children = newNode.children;
-            var length = children.length;
+            var props = newNode.props
+            var children = newNode.children
+            var length = children.length
 
             // vnode has component attachment
             if (subject.instance !== null) {
-                (component = subject.instance)['--vnode'].DOMNode = parent;
+                ;(component = subject.instance)['--vnode'].DOMNode = parent
             }
 
             // hydrate children
             for (var i = 0; i < length; i++) {
-                var newChild = children[i];
+                var newChild = children[i]
 
                 // hoisted, clone VNode
                 if (newChild.DOMNode !== null) {
-                    newChild = children[i] = cloneNode(newChild);
+                    newChild = children[i] = cloneNode(newChild)
                 }
 
-                hydrate(element, newChild, i, newNode, component);
+                hydrate(element, newChild, i, newNode, component)
             }
 
 
             // not a fragment, not an emtpy object
             if (props !== objEmpty) {
                 // events
-                assignProps(element, props, true, component);
+                assignProps(element, props, true, component)
             }
 
             // hydrate the dom element to the virtual node
-            subject.DOMNode = element;
+            subject.DOMNode = element
         } else if (nodeType === 3) { // textNode
-            var children = parentVNode.children;
-            var length = children.length;
+            var children = parentVNode.children
+            var length = children.length
 
             // when we reach a string child that is followed by a string child, 
             // it is assumed that the dom representing it is a single textNode
             // case in point h('h1', 'Hello', 'World') output: <h1>HelloWorld</h1>
             // HelloWorld is one textNode in the DOM but two in the VNode
             if (length > 1 && index + 1 < length && children[index + 1].Type === 3) {
-                var fragment = document.createDocumentFragment();
+                var fragment = document.createDocumentFragment()
 
                 // look ahead of this nodes siblings and add all textNodes to the fragment
                 // and exit when a non-textNode is encounted
                 for (var i = index, len = length - index; i < len; i++) {
-                    var textNode = children[i];
+                    var textNode = children[i]
 
                     // exit early once we encounter a non textNode
                     if (textNode.Type !== 3) {
-                        break;
+                        break
                     }
 
                     // create textNode, hydrate and append to fragment
-                    fragment.appendChild(textNode.DOMNode = document.createTextNode(textNode.children));
+                    fragment.appendChild(textNode.DOMNode = document.createTextNode(textNode.children))
                 }
 
                 // replace the textNode with a set of textNodes
-                parent.replaceChild(fragment, element);
+                parent.replaceChild(fragment, element)
             } else {
-                var nodeValue = newNode.children + '';
+                var nodeValue = newNode.children + ''
 
                 // DOMNode text does not match, reconcile
                 if (element.nodeValue !== nodeValue) {
-                    element.nodeValue = nodeValue;
+                    element.nodeValue = nodeValue
                 }
 
                 // hydrate single textNode
-                newNode.DOMNode = element;
+                newNode.DOMNode = element
             }
         }
     }
@@ -1793,39 +1790,39 @@
      * @return {function(Object=)}
      */
     function render(subject, target, callback, hydration) {
-        var initial = true;
-        var nodeType = 2;
+        var initial = true
+        var nodeType = 2
 
-        var component;
-        var vnode;
-        var container;
+        var component
+        var vnode
+        var container
 
         // renderer
         function renderer(newProps) {
             if (initial) {
                 // dispatch mount
                 // vnode.Type, vnode, container, vnode.DOMNode
-                appendNode(nodeType, vnode, container, createNode(vnode, null, null));
+                appendNode(nodeType, vnode, container, createNode(vnode, null, null))
 
                 // register mount has been dispatched
-                initial = false;
+                initial = false
 
                 // assign component instance
-                component = vnode.instance;
+                component = vnode.instance
             } else {
                 // update props
                 if (newProps !== void 0) {
                     // component with shouldComponentUpdate
                     if (applyComponentHook(component, 3, newProps, component.state) === false) {
                         // exit early
-                        return renderer;
+                        return renderer
                     }
 
-                    component.props = newProps;
+                    component.props = newProps
                 }
 
                 // update component
-                component.forceUpdate();
+                component.forceUpdate()
             }
 
             return component // renderer;
@@ -1833,7 +1830,7 @@
 
         // exit early
         if (browser === false) {
-            return renderer;
+            return renderer
         }
         // Try to convert the first parameter to the virtual DOM
 
@@ -1843,24 +1840,24 @@
 
         // Encapsulated into components, in order to use forceUpdate inside the render
         if (vnode.Type !== 2) {
-            vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty);
+            vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty)
         }
 
         // mount
         if (target != null && target.nodeType != null) {
             // target is a dom container
-            container = target === document ? docuemnt.body : target;
+            container = target === document ? docuemnt.body : target
         }
         // hydration
         if (hydration != null && hydration !== false) {
             // dispatch hydration
-            hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null);
+            hydrate(container, vnode, typeof hydration === 'number' ? hydration : 0, null, null)
 
             // register mount has been dispatched
-            initial = false;
+            initial = false
 
             // assign component
-            component = vnode.instance;
+            component = vnode.instance
         } else {
             // destructive mount
             if (hydration === false) {
@@ -1869,12 +1866,12 @@
                 }
             }
 
-            renderer();
+            renderer()
         }
 
         // if present call root components context, passing root node as argument
         if (callback && typeof callback === 'function') {
-            callback.call(component, vnode.DOMNode || target);
+            callback.call(component, vnode.DOMNode || target)
         }
 
         return component //renderer;

@@ -3,11 +3,11 @@
  */
 //用到objEmpty, arrEmpty
 
-export let objEmpty = {};
-export let arrEmpty = [];
-export let nsMath = 'http://www.w3.org/1998/Math/MathML';
-export let nsXlink = 'http://www.w3.org/1999/xlink';
-export let nsSvg = 'http://www.w3.org/2000/svg';
+export let objEmpty = {}
+export let arrEmpty = []
+export let nsMath = 'http://www.w3.org/1998/Math/MathML'
+export let nsXlink = 'http://www.w3.org/1999/xlink'
+export let nsSvg = 'http://www.w3.org/2000/svg'
 
 /**
  * component shape
@@ -30,7 +30,7 @@ export function createComponentShape(type, props, children) {
         index: 0,
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
-    };
+    }
 }
 
 /**
@@ -54,7 +54,7 @@ export function createElementShape(type, props, children) {
         index: 0,
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
-    };
+    }
 }
 
 /**
@@ -73,7 +73,7 @@ export function createEmptyShape() {
         index: 0,
         nodeName: null,
         key: void 0
-    };
+    }
 }
 
 /**
@@ -95,7 +95,7 @@ export function createFragmentShape(children) {
         index: 0,
         nodeName: null,
         key: void 0
-    };
+    }
 }
 
 /**
@@ -123,7 +123,7 @@ export function createNodeShape(Type, type, props, children, DOMNode, instance, 
         index: index,
         nodeName: nodeName,
         key: key
-    };
+    }
 }
 
 
@@ -146,7 +146,7 @@ export function createPortalShape(type, props, children) {
         index: 0,
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
-    };
+    }
 }
 
 /**
@@ -170,7 +170,7 @@ export function createSvgShape(type, props, children) {
         index: 0,
         nodeName: null,
         key: props.key
-    };
+    }
 }
 
 
@@ -193,7 +193,7 @@ export function createTextShape(text) {
         index: 0,
         nodeName: null,
         key: void 0
-    };
+    }
 }
 
-export var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0);
+export var nodeEmpty = createNodeShape(0, '', objEmpty, arrEmpty, null, null, 0, null, void 0)
