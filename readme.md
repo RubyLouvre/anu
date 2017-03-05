@@ -42,7 +42,6 @@
             return h('h2', null, 'A', '你好', h(Hello), h('p'))
         }
         window.onload = function() {
-            //render4个参数， vnode, container
             var result = anu.render(main(), document.body)
             console.log(result)
         }
@@ -78,7 +77,6 @@ class Hello extends anu.Component {
     }
 }
 window.onload = function() {
-    //render4个参数， vnode, container
     var result = anu.render(Hello, document.body)
     console.log(result)
 }
@@ -91,14 +89,13 @@ function HelloComponent(props /* context */ ) {
     return h('div', {}, 'Hello', props.name)
 }
 window.onload = function() {
-    //render4个参数， vnode, container, callback, clearContainer
     var result = anu.render(h(HelloComponent, {
         name: '111'
     }), document.body, null, false)
     console.log(result)
 }
 ```
-Use JSXParser ande genCode
+Use JSXParser ande genCode 代替anu.createElement
 
 ```html
 <script src='./dist/jsx-parser.js'></script>
@@ -111,7 +108,6 @@ Use JSXParser ande genCode
         </div>`))
 
     window.onload = function() {
-        //render4个参数， vnode, container, callback
         var result = anu.render(vnode, document.body)
         console.log(result)
     }
