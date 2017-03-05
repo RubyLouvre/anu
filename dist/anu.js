@@ -1860,11 +1860,11 @@
             component = vnode.instance
         } else {
             // destructive mount
-            if (hydration === false) {
-                while (container.firstChild) {
-                    container.removeChild(container.firstChild)
-                }
+            //  if (hydration === false) {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild)
             }
+            //   }
 
             renderer()
         }

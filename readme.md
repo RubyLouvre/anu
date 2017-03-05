@@ -42,8 +42,8 @@
             return h('h2', null, 'A', '你好', h(Hello), h('p'))
         }
         window.onload = function() {
-            //render4个参数， vnode, container, callback, clearContainer
-            var result = anu.render(main(), document.body, null, false)
+            //render4个参数， vnode, container
+            var result = anu.render(main(), document.body)
             console.log(result)
         }
     </script>
@@ -78,8 +78,8 @@ class Hello extends anu.Component {
     }
 }
 window.onload = function() {
-    //render4个参数， vnode, container, callback, clearContainer
-    var result = anu.render(Hello, document.body, null, false)
+    //render4个参数， vnode, container
+    var result = anu.render(Hello, document.body)
     console.log(result)
 }
 ```
@@ -97,4 +97,23 @@ window.onload = function() {
     }), document.body, null, false)
     console.log(result)
 }
+```
+Use JSXParser ande genCode
+
+```html
+<script src='./dist/jsx-parser.js'></script>
+<script src='./dist/genCode.js'></script>
+<script src='./dist/anu.js'></script>
+<script>
+    var vnode = eval('0,' + genCode(`<div id={111} >
+        <p>222</p>
+        <p>{new Date()-0}</p>
+        </div>`))
+
+    window.onload = function() {
+        //render4个参数， vnode, container, callback
+        var result = anu.render(vnode, document.body)
+        console.log(result)
+    }
+</script>
 ```
