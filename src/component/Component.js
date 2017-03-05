@@ -59,11 +59,11 @@ Component.prototype = {
  * @param {function(this:Component)=} callback
  */
 function setState(newState, callback) {
+
     // shouldComponentUpdate 
     if (applyComponentHook(this, 3, this.props, newState) === false) {
         return
     }
-
     // update state
     updateState(this.state, newState)
 
@@ -85,12 +85,13 @@ function setState(newState, callback) {
 function updateState(oldState, newState) {
     if (oldState != null) {
         if (typeof newState === 'function') {
-            newState(oldState)
-        } else {
-            for (var name in newState) {
-                oldState[name] = newState[name]
-            }
+            var fn = newState
+            newState = fn(oldState)
         }
+        for (var name in newState) {
+            oldState[name] = newState[name]
+        }
+
     }
 }
 

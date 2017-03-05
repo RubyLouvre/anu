@@ -1480,11 +1480,11 @@
      * @param {function(this:Component)=} callback
      */
     function setState(newState, callback) {
+
         // shouldComponentUpdate 
         if (applyComponentHook(this, 3, this.props, newState) === false) {
             return
         }
-
         // update state
         updateState(this.state, newState)
 
@@ -1506,12 +1506,13 @@
     function updateState(oldState, newState) {
         if (oldState != null) {
             if (typeof newState === 'function') {
-                newState(oldState)
-            } else {
-                for (var name in newState) {
-                    oldState[name] = newState[name]
-                }
+                var fn = newState
+                newState = fn(oldState)
             }
+            for (var name in newState) {
+                oldState[name] = newState[name]
+            }
+
         }
     }
 
@@ -1650,6 +1651,52 @@
     }
 
     // https://github.com/atom/etch/blob/master/lib/patch.js
+
+    function PureComponent(props, context) {
+        Component.call(this, props, context)
+    }
+
+    function ComponentDummy() {}
+    var dummy = ComponentDummy.prototype = Component.prototype;
+    var pure = PureComponent.prototype = new ComponentDummy()
+    for (var i in dummy) {
+        pure[i] = dummy[i]
+    }
+
+    pure.constructor = PureComponent
+    pure.isPureReactComponent = true
+    pure.shouldComponentUpdate = shallowCompare
+
+    function shallowCompare(nextProps, nextState) {
+        return !shallowEqual(this.props, nextProps) ||
+            !shallowEqual(this.state, nextState)
+    }
+
+    function shallowEqual(objA, objB) {
+        if (objA === objB) {
+            return true
+        }
+
+        if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+            return false
+        }
+
+        var keysA = Object.keys(objA)
+        var keysB = Object.keys(objB)
+
+        if (keysA.length !== keysB.length) {
+            return false
+        }
+
+        // Test for A's keys different from B.
+        for (var i = 0; i < keysA.length; i++) {
+            if (!objB.hasOwnProperty(keysA[i]) || objA[keysA[i]] !== objB[keysA[i]]) {
+                return false
+            }
+        }
+
+        return true
+    }
 
     // 用到objEmpty
     /** 
@@ -1887,6 +1934,7 @@
 
         createClass,
         Component,
+        PureComponent,
 
         render
     }

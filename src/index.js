@@ -1,5 +1,5 @@
 import { cloneElement, createElement, createFactory, isValidElement } from './element/index'
-import { createClass, Component } from './component/index'
+import { createClass, Component, PureComponent } from './component/index'
 import render from './render'
 
 
@@ -15,6 +15,7 @@ export default {
 
     createClass,
     Component,
+    PureComponent,
 
     render
 }
