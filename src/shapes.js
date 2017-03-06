@@ -20,6 +20,7 @@ export let nsSvg = 'http://www.w3.org/2000/svg'
  * @return {VNode}
  */
 export function createComponentShape(type, props, children) {
+
     return {
         Type: 2,
         type: type,
@@ -31,6 +32,7 @@ export function createComponentShape(type, props, children) {
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
     }
+
 }
 
 /**
@@ -55,6 +57,7 @@ export function createElementShape(type, props, children) {
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
     }
+
 }
 //https://github.com/facebook/react/blob/v16.0.0-alpha.3/src/shared/ReactElementType.js
 /**
@@ -76,27 +79,6 @@ export function createEmptyShape() {
     }
 }
 
-/**
- * fragment shape
- *
- * @public
- * 
- * @param  {VNode[]} children
- * @return {VNode}
- */
-export function createFragmentShape(children) {
-    return {
-        Type: 1,
-        type: 'fragment',
-        props: fragProps,
-        children: children,
-        DOMNode: null,
-        instance: null,
-        index: 0,
-        nodeName: null,
-        key: void 0
-    }
-}
 
 /**
  * create node shape
@@ -127,30 +109,6 @@ export function createNodeShape(Type, type, props, children, DOMNode, instance, 
 }
 
 
-
-/**
- * svg shape
- *
- * @public
- * 
- * @param  {string}               type
- * @param  {Object<string, any>=} props
- * @param  {VNode[]=}             children
- * @return {VNode}
- */
-export function createSvgShape(type, props, children) {
-    return {
-        Type: 1,
-        type: type,
-        props: (props == null ? (props = { xmlns: nsSvg }) : (props.xmlns = nsSvg, props)),
-        children: (children == null ? [] : children),
-        DOMNode: null,
-        instance: null,
-        index: 0,
-        nodeName: null,
-        key: props.key
-    }
-}
 
 
 /**

@@ -14,7 +14,7 @@
                 value: anu.PropTypes.string
             },
             render: function() {
-                return evalCode(`<div>{this.context.value || '并没有context'}</div>`);
+                return eval('0,' + genCode(`<div>{this.context.value || '并没有context'}</div>`));
             }
         });
 
@@ -23,32 +23,31 @@
             childContextTypes: {
                 value: anu.PropTypes.string
             },
-            getChildContext: function() {
-                return {
-                    value: '上下文'
-                };
-            },
+
             render: function() {
-                return evalCode(`
+                return eval('0,' + genCode(`
     	<div id="333">
-        {this.props.children}
-      </div>`);
+        {this.context.value}
+      </div>`));
             }
         });
 
         var App = anu.createClass({
+            getChildContext: function() {
+                return {
+                    value: '6666'
+                };
+            },
             render: function() {
-                console.log(this.props, this)
+
                 return eval('0,' + genCode(`
-      <Parent>
-        <Children />
-      </Parent>`));
+      <Parent/>`));
             }
         });
 
         window.onload = function() {
             //render4个参数， vnode, container, callback
-            var result = anu.render(anu.createElement(Parent), document.getElementById('container'))
+            var result = anu.render(anu.createElement(App), document.getElementById('container'))
             console.log(result)
         }
     </script>

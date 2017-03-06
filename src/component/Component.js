@@ -23,13 +23,14 @@ export default function Component(props, context) {
         assignDefaultProps(defaultProps, props)
     }
     // apply componentWillReceiveProps Hook
+    context = context || {}
     applyComponentHook(this, 2, props, context)
+
     this.context = context
     this.props = props
 
     // assign state
     this.state = this.state || applyComponentHook(this, -1, null) || {}
-
 
     this.refs = null
 

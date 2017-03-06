@@ -199,8 +199,7 @@ export function emptyNode(oldNode, oldLength) {
  */
 export function createNode(subject, component, namespace) {
     var nodeType = subject.Type
-
-    // create text node element	
+        // create text node element	
     if (nodeType === 3) {
         return subject.DOMNode = document.createTextNode(subject.children)
     }
@@ -280,14 +279,13 @@ export function createNode(subject, component, namespace) {
             // createScopedStylesheet(component, subject.type, element);
         }
     }
-
     // has children
     if (length !== 0) {
         // append children
         for (var i = 0; i < length; i++) {
             var newChild = children[i]
-
-            // hoisted, clone
+                //  newChild.context = 
+                // hoisted, clone
             if (newChild.DOMNode !== null) {
                 newChild = children[i] = cloneNode(newChild)
             }

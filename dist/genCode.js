@@ -3,12 +3,13 @@
 var rComponent = /^(this|[A-Z])/
 
 function genCode(str, config) {
-    return (new innerClass(str, config)).init()
+    var a = (new innerClass(str, config)).init()
+    console.log(a, '1111')
+    return a
 }
 
 function evalCode(str, config) {
     var output = (new innerClass(str, config)).init()
-    console.log(output)
     eval('0,' + output)
 }
 genCode.cache = {}

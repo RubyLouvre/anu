@@ -15,6 +15,7 @@ export function createElement(type, props) {
     if (type == null) {
         return createEmptyShape()
     }
+
     var length = arguments.length
     var children = []
 
@@ -37,7 +38,6 @@ export function createElement(type, props) {
             }
         }
     }
-
 
 
     var typeOf = typeof type

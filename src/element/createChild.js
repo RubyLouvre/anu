@@ -6,6 +6,7 @@ export default function createChild(child, children, index) {
         // vnode
         if (child.Type !== void 0) {
             children[index++] = child
+
         } else {
             var type = typeof child
 

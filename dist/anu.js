@@ -26,6 +26,7 @@
    * @return {VNode}
    */
   function createComponentShape(type, props, children) {
+
       return {
           Type: 2,
           type: type,
@@ -37,6 +38,7 @@
           nodeName: null,
           key: props !== objEmpty ? props.key : void 0
       }
+
   }
 
   /**
@@ -61,6 +63,7 @@
           nodeName: null,
           key: props !== objEmpty ? props.key : void 0
       }
+
   }
   //https://github.com/facebook/react/blob/v16.0.0-alpha.3/src/shared/ReactElementType.js
   /**
@@ -81,6 +84,7 @@
           key: void 0
       }
   }
+
 
   /**
    * create node shape
@@ -109,6 +113,7 @@
           key: key
       }
   }
+
 
 
 
@@ -143,6 +148,7 @@
           // vnode
           if (child.Type !== void 0) {
               children[index++] = child
+
           } else {
               var type = typeof child
 
@@ -181,6 +187,7 @@
       if (type == null) {
           return createEmptyShape()
       }
+
       var length = arguments.length
       var children = []
 
@@ -203,7 +210,6 @@
               }
           }
       }
-
 
 
       var typeOf = typeof type
@@ -503,8 +509,24 @@
    */
   function applyComponentRender(component) {
       try {
+          var nextContext = {}
+          var prevContext = component.context || {}
+
+          if (prevContext) {
+              for (var i in prevContext) {
+                  nextContext[i] = prevContext[i]
+              }
+          }
+          if (component.getChildContext) {
+              var childContext = component.getChildContext()
+              for (var i in childContext) {
+                  nextContext[i] = childContext[i]
+              }
+          }
+          component.context = nextContext
+          console.log('applyComponentRender', nextContext)
           return extractVirtualNode(
-              component.render(component.props, component.state, component),
+              component.render(component.props, component.state, nextContext),
               component
           )
       } catch (e) {
@@ -654,7 +676,6 @@
       // Stateless functional component
       else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
           vnode = extractFunctionNode(type, props)
-
           if (vnode.Type === void 0) {
               // create component
               owner = createClass(vnode, props)
@@ -668,10 +689,11 @@
           owner = type
       }
       // create component instance
-      var component = subject.instance = new owner(props)
 
-      // get render vnodes
-      var vnode = applyComponentRender(component)
+      var component = subject.instance = new owner(props, parent && parent.instance.context)
+          // subject.info.context = component.context
+          // get render vnodes
+      var vnode = applyComponentRender(component, subject)
 
       // if render returns a component, extract component recursive
       if (vnode.Type === 2) {
@@ -915,8 +937,7 @@
    */
   function createNode(subject, component, namespace) {
       var nodeType = subject.Type
-
-      // create text node element	
+          // create text node element	
       if (nodeType === 3) {
           return subject.DOMNode = document.createTextNode(subject.children)
       }
@@ -996,14 +1017,13 @@
               // createScopedStylesheet(component, subject.type, element);
           }
       }
-
       // has children
       if (length !== 0) {
           // append children
           for (var i = 0; i < length; i++) {
               var newChild = children[i]
-
-              // hoisted, clone
+                  //  newChild.context = 
+                  // hoisted, clone
               if (newChild.DOMNode !== null) {
                   newChild = children[i] = cloneNode$1(newChild)
               }
@@ -1408,7 +1428,7 @@
    * @export
    * @param {Object} props
    */
-  function Component(props) {
+  function Component(props, context) {
       // initial props
       if (props === objEmpty) {
           props = {}
@@ -1418,15 +1438,15 @@
           var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
           assignDefaultProps(defaultProps, props)
       }
-
       // apply componentWillReceiveProps Hook
-      applyComponentHook(this, 2, props)
+      context = context || {}
+      applyComponentHook(this, 2, props, context)
 
+      this.context = context
       this.props = props
 
       // assign state
       this.state = this.state || applyComponentHook(this, -1, null) || {}
-
 
       this.refs = null
 
@@ -1457,7 +1477,7 @@
   function setState(newState, callback) {
 
       // shouldComponentUpdate 
-      if (applyComponentHook(this, 3, this.props, newState) === false) {
+      if (applyComponentHook(this, 3, this.props, newState, this.context) === false) {
           return
       }
       // update state
@@ -1500,7 +1520,7 @@
    */
   function forceUpdate(callback) {
       // componentWillUpdate
-      applyComponentHook(this, 4, this.props, this.state)
+      applyComponentHook(this, 4, this.props, this.state, this.context)
 
 
       var oldNode = this['--vnode']
@@ -1526,7 +1546,7 @@
       }
 
       // componentDidUpdate
-      applyComponentHook(this, 5, this.props, this.state)
+      applyComponentHook(this, 5, this.props, this.state, this.context)
 
       // callback
       if (typeof callback === 'function') {
@@ -1573,8 +1593,6 @@
       if (type !== 0) {
           // render method
           render = type === 1 ? (vnode = shape, function() { return vnode; }) : shape;
-
-          // new shape
           shape = { render: render };
       } else {
           if (construct = shape.hasOwnProperty('constructor')) {
@@ -1588,20 +1606,19 @@
       }
 
       // create component class
-      function component(props) {
+      function component(props, context) {
           // constructor
           if (construct) {
-              constructor.call(this, props)
+              constructor.call(this, props, context)
           }
 
           // extend Component
-          Component.call(this, props)
+          Component.call(this, props, context)
       }
 
       // extends shape
       component.prototype = shape
-
-      // extends Component class
+          // extends Component class
       shape.setState = Component.prototype.setState
       shape.forceUpdate = Component.prototype.forceUpdate
       component.constructor = Component
@@ -1838,6 +1855,7 @@
           if (initial) {
               // dispatch mount
               // vnode.Type, vnode, container, vnode.DOMNode
+              //console.log(vnode.nodeName, 'initial')
               appendNode(nodeType, vnode, container, createNode(vnode, null, null))
 
               // register mount has been dispatched
@@ -1869,10 +1887,7 @@
           return renderer
       }
       // Try to convert the first parameter to the virtual DOM
-
-
       vnode = extractVirtualNode(subject)
-
 
       // Encapsulated into components, in order to use forceUpdate inside the render
       if (vnode.Type !== 2) {
