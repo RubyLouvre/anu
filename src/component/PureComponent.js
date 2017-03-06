@@ -45,3 +45,17 @@ export function shallowEqual(objA, objB) {
 
     return true
 }
+
+/**
+ * https://segmentfault.com/a/1190000008402834
+1. CreateClass, unless you really don't know anything about the grammar of the ES6,
+ otherwise don't use this way to define the component.
+2. Stateless Functional Component, for don't need internal state, 
+ and in less than life cycle function components, we can use this way to define components,
+ such as display a list of components, the list items can be defined as 
+ a Stateless Functional Component.
+3. PureComponent/Component with internal state, the use function of the life cycle of the Component,
+  we can use one of the two, but in most cases, I recommend using PureComponent more, 
+  because it provides better performance, forcing you to use immutable object at the same time,
+  keep good programming habits.
+ */

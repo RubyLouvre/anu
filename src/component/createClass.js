@@ -8,8 +8,8 @@ import Component from './Component'
  *
  * @public
  * 
- * @param  {(Object<string, any>|function(createElement): (Object<string, any>|function))} subject
- * @param  {Object<string, any>=} props
+ * @param  {Object|function} subject
+ * @param  {Object} props
  * @return {function(new:Component, Object<string, any>)}
  */
 export default function createClass(subject, props) {
@@ -33,7 +33,7 @@ export default function createClass(subject, props) {
     var vnode
     var constructor
     var render
-        // numbers, strings, arrays
+        // numbers, strings
     if (type !== 2 && shape.constructor !== Object && shape.render === void 0) {
         shape = extractVirtualNode(shape, { props: props })
     }

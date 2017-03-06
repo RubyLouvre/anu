@@ -1,4 +1,4 @@
-import { objEmpty, arrEmpty, createPortalShape, createComponentShape, createTextShape } from '../shapes'
+import { objEmpty, arrEmpty, createComponentShape, createTextShape } from '../shapes'
 //用到objEmpty, arrEmpty
 
 export default function createChild(child, children, index) {
@@ -6,10 +6,6 @@ export default function createChild(child, children, index) {
         // vnode
         if (child.Type !== void 0) {
             children[index++] = child
-        }
-        // portal
-        else if (child.nodeType !== void 0) {
-            children[index++] = createPortalShape(child, objEmpty, arrEmpty)
         } else {
             var type = typeof child
 

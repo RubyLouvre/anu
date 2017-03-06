@@ -56,7 +56,7 @@ export function createElementShape(type, props, children) {
         key: props !== objEmpty ? props.key : void 0
     }
 }
-
+//https://github.com/facebook/react/blob/v16.0.0-alpha.3/src/shared/ReactElementType.js
 /**
  * empty shape
  * 
@@ -127,27 +127,6 @@ export function createNodeShape(Type, type, props, children, DOMNode, instance, 
 }
 
 
-/**
- * portal shape
- *
- * @public
- * 
- * @param  {Node} DOMNode
- * @return {VNode}
- */
-export function createPortalShape(type, props, children) {
-    return {
-        Type: 4,
-        type: type.nodeName.toLowerCase(),
-        props: (props = props != null ? props : objEmpty),
-        children: (children == null ? [] : children),
-        DOMNode: type,
-        instance: null,
-        index: 0,
-        nodeName: null,
-        key: props !== objEmpty ? props.key : void 0
-    }
-}
 
 /**
  * svg shape
