@@ -6,6 +6,13 @@ function genCode(str, config) {
     return (new innerClass(str, config)).init()
 }
 
+function evalCode(str, config) {
+    var output = (new innerClass(str, config)).init()
+    console.log(output)
+    eval('0,' + output)
+}
+genCode.cache = {}
+
 function innerClass(str, config) {
     config = config || {}
     config.ns = config.ns || 'anu'
@@ -16,11 +23,20 @@ function innerClass(str, config) {
 }
 innerClass.prototype = {
     init: function() {
+
         if (typeof JSXParser === 'function') {
+            var useCache = this.input.length < 720
+            if (useCache && genCode.cache[this.input]) {
+                return genCode.cache[this.input]
+            }
             var array = (new JSXParser(this.input)).parse()
-            var evalCode = this.genChildren(array)
-            return evalCode
+            var evalString = this.genChildren(array)
+            if (useCache) {
+                return genCode.cache[this.input] = evalString
+            }
+            return evalString
         }
+
     },
     genTag: function(el) {
         var children = this.genChildren(el.children, el)

@@ -12,7 +12,7 @@ import { objEmpty, arrEmpty } from '../shapes'
  * @export
  * @param {Object} props
  */
-export default function Component(props) {
+export default function Component(props, context) {
     // initial props
     if (props === objEmpty) {
         props = {}
@@ -22,10 +22,9 @@ export default function Component(props) {
         var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
         assignDefaultProps(defaultProps, props)
     }
-
     // apply componentWillReceiveProps Hook
-    applyComponentHook(this, 2, props)
-
+    applyComponentHook(this, 2, props, context)
+    this.context = context
     this.props = props
 
     // assign state
@@ -61,7 +60,7 @@ Component.prototype = {
 function setState(newState, callback) {
 
     // shouldComponentUpdate 
-    if (applyComponentHook(this, 3, this.props, newState) === false) {
+    if (applyComponentHook(this, 3, this.props, newState, this.context) === false) {
         return
     }
     // update state
@@ -104,7 +103,7 @@ function updateState(oldState, newState) {
  */
 function forceUpdate(callback) {
     // componentWillUpdate
-    applyComponentHook(this, 4, this.props, this.state)
+    applyComponentHook(this, 4, this.props, this.state, this.context)
 
 
     var oldNode = this['--vnode']
@@ -130,7 +129,7 @@ function forceUpdate(callback) {
     }
 
     // componentDidUpdate
-    applyComponentHook(this, 5, this.props, this.state)
+    applyComponentHook(this, 5, this.props, this.state, this.context)
 
     // callback
     if (typeof callback === 'function') {
