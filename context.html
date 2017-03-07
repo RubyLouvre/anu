@@ -8,50 +8,22 @@
     <script src='./dist/evalJSX.js'></script>
     <script src='./dist/anu.js'></script>
     <script>
-        class Rect extends anu.Component {
-            static get defaultProps() {
-                return {
-                    width: 100,
-                    height: 120,
-                    x: 0,
-                    y: 0
-                }
-            }
-            getChildContext() {
-                return {
-                    aaa: 2222
-                }
-            }
-            render() {
-                return evalJSX('<Inner {...this.props} />', {
-                    Inner: Inner,
-                    this: this
-                })
-            }
-        }
-
-
-        function Inner(props, context) {
-            console.log('执行', props, context)
-            context = context || {
-                aaa: 33
-            }
-
-            return evalJSX(`<div>width {props.width} * height {props.height} {context.aaa}</div>`, {
-                this: this,
-                props: props,
-                context: context
+        function HelloComponent(props /* context */ ) {
+            return evalJSX(`<div>Hello {props.name}</div>`, {
+                props: props
             })
         }
-
         window.onload = function() {
-            anu.render(Rect, document.body)
+            var result = anu.render(evalJSX(`<HelloComponent name={222}>`, {
+                HelloComponent: HelloComponent
+            }), document.body)
+
+            console.log(result)
         }
     </script>
 </head>
 
 <body>
-
     <div>这个默认会被清掉</div>
 </body>
 
