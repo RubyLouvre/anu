@@ -86,7 +86,7 @@ https://github.com/RubyLouvre/anu/wiki
 </html>
 ```
 
-数组的定义方式 
+es6 Component
 ```javascript
  class Hello extends anu.Component {
     render() {
@@ -94,7 +94,7 @@ https://github.com/RubyLouvre/anu/wiki
     }
 }
 ```
-套嵌的组件
+nest Components
 
 ```javascript
 class World extends anu.Component {
