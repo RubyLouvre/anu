@@ -95,8 +95,8 @@ https://github.com/RubyLouvre/anu/wiki
 }
 ```
 套嵌的组件
+
 ```javascript
-var h = anu.createElement
 class World extends anu.Component {
     render() {
         return 'world'
@@ -112,6 +112,7 @@ window.onload = function() {
     console.log(result)
 }
 ```
+
 Stateless functional components 
 ```javascript
  function HelloComponent(props /* context */ ) {
