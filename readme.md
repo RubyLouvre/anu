@@ -6,6 +6,10 @@
 可能没有人员能玩转这东西。加之React也太大了，因此我推出了anu。它支持React 95％的功能。剩余功能以后以插件形式慢慢补充上
 
 
+Read the anu, the god of the Sumerian.
+
+A painless to use the React with JSX mini React frameworkAs the browser upgrade, es6, es7 of neologisms can be fully support, but the JSX is a kind of built of the syntactic sugar, so we have to rely on the Babel to compile.For small companies, this may not have the staff can win this thing.Combined with the React too big, so I introduced, anu.It supports the React function of 95%.In the form of a plug-in added slowly after remaining function
+
 ###目前没有支持的方法与对象
 
 1. PropTypes
