@@ -511,25 +511,11 @@
    */
   function applyComponentRender(component) {
       try {
-          var nextContext = {}
-              /*  var prevContext = component.context || {}
 
-                if (prevContext) {
-                    for (var i in prevContext) {
-                        nextContext[i] = prevContext[i]
-                    }
-                }
-                if (component.getChildContext) {
-                    var childContext = component.getChildContext()
-                    for (var i in childContext) {
-                        nextContext[i] = childContext[i]
-                    }
-                }
-                component.context = nextContext*/
 
-          console.log('applyComponentRender')
+          console.log('applyComponentRender', component.context)
           return extractVirtualNode(
-              component.render(component.props, component.state, nextContext),
+              component.render(component.props, component.state),
               component
           )
       } catch (e) {

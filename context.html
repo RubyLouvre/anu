@@ -5,63 +5,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script src='./dist/jsx-parser.js'></script>
-    <script src='./dist/genCode.js'></script>
+    <script src='./dist/evalJSX.js'></script>
     <script src='./dist/anu.js'></script>
     <script>
-        anu.PropTypes = {}
-        var Children = anu.createClass({
-
-            render: function() {
-                return evalJSX(`<span>{this.context.papa || '并没有context'}</span>`, {
-                    this: this
-                })
-            }
-        });
-
-
-        var Parent = anu.createClass({
-            getChildContext: function() {
-                return {
-                    papa: 'papa'
-                };
-            },
-
-            render: function() {
-                return evalJSX(`
-    	<div class="parent">{this.props.children}</div>`, {
-                    this: this
-                });
-            }
-        });
-
-        var App = anu.createClass({
-            getChildContext: function() {
-                return {
-                    value: '6666'
-                };
-            },
-            render: function() {
-                return evalJSX(`
-      <Parent><Children/></Parent>`, {
-                    this: this,
-                    Children: Children,
-                    Parent: Parent
-                });
-            }
-        });
+        function HelloComponent(props, context) {
+            return evalJSX(`<div>Hello {props.name}</div>`, {
+                this: this,
+                props: props
+            })
+        }
 
         window.onload = function() {
-            //render4个参数， vnode, container, callback
-            var result = anu.render(anu.createElement(App), document.getElementById('container'))
+            var result = anu.render(HelloComponent({
+                name: '这是属性'
+            }), document.body)
             console.log(result)
         }
     </script>
 </head>
 
 <body>
-    <div id="container">
-        <!-- This element's contents will be replaced with your component. -->
-    </div>
+
     <div>这个默认会被清掉</div>
 </body>
 

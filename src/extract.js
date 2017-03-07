@@ -16,25 +16,11 @@ import { objEmpty, arrEmpty } from './shapes'
  */
 export function applyComponentRender(component) {
     try {
-        var nextContext = {}
-            /*  var prevContext = component.context || {}
 
-              if (prevContext) {
-                  for (var i in prevContext) {
-                      nextContext[i] = prevContext[i]
-                  }
-              }
-              if (component.getChildContext) {
-                  var childContext = component.getChildContext()
-                  for (var i in childContext) {
-                      nextContext[i] = childContext[i]
-                  }
-              }
-              component.context = nextContext*/
+        console.log('applyComponentRender', component.context)
 
-        console.log('applyComponentRender')
-        return extractVirtualNode(
-            component.render(component.props, component.state, nextContext),
+        return extractVirtualNode(data,
+            component.render(component.props, component.state, component.context),
             component
         )
     } catch (e) {
