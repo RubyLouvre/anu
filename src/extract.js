@@ -16,15 +16,11 @@ import { objEmpty, arrEmpty } from './shapes'
  */
 export function applyComponentRender(component) {
     try {
-
-        console.log('applyComponentRender', component.context)
-
-        return extractVirtualNode(data,
+        return extractVirtualNode(
             component.render(component.props, component.state, component.context),
             component
         )
     } catch (e) {
-        console.log(e)
         return createEmptyShape()
     }
 
@@ -62,20 +58,18 @@ export function extractVirtualNode(subject, component) {
                     subject['--listening'] = true
                 }
                 return extractVirtualNode(subject(), component)
-            }
-            // component constructor
-            else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
+            } else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
+                // component constructor
                 return createComponentShape(subject, objEmpty, arrEmpty)
-            }
-            // function
-            else {
+            } else {
+                // stateless component
                 return extractVirtualNode(subject(component != null ? component.props : {}), component)
             }
             break
 
         default:
             //VNode
-            if (subject.Type) {
+            if (subject.Type) { //createElement(Class) --> createComponentShape 
                 return subject
             }
             //  component instance
@@ -95,33 +89,23 @@ export function extractVirtualNode(subject, component) {
 
 
 /**
- * extract function node
- *
- * @param  {function}            type
- * @param  {Object<string, any>} props
- * @return {VNode}
+ * Stateless Component
+ * 
+ * @export
+ * @param {any} type
+ * @param {any} props
+ * @param {any} context
+ * @returns
  */
-export function extractFunctionNode(type, props) {
+export function extractFunctionNode(type, props, context) {
     try {
         var vnode
-        var func = type['--func'] !== void 0
-
-        if (func === false) {
-            vnode = type(createElement)
+        try {
+            vnode = type(props, context)
+            type['--func'] = true
+        } catch (e) {
+            vnode = createEmptyShape()
         }
-
-        if (func || vnode.Type !== void 0) {
-            try {
-                vnode = type(props)
-
-                if (func === false) {
-                    type['--func'] = true
-                }
-            } catch (e) {
-                vnode = createEmptyShape()
-            }
-        }
-
         return vnode
     }
     // error thrown
@@ -141,15 +125,11 @@ export function extractFunctionNode(type, props) {
  * @return {VNode} 
  */
 export function extractComponentNode(subject, instance, parent) {
-    var owner
-
-    var vnode
-
+    var owner, vnode
     var type = subject.type
-
     var props = subject.props
-
-    // default props
+    var context = parent && parent.instance.context || {}
+        // default props
     if (type.defaultProps !== void 0) {
         // clone default props if props is not an empty object, else use defaultProps as props
         props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps)
@@ -170,7 +150,7 @@ export function extractComponentNode(subject, instance, parent) {
     }
     // Stateless functional component
     else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
-        vnode = extractFunctionNode(type, props)
+        vnode = extractFunctionNode(type, props, context)
         if (vnode.Type === void 0) {
             // create component
             owner = createClass(vnode, props)
@@ -185,7 +165,7 @@ export function extractComponentNode(subject, instance, parent) {
     }
     // create component instance
 
-    var component = subject.instance = new owner(props, parent && parent.instance.context)
+    var component = subject.instance = new owner(props, context)
         // subject.info.context = component.context
         // get render vnodes
     var vnode = applyComponentRender(component)

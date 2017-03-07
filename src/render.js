@@ -32,7 +32,6 @@ export default function render(subject, target, callback, hydration) {
         if (initial) {
             // dispatch mount
             // vnode.Type, vnode, container, vnode.DOMNode
-            //console.log(vnode.nodeName, 'initial')
             appendNode(nodeType, vnode, container, createNode(vnode, null, null))
 
             // register mount has been dispatched

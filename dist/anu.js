@@ -511,15 +511,11 @@
    */
   function applyComponentRender(component) {
       try {
-
-          console.log('applyComponentRender', component.context)
-
           return extractVirtualNode(
               component.render(component.props, component.state, component.context),
               component
           )
       } catch (e) {
-          console.log(e)
           return createEmptyShape()
       }
 
@@ -535,7 +531,6 @@
   function extractVirtualNode(subject, component) {
       // empty
       var type = Object.prototype.toString.call(subject).slice(8, -1)
-      console.log(type)
       switch (type) {
           // booleans
           case 'Boolean':
@@ -558,14 +553,11 @@
                       subject['--listening'] = true
                   }
                   return extractVirtualNode(subject(), component)
-              }
-              // component constructor
-              else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
+              } else if (subject.prototype !== void 0 && subject.prototype.render !== void 0) {
+                  // component constructor
                   return createComponentShape(subject, objEmpty, arrEmpty)
-              }
-              // function
-              else {
-
+              } else {
+                  // stateless component
                   return extractVirtualNode(subject(component != null ? component.props : {}), component)
               }
               break
@@ -603,25 +595,12 @@
   function extractFunctionNode(type, props, context) {
       try {
           var vnode
-          var func = type['--func'] !== void 0
-
-          if (func === false) {
-              vnode = type(createElement)
+          try {
+              vnode = type(props, context)
+              type['--func'] = true
+          } catch (e) {
+              vnode = createEmptyShape()
           }
-
-          if (func || vnode.Type !== void 0) {
-              try {
-                  console.log(props, context)
-                  vnode = type(props, context)
-
-                  if (func === false) {
-                      type['--func'] = true
-                  }
-              } catch (e) {
-                  vnode = createEmptyShape()
-              }
-          }
-
           return vnode
       }
       // error thrown
@@ -1852,7 +1831,6 @@
           if (initial) {
               // dispatch mount
               // vnode.Type, vnode, container, vnode.DOMNode
-              //console.log(vnode.nodeName, 'initial')
               appendNode(nodeType, vnode, container, createNode(vnode, null, null))
 
               // register mount has been dispatched
