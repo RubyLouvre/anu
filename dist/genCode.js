@@ -4,13 +4,35 @@ var rComponent = /^(this|[A-Z])/
 
 function genCode(str, config) {
     var a = (new innerClass(str, config)).init()
-    console.log(a, '1111')
     return a
 }
+var cacheFns = {}
 
-function evalCode(str, config) {
+function evalJSX(str, obj, config) {
     var output = (new innerClass(str, config)).init()
-    eval('0,' + output)
+    if (!obj)
+        obj = {}
+    if (typeof anu === 'function')
+        obj.anu = anu
+    var args = 'var args0 = arguments[0];'
+    for (var i in obj) {
+        if (i !== 'this')
+            args += 'var ' + i + ' = args0["' + i + '"];'
+    }
+    args += 'return ' + output
+    var fn
+    if (cacheFns[args]) {
+        fn = cacheFns[args]
+    } else {
+        fn = cacheFns[args] = Function(args)
+    }
+    try {
+        var a = fn.call(obj.this, obj)
+        return a
+    } catch (e) {
+        console.log(e)
+    }
+
 }
 genCode.cache = {}
 

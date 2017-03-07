@@ -88,11 +88,10 @@ export default function render(subject, target, callback, hydration) {
         component = vnode.instance
     } else {
         // destructive mount
-        //  if (hydration === false) {
         while (container.firstChild) {
             container.removeChild(container.firstChild)
         }
-        //   }
+
 
         renderer()
     }

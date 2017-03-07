@@ -29,6 +29,7 @@ export function createComponentShape(type, props, children) {
         DOMNode: null,
         instance: null,
         index: 0,
+        uuid: new Date - 0,
         nodeName: null,
         key: props !== objEmpty ? props.key : void 0
     }
@@ -74,6 +75,7 @@ export function createEmptyShape() {
         DOMNode: null,
         instance: null,
         index: 0,
+
         nodeName: null,
         key: void 0
     }

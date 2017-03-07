@@ -35,6 +35,7 @@
           DOMNode: null,
           instance: null,
           index: 0,
+          uuid: new Date - 0,
           nodeName: null,
           key: props !== objEmpty ? props.key : void 0
       }
@@ -80,6 +81,7 @@
           DOMNode: null,
           instance: null,
           index: 0,
+
           nodeName: null,
           key: void 0
       }
@@ -510,26 +512,28 @@
   function applyComponentRender(component) {
       try {
           var nextContext = {}
-          var prevContext = component.context || {}
+              /*  var prevContext = component.context || {}
 
-          if (prevContext) {
-              for (var i in prevContext) {
-                  nextContext[i] = prevContext[i]
-              }
-          }
-          if (component.getChildContext) {
-              var childContext = component.getChildContext()
-              for (var i in childContext) {
-                  nextContext[i] = childContext[i]
-              }
-          }
-          component.context = nextContext
-          console.log('applyComponentRender', nextContext)
+                if (prevContext) {
+                    for (var i in prevContext) {
+                        nextContext[i] = prevContext[i]
+                    }
+                }
+                if (component.getChildContext) {
+                    var childContext = component.getChildContext()
+                    for (var i in childContext) {
+                        nextContext[i] = childContext[i]
+                    }
+                }
+                component.context = nextContext*/
+
+          console.log('applyComponentRender')
           return extractVirtualNode(
               component.render(component.props, component.state, nextContext),
               component
           )
       } catch (e) {
+          console.log(e)
           return createEmptyShape()
       }
 
@@ -693,9 +697,8 @@
       var component = subject.instance = new owner(props, parent && parent.instance.context)
           // subject.info.context = component.context
           // get render vnodes
-      var vnode = applyComponentRender(component, subject)
-
-      // if render returns a component, extract component recursive
+      var vnode = applyComponentRender(component)
+          // if render returns a component, extract component recursive
       if (vnode.Type === 2) {
           vnode = extractComponentNode(vnode, component, parent || subject)
       }
@@ -935,7 +938,7 @@
    * @param  {string?}    namespace
    * @return {Node}
    */
-  function createNode(subject, component, namespace) {
+  function createNode(subject, component, namespace, parent) {
       var nodeType = subject.Type
           // create text node element	
       if (nodeType === 3) {
@@ -952,7 +955,7 @@
           return subject.DOMNode = element.cloneNode(true)
 
       } else { // create DOMNode
-          vnode = nodeType === 2 ? extractComponentNode(subject, null, null) : subject
+          vnode = nodeType === 2 ? extractComponentNode(subject, null, parent) : subject
       }
 
       var Type = vnode.Type
@@ -1022,14 +1025,13 @@
           // append children
           for (var i = 0; i < length; i++) {
               var newChild = children[i]
-                  //  newChild.context = 
                   // hoisted, clone
               if (newChild.DOMNode !== null) {
                   newChild = children[i] = cloneNode$1(newChild)
               }
 
               // append child
-              appendNode(newChild.Type, newChild, element, createNode(newChild, component, namespace))
+              appendNode(newChild.Type, newChild, element, createNode(newChild, component, namespace, subject))
           }
       }
 
@@ -1440,7 +1442,16 @@
       }
       // apply componentWillReceiveProps Hook
       context = context || {}
+      if (this.getChildContext) {
+          var childContext = this.getChildContext()
+          for (var i in childContext) {
+              context[i] = childContext[i]
+          }
+      }
       applyComponentHook(this, 2, props, context)
+
+
+      console.log(context)
 
       this.context = context
       this.props = props
@@ -1911,11 +1922,10 @@
           component = vnode.instance
       } else {
           // destructive mount
-          //  if (hydration === false) {
           while (container.firstChild) {
               container.removeChild(container.firstChild)
           }
-          //   }
+
 
           renderer()
       }

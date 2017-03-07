@@ -10,25 +10,27 @@
     <script>
         anu.PropTypes = {}
         var Children = anu.createClass({
-            contextTypes: {
-                value: anu.PropTypes.string
-            },
+
             render: function() {
-                return eval('0,' + genCode(`<div>{this.context.value || '并没有context'}</div>`));
+                return evalJSX(`<span>{this.context.papa || '并没有context'}</span>`, {
+                    this: this
+                })
             }
         });
 
 
         var Parent = anu.createClass({
-            childContextTypes: {
-                value: anu.PropTypes.string
+            getChildContext: function() {
+                return {
+                    papa: 'papa'
+                };
             },
 
             render: function() {
-                return eval('0,' + genCode(`
-    	<div id="333">
-        {this.context.value}
-      </div>`));
+                return evalJSX(`
+    	<div class="parent">{this.props.children}</div>`, {
+                    this: this
+                });
             }
         });
 
@@ -39,9 +41,12 @@
                 };
             },
             render: function() {
-
-                return eval('0,' + genCode(`
-      <Parent/>`));
+                return evalJSX(`
+      <Parent><Children/></Parent>`, {
+                    this: this,
+                    Children: Children,
+                    Parent: Parent
+                });
             }
         });
 

@@ -24,7 +24,16 @@ export default function Component(props, context) {
     }
     // apply componentWillReceiveProps Hook
     context = context || {}
+    if (this.getChildContext) {
+        var childContext = this.getChildContext()
+        for (var i in childContext) {
+            context[i] = childContext[i]
+        }
+    }
     applyComponentHook(this, 2, props, context)
+
+
+    console.log(context)
 
     this.context = context
     this.props = props

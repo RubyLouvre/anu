@@ -17,26 +17,28 @@ import { objEmpty, arrEmpty } from './shapes'
 export function applyComponentRender(component) {
     try {
         var nextContext = {}
-        var prevContext = component.context || {}
+            /*  var prevContext = component.context || {}
 
-        if (prevContext) {
-            for (var i in prevContext) {
-                nextContext[i] = prevContext[i]
-            }
-        }
-        if (component.getChildContext) {
-            var childContext = component.getChildContext()
-            for (var i in childContext) {
-                nextContext[i] = childContext[i]
-            }
-        }
-        component.context = nextContext
-        console.log('applyComponentRender', nextContext)
+              if (prevContext) {
+                  for (var i in prevContext) {
+                      nextContext[i] = prevContext[i]
+                  }
+              }
+              if (component.getChildContext) {
+                  var childContext = component.getChildContext()
+                  for (var i in childContext) {
+                      nextContext[i] = childContext[i]
+                  }
+              }
+              component.context = nextContext*/
+
+        console.log('applyComponentRender')
         return extractVirtualNode(
             component.render(component.props, component.state, nextContext),
             component
         )
     } catch (e) {
+        console.log(e)
         return createEmptyShape()
     }
 
@@ -200,9 +202,8 @@ export function extractComponentNode(subject, instance, parent) {
     var component = subject.instance = new owner(props, parent && parent.instance.context)
         // subject.info.context = component.context
         // get render vnodes
-    var vnode = applyComponentRender(component, subject)
-
-    // if render returns a component, extract component recursive
+    var vnode = applyComponentRender(component)
+        // if render returns a component, extract component recursive
     if (vnode.Type === 2) {
         vnode = extractComponentNode(vnode, component, parent || subject)
     }
