@@ -23,9 +23,10 @@ https://github.com/RubyLouvre/anu/wiki
 
 ###低版本浏览器可能需要以下 语言补丁
 
-1. Array.isArray
-2. Object.assign
-3. JSON.stringify
+1. [Array.isArray](https://github.com/juliangruber/isarray/blob/master/index.js)
+2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
+3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
+4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
 
 ###依赖 jsx-parser与evalJSX
 

@@ -64,12 +64,9 @@
 
                 }
             }
-            console.log(quote)
             if (typeof quote === 'string') {
-                console.log(str, retryIndex + 1, retryStr)
                 return clearString(str, map, retryIndex + 1, retryStr)
             }
-            console.log('----')
             return newStr
         }
 
