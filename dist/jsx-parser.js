@@ -18,19 +18,22 @@
         }
     })()
 
-    function clearString(str, map) {
+    function clearString(str, map, i, newStr) {
         map = map || {}
+        i = i || 0
+        newStr = newStr || ''
         var curStr = '',
-            newStr = '',
-            quote, curID
-        for (var i = 0, n = str.length; i < n; i++) {
+            retryIndex, retryStr,
+            quote = false,
+            curID
+        for (var n = str.length; i < n; i++) {
             var c = str.charAt(i)
             if (!quote) {
                 if (c === '"' || c === "'") {
                     quote = c
                     curStr = c
-                    curID = getStrID()
-
+                    retryIndex = i
+                    retryStr = newStr + c
                 } else {
                     newStr += c
                 }
@@ -38,13 +41,45 @@
                 curStr += c
                 if (quote === c) {
                     quote = false
+                    curID = getStrID()
                     map[curID] = curStr
                     newStr += curID
                 }
 
             }
         }
+        if (typeof quote === 'string') {
+            return clearString(str, map, retryIndex + 1, retryStr)
+        }
         return newStr
+    }
+
+    function readString(str, i, ret) {
+        var end = false,
+            s = 0,
+            i = i || 0
+        ret = ret || [];
+        for (var n = str.length; i < n; i++) {
+            var c = str.charAt(i);
+            if (!end) {
+                if (c === "'") {
+                    end = "'";
+                    s = i;
+                } else if (c === '"') {
+                    end = '"';
+                    s = i;
+                }
+            } else {
+                if (c === end) {
+                    ret.push(str.slice(s, i + 1));
+                    end = false;
+                }
+            }
+        }
+        if (end !== false) {
+            return readString(str, s + 1, ret)
+        }
+        return ret;
     }
 
     function clearBrace(str, map) {

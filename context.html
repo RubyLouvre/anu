@@ -7,24 +7,75 @@
     <script src='./dist/jsx-parser.js'></script>
     <script src='./dist/evalJSX.js'></script>
     <script src='./dist/anu.js'></script>
-    <script>
-        function HelloComponent(props /* context */ ) {
-            return evalJSX(`<div>Hello {props.name}</div>`, {
-                props: props
-            })
-        }
-        window.onload = function() {
-            var result = anu.render(evalJSX(`<HelloComponent name={222}>`, {
-                HelloComponent: HelloComponent
-            }), document.body)
 
-            console.log(result)
-        }
-    </script>
 </head>
 
 <body>
-    <div>这个默认会被清掉</div>
+    <div id="test">
+        <div ms-controller="control">
+            <div title="首页">首页</div>
+            <div title="Profile">
+                i's
+            </div>
+            <div title="htth">345345</div>
+            <div title="qwe2">dfgdgdfg</div>
+            <button class="btn btn-info" :click="@addNew">addNew</button>
+            <button class="btn btn-info" :click="@addRemoved">addRemoved</button>
+        </div>
+    </div>
+
+    <textarea id="output" style="width:100%;height:500px;"></textarea>
+    <script>
+        var strIndex = 0
+
+        function getStrID() {
+            return '??' + (strIndex++) + ' '
+        }
+
+        function clearString(str, map, i, newStr) {
+            map = map || {}
+            i = i || 0
+            newStr = newStr || ''
+            var curStr = '',
+                retryIndex, retryStr,
+                quote = false,
+                curID
+            for (var n = str.length; i < n; i++) {
+                var c = str.charAt(i)
+                if (!quote) {
+                    if (c === '"' || c === "'") {
+                        quote = c
+                        console.log(quote, '!!!')
+                        curStr = c
+                        retryIndex = i
+                        retryStr = newStr + c
+                    } else {
+                        newStr += c
+                    }
+                } else {
+                    curStr += c
+                    if (quote === c) {
+                        console.log(quote)
+                        quote = false
+                        curID = getStrID()
+                        map[curID] = curStr
+                        newStr += curID
+                    }
+
+                }
+            }
+            console.log(quote)
+            if (typeof quote === 'string') {
+                console.log(str, retryIndex + 1, retryStr)
+                return clearString(str, map, retryIndex + 1, retryStr)
+            }
+            console.log('----')
+            return newStr
+        }
+
+
+        console.log(clearString(document.getElementById('test').innerHTML))
+    </script>
 </body>
 
 </html>
