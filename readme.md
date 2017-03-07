@@ -128,3 +128,16 @@ window.onload = function() {
     console.log(result)
 }
 ```
+
+###Disguised as a React
+
+```
+var React = window.anu
+evalJSX.globalNs = "React"。
+
+var myComponent = React.createClass({
+    render(){
+      return evalJSX(`<div>{this.props.name || "xxx"}</div>`,{this: this})
+    }
+})
+```

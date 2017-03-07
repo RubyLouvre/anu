@@ -3,6 +3,10 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
         typeof define === 'function' && define.amd ? define(factory) : global.evalJSX = factory();
 })(this, function() {
+    // var vnode = evalJSX(str, data, config)
+    // config只需要一个参数，ns，默认是'anu',当你配置成'React'，就会生成 React.createElement
+    //也可以全局配置它 evalJSX.globalNs = 'React' 就会生成 React.createElement
+
     var rComponent = /^(this|[A-Z])/
     var cacheFns = {}
     var cacheStr = {}
@@ -38,8 +42,7 @@
 
     function innerClass(str, config) {
         config = config || {}
-        config.ns = config.ns || 'anu'
-        config.type = config.type || 'eval'
+        config.ns = evalJSX.globalNs || config.ns || 'anu'
         this.input = str
         this.ns = config.ns
         this.type = config.type
