@@ -65,8 +65,7 @@ export default function render(subject, target, callback, hydration) {
     }
     // Try to convert the first parameter to the virtual DOM
     vnode = extractVirtualNode(subject)
-
-    // Encapsulated into components, in order to use forceUpdate inside the render
+        // Encapsulated into components, in order to use forceUpdate inside the render
     if (vnode.Type !== 2) {
         vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty)
     }

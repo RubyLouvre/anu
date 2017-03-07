@@ -21,18 +21,17 @@
                 args += 'var ' + i + ' = args0["' + i + '"];'
         }
         args += 'return ' + output
-        var fn
-        if (cacheFns[args]) {
-            fn = cacheFns[args]
-        } else {
-            fn = cacheFns[args] = Function(args)
-        }
-
         try {
+            var fn
+            if (cacheFns[args]) {
+                fn = cacheFns[args]
+            } else {
+                fn = cacheFns[args] = Function(args)
+            }
             var a = fn.call(obj.this, obj)
             return a
         } catch (e) {
-            console.log(e)
+            console.log(e, args)
         }
 
     }
@@ -73,17 +72,19 @@
                 ',' + children + ')'
         },
         genProps: function(props, el) {
-            if (!props) {
+
+            if (!props && !el.spreadAttribute) {
                 return 'null'
             }
-
             var ret = '{'
             for (var i in props) {
                 ret += JSON.stringify(i) + ':' + this.genPropValue(props[i]) + ',\n'
             }
-
-            return ret.replace(/\,\n$/, '') + '}'
-
+            ret = ret.replace(/\,\n$/, '') + '}'
+            if (el.spreadAttribute) {
+                return 'Object.assign({},' + el.spreadAttribute + ',' + ret + ')'
+            }
+            return ret
         },
         genPropValue: function(val) {
             if (typeof val === 'string') {

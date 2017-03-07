@@ -512,10 +512,10 @@
   function applyComponentRender(component) {
       try {
 
-
           console.log('applyComponentRender', component.context)
+
           return extractVirtualNode(
-              component.render(component.props, component.state),
+              component.render(component.props, component.state, component.context),
               component
           )
       } catch (e) {
@@ -535,6 +535,7 @@
   function extractVirtualNode(subject, component) {
       // empty
       var type = Object.prototype.toString.call(subject).slice(8, -1)
+      console.log(type)
       switch (type) {
           // booleans
           case 'Boolean':
@@ -564,13 +565,14 @@
               }
               // function
               else {
+
                   return extractVirtualNode(subject(component != null ? component.props : {}), component)
               }
               break
 
           default:
               //VNode
-              if (subject.Type) {
+              if (subject.Type) { //createElement(Class) --> createComponentShape 
                   return subject
               }
               //  component instance
@@ -590,13 +592,15 @@
 
 
   /**
-   * extract function node
-   *
-   * @param  {function}            type
-   * @param  {Object<string, any>} props
-   * @return {VNode}
+   * Stateless Component
+   * 
+   * @export
+   * @param {any} type
+   * @param {any} props
+   * @param {any} context
+   * @returns
    */
-  function extractFunctionNode(type, props) {
+  function extractFunctionNode(type, props, context) {
       try {
           var vnode
           var func = type['--func'] !== void 0
@@ -607,7 +611,8 @@
 
           if (func || vnode.Type !== void 0) {
               try {
-                  vnode = type(props)
+                  console.log(props, context)
+                  vnode = type(props, context)
 
                   if (func === false) {
                       type['--func'] = true
@@ -636,15 +641,11 @@
    * @return {VNode} 
    */
   function extractComponentNode(subject, instance, parent) {
-      var owner
-
-      var vnode
-
+      var owner, vnode
       var type = subject.type
-
       var props = subject.props
-
-      // default props
+      var context = parent && parent.instance.context || {}
+          // default props
       if (type.defaultProps !== void 0) {
           // clone default props if props is not an empty object, else use defaultProps as props
           props !== objEmpty ? assignDefaultProps(type.defaultProps, props) : (props = type.defaultProps)
@@ -665,7 +666,7 @@
       }
       // Stateless functional component
       else if (type.constructor === Function && (type.prototype === void 0 || type.prototype.render === void 0)) {
-          vnode = extractFunctionNode(type, props)
+          vnode = extractFunctionNode(type, props, context)
           if (vnode.Type === void 0) {
               // create component
               owner = createClass(vnode, props)
@@ -680,7 +681,7 @@
       }
       // create component instance
 
-      var component = subject.instance = new owner(props, parent && parent.instance.context)
+      var component = subject.instance = new owner(props, context)
           // subject.info.context = component.context
           // get render vnodes
       var vnode = applyComponentRender(component)
@@ -1422,8 +1423,9 @@
           props = {}
       }
       // apply getDefaultProps Hook
+      // var defaultProps = this.constructor.defaultProps
       if (this.getDefaultProps) {
-          var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
+          var defaultProps = this.getDefaultProps()
           assignDefaultProps(defaultProps, props)
       }
       // apply componentWillReceiveProps Hook
@@ -1436,8 +1438,6 @@
       }
       applyComponentHook(this, 2, props, context)
 
-
-      console.log(context)
 
       this.context = context
       this.props = props
@@ -1885,8 +1885,7 @@
       }
       // Try to convert the first parameter to the virtual DOM
       vnode = extractVirtualNode(subject)
-
-      // Encapsulated into components, in order to use forceUpdate inside the render
+          // Encapsulated into components, in order to use forceUpdate inside the render
       if (vnode.Type !== 2) {
           vnode = createComponentShape(createClass(vnode, null), objEmpty, arrEmpty)
       }

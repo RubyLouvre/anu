@@ -18,8 +18,9 @@ export default function Component(props, context) {
         props = {}
     }
     // apply getDefaultProps Hook
+    // var defaultProps = this.constructor.defaultProps
     if (this.getDefaultProps) {
-        var defaultProps = this.getDefaultProps(props === objEmpty ? props : null)
+        var defaultProps = this.getDefaultProps()
         assignDefaultProps(defaultProps, props)
     }
     // apply componentWillReceiveProps Hook
@@ -32,8 +33,6 @@ export default function Component(props, context) {
     }
     applyComponentHook(this, 2, props, context)
 
-
-    console.log(context)
 
     this.context = context
     this.props = props
