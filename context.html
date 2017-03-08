@@ -14,64 +14,14 @@
     <div id="test">
         <div ms-controller="control">
             <div title="首页">首页</div>
-            <div title="Profile">
-                i's
-            </div>
-            <div title="htth">345345</div>
-            <div title="qwe2">dfgdgdfg</div>
-            <button class="btn btn-info" :click="@addNew">addNew</button>
-            <button class="btn btn-info" :click="@addRemoved">addRemoved</button>
+
         </div>
     </div>
 
-    <textarea id="output" style="width:100%;height:500px;"></textarea>
     <script>
-        var strIndex = 0
-
-        function getStrID() {
-            return '??' + (strIndex++) + ' '
-        }
-
-        function clearString(str, map, i, newStr) {
-            map = map || {}
-            i = i || 0
-            newStr = newStr || ''
-            var curStr = '',
-                retryIndex, retryStr,
-                quote = false,
-                curID
-            for (var n = str.length; i < n; i++) {
-                var c = str.charAt(i)
-                if (!quote) {
-                    if (c === '"' || c === "'") {
-                        quote = c
-                        console.log(quote, '!!!')
-                        curStr = c
-                        retryIndex = i
-                        retryStr = newStr + c
-                    } else {
-                        newStr += c
-                    }
-                } else {
-                    curStr += c
-                    if (quote === c) {
-                        console.log(quote)
-                        quote = false
-                        curID = getStrID()
-                        map[curID] = curStr
-                        newStr += curID
-                    }
-
-                }
-            }
-            if (typeof quote === 'string') {
-                return clearString(str, map, retryIndex + 1, retryStr)
-            }
-            return newStr
-        }
-
-
-        console.log(clearString(document.getElementById('test').innerHTML))
+        var a = "<div onClick={()=><div/>}>{aaa}</div>"
+        var s = new JSXParser(a)
+        console.log(s.parse())
     </script>
 </body>
 

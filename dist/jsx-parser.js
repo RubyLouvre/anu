@@ -336,8 +336,8 @@
         str = clearString(str, this.map)
         var logic = []
         do {
-            //According to the "return < div / >", "(< / div >", "[< div / >",, "< div >" segmentation
-            var match = str.match(/((?:return\s|\(|\[\|,|^)\s*)\<[a-z]/i)
+            //According to the "return <div / >", "(</div >", "[<div/>",＝><div/>, "<div >" segmentation
+            var match = str.match(/((?:return\s|\(|\[\|,|=\>|^)\s*)\<[a-z]/i)
             if (match) {
                 var splitIndex = match.index + match[1].length
                 var leftContent = str.slice(0, splitIndex)
