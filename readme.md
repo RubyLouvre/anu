@@ -137,7 +137,7 @@ window.onload = function() {
 
 ###Disguised as a React
 
-```
+```javascript
 var React = window.anu
 evalJSX.globalNs = "React"。
 
