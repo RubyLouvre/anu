@@ -30,6 +30,9 @@ https://github.com/RubyLouvre/anu/wiki
 3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
 4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
 
+或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
+
+
 ###依赖 jsx-parser与evalJSX
 
 ```html
