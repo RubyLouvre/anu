@@ -22,5 +22,9 @@
   "devDependencies": {
     "rollup": "^0.41.4",
     "rollup-plugin-replace": "^1.1.1"
+  },
+  "dependencies": {
+    "babel-loader": "^6.4.1",
+    "webpack": "^2.2.1"
   }
 }

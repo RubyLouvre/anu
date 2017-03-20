@@ -1,0 +1,382 @@
+{
+    "errors": [],
+    "warnings": [],
+    "version": "2.2.1",
+    "hash": "592cd681b9a2d61e0762",
+    "time": 105,
+    "publicPath": "",
+    "assetsByChunkName": {
+        "main": "React.js"
+    },
+    "assets": [{
+        "name": "React.js",
+        "size": 12582,
+        "chunks": [
+            0
+        ],
+        "chunkNames": [
+            "main"
+        ],
+        "emitted": true
+    }],
+    "entrypoints": {
+        "main": {
+            "chunks": [
+                0
+            ],
+            "assets": [
+                "React.js"
+            ]
+        }
+    },
+    "chunks": [{
+        "id": 0,
+        "rendered": true,
+        "initial": true,
+        "entry": true,
+        "extraAsync": false,
+        "size": 7710,
+        "names": [
+            "main"
+        ],
+        "files": [
+            "React.js"
+        ],
+        "hash": "88d0ba3b51f2e435f470",
+        "parents": [],
+        "modules": [{
+                "id": 0,
+                "identifier": "/Users/qitmac000408/anu/src/util.js",
+                "name": "./src/util.js",
+                "index": 3,
+                "index2": 0,
+                "size": 535,
+                "cacheable": true,
+                "built": true,
+                "optional": false,
+                "prefetched": false,
+                "chunks": [
+                    0
+                ],
+                "assets": [],
+                "issuer": "/Users/qitmac000408/anu/src/React.js",
+                "issuerId": 1,
+                "issuerName": "./src/React.js",
+                "failed": false,
+                "errors": 0,
+                "warnings": 0,
+                "reasons": [{
+                        "moduleId": 1,
+                        "moduleIdentifier": "/Users/qitmac000408/anu/src/React.js",
+                        "module": "./src/React.js",
+                        "moduleName": "./src/React.js",
+                        "type": "harmony import",
+                        "userRequest": "./util",
+                        "loc": "2:0-31"
+                    },
+                    {
+                        "moduleId": 2,
+                        "moduleIdentifier": "/Users/qitmac000408/anu/src/Component.js",
+                        "module": "./src/Component.js",
+                        "moduleName": "./src/Component.js",
+                        "type": "harmony import",
+                        "userRequest": "./util",
+                        "loc": "1:1-48"
+                    }
+                ],
+                "usedExports": [
+                    "extend",
+                    "clone",
+                    "isEvent"
+                ],
+                "providedExports": [
+                    "extend",
+                    "clone",
+                    "isEvent"
+                ],
+                "depth": 2,
+                "source": "/**\n * 复制一个对象的属性到另一个对象\n * \n * @param {any} obj \n * @param {any} props \n * @returns \n */\nexport function extend(obj, props) {\n    if (props) {\n        for (let i in props) {\n            obj[i] = props[i]\n        }\n    }\n    return obj\n}\n/**\n * 创建一个对象的浅克隆副本\n * \n * @param {any} obj \n * @returns \n */\nexport function clone(obj) {\n    return extend({}, obj)\n}\n\n/**\n * 判定否为与事件相关\n * \n * @param {any} name \n * @param {any} val \n * @returns \n */\nexport function isEvent(name, val) {\n    return /^on\\w/.test(name) && typeof val === 'function'\n}"
+            },
+            {
+                "id": 1,
+                "identifier": "/Users/qitmac000408/anu/src/React.js",
+                "name": "./src/React.js",
+                "index": 1,
+                "index2": 2,
+                "size": 1807,
+                "cacheable": true,
+                "built": true,
+                "optional": false,
+                "prefetched": false,
+                "chunks": [
+                    0
+                ],
+                "assets": [],
+                "issuer": "multi ./src/React.js",
+                "issuerId": 3,
+                "issuerName": "multi ./src/React.js",
+                "failed": false,
+                "errors": 0,
+                "warnings": 0,
+                "reasons": [{
+                    "moduleId": 3,
+                    "moduleIdentifier": "multi ./src/React.js",
+                    "module": "multi ./src/React.js",
+                    "moduleName": "multi ./src/React.js",
+                    "type": "single entry",
+                    "userRequest": "./src/React.js",
+                    "loc": "main:100000"
+                }],
+                "usedExports": true,
+                "providedExports": [
+                    "render",
+                    "createElement",
+                    "Component"
+                ],
+                "depth": 1,
+                "source": "import { Component, toDOM } from './Component'\nimport { extend } from './util'\n\nvar React = {\n    render,\n    createElement,\n    Component\n}\n\n/**\n * 创建虚拟DOM\n * \n * @param {string} type \n * @param {object} props \n * @param {array} children \n * @returns \n */\nfunction createElement(type, configs = {}, children) {\n    var props = {}\n    extend(props, configs)\n    var c = [].slice.call(arguments, 2)\n    if (!c.length && props.children) {\n        c = props.children\n    }\n    c = flatChildren(c)\n    props.children = Object.freeze(c)\n    Object.freeze(props)\n    return {\n        type: type,\n        props: props\n    }\n}\n/**\n * 遍平化children，并合并相邻的简单数据类型\n * \n * @param {array} children \n * @param {any} [ret=[]] \n * @returns \n */\nfunction flatChildren(children, ret = []) {\n    for (let i = 0, n = children.length; i < n; i++) {\n        let el = children[i]\n        if (el == null) { //迅速减少要continue的元素\n            el = ''\n        }\n        let type = typeof el\n        if (el === '' || type === 'boolean') {\n            continue\n        }\n        if (/number|string/.test(type)) {\n\n            if (ret.merge) {\n                ret[ret.length - 1] += el\n            } else {\n                el = String(el)\n                ret.push(el)\n                ret.merge = true\n            }\n        } else if (Array.isArray(el)) {\n            flatChildren(el, ret)\n        } else {\n            ret.push(el)\n            ret.merge = false\n        }\n\n    }\n    return ret\n}\n/**\n * \n * @param {any} vnode \n * @param {any} container \n */\nfunction render(vnode, container) {\n    container.textContent = ''\n    while (container.firstChild) {\n        container.removeChild(container.firstChild)\n    }\n    container.appendChild(toDOM(vnode))\n}\n\n\n\nwindow.ReactDOM = React\n\nexport {\n    render,\n    createElement,\n    Component\n};"
+            },
+            {
+                "id": 2,
+                "identifier": "/Users/qitmac000408/anu/src/Component.js",
+                "name": "./src/Component.js",
+                "index": 2,
+                "index2": 1,
+                "size": 5340,
+                "cacheable": true,
+                "built": true,
+                "optional": false,
+                "prefetched": false,
+                "chunks": [
+                    0
+                ],
+                "assets": [],
+                "issuer": "/Users/qitmac000408/anu/src/React.js",
+                "issuerId": 1,
+                "issuerName": "./src/React.js",
+                "failed": false,
+                "errors": 0,
+                "warnings": 0,
+                "reasons": [{
+                    "moduleId": 1,
+                    "moduleIdentifier": "/Users/qitmac000408/anu/src/React.js",
+                    "module": "./src/React.js",
+                    "moduleName": "./src/React.js",
+                    "type": "harmony import",
+                    "userRequest": "./Component",
+                    "loc": "1:0-46"
+                }],
+                "usedExports": [
+                    "Component",
+                    "toDOM"
+                ],
+                "providedExports": [
+                    "Component",
+                    "diffProps",
+                    "toDOM"
+                ],
+                "depth": 2,
+                "source": " import { clone, extend, isEvent } from './util'\n\n /**\n  * \n  * \n  * @param {any} props \n  * @param {any} context \n  */\n export function Component(props, context) {\n     this.context = context\n     this.props = props\n     if (!this.state)\n         this.state = {}\n }\n\n\n Component.prototype = {\n\n     setState(state) {\n         let s = this.state;\n         this.prevState = this.prevState || clone(s);\n         extend(s, state);\n         renderComponent(this)\n     },\n\n     forceUpdate() {\n         renderComponent(this);\n     },\n\n     render() {}\n\n }\n\n /**\n  * 渲染组件\n  * \n  * @param {any} instance \n  */\n function renderComponent(instance) {\n\n     var { props, state, context, vnode } = instance\n     if (instance.shouldComponentUpdate &&\n         instance.shouldComponentUpdate(props, state, context) === false) {\n         return\n     }\n     if (instance.componentWillUpdate) {\n         instance.componeneWillUpdate(props, state, context);\n     }\n\n     var rendered = instance.render()\n     if (instance.getChildContext) {\n         context = extend(clone(context), instance.getChildContext());\n     }\n     var dom = vnode.dom\n\n     dom = diff(dom, rendered, context, dom.parentNode)\n\n     instance.vnode = rendered\n     rendered.dom = dom\n     delete instance.prevState //方便下次能更新this.prevState\n\n     if (instance.componenDidUpdate) {\n         instance.componentDidUpdate(props, state, context);\n     }\n\n }\n /**\n  * \n  * \n  * @param {any} dom \n  * @param {any} vnode \n  * @param {any} context \n  * @param {any} parent \n  * @returns \n  */\n function diff(dom, vnode, context, parent) {\n     var oldProps = dom['__props'] || {}\n     if (dom.nodeName.toLowerCase() !== vnode.type) {\n         var nextDom = document.createElement(type)\n         while (dom.firstChild) {\n             nextDom.appendChild(dom.firstChild)\n         }\n         if (parent) {\n             parent.replaceChild(nextDom, dom)\n         }\n         dom = nextDom\n     }\n     diffProps(dom, oldProps, vnode.props)\n     diffChildren(dom, vnode.props.children)\n     return dom\n }\n\n\n /**\n  * 修改dom的属性与事件\n  * \n  * @param {any} dom \n  * @param {any} props \n  * @param {any} nextProps \n  */\n export function diffProps(dom, props, nextProps) {\n     for (var i in nextProps) {\n         if (i === 'children') {\n             continue\n         }\n         var val = nextProps[i]\n         if (isEvent(i, val)) {\n             if (!props[i]) { //添加新事件\n                 dom.addEventListener(i.slice(2).toLowerCase(), val)\n             }\n             continue\n         }\n         if (val !== props[i]) {\n             //移除属性\n             if (val === false || val === void 666 || val === null) {\n                 dom.removeAttribute(i)\n                 delete props[i]\n             } else { //添加新属性\n                 dom.setAttribute(i, val + '')\n                 props[i] = val\n             }\n         }\n     }\n     for (var i in props) {\n         if (!(i in nextProps)) {\n             if (isEvent(i, props[i])) { //移除事件\n                 dom.removeEventListener(i.slice(2).toLowerCase(), props[i])\n             } else { //移除属性\n                 dom.removeAttribute(i)\n             }\n             delete props[i]\n         }\n     }\n }\n /**\n  * \n  * \n  * @param {any} dom \n  * @param {any} newChildren \n  * @param {any} context \n  */\n function diffChildren(dom, newChildren, context) {\n     var childNodes = dom.childNodes\n     for (var i = 0, n = newChildren.length; i < n; i++) {\n         //思路，由易到难，\n         var el = newChildren[i]\n         if (el == null) {\n             el = ''\n         }\n         var type = typeof el\n             //这种情况不用比较，直接移除从数组中移除它\n         if (el === '' || type === 'boolean') {\n             newChildren.splice(i, 1)\n             i--\n             n--\n             continue\n         }\n         //处理对应真实DOM不存在的情况，那么不用比较，直接toDOM与append\n         var node = childNodes[i]\n         if (!node) {\n             dom.appendChild(el.dom = toDOM(el))\n         }\n         //再处理文本虚拟DOM的情况\n         if (type === 'string') {\n             if (node.nodeType === 3) { //类型一致，只比较nodeValue\n                 if (node.nodeValue !== el) {\n                     node.nodeValue = el + ''\n                 }\n             } else {\n                 dom.replaceChild(createText(el, texts), node)\n                 elements.push(node)\n             }\n\n         } else { //type === 'object'\n             if (node.nodeType === 3) {\n                 dom.replaceChild(el.dom = toDOM(el), node)\n             } else {\n                 diff(node, el, context, dom)\n             }\n         }\n     }\n     while (childNodes[n]) {\n         dom.removeChild(childNodes[n])\n     }\n }\n\n /**\n  * \n  * @param {any} vnode \n  * @returns \n  */\n export function toDOM(vnode) {\n     if (vnode == null) {\n         vnode = ''\n     }\n     var type = typeof vnode\n     var props = vnode.props\n     if (typeof vnode.type === 'function') {\n         var instance = new vnode.type(props, {})\n         vnode = instance.render()\n         instance.vnode = vnode //保存到vnode到实例中\n         return vnode.dom = toDOM(vnode) //完美的程序总能递归\n     }\n     if (/number|string/.test(type)) {\n         return document.createTextNode(vnode + '')\n     }\n     var dom = document.createElement(vnode.type)\n     diffProps(dom, dom['__props'] = {}, props)\n     props.children.forEach(function(el) {\n         dom.appendChild(toDOM(el))\n     })\n     return dom\n }"
+            },
+            {
+                "id": 3,
+                "identifier": "multi ./src/React.js",
+                "name": "multi ./src/React.js",
+                "index": 0,
+                "index2": 3,
+                "size": 28,
+                "cacheable": true,
+                "built": true,
+                "optional": false,
+                "prefetched": false,
+                "chunks": [
+                    0
+                ],
+                "assets": [],
+                "issuer": null,
+                "issuerId": null,
+                "issuerName": null,
+                "failed": false,
+                "errors": 0,
+                "warnings": 0,
+                "reasons": [],
+                "usedExports": true,
+                "providedExports": null,
+                "depth": 0
+            }
+        ],
+        "filteredModules": 0,
+        "origins": [{
+            "moduleId": 3,
+            "module": "multi ./src/React.js",
+            "moduleIdentifier": "multi ./src/React.js",
+            "moduleName": "multi ./src/React.js",
+            "loc": "",
+            "name": "main",
+            "reasons": []
+        }]
+    }],
+    "modules": [{
+            "id": 0,
+            "identifier": "/Users/qitmac000408/anu/src/util.js",
+            "name": "./src/util.js",
+            "index": 3,
+            "index2": 0,
+            "size": 535,
+            "cacheable": true,
+            "built": true,
+            "optional": false,
+            "prefetched": false,
+            "chunks": [
+                0
+            ],
+            "assets": [],
+            "issuer": "/Users/qitmac000408/anu/src/React.js",
+            "issuerId": 1,
+            "issuerName": "./src/React.js",
+            "failed": false,
+            "errors": 0,
+            "warnings": 0,
+            "reasons": [{
+                    "moduleId": 1,
+                    "moduleIdentifier": "/Users/qitmac000408/anu/src/React.js",
+                    "module": "./src/React.js",
+                    "moduleName": "./src/React.js",
+                    "type": "harmony import",
+                    "userRequest": "./util",
+                    "loc": "2:0-31"
+                },
+                {
+                    "moduleId": 2,
+                    "moduleIdentifier": "/Users/qitmac000408/anu/src/Component.js",
+                    "module": "./src/Component.js",
+                    "moduleName": "./src/Component.js",
+                    "type": "harmony import",
+                    "userRequest": "./util",
+                    "loc": "1:1-48"
+                }
+            ],
+            "usedExports": [
+                "extend",
+                "clone",
+                "isEvent"
+            ],
+            "providedExports": [
+                "extend",
+                "clone",
+                "isEvent"
+            ],
+            "depth": 2,
+            "source": "/**\n * 复制一个对象的属性到另一个对象\n * \n * @param {any} obj \n * @param {any} props \n * @returns \n */\nexport function extend(obj, props) {\n    if (props) {\n        for (let i in props) {\n            obj[i] = props[i]\n        }\n    }\n    return obj\n}\n/**\n * 创建一个对象的浅克隆副本\n * \n * @param {any} obj \n * @returns \n */\nexport function clone(obj) {\n    return extend({}, obj)\n}\n\n/**\n * 判定否为与事件相关\n * \n * @param {any} name \n * @param {any} val \n * @returns \n */\nexport function isEvent(name, val) {\n    return /^on\\w/.test(name) && typeof val === 'function'\n}"
+        },
+        {
+            "id": 1,
+            "identifier": "/Users/qitmac000408/anu/src/React.js",
+            "name": "./src/React.js",
+            "index": 1,
+            "index2": 2,
+            "size": 1807,
+            "cacheable": true,
+            "built": true,
+            "optional": false,
+            "prefetched": false,
+            "chunks": [
+                0
+            ],
+            "assets": [],
+            "issuer": "multi ./src/React.js",
+            "issuerId": 3,
+            "issuerName": "multi ./src/React.js",
+            "failed": false,
+            "errors": 0,
+            "warnings": 0,
+            "reasons": [{
+                "moduleId": 3,
+                "moduleIdentifier": "multi ./src/React.js",
+                "module": "multi ./src/React.js",
+                "moduleName": "multi ./src/React.js",
+                "type": "single entry",
+                "userRequest": "./src/React.js",
+                "loc": "main:100000"
+            }],
+            "usedExports": true,
+            "providedExports": [
+                "render",
+                "createElement",
+                "Component"
+            ],
+            "depth": 1,
+            "source": "import { Component, toDOM } from './Component'\nimport { extend } from './util'\n\nvar React = {\n    render,\n    createElement,\n    Component\n}\n\n/**\n * 创建虚拟DOM\n * \n * @param {string} type \n * @param {object} props \n * @param {array} children \n * @returns \n */\nfunction createElement(type, configs = {}, children) {\n    var props = {}\n    extend(props, configs)\n    var c = [].slice.call(arguments, 2)\n    if (!c.length && props.children) {\n        c = props.children\n    }\n    c = flatChildren(c)\n    props.children = Object.freeze(c)\n    Object.freeze(props)\n    return {\n        type: type,\n        props: props\n    }\n}\n/**\n * 遍平化children，并合并相邻的简单数据类型\n * \n * @param {array} children \n * @param {any} [ret=[]] \n * @returns \n */\nfunction flatChildren(children, ret = []) {\n    for (let i = 0, n = children.length; i < n; i++) {\n        let el = children[i]\n        if (el == null) { //迅速减少要continue的元素\n            el = ''\n        }\n        let type = typeof el\n        if (el === '' || type === 'boolean') {\n            continue\n        }\n        if (/number|string/.test(type)) {\n\n            if (ret.merge) {\n                ret[ret.length - 1] += el\n            } else {\n                el = String(el)\n                ret.push(el)\n                ret.merge = true\n            }\n        } else if (Array.isArray(el)) {\n            flatChildren(el, ret)\n        } else {\n            ret.push(el)\n            ret.merge = false\n        }\n\n    }\n    return ret\n}\n/**\n * \n * @param {any} vnode \n * @param {any} container \n */\nfunction render(vnode, container) {\n    container.textContent = ''\n    while (container.firstChild) {\n        container.removeChild(container.firstChild)\n    }\n    container.appendChild(toDOM(vnode))\n}\n\n\n\nwindow.ReactDOM = React\n\nexport {\n    render,\n    createElement,\n    Component\n};"
+        },
+        {
+            "id": 2,
+            "identifier": "/Users/qitmac000408/anu/src/Component.js",
+            "name": "./src/Component.js",
+            "index": 2,
+            "index2": 1,
+            "size": 5340,
+            "cacheable": true,
+            "built": true,
+            "optional": false,
+            "prefetched": false,
+            "chunks": [
+                0
+            ],
+            "assets": [],
+            "issuer": "/Users/qitmac000408/anu/src/React.js",
+            "issuerId": 1,
+            "issuerName": "./src/React.js",
+            "failed": false,
+            "errors": 0,
+            "warnings": 0,
+            "reasons": [{
+                "moduleId": 1,
+                "moduleIdentifier": "/Users/qitmac000408/anu/src/React.js",
+                "module": "./src/React.js",
+                "moduleName": "./src/React.js",
+                "type": "harmony import",
+                "userRequest": "./Component",
+                "loc": "1:0-46"
+            }],
+            "usedExports": [
+                "Component",
+                "toDOM"
+            ],
+            "providedExports": [
+                "Component",
+                "diffProps",
+                "toDOM"
+            ],
+            "depth": 2,
+            "source": " import { clone, extend, isEvent } from './util'\n\n /**\n  * \n  * \n  * @param {any} props \n  * @param {any} context \n  */\n export function Component(props, context) {\n     this.context = context\n     this.props = props\n     if (!this.state)\n         this.state = {}\n }\n\n\n Component.prototype = {\n\n     setState(state) {\n         let s = this.state;\n         this.prevState = this.prevState || clone(s);\n         extend(s, state);\n         renderComponent(this)\n     },\n\n     forceUpdate() {\n         renderComponent(this);\n     },\n\n     render() {}\n\n }\n\n /**\n  * 渲染组件\n  * \n  * @param {any} instance \n  */\n function renderComponent(instance) {\n\n     var { props, state, context, vnode } = instance\n     if (instance.shouldComponentUpdate &&\n         instance.shouldComponentUpdate(props, state, context) === false) {\n         return\n     }\n     if (instance.componentWillUpdate) {\n         instance.componeneWillUpdate(props, state, context);\n     }\n\n     var rendered = instance.render()\n     if (instance.getChildContext) {\n         context = extend(clone(context), instance.getChildContext());\n     }\n     var dom = vnode.dom\n\n     dom = diff(dom, rendered, context, dom.parentNode)\n\n     instance.vnode = rendered\n     rendered.dom = dom\n     delete instance.prevState //方便下次能更新this.prevState\n\n     if (instance.componenDidUpdate) {\n         instance.componentDidUpdate(props, state, context);\n     }\n\n }\n /**\n  * \n  * \n  * @param {any} dom \n  * @param {any} vnode \n  * @param {any} context \n  * @param {any} parent \n  * @returns \n  */\n function diff(dom, vnode, context, parent) {\n     var oldProps = dom['__props'] || {}\n     if (dom.nodeName.toLowerCase() !== vnode.type) {\n         var nextDom = document.createElement(type)\n         while (dom.firstChild) {\n             nextDom.appendChild(dom.firstChild)\n         }\n         if (parent) {\n             parent.replaceChild(nextDom, dom)\n         }\n         dom = nextDom\n     }\n     diffProps(dom, oldProps, vnode.props)\n     diffChildren(dom, vnode.props.children)\n     return dom\n }\n\n\n /**\n  * 修改dom的属性与事件\n  * \n  * @param {any} dom \n  * @param {any} props \n  * @param {any} nextProps \n  */\n export function diffProps(dom, props, nextProps) {\n     for (var i in nextProps) {\n         if (i === 'children') {\n             continue\n         }\n         var val = nextProps[i]\n         if (isEvent(i, val)) {\n             if (!props[i]) { //添加新事件\n                 dom.addEventListener(i.slice(2).toLowerCase(), val)\n             }\n             continue\n         }\n         if (val !== props[i]) {\n             //移除属性\n             if (val === false || val === void 666 || val === null) {\n                 dom.removeAttribute(i)\n                 delete props[i]\n             } else { //添加新属性\n                 dom.setAttribute(i, val + '')\n                 props[i] = val\n             }\n         }\n     }\n     for (var i in props) {\n         if (!(i in nextProps)) {\n             if (isEvent(i, props[i])) { //移除事件\n                 dom.removeEventListener(i.slice(2).toLowerCase(), props[i])\n             } else { //移除属性\n                 dom.removeAttribute(i)\n             }\n             delete props[i]\n         }\n     }\n }\n /**\n  * \n  * \n  * @param {any} dom \n  * @param {any} newChildren \n  * @param {any} context \n  */\n function diffChildren(dom, newChildren, context) {\n     var childNodes = dom.childNodes\n     for (var i = 0, n = newChildren.length; i < n; i++) {\n         //思路，由易到难，\n         var el = newChildren[i]\n         if (el == null) {\n             el = ''\n         }\n         var type = typeof el\n             //这种情况不用比较，直接移除从数组中移除它\n         if (el === '' || type === 'boolean') {\n             newChildren.splice(i, 1)\n             i--\n             n--\n             continue\n         }\n         //处理对应真实DOM不存在的情况，那么不用比较，直接toDOM与append\n         var node = childNodes[i]\n         if (!node) {\n             dom.appendChild(el.dom = toDOM(el))\n         }\n         //再处理文本虚拟DOM的情况\n         if (type === 'string') {\n             if (node.nodeType === 3) { //类型一致，只比较nodeValue\n                 if (node.nodeValue !== el) {\n                     node.nodeValue = el + ''\n                 }\n             } else {\n                 dom.replaceChild(createText(el, texts), node)\n                 elements.push(node)\n             }\n\n         } else { //type === 'object'\n             if (node.nodeType === 3) {\n                 dom.replaceChild(el.dom = toDOM(el), node)\n             } else {\n                 diff(node, el, context, dom)\n             }\n         }\n     }\n     while (childNodes[n]) {\n         dom.removeChild(childNodes[n])\n     }\n }\n\n /**\n  * \n  * @param {any} vnode \n  * @returns \n  */\n export function toDOM(vnode) {\n     if (vnode == null) {\n         vnode = ''\n     }\n     var type = typeof vnode\n     var props = vnode.props\n     if (typeof vnode.type === 'function') {\n         var instance = new vnode.type(props, {})\n         vnode = instance.render()\n         instance.vnode = vnode //保存到vnode到实例中\n         return vnode.dom = toDOM(vnode) //完美的程序总能递归\n     }\n     if (/number|string/.test(type)) {\n         return document.createTextNode(vnode + '')\n     }\n     var dom = document.createElement(vnode.type)\n     diffProps(dom, dom['__props'] = {}, props)\n     props.children.forEach(function(el) {\n         dom.appendChild(toDOM(el))\n     })\n     return dom\n }"
+        },
+        {
+            "id": 3,
+            "identifier": "multi ./src/React.js",
+            "name": "multi ./src/React.js",
+            "index": 0,
+            "index2": 3,
+            "size": 28,
+            "cacheable": true,
+            "built": true,
+            "optional": false,
+            "prefetched": false,
+            "chunks": [
+                0
+            ],
+            "assets": [],
+            "issuer": null,
+            "issuerId": null,
+            "issuerName": null,
+            "failed": false,
+            "errors": 0,
+            "warnings": 0,
+            "reasons": [],
+            "usedExports": true,
+            "providedExports": null,
+            "depth": 0
+        }
+    ],
+    "filteredModules": 0,
+    "children": []
+}

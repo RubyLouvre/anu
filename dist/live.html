@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>React组件生命周期</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" type="text/css" href="./live.css">
+</head>
+
+<body>
+    <div id="container"></div>
+</body>
+<script type="text/javascript" src="./qreact.js"></script>
+<script type="text/javascript" src="./jsx-parser.js"></script>
+
+<script type="text/javascript" src="./evalJSX.js"></script>
+<!--<script type="text/javascript" src="./lifeCycle2113.js"></script>-->
+
+<script>
+    var React = window.qreact
+    var ReactDom = window.qreact
+    evalJSX.globalNs = 'React'
+    class LifeCycle extends React.Component {
+        constructor(props) {
+            super(props);
+            console.log("LifeCycle construct");
+            this.state = {
+                str: "hello"
+            };
+        }
+
+        componentWillMount() {
+            console.log("LifeCycle componentWillMount");
+        }
+
+        componentDidMount() {
+            console.log("LifeCycle componentDidMount");
+        }
+
+        componentWillReceiveProps(nextProps) {
+            console.log("LifeCycle componentWillReceiveProps");
+        }
+
+        shouldComponentUpdate() {
+            console.log("LifeCycle shouldComponentUpdate");
+            return true; // 记得要返回true
+        }
+
+        componentWillUpdate() {
+            console.log("LifeCycle componentWillUpdate");
+        }
+
+        componentDidUpdate() {
+            console.log("LifeCycle componentDidUpdate");
+        }
+
+        componentWillUnmount() {
+            console.log("LifeCycle componentWillUnmount");
+        }
+
+        setTheState() {
+            let s = "hello";
+            if (this.state.str === s) {
+                s = "HELLO";
+            }
+            this.setState({
+                str: s
+            });
+        }
+
+        forceItUpdate() {
+            this.forceUpdate();
+        }
+
+        render() {
+            console.log("LifeCycle render");
+            return evalJSX(`
+            <div>
+                <span>{"Props:"}<h2>{parseInt(this.props.num)}</h2></span>
+                <br />
+                <span>{"State:"}<h2>{this.state.str}</h2></span>
+            </div>`, {
+                this: this
+            });
+        }
+    }
+
+    class Container extends React.Component {
+        constructor(props) {
+            super(props);
+            console.log("Container construct");
+            this.state = {
+                num: Math.random() * 100
+            };
+        }
+
+        propsChange() {
+            this.setState({
+                num: Math.random() * 100
+            });
+        }
+
+        setLifeCycleState() {
+            this.refs.rLifeCycle.setTheState();
+        }
+
+        forceLifeCycleUpdate() {
+            this.refs.rLifeCycle.forceItUpdate();
+        }
+
+        unmountLifeCycle() {
+            // 这里卸载父组件也会导致卸载子组件
+            React.unmountComponentAtNode(document.getElementById("container"));
+        }
+
+        parentForceUpdate() {
+            this.forceUpdate();
+        }
+
+        render() {
+            console.log('Container render')
+            return evalJSX(`
+            <div>
+                <a href="javascript:;" className="weui_btn weui_btn_primary" onClick={this.propsChange.bind(this)}>propsChange{this.state.num}</a>
+                <a href="javascript:;" className="weui_btn weui_btn_primary" onClick={this.setLifeCycleState.bind(this)}>setState</a>
+                <a href="javascript:;" className="weui_btn weui_btn_primary" onClick={this.forceLifeCycleUpdate.bind(this)}>forceUpdate</a>
+                <a href="javascript:;" className="weui_btn weui_btn_primary" onClick={this.unmountLifeCycle.bind(this)}>unmount</a>
+                <a href="javascript:;" className="weui_btn weui_btn_primary" onClick={this.parentForceUpdate.bind(this)}>parentForceUpdateWithoutChange</a>
+                <LifeCycle ref="rLifeCycle" num={this.state.num}></LifeCycle>
+            </div>`, {
+                this: this,
+                LifeCycle: LifeCycle
+            });
+        }
+    }
+    ReactDom.render(
+        evalJSX(`<Container/>`, {
+            Container: Container
+        }),
+        document.getElementById('container')
+    );
+</script>
+
+</html>

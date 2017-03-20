@@ -4,36 +4,53 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script src='./dist/jsx-parser.js'></script>
-    <script src='./dist/evalJSX.js'></script>
-    <script src='./dist/anu.js'></script>
+    <script src="./dist/React.js"></script>
+    <!-- <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
-        class CounterButton extends anu.PureComponent {
+        class Root extends React.Component {
             constructor(props) {
-                super(props);
+                super(props)
                 this.state = {
-                    count: 1
-                };
+                    items: ['aaa', 'bbb', 'ccc']
+                }
             }
 
+            handleClick() {
+                let {
+                    items
+                } = this.state
 
-            render() {
-                return evalJSX(`<button
-        color={this.props.color}
-        onClick={() => { this.setState(state => ({count: state.count + 1})) } }>
-        Count: {this.state.count}
-      </button>`, {
-                    this: this
+                items.push('new-item')
+                console.log(items)
+                this.setState({
+                    items
                 })
 
             }
+            render() {
+                return React.createElement('div', null,
+                    React.createElement('button', {
+                        onClick: this.handleClick.bind(this)
+                    }, '点我'),
+                    React.createElement(ItemList, {
+                        items: this.state.items
+                    })
+                )
+            }
         }
+        class ItemList extends React.PureComponent {
 
-
+            render() {
+                return React.createElement('ul', null,
+                    this.props.items.map(function(el) {
+                        return React.createElement('li', null, el)
+                    })
+                )
+            }
+        }
         window.onload = function() {
-            //render4个参数， vnode, container, callback
-            var result = anu.render(CounterButton, document.body)
-            console.log(result)
+            ReactDOM.render(React.createElement(Root, null), document.body)
         }
     </script>
 </head>

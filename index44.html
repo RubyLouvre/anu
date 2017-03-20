@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <!-- <script src='./dist/jsx-parser.js'></script>
+    <script src='./dist/evalJSX.js'></script>
+    <!--<script src='./dist/anu.js'></script>-->
+    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>
+    <script>
+        function Tree() {
+            this.lines = [
+                [1]
+            ]
+        }
+        var pp = Tree.prototype
+        pp.genNode = function(line, i) {
+            var top = line - 1
+            var topLine = this.lines[top] || [0, 0, 0]
+            var curLine = this.lines[line]
+            if (!curLine) {
+                curLine = this.lines[line] = []
+            }
+            if (i in curLine)
+                return
+            curLine[i] = (topLine[i - 1] || 0) + (topLine[i] || 0)
+        }
+        pp.genLine = function(n) {
+            for (var i = 0; i <= n; i++) {
+                this.genNode(n, i)
+            }
+        }
+        pp.print = function() {
+            for (var i = 0; i < this.lines.length; i++) {
+                var el = this.lines[i]
+                console.log(el.join(', '))
+            }
+        }
+        var tree = new Tree
+        for (var i = 0; i < 10; i++) {
+            tree.genLine(i)
+        }
+
+        tree.print()
+    </script>
+</head>
+
+<body>
+    <div>这个默认会被清掉</div>
+</body>
+
+</html>
