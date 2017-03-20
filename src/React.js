@@ -8,25 +8,36 @@ var React = {
     PureComponent,
     Component
 }
-
-/**
- * 创建虚拟DOM
- * 
- * @param {string} type 
- * @param {object} props 
- * @param {array} children 
- * @returns 
- */
+var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
+    /**
+     * 创建虚拟DOM
+     * 
+     * @param {string} type 
+     * @param {object} props 
+     * @param {array} children 
+     * @returns 
+     */
 function createElement(type, configs = {}, children) {
     var props = {}
     extend(props, configs)
     var c = [].slice.call(arguments, 2)
-    if (!c.length && props.children) {
-        c = props.children
+    var useEmpty = true
+    if (!c.length) {
+        if (props.children) {
+            c = props.children
+            useEmpty = false
+        }
+    } else {
+        useEmpty = false
     }
-    c = flatChildren(c)
-    delete c.merge
-    props.children = Object.freeze(c)
+    if (useEmpty) {
+        c = shallowEqualHack
+    } else {
+        c = flatChildren(c)
+        Object.freeze(c)
+        delete c.merge
+    }
+    props.children = c
     Object.freeze(props)
     return {
         type: type,

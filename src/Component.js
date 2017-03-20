@@ -18,6 +18,7 @@
  export function Component(props, context) {
      this.context = context
      this.props = props
+
      if (!this.state)
          this.state = {}
  }
@@ -48,13 +49,11 @@
   */
  function updateComponent(instance) {
      var { props, state, context, vnode, prevProps, prevState } = instance
-     prevProps = prevProps || props
      prevState = prevState || state
      instance.props = prevProps
      instance.state = prevState
      var nextProps = props
      var nextState = state
-     console.log(nextState, prevState, prevProps === nextProps)
      if (applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
          return dom //注意
      }
@@ -75,7 +74,7 @@
      instance.vnode = rendered
      rendered.dom = dom
      delete instance.prevState //方便下次能更新this.prevState
-     delete instance.prevProps
+     instance.prevProps = props // 更新prevProps
      applyComponentHook(instance, 6, nextProps, nextState, context)
      return dom //注意
  }
@@ -121,11 +120,12 @@
                  if (instance) {
                      //如果类型相同，使用旧的实例进行 render新的虚拟DOM
                      vnode.instance = instance
-                     instance.prevProps = instance.prevProps || prevProps //重点！
-                     applyComponentHook(instance, 3, vnode.props)
-
-                     console.log(instance.prevProps === vnode.props, vnode.props, instance.prevProps, instance.constructor.name)
-                     instance.props = vnode.props //props，创建创建新的vnode
+                     var prevProps = instance.prevProps
+                     var nextProps = vnode.props
+                     instance.props = prevProps
+                     applyComponentHook(instance, 3, nextProps)
+                     instance.prevProps = prevProps
+                     instance.props = nextProps
                      return updateComponent(instance, context)
 
                  } else {
@@ -262,7 +262,6 @@
          }
          var instance = new Type(props, context)
          Component.call(instance, props, context) //重点！！
-
          applyComponentHook(instance, 0) //willMount
 
          var rendered = instance.render()
@@ -271,9 +270,11 @@
              vnode.instance.childInstance = instance
          }
 
-         //压扁组件Vnode为普通Vnode
-         extend(vnode, rendered)
+
+         instance.prevProps = vnode.props //实例化时prevProps
          instance.vnode = vnode
+             //压扁组件Vnode为普通Vnode
+         extend(vnode, rendered)
          vnode.instance = instance
          return toVnode(vnode, context)
      } else {

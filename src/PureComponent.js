@@ -17,7 +17,6 @@ extend(fn, Component.prototype)
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     var a = shallowEqual(this.props, nextProps)
     var b = shallowEqual(this.state, nextState)
-    console.log(a, b)
     return !a || !b
 }
 fn.constructor = PureComponent

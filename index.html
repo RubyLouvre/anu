@@ -35,10 +35,11 @@
                     }, '点我'),
                     React.createElement(ItemList, {
                         items: this.state.items
-                    })
+                    }) //{type:ItemList,props:{items, children}}
                 )
             }
         }
+
         class ItemList extends React.PureComponent {
 
             render() {
