@@ -8,6 +8,7 @@
     <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
+        var index = 0
         class Hello extends React.Component {
             constructor(props) {
                 super(props)
@@ -15,8 +16,16 @@
                     items: [1, 2, 3]
                 }
             }
+            componentWillMount() {
+                console.log('hello componentWillMount')
 
+            }
+            componentDidMount() {
+                console.log('hello componentDidMount')
+
+            }
             render() {
+
                 return React.createElement('div', Object.assign({}, this.props, {
                         hello: 'hello',
                         onClick: () => {
@@ -30,7 +39,7 @@
                     }),
                     this.state.items.map(el => React.createElement('p', null, el)),
 
-                    React.createElement(World), this.props.children)
+                    getRandomNum(2, 10) % 2 == 0 ? React.createElement('span', null, 3333) : React.createElement(World), this.props.children)
             }
         }
 
@@ -49,22 +58,22 @@
                 }
             }
             componentWillUpdate() {
-                console.log('componentWillUpdate')
+                console.log('world componentWillUpdate')
             }
             componentDidUpdate() {
-                console.log('componentDidUpdate')
+                console.log('world componentDidUpdate')
 
             }
             componentWillMount() {
-                console.log('componentWillMount')
+                console.log('world componentWillMount')
 
             }
             componentDidMount() {
-                console.log('componentDidMount')
+                console.log('world componentDidMount')
 
             }
             componentWillUnmount() {
-                console.log('componentWillUnmount')
+                console.log('world componentWillUnmount')
 
             }
             render() {

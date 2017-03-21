@@ -40,12 +40,6 @@
       return /^on\w/.test(name) && typeof val === 'function'
   }
 
-  /**
-   * 收集该虚拟DOM的所有组件实例，方便依次执行它们的生命周期钩子
-   * 
-   * @param {any} instance 
-   * @returns 
-   */
   function getInstances(instance) {
       var instances = [instance]
       while (instance = instance.parentInstance) {
@@ -190,7 +184,6 @@
        }
 
        var dom = vnode.dom //dom肯定存在
-
        dom = diff(dom, rendered, context, dom.parentNode, instance.vnode)
 
        instance.vnode = rendered
@@ -209,7 +202,7 @@
        var instance = vnode.instance
        applyComponentHook(instance, 7) //7
        if (instance) {
-           instance.vnode = instance.props = instance.context = vnode.instance = vnode.dom = void 666
+           // vnode.instance = void 666
        }
 
        vnode.props.children.forEach(function(el) {
@@ -229,60 +222,54 @@
     * @param {any} parent 
     * @returns 
     */
-   function diff(dom, vnode, context, parentNode, prevVnode) {
+   function diff(dom, vnode, context, parentNode, prevVnode) { //updateComponent
        var prevProps = prevVnode.props　 || {}
        var prevChildren = prevProps.children || []
        var Type = vnode.type
 
-       if (prevVnode.type !== Type) {
-           //更新组件
-           if (typeof Type === 'function') {
-               var instance = prevVnode.instance
-               if (instance) {
-                   instance = matchInstance(instance, Type)
-                   if (instance) {
-                       //如果类型相同，使用旧的实例进行 render新的虚拟DOM
-                       vnode.instance = instance
-                       var nextProps = vnode.props
-                           //处理非状态组件
-                       if (instance.statelessRender) {
-                           instance.props = nextProps
-                           instance.prevProps = prevProps
-                           return updateComponent(instance, context)
-                       }
+       //更新组件
+       var isComponent = typeof Type === 'function'
+       var instance = prevVnode.instance
 
-                       var prevProps = instance.prevProps
-
-                       instance.props = prevProps
-                       applyComponentHook(instance, 3, nextProps)
-                       instance.prevProps = prevProps
-                       instance.props = nextProps
-                       return updateComponent(instance, context)
-
-                   } else {
-                       removeComponent(prevVnode)
-                   }
+       if (instance) {
+           instance = isComponent && matchInstance(instance, Type)
+           if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
+               vnode.instance = instance
+               var nextProps = vnode.props
+                   //处理非状态组件
+               if (instance.statelessRender) {
+                   instance.props = nextProps
+                   instance.prevProps = prevProps
+                   return updateComponent(instance, context)
                }
-               //这里创建新组件
-               return toDOM(vnode, context, parentNode, prevVnode.dom)
-           }
-           if (prevVnode.instance) {
-               removeComponent(prevVnode)
-           }
 
-           //更新普通元素节点
+               var prevProps = instance.prevProps
+
+               instance.props = prevProps
+               applyComponentHook(instance, 3, nextProps)
+               instance.prevProps = prevProps
+               instance.props = nextProps
+               return updateComponent(instance, context)
+           } else {
+               if (prevVnode.type !== Type) {
+                   removeComponent(prevVnode)
+               }
+           }
+       }
+       if (isComponent)
+           return toDOM(vnode, context, parentNode, prevVnode.dom)
+       if (prevVnode.type !== Type) { //这里只能是element 与#text
            var nextDom = document.createElement(Type)
            if (dom) {
                while (dom.firstChild) {
                    nextDom.appendChild(dom.firstChild)
                }
-           }
-           if (parentNode) {
-               parentNode.replaceChild(nextDom, dom)
+               if (parentNode) {
+                   parentNode.replaceChild(nextDom, dom)
+               }
            }
            dom = nextDom
        }
-       // console.log(prevVnode.type, '222')
        diffProps(dom, prevProps, vnode.props)
        diffChildren(dom, vnode.props.children, context, prevChildren)
        return dom
@@ -339,20 +326,21 @@
     * @param {any} instance 
     * @param {any} pool 
     */
-   function poolInstances(vnode, instance, pool) {
+   function getTopComponentName(vnode, instance) {
        while (instance.parentInstance) {
            instance = nstance.parentInstance
        }
        var ctor = instance.constructor
-       var TypeName = ctor.displayName || ctor.name
-       var list = pool[TypeName]
-       if (list) {
-           list.push(vnode)
-       } else {
-           pool[TypeName] = [vnode]
-       }
+       return (ctor.displayName || ctor.name) // + "::" + vnode.deep
+
    }
 
+   function computeKey(type, vnode) {
+       if (type === '#text') {
+           return type + '/' + vnode.deep + '/' + vnode.text
+       }
+       return type + ':' + vnode.deep + (vnode.key !== null ? '/' + vnode.key : '')
+   }
 
    /**
     * 
@@ -364,92 +352,112 @@
     */
    function diffChildren(parentNode, newChildren, context, oldChildren) {
        //第一步，收集旧children的带组件实例的节点
-       var hasInstancePool = {},
-           hasInstanceList = [],
-           noInstanceList = []
 
-       for (var i = 0, n = oldChildren.length; i < n; i++) {
-           var el = oldChildren[i]
-           el.index = i //保持它们的位置 
-           if (el.instance) {
-               poolInstances(el, el.instance, hasInstancePool)
-               hasInstanceList.push(el)
+       var mapping = {}
+       for (let i = 0, n = oldChildren.length; i < n; i++) {
+           let vnode = oldChildren[i]
+           let tag = vnode.instance ? getTopComponentName(vnode, vnode.instance) : vnode.type
+           let key = computeKey(tag, vnode)
+           if (mapping[key]) {
+               mapping[key].push(vnode)
            } else {
-               noInstanceList.push(el)
+               mapping[key] = [vnode]
            }
        }
+
        //第二步，遍历新children, 让type为函数的节点进行预先匹配
-       for (var i = 0, n = newChildren.length; i < n; i++) {
-           var vnode = newChildren[i]
-           var Type = vnode.type
-           if (typeof Type === 'function') {
-               var TypeName = Type.displatName || Type.name
-               if (hasInstancePool[TypeName]) {
-                   var matchNode = hasInstancePool[TypeName].shift()
-                   if (!hasInstancePool[TypeName].length) {
-                       delete hasInstancePool[TypeName]
-                   }
-                   if (matchNode) {
-                       var index = hasInstanceList.indexOf(matchNode)
-                       hasInstanceList.splice(index, 1)
-                       vnode.old = matchNode
-                   }
+       var removedChildren = oldChildren.concat()
+       for (let i = 0, n = newChildren.length; i < n; i++) {
+           let vnode = newChildren[i];
+           let Type = vnode.type
+           let tag = typeof Type === 'function' ? (vnode._hasInstance = 1, Type.displatName || Type.name) : Type
+           let key = computeKey(tag, vnode)
+
+           if (mapping[key]) {
+               var matchNode = mapping[key].shift()
+               if (!mapping[key].length) {
+                   delete mapping[key]
+               }
+               if (matchNode) {
+                   let index = removedChildren.indexOf(matchNode)
+                   removedChildren.splice(index, 1)
+                   vnode.old = matchNode
+                   matchNode.use = true
                }
            }
-       }
-       var list = noInstanceList.concat(hasInstanceList)
-       list.sort(function(a, b) {
-           return b.index - a.index
-       })
+       };
+
 
        //第三，逐一比较
-       var childNodes = parentNode.childNodes
-       for (var i = 0, n = newChildren.length; i < n; i++) {
-           var vnode = newChildren[i]
+       for (let i = 0, n = newChildren.length; i < n; i++) {
+           let vnode = newChildren[i]
+           let old = null
            if (vnode.old) {
                old = vnode.old
-               delete vnode.old
            } else {
-               old = list.shift()
+               var k
+               loop:
+                   while (k = removedChildren.shift()) {
+                       if (!k.use) {
+                           old = k
+                           break loop
+                       }
+                   }
            }
            if (vnode && old) { //假设两者都存在
-               if (vnode.type === old.type) {
-                   if (vnode.type === '#text') { //#text === #text
-                       if (vnode.text !== old.text) {
-                           vnode.dom = old.dom
-                           vnode.dom.nodeValue = vnode.text
-                       }
-                   } else {
-                       if (childNodes[i] !== old.dom)
-                           parentNode.appendChild(old.dom)
+               if (vnode.old && vnode._hasInstance) {
+                   delete vnode.old
+                   vnode.action = '重复利用旧的实例更新组件'
+                   vnode.dom = diff(old.dom, vnode, context, parentNode, old)
+               } else if (vnode.type === old.type) {
+                   if (vnode.type === '#text') {
+                       vnode.dom = old.dom
 
+                       if (vnode.text !== old.text) {
+                           vnode.action = '改文本'
+                           vnode.dom.nodeValue = vnode.text
+                       } else {
+                           vnode.action = '不改文本'
+                       }
+                   } else { //元素节点的比较
+                       vnode.action = '更新元素'
                        vnode.dom = diff(old.dom, vnode, context, parentNode, old)
                    }
                } else if (vnode.type === '#text') { //#text === p
                    var dom = document.createTextNode(vnode.text)
                    vnode.dom = dom
-                   parentNode.replaceChild(dom, old.dom)
-                   removeComponent(old)
+                   parentNode.removeChild(old.dom)
+                   vnode.action = '替换为文本'
+                   removeComponent(old) //移除元素节点或组件
                } else {
-                   if (childNodes[i] !== old.dom)
-                       parentNode.appendChild(old.dom)
+                   vnode.action = '替换为元素'
                    vnode.dom = diff(old.dom, vnode, context, parentNode, old)
                }
-               delete old.dom //clear reference
-           } else if (!old) {
-               vnode.dom = toDOM(vnode, context, parentNode)
+               //当这个孩子是上级祖先传下来的，那么它是相等的
+               if (vnode !== old) {
+                   delete old.dom //clear reference
+               }
+           } else if (!old) { //添加新组件或元素节点
+               vnode.action = '添加新' + (vnode.type === '#text' ? '文本' : '元素')
+               if (!vnode.dom) {
+                   vnode.dom = toDOM(vnode, context, parentNode, oldChildren[i] && oldChildren[i].dom || null)
+               }
+           }
+           if (!parentNode.contains(vnode.dom)) {
+               parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
            }
        }
 
-       if (list.length) {
-           for (var i = list.length; i < n; i++) {
-               var el = list[i]
-               parentNode.removeChild(el.dom)
-               el.props && removeComponent(el)
+
+       if (removedChildren.length) {
+           for (let i = 0, n = removedChildren.length; i < n; i++) {
+               let vnode = removedChildren[i]
+               parentNode.removeChild(vnode.dom)
+               vnode.props && removeComponent(vnode)
            }
        }
+
    }
-
    /**
     * 
     * 
@@ -673,8 +681,9 @@
    * @returns 
    */
 
-  function flatChildren(children, ret) {
+  function flatChildren(children, ret, deep) {
       ret = ret || []
+      deep = deep || 0
       for (var i = children.length; i--;) { //从后向前添加
           var el = children[i]
           if (el == null) {
@@ -691,13 +700,14 @@
               if (ret.merge) {
                   ret[0].text = (el.type ? el.text : el) + ret[0].text
               } else {
-                  ret.unshift(el.type ? el : { type: '#text', text: String(el) })
+                  ret.unshift(el.type ? el : { type: '#text', text: String(el), deep: deep })
                   ret.merge = true
               }
           } else if (Array.isArray(el)) {
-              flatChildren(el, ret)
+              flatChildren(el, ret, deep + 1)
           } else {
               ret.unshift(el)
+              el.deep = deep
               ret.merge = false
           }
 

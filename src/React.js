@@ -52,8 +52,9 @@ function createElement(type, configs = {}, children) {
  * @returns 
  */
 
-function flatChildren(children, ret) {
+function flatChildren(children, ret, deep) {
     ret = ret || []
+    deep = deep || 0
     for (var i = children.length; i--;) { //从后向前添加
         var el = children[i]
         if (el == null) {
@@ -70,13 +71,14 @@ function flatChildren(children, ret) {
             if (ret.merge) {
                 ret[0].text = (el.type ? el.text : el) + ret[0].text
             } else {
-                ret.unshift(el.type ? el : { type: '#text', text: String(el) })
+                ret.unshift(el.type ? el : { type: '#text', text: String(el), deep: deep })
                 ret.merge = true
             }
         } else if (Array.isArray(el)) {
-            flatChildren(el, ret)
+            flatChildren(el, ret, deep + 1)
         } else {
             ret.unshift(el)
+            el.deep = deep
             ret.merge = false
         }
 
