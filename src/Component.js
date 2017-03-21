@@ -132,6 +132,7 @@
                  if (instance) {
                      //如果类型相同，使用旧的实例进行 render新的虚拟DOM
                      vnode.instance = instance
+                     var nextProps = vnode.props
                          //处理非状态组件
                      if (instance.statelessRender) {
                          instance.props = nextProps
@@ -139,7 +140,7 @@
                      }
 
                      var prevProps = instance.prevProps
-                     var nextProps = vnode.props
+
                      instance.props = prevProps
                      applyComponentHook(instance, 3, nextProps)
                      instance.prevProps = prevProps
