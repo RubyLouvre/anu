@@ -68,6 +68,8 @@ export function getInstances(instance) {
  */
 export function matchInstance(instance, Type) {
     do {
+        if (instance.statelessRender === Type)
+            return instance
         if (instance instanceof Type) {
             return instance
         }
@@ -81,4 +83,15 @@ export function matchInstance(instance, Type) {
  */
 export function isComponent(type) {
     return typeof type === 'function'
+}
+/**
+ * 
+ * 
+ * @export
+ * @param {any} type 
+ * @returns 
+ */
+export function isStateless(type) {
+    var fn = type.prototype
+    return isComponent(type) && (!fn || !fn.render)
 }

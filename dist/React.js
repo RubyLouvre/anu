@@ -74,6 +74,8 @@
    */
   function matchInstance(instance, Type) {
       do {
+          if (instance.statelessRender === Type)
+              return instance
           if (instance instanceof Type) {
               return instance
           }
@@ -87,6 +89,17 @@
    */
   function isComponent(type) {
       return typeof type === 'function'
+  }
+  /**
+   * 
+   * 
+   * @export
+   * @param {any} type 
+   * @returns 
+   */
+  function isStateless(type) {
+      var fn = type.prototype
+      return isComponent(type) && (!fn || !fn.render)
   }
 
   var lifecycle = {
@@ -135,7 +148,14 @@
 
 
    Component.prototype = {
-
+       /**
+        * void setState(
+         function|object nextState,
+         [function callback]
+       )
+        * 
+        * @param {any} state 
+        */
        setState(state) {
            let s = this.state;
 
@@ -170,8 +190,12 @@
        applyComponentHook(instance, 5, nextProps, nextState, context)
        instance.props = nextProps
        instance.state = nextState
-       var rendered = instance.render() // 1
 
+       if (instance.statelessRender) {
+           var rendered = instance.statelessRender(nextProps, context)
+       } else {
+           var rendered = instance.render() // 1
+       }
        //context只能孩子用，因此不要影响原instance.context
        if (instance.getChildContext) {
            context = extend(clone(context), instance.getChildContext());
@@ -230,6 +254,12 @@
                    if (instance) {
                        //如果类型相同，使用旧的实例进行 render新的虚拟DOM
                        vnode.instance = instance
+                           //处理非状态组件
+                       if (instance.statelessRender) {
+                           instance.props = nextProps
+                           return updateComponent(instance, context)
+                       }
+
                        var prevProps = instance.prevProps
                        var nextProps = vnode.props
                        instance.props = prevProps
@@ -363,18 +393,27 @@
        var Type = vnode.type
        if (isComponent(Type)) {
            var props = vnode.props
-           var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
-           props = clone(props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-           for (var i in defaultProps) {
-               if (props[i] === void 666) {
-                   props[i] = defaultProps[i]
+
+           if (!isStateless(Type)) {
+               var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
+               props = clone(props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+               for (var i in defaultProps) {
+                   if (props[i] === void 666) {
+                       props[i] = defaultProps[i]
+                   }
+               }
+               var instance = new Type(props, context)
+               Component.call(instance, props, context) //重点！！
+               applyComponentHook(instance, 0) //willMount
+
+               var rendered = instance.render()
+           } else { //添加无状态组件的分支
+               rendered = Type(props, context)
+               instance = {
+                   statelessRender: Type,
+                   context: context
                }
            }
-           var instance = new Type(props, context)
-           Component.call(instance, props, context) //重点！！
-           applyComponentHook(instance, 0) //willMount
-
-           var rendered = instance.render()
            if (vnode.instance) {
                instance.parentInstance = vnode.instance
                vnode.instance.childInstance = instance
@@ -386,6 +425,7 @@
                //压扁组件Vnode为普通Vnode
            extend(vnode, rendered)
            vnode.instance = instance
+
            return toVnode(vnode, context)
        } else {
            return vnode
