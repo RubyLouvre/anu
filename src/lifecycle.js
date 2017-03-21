@@ -8,7 +8,7 @@ var lifecycle = {
     '4': 'shouldComponentUpdate',
     '5': 'componentWillUpdate',
     '6': 'componentDidUpdate',
-    '7': 'componentWillMount'
+    '7': 'componentWillUnmount'
 }
 
 /**

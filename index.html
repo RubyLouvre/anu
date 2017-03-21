@@ -8,10 +8,36 @@
     <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
-        function Hello(props, context) {
-            return React.createElement(World, Object.assign({}, props, {
-                hello: 'hello'
-            }), props.children, '--xxx')
+        class Hello extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    items: [1, 2, 3]
+                }
+            }
+
+            render() {
+                return React.createElement('div', Object.assign({}, this.props, {
+                        hello: 'hello',
+                        onClick: () => {
+                            var n = getRandomNum(4, 22)
+                            var items = Array(n).fill(1).map((el, index) => index).sort(_ => Math.random() > 0.5)
+                            console.log(items)
+                            this.setState({
+                                items
+                            })
+                        }
+                    }),
+                    this.state.items.map(el => React.createElement('p', null, el)),
+
+                    React.createElement(World), this.props.children)
+            }
+        }
+
+        function getRandomNum(Min, Max) {
+            var Range = Max - Min;
+            var Rand = Math.random();
+            return (Min + Math.round(Rand * Range));
         }
 
 
@@ -22,32 +48,41 @@
                     world: 'world'
                 }
             }
+            componentWillUpdate() {
+                console.log('componentWillUpdate')
+            }
+            componentDidUpdate() {
+                console.log('componentDidUpdate')
+
+            }
+            componentWillMount() {
+                console.log('componentWillMount')
+
+            }
+            componentDidMount() {
+                console.log('componentDidMount')
+
+            }
+            componentWillUnmount() {
+                console.log('componentWillUnmount')
+
+            }
             render() {
-                return React.createElement(Me, Object.assign({}, this.props, {
-                    world: this.state.world,
-                    onClick: () => {
-                        this.setState({
-                            world: new Date - 0
-                        })
-                    }
-                }), this.props.children, '--', this.state.world)
+                return React.createElement('span', null, new Date - 0)
             }
         }
 
-        function Me(props, context) {
-            console.log(props)
-            return React.createElement('p', Object.assign({}, props, {
-                me: 'me'
-            }), props.children, '--me')
-        }
+
         window.onload = function() {
-            ReactDOM.render(React.createElement(Hello, null, 'root'), document.body)
+            ReactDOM.render(React.createElement(Hello, null, '!!!'), document.body)
         }
     </script>
 </head>
 
 <body>
     <div>这个默认会被清掉</div>
+
+
 </body>
 
 </html>
