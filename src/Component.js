@@ -247,8 +247,7 @@
   * @param {any} oldChildren 
   */
  function diffChildren(parentNode, newChildren, context, oldChildren) {
-     //第一步，收集旧children的带组件实例的节点
-
+     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
      var mapping = {}
      for (let i = 0, n = oldChildren.length; i < n; i++) {
          let vnode = oldChildren[i]
@@ -261,7 +260,7 @@
          }
      }
 
-     //第二步，遍历新children, 让type为函数的节点进行预先匹配
+     //第二步，遍历新children, 从hash中取出旧节点
      var removedChildren = oldChildren.concat()
      for (let i = 0, n = newChildren.length; i < n; i++) {
          let vnode = newChildren[i];
@@ -344,7 +343,7 @@
          }
      }
 
-
+     //第4步，移除无用节点
      if (removedChildren.length) {
          for (let i = 0, n = removedChildren.length; i < n; i++) {
              let vnode = removedChildren[i]
