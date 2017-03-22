@@ -1,4 +1,6 @@
-import { Component, toDOM } from './Component'
+import { Component } from './Component'
+import { toDOM } from './diff'
+
 import { PureComponent } from './PureComponent'
 import { extend } from './util'
 
