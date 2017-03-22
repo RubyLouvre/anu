@@ -22,7 +22,7 @@
       instance.state = prevState
       var nextProps = props
       var nextState = state
-      if (applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
+      if (!this.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
           return dom //注意
       }
       applyComponentHook(instance, 5, nextProps, nextState, context)

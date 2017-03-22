@@ -5,8 +5,12 @@
 }(this, function () {
 
      var queue = []
+      var callbacks = []
       var transaction = {
           isInTransation: false,
+          enqueueCallback: function(obj) {
+              callbacks.push(obj)
+          },
           enqueue: function(obj) {
               if (obj)
                   queue.push(obj)
@@ -16,7 +20,8 @@
                   var mainProcessing = []
                   queue.length = 0
                   var unique = {}
-
+                  var processingCallbacks = callbacks.concat()
+                  callbacks.length = 0
                   preProcessing.forEach(function(request) {
                       try {
                           request.init(unique) //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
@@ -37,7 +42,9 @@
                           console.log(e)
                       }
                   })
-
+                  processingCallbacks.forEach(function(request) {
+                      request.cb.call(request.instance)
+                  })
                   this.isInTransation = false
                   if (queue.length) {
                       this.enqueue() //用于递归调用自身，当然这里还可以尝试使用setTimeout
@@ -240,7 +247,7 @@
            instance.state = prevState
            var nextProps = props
            var nextState = state
-           if (applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
+           if (!this.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
                return dom //注意
            }
            applyComponentHook(instance, 5, nextProps, nextState, context)
@@ -607,42 +614,57 @@
 
 
      Component.prototype = {
+
+             setState(state, cb) {
+                 setStateProxy(this, state, cb)
+             },
+
+             forceUpdate(cb) {
+                 setStateProxy(this, this.state, cb, true)
+             },
+
+             render() {}
+
+         }
          /**
-          * void setState(
-           function|object nextState,
-           [function callback]
-         )
+          * 让外面的setState与forceUpdate都共用同一通道
           * 
+          * @param {any} instance 
           * @param {any} state 
+          * @param {any} cb 
+          * @param {any} force 
           */
-         setState(state) {
-             transaction.enqueue({
-                 component: this,
-                 state: state,
-                 init: initSetState,
-                 exec: execSetState
+     function setStateProxy(instance, state, cb, force) {
+         transaction.enqueue({
+             component: instance,
+             state: state,
+             init: force ? gentleSetState : roughSetState,
+             exec: updateComponentProxy
+         })
+         if (typeof cb === 'function')
+             transaction.enqueueCallback({
+                 component: instance,
+                 cb: cb
              })
-         },
-
-         forceUpdate() {
-             updateComponent(this);
-         },
-
-         render() {}
-
      }
 
-     function initSetState() { //这里只处理参数
-         var component = this.component
-         var s = component.state
-         var state = this.state
-         component.prevState = component.prevState || clone(s)
-         extend(s, state)
-
+     function gentleSetState() { //只有必要时才更新
+         var instance = this.component
+         var state = instance.state
+         instance.prevState = instance.prevState || clone(state)
+         var s = this.state
+         extend(state, typeof s === 'function' ? s(state, instance.props) : s)
      }
 
-     function execSetState() { //这里触发视图更新
+     function roughSetState() { //强制更新
+         // gentleSetState.call(this)
+         var instance = this.component
+         instance.forceUpdate = true
+     }
+
+     function updateComponentProxy() { //这里触发视图更新
          updateComponent(this.component)
+         this.forceUpdate = false
      }
 
      var hasOwnProperty = Object.prototype.hasOwnProperty;

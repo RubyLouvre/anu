@@ -1,15 +1,23 @@
  var queue = []
+ var callbacks = []
  export var transaction = {
      isInTransation: false,
+     enqueueCallback: function(obj) {
+         callbacks.push(obj)
+
+         //它们是保证在ComponentDidUpdate后执行
+     },
      enqueue: function(obj) {
          if (obj)
              queue.push(obj)
          if (!this.isInTransation) {
              this.isInTransation = true
              var preProcessing = queue.concat()
+             var processingCallbacks = callbacks.concat()
              var mainProcessing = []
-             queue.length = 0
+             queue.length = callbacks.length = 0
              var unique = {}
+
 
              preProcessing.forEach(function(request) {
                  try {
@@ -31,15 +39,12 @@
                      console.log(e)
                  }
              })
-
+             processingCallbacks.forEach(function(request) {
+                 request.cb.call(request.instance)
+             })
              this.isInTransation = false
              if (queue.length) {
-                 this.enqueue() //用于递归调用自身，当然这里还可以尝试使用setTimeout
-
-                 /*
-                  * setTimeout(_=> this.enqueue() )
-                  */
-
+                 this.enqueue() //用于递归调用自身)
              }
          }
      }

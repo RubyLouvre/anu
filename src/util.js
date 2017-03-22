@@ -40,11 +40,7 @@ export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase())
 }
 
-export function isSameType(dom, vnode) {
-    if (dom['__type'])
-        return dom['__type'] === vnode.type
-    return toLowerCase(dom.nodeName) === vnode.type
-}
+
 
 /**
  * 收集该虚拟DOM的所有组件实例，方便依次执行它们的生命周期钩子

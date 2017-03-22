@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script src="./dist/React.js"></script>
-    <!-- <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
         class Hello extends React.Component {
@@ -23,27 +23,46 @@
             componentWillUpdate() {
                 console.log('hello componentWillUpdate')
             }
+            componentDidUpdate() {
+                console.log('hello componentDidUpdate')
+            }
             incrementCount() {
-                this.setState({
-                    count: this.state.count + 1
+                this.state.count += 2222
+                this.forceUpdate(function() {
+                    console.log('11111')
                 })
-                console.log(this.state.count); // 第 1次 log
-                this.setState({
-                    count: this.state.count + 1
-                })
-                console.log(this.state.count) // 第 2次 log
 
-                setTimeout(() => {
-                    this.setState({
-                        count: this.state.count + 1
-                    });
-                    console.log(this.state.count); // 第 3 次 log
+                this.forceUpdate(function() {
+                        console.log('22222')
+                    })
+                    /*    this.setState({
+                            count: this.state.count + 1
+                        }, function() {
+                            console.log(this, '000000')
+                        })
+                        console.log(this.state.count); // 第 1次 log
+                        this.setState(function(s) {
+                            return s.count + 1
+                        }, function() {
+                            console.log(this, '11111', arguments)
+                        })
+                        console.log(this.state.count) // 第 2次 log
 
-                    this.setState({
-                        count: this.state.count + 1
-                    });
-                    console.log(this.state.count); // 第 4 次 log
-                }, 0);
+                        setTimeout(() => {
+                            this.setState({
+                                count: this.state.count + 1
+                            }, function() {
+                                console.log(this, '22222')
+                            })
+                            console.log(this.state.count); // 第 3 次 log
+
+                            this.setState({
+                                count: this.state.count + 1
+                            }, function() {
+                                console.log(this, '33333')
+                            })
+                            console.log(this.state.count); // 第 4 次 log
+                        }, 0);*/
 
 
             }
@@ -51,6 +70,7 @@
                 console.log('hello componentDidMount')
             }
             render() {
+
                 return React.createElement('div', null,
                     React.createElement('button', {
                         onClick: this.incrementCount

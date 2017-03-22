@@ -19,40 +19,54 @@ export function Component(props, context) {
 
 
 Component.prototype = {
+
+        setState(state, cb) {
+            setStateProxy(this, state, cb)
+        },
+
+        forceUpdate(cb) {
+            setStateProxy(this, this.state, cb, true)
+        },
+
+        render() {}
+
+    }
     /**
-     * void setState(
-      function|object nextState,
-      [function callback]
-    )
+     * 让外面的setState与forceUpdate都共用同一通道
      * 
+     * @param {any} instance 
      * @param {any} state 
+     * @param {any} cb 
+     * @param {any} force 
      */
-    setState(state) {
-        transaction.enqueue({
-            component: this,
-            state: state,
-            init: initSetState,
-            exec: execSetState
+function setStateProxy(instance, state, cb, force) {
+    transaction.enqueue({
+        component: instance,
+        state: state,
+        init: force ? gentleSetState : roughSetState,
+        exec: updateComponentProxy
+    })
+    if (typeof cb === 'function')
+        transaction.enqueueCallback({
+            component: instance,
+            cb: cb
         })
-    },
-
-    forceUpdate() {
-        updateComponent(this);
-    },
-
-    render() {}
-
 }
 
-function initSetState() { //这里只处理参数
-    var component = this.component
-    var s = component.state
-    var state = this.state
-    component.prevState = component.prevState || clone(s)
-    extend(s, state)
-
+function gentleSetState() { //只有必要时才更新
+    var instance = this.component
+    var state = instance.state
+    instance.prevState = instance.prevState || clone(state)
+    var s = this.state
+    extend(state, typeof s === 'function' ? s(state, instance.props) : s)
 }
 
-function execSetState() { //这里触发视图更新
+function roughSetState() { //强制更新
+    var instance = this.component
+    instance.forceUpdate = true
+}
+
+function updateComponentProxy() { //这里触发视图更新
     updateComponent(this.component)
+    this.forceUpdate = false
 }
