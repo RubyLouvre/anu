@@ -17,8 +17,14 @@ var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
      * @param {array} children 
      * @returns 
      */
-function createElement(type, configs = {}, children) {
+function createElement(type, configs, children) {
     var props = {}
+    var key = null
+    configs = configs || {}
+    if (configs.key != null) {
+        key = configs.key + ''
+        delete configs.key
+    }
     extend(props, configs)
     var c = [].slice.call(arguments, 2)
     var useEmpty = true
@@ -39,10 +45,14 @@ function createElement(type, configs = {}, children) {
     }
     props.children = c
     Object.freeze(props)
-    return {
+    var vnode = {
         type: type,
         props: props
     }
+    if (key) {
+        vnode.key = key
+    }
+    return vnode
 }
 /**
  * 遍平化children，并合并相邻的简单数据类型

@@ -40,12 +40,6 @@
       return /^on\w/.test(name) && typeof val === 'function'
   }
 
-  /**
-   * 收集该虚拟DOM的所有组件实例，方便依次执行它们的生命周期钩子
-   * 
-   * @param {any} instance 
-   * @returns 
-   */
   function getInstances(instance) {
       var instances = [instance]
       while (instance = instance.parentInstance) {
@@ -120,13 +114,7 @@
       }
   }
 
-  /**
-    * 
-    * 
-    * @param {any} props 
-    * @param {any} context 
-    */
-   function Component(props, context) {
+  function Component(props, context) {
        this.context = context
        this.props = props
 
@@ -326,7 +314,7 @@
        }
    }
    /**
-    * 聚类
+    * 获取虚拟DOM对应的顶层组件实例的类型
     * 
     * @param {any} vnode 
     * @param {any} instance 
@@ -336,12 +324,18 @@
        while (instance.parentInstance) {
            instance = nstance.parentInstance
        }
-       var ctor = instance.constructor
-       return (ctor.displayName || ctor.name) // + "::" + vnode.deep
-
+       var ctor = instance.statelessRender || instance.constructor
+       return (ctor.displayName || ctor.name)
    }
 
-   function computeKey(type, vnode) {
+   /**
+    * 
+    * 
+    * @param {any} type 
+    * @param {any} vnode 
+    * @returns 
+    */
+   function computeUUID(type, vnode) {
        if (type === '#text') {
            return type + '/' + vnode.deep + '/' + vnode.text
        }
@@ -362,11 +356,11 @@
        for (let i = 0, n = oldChildren.length; i < n; i++) {
            let vnode = oldChildren[i]
            let tag = vnode.instance ? getTopComponentName(vnode, vnode.instance) : vnode.type
-           let key = computeKey(tag, vnode)
-           if (mapping[key]) {
-               mapping[key].push(vnode)
+           let uuid = computeUUID(tag, vnode)
+           if (mapping[uuid]) {
+               mapping[uuid].push(vnode)
            } else {
-               mapping[key] = [vnode]
+               mapping[uuid] = [vnode]
            }
        }
 
@@ -376,12 +370,12 @@
            let vnode = newChildren[i];
            let Type = vnode.type
            let tag = typeof Type === 'function' ? (vnode._hasInstance = 1, Type.displatName || Type.name) : Type
-           let key = computeKey(tag, vnode)
+           let uuid = computeUUID(tag, vnode)
 
-           if (mapping[key]) {
-               var matchNode = mapping[key].shift()
-               if (!mapping[key].length) {
-                   delete mapping[key]
+           if (mapping[uuid]) {
+               var matchNode = mapping[uuid].shift()
+               if (!mapping[uuid].length) {
+                   delete mapping[uuid]
                }
                if (matchNode) {
                    let index = removedChildren.indexOf(matchNode)
@@ -412,7 +406,8 @@
            if (vnode && old) { //假设两者都存在
                if (vnode.old && vnode._hasInstance) {
                    delete vnode.old
-                   vnode.action = '重复利用旧的实例更新组件'
+                   delete vnode._hasInstance
+                   vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                    vnode.dom = diff(old.dom, vnode, context, parentNode, old)
                } else if (vnode.type === old.type) {
                    if (vnode.type === '#text') {
@@ -513,8 +508,9 @@
                    text: rendered
                }
            }
-
+           var key = vnode.key
            extend(vnode, rendered)
+           vnode.key = key
            vnode.instance = instance
 
            return toVnode(vnode, context)
@@ -651,8 +647,14 @@
        * @param {array} children 
        * @returns 
        */
-  function createElement(type, configs = {}, children) {
+  function createElement(type, configs, children) {
       var props = {}
+      var key = null
+      configs = configs || {}
+      if (configs.key != null) {
+          key = configs.key + ''
+          delete configs.key
+      }
       extend(props, configs)
       var c = [].slice.call(arguments, 2)
       var useEmpty = true
@@ -673,10 +675,14 @@
       }
       props.children = c
       Object.freeze(props)
-      return {
+      var vnode = {
           type: type,
           props: props
       }
+      if (key) {
+          vnode.key = key
+      }
+      return vnode
   }
   /**
    * 遍平化children，并合并相邻的简单数据类型

@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script src="./dist/React.js"></script>
-    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
+    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>-->
+    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
         var index = 0
         class Hello extends React.Component {
@@ -39,7 +39,7 @@
                     }),
                     this.state.items.map(el => React.createElement('p', null, el)),
 
-                    getRandomNum(2, 10) % 2 == 0 ? React.createElement('span', null, 3333) : React.createElement(World), this.props.children)
+                    getRandomNum(2, 10) % 2 == 0 ? React.createElement('span', null, '静态的SPAN') : React.createElement(World), this.props.children)
             }
         }
 
