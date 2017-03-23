@@ -22,6 +22,23 @@ export function extend(obj, props) {
 export function clone(obj) {
     return extend({}, obj)
 }
+/**
+ * 类继承
+ * 
+ * @export
+ * @param {any} SubClass 
+ * @param {any} SupClass 
+ */
+export function inherit(SubClass, SupClass) {
+    function Bridge() {}
+    Bridge.prototype = SupClass.prototype
+
+    let fn = SubClass.prototype = new Bridge()
+
+    // 避免原型链拉长导致方法查找的性能开销
+    extend(fn, SupClass.prototype)
+    fn.constructor = SubClass
+}
 
 /**
  * 判定否为与事件相关

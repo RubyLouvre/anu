@@ -1,5 +1,5 @@
 import { transaction } from './transaction'
-import { updateComponent } from './diff'
+import { updateComponent, toDOM } from './diff'
 import { clone, extend } from './util'
 
 /**
@@ -36,22 +36,24 @@ Component.prototype = {
      * 
      * @param {any} instance 
      * @param {any} state 
-     * @param {any} cb 
-     * @param {any} force 
+     * @param {any} cb fire by component did update
+     * @param {any} force ignore shouldComponentUpdate
      */
 function setStateProxy(instance, state, cb, force) {
+    if (typeof cb === 'function')
+        transaction.enqueueCallback({ //确保回调先进入
+            component: instance,
+            cb: cb
+        })
     transaction.enqueue({
         component: instance,
         state: state,
         init: force ? gentleSetState : roughSetState,
         exec: updateComponentProxy
     })
-    if (typeof cb === 'function')
-        transaction.enqueueCallback({
-            component: instance,
-            cb: cb
-        })
+
 }
+
 
 function gentleSetState() { //只有必要时才更新
     var instance = this.component
@@ -67,6 +69,13 @@ function roughSetState() { //强制更新
 }
 
 function updateComponentProxy() { //这里触发视图更新
-    updateComponent(this.component)
+    var instance = this.component
+    if (!instance.vnode.dom) {
+        var p = instance.container
+        var a = toDOM(instance.vnode)
+        p.appendChild(a)
+    } else {
+        updateComponent(this.component)
+    }
     this.forceUpdate = false
 }

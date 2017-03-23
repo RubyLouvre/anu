@@ -32,7 +32,7 @@
       if (instance.statelessRender) {
           var rendered = instance.statelessRender(nextProps, context)
       } else {
-          var rendered = instance.render() // 1
+          rendered = transaction.renderWithoutSetState(instance)
       }
       //context只能孩子用，因此不要影响原instance.context
       if (instance.getChildContext) {
@@ -93,6 +93,7 @@
               vnode.instance = instance
               var nextProps = vnode.props
                   //处理非状态组件
+
               if (instance.statelessRender) {
                   instance.props = nextProps
                   instance.prevProps = prevProps
@@ -112,9 +113,10 @@
               }
           }
       }
-      if (isComponent)
+      if (isComponent) {
           return toDOM(vnode, context, parentNode, prevVnode.dom)
-      if (prevVnode.type !== Type) { //这里只能是element 与#text
+      }
+      if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
           var nextDom = document.createElement(Type)
           if (dom) {
               while (dom.firstChild) {

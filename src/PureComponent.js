@@ -1,5 +1,5 @@
 import { Component } from './Component'
-import { extend } from './util'
+import { inherit } from './util'
 import { shallowEqual } from './shallowEqual'
 
 export function PureComponent(props, context) {
@@ -7,17 +7,13 @@ export function PureComponent(props, context) {
     this.context = context
 }
 
-function Bridge() {}
-Bridge.prototype = Component.prototype
+inherit(PureComponent, Component)
 
-let fn = PureComponent.prototype = new Bridge()
+let fn = PureComponent.prototype
 
-// 避免原型链拉长导致方法查找的性能开销
-extend(fn, Component.prototype)
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     var a = shallowEqual(this.props, nextProps)
     var b = shallowEqual(this.state, nextState)
     return !a || !b
 }
-fn.constructor = PureComponent
 fn.isPureComponent = true

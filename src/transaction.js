@@ -1,11 +1,29 @@
  var queue = []
  var callbacks = []
+
+ function setState() {
+     if (transaction.isInTransation) {
+         console.warn("Cannot update during an existing state transition (such as within `render` or another component's constructor). " +
+             "Render methods should be a pure function of props and state; constructor side-effects are an anti-pattern," +
+             " but can be moved to `componentWillMount`")
+     }
+ }
  export var transaction = {
      isInTransation: false,
      enqueueCallback: function(obj) {
          callbacks.push(obj)
 
          //它们是保证在ComponentDidUpdate后执行
+     },
+     renderWithoutSetState: function(instance) {
+         instance.setState = instance.forceUpdate = setState
+         try {
+             var vnode = instance.render()
+         } finally {
+             delete instance.setState
+             delete instance.forceUpdate
+         }
+         return vnode
      },
      enqueue: function(obj) {
          if (obj)

@@ -1,7 +1,10 @@
 import { Component } from './Component'
-import { toDOM } from './diff'
+import { toVnode } from './toVnode'
 
 import { PureComponent } from './PureComponent'
+import { TopLevelWrapper } from './TopLevelWrapper'
+
+
 import { extend } from './util'
 
 var React = {
@@ -102,13 +105,17 @@ function flatChildren(children, ret, deep) {
  * @param {any} vnode 
  * @param {any} container 
  */
-function render(vnode, container) {
+function render(vnode, container, cb) {
     container.textContent = ''
     while (container.firstChild) {
         container.removeChild(container.firstChild)
     }
-    var context = {}
-    toDOM(vnode, context, container)
+
+    var root = createElement(TopLevelWrapper, { child: vnode });
+    var root = toVnode(root, {})
+
+    root.instance.container = container
+    root.instance.forceUpdate(cb)
 }
 
 

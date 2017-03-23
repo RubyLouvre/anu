@@ -27,43 +27,11 @@
                 console.log('hello componentDidUpdate')
             }
             incrementCount() {
+                console.log('9999999')
                 this.state.count += 2222
                 this.forceUpdate(function() {
                     console.log('11111')
                 })
-
-                this.forceUpdate(function() {
-                        console.log('22222')
-                    })
-                    /*    this.setState({
-                            count: this.state.count + 1
-                        }, function() {
-                            console.log(this, '000000')
-                        })
-                        console.log(this.state.count); // 第 1次 log
-                        this.setState(function(s) {
-                            return s.count + 1
-                        }, function() {
-                            console.log(this, '11111', arguments)
-                        })
-                        console.log(this.state.count) // 第 2次 log
-
-                        setTimeout(() => {
-                            this.setState({
-                                count: this.state.count + 1
-                            }, function() {
-                                console.log(this, '22222')
-                            })
-                            console.log(this.state.count); // 第 3 次 log
-
-                            this.setState({
-                                count: this.state.count + 1
-                            }, function() {
-                                console.log(this, '33333')
-                            })
-                            console.log(this.state.count); // 第 4 次 log
-                        }, 0);*/
-
 
             }
             componentDidMount() {
@@ -71,7 +39,9 @@
             }
             render() {
 
-                return React.createElement('div', null,
+                return React.createElement(World, {
+                        onClick: this.incrementCount
+                    },
                     React.createElement('button', {
                         onClick: this.incrementCount
                     }, '点我添加'),
@@ -79,7 +49,28 @@
                 )
             }
         }
+        class World extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 111
+                }
+            }
+            onClick() {
 
+            }
+            render() {
+
+                this.setState({
+                    aaa: 333
+                })
+                return React.createElement('div', Object.assign({}, this.props, {
+                    onClick: function() {
+                        console.log('1212324324')
+                    }
+                }), this.state.aaa, this.props.children)
+            }
+        }
         window.onload = function() {
             ReactDOM.render(React.createElement(Hello, null, '!!!'), document.body)
         }

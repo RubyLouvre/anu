@@ -6,10 +6,30 @@
 
      var queue = []
       var callbacks = []
+
+      function setState() {
+          if (transaction.isInTransation) {
+              console.warn("Cannot update during an existing state transition (such as within `render` or another component's constructor). " +
+                  "Render methods should be a pure function of props and state; constructor side-effects are an anti-pattern," +
+                  " but can be moved to `componentWillMount`")
+          }
+      }
       var transaction = {
           isInTransation: false,
           enqueueCallback: function(obj) {
               callbacks.push(obj)
+
+              //它们是保证在ComponentDidUpdate后执行
+          },
+          renderWithoutSetState: function(instance) {
+              instance.setState = instance.forceUpdate = setState
+              try {
+                  var vnode = instance.render()
+              } finally {
+                  delete instance.setState
+                  delete instance.forceUpdate
+              }
+              return vnode
           },
           enqueue: function(obj) {
               if (obj)
@@ -17,11 +37,12 @@
               if (!this.isInTransation) {
                   this.isInTransation = true
                   var preProcessing = queue.concat()
-                  var mainProcessing = []
-                  queue.length = 0
-                  var unique = {}
                   var processingCallbacks = callbacks.concat()
-                  callbacks.length = 0
+                  var mainProcessing = []
+                  queue.length = callbacks.length = 0
+                  var unique = {}
+
+
                   preProcessing.forEach(function(request) {
                       try {
                           request.init(unique) //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
@@ -47,12 +68,7 @@
                   })
                   this.isInTransation = false
                   if (queue.length) {
-                      this.enqueue() //用于递归调用自身，当然这里还可以尝试使用setTimeout
-
-                      /*
-                       * setTimeout(_=> this.enqueue() )
-                       */
-
+                      this.enqueue() //用于递归调用自身)
                   }
               }
           }
@@ -81,6 +97,23 @@
       */
      function clone(obj) {
          return extend({}, obj)
+     }
+     /**
+      * 类继承
+      * 
+      * @export
+      * @param {any} SubClass 
+      * @param {any} SupClass 
+      */
+     function inherit(SubClass, SupClass) {
+         function Bridge() {}
+         Bridge.prototype = SupClass.prototype
+
+         let fn = SubClass.prototype = new Bridge()
+
+         // 避免原型链拉长导致方法查找的性能开销
+         extend(fn, SupClass.prototype)
+         fn.constructor = SubClass
      }
 
      /**
@@ -198,7 +231,7 @@
                      Component.call(instance, props, context) //重点！！
                      applyComponentHook(instance, 0) //willMount
 
-                     var rendered = instance.render()
+                     var rendered = transaction.renderWithoutSetState(instance)
                  } else { //添加无状态组件的分支
                      rendered = Type(props, context)
                      instance = {
@@ -257,7 +290,7 @@
            if (instance.statelessRender) {
                var rendered = instance.statelessRender(nextProps, context)
            } else {
-               var rendered = instance.render() // 1
+               rendered = transaction.renderWithoutSetState(instance)
            }
            //context只能孩子用，因此不要影响原instance.context
            if (instance.getChildContext) {
@@ -318,6 +351,7 @@
                    vnode.instance = instance
                    var nextProps = vnode.props
                        //处理非状态组件
+
                    if (instance.statelessRender) {
                        instance.props = nextProps
                        instance.prevProps = prevProps
@@ -337,9 +371,10 @@
                    }
                }
            }
-           if (isComponent)
+           if (isComponent) {
                return toDOM(vnode, context, parentNode, prevVnode.dom)
-           if (prevVnode.type !== Type) { //这里只能是element 与#text
+           }
+           if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
                var nextDom = document.createElement(Type)
                if (dom) {
                    while (dom.firstChild) {
@@ -635,18 +670,20 @@
           * @param {any} force 
           */
      function setStateProxy(instance, state, cb, force) {
+         if (typeof cb === 'function')
+             transaction.enqueueCallback({ //确保回调先进入
+                 component: instance,
+                 cb: cb
+             })
          transaction.enqueue({
              component: instance,
              state: state,
              init: force ? gentleSetState : roughSetState,
              exec: updateComponentProxy
          })
-         if (typeof cb === 'function')
-             transaction.enqueueCallback({
-                 component: instance,
-                 cb: cb
-             })
+
      }
+
 
      function gentleSetState() { //只有必要时才更新
          var instance = this.component
@@ -657,13 +694,19 @@
      }
 
      function roughSetState() { //强制更新
-         // gentleSetState.call(this)
          var instance = this.component
          instance.forceUpdate = true
      }
 
      function updateComponentProxy() { //这里触发视图更新
-         updateComponent(this.component)
+         var instance = this.component
+         if (!instance.vnode.dom) {
+             var p = instance.container
+             var a = toDOM(instance.vnode)
+             p.appendChild(a)
+         } else {
+             updateComponent(this.component)
+         }
          this.forceUpdate = false
      }
 
@@ -721,20 +764,28 @@
          this.context = context
      }
 
-     function Bridge() {}
-     Bridge.prototype = Component.prototype
+     inherit(PureComponent, Component)
 
-     let fn = PureComponent.prototype = new Bridge()
+     let fn = PureComponent.prototype
 
-     // 避免原型链拉长导致方法查找的性能开销
-     extend(fn, Component.prototype)
      fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
          var a = shallowEqual(this.props, nextProps)
          var b = shallowEqual(this.state, nextState)
          return !a || !b
      }
-     fn.constructor = PureComponent
      fn.isPureComponent = true
+
+     var topLevelRootCounter = 1
+     function TopLevelWrapper() {
+         this.rootID = topLevelRootCounter++
+     }
+
+     inherit(TopLevelWrapper, Component)
+
+     let fn$1 = TopLevelWrapper.prototype
+     fn$1.render = function() {
+         return this.props.child;
+     }
 
      var React = {
          render,
@@ -834,13 +885,17 @@
       * @param {any} vnode 
       * @param {any} container 
       */
-     function render(vnode, container) {
+     function render(vnode, container, cb) {
          container.textContent = ''
          while (container.firstChild) {
              container.removeChild(container.firstChild)
          }
-         var context = {}
-         toDOM(vnode, context, container)
+
+         var root = createElement(TopLevelWrapper, { child: vnode });
+         var root = toVnode(root, {})
+
+         root.instance.container = container
+         root.instance.forceUpdate(cb)
      }
 
 
