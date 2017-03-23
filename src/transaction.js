@@ -1,3 +1,5 @@
+ import { CurrentOwner } from './CurrentOwner'
+
  var queue = []
  var callbacks = []
 
@@ -8,6 +10,8 @@
              " but can be moved to `componentWillMount`")
      }
  }
+
+
  export var transaction = {
      isInTransation: false,
      enqueueCallback: function(obj) {
@@ -18,8 +22,10 @@
      renderWithoutSetState: function(instance) {
          instance.setState = instance.forceUpdate = setState
          try {
+             CurrentOwner.cur = instance
              var vnode = instance.render()
          } finally {
+             CurrentOwner.cur = null
              delete instance.setState
              delete instance.forceUpdate
          }

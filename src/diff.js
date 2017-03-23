@@ -61,6 +61,11 @@
       if (instance) {
           vnode.instance = void 666
       }
+      var ref = vnode.props.ref
+      if (typeof ref === 'string') {
+          var o = vnode._owner
+          o && (o.refs[ref] = null)
+      }
 
       vnode.props.children.forEach(function(el) {
           if (el.props) {
@@ -129,7 +134,7 @@
           }
           dom = nextDom
       }
-      diffProps(dom, prevProps, vnode.props)
+      diffProps(dom, vnode._owner, prevProps, vnode.props)
       diffChildren(dom, vnode.props.children, context, prevChildren)
       return dom
   }
@@ -138,7 +143,31 @@
       'onChange': 'change'
   }
 
+  function clickHack() {}
+  let inMobile = 'ontouchstart' in document
 
+  /**
+   * 收集DOM到组件实例的refs中
+   * 
+   * @param {any} instance 
+   * @param {any} ref 
+   * @param {any} dom 
+   */
+  function collectRef(instance, ref, dom) {
+      if (typeof ref === 'function') {
+          transcation.enqueueCallback({
+              instance: instance,
+              cb: ref
+          })
+      } else if (typeof ref === 'string') {
+          instance.refs[ref] = dom
+          dom.getDOMNode = getDOMNode
+      }
+  }
+  //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+  function getDOMNode() {
+      return this
+  }
   /**
    * 修改dom的属性与事件
    * 
@@ -146,17 +175,25 @@
    * @param {any} props 
    * @param {any} nextProps 
    */
-  export function diffProps(dom, props, nextProps) {
+
+  export function diffProps(dom, instance, props, nextProps) {
       for (let name in nextProps) {
           if (name === 'children') {
               continue
           }
           var val = nextProps[name]
-
+          if (name === 'ref') {
+              instance && collectRef(instance, val, dom)
+              continue
+          }
           if (isEvent(name)) {
               if (!props[name]) { //添加全局监听事件
                   var eventName = getBrowserName(name)
                   addGlobalEventListener(eventName)
+              }
+              if (inMobile && eventName === 'click') {
+                  elem.addEventListener('click', clickHack)
+
               }
               var events = (dom.__events || (dom.__events = {}))
               events[name] = props[name] = val
@@ -351,7 +388,7 @@
       } else {
           dom = document.createElement(vnode.type)
 
-          diffProps(dom, {}, vnode.props)
+          diffProps(dom, vnode._owner, {}, vnode.props)
           diffChildren(dom, vnode.props.children, context, []) //添加第4参数
       }
 

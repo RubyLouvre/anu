@@ -3,6 +3,7 @@ import { toVnode } from './toVnode'
 
 import { PureComponent } from './PureComponent'
 import { TopLevelWrapper } from './TopLevelWrapper'
+import { CurrentOwner } from './CurrentOwner'
 
 
 import { extend } from './util'
@@ -50,15 +51,23 @@ function createElement(type, configs, children) {
     }
     props.children = c
     Object.freeze(props)
-    var vnode = {
-        type: type,
-        props: props
-    }
-    if (key) {
-        vnode.key = key
-    }
-    return vnode
+    return new Vnode(type, props, key, CurrentOwner.cur)
 }
+
+function Vnode(type, props, key, owner) {
+    this.type = type
+    this.props = props
+    this.key = key || null
+    this._owner = owner || null
+}
+
+Vnode.prototype = {
+    getDOMNode: function() {
+        return this.dom || null
+    },
+    $$typeof: 1
+}
+
 /**
  * 遍平化children，并合并相邻的简单数据类型
  * 

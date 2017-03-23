@@ -12,7 +12,7 @@ export function Component(props, context) {
     this.context = context
     this.props = props
     this.uuid = Math.random()
-
+    this.refs = {}
     if (!this.state)
         this.state = {}
 }

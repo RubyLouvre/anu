@@ -9,29 +9,8 @@
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
         class Hello extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    count: 1
-                }
-                this.incrementCount = this.incrementCount.bind(this)
-            }
-            componentWillMount() {
-                console.log('hello componentWillMount ')
-            }
-            componentWillUpdate() {
-                console.log('hello componentWillUpdate ')
-            }
-            componentDidUpdate() {
-                console.log('hello componentDidUpdate ')
-            }
-
-            componentDidMount() {
-                console.log('hello componentDidMount ')
-            }
             render() {
-
-                return React.createElement('div', {
+                var vnode = React.createElement('div', {
                         ref: 'aaa'
                     },
                     React.createElement('button', {
@@ -41,7 +20,10 @@
                         ref: 'ccc'
                     }, this.state.count)
                 )
+                console.log(this)
+                return vnode
             }
+
         }
 
         window.onload = function() {
