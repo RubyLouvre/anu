@@ -8,6 +8,7 @@
   import { applyComponentHook } from './lifecycle'
   import { transaction } from './transaction'
   import { toVnode } from './toVnode'
+  import { addGlobalEventListener, getBrowserName } from './event'
 
 
   /**
@@ -132,6 +133,10 @@
       diffChildren(dom, vnode.props.children, context, prevChildren)
       return dom
   }
+  var eventNameCache = {
+      'onClick': 'click',
+      'onChange': 'change'
+  }
 
 
   /**
@@ -142,44 +147,41 @@
    * @param {any} nextProps 
    */
   export function diffProps(dom, props, nextProps) {
-      for (var i in nextProps) {
-          if (i === 'children') {
+      for (let name in nextProps) {
+          if (name === 'children') {
               continue
           }
-          var val = nextProps[i]
+          var val = nextProps[name]
 
-          if (isEvent(i, val)) {
-              if (!props[i]) { //添加新事件
-                  dom.addEventListener(i.slice(2).toLowerCase(), function(e) {
-                      transaction.isInTransation = true
-                      var ret = val.call(dom, e)
-                      transaction.isInTransation = false
-                      transaction.enqueue()
-                      return ret
-                  })
-                  props[i] = val
+          if (isEvent(name)) {
+              if (!props[name]) { //添加全局监听事件
+                  var eventName = getBrowserName(name)
+                  addGlobalEventListener(eventName)
               }
+              var events = (dom.__events || (dom.__events = {}))
+              events[name] = props[name] = val
               continue
           }
-          if (val !== props[i]) {
+          if (val !== props[name]) {
               //移除属性
               if (val === false || val === void 666 || val === null) {
-                  dom.removeAttribute(i)
-                  delete props[i]
+                  dom.removeAttribute(name)
+                  delete props[name]
               } else { //添加新属性
-                  dom.setAttribute(i, val + '')
-                  props[i] = val
+                  dom.setAttribute(name, val + '')
+                  props[name] = val
               }
           }
       }
-      for (var i in props) {
-          if (!(i in nextProps)) {
-              if (isEvent(i, props[i])) { //移除事件
-                  dom.removeEventListener(i.slice(2).toLowerCase(), props[i])
+      for (let name in props) {
+          if (!(name in nextProps)) {
+              if (isEvent(name)) { //移除事件
+                  var events = dom.__events || {}
+                  delete events[name]
               } else { //移除属性
-                  dom.removeAttribute(i)
+                  dom.removeAttribute(name)
               }
-              delete props[i]
+              delete props[name]
           }
       }
   }
@@ -342,17 +344,17 @@
    */
   export function toDOM(vnode, context, parentNode, replaced) {
       vnode = toVnode(vnode, context)
+      var instance = vnode.instance
       var dom
       if (vnode.type === '#text') {
           dom = document.createTextNode(vnode.text)
       } else {
           dom = document.createElement(vnode.type)
-          dom.__type = vnode.type
-          diffProps(dom, {}, vnode.props)
 
+          diffProps(dom, {}, vnode.props)
           diffChildren(dom, vnode.props.children, context, []) //添加第4参数
       }
-      var instance = vnode.instance
+
       var canComponentDidMount = instance && !vnode.dom
       vnode.dom = dom
       if (parentNode) {

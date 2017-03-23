@@ -48,7 +48,7 @@ export function inherit(SubClass, SupClass) {
  * @returns 
  */
 export function isEvent(name, val) {
-    return /^on\w/.test(name) && typeof val === 'function'
+    return /^on\w/.test(name)
 }
 
 var lowerCache = {}

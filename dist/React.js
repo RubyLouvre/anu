@@ -124,7 +124,7 @@
       * @returns 
       */
      function isEvent(name, val) {
-         return /^on\w/.test(name) && typeof val === 'function'
+         return /^on\w/.test(name)
      }
 
      /**
@@ -268,6 +268,128 @@
              }
          }
 
+     var eventMap = {
+           mouseover: 'MouseOver',
+           mouseout: 'MouseOut',
+           mouseleave: 'MouseLeave',
+           mouseenter: 'MouseEnter'
+       }
+
+       function dispatchEvent(e) {
+           e = new SyntheticEvent(e)
+           var target = e.target
+           var paths = []
+           do {
+               var events = target.__events
+               if (events) {
+                   paths.push({
+                       dom: target,
+                       props: events
+                   })
+               }
+           } while ((target = target.parentNode) && target.nodeType === 1)
+
+           var type = eventMap[e.type] || e.type
+
+           var capitalized = capitalize(type)
+           var bubble = 'on' + capitalized
+           var captured = 'on' + capitalized + 'Capture'
+           transaction.isInTransation = true
+           for (var i = paths.length; i--;) { //从上到下
+               var path = paths[i]
+               var fn = path.props[captured]
+               if (typeof fn === 'function') {
+                   event.currentTarget = path.dom
+                   fn.call(path.dom, event)
+                   if (event._stopPropagation) {
+                       break
+                   }
+               }
+           }
+
+           for (var i = 0, n = paths.length; i < n; i++) { //从下到上
+               var path = paths[i]
+               var fn = path.props[bubble]
+               if (typeof fn === 'function') {
+                   event.currentTarget = path.dom
+                   fn.call(path.dom, event)
+                   if (event._stopPropagation) {
+                       break
+                   }
+               }
+           }
+           transaction.isInTransation = false
+           transaction.enqueue()
+       }
+
+       function capitalize(str) {
+           return str.charAt(0).toUpperCase() + str.slice(1)
+       }
+
+       var globalEvents = {}
+       function addGlobalEventListener(name) {
+           if (!globalEvents[name]) {
+               globalEvents[name] = true
+               document.addEventListener(name, dispatchEvent)
+           }
+       }
+
+       var eventNameCache$1 = {}
+       var ron = /^on/
+       var rcapture = /Capture$/
+       function getBrowserName(name) {
+           var n = eventNameCache$1[name]
+           if (n) {
+               return n
+           }
+           return eventNameCache$1[name] = name.replace(ron, '').
+           replace(rcapture, '').toLowerCase()
+       }
+
+
+       function SyntheticEvent(event) {
+           if (event.originalEvent) {
+               return event
+           }
+           for (var i in event) {
+               if (!eventProto[i]) {
+                   this[i] = event[i]
+               }
+           }
+           if (!this.target) {
+               this.target = event.srcElement
+           }
+           var target = this.target
+           this.fixEvent()
+           this.timeStamp = new Date() - 0
+           this.originalEvent = event
+       }
+
+       var eventProto = SyntheticEvent.prototype = {
+           fixEvent: function() {}, //留给以后扩展用
+           preventDefault: function() {
+               var e = this.originalEvent || {}
+               e.returnValue = this.returnValue = false
+               if (e.preventDefault) {
+                   e.preventDefault()
+               }
+           },
+           stopPropagation: function() {
+               var e = this.originalEvent || {}
+               e.cancelBubble = this.$$stop = true
+               if (e.stopPropagation) {
+                   e.stopPropagation()
+               }
+           },
+           stopImmediatePropagation: function() {
+               this.stopPropagation()
+               this.stopImmediate = true
+           },
+           toString: function() {
+               return '[object Event]'
+           }
+       }
+
      /**
         * 渲染组件
         * 
@@ -390,8 +512,6 @@
            diffChildren(dom, vnode.props.children, context, prevChildren)
            return dom
        }
-
-
        /**
         * 修改dom的属性与事件
         * 
@@ -400,44 +520,41 @@
         * @param {any} nextProps 
         */
        function diffProps(dom, props, nextProps) {
-           for (var i in nextProps) {
-               if (i === 'children') {
+           for (let name in nextProps) {
+               if (name === 'children') {
                    continue
                }
-               var val = nextProps[i]
+               var val = nextProps[name]
 
-               if (isEvent(i, val)) {
-                   if (!props[i]) { //添加新事件
-                       dom.addEventListener(i.slice(2).toLowerCase(), function(e) {
-                           transaction.isInTransation = true
-                           var ret = val.call(dom, e)
-                           transaction.isInTransation = false
-                           transaction.enqueue()
-                           return ret
-                       })
-                       props[i] = val
+               if (isEvent(name)) {
+                   if (!props[name]) { //添加全局监听事件
+                       var eventName = getBrowserName(name)
+                       addGlobalEventListener(eventName)
                    }
+                   var events = (dom.__events || (dom.__events = {}))
+                   events[name] = props[name] = val
                    continue
                }
-               if (val !== props[i]) {
+               if (val !== props[name]) {
                    //移除属性
                    if (val === false || val === void 666 || val === null) {
-                       dom.removeAttribute(i)
-                       delete props[i]
+                       dom.removeAttribute(name)
+                       delete props[name]
                    } else { //添加新属性
-                       dom.setAttribute(i, val + '')
-                       props[i] = val
+                       dom.setAttribute(name, val + '')
+                       props[name] = val
                    }
                }
            }
-           for (var i in props) {
-               if (!(i in nextProps)) {
-                   if (isEvent(i, props[i])) { //移除事件
-                       dom.removeEventListener(i.slice(2).toLowerCase(), props[i])
+           for (let name in props) {
+               if (!(name in nextProps)) {
+                   if (isEvent(name)) { //移除事件
+                       var events = dom.__events || {}
+                       delete events[name]
                    } else { //移除属性
-                       dom.removeAttribute(i)
+                       dom.removeAttribute(name)
                    }
-                   delete props[i]
+                   delete props[name]
                }
            }
        }
@@ -600,17 +717,17 @@
         */
        function toDOM(vnode, context, parentNode, replaced) {
            vnode = toVnode(vnode, context)
+           var instance = vnode.instance
            var dom
            if (vnode.type === '#text') {
                dom = document.createTextNode(vnode.text)
            } else {
                dom = document.createElement(vnode.type)
-               dom.__type = vnode.type
-               diffProps(dom, {}, vnode.props)
 
+               diffProps(dom, {}, vnode.props)
                diffChildren(dom, vnode.props.children, context, []) //添加第4参数
            }
-           var instance = vnode.instance
+
            var canComponentDidMount = instance && !vnode.dom
            vnode.dom = dom
            if (parentNode) {
@@ -666,8 +783,8 @@
           * 
           * @param {any} instance 
           * @param {any} state 
-          * @param {any} cb 
-          * @param {any} force 
+          * @param {any} cb fire by component did update
+          * @param {any} force ignore shouldComponentUpdate
           */
      function setStateProxy(instance, state, cb, force) {
          if (typeof cb === 'function')

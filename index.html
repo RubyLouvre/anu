@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
@@ -17,62 +17,35 @@
                 this.incrementCount = this.incrementCount.bind(this)
             }
             componentWillMount() {
-                console.log('hello componentWillMount')
-
+                console.log('hello componentWillMount ')
             }
             componentWillUpdate() {
-                console.log('hello componentWillUpdate')
+                console.log('hello componentWillUpdate ')
             }
             componentDidUpdate() {
-                console.log('hello componentDidUpdate')
+                console.log('hello componentDidUpdate ')
             }
-            incrementCount() {
-                console.log('9999999')
-                this.state.count += 2222
-                this.forceUpdate(function() {
-                    console.log('11111')
-                })
 
-            }
             componentDidMount() {
-                console.log('hello componentDidMount')
+                console.log('hello componentDidMount ')
             }
             render() {
 
-                return React.createElement(World, {
-                        onClick: this.incrementCount
+                return React.createElement('div', {
+                        ref: 'aaa'
                     },
                     React.createElement('button', {
-                        onClick: this.incrementCount
-                    }, '点我添加'),
-                    React.createElement('p', null, this.state.count)
+                        ref: 'bbb'
+                    }, '点我添加 '),
+                    React.createElement('p', {
+                        ref: 'ccc'
+                    }, this.state.count)
                 )
             }
         }
-        class World extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 111
-                }
-            }
-            onClick() {
 
-            }
-            render() {
-
-                this.setState({
-                    aaa: 333
-                })
-                return React.createElement('div', Object.assign({}, this.props, {
-                    onClick: function() {
-                        console.log('1212324324')
-                    }
-                }), this.state.aaa, this.props.children)
-            }
-        }
         window.onload = function() {
-            ReactDOM.render(React.createElement(Hello, null, '!!!'), document.body)
+            ReactDOM.render(React.createElement(Hello, null, '!!! '), document.body)
         }
     </script>
 </head>
