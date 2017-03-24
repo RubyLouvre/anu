@@ -4,6 +4,10 @@
      (global.React = factory());
 }(this, function () {
 
+     var CurrentOwner = {
+         cur: null
+     }
+
      var queue = []
       var callbacks = []
 
@@ -14,18 +18,21 @@
                   " but can be moved to `componentWillMount`")
           }
       }
+
+
       var transaction = {
           isInTransation: false,
           enqueueCallback: function(obj) {
-              callbacks.push(obj)
-
               //它们是保证在ComponentDidUpdate后执行
+              callbacks.push(obj)
           },
           renderWithoutSetState: function(instance) {
               instance.setState = instance.forceUpdate = setState
               try {
+                  CurrentOwner.cur = instance
                   var vnode = instance.render()
               } finally {
+                  CurrentOwner.cur = null
                   delete instance.setState
                   delete instance.forceUpdate
               }
@@ -440,6 +447,11 @@
            if (instance) {
                vnode.instance = void 666
            }
+           var ref = vnode.props.ref
+           if (typeof ref === 'string') {
+               var o = vnode._owner
+               o && (o.refs[ref] = null)
+           }
 
            vnode.props.children.forEach(function(el) {
                if (el.props) {
@@ -508,9 +520,39 @@
                }
                dom = nextDom
            }
-           diffProps(dom, prevProps, vnode.props)
+           diffProps(dom, vnode._owner, prevProps, vnode.props)
            diffChildren(dom, vnode.props.children, context, prevChildren)
            return dom
+       }
+       function clickHack() {}
+       let inMobile = 'ontouchstart' in document
+
+       /**
+        * 收集DOM到组件实例的refs中
+        * 
+        * @param {any} instance 
+        * @param {any} ref 
+        * @param {any} dom 
+        */
+       function collectRef(instance, ref, dom, mount) {
+           if (typeof ref === 'function') {
+               if (mount) {
+                   ref(instance)
+               } else {
+                   transaction.enqueueCallback({
+                       instance: instance,
+                       cb: ref
+                   })
+               }
+
+           } else if (typeof ref === 'string') {
+               instance.refs[ref] = dom
+               dom.getDOMNode = getDOMNode
+           }
+       }
+       //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+       function getDOMNode() {
+           return this
        }
        /**
         * 修改dom的属性与事件
@@ -519,17 +561,27 @@
         * @param {any} props 
         * @param {any} nextProps 
         */
-       function diffProps(dom, props, nextProps) {
+
+       function diffProps(dom, instance, props, nextProps) {
            for (let name in nextProps) {
                if (name === 'children') {
                    continue
                }
                var val = nextProps[name]
-
+               if (name === 'ref') {
+                   if (props[name] !== val) {
+                       instance && collectRef(instance, val, dom, !instance.vnode.dom)
+                   }
+                   continue
+               }
                if (isEvent(name)) {
                    if (!props[name]) { //添加全局监听事件
                        var eventName = getBrowserName(name)
                        addGlobalEventListener(eventName)
+                   }
+                   if (inMobile && eventName === 'click') {
+                       elem.addEventListener('click', clickHack)
+
                    }
                    var events = (dom.__events || (dom.__events = {}))
                    events[name] = props[name] = val
@@ -723,15 +775,14 @@
                dom = document.createTextNode(vnode.text)
            } else {
                dom = document.createElement(vnode.type)
-
-               diffProps(dom, {}, vnode.props)
+               diffProps(dom, vnode._owner, {}, vnode.props)
                diffChildren(dom, vnode.props.children, context, []) //添加第4参数
            }
 
            var canComponentDidMount = instance && !vnode.dom
            vnode.dom = dom
            if (parentNode) {
-               var instances, instance, childInstance
+               var instances, childInstance
                if (canComponentDidMount) { //判定能否调用componentDidMount方法
                    instances = getInstances(instance)
                }
@@ -759,7 +810,7 @@
          this.context = context
          this.props = props
          this.uuid = Math.random()
-
+         this.refs = {}
          if (!this.state)
              this.state = {}
      }
@@ -818,9 +869,8 @@
      function updateComponentProxy() { //这里触发视图更新
          var instance = this.component
          if (!instance.vnode.dom) {
-             var p = instance.container
-             var a = toDOM(instance.vnode)
-             p.appendChild(a)
+             var parentNode = instance.container
+             toDOM(instance.vnode, instance.context, parentNode)
          } else {
              updateComponent(this.component)
          }
@@ -947,15 +997,23 @@
          }
          props.children = c
          Object.freeze(props)
-         var vnode = {
-             type: type,
-             props: props
-         }
-         if (key) {
-             vnode.key = key
-         }
-         return vnode
+         return new Vnode(type, props, key, CurrentOwner.cur)
      }
+
+     function Vnode(type, props, key, owner) {
+         this.type = type
+         this.props = props
+         this.key = key || null
+         this._owner = owner || null
+     }
+
+     Vnode.prototype = {
+         getDOMNode: function() {
+             return this.dom || null
+         },
+         $$typeof: 1
+     }
+
      /**
       * 遍平化children，并合并相邻的简单数据类型
       * 
