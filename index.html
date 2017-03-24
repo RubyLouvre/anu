@@ -5,16 +5,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
+    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>　-->
     <script>
         class Hello extends React.Component {
             constructor(props) {
                 super(props)
                 this.state = {
-                    aaa: 111
-                }
-                this.kkk.bind(this)
+                        aaa: 111
+                    }
+                    // this.kkk.bind(this)
             }
             componentWillUpdate() {
                 console.log('will update')
@@ -39,7 +39,9 @@
             render() {
 
                 var vnode = React.createElement('div', {
-                        ref: this.kkk,
+                        ref: function() {
+                            console.log('xxxxs')
+                        },
                         aaa: this.state.aaa
                     },
                     this.state.aaa,

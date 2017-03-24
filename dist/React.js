@@ -275,6 +275,50 @@
              }
          }
 
+     function patchStyle(dom, oldStyle, newStyle) {
+         if (oldStyle === newStyle) {
+             return
+         }
+         for (var name in newStyle) {
+             var val = newStyle[name]
+             if (oldStyle[name] !== val) {
+                 delete oldStyle[name]
+                 name = getStyleName(name, dom)
+                 var type = typeof val
+                 if (type === void 666 || type === null) {
+                     val = ''
+                 } else if (rnumber.test(val) && !cssNumber[name]) {
+                     val = val + 'px'
+                 }
+                 dom.style[name] = val
+             }
+         }
+         for (var name in oldStyle) {
+             if (!(name in newStyle)) {
+                 dom.style[name] = ''
+             }
+         }
+     }
+
+
+     var rnumber = /^-?\d+(\.\d+)?$/
+     var rword = /[^, ]+/g
+
+     function oneObject(array, val) {
+         if (typeof array === 'string') {
+             array = array.match(rword) || []
+         }
+         var result = {},
+             value = val !== void 0 ? val : 1
+         for (var i = 0, n = array.length; i < n; i++) {
+             result[array[i]] = value
+         }
+         return result
+     }
+
+     var cssMap = oneObject('float', 'cssFloat')
+     var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
+
      var eventMap = {
            mouseover: 'MouseOver',
            mouseout: 'MouseOut',
@@ -528,33 +572,6 @@
        let inMobile = 'ontouchstart' in document
 
        /**
-        * 收集DOM到组件实例的refs中
-        * 
-        * @param {any} instance 
-        * @param {any} ref 
-        * @param {any} dom 
-        */
-       function collectRef(instance, ref, dom, mount) {
-           if (typeof ref === 'function') {
-               if (mount) {
-                   ref(instance)
-               } else {
-                   transaction.enqueueCallback({
-                       instance: instance,
-                       cb: ref
-                   })
-               }
-
-           } else if (typeof ref === 'string') {
-               instance.refs[ref] = dom
-               dom.getDOMNode = getDOMNode
-           }
-       }
-       //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-       function getDOMNode() {
-           return this
-       }
-       /**
         * 修改dom的属性与事件
         * 
         * @param {any} dom 
@@ -563,6 +580,9 @@
         */
 
        function diffProps(dom, instance, props, nextProps) {
+           if (props === nextProps) {
+               return
+           }
            for (let name in nextProps) {
                if (name === 'children') {
                    continue
@@ -570,8 +590,12 @@
                var val = nextProps[name]
                if (name === 'ref') {
                    if (props[name] !== val) {
-                       instance && collectRef(instance, val, dom, !instance.vnode.dom)
+                       instance && patchRef(instance, val, dom)
                    }
+                   continue
+               }
+               if (name === 'style') {
+                   patchStyle(dom, props[style], val)
                    continue
                }
                if (isEvent(name)) {

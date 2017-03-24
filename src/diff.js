@@ -8,6 +8,8 @@
   import { applyComponentHook } from './lifecycle'
   import { transaction } from './transaction'
   import { toVnode } from './toVnode'
+  import { patchStyle } from './style'
+
   import { addGlobalEventListener, getBrowserName } from './event'
 
 
@@ -155,15 +157,7 @@
    */
   function collectRef(instance, ref, dom, mount) {
       if (typeof ref === 'function') {
-          if (mount) {
-              ref(instance)
-          } else {
-              transaction.enqueueCallback({
-                  instance: instance,
-                  cb: ref
-              })
-          }
-
+          ref(instance)
       } else if (typeof ref === 'string') {
           instance.refs[ref] = dom
           dom.getDOMNode = getDOMNode
@@ -182,6 +176,9 @@
    */
 
   export function diffProps(dom, instance, props, nextProps) {
+      if (props === nextProps) {
+          return
+      }
       for (let name in nextProps) {
           if (name === 'children') {
               continue
@@ -189,8 +186,12 @@
           var val = nextProps[name]
           if (name === 'ref') {
               if (props[name] !== val) {
-                  instance && collectRef(instance, val, dom, !instance.vnode.dom)
+                  instance && patchRef(instance, val, dom)
               }
+              continue
+          }
+          if (name === 'style') {
+              patchStyle(dom, props[style], val)
               continue
           }
           if (isEvent(name)) {
