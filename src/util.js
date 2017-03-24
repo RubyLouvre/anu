@@ -106,3 +106,29 @@ export function isStateless(type) {
     var fn = type.prototype
     return isComponent(type) && (!fn || !fn.render)
 }
+
+var rword = /[^, ]+/g
+
+export function oneObject(array, val) {
+    if (typeof array === 'string') {
+        array = array.match(rword) || []
+    }
+    var result = {},
+        value = val !== void 0 ? val : 1
+    for (var i = 0, n = array.length; i < n; i++) {
+        result[array[i]] = value
+    }
+    return result
+}
+
+var rcamelize = /[-_][^-_]/g
+export function camelize(target) {
+    //提前判断，提高getStyle等的效率
+    if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
+        return target
+    }
+    //转换为驼峰风格
+    return target.replace(rcamelize, function(match) {
+        return match.charAt(1).toUpperCase()
+    })
+}
