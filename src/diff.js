@@ -153,12 +153,17 @@
    * @param {any} ref 
    * @param {any} dom 
    */
-  function collectRef(instance, ref, dom) {
+  function collectRef(instance, ref, dom, mount) {
       if (typeof ref === 'function') {
-          transcation.enqueueCallback({
-              instance: instance,
-              cb: ref
-          })
+          if (mount) {
+              ref(instance)
+          } else {
+              transaction.enqueueCallback({
+                  instance: instance,
+                  cb: ref
+              })
+          }
+
       } else if (typeof ref === 'string') {
           instance.refs[ref] = dom
           dom.getDOMNode = getDOMNode
@@ -183,7 +188,9 @@
           }
           var val = nextProps[name]
           if (name === 'ref') {
-              instance && collectRef(instance, val, dom)
+              if (props[name] !== val) {
+                  instance && collectRef(instance, val, dom, !instance.vnode.dom)
+              }
               continue
           }
           if (isEvent(name)) {
@@ -387,7 +394,6 @@
           dom = document.createTextNode(vnode.text)
       } else {
           dom = document.createElement(vnode.type)
-
           diffProps(dom, vnode._owner, {}, vnode.props)
           diffChildren(dom, vnode.props.children, context, []) //添加第4参数
       }
@@ -395,7 +401,7 @@
       var canComponentDidMount = instance && !vnode.dom
       vnode.dom = dom
       if (parentNode) {
-          var instances, instance, childInstance
+          var instances, childInstance
           if (canComponentDidMount) { //判定能否调用componentDidMount方法
               instances = getInstances(instance)
           }

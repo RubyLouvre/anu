@@ -15,9 +15,8 @@
  export var transaction = {
      isInTransation: false,
      enqueueCallback: function(obj) {
-         callbacks.push(obj)
-
          //它们是保证在ComponentDidUpdate后执行
+         callbacks.push(obj)
      },
      renderWithoutSetState: function(instance) {
          instance.setState = instance.forceUpdate = setState

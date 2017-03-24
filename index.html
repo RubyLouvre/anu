@@ -5,15 +5,47 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <!-- <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
     <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
         class Hello extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 111
+                }
+                this.kkk.bind(this)
+            }
+            componentWillUpdate() {
+                console.log('will update')
+            }
+            componentWillMount() {
+                console.log('will mount')
+            }
+            componentDidMount() {
+                console.log('did mount')
+            }
+            componentDidUpdate() {
+                console.log('did update')
+            }
+            kkk() {
+                console.log('called by ref')
+            }
+            clickHandle() {
+                this.setState({
+                    aaa: new Date - 0
+                })
+            }
             render() {
+
                 var vnode = React.createElement('div', {
-                        ref: 'aaa'
+                        ref: this.kkk,
+                        aaa: this.state.aaa
                     },
+                    this.state.aaa,
                     React.createElement('button', {
+                        type: 'button',
+                        onClick: this.clickHandle.bind(this),
                         ref: 'bbb'
                     }, '点我添加 '),
                     React.createElement('p', {

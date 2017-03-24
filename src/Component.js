@@ -71,9 +71,8 @@ function roughSetState() { //强制更新
 function updateComponentProxy() { //这里触发视图更新
     var instance = this.component
     if (!instance.vnode.dom) {
-        var p = instance.container
-        var a = toDOM(instance.vnode)
-        p.appendChild(a)
+        var parentNode = instance.container
+        toDOM(instance.vnode, instance.context, parentNode)
     } else {
         updateComponent(this.component)
     }
