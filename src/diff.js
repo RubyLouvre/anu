@@ -137,7 +137,9 @@
           dom = nextDom
       }
       diffProps(dom, vnode._owner, prevProps, vnode.props)
-      diffChildren(dom, vnode.props.children, context, prevChildren)
+      if (!instance || !instance._hasSetInnerHTML) {
+          diffChildren(dom, vnode.props.children, context, prevChildren)
+      }
       return dom
   }
   var eventNameCache = {
@@ -155,7 +157,7 @@
    * @param {any} ref 
    * @param {any} dom 
    */
-  function collectRef(instance, ref, dom, mount) {
+  function patchRef(instance, ref, dom, mount) {
       if (typeof ref === 'function') {
           ref(instance)
       } else if (typeof ref === 'string') {
@@ -194,6 +196,13 @@
               patchStyle(dom, props[style], val)
               continue
           }
+          if (name === 'dangerouslySetInnerHTML') {
+              var oldhtml = props[name] && props[name]._html
+              instance && (instance._hasSetInnerHTML = true)
+              if (val && val._html !== oldhtml) {
+                  dom.innerHTML = val._html
+              }
+          }
           if (isEvent(name)) {
               if (!props[name]) { //添加全局监听事件
                   var eventName = getBrowserName(name)
@@ -207,6 +216,7 @@
               events[name] = props[name] = val
               continue
           }
+
           if (val !== props[name]) {
               //移除属性
               if (val === false || val === void 666 || val === null) {
@@ -396,7 +406,8 @@
       } else {
           dom = document.createElement(vnode.type)
           diffProps(dom, vnode._owner, {}, vnode.props)
-          diffChildren(dom, vnode.props.children, context, []) //添加第4参数
+          if (!instance || !instance._hasSetInnerHTML)
+              diffChildren(dom, vnode.props.children, context, []) //添加第4参数
       }
 
       var canComponentDidMount = instance && !vnode.dom

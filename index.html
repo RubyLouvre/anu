@@ -12,8 +12,9 @@
             constructor(props) {
                 super(props)
                 this.state = {
-                        aaa: 111
-                    }
+                    aaa: 111
+                }
+                console.log('9999999')
                     // this.kkk.bind(this)
             }
             componentWillUpdate() {
@@ -31,37 +32,31 @@
             kkk() {
                 console.log('called by ref')
             }
-            clickHandle() {
-                this.setState({
-                    aaa: new Date - 0
-                })
-            }
+
             render() {
 
-                var vnode = React.createElement('div', {
-                        ref: function() {
-                            console.log('xxxxs')
-                        },
-                        aaa: this.state.aaa
-                    },
-                    this.state.aaa,
-                    React.createElement('button', {
-                        type: 'button',
-                        onClick: this.clickHandle.bind(this),
-                        ref: 'bbb'
-                    }, '点我添加 '),
-                    React.createElement('p', {
-                        ref: 'ccc'
-                    }, this.state.count)
-                )
-                console.log(this)
+                var vnode = React.createElement('div', Object.assign({}, {
+                        onClick: (function aaa() {
+                            console.log(this.xxx, this)
+                            this.xxx = "kkk" + (new Date - 0)
+                        }).bind(this)
+                    }),
+                    "xxx")
+
+
                 return vnode
             }
 
         }
 
         window.onload = function() {
-            ReactDOM.render(React.createElement(Hello, null, '!!! '), document.body)
+            ReactDOM.render(React.createElement('div', null, React.createElement(Hello, {
+
+                }, '!!! '),
+                React.createElement(Hello, {
+
+                }, '2222')
+            ), document.body)
         }
     </script>
 </head>

@@ -184,6 +184,20 @@
          return isComponent(type) && (!fn || !fn.render)
      }
 
+     var rword = /[^, ]+/g
+
+     function oneObject(array, val) {
+         if (typeof array === 'string') {
+             array = array.match(rword) || []
+         }
+         var result = {},
+             value = val !== void 0 ? val : 1
+         for (var i = 0, n = array.length; i < n; i++) {
+             result[array[i]] = value
+         }
+         return result
+     }
+
      var lifecycle = {
          '-2': 'getDefaultProps',
          '-1': 'getInitialState',
@@ -275,6 +289,15 @@
              }
          }
 
+     var rnumber = /^-?\d+(\.\d+)?$/
+         /**
+          * 为元素样子设置样式
+          * 
+          * @export
+          * @param {any} dom 
+          * @param {any} oldStyle 
+          * @param {any} newStyle 
+          */
      function patchStyle(dom, oldStyle, newStyle) {
          if (oldStyle === newStyle) {
              return
@@ -282,42 +305,30 @@
          for (var name in newStyle) {
              var val = newStyle[name]
              if (oldStyle[name] !== val) {
-                 delete oldStyle[name]
+                 delete oldStyle[name] //减少旧对象的键值对，以便减少第二次for in循环的负担
                  name = getStyleName(name, dom)
                  var type = typeof val
                  if (type === void 666 || type === null) {
-                     val = ''
+                     val = '' //清除样式
                  } else if (rnumber.test(val) && !cssNumber[name]) {
-                     val = val + 'px'
+                     val = val + 'px' //添加单位
                  }
-                 dom.style[name] = val
+                 dom.style[name] = val //应用样式
              }
          }
          for (var name in oldStyle) {
              if (!(name in newStyle)) {
-                 dom.style[name] = ''
+                 dom.style[name] = '' //清除样式
              }
          }
      }
 
 
-     var rnumber = /^-?\d+(\.\d+)?$/
-     var rword = /[^, ]+/g
 
-     function oneObject(array, val) {
-         if (typeof array === 'string') {
-             array = array.match(rword) || []
-         }
-         var result = {},
-             value = val !== void 0 ? val : 1
-         for (var i = 0, n = array.length; i < n; i++) {
-             result[array[i]] = value
-         }
-         return result
-     }
+
+     var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
      var cssMap = oneObject('float', 'cssFloat')
-     var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
      var eventMap = {
            mouseover: 'MouseOver',
@@ -565,12 +576,33 @@
                dom = nextDom
            }
            diffProps(dom, vnode._owner, prevProps, vnode.props)
-           diffChildren(dom, vnode.props.children, context, prevChildren)
+           if (!instance || !instance._hasSetInnerHTML) {
+               diffChildren(dom, vnode.props.children, context, prevChildren)
+           }
            return dom
        }
        function clickHack() {}
        let inMobile = 'ontouchstart' in document
 
+       /**
+        * 收集DOM到组件实例的refs中
+        * 
+        * @param {any} instance 
+        * @param {any} ref 
+        * @param {any} dom 
+        */
+       function patchRef(instance, ref, dom, mount) {
+           if (typeof ref === 'function') {
+               ref(instance)
+           } else if (typeof ref === 'string') {
+               instance.refs[ref] = dom
+               dom.getDOMNode = getDOMNode
+           }
+       }
+       //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+       function getDOMNode() {
+           return this
+       }
        /**
         * 修改dom的属性与事件
         * 
@@ -598,6 +630,13 @@
                    patchStyle(dom, props[style], val)
                    continue
                }
+               if (name === 'dangerouslySetInnerHTML') {
+                   var oldhtml = props[name] && props[name]._html
+                   instance && (instance._hasSetInnerHTML = true)
+                   if (val && val._html !== oldhtml) {
+                       dom.innerHTML = val._html
+                   }
+               }
                if (isEvent(name)) {
                    if (!props[name]) { //添加全局监听事件
                        var eventName = getBrowserName(name)
@@ -611,6 +650,7 @@
                    events[name] = props[name] = val
                    continue
                }
+
                if (val !== props[name]) {
                    //移除属性
                    if (val === false || val === void 666 || val === null) {
@@ -800,7 +840,8 @@
            } else {
                dom = document.createElement(vnode.type)
                diffProps(dom, vnode._owner, {}, vnode.props)
-               diffChildren(dom, vnode.props.children, context, []) //添加第4参数
+               if (!instance || !instance._hasSetInnerHTML)
+                   diffChildren(dom, vnode.props.children, context, []) //添加第4参数
            }
 
            var canComponentDidMount = instance && !vnode.dom
