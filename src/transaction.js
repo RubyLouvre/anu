@@ -40,11 +40,9 @@
              var mainProcessing = []
              queue.length = callbacks.length = 0
              var unique = {}
-
-
              preProcessing.forEach(function(request) {
                  try {
-                     request.init(unique) //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
+                     request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
                      if (!unique[request.component.uuid]) {
                          unique[request.component.uuid] = 1
                          mainProcessing.push(request)

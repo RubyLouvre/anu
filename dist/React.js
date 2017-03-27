@@ -48,11 +48,9 @@
                   var mainProcessing = []
                   queue.length = callbacks.length = 0
                   var unique = {}
-
-
                   preProcessing.forEach(function(request) {
                       try {
-                          request.init(unique) //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
+                          request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
                           if (!unique[request.component.uuid]) {
                               unique[request.component.uuid] = 1
                               mainProcessing.push(request)
@@ -249,6 +247,9 @@
                          }
                      }
                      var instance = new Type(props, context)
+                         //必须在这里添加vnode，因为willComponent里可能进行setState操作
+                     instance.vnode = vnode
+
                      Component.call(instance, props, context) //重点！！
                      applyComponentHook(instance, 0) //willMount
 
@@ -935,6 +936,7 @@
          var instance = this.component
          if (!instance.vnode.dom) {
              var parentNode = instance.container
+             instance.state = this.state //将merged state赋给它
              toDOM(instance.vnode, instance.context, parentNode)
          } else {
              updateComponent(this.component)
@@ -1130,10 +1132,10 @@
          while (container.firstChild) {
              container.removeChild(container.firstChild)
          }
-
          var root = createElement(TopLevelWrapper, { child: vnode });
-         var root = toVnode(root, {})
-
+         transaction.isInTransation = true
+         var root = toVnode(vnode, {})
+         transaction.isInTransation = false
          root.instance.container = container
          root.instance.forceUpdate(cb)
      }

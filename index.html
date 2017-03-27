@@ -6,57 +6,103 @@
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>　-->
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
     <script>
         class Hello extends React.Component {
             constructor(props) {
                 super(props)
                 this.state = {
-                    aaa: 111
-                }
-                console.log('9999999')
+                        aaa: 111
+                    }
                     // this.kkk.bind(this)
             }
             componentWillUpdate() {
+
                 console.log('will update')
             }
             componentWillMount() {
+                console.log('componentWillMount')
+                this.setState({
+                    aaa: this.state.aaa + 1
+                })
+                console.log(this.state.aaa, '第一次')
+                this.setState({
+                    aaa: this.state.aaa + 1
+                })
+                console.log(this.state.aaa, '第二次')
+                this.setState({
+                    aaa: this.state.aaa + 1
+
+                })
+                console.log(this.state.aaa, '第三次')
+                    //受影响
                 console.log('will mount')
             }
             componentDidMount() {
-                console.log('did mount')
+                //受影响
+                console.log('did mount', this.state.aaa)
             }
             componentDidUpdate() {
-                console.log('did update')
+                /* */
+                console.log(this.state.aaa)
+                var me = this
+                    //   setTimeout(function() {
+                    // console.log(me.state.aaa, '444')
+                    //  })*/
+                console.log('did update', this.state.aaa)
             }
-            kkk() {
-                console.log('called by ref')
+            clickHandle() {
+                this.setState({
+                    aaa: this.state.aaa + 10
+                })
+                console.log('called by click')
             }
-
+            componentWillReceiveProps() {
+                console.log('333')
+            }
             render() {
 
                 var vnode = React.createElement('div', Object.assign({}, {
-                        onClick: (function aaa() {
-                            console.log(this.xxx, this)
-                            this.xxx = "kkk" + (new Date - 0)
-                        }).bind(this)
+                        onClick: this.clickHandle.bind(this)
                     }),
-                    "xxx")
+                    this.props.children)
 
 
-                return vnode
+                return React.createElement('div', {}, vnode,
+                    React.createElement('p', {
+                        title: new Date - 0
+                    }, 'ddddd')
+                )
             }
 
         }
 
+        class World extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                        bbb: 111
+                    }
+                    // this.kkk.bind(this)
+            }
+            componentWillReceiveProps(props) {
+                console.log(this.state.bbb)
+                this.setState({
+                    bbb: this.state.bbb + 100
+                })
+                console.log(this.state.bbb, 'end')
+                console.log('丝丝')
+            }
+            render() {
+                return React.createElement('p', {
+                    title: new Date - 0
+                }, this.props.children, this.state.bbb)
+            }
+        }
+
         window.onload = function() {
-            ReactDOM.render(React.createElement('div', null, React.createElement(Hello, {
 
-                }, '!!! '),
-                React.createElement(Hello, {
-
-                }, '2222')
-            ), document.body)
+            ReactDOM.render(React.createElement(Hello, {}), document.body)
         }
     </script>
 </head>

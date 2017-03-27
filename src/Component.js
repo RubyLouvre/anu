@@ -72,6 +72,7 @@ function updateComponentProxy() { //这里触发视图更新
     var instance = this.component
     if (!instance.vnode.dom) {
         var parentNode = instance.container
+        instance.state = this.state //将merged state赋给它
         toDOM(instance.vnode, instance.context, parentNode)
     } else {
         updateComponent(this.component)

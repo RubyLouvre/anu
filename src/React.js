@@ -4,6 +4,7 @@ import { toVnode } from './toVnode'
 import { PureComponent } from './PureComponent'
 import { TopLevelWrapper } from './TopLevelWrapper'
 import { CurrentOwner } from './CurrentOwner'
+import { transaction } from './transaction'
 
 
 import { extend } from './util'
@@ -119,10 +120,10 @@ function render(vnode, container, cb) {
     while (container.firstChild) {
         container.removeChild(container.firstChild)
     }
-
     var root = createElement(TopLevelWrapper, { child: vnode });
-    var root = toVnode(root, {})
-
+    transaction.isInTransation = true
+    var root = toVnode(vnode, {})
+    transaction.isInTransation = false
     root.instance.container = container
     root.instance.forceUpdate(cb)
 }

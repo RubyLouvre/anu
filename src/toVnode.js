@@ -29,6 +29,9 @@
                     }
                 }
                 var instance = new Type(props, context)
+                    //必须在这里添加vnode，因为willComponent里可能进行setState操作
+                instance.vnode = vnode
+
                 Component.call(instance, props, context) //重点！！
                 applyComponentHook(instance, 0) //willMount
 
