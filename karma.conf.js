@@ -14,7 +14,7 @@ module.exports = function(config) {
 
 
         // list of files / patterns to load in the browser
-        files: ['./dist/React.test.js'],
+        files: ['./test/matchers.js', './dist/React.test.js'],
 
 
         // list of files to exclude

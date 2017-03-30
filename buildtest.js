@@ -36,7 +36,6 @@ module.exports = rollup.rollup({
     replace(/React\$1/g, 'React')
 
     result = babel.transform(code, {
-
         presets: ["es2015"],
         compact: false
     })
