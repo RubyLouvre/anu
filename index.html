@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
-    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>-->
+    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+    <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>
     <script>
         class Hello extends React.Component {
             constructor(props) {
@@ -43,12 +43,7 @@
                 console.log('did mount', this.state.aaa)
             }
             componentDidUpdate() {
-                /* */
-                console.log(this.state.aaa)
-                var me = this
-                    //   setTimeout(function() {
-                    // console.log(me.state.aaa, '444')
-                    //  })*/
+
                 console.log('did update', this.state.aaa)
             }
             clickHandle() {
@@ -69,7 +64,7 @@
 
 
                 return React.createElement('div', {}, vnode,
-                    React.createElement('p', {
+                    React.createElement(World, {
                         title: new Date - 0
                     }, 'ddddd')
                 )
@@ -86,23 +81,24 @@
                     // this.kkk.bind(this)
             }
             componentWillReceiveProps(props) {
+                console.log('componentWillReceiveProps')
                 console.log(this.state.bbb)
                 this.setState({
                     bbb: this.state.bbb + 100
                 })
                 console.log(this.state.bbb, 'end')
-                console.log('丝丝')
+                console.log('componentWillReceiveProps end')
             }
             render() {
                 return React.createElement('p', {
                     title: new Date - 0
-                }, this.props.children, this.state.bbb)
+                }, this.props.children, " ", this.state.bbb)
             }
         }
 
         window.onload = function() {
 
-            ReactDOM.render(React.createElement(Hello, {}), document.body)
+            ReactDOM.render(React.createElement(Hello, {}, '点我'), document.body)
         }
     </script>
 </head>

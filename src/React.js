@@ -47,8 +47,8 @@ function createElement(type, configs, children) {
         c = shallowEqualHack
     } else {
         c = flatChildren(c)
+        delete c.merge //注意这里的顺序
         Object.freeze(c)
-        delete c.merge
     }
     props.children = c
     Object.freeze(props)

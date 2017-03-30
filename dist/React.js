@@ -821,7 +821,7 @@
 
        }
 
-
+       //var mountOrder = 0
        /**
         * 
         * 
@@ -848,6 +848,7 @@
            var canComponentDidMount = instance && !vnode.dom
            vnode.dom = dom
            if (parentNode) {
+
                var instances, childInstance
                if (canComponentDidMount) { //判定能否调用componentDidMount方法
                    instances = getInstances(instance)
@@ -858,6 +859,7 @@
                    parentNode.appendChild(dom)
                }
                if (instances) {
+                   //instance._mountOrder = mountOrder++;
                    while (instance = instances.shift()) {
                        applyComponentHook(instance, 2)
                    }
@@ -885,6 +887,7 @@
      Component.prototype = {
 
              setState(state, cb) {
+
                  setStateProxy(this, state, cb)
              },
 
@@ -912,7 +915,7 @@
          transaction.enqueue({
              component: instance,
              state: state,
-             init: force ? gentleSetState : roughSetState,
+             init: force ? roughSetState : gentleSetState,
              exec: updateComponentProxy
          })
 
@@ -1018,7 +1021,7 @@
 
      let fn$1 = TopLevelWrapper.prototype
      fn$1.render = function() {
-         return this.props.child;
+         return this.props.child
      }
 
      var React = {
@@ -1059,8 +1062,8 @@
              c = shallowEqualHack
          } else {
              c = flatChildren(c)
+             delete c.merge //注意这里的顺序
              Object.freeze(c)
-             delete c.merge
          }
          props.children = c
          Object.freeze(props)

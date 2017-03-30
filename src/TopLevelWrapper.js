@@ -10,5 +10,5 @@ inherit(TopLevelWrapper, Component)
 
 let fn = TopLevelWrapper.prototype
 fn.render = function() {
-    return this.props.child;
+    return this.props.child
 }

@@ -386,7 +386,7 @@
 
   }
 
-
+  //var mountOrder = 0
   /**
    * 
    * 
@@ -413,6 +413,7 @@
       var canComponentDidMount = instance && !vnode.dom
       vnode.dom = dom
       if (parentNode) {
+
           var instances, childInstance
           if (canComponentDidMount) { //判定能否调用componentDidMount方法
               instances = getInstances(instance)
@@ -423,6 +424,7 @@
               parentNode.appendChild(dom)
           }
           if (instances) {
+              //instance._mountOrder = mountOrder++;
               while (instance = instances.shift()) {
                   applyComponentHook(instance, 2)
               }

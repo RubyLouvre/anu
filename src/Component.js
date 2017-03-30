@@ -21,6 +21,7 @@ export function Component(props, context) {
 Component.prototype = {
 
         setState(state, cb) {
+
             setStateProxy(this, state, cb)
         },
 
@@ -48,7 +49,7 @@ function setStateProxy(instance, state, cb, force) {
     transaction.enqueue({
         component: instance,
         state: state,
-        init: force ? gentleSetState : roughSetState,
+        init: force ? roughSetState : gentleSetState,
         exec: updateComponentProxy
     })
 
