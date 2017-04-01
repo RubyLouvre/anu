@@ -44,11 +44,10 @@ export function inherit(SubClass, SupClass) {
  * 判定否为与事件相关
  * 
  * @param {any} name 
- * @param {any} val 
  * @returns 
  */
-export function isEvent(name, val) {
-    return /^on\w/.test(name)
+export function isEvent(name) {
+    return /^on[A-Z]/.test(name)
 }
 
 var lowerCache = {}
@@ -95,6 +94,7 @@ export function matchInstance(instance, Type) {
 export function isComponent(type) {
     return typeof type === 'function'
 }
+
 /**
  * 
  * 
