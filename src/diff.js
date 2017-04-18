@@ -337,7 +337,7 @@
                   vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                   vnode.dom = diff(old.dom, vnode, context, parentNode, old)
               } else if (vnode.type === old.type) {
-                  if (vnode.type === '#text') {
+                  if (vnode.type === '#text' || vnode.type === '#comment') {
                       vnode.dom = old.dom
 
                       if (vnode.text !== old.text) {
@@ -352,6 +352,12 @@
                   }
               } else if (vnode.type === '#text') { //#text === p
                   var dom = document.createTextNode(vnode.text)
+                  vnode.dom = dom
+                  parentNode.removeChild(old.dom)
+                  vnode.action = '替换为文本'
+                  removeComponent(old) //移除元素节点或组件
+              } else if (vnode.type === '#comment') { //#text === p
+                  var dom = document.createComment(vnode.text)
                   vnode.dom = dom
                   parentNode.removeChild(old.dom)
                   vnode.action = '替换为文本'
@@ -401,6 +407,9 @@
       vnode = toVnode(vnode, context)
       var instance = vnode.instance
       var dom
+      if (vnode.type === '#comment') {
+          dom = document.createComment(vnode.text)
+      } else
       if (vnode.type === '#text') {
           dom = document.createTextNode(vnode.text)
       } else {

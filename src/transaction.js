@@ -23,6 +23,12 @@
          try {
              CurrentOwner.cur = instance
              var vnode = instance.render()
+             if (vnode === null) {
+                 vnode = {
+                     type: '#comment',
+                     text: 'empty'
+                 }
+             }
          } finally {
              CurrentOwner.cur = null
              delete instance.setState
