@@ -15,7 +15,7 @@ module.exports = function(config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['jasmine'],
+        frameworks: ['mocha'],
 
 
         // list of files / patterns to load in the browser
@@ -95,7 +95,7 @@ module.exports = function(config) {
                 })
             ]
         },
-        hostname: '127.0.0.1',
+        //hostname: '127.0.0.1',
         // web server port
         port: 9876,
 
@@ -110,7 +110,7 @@ module.exports = function(config) {
 
 
         // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: false,
+        autoWatch: true,
 
 
         // start these browsers
