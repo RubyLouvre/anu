@@ -1,12 +1,17 @@
 // Karma configuration
 // Generated on Thu Mar 30 2017 18:03:26 GMT+0800 (CST)
+var path = require('path')
+var webpack = require('webpack')
+var coverage = String(process.env.COVERAGE) !== 'false'
 
 module.exports = function(config) {
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: '',
-
+        //  basePath: '',
+        onExit: function(a) {
+            console.log(a)
+        },
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -14,7 +19,7 @@ module.exports = function(config) {
 
 
         // list of files / patterns to load in the browser
-        files: ['./test/matchers.js', './dist/React.test.js'],
+        files: ['./test/matchers.js', './test/spec.js'],
 
 
         // list of files to exclude
@@ -29,11 +34,66 @@ module.exports = function(config) {
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['progress', 'coverage'],
         preprocessors: {
-            'src/**/*.js': ['coverage']
+            'src/**/*.js': ['coverage'],
+            'test/**/*.js': ['webpack']
+        },
+        browserLogOptions: {
+            terminal: true
+        },
+        browserConsoleLogOptions: {
+            terminal: true
         },
         coverageReporter: {
             type: 'html',
             dir: 'coverage/'
+        },
+        webpack: {
+
+            module: {
+                /* Transpile source and test files */
+                preLoaders: [{
+                    test: /\.js$/,
+                    exclude: path.resolve(__dirname, 'node_modules'),
+                    loader: 'babel-loader',
+                    query: {
+                        presets: [
+                            ['latest', {
+                                es2015: {
+                                    loose: true
+                                }
+                            }], 'stage-0', 'react'
+                        ],
+                        plugins: ['istanbul', 'syntax-async-generators', ["transform-runtime", {
+                            "helpers": true,
+                            "polyfill": true,
+                            "regenerator": true,
+                            "moduleName": "babel-runtime"
+                        }]],
+                        babelrc: false
+                    }
+                }],
+                /* Only Instrument our source files for coverage */
+                loaders: []
+            },
+            resolve: {
+                // The React DevTools integration requires preact as a module
+                // rather than referencing source files inside the module
+                // directly
+                alias: {
+                    //   preact: __dirname + '/src/preact-compat',
+                    //   'preact-react-web': __dirname + '/src/preact-compat-react-web',
+                },
+                modulesDirectories: [__dirname, 'node_modules']
+            },
+            //     externals: {
+            //         'qrn-web': 'QunarReactWeb',
+            //     },
+            plugins: [
+                new webpack.DefinePlugin({
+                    coverage: coverage,
+                    NODE_ENV: JSON.stringify(process.env.NODE_ENV || ''),
+                })
+            ]
         },
         hostname: '127.0.0.1',
         // web server port
@@ -50,13 +110,20 @@ module.exports = function(config) {
 
 
         // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: true,
+        autoWatch: false,
 
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['Chrome', 'Firefox', 'PhantomJS'],
-
+        // browsers: ['Chrome', 'Firefox', 'PhantomJS'],
+        customLaunchers: {
+            'Chrome': {
+                base: 'WebDriverio',
+                browserName: 'chrome',
+                name: 'Karma'
+            }
+        },
+        browsers: ['Chrome'],
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
