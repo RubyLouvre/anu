@@ -1,16 +1,30 @@
 import eventHook, { beforeHook, afterHook, runCommand } from 'karma-event-driver-ext/cjs/event-drivers-hooks.js';
+
+import { $it, $beforeALl } from "async-await-jasmine";
+async function async_log(msg) {
+    console.log("[async] " + msg);
+}
+
+describe("async-test", () => {
+
+    $it("in zone", async() => {
+        await async_log("Hellow");
+
+    });
+
+});
 describe('Event Drive Tests', function() {
     // increase timeout
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000000
         //  this.timeout(200000);
-    beforeAll(async(done) => {
+    $beforeAll(async(done) => {
         await beforeHook();
-        done()
+
     });
-    afterAll(async() => {
+    $afterAll(async() => {
         await afterHook(false);
     });
-    it('click element', async() => {
+    $it('click element', async() => {
         console.log('-----')
         var div = document.createElement('div');
         div.id = "DIV"
@@ -27,14 +41,7 @@ describe('Event Drive Tests', function() {
             browser.click(div); // most webdriverio api support. http://webdriver.io/api.html
         });
 
-        expect(a).toBe(2);
-        //  done()
-        return new Promise(function(r) {
-            setTimeout(function() {
-                r()
-                done()
-            }, 3000)
-        })
+
 
     });
 });

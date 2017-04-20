@@ -149,3 +149,12 @@ var myComponent = React.createClass({
 ```
 https://github.com/ryanhefner/Object.keys/blob/master/index.js
 
+
+测试 
+http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
+
+java -jar selenium-server-standalone-3.3.1.jar
+
+node node_modules/karma-event-driver-ext
+
+
