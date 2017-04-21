@@ -38,5 +38,31 @@ describe('createElement', function() {
         var el = React.createElement('p', null, 111, { type: '#text', text: 'ddd' }, 333)
         expect(el.props.children[0]).toEqual({ type: '#text', text: '111ddd333', deep: 0 })
 
+
+    })
+    it('class render', () => {
+        class A extends React.Component {
+            render() {
+                return <div id = "aaa" / >
+            }
+        }
+
+        var obj = (new A()).render()
+        expect(obj.props.children).toEqual([])
+        expect(obj.props.id).toBe('aaa')
+        expect(obj.props).toEqual({
+            id: 'aaa',
+            children: []
+        })
+        expect(obj.type).toEqual('div')
+        expect(obj.key).toEqual(null)
+        expect(obj._owner).toEqual(null)
+
+
+        //obj是一个VNode实例
+
+        //   expect(obj).toEqual({ type: 'div', props: { id: 'aaa', children: [] }, key: null, _owner: null })
+
+
     })
 })

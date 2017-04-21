@@ -2,505 +2,445 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
         typeof define === 'function' && define.amd ? define(factory) : global.JSXParser = factory();
 })(this, function() {
-    var strIndex = 0
+    function oneObject(str) {
+        var obj = {}
+        str.split(",").forEach(_ => obj[_] = true)
+        return obj
+    }
+    var voidTag = oneObject("area,base,basefont,br,col,frame,hr,img,input,link,meta,param,embed,command,keygen,source,track,wbr")
+    var specalTag = oneObject('xmp,style,script,noscript,textarea,template,#comment')
 
-    function getStrID() {
-        return '??' + (strIndex++) + ' '
+    var hiddenTag = oneObject('style,script,noscript,template')
+
+
+    var JSXParser = function(a, f) {
+        if (!(this instanceof JSXParser)) {
+            return parse(a, f)
+        }
+        this.input = a
+        this.getOne = f
+    }
+    JSXParser.prototype = {
+        parse: function() {
+            return parse(this.input, this.getOne)
+        }
     }
 
-    var log = (function() {
-        if (typeof console === 'object') {
-            return function(str) {
-                console.log(str)
-            }
-        } else {
-            return function() {}
+    /**
+     * 
+     * 
+     * @param {any} string 
+     * @param {any} getOne 只返回一个节点
+     * @returns 
+     */
+    function parse(string, getOne) {
+        getOne = (getOne === void 666 || getOne === true)
+        var ret = lexer(string, getOne)
+        if (getOne) {
+            return typeof ret[0] === 'string' ? ret[1] : ret[0]
         }
-    })()
-
-    function clearString(str, map, i, newStr) {
-        map = map || {}
-        i = i || 0
-        newStr = newStr || ''
-        var curStr = '',
-            retryIndex, retryStr,
-            quote = false,
-            curID
-        for (var n = str.length; i < n; i++) {
-            var c = str.charAt(i)
-            if (!quote) {
-                if (c === '"' || c === "'") {
-                    quote = c
-                    curStr = c
-                    retryIndex = i
-                    retryStr = newStr + c
-                } else {
-                    newStr += c
-                }
-            } else {
-                curStr += c
-                if (quote === c) {
-                    quote = false
-                    curID = getStrID()
-                    map[curID] = curStr
-                    newStr += curID
-                }
-
-            }
-        }
-        if (typeof quote === 'string') {
-            return clearString(str, map, retryIndex + 1, retryStr)
-        }
-        return newStr
-    }
-
-    function readString(str, i, ret) {
-        var end = false,
-            s = 0,
-            i = i || 0
-        ret = ret || [];
-        for (var n = str.length; i < n; i++) {
-            var c = str.charAt(i);
-            if (!end) {
-                if (c === "'") {
-                    end = "'";
-                    s = i;
-                } else if (c === '"') {
-                    end = '"';
-                    s = i;
-                }
-            } else {
-                if (c === end) {
-                    ret.push(str.slice(s, i + 1));
-                    end = false;
-                }
-            }
-        }
-        if (end !== false) {
-            return readString(str, s + 1, ret)
-        }
-        return ret;
-    }
-
-    function clearBrace(str, map) {
-
-        var curStr = '',
-            newStr = '',
-            curID, deep = 0
-        for (var i = 0, n = str.length; i < n; i++) {
-            var c = str.charAt(i)
-            if (!deep) {
-                if (c === '{') {
-                    deep = 1
-                    curStr = c
-                    curID = getStrID()
-
-                } else {
-                    newStr += c
-                }
-            } else {
-                curStr += c
-                if (c === '{') {
-                    deep++
-                } else if (c === '}') {
-                    deep--
-                    if (deep === 0) {
-                        map[curID] = curStr
-                        newStr += curID
-                    }
-                }
-            }
-        }
-        return newStr
-
-    }
-
-    function split(str, reg) {
-        var ret = []
-        do {
-            var match = str.match(reg)
-            if (match) {
-                var left = str.slice(0, match.index)
-                left && ret.push(left)
-                ret.push(match[0])
-                str = str.slice(match.index + match[0].length)
-
-            } else {
-                if (str) {
-                    ret.push(str)
-                }
-                break
-
-            }
-        } while (1);
         return ret
     }
 
-    function JSXParser(str, map) {
-        this.input = str
-        this.map = map || {}
-        this.ret = []
-        var stack = this.stack = []
+    function lexer(string, getOne) {
+        var tokens = []
+        var breakIndex = 120
+        var stack = []
+        var origString = string
+        var origLength = string.length
+
         stack.last = function() {
             return stack[stack.length - 1]
         }
-        this.index = 0
-    }
+        var ret = []
 
-    var pp = JSXParser.prototype
-    pp.parse = function() {
-        var str = this.input
-        var breakIndex = str.length
-        str = clearString(str, this.map)
-        str = clearBrace(str, this.map)
-        this.input = str //str is a pure XML
-        this.index = 0
-
-        do {
-            this.parseComment()
-            this.parseOpenTag()
-            this.parseCloseTag()
-            this.parseText()
-            if (!this.node) {
-                break
-            }
-            if (--breakIndex === 0)
-                break
-            this.node = 0
-        } while (1);
-        return this.ret
-    }
-
-    pp.parseComment = function() {
-            if (this.node)
-                return
-                //"<!--ddd-->-->".match(/(?:[^>]\s|^)<!--(?!<!)[^\[>][\s\S]*?-->/)
-                //http://stackoverflow.com/questions/395874/strip-comments-from-xml?rq=1
-            if (this.left().indexOf('<!--') === 0) {
-                var i = this.left().indexOf('-->', 4)
-                if (i !== -1) {
-                    this.node = {
-                        type: '#comment',
-                        nodeValue: this.left().slice(4, i)
-                    }
-                    this.buildTree()
-                    this.index += i + 3
-                }
-            }
-        }
-        /**
-         * 
-         HTMLRegExp: /<\/?[a-z][^>]*?>/gi,
-         HTMLcommentRegExp: /<!--[\s\S]*?-->/g,
-         spaceRegExp: /&nbsp;|&#160;/gi,
-         HTMLEntityRegExp: /&\S+?;/g,
-         */
-
-
-    pp.parseOpenTag = function() {
-        if (this.node)
-            return
-        var match = this.left().match(/^<\w[^\>\/]*(\/)?>/)
-        if (match) {
-            var last = match[1] === '/' ? -2 : -1
-            var name = match[0].slice(1, last)
-            var arr = name.match(/\S+/g)
-            var tagName = arr.shift()
-            this.index += match[0].length
-
-            var node = this.node = {
-                type: tagName,
-                props: {},
-                children: []
-            }
-            this.parseProps(arr.join(' ').replace(/\s\=\s/g, '='))
-            this.buildTree()
-            if (last === -2) {
-                node.isVoidTag = true
+        function addNode(node) {
+            var p = stack.last()
+            if (p && p.children) {
+                p.children.push(node)
             } else {
-                this.stack.push(node)
-                var lower = tagName.toLowerCase()
-                if (/script|xmp|style/.test(lower)) {
-                    var i = this.left().toLowerCase().indexOf('</' + lower + '>')
-                    node.children.push({
-                        type: '#text',
-                        nodeValue: this.left().slice(0, i)
-                    })
-                    this.index += (i + 3 + lower.length)
-                    this.stack.pop()
-                }
-            }
-        }
-    }
-
-    pp.parseCloseTag = function() {
-        if (this.node)
-            return
-        var match = this.left().match(/^<\/([a-z][^>\s]*)>/i)
-        if (match) {
-            var tagName = match[1]
-            var last = this.stack.last() || this.ret[this.ret.length - 1]
-            if (!last) {
-                throw '<\/' + tagName + '>  has no corresponding open tag'
-            }
-            if (last.type !== tagName) {
-
-                throw 'expect close tagName is ' + last.type + ' but actuality is ' + tagName
-            }
-            this.stack.pop()
-            this.index += match[0].length
-            this.node = last
-        }
-    }
-
-    pp.buildTree = function() {
-        var node = this.node
-        var p = this.stack.last()
-        if (p) {
-            p.children.push(node)
-        } else {
-            this.ret.push(node)
-        }
-    }
-
-    //JSX parsing, processing string first, then find the first label
-    pp.createText = function(left, i) {
-        var content = left.slice(0, i)
-        this.index += i
-        if (/\?\?\d/.test(content)) {
-            this.parseJSXText(content)
-        } else {
-            this.node = {
-                type: '#text',
-                nodeValue: content
-            }
-            if (/\S/.test(content)) {
-                this.buildTree()
-            }
-        }
-
-    }
-
-
-    //quick match <div xxx  /> case
-
-    pp.getSingleTag = function getSingleTag(str, tagName) {
-        var match = str.match(new RegExp('<' + tagName + '[^>\\/]*\\/\\>'))
-        if (match) {
-            return [this.subParse(match[0]), this.recovery(str.slice(match[0].length))]
-        }
-        var regOpenTag = new RegExp('<' + tagName + '[^>\\/]*>')
-        var regCloseTag = new RegExp('<\\/' + tagName + '>')
-        var breakIndex = 0,
-            ret = '',
-            ok, match, index
-
-        do {
-            var match = str.match(regOpenTag)
-
-            if (match) {
-                breakIndex++
-                index = match.index + match[0].length
-                ret += str.slice(0, index)
-                str = str.slice(index)
-                ok = true
-            }
-            if (!ok) {
-                match = str.match(regCloseTag)
-                if (match) {
-                    breakIndex--
-                    index = match.index + match[0].length
-                    ret += str.slice(0, index)
-                    str = str.slice(index)
-                    if (breakIndex === 0) {
-                        break
-                    }
-                    ok = true
-                }
-            }
-            if (!ok) {
-                break
-            }
-            ok = false
-
-        } while (1);
-        return [this.subParse(ret), this.recovery(str)]
-
-    }
-
-    pp.subParse = function(str) {
-        return ((new JSXParser(str, this.map)).parse() || [])[0]
-    }
-
-    pp.parseJSLogic = function(str) {
-        str = clearString(str, this.map)
-        var logic = []
-        do {
-            //According to the "return <div / >", "(</div >", "[<div/>",＝><div/>, "<div >" segmentation
-            var match = str.match(/((?:return\s|\(|\[\|,|=\>|^)\s*)\<[a-z]/i)
-            if (match) {
-                var splitIndex = match.index + match[1].length
-                var leftContent = str.slice(0, splitIndex)
-                var rightContent = str.slice(splitIndex)
-                if (leftContent) {
-                    logic.push({
-                        type: '#jsx',
-                        nodeValue: leftContent
-                    })
-                }
-
-                var strNeedRecoverfy = clearBrace(rightContent, this.map)
-                var tagName = strNeedRecoverfy.match(/\<([^\-\/\>\s]+)/)[1] //aaa.
-                var subArray = this.getSingleTag(strNeedRecoverfy, tagName)
-                str = subArray[1]
-                logic.push(subArray[0])
-            } else {
-                break
-            }
-        } while (1);
-        if (str) {
-            logic.push({
-                type: '#jsx',
-                nodeValue: str
-            })
-        }
-        return logic
-    }
-
-    pp.recovery = function(str) {
-        var map = this.map
-        return str.replace(/\?\?\d+\s/g, function(a) {
-            return map[a]
-        })
-    }
-
-    pp.parseJSXText = function(text) {
-        var tokens = split(text, /\?\?\d+\s/),
-            ret = [],
-            node
-        for (var i = 0, n = tokens.length; i < n; i++) {
-            var c = tokens[i]
-            var val = this.map[c]
-            if (val) {
-                if (/^['"]/.test(val)) {
-                    node.nodeValue += val
-                } else {
-                    node = null
-                    var inner = val.slice(1, -1)
-                        // processing contains complex logic of JSX {[1, 2, 3]. The map (function (el) {return < div > < / div >} {el})}
-                    if (/\<[a-z]/i.test(inner)) { //{里面包含标签}
-                        ret.push({
-                            type: '#jsx',
-                            nodeValue: this.parseJSLogic(inner)
-                        })
-                    } else {
-                        // 处理简单的逻辑 { el }
-                        ret.push({
-                            type: '#jsx',
-                            nodeValue: this.recovery(inner)
-                        })
-                    }
-                }
-            } else {
-                node = {
-                    type: '#text',
-                    nodeValue: c
-                }
                 ret.push(node)
             }
         }
 
-        var p = this.stack.last()
-        var arr = p && p.children || this.ret
-        arr.push.apply(arr, ret)
-        this.node = ret[ret.length - 1]
-    }
-
-    pp.parseText = function() {
-        if (this.node)
-            return
-        var left = this.left()
-        var i = left.indexOf('<')
-        if (i === -1) { //如果是位于最后的文本节点
-            if (left) {
-                this.createText(left, i)
-            }
-        } else {
-            // var pool = []
-            var matchTag = left.match(/<\/?[a-z][^>]*>/i)
-            if (matchTag) {
-                var index = matchTag.index
-            }
-            var matchComment = left.match(/<!--(?!<!)[^\[>][\s\S]*?-->/)
-            if (matchComment) {
-                throw ('jsx DO NOT support <!--xxx--> comment tag!')
-                    //这应该抛出警告
-            }
-
-            if (index > 0) {
-                this.createText(left, index)
-            }
-
-        }
-    }
-
-
-    var rattrs = /([^=\s]+)(?:=(\S+))?/ 
-    var rspread = /^\s*\.{3}/
-
-    pp.parseProps = function(attrs) {
-        var props = this.node.props
-        while (attrs) {
-            var arr = rattrs.exec(attrs)
-
-            if (arr) {
-                var name = arr[1]
-                var value = arr[2] || ''
-                attrs = attrs.replace(arr[0], '')
-                value = this.parseJSXAttr(value)
-                if (name.slice(0, 2) === '??') {
-                    value = this.parseJSXAttr(name)
-                    if (rspread.test(value.nodeValue)) {
-                        this.node.spreadAttribute = value.nodeValue.replace(rspread, '')
-                    }
-                    continue
-                }
-                props[name] = value
-            } else {
+        var lastNode
+        do {
+            if (--breakIndex === 0) {
                 break
             }
-        }
-        return props
-    }
+            var arr = getCloseTag(string)
 
-    pp.left = function() {
-        return this.input.slice(this.index)
-    }
+            if (arr) { //处理关闭标签
+                string = string.replace(arr[0], '')
+                const node = stack.pop()
+                    //处理下面两种特殊情况：
+                    //1. option会自动移除元素节点，将它们的nodeValue组成新的文本节点
+                    //2. table会将没有被thead, tbody, tfoot包起来的tr或文本节点，收集到一个新的tbody元素中
+                if (node.type === 'option') {
+                    node.children = [{
+                        type: '#text',
+                        nodeValue: getText(node)
+                    }]
+                } else if (node.type === 'table') {
+                    insertTbody(node.children)
+                }
+                lastNode = null
+                if (getOne && ret.length === 1 && !stack.length) {
+                    return [origString.slice(0, origLength - string.length), ret[0]]
+                }
+                continue
+            }
 
-    pp.parseJSXAttr = function(str) {
-        if ((str + ' ').match(/^\?\?\d+\s/)) {
-            var val = this.map[str + ' ']
-            var first = val.charAt(0)
-            var inner = val.slice(1, -1)
-            if (first === '"' || first === "'") {
-                return inner
+            var arr = getOpenTag(string)
+            if (arr) {
+                string = string.replace(arr[0], '')
+                var node = arr[1]
+                addNode(node)
+                var selfClose = !!(node.isVoidTag || specalTag[node.type])
+                if (!selfClose) { //放到这里可以添加孩子
+                    stack.push(node)
+                }
+                if (getOne && selfClose && !stack.length) {
+                    return [origString.slice(0, origLength - string.length), node]
+                }
+                lastNode = node
+                continue
+            }
+
+            var text = ''
+            do {
+                //处理<div><<<<<<div>的情况
+                const index = string.indexOf('<')
+                if (index === 0) {
+                    text += string.slice(0, 1)
+                    string = string.slice(1)
+
+                } else {
+                    break
+                }
+            } while (string.length);
+            //处理<div>{aaa}</div>,<div>xxx{aaa}xxx</div>,<div>xxx</div>{aaa}sss的情况
+            const index = string.indexOf('<') //判定它后面是否存在标签
+            const bindex = string.indexOf('{') //判定它后面是否存在jsx
+            const aindex = string.indexOf('}')
+
+            let hasJSX = (bindex < aindex) && (index === -1 || bindex < index)
+            if (hasJSX) {
+                if (bindex !== 0) { // 收集jsx之前的文本节点
+                    text += string.slice(0, bindex)
+                    string = string.slice(bindex)
+                }
+                addText(lastNode, text, addNode)
+                string = string.slice(1) //去掉前面{
+                var arr = parseCode(string)
+                addNode(makeJSX(arr[1]))
+                lastNode = false
+                string = string.slice(arr[0].length + 1) //去掉后面的}
             } else {
-                if (val.indexOf('<!--') !== -1) {
-                    log('jsx DO NOT support <!--xxx--> comment tag!')
+                if (index === -1) {
+                    text = string
+                    string = ''
+                } else {
+                    text += string.slice(0, index)
+                    string = string.slice(index)
                 }
-                if (/<[a-z][^>]*?>/i.test(val)) {
-                    return {
-                        type: '#jsx',
-                        nodeValue: this.parseJSLogic(inner)
+                addText(lastNode, text, addNode)
+            }
+
+        } while (string.length);
+        return ret
+    }
+
+
+    function addText(lastNode, text, addNode) {
+        if (/\S/.test(text)) {
+            if (lastNode && lastNode.type === '#text') {
+                lastNode.text += text
+            } else {
+                lastNode = {
+                    type: '#text',
+                    nodeValue: text
+                }
+                addNode(lastNode)
+            }
+        }
+    }
+    var rsp = /\s/
+        //它用于解析{}中的内容，如果遇到不匹配的}则返回, 根据标签切割里面的内容 
+    function parseCode(string) { // <div id={ function(){<div/>} }>
+        var word = '', //用于匹配前面的单词
+            braceIndex = 1,
+            codeIndex = 0,
+            nodes = [],
+            quote,
+            escape,
+            state = 'code'
+        for (var i = 0, n = string.length; i < n; i++) {
+            var c = string.charAt(i),
+                next = string.charAt(i + 1)
+            switch (state) {
+                case 'code':
+                    if (c === '"' || c === "'") {
+                        state = 'string'
+                        quote = c
+                        escape = false
+                    } else if (c === '{') {
+                        braceIndex++
+                    } else if (c === '}') {
+                        braceIndex--
+                        if (braceIndex === 0) {
+                            collectJSX(string, codeIndex, i, nodes)
+                            return [string.slice(0, i), nodes]
+                        }
+                    } else if (c === '<') {
+                        var word = '',
+                            empty = true,
+                            index = i - 1
+                        do {
+                            c = string.charAt(index)
+                            if (empty && rsp.test(c)) {
+                                continue
+                            }
+                            if (rsp.test(c)) {
+                                break
+                            }
+                            empty = false
+                            word = c + word
+                            if (word.length > 7) { //性能优化
+                                break
+                            }
+                        } while (--index >= 0);
+                        var chunkString = string.slice(i)
+                        if (word === '' || /(=>|return|\{|\(|\[|\,)$/.test(word) && /\<\w/.test(chunkString)) {
+                            collectJSX(string, codeIndex, i, nodes)
+                            var chunk = lexer(chunkString, true)
+                            nodes.push(chunk[1])
+                            i += (chunk[0].length - 1) //因为已经包含了<, 需要减1
+                            codeIndex = i + 1
+                        }
+
                     }
+                    break
+                case 'string':
+                    if (c == '\\' && (next === '"' || next === "'")) {
+                        escape = !escape
+                    } else if (c === quote && !escape) {
+                        state = 'code'
+                    }
+                    break
+            }
+        }
+    }
+
+    function collectJSX(string, codeIndex, i, nodes) {
+        var nodeValue = string.slice(codeIndex, i)
+        if (/\S/.test(nodeValue)) { //将{前面的东西放进去
+            nodes.push({
+                type: '#jsx',
+                nodeValue: nodeValue
+            })
+        }
+    }
+
+    var rtbody = /^(tbody|thead|tfoot)$/
+
+    function insertTbody(nodes) {
+        var tbody = false
+        for (var i = 0, n = nodes.length; i < n; i++) {
+            var node = nodes[i]
+            if (rtbody.test(node.nodeName)) {
+                tbody = false
+                continue
+            }
+
+            if (node.nodeName === 'tr') {
+                if (tbody) {
+                    nodes.splice(i, 1)
+                    tbody.children.push(node)
+                    n--
+                    i--
+                } else {
+                    tbody = {
+                        nodeName: 'tbody',
+                        props: {},
+                        children: [node]
+                    }
+                    nodes.splice(i, 1, tbody)
                 }
-                return {
-                    type: '#jsx',
-                    nodeValue: inner
+            } else {
+                if (tbody) {
+                    nodes.splice(i, 1)
+                    tbody.children.push(node)
+                    n--
+                    i--
                 }
             }
         }
-        return str
+    }
+
+
+    function getCloseTag(string) {
+        if (string.indexOf("</") === 0) {
+            var match = string.match(/\<\/(\w+)>/)
+            if (match) {
+                var tag = match[1]
+                string = string.slice(3 + tag.length)
+                return [match[0], {
+                    type: tag
+                }]
+            }
+        }
+        return null
+    }
+
+    function getOpenTag(string) {
+        if (string.indexOf("<") === 0) {
+            var i = string.indexOf('<!--') //处理注释节点
+            if (i === 0) {
+                var l = string.indexOf('-->')
+                if (l === -1) {
+                    thow('注释节点没有闭合 ' + string.slice(0, 100))
+                }
+                var node = {
+                    type: '#comment',
+                    nodeValue: string.slice(4, l)
+                }
+
+                return [string.slice(0, l + 3), node]
+            }
+            var match = string.match(/\<(\w[^\s\/\>]*)/) //处理元素节点
+            if (match) {
+                var leftContent = match[0],
+                    tag = match[1]
+                var node = {
+                    type: tag,
+                    props: {},
+                    children: []
+                }
+
+                string = string.replace(leftContent, '') //去掉标签名(rightContent)
+                var arr = getAttrs(string) //处理属性
+                if (arr) {
+                    node.props = arr[1]
+                    string = string.replace(arr[0], '')
+                    leftContent += arr[0]
+                }
+
+                if (string[0] === '>') { //处理开标签的边界符
+                    leftContent += '>'
+                    string = string.slice(1)
+                    if (voidTag[node.type]) {
+                        node.isVoidTag = true
+                    }
+                } else if (string.slice(0, 2) === '/>') { //处理开标签的边界符
+                    leftContent += '/>'
+                    string = string.slice(2)
+                    node.isVoidTag = true
+                }
+
+                if (!node.isVoidTag && specalTag[tag]) { //如果是script, style, xmp等元素
+                    var closeTag = '</' + tag + '>'
+                    var j = string.indexOf(closeTag)
+                    var nodeValue = string.slice(0, j)
+                    leftContent += nodeValue + closeTag
+                    node.children.push({
+                        type: '#text',
+                        nodeValue: nodeValue
+                    })
+                }
+
+                return [leftContent, node]
+            }
+        }
+    }
+
+    function getText(node) {
+        var ret = ''
+        node.children.forEach(function(el) {
+            if (el.type === '#text') {
+                ret += el.nodeValue
+            } else if (el.children && !hiddenTag[el.type]) {
+                ret += getText(el)
+            }
+        })
+        return ret
+    }
+
+    function getAttrs(string) {
+        var state = 'AttrNameOrJSX',
+            attrName = '',
+            attrValue = '',
+            quote,
+            escape,
+            props = {}
+
+        for (var i = 0, n = string.length; i < n; i++) {
+            var c = string[i]
+            switch (state) {
+                case 'AttrNameOrJSX':
+                    if (c === '/' || c === '>') {
+                        return [string.slice(0, i), props]
+                    }
+                    if (rsp.test(c)) {
+                        if (attrName) {
+                            state = 'AttrEqual'
+                        }
+                    } else if (c === '=') {
+                        if (!attrName) {
+                            throw '必须指定属性名'
+                        }
+                        state = 'AttrQuoteOrJSX'
+                    } else if (c === '{') {
+                        state = 'SpreadJSX'
+                    } else {
+                        attrName += c
+                    }
+                    break
+                case 'AttrEqual':
+                    if (c === '=') {
+                        state = 'AttrQuoteOrJSX'
+                    }
+                    break
+                case 'AttrQuoteOrJSX':
+                    if (c === '"' || c === "'") {
+                        quote = c
+                        escape = false
+                        state = 'AttrValue'
+                    } else if (c === '{') {
+                        state = 'JSX'
+                    }
+                    break
+                case 'AttrValue':
+                    if (c === '\\')
+                        escape = !escape
+                    if (c !== quote) {
+                        attrValue += c
+                    } else if (c === quote && !escape) {
+                        props[attrName] = attrValue
+                        attrName = attrValue = ''
+                        state = 'AttrNameOrJSX'
+                    }
+                    break
+                case 'SpreadJSX':
+                    i += 3
+                case 'JSX':
+                    var arr = parseCode(string.slice(i))
+                    i += arr[0].length
+
+                    props[state === 'SpreadJSX' ? 'spreadAttribute' : attrName] = makeJSX(arr[1])
+                    attrName = attrValue = ''
+                    state = 'AttrNameOrJSX'
+                    break
+            }
+        }
+        throw '必须关闭标签'
+    }
+
+    function makeJSX(JSXNode) {
+        return JSXNode.length === 1 && JSXNode[0].type === '#jsx' ? JSXNode[0] : {
+            type: '#jsx',
+            nodeValue: JSXNode
+        }
     }
 
     return JSXParser;

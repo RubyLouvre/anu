@@ -1,4 +1,4 @@
-import eventHook, { beforeHook, afterHook, runCommand } from 'karma-event-driver-ext/cjs/event-drivers-hooks.js';
+import eventHook, { beforeHook, afterHook, runCommand } from 'karma-event-driver-ext/cjs/event-driver-hooks.js';
 
 //import { expect } from 'chai'
 //import '../matchers'
