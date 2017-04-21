@@ -11,6 +11,7 @@ import {
     getInstances,
     matchInstance
 } from 'src/util'
+
 describe('util', function() {
 
     it('oneObject', function() {

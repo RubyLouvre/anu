@@ -1,94 +1,99 @@
+if (typeof chai !== 'undefined') {
+    // http://stackoverflow.com/questions/11942085/is-there-a-way-to-add-a-jasmine-matcher-to-the-whole-environment
+    (function() {
 
-if (typeof jasmine !== 'undefined') {
-  // http://stackoverflow.com/questions/11942085/is-there-a-way-to-add-a-jasmine-matcher-to-the-whole-environment
-  beforeEach(function () {
+        var utils = chai.util
+        var expect = chai.expect
 
-    jasmine.addMatchers({
-      toHaveKeys: function () {
-        return {
-          compare: function (actual, expected) {
-            var keys = {}
-            for (var i in actual) {
-              try {
-                keys[i] = true
-              } catch (e) { }
-            }
-            for (var i = 0; i < expected.length; i++) {
-              var el = expected[i]
-              if (keys[el] !== true) {
-                return {
-                  message: 'toHaveKeys has not this [' + el + '] key',
-                  pass: false
-                }
-              }
-            }
-            return {
-              pass: true
-            }
-          }
+        //复杂对象的比较
+        function addMethod(methodName, method) {
+            utils.addMethod(chai.Assertion.prototype, methodName, method);
         }
-      },
-      toInstanceOf: function () {
-        return {
-          compare: function (actual, expected) {
-            var pass = actual instanceof expected
 
-            if (!pass) {
-              return {
-                message: 'toInstanceOf expected [' + expected + '], but is not',
-                pass: false
-              }
-            }
+        addMethod('toEqual', function(b) {
+            var obj = utils.flag(this, 'object');
+            new chai.Assertion(obj).to.eql(b);
+        });
+        //类型
+        addMethod('toA', function(b) {
+            var obj = utils.flag(this, 'object');
+            new chai.Assertion(obj).to.be.a(b);
+        })
 
-            return {
-              pass: true
-            }
-          }
-        }
-      },
-      toHaveProperty: function () {
-        return {
-          compare: function (actual, expected) {
-            var ohas = Object.prototype.hasOwnProperty
-            var pass = ohas.call(actual, expected)
-            if (!pass) {
-              return {
-                message: 'toHaveProperty expected has [' + expected + '] property, but is not',
-                pass: false
-              }
-            }
+        //正则
+        addMethod('toMatch', function(reg) {
+            var obj = utils.flag(this, 'object');
+            new chai.Assertion(obj).to.match(reg);
+        });
+        //严格比较
+        addMethod('toBe', function(str) {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.equal(str);
+            })
+            //defined
+        addMethod('toBeDefined', function() {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.not.be.undefined;
+            })
+            //undefined
+        addMethod('toBeUndefined', function() {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.be.undefined;
+            })
+            //null
+        addMethod('toBeNull', function() {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.be.null;
+            })
+            // true
+        addMethod('toBeTruthy', function() {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.be.ok;
+            })
+            //false
+        addMethod('toBeFalsy', function() {
+                var obj = utils.flag(this, 'object');
+                new chai.Assertion(obj).to.not.be.ok;
+            })
+            //数组包含某元素
+        addMethod('toContain', function(b) {
+                var obj = utils.flag(this, 'object');
 
-            return {
-              pass: true
-            }
-          }
-        }
-      },
-      toA: function () {
-        return {
-          compare: function (actual, expected) {
-            if (actual == null) {
-              var type = actual + ''
-            } else {
-              var toS = Object.prototype.toString
-              type = toS.call(actual).slice(8, -1).toLowerCase()
-            }
-            if (/error$/.test(type)) {
-              type = 'error' //IE对错误类型存在差异,因此统一为Error
-            }
+                new chai.Assertion(obj).to.include(b)
+            })
+            //包含多少键名
+        addMethod('toHaveKeys', function(arr) {
+                var obj = utils.flag(this, 'object');
 
-            if (type !== expected) {
-              return {
-                message: 'Expected [' + expected + '] but actual is ' + type + '!',
-                pass: false
-              }
-            }
-            return {
-              pass: true
-            }
-          }
-        }
-      }
-    })
-  })
+                new chai.Assertion(obj).to.contain.any.keys(arr);
+            })
+            //是什么类的实例
+        addMethod('toInstanceOf', function(clazz) {
+                var obj = utils.flag(this, 'object');
+
+                new chai.Assertion(obj).to.be.an.instanceof(clazz);
+            })
+            //拥有特定的某个属性名
+        addMethod('toHaveProperty', function(a) {
+            var obj = utils.flag(this, 'object');
+            new chai.Assertion(obj).to.have.property(a)
+        })
+
+        addMethod('toBeLessThan', function(num) {
+            var obj = utils.flag(this, 'object');
+
+            new chai.Assertion(obj).to.below(num)
+        })
+        addMethod('toBeGreaterThan', function(num) {
+            var obj = utils.flag(this, 'object');
+
+            new chai.Assertion(obj).to.above(num)
+        })
+
+
+        console.log('添加jasmine风格的断言方法')
+
+    })();
+
+
 }

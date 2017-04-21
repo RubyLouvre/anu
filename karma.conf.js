@@ -15,7 +15,7 @@ module.exports = function(config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['mocha'],
+        frameworks: ['mocha', 'chai'],
 
 
         // list of files / patterns to load in the browser
@@ -80,6 +80,9 @@ module.exports = function(config) {
                     NODE_ENV: JSON.stringify(process.env.NODE_ENV || ''),
                 })
             ]
+        },
+        webpackMiddleware: {
+            noInfo: true //去掉编译文件的LOG
         },
         //hostname: '127.0.0.1',
         // web server port

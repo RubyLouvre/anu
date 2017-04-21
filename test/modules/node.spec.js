@@ -1,8 +1,10 @@
 import eventHook, { beforeHook, afterHook, runCommand } from 'karma-event-driver-ext/cjs/event-drivers-hooks.js';
 
+//import { expect } from 'chai'
+//import '../matchers'
 
-var chai = require('chai');
-var expect = chai.expect;
+//var expect = chai.expect;
+
 describe('Event Drive Tests', function() {
     this.timeout(200000);
     before(async() => {
@@ -12,7 +14,6 @@ describe('Event Drive Tests', function() {
         await afterHook(false);
     });
     it('click element', async() => {
-        console.log('-----')
         var div = document.createElement('div');
 
         document.body.appendChild(div);
@@ -26,13 +27,12 @@ describe('Event Drive Tests', function() {
             // browser.moveTo(document.body, 0, 0);
             browser.click(div); // most webdriverio api support. http://webdriver.io/api.html
         });
-
-        expect(a).to.equal(2);
+        expect(a).toBe(2);
 
         await runCommand((browser) => {
 
             browser.click(div); // most webdriverio api support. http://webdriver.io/api.html
         });
-        expect(a).to.equal(3);
+        expect(a).toBe(3);
     });
 });
