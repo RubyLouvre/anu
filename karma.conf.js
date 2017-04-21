@@ -32,7 +32,7 @@ module.exports = function(config) {
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['progress', 'coverage'],
+        reporters: ['spec', 'coverage'],
         preprocessors: {
             'src/**/*.js': ['coverage'],
             'test/**/*.js': ['webpack']
@@ -56,13 +56,7 @@ module.exports = function(config) {
                     exclude: path.resolve(__dirname, 'node_modules'),
                     loader: 'babel-loader',
                     query: {
-                        presets: [
-                            ['latest', {
-                                es2015: {
-                                    loose: true
-                                }
-                            }], 'stage-0', 'react'
-                        ],
+                        presets: ['env', 'react'],
                         plugins: ['istanbul', 'syntax-async-generators', ["transform-runtime", {
                             "helpers": true,
                             "polyfill": true,
@@ -76,18 +70,10 @@ module.exports = function(config) {
                 loaders: []
             },
             resolve: {
-                // The React DevTools integration requires preact as a module
-                // rather than referencing source files inside the module
-                // directly
-                alias: {
-                    //   preact: __dirname + '/src/preact-compat',
-                    //   'preact-react-web': __dirname + '/src/preact-compat-react-web',
-                },
+
+                alias: {},
                 modulesDirectories: [__dirname, 'node_modules']
             },
-            //     externals: {
-            //         'qrn-web': 'QunarReactWeb',
-            //     },
             plugins: [
                 new webpack.DefinePlugin({
                     coverage: coverage,
@@ -106,7 +92,7 @@ module.exports = function(config) {
 
         // level of logging
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_INFO,
+        //    logLevel: config.LOG_INFO,
 
 
         // enable / disable watching file and executing tests whenever any file changes
