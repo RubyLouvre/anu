@@ -2,7 +2,7 @@
      typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
      typeof define === 'function' && define.amd ? define(factory) :
      (global.React = factory());
-}(this, function () {
+}(this, function () { 'use strict';
 
      var CurrentOwner = {
          cur: null
@@ -31,6 +31,12 @@
               try {
                   CurrentOwner.cur = instance
                   var vnode = instance.render()
+                  if (vnode === null) {
+                      vnode = {
+                          type: '#comment',
+                          text: 'empty'
+                      }
+                  }
               } finally {
                   CurrentOwner.cur = null
                   delete instance.setState
@@ -125,11 +131,10 @@
       * 判定否为与事件相关
       * 
       * @param {any} name 
-      * @param {any} val 
       * @returns 
       */
-     function isEvent(name, val) {
-         return /^on\w/.test(name)
+     function isEvent(name) {
+         return /^on[A-Z]/.test(name)
      }
 
      /**
@@ -170,6 +175,7 @@
      function isComponent(type) {
          return typeof type === 'function'
      }
+
      /**
       * 
       * 
@@ -362,9 +368,9 @@
                var path = paths[i]
                var fn = path.props[captured]
                if (typeof fn === 'function') {
-                   event.currentTarget = path.dom
-                   fn.call(path.dom, event)
-                   if (event._stopPropagation) {
+                   e.currentTarget = path.dom
+                   fn.call(path.dom, e)
+                   if (e._stopPropagation) {
                        break
                    }
                }
@@ -374,9 +380,9 @@
                var path = paths[i]
                var fn = path.props[bubble]
                if (typeof fn === 'function') {
-                   event.currentTarget = path.dom
-                   fn.call(path.dom, event)
-                   if (event._stopPropagation) {
+                   e.currentTarget = path.dom
+                   fn.call(path.dom, e)
+                   if (e._stopPropagation) {
                        break
                    }
                }
@@ -465,7 +471,7 @@
            instance.state = prevState
            var nextProps = props
            var nextState = state
-           if (!this.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
+           if (!instance.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
                return dom //注意
            }
            applyComponentHook(instance, 5, nextProps, nextState, context)
@@ -541,14 +547,13 @@
                    vnode.instance = instance
                    var nextProps = vnode.props
                        //处理非状态组件
-
                    if (instance.statelessRender) {
                        instance.props = nextProps
                        instance.prevProps = prevProps
                        return updateComponent(instance, context)
                    }
 
-                   var prevProps = instance.prevProps
+                   prevProps = instance.prevProps
 
                    instance.props = prevProps
                    applyComponentHook(instance, 3, nextProps)
@@ -611,11 +616,13 @@
         * @param {any} props 
         * @param {any} nextProps 
         */
-
+       var builtIdProperties = /^(?:className|id|title|htmlFor)$/
        function diffProps(dom, instance, props, nextProps) {
+
            if (props === nextProps) {
                return
            }
+
            for (let name in nextProps) {
                if (name === 'children') {
                    continue
@@ -648,7 +655,8 @@
 
                    }
                    var events = (dom.__events || (dom.__events = {}))
-                   events[name] = props[name] = val
+                       //   events[name] = props[name] = val
+                   events[name] = val
                    continue
                }
 
@@ -656,10 +664,15 @@
                    //移除属性
                    if (val === false || val === void 666 || val === null) {
                        dom.removeAttribute(name)
-                       delete props[name]
+                           // delete props[name]
                    } else { //添加新属性
-                       dom.setAttribute(name, val + '')
-                       props[name] = val
+                       if (builtIdProperties.test(name)) {
+                           dom[name] = val + ''
+                       } else {
+                           dom.setAttribute(name, val + '')
+                       }
+
+                       //  props[name] = val // 不能改旧的props
                    }
                }
            }
@@ -669,9 +682,13 @@
                        var events = dom.__events || {}
                        delete events[name]
                    } else { //移除属性
-                       dom.removeAttribute(name)
+                       if (builtIdProperties.test(name)) {
+                           dom[name] = ''
+                       } else {
+                           dom.removeAttribute(name)
+                       }
                    }
-                   delete props[name]
+                   // delete props[name]
                }
            }
        }
@@ -772,7 +789,7 @@
                        vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                        vnode.dom = diff(old.dom, vnode, context, parentNode, old)
                    } else if (vnode.type === old.type) {
-                       if (vnode.type === '#text') {
+                       if (vnode.type === '#text' || vnode.type === '#comment') {
                            vnode.dom = old.dom
 
                            if (vnode.text !== old.text) {
@@ -787,6 +804,12 @@
                        }
                    } else if (vnode.type === '#text') { //#text === p
                        var dom = document.createTextNode(vnode.text)
+                       vnode.dom = dom
+                       parentNode.removeChild(old.dom)
+                       vnode.action = '替换为文本'
+                       removeComponent(old) //移除元素节点或组件
+                   } else if (vnode.type === '#comment') { //#text === p
+                       var dom = document.createComment(vnode.text)
                        vnode.dom = dom
                        parentNode.removeChild(old.dom)
                        vnode.action = '替换为文本'
@@ -836,6 +859,9 @@
            vnode = toVnode(vnode, context)
            var instance = vnode.instance
            var dom
+           if (vnode.type === '#comment') {
+               dom = document.createComment(vnode.text)
+           } else
            if (vnode.type === '#text') {
                dom = document.createTextNode(vnode.text)
            } else {
@@ -1141,6 +1167,7 @@
          transaction.isInTransation = false
          root.instance.container = container
          root.instance.forceUpdate(cb)
+         return root.instance || null
      }
 
 

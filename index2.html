@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+    </style>
+    <script>
+        class A extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    aaa: 111
+                }
+            }
+            click() {
+                console.log('====')
+                this.setState({
+                    aaa: this.state.aaa + 1
+                })
+            }
+            render() {
+                return React.createElement('div', {
+                    id: 'id',
+                    onClick: this.click.bind(this),
+                    className: 'aaa'
+                }, this.state.aaa)
+
+            }
+        }
+        window.onload = function() {
+            var a = ReactDOM.render(React.createElement(A), document.body)
+        }
+    </script>
+</head>
+
+<body>
+    <div>这个默认会被清掉</div>
+
+
+</body>
+
+</html>

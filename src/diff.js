@@ -25,7 +25,7 @@
       instance.state = prevState
       var nextProps = props
       var nextState = state
-      if (!this.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
+      if (!instance.forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
           return dom //注意
       }
       applyComponentHook(instance, 5, nextProps, nextState, context)
@@ -101,14 +101,13 @@
               vnode.instance = instance
               var nextProps = vnode.props
                   //处理非状态组件
-
               if (instance.statelessRender) {
                   instance.props = nextProps
                   instance.prevProps = prevProps
                   return updateComponent(instance, context)
               }
 
-              var prevProps = instance.prevProps
+              prevProps = instance.prevProps
 
               instance.props = prevProps
               applyComponentHook(instance, 3, nextProps)
@@ -176,11 +175,13 @@
    * @param {any} props 
    * @param {any} nextProps 
    */
-
+  var builtIdProperties = /^(?:className|id|title|htmlFor)$/
   export function diffProps(dom, instance, props, nextProps) {
+
       if (props === nextProps) {
           return
       }
+
       for (let name in nextProps) {
           if (name === 'children') {
               continue
@@ -213,7 +214,8 @@
 
               }
               var events = (dom.__events || (dom.__events = {}))
-              events[name] = props[name] = val
+                  //   events[name] = props[name] = val
+              events[name] = val
               continue
           }
 
@@ -221,10 +223,15 @@
               //移除属性
               if (val === false || val === void 666 || val === null) {
                   dom.removeAttribute(name)
-                  delete props[name]
+                      // delete props[name]
               } else { //添加新属性
-                  dom.setAttribute(name, val + '')
-                  props[name] = val
+                  if (builtIdProperties.test(name)) {
+                      dom[name] = val + ''
+                  } else {
+                      dom.setAttribute(name, val + '')
+                  }
+
+                  //  props[name] = val // 不能改旧的props
               }
           }
       }
@@ -234,9 +241,13 @@
                   var events = dom.__events || {}
                   delete events[name]
               } else { //移除属性
-                  dom.removeAttribute(name)
+                  if (builtIdProperties.test(name)) {
+                      dom[name] = ''
+                  } else {
+                      dom.removeAttribute(name)
+                  }
               }
-              delete props[name]
+              // delete props[name]
           }
       }
   }

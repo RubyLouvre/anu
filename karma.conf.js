@@ -51,7 +51,7 @@ module.exports = function(config) {
             module: {
                 /* Transpile source and test files */
                 preLoaders: [{
-                    test: /\.js$/,
+                    test: /\.jsx?$/,
                     exclude: path.resolve(__dirname, 'node_modules'),
                     loader: 'babel-loader',
                     query: {
@@ -74,7 +74,7 @@ module.exports = function(config) {
                 modulesDirectories: [__dirname, 'node_modules']
             },
             plugins: [
-                new webpack.DefinePlugin({
+                new webpack.DefinePlugin({ //添加全局变量
                     coverage: coverage,
                     NODE_ENV: JSON.stringify(process.env.NODE_ENV || ''),
                 })

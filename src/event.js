@@ -31,9 +31,9 @@
           var path = paths[i]
           var fn = path.props[captured]
           if (typeof fn === 'function') {
-              event.currentTarget = path.dom
-              fn.call(path.dom, event)
-              if (event._stopPropagation) {
+              e.currentTarget = path.dom
+              fn.call(path.dom, e)
+              if (e._stopPropagation) {
                   break
               }
           }
@@ -43,9 +43,9 @@
           var path = paths[i]
           var fn = path.props[bubble]
           if (typeof fn === 'function') {
-              event.currentTarget = path.dom
-              fn.call(path.dom, event)
-              if (event._stopPropagation) {
+              e.currentTarget = path.dom
+              fn.call(path.dom, e)
+              if (e._stopPropagation) {
                   break
               }
           }

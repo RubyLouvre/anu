@@ -126,6 +126,7 @@ function render(vnode, container, cb) {
     transaction.isInTransation = false
     root.instance.container = container
     root.instance.forceUpdate(cb)
+    return root.instance || null
 }
 
 
