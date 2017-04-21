@@ -9,9 +9,7 @@ module.exports = function(config) {
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
         //  basePath: '',
-        onExit: function(a) {
-            console.log(a)
-        },
+
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
