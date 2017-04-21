@@ -21,10 +21,18 @@
                 }
             }
             click() {
-                console.log('====')
+                console.log('click')
                 this.setState({
                     aaa: this.state.aaa + 1
                 })
+            }
+            componentDidMount() {
+                console.log('componentDidMount')
+                this.click()
+            }
+            componentDidUpdate() {
+
+                console.log('componentDidUpdate')
             }
             render() {
                 return React.createElement('div', {
@@ -35,8 +43,9 @@
 
             }
         }
+        var a
         window.onload = function() {
-            var a = ReactDOM.render(React.createElement(A), document.body)
+            a = ReactDOM.render(React.createElement(A), document.body)
         }
     </script>
 </head>

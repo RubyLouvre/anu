@@ -32,7 +32,7 @@ module.exports = function(config) {
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['spec', 'coverage', 'mocha'],
         preprocessors: {
-            'src/**/*.js': ['coverage'],
+            //  'src/**/*.js': ['coverage'],
             'test/**/*.js': ['webpack']
         },
         mochaReporter: { showDiff: true },
