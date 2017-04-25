@@ -9,7 +9,6 @@ var rnumber = /^-?\d+(\.\d+)?$/
      * @param {any} newStyle 
      */
 export function patchStyle(dom, oldStyle, newStyle) {
-    console.log(oldStyle, newStyle)
     if (oldStyle === newStyle) {
         return
     }

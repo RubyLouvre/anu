@@ -11,7 +11,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
     after(async() => {
         await afterHook(false);
     });
-    it('ReactDOM.render返回根组件的实例', async() => {
+    it('事件与样式', async() => {
         class A extends React.Component {
             constructor() {
                 super()
@@ -51,6 +51,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
             rootInstance = ReactDOM.render(
                 <A/>, document.body);
 
+
         }, async() => {
             await browser
                 .click('#aaa')
@@ -61,6 +62,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 .click('#aaa')
                 .$apply('wait');
             expect(rootInstance.state.aaa).toBe(113)
+            expect(rootInstance.vnode.dom.style.heigth).toBe('113px')
         });
 
     })
