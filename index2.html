@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/anu.js"></script>
     <style>
         .aaa {
             width: 200px;
@@ -13,7 +13,8 @@
         }
     </style>
     <script>
-        class A extends React.Component {
+        console.log(anu)
+        class A extends anu.Component {
             constructor() {
                 super()
                 this.state = {
@@ -31,7 +32,6 @@
                 this.click()
             }
             componentDidUpdate() {
-
                 console.log('componentDidUpdate')
             }
             render() {
@@ -45,7 +45,7 @@
         }
         var a
         window.onload = function() {
-            a = ReactDOM.render(React.createElement(A), document.body)
+            a = anu.render(React.createElement(A), document.body)
         }
     </script>
 </head>

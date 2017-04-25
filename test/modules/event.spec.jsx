@@ -1,6 +1,7 @@
 import React from 'src/React'
+
 import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
-let {executer, $$addTest} = browser;
+let {$serial} = browser;
 
 describe('ReactDOM.render返回根组件的实例', function () {
     this.timeout(200000);
@@ -26,20 +27,17 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
             }
             componentDidMount() {
-                //  resolve()
-                executer.next()
+                browser.$next();
             }
             componentDidUpdate() {
-                // console.log('updated')
-
-                executer.next()
-                //   console.log(this.state.aaa) /    resolve()
+                browser.$next();
 
             }
             render() {
                 return (
                     <div
                         id="aaa"
+                        style={{height:this.state.aaa}}
                         onClick={this
                         .click
                         .bind(this)}>
@@ -48,23 +46,23 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 )
             }
         }
-        var rootInstance,
-            resolve
-        $$addTest(async function () {
-            parent.xxxx = document.getElementById('aaa') || 'xxxx';
-            browser.click('#aaa');
-            await browser.$$action('wait')
-            expect(rootInstance.state.aaa).toBe(112)
+        var rootInstance
+        $serial(async() => {
+            rootInstance = ReactDOM.render(
+                <A/>, document.body);
 
-        }, async function () {
-            browser.click('#aaa');
-            await browser.$$action('wait')
+        }, async() => {
+            await browser
+                .click('#aaa')
+                .$apply('wait');
             expect(rootInstance.state.aaa).toBe(112)
-            resolve = this
-        })
+        }, async() => {
+            await browser
+                .click('#aaa')
+                .$apply('wait');
+            expect(rootInstance.state.aaa).toBe(113)
+        });
 
-        rootInstance = ReactDOM.render(
-            <A/>, document.body);
     })
 
 })
