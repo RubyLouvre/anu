@@ -9,14 +9,15 @@ var rnumber = /^-?\d+(\.\d+)?$/
      * @param {any} newStyle 
      */
 export function patchStyle(dom, oldStyle, newStyle) {
+    console.log(oldStyle, newStyle)
     if (oldStyle === newStyle) {
         return
     }
+    var old = {}
     for (var name in newStyle) {
         var val = newStyle[name]
         if (oldStyle[name] !== val) {
-            delete oldStyle[name] //减少旧对象的键值对，以便减少第二次for in循环的负担
-            name = getStyleName(name, dom)
+            name = cssName(name, dom)
             var type = typeof val
             if (type === void 666 || type === null) {
                 val = '' //清除样式
@@ -26,6 +27,7 @@ export function patchStyle(dom, oldStyle, newStyle) {
             dom.style[name] = val //应用样式
         }
     }
+    // 如果旧样式存在，但新样式已经去掉
     for (var name in oldStyle) {
         if (!(name in newStyle)) {
             dom.style[name] = '' //清除样式
@@ -35,12 +37,11 @@ export function patchStyle(dom, oldStyle, newStyle) {
 
 
 
-
 var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
 var cssMap = oneObject('float', 'cssFloat')
 
-var testStyle = document.documentElement.style
+//var testStyle = document.documentElement.style
 var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-']
 
 /**
@@ -49,13 +50,14 @@ var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-']
  * @param {any} name 
  * @returns 
  */
-function cssName(name) {
+function cssName(name, dom) {
     if (cssMap[name]) {
         return cssMap[name]
     }
+    host = dom && dom.style || {}
     for (var i = 0, n = prefixes.length; i < n; i++) {
-        var camelCase = camelize(prefixes[i] + name)
-        if (camelCase in testStyle) {
+        camelCase = camelize(prefixes[i] + name)
+        if (camelCase in host) {
             return (cssMap[name] = camelCase)
         }
     }

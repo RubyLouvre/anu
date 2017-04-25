@@ -177,7 +177,6 @@
    */
   var builtIdProperties = /^(?:className|id|title|htmlFor)$/
   export function diffProps(dom, instance, props, nextProps) {
-
       if (props === nextProps) {
           return
       }
@@ -194,7 +193,8 @@
               continue
           }
           if (name === 'style') {
-              patchStyle(dom, props[style], val)
+
+              patchStyle(dom, props.style || {}, val)
               continue
           }
           if (name === 'dangerouslySetInnerHTML') {
