@@ -1,5 +1,6 @@
 import React from 'src/React'
-import eventHook, {beforeHook, afterHook, runCommand} from 'karma-event-driver-ext/cjs/event-driver-hooks.js';
+import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
+let {executer, $$addTest} = browser;
 
 describe('ReactDOM.render返回根组件的实例', function () {
     this.timeout(200000);
@@ -18,20 +19,21 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 }
             }
             click(e) {
-              
+
                 this.setState({
                     aaa: this.state.aaa + 1
                 })
-              
+
             }
             componentDidMount() {
-                resolve()
+                //  resolve()
+                executer.next()
             }
             componentDidUpdate() {
-               // console.log('updated')
-                console.log(this.state.aaa)
-               
-                resolve()
+                // console.log('updated')
+
+                executer.next()
+                //   console.log(this.state.aaa) /    resolve()
 
             }
             render() {
@@ -48,38 +50,21 @@ describe('ReactDOM.render返回根组件的实例', function () {
         }
         var rootInstance,
             resolve
-        async function nextAction(fn) {
-            if (fn && !fn.prototype) {
-                throw '不能为匿名函数'
-            }
-            var rr
-            var p = new Promise(function (r) {
-                rr = r
-            })
-            await runCommand(fn.bind(rr))
-            return p
-        }
-
-        await nextAction(function () {
-            rootInstance = ReactDOM.render(
-                <A/>, document.body)
-            this()
-        })
-        //等待组件mount 确保Promise是在await之前
-        await nextAction(function (browser) {
+        $$addTest(async function () {
+            parent.xxxx = document.getElementById('aaa') || 'xxxx';
             browser.click('#aaa');
-            resolve = this
-        });
+            await browser.$$action('wait')
+            expect(rootInstance.state.aaa).toBe(112)
 
-        expect(rootInstance.state.aaa).toBe(112)
-
-        await nextAction(function (browser) {
+        }, async function () {
             browser.click('#aaa');
+            await browser.$$action('wait')
+            expect(rootInstance.state.aaa).toBe(112)
             resolve = this
         })
 
-        expect(rootInstance.state.aaa).toBe(113)
-
+        rootInstance = ReactDOM.render(
+            <A/>, document.body);
     })
 
 })

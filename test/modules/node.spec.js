@@ -11,22 +11,22 @@ describe('Event Drive Tests', function() {
         await afterHook(false);
     });
     it('click element', async() => {
-        var div = document.createElement('div');
+        /*     var div = document.createElement('div');
 
-        document.body.appendChild(div);
-        div.innerHTML = '看到我吗？'
-        var a = 1;
-        div.onclick = function() {
-            a++
-        };
-        await runCommand((browser) => {
-            browser.click(div); // most webdriverio api support. http://webdriver.io/api.html
-        });
-        expect(a).toBe(2);
+             document.body.appendChild(div);
+             div.innerHTML = '看到我吗？'
+             var a = 1;
+             div.onclick = function() {
+                 a++
+             };
+             await runCommand((browser) => {
+                 browser.click(div); // most webdriverio api support. http://webdriver.io/api.html
+             });
+             expect(a).toBe(2);
 
-        await runCommand((browser) => {
-            browser.click(div);
-        });
-        expect(a).toBe(3);
+             await runCommand((browser) => {
+                 browser.click(div);
+             });
+             expect(a).toBe(3);*/
     });
 });
