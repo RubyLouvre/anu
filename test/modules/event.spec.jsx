@@ -18,18 +18,19 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 }
             }
             click(e) {
-                console.log('这个已经触发')
+              
                 this.setState({
                     aaa: this.state.aaa + 1
                 })
-                console.log('点击完')
+              
             }
             componentDidMount() {
                 resolve()
             }
             componentDidUpdate() {
-                console.log('updated')
+               // console.log('updated')
                 console.log(this.state.aaa)
+               
                 resolve()
 
             }
@@ -45,32 +46,38 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 )
             }
         }
-        var resolve
-        var p = new Promise(function (r) {
-            resolve = r
+        var rootInstance,
+            resolve
+        async function nextAction(fn) {
+            if (fn && !fn.prototype) {
+                throw '不能为匿名函数'
+            }
+            var rr
+            var p = new Promise(function (r) {
+                rr = r
+            })
+            await runCommand(fn.bind(rr))
+            return p
+        }
+
+        await nextAction(function () {
+            rootInstance = ReactDOM.render(
+                <A/>, document.body)
+            this()
         })
-        var rootInstance = ReactDOM.render(
-            <A/>, document.body)
-        //等待组件mount
-        await p
-        p = new Promise(function (r) {
-            resolve = r
-        })
-        //确保Promise是在await之前
-        await runCommand((browser) => {
-            browser.click('#aaa'); 
+        //等待组件mount 确保Promise是在await之前
+        await nextAction(function (browser) {
+            browser.click('#aaa');
+            resolve = this
         });
-        //等待组件update
-        await p
+
         expect(rootInstance.state.aaa).toBe(112)
-        p = new Promise(function (r) {
-            resolve = r
+
+        await nextAction(function (browser) {
+            browser.click('#aaa');
+            resolve = this
         })
-        await runCommand((browser) => {
-            browser.click('#aaa'); 
-        });
-        //等待组件update
-        await p
+
         expect(rootInstance.state.aaa).toBe(113)
 
     })
