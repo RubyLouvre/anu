@@ -5,12 +5,23 @@
       getInstances,
       matchInstance,
   } from './util'
-  import { applyComponentHook } from './lifecycle'
-  import { transaction } from './transaction'
-  import { toVnode } from './toVnode'
-  import { patchStyle } from './style'
+  import {
+      applyComponentHook
+  } from './lifecycle'
+  import {
+      transaction
+  } from './transaction'
+  import {
+      toVnode
+  } from './toVnode'
+  import {
+      patchStyle
+  } from './style'
 
-  import { addGlobalEventListener, getBrowserName } from './event'
+  import {
+      addGlobalEventListener,
+      getBrowserName
+  } from './event'
 
 
   /**
@@ -19,7 +30,14 @@
    * @param {any} instance 
    */
   export function updateComponent(instance) {
-      var { props, state, context, vnode, prevProps, prevState } = instance
+      var {
+          props,
+          state,
+          context,
+          vnode,
+          prevProps,
+          prevState
+      } = instance
       prevState = prevState || state
       instance.props = prevProps
       instance.state = prevState
@@ -41,10 +59,7 @@
       if (instance.getChildContext) {
           context = extend(clone(context), instance.getChildContext());
       }
-
-      var dom = vnode.dom //dom肯定存在
-      dom = diff(dom, rendered, context, dom.parentNode, instance.vnode)
-
+      var dom = diff(rendered, instance.vnode, vnode._hostParent, context)
       instance.vnode = rendered
       rendered.dom = dom
       delete instance.prevState //方便下次能更新this.prevState
@@ -59,17 +74,17 @@
    */
   function removeComponent(vnode) {
       var instance = vnode.instance
+
       applyComponentHook(instance, 7) //7
-      if (instance) {
-          vnode.instance = void 666
-      }
+      vnode._hostParent = vnode._hostInfo = vnode.instance = void 666
+
       var ref = vnode.props.ref
       if (typeof ref === 'string') {
           var o = vnode._owner
           o && (o.refs[ref] = null)
       }
 
-      vnode.props.children.forEach(function(el) {
+      vnode.props.children.forEach(function (el) {
           if (el.props) {
               removeComponent(el)
           }
@@ -78,15 +93,17 @@
 
 
   /**
+   * 参数不要出现DOM,以便在后端也能运行
    * 
-   * 
-   * @param {any} dom 
-   * @param {any} vnode 
+   * @param {any} vnode 新的虚拟DOM
+   * @param {any} prevVnode 旧的虚拟DOM
+   * @param {any} vParentNode 父虚拟DOM
    * @param {any} context 
-   * @param {any} parent 
    * @returns 
    */
-  function diff(dom, vnode, context, parentNode, prevVnode) { //updateComponent
+  function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
+      var dom = prevVnode.dom
+      var parentNode = vParentNode && vParentNode.dom
       var prevProps = prevVnode.props　 || {}
       var prevChildren = prevProps.children || []
       var Type = vnode.type
@@ -100,7 +117,7 @@
           if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
               vnode.instance = instance
               var nextProps = vnode.props
-                  //处理非状态组件
+              //处理非状态组件
               if (instance.statelessRender) {
                   instance.props = nextProps
                   instance.prevProps = prevProps
@@ -121,6 +138,7 @@
           }
       }
       if (isComponent) {
+          vnode._hostParent = vParentNode
           return toDOM(vnode, context, parentNode, prevVnode.dom)
       }
       if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
@@ -135,9 +153,11 @@
           }
           dom = nextDom
       }
-      diffProps(dom, vnode._owner, prevProps, vnode.props)
-      if (!instance || !instance._hasSetInnerHTML) {
-          diffChildren(dom, vnode.props.children, context, prevChildren)
+      //必须在diffProps前添加它的dom
+      vnode.dom = dom
+      diffProps(vnode.props, prevProps, vnode, prevVnode)
+      if (!vnode._hasSetInnerHTML && vnode.props) {
+          diffChildren(vnode.props.children, prevChildren, vnode, context)
       }
       return dom
   }
@@ -168,75 +188,93 @@
   function getDOMNode() {
       return this
   }
-  /**
-   * 修改dom的属性与事件
-   * 
-   * @param {any} dom 
-   * @param {any} props 
-   * @param {any} nextProps 
-   */
-  var builtIdProperties = /^(?:className|id|title|htmlFor)$/
-  export function diffProps(dom, instance, props, nextProps) {
-      if (props === nextProps) {
+
+  var builtIdProperties = /^(?:className|id|title|selected|htmlFor|value|checked|disabled)$/
+/**
+ * 
+ * 修改dom的属性与事件
+ * @export
+ * @param {any} props 
+ * @param {any} prevProps 
+ * @param {any} vnode 
+ * @param {any} prevVnode 
+ */
+  export function diffProps(props, prevProps, vnode, prevVnode) {
+      if (props === prevProps) {
           return
       }
+      var dom = vnode.dom
 
-      for (let name in nextProps) {
+      var instance = vnode._owner
+      if (vnode.type === 'option') {
+
+          var value = typeof props.value === 'string' ? props.value : props.children[0].text
+          var p = vnode._hostParent
+          if (p.type === 'optgroup') {
+              p = p._hostParent
+          }
+          var selectValue = p.props.value
+          var selected = value === selectValue
+          var _hostInfo = prevVnode._hostInfo || {}
+          if (_hostInfo.selected !== selected) {
+              dom.selected = selected
+              delete prevVnode._hostInfo
+              _hostInfo.selected = selected
+          }
+          vnode._hostInfo = _hostInfo
+      }
+
+      for (let name in props) {
           if (name === 'children') {
               continue
           }
-          var val = nextProps[name]
+          var val = props[name]
           if (name === 'ref') {
-              if (props[name] !== val) {
+              if (prevProps[name] !== val) {
                   instance && patchRef(instance, val, dom)
               }
               continue
           }
           if (name === 'style') {
-
-              patchStyle(dom, props.style || {}, val)
+              patchStyle(dom, prevProps.style || {}, val)
               continue
           }
           if (name === 'dangerouslySetInnerHTML') {
-              var oldhtml = props[name] && props[name]._html
-              instance && (instance._hasSetInnerHTML = true)
+              var oldhtml = prevProps[name] && prevProps[name]._html
+              vnode._hasSetInnerHTML = true
               if (val && val._html !== oldhtml) {
                   dom.innerHTML = val._html
               }
           }
           if (isEvent(name)) {
-              if (!props[name]) { //添加全局监听事件
+              if (!prevProps[name]) { //添加全局监听事件
                   var eventName = getBrowserName(name)
                   addGlobalEventListener(eventName)
               }
               if (inMobile && eventName === 'click') {
                   elem.addEventListener('click', clickHack)
-
               }
               var events = (dom.__events || (dom.__events = {}))
-                  //   events[name] = props[name] = val
               events[name] = val
               continue
           }
 
-          if (val !== props[name]) {
+          if (val !== prevProps[name]) {
               //移除属性
               if (val === false || val === void 666 || val === null) {
                   dom.removeAttribute(name)
-                      // delete props[name]
               } else { //添加新属性
                   if (builtIdProperties.test(name)) {
                       dom[name] = val + ''
                   } else {
                       dom.setAttribute(name, val + '')
                   }
-
-                  //  props[name] = val // 不能改旧的props
               }
           }
       }
-      for (let name in props) {
-          if (!(name in nextProps)) {
+      //如果旧属性在新属性对象不存在，那么移除DOM
+      for (let name in prevProps) {
+          if (!(name in props)) {
               if (isEvent(name)) { //移除事件
                   var events = dom.__events || {}
                   delete events[name]
@@ -247,7 +285,6 @@
                       dom.removeAttribute(name)
                   }
               }
-              // delete props[name]
           }
       }
   }
@@ -283,13 +320,14 @@
   /**
    * 
    * 
-   * @param {any} parentNode 
    * @param {any} newChildren 
-   * @param {any} context 
    * @param {any} oldChildren 
+   * @param {any} vParentNode 
+   * @param {any} context 
    */
-  function diffChildren(parentNode, newChildren, context, oldChildren) {
+  function diffChildren(newChildren, oldChildren, vParentNode, context) {
       //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
+      var parentNode = vParentNode.dom
       var mapping = {}
       for (let i = 0, n = oldChildren.length; i < n; i++) {
           let vnode = oldChildren[i]
@@ -318,7 +356,7 @@
               if (matchNode) {
                   let index = removedChildren.indexOf(matchNode)
                   removedChildren.splice(index, 1)
-                  vnode.old = matchNode
+                  vnode.prevVnode = matchNode
                   matchNode.use = true
               }
           }
@@ -328,30 +366,32 @@
       //第三，逐一比较
       for (let i = 0, n = newChildren.length; i < n; i++) {
           let vnode = newChildren[i]
-          let old = null
-          if (vnode.old) {
-              old = vnode.old
+          let prevVnode = null
+          if (vnode.prevVnode) {
+              prevVnode = vnode.prevVnode
           } else {
               var k
               loop:
                   while (k = removedChildren.shift()) {
                       if (!k.use) {
-                          old = k
+                          prevVnode = k
                           break loop
                       }
                   }
           }
-          if (vnode && old) { //假设两者都存在
-              if (vnode.old && vnode._hasInstance) {
-                  delete vnode.old
+          vnode._hostParent = vParentNode
+          if (vnode && prevVnode) { //假设两者都存在
+              var prevDom = prevVnode.dom
+              if (vnode.prevVnode && vnode._hasInstance) {
+                  delete vnode.prevVnode
                   delete vnode._hasInstance
                   vnode.action = '重复利用旧的实例更新组件' //action只是调试用
-                  vnode.dom = diff(old.dom, vnode, context, parentNode, old)
-              } else if (vnode.type === old.type) {
+                  diff(vnode, prevVnode, vParentNode, context)
+              } else if (vnode.type === prevVnode.type) {
                   if (vnode.type === '#text' || vnode.type === '#comment') {
-                      vnode.dom = old.dom
+                      vnode.dom = prevDom
 
-                      if (vnode.text !== old.text) {
+                      if (vnode.text !== prevVnode.text) {
                           vnode.action = '改文本'
                           vnode.dom.nodeValue = vnode.text
                       } else {
@@ -359,34 +399,37 @@
                       }
                   } else { //元素节点的比较
                       vnode.action = '更新元素'
-                      vnode.dom = diff(old.dom, vnode, context, parentNode, old)
+                      diff(vnode, prevVnode, vParentNode, context)
                   }
               } else if (vnode.type === '#text') { //#text === p
                   var dom = document.createTextNode(vnode.text)
                   vnode.dom = dom
-                  parentNode.removeChild(old.dom)
+                  parentNode.removeChild(prevDom)
                   vnode.action = '替换为文本'
-                  removeComponent(old) //移除元素节点或组件
+                  removeComponent(prevVnode) //移除元素节点或组件
               } else if (vnode.type === '#comment') { //#text === p
                   var dom = document.createComment(vnode.text)
                   vnode.dom = dom
-                  parentNode.removeChild(old.dom)
+                  parentNode.removeChild(prevDom)
                   vnode.action = '替换为文本'
-                  removeComponent(old) //移除元素节点或组件
+                  removeComponent(prevVnode) //移除元素节点或组件
               } else {
                   vnode.action = '替换为元素'
-                  vnode.dom = diff(old.dom, vnode, context, parentNode, old)
+                  diff(vnode, prevVnode, vParentNode, context)
               }
               //当这个孩子是上级祖先传下来的，那么它是相等的
-              if (vnode !== old) {
-                  delete old.dom //clear reference
+              if (vnode !== prevVnode) {
+                  delete prevVnode.dom //clear reference
               }
-          } else if (!old) { //添加新组件或元素节点
+          } else if (!prevVnode) { //添加新组件或元素节点
               vnode.action = '添加新' + (vnode.type === '#text' ? '文本' : '元素')
               if (!vnode.dom) {
-                  vnode.dom = toDOM(vnode, context, parentNode, oldChildren[i] && oldChildren[i].dom || null)
+                  var oldNode = oldChildren[i]
+
+                  toDOM(vnode, context, parentNode, oldNode && oldNode.dom || null)
               }
           }
+
           if (!parentNode.contains(vnode.dom)) {
               parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
           }
@@ -396,6 +439,7 @@
       if (removedChildren.length) {
           for (let i = 0, n = removedChildren.length; i < n; i++) {
               let vnode = removedChildren[i]
+              delete vnode._hostParent
               parentNode.removeChild(vnode.dom)
               vnode.props && removeComponent(vnode)
           }
@@ -416,8 +460,7 @@
    */
   export function toDOM(vnode, context, parentNode, replaced) {
       vnode = toVnode(vnode, context)
-      var instance = vnode.instance
-      var dom
+      var dom, isElement
       if (vnode.type === '#comment') {
           dom = document.createComment(vnode.text)
       } else
@@ -425,15 +468,21 @@
           dom = document.createTextNode(vnode.text)
       } else {
           dom = document.createElement(vnode.type)
-          diffProps(dom, vnode._owner, {}, vnode.props)
-          if (!instance || !instance._hasSetInnerHTML)
-              diffChildren(dom, vnode.props.children, context, []) //添加第4参数
+          isElement = true
       }
 
+      var instance = vnode.instance
       var canComponentDidMount = instance && !vnode.dom
       vnode.dom = dom
-      if (parentNode) {
+      if (isElement) {
+          diffProps(vnode.props, {}, vnode, {})
+          if (!vnode._hasSetInnerHTML) {
+              diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
+          }
+      }
 
+      //尝试插入DOM树
+      if (parentNode) {
           var instances, childInstance
           if (canComponentDidMount) { //判定能否调用componentDidMount方法
               instances = getInstances(instance)

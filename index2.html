@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+  <script type='text/javascript' src="./dist/React.js"></script>
     <style>
         .aaa {
             width: 200px;
@@ -12,44 +12,40 @@
             background: red;
         }
     </style>
-    <script>
-        class A extends React.Component {
-            constructor() {
-                super()
-                this.state = {
-                    aaa: 111
-                }
-            }
-            click() {
-                console.log('click')
-                this.setState({
-                    aaa: this.state.aaa + 1
-                })
-            }
-            componentDidMount() {
-                console.log('componentDidMount')
-                this.click()
-            }
-            componentDidUpdate() {
-                console.log('componentDidUpdate')
-            }
-            render() {
-                return React.createElement('div', {
-                    id: 'id',
-                    style: {
-                        height: this.state.aaa
-                    },
-                    onClick: this.click.bind(this),
-                    className: 'aaa'
-                }, this.state.aaa)
-
-            }
+   <!--
+    <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+     <script src="react-dom.js"></script>-->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script  type="text/babel" >
+        class Select extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            city: "bj"
         }
-        var a
-        window.onload = function() {
-            a = React.render(React.createElement(A), document.body)
-            console.log(a)
-        }
+    }
+ 
+    handleCity(e) {
+        var value = e.target.value;
+        this.setState({
+            city: value,
+        })
+        console.log(value, '111')
+    }
+    render() {
+        return <select name='city' id='city'
+            value={this.state.city} onChange={this.handleCity.bind(this)}>
+            <option value='hz'>杭州</option>
+            <option value='bj'>北京</option>
+            <option value='sh'>上海</option>
+        </select>
+    }
+}
+var a
+window.onload = function () {
+    a = ReactDOM.render(<Select />, document.body)
+    console.log(a)
+}
     </script>
 </head>
 

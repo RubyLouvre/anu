@@ -1,4 +1,4 @@
-import './modules/createElement.spec'
-import './modules/util.spec'
-import './modules/node.spec'
-require('./modules/event.spec.jsx')
+// import './modules/createElement.spec'
+// import './modules/util.spec'
+require('./modules/node.spec.jsx')
+// require('./modules/event.spec.jsx')
