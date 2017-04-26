@@ -16,29 +16,32 @@ describe('Event Drive Tests', function () {
     after(async () => {
         await afterHook(false);
     });
-    // it('click element', async () => {
-    //     var div = document.createElement('div');
+    it('click element', async () => {
+        var div = document.createElement('div');
 
-    //     document.body.appendChild(div);
-    //     div.innerHTML = '看到我吗？'
-    //     var a = 1;
-    //     div.onclick = function () {
-    //         a++
-    //         browser.$next();
-    //     };
+        document.body.appendChild(div);
+        div.innerHTML = '看到我吗？'
+        var a = 1;
+        div.onclick = function () {
+            a++
+            browser.$next();
+        };
 
-    //     await browser
-    //         .click(div)
-    //         .$apply('wait');
-    //     expect(a).toBe(2);
+        await browser
+            .click(div)
+            .$apply('wait');
+        expect(a).toBe(2);
 
-    //     await browser
-    //         .click(div)
-    //         .$apply('wait');
+        await browser
+            .click(div)
+            .$apply('wait');
 
-    //     expect(a).toBe(3);
-    // });
+        expect(a).toBe(3);
+    });
     it('select', async () => {
+        let rs, prom = new Promise((s) => {
+            rs = s;
+        })
         class Select extends React.Component {
             constructor() {
                 super()
@@ -54,8 +57,10 @@ describe('Event Drive Tests', function () {
                 })
             }
             componentDidMount() {
-              console.log('mount......')
-                browser.$next();
+                console.log('mount......')
+             
+                rs()
+             
             }
             componentDidUpdate() {
                 browser.$next();
@@ -63,7 +68,7 @@ describe('Event Drive Tests', function () {
             }
             render() {
                 return <select name='city'
-                    id="aaa"
+                    id="select"
                     value={this.state.city}
                     onChange={
                         this.handleCity.bind(this)
@@ -78,20 +83,19 @@ describe('Event Drive Tests', function () {
         var div = document.createElement('div');
 
         document.body.appendChild(div);
-
         var s = React.render(<Select />, document.body)
-        $serial(async () => {
-            // expect(s.vnode.dom.children[1].selected).toBe(true)
-            await browser.selectByVisibleText('aaa','上海').$apply('wait');
-          //  await browser.click('#aaa').$apply('wait');
-            console.log('选择下拉项的某一项');
-          //  return new Promise((rs) => setTimeout(rs, 5000));
-        }, async () => {
 
-            expect(s.vnode.dom.children[2].selected).toBe(false)
-            consoole.log('------')
-            document.removeChild(div)
-        });
+        await prom;
+
+        expect(s.vnode.dom.children[1].selected).toBe(true)
+        await browser.selectByVisibleText('select', '上海').$apply('wait');
+        console.log('选择下拉项的某一项');
+
+        expect(s.vnode.dom.children[2].selected).toBe(true)
+        await browser.selectByVisibleText('select', '杭州').$apply('wait');
+        expect(s.vnode.dom.children[0].selected).toBe(true)
+        // document.removeChild(div)
+
 
 
     });
