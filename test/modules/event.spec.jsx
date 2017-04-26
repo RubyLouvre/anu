@@ -20,7 +20,6 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 }
             }
             click(e) {
-
                 this.setState({
                     aaa: this.state.aaa + 1
                 })
@@ -46,10 +45,12 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 )
             }
         }
-        var rootInstance
-    
-            rootInstance = ReactDOM.render(
-                <A/>, document.body);
+       
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+         var  rootInstance = ReactDOM.render(
+                <A/>, div);
       return  $serial(async() => {
             await browser
                 .click('#aaa')
@@ -61,6 +62,8 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 .$apply('wait');
             expect(rootInstance.state.aaa).toBe(113)
             expect(rootInstance.vnode.dom.style.height).toBe('113px')
+            document.body.removeChild(div)
+
         });
 
     })

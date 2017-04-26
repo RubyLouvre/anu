@@ -362,7 +362,7 @@
          if (cssMap[name]) {
              return cssMap[name]
          }
-         host = dom && dom.style || {}
+        var host = dom && dom.style || {}
          for (var i = 0, n = prefixes.length; i < n; i++) {
              camelCase = camelize(prefixes[i] + name)
              if (camelCase in host) {

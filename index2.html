@@ -12,8 +12,8 @@
             background: red;
         }
     </style>
-   <!--
-    <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+  
+  <!--  <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
      <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
@@ -21,11 +21,17 @@
     constructor() {
         super()
         this.state = {
+            citys: [{value: 'bj',text:'北京'},{value:'hj',text:'杭州'},{value:'nj',text:'南京'}],
             city: "bj"
         }
     }
- 
+    change(){
+        this.setState({
+           citys: [{value:'hj',text:'杭州'},{value:'nj',text:'南京'},{value: 'bj',text:'北京'}],
+        })
+    }
     handleCity(e) {
+        console.log(e,'----')
         var value = e.target.value;
         this.setState({
             city: value,
@@ -35,22 +41,27 @@
     render() {
         return <select name='city' id='city'
             value={this.state.city} onChange={this.handleCity.bind(this)}>
-            <option value='hz'>杭州</option>
-            <option value='bj'>北京</option>
-            <option value='sh'>上海</option>
+            {this.state.citys.map(function(el){
+                return  <option value={el.value}>{el.text}</option>
+            })}
+           
         </select>
     }
 }
 var a
 window.onload = function () {
-    a = ReactDOM.render(<Select />, document.body)
+    a = ReactDOM.render(<Select />, document.getElementById('example'))
     console.log(a)
 }
     </script>
 </head>
 
 <body>
+    <input type='radio' name='xxx' value='1'/>
+     <input type='radio' name='xxx' value='2'/>
+      <input type='radio' name='xxx' value='3'/>
     <div>这个默认会被清掉</div>
+    <div id='example'></div>
 
 
 </body>
