@@ -23,7 +23,6 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 this.setState({
                     aaa: this.state.aaa + 1
                 })
-
             }
             componentDidMount() {
                 browser.$next();

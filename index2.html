@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/React.js"></script>
+<script type='text/javascript' src="./dist/React.js"></script>
     <style>
         .aaa {
             width: 200px;
@@ -12,54 +12,48 @@
             background: red;
         }
     </style>
-  
-  <!--  <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+ 
+   <!-- <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
      <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
-        class Select extends React.Component {
+ class Radio extends React.Component {
     constructor() {
         super()
         this.state = {
-            citys: [{value: 'bj',text:'北京'},{value:'hj',text:'杭州'},{value:'nj',text:'南京'}],
-            city: "bj"
+          checkedIndex: 2
         }
     }
-    change(){
+    handleChange(index){
         this.setState({
-           citys: [{value:'hj',text:'杭州'},{value:'nj',text:'南京'},{value: 'bj',text:'北京'}],
+           checkedIndex: index
         })
     }
-    handleCity(e) {
-        console.log(e,'----')
-        var value = e.target.value;
-        this.setState({
-            city: value,
-        })
-        console.log(value, '111')
-    }
+
     render() {
-        return <select name='city' id='city'
-            value={this.state.city} onChange={this.handleCity.bind(this)}>
-            {this.state.citys.map(function(el){
-                return  <option value={el.value}>{el.text}</option>
-            })}
-           
-        </select>
+
+        return <div>
+            {
+                [1,2,3].map(function(el){
+                   return  <input type='radio' name='xxx' key={el} value={el} 
+                       checked={this.state.checkedIndex === el} 
+                       onChange={this.handleChange.bind(this, el)}/>
+
+                }, this)
+            }
+            </div>
     }
 }
-var a
+
 window.onload = function () {
-    a = ReactDOM.render(<Select />, document.getElementById('example'))
-    console.log(a)
+  ReactDOM.render(<Radio />, document.getElementById('example'))
+   
 }
     </script>
 </head>
 
 <body>
-    <input type='radio' name='xxx' value='1'/>
-     <input type='radio' name='xxx' value='2'/>
-      <input type='radio' name='xxx' value='3'/>
+  
     <div>这个默认会被清掉</div>
     <div id='example'></div>
 

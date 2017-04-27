@@ -8,7 +8,7 @@ let {
 } = browser;
 import React from 'src/React'
 
-describe('Event Drive Tests', function () {
+describe('node模块', function () {
     this.timeout(200000);
     before(async () => {
         await beforeHook();
@@ -37,6 +37,7 @@ describe('Event Drive Tests', function () {
             .$apply('wait');
 
         expect(a).toBe(3);
+         document.body.removeChild(div)
     });
     it('select', async () => {
         let rs, prom = new Promise((s) => {
@@ -77,10 +78,10 @@ describe('Event Drive Tests', function () {
             }
         }
 
-        var div = document.createElement('div');
+        var div2 = document.createElement('div');
 
-        document.body.appendChild(div);
-        var s = React.render(<Select />, document.body)
+        document.body.appendChild(div2);
+        var s = React.render(<Select />, div2)
 
         await prom;
 
@@ -91,9 +92,9 @@ describe('Event Drive Tests', function () {
         await browser.selectByVisibleText('select', '杭州').$apply('wait');
         expect(s.vnode.dom.children[0].selected).toBe(true)
 
-        setTimeout(function () {
-            document.body.removeChild(div)
-        }, 300)
+       
+        document.body.removeChild(div2)
+       
     })
 
     it('select2', async () => {
@@ -130,9 +131,7 @@ describe('Event Drive Tests', function () {
                 return <select name='city'
                     id="select2"
                     value={this.state.city}
-                    onChange={
-                        this.handleCity.bind(this)
-                    } >
+                    onChange={this.handleCity.bind(this) } >
                     {
                         this.state.cities.map(function (el) {
                             return <option value={el.value}>{el.text}</option>
@@ -142,10 +141,10 @@ describe('Event Drive Tests', function () {
             }
         }
 
-        var div = document.createElement('div');
+        var div3 = document.createElement('div');
 
-        document.body.appendChild(div);
-        var s = React.render(<Select />, document.body)
+        document.body.appendChild(div3);
+        var s = React.render(<Select />, div3)
 
         await prom;
 
@@ -154,17 +153,76 @@ describe('Event Drive Tests', function () {
         expect(s.vnode.dom.children[2].text).toBe('南京')
         s.change()
 
-        await $serial(async () => {
+        return $serial(async () => {
             expect(s.vnode.dom.children[0].text).toBe('杭州')
             expect(s.vnode.dom.children[1].text).toBe('南京')
             expect(s.vnode.dom.children[2].text).toBe('北京')
-
-        }).then(function () {
-            setTimeout(function () {
-                document.body.removeChild(div)
-            })
+  document.body.removeChild(div3)
         })
-
-
     })
+
+    it('radio2', async () => {
+        let rs, prom = new Promise((s) => {
+            rs = s;
+        })
+        class Radio extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    checkedIndex: 2
+                }
+            }
+            handleChange(index) {
+                this.setState({
+                    checkedIndex: index
+                })               
+            }
+            onClick(index){
+                var me = this
+                setTimeout(function(){
+                  me.handleChange(index)
+                })
+            }
+            componentDidMount() {
+                rs()
+            }
+            componentDidUpdate() {
+                browser.$next();
+            }
+            render() {
+
+                return <div>
+                    {
+                        [1, 2, 3].map(function (el) {
+                            console.log('radio'+el)
+                            return <input type='radio' id={'radio'+el} name='xxx' key={el} value={el}
+                                checked={this.state.checkedIndex === el}
+                                onClick={this.onClick.bind(this, el)}
+                                onChange={this.handleChange.bind(this, el)} />
+
+                        }, this)
+                    }
+                </div>
+            }
+        }
+
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+        var s = React.render(<Radio />, div)
+
+        await prom;
+
+        expect(s.vnode.dom.children[0].checked).toBe(false)
+        expect(s.vnode.dom.children[1].checked).toBe(true)
+        expect(s.vnode.dom.children[2].checked).toBe(false)
+        await browser.click('#radio3').$apply('wait')
+        return $serial(async () => {
+            expect(s.vnode.dom.children[0].checked).toBe(false)
+            expect(s.vnode.dom.children[1].checked).toBe(false)
+            expect(s.vnode.dom.children[2].checked).toBe(true)
+           document.body.removeChild(div)
+        })
+    })
+    
 });

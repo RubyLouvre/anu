@@ -59,9 +59,6 @@ describe('createElement', function() {
         expect(obj._owner).toEqual(null)
 
 
-        //obj是一个VNode实例
-
-        //   expect(obj).toEqual({ type: 'div', props: { id: 'aaa', children: [] }, key: null, _owner: null })
 
 
     })
