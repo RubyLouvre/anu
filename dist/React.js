@@ -22,12 +22,13 @@
 
       var transaction = {
           isInTransation: false,
-          enqueueCallback: function(obj) {
+          enqueueCallback: function (obj) {
               //它们是保证在ComponentDidUpdate后执行
               callbacks.push(obj)
           },
-          renderWithoutSetState: function(instance) {
+          renderWithoutSetState: function (instance) {
               instance.setState = instance.forceUpdate = setState
+          
               try {
                   CurrentOwner.cur = instance
                   var vnode = instance.render()
@@ -41,10 +42,12 @@
                   CurrentOwner.cur = null
                   delete instance.setState
                   delete instance.forceUpdate
+                 
+                 
               }
               return vnode
           },
-          enqueue: function(obj) {
+          enqueue: function (obj) {
               if (obj)
                   queue.push(obj)
               if (!this.isInTransation) {
@@ -54,7 +57,7 @@
                   var mainProcessing = []
                   queue.length = callbacks.length = 0
                   var unique = {}
-                  preProcessing.forEach(function(request) {
+                  preProcessing.forEach(function (request) {
                       try {
                           request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
                           if (!unique[request.component.uuid]) {
@@ -67,14 +70,14 @@
 
                   })
 
-                  mainProcessing.forEach(function(request) {
+                  mainProcessing.forEach(function (request) {
                       try {
                           request.exec() //执行主程序
                       } catch (e) {
                           console.log(e)
                       }
                   })
-                  processingCallbacks.forEach(function(request) {
+                  processingCallbacks.forEach(function (request) {
                       request.cb.call(request.instance)
                   })
                   this.isInTransation = false
@@ -364,7 +367,7 @@
          }
         var host = dom && dom.style || {}
          for (var i = 0, n = prefixes.length; i < n; i++) {
-             camelCase = camelize(prefixes[i] + name)
+             var camelCase = camelize(prefixes[i] + name)
              if (camelCase in host) {
                  return (cssMap[name] = camelCase)
              }
@@ -529,9 +532,10 @@
            if (instance.getChildContext) {
                context = extend(clone(context), instance.getChildContext());
            }
+
            var dom = diff(rendered, instance.vnode, vnode._hostParent, context)
            instance.vnode = rendered
-           rendered.dom = dom
+           // rendered.dom = dom
            delete instance.prevState //方便下次能更新this.prevState
            instance.prevProps = props // 更新prevProps
            applyComponentHook(instance, 6, nextProps, nextState, context)
@@ -546,7 +550,7 @@
            var instance = vnode.instance
 
            applyComponentHook(instance, 7) //7
-           vnode._hostParent = vnode._hostInfo = vnode.instance = void 666
+           vnode._hostParent = vnode._wrapperState = vnode.instance = void 666
 
            var ref = vnode.props.ref
            if (typeof ref === 'string') {
@@ -629,6 +633,10 @@
            if (!vnode._hasSetInnerHTML && vnode.props) {
                diffChildren(vnode.props.children, prevChildren, vnode, context)
            }
+           var wrapperState = vnode._wrapperState
+           if (wrapperState && wrapperState.postUpdate) { //处理select
+               wrapperState.postUpdate(vnode)
+           }
            return dom
        }
        function clickHack() {}
@@ -655,15 +663,15 @@
        }
 
        var builtIdProperties = /^(?:className|id|title|selected|htmlFor|value|checked|disabled)$/
-     /**
-      * 
-      * 修改dom的属性与事件
-      * @export
-      * @param {any} props 
-      * @param {any} prevProps 
-      * @param {any} vnode 
-      * @param {any} prevVnode 
-      */
+       /**
+        * 
+        * 修改dom的属性与事件
+        * @export
+        * @param {any} props 
+        * @param {any} prevProps 
+        * @param {any} vnode 
+        * @param {any} prevVnode 
+        */
        function diffProps(props, prevProps, vnode, prevVnode) {
            if (props === prevProps) {
                return
@@ -671,22 +679,9 @@
            var dom = vnode.dom
 
            var instance = vnode._owner
-           if (vnode.type === 'option') {
-
-               var value = typeof props.value === 'string' ? props.value : props.children[0].text
-               var p = vnode._hostParent
-               if (p.type === 'optgroup') {
-                   p = p._hostParent
-               }
-               var selectValue = p.props.value
-               var selected = value === selectValue
-               var _hostInfo = prevVnode._hostInfo || {}
-               if (_hostInfo.selected !== selected) {
-                   dom.selected = selected
-                   delete prevVnode._hostInfo
-                   _hostInfo.selected = selected
-               }
-               vnode._hostInfo = _hostInfo
+           if (prevVnode._wrapperState) {
+               vnode._wrapperState = prevVnode._wrapperState
+               delete prevVnode._wrapperState
            }
 
            for (let name in props) {
@@ -730,7 +725,12 @@
                        dom.removeAttribute(name)
                    } else { //添加新属性
                        if (builtIdProperties.test(name)) {
-                           dom[name] = val + ''
+                           val = val + ''
+                           //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
+                           //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
+                           if (name !== 'value' || dom[name] !== val) {
+                               dom[name] = val
+                           }
                        } else {
                            dom.setAttribute(name, val + '')
                        }
@@ -941,8 +941,12 @@
            vnode.dom = dom
            if (isElement) {
                diffProps(vnode.props, {}, vnode, {})
+
                if (!vnode._hasSetInnerHTML) {
                    diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
+               }
+               if (handleSpecialNode(vnode)) {
+                   vnode._wrapperState.postMount && vnode._wrapperState.postMount(vnode)
                }
            }
 
@@ -965,6 +969,96 @@
                }
            }
            return dom
+       }
+
+       function handleSpecialNode(vnode) {
+           var props = vnode.props
+           switch (vnode.type) {
+               case "select":
+                   return vnode._wrapperState = {
+                       postUpdate: postUpdateSelectedOptions,
+                       postMount: postUpdateSelectedOptions
+                   }
+               case 'input':
+                   if (props.type === 'radio') {
+                       if ('checked' in props && !(props.onChange || 'readOnly' in props)) {
+                           console.log('You provided a `checked` prop to a form field without an `onChange` handler. ' +
+                               'This will render a read-only field. If the field should be mutable use `defaultChecked`. ' +
+                               'Otherwise, set either `onChange` or `readOnly`. Check the render method of `Radio`.')
+                       }
+                   }
+
+                   break
+               case "option":
+                   return vnode._wrapperState = {
+                       value: typeof props.value != 'undefined' ? props.value : props.children[0].text
+                   }
+           }
+       }
+
+       function postUpdateSelectedOptions(vnode) {
+           var props = vnode.props
+           var value = props.value
+           var multiple = !!props.multiple
+           if (value != null) {
+               updateOptions(vnode, multiple, value)
+           } else {
+               if (props.defaultValue != null) {
+                   updateOptions(vnode, multiple, props.defaultValue)
+               } else {
+                   // Revert the select back to its default unselected state.
+                   updateOptions(vnode, multiple, props.multiple ? [] : '');
+               }
+           }
+       }
+
+       function collectOptions(vnode, ret) {
+           ret = ret || []
+           vnode.props.children.forEach(function (el) {
+               if (el.type === 'option') {
+                   ret.push(el)
+               } else if (el.type === 'optgroup') {
+                   collectOptions(el, ret)
+               }
+           })
+           return ret
+       }
+
+       function updateOptions(vnode, multiple, propValue) {
+           var options = collectOptions(vnode),
+               selectedValue
+           if (multiple) {
+               selectedValue = {};
+               for (i = 0; i < propValue.length; i++) {
+                   selectedValue['' + propValue[i]] = true;
+               }
+               for (var i = 0, option; option = options[i++];) {
+                   var state = option._wrapperState || handleSpecialNode(option)
+                   var selected = selectedValue.hasOwnProperty(state.value)
+                   if (state.selected !== f) {
+                       state.selected = selected
+                       setDomSelected(option, selected)
+                   }
+               }
+           } else {
+               // Do not set `select.value` as exact behavior isn't consistent across all
+               // browsers for all cases.
+               selectedValue = '' + propValue;
+               for (var i = 0, option; option = options[i++];) {
+                   var state = option._wrapperState
+                   if (state.value === selectedValue) {
+                       setDomSelected(option, true)
+                       return
+                   }
+               }
+               if (options.length) {
+                   setDomSelected(options[0], true)
+               }
+           }
+       }
+
+       function setDomSelected(option, selected) {
+           option.dom && (option.dom.selected = selected)
        }
 
      /**

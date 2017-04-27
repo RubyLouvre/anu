@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-<script type='text/javascript' src="./dist/React.js"></script>
+<!--<script type='text/javascript' src="./dist/React.js"></script>-->
     <style>
         .aaa {
             width: 200px;
@@ -12,41 +12,34 @@
             background: red;
         }
     </style>
- 
-   <!-- <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-     <script src="react-dom.js"></script>-->
+
+   <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+     <script src="react-dom.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
- class Radio extends React.Component {
+ class TextArea extends React.Component {
     constructor() {
         super()
         this.state = {
-          checkedIndex: 2
+          value: 2
         }
     }
-    handleChange(index){
+    onInput(e){
         this.setState({
-           checkedIndex: index
+          value: e.target.value
         })
     }
-
+//
     render() {
 
         return <div>
-            {
-                [1,2,3].map(function(el){
-                   return  <input type='radio' name='xxx' key={el} value={el} 
-                       checked={this.state.checkedIndex === el} 
-                       onChange={this.handleChange.bind(this, el)}/>
-
-                }, this)
-            }
+               <textarea value={this.state.value} onInput={this.onInput.bind(this)}  ></textarea>{this.state.value}
             </div>
     }
 }
-
+var a 
 window.onload = function () {
-  ReactDOM.render(<Radio />, document.getElementById('example'))
+ a =  ReactDOM.render(<TextArea />, document.getElementById('example'))
    
 }
     </script>

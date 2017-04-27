@@ -23,7 +23,6 @@
       getBrowserName
   } from './event'
 
-
   /**
    * 渲染组件
    * 
@@ -62,13 +61,9 @@
 
       var dom = diff(rendered, instance.vnode, vnode._hostParent, context)
       instance.vnode = rendered
-      rendered.dom = dom
+      // rendered.dom = dom
       delete instance.prevState //方便下次能更新this.prevState
       instance.prevProps = props // 更新prevProps
-      var wrapperState = rendered._wrapperState
-      if (wrapperState && wrapperState.postUpdate) { //处理select
-          wrapperState.postUpdate(rendered)
-      }
       applyComponentHook(instance, 6, nextProps, nextState, context)
       return dom //注意
   }
@@ -164,6 +159,10 @@
       if (!vnode._hasSetInnerHTML && vnode.props) {
           diffChildren(vnode.props.children, prevChildren, vnode, context)
       }
+      var wrapperState = vnode._wrapperState
+      if (wrapperState && wrapperState.postUpdate) { //处理select
+          wrapperState.postUpdate(vnode)
+      }
       return dom
   }
   var eventNameCache = {
@@ -257,7 +256,12 @@
                   dom.removeAttribute(name)
               } else { //添加新属性
                   if (builtIdProperties.test(name)) {
-                      dom[name] = val + ''
+                      val = val + ''
+                      //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
+                      //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
+                      if (name !== 'value' || dom[name] !== val) {
+                          dom[name] = val
+                      }
                   } else {
                       dom.setAttribute(name, val + '')
                   }
@@ -552,7 +556,8 @@
   }
 
   function updateOptions(vnode, multiple, propValue) {
-      var options = collectOptions(vnode),selectedValue
+      var options = collectOptions(vnode),
+          selectedValue
       if (multiple) {
           selectedValue = {};
           for (i = 0; i < propValue.length; i++) {

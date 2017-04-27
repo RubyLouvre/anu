@@ -1,4 +1,7 @@
- import { CurrentOwner } from './CurrentOwner'
+ import {
+     CurrentOwner
+ } from './CurrentOwner'
+
 
  var queue = []
  var callbacks = []
@@ -14,12 +17,13 @@
 
  export var transaction = {
      isInTransation: false,
-     enqueueCallback: function(obj) {
+     enqueueCallback: function (obj) {
          //它们是保证在ComponentDidUpdate后执行
          callbacks.push(obj)
      },
-     renderWithoutSetState: function(instance) {
+     renderWithoutSetState: function (instance) {
          instance.setState = instance.forceUpdate = setState
+     
          try {
              CurrentOwner.cur = instance
              var vnode = instance.render()
@@ -33,10 +37,12 @@
              CurrentOwner.cur = null
              delete instance.setState
              delete instance.forceUpdate
+            
+            
          }
          return vnode
      },
-     enqueue: function(obj) {
+     enqueue: function (obj) {
          if (obj)
              queue.push(obj)
          if (!this.isInTransation) {
@@ -46,7 +52,7 @@
              var mainProcessing = []
              queue.length = callbacks.length = 0
              var unique = {}
-             preProcessing.forEach(function(request) {
+             preProcessing.forEach(function (request) {
                  try {
                      request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
                      if (!unique[request.component.uuid]) {
@@ -59,14 +65,14 @@
 
              })
 
-             mainProcessing.forEach(function(request) {
+             mainProcessing.forEach(function (request) {
                  try {
                      request.exec() //执行主程序
                  } catch (e) {
                      console.log(e)
                  }
              })
-             processingCallbacks.forEach(function(request) {
+             processingCallbacks.forEach(function (request) {
                  request.cb.call(request.instance)
              })
              this.isInTransation = false
@@ -76,3 +82,5 @@
          }
      }
  }
+
+ 
