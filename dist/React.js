@@ -11,6 +11,15 @@ var CurrentOwner = {
 var queue = [];
 var callbacks = [];
 
+function setStateWarn() {
+    if (transaction.isInTransation) {
+        console.warn("Cannot update during an existing state transition (such as within `render` or an" +
+                "other component's constructor). Render methods should be a pure function of prop" +
+                "s and state; constructor side-effects are an anti-pattern, but can be moved to `" +
+                "componentWillMount`");
+    }
+}
+
 var transaction = {
     isInTransation: false,
     enqueueCallback: function (obj) {
@@ -18,7 +27,7 @@ var transaction = {
         callbacks.push(obj);
     },
     renderWithoutSetState: function (instance, nextProps, context) {
-        instance.setState = instance.forceUpdate = setState;
+        instance.setState = instance.forceUpdate = setStateWarn;
 
         try {
             CurrentOwner.cur = instance;
@@ -1557,7 +1566,6 @@ function render(vnode, container, cb) {
     root = toVnode(vnode, {});
     transaction.isInTransation = false;
     root.instance.container = container;
-    console.log(root.type, root);
     root.instance.forceUpdate(cb);
     return root.instance || null
 }
