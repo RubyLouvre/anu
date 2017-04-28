@@ -5,7 +5,7 @@ import { PureComponent } from './PureComponent'
 import { TopLevelWrapper } from './TopLevelWrapper'
 import { CurrentOwner } from './CurrentOwner'
 import { transaction } from './transaction'
-
+import './diff'
 
 import { extend } from './util'
 

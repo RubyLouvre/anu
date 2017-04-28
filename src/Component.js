@@ -1,6 +1,12 @@
-import { transaction } from './transaction'
-import { updateComponent, toDOM } from './diff'
-import { clone, extend } from './util'
+import {
+    transaction
+} from './transaction'
+
+import {
+    clone,
+    extend,
+    midway,
+} from './util'
 
 /**
  * 
@@ -8,6 +14,7 @@ import { clone, extend } from './util'
  * @param {any} props 
  * @param {any} context 
  */
+
 export function Component(props, context) {
     this.context = context
     this.props = props
@@ -20,26 +27,28 @@ export function Component(props, context) {
 
 Component.prototype = {
 
-        setState(state, cb) {
+    setState(state, cb) {
 
-            setStateProxy(this, state, cb)
-        },
+        setStateProxy(this, state, cb)
+    },
 
-        forceUpdate(cb) {
-            setStateProxy(this, this.state, cb, true)
-        },
+    forceUpdate(cb) {
+        setStateProxy(this, this.state, cb, true)
+    },
 
-        render() {}
+    render() {}
 
-    }
-    /**
-     * 让外面的setState与forceUpdate都共用同一通道
-     * 
-     * @param {any} instance 
-     * @param {any} state 
-     * @param {any} cb fire by component did update
-     * @param {any} force ignore shouldComponentUpdate
-     */
+}
+
+/**
+ * 让外面的setState与forceUpdate都共用同一通道
+ * 
+ * @param {any} instance 
+ * @param {any} state 
+ * @param {any} cb fire by component did update
+ * @param {any} force ignore shouldComponentUpdate
+ */
+
 function setStateProxy(instance, state, cb, force) {
     if (typeof cb === 'function')
         transaction.enqueueCallback({ //确保回调先进入
@@ -50,14 +59,16 @@ function setStateProxy(instance, state, cb, force) {
         component: instance,
         state: state,
         init: force ? roughSetState : gentleSetState,
-        exec: updateComponentProxy
+        exec: midway.immune.updateComponent || noop
     })
 
 }
+function noop(){}
 
 
 function gentleSetState() { //只有必要时才更新
     var instance = this.component
+    
     var state = instance.state
     instance.prevState = instance.prevState || clone(state)
     var s = this.state
@@ -69,14 +80,3 @@ function roughSetState() { //强制更新
     instance.forceUpdate = true
 }
 
-function updateComponentProxy() { //这里触发视图更新
-    var instance = this.component
-    if (!instance.vnode.dom) {
-        var parentNode = instance.container
-        instance.state = this.state //将merged state赋给它
-        toDOM(instance.vnode, instance.context, parentNode)
-    } else {
-        updateComponent(this.component)
-    }
-    this.forceUpdate = false
-}

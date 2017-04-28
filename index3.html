@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+    </style>
+
+
+    <script>
+       'use strict'
+       var b = {
+           a : {}
+       }
+       Object.freeze(b)
+     //  b.xx = 'www'
+     b.a.xx = 'ddd'
+     console.log(b.a)
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

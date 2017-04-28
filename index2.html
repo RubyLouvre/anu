@@ -13,7 +13,7 @@
         }
     </style>
 
-   <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+  <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
      <script src="react-dom.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
@@ -21,19 +21,21 @@
     constructor() {
         super()
         this.state = {
-          value: 2
+          value: true
         }
     }
     onInput(e){
+        console.log(e.type)
         this.setState({
           value: e.target.value
         })
     }
-//
+//onInput={this.onInput.bind(this)} 
     render() {
 
         return <div>
-               <textarea value={this.state.value} onInput={this.onInput.bind(this)}  ></textarea>{this.state.value}
+               <input type='checkbox' name='xxx' checked={this.state.value}  />{this.state.value}
+                <input type='checkbox' name='xxx'  />
             </div>
     }
 }

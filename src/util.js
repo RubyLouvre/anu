@@ -132,3 +132,6 @@ export function camelize(target) {
         return match.charAt(1).toUpperCase()
     })
 }
+export var midway = {
+    immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+}

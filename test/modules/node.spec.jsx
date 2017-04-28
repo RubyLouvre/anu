@@ -16,7 +16,7 @@ describe('node模块', function () {
     after(async () => {
         await afterHook(false);
     });
-    it('click element', async () => {
+    it('连续点击一个DIV', async () => {
         var div = document.createElement('div');
 
         document.body.appendChild(div);
@@ -39,7 +39,7 @@ describe('node模块', function () {
         expect(a).toBe(3);
         document.body.removeChild(div)
     });
-    it('select', async () => {
+    it('下拉菜单的选择', async () => {
         let rs, prom = new Promise((s) => {
             rs = s;
         })
@@ -66,7 +66,7 @@ describe('node模块', function () {
             }
             render() {
                 return <select name='city'
-                    id="select"
+                    id="node2"
                     value={this.state.city}
                     onChange={
                         this.handleCity.bind(this)
@@ -86,10 +86,10 @@ describe('node模块', function () {
         await prom;
 
         expect(s.vnode.dom.children[1].selected).toBe(true)
-        await browser.selectByVisibleText('select', '上海').$apply('wait');
+        await browser.selectByVisibleText('#node2', '上海').$apply('wait');
 
         expect(s.vnode.dom.children[2].selected).toBe(true)
-        await browser.selectByVisibleText('select', '杭州').$apply('wait');
+        await browser.selectByVisibleText('#node2', '杭州').$apply('wait');
         expect(s.vnode.dom.children[0].selected).toBe(true)
 
 
@@ -97,7 +97,7 @@ describe('node模块', function () {
 
     })
 
-    it('select2', async () => {
+    it('下拉菜单的options重排后确保selected正确', async () => {
         let rs, prom = new Promise((s) => {
             rs = s;
         })
@@ -129,7 +129,7 @@ describe('node模块', function () {
             }
             render() {
                 return <select name='city'
-                    id="select2"
+                    id="node3"
                     value={this.state.city}
                     onChange={this.handleCity.bind(this)} >
                     {
@@ -195,7 +195,6 @@ describe('node模块', function () {
                 return <div>
                     {
                         [1, 2, 3].map(function (el) {
-                            console.log('radio' + el)
                             return <input type='radio' id={'radio' + el} name='xxx' key={el} value={el}
                                 checked={this.state.checkedIndex === el}
                                 onClick={this.onClick.bind(this, el)}
@@ -239,7 +238,6 @@ describe('node模块', function () {
                 }
             }
             onInput(e) {
-               // console.log('oninput', e.type, e.target.value)
                 this.setState({
                     value: e.target.value
                 })
@@ -249,13 +247,12 @@ describe('node模块', function () {
                 rs()
             }
             componentDidUpdate() {
-               // console.log('didUpdate', s.vnode.dom.children[0].value)
                 expect(s.vnode.dom.children[0].value).toBe(values.shift())
                 browser.$next();
             }
             render() {
                 return <div>
-                    <input id='input4' value={this.state.value} onInput={this.onInput.bind(this)} />{this.state.value}
+                    <input id='node4' value={this.state.value} onInput={this.onInput.bind(this)} />{this.state.value}
                 </div>
             }
         }
@@ -269,13 +266,13 @@ describe('node模块', function () {
 
         expect(s.vnode.dom.children[0].value).toBe('2')
 
-        await browser.setValue('#input4', 'xxxx').$apply('wait')
+        await browser.setValue('#node4', 'xxxx').$apply('wait')
    
-            document.body.removeChild(div)
+        document.body.removeChild(div)
    
 
     })
-it('测试textarea元素的oninput事件', async () => {
+    it('测试textarea元素的oninput事件', async () => {
         let rs, prom = new Promise((s) => {
             rs = s;
         })
@@ -298,13 +295,12 @@ it('测试textarea元素的oninput事件', async () => {
                 rs()
             }
             componentDidUpdate() {
-               // console.log('didUpdate', s.vnode.dom.children[0].value)
                 expect(s.vnode.dom.children[0].value).toBe(values.shift())
                 browser.$next();
             }
             render() {
                 return <div>
-                    <textarea id='input5' onInput={this.onInput.bind(this)} >{this.state.value}</textarea>{this.state.value}
+                    <textarea id='node5' onInput={this.onInput.bind(this)} >{this.state.value}</textarea>{this.state.value}
                 </div>
             }
         }
@@ -318,10 +314,81 @@ it('测试textarea元素的oninput事件', async () => {
 
         expect(s.vnode.dom.children[0].value).toBe('4')
 
-        await browser.setValue('#input5', 'xxxx').$apply('wait')
+        await browser.setValue('#node5', 'xxxx').$apply('wait')
    
         document.body.removeChild(div)
    
 
     })
-});
+   it('非受控组件textarea的value不可变', async () => {
+        let rs, prom = new Promise((s) => {
+            rs = s;
+        })
+        class TextArea extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    value: 5
+                }
+            }
+
+            componentDidMount() {
+                rs()
+            }
+            render() {
+                return <div>
+                    <textarea id='node6' value={this.state.value} ></textarea>{this.state.value}
+                </div>
+            }
+        }
+
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+        var s = React.render(<TextArea />, div)
+
+        await prom;
+
+        expect(s.vnode.dom.children[0].value).toBe('5')
+
+        await browser.setValue('#node6', 'xxxx').pause(300).$apply()
+
+        expect(s.vnode.dom.children[0].value).toBe('5')
+
+        document.body.removeChild(div)
+   
+    })
+  it('非受控组件checkbox的checked不可变', async () => {
+      
+        class Com extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    value: true
+                }
+            }
+            render() {
+                return <div>
+                   <input id='node7' type='checkbox' name='xxx' checked={this.state.value}  />
+                
+                </div>
+            }
+        }
+
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+        var s = React.render(<Com />, div)
+        await browser.pause(100).$apply()
+
+        expect(s.vnode.dom.children[0].checked).toBe(true)
+
+        await browser.click('#node7').pause(300).$apply()
+
+        expect(s.vnode.dom.children[0].checked).toBe(true)
+
+        document.body.removeChild(div)
+   
+    })
+
+})

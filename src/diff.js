@@ -4,6 +4,7 @@
       isEvent,
       getInstances,
       matchInstance,
+      midway
   } from './util'
   import {
       applyComponentHook
@@ -14,6 +15,7 @@
   import {
       toVnode
   } from './toVnode'
+
   import {
       patchStyle
   } from './style'
@@ -22,6 +24,10 @@
       addGlobalEventListener,
       getBrowserName
   } from './event'
+  import {
+      handleSpecialNode
+  } from './handleSpecialNode'
+
 
   /**
    * 渲染组件
@@ -486,6 +492,7 @@
           var instances, childInstance
           if (canComponentDidMount) { //判定能否调用componentDidMount方法
               instances = getInstances(instance)
+             
           }
           if (replaced) {
               parentNode.replaceChild(dom, replaced)
@@ -501,93 +508,15 @@
       }
       return dom
   }
-
-  function handleSpecialNode(vnode) {
-      var props = vnode.props
-      switch (vnode.type) {
-          case "select":
-              return vnode._wrapperState = {
-                  postUpdate: postUpdateSelectedOptions,
-                  postMount: postUpdateSelectedOptions
-              }
-          case 'input':
-              if (props.type === 'radio') {
-                  if ('checked' in props && !(props.onChange || 'readOnly' in props)) {
-                      console.log('You provided a `checked` prop to a form field without an `onChange` handler. ' +
-                          'This will render a read-only field. If the field should be mutable use `defaultChecked`. ' +
-                          'Otherwise, set either `onChange` or `readOnly`. Check the render method of `Radio`.')
-                  }
-              }
-
-              break
-          case "option":
-              return vnode._wrapperState = {
-                  value: typeof props.value != 'undefined' ? props.value : props.children[0].text
-              }
-      }
-  }
-
-  function postUpdateSelectedOptions(vnode) {
-      var props = vnode.props
-      var value = props.value
-      var multiple = !!props.multiple
-      if (value != null) {
-          updateOptions(vnode, multiple, value)
+  //将Component中这个东西移动这里
+  midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
+      var instance = this.component
+      if (!instance.vnode.dom) {
+          var parentNode = instance.container
+          instance.state = this.state //将merged state赋给它
+          toDOM(instance.vnode, instance.context, parentNode)
       } else {
-          if (props.defaultValue != null) {
-              updateOptions(vnode, multiple, props.defaultValue)
-          } else {
-              // Revert the select back to its default unselected state.
-              updateOptions(vnode, multiple, props.multiple ? [] : '');
-          }
+          updateComponent(this.component)
       }
-  }
-
-  function collectOptions(vnode, ret) {
-      ret = ret || []
-      vnode.props.children.forEach(function (el) {
-          if (el.type === 'option') {
-              ret.push(el)
-          } else if (el.type === 'optgroup') {
-              collectOptions(el, ret)
-          }
-      })
-      return ret
-  }
-
-  function updateOptions(vnode, multiple, propValue) {
-      var options = collectOptions(vnode),
-          selectedValue
-      if (multiple) {
-          selectedValue = {};
-          for (i = 0; i < propValue.length; i++) {
-              selectedValue['' + propValue[i]] = true;
-          }
-          for (var i = 0, option; option = options[i++];) {
-              var state = option._wrapperState || handleSpecialNode(option)
-              var selected = selectedValue.hasOwnProperty(state.value)
-              if (state.selected !== f) {
-                  state.selected = selected
-                  setDomSelected(option, selected)
-              }
-          }
-      } else {
-          // Do not set `select.value` as exact behavior isn't consistent across all
-          // browsers for all cases.
-          selectedValue = '' + propValue;
-          for (var i = 0, option; option = options[i++];) {
-              var state = option._wrapperState
-              if (state.value === selectedValue) {
-                  setDomSelected(option, true)
-                  return
-              }
-          }
-          if (options.length) {
-              setDomSelected(options[0], true)
-          }
-      }
-  }
-
-  function setDomSelected(option, selected) {
-      option.dom && (option.dom.selected = selected)
+      this.forceUpdate = false
   }
