@@ -25,8 +25,8 @@
       getBrowserName
   } from './event'
   import {
-      handleSpecialNode
-  } from './handleSpecialNode'
+      setControlledComponent
+  } from './ControlledComponent'
 
 
   /**
@@ -482,9 +482,7 @@
           if (!vnode._hasSetInnerHTML) {
               diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
           }
-          if (handleSpecialNode(vnode)) {
-              vnode._wrapperState.postMount && vnode._wrapperState.postMount(vnode)
-          }
+          setControlledComponent(vnode)
       }
 
       //尝试插入DOM树

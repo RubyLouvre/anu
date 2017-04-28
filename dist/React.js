@@ -656,13 +656,19 @@
         'reset': true,
         'submit': true
     }
-    function handleSpecialNode(vnode) {
+    function setControlledComponent(vnode) {
         var props = vnode.props
         var type = props.type
-        //如果用户没有为表单元素添加onChange或onInput事件，那么它就成为一个非受控组件
-        //意即用户无法控制它的value与checked的改变，一直保持原始值
-        //框架通过添加onChange或onInput事件，不断重置用户的输入，确保它不被改变
+        //input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件
+        // **受控组件** 是指定指定了value或checked 并绑定了事件的元素
+        // **非受控组件** 是指定指定了value或checked， 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
+        // 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变
+        // 但如果用户使用了defaultValue, defaultChecked，那么它不做任何转换
+
         switch (vnode.type) {
+            case "select":
+            case "datalist":
+                type = 'select'
             case 'textarea':
                 if (!type) {
                     type = 'textarea'
@@ -684,22 +690,26 @@
                 if (!isControlled && propName in props) {
                     var dom = vnode.dom
                     console.log('你在表单元素指定了' + propName + '属性,但没有添加onChange或onInput事件或readOnly或disabled，它将变成非受控组件，无法更换' + propName)
+
                     function keepInitValue(e) {
                         dom[propName] = initValue
                     }
                     vnode.dom.addEventListener('change', keepInitValue)
-                    vnode.dom.addEventListener(isChecked ? 'click' : 'input', keepInitValue)
+                    if (type !== 'select') {
+                        vnode.dom.addEventListener(isChecked ? 'click' : 'input', keepInitValue)
+                    }
                 }
                 break
-            case "select":
-                return vnode._wrapperState = {
-                    postUpdate: postUpdateSelectedOptions,
-                    postMount: postUpdateSelectedOptions
-                }
             case "option":
                 return vnode._wrapperState = {
                     value: typeof props.value != 'undefined' ? props.value : props.children[0].text
                 }
+        }
+        if (type === 'select') {
+            postUpdateSelectedOptions(vnode) //先在mount时执行一次
+            return vnode._wrapperState = {
+                postUpdate: postUpdateSelectedOptions 
+            }
         }
     }
 
@@ -735,9 +745,13 @@
         var options = collectOptions(vnode),
             selectedValue
         if (multiple) {
-            selectedValue = {};
-            for (i = 0; i < propValue.length; i++) {
-                selectedValue['' + propValue[i]] = true;
+            selectedValue = {}
+            try {
+                for (i = 0; i < propValue.length; i++) {
+                    selectedValue['' + propValue[i]] = true
+                }
+            } catch (e) {
+                console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
             }
             for (var i = 0, option; option = options[i++];) {
                 var state = option._wrapperState || handleSpecialNode(option)
@@ -767,6 +781,8 @@
     function setDomSelected(option, selected) {
         option.dom && (option.dom.selected = selected)
     }
+
+    //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
 
    /**
       * 渲染组件
@@ -1216,9 +1232,7 @@
              if (!vnode._hasSetInnerHTML) {
                  diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
              }
-             if (handleSpecialNode(vnode)) {
-                 vnode._wrapperState.postMount && vnode._wrapperState.postMount(vnode)
-             }
+             setControlledComponent(vnode)
          }
 
          //尝试插入DOM树

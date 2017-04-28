@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-<!--<script type='text/javascript' src="./dist/React.js"></script>-->
+<script type='text/javascript' src="./dist/React.js"></script>
     <style>
         .aaa {
             width: 200px;
@@ -13,15 +13,15 @@
         }
     </style>
 
-  <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-     <script src="react-dom.js"></script>
+     <!--<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+     <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
- class TextArea extends React.Component {
+ class Com extends React.Component {
     constructor() {
         super()
         this.state = {
-          value: true
+          value: 'bbb'
         }
     }
     onInput(e){
@@ -34,14 +34,18 @@
     render() {
 
         return <div>
-               <input type='checkbox' name='xxx' checked={this.state.value}  />{this.state.value}
-                <input type='checkbox' name='xxx'  />
+               <select value={this.state.value}>
+                    <option value='aaa'>aaa</option>
+                    <option value='bbb'>bbb</option>
+                    <option value='ccc'>ccc</option>
+                   </select>
+                   <p>{this.state.value}</p>
             </div>
     }
 }
 var a 
 window.onload = function () {
- a =  ReactDOM.render(<TextArea />, document.getElementById('example'))
+ a =  ReactDOM.render(<Com />, document.getElementById('example'))
    
 }
     </script>

@@ -390,5 +390,36 @@ describe('node模块', function () {
         document.body.removeChild(div)
    
     })
+     it('非受控组件select的value不可变', async () => {
+  class Com extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    value: 'bbb'
+                }
+            }
+            render() {
+                return <select id='node8' value={this.state.value}>
+                    <option value='aaa'>aaa</option>
+                    <option value='bbb'>bbb</option>
+                    <option value='ccc'>ccc</option>
+                   </select>
+            }
+        }
+
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+        var s = React.render(<Com />, div)
+        await browser.pause(100).$apply()
+
+        expect(s.vnode.dom.children[1].selected).toBe(true)
+        await browser.selectByVisibleText('#node8', 'ccc').pause(300).$apply()
+
+        expect(s.vnode.dom.children[2].selected).toBe(false)
+        expect(s.vnode.dom.children[1].selected).toBe(true)
+
+        document.body.removeChild(div)
+     })
 
 })
