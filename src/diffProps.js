@@ -70,7 +70,8 @@
 
   var anomaly = ['accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
       'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,' +
-      'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign'
+      'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,'+
+      'value,title,alt'
   ].join(',')
 
   anomaly.replace(/\w+/g, function (name) {

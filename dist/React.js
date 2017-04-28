@@ -516,6 +516,7 @@
     var mathTags = {
         semantics: mathNs
     }
+    var rmathTags = /^m/
     var mathNs = 'http://www.w3.org/1998/Math/MathML'
     var svgNs = 'http://www.w3.org/2000/svg'
     function getNs(type) {
@@ -785,7 +786,8 @@
 
      var anomaly = ['accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
          'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,' +
-         'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign'
+         'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,'+
+         'value,title,alt'
      ].join(',')
 
      anomaly.replace(/\w+/g, function (name) {
@@ -847,11 +849,11 @@
                  continue
              }
              if (val !== prevProps[name]) {
-                 if (typeof node[name] === 'boolean') {
+                 if (typeof dom[name] === 'boolean') {
                      //布尔属性必须使用el.xxx = true|false方式设值
                      //如果为false, IE全系列下相当于setAttribute(xxx,''),
                      //会影响到样式,需要进一步处理
-                     node[propName] = !!val
+                     dom[name] = !!val
                  }
                  if (val === false || val === void 666 || val === null) {
                      operateAttribute(dom, name, '', !isHTML)
@@ -889,17 +891,21 @@
 
      function operateAttribute(dom, name, value, isSVG) {
 
-         var method = value === '' ? 'removeAttribure' : 'setAttribute',
+         var method = value === '' ? 'removeAttribute' : 'setAttribute',
              isXLink
          if (isSVG && name.indexOf('xlink:') === 0) {
              name = name.replace(/^xlink\:?/, '')
              isXLink = true
          }
-         if (isLink) {
-             method = method + 'Ns'
-             dom[method](xlink, name.toLowerCase(), value)
-         } else {
-             dom[method](name, value)
+         try {
+             if (isXLink) {
+                 method = method + 'Ns'
+                 dom[method](xlink, name.toLowerCase(), value)
+             } else {
+                 dom[method](name, value)
+             }
+         } catch (e) {
+             console.log(e, method, dom.nodeName)
          }
      }
 

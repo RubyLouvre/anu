@@ -17,35 +17,28 @@
      <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
- class Com extends React.Component {
-    constructor() {
-        super()
-        this.state = {
-          value: 'bbb'
-        }
-    }
-    onInput(e){
-        console.log(e.type)
-        this.setState({
-          value: e.target.value
-        })
-    }
-//onInput={this.onInput.bind(this)} 
-    render() {
+         class TextArea extends React.Component {
+            constructor() {
+                super()
+                this.state = {
+                    value: 5
+                }
+            }
 
-        return <div>
-               <select value={this.state.value}>
-                    <option value='aaa'>aaa</option>
-                    <option value='bbb'>bbb</option>
-                    <option value='ccc'>ccc</option>
-                   </select>
-                   <p>{this.state.value}</p>
-            </div>
-    }
-}
+            componentDidMount() {
+              
+            }
+            render() {
+                return <div>
+                    <textarea id='node6' value={this.state.value} ></textarea>{this.state.value}
+                </div>
+            }
+        }
+
+
 var a 
 window.onload = function () {
- a =  ReactDOM.render(<Com />, document.getElementById('example'))
+ a =  ReactDOM.render(<TextArea />, document.getElementById('example'))
    
 }
     </script>
