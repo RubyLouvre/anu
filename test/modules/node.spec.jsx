@@ -391,7 +391,7 @@ describe('node模块', function () {
    
     })
      it('非受控组件select的value不可变', async () => {
-  class Com extends React.Component {
+     class Com extends React.Component {
             constructor() {
                 super()
                 this.state = {

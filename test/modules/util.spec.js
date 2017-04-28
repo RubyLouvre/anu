@@ -1,7 +1,6 @@
 import {
     oneObject,
     extend,
-    clone,
     isComponent,
     isStateless,
     toLowerCase,
@@ -41,28 +40,7 @@ describe('util', function() {
 
     })
 
-    it('clone', function() {
 
-        expect(clone({ a: 1, b: 2 })).toEqual({
-            a: 1,
-            b: 2
-        })
-        expect(clone({ a: 1 })).toEqual({
-            a: 1
-        })
-
-    })
-    it('clone', function() {
-
-        expect(clone({ a: 1, b: 2 })).toEqual({
-            a: 1,
-            b: 2
-        })
-        expect(clone({ a: 1 })).toEqual({
-            a: 1
-        })
-
-    })
     it('isComponent', function() {
         expect(isComponent('sss')).toBe(false)
         expect(isComponent(function a() {})).toBe(true)
@@ -129,7 +107,3 @@ describe('util', function() {
     })
 })
 
-/**
- * extend
- * clone
- */

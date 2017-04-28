@@ -17,28 +17,14 @@
      <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
-         class TextArea extends React.Component {
-            constructor() {
-                super()
-                this.state = {
-                    value: 5
-                }
-            }
-
-            componentDidMount() {
-              
-            }
-            render() {
-                return <div>
-                    <textarea id='node6' value={this.state.value} ></textarea>{this.state.value}
-                </div>
-            }
+         function HelloComponent(props,  /* context */) {
+            return <p onClick={() => props.name = 11}>Hello {props.name}</p>
         }
 
 
 var a 
 window.onload = function () {
- a =  ReactDOM.render(<TextArea />, document.getElementById('example'))
+ a =  ReactDOM.render(<HelloComponent name="Sebastian"/>, document.getElementById('example'))
    
 }
     </script>
@@ -47,7 +33,7 @@ window.onload = function () {
 <body>
   
     <div>这个默认会被清掉</div>
-    <div id='example'></div>
+    <blockquote id='example'></blockquote>
 
 
 </body>

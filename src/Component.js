@@ -3,9 +3,9 @@ import {
 } from './transaction'
 
 import {
-    clone,
     extend,
     midway,
+    noop
 } from './util'
 
 /**
@@ -28,7 +28,6 @@ export function Component(props, context) {
 Component.prototype = {
 
     setState(state, cb) {
-
         setStateProxy(this, state, cb)
     },
 
@@ -63,20 +62,19 @@ function setStateProxy(instance, state, cb, force) {
     })
 
 }
-function noop(){}
 
 
 function gentleSetState() { //只有必要时才更新
     var instance = this.component
     
     var state = instance.state
-    instance.prevState = instance.prevState || clone(state)
+    instance.prevState = instance.prevState || extend({},state)
     var s = this.state
     extend(state, typeof s === 'function' ? s(state, instance.props) : s)
 }
 
 function roughSetState() { //强制更新
     var instance = this.component
-    instance.forceUpdate = true
+    instance._forceUpdate = true
 }
 

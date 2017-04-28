@@ -24,18 +24,14 @@ describe('ReactDOM.render返回根组件的实例', function () {
                     aaa: this.state.aaa + 1
                 })
             }
-            componentDidMount() {
-                browser.$next();
-            }
-            componentDidUpdate() {
-                browser.$next();
 
-            }
             render() {
                 return (
                     <div
-                        id="aaa"
-                        style={{height:this.state.aaa}}
+                        id="aaa3"
+                        style={{
+                        height: this.state.aaa
+                    }}
                         onClick={this
                         .click
                         .bind(this)}>
@@ -44,27 +40,33 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 )
             }
         }
-       
+
         var div = document.createElement('div');
 
-        document.body.appendChild(div);
-         var  rootInstance = ReactDOM.render(
-                <A/>, div);
-      return  $serial(async() => {
-            await browser
-                .click('#aaa')
-                .$apply('wait');
-            expect(rootInstance.state.aaa).toBe(112)
-        }, async() => {
-            await browser
-                .click('#aaa')
-                .$apply('wait');
-            expect(rootInstance.state.aaa).toBe(113)
-            expect(rootInstance.vnode.dom.style.height).toBe('113px')
-            document.body.removeChild(div)
+        document
+            .body
+            .appendChild(div);
+        var rootInstance = ReactDOM.render(
+            <A/>, div);
+        await browser
+            .pause(200)
+            .$apply()
+        expect(rootInstance.state.aaa).toBe(111)
+        await browser
+            .click(rootInstance.vnode.dom)
+            .pause(100)
+            .$apply()
 
-        });
+        expect(rootInstance.state.aaa).toBe(112)
+        await browser
+            .click(rootInstance.vnode.dom)
+            .pause(100)
+            .$apply()
 
+        expect(rootInstance.state.aaa).toBe(113)
+        document
+            .body
+            .removeChild(div)
     })
 
 })

@@ -159,7 +159,7 @@
       //如果旧属性在新属性对象不存在，那么移除DOM
       for (let name in prevProps) {
           if (!(name in props)) {
-              if (isEvent(name)) { //移除事件
+              if (isEventName(name)) { //移除事件
                   var events = dom.__events || {}
                   delete events[name]
               } else { //移除属性

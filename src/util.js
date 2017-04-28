@@ -14,14 +14,11 @@ export function extend(obj, props) {
     return obj
 }
 /**
- * 创建一个对象的浅克隆副本
+ * 一个空函数
  * 
- * @param {any} obj 
- * @returns 
+ * @export
  */
-export function clone(obj) {
-    return extend({}, obj)
-}
+export function noop(){}
 /**
  * 类继承
  * 

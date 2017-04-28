@@ -148,11 +148,11 @@ function render(vnode, container, cb) {
     while (container.firstChild) {
         container.removeChild(container.firstChild)
     }
-    var root = createElement(TopLevelWrapper, {
+    let root = createElement(TopLevelWrapper, {
         child: vnode
     });
     transaction.isInTransation = true
-    var root = toVnode(vnode, {})
+    root = toVnode(vnode, {})
     transaction.isInTransation = false
     root.instance.container = container
     root.instance.forceUpdate(cb)

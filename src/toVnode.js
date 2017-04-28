@@ -1,8 +1,8 @@
     import {
-        clone,
         extend,
         isComponent,
-        isStateless
+        isStateless,
+        noop
     } from './util'
     import { applyComponentHook } from './lifecycle'
     import { transaction } from './transaction'
@@ -23,7 +23,7 @@
 
             if (!isStateless(Type)) {
                 var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
-                props = clone(props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+                props = extend({},props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
                 for (var i in defaultProps) {
                     if (props[i] === void 666) {
                         props[i] = defaultProps[i]
@@ -39,10 +39,11 @@
                 var rendered = transaction.renderWithoutSetState(instance)
             } else { //添加无状态组件的分支
                 rendered = Type(props, context)
-                instance = {
-                    statelessRender: Type,
-                    context: context
-                }
+
+                instance = new Component(null, context)
+                 instance.render = Type
+                instance.statelessRender = Type
+            
             }
             if (vnode.instance) {
                 instance.parentInstance = vnode.instance
