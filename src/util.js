@@ -40,15 +40,6 @@ export function inherit(SubClass, SupClass) {
     fn.constructor = SubClass
 }
 
-/**
- * 判定否为与事件相关
- * 
- * @param {any} name 
- * @returns 
- */
-export function isEvent(name) {
-    return /^on[A-Z]/.test(name)
-}
 
 var lowerCache = {}
 

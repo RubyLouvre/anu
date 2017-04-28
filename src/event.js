@@ -1,11 +1,24 @@
-  import { transaction } from './transaction'
-
+  import {
+      transaction
+  } from './transaction'
+  import {
+      document
+  } from './browser'
   export var eventMap = {
       mouseover: 'MouseOver',
       mouseout: 'MouseOut',
       mouseleave: 'MouseLeave',
       mouseenter: 'MouseEnter'
   }
+/**
+ * 判定否为与事件相关
+ * 
+ * @param {any} name 
+ * @returns 
+ */
+export function isEventName(name) {
+    return /^on[A-Z]/.test(name)
+}
 
   function dispatchEvent(e) {
       e = new SyntheticEvent(e)
@@ -62,7 +75,14 @@
   export function addGlobalEventListener(name) {
       if (!globalEvents[name]) {
           globalEvents[name] = true
-          document.addEventListener(name, dispatchEvent)
+          addEvent(document, name, dispatchEvent)
+      }
+  }
+  export function addEvent(el, type, fn) {
+      if (el.addEventListener) {
+          el.addEventListener(type, fn)
+      } else if (el.attachEvent) {
+          el.attachEvent('on' + type, fn)
       }
   }
 
@@ -98,26 +118,26 @@
   }
 
   var eventProto = SyntheticEvent.prototype = {
-      fixEvent: function() {}, //留给以后扩展用
-      preventDefault: function() {
+      fixEvent: function () {}, //留给以后扩展用
+      preventDefault: function () {
           var e = this.originalEvent || {}
           e.returnValue = this.returnValue = false
           if (e.preventDefault) {
               e.preventDefault()
           }
       },
-      stopPropagation: function() {
+      stopPropagation: function () {
           var e = this.originalEvent || {}
           e.cancelBubble = this.$$stop = true
           if (e.stopPropagation) {
               e.stopPropagation()
           }
       },
-      stopImmediatePropagation: function() {
+      stopImmediatePropagation: function () {
           this.stopPropagation()
           this.stopImmediate = true
       },
-      toString: function() {
+      toString: function () {
           return '[object Event]'
       }
   }

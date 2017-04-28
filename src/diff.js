@@ -1,7 +1,6 @@
   import {
       clone,
       extend,
-      isEvent,
       getInstances,
       matchInstance,
       midway
@@ -15,15 +14,14 @@
   import {
       toVnode
   } from './toVnode'
-
   import {
-      patchStyle
-  } from './style'
-
+      diffProps
+  } from './diffProps'
   import {
-      addGlobalEventListener,
-      getBrowserName
-  } from './event'
+      document,
+      createDOMElement
+  } from './browser'
+
   import {
       setControlledComponent
   } from './ControlledComponent'
@@ -148,7 +146,7 @@
           return toDOM(vnode, context, parentNode, prevVnode.dom)
       }
       if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
-          var nextDom = document.createElement(Type)
+          var nextDom = createDOMElement(Type)
           if (dom) {
               while (dom.firstChild) {
                   nextDom.appendChild(dom.firstChild)
@@ -171,125 +169,7 @@
       }
       return dom
   }
-  var eventNameCache = {
-      'onClick': 'click',
-      'onChange': 'change'
-  }
 
-  function clickHack() {}
-  let inMobile = 'ontouchstart' in document
-
-  /**
-   * 收集DOM到组件实例的refs中
-   * 
-   * @param {any} instance 
-   * @param {any} ref 
-   * @param {any} dom 
-   */
-  function patchRef(instance, ref, dom, mount) {
-      if (typeof ref === 'function') {
-          ref(instance)
-      } else if (typeof ref === 'string') {
-          instance.refs[ref] = dom
-          dom.getDOMNode = getDOMNode
-      }
-  }
-  //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-  function getDOMNode() {
-      return this
-  }
-
-  var builtIdProperties = /^(?:className|id|title|selected|htmlFor|value|checked|disabled)$/
-  /**
-   * 
-   * 修改dom的属性与事件
-   * @export
-   * @param {any} props 
-   * @param {any} prevProps 
-   * @param {any} vnode 
-   * @param {any} prevVnode 
-   */
-  export function diffProps(props, prevProps, vnode, prevVnode) {
-      if (props === prevProps) {
-          return
-      }
-      var dom = vnode.dom
-
-      var instance = vnode._owner
-      if (prevVnode._wrapperState) {
-          vnode._wrapperState = prevVnode._wrapperState
-          delete prevVnode._wrapperState
-      }
-
-      for (let name in props) {
-          if (name === 'children') {
-              continue
-          }
-          var val = props[name]
-          if (name === 'ref') {
-              if (prevProps[name] !== val) {
-                  instance && patchRef(instance, val, dom)
-              }
-              continue
-          }
-          if (name === 'style') {
-              patchStyle(dom, prevProps.style || {}, val)
-              continue
-          }
-          if (name === 'dangerouslySetInnerHTML') {
-              var oldhtml = prevProps[name] && prevProps[name]._html
-              vnode._hasSetInnerHTML = true
-              if (val && val._html !== oldhtml) {
-                  dom.innerHTML = val._html
-              }
-          }
-          if (isEvent(name)) {
-              if (!prevProps[name]) { //添加全局监听事件
-                  var eventName = getBrowserName(name)
-                  addGlobalEventListener(eventName)
-              }
-              if (inMobile && eventName === 'click') {
-                  elem.addEventListener('click', clickHack)
-              }
-              var events = (dom.__events || (dom.__events = {}))
-              events[name] = val
-              continue
-          }
-
-          if (val !== prevProps[name]) {
-              //移除属性
-              if (val === false || val === void 666 || val === null) {
-                  dom.removeAttribute(name)
-              } else { //添加新属性
-                  if (builtIdProperties.test(name)) {
-                      val = val + ''
-                      //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
-                      //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                      if (name !== 'value' || dom[name] !== val) {
-                          dom[name] = val
-                      }
-                  } else {
-                      dom.setAttribute(name, val + '')
-                  }
-              }
-          }
-      }
-      //如果旧属性在新属性对象不存在，那么移除DOM
-      for (let name in prevProps) {
-          if (!(name in props)) {
-              if (isEvent(name)) { //移除事件
-                  var events = dom.__events || {}
-                  delete events[name]
-              } else { //移除属性
-                  if (builtIdProperties.test(name)) {
-                      dom[name] = ''
-                  } else {
-                      dom.removeAttribute(name)
-                  }
-              }
-          }
-      }
-  }
   /**
    * 获取虚拟DOM对应的顶层组件实例的类型
    * 
@@ -358,7 +238,7 @@
               if (matchNode) {
                   let index = removedChildren.indexOf(matchNode)
                   removedChildren.splice(index, 1)
-                  vnode.prevVnode = matchNode
+                  vnode.prevVnode = matchNode //重点
                   matchNode.use = true
               }
           }
@@ -465,11 +345,10 @@
       var dom, isElement
       if (vnode.type === '#comment') {
           dom = document.createComment(vnode.text)
-      } else
-      if (vnode.type === '#text') {
+      } else if (vnode.type === '#text') {
           dom = document.createTextNode(vnode.text)
       } else {
-          dom = document.createElement(vnode.type)
+          dom = createDOMElement(vnode)
           isElement = true
       }
 
@@ -490,7 +369,7 @@
           var instances, childInstance
           if (canComponentDidMount) { //判定能否调用componentDidMount方法
               instances = getInstances(instance)
-             
+
           }
           if (replaced) {
               parentNode.replaceChild(dom, replaced)

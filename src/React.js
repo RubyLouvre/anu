@@ -1,13 +1,33 @@
-import { Component } from './Component'
-import { toVnode } from './toVnode'
+import {
+    Component
+} from './Component'
+import {
+    toVnode
+} from './toVnode'
 
-import { PureComponent } from './PureComponent'
-import { TopLevelWrapper } from './TopLevelWrapper'
-import { CurrentOwner } from './CurrentOwner'
-import { transaction } from './transaction'
+import {
+    PureComponent
+} from './PureComponent'
+import {
+    TopLevelWrapper
+} from './TopLevelWrapper'
+import {
+    CurrentOwner
+} from './CurrentOwner'
+import {
+    transaction
+} from './transaction'
+import {
+    win as window,
+    modern,
+    getNs
+} from './browser'
+
 import './diff'
 
-import { extend } from './util'
+import {
+    extend
+} from './util'
 
 var React = {
     render,
@@ -16,14 +36,14 @@ var React = {
     Component
 }
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
-    /**
-     * 创建虚拟DOM
-     * 
-     * @param {string} type 
-     * @param {object} props 
-     * @param {array} children 
-     * @returns 
-     */
+/**
+ * 创建虚拟DOM
+ * 
+ * @param {string} type 
+ * @param {object} props 
+ * @param {array} children 
+ * @returns 
+ */
 function createElement(type, configs, children) {
     var props = {}
     var key = null
@@ -58,12 +78,16 @@ function createElement(type, configs, children) {
 function Vnode(type, props, key, owner) {
     this.type = type
     this.props = props
+    var ns = getNs(type)
+    if (ns) {
+        this.ns = ns
+    }
     this.key = key || null
     this._owner = owner || null
 }
 
 Vnode.prototype = {
-    getDOMNode: function() {
+    getDOMNode: function () {
         return this.dom || null
     },
     $$typeof: 1
@@ -96,7 +120,11 @@ function flatChildren(children, ret, deep) {
             if (ret.merge) {
                 ret[0].text = (el.type ? el.text : el) + ret[0].text
             } else {
-                ret.unshift(el.type ? el : { type: '#text', text: String(el), deep: deep })
+                ret.unshift(el.type ? el : {
+                    type: '#text',
+                    text: String(el),
+                    deep: deep
+                })
                 ret.merge = true
             }
         } else if (Array.isArray(el)) {
@@ -120,7 +148,9 @@ function render(vnode, container, cb) {
     while (container.firstChild) {
         container.removeChild(container.firstChild)
     }
-    var root = createElement(TopLevelWrapper, { child: vnode });
+    var root = createElement(TopLevelWrapper, {
+        child: vnode
+    });
     transaction.isInTransation = true
     var root = toVnode(vnode, {})
     transaction.isInTransation = false

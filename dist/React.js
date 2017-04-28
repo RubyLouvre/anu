@@ -130,15 +130,6 @@
        fn.constructor = SubClass
    }
 
-   /**
-    * 判定否为与事件相关
-    * 
-    * @param {any} name 
-    * @returns 
-    */
-   function isEvent(name) {
-       return /^on[A-Z]/.test(name)
-   }
 
    /**
     * 收集该虚拟DOM的所有组件实例，方便依次执行它们的生命周期钩子
@@ -463,6 +454,82 @@
        return this.props.child
    }
 
+   var win = typeof window === 'object' ? window : typeof global === 'object' ? global : {};
+
+    var inBrowser = !!win.location && win.navigator
+    /* istanbul ignore if  */
+    function DOMElement() {
+        this.outerHTML = 'x'
+        this.style = {}
+        this.children = []
+    }
+    var fn$2 = DOMElement.prototype = {
+        contains: Boolean
+    }
+    String('replaceChild,appendChild,removeAttributeNs,setAttributeNs,removeAttribute,setAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent,detachEvent').replace(/\w+/g, function (name) {
+        fn$2[name] = function () {
+            console.log('fire ' + name)
+        }
+    })
+
+
+    var document = inBrowser ? win.document : (function () {
+        //document是DOMElement的实例，加上专有的方法与属性
+        var d = new DOMElement
+        d.createElement = d.createElementNS = function () {
+            return new DOMElement
+        }
+        d.createTextNode = d.createComment = Boolean
+        d.documentElement = new DOMElement
+        return d
+    })()
+
+    var versions = {
+        objectobject: 7, //IE7-8
+        objectundefined: 6, //IE6
+        undefinedfunction: NaN, // other modern browsers
+        undefinedobject: NaN
+    };
+    /* istanbul ignore next  */
+    var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest];
+
+    var modern = /NaN|undefined/.test(msie) || msie > 8
+
+    function createDOMElement(vnode) {
+        try {
+            if (vnode.ns) {
+                return document.createElementNS(vnode.type, vnode.ns)
+            }
+        } catch (e) {}
+        return document.createElement(vnode.type)
+    }
+    //https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
+    //http://demo.yanue.net/HTML5element/
+    var mhtml = {
+        meter: 1,
+        menu: 1,
+        map: 1,
+        meta: 1,
+        mark: 1
+    }
+    var svgTags = oneObject('circle,defs,ellipse,image,line,' + 'path,polygon,polyline,rect,symbol,text,use,g,svg', svgNs);
+    var mathTags = {
+        semantics: mathNs
+    }
+    var mathNs = 'http://www.w3.org/1998/Math/MathML'
+    var svgNs = 'http://www.w3.org/2000/svg'
+    function getNs(type) {
+        if (svgTags[type]) {
+            return svgNs
+        } else if (mathTags[type]) {
+            return mathNs
+        } else {
+            if (!mhtml[type] && rmathTags.test(type)) {
+                return mathTags[type] = mathNs
+            }
+        }
+    }
+
    var rnumber = /^-?\d+(\.\d+)?$/
        /**
         * 为元素样子设置样式
@@ -533,6 +600,15 @@
          mouseleave: 'MouseLeave',
          mouseenter: 'MouseEnter'
      }
+   /**
+    * 判定否为与事件相关
+    * 
+    * @param {any} name 
+    * @returns 
+    */
+   function isEventName(name) {
+       return /^on[A-Z]/.test(name)
+   }
 
      function dispatchEvent(e) {
          e = new SyntheticEvent(e)
@@ -589,7 +665,14 @@
      function addGlobalEventListener(name) {
          if (!globalEvents[name]) {
              globalEvents[name] = true
-             document.addEventListener(name, dispatchEvent)
+             addEvent(document, name, dispatchEvent)
+         }
+     }
+     function addEvent(el, type, fn) {
+         if (el.addEventListener) {
+             el.addEventListener(type, fn)
+         } else if (el.attachEvent) {
+             el.attachEvent('on' + type, fn)
          }
      }
 
@@ -625,27 +708,198 @@
      }
 
      var eventProto = SyntheticEvent.prototype = {
-         fixEvent: function() {}, //留给以后扩展用
-         preventDefault: function() {
+         fixEvent: function () {}, //留给以后扩展用
+         preventDefault: function () {
              var e = this.originalEvent || {}
              e.returnValue = this.returnValue = false
              if (e.preventDefault) {
                  e.preventDefault()
              }
          },
-         stopPropagation: function() {
+         stopPropagation: function () {
              var e = this.originalEvent || {}
              e.cancelBubble = this.$$stop = true
              if (e.stopPropagation) {
                  e.stopPropagation()
              }
          },
-         stopImmediatePropagation: function() {
+         stopImmediatePropagation: function () {
              this.stopPropagation()
              this.stopImmediate = true
          },
-         toString: function() {
+         toString: function () {
              return '[object Event]'
+         }
+     }
+
+   function clickHack() {}
+     let inMobile = 'ontouchstart' in document
+
+     /**
+      * 收集DOM到组件实例的refs中
+      * 
+      * @param {any} instance 
+      * @param {any} ref 
+      * @param {any} dom 
+      */
+     function patchRef(instance, ref, dom, mount) {
+         if (typeof ref === 'function') {
+             ref(instance)
+         } else if (typeof ref === 'string') {
+             instance.refs[ref] = dom
+             dom.getDOMNode = getDOMNode
+         }
+     }
+     //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+     function getDOMNode() {
+         return this
+     }
+     var xlink = "http://www.w3.org/1999/xlink"
+     var builtIdProperties = {} //不规则的属性名映射
+
+
+     //防止压缩时出错
+     'accept-charset,acceptCharset|char,ch|charoff,chOff|class,className|for,htmlFor|http-equiv,httpEquiv'.replace(/[^\|]+/g, function (a) {
+         var k = a.split(',')
+         builtIdProperties[k[1]] = k[0]
+     })
+     /*
+     contenteditable不是布尔属性
+     http://www.zhangxinxu.com/wordpress/2016/01/contenteditable-plaintext-only/
+     contenteditable=''
+     contenteditable='events'
+     contenteditable='caret'
+     contenteditable='plaintext-only'
+     contenteditable='true'
+     contenteditable='false'
+      */
+     var bools = ['autofocus,autoplay,async,allowTransparency,checked,controls',
+         'declare,disabled,defer,defaultChecked,defaultSelected,',
+         'isMap,loop,multiple,noHref,noResize,noShade',
+         'open,readOnly,selected'
+     ].join(',')
+
+     bools.replace(/\w+/g, function (name) {
+         builtIdProperties[name] = true
+     })
+
+     var anomaly = ['accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
+         'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,' +
+         'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign'
+     ].join(',')
+
+     anomaly.replace(/\w+/g, function (name) {
+         builtIdProperties[name] = name
+     })
+     /**
+      * 
+      * 修改dom的属性与事件
+      * @export
+      * @param {any} props 
+      * @param {any} prevProps 
+      * @param {any} vnode 
+      * @param {any} prevVnode 
+      */
+     function diffProps(props, prevProps, vnode, prevVnode) {
+         if (props === prevProps) {
+             return
+         }
+         var dom = vnode.dom
+
+         var instance = vnode._owner
+         if (prevVnode._wrapperState) {
+             vnode._wrapperState = prevVnode._wrapperState
+             delete prevVnode._wrapperState
+         }
+         var isHTML = !vnode.ns
+         for (let name in props) {
+             if (name === 'children') {
+                 continue
+             }
+             var val = props[name]
+             if (name === 'ref') {
+                 if (prevProps[name] !== val) {
+                     instance && patchRef(instance, val, dom)
+                 }
+                 continue
+             }
+             if (name === 'style') {
+                 patchStyle(dom, prevProps.style || {}, val)
+                 continue
+             }
+             if (name === 'dangerouslySetInnerHTML') {
+                 var oldhtml = prevProps[name] && prevProps[name]._html
+                 vnode._hasSetInnerHTML = true
+                 if (val && val._html !== oldhtml) {
+                     dom.innerHTML = val._html
+                 }
+             }
+             if (isEventName(name)) {
+                 if (!prevProps[name]) { //添加全局监听事件
+                     var eventName = getBrowserName(name)
+                     addGlobalEventListener(eventName)
+                 }
+                 if (inMobile && eventName === 'click') {
+                     elem.addEventListener('click', clickHack)
+                 }
+                 var events = (dom.__events || (dom.__events = {}))
+                 events[name] = val
+                 continue
+             }
+             if (val !== prevProps[name]) {
+                 if (typeof node[name] === 'boolean') {
+                     //布尔属性必须使用el.xxx = true|false方式设值
+                     //如果为false, IE全系列下相当于setAttribute(xxx,''),
+                     //会影响到样式,需要进一步处理
+                     node[propName] = !!val
+                 }
+                 if (val === false || val === void 666 || val === null) {
+                     operateAttribute(dom, name, '', !isHTML)
+                     continue
+                 }
+                 val = val + ''
+                 if (isHTML && builtIdProperties[name]) {
+                     //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
+                     //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
+                     if (name !== 'value' || dom[name] !== val) {
+                         dom[name] = val
+                     }
+                 } else {
+                     operateAttribute(dom, name, val, !isHTML)
+                 }
+
+             }
+         }
+         //如果旧属性在新属性对象不存在，那么移除DOM
+         for (let name in prevProps) {
+             if (!(name in props)) {
+                 if (isEvent(name)) { //移除事件
+                     var events = dom.__events || {}
+                     delete events[name]
+                 } else { //移除属性
+                     if (isHTML && builtIdProperties[name]) {
+                         dom[name] = builtIdProperties[name] === true ? false : ''
+                     } else {
+                         operateAttribute(dom, name, '', !isHTML)
+                     }
+                 }
+             }
+         }
+     }
+
+     function operateAttribute(dom, name, value, isSVG) {
+
+         var method = value === '' ? 'removeAttribure' : 'setAttribute',
+             isXLink
+         if (isSVG && name.indexOf('xlink:') === 0) {
+             name = name.replace(/^xlink\:?/, '')
+             isXLink = true
+         }
+         if (isLink) {
+             method = method + 'Ns'
+             dom[method](xlink, name.toLowerCase(), value)
+         } else {
+             dom[method](name, value)
          }
      }
 
@@ -689,7 +943,7 @@
                 }
                 if (!isControlled && propName in props) {
                     var dom = vnode.dom
-                    console.log('你在表单元素指定了' + propName + '属性,但没有添加onChange或onInput事件或readOnly或disabled，它将变成非受控组件，无法更换' + propName)
+                    console.warn('你在表单元素指定了' + propName + '属性,但没有添加onChange或onInput事件或readOnly或disabled，它将变成非受控组件，无法更换' + propName)
 
                     function keepInitValue(e) {
                         dom[propName] = initValue
@@ -903,7 +1157,7 @@
              return toDOM(vnode, context, parentNode, prevVnode.dom)
          }
          if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
-             var nextDom = document.createElement(Type)
+             var nextDom = createDOMElement(Type)
              if (dom) {
                  while (dom.firstChild) {
                      nextDom.appendChild(dom.firstChild)
@@ -926,120 +1180,7 @@
          }
          return dom
      }
-     function clickHack() {}
-     let inMobile = 'ontouchstart' in document
 
-     /**
-      * 收集DOM到组件实例的refs中
-      * 
-      * @param {any} instance 
-      * @param {any} ref 
-      * @param {any} dom 
-      */
-     function patchRef(instance, ref, dom, mount) {
-         if (typeof ref === 'function') {
-             ref(instance)
-         } else if (typeof ref === 'string') {
-             instance.refs[ref] = dom
-             dom.getDOMNode = getDOMNode
-         }
-     }
-     //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-     function getDOMNode() {
-         return this
-     }
-
-     var builtIdProperties = /^(?:className|id|title|selected|htmlFor|value|checked|disabled)$/
-     /**
-      * 
-      * 修改dom的属性与事件
-      * @export
-      * @param {any} props 
-      * @param {any} prevProps 
-      * @param {any} vnode 
-      * @param {any} prevVnode 
-      */
-     function diffProps(props, prevProps, vnode, prevVnode) {
-         if (props === prevProps) {
-             return
-         }
-         var dom = vnode.dom
-
-         var instance = vnode._owner
-         if (prevVnode._wrapperState) {
-             vnode._wrapperState = prevVnode._wrapperState
-             delete prevVnode._wrapperState
-         }
-
-         for (let name in props) {
-             if (name === 'children') {
-                 continue
-             }
-             var val = props[name]
-             if (name === 'ref') {
-                 if (prevProps[name] !== val) {
-                     instance && patchRef(instance, val, dom)
-                 }
-                 continue
-             }
-             if (name === 'style') {
-                 patchStyle(dom, prevProps.style || {}, val)
-                 continue
-             }
-             if (name === 'dangerouslySetInnerHTML') {
-                 var oldhtml = prevProps[name] && prevProps[name]._html
-                 vnode._hasSetInnerHTML = true
-                 if (val && val._html !== oldhtml) {
-                     dom.innerHTML = val._html
-                 }
-             }
-             if (isEvent(name)) {
-                 if (!prevProps[name]) { //添加全局监听事件
-                     var eventName = getBrowserName(name)
-                     addGlobalEventListener(eventName)
-                 }
-                 if (inMobile && eventName === 'click') {
-                     elem.addEventListener('click', clickHack)
-                 }
-                 var events = (dom.__events || (dom.__events = {}))
-                 events[name] = val
-                 continue
-             }
-
-             if (val !== prevProps[name]) {
-                 //移除属性
-                 if (val === false || val === void 666 || val === null) {
-                     dom.removeAttribute(name)
-                 } else { //添加新属性
-                     if (builtIdProperties.test(name)) {
-                         val = val + ''
-                         //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
-                         //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                         if (name !== 'value' || dom[name] !== val) {
-                             dom[name] = val
-                         }
-                     } else {
-                         dom.setAttribute(name, val + '')
-                     }
-                 }
-             }
-         }
-         //如果旧属性在新属性对象不存在，那么移除DOM
-         for (let name in prevProps) {
-             if (!(name in props)) {
-                 if (isEvent(name)) { //移除事件
-                     var events = dom.__events || {}
-                     delete events[name]
-                 } else { //移除属性
-                     if (builtIdProperties.test(name)) {
-                         dom[name] = ''
-                     } else {
-                         dom.removeAttribute(name)
-                     }
-                 }
-             }
-         }
-     }
      /**
       * 获取虚拟DOM对应的顶层组件实例的类型
       * 
@@ -1108,7 +1249,7 @@
                  if (matchNode) {
                      let index = removedChildren.indexOf(matchNode)
                      removedChildren.splice(index, 1)
-                     vnode.prevVnode = matchNode
+                     vnode.prevVnode = matchNode //重点
                      matchNode.use = true
                  }
              }
@@ -1215,11 +1356,10 @@
          var dom, isElement
          if (vnode.type === '#comment') {
              dom = document.createComment(vnode.text)
-         } else
-         if (vnode.type === '#text') {
+         } else if (vnode.type === '#text') {
              dom = document.createTextNode(vnode.text)
          } else {
-             dom = document.createElement(vnode.type)
+             dom = createDOMElement(vnode)
              isElement = true
          }
 
@@ -1240,7 +1380,7 @@
              var instances, childInstance
              if (canComponentDidMount) { //判定能否调用componentDidMount方法
                  instances = getInstances(instance)
-                
+
              }
              if (replaced) {
                  parentNode.replaceChild(dom, replaced)
@@ -1276,14 +1416,14 @@
        Component
    }
    var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
-       /**
-        * 创建虚拟DOM
-        * 
-        * @param {string} type 
-        * @param {object} props 
-        * @param {array} children 
-        * @returns 
-        */
+   /**
+    * 创建虚拟DOM
+    * 
+    * @param {string} type 
+    * @param {object} props 
+    * @param {array} children 
+    * @returns 
+    */
    function createElement(type, configs, children) {
        var props = {}
        var key = null
@@ -1318,12 +1458,16 @@
    function Vnode(type, props, key, owner) {
        this.type = type
        this.props = props
+       var ns = getNs(type)
+       if (ns) {
+           this.ns = ns
+       }
        this.key = key || null
        this._owner = owner || null
    }
 
    Vnode.prototype = {
-       getDOMNode: function() {
+       getDOMNode: function () {
            return this.dom || null
        },
        $$typeof: 1
@@ -1356,7 +1500,11 @@
                if (ret.merge) {
                    ret[0].text = (el.type ? el.text : el) + ret[0].text
                } else {
-                   ret.unshift(el.type ? el : { type: '#text', text: String(el), deep: deep })
+                   ret.unshift(el.type ? el : {
+                       type: '#text',
+                       text: String(el),
+                       deep: deep
+                   })
                    ret.merge = true
                }
            } else if (Array.isArray(el)) {
@@ -1380,7 +1528,9 @@
        while (container.firstChild) {
            container.removeChild(container.firstChild)
        }
-       var root = createElement(TopLevelWrapper, { child: vnode });
+       var root = createElement(TopLevelWrapper, {
+           child: vnode
+       });
        transaction.isInTransation = true
        var root = toVnode(vnode, {})
        transaction.isInTransation = false
@@ -1391,7 +1541,7 @@
 
 
 
-   window.ReactDOM = React
+   win.ReactDOM = React
 
    return React;
 

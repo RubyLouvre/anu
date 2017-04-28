@@ -3,7 +3,6 @@ import {
     extend,
     clone,
     isComponent,
-    isEvent,
     isStateless,
     toLowerCase,
     inherit,
@@ -11,7 +10,9 @@ import {
     getInstances,
     matchInstance
 } from 'src/util'
-
+import {
+    isEventName
+} from 'src/event'
 describe('util', function() {
 
     it('oneObject', function() {
@@ -76,10 +77,10 @@ describe('util', function() {
         expect(isStateless(b)).toBe(false)
     })
 
-    it('isEvent', () => {
-        expect(isEvent('onaaa')).toBe(false)
-        expect(isEvent('onAaa')).toBe(true)
-        expect(isEvent('xxx')).toBe(false)
+    it('isEventName', () => {
+        expect(isEventName('onaaa')).toBe(false)
+        expect(isEventName('onAaa')).toBe(true)
+        expect(isEventName('xxx')).toBe(false)
     })
 
     it('toLowerCase', () => {
