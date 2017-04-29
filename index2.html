@@ -17,6 +17,7 @@
      <script src="react-dom.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
+    var aaa = ''
        class A extends React.PureComponent {
             constructor(props) {
                 super(props)
@@ -28,18 +29,35 @@
             }
           
             click() {
-                this.setState(function(state){
-                   state.aaa.a = 8
-                })
+                aaa += 'aaa '
+            }
+            click2(e){
+                aaa += 'bbb '
+                e.stopPropagation()
+               
+            }
+             click3(e){
+                aaa += 'ccc '
+             
             }
             render() {
-                return  <div onClick={this.click.bind(this) }>{this.state.aaa.a}</div>
+                return  <div onClickCapture={this.click }>
+                  <p>=========</p>
+                    <div onClickCapture={this.click2 }>
+                        <p>=====</p>
+                        <div onClickCapture={this.click3 }>{this.state.aaa.a}</div>
+                    </div>
+
+                </div>
             }
         }
 
 
 window.onload = function () {
    ReactDOM.render(<A />, document.getElementById('example'))
+   setTimeout(function(){
+                    alert(aaa)
+                },1000)
    
 }
     </script>

@@ -463,7 +463,7 @@ function DOMElement(type) {
 var fn$2 = DOMElement.prototype = {
     contains: Boolean
 };
-String('replaceChild,appendChild,removeAttributeNs,setAttributeNs,removeAttribute,setAttribute' +
+String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
             ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
             ',detachEvent').replace(/\w+/g, function (name) {
     fn$2[name] = function () {
@@ -503,7 +503,7 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 function createDOMElement(vnode) {
     try {
         if (vnode.ns) {
-            return document.createElementNS(vnode.type, vnode.ns)
+            return document.createElementNS(vnode.ns,vnode.type)
         }
     } catch (e) {}
     return document.createElement(vnode.type)
@@ -528,12 +528,14 @@ var svgTags = oneObject('' +
 'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
 // font
 'font,font-face,glyph,missing-glyph', svgNs);
-var mathTags = {
-    semantics: mathNs
-};
+
 var rmathTags = /^m/;
 var mathNs = 'http://www.w3.org/1998/Math/MathML';
 var svgNs = 'http://www.w3.org/2000/svg';
+var mathTags = {
+    semantics: mathNs
+};
+
 function getNs(type) {
     if (svgTags[type]) {
         return svgNs
@@ -734,7 +736,7 @@ var eventProto = SyntheticEvent.prototype = {
     },
     stopPropagation: function () {
         var e = this.originalEvent || {};
-        e.cancelBubble = this.$$stop = true;
+        e.cancelBubble = this._stopPropagation = true;
         if (e.stopPropagation) {
             e.stopPropagation();
         }

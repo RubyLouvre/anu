@@ -124,7 +124,7 @@ var eventProto = SyntheticEvent.prototype = {
     },
     stopPropagation: function () {
         var e = this.originalEvent || {}
-        e.cancelBubble = this.$$stop = true
+        e.cancelBubble = this._stopPropagation = true
         if (e.stopPropagation) {
             e.stopPropagation()
         }
