@@ -1,4 +1,4 @@
-#anu
+# anu
 
 读作 安努 ，苏美尔的主神，开天辟地。一个无痛使用React与JSX的迷你React框架
 
@@ -16,7 +16,7 @@ More usage and examples please see the wiki
 
 https://github.com/RubyLouvre/anu/wiki
 
-###目前没有支持的方法与对象
+### 目前没有支持的方法与对象
 
 1. PropTypes
 2. childContextTypes
@@ -24,7 +24,7 @@ https://github.com/RubyLouvre/anu/wiki
 4. mixin机制
 5. createClass
 
-###低版本浏览器可能需要以下 语言补丁
+### 低版本浏览器可能需要以下 语言补丁
 
 1. [Array.isArray](https://github.com/juliangruber/isarray/blob/master/index.js)
 2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
@@ -91,9 +91,9 @@ https://github.com/RubyLouvre/anu/wiki
 
 
 
-##测试 
+### 测试 
 
-### 依赖于
+依赖于
 
 + [selenium-server-standalone](http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar)
 + [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/), [more available drivers](http://www.seleniumhq.org/projects/webdriver/)
