@@ -352,11 +352,9 @@ export function toDOM(vnode, context, parentNode, replaced) {
 
     //尝试插入DOM树
     if (parentNode) {
-        var instances,
-            childInstance
+        var instances
         if (canComponentDidMount) { //判定能否调用componentDidMount方法
             instances = getInstances(instance)
-
         }
         if (replaced) {
             parentNode.replaceChild(dom, replaced)
