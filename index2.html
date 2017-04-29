@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+   <script type='text/javascript' src="./dist/React.js"></script>
     <style>
         .aaa {
             width: 200px;
@@ -13,51 +13,50 @@
         }
     </style>
 
-     <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-     <script src="react-dom.js"></script>
+   <!-- <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+     <script src="react-dom.js"></script>-->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
-    var aaa = ''
-       class A extends React.PureComponent {
-            constructor(props) {
-                super(props)
+    
+       class Select extends React.Component {
+            constructor() {
+                super()
                 this.state = {
-                    aaa: {
-                        a: 7
-                    }
+                    city: "bj"
                 }
             }
-          
-            click() {
-                aaa += 'aaa '
+
+            handleCity(e) {
+               // expect(e.type).toBe('change')
+                var value = e.target.value;
+                this.setState({
+                    city: value,
+                })
             }
-            click2(e){
-                aaa += 'bbb '
-                e.stopPropagation()
+            componentDidMount() {
                
             }
-             click3(e){
-                aaa += 'ccc '
-             
+            componentDidUpdate() {
+               
             }
             render() {
-                return  <div onClickCapture={this.click }>
-                  <p>=========</p>
-                    <div onClickCapture={this.click2 }>
-                        <p>=====</p>
-                        <div onClickCapture={this.click3 }>{this.state.aaa.a}</div>
-                    </div>
-
-                </div>
+                return <select name='city'
+                    id="node2"
+                    value={this.state.city}
+                    onChange={
+                        this.handleCity.bind(this)
+                    } >
+                    <option value='hz' >杭州</option>
+                    <option value='bj' >北京</option>
+                    <option value='sh' >上海</option>
+                </select>
             }
         }
 
-
+var a 
 window.onload = function () {
-   ReactDOM.render(<A />, document.getElementById('example'))
-   setTimeout(function(){
-                    alert(aaa)
-                },1000)
+ a =  ReactDOM.render(<Select />, document.getElementById('example'))
+
    
 }
     </script>
