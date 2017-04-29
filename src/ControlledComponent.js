@@ -89,7 +89,7 @@ function postUpdateSelectedOptions(vnode) {
             updateOptions(vnode, multiple, props.defaultValue)
         } else {
             // Revert the select back to its default unselected state.
-            updateOptions(vnode, multiple, props.multiple
+            updateOptions(vnode, multiple, multiple
                 ? []
                 : '');
         }

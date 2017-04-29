@@ -266,6 +266,7 @@ describe('node模块', function () {
             render() {
                 return <div>
                     <input id='node4' value={this.state.value} onInput={this.onInput.bind(this)} />{this.state.value}
+                    <input type='image'/> <input type='button' value='提交'/>
                 </div>
             }
         }

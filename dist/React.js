@@ -546,11 +546,10 @@ function patchStyle(dom, oldStyle, newStyle) {
     }
     var old = {};
     for (var name in newStyle) {
-        var val = newStyle[name];
+        let val = newStyle[name];
         if (oldStyle[name] !== val) {
             name = cssName(name, dom);
-            var type = typeof val;
-            if (type === void 666 || type === null) {
+            if (val === void(0) || val === null || val === false) {
                 val = ''; //清除样式
             } else if (rnumber.test(val) && !cssNumber[name]) {
                 val = val + 'px'; //添加单位
@@ -998,7 +997,7 @@ function postUpdateSelectedOptions(vnode) {
             updateOptions(vnode, multiple, props.defaultValue);
         } else {
             // Revert the select back to its default unselected state.
-            updateOptions(vnode, multiple, props.multiple
+            updateOptions(vnode, multiple, multiple
                 ? []
                 : '');
         }
