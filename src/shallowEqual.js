@@ -26,7 +26,7 @@ export function shallowEqual(objA, objB) {
     if (is(objA, objB)) {
         return true;
     }
-
+ 
     if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
         return false;
     }

@@ -1,41 +1,41 @@
 import {oneObject} from './util'
-export var win = typeof window === 'object'
-    ? window
-    : typeof global === 'object'
-        ? global
-        : {};
 
-export var inBrowser = !!win.location && win.navigator
-/* istanbul ignore if  */
-function DOMElement() {
-    this.outerHTML = 'x'
+
+
+//用于后端的元素节点
+export function DOMElement(type) {
+    this.nodeName = type
     this.style = {}
     this.children = []
 }
 var fn = DOMElement.prototype = {
     contains: Boolean
 }
-String('replaceChild,appendChild,removeAttributeNs,setAttributeNs,removeAttribute,setAtt' +
-            'ribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
+String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
+            ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
             ',detachEvent').replace(/\w+/g, function (name) {
     fn[name] = function () {
         console.log('fire ' + name)
     }
 })
 
-export var document = inBrowser
-    ? win.document
-    : (function () {
-        //document是DOMElement的实例，加上专有的方法与属性
-        var d = new DOMElement
-        d.createElement = d.createElementNS = function () {
-            return new DOMElement
-        }
-        d.createTextNode = d.createComment = Boolean
-        d.documentElement = new DOMElement
-        return d
-    })()
+//用于后端的document
+export var fakeDoc = new DOMElement
+fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
+    return new DOMElement(type)
+}
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean
+fakeDoc.documentElement = new DOMElement
 
+export var win = typeof window === 'object'
+    ? window
+    : typeof global === 'object'
+        ? global
+        : { document: faceDoc};
+
+export var inBrowser = !!win.location && win.navigator
+
+export var document = win.document
 
 var versions = {
     objectobject: 7, //IE7-8
@@ -51,7 +51,7 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8
 export function createDOMElement(vnode) {
     try {
         if (vnode.ns) {
-            return document.createElementNS(vnode.type, vnode.ns)
+            return document.createElementNS(vnode.ns,vnode.type)
         }
     } catch (e) {}
     return document.createElement(vnode.type)
@@ -75,13 +75,15 @@ var svgTags = oneObject('' +
 // other
 'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
 // font
-'font,font-face,glyph,missing-glyph', svgNs);
-var mathTags = {
-    semantics: mathNs
-}
+'font,font-face,glyph,missing-glyph', svgNs)
+
 var rmathTags = /^m/
 var mathNs = 'http://www.w3.org/1998/Math/MathML'
 var svgNs = 'http://www.w3.org/2000/svg'
+var mathTags = {
+    semantics: mathNs
+}
+
 export function getNs(type) {
     if (svgTags[type]) {
         return svgNs

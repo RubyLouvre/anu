@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-<script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
     <style>
         .aaa {
             width: 200px;
@@ -13,18 +13,34 @@
         }
     </style>
 
-     <!--<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-     <script src="react-dom.js"></script>-->
+     <script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+     <script src="react-dom.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script  type="text/babel" >
-         function HelloComponent(props,  /* context */) {
-            return <p onClick={() => props.name = 11}>Hello {props.name}</p>
+       class A extends React.PureComponent {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
+            }
+          
+            click() {
+                this.setState(function(state){
+                   state.aaa.a = 8
+                })
+            }
+            render() {
+                return  <div onClick={this.click.bind(this) }>{this.state.aaa.a}</div>
+            }
         }
 
 
 var a 
 window.onload = function () {
- a =  ReactDOM.render(<HelloComponent name="Sebastian"/>, document.getElementById('example'))
+ a =  ReactDOM.render(<A />, document.getElementById('example'))
    
 }
     </script>

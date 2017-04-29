@@ -405,7 +405,7 @@ function shallowEqual(objA, objB) {
     if (is(objA, objB)) {
         return true;
     }
-
+ 
     if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
         return false;
     }
@@ -454,43 +454,40 @@ fn$1.render = function() {
     return this.props.child
 };
 
-var win = typeof window === 'object'
-    ? window
-    : typeof global === 'object'
-        ? global
-        : {};
-
-var inBrowser = !!win.location && win.navigator;
-/* istanbul ignore if  */
-function DOMElement() {
-    this.outerHTML = 'x';
+//用于后端的元素节点
+function DOMElement(type) {
+    this.nodeName = type;
     this.style = {};
     this.children = [];
 }
 var fn$2 = DOMElement.prototype = {
     contains: Boolean
 };
-String('replaceChild,appendChild,removeAttributeNs,setAttributeNs,removeAttribute,setAtt' +
-            'ribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
+String('replaceChild,appendChild,removeAttributeNs,setAttributeNs,removeAttribute,setAttribute' +
+            ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
             ',detachEvent').replace(/\w+/g, function (name) {
     fn$2[name] = function () {
         console.log('fire ' + name);
     };
 });
 
-var document = inBrowser
-    ? win.document
-    : (function () {
-        //document是DOMElement的实例，加上专有的方法与属性
-        var d = new DOMElement;
-        d.createElement = d.createElementNS = function () {
-            return new DOMElement
-        };
-        d.createTextNode = d.createComment = Boolean;
-        d.documentElement = new DOMElement;
-        return d
-    })();
+//用于后端的document
+var fakeDoc = new DOMElement;
+fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
+    return new DOMElement(type)
+};
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
+fakeDoc.documentElement = new DOMElement;
 
+var win = typeof window === 'object'
+    ? window
+    : typeof global === 'object'
+        ? global
+        : { document: faceDoc};
+
+
+
+var document = win.document;
 
 var versions = {
     objectobject: 7, //IE7-8
