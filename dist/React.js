@@ -320,7 +320,7 @@ function applyComponentHook(instance, index) {
      * @returns
      */
 function toVnode(vnode, context) {
-    var Type = vnode.type;
+    var Type = vnode.type, instance, rendered;
     if (isComponent(Type)) {
         var props = vnode.props;
 
@@ -332,27 +332,25 @@ function toVnode(vnode, context) {
                     props[i] = defaultProps[i];
                 }
             }
-            var instance = new Type(props, context);
+            instance = new Type(props, context);
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
             instance.vnode = vnode;
 
             Component.call(instance, props, context); //重点！！
             applyComponentHook(instance, 0); //willMount
 
-            var rendered = transaction.renderWithoutSetState(instance);
+            rendered = transaction.renderWithoutSetState(instance);
         } else { //添加无状态组件的分支
             rendered = Type(props, context);
-
             instance = new Component(null, context);
-            instance.render = Type;
-            instance.statelessRender = Type;
-
+            instance.render = instance.statelessRender = Type;
+            instance.vnode = vnode;
         }
 
         instance.parentInstance = vnode.instance;
 
         instance.prevProps = vnode.props; //实例化时prevProps
-        instance.vnode = vnode;
+       
         //压扁组件Vnode为普通Vnode
         if (rendered == null) {
             rendered = '';
@@ -439,31 +437,19 @@ fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
 };
 fn.isPureComponent = true;
 
-var topLevelRootCounter = 1;
-function TopLevelWrapper() {
-    this.rootID = topLevelRootCounter++;
-}
-
-inherit(TopLevelWrapper, Component);
-
-let fn$1 = TopLevelWrapper.prototype;
-fn$1.render = function() {
-    return this.props.child
-};
-
 //用于后端的元素节点
 function DOMElement(type) {
     this.nodeName = type;
     this.style = {};
     this.children = [];
 }
-var fn$2 = DOMElement.prototype = {
+var fn$1 = DOMElement.prototype = {
     contains: Boolean
 };
 String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
             ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
             ',detachEvent').replace(/\w+/g, function (name) {
-    fn$2[name] = function () {
+    fn$1[name] = function () {
         console.log('fire ' + name);
     };
 });
@@ -944,7 +930,9 @@ function setControlledComponent(vnode) {
         case "datalist":
             type = 'select';
         case 'textarea':
-            type = 'textarea';
+            if (!type) {//必须指定
+                type = 'textarea';
+            }
         case 'input':
             if (!type) {
                 type = 'text';
@@ -1570,21 +1558,21 @@ function render(vnode, container, cb) {
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
-    var instance = new TopLevelWrapper();
-    instance.props = {
+    let context = {};
+    let instance = new Component({
         child: vnode
+    }, context);
+  
+    instance.render = function(){
+        return this.props.child
     };
     instance.vnode = vnode;
-  
     vnode.instance = instance;
-  //  let root = createElement(TopLevelWrapper, {
- //       child: vnode
- //   });
-   
     transaction.isInTransation = true;
-    var root = toVnode(vnode, {});
+    let root = toVnode(vnode, context);
  
     transaction.isInTransation = false;
+
     root.instance.container = container;
     root.instance.forceUpdate(cb);
     return root.instance || null

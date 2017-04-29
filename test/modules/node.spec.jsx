@@ -39,6 +39,19 @@ describe('node模块', function () {
         expect(a).toBe(3);
         document.body.removeChild(div)
     });
+    it('输出简单的元素', async () => {
+        var div = document.createElement('div');
+
+        document.body.appendChild(div);
+       
+        var s = React.render(<div>222</div>, div)
+
+        await browser.pause(100).$apply()
+        expect(s.vnode.dom.nodeName).toBe('DIV');
+
+      
+        document.body.removeChild(div)
+    });
     it('下拉菜单的选择', async () => {
         let rs, prom = new Promise((s) => {
             rs = s;
