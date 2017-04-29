@@ -22,6 +22,7 @@ https://github.com/RubyLouvre/anu/wiki
 2. childContextTypes
 3. Children的方法集合
 4. mixin机制
+5. createClass
 
 ###低版本浏览器可能需要以下 语言补丁
 
@@ -33,7 +34,6 @@ https://github.com/RubyLouvre/anu/wiki
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
 
 
-###依赖 jsx-parser与evalJSX
 
 ```html
 <!DOCTYPE html>
@@ -42,119 +42,73 @@ https://github.com/RubyLouvre/anu/wiki
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script src='./dist/jsx-parser.js'></script>
-    <script src='./dist/evalJSX.js'></script>
-    <script src='./dist/anu.js'></script>
-    <script>
-        class Hello extends anu.Component {
-            constructor() {
-                super() //Must write, or throw ReferenceError: |this| used uninitialized in Hello class constructor
-                this.handleClick = this.handleClick.bind(this)
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+    </style>>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script  type="text/babel" >
+       class A extends React.PureComponent {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
             }
-            componentWillMount() {
-                console.log('准备插入DOM树')
-            }
-            componentDidMount() {
-                console.log('已经插入DOM树')
-            }
-            handleClick() {
-                this.setState({
-                    title: new Date - 0,
-                    child: new Date - 1
+          
+            click() {
+                this.setState(function(state){
+                   state.aaa.a = 8
                 })
-            }
-            static className() {
-                return 'Point';
             }
             render() {
-                return evalJSX(`<div tilte={this.state.title} onClick={this.handleClick} >{this.state.child || "点我"}</div>`, {
-                    this: this
-                })
+                return  <div onClick={this.click.bind(this) }>{this.state.aaa.a}</div>
             }
         }
-
-        function main() {
-            return evalJSX(`<h2>对象使用anu<br /><Hello /></h2>`, {
-                Hello: Hello
-            })
-        }
-        window.onload = function() {
-            var result = anu.render(main(), document.body)
-            console.log(result)
+        window.onload = function () {
+            ReactDOM.render(<A />, document.getElementById('example'))
         }
     </script>
 </head>
 
 <body>
-    <div>这个默认会被清掉</div>
+    <div>这个怎么点击也不会变</div>
+    <blockquote id='example'></blockquote>
+
+
 </body>
 
 </html>
 ```
+支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
 
-es6 Component
-```javascript
- class Hello extends anu.Component {
-    render() {
-        return 1984
-    }
-}
+
+
+
+##测试 
+
+### 依赖于
+
++ [selenium-server-standalone](http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar)
++ [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/), [more available drivers](http://www.seleniumhq.org/projects/webdriver/)
++ nodejs v6.10.0+
++ karma
+
+cli
+
 ```
-nest Components
-
-```javascript
-class World extends anu.Component {
-    render() {
-        return 'world'
-    }
-}
-class Hello extends anu.Component {
-    render() {
-        return World
-    }
-}
-window.onload = function() {
-    var result = anu.render(Hello, document.body)
-    console.log(result)
-}
+    // start selenium-server-standalone
+    java -jar selenium-server-standalone-3.3.1.jar
+    // start karma server && event-driver server
+    node node_modules/karma-event-driver-ext
+    // or 
+    ./node_modules/.bin/karma-event-driver-ext
 ```
-
-Stateless functional components 
-```javascript
- function HelloComponent(props /* context */ ) {
-    return evalJSX(`<div>Hello {props.name}</div>`, {
-        props: props
-    })
-}
-window.onload = function() {
-    var result = anu.render(evalJSX(`<HelloComponent name={222}>`, {
-        HelloComponent: HelloComponent
-    }), document.body)
-
-    console.log(result)
-}
-```
-
-###Disguised as a React
-
-```javascript
-var React = window.anu
-evalJSX.globalNs = "React"。
-
-var myComponent = React.createClass({
-    render(){
-      return evalJSX(`<div>{this.props.name || "xxx"}</div>`,{this: this})
-    }
-})
-```
-https://github.com/ryanhefner/Object.keys/blob/master/index.js
-
-
-测试 
-http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
-
-java -jar selenium-server-standalone-3.3.1.jar
-
-node node_modules/karma-event-driver-ext
 
 
