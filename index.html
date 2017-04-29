@@ -4,42 +4,109 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script src='./dist/jsx-parser.js'></script>
-    <script src='./dist/evalJSX.js'></script>
-    <script src='./dist/anu.js'></script>
+    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+    <script src="http://cdn.bootcss.com/react/15.4.1/react.js"></script>
+    <script src="http://cdn.bootcss.com/react/15.4.1/react-dom.js"></script>
     <script>
-        class CounterButton extends anu.PureComponent {
+        class Hello extends React.Component {
             constructor(props) {
-                super(props);
+                super(props)
                 this.state = {
-                    count: 1
-                };
+                        aaa: 111
+                    }
+                    // this.kkk.bind(this)
+            }
+            componentWillUpdate() {
+
+                console.log('will update')
+            }
+            componentWillMount() {
+                console.log('componentWillMount')
+                this.setState({
+                    aaa: this.state.aaa + 1
+                })
+                console.log(this.state.aaa, '第一次')
+                this.setState({
+                    aaa: this.state.aaa + 1
+                })
+                console.log(this.state.aaa, '第二次')
+                this.setState({
+                    aaa: this.state.aaa + 1
+
+                })
+                console.log(this.state.aaa, '第三次')
+                    //受影响
+                console.log('will mount')
+            }
+            componentDidMount() {
+                //受影响
+                console.log('did mount', this.state.aaa)
+            }
+            componentDidUpdate() {
+
+                console.log('did update', this.state.aaa)
+            }
+            clickHandle() {
+                this.setState({
+                    aaa: this.state.aaa + 10
+                })
+                console.log('called by click')
+            }
+            componentWillReceiveProps() {
+                console.log('333')
+            }
+            render() {
+
+                var vnode = React.createElement('div', Object.assign({}, {
+                        onClick: this.clickHandle.bind(this)
+                    }),
+                    this.props.children)
+
+
+                return React.createElement('div', {}, vnode,
+                    React.createElement(World, {
+                        title: new Date - 0
+                    }, 'ddddd')
+                )
             }
 
+        }
 
-            render() {
-                return evalJSX(`<button
-        color={this.props.color}
-        onClick={() => { this.setState(state => ({count: state.count + 1})) } }>
-        Count: {this.state.count}
-      </button>`, {
-                    this: this
+        class World extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                        bbb: 111
+                    }
+                    // this.kkk.bind(this)
+            }
+            componentWillReceiveProps(props) {
+                console.log('componentWillReceiveProps')
+                console.log(this.state.bbb)
+                this.setState({
+                    bbb: this.state.bbb + 100
                 })
-
+                console.log(this.state.bbb, 'end')
+                console.log('componentWillReceiveProps end')
+            }
+            render() {
+                return React.createElement('p', {
+                    title: new Date - 0
+                }, this.props.children, " ", this.state.bbb)
             }
         }
 
-
         window.onload = function() {
-            //render4个参数， vnode, container, callback
-            var result = anu.render(CounterButton, document.body)
-            console.log(result)
+
+            ReactDOM.render(React.createElement(Hello, {}, '点我'), document.body)
         }
     </script>
 </head>
 
 <body>
     <div>这个默认会被清掉</div>
+
+
 </body>
 
 </html>
