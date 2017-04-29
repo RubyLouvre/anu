@@ -1,3 +1,5 @@
+//废掉此依赖
+
 import { Component } from './Component'
 import { inherit } from './util'
 
