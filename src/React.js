@@ -8,9 +8,7 @@ import {
 import {
     PureComponent
 } from './PureComponent'
-import {
-    TopLevelWrapper
-} from './TopLevelWrapper'
+
 import {
     CurrentOwner
 } from './CurrentOwner'
@@ -148,12 +146,21 @@ function render(vnode, container, cb) {
     while (container.firstChild) {
         container.removeChild(container.firstChild)
     }
-    let root = createElement(TopLevelWrapper, {
+    let context = {}
+    let instance = new Component({
         child: vnode
-    });
+    }, context)
+  
+    instance.render = function(){
+        return this.props.child
+    }
+    instance.vnode = vnode
+    vnode.instance = instance
     transaction.isInTransation = true
-    root = toVnode(vnode, {})
+    let root = toVnode(vnode, context)
+ 
     transaction.isInTransation = false
+
     root.instance.container = container
     root.instance.forceUpdate(cb)
     return root.instance || null
