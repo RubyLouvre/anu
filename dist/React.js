@@ -933,11 +933,13 @@ function setControlledComponent(vnode) {
                 type = 'textarea';
             }
         case 'input':
+            if (hasReadOnlyValue[type]) 
+                return
+            
             if (!type) {
                 type = 'text';
             }
-            if (hasReadOnlyValue[type]) 
-                return
+            
             var isChecked = type === 'radio' || type === 'checkbox';
             var propName = isChecked
                 ? 'checked'
@@ -1180,13 +1182,17 @@ function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
         return toDOM(vnode, context, parentNode, prevVnode.dom)
     }
     if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
-        var nextDom = createDOMElement(Type);
+        var nextDom = createDOMElement(vnode);
         if (dom) {
             while (dom.firstChild) {
                 nextDom.appendChild(dom.firstChild);
             }
-            if (parentNode) {
+        }
+        if (parentNode) {
+            if (dom) {
                 parentNode.replaceChild(nextDom, dom);
+            } else {
+                parentNode.appendChild(nextDom);
             }
         }
         dom = nextDom;
@@ -1447,11 +1453,11 @@ var React = {
 var shallowEqualHack = Object.freeze([]); //用于绕过shallowEqual
 /**
  * 创建虚拟DOM
- * 
- * @param {string} type 
- * @param {object} props 
- * @param {array} children 
- * @returns 
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} children
+ * @returns
  */
 function createElement(type, configs, children) {
     var props = {};
@@ -1462,7 +1468,9 @@ function createElement(type, configs, children) {
         delete configs.key;
     }
     extend(props, configs);
-    var c = [].slice.call(arguments, 2);
+    var c = []
+        .slice
+        .call(arguments, 2);
     var useEmpty = true;
     if (!c.length) {
         if (props.children) {
@@ -1504,10 +1512,10 @@ Vnode.prototype = {
 
 /**
  * 遍平化children，并合并相邻的简单数据类型
- * 
- * @param {array} children 
- * @param {any} [ret=[]] 
- * @returns 
+ *
+ * @param {array} children
+ * @param {any} [ret=[]]
+ * @returns
  */
 
 function flatChildren(children, ret, deep) {
@@ -1527,13 +1535,17 @@ function flatChildren(children, ret, deep) {
                 continue
             }
             if (ret.merge) {
-                ret[0].text = (el.type ? el.text : el) + ret[0].text;
+                ret[0].text = (el.type
+                    ? el.text
+                    : el) + ret[0].text;
             } else {
-                ret.unshift(el.type ? el : {
-                    type: '#text',
-                    text: String(el),
-                    deep: deep
-                });
+                ret.unshift(el.type
+                    ? el
+                    : {
+                        type: '#text',
+                        text: String(el),
+                        deep: deep
+                    });
                 ret.merge = true;
             }
         } else if (Array.isArray(el)) {
@@ -1548,9 +1560,9 @@ function flatChildren(children, ret, deep) {
     return ret
 }
 /**
- * 
- * @param {any} vnode 
- * @param {any} container 
+ *
+ * @param {any} vnode
+ * @param {any} container
  */
 function render(vnode, container, cb) {
     container.textContent = '';
@@ -1558,26 +1570,17 @@ function render(vnode, container, cb) {
         container.removeChild(container.firstChild);
     }
     let context = {};
-    let instance = new Component({
-        child: vnode
-    }, context);
-  
-    instance.render = function(){
-        return this.props.child
-    };
-    instance.vnode = vnode;
-    vnode.instance = instance;
+
     transaction.isInTransation = true;
-    let root = toVnode(vnode, context);
- 
+
+    var rootElement = diff(vnode, {}, {
+        dom: container
+    }, context);
+
     transaction.isInTransation = false;
-
-    root.instance.container = container;
-    root.instance.forceUpdate(cb);
-    return root.instance || null
+   //组件返回组件实例，而普通虚拟DOM 返回元素节点
+    return vnode.instance || rootElement
 }
-
-
 
 win.ReactDOM = React;
 

@@ -84,7 +84,7 @@ function removeComponent(vnode) {
    * @param {any} context
    * @returns
    */
-function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
+export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     var dom = prevVnode.dom
     var parentNode = vParentNode && vParentNode.dom
     var prevProps = prevVnode.props || {}
@@ -125,13 +125,17 @@ function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
         return toDOM(vnode, context, parentNode, prevVnode.dom)
     }
     if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
-        var nextDom = createDOMElement(Type)
+        var nextDom = createDOMElement(vnode)
         if (dom) {
             while (dom.firstChild) {
                 nextDom.appendChild(dom.firstChild)
             }
-            if (parentNode) {
+        }
+        if (parentNode) {
+            if (dom) {
                 parentNode.replaceChild(nextDom, dom)
+            } else {
+                parentNode.appendChild(nextDom)
             }
         }
         dom = nextDom

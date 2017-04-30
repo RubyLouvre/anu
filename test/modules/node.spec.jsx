@@ -47,7 +47,8 @@ describe('node模块', function () {
         var s = React.render(<div>222</div>, div)
 
         await browser.pause(100).$apply()
-        expect(s.vnode.dom.nodeName).toBe('DIV');
+        //组件直接返回元素节点
+        expect(s.nodeName).toBe('DIV');
 
       
         document.body.removeChild(div)

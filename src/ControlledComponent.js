@@ -25,11 +25,13 @@ export function setControlledComponent(vnode) {
                 type = 'textarea'
             }
         case 'input':
+            if (hasReadOnlyValue[type]) 
+                return
+            
             if (!type) {
                 type = 'text'
             }
-            if (hasReadOnlyValue[type]) 
-                return
+            
             var isChecked = type === 'radio' || type === 'checkbox'
             var propName = isChecked
                 ? 'checked'

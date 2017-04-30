@@ -1,31 +1,14 @@
-import {
-    Component
-} from './Component'
-import {
-    toVnode
-} from './toVnode'
+import {Component} from './Component'
 
-import {
-    PureComponent
-} from './PureComponent'
+import {PureComponent} from './PureComponent'
 
-import {
-    CurrentOwner
-} from './CurrentOwner'
-import {
-    transaction
-} from './transaction'
-import {
-    win as window,
-    modern,
-    getNs
-} from './browser'
+import {CurrentOwner} from './CurrentOwner'
+import {transaction} from './transaction'
+import {win as window, modern, getNs} from './browser'
 
-import './diff'
+import {diff} from './diff'
 
-import {
-    extend
-} from './util'
+import {extend} from './util'
 
 var React = {
     render,
@@ -36,11 +19,11 @@ var React = {
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 /**
  * 创建虚拟DOM
- * 
- * @param {string} type 
- * @param {object} props 
- * @param {array} children 
- * @returns 
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} children
+ * @returns
  */
 function createElement(type, configs, children) {
     var props = {}
@@ -51,7 +34,9 @@ function createElement(type, configs, children) {
         delete configs.key
     }
     extend(props, configs)
-    var c = [].slice.call(arguments, 2)
+    var c = []
+        .slice
+        .call(arguments, 2)
     var useEmpty = true
     if (!c.length) {
         if (props.children) {
@@ -93,10 +78,10 @@ Vnode.prototype = {
 
 /**
  * 遍平化children，并合并相邻的简单数据类型
- * 
- * @param {array} children 
- * @param {any} [ret=[]] 
- * @returns 
+ *
+ * @param {array} children
+ * @param {any} [ret=[]]
+ * @returns
  */
 
 function flatChildren(children, ret, deep) {
@@ -116,13 +101,17 @@ function flatChildren(children, ret, deep) {
                 continue
             }
             if (ret.merge) {
-                ret[0].text = (el.type ? el.text : el) + ret[0].text
+                ret[0].text = (el.type
+                    ? el.text
+                    : el) + ret[0].text
             } else {
-                ret.unshift(el.type ? el : {
-                    type: '#text',
-                    text: String(el),
-                    deep: deep
-                })
+                ret.unshift(el.type
+                    ? el
+                    : {
+                        type: '#text',
+                        text: String(el),
+                        deep: deep
+                    })
                 ret.merge = true
             }
         } else if (Array.isArray(el)) {
@@ -137,9 +126,9 @@ function flatChildren(children, ret, deep) {
     return ret
 }
 /**
- * 
- * @param {any} vnode 
- * @param {any} container 
+ *
+ * @param {any} vnode
+ * @param {any} container
  */
 function render(vnode, container, cb) {
     container.textContent = ''
@@ -147,26 +136,18 @@ function render(vnode, container, cb) {
         container.removeChild(container.firstChild)
     }
     let context = {}
-    let instance = new Component({
-        child: vnode
-    }, context)
-  
-    instance.render = function(){
-        return this.props.child
-    }
-    instance.vnode = vnode
-    vnode.instance = instance
+
     transaction.isInTransation = true
-    let root = toVnode(vnode, context)
- 
+
+    var rootElement = diff(vnode, {}, {
+        dom: container
+    }, context)
+
     transaction.isInTransation = false
-
-    root.instance.container = container
-    root.instance.forceUpdate(cb)
-    return root.instance || null
+    
+   //组件返回组件实例，而普通虚拟DOM 返回元素节点
+    return vnode.instance || rootElement
 }
-
-
 
 window.ReactDOM = React
 
