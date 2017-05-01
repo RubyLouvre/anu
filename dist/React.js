@@ -282,96 +282,6 @@ function roughSetState() { //强制更新
     instance._forceUpdate = true;
 }
 
-var lifecycle = {
-    '-2': 'getDefaultProps',
-    '-1': 'getInitialState',
-    '0': 'componentWillMount',
-    '1': 'render',
-    '2': 'componentDidMount',
-    '3': 'componentWillReceiveProps',
-    '4': 'shouldComponentUpdate',
-    '5': 'componentWillUpdate',
-    '6': 'componentDidUpdate',
-    '7': 'componentWillUnmount'
-};
-
-/**
- * 
- * 
- * @export
- * @param {Component} instance 
- * @param {number} index 
- * @returns 
- */
-function applyComponentHook(instance, index) {
-    if (instance) {
-        var method = lifecycle[index];
-        if (instance[method]) {
-            return instance[method].apply(instance, [].slice.call(arguments, 2))
-        }
-    }
-}
-
-/**
-     *
-     *
-     * @param {any} vnode
-     * @param {any} context
-     * @returns
-     */
-function toVnode(vnode, context) {
-    var Type = vnode.type, instance, rendered;
-    if (isComponent(Type)) {
-        var props = vnode.props;
-
-        if (!isStateless(Type)) {
-            var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {};
-            props = extend({}, props); //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-            for (var i in defaultProps) {
-                if (props[i] === void 666) {
-                    props[i] = defaultProps[i];
-                }
-            }
-            instance = new Type(props, context);
-            //必须在这里添加vnode，因为willComponent里可能进行setState操作
-            instance.vnode = vnode;
-
-            Component.call(instance, props, context); //重点！！
-            applyComponentHook(instance, 0); //willMount
-
-            rendered = transaction.renderWithoutSetState(instance);
-        } else { //添加无状态组件的分支
-            rendered = Type(props, context);
-            instance = new Component(null, context);
-            instance.render = instance.statelessRender = Type;
-            instance.vnode = vnode;
-        }
-
-        instance.parentInstance = vnode.instance;
-
-        instance.prevProps = vnode.props; //实例化时prevProps
-       
-        //压扁组件Vnode为普通Vnode
-        if (rendered == null) {
-            rendered = '';
-        }
-        if (/number|string/.test(typeof rendered)) {
-            rendered = {
-                type: '#text',
-                text: rendered
-            };
-        }
-        var key = vnode.key;
-        extend(vnode, rendered);
-        vnode.key = key;
-        vnode.instance = instance;
-
-        return toVnode(vnode, context)
-    } else {
-        return vnode
-    }
-}
-
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 /**
@@ -528,6 +438,96 @@ function getNs(type) {
         if (!mhtml[type] && rmathTags.test(type)) {
             return mathTags[type] = mathNs
         }
+    }
+}
+
+var lifecycle = {
+    '-2': 'getDefaultProps',
+    '-1': 'getInitialState',
+    '0': 'componentWillMount',
+    '1': 'render',
+    '2': 'componentDidMount',
+    '3': 'componentWillReceiveProps',
+    '4': 'shouldComponentUpdate',
+    '5': 'componentWillUpdate',
+    '6': 'componentDidUpdate',
+    '7': 'componentWillUnmount'
+};
+
+/**
+ * 
+ * 
+ * @export
+ * @param {Component} instance 
+ * @param {number} index 
+ * @returns 
+ */
+function applyComponentHook(instance, index) {
+    if (instance) {
+        var method = lifecycle[index];
+        if (instance[method]) {
+            return instance[method].apply(instance, [].slice.call(arguments, 2))
+        }
+    }
+}
+
+/**
+     *
+     *
+     * @param {any} vnode
+     * @param {any} context
+     * @returns
+     */
+function toVnode(vnode, context) {
+    var Type = vnode.type, instance, rendered;
+    if (isComponent(Type)) {
+        var props = vnode.props;
+
+        if (!isStateless(Type)) {
+            var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {};
+            props = extend({}, props); //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+            for (var i in defaultProps) {
+                if (props[i] === void 666) {
+                    props[i] = defaultProps[i];
+                }
+            }
+            instance = new Type(props, context);
+            //必须在这里添加vnode，因为willComponent里可能进行setState操作
+            instance.vnode = vnode;
+
+            Component.call(instance, props, context); //重点！！
+            applyComponentHook(instance, 0); //willMount
+
+            rendered = transaction.renderWithoutSetState(instance);
+        } else { //添加无状态组件的分支
+            rendered = Type(props, context);
+            instance = new Component(null, context);
+            instance.render = instance.statelessRender = Type;
+            instance.vnode = vnode;
+        }
+
+        instance.parentInstance = vnode.instance;
+
+        instance.prevProps = vnode.props; //实例化时prevProps
+       
+        //压扁组件Vnode为普通Vnode
+        if (rendered == null) {
+            rendered = '';
+        }
+        if (/number|string/.test(typeof rendered)) {
+            rendered = {
+                type: '#text',
+                text: rendered
+            };
+        }
+        var key = vnode.key;
+        extend(vnode, rendered);
+        vnode.key = key;
+        vnode.instance = instance;
+
+        return toVnode(vnode, context)
+    } else {
+        return vnode
     }
 }
 
@@ -1578,6 +1578,7 @@ function render(vnode, container, cb) {
     }, context);
 
     transaction.isInTransation = false;
+    
    //组件返回组件实例，而普通虚拟DOM 返回元素节点
     return vnode.instance || rootElement
 }

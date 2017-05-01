@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script> 
     <style>
         .aaa {
             width: 200px;
@@ -17,45 +17,45 @@
      <script src="react-dom.js"></script>-->
     <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
     <script  type="text/babel" >
-    
-       class Select extends React.Component {
-            constructor() {
-                super()
-                this.state = {
-                    city: "bj"
-                }
-            }
+     class InputControlES6 extends React.Component {
+            constructor(props) {
+                super(props);
 
-            handleCity(e) {
-               // expect(e.type).toBe('change')
-                var value = e.target.value;
-                this.setState({
-                    city: value,
-                })
+                // 设置 initial state
+                this.state = {
+                    text: props.initialValue || 'placeholder'
+                };
+
+                // ES6 类中函数必须手动绑定
+                this.handleChange = this.handleChange.bind(this);
             }
             componentDidMount() {
-               
+               // rs()
             }
-            componentDidUpdate() {
-               
+            handleChange(event) {
+                this.setState({
+                    text: event.target.value
+                });
             }
+
             render() {
-                return <select name='city'
-                    id="node2"
-                    value={this.state.city}
-                    onChange={
-                        this.handleCity.bind(this)
-                    } >
-                    <option value='hz' >杭州</option>
-                    <option value='bj' >北京</option>
-                    <option value='sh' >上海</option>
-                </select>
+                return (
+                    <div>
+                        Type something:
+                        <input onInput={this.handleChange} ref="input"
+                    value={new Date - 0} />{this.state.text}
+                    </div>
+                );
             }
         }
 
-var arr1
+        InputControlES6.defaultProps = {
+            initialValue: '请输入内容'
+        };
+
+var s
 window.onload = function () {
- arr1 =  ReactDOM.render(<div><Select /></div>, document.getElementById('example'))
+ s =  ReactDOM.render(<InputControlES6 />, document.getElementById('example'))
 
    
 }
