@@ -7,7 +7,9 @@
       getBrowserName,
       isEventName
   } from './event'
-
+  import {
+      oneObject
+  } from './util'
   import {
       document
   } from './browser'
@@ -40,6 +42,7 @@
       return this
   }
   var xlink = "http://www.w3.org/1999/xlink"
+  var stringAttributes = oneObject('id,title,alt,value,className')
   export var builtIdProperties = {} //不规则的属性名映射
 
 
@@ -70,7 +73,7 @@
 
   var anomaly = ['accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
       'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,' +
-      'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,'+
+      'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,' +
       'value,title,alt'
   ].join(',')
 
@@ -143,10 +146,11 @@
                   operateAttribute(dom, name, '', !isHTML)
                   continue
               }
-              val = val + ''
               if (isHTML && builtIdProperties[name]) {
                   //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
                   //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
+                  if (stringAttributes[name])
+                      val = val + ''
                   if (name !== 'value' || dom[name] !== val) {
                       dom[name] = val
                   }
@@ -176,17 +180,19 @@
   function operateAttribute(dom, name, value, isSVG) {
 
       var method = value === '' ? 'removeAttribute' : 'setAttribute',
-          isXLink
+          namespace = null
+      //http://www.w3school.com.cn/xlink/xlink_reference.asp xlink:actuate xlink:href xlink:show xlink:type	
+
       if (isSVG && name.indexOf('xlink:') === 0) {
           name = name.replace(/^xlink\:?/, '')
-          isXLink = true
+          namespace = xlink
       }
       try {
-          if (isXLink) {
-              method = method + 'Ns'
-              dom[method](xlink, name.toLowerCase(), value)
+          if (isSVG) {
+              method = method + 'NS'
+              dom[method](namespace, name.toLowerCase(), value + '')
           } else {
-              dom[method](name, value)
+              dom[method](name, value + '')
           }
       } catch (e) {
           console.log(e, method, dom.nodeName)

@@ -154,23 +154,14 @@ describe('node模块', function () {
 
         var s = React.render(<InputControlES6/>, div2)
         await hasMount
-        var value = s.refs.input.value
         var index = 0
         expect(s.vnode.getDOMNode().nodeName).toBe('DIV')
         s.forceUpdate(function () {
-            var curValue = s.refs.input.value
-            expect(value)
-                .not
-                .toBe(curValue)
-            value = curValue
+          
             index++
         })
         s.forceUpdate(function () {
-            var curValue = s.refs.input.value
-            expect(value)
-                .not
-                .toBe(curValue)
-            value = curValue
+           
             index++
         })
         await browser

@@ -17,54 +17,26 @@
      <script src="react-dom.js"></script>-->
     <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
     <script  type="text/babel" >
-     class InputControlES6 extends React.Component {
-            constructor(props) {
-                super(props);
-
-                // 设置 initial state
-                this.state = {
-                    text: props.initialValue || 'placeholder'
-                };
-
-                // ES6 类中函数必须手动绑定
-                this.handleChange = this.handleChange.bind(this);
-            }
-            componentDidMount() {
-               // rs()
-            }
-            handleChange(event) {
-                this.setState({
-                    text: event.target.value
-                });
-            }
-
-            render() {
-                return (
-                    <div>
-                        Type something:
-                        <input onInput={this.handleChange} ref="input"
-                    value={new Date - 0} />{this.state.text}
-                    </div>
-                );
-            }
-        }
-
-        InputControlES6.defaultProps = {
-            initialValue: '请输入内容'
-        };
 
 var s
 window.onload = function () {
- s =  ReactDOM.render(<InputControlES6 />, document.getElementById('example'))
+    var a = {}
+    a.toString = function(){
+        throw "xxx"
+    }
+   s =  ReactDOM.render(React.createElement('div',{
+       aaa: a
+   }), 
+   document.getElementById('example'))
 
-   
+   console.log(/^\[object SVG\w*Element\]$/.test(s.firstChild))
 }
     </script>
 </head>
 
 <body>
   
-    <div>这个怎么点击也不会变</div>
+    <div>测试</div>
     <blockquote id='example'></blockquote>
 
 
