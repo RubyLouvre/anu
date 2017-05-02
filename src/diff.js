@@ -1,17 +1,35 @@
-import {extend, getInstances, matchInstance, midway} from './util'
-import {applyComponentHook} from './lifecycle'
-import {transaction} from './transaction'
-import {toVnode} from './toVnode'
-import {diffProps} from './diffProps'
-import {document, createDOMElement} from './browser'
+import {
+    extend,
+    getInstances,
+    matchInstance,
+    midway
+} from './util'
+import {
+    applyComponentHook
+} from './lifecycle'
+import {
+    transaction
+} from './transaction'
+import {
+    toVnode
+} from './toVnode'
+import {
+    diffProps
+} from './diffProps'
+import {
+    document,
+    createDOMElement
+} from './browser'
 
-import {setControlledComponent} from './ControlledComponent'
+import {
+    setControlledComponent
+} from './ControlledComponent'
 
 /**
-   * 渲染组件
-   *
-   * @param {any} instance
-   */
+ * 渲染组件
+ *
+ * @param {any} instance
+ */
 export function updateComponent(instance) {
     var {
         props,
@@ -49,10 +67,10 @@ export function updateComponent(instance) {
     return dom //注意
 }
 /**
-   * call componentWillUnmount
-   *
-   * @param {any} vnode
-   */
+ * call componentWillUnmount
+ *
+ * @param {any} vnode
+ */
 function removeComponent(vnode) {
     var instance = vnode.instance
 
@@ -76,14 +94,14 @@ function removeComponent(vnode) {
 }
 
 /**
-   * 参数不要出现DOM,以便在后端也能运行
-   *
-   * @param {any} vnode 新的虚拟DOM
-   * @param {any} prevVnode 旧的虚拟DOM
-   * @param {any} vParentNode 父虚拟DOM
-   * @param {any} context
-   * @returns
-   */
+ * 参数不要出现DOM,以便在后端也能运行
+ *
+ * @param {any} vnode 新的虚拟DOM
+ * @param {any} prevVnode 旧的虚拟DOM
+ * @param {any} vParentNode 父虚拟DOM
+ * @param {any} context
+ * @returns
+ */
 export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     var dom = prevVnode.dom
     var parentNode = vParentNode && vParentNode.dom
@@ -142,8 +160,14 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     }
     //必须在diffProps前添加它的dom
     vnode.dom = dom
-    if(!('text' in vnode && 'text' in prevVnode)){
-      diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+    if (!('text' in vnode && 'text' in prevVnode)) {
+        diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+    }
+    if(prevVnode._hasSetInnerHTML){
+
+        while(dom.firstChild){
+           dom.removeChild(dom.firstChild)
+        }
     }
     if (!vnode._hasSetInnerHTML && vnode.props) {
         diffChildren(vnode.props.children, prevChildren, vnode, context)
@@ -156,12 +180,12 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
 }
 
 /**
-   * 获取虚拟DOM对应的顶层组件实例的类型
-   *
-   * @param {any} vnode
-   * @param {any} instance
-   * @param {any} pool
-   */
+ * 获取虚拟DOM对应的顶层组件实例的类型
+ *
+ * @param {any} vnode
+ * @param {any} instance
+ * @param {any} pool
+ */
 function getTopComponentName(vnode, instance) {
     while (instance.parentInstance) {
         instance = nstance.parentInstance
@@ -171,38 +195,38 @@ function getTopComponentName(vnode, instance) {
 }
 
 /**
-   *
-   *
-   * @param {any} type
-   * @param {any} vnode
-   * @returns
-   */
+ *
+ *
+ * @param {any} type
+ * @param {any} vnode
+ * @returns
+ */
 function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep + '/' + vnode.text
     }
-    return type + '/' + vnode.deep + (vnode.key !== null
-        ? '/' + vnode.key
-        : '')
+    return type + '/' + vnode.deep + (vnode.key !== null ?
+        '/' + vnode.key :
+        '')
 }
 
 /**
-   *
-   *
-   * @param {any} newChildren
-   * @param {any} oldChildren
-   * @param {any} vParentNode
-   * @param {any} context
-   */
+ *
+ *
+ * @param {any} newChildren
+ * @param {any} oldChildren
+ * @param {any} vParentNode
+ * @param {any} context
+ */
 function diffChildren(newChildren, oldChildren, vParentNode, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var parentNode = vParentNode.dom
     var mapping = {}
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
-        let tag = vnode.instance
-            ? getTopComponentName(vnode, vnode.instance)
-            : vnode.type
+        let tag = vnode.instance ?
+            getTopComponentName(vnode, vnode.instance) :
+            vnode.type
         let uuid = computeUUID(tag, vnode)
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
@@ -215,9 +239,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
-        let tag = typeof Type === 'function'
-            ? (vnode._hasInstance = 1, Type.displatName || Type.name)
-            : Type
+        let tag = typeof Type === 'function' ?
+            (vnode._hasInstance = 1, Type.displatName || Type.name) :
+            Type
         let uuid = computeUUID(tag, vnode)
 
         if (mapping[uuid]) {
@@ -242,7 +266,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             prevVnode = vnode.prevVnode
         } else {
             var k
-            loop : while (k = removedChildren.shift()) {
+            loop: while (k = removedChildren.shift()) {
                 if (!k.use) {
                     prevVnode = k
                     break loop
@@ -258,7 +282,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                 diff(vnode, prevVnode, vParentNode, context)
             } else if (vnode.type === prevVnode.type) {
-                if ('text' in vnode) {//如果是文本或注释节点
+                if ('text' in vnode) { //如果是文本或注释节点
                     vnode.dom = prevDom
 
                     if (vnode.text !== prevVnode.text) {
@@ -272,11 +296,11 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                     diff(vnode, prevVnode, vParentNode, context)
                 }
             } else if ('text' in vnode) { //#text === p, #comment === p
-                var isText = vnode.type === '#text' 
-                var dom = isText ?  document.createTextNode(vnode.text): document.createComment(vnode.text)
+                var isText = vnode.type === '#text'
+                var dom = isText ? document.createTextNode(vnode.text) : document.createComment(vnode.text)
                 vnode.dom = dom
                 parentNode.removeChild(prevDom)
-                vnode.action = isText ? '替换为文本': '替换为注释'
+                vnode.action = isText ? '替换为文本' : '替换为注释'
                 removeComponent(prevVnode) //移除元素节点或组件
             } else {
                 vnode.action = '替换为元素'
@@ -287,9 +311,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 delete prevVnode.dom //clear reference
             }
         } else if (!prevVnode) { //添加新组件或元素节点
-            vnode.action = '添加新' + (vnode.type === '#text'
-                ? '文本'
-                : '元素')
+            vnode.action = '添加新' + (vnode.type === '#text' ?
+                '文本' :
+                '元素')
             if (!vnode.dom) {
                 var oldNode = oldChildren[i]
 
@@ -297,11 +321,12 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             }
         }
 
-      //  if (!parentNode.contains(vnode.dom)) {
-      //      console.log(vnode.dom, parentNode)
-      //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
-      //  }
+        //  if (!parentNode.contains(vnode.dom)) {
+        //      console.log(vnode.dom, parentNode)
+        //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
+        //  }
     }
+
 
     //第4步，移除无用节点
     if (removedChildren.length) {
@@ -313,19 +338,21 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
         }
     }
 
+
+
 }
 
 //var mountOrder = 0
 /**
-   *
-   *
-   * @export
-   * @param {VNode} vnode
-   * @param {DOM} context
-   * @param {DOM} parentNode ?
-   * @param {DOM} replaced ?
-   * @returns
-   */
+ *
+ *
+ * @export
+ * @param {VNode} vnode
+ * @param {DOM} context
+ * @param {DOM} parentNode ?
+ * @param {DOM} replaced ?
+ * @returns
+ */
 export function toDOM(vnode, context, parentNode, replaced) {
     vnode = toVnode(vnode, context)
     var dom,
@@ -374,12 +401,12 @@ export function toDOM(vnode, context, parentNode, replaced) {
 //将Component中这个东西移动这里
 midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
     var instance = this.component
- /*   if (!instance.vnode.dom) {
-        var parentNode = instance.container
-        instance.state = this.state //将merged state赋给它
-        toDOM(instance.vnode, instance.context, parentNode)
-    } else {*/
-        updateComponent(instance)
-  /*  } */
+    /*   if (!instance.vnode.dom) {
+           var parentNode = instance.container
+           instance.state = this.state //将merged state赋给它
+           toDOM(instance.vnode, instance.context, parentNode)
+       } else {*/
+    updateComponent(instance)
+    /*  } */
     instance._forceUpdate = false
 }

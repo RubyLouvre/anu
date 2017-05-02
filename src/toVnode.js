@@ -43,15 +43,7 @@ export function toVnode(vnode, context) {
 
         instance.prevProps = vnode.props //实例化时prevProps
        
-        //压扁组件Vnode为普通Vnode
-       
-   /*     if (/number|string/.test(typeof rendered)) {
-            rendered = {
-                type: '#text',
-                text: rendered
-            }
-        }
-        */
+
         var key = vnode.key
         extend(vnode, rendered)
         vnode.key = key

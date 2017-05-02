@@ -157,15 +157,13 @@ describe('node模块', function () {
         var index = 0
         expect(s.vnode.getDOMNode().nodeName).toBe('DIV')
         s.forceUpdate(function () {
-
             index++
         })
         s.forceUpdate(function () {
-
             index++
         })
         await browser
-            .pause(300)
+            .pause(200)
             .$apply()
         expect(index).toBe(2)
         document

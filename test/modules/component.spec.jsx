@@ -263,4 +263,136 @@ describe('无狀态组件', function () {
             .body
             .removeChild(div)
     });
+    it('多选下拉框', async () => {
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: ['aaa', 'ccc']
+                }
+            }
+
+            onChange(e) {
+                var values = []
+                var elems = e.target.getElementsByTagName('option')
+                for (var i = 0, el; el = elems[i++];) {
+                    if (el.selected) {
+                        if (el.getAttribute('value') != null) {
+                            values.push(el.getAttribute('value'))
+                        } else {
+                            values.push(el.text)
+                        }
+                    }
+                }
+                this.setState({
+                    values: values
+                })
+            }
+            render() {
+                return <select value={this.state.value} multiple='true' onChange={this.onChange.bind(this)}>
+                    <optgroup>
+                        <option ref='a'>aaa</option>
+                        <option ref='b'>bbb</option>
+                    </optgroup>
+                    <optgroup>
+                        <option ref='c'>ccc</option>
+                        <option ref='d'>ddd</option>
+                    </optgroup>
+                </select>
+            }
+
+        }
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(true)
+        expect(s.refs.b.selected).toBe(false)
+        expect(s.refs.c.selected).toBe(true)
+        expect(s.refs.d.selected).toBe(false)
+        s.setState({
+            value: ['bbb', 'ddd']
+        })
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(false)
+        expect(s.refs.b.selected).toBe(true)
+        expect(s.refs.c.selected).toBe(false)
+        expect(s.refs.d.selected).toBe(true)
+        document
+            .body
+            .removeChild(div)
+    })
+
+    it('多选下拉框defaultValue', async () => {
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: 'ccc'
+                }
+            }
+           
+            render() {
+                return <select defaultValue={this.state.value} >
+                    <option ref='a'>aaa</option>
+                    <option ref='b'>bbb</option>
+                    <option ref='c'>ccc</option>
+                    <option ref='d'>ddd</option>
+                </select>
+            }
+        }
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.c.selected).toBe(true)
+         document
+            .body
+            .removeChild(div)
+    })
+
+     it('多选下拉框没有defaultValue', async () => {
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {  }
+            }
+           
+            render() {
+                return <select >
+                    <option ref='a'>aaa</option>
+                    <option ref='b'>bbb</option>
+                    <option ref='c'>ccc</option>
+                    <option ref='d'>ddd</option>
+                </select>
+            }
+        }
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(true)
+         document
+            .body
+            .removeChild(div)
+    })
 })

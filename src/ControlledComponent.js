@@ -1,4 +1,6 @@
-import {inherit} from './util'
+import {
+    inherit
+} from './util'
 
 var hasReadOnlyValue = {
     'button': true,
@@ -21,27 +23,27 @@ export function setControlledComponent(vnode) {
         case "datalist":
             type = 'select'
         case 'textarea':
-            if (!type) {//必须指定
+            if (!type) { //必须指定
                 type = 'textarea'
             }
         case 'input':
-            if (hasReadOnlyValue[type]) 
+            if (hasReadOnlyValue[type])
                 return
-            
+
             if (!type) {
                 type = 'text'
             }
-            
+
             var isChecked = type === 'radio' || type === 'checkbox'
-            var propName = isChecked
-                ? 'checked'
-                : 'value'
-            var defaultName = propName === 'value'
-                ? 'defaultValue'
-                : 'defaultChecked'
-            var initValue = props[propName] != null
-                ? props[propName]
-                : props[defaultName]
+            var propName = isChecked ?
+                'checked' :
+                'value'
+            var defaultName = propName === 'value' ?
+                'defaultValue' :
+                'defaultChecked'
+            var initValue = props[propName] != null ?
+                props[propName] :
+                props[defaultName]
             var isControlled = props.onChange || props.readOnly || props.disabled
             if (/text|password/.test(type)) {
                 isControlled = isControlled || props.onInput
@@ -59,17 +61,15 @@ export function setControlledComponent(vnode) {
                 if (type !== 'select') {
                     vnode
                         .dom
-                        .addEventListener(isChecked
-                            ? 'click'
-                            : 'input', keepInitValue)
+                        .addEventListener(isChecked ?
+                            'click' :
+                            'input', keepInitValue)
                 }
             }
             break
         case "option":
             return vnode._wrapperState = {
-                value: typeof props.value != 'undefined'
-                    ? props.value
-                    : props.children[0].text
+                value: getOptionValue(props)
             }
     }
     if (type === 'select') {
@@ -80,36 +80,31 @@ export function setControlledComponent(vnode) {
     }
 }
 
+function getOptionValue(props) {
+    return typeof props.value != 'undefined' ?
+        props.value :
+        props.children[0].text
+}
+
 function postUpdateSelectedOptions(vnode) {
     var props = vnode.props
-    var value = props.value
     var multiple = !!props.multiple
-    if (value != null) {
-        updateOptions(vnode, multiple, value)
-    } else {
-        if (props.defaultValue != null) {
-            updateOptions(vnode, multiple, props.defaultValue)
-        } else {
-            // Revert the select back to its default unselected state.
-            updateOptions(vnode, multiple, multiple
-                ? []
-                : '');
-        }
-    }
+    var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] :
+        ''
+
+    updateOptions(vnode, multiple, value)
+
 }
 
 function collectOptions(vnode, ret) {
     ret = ret || []
-    vnode
-        .props
-        .children
-        .forEach(function (el) {
-            if (el.type === 'option') {
-                ret.push(el)
-            } else if (el.type === 'optgroup') {
-                collectOptions(el, ret)
-            }
-        })
+    for (var i = 0, el; el = vnode.props.children[i++];) {
+        if (el.type === 'option') {
+            ret.push(el)
+        } else if (el.type === 'optgroup') {
+            collectOptions(el, ret)
+        }
+    }
     return ret
 }
 
@@ -123,12 +118,13 @@ function updateOptions(vnode, multiple, propValue) {
                 selectedValue['' + propValue[i]] = true
             }
         } catch (e) {
+            /* istanbul ignore next */
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
         }
         for (var i = 0, option; option = options[i++];) {
-            var state = option._wrapperState || handleSpecialNode(option)
+            var state = option._wrapperState || /* istanbul ignore next */handleSpecialNode(option)
             var selected = selectedValue.hasOwnProperty(state.value)
-            if (state.selected !== f) {
+            if (state.selected !== selected) {
                 state.selected = selected
                 setDomSelected(option, selected)
             }

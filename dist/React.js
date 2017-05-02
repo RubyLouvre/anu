@@ -621,15 +621,7 @@
 
            instance.prevProps = vnode.props //实例化时prevProps
           
-           //压扁组件Vnode为普通Vnode
-          
-      /*     if (/number|string/.test(typeof rendered)) {
-               rendered = {
-                   type: '#text',
-                   text: rendered
-               }
-           }
-           */
+
            var key = vnode.key
            extend(vnode, rendered)
            vnode.key = key
@@ -913,6 +905,7 @@
       * @param {any} prevVnode 
       */
      function diffProps(props, prevProps, vnode, prevVnode) {
+         /* istanbul ignore if */
          if (props === prevProps) {
              return
          }
@@ -942,15 +935,23 @@
              if (name === 'dangerouslySetInnerHTML') {
                  var oldhtml = prevProps[name] && prevProps[name]._html
                  vnode._hasSetInnerHTML = true
-                 if (val && val._html !== oldhtml) {
-                     dom.innerHTML = val._html
+                 prevVnode._hasSetInnerHTML = true
+                 console.log(vnode._hasSetInnerHTML, 'innerHTML')
+                 if (val && val.__html !== oldhtml) {
+                     dom.innerHTML = val.__html
                  }
              }
              if (isEventName(name)) {
                  if (!prevProps[name]) { //添加全局监听事件
                      var eventName = getBrowserName(name)
+                     var curType = typeof val
+                      /* istanbul ignore if */
+                     if (curType !== 'function')
+                         throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
+
                      addGlobalEventListener(eventName)
                  }
+                 /* istanbul ignore if */
                  if (inMobile && eventName === 'click') {
                      elem.addEventListener('click', clickHack)
                  }
@@ -1018,6 +1019,7 @@
                  dom[method](name, value + '')
              }
          } catch (e) {
+             /* istanbul ignore next */
              console.log(e, method, dom.nodeName)
          }
      }
@@ -1043,27 +1045,27 @@
            case "datalist":
                type = 'select'
            case 'textarea':
-               if (!type) {//必须指定
+               if (!type) { //必须指定
                    type = 'textarea'
                }
            case 'input':
-               if (hasReadOnlyValue[type]) 
+               if (hasReadOnlyValue[type])
                    return
-               
+
                if (!type) {
                    type = 'text'
                }
-               
+
                var isChecked = type === 'radio' || type === 'checkbox'
-               var propName = isChecked
-                   ? 'checked'
-                   : 'value'
-               var defaultName = propName === 'value'
-                   ? 'defaultValue'
-                   : 'defaultChecked'
-               var initValue = props[propName] != null
-                   ? props[propName]
-                   : props[defaultName]
+               var propName = isChecked ?
+                   'checked' :
+                   'value'
+               var defaultName = propName === 'value' ?
+                   'defaultValue' :
+                   'defaultChecked'
+               var initValue = props[propName] != null ?
+                   props[propName] :
+                   props[defaultName]
                var isControlled = props.onChange || props.readOnly || props.disabled
                if (/text|password/.test(type)) {
                    isControlled = isControlled || props.onInput
@@ -1081,17 +1083,15 @@
                    if (type !== 'select') {
                        vnode
                            .dom
-                           .addEventListener(isChecked
-                               ? 'click'
-                               : 'input', keepInitValue)
+                           .addEventListener(isChecked ?
+                               'click' :
+                               'input', keepInitValue)
                    }
                }
                break
            case "option":
                return vnode._wrapperState = {
-                   value: typeof props.value != 'undefined'
-                       ? props.value
-                       : props.children[0].text
+                   value: getOptionValue(props)
                }
        }
        if (type === 'select') {
@@ -1102,36 +1102,31 @@
        }
    }
 
+   function getOptionValue(props) {
+       return typeof props.value != 'undefined' ?
+           props.value :
+           props.children[0].text
+   }
+
    function postUpdateSelectedOptions(vnode) {
        var props = vnode.props
-       var value = props.value
        var multiple = !!props.multiple
-       if (value != null) {
-           updateOptions(vnode, multiple, value)
-       } else {
-           if (props.defaultValue != null) {
-               updateOptions(vnode, multiple, props.defaultValue)
-           } else {
-               // Revert the select back to its default unselected state.
-               updateOptions(vnode, multiple, multiple
-                   ? []
-                   : '');
-           }
-       }
+       var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] :
+           ''
+
+       updateOptions(vnode, multiple, value)
+
    }
 
    function collectOptions(vnode, ret) {
        ret = ret || []
-       vnode
-           .props
-           .children
-           .forEach(function (el) {
-               if (el.type === 'option') {
-                   ret.push(el)
-               } else if (el.type === 'optgroup') {
-                   collectOptions(el, ret)
-               }
-           })
+       for (var i = 0, el; el = vnode.props.children[i++];) {
+           if (el.type === 'option') {
+               ret.push(el)
+           } else if (el.type === 'optgroup') {
+               collectOptions(el, ret)
+           }
+       }
        return ret
    }
 
@@ -1145,12 +1140,13 @@
                    selectedValue['' + propValue[i]] = true
                }
            } catch (e) {
+               /* istanbul ignore next */
                console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
            }
            for (var i = 0, option; option = options[i++];) {
-               var state = option._wrapperState || handleSpecialNode(option)
+               var state = option._wrapperState || /* istanbul ignore next */handleSpecialNode(option)
                var selected = selectedValue.hasOwnProperty(state.value)
-               if (state.selected !== f) {
+               if (state.selected !== selected) {
                    state.selected = selected
                    setDomSelected(option, selected)
                }
@@ -1179,10 +1175,10 @@
    //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
 
    /**
-      * 渲染组件
-      *
-      * @param {any} instance
-      */
+    * 渲染组件
+    *
+    * @param {any} instance
+    */
    function updateComponent(instance) {
        var {
            props,
@@ -1220,10 +1216,10 @@
        return dom //注意
    }
    /**
-      * call componentWillUnmount
-      *
-      * @param {any} vnode
-      */
+    * call componentWillUnmount
+    *
+    * @param {any} vnode
+    */
    function removeComponent(vnode) {
        var instance = vnode.instance
 
@@ -1247,14 +1243,14 @@
    }
 
    /**
-      * 参数不要出现DOM,以便在后端也能运行
-      *
-      * @param {any} vnode 新的虚拟DOM
-      * @param {any} prevVnode 旧的虚拟DOM
-      * @param {any} vParentNode 父虚拟DOM
-      * @param {any} context
-      * @returns
-      */
+    * 参数不要出现DOM,以便在后端也能运行
+    *
+    * @param {any} vnode 新的虚拟DOM
+    * @param {any} prevVnode 旧的虚拟DOM
+    * @param {any} vParentNode 父虚拟DOM
+    * @param {any} context
+    * @returns
+    */
    function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
        var dom = prevVnode.dom
        var parentNode = vParentNode && vParentNode.dom
@@ -1313,8 +1309,14 @@
        }
        //必须在diffProps前添加它的dom
        vnode.dom = dom
-       if(!('text' in vnode && 'text' in prevVnode)){
-         diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+       if (!('text' in vnode && 'text' in prevVnode)) {
+           diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+       }
+       if(prevVnode._hasSetInnerHTML){
+
+           while(dom.firstChild){
+              dom.removeChild(dom.firstChild)
+           }
        }
        if (!vnode._hasSetInnerHTML && vnode.props) {
            diffChildren(vnode.props.children, prevChildren, vnode, context)
@@ -1327,12 +1329,12 @@
    }
 
    /**
-      * 获取虚拟DOM对应的顶层组件实例的类型
-      *
-      * @param {any} vnode
-      * @param {any} instance
-      * @param {any} pool
-      */
+    * 获取虚拟DOM对应的顶层组件实例的类型
+    *
+    * @param {any} vnode
+    * @param {any} instance
+    * @param {any} pool
+    */
    function getTopComponentName(vnode, instance) {
        while (instance.parentInstance) {
            instance = nstance.parentInstance
@@ -1342,38 +1344,38 @@
    }
 
    /**
-      *
-      *
-      * @param {any} type
-      * @param {any} vnode
-      * @returns
-      */
+    *
+    *
+    * @param {any} type
+    * @param {any} vnode
+    * @returns
+    */
    function computeUUID(type, vnode) {
        if (type === '#text') {
            return type + '/' + vnode.deep + '/' + vnode.text
        }
-       return type + '/' + vnode.deep + (vnode.key !== null
-           ? '/' + vnode.key
-           : '')
+       return type + '/' + vnode.deep + (vnode.key !== null ?
+           '/' + vnode.key :
+           '')
    }
 
    /**
-      *
-      *
-      * @param {any} newChildren
-      * @param {any} oldChildren
-      * @param {any} vParentNode
-      * @param {any} context
-      */
+    *
+    *
+    * @param {any} newChildren
+    * @param {any} oldChildren
+    * @param {any} vParentNode
+    * @param {any} context
+    */
    function diffChildren(newChildren, oldChildren, vParentNode, context) {
        //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
        var parentNode = vParentNode.dom
        var mapping = {}
        for (let i = 0, n = oldChildren.length; i < n; i++) {
            let vnode = oldChildren[i]
-           let tag = vnode.instance
-               ? getTopComponentName(vnode, vnode.instance)
-               : vnode.type
+           let tag = vnode.instance ?
+               getTopComponentName(vnode, vnode.instance) :
+               vnode.type
            let uuid = computeUUID(tag, vnode)
            if (mapping[uuid]) {
                mapping[uuid].push(vnode)
@@ -1386,9 +1388,9 @@
        for (let i = 0, n = newChildren.length; i < n; i++) {
            let vnode = newChildren[i];
            let Type = vnode.type
-           let tag = typeof Type === 'function'
-               ? (vnode._hasInstance = 1, Type.displatName || Type.name)
-               : Type
+           let tag = typeof Type === 'function' ?
+               (vnode._hasInstance = 1, Type.displatName || Type.name) :
+               Type
            let uuid = computeUUID(tag, vnode)
 
            if (mapping[uuid]) {
@@ -1413,7 +1415,7 @@
                prevVnode = vnode.prevVnode
            } else {
                var k
-               loop : while (k = removedChildren.shift()) {
+               loop: while (k = removedChildren.shift()) {
                    if (!k.use) {
                        prevVnode = k
                        break loop
@@ -1429,7 +1431,7 @@
                    vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                    diff(vnode, prevVnode, vParentNode, context)
                } else if (vnode.type === prevVnode.type) {
-                   if ('text' in vnode) {//如果是文本或注释节点
+                   if ('text' in vnode) { //如果是文本或注释节点
                        vnode.dom = prevDom
 
                        if (vnode.text !== prevVnode.text) {
@@ -1443,11 +1445,11 @@
                        diff(vnode, prevVnode, vParentNode, context)
                    }
                } else if ('text' in vnode) { //#text === p, #comment === p
-                   var isText = vnode.type === '#text' 
-                   var dom = isText ?  document.createTextNode(vnode.text): document.createComment(vnode.text)
+                   var isText = vnode.type === '#text'
+                   var dom = isText ? document.createTextNode(vnode.text) : document.createComment(vnode.text)
                    vnode.dom = dom
                    parentNode.removeChild(prevDom)
-                   vnode.action = isText ? '替换为文本': '替换为注释'
+                   vnode.action = isText ? '替换为文本' : '替换为注释'
                    removeComponent(prevVnode) //移除元素节点或组件
                } else {
                    vnode.action = '替换为元素'
@@ -1458,9 +1460,9 @@
                    delete prevVnode.dom //clear reference
                }
            } else if (!prevVnode) { //添加新组件或元素节点
-               vnode.action = '添加新' + (vnode.type === '#text'
-                   ? '文本'
-                   : '元素')
+               vnode.action = '添加新' + (vnode.type === '#text' ?
+                   '文本' :
+                   '元素')
                if (!vnode.dom) {
                    var oldNode = oldChildren[i]
 
@@ -1468,11 +1470,12 @@
                }
            }
 
-         //  if (!parentNode.contains(vnode.dom)) {
-         //      console.log(vnode.dom, parentNode)
-         //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
-         //  }
+           //  if (!parentNode.contains(vnode.dom)) {
+           //      console.log(vnode.dom, parentNode)
+           //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
+           //  }
        }
+
 
        //第4步，移除无用节点
        if (removedChildren.length) {
@@ -1484,19 +1487,21 @@
            }
        }
 
+
+
    }
 
    //var mountOrder = 0
    /**
-      *
-      *
-      * @export
-      * @param {VNode} vnode
-      * @param {DOM} context
-      * @param {DOM} parentNode ?
-      * @param {DOM} replaced ?
-      * @returns
-      */
+    *
+    *
+    * @export
+    * @param {VNode} vnode
+    * @param {DOM} context
+    * @param {DOM} parentNode ?
+    * @param {DOM} replaced ?
+    * @returns
+    */
    function toDOM(vnode, context, parentNode, replaced) {
        vnode = toVnode(vnode, context)
        var dom,
@@ -1545,13 +1550,13 @@
    //将Component中这个东西移动这里
    midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
        var instance = this.component
-    /*   if (!instance.vnode.dom) {
-           var parentNode = instance.container
-           instance.state = this.state //将merged state赋给它
-           toDOM(instance.vnode, instance.context, parentNode)
-       } else {*/
-           updateComponent(instance)
-     /*  } */
+       /*   if (!instance.vnode.dom) {
+              var parentNode = instance.container
+              instance.state = this.state //将merged state赋给它
+              toDOM(instance.vnode, instance.context, parentNode)
+          } else {*/
+       updateComponent(instance)
+       /*  } */
        instance._forceUpdate = false
    }
 

@@ -51,7 +51,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
         var rootInstance = ReactDOM.render(
             <A/>, div);
         await browser
-            .pause(200)
+            .pause(100)
             .$apply()
         expect(rootInstance.state.aaa).toBe(111)
         await browser
@@ -113,7 +113,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
         var rootInstance = ReactDOM.render(
             <A/>, div);
         await browser
-            .pause(200)
+            .pause(100)
             .$apply()
         await browser
             .click('#bubble')
@@ -170,7 +170,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
         var rootInstance = ReactDOM.render(
             <A/>, div);
         await browser
-            .pause(200)
+            .pause(100)
             .$apply()
         await browser
             .click('#capture')

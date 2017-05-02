@@ -10,6 +10,9 @@ import './modules/browser.spec'
 
 require('./modules/component.spec.jsx')
 require('./modules/svg.spec.jsx')
+
+require('./modules/diffProps.spec.jsx')
+
 require('./modules/event.spec.jsx')
 
 require('./modules/node.spec.jsx')

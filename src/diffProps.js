@@ -90,6 +90,7 @@
    * @param {any} prevVnode 
    */
   export function diffProps(props, prevProps, vnode, prevVnode) {
+      /* istanbul ignore if */
       if (props === prevProps) {
           return
       }
@@ -119,15 +120,21 @@
           if (name === 'dangerouslySetInnerHTML') {
               var oldhtml = prevProps[name] && prevProps[name]._html
               vnode._hasSetInnerHTML = true
-              if (val && val._html !== oldhtml) {
-                  dom.innerHTML = val._html
+              if (val && val.__html !== oldhtml) {
+                  dom.innerHTML = val.__html
               }
           }
           if (isEventName(name)) {
               if (!prevProps[name]) { //添加全局监听事件
                   var eventName = getBrowserName(name)
+                  var curType = typeof val
+                   /* istanbul ignore if */
+                  if (curType !== 'function')
+                      throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
+
                   addGlobalEventListener(eventName)
               }
+              /* istanbul ignore if */
               if (inMobile && eventName === 'click') {
                   elem.addEventListener('click', clickHack)
               }
@@ -195,6 +202,7 @@
               dom[method](name, value + '')
           }
       } catch (e) {
+          /* istanbul ignore next */
           console.log(e, method, dom.nodeName)
       }
   }
