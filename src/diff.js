@@ -142,7 +142,9 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     }
     //必须在diffProps前添加它的dom
     vnode.dom = dom
-    diffProps(vnode.props, prevProps, vnode, prevVnode)
+    if(!('text' in vnode && 'text' in prevVnode)){
+      diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+    }
     if (!vnode._hasSetInnerHTML && vnode.props) {
         diffChildren(vnode.props.children, prevChildren, vnode, context)
     }

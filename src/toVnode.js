@@ -32,10 +32,11 @@ export function toVnode(vnode, context) {
 
             rendered = transaction.renderWithoutSetState(instance)
         } else { //添加无状态组件的分支
-            rendered = Type(props, context)
+           // rendered = Type(props, context)
             instance = new Component(null, context)
             instance.render = instance.statelessRender = Type
             instance.vnode = vnode
+            rendered = transaction.renderWithoutSetState(instance, props, context)
         }
 
         instance.parentInstance = vnode.instance
@@ -43,15 +44,14 @@ export function toVnode(vnode, context) {
         instance.prevProps = vnode.props //实例化时prevProps
        
         //压扁组件Vnode为普通Vnode
-        if (rendered == null) {
-            rendered = ''
-        }
-        if (/number|string/.test(typeof rendered)) {
+       
+   /*     if (/number|string/.test(typeof rendered)) {
             rendered = {
                 type: '#text',
                 text: rendered
             }
         }
+        */
         var key = vnode.key
         extend(vnode, rendered)
         vnode.key = key
