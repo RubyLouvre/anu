@@ -1,16 +1,16 @@
-import eventHook, { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import eventHook, {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
 
 import React from 'src/React'
 
 describe('diffProps', function () {
-     this.timeout(200000);
-    before(async () => {
+    this.timeout(200000);
+    before(async() => {
         await beforeHook();
     });
-    after(async () => {
+    after(async() => {
         await afterHook(false);
     });
-    it('使用对象解构', async () => {
+    it('使用对象解构', async() => {
         class App extends React.Component {
             constructor(props) {
                 super(props)
@@ -20,7 +20,9 @@ describe('diffProps', function () {
                 }
             }
             render() {
-                return <div ref='a' {...this.state} > xxx </div>
+                return <div ref='a' {...this.state}>
+                    xxx
+                </div>
             }
         }
         var div = document.createElement('div');
@@ -28,26 +30,25 @@ describe('diffProps', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<App />, div)
+        var s = React.render(<App/>, div)
         await browser
             .pause(100)
             .$apply()
         var dom = s.refs.a
         expect(dom.title).toBe('xxx')
         expect(dom.className).toBe('aaa')
-        s.setState({
-            title: '123',
-            id: 'uuuu'
-        })
+        s.setState({title: '123', id: 'uuuu'})
         await browser
             .pause(100)
             .$apply()
         expect(dom.title).toBe('123')
         expect(dom.className).toBe('aaa')
         expect(dom.id).toBe('uuuu')
-        document.body.removeChild(div)
+        document
+            .body
+            .removeChild(div)
     })
-    it('改变属性', async () => {
+    it('改变属性', async() => {
         var index = 1
         class App extends React.Component {
             constructor(props) {
@@ -57,14 +58,26 @@ describe('diffProps', function () {
                     className: 'aaa'
                 }
             }
-            onClick(){
+            onClick() {
                 index = 0
                 this.forceUpdate()
             }
             render() {
-                return index ? <div ref='a' title='xxx' className='ddd' id='h33' onClick={this.onClick.bind(this)}
-                dangerouslySetInnerHTML={{__html: '<b>xxx</b>'}} ></div> :
-                    <div ref='a' title='yyy' id='h44' data-bbb='sss' > xxx{new Date - 0} </div>
+                return index
+                    ? <div
+                            ref='a'
+                            title='xxx'
+                            className='ddd'
+                            id='h33'
+                            onClick={this
+                            .onClick
+                            .bind(this)}
+                            dangerouslySetInnerHTML={{
+                            __html: '<b>xxx</b>'
+                        }}></div>
+                    : <div ref='a' title='yyy' id='h44' data-bbb='sss'>
+                        xxx{new Date - 0}
+                    </div>
             }
         }
         var div = document.createElement('div');
@@ -72,7 +85,7 @@ describe('diffProps', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<App />, div)
+        var s = React.render(<App/>, div)
         await browser
             .pause(100)
             .$apply()
@@ -83,7 +96,7 @@ describe('diffProps', function () {
         expect((dom.__events || {}).onClick).toA('function')
         expect(dom.getElementsByTagName('b').length).toBe(1)
         index = 0
-       await browser
+        await browser
             .click('#h33')
             .pause(100)
             .$apply()
@@ -95,6 +108,58 @@ describe('diffProps', function () {
         expect(dom.getAttribute('data-bbb')).toBe('sss')
         expect((dom.__events || {}).onClick).toA('undefined')
         expect(dom.getElementsByTagName('b').length).toBe(0)
-        document.body.removeChild(div)
+        document
+            .body
+            .removeChild(div)
+    })
+
+    it('patchRef', async() => {
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.handleClick = this
+                    .handleClick
+                    .bind(this)
+
+            }
+            handleClick() {
+                // Explicitly focus the text input using the raw DOM API.
+                if (this.myTextInput !== null) {
+                    this
+                        .myTextInput
+                        .focus();
+                }
+            }
+            render() {
+                return (
+                    <div>
+                        <input type="text" ref={(ref) => this.myTextInput = ref}/>
+                        <input ref='a' type="button" value="Focus the text input" onClick={this.handleClick}/>
+                    </div>
+                );
+            }
+        };
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App/>, div)
+        await browser
+            .pause(100)
+            .$apply()
+        var dom = s.refs.a
+     
+        await browser
+            .click(dom)
+            .pause(100)
+            .$apply()
+
+        expect(document.activeElement).toBe(s.myTextInput)
+        expect(s.myTextInput).toBeDefined()
+     
+        document
+            .body
+            .removeChild(div)
     })
 })

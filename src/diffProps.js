@@ -31,7 +31,7 @@
    */
   function patchRef(instance, ref, dom, mount) {
       if (typeof ref === 'function') {
-          ref(instance)
+          ref(dom)
       } else if (typeof ref === 'string') {
           instance.refs[ref] = dom
           dom.getDOMNode = getDOMNode
