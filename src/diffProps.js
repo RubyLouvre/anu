@@ -118,7 +118,7 @@
               continue
           }
           if (name === 'dangerouslySetInnerHTML') {
-              var oldhtml = prevProps[name] && prevProps[name]._html
+              var oldhtml = prevProps[name] && prevProps[name].__html
               vnode._hasSetInnerHTML = true
               if (val && val.__html !== oldhtml) {
                   dom.innerHTML = val.__html
