@@ -1,16 +1,16 @@
-import eventHook, {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
-let {$serial} = browser;
+import eventHook, { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
+let { $serial } = browser;
 import React from 'src/React'
 
 describe('node模块', function () {
     this.timeout(200000);
-    before(async() => {
+    before(async () => {
         await beforeHook();
     });
-    after(async() => {
+    after(async () => {
         await afterHook(false);
     });
-    it('连续点击一个DIV', async() => {
+    it('连续点击一个DIV', async () => {
         var div = document.createElement('div');
 
         document
@@ -19,7 +19,7 @@ describe('node模块', function () {
         div.innerHTML = '看到我吗？'
         var a = 1;
         div.onclick = function () {
-            a++ ;
+            a++;
             browser.$next();
         };
 
@@ -37,7 +37,7 @@ describe('node模块', function () {
             .body
             .removeChild(div)
     });
-    it('输出简单的元素', async() => {
+    it('输出简单的元素', async () => {
         var div = document.createElement('div');
 
         document
@@ -56,7 +56,7 @@ describe('node模块', function () {
             .body
             .removeChild(div)
     });
-    it('InputControlES6', async() => {
+    it('InputControlES6', async () => {
         let rs,
             hasMount = new Promise((s) => {
                 rs = s;
@@ -79,14 +79,14 @@ describe('node模块', function () {
                 rs()
             }
             handleChange(event) {
-                this.setState({text: event.target.value});
+                this.setState({ text: event.target.value });
             }
 
             render() {
                 return (
                     <div>
                         Type something:
-                        <input ref="input" onChange={this.handleChange} value={this.state.text}/>
+                        <input ref="input" onChange={this.handleChange} value={this.state.text} />
                     </div>
                 );
             }
@@ -100,7 +100,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div2);
-        var s = React.render(<InputControlES6/>, div2)
+        var s = React.render(<InputControlES6 />, div2)
         await hasMount
         var input = s.refs.input
         expect(input.value).toBe('请输入内容')
@@ -110,7 +110,7 @@ describe('node模块', function () {
             .removeChild(div2)
 
     })
-    it('forceUpdate', async() => {
+    it('forceUpdate', async () => {
         let rs,
             hasMount = new Promise((s) => {
                 rs = s;
@@ -136,7 +136,7 @@ describe('node模块', function () {
                 return (
                     <div>
                         Type something:
-                        <input ref="input" value={new Date - 0}/>
+                        <input ref="input" value={new Date - 0} />
                     </div>
                 );
             }
@@ -152,16 +152,16 @@ describe('node模块', function () {
             .body
             .appendChild(div2);
 
-        var s = React.render(<InputControlES6/>, div2)
+        var s = React.render(<InputControlES6 />, div2)
         await hasMount
         var index = 0
         expect(s.vnode.getDOMNode().nodeName).toBe('DIV')
         s.forceUpdate(function () {
-          
+
             index++
         })
         s.forceUpdate(function () {
-           
+
             index++
         })
         await browser
@@ -172,7 +172,7 @@ describe('node模块', function () {
             .body
             .removeChild(div2)
     })
-    it('下拉菜单的选择', async() => {
+    it('下拉菜单的选择', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -188,7 +188,7 @@ describe('node模块', function () {
             handleCity(e) {
                 expect(e.type).toBe('change')
                 var value = e.target.value;
-                this.setState({city: value})
+                this.setState({ city: value })
             }
             componentDidMount() {
                 rs()
@@ -202,8 +202,8 @@ describe('node模块', function () {
                     id="node2"
                     value={this.state.city}
                     onChange={this
-                    .handleCity
-                    .bind(this)}>
+                        .handleCity
+                        .bind(this)}>
                     <option value='hz'>杭州</option>
                     <option value='bj'>北京</option>
                     <option value='sh'>上海</option>
@@ -216,7 +216,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div2);
-        var s = React.render(<Select/>, div2)
+        var s = React.render(<Select />, div2)
 
         await prom;
 
@@ -237,7 +237,7 @@ describe('node模块', function () {
 
     })
 
-    it('下拉菜单的options重排后确保selected正确', async() => {
+    it('下拉菜单的options重排后确保selected正确', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -279,7 +279,7 @@ describe('node模块', function () {
             }
             handleCity(e) {
                 var value = e.target.value;
-                this.setState({city: value})
+                this.setState({ city: value })
             }
             componentDidMount() {
                 rs()
@@ -294,15 +294,15 @@ describe('node模块', function () {
                     id="node3"
                     value={this.state.city}
                     onChange={this
-                    .handleCity
-                    .bind(this)}>
+                        .handleCity
+                        .bind(this)}>
                     {this
                         .state
                         .cities
                         .map(function (el) {
                             return <option value={el.value}>{el.text}</option>
                         })
-}
+                    }
                 </select>
             }
         }
@@ -312,7 +312,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div3);
-        var s = React.render(<Select/>, div3)
+        var s = React.render(<Select />, div3)
 
         await prom;
 
@@ -321,7 +321,7 @@ describe('node模块', function () {
         expect(s.vnode.dom.children[2].text).toBe('南京')
         s.change()
 
-        return $serial(async() => {
+        return $serial(async () => {
             expect(s.vnode.dom.children[0].text).toBe('杭州')
             expect(s.vnode.dom.children[1].text).toBe('南京')
             expect(s.vnode.dom.children[2].text).toBe('北京')
@@ -331,7 +331,7 @@ describe('node模块', function () {
         })
     })
 
-    it('测试radio的onchange事件', async() => {
+    it('测试radio的onchange事件', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -344,7 +344,7 @@ describe('node模块', function () {
                 }
             }
             handleChange(index) {
-                this.setState({checkedIndex: index})
+                this.setState({ checkedIndex: index })
             }
             // webdriver.io不支持触发
             // checkbox的onchange事件，只能browsers.click它，然后在一个onClick回调中手动调用onChange回调
@@ -373,14 +373,14 @@ describe('node模块', function () {
                                 value={el}
                                 checked={this.state.checkedIndex === el}
                                 onClick={this
-                                .onClick
-                                .bind(this, el)}
+                                    .onClick
+                                    .bind(this, el)}
                                 onChange={this
-                                .handleChange
-                                .bind(this, el)}/>
+                                    .handleChange
+                                    .bind(this, el)} />
 
                         }, this)
-}
+                    }
                 </div>
             }
         }
@@ -390,7 +390,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<Radio/>, div)
+        var s = React.render(<Radio />, div)
 
         await prom;
 
@@ -400,7 +400,7 @@ describe('node模块', function () {
         await browser
             .click('#radio3')
             .$apply('wait')
-        return $serial(async() => {
+        return $serial(async () => {
             expect(s.vnode.dom.children[0].checked).toBe(false)
             expect(s.vnode.dom.children[1].checked).toBe(false)
             expect(s.vnode.dom.children[2].checked).toBe(true)
@@ -410,7 +410,7 @@ describe('node模块', function () {
         })
     })
 
-    it('测试input元素的oninput事件', async() => {
+    it('测试input元素的oninput事件', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -424,7 +424,7 @@ describe('node模块', function () {
                 }
             }
             onInput(e) {
-                this.setState({value: e.target.value})
+                this.setState({ value: e.target.value })
             }
 
             componentDidMount() {
@@ -440,10 +440,10 @@ describe('node模块', function () {
                         id='node4'
                         value={this.state.value}
                         onInput={this
-                        .onInput
-                        .bind(this)}/>{this.state.value}
-                    <input type='image'/>
-                    <input type='button' value='提交'/>
+                            .onInput
+                            .bind(this)} />{this.state.value}
+                    <input type='image' />
+                    <input type='button' value='提交' />
                 </div>
             }
         }
@@ -453,7 +453,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<Input/>, div)
+        var s = React.render(<Input />, div)
 
         await prom;
 
@@ -468,7 +468,7 @@ describe('node模块', function () {
             .removeChild(div)
 
     })
-    it('测试textarea元素的oninput事件', async() => {
+    it('测试textarea元素的oninput事件', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -483,7 +483,7 @@ describe('node模块', function () {
             }
             onInput(e) {
                 // console.log('oninput', e.type, e.target.value)
-                this.setState({value: e.target.value})
+                this.setState({ value: e.target.value })
             }
 
             componentDidMount() {
@@ -498,8 +498,8 @@ describe('node模块', function () {
                     <textarea
                         id='node5'
                         onInput={this
-                        .onInput
-                        .bind(this)}>{this.state.value}</textarea>{this.state.value}
+                            .onInput
+                            .bind(this)}>{this.state.value}</textarea>{this.state.value}
                 </div>
             }
         }
@@ -509,7 +509,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<TextArea/>, div)
+        var s = React.render(<TextArea />, div)
 
         await prom;
 
@@ -524,7 +524,7 @@ describe('node模块', function () {
             .removeChild(div)
 
     })
-    it('非受控组件textarea的value不可变', async() => {
+    it('非受控组件textarea的value不可变', async () => {
         let rs,
             prom = new Promise((s) => {
                 rs = s;
@@ -552,7 +552,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<TextArea/>, div)
+        var s = React.render(<TextArea />, div)
 
         await prom;
 
@@ -570,7 +570,7 @@ describe('node模块', function () {
             .removeChild(div)
 
     })
-    it('非受控组件checkbox的checked不可变', async() => {
+    it('非受控组件checkbox的checked不可变', async () => {
 
         class Com extends React.Component {
             constructor() {
@@ -581,7 +581,7 @@ describe('node模块', function () {
             }
             render() {
                 return <div>
-                    <input id='node7' type='checkbox' name='xxx' checked={this.state.value}/>
+                    <input id='node7' type='checkbox' name='xxx' checked={this.state.value} />
 
                 </div>
             }
@@ -592,7 +592,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<Com/>, div)
+        var s = React.render(<Com />, div)
         await browser
             .pause(100)
             .$apply()
@@ -611,7 +611,7 @@ describe('node模块', function () {
             .removeChild(div)
 
     })
-    it('非受控组件select的value不可变', async() => {
+    it('非受控组件select的value不可变', async () => {
         class Com extends React.Component {
             constructor() {
                 super()
@@ -633,7 +633,7 @@ describe('node模块', function () {
         document
             .body
             .appendChild(div);
-        var s = React.render(<Com/>, div)
+        var s = React.render(<Com />, div)
         await browser
             .pause(100)
             .$apply()
@@ -652,4 +652,115 @@ describe('node模块', function () {
             .removeChild(div)
     })
 
+    it('父子组件间的通信', async () => {
+        class Select extends React.Component {
+            constructor(props) {
+                super(props)
+
+                this.state = {
+                    value: props.value
+                }
+                this.onUpdate = props.onUpdate
+                this.onChange = this.onChange.bind(this)
+            }
+            componentWillReceiveProps(props) {
+                this.state = { //更新自己
+                    value: props.value
+                }
+            }
+            onChange(e) {//让父组件更新自己
+                this.onUpdate(e.target.value)
+            }
+            render() {
+                return <select id="communicate" value={this.state.value} onChange={this.onChange}>
+                    <option>北京</option>
+                    <option>南京</option>
+                    <option>东京</option>
+                </select>
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+            onUpdate(value) { //让子组件调用这个父组件的方法
+                this.setState({
+                    value: value
+                })
+            }
+            onChange(e) {
+                this.onUpdate(e.target.value)
+
+            }
+            render() {
+                return <div><Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /><input ref='sss' value={this.state.value} onChange={this.onChange.bind(this)} /></div>
+            }
+
+        }
+
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.sss.value).toBe('南京')
+        await browser
+            .selectByVisibleText('#communicate', '北京').pause(100)
+            .$apply()
+        expect(s.refs.sss.value).toBe('北京')
+        document
+            .body
+            .removeChild(div)
+    })
+    it('empty Component', async () => {
+        class Empty extends React.Component {
+            render() {
+                return null
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+            onUpdate(value) { //让子组件调用这个父组件的方法
+                this.setState({
+                    value: value
+                })
+            }
+            onChange(e) {//让父组件更新自己
+                this.onUpdate(e.target.value)
+            }
+            render() {
+                return <div><Empty />
+                    <input ref="a" value={this.state.value} onInput={this.onChange.bind(this)} /></div>
+            }
+        }
+
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.value).toBe('南京')
+        await browser.setValue(s.refs.a,'北京').pause(100)
+            .$apply()
+        expect(s.refs.a.value).toBe('北京')
+        document
+            .body
+            .removeChild(div)
+    })
 })

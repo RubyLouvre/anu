@@ -334,6 +334,7 @@
    var callbacks = []
 
    function setStateWarn() {
+       /* istanbul ignore next */
        if (transaction.isInTransation) {
            console.warn("Cannot update during an existing state transition (such as within `render` or an" +
                    "other component's constructor). Render methods should be a pure function of prop" +
@@ -387,6 +388,7 @@
                            mainProcessing.push(request)
                        }
                    } catch (e) {
+                       /* istanbul ignore next */
                        console.log(e)
                    }
 
@@ -396,6 +398,7 @@
                    try {
                        request.exec() //执行主程序
                    } catch (e) {
+                       /* istanbul ignore next */
                        console.log(e)
                    }
                })
@@ -405,6 +408,7 @@
                        .call(request.instance)
                })
                this.isInTransation = false
+                /* istanbul ignore next */
                if (queue.length) {
                    this.enqueue() //用于递归调用自身)
                }
@@ -606,10 +610,11 @@
 
                rendered = transaction.renderWithoutSetState(instance)
            } else { //添加无状态组件的分支
-               rendered = Type(props, context)
+              // rendered = Type(props, context)
                instance = new Component(null, context)
                instance.render = instance.statelessRender = Type
                instance.vnode = vnode
+               rendered = transaction.renderWithoutSetState(instance, props, context)
            }
 
            instance.parentInstance = vnode.instance
@@ -617,15 +622,14 @@
            instance.prevProps = vnode.props //实例化时prevProps
           
            //压扁组件Vnode为普通Vnode
-           if (rendered == null) {
-               rendered = ''
-           }
-           if (/number|string/.test(typeof rendered)) {
+          
+      /*     if (/number|string/.test(typeof rendered)) {
                rendered = {
                    type: '#text',
                    text: rendered
                }
            }
+           */
            var key = vnode.key
            extend(vnode, rendered)
            vnode.key = key
@@ -1309,7 +1313,9 @@
        }
        //必须在diffProps前添加它的dom
        vnode.dom = dom
-       diffProps(vnode.props, prevProps, vnode, prevVnode)
+       if(!('text' in vnode && 'text' in prevVnode)){
+         diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
+       }
        if (!vnode._hasSetInnerHTML && vnode.props) {
            diffChildren(vnode.props.children, prevChildren, vnode, context)
        }
@@ -1388,7 +1394,6 @@
            if (mapping[uuid]) {
                var matchNode = mapping[uuid].shift()
                if (!mapping[uuid].length) {
-                   console.log(uuid)
                    delete mapping[uuid]
                }
                if (matchNode) {

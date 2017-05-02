@@ -15,34 +15,11 @@
 
   <!--<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
      <script src="react-dom.js"></script>-->
-    <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
+    <script src="./test/babel.js"></script>
     <script  type="text/babel" >
   
-    class Select extends React.Component{
-        constructor(props){
-           super(props)
-
-           this.state = {
-               value: props.value
-           }
-           this.onUpdate = props.onUpdate
-           this.onChange = this.onChange.bind(this)
-        }
-        componentWillReceiveProps(props){
-           this.state = { //更新自己
-               value: props.value
-           }
-        }
-        onChange(e){//让父组件更新自己
-            this.onUpdate(e.target.value)
-        }
-        render(){
-            return <select value={this.state.value} onChange={this.onChange}>
-                <option>北京</option>
-                <option>南京</option>
-                <option>东京</option>
-                </select>
-        }
+    function Select(props){
+        return <strong>{props.value}</strong>
     }
     class App extends React.Component{
        constructor(props){
@@ -51,17 +28,16 @@
                value: '南京'
            }
         }
-        onUpdate(value){ //让子组件调用这个父组件的方法
-             this.setState({
-                value: value
-            })
-        }
+
         onChange(e){
-           this.onUpdate(e.target.value)
+           this.setState({
+                value: e.target.value
+            })
  
         }
         render(){
-          return  <div><Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /><input value={this.state.value} onChange={this.onChange.bind(this)} /></div>
+          return  <div><Select value={this.state.value} />
+          <input value={this.state.value} onInput={this.onChange.bind(this)} /></div>
         }
 
     }

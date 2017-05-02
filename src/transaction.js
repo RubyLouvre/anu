@@ -4,6 +4,7 @@ var queue = []
 var callbacks = []
 
 function setStateWarn() {
+    /* istanbul ignore next */
     if (transaction.isInTransation) {
         console.warn("Cannot update during an existing state transition (such as within `render` or an" +
                 "other component's constructor). Render methods should be a pure function of prop" +
@@ -57,6 +58,7 @@ export var transaction = {
                         mainProcessing.push(request)
                     }
                 } catch (e) {
+                    /* istanbul ignore next */
                     console.log(e)
                 }
 
@@ -66,6 +68,7 @@ export var transaction = {
                 try {
                     request.exec() //执行主程序
                 } catch (e) {
+                    /* istanbul ignore next */
                     console.log(e)
                 }
             })
@@ -75,6 +78,7 @@ export var transaction = {
                     .call(request.instance)
             })
             this.isInTransation = false
+             /* istanbul ignore next */
             if (queue.length) {
                 this.enqueue() //用于递归调用自身)
             }
