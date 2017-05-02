@@ -1346,7 +1346,7 @@
        if (type === '#text') {
            return type + '/' + vnode.deep + '/' + vnode.text
        }
-       return type + ':' + vnode.deep + (vnode.key !== null
+       return type + '/' + vnode.deep + (vnode.key !== null
            ? '/' + vnode.key
            : '')
    }
@@ -1375,7 +1375,6 @@
                mapping[uuid] = [vnode]
            }
        }
-
        //第二步，遍历新children, 从hash中取出旧节点
        var removedChildren = oldChildren.concat()
        for (let i = 0, n = newChildren.length; i < n; i++) {
@@ -1389,6 +1388,7 @@
            if (mapping[uuid]) {
                var matchNode = mapping[uuid].shift()
                if (!mapping[uuid].length) {
+                   console.log(uuid)
                    delete mapping[uuid]
                }
                if (matchNode) {
@@ -1424,7 +1424,7 @@
                    vnode.action = '重复利用旧的实例更新组件' //action只是调试用
                    diff(vnode, prevVnode, vParentNode, context)
                } else if (vnode.type === prevVnode.type) {
-                   if (vnode.type === '#text' || vnode.type === '#comment') {
+                   if ('text' in vnode) {//如果是文本或注释节点
                        vnode.dom = prevDom
 
                        if (vnode.text !== prevVnode.text) {
@@ -1437,17 +1437,12 @@
                        vnode.action = '更新元素'
                        diff(vnode, prevVnode, vParentNode, context)
                    }
-               } else if (vnode.type === '#text') { //#text === p
-                   var dom = document.createTextNode(vnode.text)
+               } else if ('text' in vnode) { //#text === p, #comment === p
+                   var isText = vnode.type === '#text' 
+                   var dom = isText ?  document.createTextNode(vnode.text): document.createComment(vnode.text)
                    vnode.dom = dom
                    parentNode.removeChild(prevDom)
-                   vnode.action = '替换为文本'
-                   removeComponent(prevVnode) //移除元素节点或组件
-               } else if (vnode.type === '#comment') { //#text === p
-                   var dom = document.createComment(vnode.text)
-                   vnode.dom = dom
-                   parentNode.removeChild(prevDom)
-                   vnode.action = '替换为文本'
+                   vnode.action = isText ? '替换为文本': '替换为注释'
                    removeComponent(prevVnode) //移除元素节点或组件
                } else {
                    vnode.action = '替换为元素'
@@ -1468,9 +1463,10 @@
                }
            }
 
-           if (!parentNode.contains(vnode.dom)) {
-               parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
-           }
+         //  if (!parentNode.contains(vnode.dom)) {
+         //      console.log(vnode.dom, parentNode)
+         //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
+         //  }
        }
 
        //第4步，移除无用节点
@@ -1544,13 +1540,13 @@
    //将Component中这个东西移动这里
    midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
        var instance = this.component
-       if (!instance.vnode.dom) {
+    /*   if (!instance.vnode.dom) {
            var parentNode = instance.container
            instance.state = this.state //将merged state赋给它
            toDOM(instance.vnode, instance.context, parentNode)
-       } else {
-           updateComponent(this.component)
-       }
+       } else {*/
+           updateComponent(instance)
+     /*  } */
        instance._forceUpdate = false
    }
 

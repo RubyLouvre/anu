@@ -43,14 +43,8 @@ https://github.com/RubyLouvre/anu/wiki
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-    </style>>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
+
     <script  type="text/babel" >
        class A extends React.PureComponent {
             constructor(props) {
@@ -85,6 +79,85 @@ https://github.com/RubyLouvre/anu/wiki
 </body>
 
 </html>
+```
+-----------
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script> 
+    <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
+    <script  type="text/babel" >
+  
+    class Select extends React.Component{
+        constructor(props){
+           super(props)
+
+           this.state = {
+               value: props.value
+           }
+           this.onUpdate = props.onUpdate
+           this.onChange = this.onChange.bind(this)
+        }
+        componentWillReceiveProps(props){
+           this.state = { //更新自己
+               value: props.value
+           }
+        }
+        onChange(e){//让父组件更新自己
+            this.onUpdate(e.target.value)
+        }
+        render(){
+            return <select value={this.state.value} onChange={this.onChange}>
+                <option>北京</option>
+                <option>南京</option>
+                <option>东京</option>
+                </select>
+        }
+    }
+    class App extends React.Component{
+       constructor(props){
+           super(props)
+           this.state = {
+               value: '南京'
+           }
+        }
+        onUpdate(value){ //让子组件调用这个父组件的方法
+             this.setState({
+                value: value
+            })
+        }
+        onChange(e){
+           this.onUpdate(e.target.value)
+ 
+        }
+        render(){
+          return  <div><Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /><input value={this.state.value} onChange={this.onChange.bind(this)} /></div>
+        }
+
+    }
+
+window.onload = function () {
+   
+ ReactDOM.render(<App />,
+   document.getElementById('example'))
+
+}
+    </script>
+</head>
+
+<body>
+  
+    <div>测试</div>
+    <blockquote id='example'></blockquote>
+
+</body>
+
+</html>
+
 ```
 支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
 
