@@ -43,7 +43,7 @@ describe('无狀态组件', function () {
                 }
             }
             shouldComponentUpdate() {
-                console.log('shouldComponentUpdate')
+              //  console.log('shouldComponentUpdate')
             }
             click() {
                 this.setState(function (a) {

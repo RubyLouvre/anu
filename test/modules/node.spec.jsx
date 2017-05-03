@@ -49,7 +49,7 @@ describe('node模块', function () {
 
     });
     it('InputControlES6', async () => {
-     
+
         class InputControlES6 extends React.Component {
             constructor(props) {
                 super(props);
@@ -64,7 +64,7 @@ describe('node模块', function () {
                     .handleChange
                     .bind(this);
             }
-          
+
             handleChange(event) {
                 this.setState({ text: event.target.value });
             }
@@ -94,7 +94,7 @@ describe('node模块', function () {
 
     })
     it('forceUpdate', async () => {
-       
+
 
         class InputControlES6 extends React.Component {
             constructor(props) {
@@ -105,7 +105,7 @@ describe('node模块', function () {
                     text: 'xxx'
                 };
             }
-           
+
             shouldComponentUpdate() {
                 return false
             }
@@ -125,7 +125,7 @@ describe('node模块', function () {
         };
         div.innerHTML = '<span>remove</span>'
 
-    
+
 
         var s = React.render(<InputControlES6 />, div)
 
@@ -144,7 +144,7 @@ describe('node模块', function () {
             .pause(200)
             .$apply()
         expect(index).toBe(2)
-    
+
     })
     it('下拉菜单的选择', async () => {
 
@@ -250,7 +250,7 @@ describe('node模块', function () {
                 </select>
             }
         }
-;
+        ;
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
@@ -313,7 +313,7 @@ describe('node模块', function () {
             }
         }
 
-     
+
         var s = React.render(<Radio />, div)
         await browser.pause(100).$apply()
 
@@ -325,7 +325,7 @@ describe('node模块', function () {
         expect(s.vnode.dom.children[0].checked).toBe(false)
         expect(s.vnode.dom.children[1].checked).toBe(false)
         expect(s.vnode.dom.children[2].checked).toBe(true)
-     
+
 
     })
 
@@ -362,7 +362,7 @@ describe('node模块', function () {
             }
         }
 
-      
+
         var s = React.render(<Input />, div)
 
         await browser.pause(100).$apply()
@@ -372,11 +372,11 @@ describe('node模块', function () {
         await browser
             .setValue('#node4', 'xxxx').pause(100).$apply()
 
-       
+
 
     })
     it('测试textarea元素的oninput事件', async () => {
-   
+
         var values = ['x', 'xx', 'xxx', 'xxxx']
         class TextArea extends React.Component {
             constructor() {
@@ -404,7 +404,7 @@ describe('node模块', function () {
             }
         }
 
-    
+
         var s = React.render(<TextArea />, div)
 
         await browser
@@ -415,11 +415,11 @@ describe('node模块', function () {
 
         await browser
             .setValue('#node5', 'xxxx').pause(100).$apply()
-       
+
 
     })
     it('非受控组件textarea的value不可变', async () => {
-   
+
         class TextArea extends React.Component {
             constructor() {
                 super()
@@ -437,7 +437,7 @@ describe('node模块', function () {
 
         var s = React.render(<TextArea />, div)
 
-         await browser
+        await browser
             .pause(100)
             .$apply()
 
@@ -469,7 +469,7 @@ describe('node模块', function () {
             }
         }
 
-  
+
         var s = React.render(<Com />, div)
         await browser
             .pause(100)
@@ -517,7 +517,7 @@ describe('node模块', function () {
         expect(s.vnode.dom.children[2].selected).toBe(false)
         expect(s.vnode.dom.children[1].selected).toBe(true)
 
-  
+
     })
 
     it('父子组件间的通信', async () => {
@@ -578,7 +578,7 @@ describe('node模块', function () {
             .selectByVisibleText('#communicate', '北京').pause(100)
             .$apply()
         expect(s.refs.sss.value).toBe('北京')
-        
+
     })
     it('empty Component', async () => {
         class Empty extends React.Component {
@@ -607,7 +607,7 @@ describe('node模块', function () {
             }
         }
 
-   
+
         var s = React.render(<App />, div)
         await browser
             .pause(100)
@@ -616,7 +616,7 @@ describe('node模块', function () {
         await browser.setValue(s.refs.a, '北京').pause(100)
             .$apply()
         expect(s.refs.a.value).toBe('北京')
-       
+
     })
     it('移除组件', async () => {
         var str = ''
@@ -657,13 +657,13 @@ describe('node模块', function () {
 
             }
         };
-      
+
         var s = React.render(<App />, div)
 
         await browser.pause(100).click(s.refs.a).pause(100)
             .$apply()
         expect(str).toBe('xxxx yyyy')
-  
+
     })
     it('移除组件2', async () => {
         var index = 1
@@ -684,12 +684,132 @@ describe('node模块', function () {
 
             }
         };
-      
+
         var s = React.render(<App />, div)
 
         await browser.pause(100).click(s.refs.a).pause(100)
             .$apply()
         expect(div.getElementsByTagName('p').length).toBe(1)
-        
+
+    })
+    it('removedChildren', async () => {
+        var index = 1
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.handleClick = this.handleClick.bind(this)
+            }
+            handleClick() {
+                index = 0
+                this.forceUpdate()
+            }
+            render() {
+                return index ?
+                    <div ref='a' onClick={this.handleClick.bind(this)}>
+                        <p><strong>111</strong></p><p>2</p><p>3</p><p>4</p>
+                    </div> : <div><p>11</p></div>
+
+            }
+        };
+
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).$apply()
+        expect(div.getElementsByTagName('p').length).toBe(4)
+        await browser.click(s.refs.a).pause(100).$apply()
+        expect(div.getElementsByTagName('p').length).toBe(1)
+    })
+
+    it('一个元素拥有多个实例', async () => {
+        var arr = ['111', '222', '333']
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    title: 111
+                }
+            }
+
+            handleClick() {
+
+                this.setState({
+                    title: arr.shift() || new Date - 0
+                })
+
+            }
+            render() {
+                return <B title={this.state.title} onClick={this.handleClick.bind(this)} />
+            }
+        }
+
+        class B extends React.Component {
+            componentWillReceiveProps() {
+                this.forceUpdate()
+            }
+            render() {
+                return <div title={this.props.title} onClick={this.props.onClick}  >{new Date - 0}<C /></div>;
+            }
+        }
+
+        class C extends React.Component {
+            render() {
+                return <strong >{new Date - 0}</strong>;
+            }
+        }
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).$apply()
+        expect(div.getElementsByTagName('strong').length).toBe(1)
+        expect(s).toInstanceOf(App)
+        //expect(div.getElementsByTagName('p').length).toBe(1)
+    })
+   it('一个元素拥有多个实例2', async () => {
+        var arr = ['111', '222', '333']
+        class App extends React.Component{
+            render() {
+                return <div><A /></div>
+            }
+        }
+        class A extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    title: 111
+                }
+            }
+
+            handleClick() {
+
+                this.setState({
+                    title: arr.shift() || new Date - 0
+                })
+
+            }
+            render() {
+                return <B title={this.state.title} onClick={this.handleClick.bind(this)} />
+            }
+        }
+
+        class B extends React.Component {
+            componentWillReceiveProps() {
+                this.forceUpdate()
+            }
+            render() {
+                return <div title={this.props.title} onClick={this.props.onClick}  >{new Date - 0}<C /></div>;
+            }
+        }
+
+        class C extends React.Component {
+            render() {
+                return <strong >{new Date - 0}</strong>;
+            }
+        }
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).$apply()
+        expect(div.getElementsByTagName('strong').length).toBe(1)
+        s.forceUpdate()
+        expect(div.getElementsByTagName('strong').length).toBe(1)
+        //expect(div.getElementsByTagName('p').length).toBe(1)
     })
 })

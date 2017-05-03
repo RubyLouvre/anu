@@ -14,5 +14,6 @@ require('./modules/svg.spec.jsx')
 require('./modules/diffProps.spec.jsx')
 
 require('./modules/event.spec.jsx')
+require('./modules/context.spec.jsx')
 
 require('./modules/node.spec.jsx')
