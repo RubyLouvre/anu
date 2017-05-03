@@ -111,12 +111,12 @@
           }
           if (isEventName(name)) {
               if (!prevProps[name]) { //添加全局监听事件
-                  var eventName = getBrowserName(name)
+                  var eventName = getBrowserName(name) //带on
+                  
                   var curType = typeof val
                   /* istanbul ignore if */
                   if (curType !== 'function')
                       throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
-
                   addGlobalEventListener(eventName)
               }
               /* istanbul ignore if */

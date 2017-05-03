@@ -159,6 +159,109 @@ window.onload = function () {
 </html>
 
 ```
+与Redux使用的例子
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <script src="https://cdn.bootcss.com/redux/3.6.0/redux.js"></script>
+
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+        var addTodoActions = function (text) {
+            return {
+                type: 'add_todo',
+                text: text
+            };
+        }
+        var todoReducer = function (state, action) {
+
+            if (typeof state === 'undefined') {
+                return [];
+            }
+
+            switch (action.type) {
+                case 'add_todo':
+                    return state.slice(0).concat({
+                        text: action.text,
+                        completed: false
+                    });
+                    break;
+                default:
+                    return state;
+            }
+        };
+        var store = Redux.createStore(todoReducer);
+        class App extends React.Component {
+            constructor(props){
+                super(props)
+                this.state = {
+                    items: store.getState()
+                }
+                this.onChange = this.onChange.bind(this)
+                this.handleKeyUp = this.handleKeyUp.bind(this)
+                this.handleAdd = this.handleAdd.bind(this)
+            }
+            componentDidMount(){
+                var unsubscribe = store.subscribe(this.onChange);
+            }
+            onChange(){
+                this.setState({
+                    items: store.getState()
+                });
+            }
+            handleKeyUp(e){
+                if(e.which === 13){
+                   this.handleAdd()
+                }
+            }
+            handleAdd(){
+                var input = this.refs.todo
+                var value = input.value.trim();
+
+                if(value)
+                    store.dispatch(addTodoActions(value));
+
+                input.value = '';
+            }
+            render(){
+                return (
+                    <div>
+                        <input ref="todo" type="text" placeholder="输入todo项" style={{marginRight:'10px'}} onKeyUp={this.handleKeyUp} />
+                        <button onClick={this.handleAdd}>点击添加</button>
+                        <ul>
+                            {this.state.items.map(function(item){
+                                return <li>{item.text}</li>;
+                            })}
+                        </ul>
+                    </div>            
+                    );
+            }
+        };
+
+ReactDOM.render(
+    <App />, 
+    document.getElementById('example')
+    );
+    </script>
+</head>
+
+<body>
+
+    <div>测试</div>
+    <blockquote id='example'></blockquote>
+
+
+</body>
+
+</html>
+
+```
+
 支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
 
 

@@ -8,7 +8,9 @@ import {
 import {
     Component
 } from './Component'
-
+import {
+    Children
+} from './compat'
 //import {transaction} from './transaction'
 import {
     win as window
@@ -21,6 +23,7 @@ import {
 
 
 var React = {
+    Children, //为了react-redux
     render,
     createElement,
     PureComponent,

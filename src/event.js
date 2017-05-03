@@ -1,11 +1,6 @@
 import {transaction} from './transaction'
 import {document} from './browser'
-export var eventMap = {
-    mouseover: 'MouseOver',
-    mouseout: 'MouseOut',
-    mouseleave: 'MouseLeave',
-    mouseenter: 'MouseEnter'
-}
+export var eventMap = {}
 /**
  * 判定否为与事件相关
  *
@@ -81,18 +76,21 @@ export function addEvent(el, type, fn) {
     }
 }
 
-var eventNameCache = {}
+var eventLowerCache = {}
 var ron = /^on/
 var rcapture = /Capture$/
-export function getBrowserName(name) {
-    var n = eventNameCache[name]
-    if (n) {
-        return n
+export function getBrowserName(onStr) {
+    var lower = eventLowerCache[onStr]
+    if (lower) {
+        return lower
     }
-    return eventNameCache[name] = name
+    var hump = onStr
         .replace(ron, '')
         .replace(rcapture, '')
-        .toLowerCase()
+    lower = hump.toLowerCase()
+    eventLowerCache[onStr] = lower
+    eventMap[lower] = hump
+    return lower
 }
 
 export function SyntheticEvent(event) {

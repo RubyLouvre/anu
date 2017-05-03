@@ -23,6 +23,26 @@ describe('createElement', function () {
         el = React.createElement('p', null)
         expect(el.props.children.length).toBe(0)
     })
+     it('Children.only', () => {
+        var el = React.createElement('p', null, 'aaa', 'bbb', 'ccc')
+        expect(React.Children.only(el.props.children)).toEqual({
+            type:'#text',
+            text: 'aaabbbccc',
+            deep: 0
+        })
+
+        el = React.createElement('p', null, null)
+        expect(el.props.children.length).toBe(0)
+
+        el = React.createElement('p', null, [])
+        expect(el.props.children.length).toBe(0)
+
+        el = React.createElement('p', {children: ["aaa","bbb"]})
+        expect(el.props.children.length).toBe(1)
+
+        el = React.createElement('p', null)
+        expect(el.props.children.length).toBe(0)
+    })
 
     it('flatChildren', () => {
         var el = React.createElement('p', null, 'aaa', false, 'ccc')
