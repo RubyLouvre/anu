@@ -761,4 +761,90 @@ describe('node模块', function () {
             .body
             .removeChild(div)
     })
+   it('移除组件', async () => {
+       var str = ''
+        class Component1 extends React.Component{
+            componentWillUnmount(){
+               str += 'xxxx'
+            }
+            render(){
+               return <div className="component1">{this.props.children}</div>
+            }
+        }
+        class Component2 extends React.Component{
+            componentWillUnmount(){
+                    str += ' yyyy'
+                }
+                render(){
+                   return <div className="component1">xxx</div>
+                }
+            }
+            var index = 1
+            class App extends React.Component{
+                constructor(props){
+                    super(props)
+                    this.handleClick = this.handleClick.bind(this)
+                }
+                handleClick() {
+                    index = 0
+                    this.forceUpdate()
+                }
+                render() {
+                    return index ? 
+                        <div ref='a' onClick={this.handleClick.bind(this)}>
+                            <Component1>
+                                <p>这是子节点</p>
+                                <Component2 />
+                            </Component1> 
+                        </div>: <div>文本节点</div>
+                
+                }
+        };
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).click(s.refs.a).pause(100)
+            .$apply()
+        expect(str).toBe('xxxx yyyy')
+        document
+            .body
+            .removeChild(div)
+    })
+   it('移除组件2', async () => {
+   var index = 1
+    class App extends React.Component{
+        constructor(props){
+            super(props)
+            this.handleClick = this.handleClick.bind(this)
+        }
+        handleClick() {
+            index = 0
+            this.forceUpdate()
+        }
+        render() {
+            return index ? 
+                <div ref='a' onClick={this.handleClick.bind(this)}>
+                      <div ref='b'><span>222</span></div>
+                </div>: <div><p><span>222</span></p></div>
+        
+        }
+     };
+        var div = document.createElement('div');
+
+        document
+            .body
+            .appendChild(div);
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).click(s.refs.a).pause(100)
+            .$apply()
+        expect(div.getElementsByTagName('p').length).toBe(1)
+        document
+            .body
+            .removeChild(div)
+    })
 })

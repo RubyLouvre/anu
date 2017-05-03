@@ -75,13 +75,10 @@ function removeComponent(vnode) {
     var instance = vnode.instance
 
     applyComponentHook(instance, 7) //7
-    vnode._hostParent = vnode._wrapperState = vnode.instance = void 666
 
-    var ref = vnode.props.ref
-    if (typeof ref === 'string') {
-        var o = vnode._owner
-        o && (o.refs[ref] = null)
-    }
+    '_hostParent,_wrapperState,_instance,_owner'.replace(/\w+/g,function(name){
+        delete vnode[name]
+    })
 
     vnode
         .props
@@ -297,10 +294,10 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 }
             } else if ('text' in vnode) { //#text === p, #comment === p
                 var isText = vnode.type === '#text'
-                var dom = isText ? document.createTextNode(vnode.text) : document.createComment(vnode.text)
+                var dom = isText ? document.createTextNode(vnode.text) : /* istanbul ignore next */ document.createComment(vnode.text)
                 vnode.dom = dom
                 parentNode.removeChild(prevDom)
-                vnode.action = isText ? '替换为文本' : '替换为注释'
+                vnode.action = isText ? '替换为文本' :/* istanbul ignore next */  '替换为注释'
                 removeComponent(prevVnode) //移除元素节点或组件
             } else {
                 vnode.action = '替换为元素'
@@ -316,15 +313,11 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 '元素')
             if (!vnode.dom) {
                 var oldNode = oldChildren[i]
-
+                 /* istanbul ignore next */ 
                 toDOM(vnode, context, parentNode, oldNode && oldNode.dom || null)
             }
         }
 
-        //  if (!parentNode.contains(vnode.dom)) {
-        //      console.log(vnode.dom, parentNode)
-        //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
-        //  }
     }
 
 
@@ -337,8 +330,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             vnode.props && removeComponent(vnode)
         }
     }
-
-
 
 }
 
@@ -401,12 +392,6 @@ export function toDOM(vnode, context, parentNode, replaced) {
 //将Component中这个东西移动这里
 midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
     var instance = this.component
-    /*   if (!instance.vnode.dom) {
-           var parentNode = instance.container
-           instance.state = this.state //将merged state赋给它
-           toDOM(instance.vnode, instance.context, parentNode)
-       } else {*/
     updateComponent(instance)
-    /*  } */
     instance._forceUpdate = false
 }

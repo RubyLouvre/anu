@@ -10,6 +10,9 @@
   import {
       oneObject
   } from './util'
+    import {
+      patchRef,removeRef
+  } from './ref'
   import {
       document
   } from './browser'
@@ -22,25 +25,7 @@
   function clickHack() {}
   let inMobile = 'ontouchstart' in document
 
-  /**
-   * 收集DOM到组件实例的refs中
-   * 
-   * @param {any} instance 
-   * @param {any} ref 
-   * @param {any} dom 
-   */
-  function patchRef(instance, ref, dom, mount) {
-      if (typeof ref === 'function') {
-          ref(dom)
-      } else if (typeof ref === 'string') {
-          instance.refs[ref] = dom
-          dom.getDOMNode = getDOMNode
-      }
-  }
-  //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-  function getDOMNode() {
-      return this
-  }
+
   var xlink = "http://www.w3.org/1999/xlink"
   var stringAttributes = oneObject('id,title,alt,value,className')
   export var builtIdProperties = {} //不规则的属性名映射
@@ -128,7 +113,7 @@
               if (!prevProps[name]) { //添加全局监听事件
                   var eventName = getBrowserName(name)
                   var curType = typeof val
-                   /* istanbul ignore if */
+                  /* istanbul ignore if */
                   if (curType !== 'function')
                       throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
 
@@ -170,7 +155,9 @@
       //如果旧属性在新属性对象不存在，那么移除DOM
       for (let name in prevProps) {
           if (!(name in props)) {
-              if (isEventName(name)) { //移除事件
+              if (name === 'ref') {
+                  removeRef(instance, prevProps.ref)
+              }else if (isEventName(name)) { //移除事件
                   var events = dom.__events || {}
                   delete events[name]
               } else { //移除属性
@@ -188,9 +175,10 @@
 
       var method = value === '' ? 'removeAttribute' : 'setAttribute',
           namespace = null
-      //http://www.w3school.com.cn/xlink/xlink_reference.asp xlink:actuate xlink:href xlink:show xlink:type	
-
-      if (isSVG && name.indexOf('xlink:') === 0) {
+      //http://www.w3school.com.cn/xlink/xlink_reference.asp 
+      //https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enhancements
+      // xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow, xlinkTitle, xlinkType
+      if (isSVG && name.indexOf('xlink') === 0) {
           name = name.replace(/^xlink\:?/, '')
           namespace = xlink
       }

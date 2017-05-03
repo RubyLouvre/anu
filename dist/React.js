@@ -834,28 +834,37 @@
        }
    }
 
-   function clickHack() {}
-     let inMobile = 'ontouchstart' in document
-
-     /**
-      * 收集DOM到组件实例的refs中
-      * 
-      * @param {any} instance 
-      * @param {any} ref 
-      * @param {any} dom 
-      */
-     function patchRef(instance, ref, dom, mount) {
-         if (typeof ref === 'function') {
-             ref(instance)
-         } else if (typeof ref === 'string') {
-             instance.refs[ref] = dom
-             dom.getDOMNode = getDOMNode
-         }
-     }
-     //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+   //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
      function getDOMNode() {
          return this
      }
+
+   /**
+    * 收集DOM到组件实例的refs中
+    * 
+    * @param {any} instance 
+    * @param {any} ref 
+    * @param {any} dom 
+    */
+   function patchRef(instance, ref, dom) {
+       if (typeof ref === 'function') {
+           ref(dom)
+       } else if (typeof ref === 'string') {
+           instance.refs[ref] = dom
+           dom.getDOMNode = getDOMNode
+       }
+   }
+
+   function removeRef(instance, ref) {
+       if (instance && typeof ref === 'string') {
+           delete instance.refs[ref]
+       }
+   }
+
+   function clickHack() {}
+     let inMobile = 'ontouchstart' in document
+
+
      var xlink = "http://www.w3.org/1999/xlink"
      var stringAttributes = oneObject('id,title,alt,value,className')
      var builtIdProperties = {} //不规则的属性名映射
@@ -943,7 +952,7 @@
                  if (!prevProps[name]) { //添加全局监听事件
                      var eventName = getBrowserName(name)
                      var curType = typeof val
-                      /* istanbul ignore if */
+                     /* istanbul ignore if */
                      if (curType !== 'function')
                          throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
 
@@ -985,7 +994,9 @@
          //如果旧属性在新属性对象不存在，那么移除DOM
          for (let name in prevProps) {
              if (!(name in props)) {
-                 if (isEventName(name)) { //移除事件
+                 if (name === 'ref') {
+                     removeRef(instance, prevProps.ref)
+                 }else if (isEventName(name)) { //移除事件
                      var events = dom.__events || {}
                      delete events[name]
                  } else { //移除属性
@@ -1003,9 +1014,10 @@
 
          var method = value === '' ? 'removeAttribute' : 'setAttribute',
              namespace = null
-         //http://www.w3school.com.cn/xlink/xlink_reference.asp xlink:actuate xlink:href xlink:show xlink:type	
-
-         if (isSVG && name.indexOf('xlink:') === 0) {
+         //http://www.w3school.com.cn/xlink/xlink_reference.asp 
+         //https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enhancements
+         // xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow, xlinkTitle, xlinkType
+         if (isSVG && name.indexOf('xlink') === 0) {
              name = name.replace(/^xlink\:?/, '')
              namespace = xlink
          }
@@ -1222,13 +1234,10 @@
        var instance = vnode.instance
 
        applyComponentHook(instance, 7) //7
-       vnode._hostParent = vnode._wrapperState = vnode.instance = void 666
 
-       var ref = vnode.props.ref
-       if (typeof ref === 'string') {
-           var o = vnode._owner
-           o && (o.refs[ref] = null)
-       }
+       '_hostParent,_wrapperState,_instance,_owner'.replace(/\w+/g,function(name){
+           delete vnode[name]
+       })
 
        vnode
            .props
@@ -1444,7 +1453,7 @@
                    }
                } else if ('text' in vnode) { //#text === p, #comment === p
                    var isText = vnode.type === '#text'
-                   var dom = isText ? document.createTextNode(vnode.text) : document.createComment(vnode.text)
+                   var dom = isText ? document.createTextNode(vnode.text) : /* istanbul ignore next */ document.createComment(vnode.text)
                    vnode.dom = dom
                    parentNode.removeChild(prevDom)
                    vnode.action = isText ? '替换为文本' : '替换为注释'
@@ -1468,10 +1477,6 @@
                }
            }
 
-           //  if (!parentNode.contains(vnode.dom)) {
-           //      console.log(vnode.dom, parentNode)
-           //      parentNode.insertBefore(vnode.dom, newChildren[i].dom.nextSibling)
-           //  }
        }
 
 
@@ -1484,8 +1489,6 @@
                vnode.props && removeComponent(vnode)
            }
        }
-
-
 
    }
 
@@ -1548,13 +1551,7 @@
    //将Component中这个东西移动这里
    midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
        var instance = this.component
-       /*   if (!instance.vnode.dom) {
-              var parentNode = instance.container
-              instance.state = this.state //将merged state赋给它
-              toDOM(instance.vnode, instance.context, parentNode)
-          } else {*/
        updateComponent(instance)
-       /*  } */
        instance._forceUpdate = false
    }
 
@@ -1571,19 +1568,15 @@
     * @param {any} container
     */
    function render(vnode, container, cb) {
-       container.textContent = ''
        while (container.firstChild) {
            container.removeChild(container.firstChild)
        }
        let context = {}
 
-      // transaction.isInTransation = true
 
        var rootElement = diff(vnode, {}, {
            dom: container
        }, context)
-
-     //  transaction.isInTransation = false
        
       //组件返回组件实例，而普通虚拟DOM 返回元素节点
        return vnode.instance || rootElement
