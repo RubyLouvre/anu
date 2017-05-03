@@ -1,20 +1,34 @@
-import {extend, isComponent, isStateless, noop} from './util'
-import {applyComponentHook} from './lifecycle'
-import {transaction} from './transaction'
-import {Component} from './Component'
+import {
+    extend,
+    getContext,
+    isComponent,
+    isStateless,
+    noop
+} from './util'
+import {
+    applyComponentHook
+} from './lifecycle'
+import {
+    transaction
+} from './transaction'
+import {
+    Component
+} from './Component'
 
 /**
-     *
-     *
-     * @param {any} vnode
-     * @param {any} context
-     * @returns
-     */
+ *
+ *
+ * @param {any} vnode
+ * @param {any} context
+ * @returns
+ */
 export function toVnode(vnode, context) {
-    var Type = vnode.type, instance, rendered
+
+    var Type = vnode.type,
+        instance, rendered
+
     if (isComponent(Type)) {
         var props = vnode.props
-
         if (!isStateless(Type)) {
             var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
             props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
@@ -28,26 +42,33 @@ export function toVnode(vnode, context) {
             instance.vnode = vnode
 
             Component.call(instance, props, context) //重点！！
+
             applyComponentHook(instance, 0) //willMount
 
             rendered = transaction.renderWithoutSetState(instance)
         } else { //添加无状态组件的分支
-           // rendered = Type(props, context)
             instance = new Component(null, context)
             instance.render = instance.statelessRender = Type
             instance.vnode = vnode
             rendered = transaction.renderWithoutSetState(instance, props, context)
         }
+        if (vnode.instance) {
+            instance.parentInstance = vnode.instance
+            vnode.instance.childInstance = instance
+        }
 
-        instance.parentInstance = vnode.instance
 
         instance.prevProps = vnode.props //实例化时prevProps
-       
 
         var key = vnode.key
         extend(vnode, rendered)
         vnode.key = key
         vnode.instance = instance
+
+        if (instance.getChildContext) {
+            vnode.context = getContext(instance, context)
+        }
+
 
         return toVnode(vnode, context)
     } else {

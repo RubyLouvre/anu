@@ -18,7 +18,7 @@ export function extend(obj, props) {
  * 
  * @export
  */
-export function noop(){}
+export function noop() {}
 /**
  * 类继承
  * 
@@ -109,6 +109,12 @@ export function oneObject(array, val) {
     return result
 }
 
+export function getContext(instance, context) {
+    if (instance.getChildContext) {
+        return extend(extend({}, context), instance.getChildContext())
+    }
+    return context
+}
 var rcamelize = /[-_][^-_]/g
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
@@ -116,7 +122,7 @@ export function camelize(target) {
         return target
     }
     //转换为驼峰风格
-    return target.replace(rcamelize, function(match) {
+    return target.replace(rcamelize, function (match) {
         return match.charAt(1).toUpperCase()
     })
 }

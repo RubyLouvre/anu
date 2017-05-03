@@ -1,13 +1,23 @@
-import {createElement} from './createElement'
+import {
+    createElement
+} from './createElement'
 
-import {PureComponent} from './PureComponent'
-import {Component} from './Component'
+import {
+    PureComponent
+} from './PureComponent'
+import {
+    Component
+} from './Component'
 
 //import {transaction} from './transaction'
-import {win as window} from './browser'
+import {
+    win as window
+} from './browser'
 
 
-import {diff} from './diff'
+import {
+    diff
+} from './diff'
 
 
 var React = {
@@ -32,9 +42,16 @@ function render(vnode, container, cb) {
     var rootElement = diff(vnode, {}, {
         dom: container
     }, context)
-    
-   //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    return vnode.instance || rootElement
+    var instance = vnode.instance
+    if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
+        while (instance.parentInstance) {
+            instance = instance.parentInstance
+        }
+        return instance
+    }else{
+        return rootElement
+    }
+
 }
 
 window.ReactDOM = React

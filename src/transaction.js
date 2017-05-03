@@ -24,7 +24,7 @@ export var transaction = {
 
         try {
             CurrentOwner.cur = instance;
-            var vnode =  instance.render(nextProps, context)
+            var vnode = instance.render(nextProps, context)
             if (vnode === null) {
                 vnode = {
                     type: '#comment',
