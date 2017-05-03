@@ -45,7 +45,7 @@ describe('browser', function () {
         expect(el.setAttributeNS).toA('function')
         expect(el.removeAttribute).toA('function')
         expect(el.removeAttributeNS).toA('function')
-el.removeAttribute('aaa')
+        el.removeAttribute('aaa')
         expect(el.appendChild).toA('function')
         expect(el.removeChild).toA('function')
         expect(el.insertBefore).toA('function')

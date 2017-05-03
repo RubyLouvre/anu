@@ -1,5 +1,4 @@
-import eventHook, { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
-let { $serial } = browser;
+import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'src/React'
 import PureComponent from 'src/PureComponent'
 

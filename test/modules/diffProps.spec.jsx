@@ -1,4 +1,4 @@
-import eventHook, {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
 
 import React from 'src/React'
 
