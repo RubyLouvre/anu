@@ -619,7 +619,6 @@
 
                rendered = transaction.renderWithoutSetState(instance)
            } else { //添加无状态组件的分支
-               // rendered = Type(props, context)
                instance = new Component(null, context)
                instance.render = instance.statelessRender = Type
                instance.vnode = vnode
@@ -1360,7 +1359,7 @@
     */
    function getTopComponentName(vnode, instance) {
        while (instance.parentInstance) {
-           instance = nstance.parentInstance
+           instance = instance.parentInstance
        }
        var ctor = instance.statelessRender || instance.constructor
        return (ctor.displayName || ctor.name)

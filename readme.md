@@ -19,7 +19,7 @@ https://github.com/RubyLouvre/anu/wiki
 ### 目前没有支持的方法与对象
 
 1. PropTypes
-2. childContextTypes
+2. childContextTypes(不需要定义它，就能使用context)
 3. Children的方法集合
 4. mixin机制
 5. createClass

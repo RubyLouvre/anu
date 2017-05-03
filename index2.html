@@ -17,52 +17,29 @@
     <script src="./test/react-dom.js"></script>-->
     <script src="./test/babel.js"></script>
     <script  type="text/babel" >
-   var arr = ['111','222','333']
-  /* class App extends React.Component{
+   var index = 1
+ class App extends React.Component{
         
         handleClick(){
-  
+  index = 0
          this.forceUpdate()
            
         }
         render() {
             return <div onClick={ this.handleClick.bind(this)}>
-                <p>222</p>
-                <A /></div>
+ {index ? <A />: <B />}</div>
         }
-   }*/
-    class App extends React.Component{
-       constructor(props){
-           super(props)
-           this.state = {
-               title: 111
-           }
-       }
-       
-        handleClick(){
-  
-          this.setState({
-              title: arr.shift() || new Date - 0
-          })
-           
-        }
+   }
+    class A extends React.Component{
+
         render() {
-            return <B title={this.state.title} onClick={ this.handleClick.bind(this)}/>
+            return <strong>111</strong>
         }
     }
    
     class B extends React.Component{
-        componentWillReceiveProps(){
-            this.forceUpdate()
-        }
-        render() {
-            return <div ref='a'  title={this.props.title} onClick={this.props.onClick}  >{new Date-0}<C/></div>;
-        }
-    }
-   
-     class C extends React.Component{
-        render() {
-            return <div >{new Date-0}</div>;
+       render() {
+            return <em>111</em>
         }
     }
 

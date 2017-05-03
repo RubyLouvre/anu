@@ -763,9 +763,9 @@ describe('node模块', function () {
         expect(s).toInstanceOf(App)
         //expect(div.getElementsByTagName('p').length).toBe(1)
     })
-   it('一个元素拥有多个实例2', async () => {
+    it('一个元素拥有多个实例2', async () => {
         var arr = ['111', '222', '333']
-        class App extends React.Component{
+        class App extends React.Component {
             render() {
                 return <div><A /></div>
             }
@@ -810,6 +810,41 @@ describe('node模块', function () {
         expect(div.getElementsByTagName('strong').length).toBe(1)
         s.forceUpdate()
         expect(div.getElementsByTagName('strong').length).toBe(1)
+        //expect(div.getElementsByTagName('p').length).toBe(1)
+    })
+
+    it('用一个新组件替换另一个组件', async () => {
+        var index = 1
+        class App extends React.Component {
+
+            handleClick() {
+                index = 0
+                this.forceUpdate()
+
+            }
+            render() {
+                return <div onClick={this.handleClick.bind(this)}>
+                    {index ? <A /> : <B />}</div>
+            }
+        }
+        class A extends React.Component {
+
+            render() {
+                return <strong>111</strong>
+            }
+        }
+
+        class B extends React.Component {
+            render() {
+                return <em>111</em>
+            }
+        }
+        var s = React.render(<App />, div)
+
+        await browser.pause(100).$apply()
+        expect(div.getElementsByTagName('strong').length).toBe(1)
+        s.handleClick()
+        expect(div.getElementsByTagName('em').length).toBe(1)
         //expect(div.getElementsByTagName('p').length).toBe(1)
     })
 })
