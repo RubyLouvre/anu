@@ -1,4 +1,4 @@
-import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'src/React'
 import PureComponent from 'src/PureComponent'
 
@@ -9,28 +9,28 @@ describe('无狀态组件', function () {
     });
     after(async () => {
         await afterHook(false);
-    });
+    })
+    var body = document.body, div
+    beforeEach(function () {
+        div = document.createElement('div')
+        body.appendChild(div)
+    })
+    afterEach(function () {
+        body.removeChild(div)
+    })
     it('stateless', async () => {
         function HelloComponent(props,
         /* context */) {
             return <div onClick={() => props.name = 11}>Hello {props.name}</div>
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+   
         var s = React.render(<HelloComponent name="Sebastian" />, div)
 
         await browser
             .pause(200)
             .$apply()
-        console.log(s.type, '!!!')
         expect(s.vnode.dom.innerHTML).toBe('Hello Sebastian')
 
-        document
-            .body
-            .removeChild(div)
     })
 
     it('setState', async () => {
@@ -62,11 +62,7 @@ describe('无狀态组件', function () {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
             }
         }
-        var div = document.createElement('div');
 
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<A />, div)
         await browser
             .pause(200)
@@ -77,10 +73,9 @@ describe('无狀态组件', function () {
             .pause(200)
             .$apply()
         expect(s.vnode.dom.innerHTML).toBe('3')
+
         expect(a).toBe(3)
-        document
-            .body
-            .removeChild(div)
+
     });
     it('setState2', async () => {
         var a = 1
@@ -111,15 +106,12 @@ describe('无狀态组件', function () {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+   
         var s = React.render(<A />, div)
         await browser
             .pause(200)
             .$apply()
+
         expect(s.vnode.dom.innerHTML).toBe('1')
         await browser
             .click(s.vnode.dom)
@@ -127,9 +119,7 @@ describe('无狀态组件', function () {
             .$apply()
         expect(s.vnode.dom.innerHTML).toBe('1')
         expect(a).toBe(3)
-        document
-            .body
-            .removeChild(div)
+
     });
     it('PureComponent', async () => {
         var a = 1
@@ -154,15 +144,12 @@ describe('无狀态组件', function () {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+  
         var s = React.render(<A />, div)
         await browser
             .pause(200)
             .$apply()
+
         expect(s.vnode.dom.innerHTML).toBe('7')
         await browser
             .click(s.vnode.dom)
@@ -170,9 +157,7 @@ describe('无狀态组件', function () {
             .$apply()
         expect(s.vnode.dom.innerHTML).toBe('7')
 
-        document
-            .body
-            .removeChild(div)
+
     });
     it('PureComponent2', async () => {
         class A extends React.PureComponent {
@@ -197,25 +182,20 @@ describe('无狀态组件', function () {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+  
         var s = React.render(<A />, div)
         await browser
             .pause(100)
             .$apply()
         expect(s.vnode.dom.innerHTML).toBe('7')
+
         await browser
             .click(s.vnode.dom)
             .pause(200)
             .$apply()
         expect(s.vnode.dom.innerHTML).toBe('9')
 
-        document
-            .body
-            .removeChild(div)
+
     });
     it('子组件是无状态组件', async () => {
         function Select(props) {
@@ -241,11 +221,7 @@ describe('无狀态组件', function () {
             }
 
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+    
         var s = React.render(<App />, div)
         await browser
             .pause(100)
@@ -258,9 +234,7 @@ describe('无狀态组件', function () {
         expect(s.refs.a.value).toBe('南京22')
         expect(div.getElementsByTagName('strong')[0].innerHTML).toBe('南京22')
 
-        document
-            .body
-            .removeChild(div)
+
     });
     it('多选下拉框', async () => {
         class App extends React.Component {
@@ -301,11 +275,7 @@ describe('无狀态组件', function () {
             }
 
         }
-        var div = document.createElement('div');
 
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<App />, div)
         await browser
             .pause(100)
@@ -324,9 +294,7 @@ describe('无狀态组件', function () {
         expect(s.refs.b.selected).toBe(true)
         expect(s.refs.c.selected).toBe(false)
         expect(s.refs.d.selected).toBe(true)
-        document
-            .body
-            .removeChild(div)
+  
     })
 
     it('多选下拉框defaultValue', async () => {
@@ -348,19 +316,13 @@ describe('无狀态组件', function () {
                 </select>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+ 
         var s = React.render(<App />, div)
         await browser
             .pause(100)
             .$apply()
         expect(s.refs.c.selected).toBe(true)
-         document
-            .body
-            .removeChild(div)
+
     })
 
      it('多选下拉框没有defaultValue', async () => {
@@ -380,18 +342,12 @@ describe('无狀态组件', function () {
                 </select>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+  
         var s = React.render(<App />, div)
         await browser
             .pause(100)
             .$apply()
         expect(s.refs.a.selected).toBe(true)
-         document
-            .body
-            .removeChild(div)
+
     })
 })

@@ -1,4 +1,4 @@
-import eventHook, { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'src/React'
 
 describe('node模块', function () {
@@ -37,7 +37,6 @@ describe('node模块', function () {
 
     });
     it('输出简单的元素', async () => {
-
 
         var s = React.render(<div>222</div>, div)
 
@@ -176,11 +175,7 @@ describe('node模块', function () {
             }
         }
 
-        var div = document.createElement('div');
 
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
@@ -193,9 +188,6 @@ describe('node模块', function () {
 
         expect(s.vnode.dom.children[0].selected).toBe(true)
 
-        document
-            .body
-            .removeChild(div)
 
     })
 
@@ -258,11 +250,7 @@ describe('node模块', function () {
                 </select>
             }
         }
-
-        var div = document.createElement('div');
-
-        document.body
-            .appendChild(div);
+;
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
@@ -275,9 +263,7 @@ describe('node模块', function () {
         expect(s.vnode.dom.children[0].text).toBe('杭州')
         expect(s.vnode.dom.children[1].text).toBe('南京')
         expect(s.vnode.dom.children[2].text).toBe('北京')
-        document
-            .body
-            .removeChild(div)
+
 
     })
 
@@ -390,10 +376,7 @@ describe('node模块', function () {
 
     })
     it('测试textarea元素的oninput事件', async () => {
-        let rs,
-            prom = new Promise((s) => {
-                rs = s;
-            })
+   
         var values = ['x', 'xx', 'xxx', 'xxxx']
         class TextArea extends React.Component {
             constructor() {
@@ -407,12 +390,8 @@ describe('node模块', function () {
                 this.setState({ value: e.target.value })
             }
 
-            componentDidMount() {
-                rs()
-            }
             componentDidUpdate() {
                 expect(s.vnode.dom.children[0].value).toBe(values.shift())
-                browser.$next();
             }
             render() {
                 return <div>
@@ -428,30 +407,25 @@ describe('node模块', function () {
     
         var s = React.render(<TextArea />, div)
 
-        await prom;
+        await browser
+            .pause(100)
+            .$apply()
 
         expect(s.vnode.dom.children[0].value).toBe('4')
 
         await browser
-            .setValue('#node5', 'xxxx')
-            .$apply('wait')
+            .setValue('#node5', 'xxxx').pause(100).$apply()
+       
 
     })
     it('非受控组件textarea的value不可变', async () => {
-        let rs,
-            prom = new Promise((s) => {
-                rs = s;
-            })
+   
         class TextArea extends React.Component {
             constructor() {
                 super()
                 this.state = {
                     value: 5
                 }
-            }
-
-            componentDidMount() {
-                rs()
             }
             render() {
                 return <div>
@@ -460,27 +434,22 @@ describe('node模块', function () {
             }
         }
 
-        var div = document.createElement('div');
 
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<TextArea />, div)
 
-        await prom;
+         await browser
+            .pause(100)
+            .$apply()
 
         expect(s.vnode.dom.children[0].value).toBe('5')
 
         await browser
             .setValue('#node6', 'xxxx')
-            .pause(300)
+            .pause(100)
             .$apply()
 
         expect(s.vnode.dom.children[0].value).toBe('5')
 
-        document
-            .body
-            .removeChild(div)
 
     })
     it('非受控组件checkbox的checked不可变', async () => {
@@ -500,11 +469,7 @@ describe('node模块', function () {
             }
         }
 
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+  
         var s = React.render(<Com />, div)
         await browser
             .pause(100)
@@ -519,9 +484,6 @@ describe('node模块', function () {
 
         expect(s.vnode.dom.children[0].checked).toBe(true)
 
-        document
-            .body
-            .removeChild(div)
 
     })
     it('非受控组件select的value不可变', async () => {
@@ -541,11 +503,6 @@ describe('node模块', function () {
             }
         }
 
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<Com />, div)
         await browser
             .pause(100)
@@ -554,15 +511,13 @@ describe('node模块', function () {
         expect(s.vnode.dom.children[1].selected).toBe(true)
         await browser
             .selectByVisibleText('#node8', 'ccc')
-            .pause(300)
+            .pause(200)
             .$apply()
 
         expect(s.vnode.dom.children[2].selected).toBe(false)
         expect(s.vnode.dom.children[1].selected).toBe(true)
 
-        document
-            .body
-            .removeChild(div)
+  
     })
 
     it('父子组件间的通信', async () => {
@@ -614,11 +569,6 @@ describe('node模块', function () {
 
         }
 
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<App />, div)
         await browser
             .pause(100)
@@ -628,9 +578,7 @@ describe('node模块', function () {
             .selectByVisibleText('#communicate', '北京').pause(100)
             .$apply()
         expect(s.refs.sss.value).toBe('北京')
-        document
-            .body
-            .removeChild(div)
+        
     })
     it('empty Component', async () => {
         class Empty extends React.Component {
@@ -659,11 +607,7 @@ describe('node模块', function () {
             }
         }
 
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+   
         var s = React.render(<App />, div)
         await browser
             .pause(100)
@@ -672,9 +616,7 @@ describe('node模块', function () {
         await browser.setValue(s.refs.a, '北京').pause(100)
             .$apply()
         expect(s.refs.a.value).toBe('北京')
-        document
-            .body
-            .removeChild(div)
+       
     })
     it('移除组件', async () => {
         var str = ''
@@ -715,19 +657,13 @@ describe('node模块', function () {
 
             }
         };
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+      
         var s = React.render(<App />, div)
 
         await browser.pause(100).click(s.refs.a).pause(100)
             .$apply()
         expect(str).toBe('xxxx yyyy')
-        document
-            .body
-            .removeChild(div)
+  
     })
     it('移除组件2', async () => {
         var index = 1
@@ -748,18 +684,12 @@ describe('node模块', function () {
 
             }
         };
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+      
         var s = React.render(<App />, div)
 
         await browser.pause(100).click(s.refs.a).pause(100)
             .$apply()
         expect(div.getElementsByTagName('p').length).toBe(1)
-        document
-            .body
-            .removeChild(div)
+        
     })
 })

@@ -1,9 +1,7 @@
+import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'src/React'
 import {SyntheticEvent, addEvent} from 'src/event'
 import {DOMElement} from 'src/browser'
-
-import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
-let {$serial} = browser;
 
 describe('ReactDOM.render返回根组件的实例', function () {
     this.timeout(200000);
@@ -12,7 +10,16 @@ describe('ReactDOM.render返回根组件的实例', function () {
     });
     after(async() => {
         await afterHook(false);
-    });
+    })
+    var body = document.body, div
+    beforeEach(function () {
+        div = document.createElement('div')
+        body.appendChild(div)
+    })
+    afterEach(function () {
+        body.removeChild(div)
+
+    })
     it('事件与样式', async() => {
         class A extends React.Component {
             constructor() {
@@ -43,32 +50,26 @@ describe('ReactDOM.render返回根组件的实例', function () {
             }
         }
 
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
-        var rootInstance = ReactDOM.render(
+   
+        var s = ReactDOM.render(
             <A/>, div);
         await browser
             .pause(100)
             .$apply()
-        expect(rootInstance.state.aaa).toBe(111)
+        expect(s.state.aaa).toBe(111)
         await browser
-            .click(rootInstance.vnode.dom)
+            .click(s.vnode.dom)
             .pause(100)
             .$apply()
 
-        expect(rootInstance.state.aaa).toBe(112)
+        expect(s.state.aaa).toBe(112)
         await browser
-            .click(rootInstance.vnode.dom)
+            .click(s.vnode.dom)
             .pause(100)
             .$apply()
 
-        expect(rootInstance.state.aaa).toBe(113)
-        document
-            .body
-            .removeChild(div)
+        expect(s.state.aaa).toBe(113)
+       
     })
 
     it('冒泡', async() => {
@@ -105,25 +106,18 @@ describe('ReactDOM.render返回根组件的实例', function () {
             }
         }
 
-        var div = document.createElement('div');
+  
+        var s = ReactDOM.render(
+            <A/>, div)
 
-        document
-            .body
-            .appendChild(div);
-        var rootInstance = ReactDOM.render(
-            <A/>, div);
         await browser
             .pause(100)
-            .$apply()
-        await browser
             .click('#bubble')
             .pause(100)
             .$apply()
 
         expect(aaa.trim()).toBe('ccc bbb')
-        document
-            .body
-            .removeChild(div)
+       
 
     })
 
@@ -162,25 +156,18 @@ describe('ReactDOM.render返回根组件的实例', function () {
             }
         }
 
-        var div = document.createElement('div');
+ 
+        var s = ReactDOM.render(
+            <A/>, div)
 
-        document
-            .body
-            .appendChild(div);
-        var rootInstance = ReactDOM.render(
-            <A/>, div);
         await browser
             .pause(100)
-            .$apply()
-        await browser
             .click('#capture')
             .pause(100)
             .$apply()
 
         expect(aaa.trim()).toBe('aaa bbb')
-        document
-            .body
-            .removeChild(div)
+
 
     })
     it('event', function () {
