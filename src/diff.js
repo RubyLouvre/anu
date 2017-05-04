@@ -144,6 +144,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
         var nextDom = createDOMElement(vnode)
         if (dom) {
             while (dom.firstChild) {
+               
                 nextDom.appendChild(dom.firstChild)
             }
         }
@@ -164,7 +165,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     if (prevVnode._hasSetInnerHTML) {
 
         while (dom.firstChild) {
-            dom.removeChild(dom.firstChild)
+           var removed = dom.removeChild(dom.firstChild)
         }
     }
     if (!vnode._hasSetInnerHTML && vnode.props) {
@@ -226,14 +227,18 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             getTopComponentName(vnode, vnode.instance) :
             vnode.type
         let uuid = computeUUID(tag, vnode)
+        console.log(uuid)
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
         } else {
             mapping[uuid] = [vnode]
         }
     }
+  
     //第二步，遍历新children, 从hash中取出旧节点
+   
     var removedChildren = oldChildren.concat()
+    
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
@@ -278,7 +283,8 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 delete vnode.prevVnode
                 delete vnode._hasInstance
                 vnode.action = '重复利用旧的实例更新组件'
-                diff(vnode, prevVnode, vParentNode, context)
+                console.log('重复利用旧的实例更新组件',prevVnode.dom.nodeName)
+                vnode.dom = diff(vnode, prevVnode, vParentNode, context)
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
                 if (isTextOrComment) {
                     vnode.dom = prevDom
@@ -290,21 +296,26 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                     }
                 } else {
                     vnode.action = '更新元素'
-                    diff(vnode, prevVnode, vParentNode, context)
+                    //必须设置vnode.dom = newDOM
+                    console.log('更校元素',vnode, prevVnode)
+                    vnode.dom = diff(vnode, prevVnode, vParentNode, context)
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
                 let isText = vnode.type === '#text'
                 var dom = isText ? document.createTextNode(vnode.text) : /* istanbul ignore next */ document.createComment(vnode.text)
                 vnode.dom = dom
                 parentNode.replaceChild(dom, prevDom)
+                console.log('isTextOrComment', dom, prevDom)
                 vnode.action = isText ? '替换为文本' : /* istanbul ignore next */ '替换为注释'
+                 //必须设置vnode.dom = newDOM
                 removeComponent(prevVnode) //移除元素节点或组件
             } else { //由其他类型变成元素
                 vnode.action = '替换为元素'
-                diff(vnode, prevVnode, vParentNode, context)
+                console.log(vnode.type, prevVnode.type,'替换成元素' )
+                vnode.dom = diff(vnode, prevVnode, vParentNode, context)
             }
             //当这个孩子是上级祖先传下来的，那么它是相等的
-            if (vnode !== prevVnode) {
+            if (vnode !== prevVnode ) {
                 delete prevVnode.dom //clear reference
             }
         } else { //添加新节点
@@ -313,6 +324,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 '元素')
             if (!vnode.dom) {
                 var oldNode = oldChildren[i]
+              //  console.log('添加新节点',oldNode && oldNode.dom )
                 /* istanbul ignore next */
                 toDOM(vnode, context, parentNode, oldNode && oldNode.dom || null)
             }
@@ -361,8 +373,6 @@ export function toDOM(vnode, context, parentNode, replaced) {
     }
 
     var instance = vnode.instance
-
-
     var canComponentDidMount = instance && !vnode.dom
     vnode.dom = dom
     if (isElement) {
@@ -386,7 +396,6 @@ export function toDOM(vnode, context, parentNode, replaced) {
             parentNode.appendChild(dom)
         }
         if (instances) {
-            //instance._mountOrder = mountOrder++;
             while (instance = instances.shift()) {
                 applyComponentHook(instance, 2)
             }

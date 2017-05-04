@@ -1395,6 +1395,7 @@
           var nextDom = createDOMElement(vnode);
           if (dom) {
               while (dom.firstChild) {
+
                   nextDom.appendChild(dom.firstChild);
               }
           }
@@ -1415,7 +1416,7 @@
       if (prevVnode._hasSetInnerHTML) {
 
           while (dom.firstChild) {
-              dom.removeChild(dom.firstChild);
+              var removed = dom.removeChild(dom.firstChild);
           }
       }
       if (!vnode._hasSetInnerHTML && vnode.props) {
@@ -1474,14 +1475,18 @@
           var vnode = oldChildren[i];
           var tag = vnode.instance ? getTopComponentName(vnode, vnode.instance) : vnode.type;
           var uuid = computeUUID(tag, vnode);
+          console.log(uuid);
           if (mapping[uuid]) {
               mapping[uuid].push(vnode);
           } else {
               mapping[uuid] = [vnode];
           }
       }
+
       //第二步，遍历新children, 从hash中取出旧节点
+
       var removedChildren = oldChildren.concat();
+
       for (var _i = 0, _n = newChildren.length; _i < _n; _i++) {
           var _vnode = newChildren[_i];
           var Type = _vnode.type;
@@ -1526,7 +1531,8 @@
                   delete _vnode2.prevVnode;
                   delete _vnode2._hasInstance;
                   _vnode2.action = '重复利用旧的实例更新组件';
-                  diff(_vnode2, prevVnode, vParentNode, context);
+                  console.log('重复利用旧的实例更新组件', prevVnode.dom.nodeName);
+                  _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
               } else if (_vnode2.type === prevVnode.type) {
                   //都是元素，文本或注释
                   if (isTextOrComment) {
@@ -1539,7 +1545,9 @@
                       }
                   } else {
                       _vnode2.action = '更新元素';
-                      diff(_vnode2, prevVnode, vParentNode, context);
+                      //必须设置vnode.dom = newDOM
+                      console.log('更校元素', _vnode2, prevVnode);
+                      _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
                   }
               } else if (isTextOrComment) {
                   //由其他类型变成文本或注释
@@ -1547,12 +1555,15 @@
                   var dom = isText ? document.createTextNode(_vnode2.text) : /* istanbul ignore next */document.createComment(_vnode2.text);
                   _vnode2.dom = dom;
                   parentNode.replaceChild(dom, prevDom);
+                  console.log('isTextOrComment', dom, prevDom);
                   _vnode2.action = isText ? '替换为文本' : /* istanbul ignore next */'替换为注释';
+                  //必须设置vnode.dom = newDOM
                   removeComponent(prevVnode); //移除元素节点或组件
               } else {
                   //由其他类型变成元素
                   _vnode2.action = '替换为元素';
-                  diff(_vnode2, prevVnode, vParentNode, context);
+                  console.log(_vnode2.type, prevVnode.type, '替换成元素');
+                  _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
               }
               //当这个孩子是上级祖先传下来的，那么它是相等的
               if (_vnode2 !== prevVnode) {
@@ -1563,6 +1574,7 @@
               _vnode2.action = '添加新' + (_vnode2.type === '#text' ? '文本' : '元素');
               if (!_vnode2.dom) {
                   var oldNode = oldChildren[_i2];
+                  //  console.log('添加新节点',oldNode && oldNode.dom )
                   /* istanbul ignore next */
                   toDOM(_vnode2, context, parentNode, oldNode && oldNode.dom || null);
               }
@@ -1607,7 +1619,6 @@
       }
 
       var instance = vnode.instance;
-
       var canComponentDidMount = instance && !vnode.dom;
       vnode.dom = dom;
       if (isElement) {
@@ -1632,7 +1643,6 @@
               parentNode.appendChild(dom);
           }
           if (instances) {
-              //instance._mountOrder = mountOrder++;
               while (instance = instances.shift()) {
                   applyComponentHook(instance, 2);
               }

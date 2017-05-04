@@ -11,17 +11,38 @@
             background: red;
         }
     </style>
+<script type='text/javascript' src="./dist/React.js"></script>
 
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+var index = 1
+const Link = ({ active, children }) => {
+  console.log(children, 'Link', active)
+  if (active) {
+    return <span>{children}</span>
+  }
 
-    <script>
-       'use strict'
-       var b = {
-           a : {}
-       }
-       Object.freeze(b)
-     //  b.xx = 'www'
-     b.a.xx = 'ddd'
-     console.log(b.a)
+  return (
+    <a href="#">
+      {children}
+    </a>
+  )
+}
+
+class App extends React.Component{
+    update(){
+        index = 0
+        this.forceUpdate()
+    }
+   render(){
+    return index ?<div><span>111</span><Link active={false} children={'xxx'} /><Link active={false} children={'yyyy'} /><Link active={false} children={'zzzz'} /></div>:
+    <div><span>111</span><Link active={true} children={'xxx'} /><Link active={false} children={'yyyy'} /><Link active={false} children={'zzzz'} /></div>
+    }
+}
+var s 
+window.onload = function(){
+   s = ReactDOM.render( <App />, document.getElementById('example'))
+}
     </script>
 </head>
 
