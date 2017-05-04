@@ -14,7 +14,7 @@
         }
     </style>
 
-  <!--<script src="./test/react.js"></script>
+<!--  <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
       <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
@@ -96,12 +96,8 @@ const toggleTodo = (id) => ({
 
 const Link = ({ active, children, onClick }) => {
   if (active) {
-        console.log(children, 'Link', active)
-
     return <span>{children}</span>
   }
-  console.log(children, 'Link', active)
-
   return (
     <a href="#"
        onClick={e => {

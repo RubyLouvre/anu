@@ -2,7 +2,8 @@ import {
     getContext,
     getInstances,
     matchInstance,
-    midway
+    midway,
+    extend
 } from './util'
 import {
     applyComponentHook
@@ -57,10 +58,14 @@ export function updateComponent(instance) {
     //context只能孩子用，因此不要影响原instance.context
 
     context = getContext(instance, context)
-
-    var dom = diff(rendered, instance.vnode, vnode._hostParent, context)
+   var hostParent = vnode._hostParent
+    //vnode._hostParent会丢失
+    var dom = diff(rendered, instance.vnode, hostParent, context)
+    if(hostParent){
+         rendered._hostParent = hostParent
+         extend(vnode, rendered)
+    }
     instance.vnode = rendered
-    // rendered.dom = dom
     delete instance.prevState //方便下次能更新this.prevState
     instance.prevProps = props // 更新prevProps
     applyComponentHook(instance, 6, nextProps, nextState, context)
@@ -75,10 +80,10 @@ function removeComponent(vnode) {
     var instance = vnode.instance
 
     applyComponentHook(instance, 7) //7
-
     '_hostParent,_wrapperState,_instance,_owner'.replace(/\w+/g, function (name) {
         delete vnode[name]
     })
+
     removeRef(instance, vnode.props.ref)
 
     vnode
@@ -143,8 +148,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
         var nextDom = createDOMElement(vnode)
         if (dom) {
-            while (dom.firstChild) {
-               
+            while (dom.firstChild) {  
                 nextDom.appendChild(dom.firstChild)
             }
         }
@@ -156,6 +160,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
             }
         }
         dom = nextDom
+        vnode.dom = nextDom
     }
     //必须在diffProps前添加它的dom
     vnode.dom = dom
@@ -163,7 +168,6 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
         diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
     }
     if (prevVnode._hasSetInnerHTML) {
-
         while (dom.firstChild) {
            var removed = dom.removeChild(dom.firstChild)
         }
@@ -227,7 +231,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             getTopComponentName(vnode, vnode.instance) :
             vnode.type
         let uuid = computeUUID(tag, vnode)
-        console.log(uuid)
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
         } else {
@@ -271,6 +274,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             loop: while (k = removedChildren.shift()) {
                 if (!k.use) {
                     prevVnode = k
+                    prevVnode.use = true
                     break loop
                 }
             }
@@ -283,7 +287,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 delete vnode.prevVnode
                 delete vnode._hasInstance
                 vnode.action = '重复利用旧的实例更新组件'
-                console.log('重复利用旧的实例更新组件',prevVnode.dom.nodeName)
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context)
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
                 if (isTextOrComment) {
@@ -293,25 +296,26 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                         vnode.dom.nodeValue = vnode.text
                     } else {
                         vnode.action = '不改文本'
+                        var pp = newChildren[i-1]
+                        
+                        parentNode.insertBefore(vnode.dom, pp && pp.dom ||null )
                     }
                 } else {
                     vnode.action = '更新元素'
                     //必须设置vnode.dom = newDOM
-                    console.log('更校元素',vnode, prevVnode)
                     vnode.dom = diff(vnode, prevVnode, vParentNode, context)
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
                 let isText = vnode.type === '#text'
                 var dom = isText ? document.createTextNode(vnode.text) : /* istanbul ignore next */ document.createComment(vnode.text)
                 vnode.dom = dom
+               
                 parentNode.replaceChild(dom, prevDom)
-                console.log('isTextOrComment', dom, prevDom)
                 vnode.action = isText ? '替换为文本' : /* istanbul ignore next */ '替换为注释'
                  //必须设置vnode.dom = newDOM
                 removeComponent(prevVnode) //移除元素节点或组件
             } else { //由其他类型变成元素
                 vnode.action = '替换为元素'
-                console.log(vnode.type, prevVnode.type,'替换成元素' )
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context)
             }
             //当这个孩子是上级祖先传下来的，那么它是相等的
@@ -324,7 +328,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 '元素')
             if (!vnode.dom) {
                 var oldNode = oldChildren[i]
-              //  console.log('添加新节点',oldNode && oldNode.dom )
                 /* istanbul ignore next */
                 toDOM(vnode, context, parentNode, oldNode && oldNode.dom || null)
             }
@@ -337,8 +340,11 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     if (removedChildren.length) {
         for (let i = 0, n = removedChildren.length; i < n; i++) {
             let vnode = removedChildren[i]
-            parentNode.removeChild(vnode.dom)
-            vnode.props && removeComponent(vnode)
+            if(!vnode.use){
+               parentNode.removeChild(vnode.dom)
+              
+               vnode.props && removeComponent(vnode)
+            }
         }
     }
 
@@ -377,7 +383,6 @@ export function toDOM(vnode, context, parentNode, replaced) {
     vnode.dom = dom
     if (isElement) {
         diffProps(vnode.props, {}, vnode, {})
-
         if (!vnode._hasSetInnerHTML) {
             diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
         }
