@@ -17,3 +17,5 @@ require('./modules/event.spec.jsx')
 require('./modules/context.spec.jsx')
 
 require('./modules/node.spec.jsx')
+
+require('./modules/redux.spec.jsx')

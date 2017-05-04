@@ -36,23 +36,28 @@ var React = {
  * @param {any} container
  */
 function render(vnode, container, cb) {
-    while (container.firstChild) {
-        container.removeChild(container.firstChild)
-    }
     let context = {}
-
-
-    var rootElement = diff(vnode, {}, {
+   if (!container.oldVnode) {
+      while (container.firstChild) {
+            container.removeChild(container.firstChild)
+        }
+}
+  
+    var rootVnode = diff(vnode,  container.oldVnode|| {}, {
         dom: container
     }, context)
+    
+
+    container.oldVnode = vnode
     var instance = vnode.instance
     if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
         while (instance.parentInstance) {
             instance = instance.parentInstance
         }
         return instance
-    }else{
-        return rootElement
+
+    } else {
+        return rootVnode
     }
 
 }

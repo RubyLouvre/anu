@@ -20,7 +20,9 @@ import {
     document,
     createDOMElement
 } from './browser'
-
+import {
+    removeRef
+} from './ref'
 import {
     setControlledComponent
 } from './ControlledComponent'
@@ -77,6 +79,7 @@ function removeComponent(vnode) {
     '_hostParent,_wrapperState,_instance,_owner'.replace(/\w+/g, function (name) {
         delete vnode[name]
     })
+    removeRef(instance, vnode.props.ref)
 
     vnode
         .props
@@ -107,7 +110,6 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     //更新组件
     var isComponent = typeof Type === 'function'
     var instance = prevVnode.instance
-
     if (instance) {
         instance = isComponent && matchInstance(instance, Type)
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
@@ -135,7 +137,6 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
         }
     }
     if (isComponent) {
-
         vnode._hostParent = vParentNode
         return toDOM(vnode, context, parentNode, prevVnode.dom)
     }

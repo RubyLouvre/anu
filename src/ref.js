@@ -21,7 +21,9 @@ export function patchRef(instance, ref, dom) {
 }
 
 export function removeRef(instance, ref) {
-    if (instance && typeof ref === 'string') {
+    if (typeof ref === 'function') {
+        ref(null)
+    }else if (instance && typeof ref === 'string') {
         delete instance.refs[ref]
     }
 }

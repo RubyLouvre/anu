@@ -637,6 +637,13 @@ describe('node模块', function () {
             }
         }
         var index = 1
+        function detect(a){
+            if(index ===1){
+                 expect(typeof a).toBe('object')
+            }else{
+                 expect(a).toBeNull()
+            }
+        }
         class App extends React.Component {
             constructor(props) {
                 super(props)
@@ -650,7 +657,7 @@ describe('node模块', function () {
                 return index ?
                     <div ref='a' onClick={this.handleClick.bind(this)}>
                         <Component1>
-                            <p>这是子节点</p>
+                            <p ref={detect}>这是子节点</p>
                             <Component2 />
                         </Component1>
                     </div> : <div>文本节点</div>

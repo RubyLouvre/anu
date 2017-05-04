@@ -199,7 +199,7 @@ describe('无狀态组件', function () {
     });
     it('子组件是无状态组件', async () => {
         function Select(props) {
-            return <strong ref='a'>{props.value}</strong>
+            return <strong>{props.value}</strong>
         }
         class App extends React.Component {
             constructor(props) {
