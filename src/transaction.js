@@ -20,10 +20,10 @@ export var transaction = {
         callbacks.push(obj)
     },
     renderWithoutSetState: function (instance, nextProps, context) {
-        instance.setState = instance.forceUpdate = setStateWarn;
+        instance.setState = instance.forceUpdate = setStateWarn
 
         try {
-            CurrentOwner.cur = instance;
+            CurrentOwner.cur = instance
             var vnode = instance.render(nextProps, context)
             if (vnode === null) {
                 vnode = {
@@ -32,8 +32,8 @@ export var transaction = {
                 };
             }
         } finally {
-            CurrentOwner.cur = null;
-            delete instance.setState;
+            CurrentOwner.cur = null
+            delete instance.setState
             delete instance.forceUpdate
 
         }

@@ -1308,10 +1308,12 @@
       var rendered = transaction.renderWithoutSetState(instance, nextProps, context);
       //context只能孩子用，因此不要影响原instance.context
 
+
       context = getContext(instance, context);
       var hostParent = vnode._hostParent;
       //vnode._hostParent会丢失
-      var dom = diff(rendered, instance.vnode, hostParent, context);
+      console.log('updateComponent方法', rendered.props.children, vnode.props.children.slice());
+      var dom = diff(rendered, vnode, hostParent, context);
 
       rendered._hostParent = hostParent;
       extend(vnode, rendered); //直接更新原对象
@@ -1353,85 +1355,97 @@
    * @param {any} context
    * @returns
    */
+  var diffDeep = 0;
   function diff(vnode, prevVnode, vParentNode, context) {
       //updateComponent
-      var dom = prevVnode.dom;
-      var parentNode = vParentNode && vParentNode.dom;
-      var prevProps = prevVnode.props || {};
-      var prevChildren = prevProps.children || [];
-      var Type = vnode.type;
+      try {
+          diffDeep++;
+          var dom = prevVnode.dom;
+          var parentNode = vParentNode && vParentNode.dom;
+          var prevProps = prevVnode.props || {};
+          var prevChildren = prevProps.children || [];
+          var Type = vnode.type;
 
-      //更新组件
-      var isComponent = typeof Type === 'function';
-      var instance = prevVnode.instance;
-      if (instance) {
-          instance = isComponent && matchInstance(instance, Type);
+          //更新组件
+          var isComponent = typeof Type === 'function';
+          var instance = prevVnode.instance;
           if (instance) {
-              //如果类型相同，使用旧的实例进行 render新的虚拟DOM
-              vnode.instance = instance;
-              instance.context = context; //更新context
-              var nextProps = vnode.props;
-              //处理非状态组件
-              if (instance.statelessRender) {
-                  instance.props = nextProps;
+
+              instance = isComponent && matchInstance(instance, Type);
+              console.log('diff方法', 'hasInstance', instance, 'isComponent', isComponent);
+              if (instance) {
+                  //如果类型相同，使用旧的实例进行 render新的虚拟DOM
+                  vnode.instance = instance;
+                  instance.context = context; //更新context
+                  var nextProps = vnode.props;
+                  //处理非状态组件
+                  if (instance.statelessRender) {
+                      instance.props = nextProps;
+                      instance.prevProps = prevProps;
+
+                      return updateComponent(instance, context);
+                  }
+
+                  prevProps = instance.prevProps;
+
+                  instance.props = prevProps;
+                  applyComponentHook(instance, 3, nextProps);
                   instance.prevProps = prevProps;
+                  instance.props = nextProps;
+                  console.log('这里不进入');
                   return updateComponent(instance, context);
-              }
-
-              prevProps = instance.prevProps;
-
-              instance.props = prevProps;
-              applyComponentHook(instance, 3, nextProps);
-              instance.prevProps = prevProps;
-              instance.props = nextProps;
-              return updateComponent(instance, context);
-          } else {
-              if (prevVnode.type !== Type) {
-                  removeComponent(prevVnode);
-              }
-          }
-      }
-      if (isComponent) {
-          vnode._hostParent = vParentNode;
-          return toDOM(vnode, context, parentNode, prevVnode.dom);
-      }
-      if (!dom || prevVnode.type !== Type) {
-          //这里只能是element 与#text
-          var nextDom = createDOMElement(vnode);
-          if (dom) {
-              while (dom.firstChild) {
-                  nextDom.appendChild(dom.firstChild);
-              }
-          }
-          if (parentNode) {
-              if (dom) {
-                  parentNode.replaceChild(nextDom, dom);
               } else {
-                  parentNode.appendChild(nextDom);
+                  if (prevVnode.type !== Type) {
+                      removeComponent(prevVnode);
+                  }
               }
           }
-          dom = nextDom;
-          vnode.dom = nextDom;
-      }
-      //必须在diffProps前添加它的dom
-      vnode.dom = dom;
-      if (!('text' in vnode && 'text' in prevVnode)) {
-          diffProps(vnode.props || {}, prevProps, vnode, prevVnode);
-      }
-      if (prevVnode._hasSetInnerHTML) {
-          while (dom.firstChild) {
-              var removed = dom.removeChild(dom.firstChild);
+          if (isComponent) {
+              console.log('enter to isComponent');
+              vnode._hostParent = vParentNode;
+              return toDOM(vnode, context, parentNode, prevVnode.dom);
           }
+          if (!dom || prevVnode.type !== Type) {
+              //这里只能是element 与#text
+              var nextDom = createDOMElement(vnode);
+              if (dom) {
+                  while (dom.firstChild) {
+                      nextDom.appendChild(dom.firstChild);
+                  }
+              }
+              if (parentNode) {
+                  if (dom) {
+                      parentNode.replaceChild(nextDom, dom);
+                  } else {
+                      parentNode.appendChild(nextDom);
+                  }
+              }
+              dom = nextDom;
+              vnode.dom = nextDom;
+          }
+          //必须在diffProps前添加它的dom
+          vnode.dom = dom;
+          if (!('text' in vnode && 'text' in prevVnode)) {
+              diffProps(vnode.props || {}, prevProps, vnode, prevVnode);
+          }
+          if (prevVnode._hasSetInnerHTML) {
+              while (dom.firstChild) {
+                  var removed = dom.removeChild(dom.firstChild);
+              }
+          }
+          if (!vnode._hasSetInnerHTML && vnode.props) {
+              console.log('enter to diffChildren', vnode.props.children.concat().length, prevChildren.concat().length);
+              diffChildren(vnode.props.children.concat(), prevChildren.concat(), vnode, context);
+          }
+          var wrapperState = vnode._wrapperState;
+          if (wrapperState && wrapperState.postUpdate) {
+              //处理select
+              wrapperState.postUpdate(vnode);
+          }
+          return dom;
+      } finally {
+          diffDeep--;
       }
-      if (!vnode._hasSetInnerHTML && vnode.props) {
-          diffChildren(vnode.props.children, prevChildren, vnode, context);
-      }
-      var wrapperState = vnode._wrapperState;
-      if (wrapperState && wrapperState.postUpdate) {
-          //处理select
-          wrapperState.postUpdate(vnode);
-      }
-      return dom;
   }
 
   /**
@@ -1475,17 +1489,19 @@
       //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
 
       var mapping = {};
+      var oldM = [];
       for (var i = 0, n = oldChildren.length; i < n; i++) {
           var vnode = oldChildren[i];
           var tag = vnode.instance ? getTopComponentName(vnode, vnode.instance) : vnode.type;
           var uuid = computeUUID(tag, vnode);
+          oldM.push(uuid);
           if (mapping[uuid]) {
               mapping[uuid].push(vnode);
           } else {
               mapping[uuid] = [vnode];
           }
       }
-
+      console.log('diffChildren方法 oldChildren uuid', oldM.join('  '));
       //第二步，遍历新children, 从hash中取出旧节点
 
       var removedChildren = oldChildren.concat();
@@ -1510,6 +1526,7 @@
       }
       var parentNode = vParentNode.dom;
       //第三，逐一比较
+      var nativeChildren = parentNode.childNodes;
       for (var _i2 = 0, _n2 = newChildren.length; _i2 < _n2; _i2++) {
           var _vnode2 = newChildren[_i2];
           var prevVnode = null;
@@ -1536,6 +1553,9 @@
                   delete _vnode2._hasInstance;
                   _vnode2.action = '重复利用旧的实例更新组件';
                   _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
+                  if (nativeChildren[_i2] !== _vnode2.dom) {
+                      parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
+                  }
               } else if (_vnode2.type === prevVnode.type) {
                   //都是元素，文本或注释
                   if (isTextOrComment) {
@@ -1545,14 +1565,17 @@
                           _vnode2.dom.nodeValue = _vnode2.text;
                       } else {
                           _vnode2.action = '不改文本';
-                          var pp = newChildren[_i2 - 1];
-
-                          parentNode.insertBefore(_vnode2.dom, pp && pp.dom || null);
+                      }
+                      if (nativeChildren[_i2] !== _vnode2.dom) {
+                          parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
                       }
                   } else {
                       _vnode2.action = '更新元素';
                       //必须设置vnode.dom = newDOM
                       _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
+                      if (nativeChildren[_i2] !== _vnode2.dom) {
+                          parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
+                      }
                   }
               } else if (isTextOrComment) {
                   //由其他类型变成文本或注释
@@ -1560,14 +1583,21 @@
                   var dom = isText ? document.createTextNode(_vnode2.text) : /* istanbul ignore next */document.createComment(_vnode2.text);
                   _vnode2.dom = dom;
 
-                  parentNode.replaceChild(dom, prevDom);
+                  //     parentNode.replaceChild(dom, prevDom)
                   _vnode2.action = isText ? '替换为文本' : /* istanbul ignore next */'替换为注释';
                   //必须设置vnode.dom = newDOM
                   removeComponent(prevVnode); //移除元素节点或组件
+
+                  if (nativeChildren[_i2] !== _vnode2.dom) {
+                      parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
+                  }
               } else {
                   //由其他类型变成元素
                   _vnode2.action = '替换为元素';
                   _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context);
+                  if (nativeChildren[_i2] !== _vnode2.dom) {
+                      parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
+                  }
               }
               //当这个孩子是上级祖先传下来的，那么它是相等的
               if (_vnode2 !== prevVnode) {
@@ -1580,6 +1610,10 @@
                   var oldNode = oldChildren[_i2];
                   /* istanbul ignore next */
                   toDOM(_vnode2, context, parentNode, oldNode && oldNode.dom || null);
+
+                  if (nativeChildren[_i2] !== _vnode2.dom) {
+                      parentNode.insertBefore(_vnode2.dom, nativeChildren[_i2]);
+                  }
               }
           }
       }

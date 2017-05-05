@@ -76,7 +76,6 @@ export function toVnode(vnode, context) {
            context = vnode.context = getContext(instance, context)//将context往下传
         }
 
-
         return toVnode(vnode, context)
     } else {
         return vnode

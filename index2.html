@@ -4,7 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
+      <script type='text/javascript' src="./test/jsDump.js"></script>
+  <script type='text/javascript' src="./dist/React.js"></script>
  
     <style>
         .aaa {
@@ -14,7 +15,7 @@
         }
     </style>
 
-   <!--<script src="./test/react.js"></script>
+  <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
   <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
@@ -97,6 +98,7 @@ class Node extends React.Component {
 
     const { addChild, createNode, id } = this.props
     const childId = createNode().nodeId
+    console.log(childId)
     addChild(id, childId)
   }
 

@@ -11,6 +11,7 @@
             background: red;
         }
     </style>
+    <script type='text/javascript' src="./test/jsDump.js"></script>
 <script type='text/javascript' src="./dist/React.js"></script>
   <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
@@ -24,19 +25,26 @@ class App extends React.Component{
         super(props, context)
         console.log(props, context, 'App')
     }
+    onClick(){
+            index = 0
+        console.log('1111111111111')
+        this.forceUpdate()
+    }
     render(){
-        return <div title='1'><A /></div>
+        return <div onClick={ this.onClick.bind(this)} title='root'><A /></div>
     }
 }
 var index = 1
 class A extends React.Component{
 
-componentWillReceiveProps(){
-    index = 0
-    this.forceUpdate()
-}
+   componentWillReceiveProps(){
+    
+      //  console.log('===================')
+     //   this.forceUpdate()
+        
+    }
    render(){
-       return index ? <strong>111</strong> : <em>111</em>
+       return index ? <p >111<strong>111</strong></p> : <p>www<strong>222</strong><em>333</em></p>
    }
 }
 var store = {
