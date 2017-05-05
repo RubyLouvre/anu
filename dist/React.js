@@ -1008,9 +1008,9 @@
   contenteditable='false'
    */
   var bools = ['autofocus,autoplay,async,allowTransparency,checked,controls', 'declare,disabled,defer,defaultChecked,defaultSelected,', 'isMap,loop,multiple,noHref,noResize,noShade', 'open,readOnly,selected'].join(',');
-
+  var boolAttributes = {};
   bools.replace(/\w+/g, function (name) {
-      builtIdProperties[name] = true;
+      boolAttributes[name] = true;
   });
 
   var anomaly = ['accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan', 'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,' + 'marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,' + 'value,title,alt'].join(',');
@@ -1078,7 +1078,7 @@
                       var events = dom.__events || (dom.__events = {});
                       events[name] = val;
                   } else if (val !== prevProps[name]) {
-                      if (typeof dom[name] === 'boolean') {
+                      if (isHTML && boolAttributes[name] && typeof dom[name] === 'boolean') {
                           //布尔属性必须使用el.xxx = true|false方式设值
                           //如果为false, IE全系列下相当于setAttribute(xxx,''),
                           //会影响到样式,需要进一步处理

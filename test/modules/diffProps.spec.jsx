@@ -113,53 +113,5 @@ describe('diffProps', function () {
             .removeChild(div)
     })
 
-    it('patchRef', async() => {
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.handleClick = this
-                    .handleClick
-                    .bind(this)
-
-            }
-            handleClick() {
-                // Explicitly focus the text input using the raw DOM API.
-                if (this.myTextInput !== null) {
-                    this
-                        .myTextInput
-                        .focus();
-                }
-            }
-            render() {
-                return (
-                    <div>
-                        <input type="text" ref={(ref) => this.myTextInput = ref}/>
-                        <input ref='a' type="button" value="Focus the text input" onClick={this.handleClick}/>
-                    </div>
-                );
-            }
-        };
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
-        var s = React.render(<App/>, div)
-        await browser
-            .pause(100)
-            .$apply()
-        var dom = s.refs.a
-     
-        await browser
-            .click(dom)
-            .pause(100)
-            .$apply()
-
-        expect(document.activeElement).toBe(s.myTextInput)
-        expect(s.myTextInput).toBeDefined()
-     
-        document
-            .body
-            .removeChild(div)
-    })
+    
 })
