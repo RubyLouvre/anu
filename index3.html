@@ -12,36 +12,31 @@
         }
     </style>
 <script type='text/javascript' src="./dist/React.js"></script>
-
+  <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-var index = 1
-const Link = ({ active, children }) => {
-  console.log(children, 'Link', active)
-  if (active) {
-    return <span>{children}</span>
-  }
-
-  return (
-    <a href="#">
-      {children}
-    </a>
-  )
-}
-
+    function fn(a){
+        console.log(a)
+    }
 class App extends React.Component{
-    update(){
-        index = 0
-        this.forceUpdate()
+    render(){
+        return <div title='1'><A ref={fn}/></div>
     }
+}
+var index = 1
+class A extends React.Component{
+componentWillReceiveProps(){
+    index = 0
+    this.forceUpdate()
+}
    render(){
-    return index ?<div><span>111</span><Link active={false} children={'xxx'} /><Link active={false} children={'yyyy'} /><Link active={false} children={'zzzz'} /></div>:
-    <div><span>111</span><Link active={true} children={'xxx'} /><Link active={false} children={'yyyy'} /><Link active={false} children={'zzzz'} /></div>
-    }
+       return index ? <strong>111</strong> : <em>111</em>
+   }
 }
 var s 
 window.onload = function(){
-   s = ReactDOM.render( <App />, document.getElementById('example'))
+   s = ReactDOM.render( <App title='a'/>, document.getElementById('example'))
 }
     </script>
 </head>

@@ -8,7 +8,8 @@
 export function extend(obj, props) {
     if (props) {
         for (let i in props) {
-            obj[i] = props[i]
+            if(props.hasOwnProperty(i))
+              obj[i] = props[i]
         }
     }
     return obj

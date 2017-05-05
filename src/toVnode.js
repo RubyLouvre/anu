@@ -12,9 +12,14 @@ import {
     transaction
 } from './transaction'
 import {
+    patchRef
+} from './ref'
+import {
     Component
 } from './Component'
-
+import {
+    CurrentOwner
+} from './CurrentOwner'
 /**
  *
  *
@@ -38,6 +43,7 @@ export function toVnode(vnode, context) {
                 }
             }
             instance = new Type(props, context)
+
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
             instance.vnode = vnode
 
@@ -57,10 +63,12 @@ export function toVnode(vnode, context) {
             vnode.instance.childInstance = instance
         }
 
-
         instance.prevProps = vnode.props //实例化时prevProps
 
         var key = vnode.key
+       //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
+        patchRef(vnode._owner, vnode.props.ref, instance)
+
         extend(vnode, rendered)
         vnode.key = key
         vnode.instance = instance

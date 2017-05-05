@@ -24,7 +24,6 @@ export function Component(props, context) {
         this.state = {}
 }
 
-
 Component.prototype = {
 
     setState(state, cb) {

@@ -10,8 +10,9 @@
   import {
       oneObject
   } from './util'
-    import {
-      patchRef,removeRef
+  import {
+      patchRef,
+      removeRef
   } from './ref'
   import {
       document
@@ -88,68 +89,65 @@
       }
       var isHTML = !vnode.ns
       for (let name in props) {
-          if (name === 'children') {
-              continue
-          }
-          var val = props[name]
-          if (name === 'ref') {
-              if (prevProps[name] !== val) {
-                  instance && patchRef(instance, val, dom)
-              }
-              continue
-          }
-          if (name === 'style') {
-              patchStyle(dom, prevProps.style || {}, val)
-              continue
-          }
-          if (name === 'dangerouslySetInnerHTML') {
-              var oldhtml = prevProps[name] && prevProps[name].__html
-              vnode._hasSetInnerHTML = true
-              if (val && val.__html !== oldhtml) {
-                  dom.innerHTML = val.__html
-              }
-          }
-          if (isEventName(name)) {
-              if (!prevProps[name]) { //添加全局监听事件
-                  var eventName = getBrowserName(name) //带on
-                  
-                  var curType = typeof val
-                  /* istanbul ignore if */
-                  if (curType !== 'function')
-                      throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
-                  addGlobalEventListener(eventName)
-              }
-              /* istanbul ignore if */
-              if (inMobile && eventName === 'click') {
-                  elem.addEventListener('click', clickHack)
-              }
-              var events = (dom.__events || (dom.__events = {}))
-              events[name] = val
-              continue
-          }
-          if (val !== prevProps[name]) {
-              if (typeof dom[name] === 'boolean') {
-                  //布尔属性必须使用el.xxx = true|false方式设值
-                  //如果为false, IE全系列下相当于setAttribute(xxx,''),
-                  //会影响到样式,需要进一步处理
-                  dom[name] = !!val
-              }
-              if (val === false || val === void 666 || val === null) {
-                  operateAttribute(dom, name, '', !isHTML)
-                  continue
-              }
-              if (isHTML && builtIdProperties[name]) {
-                  //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
-                  //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                  if (stringAttributes[name])
-                      val = val + ''
-                  if (name !== 'value' || dom[name] !== val) {
-                      dom[name] = val
+          let val = props[name]
+          switch (name) {
+              case 'name':
+                  break
+              case 'style':
+                  patchStyle(dom, prevProps.style || {}, val)
+                  break
+              case 'ref':
+                  if (prevProps[name] !== val) {
+                      instance && patchRef(instance, val, dom)
                   }
-              } else {
-                  operateAttribute(dom, name, val, !isHTML)
-              }
+                  break
+              case 'dangerouslySetInnerHTML':
+                  var oldhtml = prevProps[name] && prevProps[name].__html
+                  vnode._hasSetInnerHTML = true
+                  if (val && val.__html !== oldhtml) {
+                      dom.innerHTML = val.__html
+                  }
+                  break
+              default:
+                  if (isEventName(name)) {
+                      if (!prevProps[name]) { //添加全局监听事件
+                          var eventName = getBrowserName(name) //带on
 
+                          var curType = typeof val
+                          /* istanbul ignore if */
+                          if (curType !== 'function')
+                              throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
+                          addGlobalEventListener(eventName)
+                      }
+                      /* istanbul ignore if */
+                      if (inMobile && eventName === 'click') {
+                          elem.addEventListener('click', clickHack)
+                      }
+                      var events = (dom.__events || (dom.__events = {}))
+                      events[name] = val
+                  } else if (val !== prevProps[name]) {
+                      if (typeof dom[name] === 'boolean') {
+                          //布尔属性必须使用el.xxx = true|false方式设值
+                          //如果为false, IE全系列下相当于setAttribute(xxx,''),
+                          //会影响到样式,需要进一步处理
+                          dom[name] = !!val
+                      }
+                      if (val === false || val === void 666 || val === null) {
+                          operateAttribute(dom, name, '', !isHTML)
+                          continue
+                      }
+                      if (isHTML && builtIdProperties[name]) {
+                          //特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的
+                          //<input value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
+                          if (stringAttributes[name])
+                              val = val + ''
+                          if (name !== 'value' || dom[name] !== val) {
+                              dom[name] = val
+                          }
+                      } else {
+                          operateAttribute(dom, name, val, !isHTML)
+                      }
+                  }
           }
       }
       //如果旧属性在新属性对象不存在，那么移除DOM
@@ -157,7 +155,7 @@
           if (!(name in props)) {
               if (name === 'ref') {
                   removeRef(instance, prevProps.ref)
-              }else if (isEventName(name)) { //移除事件
+              } else if (isEventName(name)) { //移除事件
                   var events = dom.__events || {}
                   delete events[name]
               } else { //移除属性

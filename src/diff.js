@@ -58,13 +58,13 @@ export function updateComponent(instance) {
     //context只能孩子用，因此不要影响原instance.context
 
     context = getContext(instance, context)
-   var hostParent = vnode._hostParent
+    var hostParent = vnode._hostParent
     //vnode._hostParent会丢失
     var dom = diff(rendered, instance.vnode, hostParent, context)
-    if(hostParent){
-         rendered._hostParent = hostParent
-         extend(vnode, rendered)
-    }
+
+    rendered._hostParent = hostParent
+    extend(vnode, rendered) //直接更新原对象
+
     instance.vnode = rendered
     delete instance.prevState //方便下次能更新this.prevState
     instance.prevProps = props // 更新prevProps
@@ -148,7 +148,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     if (!dom || prevVnode.type !== Type) { //这里只能是element 与#text
         var nextDom = createDOMElement(vnode)
         if (dom) {
-            while (dom.firstChild) {  
+            while (dom.firstChild) {
                 nextDom.appendChild(dom.firstChild)
             }
         }
@@ -169,7 +169,7 @@ export function diff(vnode, prevVnode, vParentNode, context) { //updateComponent
     }
     if (prevVnode._hasSetInnerHTML) {
         while (dom.firstChild) {
-           var removed = dom.removeChild(dom.firstChild)
+            var removed = dom.removeChild(dom.firstChild)
         }
     }
     if (!vnode._hasSetInnerHTML && vnode.props) {
@@ -237,11 +237,11 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             mapping[uuid] = [vnode]
         }
     }
-  
+
     //第二步，遍历新children, 从hash中取出旧节点
-   
+
     var removedChildren = oldChildren.concat()
-    
+
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
@@ -296,9 +296,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                         vnode.dom.nodeValue = vnode.text
                     } else {
                         vnode.action = '不改文本'
-                        var pp = newChildren[i-1]
-                        
-                        parentNode.insertBefore(vnode.dom, pp && pp.dom ||null )
+                        var pp = newChildren[i - 1]
+
+                        parentNode.insertBefore(vnode.dom, pp && pp.dom || null)
                     }
                 } else {
                     vnode.action = '更新元素'
@@ -309,17 +309,17 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 let isText = vnode.type === '#text'
                 var dom = isText ? document.createTextNode(vnode.text) : /* istanbul ignore next */ document.createComment(vnode.text)
                 vnode.dom = dom
-               
+
                 parentNode.replaceChild(dom, prevDom)
                 vnode.action = isText ? '替换为文本' : /* istanbul ignore next */ '替换为注释'
-                 //必须设置vnode.dom = newDOM
+                //必须设置vnode.dom = newDOM
                 removeComponent(prevVnode) //移除元素节点或组件
             } else { //由其他类型变成元素
                 vnode.action = '替换为元素'
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context)
             }
             //当这个孩子是上级祖先传下来的，那么它是相等的
-            if (vnode !== prevVnode ) {
+            if (vnode !== prevVnode) {
                 delete prevVnode.dom //clear reference
             }
         } else { //添加新节点
@@ -340,10 +340,10 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     if (removedChildren.length) {
         for (let i = 0, n = removedChildren.length; i < n; i++) {
             let vnode = removedChildren[i]
-            if(!vnode.use){
-               parentNode.removeChild(vnode.dom)
-              
-               vnode.props && removeComponent(vnode)
+            if (!vnode.use) {
+                parentNode.removeChild(vnode.dom)
+
+                vnode.props && removeComponent(vnode)
             }
         }
     }
