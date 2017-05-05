@@ -50,6 +50,7 @@ export function toVnode(vnode, context) {
             Component.call(instance, props, context) //重点！！
 
             applyComponentHook(instance, 0) //willMount
+            
 
             rendered = transaction.renderWithoutSetState(instance)
         } else { //添加无状态组件的分支
