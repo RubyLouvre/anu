@@ -1042,7 +1042,7 @@
       for (var name in props) {
           var val = props[name];
           switch (name) {
-              case 'name':
+              case 'children':
                   break;
               case 'style':
                   patchStyle(dom, prevProps.style || {}, val);

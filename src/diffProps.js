@@ -91,7 +91,7 @@
       for (let name in props) {
           let val = props[name]
           switch (name) {
-              case 'name':
+              case 'children':
                   break
               case 'style':
                   patchStyle(dom, prevProps.style || {}, val)
