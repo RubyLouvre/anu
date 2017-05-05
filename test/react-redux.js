@@ -828,7 +828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _classCallCheck(this, Provider);
 
 	    var _this = _possibleConstructorReturn(this, _Component.call(this, props, context));
-
+console.log(props,'000')
 	    _this.store = props.store;
 	    return _this;
 	  }

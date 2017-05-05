@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
- <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
  
     <style>
         .aaa {
@@ -14,223 +14,221 @@
         }
     </style>
 
-<!--  <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-      <script src="./test/redux.js"></script>
+   <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
+  <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
    
-    var combineReducers = Redux.combineReducers
-    var Provider = ReactRedux.Provider
-    var connect = ReactRedux.connect
-
-const todo = (state, action) => {
-  switch (action.type) {
-    case 'ADD_TODO':
-      return {
-        id: action.id,
-        text: action.text,
-        completed: false
-      }
-    case 'TOGGLE_TODO':
-      if (state.id !== action.id) {
-        return state
-      }
-
-      return {
-        ...state,
-        completed: !state.completed
-      }
-    default:
-      return state
+var combineReducers = Redux.combineReducers
+var Provider = ReactRedux.Provider
+var connect = ReactRedux.connect
+var createStore = Redux.createStore
+function generateTree() {
+  let tree = {
+    0: {
+      id: 0,
+      counter: 0,
+      childIds: []
+    }
   }
-}
 
-const todos = (state = [], action) => {
-  switch (action.type) {
-    case 'ADD_TODO':
-      return [
-        ...state,
-        todo(undefined, action)
-      ]
-    case 'TOGGLE_TODO':
-      return state.map(t =>
-        todo(t, action)
-      )
-    default:
-      return state
+  for (let i = 1; i < 3; i++) {
+    let parentId = Math.floor(Math.pow(Math.random(), 2) * i)
+    tree[i] = {
+      id: i,
+      counter: 0,
+      childIds: []
+    }
+    tree[parentId].childIds.push(i)
   }
+
+  return tree
 }
-const visibilityFilter = (state = 'SHOW_ALL', action) => {
-  switch (action.type) {
-    case 'SET_VISIBILITY_FILTER':
-      return action.filter
-    default:
-      return state
-  }
-}
-const todoApp = combineReducers({ 
-  todos,
-  visibilityFilter
+ const INCREMENT = 'INCREMENT'
+ const CREATE_NODE = 'CREATE_NODE'
+ const DELETE_NODE = 'DELETE_NODE'
+ const ADD_CHILD = 'ADD_CHILD'
+ const REMOVE_CHILD = 'REMOVE_CHILD'
+
+ const increment = (nodeId) => ({
+  type: INCREMENT,
+  nodeId
 })
 
-
-//===================filters
-let nextTodoId = 0
-const addTodo = (text) => ({
-  type: 'ADD_TODO',
-  id: nextTodoId++,
-  text
+let nextId = 0
+const createNode = () => ({
+  type: CREATE_NODE,
+  nodeId: `new_${nextId++}`
 })
 
-const setVisibilityFilter = (filter) => ({
-  type: 'SET_VISIBILITY_FILTER',
-  filter
+ const deleteNode = (nodeId) => ({
+  type: DELETE_NODE,
+  nodeId
 })
 
-const toggleTodo = (id) => ({
-  type: 'TOGGLE_TODO',
-  id
+const addChild = (nodeId, childId) => ({
+  type: ADD_CHILD,
+  nodeId,
+  childId
 })
 
-const Link = ({ active, children, onClick }) => {
-  if (active) {
-    return <span>{children}</span>
+ const removeChild = (nodeId, childId) => ({
+  type: REMOVE_CHILD,
+  nodeId,
+  childId
+})
+var actions = {
+  increment,
+  createNode,
+  deleteNode,
+  addChild,
+  removeChild
+}
+class Node extends React.Component {
+  handleIncrementClick = () => {
+    const { increment, id } = this.props
+    console.log(this.props)
+    increment(id)
   }
-  return (
-    <a href="#"
-       onClick={e => {
-         e.preventDefault()
-         onClick()
-       }}
-    >
-      {children}
-    </a>
-  )
-}
-const Todo = ({ onClick, completed, text }) => (
-  <li
-    onClick={onClick}
-    style={{
-      textDecoration: completed ? 'line-through' : 'none'
-    }}
-  >
-    {text}
-  </li>
-)
-const TodoList = function({ todos, onTodoClick }) {
- 
-  return <ul>
-    {todos.map(todo =>
-      <Todo
-        key={todo.id}
-        {...todo}
-        onClick={() => onTodoClick(todo.id)}
-      />
-    )}
-  </ul>
-}
-const Footer = () => (
-  <p>
-    Show:
-    {" "}
-    <FilterLink filter="SHOW_ALL">
-      All
-    </FilterLink>
-    {", "}
-    <FilterLink filter="SHOW_ACTIVE">
-      Active
-    </FilterLink>
-    {", "}
-    <FilterLink filter="SHOW_COMPLETED">
-      Completed
-    </FilterLink>
-  </p>
-)
 
-const App = () => (
-  <div>
-    <AddTodo />
-    <VisibleTodoList />
-    <Footer />
-  </div>
-)
+  handleAddChildClick = e => {
+    e.preventDefault()
 
+    const { addChild, createNode, id } = this.props
+    const childId = createNode().nodeId
+    addChild(id, childId)
+  }
 
-let AddTodo = ({ dispatch }) => {
-  let input
+  handleRemoveClick = e => {
+    e.preventDefault()
 
-  return (
-    <div>
-      <form onSubmit={e => {
-        e.preventDefault()
-        if (!input.value.trim()) {
-          return
-        }
-        dispatch(addTodo(input.value))
-        input.value = ''
-      }}>
-        <input ref={node => {
-          input = node
-        }} />
-        <button type="submit">
-          Add Todo
+    const { removeChild, deleteNode, parentId, id } = this.props
+    removeChild(parentId, id)
+    deleteNode(id)
+  }
+
+  renderChild = childId => {
+    const { id } = this.props
+    return (
+      <li key={childId}>
+        <ConnectedNode id={childId} parentId={id} />
+      </li>
+    )
+  }
+
+  render() {
+    const { counter, parentId, childIds } = this.props
+    return (
+      <div>
+        Counter: {counter}
+        {' '}
+        <button onClick={this.handleIncrementClick}>
+          +
         </button>
-      </form>(点列表前的圆点切换状态)
-    </div>
-  )
+        {' '}
+        {typeof parentId !== 'undefined' &&
+          <a href="#" onClick={this.handleRemoveClick}
+             style={{ color: 'lightgray', textDecoration: 'none' }}>
+            ×
+          </a>
+        }
+        <ul>
+          {childIds.map(this.renderChild)}
+          <li key="add">
+            <a href="#" onClick={this.handleAddChildClick}>
+              Add child
+            </a>
+          </li>
+        </ul>
+      </div>
+    )
+  }
 }
 
-AddTodo = connect()(AddTodo)
-const mapStateToProps = (state, ownProps) => ({
-  active: ownProps.filter === state.visibilityFilter
-})
+function mapStateToProps(state, ownProps) {
+  return state[ownProps.id]
+}
 
-const mapDispatchToProps = (dispatch, ownProps) => ({
-  onClick: () => {
-    dispatch(setVisibilityFilter(ownProps.filter))
-  }
-})
+const ConnectedNode = connect(mapStateToProps, actions)(Node)
 
-const FilterLink = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Link)
 
-const getVisibleTodos = (todos, filter) => {
-  switch (filter) {
-    case 'SHOW_ALL':
-      return todos
-    case 'SHOW_COMPLETED':
-      return todos.filter(t => t.completed)
-    case 'SHOW_ACTIVE':
-      return todos.filter(t => !t.completed)
+//import { INCREMENT, ADD_CHILD, REMOVE_CHILD, CREATE_NODE, DELETE_NODE } from '../actions'
+
+const childIds = (state, action) => {
+  switch (action.type) {
+    case ADD_CHILD:
+      return [ ...state, action.childId ]
+    case REMOVE_CHILD:
+      return state.filter(id => id !== action.childId)
     default:
-      throw new Error('Unknown filter: ' + filter)
+      return state
   }
 }
 
-const mapStateToProps1 = (state) => ({
-  todos: getVisibleTodos(state.todos, state.visibilityFilter)
-})
-
-const mapDispatchToProps1 = {
-  onTodoClick: toggleTodo
+const node = (state, action) => {
+  switch (action.type) {
+    case CREATE_NODE:
+      return {
+        id: action.nodeId,
+        counter: 0,
+        childIds: []
+      }
+    case INCREMENT:
+      return {
+        ...state,
+        counter: state.counter + 1
+      }
+    case ADD_CHILD:
+    case REMOVE_CHILD:
+      return {
+        ...state,
+        childIds: childIds(state.childIds, action)
+      }
+    default:
+      return state
+  }
 }
 
-const VisibleTodoList = connect(
-  mapStateToProps1,
-  mapDispatchToProps1
-)(TodoList)
+const getAllDescendantIds = (state, nodeId) => (
+  state[nodeId].childIds.reduce((acc, childId) => (
+    [ ...acc, childId, ...getAllDescendantIds(state, childId) ]
+  ), [])
+)
 
-const store = Redux.createStore(todoApp)
-var s 
+const deleteMany = (state, ids) => {
+  state = { ...state }
+  ids.forEach(id => delete state[id])
+  return state
+}
 
+function reducers(state = {}, action) {
+  const { nodeId } = action
+  if (typeof nodeId === 'undefined') {
+    return state
+  }
+
+  if (action.type === DELETE_NODE) {
+    const descendantIds = getAllDescendantIds(state, nodeId)
+    return deleteMany(state, [ nodeId, ...descendantIds ])
+  }
+
+  return {
+    ...state,
+    [nodeId]: node(state[nodeId], action)
+  }
+}
+
+const tree = generateTree()
+
+const store = createStore(reducers, tree)
+//console.log(store)
+var s
 window.onload = function(){
   s = ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ConnectedNode id={0} />
   </Provider>,
   document.getElementById('example')
  )

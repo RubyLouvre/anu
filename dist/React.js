@@ -773,13 +773,12 @@
           var key = vnode.key;
           //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
           patchRef(vnode._owner, vnode.props.ref, instance);
-
           extend(vnode, rendered);
           vnode.key = key;
           vnode.instance = instance;
 
           if (instance.getChildContext) {
-              vnode.context = getContext(instance, context);
+              context = vnode.context = getContext(instance, context); //将context往下传
           }
 
           return toVnode(vnode, context);
