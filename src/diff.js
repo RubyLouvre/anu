@@ -36,12 +36,10 @@ export function updateComponent(instance) {
     applyComponentHook(instance, 5, nextProps, nextState, context)
     instance.props = nextProps
     instance.state = nextState
-try{
+
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
     //context只能孩子用，因此不要影响原instance.context
-}catch(e){
-    console.log(instance, nextProps, context)
-}
+
     context = getContext(instance, context)
     var hostParent = vnode._hostParent
     //vnode._hostParent会丢失
@@ -69,6 +67,9 @@ function removeComponent(vnode) {
     if (instance) {
         //防止它继续热舞
         instance._unmount = true
+       
+        console.log(instance.props, 'remove')
+        
     }
     '_hostParent,_wrapperState,_instance,_owner'
         .replace(/\w+/g, function (name) {
@@ -98,6 +99,7 @@ function removeComponent(vnode) {
  */
 export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //updateComponent
     var dom = prevVnode.dom
+    
     var parentNode = vParentNode && vParentNode.dom
     var prevProps = prevVnode.props || {}
     var prevChildren = prevProps.children || []
@@ -352,6 +354,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 dom
                     .parentNode
                     .removeChild(dom)
+            }
+            if(vnode.instance){
+               vnode.instance._unmount = true
             }
             //  if (!vnode.use) {      parentNode.removeChild(vnode.dom)
             vnode.props && removeComponent(vnode)
