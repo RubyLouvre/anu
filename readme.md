@@ -288,4 +288,4 @@ cli
     ./node_modules/.bin/karma-event-driver-ext
 ```
 
-
+http://stackoverflow.com/questions/31374085/installing-adb-on-mac-os-x

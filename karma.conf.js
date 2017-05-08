@@ -108,7 +108,19 @@ module.exports = function(config) {
             'Chrome': {
                 base: 'WebDriverio',
                 browserName: 'chrome',
-                name: 'Karma'
+                name: 'Karma',
+                 config: {
+                    port: 4723,
+                    logLevel: 'verbose',
+                  /*  desiredCapabilities: {
+                        'appium-version': '1.6',
+                        platformName: 'Android',
+                        platformVersion: '7.0',
+                        deviceName: '3HX5T17117024214',
+                        browserName: 'chrome',
+                        app: undefined
+                    }*/
+                }
             }
         },
         browsers: ['Chrome'],

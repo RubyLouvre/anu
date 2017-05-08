@@ -21,7 +21,6 @@ export var transaction = {
     },
     renderWithoutSetState: function (instance, nextProps, context) {
         instance.setState = instance.forceUpdate = setStateWarn
-
         try {
             CurrentOwner.cur = instance
             var vnode = instance.render(nextProps, context)

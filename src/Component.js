@@ -25,12 +25,13 @@ export function Component(props, context) {
 }
 
 Component.prototype = {
-
+ 
     setState(state, cb) {
         setStateProxy(this, state, cb)
     },
 
     forceUpdate(cb) {
+        
         setStateProxy(this, this.state, cb, true)
     },
 

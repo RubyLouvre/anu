@@ -1,11 +1,32 @@
-import {getContext, getInstances, matchInstance, midway, extend} from './util'
-import {applyComponentHook} from './lifecycle'
-import {transaction} from './transaction'
-import {toVnode} from './toVnode'
-import {diffProps} from './diffProps'
-import {document, createDOMElement} from './browser'
-import {removeRef} from './ref'
-import {setControlledComponent} from './ControlledComponent'
+import {
+    getContext,
+    getInstances,
+    matchInstance,
+    midway,
+    extend
+} from './util'
+import {
+    applyComponentHook
+} from './lifecycle'
+import {
+    transaction
+} from './transaction'
+import {
+    toVnode
+} from './toVnode'
+import {
+    diffProps
+} from './diffProps'
+import {
+    document,
+    createDOMElement
+} from './browser'
+import {
+    removeRef
+} from './ref'
+import {
+    setControlledComponent
+} from './ControlledComponent'
 
 /**
  * 渲染组件
@@ -30,7 +51,7 @@ export function updateComponent(instance) {
         return vnode.dom //注意
     }
     if (instance._unmount) {
-        console.warn(instance._unmount,'此组件已经移除')
+        console.warn(instance._unmount, '此组件已经移除')
         return vnode.dom //注意
     }
     applyComponentHook(instance, 5, nextProps, nextState, context)
@@ -62,19 +83,18 @@ export function updateComponent(instance) {
  */
 function removeComponent(vnode) {
     var instance = vnode.instance
+    var disabedInstance = instance
 
     applyComponentHook(instance, 7) //7
-    if (instance) {
-        //防止它继续热舞
-        instance._unmount = true
-       
-        console.log(instance.props, 'remove')
-        
+    while (disabedInstance) {
+        disabedInstance._unmount = true
+        disabedInstance = disabedInstance.parentInstance
     }
+
     '_hostParent,_wrapperState,_instance,_owner'
-        .replace(/\w+/g, function (name) {
-            delete vnode[name]
-        })
+    .replace(/\w+/g, function (name) {
+        delete vnode[name]
+    })
 
     removeRef(instance, vnode.props.ref)
 
@@ -99,7 +119,7 @@ function removeComponent(vnode) {
  */
 export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //updateComponent
     var dom = prevVnode.dom
-    
+
     var parentNode = vParentNode && vParentNode.dom
     var prevProps = prevVnode.props || {}
     var prevChildren = prevProps.children || []
@@ -127,7 +147,6 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
             instance.props = prevProps
             applyComponentHook(instance, 3, nextProps)
             if (!instance.vnode.dom) { //今天修正的
-                console.log(instance._unmount)
                 instance.vnode.dom = dom
             }
             instance.prevProps = prevProps
@@ -149,7 +168,7 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
         var nextDom = createDOMElement(vnode)
 
         if (parentNode) {
-            if (dom && dom !== beforeDom) 
+            if (dom && dom !== beforeDom)
                 parentNode.removeChild(dom)
             parentNode.insertBefore(nextDom, beforeDom || null)
 
@@ -203,9 +222,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep + '/' + vnode.text
     }
-    return type + '/' + vnode.deep + (vnode.key !== null
-        ? '/' + vnode.key
-        : '')
+    return type + '/' + vnode.deep + (vnode.key !== null ?
+        '/' + vnode.key :
+        '')
 }
 
 /**
@@ -222,9 +241,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     var mapping = {};
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
-        let tag = vnode.instance
-            ? getTopComponentName(vnode, vnode.instance)
-            : vnode.type
+        let tag = vnode.instance ?
+            getTopComponentName(vnode, vnode.instance) :
+            vnode.type
         let uuid = computeUUID(tag, vnode)
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
@@ -239,9 +258,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
-        let tag = typeof Type === 'function'
-            ? (vnode._hasInstance = 1, Type.displatName || Type.name)
-            : Type
+        let tag = typeof Type === 'function' ?
+            (vnode._hasInstance = 1, Type.displatName || Type.name) :
+            Type
         let uuid = computeUUID(tag, vnode)
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
@@ -305,9 +324,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
                 let isText = vnode.type === '#text'
-                var dom = isText
-                    ? document.createTextNode(vnode.text)
-                    :/* istanbul ignore next */
+                var dom = isText ?
+                    document.createTextNode(vnode.text) :
+                    /* istanbul ignore next */
                     document.createComment(vnode.text)
                 vnode.dom = dom
                 branch = 'D'
@@ -355,8 +374,8 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                     .parentNode
                     .removeChild(dom)
             }
-            if(vnode.instance){
-               vnode.instance._unmount = true
+            if (vnode.instance) {
+                vnode.instance._unmount = true
             }
             //  if (!vnode.use) {      parentNode.removeChild(vnode.dom)
             vnode.props && removeComponent(vnode)
