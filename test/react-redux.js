@@ -4,7 +4,8 @@
 	else if(typeof define === 'function' && define.amd)
 		define(["react", "redux"], factory);
 	else if(typeof exports === 'object')
-		exports["ReactRedux"] = factory(require("react"), require("redux"));
+	//require("react"),
+		exports["ReactRedux"] = factory(require("react"),  require("redux"));
 	else
 		root["ReactRedux"] = factory(root["React"], root["Redux"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_12__, __WEBPACK_EXTERNAL_MODULE_35__) {

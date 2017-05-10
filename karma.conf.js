@@ -4,7 +4,7 @@ var path = require('path')
 var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
 
-module.exports = function(config) {
+module.exports = function (config) {
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -35,7 +35,9 @@ module.exports = function(config) {
             'src/**/*.js': ['coverage'],
             'test/**/*.js': ['webpack']
         },
-        mochaReporter: { showDiff: true },
+        mochaReporter: {
+            showDiff: true
+        },
         browserLogOptions: {
             terminal: true
         },
@@ -56,12 +58,15 @@ module.exports = function(config) {
                     loader: 'babel-loader',
                     query: {
                         presets: ['env', 'react'],
-                        plugins: ['istanbul', 'syntax-async-generators', ["transform-runtime", {
-                            "helpers": true,
-                            "polyfill": true,
-                            "regenerator": true,
-                            "moduleName": "babel-runtime"
-                        }]],
+                        plugins: ['istanbul', 'syntax-async-generators',
+                            //'transform-es2015-destructuring',
+                            'transform-object-rest-spread', ["transform-runtime", {
+                                "helpers": true,
+                                "polyfill": true,
+                                "regenerator": true,
+                                "moduleName": "babel-runtime"
+                            }]
+                        ],
                         babelrc: false
                     }
                 }],
@@ -70,7 +75,11 @@ module.exports = function(config) {
             },
             resolve: {
 
-                alias: {},
+                alias: {
+                    redux: path.join(__dirname, './test/redux'),
+                    react: path.join(__dirname, './dist/React'),
+                    'react-redux': path.join(__dirname, './test/react-redux')
+                },
                 modulesDirectories: [__dirname, 'node_modules']
             },
             plugins: [
@@ -108,19 +117,8 @@ module.exports = function(config) {
             'Chrome': {
                 base: 'WebDriverio',
                 browserName: 'chrome',
-                name: 'Karma',
-                 config: {
-                    port: 4723,
-                    logLevel: 'verbose',
-                  /*  desiredCapabilities: {
-                        'appium-version': '1.6',
-                        platformName: 'Android',
-                        platformVersion: '7.0',
-                        deviceName: '3HX5T17117024214',
-                        browserName: 'chrome',
-                        app: undefined
-                    }*/
-                }
+                name: 'Karma'
+
             }
         },
         browsers: ['Chrome'],

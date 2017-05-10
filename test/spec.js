@@ -1,6 +1,6 @@
 
 import './modules/createElement.spec'
-
+/*
 import './modules/util.spec'
 import './modules/style.spec'
 
@@ -18,5 +18,5 @@ require('./modules/context.spec.jsx')
 require('./modules/ref.spec.jsx')
 
 require('./modules/node.spec.jsx')
-
+*/
 require('./modules/redux.spec.jsx')
