@@ -98,7 +98,7 @@
                   break
               case 'ref':
                   if (prevProps[name] !== val) {
-                      instance && patchRef(instance, val, dom)
+                      patchRef(instance, val, dom)
                   }
                   break
               case 'dangerouslySetInnerHTML':

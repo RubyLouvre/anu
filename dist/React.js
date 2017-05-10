@@ -709,7 +709,7 @@
   function patchRef(instance, ref, dom) {
       if (typeof ref === 'function') {
           ref(dom);
-      } else if (typeof ref === 'string') {
+      } else if (instance && typeof ref === 'string') {
           instance.refs[ref] = dom;
           dom.getDOMNode = getDOMNode;
       }
@@ -1050,7 +1050,7 @@
                   break;
               case 'ref':
                   if (prevProps[name] !== val) {
-                      instance && patchRef(instance, val, dom);
+                      patchRef(instance, val, dom);
                   }
                   break;
               case 'dangerouslySetInnerHTML':

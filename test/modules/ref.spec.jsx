@@ -74,7 +74,7 @@ describe('ref', function () {
     })
 
     it('patchRef Component', async () => {
-        
+
         class App extends React.Component {
             render() {
                 return <div title='1'><A ref='a' /></div>
@@ -90,13 +90,54 @@ describe('ref', function () {
                 return index ? <strong>111</strong> : <em>111</em>
             }
         }
-        
+
         var s = React.render(<App />, div)
         await browser
             .pause(100)
             .$apply()
-        expect( s.refs.a ).toInstanceOf(A)
+        expect(s.refs.a).toInstanceOf(A)
 
-     
+
     })
+
+    it('没有组件的情况', async () => {
+
+        function ref(a) {
+            expect(a.tagName).toBe('div')
+        }
+
+        var s = React.render(<div ref={ref}></div>, div)
+        await browser
+            .pause(100)
+            .$apply()
+
+
+
+    })
+    it('should invoke refs in Component.render()',async () => {
+        var i = 0
+        let outer = function (a) {
+            expect(a).to.Be(div.firstChild);
+            i++
+        }
+        let inner = function () {
+            expect(a).to.Be(div.firstChild.firstChild);
+            i++
+        }
+        class Foo extends React.Component {
+            render() {
+                return (
+                    <div ref={outer}>
+                        <span ref={inner} />
+                    </div>
+                );
+            }
+        }
+        var s = React.render(<Foo />, div);
+        await browser
+            .pause(100)
+            .$apply()
+
+        expect(i).toBe(2)
+    });
 })
