@@ -464,6 +464,7 @@
 	            var vnode = instance.render(nextProps, context);
 	            if (vnode === null) {
 	                vnode = {
+	                    instance: instance,
 	                    type: '#comment',
 	                    text: 'empty'
 	                };
@@ -650,6 +651,9 @@
 	var Children = {
 		only: function only(children) {
 			return children && children[0] || null;
+		},
+		count: function count(children) {
+			return children && children.length || 0;
 		}
 	};
 	/*
@@ -1549,7 +1553,6 @@
 	            }
 	        }
 	        _vnode2._hostParent = vParentNode;
-
 	        if (prevVnode) {
 	            //假设两者都存在
 	            var isTextOrComment = 'text' in _vnode2;
@@ -1581,6 +1584,7 @@
 	                }
 	            } else if (isTextOrComment) {
 	                //由其他类型变成文本或注释
+
 	                var isText = _vnode2.type === '#text';
 	                var dom = isText ? document.createTextNode(_vnode2.text) :
 	                /* istanbul ignore next */
@@ -1590,6 +1594,7 @@
 	                removeComponent(prevVnode); //移除元素节点或组件}
 	            } else {
 	                //由其他类型变成元素
+	                console.log(_vnode2, prevVnode);
 	                needInsert = false;
 	                //console.log('fff',vnode.dom, prevVnode.dom,vnode.type, prevVnode.type)
 	                _vnode2.dom = diff(_vnode2, prevVnode, vParentNode, context, beforeDom);

@@ -26,6 +26,7 @@ export var transaction = {
             var vnode = instance.render(nextProps, context)
             if (vnode === null) {
                 vnode = {
+                    instance:instance,
                     type: '#comment',
                     text: 'empty'
                 };

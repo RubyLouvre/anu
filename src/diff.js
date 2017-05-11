@@ -278,7 +278,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
 
         }
         vnode._hostParent = vParentNode
-
         if (prevVnode) { //假设两者都存在
             let isTextOrComment = 'text' in vnode
             let prevDom = prevVnode.dom
@@ -306,6 +305,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                     branch = 'C'
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
+
                 let isText = vnode.type === '#text'
                 var dom = isText
                     ? document.createTextNode(vnode.text)
@@ -316,6 +316,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 branch = 'D'
                 removeComponent(prevVnode) //移除元素节点或组件}
             } else { //由其他类型变成元素
+                console.log(vnode, prevVnode)
                 needInsert = false
                 //console.log('fff',vnode.dom, prevVnode.dom,vnode.type, prevVnode.type)
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context, beforeDom)
