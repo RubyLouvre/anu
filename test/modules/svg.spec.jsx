@@ -1,6 +1,6 @@
 import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 
-import React from 'src/React'
+import React from 'dist/React'
 
 describe('SVG元素', function () {
     this.timeout(200000);

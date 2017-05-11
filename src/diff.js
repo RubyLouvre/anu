@@ -323,7 +323,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                     console.log(prevVnode.dom, vParentNode.dom)
                 }
                 branch = 'E'
-                // console.log(vnode.dom, '55555')
             }
             //当这个孩子是上级祖先传下来的，那么它是相等的
             if (vnode !== prevVnode) {
@@ -404,7 +403,7 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
     if (props && !props.dangerouslySetInnerHTML) {
         // 先diff Children 再 diff Props 最后是 diff ref
         diffChildren(props.children, [], vnode, context) //添加第4参数
-        setControlledComponent(vnode)
+     
     }
     //尝试插入DOM树
     if (parentNode) {
@@ -415,6 +414,7 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
       //  parentNode.insertBefore(dom, beforeDom || null)
         if (props) {
             diffProps(props, {}, vnode, {})
+               setControlledComponent(vnode)
         }
 
         if (instances) {

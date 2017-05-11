@@ -1,10 +1,8 @@
 import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
-import React from 'src/React'
+import React from 'dist/React'
 
 describe('node模块', function () {
     this.timeout(200000);
-
-
     before(async () => {
         await beforeHook();
     });

@@ -1,5 +1,5 @@
 import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
-import React from 'src/React'
+import React from 'dist/React'
 import PureComponent from 'src/PureComponent'
 
 describe('无狀态组件', function () {

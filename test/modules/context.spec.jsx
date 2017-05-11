@@ -1,5 +1,5 @@
 import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
-import React from 'src/React'
+import React from 'dist/React'
 import PureComponent from 'src/PureComponent'
 
 describe('context', function () {
@@ -18,10 +18,11 @@ describe('context', function () {
     afterEach(function () {
         body.removeChild(div)
     })
+      React.PropTypes =  (React.PropTypes || {})
 
 
     it('getChildContext', async () => {
-        React.PropTypes =  React.PropTypes || {}
+      
         var arr = ['111', '222', '333']
         class App extends React.Component {
 
@@ -83,6 +84,7 @@ describe('context', function () {
         expect(strongs[0].innerHTML).toBe('222')
         expect(strongs[1].innerHTML).toBe('222')
     })
+
 
 
 })

@@ -1,5 +1,5 @@
 import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
-import React from 'src/React'
+import React from 'dist/React'
 import {SyntheticEvent, addEvent} from 'src/event'
 import {DOMElement} from 'src/browser'
 
@@ -21,7 +21,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
     })
     it('事件与样式', async() => {
-        class A extends React.Component {
+        class App extends React.Component {
             constructor() {
                 super()
                 this.state = {
@@ -52,7 +52,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
    
         var s = ReactDOM.render(
-            <A/>, div);
+            <App/>, div);
         await browser
             .pause(100)
             .$apply()
@@ -74,7 +74,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
     it('冒泡', async() => {
         var aaa = ''
-        class A extends React.PureComponent {
+        class App extends React.PureComponent {
             constructor(props) {
                 super(props)
                 this.state = {
@@ -108,7 +108,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
   
         var s = ReactDOM.render(
-            <A/>, div)
+            <App/>, div)
 
         await browser
             .pause(100)
@@ -123,7 +123,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
     it('捕获', async() => {
         var aaa = ''
-        class A extends React.PureComponent {
+        class App extends React.PureComponent {
             constructor(props) {
                 super(props)
                 this.state = {
@@ -158,7 +158,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
  
         var s = ReactDOM.render(
-            <A/>, div)
+            <App/>, div)
 
         await browser
             .pause(100)

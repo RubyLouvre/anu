@@ -99,7 +99,7 @@ describe('Redux', function () {
             }
 
             for (let i = 1; i < 3; i++) {
-                let parentId = Math.floor(Math.pow(Math.random(), 2) * i)
+                let parentId = 0 //Math.floor(Math.pow(Math.random(), 2) * i)
                 tree[i] = {
                     id: i,
                     counter: 0,
@@ -168,7 +168,6 @@ describe('Redux', function () {
 
                 const { addChild, createNode, id } = this.props
                 const childId = createNode().nodeId
-                console.log(childId)
                 addChild(id, childId)
             }
 
@@ -294,7 +293,7 @@ describe('Redux', function () {
         const tree = generateTree()
 
         const store = createStore(reducers, tree)
-                var s = ReactDOM.render(<Provider store={store}>
+        var s = ReactDOM.render(<Provider store={store}>
                 <ConnectedNode id={0} />
             </Provider>, div)
         await browser.pause(100).$apply()

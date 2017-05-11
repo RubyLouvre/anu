@@ -91,8 +91,7 @@ function postUpdateSelectedOptions(vnode) {
     var multiple = !!props.multiple
     var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] :
         ''
-console.log(vnode, multiple, value)
-    updateOptions(vnode, multiple, value)
+      updateOptions(vnode, multiple, value)
 
 }
 
@@ -109,7 +108,7 @@ function collectOptions(vnode, ret) {
 }
 
 function updateOptions(vnode, multiple, propValue) {
-    console.log('=====')
+    
     var options = collectOptions(vnode),
         selectedValue
     if (multiple) {
@@ -118,16 +117,13 @@ function updateOptions(vnode, multiple, propValue) {
             for (i = 0; i < propValue.length; i++) {
                 selectedValue['' + propValue[i]] = true
             }
-            console.log(selectedValue)
         } catch (e) {
             /* istanbul ignore next */
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
         }
         for (var i = 0, option; option = options[i++];) {
             var state = option._wrapperState || /* istanbul ignore next */handleSpecialNode(option)
-            console.log(state)
             var selected = selectedValue.hasOwnProperty(state.value)
-            console.log(state.selected , selected, option.dom)
             if (state.selected !== selected) {
                 state.selected = selected
                 setDomSelected(option, selected)
@@ -151,9 +147,9 @@ function updateOptions(vnode, multiple, propValue) {
 }
 
 function setDomSelected(option, selected) {
-  //  option.dom &&
-     (option.dom.selected = selected);
-     console.log(option.dom.selected,'11',option.dom.parentNode)
+   if(option.dom){
+       option.dom.selected = selected
+   }   
 }
 
 //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制

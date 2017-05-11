@@ -1,7 +1,6 @@
 import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
 
-import React from 'src/React'
-
+import React from 'dist/React'
 describe('diffProps', function () {
     this.timeout(200000);
     before(async() => {
@@ -9,7 +8,16 @@ describe('diffProps', function () {
     });
     after(async() => {
         await afterHook(false);
-    });
+    })
+     var body = document.body, div
+    beforeEach(function () {
+        div = document.createElement('div')
+        body.appendChild(div)
+    })
+    afterEach(function () {
+        body.removeChild(div)
+
+    })
     it('使用对象解构', async() => {
         class App extends React.Component {
             constructor(props) {
@@ -25,12 +33,8 @@ describe('diffProps', function () {
                 </div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
-        var s = React.render(<App/>, div)
+      
+        var s = ReactDOM.render(<App/>, div)
         await browser
             .pause(100)
             .$apply()
@@ -44,9 +48,7 @@ describe('diffProps', function () {
         expect(dom.title).toBe('123')
         expect(dom.className).toBe('aaa')
         expect(dom.id).toBe('uuuu')
-        document
-            .body
-            .removeChild(div)
+     
     })
     it('改变属性', async() => {
         var index = 1
@@ -80,16 +82,13 @@ describe('diffProps', function () {
                     </div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
-        var s = React.render(<App/>, div)
+   
+        var s = ReactDOM.render(<App/>, div)
         await browser
             .pause(100)
             .$apply()
         var dom = s.refs.a
+        console.log(dom, '1111')
         expect(dom.title).toBe('xxx')
         expect(dom.className).toBe('ddd')
         expect(dom.id).toBe('h33')
@@ -108,9 +107,7 @@ describe('diffProps', function () {
         expect(dom.getAttribute('data-bbb')).toBe('sss')
         expect((dom.__events || {}).onClick).toA('undefined')
         expect(dom.getElementsByTagName('b').length).toBe(0)
-        document
-            .body
-            .removeChild(div)
+      
     })
 
     

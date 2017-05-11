@@ -1,9 +1,22 @@
-import {patchStyle} from './style'
+import {
+    patchStyle
+} from './style'
 
-import {addGlobalEventListener, getBrowserName, isEventName} from './event'
-import {oneObject} from './util'
-import {patchRef, removeRef} from './ref'
-import {document} from './browser'
+import {
+    addGlobalEventListener,
+    getBrowserName,
+    isEventName
+} from './event'
+import {
+    oneObject
+} from './util'
+import {
+    patchRef,
+    removeRef
+} from './ref'
+import {
+    document
+} from './browser'
 
 var eventNameCache = {
     'onClick': 'click',
@@ -14,15 +27,11 @@ function clickHack() {}
 let inMobile = 'ontouchstart' in document
 
 var xlink = "http://www.w3.org/1999/xlink"
-var stringAttributes = oneObject('id,title,alt,value,className')
+var stringAttributes = {}
 export var builtIdProperties = {} //不规则的属性名映射
 
 //防止压缩时出错
-'accept-charset,acceptCharset|char,ch|charoff,chOff|class,className|for,htmlFor|h' +
-    'ttp-equiv,httpEquiv'.replace(/[^\|]+/g, function (a) {
-    var k = a.split(',')
-    builtIdProperties[k[1]] = k[0]
-})
+
 /*
   contenteditable不是布尔属性
   http://www.zhangxinxu.com/wordpress/2016/01/contenteditable-plaintext-only/
@@ -33,29 +42,38 @@ export var builtIdProperties = {} //不规则的属性名映射
   contenteditable='true'
   contenteditable='false'
    */
-var bools = ['autofocus,autoplay,async,allowTransparency,checked,controls', 'declare,disabled,defer,defaultChecked,defaultSelected,', 'isMap,loop,multiple,noHref,noResize,noShade', 'open,readOnly,selected'].join(',')
+var bools = ['autofocus,autoplay,async,allowTransparency,checked,controls',
+    'declare,disabled,defer,defaultChecked,defaultSelected,',
+    'isMap,loop,multiple,noHref,noResize,noShade',
+    'open,readOnly,selected'
+].join(',')
 var boolAttributes = {}
 bools.replace(/\w+/g, function (name) {
     boolAttributes[name] = true
 })
 
 var anomaly = [
-    'accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan', 'dateTime,defaultValue,contentEditable,frameBorder,longDesc,maxLength,marginWidth' +
-            ',marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign,value,title,alt'
+    'accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
+    'dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth',
+    'marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign'
 ].join(',')
 
 anomaly.replace(/\w+/g, function (name) {
     builtIdProperties[name] = name
+})　
+String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function (name) {
+    builtIdProperties[name] = name
+    stringAttributes[name] = name
 })
 /**
-   *
-   * 修改dom的属性与事件
-   * @export
-   * @param {any} props
-   * @param {any} prevProps
-   * @param {any} vnode
-   * @param {any} prevVnode
-   */
+ *
+ * 修改dom的属性与事件
+ * @export
+ * @param {any} props
+ * @param {any} prevProps
+ * @param {any} vnode
+ * @param {any} prevVnode
+ */
 export function diffProps(props, prevProps, vnode, prevVnode) {
     /* istanbul ignore if */
     if (props === prevProps) {
@@ -98,7 +116,7 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
 
                         var curType = typeof val
                         /* istanbul ignore if */
-                        if (curType !== 'function') 
+                        if (curType !== 'function')
                             throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
                         addGlobalEventListener(eventName)
                     }
@@ -121,7 +139,7 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
                     if (isHTML && builtIdProperties[name]) {
                         // 特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的 <input
                         // value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                        if (stringAttributes[name]) 
+                        if (stringAttributes[name])
                             val = val + ''
                         if (name !== 'value' || dom[name] !== val) {
                             dom[name] = val
@@ -142,9 +160,9 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
                 delete events[name]
             } else { //移除属性
                 if (isHTML && builtIdProperties[name]) {
-                    dom[name] = builtIdProperties[name] === true
-                        ? false
-                        : ''
+                    dom[name] = builtIdProperties[name] === true ?
+                        false :
+                        ''
                 } else {
                     operateAttribute(dom, name, '', !isHTML)
                 }
@@ -158,9 +176,9 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
 
 function operateAttribute(dom, name, value, isSVG) {
 
-    var method = value === ''
-            ? 'removeAttribute'
-            : 'setAttribute',
+    var method = value === '' ?
+        'removeAttribute' :
+        'setAttribute',
         namespace = null
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enha
