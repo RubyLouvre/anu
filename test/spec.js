@@ -1,6 +1,5 @@
 
 import './modules/createElement.spec'
-/*
 import './modules/util.spec'
 import './modules/style.spec'
 
@@ -14,9 +13,10 @@ require('./modules/svg.spec.jsx')
 require('./modules/diffProps.spec.jsx')
 
 require('./modules/event.spec.jsx')
+require('./modules/node.spec.jsx')
 require('./modules/context.spec.jsx')
 require('./modules/ref.spec.jsx')
 
-require('./modules/node.spec.jsx')
-*/
-require('./modules/redux.spec.jsx')
+
+
+//require('./modules/redux.spec.jsx')

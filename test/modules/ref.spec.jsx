@@ -103,7 +103,7 @@ describe('ref', function () {
     it('没有组件的情况', async () => {
 
         function ref(a) {
-            expect(a.tagName).toBe('div')
+            expect(a.tagName).toBe('DIV')
         }
 
         var s = React.render(<div ref={ref}></div>, div)
@@ -117,11 +117,11 @@ describe('ref', function () {
     it('should invoke refs in Component.render()',async () => {
         var i = 0
         let outer = function (a) {
-            expect(a).to.Be(div.firstChild);
+            expect(a).toBe(div.firstChild);
             i++
         }
-        let inner = function () {
-            expect(a).to.Be(div.firstChild.firstChild);
+        let inner = function (a) {
+            expect(a).toBe(div.firstChild.firstChild);
             i++
         }
         class Foo extends React.Component {

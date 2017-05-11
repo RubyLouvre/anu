@@ -1,32 +1,12 @@
-import {
-    getContext,
-    getInstances,
-    matchInstance,
-    midway,
-    extend
-} from './util'
-import {
-    applyComponentHook
-} from './lifecycle'
-import {
-    transaction
-} from './transaction'
-import {
-    toVnode
-} from './toVnode'
-import {
-    diffProps
-} from './diffProps'
-import {
-    document,
-    createDOMElement
-} from './browser'
-import {
-    removeRef
-} from './ref'
-import {
-    setControlledComponent
-} from './ControlledComponent'
+import {getContext, getInstances, matchInstance, midway, extend} from './util'
+import {applyComponentHook} from './lifecycle'
+
+import {transaction} from './transaction'
+import {toVnode} from './toVnode'
+import {diffProps} from './diffProps'
+import {document, createDOMElement} from './browser'
+import {removeRef} from './ref'
+import {setControlledComponent} from './ControlledComponent'
 
 /**
  * 渲染组件
@@ -92,9 +72,9 @@ function removeComponent(vnode) {
     }
 
     '_hostParent,_wrapperState,_instance,_owner'
-    .replace(/\w+/g, function (name) {
-        delete vnode[name]
-    })
+        .replace(/\w+/g, function (name) {
+            delete vnode[name]
+        })
 
     removeRef(instance, vnode.props.ref)
 
@@ -142,14 +122,14 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
                 return updateComponent(instance, context)
             }
 
-            prevProps = instance.prevProps
+            var _prevProps = instance.prevProps
 
-            instance.props = prevProps
+            instance.props = _prevProps
             applyComponentHook(instance, 3, nextProps)
             if (!instance.vnode.dom) { //今天修正的
                 instance.vnode.dom = dom
             }
-            instance.prevProps = prevProps
+            instance.prevProps = _prevProps
             //instance.vnode = prevProps
 
             instance.props = nextProps
@@ -168,7 +148,7 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
         var nextDom = createDOMElement(vnode)
 
         if (parentNode) {
-            if (dom && dom !== beforeDom)
+            if (dom && dom !== beforeDom) 
                 parentNode.removeChild(dom)
             parentNode.insertBefore(nextDom, beforeDom || null)
 
@@ -178,17 +158,20 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
     }
     //必须在diffProps前添加它的dom
     vnode.dom = dom
-    if (!('text' in vnode && 'text' in prevVnode)) {
-        diffProps(vnode.props || {}, prevProps, vnode, prevVnode)
-    }
-    if (prevVnode._hasSetInnerHTML) {
+
+    if (prevProps.dangerouslySetInnerHTML) {
         while (dom.firstChild) {
             var removed = dom.removeChild(dom.firstChild)
         }
     }
-    if (!vnode._hasSetInnerHTML && vnode.props) {
-        diffChildren(vnode.props.children, prevChildren, vnode, context)
+    var props = vnode.props
+    if (props && !props.dangerouslySetInnerHTML) {
+        diffChildren(props.children, prevChildren, vnode, context)
     }
+    if (props) {
+        diffProps(props, prevProps, vnode, prevVnode)
+    }
+
     var wrapperState = vnode._wrapperState
     if (wrapperState && wrapperState.postUpdate) { //处理select
         wrapperState.postUpdate(vnode)
@@ -222,9 +205,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep + '/' + vnode.text
     }
-    return type + '/' + vnode.deep + (vnode.key !== null ?
-        '/' + vnode.key :
-        '')
+    return type + '/' + vnode.deep + (vnode.key !== null
+        ? '/' + vnode.key
+        : '')
 }
 
 /**
@@ -241,9 +224,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     var mapping = {};
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
-        let tag = vnode.instance ?
-            getTopComponentName(vnode, vnode.instance) :
-            vnode.type
+        let tag = vnode.instance
+            ? getTopComponentName(vnode, vnode.instance)
+            : vnode.type
         let uuid = computeUUID(tag, vnode)
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
@@ -258,9 +241,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
-        let tag = typeof Type === 'function' ?
-            (vnode._hasInstance = 1, Type.displatName || Type.name) :
-            Type
+        let tag = typeof Type === 'function'
+            ? (vnode._hasInstance = 1, Type.displatName || Type.name)
+            : Type
         let uuid = computeUUID(tag, vnode)
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
@@ -324,8 +307,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
                 let isText = vnode.type === '#text'
-                var dom = isText ?
-                    document.createTextNode(vnode.text) :
+                var dom = isText
+                    ? document.createTextNode(vnode.text)
+                    :
                     /* istanbul ignore next */
                     document.createComment(vnode.text)
                 vnode.dom = dom
@@ -353,7 +337,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 branch = 'F'
             }
         }
-
         if (nativeChildren[i] !== vnode.dom) {
             //  if (!vnode.dom)      console.log(vnode.dom, branch, nativeChildren[i] )
             parentNode.insertBefore(vnode.dom, nativeChildren[i] || null)
@@ -397,14 +380,14 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
 export function toDOM(vnode, context, parentNode, beforeDom) {
     vnode = toVnode(vnode, context)
     var dom,
-        isElement
+        props
     if (vnode.type === '#comment') {
         dom = document.createComment(vnode.text)
     } else if (vnode.type === '#text') {
         dom = document.createTextNode(vnode.text)
     } else {
         dom = createDOMElement(vnode)
-        isElement = true
+        props = vnode.props
     }
     if (vnode.context) {
         context = vnode.context
@@ -414,23 +397,25 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
     var instance = vnode.instance
     var canComponentDidMount = instance && !vnode.dom
     vnode.dom = dom
-
-    if (isElement) {
-        diffProps(vnode.props, {}, vnode, {})
-        if (!vnode._hasSetInnerHTML) {
-            diffChildren(vnode.props.children, [], vnode, context) //添加第4参数
-        }
+    if (parentNode) {
+          parentNode.insertBefore(dom, beforeDom || null)
+    }
+    //只有元素与组件才有props
+    if (props && !props.dangerouslySetInnerHTML) {
+        // 先diff Children 再 diff Props 最后是 diff ref
+        diffChildren(props.children, [], vnode, context) //添加第4参数
         setControlledComponent(vnode)
     }
-
     //尝试插入DOM树
     if (parentNode) {
         var instances
         if (canComponentDidMount) { //判定能否调用componentDidMount方法
             instances = getInstances(instance)
         }
-
-        parentNode.insertBefore(dom, beforeDom || null)
+      //  parentNode.insertBefore(dom, beforeDom || null)
+        if (props) {
+            diffProps(props, {}, vnode, {})
+        }
 
         if (instances) {
             while (instance = instances.shift()) {
@@ -438,6 +423,7 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
             }
         }
     }
+
     return dom
 }
 //将Component中这个东西移动这里
