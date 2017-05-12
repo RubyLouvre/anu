@@ -49,12 +49,20 @@ export var msie = document.documentMode || versions[typeof document.all + typeof
 export var modern = /NaN|undefined/.test(msie) || msie > 8
 
 export function createDOMElement(vnode) {
+    var type = vnode.type
+    if(type ==='#text'){
+        return document.createTextNode(vnode.text)
+    }
+    if(type ==='#comment'){
+        return document.createComment(vnode.text)
+    }
+
     try {
         if (vnode.ns) {
-            return document.createElementNS(vnode.ns,vnode.type)
+            return document.createElementNS(vnode.ns,type)
         }
     } catch (e) {}
-    return document.createElement(vnode.type)
+    return document.createElement(type)
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 // http://demo.yanue.net/HTML5element/

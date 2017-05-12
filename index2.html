@@ -15,62 +15,63 @@
         }
     </style>
 
-  <!--<script src="./test/react.js"></script>
+ <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
-  <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
+   <!--<script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>-->
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-    var s
-window.onload = function(){
-    var div = document.getElementById('root')
-     class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    value: ['aaa', 'ccc']
-                }
-            }
+     class App extends React.Component{
+         constructor(props){
+             super(props)
+             this.state = {
+                 path: '111'
+             }
+         }
+         change(path){
+             this.setState({
+                 path: path || '333'
+             })
+         }
+         render(){
+             return <div><span>xx</span><Route path={this.state.path} /></div> 
+         }
+     }
+    class Route extends React.Component{
+         constructor(props){
+             super(props)
+             this.state = {
+                 path: props.path
+             }
+         }
+         componentWillReceiveProps(props){
+             
+             console.log('Route WillReceiveProps')
+           //  this.forceUpdate()
+           this.setState({
+               path: props.path
+           })
+            //   console.log('forceUpdate')
+         }
+         componentWillUpdate(){
 
-            onChange(e) {
-                var values = []
-                var elems = e.target.getElementsByTagName('option')
-                for (var i = 0, el; el = elems[i++];) {
-                    if (el.selected) {
-                        if (el.getAttribute('value') != null) {
-                            values.push(el.getAttribute('value'))
-                        } else {
-                            values.push(el.text)
-                        }
-                    }
-                }
-                this.setState({
-                    values: values
-                })
-            }
-            render() {
-                return <select value={this.state.value} multiple='true' onChange={this.onChange.bind(this)}>
-                    <optgroup>
-                        <option ref='a'>aaa</option>
-                        <option ref='b'>bbb</option>
-                    </optgroup>
-                    <optgroup>
-                        <option ref='c'>ccc</option>
-                        <option ref='d'>ddd</option>
-                    </optgroup>
-                </select>
-            }
+             console.log('Route WillUpdate',this.props.path)
+           
+         }
+         componentWillUnmount(){
 
-        }
-
-  s = ReactDOM.render(
-    <App />,
-    div
-    )
-    console.log(s.refs.a.selected )
-    console.log(s.refs.b.selected )
-    console.log(s.refs.c.selected )
-    console.log(s.refs.d.selected )
+            console.log('Route WillUnmount')
+         }
+         render(){
+             return this.state.path == '111' ? <p>{this.state.path}</p>: null
+         }
+     }
+     var s 
+     window.onload = function(){
+        s = ReactDOM.render(
+            <App  />,
+            document.getElementById('root')
+        )
     }
     </script>
 </head>

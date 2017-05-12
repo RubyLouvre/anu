@@ -286,12 +286,20 @@
 	var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 	function createDOMElement(vnode) {
+	    var type = vnode.type;
+	    if (type === '#text') {
+	        return document.createTextNode(vnode.text);
+	    }
+	    if (type === '#comment') {
+	        return document.createComment(vnode.text);
+	    }
+
 	    try {
 	        if (vnode.ns) {
-	            return document.createElementNS(vnode.ns, vnode.type);
+	            return document.createElementNS(vnode.ns, type);
 	        }
 	    } catch (e) {}
-	    return document.createElement(vnode.type);
+	    return document.createElement(type);
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 	// http://demo.yanue.net/HTML5element/
@@ -447,7 +455,7 @@
 	function setStateWarn() {
 	    /* istanbul ignore next */
 	    if (transaction.isInTransation) {
-	        console.warn("Cannot update during an existing state transition (such as within `render` or an" + "other component's constructor). Render methods should be a pure function of prop" + "s and state; constructor side-effects are an anti-pattern, but can be moved to `" + "componentWillMount`");
+	        console.warn('\u8BF7\u4E0D\u8981\u5728\'render\', \'componentWillUpdate\',\'componentDidUpdate\',\u6216\u7EC4\u4EF6\u7684\u6784\u9020\u5668\u4E2D\n       \xA0\u8C03\u7528setState\uFF0CforceUpdate\u65B9\u6CD5\uFF0C\u5426\u5219\u4F1A\u9020\u6210\u6B7B\u5FAA\u73AF\uFF0C\u4F60\u53EF\u4EE5\u5C06\u76F8\u5173\u903B\u8F91\u653E\u5230\'componentWillMount\'\u94A9\u5B50');
 	    }
 	}
 
@@ -511,6 +519,7 @@
 	                request.cb.call(request.instance);
 	            });
 	            this.isInTransation = false;
+	            this.uuid = NaN;
 	            /* istanbul ignore next */
 	            if (queue.length) {
 	                this.enqueue(); //用于递归调用自身)

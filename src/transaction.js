@@ -1,15 +1,15 @@
-import {CurrentOwner} from './CurrentOwner'
+import {
+    CurrentOwner
+} from './CurrentOwner'
 
 var queue = []
 var callbacks = []
 
-function setStateWarn() {
+export function setStateWarn() {
     /* istanbul ignore next */
     if (transaction.isInTransation) {
-        console.warn("Cannot update during an existing state transition (such as within `render` or an" +
-                "other component's constructor). Render methods should be a pure function of prop" +
-                "s and state; constructor side-effects are an anti-pattern, but can be moved to `" +
-                "componentWillMount`")
+        console.warn(`请不要在'render', 'componentWillUpdate','componentDidUpdate',或组件的构造器中
+        调用setState，forceUpdate方法，否则会造成死循环，你可以将相关逻辑放到'componentWillMount'钩子`)
     }
 }
 
@@ -26,7 +26,7 @@ export var transaction = {
             var vnode = instance.render(nextProps, context)
             if (vnode === null) {
                 vnode = {
-                    instance:instance,
+                    instance: instance,
                     type: '#comment',
                     text: 'empty'
                 };
@@ -41,7 +41,7 @@ export var transaction = {
         return vnode
     },
     enqueue: function (obj) {
-        if (obj) 
+        if (obj)
             queue.push(obj)
         if (!this.isInTransation) {
             this.isInTransation = true
@@ -78,7 +78,8 @@ export var transaction = {
                     .call(request.instance)
             })
             this.isInTransation = false
-             /* istanbul ignore next */
+            this.uuid = NaN
+            /* istanbul ignore next */
             if (queue.length) {
                 this.enqueue() //用于递归调用自身)
             }
