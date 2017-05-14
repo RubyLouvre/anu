@@ -128,5 +128,8 @@ export function camelize(target) {
     })
 }
 export var midway = {
-    immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+    updateBatchNumber: 0,
+    immune: {
+
+    } // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 }

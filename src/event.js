@@ -52,7 +52,7 @@ function dispatchEvent(e) {
         }
     }
     transaction.isInTransation = false
-    transaction.enqueue()
+    transaction.enqueue(true)
 }
 
 function capitalize(str) {

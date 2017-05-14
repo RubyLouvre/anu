@@ -12876,7 +12876,10 @@ var asapEnqueued = false;
 var batchingStrategy = null;
 
 function ensureInjected() {
-  !(ReactUpdates.ReactReconcileTransaction && batchingStrategy) ? "development" !== 'production' ? invariant(false, 'ReactUpdates: must inject a reconcile transaction class and batching strategy') : _prodInvariant('123') : void 0;
+  !(ReactUpdates.ReactReconcileTransaction && batchingStrategy) ? 
+  "development" !== 'production' ? 
+  invariant(false, 'ReactUpdates: must inject a reconcile transaction class and batching strategy') : 
+  _prodInvariant('123') : void 0;
 }
 
 var NESTED_UPDATES = {
@@ -12957,8 +12960,9 @@ function mountOrderComparator(c1, c2) {
 
 function runBatchedUpdates(transaction) {
   var len = transaction.dirtyComponentsLength;
-  !(len === dirtyComponents.length) ? "development" !== 'production' ? invariant(false, 'Expected flush transaction\'s stored dirty-components length (%s) to match dirty-components array length (%s).', len, dirtyComponents.length) : _prodInvariant('124', len, dirtyComponents.length) : void 0;
-
+  !(len === dirtyComponents.length) ?
+  "development" !== 'production' ? 
+  invariant(false, 'Expected flush transaction\'s stored dirty-components length (%s) to match dirty-components array length (%s).', len, dirtyComponents.length) : _prodInvariant('124', len, dirtyComponents.length) : void 0;
   // Since reconciling a component higher in the owner hierarchy usually (not
   // always -- see shouldComponentUpdate()) will reconcile children, reconcile
   // them before their children by sorting the array.
@@ -12970,7 +12974,6 @@ function runBatchedUpdates(transaction) {
   // to B (since B would have already updated, we should skip it, and the only
   // way we can know to do so is by checking the batch counter).
   updateBatchNumber++;
-
   for (var i = 0; i < len; i++) {
     // If a component is unmounted before pending changes apply, it will still
     // be here, but we assume that it has cleared its _pendingCallbacks and
@@ -13013,6 +13016,7 @@ var flushBatchedUpdates = function () {
   // array and perform any updates enqueued by mount-ready handlers (i.e.,
   // componentDidUpdate) but we need to check here too in order to catch
   // updates enqueued by setState callbacks and asap calls.
+
   while (dirtyComponents.length || asapEnqueued) {
     if (dirtyComponents.length) {
       var transaction = ReactUpdatesFlushTransaction.getPooled();
@@ -13047,7 +13051,6 @@ function enqueueUpdate(component) {
     batchingStrategy.batchedUpdates(enqueueUpdate, component);
     return;
   }
-
   dirtyComponents.push(component);
   if (component._updateBatchNumber == null) {
     component._updateBatchNumber = updateBatchNumber + 1;

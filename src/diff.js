@@ -26,7 +26,9 @@ export function updateComponent(instance) {
     instance.props = prevProps
     instance.state = prevState
     var nextProps = props
-    var nextState = state
+
+    var nextState = instance._processPendingState(props, context)
+
     if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
         return vnode.dom //注意
     }
@@ -37,7 +39,7 @@ export function updateComponent(instance) {
     applyComponentHook(instance, 5, nextProps, nextState, context)
     instance.props = nextProps
     instance.state = nextState
-
+    instance._updateBatchNumber = null
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
     //context只能孩子用，因此不要影响原instance.context
 
@@ -67,7 +69,7 @@ function removeComponent(vnode) {
 
     applyComponentHook(instance, 7) //7
     while (disabedInstance) {
-        disabedInstance._unmount = true
+        disabedInstance._unmount = 123
         disabedInstance = disabedInstance.parentInstance
     }
 
@@ -75,17 +77,18 @@ function removeComponent(vnode) {
         .replace(/\w+/g, function (name) {
             delete vnode[name]
         })
-
-    removeRef(instance, vnode.props.ref)
-
-    vnode
-        .props
-        .children
-        .forEach(function (el) {
-            if (el.props) {
+    var props = vnode.props
+    if (props) {
+        removeRef(instance, props.ref)
+        props
+            .children
+            .forEach(function (el) {
+                // if (el.props) {
                 removeComponent(el)
-            }
-        })
+                // }
+            })
+    }
+
 }
 
 /**
@@ -136,7 +139,8 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
             return updateComponent(instance, context)
         } else {
             if (prevVnode.type !== Type) {
-                removeComponent(prevVnode)
+                //同一个组件，因为render返回的内容不一致，不算移除
+             //   removeComponent(prevVnode)
             }
         }
     }
@@ -165,10 +169,11 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
         }
     }
     var props = vnode.props
-    if (props && !props.dangerouslySetInnerHTML) {
-        diffChildren(props.children, prevChildren, vnode, context)
-    }
     if (props) {
+        if (!props.angerouslySetInnerHTML) {
+            diffChildren(props.children, prevChildren, vnode, context)
+        }
+
         diffProps(props, prevProps, vnode, prevVnode)
     }
 
@@ -228,6 +233,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             ? getTopComponentName(vnode, vnode.instance)
             : vnode.type
         let uuid = computeUUID(tag, vnode)
+     
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
         } else {
@@ -237,7 +243,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     //第二步，遍历新children, 从hash中取出旧节点
 
     var removedChildren = oldChildren.concat();
-
+  
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let Type = vnode.type
@@ -245,6 +251,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             ? (vnode._hasInstance = 1, Type.displatName || Type.name)
             : Type
         let uuid = computeUUID(tag, vnode)
+
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
             if (!mapping[uuid].length) {
@@ -284,6 +291,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             if (vnode.prevVnode && vnode._hasInstance) { //都是同种组件
                 delete vnode.prevVnode
                 delete vnode._hasInstance
+                delete prevVnode.instance._unmount
                 needInsert = false
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context, beforeDom)
                 branch = 'A'
@@ -306,23 +314,13 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
 
-                let isText = vnode.type === '#text'
-                var dom = isText
-                    ? document.createTextNode(vnode.text)
-                    :
-                    /* istanbul ignore next */
-                    document.createComment(vnode.text)
-                vnode.dom = dom
+                vnode.dom = createDOMElement(vnode)
                 branch = 'D'
                 removeComponent(prevVnode) //移除元素节点或组件}
             } else { //由其他类型变成元素
-                console.log(vnode, prevVnode)
                 needInsert = false
-                //console.log('fff',vnode.dom, prevVnode.dom,vnode.type, prevVnode.type)
                 vnode.dom = diff(vnode, prevVnode, vParentNode, context, beforeDom)
-                if (!vnode.dom) {
-                    console.log(prevVnode.dom, vParentNode.dom)
-                }
+               
                 branch = 'E'
             }
             //当这个孩子是上级祖先传下来的，那么它是相等的
@@ -338,7 +336,6 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             }
         }
         if (nativeChildren[i] !== vnode.dom) {
-            //  if (!vnode.dom)      console.log(vnode.dom, branch, nativeChildren[i] )
             parentNode.insertBefore(vnode.dom, nativeChildren[i] || null)
         }
 
@@ -379,16 +376,9 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
  */
 export function toDOM(vnode, context, parentNode, beforeDom) {
     vnode = toVnode(vnode, context)
-    var dom,
-        props
-    if (vnode.type === '#comment') {
-        dom = document.createComment(vnode.text)
-    } else if (vnode.type === '#text') {
-        dom = document.createTextNode(vnode.text)
-    } else {
-        dom = createDOMElement(vnode)
-        props = vnode.props
-    }
+    var dom = createDOMElement(vnode)
+    var props = vnode.props
+
     if (vnode.context) {
         context = vnode.context
         delete vnode.context
@@ -398,13 +388,13 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
     var canComponentDidMount = instance && !vnode.dom
     vnode.dom = dom
     if (parentNode) {
-          parentNode.insertBefore(dom, beforeDom || null)
+        parentNode.insertBefore(dom, beforeDom || null)
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {
         // 先diff Children 再 diff Props 最后是 diff ref
         diffChildren(props.children, [], vnode, context) //添加第4参数
-     
+
     }
     //尝试插入DOM树
     if (parentNode) {
@@ -412,10 +402,10 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
         if (canComponentDidMount) { //判定能否调用componentDidMount方法
             instances = getInstances(instance)
         }
-      //  parentNode.insertBefore(dom, beforeDom || null)
+        //  parentNode.insertBefore(dom, beforeDom || null)
         if (props) {
             diffProps(props, {}, vnode, {})
-               setControlledComponent(vnode)
+            setControlledComponent(vnode)
         }
 
         if (instances) {
@@ -428,8 +418,8 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
     return dom
 }
 //将Component中这个东西移动这里
-midway.immune.updateComponent = function updateComponentProxy() { //这里触发视图更新
-    var instance = this.component
+midway.immune.updateComponent = function updateComponentProxy(instance) { //这里触发视图更新
+
     updateComponent(instance)
     instance._forceUpdate = false
 }

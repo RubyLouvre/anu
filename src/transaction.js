@@ -1,7 +1,5 @@
-import {
-    CurrentOwner
-} from './CurrentOwner'
-
+import {CurrentOwner} from './CurrentOwner'
+import {midway} from './util'
 var queue = []
 var callbacks = []
 
@@ -17,6 +15,7 @@ export var transaction = {
     isInTransation: false,
     enqueueCallback: function (obj) {
         //它们是保证在ComponentDidUpdate后执行
+        console.log
         callbacks.push(obj)
     },
     renderWithoutSetState: function (instance, nextProps, context) {
@@ -40,49 +39,46 @@ export var transaction = {
 
         return vnode
     },
-    enqueue: function (obj) {
-        if (obj)
-            queue.push(obj)
+    enqueue: function (instance) {
+        if (typeof instance === 'object') {
+            queue.push(instance)
+        }
         if (!this.isInTransation) {
             this.isInTransation = true
-            var preProcessing = queue.concat()
+
+            if (instance) 
+                midway.updateBatchNumber++;
+            var globalBatchNumber = midway.updateBatchNumber
+
+            var renderQueue = queue.concat()
             var processingCallbacks = callbacks.concat()
-            var mainProcessing = []
+
             queue.length = callbacks.length = 0
-            var unique = {}
-            preProcessing.forEach(function (request) {
+            renderQueue.forEach(function (inst) {
                 try {
-                    request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
-                    if (!unique[request.component.uuid]) {
-                        unique[request.component.uuid] = 1
-                        mainProcessing.push(request)
+                    if (inst._updateBatchNumber === globalBatchNumber) {
+                        midway
+                            .immune
+                            .updateComponent(inst)
                     }
+
                 } catch (e) {
                     /* istanbul ignore next */
                     console.log(e)
                 }
 
             })
-
-            mainProcessing.forEach(function (request) {
-                try {
-                    request.exec() //执行主程序
-                } catch (e) {
-                    /* istanbul ignore next */
-                    console.log(e)
-                }
-            })
+            this.isInTransation = false
             processingCallbacks.forEach(function (request) {
                 request
                     .cb
                     .call(request.instance)
             })
-            this.isInTransation = false
-            this.uuid = NaN
             /* istanbul ignore next */
             if (queue.length) {
                 this.enqueue() //用于递归调用自身)
             }
         }
+
     }
 }
