@@ -39,6 +39,7 @@ export function createElement(type, configs, children) {
         delete c.merge //注意这里的顺序
         Object.freeze(c)
     }
+  
     props.children = c
     Object.freeze(props)
     return new Vnode(type, props, key, CurrentOwner.cur)

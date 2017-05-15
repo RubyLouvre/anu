@@ -53,7 +53,7 @@ export function toLowerCase(s) {
  */
 export function getInstances(instance) {
     var instances = [instance]
-    while (instance = instance.parentInstance) {
+    while (instance = instance.parentInstance ) {
         instances.push(instance)
     }
     return instances

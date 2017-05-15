@@ -37,16 +37,15 @@ var React = {
  */
 function render(vnode, container, cb) {
     let context = {}
-   if (!container.oldVnode) {
-      while (container.firstChild) {
+    if (!container.oldVnode) {
+        while (container.firstChild) {
             container.removeChild(container.firstChild)
         }
-}
-  
-    var rootVnode = diff(vnode,  container.oldVnode|| {}, {
+    }
+
+    var rootVnode = diff(vnode, container.oldVnode || {}, {
         dom: container
     }, context)
-    
 
     container.oldVnode = vnode
     var instance = vnode.instance

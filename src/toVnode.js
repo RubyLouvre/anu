@@ -27,7 +27,7 @@ import {
  * @param {any} context
  * @returns
  */
-export function toVnode(vnode, context) {
+export function toVnode(vnode, context, parentInstance) {
 
     var Type = vnode.type,
         instance, rendered
@@ -45,39 +45,48 @@ export function toVnode(vnode, context) {
             instance = new Type(props, context)
 
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
-            instance.vnode = vnode
-
+            //   instance.vnode = vnode
+            vnode.instance = instance
             Component.call(instance, props, context) //重点！！
 
             applyComponentHook(instance, 0) //willMount
-            
 
             rendered = transaction.renderWithoutSetState(instance)
+            instance._rendered = rendered
         } else { //添加无状态组件的分支
             instance = new Component(null, context)
             instance.render = instance.statelessRender = Type
-            instance.vnode = vnode
+            vnode.instance = instance
+
+            //   instance.vnode = vnode
             rendered = transaction.renderWithoutSetState(instance, props, context)
+
+
         }
-        if (vnode.instance) {
-            instance.parentInstance = vnode.instance
-            vnode.instance.childInstance = instance
+        if (parentInstance && instance) {
+            instance.parentInstance = parentInstance
+            parentInstance.childInstance = instance
         }
 
-        instance.prevProps = vnode.props //实例化时prevProps
+        // instance.prevProps = vnode.props //实例化时prevProps
 
         var key = vnode.key
-       //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
+        //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
         patchRef(vnode._owner, vnode.props.ref, instance)
-        extend(vnode, rendered)
-        vnode.key = key
-        vnode.instance = instance
+
+
+        rendered.instance = instance
+        instance._rendered = rendered
+        rendered._hostParent = vnode._hostParent
+     
+        rendered.key = key
+        //  vnode.instance = instance
 
         if (instance.getChildContext) {
-           context = vnode.context = getContext(instance, context)//将context往下传
+            context = rendered.context = getContext(instance, context) //将context往下传
         }
 
-        return toVnode(vnode, context)
+        return toVnode(rendered, context, instance)
     } else {
         return vnode
     }
