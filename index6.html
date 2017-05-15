@@ -5,152 +5,53 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <style>
-        .aaa {
+      .aaa {
             width: 200px;
             height: 200px;
             background: red;
         }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
     </style>
-    <script type='text/javascript' src="./test/jsDump.js"></script>
 <script type='text/javascript' src="./dist/React.js"></script>
-  <!--<script src="./test/react.js"></script>
+ <!-- <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
      <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
-     <script src="./test/redux-thunk.js"></script>
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-var combineReducers = Redux.combineReducers
-var Provider = ReactRedux.Provider
-var connect = ReactRedux.connect
-var createStore = Redux.createStore
-var applyMiddleware = Redux.applyMiddleware
-var bindActionCreators = Redux.bindActionCreators
-var thunk = ReduxThunk.default
+var s
 
- const SET_COUNTER = 'SET_COUNTER'
- const INCREMENT_COUNTER = 'INCREMENT_COUNTER'
- const DECREMENT_COUNTER = 'DECREMENT_COUNTER'
-//==========actions====
- const set = (value) => ({
-  type: SET_COUNTER,
-  payload: value
-})
-
- const increment = () => ({
-  type: INCREMENT_COUNTER
-})
-
- const decrement = () => ({
-  type: DECREMENT_COUNTER
-})
-
- const incrementIfOdd = () => (dispatch, getState) => {
-  const { counter } = getState()
-
-  if (counter % 2 === 0) {
-    return
-  }
-
-  dispatch(increment())
-}
-
- const incrementAsync = (delay = 1000) => dispatch => {
-  setTimeout(() => {
-    dispatch(increment())
-  }, delay)
-}
-const CounterActions= {
-    set,
-    increment,
-    decrement,
-    incrementIfOdd,
-    incrementAsync
-}
-//==============counter api========
-
-const getRandomInt = (min, max) => (
-  Math.floor(Math.random() * (max - min)) + min
-)
-
-const fetchCounter = (callback) => {
-  // Rather than immediately returning, we delay our code with a timeout to simulate asynchronous behavior
-  setTimeout(() => {
-    callback(getRandomInt(1, 100))
-  }, 500)
-
-
-}
-
-const Counter = ({increment, incrementIfOdd, incrementAsync, decrement, counter}) => (
-  <p>
-    Clicked: {counter} times
-    {' '}
-    <button onClick={increment}>+</button>
-    {' '}
-    <button onClick={decrement}>-</button>
-    {' '}
-    <button onClick={incrementIfOdd}>Increment if odd</button>
-    {' '}
-    <button onClick={() => incrementAsync()}>Increment async</button>
-  </p>
-)
-//=============containers========
-
-
-const mapStateToProps = (state) => ({
-  counter: state.counter
-})
-
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators(CounterActions, dispatch)
-}
-const App = connect(mapStateToProps, mapDispatchToProps)(Counter)
-
-//＝＝＝＝＝＝reducers＝＝＝＝＝＝＝＝＝
-//=========counter-reducers=======
-
-const counter = (state = 0, action) => {
-  switch (action.type) {
-    case SET_COUNTER:
-      return action.payload
-    case INCREMENT_COUNTER:
-      return state + 1
-    case DECREMENT_COUNTER:
-      return state - 1
-    default:
-      return state
-  }
-}
-
-const rootReducer = combineReducers({
-  counter
-})
-
-
-
-
-
-//==============
-const configureStore = (preloadedState) => {
-  const store = createStore(
-    rootReducer,
-    preloadedState,
-    applyMiddleware(thunk)
-  )
-
-
-
-  return store
-}
-
-const preloadedState = { counter:8 }
-
-const store = configureStore(preloadedState)
-
-var s 
 window.onload = function(){
-   s = ReactDOM.render( <Provider store={store} ><App /></Provider>, document.getElementById('example'))
+      //  React.PropTypes =  (React.PropTypes || {})
+        function Select(props) {
+           return <strong>{props.value}</strong>
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+
+            onChange(e) {
+                this.setState({
+                    value: e.target.value
+                })
+
+            }
+            render() {
+                return <div><Select value={this.state.value} />
+                    <input ref='a' value={this.state.value} onInput={this.onChange.bind(this)} /></div>
+            }
+
+        }
+
+       s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
     </script>
 </head>

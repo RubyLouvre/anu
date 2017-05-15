@@ -12,7 +12,7 @@ import {extend, midway, noop} from './util'
 export function Component(props, context) {
     this.context = context
     this.props = props
-    this.uuid = Math.random()
+   // this.uuid = Math.random()
     this.refs = {}
     if (!this.state) 
         this.state = {}
@@ -32,7 +32,7 @@ Component.prototype = {
     _processPendingState: function (props, context) {
 
         var queue = this._pendingStateQueue
-        this._pendingStateQueue = null
+        delete this._pendingStateQueue
 
         if (!queue) {
             return this.state
@@ -69,7 +69,7 @@ function setStateProxy(instance, cb) {
             component: instance,
             cb: cb
         })
-    if (instance._updateBatchNumber == null) {
+    if (!instance._updateBatchNumber) {
         instance._updateBatchNumber = midway.updateBatchNumber + 1
     }
     transaction.enqueue(instance)
