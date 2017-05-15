@@ -51,9 +51,11 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8
 export function createDOMElement(vnode) {
     var type = vnode.type
     if(type ==='#text'){
+        delete vnode.props
         return document.createTextNode(vnode.text)
     }
     if(type ==='#comment'){
+         delete vnode.props
         return document.createComment(vnode.text)
     }
 
