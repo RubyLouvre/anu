@@ -350,4 +350,78 @@ describe('无狀态组件', function () {
         expect(s.refs.a.selected).toBe(true)
 
     })
+
+    it('一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount', async()=>{
+        class App extends React.Component{
+            constructor(props){
+                super(props)
+                this.state = {
+                    path: '111'
+                }
+            }
+            change(path){
+                this.setState({
+                    path: path || '333'
+                })
+            }
+            render(){
+                return <div><span>xx</span><Route path={this.state.path} /></div> 
+            }
+        }
+        var updateCount = 0
+        var receiveCount = 0
+        var destroyCount = 0
+        class Route extends React.Component{
+            constructor(props){
+                super(props)
+                this.state = {
+                    path: props.path
+                }
+            }
+            componentWillReceiveProps(props){
+                receiveCount++
+                this.setState(function(nextState, props){
+                    nextState.path = props.path
+                    return nextState
+                })
+            }
+            componentWillUpdate(){
+                 updateCount++ 
+            }
+            componentWillUnmount(){
+                 destroyCount++ 
+            }
+            render(){
+                return this.state.path == '111' ? <p>{this.state.path}</p>: null
+            }
+        }
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(0)
+        expect(receiveCount).toBe(0)
+        s.change('111')
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(1)
+        expect(receiveCount).toBe(1)
+        s.change('111x')
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(2)
+        expect(receiveCount).toBe(2)
+        expect(div.firstChild.childNodes[1].nodeType).toBe(8)
+        expect(destroyCount).toBe(0)
+        s.change('111')
+         await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(3)
+        expect(receiveCount).toBe(3)
+        expect(div.firstChild.childNodes[1].nodeType).toBe(1)
+        expect(destroyCount).toBe(0)
+    })
 })

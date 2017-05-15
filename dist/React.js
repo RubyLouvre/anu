@@ -1333,10 +1333,11 @@
 
 	    context = getContext(instance, context);
 	    var hostParent = vnode._hostParent;
-
+	    console.log(extend({}, vnode.props), '===========');
 	    var dom = diff(rendered, vnode, hostParent, context, vnode.dom);
 	    //vnode._hostParent会丢失
 	    rendered._hostParent = hostParent;
+
 	    extend(vnode, rendered); //直接更新原对象
 
 	    instance.vnode = rendered;
@@ -1361,7 +1362,7 @@
 	        disabedInstance = disabedInstance.parentInstance;
 	    }
 
-	    '_hostParent,_wrapperState,_instance,_owner'.replace(/\w+/g, function (name) {
+	    '_hostParent,_wrapperState,_owner'.replace(/\w+/g, function (name) {
 	        delete vnode[name];
 	    });
 	    var props = vnode.props;
@@ -1397,10 +1398,16 @@
 	    var isComponent = typeof Type === 'function';
 	    var instance = prevVnode.instance;
 	    if (instance) {
+	        if (instance === vnode.instance) {
+	            console.log('这是两个注释节点', vnode);
+	            //两个注释节点
+	        } else {
+	            instance = isComponent && matchInstance(instance, Type);
+	        }
 
-	        instance = isComponent && matchInstance(instance, Type);
 	        if (instance) {
 	            //如果类型相同，使用旧的实例进行 render新的虚拟DOM
+
 	            vnode.instance = instance;
 	            instance.context = context; //更新context
 	            var nextProps = vnode.props;
@@ -1458,7 +1465,6 @@
 	        if (!props.angerouslySetInnerHTML) {
 	            diffChildren(props.children, prevChildren, vnode, context);
 	        }
-	        console.log(vnode.type, props);
 	        diffProps(props, prevProps, vnode, prevVnode);
 	    }
 
@@ -1511,27 +1517,32 @@
 	    //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
 
 	    var mapping = {};
+	    var str1 = '';
 	    for (var _i = 0, _n = oldChildren.length; _i < _n; _i++) {
 	        var vnode = oldChildren[_i];
 	        var tag = vnode.instance ? getTopComponentName(vnode, vnode.instance) : vnode.type;
 	        var uuid = computeUUID(tag, vnode);
-
+	        str1 += uuid + ' ';
 	        if (mapping[uuid]) {
 	            mapping[uuid].push(vnode);
 	        } else {
 	            mapping[uuid] = [vnode];
 	        }
 	    }
+	    console.log('旧的', str1);
 	    //第二步，遍历新children, 从hash中取出旧节点
 
 	    var removedChildren = oldChildren.concat();
-
+	    str1 = '';
 	    for (var _i2 = 0, _n2 = newChildren.length; _i2 < _n2; _i2++) {
 	        var _vnode = newChildren[_i2];
-	        var Type = _vnode.type;
-	        var _tag = typeof Type === 'function' ? (_vnode._hasInstance = 1, Type.displatName || Type.name) : Type;
-	        var _uuid = computeUUID(_tag, _vnode);
 
+	        var Type = _vnode.type;
+
+	        var _tag = typeof Type === 'function' ? (_vnode._hasInstance = 1, Type.displatName || Type.name) : _vnode.instance ? getTopComponentName(_vnode, _vnode.instance, _vnode._hasInstance = 1) : Type;
+
+	        var _uuid = computeUUID(_tag, _vnode);
+	        str1 += _uuid + ' ';
 	        if (mapping[_uuid]) {
 	            var matchNode = mapping[_uuid].shift();
 	            if (!mapping[_uuid].length) {
@@ -1546,6 +1557,7 @@
 	            }
 	        }
 	    }
+	    console.log('新的', str1);
 	    var parentNode = vParentNode.dom,
 
 	    //第三，逐一比较
@@ -1570,6 +1582,7 @@
 	            var prevDom = prevVnode.dom;
 	            if (_vnode2.prevVnode && _vnode2._hasInstance) {
 	                //都是同种组件
+	                console.log(_vnode2, 'diff两个组件', prevVnode);
 	                delete _vnode2.prevVnode;
 	                delete _vnode2._hasInstance;
 	                delete prevVnode.instance._unmount;
@@ -1634,6 +1647,7 @@
 	                dom.parentNode.removeChild(dom);
 	            }
 	            if (_vnode3.instance) {
+	                console.log(_vnode3.type === '#comment');
 	                removeComponent(_vnode3);
 	                //  vnode.instance._unmount = true
 	            }
@@ -1680,8 +1694,6 @@
 	        }
 	        //  parentNode.insertBefore(dom, beforeDom || null)
 	        if (props) {
-
-	            console.log(vnode.type, props);
 	            diffProps(props, {}, vnode, {});
 	            setControlledComponent(vnode);
 	        }

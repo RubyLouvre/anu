@@ -11,8 +11,9 @@
             background: red;
         }
     </style>
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script src="./test/react.js"></script>
+     <script type='text/javascript' src="./json5.js"></script>  
+  <script type='text/javascript' src="./dist/React.js"></script>  
+ <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
    
     <script type='text/javascript' src="./react-router-dom.js"></script>
@@ -29,7 +30,7 @@ var {
 } = ReactRouterDOM
 var Router = BrowserRouter
 const Child = function({ match }) {
-  console.log('999')
+  console.log('Child render')
   return <div>
     <h3>ID: {match.params.id}</h3>
   </div>

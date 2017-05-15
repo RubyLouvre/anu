@@ -69,10 +69,10 @@ export function updateComponent(instance) {
 
     context = getContext(instance, context)
     var hostParent = vnode._hostParent
-
     var dom = diff(rendered, vnode, hostParent, context, vnode.dom)
     //vnode._hostParent会丢失
     rendered._hostParent = hostParent
+   
     extend(vnode, rendered) //直接更新原对象
 
     instance.vnode = rendered
@@ -97,7 +97,7 @@ function removeComponent(vnode) {
         disabedInstance = disabedInstance.parentInstance
     }
 
-    '_hostParent,_wrapperState,_instance,_owner'
+    '_hostParent,_wrapperState,_owner'
     .replace(/\w+/g, function (name) {
         delete vnode[name]
     })
@@ -136,9 +136,15 @@ export function diff(vnode, prevVnode, vParentNode, context, beforeDom) { //upda
     var isComponent = typeof Type === 'function'
     var instance = prevVnode.instance
     if (instance) {
-
-        instance = isComponent && matchInstance(instance, Type)
+        if(instance === vnode.instance){
+            console.log('这是两个注释节点', vnode)
+//两个注释节点
+        }else{
+          instance = isComponent && matchInstance(instance, Type) 
+        }
+     
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
+            
             vnode.instance = instance
             instance.context = context //更新context
             var nextProps = vnode.props
@@ -250,31 +256,38 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
 
     var mapping = {};
+    var str1 = ''
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
         let tag = vnode.instance ?
             getTopComponentName(vnode, vnode.instance) :
             vnode.type
         let uuid = computeUUID(tag, vnode)
-
+        str1 += uuid+' '
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
         } else {
             mapping[uuid] = [vnode]
         }
     }
+    //console.log('旧的',str1)
     //第二步，遍历新children, 从hash中取出旧节点
 
     var removedChildren = oldChildren.concat();
-
+    str1 = ''
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
+
         let Type = vnode.type
+        
         let tag = typeof Type === 'function' ?
             (vnode._hasInstance = 1, Type.displatName || Type.name) :
+            vnode.instance ?
+            getTopComponentName(vnode, vnode.instance, vnode._hasInstance = 1) :
             Type
-        let uuid = computeUUID(tag, vnode)
 
+        let uuid = computeUUID(tag, vnode)
+ str1 += uuid+' '
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
             if (!mapping[uuid].length) {
@@ -289,6 +302,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             }
         }
     }
+   // console.log('新的',str1)
     var parentNode = vParentNode.dom,
         //第三，逐一比较
         nativeChildren = parentNode.childNodes,
@@ -311,6 +325,7 @@ function diffChildren(newChildren, oldChildren, vParentNode, context) {
             let isTextOrComment = 'text' in vnode
             let prevDom = prevVnode.dom
             if (vnode.prevVnode && vnode._hasInstance) { //都是同种组件
+                console.log(vnode, 'diff两个组件',prevVnode)
                 delete vnode.prevVnode
                 delete vnode._hasInstance
                 delete prevVnode.instance._unmount
@@ -423,8 +438,6 @@ export function toDOM(vnode, context, parentNode, beforeDom) {
         }
         //  parentNode.insertBefore(dom, beforeDom || null)
         if (props) {
-             
-            console.log(vnode.type, props)
             diffProps(props, {}, vnode, {})
             setControlledComponent(vnode)
         }

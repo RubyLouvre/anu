@@ -7,6 +7,7 @@ import './modules/style.spec'
 import './modules/classInherit.spec'
 import './modules/shallow.spec'
 import './modules/browser.spec'
+
 require('./modules/context.spec.jsx')
 
 require('./modules/component.spec.jsx')
