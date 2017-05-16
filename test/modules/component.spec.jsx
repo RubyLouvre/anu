@@ -29,7 +29,7 @@ describe('无狀态组件', function () {
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('Hello Sebastian')
+        expect(s.vnode._hostNode.innerHTML).toBe('Hello Sebastian')
 
     })
 
@@ -67,12 +67,12 @@ describe('无狀态组件', function () {
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('1')
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('3')
+        expect(s.vnode._hostNode.innerHTML).toBe('3')
 
         expect(a).toBe(3)
 
@@ -112,18 +112,18 @@ describe('无狀态组件', function () {
             .pause(200)
             .$apply()
 
-        expect(s.vnode.dom.innerHTML).toBe('1')
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('1')
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         expect(a).toBe(3)
 
     });
     it('PureComponent', async () => {
         var a = 1
-        class A extends React.PureComponent {
+        class App extends React.PureComponent {
             constructor(props) {
                 super(props)
                 this.state = {
@@ -145,17 +145,17 @@ describe('无狀态组件', function () {
             }
         }
   
-        var s = React.render(<A />, div)
+        var s = React.render(<App />, div)
         await browser
             .pause(200)
             .$apply()
 
-        expect(s.vnode.dom.innerHTML).toBe('7')
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('7')
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
 
 
     });
@@ -187,13 +187,13 @@ describe('无狀态组件', function () {
         await browser
             .pause(100)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('7')
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
 
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('9')
+        expect(s.vnode._hostNode.innerHTML).toBe('9')
 
 
     });

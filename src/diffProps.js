@@ -79,7 +79,7 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
     if (props === prevProps) {
         return
     }
-    var dom = vnode.dom
+    var dom = vnode._hostNode
 
     var instance = vnode._owner
     if (prevVnode._wrapperState) {

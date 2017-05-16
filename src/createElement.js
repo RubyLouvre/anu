@@ -1,6 +1,12 @@
-import {extend} from './util'
-import {getNs} from './browser'
-import {CurrentOwner} from './CurrentOwner'
+import {
+    extend
+} from './util'
+import {
+    getNs
+} from './browser'
+import {
+    CurrentOwner
+} from './CurrentOwner'
 
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 /**
@@ -39,7 +45,7 @@ export function createElement(type, configs, children) {
         delete c.merge //注意这里的顺序
         Object.freeze(c)
     }
-  
+
     props.children = c
     Object.freeze(props)
     return new Vnode(type, props, key, CurrentOwner.cur)
@@ -48,21 +54,25 @@ export function createElement(type, configs, children) {
 function Vnode(type, props, key, owner) {
     this.type = type
     this.props = props
+    this.key = key || null
     var ns = getNs(type)
     if (ns) {
         this.ns = ns
     }
-    this.key = key || null
+    this._hostNode = null
+    this._instance = null
+    this._hostParent = null
+
     this._owner = owner || null
 }
 
 Vnode.prototype = {
     getDOMNode: function () {
-        return this.dom || null
+        return this._dom || null
     },
     $$typeof: 1
 }
-
+// 如果是组件的虚拟DOM，如果它
 /**
  * 遍平化children，并合并相邻的简单数据类型
  *
@@ -88,13 +98,13 @@ function flatChildren(children, ret, deep) {
                 continue
             }
             if (ret.merge) {
-                ret[0].text = (el.type
-                    ? el.text
-                    : el) + ret[0].text
+                ret[0].text = (el.type ?
+                    el.text :
+                    el) + ret[0].text
             } else {
-                ret.unshift(el.type
-                    ? el
-                    : {
+                ret.unshift(el.type ?
+                    el :
+                    {
                         type: '#text',
                         text: String(el),
                         deep: deep

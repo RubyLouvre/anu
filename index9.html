@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+      .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+<script type='text/javascript' src="./dist/React.js"></script>
+ <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+     <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+var s
+
+window.onload = function(){
+   
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+
+            onChange(e) {
+                this.setState({
+                    value: e.target.value
+                })
+
+            }
+            render() {
+                return <div>2222</div>
+            }
+
+        }
+
+       s = ReactDOM.render( <App/>, document.getElementById('example'))
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

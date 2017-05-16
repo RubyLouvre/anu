@@ -1,6 +1,12 @@
-import {transaction} from './transaction'
+import {
+    transaction
+} from './transaction'
 
-import {extend, midway, noop} from './util'
+import {
+    extend,
+    midway,
+    noop
+} from './util'
 
 /**
  *
@@ -12,11 +18,11 @@ import {extend, midway, noop} from './util'
 export function Component(props, context) {
     this.context = context
     this.props = props
-   // this.uuid = Math.random()
+    // this.uuid = Math.random()
     this.refs = {}
-    if (!this.state) 
+    if (!this.state)
         this.state = {}
-    }
+}
 
 Component.prototype = {
 
@@ -24,6 +30,14 @@ Component.prototype = {
         var arr = this._pendingStateQueue = this._pendingStateQueue || []
         arr.push(state)
         setStateProxy(this, cb)
+    },
+    getVnode() {
+        var p = this
+        do {
+            if (p.vnode) {
+                return p.vnode
+            }
+        } while (p = p.parentInstance)
     },
     forceUpdate(cb) {
         this._pendingForceUpdate = true
@@ -38,13 +52,13 @@ Component.prototype = {
             return this.state
         }
 
-     
+
         var nextState = extend({}, this.state);
         for (var i = 0; i < queue.length; i++) {
             var partial = queue[i]
-            extend(nextState, typeof partial === 'function'
-                ? partial.call(this, nextState, props, context)
-                : partial)
+            extend(nextState, typeof partial === 'function' ?
+                partial.call(this, nextState, props, context) :
+                partial)
         }
 
         return nextState
@@ -64,7 +78,7 @@ Component.prototype = {
  */
 
 function setStateProxy(instance, cb) {
-    if (typeof cb === 'function') 
+    if (typeof cb === 'function')
         transaction.enqueueCallback({ //确保回调先进入
             component: instance,
             cb: cb
@@ -74,4 +88,3 @@ function setStateProxy(instance, cb) {
     }
     transaction.enqueue(instance)
 }
-

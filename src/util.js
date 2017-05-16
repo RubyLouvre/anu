@@ -8,7 +8,7 @@
 export function extend(obj, props) {
     if (props) {
         for (let i in props) {
-            if (props.hasOwnProperty(i)) 
+            if (props.hasOwnProperty(i))
                 obj[i] = props[i]
         }
     }
@@ -66,7 +66,7 @@ export function getInstances(instance) {
  */
 export function matchInstance(instance, Type) {
 
-    if (instance.statelessRender === Type) 
+    if (instance.statelessRender === Type)
         return instance
     if (instance instanceof Type) {
         return instance
@@ -101,9 +101,9 @@ export function oneObject(array, val) {
         array = array.match(rword) || []
     }
     var result = {},
-        value = val !== void 0
-            ? val
-            : 1
+        value = val !== void 0 ?
+        val :
+        1
     for (var i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value
     }
@@ -132,4 +132,27 @@ export function camelize(target) {
 export var midway = {
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+}
+
+/**
+ * 获取虚拟DOM对应的顶层组件实例的类型
+ *
+ * @param {any} vnode
+ * @param {any} instance
+ * @param {any} pool
+ */
+
+export function getComponentName(instance) {
+    var ctor = instance.statelessRender || instance.constructor
+    return (ctor.displayName || ctor.name)
+}
+
+export function getTop(instance) {
+    do {
+        if (!instance.parentInstance) {
+            return instance
+        } else {
+            instance = instance.parentInstance
+        }
+    } while (1)
 }

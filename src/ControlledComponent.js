@@ -49,18 +49,18 @@ export function setControlledComponent(vnode) {
                 isControlled = isControlled || props.onInput
             }
             if (!isControlled && propName in props) {
-                var dom = vnode.dom
+                var dom = vnode._hostNode
                 console.warn('你在表单元素指定了' + propName + '属性,但没有添加onChange或onInput事件或readOnly或disabled，它将变成非受控组件，无法更换' + propName)
 
                 function keepInitValue(e) {
                     dom[propName] = initValue
                 }
                 vnode
-                    .dom
+                    ._hostNode
                     .addEventListener('change', keepInitValue)
                 if (type !== 'select') {
                     vnode
-                        .dom
+                        ._hostNode
                         .addEventListener(isChecked ?
                             'click' :
                             'input', keepInitValue)
@@ -147,8 +147,8 @@ function updateOptions(vnode, multiple, propValue) {
 }
 
 function setDomSelected(option, selected) {
-   if(option.dom){
-       option.dom.selected = selected
+   if(option._hostNode){
+       option._hostNode.selected = selected
    }   
 }
 

@@ -32,8 +32,8 @@ function dispatchEvent(e) {
         var path = paths[i]
         var fn = path.props[captured]
         if (typeof fn === 'function') {
-            e.currentTarget = path.dom
-            fn.call(path.dom, e)
+            e.currentTarget = path._hostNode
+            fn.call(path._hostNode, e)
             if (e._stopPropagation) {
                 break
             }
@@ -44,8 +44,8 @@ function dispatchEvent(e) {
         var path = paths[i]
         var fn = path.props[bubble]
         if (typeof fn === 'function') {
-            e.currentTarget = path.dom
-            fn.call(path.dom, e)
+            e.currentTarget = path._hostNode
+            fn.call(path._hostNode, e)
             if (e._stopPropagation) {
                 break
             }

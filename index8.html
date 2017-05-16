@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+
+        .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+
+    <script>
+        function ReactElement(type, props, children) {
+            this.type = type
+            this.props = props
+            this.children = children
+            this.hostParent = null
+        }
+        function Select(props, state){
+            this.props = props
+            this.state = state
+        }
+        Select.prototype = {
+            render: function(){
+                return {type: 'select',props:{ children: [] }}
+            }
+        }
+        var vnode = new ReactElement(Select, {}, [])
+        var instance = new Select()
+        vnode.instance = instance
+        instance.vnode = vnode
+        instance.rendered = instance.render()
+        function toDOM(){}
+        var hostParent = {}
+        if(typeof instance.rendered.type === 'string'){
+            instance.rendered.hostParent = hostParent
+            vnode.dom = toDOM(instance.rendered)
+        }
+        console.log(vnode)
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

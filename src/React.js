@@ -44,7 +44,7 @@ function render(vnode, container, cb) {
     }
 
     var rootVnode = diff(vnode, container.oldVnode || {}, {
-        dom: container
+        _hostNode: container
     }, context)
 
     container.oldVnode = vnode
