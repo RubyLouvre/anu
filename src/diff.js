@@ -41,10 +41,12 @@ export function updateComponent(instance) {
         props,
         state,
         context,
-        prevProps,
-        vnode
-    } = instance
-
+        prevProps
+     } = instance
+    var oldRendered = instance._rendered
+    var vnode = instance.getVnode()
+    var hostParent = vnode._hostParent
+  console.log('updateComponent.......', vnode)
     if (instance._unmount) {
         return vnode._hostNode //注意
     }
@@ -70,13 +72,13 @@ export function updateComponent(instance) {
 
     //context只能孩子用，因此不要影响原instance.context
     context = getContext(instance, context)
-    var hostParent = rendered._hostParent = vnode._hostParent
-    console.log('update...', vnode)
-    var oldRendered = instance._rendered
+  
+  
+    
     instance._rendered = rendered
     //rendered的type为函数时，会多次进入toVnode
     var dom = diff(rendered, oldRendered, hostParent, context, vnode._hostNode)
-
+    vnode._hostNode = dom
     applyComponentHook(instance, 6, nextProps, nextState, context)
 
     return dom //注意
@@ -124,18 +126,18 @@ function removeComponent(vnode) {
  * @returns
  */
 export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updateComponent
-
-    var parentNode = hostParent && hostParent._dom
-    var prevInstance = prevVnode.instance
+    var parentNode = hostParent._hostNode
+    var prevInstance = prevVnode._instance
     var prevProps = prevVnode.props || {}
     var prevChildren = prevProps.children || []
     var Type = vnode.type
     var isComponent = typeof Type === 'function'
-    var dom = prevVnode._dom
+    var dom = beforeDom
+   // var dom = prevVnode._dom
     var instance
     if (prevInstance) {
-        dom = prevInstance._rendered._hostNode
-        if (prevInstance === vnode.instance) {
+      //  dom = prevInstance._rendered._hostNode
+        if (prevInstance === vnode._instance) {
             instance = vnode.type === '#comment' ?
                 null :
                 prevInstance
@@ -168,7 +170,6 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
         }
     }
     if (isComponent) {
-        console.log('-----', hostParent)
         //  vnode._hostParent = hostParent
         try {
             return toDOM(vnode, context, hostParent, beforeDom)
@@ -180,7 +181,9 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
         }
     } else if (!dom || prevVnode.type !== Type) {
         //如果元素类型不一致
+        
         var nextDom = createDOMElement(vnode)
+        console.log(vnode, '标签类型不一样', nextDom, beforeDom)
         parentNode.insertBefore(nextDom, beforeDom || null)
         if (dom && dom === beforeDom) {
             parentNode.removeChild(dom)
@@ -191,10 +194,10 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     if (prevVnode._renderedComponent) {
         vnode._renderedComponent = prevVnode._renderedComponent
     }
-
+    console.log('当前的情况',vnode, instance)
     //必须在diffProps前添加它的dom
     vnode._hostNode = dom
-
+    vnode._hostParent = hostParent
     if (prevProps.dangerouslySetInnerHTML) {
         while (dom.firstChild) {
             var removed = dom.removeChild(dom.firstChild)
@@ -212,6 +215,7 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     if (wrapperState && wrapperState.postUpdate) { //处理select
         wrapperState.postUpdate(vnode)
     }
+    console.log('返回',dom)
     return dom
 }
 
@@ -417,7 +421,6 @@ export function toDOM(vnode, context, hostParent, beforeDom) {
     if (instance) {
         // instance.getVnode()
         var p = getTop(instance)
-
         var v = p.vnode
         if (vnode !== v) {
             v._hostNode = hostNode
@@ -437,7 +440,6 @@ export function toDOM(vnode, context, hostParent, beforeDom) {
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {
-        console.log(props.children, [], vnode)
         // 先diff Children 再 diff Props 最后是 diff ref
         diffChildren(props.children, [], vnode, context) //添加第4参数
     }

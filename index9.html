@@ -26,7 +26,7 @@
 var s
 
 window.onload = function(){
-   
+    var i = 0
         class App extends React.Component {
             constructor(props) {
                 super(props)
@@ -37,12 +37,13 @@ window.onload = function(){
 
             onChange(e) {
                 this.setState({
-                    value: e.target.value
+                    value:  e
                 })
 
             }
             render() {
-                return <div>2222</div>
+                return i ++ % 2=== 0 ? <div>{this.state.value}</div>:
+                <strong>{this.state.value}</strong>
             }
 
         }

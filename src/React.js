@@ -48,7 +48,7 @@ function render(vnode, container, cb) {
     }, context)
 
     container.oldVnode = vnode
-    var instance = vnode.instance
+    var instance = vnode._instance
     if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
         while (instance.parentInstance) {
             instance = instance.parentInstance
