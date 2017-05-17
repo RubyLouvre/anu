@@ -59,7 +59,6 @@ export function toVnode(vnode, context, parentInstance) {
             rendered = transaction.renderWithoutSetState(instance)
 
         }
-     //  if(rendered.type === 'function')
         instance._rendered = rendered
         rendered.key = vnode.key
         vnode._instance = instance
@@ -82,9 +81,7 @@ export function toVnode(vnode, context, parentInstance) {
 
         return toVnode(rendered, context, instance)
     } else {
-        if (parentInstance) {
-          vnode._owner = parentInstance
-        }
+        
         return vnode
     }
 }

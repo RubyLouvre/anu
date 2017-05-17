@@ -7,29 +7,14 @@ import {
     midway,
     extend
 } from './util'
-import {
-    applyComponentHook
-} from './lifecycle'
+import {applyComponentHook} from './lifecycle'
 
-import {
-    transaction
-} from './transaction'
-import {
-    toVnode
-} from './toVnode'
-import {
-    diffProps
-} from './diffProps'
-import {
-    document,
-    createDOMElement
-} from './browser'
-import {
-    removeRef
-} from './ref'
-import {
-    setControlledComponent
-} from './ControlledComponent'
+import {transaction} from './transaction'
+import {toVnode} from './toVnode'
+import {diffProps} from './diffProps'
+import {document, createDOMElement} from './browser'
+import {removeRef} from './ref'
+import {setControlledComponent} from './ControlledComponent'
 
 /**
  * 渲染组件
@@ -37,16 +22,11 @@ import {
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {
-        props,
-        state,
-        context,
-        prevProps
-     } = instance
+    var {props, state, context, prevProps} = instance
     var oldRendered = instance._rendered
     var vnode = instance.getVnode()
     var hostParent = vnode._hostParent
-  console.log('updateComponent.......', vnode)
+    console.log('updateComponent.......', vnode)
     if (instance._unmount) {
         return vnode._hostNode //注意
     }
@@ -67,14 +47,11 @@ export function updateComponent(instance) {
     instance.state = nextState
     delete instance._updateBatchNumber
 
-
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
 
     //context只能孩子用，因此不要影响原instance.context
     context = getContext(instance, context)
-  
-  
-    
+
     instance._rendered = rendered
     //rendered的type为函数时，会多次进入toVnode
     var dom = diff(rendered, oldRendered, hostParent, context, vnode._hostNode)
@@ -98,8 +75,7 @@ function removeComponent(vnode) {
           disabedInstance = disabedInstance.parentInstance
       }*/
 
-    '_hostParent,_wrapperState,_owner'
-    .replace(/\w+/g, function (name) {
+    '_hostParent,_wrapperState,_owner'.replace(/\w+/g, function (name) {
         delete vnode[name]
     })
     var props = vnode.props
@@ -108,9 +84,7 @@ function removeComponent(vnode) {
         props
             .children
             .forEach(function (el) {
-                // if (el.props) {
                 removeComponent(el)
-                // }
             })
     }
 
@@ -133,19 +107,20 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     var Type = vnode.type
     var isComponent = typeof Type === 'function'
     var dom = beforeDom
-   // var dom = prevVnode._dom
+    // var dom = prevVnode._dom
     var instance
     if (prevInstance) {
-      //  dom = prevInstance._rendered._hostNode
+        //  dom = prevInstance._rendered._hostNode
         if (prevInstance === vnode._instance) {
-            instance = vnode.type === '#comment' ?
-                null :
-                prevInstance
+            instance = vnode.type === '#comment'
+                ? null
+                : prevInstance
         } else {
             instance = isComponent && matchInstance(prevInstance, Type)
         }
-        console.log('instance', instance, dom, prevVnode, hostParent)
+       
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
+             console.log('拥有相同的实例', instance, beforeDom)
             instance.context = context //更新context
             instance.prevProps = prevProps
             var nextProps = vnode.props
@@ -181,7 +156,7 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
         }
     } else if (!dom || prevVnode.type !== Type) {
         //如果元素类型不一致
-        
+
         var nextDom = createDOMElement(vnode)
         console.log(vnode, '标签类型不一样', nextDom, beforeDom)
         parentNode.insertBefore(nextDom, beforeDom || null)
@@ -194,8 +169,9 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     if (prevVnode._renderedComponent) {
         vnode._renderedComponent = prevVnode._renderedComponent
     }
-    console.log('当前的情况',vnode, instance)
+    console.log('当前的情况', vnode, instance)
     //必须在diffProps前添加它的dom
+    
     vnode._hostNode = dom
     vnode._hostParent = hostParent
     if (prevProps.dangerouslySetInnerHTML) {
@@ -215,11 +191,9 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     if (wrapperState && wrapperState.postUpdate) { //处理select
         wrapperState.postUpdate(vnode)
     }
-    console.log('返回',dom)
+    console.log('返回', dom)
     return dom
 }
-
-
 
 /**
  *
@@ -232,9 +206,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep + '/' + vnode.text
     }
-    return type + '/' + vnode.deep + (vnode.key !== null ?
-        '/' + vnode.key :
-        '')
+    return type + '/' + vnode.deep + (vnode.key !== null
+        ? '/' + vnode.key
+        : '')
 }
 
 /**
@@ -251,9 +225,9 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     var str1 = ''
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
-        let tag = vnode.instance ?
-            getComponentName(vnode.instance) :
-            vnode.type
+        let tag = vnode._instance
+            ? getComponentName(vnode._instance)
+            : vnode.type
         let uuid = computeUUID(tag, vnode)
         str1 += uuid + ' '
         if (mapping[uuid]) {
@@ -271,11 +245,11 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
         let Type = vnode.type
 
-        let tag = typeof Type === 'function' ?
-            (vnode._hasInstance = 1, Type.displatName || Type.name) :
-            vnode.instance ?
-            getComponentName(vnode.instance, vnode._hasInstance = 1) :
-            Type
+        let tag = typeof Type === 'function'
+            ? (vnode._hasInstance = 1, Type.displatName || Type.name)
+            : vnode.instance
+                ? getComponentName(vnode._instance, vnode._hasInstance = 1)
+                : Type
 
         let uuid = computeUUID(tag, vnode)
         str1 += uuid + ' '
@@ -298,6 +272,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         //第三，逐一比较
         nativeChildren = parentNode.childNodes,
         branch;
+        console.log(parentNode,[].slice.call(nativeChildren))
     for (var i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i],
             prevVnode = null,
@@ -321,8 +296,9 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             if (vnode._hasInstance) { //都是同种组件
 
                 delete vnode._hasInstance
-                delete prevVnode.instance._unmount
-                vnode.instance = prevVnode.instance
+                delete prevVnode._instance._unmount
+               var inst = vnode._instance = prevVnode._instance
+                console.log('组件类型一致',vnode, prevVnode, beforeDom, inst)
                 vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDom)
                 branch = 'A'
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
@@ -358,7 +334,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
         } else { //添加新节点
             if (!vnode._hostNode) {
-                console.log('产生新DOM节点', vnode)
+                console.log('产生新DOM节点', vnode, vnode.type)
                 /* istanbul ignore next */
                 vnode._hostNode = toDOM(vnode, context, hostParent, beforeDom)
                 branch = 'F'
@@ -391,9 +367,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     }
 
 }
-// React.createElement返回的是用于定义数据描述结果的虚拟DOM
-// 如果这种虚拟DOM的type为一个函数或类，那么将产生组件实例  renderedComponent
-// 组件实例通过render方法更下一级的虚拟DOM renderedElement
+// React.createElement返回的是用于定义数据描述结果的虚拟DOM 如果这种虚拟DOM的type为一个函数或类，那么将产生组件实例
+// renderedComponent 组件实例通过render方法更下一级的虚拟DOM renderedElement
 /**
  *
  * @export
@@ -411,13 +386,11 @@ export function toDOM(vnode, context, hostParent, beforeDom) {
     var parentNode = hostParent._hostNode
     var instance = vnode._instance || vnode._owner
     var canComponentDidMount = instance && !vnode._hostNode
-    //每个实例保存其虚拟DOM
-    //最开始的虚拟DOM保存instance
+    //每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
     if (typeof vnode.type === 'string') {
         vnode._hostNode = hostNode
         vnode._hostParent = hostParent
     }
-    console.log(typeof instance, '!!!!!', vnode._owner)
     if (instance) {
         // instance.getVnode()
         var p = getTop(instance)
@@ -433,10 +406,8 @@ export function toDOM(vnode, context, hostParent, beforeDom) {
     }
     //文本是没有instance, 只有empty与元素节点有instance
 
-
     if (parentNode) {
         parentNode.insertBefore(hostNode, beforeDom || null)
-
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {
