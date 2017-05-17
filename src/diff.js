@@ -66,6 +66,7 @@ export function updateComponent(instance) {
  * @param {any} vnode
  */
 function removeComponent(vnode) {
+    console.log('移除',vnode)
     var instance = vnode.instance
     var disabedInstance = instance
 
@@ -106,8 +107,9 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
     var prevChildren = prevProps.children || []
     var Type = vnode.type
     var isComponent = typeof Type === 'function'
-    var dom = beforeDom
-    // var dom = prevVnode._dom
+    console.log('diff里面的beforeDom', beforeDom, prevVnode._hostNode)
+   // var dom = beforeDom || prevVnode._hostNode
+     var dom = prevVnode._hostNode
     var instance
     if (prevInstance) {
         //  dom = prevInstance._rendered._hostNode
@@ -156,9 +158,9 @@ export function diff(vnode, prevVnode, hostParent, context, beforeDom) { //updat
         }
     } else if (!dom || prevVnode.type !== Type) {
         //如果元素类型不一致
-
+ console.log( '标签类型不一样',dom, nextDom, beforeDom, vnode)
         var nextDom = createDOMElement(vnode)
-        console.log(vnode, '标签类型不一样', nextDom, beforeDom)
+       
         parentNode.insertBefore(nextDom, beforeDom || null)
         if (dom && dom === beforeDom) {
             parentNode.removeChild(dom)
@@ -223,8 +225,12 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {};
     var str1 = ''
+      var nodes = []
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
+          if(vnode._hostNode){
+           nodes.push(vnode._hostNode)
+        }
         let tag = vnode._instance
             ? getComponentName(vnode._instance)
             : vnode.type
@@ -240,8 +246,11 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     var removedChildren = oldChildren.concat();
     str1 = ''
+  
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
+        
+      
 
         let Type = vnode.type
 
@@ -267,7 +276,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             }
         }
     }
-    console.log('旧的', str1)
+    console.log('旧的', str1,nodes)
     var parentNode = hostParent._hostNode,
         //第三，逐一比较
         nativeChildren = parentNode.childNodes,
@@ -276,7 +285,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     for (var i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i],
             prevVnode = null,
-            beforeDom = nativeChildren[i]
+            beforeDom = nodes[i]
 
         if (vnode.prevVnode) {
             prevVnode = vnode.prevVnode
@@ -312,6 +321,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                     branch = 'B'
                 } else {
                     //  '更新元素' 必须设置vnode._hostNode = newDOM
+                    console.log(vnode.type, '看一下是否input')
                     vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDom)
                     branch = 'C'
                 }
@@ -341,13 +351,13 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             }
         }
         // console.log('branch  ', branch)
-        if (nativeChildren[i] !== vnode._hostNode) {
-            parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)
-        }
+      //  if (nativeChildren[i] !== vnode._hostNode) {
+      //      parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)
+      //  }
     }
-    while (nativeChildren[i]) {
-        parentNode.removeChild(nativeChildren[i])
-    }
+  //  while (nativeChildren[i]) {
+ //       parentNode.removeChild(nativeChildren[i])
+ //   }
 
     //第4步，移除无用节点
     if (removedChildren.length) {
