@@ -3,33 +3,17 @@ import {
     getInstances,
     getComponentName,
     matchInstance,
-    getTop,
     midway,
     extend
 } from './util'
-import {
-    applyComponentHook
-} from './lifecycle'
+import {applyComponentHook} from './lifecycle'
 
-import {
-    transaction
-} from './transaction'
-import {
-    toVnode
-} from './toVnode'
-import {
-    diffProps
-} from './diffProps'
-import {
-    document,
-    createDOMElement
-} from './browser'
-import {
-    removeRef
-} from './ref'
-import {
-    setControlledComponent
-} from './ControlledComponent'
+import {transaction} from './transaction'
+import {toVnode} from './toVnode'
+import {diffProps} from './diffProps'
+import {document, createDOMElement} from './browser'
+import {removeRef} from './ref'
+import {setControlledComponent} from './ControlledComponent'
 // createElement创建的虚拟DOM叫baseVnode
 /**
  * 渲染组件
@@ -37,12 +21,7 @@ import {
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {
-        props,
-        state,
-        context,
-        prevProps
-    } = instance
+    var {props, state, context, prevProps} = instance
     var oldRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent
@@ -68,7 +47,6 @@ export function updateComponent(instance) {
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
     //context只能孩子用，因此不要影响原instance.context
     context = getContext(instance, context)
-console.log(context, 'context')
     instance._rendered = rendered
     //rendered的type为函数时，会多次进入toVnode
     var dom = diff(rendered, oldRendered, hostParent, context, baseVnode._hostNode)
@@ -133,10 +111,9 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
         if (instance !== prevInstance) {
             instance = isComponent && matchInstance(prevInstance, Type)
         }
-       
+
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
             vnode._instance = instance
-            console.log('xxxxxxxx更新context')
             instance.context = context //更新context
             instance.prevProps = prevProps
             var nextProps = vnode.props
@@ -176,7 +153,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
         removeComponent(prevVnode)
         hostNode = nextNode
     } else {
-        console.log('类型相等', vnode.type)
+        console.log('类型相等')
     }
 
     //必须在diffProps前添加它的真实节点
@@ -213,10 +190,12 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
  */
 function computeUUID(type, vnode) {
     if (type === '#text') {
-        return type + '/' + vnode.deep + '/' + vnode.text
+        return type + '/' + vnode.deep
     }
 
-    return type + '/' + vnode.deep + (vnode.key ?  '/' + vnode.key :'')
+    return type + '/' + vnode.deep + (vnode.key
+        ? '/' + vnode.key
+        : '')
 }
 
 /**
@@ -237,9 +216,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (vnode._hostNode) {
             nodes.push(vnode._hostNode)
         }
-       
 
-        let uuid = computeUUID(getComponentName(vnode.type) , vnode)
+        let uuid = computeUUID(getComponentName(vnode.type), vnode)
         str1 += uuid + ' '
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
@@ -249,35 +227,37 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     }
 
     //第二步，遍历新children, 从hash中取出旧节点
-     //console.log('旧的', str1)
+    // console.log('旧的', str1)
     var removedChildren = oldChildren.concat();
     str1 = ''
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
-        let tag = getComponentName(vnode.type, vnode._hasInstance = 1) 
+        let tag = getComponentName(vnode.type)
+
         let uuid = computeUUID(tag, vnode)
         str1 += uuid + ' '
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
-
+            vnode.prevVnode = matchNode //重点
             if (!mapping[uuid].length) {
                 delete mapping[uuid]
             }
-            if (matchNode) {
-                let index = removedChildren.indexOf(matchNode)
-                if (index !== -1) {
-                    removedChildren.splice(index, 1)
-                    vnode.prevVnode = matchNode //重点
-                }
+            if (matchNode._instance) {
+                matchNode._hasInstance = 1
             }
+            let index = removedChildren.indexOf(matchNode)
+            if (index !== -1) {
+                removedChildren.splice(index, 1)
+            }
+
         }
     }
-    //  console.log('新的', str1, nodes)
+   // console.log('新的', str1, nodes)
 
     var parentNode = hostParent._hostNode,
         //第三，逐一比较
         branch;
-   
+
     for (var i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i],
             prevVnode = null,
@@ -291,23 +271,23 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         }
 
         vnode._hostParent = hostParent
+
         if (prevVnode) { //假设两者都存在
             let isTextOrComment = 'text' in vnode
             let prevDom = prevVnode._hostNode
             var prevInstance = prevVnode._instance
             delete vnode.prevVnode
-            if (vnode._hasInstance) { //都是同种组件
+            if (prevVnode._hasInstance) { //都是同种组件
 
-                delete vnode._hasInstance
-              //  delete prevVnode._instance._unmount
-              //  var inst = vnode._instance = prevInstance
+                delete prevVnode._hasInstance
+                //  delete prevVnode._instance._unmount  var inst = vnode._instance =
+                // prevInstance
                 vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
                 branch = 'A'
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
 
                 if (isTextOrComment) {
                     vnode._hostNode = prevDom
-
                     if (vnode.text !== prevVnode.text) {
                         vnode._hostNode.nodeValue = vnode.text
                     }
@@ -341,16 +321,12 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 branch = 'F'
             }
         }
-        // console.log('branch  ', branch)
+       // console.log('branch  ', branch)
         //  if (nativeChildren[i] !== vnode._hostNode) {
-        //      parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)
-        //  }
+        // parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)  }
     }
-    //  while (nativeChildren[i]) {
-    //       parentNode.removeChild(nativeChildren[i])
-    //   }
-
-    //第4步，移除无用节点
+    //  while (nativeChildren[i]) {       parentNode.removeChild(nativeChildren[i])
+    //  } 第4步，移除无用节点
     if (removedChildren.length) {
         for (let i = 0, n = removedChildren.length; i < n; i++) {
             let vnode = removedChildren[i]

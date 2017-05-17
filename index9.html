@@ -56,8 +56,8 @@ window.onload = function(){
         }
 
         class B extends React.Component {
- componentWillUpdate(p, s, c){
-                console.log(c)
+         componentWillUpdate(p, s, c){
+                console.log(c,'componentWillUpdate')
             }
             render() {
                 return <div><C /><em>{this.context.fruit}</em></div>;
@@ -68,7 +68,7 @@ window.onload = function(){
         }
         class C extends React.Component {
             componentWillUpdate(p, s, c){
-                console.log(c)
+                console.log(c,'componentWillUpdate')
             }
             render() {
                 return <strong>{this.context.fruit}</strong>;
