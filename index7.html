@@ -17,7 +17,7 @@
         }
     </style>
 <script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script src="./test/react.js"></script>
+<!-- <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
      <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
@@ -27,10 +27,18 @@ var s
 
 window.onload = function(){
       //  React.PropTypes =  (React.PropTypes || {})
-        function Select(props) {
-           return <strong>{props.value}</strong>
+       function Select(props) {
+           return <strong>{props.aaa}</strong>
         }
-       // <Select value={this.state.value} />
+        class Input extends React.Component{
+           
+            componentWillUpdate(){
+                console.log('Input componentWillUpdate')
+            }
+            render() {
+                return <input ref='a' value={this.props.value} onChange={ this.props.xxx }  />
+            }
+        }
         class App extends React.Component {
             constructor(props) {
                 super(props)
@@ -38,19 +46,22 @@ window.onload = function(){
                     value: '南京'
                 }
             }
-
-            onChange(e) {
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            onChange(a) {
                 this.setState({
-                    value: e.target.value
+                    value: a.value
                 })
-
             }
             render() {
-                return <div><Select value={this.state.value} />
-                    <input ref='a' value={this.state.value} onInput={this.onChange.bind(this)} /></div>
+                return <div><Select aaa={this.state.value} />
+                <Input value={this.state.value} xxx={this.onChange.bind(this)} />
+                </div>
             }
 
         }
+        
 
        s = ReactDOM.render( <App/>, document.getElementById('example'))
 }

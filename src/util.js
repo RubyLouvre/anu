@@ -142,17 +142,9 @@ export var midway = {
  * @param {any} pool
  */
 
-export function getComponentName(instance) {
-    var ctor = instance.statelessRender || instance.constructor
-    return (ctor.displayName || ctor.name)
+export function getComponentName(type) {
+    return typeof type === 'function' ? (type.displayName || type.name) : type
+ //   var ctor = instance.statelessRender || instance.constructor
+//    return (ctor.displayName || ctor.name)
 }
 
-export function getTop(instance) {
-    do {
-        if (!instance.parentInstance) {
-            return instance
-        } else {
-            instance = instance.parentInstance
-        }
-    } while (1)
-}

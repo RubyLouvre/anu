@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <title>测试注释节点</title>
     <meta name="viewport" content="width=device-width">
     <style>
       .aaa {
@@ -16,8 +17,8 @@
             background: lawngreen;
         }
     </style>
-<script type='text/javascript' src="./dist/React.js"></script>
-  <!--<script src="./test/react.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
      <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
@@ -27,53 +28,34 @@ var s
 
 window.onload = function(){
 
-     class App extends React.Component {
+      class App extends React.Component {
             constructor(props) {
-                super(props)
+                super(props);
+
+                // 设置 initial state
                 this.state = {
-                    aaa: 'aaa'
-                }
+                    text: 'xxx'
+                };
             }
-            change(){
-                this.setState({
-                    aaa: this.state.aaa ==='aaa' ? 'bbb': 'aaa'
-                })
+
+            shouldComponentUpdate() {
+                return false
             }
-            componentDidMount(){
-                console.log('App componentDidMount')
-            }
-            componentWillUpdate(){
-                console.log('App componentWillUpdate')
-            }
+
             render() {
-                console.log(this.state.aaa, '传')
-                return  <Inner className={this.state.aaa} />
-               
+                return (
+                    <div>
+                        Type something:
+                        <input ref="input" value={new Date - 0} />
+                    </div>
+                );
             }
         }
 
-        class Inner extends React.Component{
-            componentDidMount(){
-                console.log('Inner componentDidMount')
-            }
-             componentWillReceiveProps(props){
-                  console.log('Inner componentWillReceiveProps',props)
-             }
-             componentDidUpdate(props){
-                  console.log('Inner componentDidUpdate',this.props)
-             }
-            componentWillUnmount(props){
-                  console.log('Inner componentWillUnmount',this.props)
-             }
-             componentWillUpdate(){
-                console.log('Inner componentWillUpdate',this.props)
-            }
-            render() {
-                return this.props.className === 'aaa' ?  <div className={this.props.className}>xxx</div> : null
-            }
-
-        }
-   s = ReactDOM.render( <App/>, document.getElementById('example'))
+        App.defaultProps = {
+            initialValue: '请输入内容'
+        };
+        s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
     </script>
 </head>

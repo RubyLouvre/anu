@@ -66,10 +66,9 @@ export function updateComponent(instance) {
     delete instance._updateBatchNumber
 
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
-
     //context只能孩子用，因此不要影响原instance.context
     context = getContext(instance, context)
-
+console.log(context, 'context')
     instance._rendered = rendered
     //rendered的type为函数时，会多次进入toVnode
     var dom = diff(rendered, oldRendered, hostParent, context, baseVnode._hostNode)
@@ -115,7 +114,6 @@ function removeComponent(vnode) {
  * @returns
  */
 export function diff(vnode, prevVnode, hostParent, context, prevNode) { //updateComponent
-    console.log('diff的所有参数', arguments)
     var prevInstance = prevVnode._instance
     var parentInstance = prevInstance && prevInstance.parentInstance
     var parentNode = hostParent._hostNode
@@ -138,6 +136,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
        
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
             vnode._instance = instance
+            console.log('xxxxxxxx更新context')
             instance.context = context //更新context
             instance.prevProps = prevProps
             var nextProps = vnode.props
@@ -158,7 +157,6 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
         }
     }
     if (isComponent) {
-
         try {
             return toDOM(vnode, context, hostParent, prevNode, parentInstance)
         } finally {
@@ -178,7 +176,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
         removeComponent(prevVnode)
         hostNode = nextNode
     } else {
-        console.log('类型相等')
+        console.log('类型相等', vnode.type)
     }
 
     //必须在diffProps前添加它的真实节点
@@ -217,9 +215,8 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep + '/' + vnode.text
     }
-    return type + '/' + vnode.deep + (vnode.key !== null ?
-        '/' + vnode.key :
-        '')
+
+    return type + '/' + vnode.deep + (vnode.key ?  '/' + vnode.key :'')
 }
 
 /**
@@ -231,7 +228,6 @@ function computeUUID(type, vnode) {
  * @param {any} context
  */
 function diffChildren(newChildren, oldChildren, hostParent, context) {
-    console.log('diffChildren的参数', arguments)
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {};
     var str1 = ''
@@ -241,10 +237,9 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (vnode._hostNode) {
             nodes.push(vnode._hostNode)
         }
-        let tag = vnode._instance ?
-            getComponentName(vnode._instance) :
-            vnode.type
-        let uuid = computeUUID(tag, vnode)
+       
+
+        let uuid = computeUUID(getComponentName(vnode.type) , vnode)
         str1 += uuid + ' '
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
@@ -252,26 +247,19 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             mapping[uuid] = [vnode]
         }
     }
-    //第二步，遍历新children, 从hash中取出旧节点
 
+    //第二步，遍历新children, 从hash中取出旧节点
+     //console.log('旧的', str1)
     var removedChildren = oldChildren.concat();
     str1 = ''
-
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
-
-        let Type = vnode.type
-
-        let tag = typeof Type === 'function' ?
-            (vnode._hasInstance = 1, Type.displatName || Type.name) :
-            vnode.instance ?
-            getComponentName(vnode._instance, vnode._hasInstance = 1) :
-            Type
-
+        let tag = getComponentName(vnode.type, vnode._hasInstance = 1) 
         let uuid = computeUUID(tag, vnode)
         str1 += uuid + ' '
         if (mapping[uuid]) {
             var matchNode = mapping[uuid].shift()
+
             if (!mapping[uuid].length) {
                 delete mapping[uuid]
             }
@@ -284,25 +272,23 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             }
         }
     }
+    //  console.log('新的', str1, nodes)
 
     var parentNode = hostParent._hostNode,
         //第三，逐一比较
         branch;
-    //  console.log('旧的', str1, nodes)
+   
     for (var i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i],
             prevVnode = null,
             prevNode = nodes[i]
-
         if (vnode.prevVnode) {
             prevVnode = vnode.prevVnode
         } else {
             if (removedChildren.length) {
                 prevVnode = removedChildren.shift()
             }
-
         }
-        //  console.log('新的', str1)
 
         vnode._hostParent = hostParent
         if (prevVnode) { //假设两者都存在
@@ -313,9 +299,9 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             if (vnode._hasInstance) { //都是同种组件
 
                 delete vnode._hasInstance
-                delete prevVnode._instance._unmount
-                var inst = vnode._instance = prevInstance
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevInstance)
+              //  delete prevVnode._instance._unmount
+              //  var inst = vnode._instance = prevInstance
+                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
                 branch = 'A'
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
 
@@ -327,9 +313,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                     }
                     branch = 'B'
                 } else {
-                    //  '更新元素' 必须设置vnode._hostNode = newDOM
-                    console.log(vnode.type, '看一下是否input')
-                    vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevVnode._instance)
+                    // console.log(vnode.type, '看一下是否input')
+                    vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
                     branch = 'C'
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
@@ -340,7 +325,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 removeComponent(prevVnode) //移除元素节点或组件}
             } else { //由其他类型变成元素
 
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevNode)
+                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
 
                 branch = 'E'
             }
@@ -372,7 +357,6 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             var dom = vnode._hostNode
             if (dom.parentNode) {
                 vnode.isRemove = true
-                console.log('xxxxxxx', dom)
                 dom
                     .parentNode
                     .removeChild(dom)

@@ -16,8 +16,8 @@
             background: lawngreen;
         }
     </style>
-<script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script src="./test/react.js"></script>
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
      <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
@@ -26,29 +26,56 @@
 var s
 
 window.onload = function(){
-    var i = 0
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    value: '南京'
-                }
-            }
+    React.PropTypes = React.PropTypes || {}
+      var arr = ['111', '222', '333']
+           class App extends React.Component {
 
-            onChange(e) {
-                this.setState({
-                    value:  e
-                })
+            getChildContext() {
+                return {
+                    name: "Jonas",
+                    fruit: "Banana"
+                };
+            }
+            handleClick() {
+                this.getChildContext = function () {
+                    return {
+                        name: "Jonas",
+                        fruit: arr.shift() 
+                    };
+                }
+                this.forceUpdate()
 
             }
             render() {
-                return i ++ % 2=== 0 ? <div>{this.state.value}</div>:
-               <strong>{this.state.value}</strong>
+                return <div ref='a' onClick={this.handleClick.bind(this)}><C /></div>;
             }
-
+        }
+        App.childContextTypes = {
+            name: React.PropTypes.string,
+            fruit: React.PropTypes.string
         }
 
-       s = ReactDOM.render( <App/>, document.getElementById('example'))
+        class B extends React.Component {
+ componentWillUpdate(p, s, c){
+                console.log(c)
+            }
+            render() {
+                return <div><C /><em>{this.context.fruit}</em></div>;
+            }
+        }
+        B.contextTypes = {
+            fruit: React.PropTypes.string
+        }
+        class C extends React.Component {
+            componentWillUpdate(p, s, c){
+                console.log(c)
+            }
+            render() {
+                return <strong>{this.context.fruit}</strong>;
+            }
+        }
+
+       s = ReactDOM.render( <App/>, document.getElementById('root'))
 }
     </script>
 </head>
@@ -56,7 +83,7 @@ window.onload = function(){
 <body>
 
     <div>这个默认会被清掉</div>
-    <div id='example'></div>
+    <div id='root'></div>
 
 
 </body>

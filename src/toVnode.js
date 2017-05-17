@@ -64,15 +64,15 @@ export function toVnode(vnode, context, parentInstance) {
 
         }
         instance._rendered = rendered
-        rendered.key = vnode.key
+        if (vnode.key)
+            rendered.key = vnode.key
         vnode._instance = instance
-         
+
         if (parentInstance) {
-           
-             instance.parentInstance = parentInstance
-           
-            parentInstance.childInstance = instance
-        }else{
+
+            instance.parentInstance = parentInstance
+          //  parentInstance.childInstance = instance
+        } else {
             instance.vnode = vnode
         }
 
@@ -85,9 +85,6 @@ export function toVnode(vnode, context, parentInstance) {
 
         return toVnode(rendered, context, instance)
     } else {
-       
-        
         return vnode
     }
 }
-

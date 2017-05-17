@@ -54,21 +54,26 @@ export function createElement(type, configs, children) {
 function Vnode(type, props, key, owner) {
     this.type = type
     this.props = props
-    this.key = key || null
+    if (key) {
+        this.key
+    }
     var ns = getNs(type)
     if (ns) {
         this.ns = ns
     }
+    /*
     this._hostNode = null
     this._instance = null
     this._hostParent = null
-
-    this._owner = owner || null
+  */
+    if (owner) {
+        this._owner = owner
+    }
 }
 
 Vnode.prototype = {
     getDOMNode: function () {
-        return this._dom || null
+        return this._hostNode || null
     },
     $$typeof: 1
 }
@@ -103,8 +108,7 @@ function flatChildren(children, ret, deep) {
                     el) + ret[0].text
             } else {
                 ret.unshift(el.type ?
-                    el :
-                    {
+                    el : {
                         type: '#text',
                         text: String(el),
                         deep: deep
