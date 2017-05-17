@@ -20,12 +20,16 @@ import {
 import {
     CurrentOwner
 } from './CurrentOwner'
+
+
 /**
  * 将组件节点转化为简单的虚拟节点
- *
- * @param {any} vnode
- * @param {any} context
- * @returns
+ * 
+ * @export
+ * @param {any} vnode 
+ * @param {any} context 
+ * @param {any} parentInstance 
+ * @returns 
  */
 export function toVnode(vnode, context, parentInstance) {
 
@@ -62,12 +66,12 @@ export function toVnode(vnode, context, parentInstance) {
         instance._rendered = rendered
         rendered.key = vnode.key
         vnode._instance = instance
-       
+         
         if (parentInstance) {
            
-            instance.parentInstance = parentInstance
+             instance.parentInstance = parentInstance
            
-           parentInstance.childInstance = instance
+            parentInstance.childInstance = instance
         }else{
             instance.vnode = vnode
         }
@@ -81,6 +85,7 @@ export function toVnode(vnode, context, parentInstance) {
 
         return toVnode(rendered, context, instance)
     } else {
+       
         
         return vnode
     }

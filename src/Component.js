@@ -31,7 +31,7 @@ Component.prototype = {
         arr.push(state)
         setStateProxy(this, cb)
     },
-    getVnode() {
+    getBaseVnode() {
         var p = this
         do {
             if (p.vnode) {
