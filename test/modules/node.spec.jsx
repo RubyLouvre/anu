@@ -94,7 +94,7 @@ describe('node模块', function () {
     it('forceUpdate', async () => {
 
 
-        class InputControlES6 extends React.Component {
+        class App extends React.Component {
             constructor(props) {
                 super(props);
 
@@ -118,14 +118,14 @@ describe('node模块', function () {
             }
         }
 
-        InputControlES6.defaultProps = {
+        App.defaultProps = {
             initialValue: '请输入内容'
         };
         div.innerHTML = '<span>remove</span>'
 
 
 
-        var s = React.render(<InputControlES6 />, div)
+        var s = React.render(<App />, div)
 
         await browser
             .pause(100)
