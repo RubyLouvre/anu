@@ -62,7 +62,7 @@ export var transaction = {
 
                 } catch (e) {
                     /* istanbul ignore next */
-                    console.log(e)
+                    console.warn(e)
                 }
 
             })

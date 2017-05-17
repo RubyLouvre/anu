@@ -26,9 +26,9 @@ export function updateComponent(instance) {
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent
 
-    if (instance._unmount) {
+   /* if (instance._unmount) {
         return baseVnode._hostNode //注意
-    }
+    }*/
     var nextProps = props
     prevProps = prevProps || props
     var nextState = instance._processPendingState(props, context)
@@ -63,7 +63,12 @@ export function updateComponent(instance) {
 function removeComponent(vnode) {
 
     var instance = vnode._instance
+  /*  var disabedInstance = instance
 
+    while (disabedInstance) {
+        disabedInstance._unmount = true
+        disabedInstance = disabedInstance.parentInstance
+    }*/
     applyComponentHook(instance, 7) //componentWillUnmount hook
 
     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
@@ -91,20 +96,21 @@ function removeComponent(vnode) {
  * @param {DOM} prevNode
  * @returns
  */
-export function diff(vnode, prevVnode, hostParent, context, prevNode) { //updateComponent
-    var prevInstance = prevVnode._instance
-    var parentInstance = prevInstance && prevInstance.parentInstance
+export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) { //updateComponent
+
+    prevInstance = prevInstance || prevVnode._instance
+
     var parentNode = hostParent._hostNode
     var prevProps = prevVnode.props || {}
-    var prevChildren = prevProps.children || []
 
     var Type = vnode.type
     var isComponent = typeof Type === 'function'
 
     var baseVnode = vnode
     var hostNode = prevVnode._hostNode
-    var instance = vnode._instance
+
     if (prevInstance) {
+        var instance = vnode._instance
         baseVnode = prevInstance.getBaseVnode()
         hostNode = baseVnode._hostNode
         if (instance !== prevInstance) {
@@ -113,6 +119,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
 
         if (instance) { //如果类型相同，使用旧的实例进行 render新的虚拟DOM
             vnode._instance = instance
+
             instance.context = context //更新context
             instance.prevProps = prevProps
             var nextProps = vnode.props
@@ -132,7 +139,9 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
 
         }
     }
+    var prevChildren = prevProps.children || []
     if (isComponent) {
+        var parentInstance = prevInstance && prevInstance.parentInstance
         try {
             return toDOM(vnode, context, hostParent, prevNode, parentInstance)
         } finally {
@@ -151,9 +160,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode) { //update
         }
         removeComponent(prevVnode)
         hostNode = nextNode
-    } else {
-        console.log('类型相等')
-    }
+    } 
 
     //必须在diffProps前添加它的真实节点
 
@@ -210,7 +217,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     var mapping = {};
     var str1 = ''
     var nodes = []
-  
+
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
         if (vnode._hostNode) {
@@ -273,27 +280,26 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
         if (prevVnode) { //假设两者都存在
             let isTextOrComment = 'text' in vnode
-            let prevDom = prevVnode._hostNode
+            let beforeDOM = prevVnode._hostNode
             var prevInstance = prevVnode._instance
             delete vnode.prevVnode
             if (prevVnode._hasInstance) { //都是同种组件
 
                 delete prevVnode._hasInstance
-                //  delete prevVnode._instance._unmount  var inst = vnode._instance =
-                // prevInstance
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
+               // delete prevInstance._unmount
+                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDOM, prevInstance)
                 branch = 'A'
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
 
                 if (isTextOrComment) {
-                    vnode._hostNode = prevDom
+                    vnode._hostNode = beforeDOM
                     if (vnode.text !== prevVnode.text) {
                         vnode._hostNode.nodeValue = vnode.text
                     }
                     branch = 'B'
                 } else {
                     // console.log(vnode.type, '看一下是否input')
-                    vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
+                    vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDOM, prevInstance)
                     branch = 'C'
                 }
             } else if (isTextOrComment) { //由其他类型变成文本或注释
@@ -304,7 +310,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 removeComponent(prevVnode) //移除元素节点或组件}
             } else { //由其他类型变成元素
 
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, prevDom)
+                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDOM, prevInstance)
 
                 branch = 'E'
             }
@@ -320,8 +326,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 branch = 'F'
             }
         }
-        // console.log('branch  ', branch)  if (nativeChildren[i] !== vnode._hostNode) {
-        // parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)  }
+
     }
     //  while (nativeChildren[i]) {       parentNode.removeChild(nativeChildren[i])
     // } 第4步，移除无用节点
@@ -330,14 +335,12 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             let vnode = removedChildren[i]
             var dom = vnode._hostNode
             if (dom.parentNode) {
-                vnode.isRemove = true
                 dom
                     .parentNode
                     .removeChild(dom)
             }
-            if (vnode._instance) {
-                removeComponent(vnode)
-            }
+
+            removeComponent(vnode)
 
         }
     }

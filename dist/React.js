@@ -422,7 +422,7 @@ var transaction = {
                     }
                 } catch (e) {
                     /* istanbul ignore next */
-                    console.log(e);
+                    console.warn(e);
                 }
             });
             this.isInTransation = false;
@@ -1236,9 +1236,9 @@ function updateComponent(instance) {
     var baseVnode = instance.getBaseVnode();
     var hostParent = baseVnode._hostParent;
 
-    if (instance._unmount) {
-        return baseVnode._hostNode; //注意
-    }
+    /* if (instance._unmount) {
+         return baseVnode._hostNode //注意
+     }*/
     var nextProps = props;
     prevProps = prevProps || props;
     var nextState = instance._processPendingState(props, context);
@@ -1273,7 +1273,11 @@ function updateComponent(instance) {
 function removeComponent(vnode) {
 
     var instance = vnode._instance;
-
+    /*  var disabedInstance = instance
+       while (disabedInstance) {
+          disabedInstance._unmount = true
+          disabedInstance = disabedInstance.parentInstance
+      }*/
     applyComponentHook(instance, 7); //componentWillUnmount hook
 
     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
@@ -1298,21 +1302,22 @@ function removeComponent(vnode) {
  * @param {DOM} prevNode
  * @returns
  */
-function diff(vnode, prevVnode, hostParent, context, prevNode) {
+function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
     //updateComponent
-    var prevInstance = prevVnode._instance;
-    var parentInstance = prevInstance && prevInstance.parentInstance;
+
+    prevInstance = prevInstance || prevVnode._instance;
+
     var parentNode = hostParent._hostNode;
     var prevProps = prevVnode.props || {};
-    var prevChildren = prevProps.children || [];
 
     var Type = vnode.type;
     var isComponent$$1 = typeof Type === 'function';
 
     var baseVnode = vnode;
     var hostNode = prevVnode._hostNode;
-    var instance = vnode._instance;
+
     if (prevInstance) {
+        var instance = vnode._instance;
         baseVnode = prevInstance.getBaseVnode();
         hostNode = baseVnode._hostNode;
         if (instance !== prevInstance) {
@@ -1322,6 +1327,7 @@ function diff(vnode, prevVnode, hostParent, context, prevNode) {
         if (instance) {
             //如果类型相同，使用旧的实例进行 render新的虚拟DOM
             vnode._instance = instance;
+
             instance.context = context; //更新context
             instance.prevProps = prevProps;
             var nextProps = vnode.props;
@@ -1340,7 +1346,9 @@ function diff(vnode, prevVnode, hostParent, context, prevNode) {
             removeComponent(prevVnode);
         }
     }
+    var prevChildren = prevProps.children || [];
     if (isComponent$$1) {
+        var parentInstance = prevInstance && prevInstance.parentInstance;
         try {
             return toDOM(vnode, context, hostParent, prevNode, parentInstance);
         } finally {
@@ -1359,8 +1367,6 @@ function diff(vnode, prevVnode, hostParent, context, prevNode) {
         }
         removeComponent(prevVnode);
         hostNode = nextNode;
-    } else {
-        console.log('类型相等');
     }
 
     //必须在diffProps前添加它的真实节点
@@ -1481,29 +1487,28 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (prevVnode) {
             //假设两者都存在
             var isTextOrComment = 'text' in _vnode2;
-            var prevDom = prevVnode._hostNode;
+            var beforeDOM = prevVnode._hostNode;
             var prevInstance = prevVnode._instance;
             delete _vnode2.prevVnode;
             if (prevVnode._hasInstance) {
                 //都是同种组件
 
                 delete prevVnode._hasInstance;
-                //  delete prevVnode._instance._unmount  var inst = vnode._instance =
-                // prevInstance
-                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, prevDom);
+                // delete prevInstance._unmount
+                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
                 branch = 'A';
             } else if (_vnode2.type === prevVnode.type) {
                 //都是元素，文本或注释
 
                 if (isTextOrComment) {
-                    _vnode2._hostNode = prevDom;
+                    _vnode2._hostNode = beforeDOM;
                     if (_vnode2.text !== prevVnode.text) {
                         _vnode2._hostNode.nodeValue = _vnode2.text;
                     }
                     branch = 'B';
                 } else {
                     // console.log(vnode.type, '看一下是否input')
-                    _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, prevDom);
+                    _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
                     branch = 'C';
                 }
             } else if (isTextOrComment) {
@@ -1516,7 +1521,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             } else {
                 //由其他类型变成元素
 
-                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, prevDom);
+                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
 
                 branch = 'E';
             }
@@ -1532,8 +1537,6 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 branch = 'F';
             }
         }
-        // console.log('branch  ', branch)  if (nativeChildren[i] !== vnode._hostNode) {
-        // parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)  }
     }
     //  while (nativeChildren[i]) {       parentNode.removeChild(nativeChildren[i])
     // } 第4步，移除无用节点
@@ -1542,12 +1545,10 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             var _vnode3 = removedChildren[_i3];
             var dom = _vnode3._hostNode;
             if (dom.parentNode) {
-                _vnode3.isRemove = true;
                 dom.parentNode.removeChild(dom);
             }
-            if (_vnode3._instance) {
-                removeComponent(_vnode3);
-            }
+
+            removeComponent(_vnode3);
         }
     }
 }
