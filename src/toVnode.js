@@ -54,7 +54,6 @@ export function toVnode(vnode, context, parentInstance) {
                     props[i] = defaultProps[i]
                 }
             }
-
             instance = new Type(props, context)
 
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
@@ -71,7 +70,6 @@ export function toVnode(vnode, context, parentInstance) {
         if (parentInstance) {
 
             instance.parentInstance = parentInstance
-          //  parentInstance.childInstance = instance
         } else {
             instance.vnode = vnode
         }
@@ -82,9 +80,10 @@ export function toVnode(vnode, context, parentInstance) {
         if (instance.getChildContext) {
             context = rendered.context = getContext(instance, context) //将context往下传
         }
-
         return toVnode(rendered, context, instance)
     } else {
+        
+        vnode.context = context
         return vnode
     }
 }

@@ -688,7 +688,6 @@ function toVnode(vnode, context, parentInstance) {
                     props[i] = defaultProps[i];
                 }
             }
-
             instance = new Type(props, context);
 
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
@@ -703,7 +702,6 @@ function toVnode(vnode, context, parentInstance) {
         if (parentInstance) {
 
             instance.parentInstance = parentInstance;
-            //  parentInstance.childInstance = instance
         } else {
             instance.vnode = vnode;
         }
@@ -714,9 +712,10 @@ function toVnode(vnode, context, parentInstance) {
         if (instance.getChildContext) {
             context = rendered.context = getContext(instance, context); //将context往下传
         }
-
         return toVnode(rendered, context, instance);
     } else {
+
+        vnode.context = context;
         return vnode;
     }
 }
@@ -1304,7 +1303,6 @@ function diff(vnode, prevVnode, hostParent, context, prevNode) {
     var prevInstance = prevVnode._instance;
     var parentInstance = prevInstance && prevInstance.parentInstance;
     var parentNode = hostParent._hostNode;
-
     var prevProps = prevVnode.props || {};
     var prevChildren = prevProps.children || [];
 
@@ -1419,6 +1417,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     var mapping = {};
     var str1 = '';
     var nodes = [];
+
     for (var _i = 0, _n = oldChildren.length; _i < _n; _i++) {
         var vnode = oldChildren[_i];
         if (vnode._hostNode) {
@@ -1434,8 +1433,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         }
     }
 
-    //第二步，遍历新children, 从hash中取出旧节点
-    // console.log('旧的', str1)
+    //第二步，遍历新children, 从hash中取出旧节点 console.log('旧的', str1)
     var removedChildren = oldChildren.concat();
     str1 = '';
     for (var _i2 = 0, _n2 = newChildren.length; _i2 < _n2; _i2++) {
@@ -1534,12 +1532,11 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                 branch = 'F';
             }
         }
-        // console.log('branch  ', branch)
-        //  if (nativeChildren[i] !== vnode._hostNode) {
+        // console.log('branch  ', branch)  if (nativeChildren[i] !== vnode._hostNode) {
         // parentNode.insertBefore(vnode._hostNode, nativeChildren[i] || null)  }
     }
     //  while (nativeChildren[i]) {       parentNode.removeChild(nativeChildren[i])
-    //  } 第4步，移除无用节点
+    // } 第4步，移除无用节点
     if (removedChildren.length) {
         for (var _i3 = 0, _n3 = removedChildren.length; _i3 < _n3; _i3++) {
             var _vnode3 = removedChildren[_i3];
@@ -1568,6 +1565,10 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
     //如果一个虚拟DOM的type为字符串 或 它拥有instance，且这个instance不再存在parentInstance, 那么它就可以拥有_dom属性
     vnode = toVnode(vnode, context, parentIntance);
+    if (vnode.context) {
+        context = vnode.context;
+        if (vnode.refs) delete vnode.context;
+    }
     var hostNode = createDOMElement(vnode);
     var props = vnode.props;
     var parentNode = hostParent._hostNode;
@@ -1586,10 +1587,7 @@ function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
             baseVnode._hostParent = hostParent;
         }
     }
-    if (vnode.context) {
-        context = vnode.context;
-        delete vnode.context;
-    }
+
     //文本是没有instance, 只有empty与元素节点有instance
 
     if (parentNode) {
