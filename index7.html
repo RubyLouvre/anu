@@ -26,17 +26,22 @@
 var s
 
 window.onload = function(){
-      //  React.PropTypes =  (React.PropTypes || {})
-       function Select(props) {
-           return <strong>{props.aaa}</strong>
-        }
+     
+     
+        var i = 0
         class Input extends React.Component{
            
             componentWillUpdate(){
                 console.log('Input componentWillUpdate')
             }
+             onChange(a) {
+                i++
+                this.setState({
+                    value: a
+                })
+            }
             render() {
-                return <input ref='a' value={this.props.value} onInput={ this.props.xxx }  />
+                return i ? <strong>222</strong> : <em>3333</em>
             }
         }
         class App extends React.Component {
@@ -50,13 +55,14 @@ window.onload = function(){
                 console.log('App componentWillUpdate')
             }
             onChange(a) {
+                i++
                 this.setState({
-                    value: a.target.value
+                    value: a
                 })
             }
             render() {
-                return <div><Select aaa={this.state.value} />
-                <Input value={this.state.value} xxx={this.onChange.bind(this)} />
+                return <div>1111<span>333</span>
+                <Input ref='aaa'/>
                 </div>
             }
 

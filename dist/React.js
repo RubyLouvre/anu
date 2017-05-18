@@ -1446,6 +1446,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         debugString = '',
         nodes = [],
         returnDOM,
+        hashmap = {},
         parentNode = hostParent._hostNode,
         branch;
 
@@ -1454,7 +1455,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (vnode._hostNode) {
             nodes.push(vnode._hostNode);
         }
-
+        vnode.uuid = '.' + i;
+        hashmap[vnode.uuid] = vnode;
         var uuid = computeUUID(getComponentName(vnode.type), vnode);
         debugString += uuid + ' ';
         if (mapping[uuid]) {
@@ -1464,8 +1466,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         }
     }
 
-    //console.log('旧的',debugString) 第二步，遍历新children, 从hash中取出旧节点
-    var removedChildren = oldChildren.concat();
+    //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
     debugString = '';
     var firstDOM = nodes[0];
     var insertPoint = firstDOM;
@@ -1482,11 +1483,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             if (!mapping[_uuid].length) {
                 delete mapping[_uuid];
             }
-
-            var index = removedChildren.indexOf(prevVnode);
-            if (index !== -1) {
-                removedChildren.splice(index, 1);
-            }
+            delete hashmap[prevVnode.uuid];
         }
 
         _vnode._hostParent = hostParent;
@@ -1523,8 +1520,11 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
         insertPoint = _vnode._hostNode.nextSibling;
     }
-    //console.log('新的',debugString) 
-    // 第3步，移除无用节点
+    //console.log('新的',debugString) 第3步，移除无用节点
+    var removedChildren = [];
+    for (var key in hashmap) {
+        removedChildren.push(hashmap[key]);
+    }
     if (removedChildren.length) {
         removeComponents(removedChildren);
     }
