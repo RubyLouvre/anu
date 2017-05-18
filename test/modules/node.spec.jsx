@@ -852,4 +852,56 @@ describe('node模块', function () {
         expect(div.getElementsByTagName('em').length).toBe(1)
         //expect(div.getElementsByTagName('p').length).toBe(1)
     })
+
+     it('复杂的孩子转换', async () => {
+      var index = 0
+       var map = [
+             <div >1111<p>ddd</p><span>333</span><Link /></div>,
+             <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
+             <div><span>33</span></div>
+        ]
+        function Link(){
+            return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            change(a){
+                this.setState({
+                    aaa:a
+                })
+            }
+            componentDidMount(){
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                 return map[index++]
+             
+            }
+        }
+         var s = React.render(<App />, div)
+
+        await browser.pause(100).$apply()
+        function getString(nodes){
+          var str = []
+           for(var i =0, node; node = nodes[i++];){
+                str.push(node.nodeName.toLowerCase())
+           }
+           return str.join(' ')
+        }
+        expect(getString( div.firstChild.childNodes )).toBe('#text p span strong')
+        s.change(100)
+        await browser.pause(100).$apply()
+        expect(getString( div.firstChild.childNodes )).toBe('em span #text span b i')
+        s.change(100)
+        await browser.pause(100).$apply()
+        expect(getString( div.firstChild.childNodes )).toBe('span')
+     })
 })
