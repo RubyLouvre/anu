@@ -268,6 +268,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     var mapping = {};
     var str1 = ''
     var nodes = []
+    var lastDOM 
     var parentNode = hostParent._hostNode,
         //第三，逐一比较
         branch;
@@ -276,6 +277,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         let vnode = oldChildren[i]
         if (vnode._hostNode) {
             nodes.push(vnode._hostNode)
+            lastDOM = vnode._hostNode
         }
 
         let uuid = computeUUID(getComponentName(vnode.type), vnode)
@@ -317,6 +319,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     var beforeDOM = nodes[0]
     var firstDOM = beforeDOM
+    lastDOM = lastDOM && lastDOM.nextSibling
     for (var i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i],
             prevVnode = null,
@@ -382,6 +385,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     if (removedChildren.length) {
         removeComponents(removedChildren)
     }
+   
 
 }
 
