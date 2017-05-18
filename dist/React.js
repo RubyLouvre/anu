@@ -1443,106 +1443,88 @@ function computeUUID(type, vnode) {
 function diffChildren(newChildren, oldChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {},
-        str1 = '',
+        debugString = '',
         nodes = [],
         returnDOM,
         parentNode = hostParent._hostNode,
+        branch;
 
-    //第三，逐一比较
-    branch;
-
-    for (var _i = 0, _n = oldChildren.length; _i < _n; _i++) {
-        var vnode = oldChildren[_i];
+    for (var i = 0, n = oldChildren.length; i < n; i++) {
+        var vnode = oldChildren[i];
         if (vnode._hostNode) {
             nodes.push(vnode._hostNode);
         }
 
         var uuid = computeUUID(getComponentName(vnode.type), vnode);
-        str1 += uuid + ' ';
+        debugString += uuid + ' ';
         if (mapping[uuid]) {
             mapping[uuid].push(vnode);
         } else {
             mapping[uuid] = [vnode];
         }
     }
-    //console.log('旧的',str1) 第二步，遍历新children, 从hash中取出旧节点 console.log('旧的', str1)
+
+    //console.log('旧的',debugString) 第二步，遍历新children, 从hash中取出旧节点
     var removedChildren = oldChildren.concat();
-    str1 = '';
-    for (var _i2 = 0, _n2 = newChildren.length; _i2 < _n2; _i2++) {
-        var _vnode = newChildren[_i2];
+    debugString = '';
+    var firstDOM = nodes[0];
+    var insertPoint = firstDOM;
+    for (var _i = 0, _n = newChildren.length; _i < _n; _i++) {
+        var _vnode = newChildren[_i];
         var tag = getComponentName(_vnode.type);
 
         var _uuid = computeUUID(tag, _vnode);
-        str1 += _uuid + ' ';
+        debugString += _uuid + ' ';
+        var prevVnode = null;
         if (mapping[_uuid]) {
-            var matchNode = mapping[_uuid].shift();
-            _vnode.prevVnode = matchNode; //重点
+            prevVnode = mapping[_uuid].shift();
+
             if (!mapping[_uuid].length) {
                 delete mapping[_uuid];
             }
 
-            var index = removedChildren.indexOf(matchNode);
+            var index = removedChildren.indexOf(prevVnode);
             if (index !== -1) {
                 removedChildren.splice(index, 1);
             }
         }
-    }
-    // console.log('新的', str1)
 
-    var beforeDOM = nodes[0];
-    var firstDOM = beforeDOM;
-    for (var i = 0, n = newChildren.length; i < n; i++) {
-        var _vnode2 = newChildren[i],
-            prevVnode = null,
-            prevNode = nodes[i];
-        if (_vnode2.prevVnode) {
-            prevVnode = _vnode2.prevVnode;
-        }
-
-        _vnode2._hostParent = hostParent;
+        _vnode._hostParent = hostParent;
 
         if (prevVnode) {
-            //假设两者都存在
-            var isTextOrComment = 'text' in _vnode2;
-            //   let beforeDOM = prevVnode._hostNode
+            //它们的组件类型， 或者标签类型相同
             var prevInstance = prevVnode._instance;
-            delete _vnode2.prevVnode;
 
-            //   if (prevVnode._hasInstance) { //都是同种组件   delete prevVnode._hasInstance
-            // delete prevInstance._unmount    vnode._hostNode = diff(vnode, prevVnode,
-            // hostParent, context, beforeDOM, prevInstance)   branch = 'A'  } else if
-            // (vnode.type === prevVnode.type) { //都是元素，文本或注释
-
-            if (isTextOrComment) {
-                _vnode2._hostNode = prevVnode._hostNode;
-                if (_vnode2.text !== prevVnode.text) {
-                    _vnode2._hostNode.nodeValue = _vnode2.text;
+            if ('text' in _vnode) {
+                var textNode = _vnode._hostNode = prevVnode._hostNode;
+                if (_vnode.text !== prevVnode.text) {
+                    textNode.nodeValue = _vnode.text;
                 }
                 branch = 'B';
-                // console.log(vnode._hostNode  === beforeDOM, '!!!')
-                if (_vnode2._hostNode !== beforeDOM) parentNode.insertBefore(_vnode2._hostNode, beforeDOM);
+                if (textNode !== insertPoint) {
+                    parentNode.insertBefore(textNode, insertPoint);
+                }
             } else {
-                // console.log(vnode.type, '看一下是否input')
-                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
+                _vnode._hostNode = diff(_vnode, prevVnode, hostParent, context, insertPoint, prevInstance);
                 branch = 'C';
             }
-            //  }
         } else {
             //添加新节点
 
-            _vnode2._hostNode = toDOM(_vnode2, context, hostParent, beforeDOM, null);
+            _vnode._hostNode = toDOM(_vnode, context, hostParent, insertPoint, null);
             branch = 'D';
         }
-        if (i === 0) {
-            returnDOM = _vnode2._hostNode;
-            if (branch != 'D' && firstDOM && _vnode2._hostNode !== firstDOM) {
-                parentNode.replaceChild(_vnode2._hostNode, firstDOM);
+        if (_i === 0) {
+            returnDOM = _vnode._hostNode;
+            if (branch != 'D' && firstDOM && _vnode._hostNode !== firstDOM) {
+                parentNode.replaceChild(_vnode._hostNode, firstDOM);
             }
         }
 
-        beforeDOM = _vnode2._hostNode.nextSibling;
+        insertPoint = _vnode._hostNode.nextSibling;
     }
-    // 第4步，移除无用节点
+    //console.log('新的',debugString) 
+    // 第3步，移除无用节点
     if (removedChildren.length) {
         removeComponents(removedChildren);
     }

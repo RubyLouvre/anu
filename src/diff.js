@@ -235,11 +235,10 @@ function computeUUID(type, vnode) {
 function diffChildren(newChildren, oldChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {},
-        str1 = '',
+        debugString = '',
         nodes = [],
         returnDOM,
         parentNode = hostParent._hostNode,
-        //第三，逐一比较
         branch;
 
     for (let i = 0, n = oldChildren.length; i < n; i++) {
@@ -249,81 +248,61 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         }
 
         let uuid = computeUUID(getComponentName(vnode.type), vnode)
-        str1 += uuid + ' '
+        debugString += uuid + ' '
         if (mapping[uuid]) {
             mapping[uuid].push(vnode)
         } else {
             mapping[uuid] = [vnode]
         }
     }
-    //console.log('旧的',str1) 第二步，遍历新children, 从hash中取出旧节点 console.log('旧的', str1)
+
+    //console.log('旧的',debugString) 第二步，遍历新children, 从hash中取出旧节点
     var removedChildren = oldChildren.concat();
-    str1 = ''
+    debugString = ''
+    var firstDOM = nodes[0]
+    var insertPoint = firstDOM
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
         let tag = getComponentName(vnode.type)
 
         let uuid = computeUUID(tag, vnode)
-        str1 += uuid + ' '
+        debugString += uuid + ' '
+        var prevVnode = null
         if (mapping[uuid]) {
-            var matchNode = mapping[uuid].shift()
-            vnode.prevVnode = matchNode //重点
+            prevVnode = mapping[uuid].shift()
+
             if (!mapping[uuid].length) {
                 delete mapping[uuid]
             }
-            
-            let index = removedChildren.indexOf(matchNode)
+
+            let index = removedChildren.indexOf(prevVnode)
             if (index !== -1) {
                 removedChildren.splice(index, 1)
             }
-
-        }
-    }
-    // console.log('新的', str1)
-
-    var beforeDOM = nodes[0]
-    var firstDOM = beforeDOM
-    for (var i = 0, n = newChildren.length; i < n; i++) {
-        let vnode = newChildren[i],
-            prevVnode = null,
-            prevNode = nodes[i]
-        if (vnode.prevVnode) {
-            prevVnode = vnode.prevVnode
         }
 
         vnode._hostParent = hostParent
 
-        if (prevVnode) { //假设两者都存在
-            let isTextOrComment = 'text' in vnode
-            //   let beforeDOM = prevVnode._hostNode
+        if (prevVnode) { //它们的组件类型， 或者标签类型相同
             var prevInstance = prevVnode._instance
-            delete vnode.prevVnode
 
-            //   if (prevVnode._hasInstance) { //都是同种组件   delete prevVnode._hasInstance
-            // delete prevInstance._unmount    vnode._hostNode = diff(vnode, prevVnode,
-            // hostParent, context, beforeDOM, prevInstance)   branch = 'A'  } else if
-            // (vnode.type === prevVnode.type) { //都是元素，文本或注释
-
-            if (isTextOrComment) {
-                vnode._hostNode = prevVnode._hostNode
+            if ('text' in vnode) {
+                var textNode = vnode._hostNode = prevVnode._hostNode
                 if (vnode.text !== prevVnode.text) {
-                    vnode._hostNode.nodeValue = vnode.text
+                    textNode.nodeValue = vnode.text
                 }
                 branch = 'B'
-                // console.log(vnode._hostNode  === beforeDOM, '!!!')
-                if (vnode._hostNode !== beforeDOM) 
-                    parentNode.insertBefore(vnode._hostNode, beforeDOM)
-
+                if (textNode !== insertPoint) {
+                    parentNode.insertBefore(textNode, insertPoint)
+                }
             } else {
-                // console.log(vnode.type, '看一下是否input')
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDOM, prevInstance)
+                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, insertPoint, prevInstance)
                 branch = 'C'
             }
-            //  }
 
         } else { //添加新节点
 
-            vnode._hostNode = toDOM(vnode, context, hostParent, beforeDOM, null)
+            vnode._hostNode = toDOM(vnode, context, hostParent, insertPoint, null)
             branch = 'D'
 
         }
@@ -334,10 +313,11 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             }
         }
 
-        beforeDOM = vnode._hostNode.nextSibling
+        insertPoint = vnode._hostNode.nextSibling
 
     }
-    // 第4步，移除无用节点
+    //console.log('新的',debugString) 
+    // 第3步，移除无用节点
     if (removedChildren.length) {
         removeComponents(removedChildren)
     }
