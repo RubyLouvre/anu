@@ -47,7 +47,7 @@ window.onload = function(){
             render() {
                 return (
                     <div>
-                        Type something:
+                        Type something:{this.state.value}
                         <input ref="input" value={this.state.value} onInput={this.click.bind(this)}/>
                     </div>
                 );

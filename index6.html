@@ -41,13 +41,12 @@ window.onload = function(){
 
             onChange(e) {
                 this.setState({
-                    value: e.target.value
+                    value: e
                 })
 
             }
             render() {
-                return <div><Select value={this.state.value} />
-                    <input ref='a' value={this.state.value} onInput={this.onChange.bind(this)} /></div>
+                return <div><span>111</span><span>{this.state.value}</span></div>
             }
 
         }

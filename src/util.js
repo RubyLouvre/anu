@@ -64,6 +64,7 @@ export function getInstances(instance) {
  * @param {any} Type
  * @returns
  */
+/*
 export function matchInstance(instance, Type) {
 
     if (instance.statelessRender === Type)
@@ -72,6 +73,7 @@ export function matchInstance(instance, Type) {
         return instance
     }
 }
+*/
 /**
  *
  *

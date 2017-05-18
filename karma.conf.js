@@ -32,7 +32,8 @@ module.exports = function (config) {
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['spec', 'coverage'],
         preprocessors: {
-            'src/**/*.js': ['coverage'],
+            'dist/React.js': ['coverage'],
+            //'src/**/*.js': ['coverage'],
             'test/**/*.js': ['webpack']
         },
         mochaReporter: {
@@ -49,7 +50,7 @@ module.exports = function (config) {
             dir: 'coverage/'
         },
         webpack: {
-
+            
             module: {
                 /* Transpile source and test files */
                 preLoaders: [{

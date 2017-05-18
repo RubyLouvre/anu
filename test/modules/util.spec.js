@@ -94,7 +94,7 @@ describe('util', function() {
         expect(arr.length).toBe(3)
     })
 
-    it('matchInstance', () => {
+  /*  it('matchInstance', () => {
         var A = function() {}
         var a = new A
        
@@ -104,5 +104,6 @@ describe('util', function() {
         expect(matchInstance(a, A)).toBe(a)
         expect(matchInstance(c, C)).toBe(c)
     })
+    */
 })
 
