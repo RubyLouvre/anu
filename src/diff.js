@@ -242,7 +242,6 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {},
         debugString = '',
-        nodes = [],
         returnDOM,
         hashmap = {},
         parentNode = hostParent._hostNode,
@@ -250,9 +249,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     for (let i = 0, n = oldChildren.length; i < n; i++) {
         let vnode = oldChildren[i]
-        if (vnode._hostNode) {
-            nodes.push(vnode._hostNode)
-        }
+
         vnode.uuid = '.' + i
         hashmap[vnode.uuid] = vnode
         let uuid = computeUUID(getComponentName(vnode.type), vnode)
@@ -266,7 +263,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
     debugString = ''
-    var firstDOM = nodes[0]
+    var firstDOM = oldChildren[0] && oldChildren[0]._hostNode
     var insertPoint = firstDOM
     for (let i = 0, n = newChildren.length; i < n; i++) {
         let vnode = newChildren[i];
