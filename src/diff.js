@@ -14,7 +14,10 @@ import {diffProps} from './diffProps'
 import {document, createDOMElement} from './browser'
 import {removeRef} from './ref'
 import {setControlledComponent} from './ControlledComponent'
-// createElement创建的虚拟DOM叫baseVnode
+
+// createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
+// 如果baseVnode的type类型为函数，那么产生实例
+
 /**
  * 渲染组件
  *
@@ -26,31 +29,30 @@ export function updateComponent(instance) {
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent
 
-   /* if (instance._unmount) {
-        return baseVnode._hostNode //注意
-    }*/
+
     var nextProps = props
     prevProps = prevProps || props
     var nextState = instance._processPendingState(props, context)
 
     instance.props = prevProps
     delete instance.prevProps
-
+    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
     if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
         return baseVnode._hostNode //注意
     }
+    //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
     applyComponentHook(instance, 5, nextProps, nextState, context)
     instance.props = nextProps
     instance.state = nextState
     delete instance._updateBatchNumber
 
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
-    //context只能孩子用，因此不要影响原instance.context
     context = getContext(instance, context)
     instance._rendered = rendered
     //rendered的type为函数时，会多次进入toVnode
     var dom = diff(rendered, oldRendered, hostParent, context, baseVnode._hostNode)
     baseVnode._hostNode = dom
+    //生命周期 componentDidUpdate(prevProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
 
     return dom //注意
@@ -63,13 +65,8 @@ export function updateComponent(instance) {
 function removeComponent(vnode) {
 
     var instance = vnode._instance
-  /*  var disabedInstance = instance
 
-    while (disabedInstance) {
-        disabedInstance._unmount = true
-        disabedInstance = disabedInstance.parentInstance
-    }*/
-    applyComponentHook(instance, 7) //componentWillUnmount hook
+    instance && applyComponentHook(instance, 7) //componentWillUnmount hook
 
     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
         vnode[name] = NaN
@@ -128,7 +125,8 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
                 instance.props = nextProps
                 return updateComponent(instance, context)
             }
-            applyComponentHook(instance, 3, nextProps) //componentWillReceiveProps
+            //componentWillReceiveProps(nextProps, nextContext)
+            applyComponentHook(instance, 3, nextProps, context) 
 
             instance.props = nextProps
 
@@ -346,8 +344,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
     }
 
 }
-// React.createElement返回的是用于定义数据描述结果的虚拟DOM 如果这种虚拟DOM的type为一个函数或类，那么将产生组件实例
-// renderedComponent 组件实例通过render方法更下一级的虚拟DOM renderedElement
+
 /**
  *
  * @export
