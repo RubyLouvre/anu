@@ -18,34 +18,51 @@
         }
     </style>
 
-    <script>
-        function ReactElement(type, props, children) {
-            this.type = type
-            this.props = props
-            this.children = children
-            this.hostParent = null
+   <script type='text/javascript' src="./dist/React.js"></script>
+<!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+     <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+        var index = 0
+       var map = [
+             <div >1111<p>ddd</p><span>333</span><Link /></div>,
+             <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
+             <div><span>33</span></div>
+        ]
+        function Link(){
+            return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
         }
-        function Select(props, state){
-            this.props = props
-            this.state = state
-        }
-        Select.prototype = {
-            render: function(){
-                return {type: 'select',props:{ children: [] }}
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            change(a){
+                this.setState({
+                    aaa:a
+                })
+            }
+            componentDidMount(){
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                 return map[index++]
+             
             }
         }
-        var vnode = new ReactElement(Select, {}, [])
-        var instance = new Select()
-        vnode.instance = instance
-        instance.vnode = vnode
-        instance.rendered = instance.render()
-        function toDOM(){}
-        var hostParent = {}
-        if(typeof instance.rendered.type === 'string'){
-            instance.rendered.hostParent = hostParent
-            vnode.dom = toDOM(instance.rendered)
-        }
-        console.log(vnode)
+        var s
+
+window.onload = function(){
+    
+       s = ReactDOM.render( <App/>, document.getElementById('example'))
+}
     </script>
 </head>
 

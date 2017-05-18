@@ -54,6 +54,7 @@ export function createElement(type, configs, children) {
 function Vnode(type, props, key, owner) {
     this.type = type
     this.props = props
+   
     if (key) {
         this.key
     }

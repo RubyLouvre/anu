@@ -132,9 +132,8 @@
 
 	function getComponentName(type) {
 	    return typeof type === 'function' ? type.displayName || type.name : type;
-	    //   var ctor = instance.statelessRender || instance.constructor
-	    //    return (ctor.displayName || ctor.name)
 	}
+	var recyclableNodes = [];
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
 	  return typeof obj;
@@ -278,7 +277,9 @@
 	fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 	fakeDoc.documentElement = new DOMElement();
 
-	var win = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' ? window : (typeof global === 'undefined' ? 'undefined' : _typeof(global)) === 'object' ? global : { document: faceDoc };
+	var win = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' ? window : (typeof global === 'undefined' ? 'undefined' : _typeof(global)) === 'object' ? global : {
+	    document: faceDoc
+	};
 
 	var document = win.document;
 
@@ -296,11 +297,14 @@
 	function createDOMElement(vnode) {
 	    var type = vnode.type;
 	    if (type === '#text') {
-	        delete vnode.props;
+	        var node = recyclableNodes.pop();
+	        if (node) {
+	            node.nodeValue = vnode.text;
+	            return node;
+	        }
 	        return document.createTextNode(vnode.text);
 	    }
 	    if (type === '#comment') {
-	        delete vnode.props;
 	        return document.createComment(vnode.text);
 	    }
 
@@ -399,6 +403,7 @@
 	function Vnode(type, props, key, owner) {
 	    this.type = type;
 	    this.props = props;
+
 	    if (key) {
 	        this.key;
 	    }
@@ -1323,7 +1328,9 @@
 
 	//react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
 
-	// createElement创建的虚拟DOM叫baseVnode
+	// createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
+	// 如果baseVnode的type类型为函数，那么产生实例
+
 	/**
 	 * 渲染组件
 	 *
@@ -1337,22 +1344,19 @@
 
 	    var oldRendered = instance._rendered;
 	    var baseVnode = instance.getBaseVnode();
-	    var hostParent = baseVnode._hostParent;
+	    var hostParent = baseVnode._hostParent || oldRendered._hostParent;
 
-	    /* if (instance._unmount) {
-	         return baseVnode._hostNode //注意
-	     }*/
 	    var nextProps = props;
 	    prevProps = prevProps || props;
 	    var nextState = instance._processPendingState(props, context);
 
 	    instance.props = prevProps;
 	    delete instance.prevProps;
-	    //shouldComponentUpdate(nextProps, nextState, nextContext)
+	    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
 	    if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
 	        return baseVnode._hostNode; //注意
 	    }
-	    //componentWillUpdate(nextProps, nextState, nextContext)
+	    //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
 	    applyComponentHook(instance, 5, nextProps, nextState, context);
 	    instance.props = nextProps;
 	    instance.state = nextState;
@@ -1364,7 +1368,7 @@
 	    //rendered的type为函数时，会多次进入toVnode
 	    var dom = diff(rendered, oldRendered, hostParent, context, baseVnode._hostNode);
 	    baseVnode._hostNode = dom;
-	    //componentDidUpdate(prevProps, prevState, prevContext)
+	    //生命周期 componentDidUpdate(prevProps, prevState, prevContext)
 	    applyComponentHook(instance, 6, nextProps, nextState, context);
 
 	    return dom; //注意
@@ -1375,14 +1379,12 @@
 	 * @param {any} vnode
 	 */
 	function removeComponent(vnode) {
-
+	    if (vnode._hostNode && vnode.type === '#text' && recyclableNodes.length < 512) {
+	        recyclableNodes.push(vnode._hostNode);
+	    }
 	    var instance = vnode._instance;
-	    /*  var disabedInstance = instance
-	       while (disabedInstance) {
-	          disabedInstance._unmount = true
-	          disabedInstance = disabedInstance.parentInstance
-	      }*/
-	    applyComponentHook(instance, 7); //componentWillUnmount hook
+
+	    instance && applyComponentHook(instance, 7); //componentWillUnmount hook
 
 	    '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
 	        vnode[name] = NaN;
@@ -1409,17 +1411,18 @@
 	function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
 	    //updateComponent
 
-	    prevInstance = prevInstance || prevVnode._instance;
-
-	    var parentNode = hostParent._hostNode;
-	    var prevProps = prevVnode.props || {};
-
-	    var Type = vnode.type;
-	    var isComponent = typeof Type === 'function';
 
 	    var baseVnode = vnode;
 	    var hostNode = prevVnode._hostNode;
 
+	    if (hostNode && vnode === prevVnode) return hostNode;
+
+	    var Type = vnode.type;
+	    var isComponent = typeof Type === 'function';
+	    prevInstance = prevInstance || prevVnode._instance;
+
+	    var parentNode = hostParent._hostNode;
+	    var prevProps = prevVnode.props || {};
 	    if (prevInstance) {
 	        var instance = vnode._instance;
 	        baseVnode = prevInstance.getBaseVnode();
@@ -1657,8 +1660,7 @@
 	        }
 	    }
 	}
-	// React.createElement返回的是用于定义数据描述结果的虚拟DOM 如果这种虚拟DOM的type为一个函数或类，那么将产生组件实例
-	// renderedComponent 组件实例通过render方法更下一级的虚拟DOM renderedElement
+
 	/**
 	 *
 	 * @export
@@ -1754,10 +1756,12 @@
 	            container.removeChild(container.firstChild);
 	        }
 	    }
-
-	    var rootVnode = diff(vnode, container.oldVnode || {}, {
+	    var hostParent = {
 	        _hostNode: container
-	    }, context);
+	    };
+	    var rootVnode = diff(vnode, container.oldVnode || {
+	        hostParent: hostParent
+	    }, hostParent, context);
 
 	    container.oldVnode = vnode;
 	    var instance = vnode._instance;

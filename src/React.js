@@ -42,10 +42,12 @@ function render(vnode, container, cb) {
             container.removeChild(container.firstChild)
         }
     }
-
-    var rootVnode = diff(vnode, container.oldVnode || {}, {
+    var hostParent = {
         _hostNode: container
-    }, context)
+    }
+    var rootVnode = diff(vnode, container.oldVnode || {
+        hostParent: hostParent
+    }, hostParent, context)
 
     container.oldVnode = vnode
     var instance = vnode._instance

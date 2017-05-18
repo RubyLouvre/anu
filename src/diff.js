@@ -3,17 +3,33 @@ import {
     getInstances,
     getComponentName,
     matchInstance,
+    recyclableNodes,
     midway,
     extend
 } from './util'
-import {applyComponentHook} from './lifecycle'
+import {
+    applyComponentHook
+} from './lifecycle'
 
-import {transaction} from './transaction'
-import {toVnode} from './toVnode'
-import {diffProps} from './diffProps'
-import {document, createDOMElement} from './browser'
-import {removeRef} from './ref'
-import {setControlledComponent} from './ControlledComponent'
+import {
+    transaction
+} from './transaction'
+import {
+    toVnode
+} from './toVnode'
+import {
+    diffProps
+} from './diffProps'
+import {
+    document,
+    createDOMElement
+} from './browser'
+import {
+    removeRef
+} from './ref'
+import {
+    setControlledComponent
+} from './ControlledComponent'
 
 // createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
 // 如果baseVnode的type类型为函数，那么产生实例
@@ -24,10 +40,15 @@ import {setControlledComponent} from './ControlledComponent'
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {props, state, context, prevProps} = instance
+    var {
+        props,
+        state,
+        context,
+        prevProps
+    } = instance
     var oldRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
-    var hostParent = baseVnode._hostParent
+    var hostParent = baseVnode._hostParent || oldRendered._hostParent
 
 
     var nextProps = props
@@ -63,7 +84,9 @@ export function updateComponent(instance) {
  * @param {any} vnode
  */
 function removeComponent(vnode) {
-
+   if (vnode._hostNode && vnode.type === '#text' && recyclableNodes.length < 512) {
+        recyclableNodes.push(vnode._hostNode)
+    }
     var instance = vnode._instance
 
     instance && applyComponentHook(instance, 7) //componentWillUnmount hook
@@ -94,18 +117,20 @@ function removeComponent(vnode) {
  * @returns
  */
 export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) { //updateComponent
+ 
+ 
+    var baseVnode = vnode
+    var hostNode = prevVnode._hostNode
 
+    if (hostNode && vnode === prevVnode)
+        return hostNode
+
+    var Type = vnode.type
+    var isComponent = typeof Type === 'function'
     prevInstance = prevInstance || prevVnode._instance
 
     var parentNode = hostParent._hostNode
     var prevProps = prevVnode.props || {}
-
-    var Type = vnode.type
-    var isComponent = typeof Type === 'function'
-
-    var baseVnode = vnode
-    var hostNode = prevVnode._hostNode
-
     if (prevInstance) {
         var instance = vnode._instance
         baseVnode = prevInstance.getBaseVnode()
@@ -126,7 +151,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
                 return updateComponent(instance, context)
             }
             //componentWillReceiveProps(nextProps, nextContext)
-            applyComponentHook(instance, 3, nextProps, context) 
+            applyComponentHook(instance, 3, nextProps, context)
 
             instance.props = nextProps
 
@@ -158,7 +183,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
         }
         removeComponent(prevVnode)
         hostNode = nextNode
-    } 
+    }
 
     //必须在diffProps前添加它的真实节点
 
@@ -197,9 +222,9 @@ function computeUUID(type, vnode) {
         return type + '/' + vnode.deep
     }
 
-    return type + '/' + vnode.deep + (vnode.key
-        ? '/' + vnode.key
-        : '')
+    return type + '/' + vnode.deep + (vnode.key ?
+        '/' + vnode.key :
+        '')
 }
 
 /**
@@ -284,7 +309,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
             if (prevVnode._hasInstance) { //都是同种组件
 
                 delete prevVnode._hasInstance
-               // delete prevInstance._unmount
+                // delete prevInstance._unmount
                 vnode._hostNode = diff(vnode, prevVnode, hostParent, context, beforeDOM, prevInstance)
                 branch = 'A'
             } else if (vnode.type === prevVnode.type) { //都是元素，文本或注释
@@ -359,7 +384,7 @@ export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
     vnode = toVnode(vnode, context, parentIntance)
     if (vnode.context) {
         context = vnode.context
-        if (vnode.refs) 
+        if (vnode.refs)
             delete vnode.context
     }
     var hostNode = createDOMElement(vnode)

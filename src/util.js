@@ -144,7 +144,5 @@ export var midway = {
 
 export function getComponentName(type) {
     return typeof type === 'function' ? (type.displayName || type.name) : type
- //   var ctor = instance.statelessRender || instance.constructor
-//    return (ctor.displayName || ctor.name)
 }
-
+export var recyclableNodes = []

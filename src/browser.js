@@ -1,4 +1,7 @@
-import {oneObject} from './util'
+import {
+    oneObject,
+    recyclableNodes
+} from './util'
 
 
 
@@ -12,8 +15,8 @@ var fn = DOMElement.prototype = {
     contains: Boolean
 }
 String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
-            ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
-            ',detachEvent').replace(/\w+/g, function (name) {
+    ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
+    ',detachEvent').replace(/\w+/g, function (name) {
     fn[name] = function () {
         console.log('fire ' + name)
     }
@@ -27,11 +30,13 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean
 fakeDoc.documentElement = new DOMElement
 
-export var win = typeof window === 'object'
-    ? window
-    : typeof global === 'object'
-        ? global
-        : { document: faceDoc};
+export var win = typeof window === 'object' ?
+    window :
+    typeof global === 'object' ?
+    global :
+    {
+        document: faceDoc
+    };
 
 export var inBrowser = !!win.location && win.navigator
 
@@ -50,18 +55,21 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8
 
 export function createDOMElement(vnode) {
     var type = vnode.type
-    if(type ==='#text'){
-        delete vnode.props
+    if (type === '#text') {
+        var node = recyclableNodes.pop()
+        if (node) {
+            node.nodeValue = vnode.text
+            return node
+        }
         return document.createTextNode(vnode.text)
     }
-    if(type ==='#comment'){
-         delete vnode.props
+    if (type === '#comment') {
         return document.createComment(vnode.text)
     }
 
     try {
         if (vnode.ns) {
-            return document.createElementNS(vnode.ns,type)
+            return document.createElementNS(vnode.ns, type)
         }
     } catch (e) {}
     return document.createElement(type)
@@ -76,16 +84,16 @@ var mhtml = {
     mark: 1
 }
 var svgTags = oneObject('' +
-// structure
-'svg,g,defs,desc,metadata,symbol,use,' +
-// image & shape
-'image,path,rect,circle,line,ellipse,polyline,polygon,' +
-// text
-'text,tspan,tref,textpath,' +
-// other
-'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
-// font
-'font,font-face,glyph,missing-glyph', svgNs)
+    // structure
+    'svg,g,defs,desc,metadata,symbol,use,' +
+    // image & shape
+    'image,path,rect,circle,line,ellipse,polyline,polygon,' +
+    // text
+    'text,tspan,tref,textpath,' +
+    // other
+    'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
+    // font
+    'font,font-face,glyph,missing-glyph', svgNs)
 
 var rmathTags = /^m/
 var mathNs = 'http://www.w3.org/1998/Math/MathML'
