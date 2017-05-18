@@ -1393,15 +1393,20 @@ function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
             var currChildren = props.children;
             var n1 = currChildren.length;
             var n2 = prevChildren.length;
-            if (n1 === 0 && n2) {
+            var old = prevChildren[0];
+            var neo = currChildren[0];
+            if (!neo && old) {
                 removeComponents(prevChildren);
-            } else if (n2 === 0 && n1) {
-
+            } else if (neo && !old) {
                 var beforeDOM = null;
                 for (var i = 0, el; el = currChildren[i++];) {
                     var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM);
                     beforeDOM = dom.nextSibling;
                 }
+
+                //    } else if (n1 + n2 === 2 && neo.type === old.type) {
+
+                //         neo._hostNode = diff(neo, old, baseVnode, context, old._hostNode, old._instance)
             } else {
                 diffChildren(currChildren, prevChildren, baseVnode, context);
             }
@@ -1514,6 +1519,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (_i === 0) {
             returnDOM = _vnode._hostNode;
             if (branch != 'D' && firstDOM && _vnode._hostNode !== firstDOM) {
+                console.log('调整位置。。。。');
                 parentNode.replaceChild(_vnode._hostNode, firstDOM);
             }
         }

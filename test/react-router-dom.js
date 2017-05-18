@@ -486,7 +486,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var setState = function setState(nextState) {
 	    _extends(history, nextState);
-console.log('innerSetState', history)
 	    history.length = globalHistory.length;
 
 	    transitionManager.notifyListeners(history.location, history.action);
@@ -561,7 +560,6 @@ console.log('innerSetState', history)
 	    var location = (0, _LocationUtils.createLocation)(path, state, createKey(), history.location);
 
 	    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-				console.log("push --> transitionManager.confirmTransitionTo", ok)
 	      if (!ok) return;
 
 	      var href = createHref(location);
@@ -698,7 +696,6 @@ console.log('innerSetState', history)
 	    block: block,
 	    listen: listen
 	  };
-console.log('这里是history')
 	  return history;
 	};
 
@@ -1158,9 +1155,7 @@ console.log('这里是history')
 	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	      args[_key] = arguments[_key];
 	    }
-      console.log('notifyListeners',listeners)
 	    listeners.forEach(function (listener) {
-				console.log('notifyListeners args', args)
 	      return listener.apply(undefined, args);
 	    });
 	  };
@@ -1647,7 +1642,6 @@ console.log('这里是history')
 	    var location = (0, _LocationUtils.createLocation)(path, state, createKey(), history.location);
 
 	    transitionManager.confirmTransitionTo(location, action, getUserConfirmation, function (ok) {
-				console.log('transitionManager.confirmTransitionTo',ok)
 	      if (!ok) return;
 
 	      var prevIndex = history.index;
@@ -1865,7 +1859,6 @@ console.log('这里是history')
 	};
 
 	var createPath = exports.createPath = function createPath(location) {
-		console.log(location)
 	  var pathname = location.pathname,
 	      search = location.search,
 	      hash = location.hash;
@@ -2232,7 +2225,6 @@ console.log('这里是history')
 	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	      args[_key] = arguments[_key];
 	    }
-      console.log( 'Router 构造器')
 	    return _ret = (_temp = (_this = _possibleConstructorReturn(this,
 			 _React$Component.call.apply(_React$Component, [this].concat(args))), _this), 
 			 _this.state = {
@@ -2274,7 +2266,6 @@ console.log('这里是history')
 	    // location in componentWillMount. This happens e.g. when doing
 	    // server rendering using a <StaticRouter>.
 	    this.unlisten = history.listen(function () {
-				console.log('Router.prototype.componentWillMount',children,history.location.pathname, _this2.computeMatch(history.location.pathname))
 	      _this2.setState({
 	        match: _this2.computeMatch(history.location.pathname)
 	      });
@@ -2290,7 +2281,6 @@ console.log('这里是history')
 	  };
 	  Router.prototype.render = function render() {
 	    var children = this.props.children;
-      console.log('Router.prototype.render', _react2.default.Children.only(children) )
 		
 	    return children ? _react2.default.Children.only(children) : null;
 	  };
@@ -2666,7 +2656,6 @@ console.log('这里是history')
 	        strict = _ref.strict,
 	        exact = _ref.exact;
 	    var route = _ref2.route;
-      console.log('Route.prototype.computeMatch', computedMatch, path)
 
 	    if (computedMatch) return computedMatch; // <Switch> already computed the match for us
 
@@ -2691,7 +2680,6 @@ console.log('这里是history')
 	    (0, _warning2.default)(!(nextProps.location && !this.props.location), '<Route> elements should not change from uncontrolled to controlled (or vice versa). You initially used no "location" prop and then provided one on a subsequent render.');
 
 	    (0, _warning2.default)(!(!nextProps.location && this.props.location), '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.');
-     console.log( 'Route componentWillReceiveProps', nextProps, nextContext.router)
 	    this.setState({
 	      match: this.computeMatch(nextProps, nextContext.router)
 	    });
@@ -2707,7 +2695,6 @@ console.log('这里是history')
 	        history = _context$router.history,
 	        route = _context$router.route,
 	        staticContext = _context$router.staticContext;
-      console.log('Route.prototype.render',component, match)
 	    var location = this.props.location || route.location;
 	    var props = { match: match, location: location, history: history, staticContext: staticContext };
 
@@ -4059,7 +4046,6 @@ console.log('StaticRouter.prototype.render')
 	  };
 
 	  var listen = function listen(listener) {
-			console.log('listener', listener+'')
 	    var unlisten = transitionManager.appendListener(listener);
 	    checkDOMListeners(1);
 
@@ -4139,7 +4125,6 @@ console.log('StaticRouter.prototype.render')
 	    return _ret = (_temp = (_this = _possibleConstructorReturn(this, 
 			_React$Component.call.apply(_React$Component, [this].concat(args))), _this), 
 			_this.handleClick = function (event) {
-				console.log(event)
 	      if (_this.props.onClick) _this.props.onClick(event);
 
 	      if (!event.defaultPrevented && // onClick prevented default
@@ -4253,7 +4238,6 @@ console.log('StaticRouter.prototype.render')
 	      style = _ref.style,
 	      getIsActive = _ref.isActive,
 	      rest = _objectWithoutProperties(_ref, ['to', 'exact', 'strict', 'location', 'activeClassName', 'className', 'activeStyle', 'style', 'isActive']);
-console.log('----------')
 	  return _react2.default.createElement(_reactRouter.Route, {
 	    path: (typeof to === 'undefined' ? 'undefined' : _typeof(to)) === 'object' ? to.pathname : to,
 	    exact: exact,
