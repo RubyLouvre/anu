@@ -34,19 +34,21 @@ window.onload = function(){
 
                 // 设置 initial state
                 this.state = {
-                    text: 'xxx'
+                    value: 'xxxx'
                 };
             }
 
-            shouldComponentUpdate() {
-                return false
-            }
+           click(e){
+               this.setState({
+                   value: e.target.value
+               })
+           }
 
             render() {
                 return (
                     <div>
                         Type something:
-                        <input ref="input" value={new Date - 0} />
+                        <input ref="input" value={this.state.value} onInput={this.click.bind(this)}/>
                     </div>
                 );
             }

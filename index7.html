@@ -36,7 +36,7 @@ window.onload = function(){
                 console.log('Input componentWillUpdate')
             }
             render() {
-                return <input ref='a' value={this.props.value} onChange={ this.props.xxx }  />
+                return <input ref='a' value={this.props.value} onInput={ this.props.xxx }  />
             }
         }
         class App extends React.Component {
@@ -51,7 +51,7 @@ window.onload = function(){
             }
             onChange(a) {
                 this.setState({
-                    value: a.value
+                    value: a.target.value
                 })
             }
             render() {

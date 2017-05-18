@@ -1398,6 +1398,16 @@
 	    }
 	}
 
+	function removeComponents(nodes) {
+	    for (var i = 0, el; el = nodes[i++];) {
+	        var dom = el._hostNode;
+	        if (dom.parentNode) {
+	            dom.parentNode.removeChild(dom);
+	        }
+	        removeComponent(el);
+	    }
+	}
+
 	/**
 	 * 参数不要出现DOM,以便在后端也能运行
 	 *
@@ -1414,8 +1424,6 @@
 
 	    var baseVnode = vnode;
 	    var hostNode = prevVnode._hostNode;
-
-	    if (hostNode && vnode === prevVnode) return hostNode;
 
 	    var Type = vnode.type;
 	    var isComponent = typeof Type === 'function';
@@ -1465,6 +1473,7 @@
 	            }
 	        }
 	    } else if (!hostNode || prevVnode.type !== Type) {
+
 	        //如果元素类型不一致
 	        var nextNode = createDOMElement(vnode);
 	        parentNode.insertBefore(nextNode, hostNode || null);
@@ -1490,7 +1499,22 @@
 	    var props = vnode.props;
 	    if (props) {
 	        if (!props.angerouslySetInnerHTML) {
-	            diffChildren(props.children, prevChildren, vnode, context);
+	            var currChildren = props.children;
+	            var n1 = currChildren.length;
+	            var n2 = prevChildren.length;
+	            if (n1 === 0 && n2) {
+	                removeComponents(prevChildren);
+	            } else if (n2 === 0 && n1) {
+
+	                var beforeDOM = null;
+	                for (var i = 0, el; el = currChildren[i++];) {
+	                    var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM);
+	                    beforeDOM = dom.nextSibling;
+	                }
+	            } else {
+
+	                diffChildren(currChildren, prevChildren, baseVnode, context);
+	            }
 	        }
 	        diffProps(props, prevProps, vnode, prevVnode);
 	    }
@@ -1531,6 +1555,10 @@
 	    var mapping = {};
 	    var str1 = '';
 	    var nodes = [];
+	    var parentNode = hostParent._hostNode,
+
+	    //第三，逐一比较
+	    branch;
 
 	    for (var _i = 0, _n = oldChildren.length; _i < _n; _i++) {
 	        var vnode = oldChildren[_i];
@@ -1546,6 +1574,7 @@
 	            mapping[uuid] = [vnode];
 	        }
 	    }
+	    //console.log('旧的',str1)
 
 	    //第二步，遍历新children, 从hash中取出旧节点 console.log('旧的', str1)
 	    var removedChildren = oldChildren.concat();
@@ -1571,23 +1600,16 @@
 	            }
 	        }
 	    }
-	    // console.log('新的', str1, nodes)
+	    // console.log('新的', str1)
 
-	    var parentNode = hostParent._hostNode,
-
-	    //第三，逐一比较
-	    branch;
-
+	    var beforeDOM = nodes[0];
+	    var firstDOM = beforeDOM;
 	    for (var i = 0, n = newChildren.length; i < n; i++) {
 	        var _vnode2 = newChildren[i],
 	            prevVnode = null,
 	            prevNode = nodes[i];
 	        if (_vnode2.prevVnode) {
 	            prevVnode = _vnode2.prevVnode;
-	        } else {
-	            if (removedChildren.length) {
-	                prevVnode = removedChildren.shift();
-	            }
 	        }
 
 	        _vnode2._hostParent = hostParent;
@@ -1595,9 +1617,10 @@
 	        if (prevVnode) {
 	            //假设两者都存在
 	            var isTextOrComment = 'text' in _vnode2;
-	            var beforeDOM = prevVnode._hostNode;
+	            //   let beforeDOM = prevVnode._hostNode
 	            var prevInstance = prevVnode._instance;
 	            delete _vnode2.prevVnode;
+
 	            if (prevVnode._hasInstance) {
 	                //都是同种组件
 
@@ -1609,55 +1632,37 @@
 	                //都是元素，文本或注释
 
 	                if (isTextOrComment) {
-	                    _vnode2._hostNode = beforeDOM;
+	                    _vnode2._hostNode = prevVnode._hostNode;
 	                    if (_vnode2.text !== prevVnode.text) {
 	                        _vnode2._hostNode.nodeValue = _vnode2.text;
 	                    }
 	                    branch = 'B';
+	                    // console.log(vnode._hostNode  === beforeDOM, '!!!')
+	                    if (_vnode2._hostNode !== beforeDOM) parentNode.insertBefore(_vnode2._hostNode, beforeDOM);
 	                } else {
 	                    // console.log(vnode.type, '看一下是否input')
 	                    _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
 	                    branch = 'C';
 	                }
-	            } else if (isTextOrComment) {
-	                //由其他类型变成文本或注释
-
-	                _vnode2._hostNode = createDOMElement(_vnode2);
-	                branch = 'D';
-
-	                removeComponent(prevVnode); //移除元素节点或组件}
-	            } else {
-	                //由其他类型变成元素
-
-	                _vnode2._hostNode = diff(_vnode2, prevVnode, hostParent, context, beforeDOM, prevInstance);
-
-	                branch = 'E';
-	            }
-	            //当这个孩子是上级祖先传下来的，那么它是相等的
-	            if (_vnode2 !== prevVnode) {
-	                delete prevVnode._hostNode; //clear reference
 	            }
 	        } else {
 	            //添加新节点
-	            if (!_vnode2._hostNode) {
-	                /* istanbul ignore next */
-	                _vnode2._hostNode = toDOM(_vnode2, context, hostParent, prevNode, prevInstance);
-	                branch = 'F';
-	            }
-	        }
-	    }
-	    //  while (nativeChildren[i]) {       parentNode.removeChild(nativeChildren[i])
-	    // } 第4步，移除无用节点
-	    if (removedChildren.length) {
-	        for (var _i3 = 0, _n3 = removedChildren.length; _i3 < _n3; _i3++) {
-	            var _vnode3 = removedChildren[_i3];
-	            var dom = _vnode3._hostNode;
-	            if (dom.parentNode) {
-	                dom.parentNode.removeChild(dom);
-	            }
 
-	            removeComponent(_vnode3);
+	            _vnode2._hostNode = toDOM(_vnode2, context, hostParent, beforeDOM, prevInstance);
+	            branch = 'D';
 	        }
+	        if (i === 0) {
+
+	            if (branch != 'D' && firstDOM && _vnode2._hostNode !== firstDOM) {
+	                parentNode.replaceChild(_vnode2._hostNode, firstDOM);
+	            }
+	        }
+
+	        beforeDOM = _vnode2._hostNode.nextSibling;
+	    }
+	    // 第4步，移除无用节点
+	    if (removedChildren.length) {
+	        removeComponents(removedChildren);
 	    }
 	}
 
