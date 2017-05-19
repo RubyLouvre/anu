@@ -57,30 +57,14 @@ export function getInstances(instance) {
     }
     return instances
 }
-/**
- * 寻找适合的实例并返回
- *
- * @param {any} instance
- * @param {any} Type
- * @returns
- */
-/*
-export function matchInstance(instance, Type) {
 
-    if (instance.statelessRender === Type)
-        return instance
-    if (instance instanceof Type) {
-        return instance
-    }
-}
-*/
 /**
  *
  *
  * @param {any} type
  * @returns
  */
-export function isComponent(type) {
+export function isFn(type) {
     return typeof type === 'function'
 }
 
@@ -93,7 +77,7 @@ export function isComponent(type) {
  */
 export function isStateless(type) {
     var fn = type.prototype
-    return isComponent(type) && (!fn || !fn.render)
+    return isFn(type) && (!fn || !fn.render)
 }
 
 var rword = /[^, ]+/g

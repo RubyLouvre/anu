@@ -5,7 +5,8 @@ import {
 import {
     extend,
     midway,
-    noop
+    noop,
+    isFn
 } from './util'
 
 /**
@@ -56,7 +57,7 @@ Component.prototype = {
         var nextState = extend({}, this.state);
         for (var i = 0; i < queue.length; i++) {
             var partial = queue[i]
-            extend(nextState, typeof partial === 'function' ?
+            extend(nextState, isFn( partial ) ?
                 partial.call(this, nextState, props, context) :
                 partial)
         }
@@ -78,7 +79,7 @@ Component.prototype = {
  */
 
 function setStateProxy(instance, cb) {
-    if (typeof cb === 'function')
+    if (isFn( cb ))
         transaction.enqueueCallback({ //确保回调先进入
             component: instance,
             cb: cb

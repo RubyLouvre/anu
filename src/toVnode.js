@@ -1,7 +1,7 @@
 import {
     extend,
     getContext,
-    isComponent,
+    isFn,
     isStateless,
     noop
 } from './util'
@@ -36,7 +36,7 @@ export function toVnode(vnode, context, parentInstance) {
     var Type = vnode.type,
         instance, rendered
 
-    if (isComponent(Type)) {
+    if (isFn(Type)) {
         var props = vnode.props
         if (isStateless(Type)) {
             //处理无状态组件

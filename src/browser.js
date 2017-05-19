@@ -28,19 +28,18 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
     return new DOMElement(type)
 }
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean
-fakeDoc.documentElement = new DOMElement
-
+fakeDoc.documentElement = new DOMElement('html')
+fakeDoc.nodeName = '#document'
 export var win = typeof window === 'object' ?
     window :
     typeof global === 'object' ?
-    global :
-    {
-        document: faceDoc
+    global : {
+        document: fakeDoc
     };
 
 export var inBrowser = !!win.location && win.navigator
 
-export var document = win.document
+export var document = win.document || fakeDoc
 
 var versions = {
     objectobject: 7, //IE7-8
@@ -49,7 +48,7 @@ var versions = {
     undefinedobject: NaN
 };
 /* istanbul ignore next  */
-export var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest];
+export var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest]
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8
 

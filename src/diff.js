@@ -4,6 +4,7 @@ import {
     getComponentName,
     recyclableNodes,
     midway,
+    isFn,
     extend
 } from './util'
 import {applyComponentHook} from './lifecycle'
@@ -146,7 +147,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
         return updateComponent(instance, context)
     }
 
-    if (typeof vnode.type === 'function') {
+    if (isFn( vnode.type )) {
         var parentInstance = prevInstance && prevInstance.parentInstance
 
         return toDOM(vnode, context, hostParent, prevNode, parentInstance)

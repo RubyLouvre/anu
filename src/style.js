@@ -1,5 +1,5 @@
 import { oneObject, camelize } from './util'
-var rnumber = /^-?\d+(\.\d+)?$/
+export var rnumber = /^-?\d+(\.\d+)?$/
     /**
      * 为元素样子设置样式
      * 
@@ -35,7 +35,7 @@ export function patchStyle(dom, oldStyle, newStyle) {
 
 
 
-var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
+export var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
 var cssMap = oneObject('float', 'cssFloat')
 

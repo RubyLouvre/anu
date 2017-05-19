@@ -1,7 +1,7 @@
 import {
     oneObject,
     extend,
-    isComponent,
+    isFn,
     isStateless,
     toLowerCase,
     inherit,
@@ -41,9 +41,9 @@ describe('util', function() {
     })
 
 
-    it('isComponent', function() {
-        expect(isComponent('sss')).toBe(false)
-        expect(isComponent(function a() {})).toBe(true)
+    it('isFn', function() {
+        expect(isFn('sss')).toBe(false)
+        expect(isFn(function a() {})).toBe(true)
 
     })
 
