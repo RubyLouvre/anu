@@ -1,26 +1,22 @@
 # anu
 
-读作 安努 ，苏美尔的主神，开天辟地。一个无痛使用React与JSX的迷你React框架
+读作 安努 ，苏美尔的主神，开天辟地。一个无痛替换线上React的迷你React框架
 
-随着浏览器的升级，es6,es7的新语法会被完全支持，但JSX是一种自造的语法糖，因此我们不得不依赖于babel 进行编译。这对小公司来说，
-可能没有人员能玩转这东西。加之React也太大了，因此我推出了anu。它支持React 95％的功能。剩余功能以后以插件形式慢慢补充上
+特点：
+
+1. 支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
+2. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
+3. 体积足够少
+4. 生命周期函数的参数与官方保持一致
+5. 直接与react-redux, react-router-dom, react-router-redux混用
 
 
-Read as anu, which is the god of the Sumerian.
-
-A painless mini React framework to use the React with JSX.
-
-As browsers keep upgrading, the new grammer of es6, es7 will be fully supported. But the JSX is a grammer sugar that we have to rely on the Babel to compile it. Small companies may not have staffs that can win this thing. Besides the React framework is too big, that's why I introduced anu. It supports 95% functionalily of React and other remaining functionalities will be added as plugin.
-
-More usage and examples please see the wiki
-
-https://github.com/RubyLouvre/anu/wiki
 
 ### 目前没有支持的方法与对象
 
 1. PropTypes
 2. childContextTypes(不需要定义它，就能使用context)
-3. Children的方法集合
+3. Children的方法集合（不完整）
 4. mixin机制
 5. createClass
 6. cloneElement
@@ -34,7 +30,7 @@ https://github.com/RubyLouvre/anu/wiki
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
 
-
+详细用法与示例见 ** [wiki](https://github.com/RubyLouvre/anu/wiki) **
 
 ```html
 <!DOCTYPE html>
@@ -263,7 +259,6 @@ ReactDOM.render(
 
 ```
 
-支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
 
 
 
@@ -288,4 +283,4 @@ cli
     ./node_modules/.bin/karma-event-driver-ext
 ```
 
-http://stackoverflow.com/questions/31374085/installing-adb-on-mac-os-x
+
