@@ -1,18 +1,9 @@
-import {
-    isFn,
-    extend,
-    isStateless,
-    getContext
-} from './util'
-import {
-    rnumber,
-    cssNumber
-} from './style'
-import {
-    isEventName
-} from './event'
+import {isFn, extend, isStateless, getContext} from './util'
+import {rnumber, cssNumber} from './style'
 var React = global.React
-
+function isEventName(name) {
+    return /^on[A-Z]/.test(name)
+}
 var Component = React.Component
 
 function renderVNode(vnode, context) {
@@ -25,11 +16,12 @@ function renderVNode(vnode, context) {
             return '<!--' + vnode.text + '-->'
         default:
             if (typeof type === 'string') {
-                var arr = [], html
+                var arr = [],
+                    html
                 for (var i in props) {
                     for (var i in props) {
 
-                        if (i === 'children' || i === 'ref' || i === 'key' || isEventName(i))
+                        if (i === 'children' || i === 'ref' || i === 'key' || isEventName(i)) 
                             continue
                         var v = props[i]
                         if (name === 'dangerouslySetInnerHTML') {
@@ -48,7 +40,9 @@ function renderVNode(vnode, context) {
                             arr.push(i + '=' + encodeAttributes(v + ''))
                         }
                     }
-                    arr = arr.length ? ' ' + arr.join(' ') : ''
+                    arr = arr.length
+                        ? ' ' + arr.join(' ')
+                        : ''
 
                 }
                 var str = '<' + type + arr
@@ -59,13 +53,16 @@ function renderVNode(vnode, context) {
                 if (html) {
                     str += html
                 } else {
-                    str +=  props.children.map(
-                        el => (el ? renderVNode(el, context) : '')
-                    ).join('')
+                    str += props
+                        .children
+                        .map(el => (el
+                            ? renderVNode(el, context)
+                            : ''))
+                        .join('')
                 }
                 return str + '</' + type + '>\n'
 
-            } else if (typeof (type) === 'function') {
+            } else if (typeof(type) === 'function') {
                 vnode = toVnode(vnode, context)
                 return renderVNode(vnode, vnode.context || context)
             } else {
@@ -83,8 +80,6 @@ function hashToClassName() {
     }
     return arr.join(' ')
 }
-
-
 
 const voidTags = [
     'area',
@@ -123,9 +118,6 @@ function styleObjToCss(obj) {
 
 }
 
-
-
-
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
 function setStateWarn() {}
 var transaction = {
@@ -148,13 +140,13 @@ var transaction = {
     }
 }
 
-
 function toVnode(vnode, context, parentInstance) {
 
     var Type = vnode.type,
-        instance, rendered
+        instance,
+        rendered
 
-    if (typeof (Type) === 'function') {
+    if (typeof(Type) === 'function') {
         var props = vnode.props
         if (isStateless(Type)) {
             //处理无状态组件
@@ -191,8 +183,8 @@ function toVnode(vnode, context, parentInstance) {
             instance.vnode = vnode
         }
 
-        //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
-        //  patchRef(vnode._owner, vnode.props.ref, instance)
+        // <App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
+        // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
             context = rendered.context = getContext(instance, context) //将context往下传
@@ -255,7 +247,9 @@ function escapeHtml(string) {
         html += escape;
     }
 
-    return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+    return lastIndex !== index
+        ? html + str.substring(lastIndex, index)
+        : html;
 }
 
 function encodeEntities(text) {
@@ -265,15 +259,52 @@ function encodeEntities(text) {
     return escapeHtml(text);
 }
 
-
 function encodeAttributes(value) {
     return '"' + encodeEntities(value) + '"';
 }
 
-
 function renderToString(vnode, context) {
+    var TAG_END = /\/?>/;
+    var COMMENT_START = /^<\!\-\-/;
+    var markup = renderVNode(vnode, context || {})
+    var checksum = adler32(markup);
+    // Add checksum (handle both parent tags, comments and self-closing tags)
+    if (COMMENT_START.test(markup)) {
+        return markup;
+    } else {
+        return markup.replace(TAG_END, 'data-react-root data-react-checksum="' + checksum + '"$&');
+    }
 
-    return renderVNode(vnode, context || {})
+ //   return markup
+}
+
+var MOD = 65521;
+
+// adler32 is not cryptographically strong, and is only used to sanity check
+// that markup generated on the server matches the markup generated on the
+// client. This implementation (a modified version of the SheetJS version) has
+// been optimized for our use case, at the expense of conforming to the adler32
+// specification for non-ascii inputs.
+function adler32(data) {
+    var a = 1;
+    var b = 0;
+    var i = 0;
+    var l = data.length;
+    var m = l & ~ 0x3;
+    while (i < m) {
+        var n = Math.min(i + 4096, m);
+        for (; i < n; i += 4) {
+            b += (a += data.charCodeAt(i)) + (a += data.charCodeAt(i + 1)) + (a += data.charCodeAt(i + 2)) + (a += data.charCodeAt(i + 3));
+        }
+        a %= MOD;
+        b %= MOD;
+    }
+    for (; i < l; i++) {
+        b += a += data.charCodeAt(i);
+    }
+    a %= MOD;
+    b %= MOD;
+    return a | b << 16;
 }
 export default {
     renderToString

@@ -30,14 +30,12 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean
 fakeDoc.documentElement = new DOMElement('html')
 fakeDoc.nodeName = '#document'
-export var win = typeof window === 'object' ?
-    window :
-    typeof global === 'object' ?
-    global : {
+export var inBrowser =  typeof window === 'object' && window.alert 
+
+export var win = inBrowser ?
+    window : {
         document: fakeDoc
     };
-
-export var inBrowser = !!win.location && win.navigator
 
 export var document = win.document || fakeDoc
 

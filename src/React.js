@@ -44,7 +44,8 @@ function render(vnode, container, cb) {
     var hostParent = {
         _hostNode: container
     }
- 
+    //如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
+    //并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
     var rootVnode = diff(vnode, container.oldVnode || {
       
     }, hostParent, context)
