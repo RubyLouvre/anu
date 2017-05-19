@@ -92,6 +92,7 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
         let val = props[name]
         switch (name) {
             case 'children':
+            case 'key':
                 break
             case 'style':
                 patchStyle(dom, prevProps.style || {}, val)

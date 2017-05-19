@@ -31,7 +31,6 @@ window.onload = function(){
       class App extends React.Component {
             constructor(props) {
                 super(props);
-
                 // 设置 initial state
                 this.state = {
                     value: 'xxxx'
@@ -46,7 +45,7 @@ window.onload = function(){
 
             render() {
                 return (
-                    <div>
+                    <div className='xxxx'>
                         Type something:{this.state.value}
                         <input ref="input" value={this.state.value} onInput={this.click.bind(this)}/>
                     </div>

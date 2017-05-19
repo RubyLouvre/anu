@@ -384,7 +384,6 @@ export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
             instances = getInstances(instance)
         }
         if (props) {
-
             diffProps(props, {}, vnode, {})
             setControlledComponent(vnode)
         }

@@ -21,7 +21,6 @@ import {
     diff
 } from './diff'
 
-
 var React = {
     Children, //为了react-redux
     render,
@@ -45,11 +44,13 @@ function render(vnode, container, cb) {
     var hostParent = {
         _hostNode: container
     }
+ 
     var rootVnode = diff(vnode, container.oldVnode || {
-        hostParent:hostParent
+      
     }, hostParent, context)
-
-    container.oldVnode = vnode
+    if(rootVnode.setAttribute){
+       rootVnode.setAttribute('data-reactroot','')
+    }
     var instance = vnode._instance
     if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
         while (instance.parentInstance) {
