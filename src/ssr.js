@@ -264,18 +264,16 @@ function encodeAttributes(value) {
 }
 
 function renderToString(vnode, context) {
-    var TAG_END = /\/?>/;
-    var COMMENT_START = /^<\!\-\-/;
+    var TAG_END = /\/?>/
+    var COMMENT_START = /^<\!\-\-/
     var markup = renderVNode(vnode, context || {})
-    var checksum = adler32(markup);
+    var checksum = adler32(markup)
     // Add checksum (handle both parent tags, comments and self-closing tags)
     if (COMMENT_START.test(markup)) {
-        return markup;
+        return markup
     } else {
-        return markup.replace(TAG_END, 'data-react-root data-react-checksum="' + checksum + '"$&');
+        return markup.replace(TAG_END, ' data-reactroot="" data-react-checksum="' + checksum + '"$&')
     }
-
- //   return markup
 }
 
 var MOD = 65521;

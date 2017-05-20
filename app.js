@@ -9,6 +9,7 @@ app.set('views', __dirname + '/test/views');
 //使用ejs模板引擎解析html视图文件
 app.engine('.html',ejs.__express);  
 
+app.use(express.static('dist'));
 
 //................
 
@@ -22,9 +23,10 @@ var ReactDOMServer = require('./dist/ReactDOMServer')
 
 var Test = require('./test/components/Test.js') //引入React组件
 //利用模板文件home.ejs渲染为html
-
+var path = require('path')
 app.get("/", function(req, res) {
     res.render('home.html', {//这里指定文件名
+        url: '/React.js',
         component: ReactDOMServer.renderToString( React.createElement( Test,{name:"司徒正美"}) )
     })
 })

@@ -5,7 +5,8 @@ import {
     recyclableNodes,
     midway,
     isFn,
-    extend
+    extend,
+    getNodes
 } from './util'
 import {applyComponentHook} from './lifecycle'
 
@@ -118,7 +119,7 @@ function removeComponents(nodes) {
 export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) { //updateComponent
 
     var baseVnode = vnode
-    var hostNode = prevVnode._hostNode
+    var hostNode = prevVnode._hostNode || vnode._prevCached
 
     prevInstance = prevInstance || prevVnode._instance
 
@@ -147,9 +148,9 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
         return updateComponent(instance, context)
     }
 
-    if (isFn( vnode.type )) {
+    if (isFn(vnode.type)) {
         var parentInstance = prevInstance && prevInstance.parentInstance
-
+console.log('3333')
         return toDOM(vnode, context, hostParent, prevNode, parentInstance)
 
     }
@@ -157,6 +158,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
     var prevChildren = prevProps.children || []
     if (!hostNode) {
         //如果元素类型不一致
+
         var nextNode = createDOMElement(vnode)
         parentNode.insertBefore(nextNode, hostNode || null)
         prevChildren = []
@@ -165,6 +167,7 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
             parentNode.removeChild(prevNode)
         }
         removeComponent(prevVnode)
+
         hostNode = nextNode
     }
 
@@ -180,28 +183,32 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
     }
     var props = vnode.props
     if (props) {
-        if (!props.angerouslySetInnerHTML) {
-            var currChildren = props.children
-            var n1 = currChildren.length
-            var n2 = prevChildren.length
-            var old = prevChildren[0]
-            var neo = currChildren[0]
-            if (!neo && old) {
-                removeComponents(prevChildren)
+        if (vnode._prevCached) {
+            console.log('================')
+            alignChildren(currChildren, getNodes(hostNode), baseVnode, context)
+        } else {
+            if (!props.angerouslySetInnerHTML) {
+                var currChildren = props.children
+                var n1 = currChildren.length
+                var n2 = prevChildren.length
+                var old = prevChildren[0]
+                var neo = currChildren[0]
+                if (!neo && old) {
+                    removeComponents(prevChildren)
 
-            } else if (neo && !old) {
-                var beforeDOM = null
-                for (var i = 0, el; el = currChildren[i++];) {
-                    var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM)
-                    beforeDOM = dom.nextSibling
+                } else if (neo && !old) {
+                    var beforeDOM = null
+                    for (var i = 0, el; el = currChildren[i++];) {
+                        var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM)
+                        beforeDOM = dom.nextSibling
+                    }
+
+                    //    } else if (n1 + n2 === 2 && neo.type === old.type) {    neo._hostNode =
+                    // diff(neo, old, baseVnode, context, old._hostNode, old._instance)
+
+                } else {
+                    diffChildren(currChildren, prevChildren, baseVnode, context)
                 }
-
-        //    } else if (n1 + n2 === 2 && neo.type === old.type) {
-
-       //         neo._hostNode = diff(neo, old, baseVnode, context, old._hostNode, old._instance)
-
-            } else {
-                diffChildren(currChildren, prevChildren, baseVnode, context)
             }
         }
         diffProps(props, prevProps, vnode, prevVnode)
@@ -212,6 +219,28 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
         wrapperState.postUpdate(vnode)
     }
     return hostNode
+}
+
+function alignChildren(children, nodes, hostParent, context) {
+    var insertPoint = nodes[0] || null
+    var parentNode = hostParent._hostNode
+    for (let i = 0, n = children.length; i < n; i++) {
+        var vnode = children[i]
+        vnode = toVnode(vnode)
+        var dom = nodes[i]
+        if (!dom || vnode.type !== dom.nodeName.toLowerCase()) {
+
+            var newDOM = createDOMElement(vnode)
+            parentNode.insertBefore(newDOM, insertPoint)
+
+            dom = newDOM
+        }
+        vnode._prevCached = dom
+
+        toDOM(vnode, context, hostParent, insertPoint)
+        insertPoint = dom.nextSibling
+    }
+
 }
 
 /**
@@ -233,7 +262,7 @@ function computeUUID(type, vnode) {
 
 /**
  *
- *
+ *v
  * @param {any} newChildren
  * @param {any} oldChildren
  * @param {any} hostParent
@@ -310,7 +339,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         if (i === 0) {
             returnDOM = vnode._hostNode
             if (branch != 'D' && firstDOM && vnode._hostNode !== firstDOM) {
-               // console.log('调整位置。。。。')
+                // console.log('调整位置。。。。')
                 parentNode.replaceChild(vnode._hostNode, firstDOM)
             }
         }
@@ -342,13 +371,15 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
  */
 export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
     //如果一个虚拟DOM的type为字符串 或 它拥有instance，且这个instance不再存在parentInstance, 那么它就可以拥有_dom属性
+    var hasDOM = vnode._prevCached
     vnode = toVnode(vnode, context, parentIntance)
     if (vnode.context) {
         context = vnode.context
         if (vnode.refs) 
             delete vnode.context
     }
-    var hostNode = createDOMElement(vnode)
+   
+    var hostNode = hasDOM || createDOMElement(vnode)
     var props = vnode.props
     var parentNode = hostParent._hostNode
     var instance = vnode._instance || vnode._owner
@@ -369,13 +400,19 @@ export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
 
     //文本是没有instance, 只有empty与元素节点有instance
 
-    if (parentNode) {
+    if (parentNode && !hasDOM) {
+      
         parentNode.insertBefore(hostNode, prevNode || null)
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {
         // 先diff Children 再 diff Props 最后是 diff ref
-        diffChildren(props.children, [], vnode, context) //添加第4参数
+        if (hasDOM) {
+            alignChildren(props.children, getNodes(hasDOM), vnode, context)
+        } else {
+            diffChildren(props.children, [], vnode, context) //添加第4参数
+        }
+
     }
     //尝试插入DOM树
     if (parentNode) {

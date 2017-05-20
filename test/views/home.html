@@ -4,6 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>react 后端渲染</title>
+    <script src='React.js'></script>
+      <script src='babel.js'></script>
+       <script type='text/babel'>
+
+ class Test extends React.Component{
+      click(){
+          console.log('=========')
+      }
+      render(){
+          return <h1>{this.props.name}
+          <p onClick={this.click.bind(this)}>事件</p>
+          </h1>;
+      }
+  }
+  window.onload = function(){
+      ReactDOM.render(<Test name='司徒正美' />, document.getElementById('container'))
+  }
+      </script>
 </head>
 
 <body>

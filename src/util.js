@@ -37,7 +37,13 @@ export function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype)
     fn.constructor = SubClass
 }
-
+export function getNodes(dom) {
+    var ret = []
+    for (var i = 0, el; el = dom.childNodes[i++];) {
+        ret.push(el)
+    }
+    return ret
+}
 var lowerCache = {}
 
 export function toLowerCase(s) {
