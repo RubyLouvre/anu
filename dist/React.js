@@ -42,9 +42,17 @@ function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype);
     fn.constructor = SubClass;
 }
+/**
+ *  收集一个元素的所有孩子
+ * 
+ * @export
+ * @param {any} dom 
+ * @returns 
+ */
 function getNodes(dom) {
-    var ret = [];
-    for (var i = 0, el; el = dom.childNodes[i++];) {
+    var ret = [],
+        c = dom.childNodes || [];
+    for (var i = 0, el; el = c[i++];) {
         ret.push(el);
     }
     return ret;
@@ -694,7 +702,7 @@ function toVnode(vnode, context, parentInstance) {
             rendered = transaction.renderWithoutSetState(instance);
         }
         instance._rendered = rendered;
-        if (vnode.key) rendered.key = vnode.key;
+
         vnode._instance = instance;
 
         if (parentInstance) {
@@ -1570,7 +1578,6 @@ function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
         if (vnode.refs) delete vnode.context;
     }
 
-    console.log(vnode, hasDOM);
     var hostNode = hasDOM || createDOMElement(vnode);
     var props = vnode.props;
     var parentNode = hostParent._hostNode;

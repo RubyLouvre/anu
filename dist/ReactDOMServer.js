@@ -33,6 +33,13 @@ function extend(obj, props) {
  * @param {any} SupClass
  */
 
+/**
+ *  收集一个元素的所有孩子
+ * 
+ * @export
+ * @param {any} dom 
+ * @returns 
+ */
 
 
 
@@ -126,10 +133,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 };
 
 var React = global.React;
-function isEventName(name) {
-    return (/^on[A-Z]/.test(name)
-    );
-}
+
 var Component = React.Component;
 
 function renderVNode(vnode, context) {
@@ -144,39 +148,38 @@ function renderVNode(vnode, context) {
         case '#comment':
             return '<!--' + vnode.text + '-->';
         default:
+            var innerHTML = props && props.dangerouslySetInnerHTML;
+            innerHTML = innerHTML && innerHTML.__html;
             if (typeof type === 'string') {
-                var arr = [],
-                    html;
+                var attrs = [];
                 for (var i in props) {
-                    for (var i in props) {
-
-                        if (i === 'children' || i === 'ref' || i === 'key' || isEventName(i)) continue;
-                        var v = props[i];
-                        if (name === 'dangerouslySetInnerHTML') {
-                            html = v && v.__html;
-                            continue;
-                        }
-                        if (name === 'className') {
-                            name = 'class';
-                        }
-                        if (name === 'class' && v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
-                            v = hashToClassName(v);
-                        } else if (name === 'style' && v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
-                            v = styleObjToCss(v);
-                        }
-                        if (skipFalseAndFunction(val)) {
-                            arr.push(i + '=' + encodeAttributes(v + ''));
-                        }
+                    var v = props[i];
+                    if (skipAttributes[i] || /^on[A-Z]/.test(i) && (skipAttributes[i] = true)) {
+                        continue;
                     }
-                    arr = arr.length ? ' ' + arr.join(' ') : '';
+
+                    if (name === 'className' || name === 'class') {
+                        name = 'class';
+                        if (v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
+                            v = hashToClassName(v);
+                        }
+                    } else if (name.match(/^xlink\:?(.+)/)) {
+                        name = name.toLowerCase().replace(/^xlink\:?(.+)/, 'xlink:$1');
+                    } else if (name === 'style' && v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
+                        v = styleObjToCss(v);
+                    }
+                    if (skipFalseAndFunction(val)) {
+                        attrs.push(i + '=' + encodeAttributes(v + ''));
+                    }
                 }
-                var str = '<' + type + arr;
+                attrs = attrs.length ? ' ' + attrs.join(' ') : '';
+                var str = '<' + type + attrs;
                 if (voidTags[type]) {
                     return str + '/>\n';
                 }
                 str += '>';
-                if (html) {
-                    str += html;
+                if (innerHTML) {
+                    str += innerHTML;
                 } else {
                     str += props.children.map(function (el) {
                         return el ? renderVNode(el, context) : '';
@@ -217,10 +220,20 @@ function styleObjToCss(obj) {
             if (rnumber.test(val) && !cssNumber[name]) {
                 unit = 'px';
             }
-            arr.push(i.toLowerCase() + ': ' + val + unit);
+            arr.push(cssName$$1(name) + ': ' + val + unit);
         }
     }
     return arr.join('; ');
+}
+var cssCached = {
+    styleFloat: 'float',
+    cssFloat: 'float'
+};
+
+function cssName$$1(name) {
+    if (cssCached[name]) return cssCached[name];
+
+    return cssCached[name] = name.replace(/([A-Z])/g, '-$1').toLowerCase();
 }
 
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝

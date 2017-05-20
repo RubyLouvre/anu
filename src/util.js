@@ -37,9 +37,16 @@ export function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype)
     fn.constructor = SubClass
 }
+/**
+ *  收集一个元素的所有孩子
+ * 
+ * @export
+ * @param {any} dom 
+ * @returns 
+ */
 export function getNodes(dom) {
-    var ret = []
-    for (var i = 0, el; el = dom.childNodes[i++];) {
+    var ret = [], c = dom.childNodes || []
+    for (var i = 0, el; el = c[i++];) {
         ret.push(el)
     }
     return ret
