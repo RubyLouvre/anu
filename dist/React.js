@@ -131,6 +131,8 @@ var midway = {
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
 
+
+
 /**
  * 获取虚拟DOM对应的顶层组件实例的类型
  *
@@ -960,14 +962,14 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
  *
  * 修改dom的属性与事件
  * @export
- * @param {any} props
- * @param {any} prevProps
+ * @param {any} nextProps
+ * @param {any} lastProps
  * @param {any} vnode
  * @param {any} prevVnode
  */
-function diffProps(props, prevProps, vnode, prevVnode) {
+function diffProps(nextProps, lastProps, vnode, prevVnode) {
     /* istanbul ignore if */
-    if (props === prevProps) {
+    if (nextProps === lastProps) {
         return;
     }
     var dom = vnode._hostNode;
@@ -979,31 +981,31 @@ function diffProps(props, prevProps, vnode, prevVnode) {
     }
     var isHTML = !vnode.ns;
     var diffRef = false;
-    for (var name in props) {
-        var val = props[name];
+    for (var name in nextProps) {
+        var val = nextProps[name];
         switch (name) {
             case 'children':
             case 'key':
                 break;
             case 'style':
-                patchStyle(dom, prevProps.style || {}, val);
+                patchStyle(dom, lastProps.style || {}, val);
                 break;
             case 'ref':
-                if (prevProps[name] !== val) {
+                if (lastProps[name] !== val) {
                     diffRef = {
                         val: val
                     };
                 }
                 break;
             case 'dangerouslySetInnerHTML':
-                var oldhtml = prevProps[name] && prevProps[name].__html;
+                var oldhtml = lastProps[name] && lastProps[name].__html;
                 if (val && val.__html !== oldhtml) {
                     dom.innerHTML = val.__html;
                 }
                 break;
             default:
                 if (isEventName(name)) {
-                    if (!prevProps[name]) {
+                    if (!lastProps[name]) {
                         //添加全局监听事件
                         var eventName = getBrowserName(name); //带on
 
@@ -1018,7 +1020,7 @@ function diffProps(props, prevProps, vnode, prevVnode) {
                     }
                     var events = dom.__events || (dom.__events = {});
                     events[name] = val;
-                } else if (val !== prevProps[name]) {
+                } else if (val !== lastProps[name]) {
                     if (isHTML && boolAttributes[name] && typeof dom[name] === 'boolean') {
                         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
                         // 会影响到样式,需要进一步处理
@@ -1042,10 +1044,10 @@ function diffProps(props, prevProps, vnode, prevVnode) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
-    for (var _name in prevProps) {
-        if (!(_name in props)) {
+    for (var _name in lastProps) {
+        if (!(_name in nextProps)) {
             if (_name === 'ref') {
-                removeRef(instance, prevProps.ref);
+                removeRef(instance, lastProps.ref);
             } else if (isEventName(_name)) {
                 //移除事件
                 var events = dom.__events || {};
@@ -1239,18 +1241,18 @@ function updateComponent(instance) {
     var props = instance.props,
         state = instance.state,
         context = instance.context,
-        prevProps = instance.prevProps;
+        lastProps = instance.lastProps;
 
     var oldRendered = instance._rendered;
     var baseVnode = instance.getBaseVnode();
     var hostParent = baseVnode._hostParent || oldRendered._hostParent;
 
     var nextProps = props;
-    prevProps = prevProps || props;
+    lastProps = lastProps || props;
     var nextState = instance._processPendingState(props, context);
 
-    instance.props = prevProps;
-    delete instance.prevProps;
+    instance.props = lastProps;
+    delete instance.lastProps;
     //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
     if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
         return baseVnode._hostNode; //注意
@@ -1268,7 +1270,7 @@ function updateComponent(instance) {
     // hostParent, context, baseVnode._hostNode)
     var dom = diffChildren([rendered], [oldRendered], hostParent, context);
     baseVnode._hostNode = dom;
-    //生命周期 componentDidUpdate(prevProps, prevState, prevContext)
+    //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context);
 
     return dom; //注意
@@ -1317,31 +1319,31 @@ function removeComponents(nodes) {
  * 参数不要出现DOM,以便在后端也能运行
  *
  * @param {VNode} vnode 新的虚拟DOM
- * @param {VNode} prevVnode 旧的虚拟DOM
+ * @param {VNode} lastVnode 旧的虚拟DOM
  * @param {VNode} hostParent 父虚拟DOM
  * @param {Object} context
- * @param {DOM} prevNode
+ * @param {DOM} insertPoint
  * @returns
  */
-function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
+function diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance) {
     //updateComponent
 
     var baseVnode = vnode;
-    var hostNode = prevVnode._hostNode || vnode._prevCached;
+    var hostNode = lastVnode._hostNode || vnode._prevCached;
 
-    prevInstance = prevInstance || prevVnode._instance;
+    lastInstance = lastInstance || lastVnode._instance;
 
-    var prevProps = prevVnode.props || {};
-    if (prevInstance) {
-        var instance = prevInstance;
-        vnode._instance = prevInstance;
-        baseVnode = prevInstance.getBaseVnode();
+    var lastProps = lastVnode.props || {};
+    if (lastInstance) {
+        var instance = lastInstance;
+        vnode._instance = lastInstance;
+        baseVnode = lastInstance.getBaseVnode();
         hostNode = baseVnode._hostNode;
 
         vnode._instance = instance;
 
         instance.context = context; //更新context
-        instance.prevProps = prevProps;
+        instance.lastProps = lastProps;
         var nextProps = vnode.props;
         //处理非状态组件
         if (instance.statelessRender) {
@@ -1357,23 +1359,22 @@ function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
     }
 
     if (isFn(vnode.type)) {
-        var parentInstance = prevInstance && prevInstance.parentInstance;
-        console.log('3333');
-        return toDOM(vnode, context, hostParent, prevNode, parentInstance);
+        var parentInstance = lastInstance && lastInstance.parentInstance;
+        return toDOM(vnode, context, hostParent, insertPoint, parentInstance);
     }
     var parentNode = hostParent._hostNode;
-    var prevChildren = prevProps.children || [];
+    var lastChildren = lastProps.children || [];
     if (!hostNode) {
         //如果元素类型不一致
 
         var nextNode = createDOMElement(vnode);
         parentNode.insertBefore(nextNode, hostNode || null);
-        prevChildren = [];
-        prevProps = {};
-        if (prevNode) {
-            parentNode.removeChild(prevNode);
+        lastChildren = [];
+        lastProps = {};
+        if (insertPoint) {
+            parentNode.removeChild(insertPoint);
         }
-        removeComponent(prevVnode);
+        removeComponent(lastVnode);
 
         hostNode = nextNode;
     }
@@ -1383,7 +1384,7 @@ function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
     baseVnode._hostNode = hostNode;
     baseVnode._hostParent = hostParent;
 
-    if (prevProps.dangerouslySetInnerHTML) {
+    if (lastProps.dangerouslySetInnerHTML) {
         while (hostNode.firstChild) {
             hostNode.removeChild(hostNode.firstChild);
         }
@@ -1391,20 +1392,19 @@ function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
     var props = vnode.props;
     if (props) {
         if (vnode._prevCached) {
-            console.log('================');
-            alignChildren(currChildren, getNodes(hostNode), baseVnode, context);
+            alignChildren(nextChildren, getNodes(hostNode), baseVnode, context);
         } else {
             if (!props.angerouslySetInnerHTML) {
-                var currChildren = props.children;
-                var n1 = currChildren.length;
-                var n2 = prevChildren.length;
-                var old = prevChildren[0];
-                var neo = currChildren[0];
+                var nextChildren = props.children;
+                var n1 = nextChildren.length;
+                var n2 = lastChildren.length;
+                var old = lastChildren[0];
+                var neo = nextChildren[0];
                 if (!neo && old) {
-                    removeComponents(prevChildren);
+                    removeComponents(lastChildren);
                 } else if (neo && !old) {
                     var beforeDOM = null;
-                    for (var i = 0, el; el = currChildren[i++];) {
+                    for (var i = 0, el; el = nextChildren[i++];) {
                         var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM);
                         beforeDOM = dom.nextSibling;
                     }
@@ -1412,11 +1412,11 @@ function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) {
                     //    } else if (n1 + n2 === 2 && neo.type === old.type) {    neo._hostNode =
                     // diff(neo, old, baseVnode, context, old._hostNode, old._instance)
                 } else {
-                    diffChildren(currChildren, prevChildren, baseVnode, context);
+                    diffChildren(nextChildren, lastChildren, baseVnode, context);
                 }
             }
         }
-        diffProps(props, prevProps, vnode, prevVnode);
+        diffProps(props, lastProps, vnode, lastVnode);
     }
 
     var wrapperState = vnode._wrapperState;
@@ -1466,12 +1466,12 @@ function computeUUID(type, vnode) {
 /**
  *
  *v
- * @param {any} newChildren
- * @param {any} oldChildren
+ * @param {any} nextChildren
+ * @param {any} lastChildren
  * @param {any} hostParent
  * @param {any} context
  */
-function diffChildren(newChildren, oldChildren, hostParent, context) {
+function diffChildren(nextChildren, lastChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {},
         debugString = '',
@@ -1480,8 +1480,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         parentNode = hostParent._hostNode,
         branch;
 
-    for (var i = 0, n = oldChildren.length; i < n; i++) {
-        var vnode = oldChildren[i];
+    for (var i = 0, n = lastChildren.length; i < n; i++) {
+        var vnode = lastChildren[i];
 
         vnode.uuid = '.' + i;
         hashmap[vnode.uuid] = vnode;
@@ -1496,33 +1496,33 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
     debugString = '';
-    var firstDOM = oldChildren[0] && oldChildren[0]._hostNode;
+    var firstDOM = lastChildren[0] && lastChildren[0]._hostNode;
     var insertPoint = firstDOM;
-    for (var _i = 0, _n = newChildren.length; _i < _n; _i++) {
-        var _vnode = newChildren[_i];
+    for (var _i = 0, _n = nextChildren.length; _i < _n; _i++) {
+        var _vnode = nextChildren[_i];
         var tag = getComponentName(_vnode.type);
 
         var _uuid = computeUUID(tag, _vnode);
         debugString += _uuid + ' ';
-        var prevVnode = null;
+        var lastVnode = null;
         if (mapping[_uuid]) {
-            prevVnode = mapping[_uuid].shift();
+            lastVnode = mapping[_uuid].shift();
 
             if (!mapping[_uuid].length) {
                 delete mapping[_uuid];
             }
-            delete hashmap[prevVnode.uuid];
+            delete hashmap[lastVnode.uuid];
         }
 
         _vnode._hostParent = hostParent;
 
-        if (prevVnode) {
+        if (lastVnode) {
             //它们的组件类型， 或者标签类型相同
-            var prevInstance = prevVnode._instance;
+            var lastInstance = lastVnode._instance;
 
             if ('text' in _vnode) {
-                var textNode = _vnode._hostNode = prevVnode._hostNode;
-                if (_vnode.text !== prevVnode.text) {
+                var textNode = _vnode._hostNode = lastVnode._hostNode;
+                if (_vnode.text !== lastVnode.text) {
                     textNode.nodeValue = _vnode.text;
                 }
                 branch = 'B';
@@ -1530,7 +1530,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                     parentNode.insertBefore(textNode, insertPoint);
                 }
             } else {
-                _vnode._hostNode = diff(_vnode, prevVnode, hostParent, context, insertPoint, prevInstance);
+                _vnode._hostNode = diff(_vnode, lastVnode, hostParent, context, insertPoint, lastInstance);
                 branch = 'C';
             }
         } else {
@@ -1569,7 +1569,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
  * @param {DOM} replaced ?
  * @returns
  */
-function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
+function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     //如果一个虚拟DOM的type为字符串 或 它拥有instance，且这个instance不再存在parentInstance, 那么它就可以拥有_dom属性
     var hasDOM = vnode._prevCached;
     vnode = toVnode(vnode, context, parentIntance);
@@ -1601,7 +1601,7 @@ function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
 
     if (parentNode && !hasDOM) {
 
-        parentNode.insertBefore(hostNode, prevNode || null);
+        parentNode.insertBefore(hostNode, insertPoint || null);
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {
@@ -1664,12 +1664,10 @@ function render(vnode, container, cb) {
     if (!prevVnode) {
 
         var nodes = getNodes(container);
-        console.log(nodes);
         for (var i = 0, el; el = nodes[i++];) {
             if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
                 hostNode = el;
                 vnode._prevCached = el; //进入节点对齐模块
-                console.log(vnode);
             } else {
                 el.parentNode.removeChild(el);
             }
@@ -1684,7 +1682,7 @@ function render(vnode, container, cb) {
     }
     var instance = vnode._instance;
     container.oldVnode = vnode;
-    delete vnode._preCached;
+    delete vnode._prevCached;
     if (instance) {
         //组件返回组件实例，而普通虚拟DOM 返回元素节点
         while (instance.parentInstance) {

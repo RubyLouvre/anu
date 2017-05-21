@@ -69,14 +69,14 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
  *
  * 修改dom的属性与事件
  * @export
- * @param {any} props
- * @param {any} prevProps
+ * @param {any} nextProps
+ * @param {any} lastProps
  * @param {any} vnode
  * @param {any} prevVnode
  */
-export function diffProps(props, prevProps, vnode, prevVnode) {
+export function diffProps(nextProps, lastProps, vnode, prevVnode) {
     /* istanbul ignore if */
-    if (props === prevProps) {
+    if (nextProps === lastProps) {
         return
     }
     var dom = vnode._hostNode
@@ -88,31 +88,31 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
     }
     var isHTML = !vnode.ns
     var diffRef = false
-    for (let name in props) {
-        let val = props[name]
+    for (let name in nextProps) {
+        let val = nextProps[name]
         switch (name) {
             case 'children':
             case 'key':
                 break
             case 'style':
-                patchStyle(dom, prevProps.style || {}, val)
+                patchStyle(dom, lastProps.style || {}, val)
                 break
             case 'ref':
-                if (prevProps[name] !== val) {
+                if (lastProps[name] !== val) {
                     diffRef = {
                         val: val
                     }
                 }
                 break
             case 'dangerouslySetInnerHTML':
-                var oldhtml = prevProps[name] && prevProps[name].__html
+                var oldhtml = lastProps[name] && lastProps[name].__html
                 if (val && val.__html !== oldhtml) {
                     dom.innerHTML = val.__html
                 }
                 break
             default:
                 if (isEventName(name)) {
-                    if (!prevProps[name]) { //添加全局监听事件
+                    if (!lastProps[name]) { //添加全局监听事件
                         var eventName = getBrowserName(name) //带on
 
                         var curType = typeof val
@@ -127,7 +127,7 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
                     }
                     var events = (dom.__events || (dom.__events = {}))
                     events[name] = val
-                } else if (val !== prevProps[name]) {
+                } else if (val !== lastProps[name]) {
                     if (isHTML && boolAttributes[name] && typeof dom[name] === 'boolean') {
                         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
                         // 会影响到样式,需要进一步处理
@@ -152,10 +152,10 @@ export function diffProps(props, prevProps, vnode, prevVnode) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
-    for (let name in prevProps) {
-        if (!(name in props)) {
+    for (let name in lastProps) {
+        if (!(name in nextProps)) {
             if (name === 'ref') {
-                removeRef(instance, prevProps.ref)
+                removeRef(instance, lastProps.ref)
             } else if (isEventName(name)) { //移除事件
                 var events = dom.__events || {}
                 delete events[name]

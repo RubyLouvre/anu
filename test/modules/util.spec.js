@@ -7,7 +7,7 @@ import {
     inherit,
     camelize,
     getInstances,
-    matchInstance
+    getNodes
 } from 'src/util'
 import {
     isEventName
@@ -92,6 +92,10 @@ describe('util', function() {
         b.parentInstance = c
         var arr = getInstances(a)
         expect(arr.length).toBe(3)
+    })
+    it('getNodes', () => {
+       var dom = {childNodes:[{},{},{}]}
+       expect(getNodes(dom).length).toBe(3)
     })
 
   /*  it('matchInstance', () => {

@@ -26,17 +26,17 @@ import {setControlledComponent} from './ControlledComponent'
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {props, state, context, prevProps} = instance
-    var oldRendered = instance._rendered
+    var {props, state, context, lastProps} = instance
+    var lastRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
-    var hostParent = baseVnode._hostParent || oldRendered._hostParent
+    var hostParent = baseVnode._hostParent || lastRendered._hostParent
 
     var nextProps = props
-    prevProps = prevProps || props
+    lastProps = lastProps || props
     var nextState = instance._processPendingState(props, context)
 
-    instance.props = prevProps
-    delete instance.prevProps
+    instance.props = lastProps
+    delete instance.lastProps
     //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
     if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
         return baseVnode._hostNode //注意
@@ -50,11 +50,11 @@ export function updateComponent(instance) {
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context)
     context = getContext(instance, context)
     instance._rendered = rendered
-    // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, oldRendered,
+    // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
     // hostParent, context, baseVnode._hostNode)
-    var dom = diffChildren([rendered], [oldRendered], hostParent, context)
+    var dom = diffChildren([rendered], [lastRendered], hostParent, context)
     baseVnode._hostNode = dom
-    //生命周期 componentDidUpdate(prevProps, prevState, prevContext)
+    //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
 
     return dom //注意
@@ -110,30 +110,30 @@ function removeComponents(nodes) {
  * 参数不要出现DOM,以便在后端也能运行
  *
  * @param {VNode} vnode 新的虚拟DOM
- * @param {VNode} prevVnode 旧的虚拟DOM
+ * @param {VNode} lastVnode 旧的虚拟DOM
  * @param {VNode} hostParent 父虚拟DOM
  * @param {Object} context
- * @param {DOM} prevNode
+ * @param {DOM} insertPoint
  * @returns
  */
-export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstance) { //updateComponent
+export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance) { //updateComponent
 
     var baseVnode = vnode
-    var hostNode = prevVnode._hostNode || vnode._prevCached
+    var hostNode = lastVnode._hostNode || vnode._prevCached
 
-    prevInstance = prevInstance || prevVnode._instance
+    lastInstance = lastInstance || lastVnode._instance
 
-    var prevProps = prevVnode.props || {}
-    if (prevInstance) {
-        var instance = prevInstance
-        vnode._instance = prevInstance
-        baseVnode = prevInstance.getBaseVnode()
+    var lastProps = lastVnode.props || {}
+    if (lastInstance) {
+        var instance = lastInstance
+        vnode._instance = lastInstance
+        baseVnode = lastInstance.getBaseVnode()
         hostNode = baseVnode._hostNode
 
         vnode._instance = instance
 
         instance.context = context //更新context
-        instance.prevProps = prevProps
+        instance.lastProps = lastProps
         var nextProps = vnode.props
         //处理非状态组件
         if (instance.statelessRender) {
@@ -149,24 +149,23 @@ export function diff(vnode, prevVnode, hostParent, context, prevNode, prevInstan
     }
 
     if (isFn(vnode.type)) {
-        var parentInstance = prevInstance && prevInstance.parentInstance
-console.log('3333')
-        return toDOM(vnode, context, hostParent, prevNode, parentInstance)
+        var parentInstance = lastInstance && lastInstance.parentInstance
+        return toDOM(vnode, context, hostParent, insertPoint, parentInstance)
 
     }
     var parentNode = hostParent._hostNode
-    var prevChildren = prevProps.children || []
+    var lastChildren = lastProps.children || []
     if (!hostNode) {
         //如果元素类型不一致
 
         var nextNode = createDOMElement(vnode)
         parentNode.insertBefore(nextNode, hostNode || null)
-        prevChildren = []
-        prevProps = {}
-        if (prevNode) {
-            parentNode.removeChild(prevNode)
+        lastChildren = []
+        lastProps = {}
+        if (insertPoint) {
+            parentNode.removeChild(insertPoint)
         }
-        removeComponent(prevVnode)
+        removeComponent(lastVnode)
 
         hostNode = nextNode
     }
@@ -176,7 +175,7 @@ console.log('3333')
     baseVnode._hostNode = hostNode
     baseVnode._hostParent = hostParent
 
-    if (prevProps.dangerouslySetInnerHTML) {
+    if (lastProps.dangerouslySetInnerHTML) {
         while (hostNode.firstChild) {
             hostNode.removeChild(hostNode.firstChild)
         }
@@ -184,21 +183,20 @@ console.log('3333')
     var props = vnode.props
     if (props) {
         if (vnode._prevCached) {
-            console.log('================')
-            alignChildren(currChildren, getNodes(hostNode), baseVnode, context)
+            alignChildren(nextChildren, getNodes(hostNode), baseVnode, context)
         } else {
             if (!props.angerouslySetInnerHTML) {
-                var currChildren = props.children
-                var n1 = currChildren.length
-                var n2 = prevChildren.length
-                var old = prevChildren[0]
-                var neo = currChildren[0]
+                var nextChildren = props.children
+                var n1 = nextChildren.length
+                var n2 = lastChildren.length
+                var old = lastChildren[0]
+                var neo = nextChildren[0]
                 if (!neo && old) {
-                    removeComponents(prevChildren)
+                    removeComponents(lastChildren)
 
                 } else if (neo && !old) {
                     var beforeDOM = null
-                    for (var i = 0, el; el = currChildren[i++];) {
+                    for (var i = 0, el; el = nextChildren[i++];) {
                         var dom = el._hostNode = toDOM(el, context, baseVnode, beforeDOM)
                         beforeDOM = dom.nextSibling
                     }
@@ -207,11 +205,11 @@ console.log('3333')
                     // diff(neo, old, baseVnode, context, old._hostNode, old._instance)
 
                 } else {
-                    diffChildren(currChildren, prevChildren, baseVnode, context)
+                    diffChildren(nextChildren, lastChildren, baseVnode, context)
                 }
             }
         }
-        diffProps(props, prevProps, vnode, prevVnode)
+        diffProps(props, lastProps, vnode, lastVnode)
     }
 
     var wrapperState = vnode._wrapperState
@@ -263,12 +261,12 @@ function computeUUID(type, vnode) {
 /**
  *
  *v
- * @param {any} newChildren
- * @param {any} oldChildren
+ * @param {any} nextChildren
+ * @param {any} lastChildren
  * @param {any} hostParent
  * @param {any} context
  */
-function diffChildren(newChildren, oldChildren, hostParent, context) {
+function diffChildren(nextChildren, lastChildren, hostParent, context) {
     //第一步，根据实例的类型，nodeName, nodeValue, key与数组深度 构建hash
     var mapping = {},
         debugString = '',
@@ -277,8 +275,8 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
         parentNode = hostParent._hostNode,
         branch;
 
-    for (let i = 0, n = oldChildren.length; i < n; i++) {
-        let vnode = oldChildren[i]
+    for (let i = 0, n = lastChildren.length; i < n; i++) {
+        let vnode = lastChildren[i]
 
         vnode.uuid = '.' + i
         hashmap[vnode.uuid] = vnode
@@ -293,32 +291,32 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
 
     //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
     debugString = ''
-    var firstDOM = oldChildren[0] && oldChildren[0]._hostNode
+    var firstDOM = lastChildren[0] && lastChildren[0]._hostNode
     var insertPoint = firstDOM
-    for (let i = 0, n = newChildren.length; i < n; i++) {
-        let vnode = newChildren[i];
+    for (let i = 0, n = nextChildren.length; i < n; i++) {
+        let vnode = nextChildren[i];
         let tag = getComponentName(vnode.type)
 
         let uuid = computeUUID(tag, vnode)
         debugString += uuid + ' '
-        var prevVnode = null
+        var lastVnode = null
         if (mapping[uuid]) {
-            prevVnode = mapping[uuid].shift()
+            lastVnode = mapping[uuid].shift()
 
             if (!mapping[uuid].length) {
                 delete mapping[uuid]
             }
-            delete hashmap[prevVnode.uuid]
+            delete hashmap[lastVnode.uuid]
         }
 
         vnode._hostParent = hostParent
 
-        if (prevVnode) { //它们的组件类型， 或者标签类型相同
-            var prevInstance = prevVnode._instance
+        if (lastVnode) { //它们的组件类型， 或者标签类型相同
+            var lastInstance = lastVnode._instance
 
             if ('text' in vnode) {
-                var textNode = vnode._hostNode = prevVnode._hostNode
-                if (vnode.text !== prevVnode.text) {
+                var textNode = vnode._hostNode = lastVnode._hostNode
+                if (vnode.text !== lastVnode.text) {
                     textNode.nodeValue = vnode.text
                 }
                 branch = 'B'
@@ -326,7 +324,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
                     parentNode.insertBefore(textNode, insertPoint)
                 }
             } else {
-                vnode._hostNode = diff(vnode, prevVnode, hostParent, context, insertPoint, prevInstance)
+                vnode._hostNode = diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance)
                 branch = 'C'
             }
 
@@ -369,7 +367,7 @@ function diffChildren(newChildren, oldChildren, hostParent, context) {
  * @param {DOM} replaced ?
  * @returns
  */
-export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
+export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     //如果一个虚拟DOM的type为字符串 或 它拥有instance，且这个instance不再存在parentInstance, 那么它就可以拥有_dom属性
     var hasDOM = vnode._prevCached
     vnode = toVnode(vnode, context, parentIntance)
@@ -402,7 +400,7 @@ export function toDOM(vnode, context, hostParent, prevNode, parentIntance) {
 
     if (parentNode && !hasDOM) {
       
-        parentNode.insertBefore(hostNode, prevNode || null)
+        parentNode.insertBefore(hostNode, insertPoint || null)
     }
     //只有元素与组件才有props
     if (props && !props.dangerouslySetInnerHTML) {

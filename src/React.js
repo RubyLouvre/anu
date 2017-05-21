@@ -32,12 +32,10 @@ function render(vnode, container, cb) {
     if (!prevVnode) {
 
         var nodes = getNodes(container)
-console.log(nodes)
         for (var i = 0, el; el = nodes[i++];) {
             if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
                 hostNode = el
                 vnode._prevCached = el //进入节点对齐模块
-                console.log(vnode)
             } else {
                 el
                     .parentNode
@@ -54,7 +52,7 @@ console.log(nodes)
     }
     var instance = vnode._instance
     container.oldVnode = vnode
-    delete vnode._preCached
+    delete vnode._prevCached
     if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
         while (instance.parentInstance) {
             instance = instance.parentInstance

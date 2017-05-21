@@ -133,6 +133,11 @@ export var midway = {
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 }
 
+export function isKeyed(lastChildren,nextChildren) {
+	return nextChildren.length > 0  && !isNullOrUndef(nextChildren[ 0 ].key)
+		&& lastChildren.length > 0 && !isNullOrUndef(lastChildren[ 0 ].key);
+}
+
 /**
  * 获取虚拟DOM对应的顶层组件实例的类型
  *
