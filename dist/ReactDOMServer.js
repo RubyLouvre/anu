@@ -96,6 +96,8 @@ function getContext(instance, context) {
 
 
 
+
+
 /**
  * 获取虚拟DOM对应的顶层组件实例的类型
  *
@@ -220,7 +222,7 @@ function styleObjToCss(obj) {
             if (rnumber.test(val) && !cssNumber[name]) {
                 unit = 'px';
             }
-            arr.push(cssName$$1(name) + ': ' + val + unit);
+            arr.push(cssProp(name) + ': ' + val + unit);
         }
     }
     return arr.join('; ');
@@ -230,7 +232,7 @@ var cssCached = {
     cssFloat: 'float'
 };
 
-function cssName$$1(name) {
+function cssProp(name) {
     if (cssCached[name]) return cssCached[name];
 
     return cssCached[name] = name.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -417,10 +419,10 @@ function adler32(data) {
     b %= MOD;
     return a | b << 16;
 }
-var ssr = {
+var index = {
     renderToString: renderToString
 };
 
-return ssr;
+return index;
 
 })));

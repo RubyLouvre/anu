@@ -37,10 +37,10 @@ export function patchStyle(dom, oldStyle, newStyle) {
 
 export var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
-var cssMap = oneObject('float', 'cssFloat')
 
 //var testStyle = document.documentElement.style
 var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-']
+export var cssMap = oneObject('float', 'cssFloat')
 
 /**
  * 转换成当前浏览器可用的样式名
