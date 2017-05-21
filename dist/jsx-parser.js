@@ -37,7 +37,7 @@
         getOne = (getOne === void 666 || getOne === true)
         var ret = lexer(string, getOne)
         if (getOne) {
-            return typeof ret[0] === 'string' ? ret[1] : ret[0]
+            return  ret[0] + '' ===  ret[0] ? ret[1] : ret[0]
         }
         return ret
     }

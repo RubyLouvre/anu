@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+      .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+<script type='text/javascript' src="./dist/React.js"></script>
+<!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+     <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+var s
+
+window.onload = function(){
+     
+     
+        var i = 0
+        class Input extends React.Component{
+           
+            componentWillUpdate(){
+                console.log('Input componentWillUpdate')
+            }
+             onChange(a) {
+                i++
+                this.setState({
+                    value: a
+                })
+            }
+            render() {
+                return i ? <strong>222</strong> : <em>3333</em>
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            onChange(a) {
+                i++
+                this.setState({
+                    value: a
+                })
+            }
+            render() {
+                return <div>1111<span>333</span>
+                <Input ref='aaa'/>
+                </div>
+            }
+
+        }
+        
+
+       s = ReactDOM.render( <App/>, document.getElementById('example'))
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

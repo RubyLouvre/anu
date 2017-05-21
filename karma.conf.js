@@ -4,7 +4,7 @@ var path = require('path')
 var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
 
-module.exports = function(config) {
+module.exports = function (config) {
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -32,10 +32,13 @@ module.exports = function(config) {
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['spec', 'coverage'],
         preprocessors: {
-            'src/**/*.js': ['coverage'],
+            'dist/React.js': ['coverage'],
+            //'src/**/*.js': ['coverage'],
             'test/**/*.js': ['webpack']
         },
-        mochaReporter: { showDiff: true },
+        mochaReporter: {
+            showDiff: true
+        },
         browserLogOptions: {
             terminal: true
         },
@@ -47,7 +50,7 @@ module.exports = function(config) {
             dir: 'coverage/'
         },
         webpack: {
-
+            
             module: {
                 /* Transpile source and test files */
                 preLoaders: [{
@@ -56,12 +59,15 @@ module.exports = function(config) {
                     loader: 'babel-loader',
                     query: {
                         presets: ['env', 'react'],
-                        plugins: ['istanbul', 'syntax-async-generators', ["transform-runtime", {
-                            "helpers": true,
-                            "polyfill": true,
-                            "regenerator": true,
-                            "moduleName": "babel-runtime"
-                        }]],
+                        plugins: ['istanbul', 'syntax-async-generators',
+                            //'transform-es2015-destructuring',
+                            'transform-object-rest-spread', ["transform-runtime", {
+                                "helpers": true,
+                                "polyfill": true,
+                                "regenerator": true,
+                                "moduleName": "babel-runtime"
+                            }]
+                        ],
                         babelrc: false
                     }
                 }],
@@ -70,7 +76,11 @@ module.exports = function(config) {
             },
             resolve: {
 
-                alias: {},
+                alias: {
+                    redux: path.join(__dirname, './test/redux'),
+                    react: path.join(__dirname, './dist/React'),
+                    'react-redux': path.join(__dirname, './test/react-redux')
+                },
                 modulesDirectories: [__dirname, 'node_modules']
             },
             plugins: [
@@ -109,6 +119,7 @@ module.exports = function(config) {
                 base: 'WebDriverio',
                 browserName: 'chrome',
                 name: 'Karma'
+
             }
         },
         browsers: ['Chrome'],

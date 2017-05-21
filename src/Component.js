@@ -5,34 +5,64 @@ import {
 import {
     extend,
     midway,
-    noop
+    noop,
+    isFn
 } from './util'
 
 /**
- * 
- * 
- * @param {any} props 
- * @param {any} context 
+ *
+ *
+ * @param {any} props
+ * @param {any} context
  */
 
 export function Component(props, context) {
     this.context = context
     this.props = props
-    this.uuid = Math.random()
+    // this.uuid = Math.random()
     this.refs = {}
     if (!this.state)
         this.state = {}
 }
 
-
 Component.prototype = {
 
     setState(state, cb) {
-        setStateProxy(this, state, cb)
+        var arr = this._pendingStateQueue = this._pendingStateQueue || []
+        arr.push(state)
+        setStateProxy(this, cb)
     },
-
+    getBaseVnode() {
+        var p = this
+        do {
+            if (p.vnode) {
+                return p.vnode
+            }
+        } while (p = p.parentInstance)
+    },
     forceUpdate(cb) {
-        setStateProxy(this, this.state, cb, true)
+        this._pendingForceUpdate = true
+        setStateProxy(this, cb)
+    },
+    _processPendingState: function (props, context) {
+
+        var queue = this._pendingStateQueue
+        delete this._pendingStateQueue
+
+        if (!queue) {
+            return this.state
+        }
+
+
+        var nextState = extend({}, this.state);
+        for (var i = 0; i < queue.length; i++) {
+            var partial = queue[i]
+            extend(nextState, isFn( partial ) ?
+                partial.call(this, nextState, props, context) :
+                partial)
+        }
+
+        return nextState
     },
 
     render() {}
@@ -41,40 +71,21 @@ Component.prototype = {
 
 /**
  * 让外面的setState与forceUpdate都共用同一通道
- * 
- * @param {any} instance 
- * @param {any} state 
+ *
+ * @param {any} instance
+ * @param {any} state
  * @param {any} cb fire by component did update
  * @param {any} force ignore shouldComponentUpdate
  */
 
-function setStateProxy(instance, state, cb, force) {
-    if (typeof cb === 'function')
+function setStateProxy(instance, cb) {
+    if (isFn( cb ))
         transaction.enqueueCallback({ //确保回调先进入
             component: instance,
             cb: cb
         })
-    transaction.enqueue({
-        component: instance,
-        state: state,
-        init: force ? roughSetState : gentleSetState,
-        exec: midway.immune.updateComponent || noop
-    })
-
+    if (!instance._updateBatchNumber) {
+        instance._updateBatchNumber = midway.updateBatchNumber + 1
+    }
+    transaction.enqueue(instance)
 }
-
-
-function gentleSetState() { //只有必要时才更新
-    var instance = this.component
-    
-    var state = instance.state
-    instance.prevState = instance.prevState || extend({},state)
-    var s = this.state
-    extend(state, typeof s === 'function' ? s(state, instance.props) : s)
-}
-
-function roughSetState() { //强制更新
-    var instance = this.component
-    instance._forceUpdate = true
-}
-

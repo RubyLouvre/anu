@@ -1,11 +1,11 @@
 import babel from 'rollup-plugin-babel';
 
 export default {
-    entry: './src/React.js',
+    entry: './ssr/index.js',
     format: 'umd',
     exports: 'default',
-    dest: './dist/React.js',
+    dest: './dist/ReactDOMServer.js',
     plugins: [babel() ],
-    moduleName: 'React',
+    moduleName: 'ReactDOMServer',
     useStrict: false
 }

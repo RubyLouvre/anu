@@ -1,11 +1,8 @@
 import {transaction} from './transaction'
 import {document} from './browser'
-export var eventMap = {
-    mouseover: 'MouseOver',
-    mouseout: 'MouseOut',
-    mouseleave: 'MouseLeave',
-    mouseenter: 'MouseEnter'
-}
+import {isFn} from './util'
+
+export var eventMap = {}
 /**
  * 判定否为与事件相关
  *
@@ -36,9 +33,9 @@ function dispatchEvent(e) {
     for (var i = paths.length; i--;) { //从上到下
         var path = paths[i]
         var fn = path.props[captured]
-        if (typeof fn === 'function') {
-            e.currentTarget = path.dom
-            fn.call(path.dom, e)
+        if (isFn(fn)) {
+            e.currentTarget = path._hostNode
+            fn.call(path._hostNode, e)
             if (e._stopPropagation) {
                 break
             }
@@ -48,16 +45,16 @@ function dispatchEvent(e) {
     for (var i = 0, n = paths.length; i < n; i++) { //从下到上
         var path = paths[i]
         var fn = path.props[bubble]
-        if (typeof fn === 'function') {
-            e.currentTarget = path.dom
-            fn.call(path.dom, e)
+        if (isFn(fn)) {
+            e.currentTarget = path._hostNode
+            fn.call(path._hostNode, e)
             if (e._stopPropagation) {
                 break
             }
         }
     }
     transaction.isInTransation = false
-    transaction.enqueue()
+    transaction.enqueue(true)
 }
 
 function capitalize(str) {
@@ -81,18 +78,21 @@ export function addEvent(el, type, fn) {
     }
 }
 
-var eventNameCache = {}
+var eventLowerCache = {}
 var ron = /^on/
 var rcapture = /Capture$/
-export function getBrowserName(name) {
-    var n = eventNameCache[name]
-    if (n) {
-        return n
+export function getBrowserName(onStr) {
+    var lower = eventLowerCache[onStr]
+    if (lower) {
+        return lower
     }
-    return eventNameCache[name] = name
+    var hump = onStr
         .replace(ron, '')
         .replace(rcapture, '')
-        .toLowerCase()
+    lower = hump.toLowerCase()
+    eventLowerCache[onStr] = lower
+    eventMap[lower] = hump
+    return lower
 }
 
 export function SyntheticEvent(event) {
@@ -124,7 +124,7 @@ var eventProto = SyntheticEvent.prototype = {
     },
     stopPropagation: function () {
         var e = this.originalEvent || {}
-        e.cancelBubble = this.$$stop = true
+        e.cancelBubble = this._stopPropagation = true
         if (e.stopPropagation) {
             e.stopPropagation()
         }

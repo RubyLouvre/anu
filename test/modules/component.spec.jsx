@@ -1,40 +1,39 @@
-import eventHook, {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
-let {$serial} = browser;
-import React from 'src/React'
+import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import React from 'dist/React'
 import PureComponent from 'src/PureComponent'
 
 describe('无狀态组件', function () {
     this.timeout(200000);
-    before(async() => {
+    before(async () => {
         await beforeHook();
     });
-    after(async() => {
+    after(async () => {
         await afterHook(false);
-    });
-    it('stateless', async() => {
+    })
+    var body = document.body, div
+    beforeEach(function () {
+        div = document.createElement('div')
+        body.appendChild(div)
+    })
+    afterEach(function () {
+        body.removeChild(div)
+    })
+    it('stateless', async () => {
         function HelloComponent(props,
         /* context */) {
             return <div onClick={() => props.name = 11}>Hello {props.name}</div>
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
-        var s = React.render(<HelloComponent name="Sebastian"/>, div)
+   
+        var s = React.render(<HelloComponent name="Sebastian" />, div)
 
         await browser
             .pause(200)
             .$apply()
-        console.log(s.type, '!!!')
-        expect(s.vnode.dom.innerHTML).toBe('Hello Sebastian')
+        expect(s.vnode._hostNode.innerHTML).toBe('Hello Sebastian')
 
-        document
-            .body
-            .removeChild(div)
     })
 
-    it('setState', async() => {
+    it('setState', async () => {
         var a = 1
         class A extends React.Component {
             constructor(props) {
@@ -44,14 +43,14 @@ describe('无狀态组件', function () {
                 }
             }
             shouldComponentUpdate() {
-                console.log('shouldComponentUpdate')
+              //  console.log('shouldComponentUpdate')
             }
             click() {
                 this.setState(function (a) {
-                        a.aaa++
-                    }, function () {
-                        a++
-                    })
+                    a.aaa++
+                }, function () {
+                    a++
+                })
 
                 this.setState(function (a) {
                     a.aaa++
@@ -60,31 +59,26 @@ describe('无狀态组件', function () {
                 })
             }
             render() {
-                return  <div onClick={this.click.bind(this) }>{this.state.aaa}</div>
+                return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
             }
         }
-        var div = document.createElement('div');
 
-        document
-            .body
-            .appendChild(div);
         var s = React.render(<A />, div)
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('1')
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('3')
+        expect(s.vnode._hostNode.innerHTML).toBe('3')
+
         expect(a).toBe(3)
-        document
-            .body
-            .removeChild(div)
+
     });
- it('setState2', async() => {
-     var a = 1
+    it('setState2', async () => {
+        var a = 1
         class A extends React.Component {
             constructor(props) {
                 super(props)
@@ -97,44 +91,39 @@ describe('无狀态组件', function () {
             }
             click() {
                 this.setState(function (a) {
-                        a.aaa++
-                    }, function () {
-                       a++
-                    })
+                    a.aaa++
+                }, function () {
+                    a++
+                })
 
                 this.setState(function (a) {
                     a.aaa++
                 }, function () {
-                  a++
+                    a++
                 })
             }
             render() {
-                return  <div onClick={this.click.bind(this) }>{this.state.aaa}</div>
+                return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+   
         var s = React.render(<A />, div)
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('1')
+
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('1')
+        expect(s.vnode._hostNode.innerHTML).toBe('1')
         expect(a).toBe(3)
-        document
-            .body
-            .removeChild(div)
+
     });
-it('PureComponent', async() => {
-     var a = 1
-        class A extends React.PureComponent {
+    it('PureComponent', async () => {
+        var a = 1
+        class App extends React.PureComponent {
             constructor(props) {
                 super(props)
                 this.state = {
@@ -143,39 +132,34 @@ it('PureComponent', async() => {
                     }
                 }
             }
-         
+
             click() {
-               
-                 this.setState(function(state){
-                   state.aaa.a = 8
+
+                this.setState(function (state) {
+                    state.aaa.a = 8
                 })
-               
+
             }
             render() {
-                return  <div onClick={this.click.bind(this) }>{this.state.aaa.a}</div>
+                return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
             }
         }
-        var div = document.createElement('div');
+  
+        var s = React.render(<App />, div)
+        await browser
+            .pause(200)
+            .$apply()
 
-        document
-            .body
-            .appendChild(div);
-        var s = React.render(<A />, div)
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
         await browser
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('7')
-        await browser
-            .click(s.vnode.dom)
-            .pause(200)
-            .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('7')
-       
-        document
-            .body
-            .removeChild(div)
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
+
+
     });
-it('PureComponent2', async() => {
+    it('PureComponent2', async () => {
         class A extends React.PureComponent {
             constructor(props) {
                 super(props)
@@ -185,7 +169,7 @@ it('PureComponent2', async() => {
                     }
                 }
             }
-     
+
             click() {
                 var aaa = this.state.aaa
                 aaa.a = 9
@@ -195,27 +179,249 @@ it('PureComponent2', async() => {
                 })
             }
             render() {
-                return  <div onClick={this.click.bind(this) }>{this.state.aaa.a}</div>
+                return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
             }
         }
-        var div = document.createElement('div');
-
-        document
-            .body
-            .appendChild(div);
+  
         var s = React.render(<A />, div)
         await browser
-            .pause(200)
+            .pause(100)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('7')
+        expect(s.vnode._hostNode.innerHTML).toBe('7')
+
         await browser
-            .click(s.vnode.dom)
+            .click(s.vnode._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode.dom.innerHTML).toBe('9')
-       
-        document
-            .body
-            .removeChild(div)
+        expect(s.vnode._hostNode.innerHTML).toBe('9')
+
+
     });
+    it('子组件是无状态组件', async () => {
+        function Select(props) {
+            return <strong>{props.value}</strong>
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: '南京'
+                }
+            }
+
+            onChange(e) {
+                this.setState({
+                    value: e.target.value
+                })
+
+            }
+            render() {
+                return <div><Select value={this.state.value} />
+                    <input ref='a' value={this.state.value} onInput={this.onChange.bind(this)} /></div>
+            }
+
+        }
+    
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.value).toBe('南京')
+        await browser
+            .setValue(s.refs.a, '南京22')
+            .pause(200)
+            .$apply()
+        expect(s.refs.a.value).toBe('南京22')
+        expect(div.getElementsByTagName('strong')[0].innerHTML).toBe('南京22')
+
+
+    });
+    it('多选下拉框', async () => {
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: ['aaa', 'ccc']
+                }
+            }
+
+            onChange(e) {
+                var values = []
+                var elems = e.target.getElementsByTagName('option')
+                for (var i = 0, el; el = elems[i++];) {
+                    if (el.selected) {
+                        if (el.getAttribute('value') != null) {
+                            values.push(el.getAttribute('value'))
+                        } else {
+                            values.push(el.text)
+                        }
+                    }
+                }
+                this.setState({
+                    values: values
+                })
+            }
+            render() {
+                return <select value={this.state.value} multiple='true' onChange={this.onChange.bind(this)}>
+                    <optgroup>
+                        <option ref='a'>aaa</option>
+                        <option ref='b'>bbb</option>
+                    </optgroup>
+                    <optgroup>
+                        <option ref='c'>ccc</option>
+                        <option ref='d'>ddd</option>
+                    </optgroup>
+                </select>
+            }
+
+        }
+
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(true)
+        expect(s.refs.b.selected).toBe(false)
+        expect(s.refs.c.selected).toBe(true)
+        expect(s.refs.d.selected).toBe(false)
+        s.setState({
+            value: ['bbb', 'ddd']
+        })
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(false)
+        expect(s.refs.b.selected).toBe(true)
+        expect(s.refs.c.selected).toBe(false)
+        expect(s.refs.d.selected).toBe(true)
+  
+    })
+
+    it('多选下拉框defaultValue', async () => {
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    value: 'ccc'
+                }
+            }
+           
+            render() {
+                return <select defaultValue={this.state.value} >
+                    <option ref='a'>aaa</option>
+                    <option ref='b'>bbb</option>
+                    <option ref='c'>ccc</option>
+                    <option ref='d'>ddd</option>
+                </select>
+            }
+        }
+ 
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.c.selected).toBe(true)
+
+    })
+
+     it('多选下拉框没有defaultValue', async () => {
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {  }
+            }
+           
+            render() {
+                return <select >
+                    <option ref='a'>aaa</option>
+                    <option ref='b'>bbb</option>
+                    <option ref='c'>ccc</option>
+                    <option ref='d'>ddd</option>
+                </select>
+            }
+        }
+  
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.a.selected).toBe(true)
+
+    })
+
+    it('一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount', async()=>{
+        class App extends React.Component{
+            constructor(props){
+                super(props)
+                this.state = {
+                    path: '111'
+                }
+            }
+            change(path){
+                this.setState({
+                    path: path || '333'
+                })
+            }
+            render(){
+                return <div><span>xx</span><Route path={this.state.path} /></div> 
+            }
+        }
+        var updateCount = 0
+        var receiveCount = 0
+        var destroyCount = 0
+        class Route extends React.Component{
+            constructor(props){
+                super(props)
+                this.state = {
+                    path: props.path
+                }
+            }
+            componentWillReceiveProps(props){
+                receiveCount++
+                this.setState(function(nextState, props){
+                    nextState.path = props.path
+                    return nextState
+                })
+            }
+            componentWillUpdate(){
+                 updateCount++ 
+            }
+            componentWillUnmount(){
+                 destroyCount++ 
+            }
+            render(){
+                return this.state.path == '111' ? <p>{this.state.path}</p>: null
+            }
+        }
+        var s = React.render(<App />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(0)
+        expect(receiveCount).toBe(0)
+        s.change('111')
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(1)
+        expect(receiveCount).toBe(1)
+        s.change('111x')
+        await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(2)
+        expect(receiveCount).toBe(2)
+        expect(div.firstChild.childNodes[1].nodeType).toBe(8)
+        expect(destroyCount).toBe(0)
+        s.change('111')
+         await browser
+            .pause(100)
+            .$apply()
+        expect(updateCount).toBe(3)
+        expect(receiveCount).toBe(3)
+        expect(div.firstChild.childNodes[1].nodeType).toBe(1)
+        expect(destroyCount).toBe(0)
+    })
 })

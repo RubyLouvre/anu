@@ -1,14 +1,13 @@
 import {CurrentOwner} from './CurrentOwner'
-
+import {midway} from './util'
 var queue = []
 var callbacks = []
 
-function setStateWarn() {
+export function setStateWarn() {
+    /* istanbul ignore next */
     if (transaction.isInTransation) {
-        console.warn("Cannot update during an existing state transition (such as within `render` or an" +
-                "other component's constructor). Render methods should be a pure function of prop" +
-                "s and state; constructor side-effects are an anti-pattern, but can be moved to `" +
-                "componentWillMount`")
+        console.warn(`请不要在'render', 'componentWillUpdate','componentDidUpdate',或组件的构造器中
+        调用setState，forceUpdate方法，否则会造成死循环，你可以将相关逻辑放到'componentWillMount'钩子`)
     }
 }
 
@@ -19,11 +18,10 @@ export var transaction = {
         callbacks.push(obj)
     },
     renderWithoutSetState: function (instance, nextProps, context) {
-        instance.setState = instance.forceUpdate = setStateWarn;
-
+        instance.setState = instance.forceUpdate = setStateWarn
         try {
-            CurrentOwner.cur = instance;
-            var vnode =  instance.render(nextProps, context)
+            CurrentOwner.cur = instance
+            var vnode = instance.render(nextProps, context)
             if (vnode === null) {
                 vnode = {
                     type: '#comment',
@@ -31,53 +29,54 @@ export var transaction = {
                 };
             }
         } finally {
-            CurrentOwner.cur = null;
-            delete instance.setState;
+            CurrentOwner.cur = null
+            delete instance.setState
             delete instance.forceUpdate
 
         }
 
         return vnode
     },
-    enqueue: function (obj) {
-        if (obj) 
-            queue.push(obj)
+    enqueue: function (instance) {
+        if (typeof instance === 'object') {
+            queue.push(instance)
+        }
         if (!this.isInTransation) {
             this.isInTransation = true
-            var preProcessing = queue.concat()
+
+            if (instance) 
+                midway.updateBatchNumber++;
+            var globalBatchNumber = midway.updateBatchNumber
+
+            var renderQueue = queue.concat()
             var processingCallbacks = callbacks.concat()
-            var mainProcessing = []
+
             queue.length = callbacks.length = 0
-            var unique = {}
-            preProcessing.forEach(function (request) {
+            renderQueue.forEach(function (inst) {
                 try {
-                    request.init() //预处理， 合并参数，同一个组件的请求只需某一个进入主调度程序
-                    if (!unique[request.component.uuid]) {
-                        unique[request.component.uuid] = 1
-                        mainProcessing.push(request)
+                    if (inst._updateBatchNumber === globalBatchNumber) {
+                        midway
+                            .immune
+                            .updateComponent(inst)
                     }
+
                 } catch (e) {
-                    console.log(e)
+                    /* istanbul ignore next */
+                    console.warn(e)
                 }
 
             })
-
-            mainProcessing.forEach(function (request) {
-                try {
-                    request.exec() //执行主程序
-                } catch (e) {
-                    console.log(e)
-                }
-            })
+            this.isInTransation = false
             processingCallbacks.forEach(function (request) {
                 request
                     .cb
                     .call(request.instance)
             })
-            this.isInTransation = false
+            /* istanbul ignore next */
             if (queue.length) {
                 this.enqueue() //用于递归调用自身)
             }
         }
+
     }
 }

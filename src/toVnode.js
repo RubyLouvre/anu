@@ -1,75 +1,89 @@
-    import {
-        extend,
-        isComponent,
-        isStateless,
-        noop
-    } from './util'
-    import { applyComponentHook } from './lifecycle'
-    import { transaction } from './transaction'
-    import { Component } from './Component'
+import {
+    extend,
+    getContext,
+    isFn,
+    isStateless,
+    noop
+} from './util'
+import {
+    applyComponentHook
+} from './lifecycle'
+import {
+    transaction
+} from './transaction'
+import {
+    patchRef
+} from './ref'
+import {
+    Component
+} from './Component'
+import {
+    CurrentOwner
+} from './CurrentOwner'
 
 
-    /**
-     * 
-     * 
-     * @param {any} vnode 
-     * @param {any} context 
-     * @returns 
-     */
-    export function toVnode(vnode, context) {
-        var Type = vnode.type
-        if (isComponent(Type)) {
-            var props = vnode.props
+/**
+ * 将组件节点转化为简单的虚拟节点
+ * 
+ * @export
+ * @param {any} vnode 
+ * @param {any} context 
+ * @param {any} parentInstance 
+ * @returns 
+ */
+export function toVnode(vnode, context, parentInstance) {
 
-            if (!isStateless(Type)) {
-                var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
-                props = extend({},props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-                for (var i in defaultProps) {
-                    if (props[i] === void 666) {
-                        props[i] = defaultProps[i]
-                    }
-                }
-                var instance = new Type(props, context)
-                    //必须在这里添加vnode，因为willComponent里可能进行setState操作
-                instance.vnode = vnode
+    var Type = vnode.type,
+        instance, rendered
 
-                Component.call(instance, props, context) //重点！！
-                applyComponentHook(instance, 0) //willMount
+    if (isFn(Type)) {
+        var props = vnode.props
+        if (isStateless(Type)) {
+            //处理无状态组件
+            instance = new Component(null, context)
+            instance.render = instance.statelessRender = Type
+            rendered = transaction.renderWithoutSetState(instance, props, context)
 
-                var rendered = transaction.renderWithoutSetState(instance)
-            } else { //添加无状态组件的分支
-                rendered = Type(props, context)
-
-                instance = new Component(null, context)
-                 instance.render = Type
-                instance.statelessRender = Type
-            
-            }
-            if (vnode.instance) {
-                instance.parentInstance = vnode.instance
-                vnode.instance.childInstance = instance
-            }
-
-
-            instance.prevProps = vnode.props //实例化时prevProps
-            instance.vnode = vnode
-                //压扁组件Vnode为普通Vnode
-            if (rendered == null) {
-                rendered = ''
-            }
-            if (/number|string/.test(typeof rendered)) {
-                rendered = {
-                    type: '#text',
-                    text: rendered
-                }
-            }
-            var key = vnode.key
-            extend(vnode, rendered)
-            vnode.key = key
-            vnode.instance = instance
-
-            return toVnode(vnode, context)
         } else {
-            return vnode
+
+            //处理普通组件
+            var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
+            props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+            for (var i in defaultProps) {
+                if (props[i] === void 666) {
+                    props[i] = defaultProps[i]
+                }
+            }
+            instance = new Type(props, context)
+
+            //必须在这里添加vnode，因为willComponent里可能进行setState操作
+            Component.call(instance, props, context) //重点！！
+            applyComponentHook(instance, 0) //componentWillMount
+            rendered = transaction.renderWithoutSetState(instance)
+
         }
+        instance._rendered = rendered
+      
+        vnode._instance = instance
+
+        if (parentInstance) {
+
+            instance.parentInstance = parentInstance
+        } else {
+            instance.vnode = vnode
+        }
+
+        //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
+        patchRef(vnode._owner, vnode.props.ref, instance)
+
+        if (instance.getChildContext) {
+            context = rendered.context = getContext(instance, context) //将context往下传
+        }
+        return toVnode(rendered, context, instance)
+    } else {
+        
+        vnode.context = context
+        return vnode
     }
+}
+

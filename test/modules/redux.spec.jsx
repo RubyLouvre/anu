@@ -1,28 +1,90 @@
-<!DOCTYPE html>
-<html>
+import {
+    beforeHook,
+    afterHook,
+    browser
+} from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import React from 'dist/React'
+//import {Redux} from 'redux'
+var Redux = require('redux')
+var ReactRedux = require('react-redux')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-  <title>树组件</title>
-  <script type='text/javascript' src="./dist/React.js"></script> 
- 
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
+describe('Redux', function () {
+    this.timeout(200000);
+    before(async () => {
+        await beforeHook();
+    });
+    after(async () => {
+        await afterHook(false);
+    })
+    var body = document.body,
+        div
+    beforeEach(function () {
+        div = document.createElement('div')
+        body.appendChild(div)
+    })
+    afterEach(function () {
+        body.removeChild(div)
+
+    })
+    it('Counter', async () => {
+        class Counter extends React.Component {
+            render() {
+                return <div>
+                    <h1 ref='value'>{this.props.value}</h1>
+                    <button ref='a' onClick={this.props.onIncrement}>+</button>&nbsp;
+                    <button ref='b' onClick={this.props.onDecrement}>-</button>
+                </div>
+            }
+        };
+
+        const reducer = (state = 0, action) => {
+            switch (action.type) {
+                case 'INCREMENT': return state + 1;
+                case 'DECREMENT': return state - 1;
+                default: return state;
+            }
+        };
+
+        const store = Redux.createStore(reducer);
+        function onIncrement() {
+            store.dispatch({ type: 'INCREMENT' })
         }
-    </style>
+        function onDecrement() {
+            store.dispatch({ type: 'DECREMENT' })
+        }
 
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-   <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-      var s
-     window.onload = function(){
+        const render = () => {
+            return ReactDOM.render(
+                <Counter
+                    value={store.getState()}
+                    onIncrement={onIncrement}
+                    onDecrement={onDecrement}
+                />,
+                div
+            );
+        };
+
+        var s = render();
+        store.subscribe(render)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(s.refs.value.innerHTML).toBe('0')
+        expect(s.refs.a.tagName).toBe('BUTTON')
+        await browser.click(s.refs.a)
+            .pause(100)
+            .$apply()
+        expect(s.refs.value.innerHTML).toBe('1')
+        await browser.click(s.refs.a)
+            .pause(100)
+            .$apply()
+        expect(s.refs.value.innerHTML).toBe('2')
+        await browser.click(s.refs.b)
+            .pause(100)
+            .$apply()
+        expect(s.refs.value.innerHTML).toBe('1')
+    })
+    it('TreeView', async () => {
         var combineReducers = Redux.combineReducers
         var Provider = ReactRedux.Provider
         var connect = ReactRedux.connect
@@ -229,22 +291,22 @@
         }
 
         const tree = generateTree()
-       var div =  document.getElementById('root')
+
         const store = createStore(reducers, tree)
-         s = ReactDOM.render(<Provider store={store}>
+        var s = ReactDOM.render(<Provider store={store}>
                 <ConnectedNode id={0} />
             </Provider>, div)
-        
-    }
-    </script>
-</head>
+        await browser.pause(100).$apply()
+        var ass = div.getElementsByTagName('a')
+        expect(ass.length).toBe(5)
+        var el = ass[1]
+        await browser.click(el).pause(100).$apply()
+    
 
-<body>
+        expect(ass.length).toBe(el.className === 'add' ? 7: 5)
+        await browser.click(ass[4]).pause(100).$apply()
 
-    <div>测试</div>
-    <blockquote id='root'></blockquote>
+       expect(ass.length).toBe( 5)
+    })
 
-
-</body>
-
-</html>
+})

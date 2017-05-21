@@ -1,165 +1,69 @@
-import {
-    Component
-} from './Component'
-import {
-    toVnode
-} from './toVnode'
+import {createElement} from './createElement'
 
-import {
-    PureComponent
-} from './PureComponent'
-import {
-    TopLevelWrapper
-} from './TopLevelWrapper'
-import {
-    CurrentOwner
-} from './CurrentOwner'
-import {
-    transaction
-} from './transaction'
-import {
-    win as window,
-    modern,
-    getNs
-} from './browser'
+import {PureComponent} from './PureComponent'
+import {Component} from './Component'
+import {Children} from './compat'
+//import {transaction} from './transaction'
+import {win as window} from './browser'
 
-import './diff'
+import {getNodes} from './util'
 
-import {
-    extend
-} from './util'
+import {diff} from './diff'
 
 var React = {
+    Children, //为了react-redux
     render,
     createElement,
     PureComponent,
     Component
 }
-var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
-/**
- * 创建虚拟DOM
- * 
- * @param {string} type 
- * @param {object} props 
- * @param {array} children 
- * @returns 
- */
-function createElement(type, configs, children) {
-    var props = {}
-    var key = null
-    configs = configs || {}
-    if (configs.key != null) {
-        key = configs.key + ''
-        delete configs.key
-    }
-    extend(props, configs)
-    var c = [].slice.call(arguments, 2)
-    var useEmpty = true
-    if (!c.length) {
-        if (props.children) {
-            c = props.children
-            useEmpty = false
-        }
-    } else {
-        useEmpty = false
-    }
-    if (useEmpty) {
-        c = shallowEqualHack
-    } else {
-        c = flatChildren(c)
-        delete c.merge //注意这里的顺序
-        Object.freeze(c)
-    }
-    props.children = c
-    Object.freeze(props)
-    return new Vnode(type, props, key, CurrentOwner.cur)
-}
-
-function Vnode(type, props, key, owner) {
-    this.type = type
-    this.props = props
-    var ns = getNs(type)
-    if (ns) {
-        this.ns = ns
-    }
-    this.key = key || null
-    this._owner = owner || null
-}
-
-Vnode.prototype = {
-    getDOMNode: function () {
-        return this.dom || null
-    },
-    $$typeof: 1
-}
 
 /**
- * 遍平化children，并合并相邻的简单数据类型
- * 
- * @param {array} children 
- * @param {any} [ret=[]] 
- * @returns 
- */
-
-function flatChildren(children, ret, deep) {
-    ret = ret || []
-    deep = deep || 0
-    for (var i = children.length; i--;) { //从后向前添加
-        var el = children[i]
-        if (el == null) {
-            el = ''
-        }
-        var type = typeof el
-        if (el === '' || type === 'boolean') {
-            continue
-        }
-        if (/number|string/.test(type) || el.type === '#text') {
-            if (el === '' || el.text == '') {
-                continue
-            }
-            if (ret.merge) {
-                ret[0].text = (el.type ? el.text : el) + ret[0].text
-            } else {
-                ret.unshift(el.type ? el : {
-                    type: '#text',
-                    text: String(el),
-                    deep: deep
-                })
-                ret.merge = true
-            }
-        } else if (Array.isArray(el)) {
-            flatChildren(el, ret, deep + 1)
-        } else {
-            ret.unshift(el)
-            el.deep = deep
-            ret.merge = false
-        }
-
-    }
-    return ret
-}
-/**
- * 
- * @param {any} vnode 
- * @param {any} container 
+ *
+ * @param {any} vnode
+ * @param {any} container
  */
 function render(vnode, container, cb) {
-    container.textContent = ''
-    while (container.firstChild) {
-        container.removeChild(container.firstChild)
+    var context = {},
+        prevVnode = container.oldVnode,
+        hostParent = {
+            _hostNode: container
+        }
+    if (!prevVnode) {
+
+        var nodes = getNodes(container)
+        for (var i = 0, el; el = nodes[i++];) {
+            if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
+                hostNode = el
+                vnode._prevCached = el //进入节点对齐模块
+            } else {
+                el
+                    .parentNode
+                    .removeChild(el)
+            }
+        }
+        prevVnode = {}
     }
-    let root = createElement(TopLevelWrapper, {
-        child: vnode
-    });
-    transaction.isInTransation = true
-    root = toVnode(vnode, {})
-    transaction.isInTransation = false
-    root.instance.container = container
-    root.instance.forceUpdate(cb)
-    return root.instance || null
+    // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
+    // 并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
+    var rootVnode = diff(vnode, prevVnode, hostParent, context)
+    if (rootVnode.setAttribute) {
+        rootVnode.setAttribute('data-reactroot', '')
+    }
+    var instance = vnode._instance
+    container.oldVnode = vnode
+    delete vnode._prevCached
+    if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
+        while (instance.parentInstance) {
+            instance = instance.parentInstance
+        }
+        return instance
+
+    } else {
+        return rootVnode
+    }
+
 }
-
-
 
 window.ReactDOM = React
 

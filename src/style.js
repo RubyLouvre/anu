@@ -1,5 +1,5 @@
 import { oneObject, camelize } from './util'
-var rnumber = /^-?\d+(\.\d+)?$/
+export var rnumber = /^-?\d+(\.\d+)?$/
     /**
      * 为元素样子设置样式
      * 
@@ -14,11 +14,10 @@ export function patchStyle(dom, oldStyle, newStyle) {
     }
     var old = {}
     for (var name in newStyle) {
-        var val = newStyle[name]
+        let val = newStyle[name]
         if (oldStyle[name] !== val) {
             name = cssName(name, dom)
-            var type = typeof val
-            if (type === void 666 || type === null) {
+            if (val === void(0) || val === null || val === false) {
                 val = '' //清除样式
             } else if (rnumber.test(val) && !cssNumber[name]) {
                 val = val + 'px' //添加单位
@@ -36,12 +35,12 @@ export function patchStyle(dom, oldStyle, newStyle) {
 
 
 
-var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
+export var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom')
 
-var cssMap = oneObject('float', 'cssFloat')
 
 //var testStyle = document.documentElement.style
 var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-']
+export var cssMap = oneObject('float', 'cssFloat')
 
 /**
  * 转换成当前浏览器可用的样式名
@@ -49,7 +48,7 @@ var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-']
  * @param {any} name 
  * @returns 
  */
-function cssName(name, dom) {
+export function cssName(name, dom) {
     if (cssMap[name]) {
         return cssMap[name]
     }

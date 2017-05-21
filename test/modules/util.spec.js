@@ -1,13 +1,13 @@
 import {
     oneObject,
     extend,
-    isComponent,
+    isFn,
     isStateless,
     toLowerCase,
     inherit,
     camelize,
     getInstances,
-    matchInstance
+    getNodes
 } from 'src/util'
 import {
     isEventName
@@ -41,9 +41,9 @@ describe('util', function() {
     })
 
 
-    it('isComponent', function() {
-        expect(isComponent('sss')).toBe(false)
-        expect(isComponent(function a() {})).toBe(true)
+    it('isFn', function() {
+        expect(isFn('sss')).toBe(false)
+        expect(isFn(function a() {})).toBe(true)
 
     })
 
@@ -93,17 +93,21 @@ describe('util', function() {
         var arr = getInstances(a)
         expect(arr.length).toBe(3)
     })
+    it('getNodes', () => {
+       var dom = {childNodes:[{},{},{}]}
+       expect(getNodes(dom).length).toBe(3)
+    })
 
-    it('matchInstance', () => {
+  /*  it('matchInstance', () => {
         var A = function() {}
         var a = new A
-        var b = {}
+       
         var C = function() {}
         var c = { statelessRender: C }
-        a.parentInstance = b
-        b.parentInstance = c
+       
         expect(matchInstance(a, A)).toBe(a)
-        expect(matchInstance(a, C)).toBe(c)
+        expect(matchInstance(c, C)).toBe(c)
     })
+    */
 })
 

@@ -1,4 +1,7 @@
-import {oneObject} from './util'
+import {
+    oneObject,
+    recyclableNodes
+} from './util'
 
 
 
@@ -12,8 +15,8 @@ var fn = DOMElement.prototype = {
     contains: Boolean
 }
 String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
-            ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
-            ',detachEvent').replace(/\w+/g, function (name) {
+    ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
+    ',detachEvent').replace(/\w+/g, function (name) {
     fn[name] = function () {
         console.log('fire ' + name)
     }
@@ -25,17 +28,16 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
     return new DOMElement(type)
 }
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean
-fakeDoc.documentElement = new DOMElement
+fakeDoc.documentElement = new DOMElement('html')
+fakeDoc.nodeName = '#document'
+export var inBrowser =  typeof window === 'object' && window.alert 
 
-export var win = typeof window === 'object'
-    ? window
-    : typeof global === 'object'
-        ? global
-        : { document: faceDoc};
+export var win = inBrowser ?
+    window : {
+        document: fakeDoc
+    };
 
-export var inBrowser = !!win.location && win.navigator
-
-export var document = win.document
+export var document = win.document || fakeDoc
 
 var versions = {
     objectobject: 7, //IE7-8
@@ -44,17 +46,30 @@ var versions = {
     undefinedobject: NaN
 };
 /* istanbul ignore next  */
-export var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest];
+export var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest]
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8
 
 export function createDOMElement(vnode) {
+    var type = vnode.type
+    if (type === '#text') {
+        var node = recyclableNodes.pop()
+        if (node) {
+            node.nodeValue = vnode.text
+            return node
+        }
+        return document.createTextNode(vnode.text)
+    }
+    if (type === '#comment') {
+        return document.createComment(vnode.text)
+    }
+
     try {
         if (vnode.ns) {
-            return document.createElementNS(vnode.ns,vnode.type)
+            return document.createElementNS(vnode.ns, type)
         }
     } catch (e) {}
-    return document.createElement(vnode.type)
+    return document.createElement(type)
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 // http://demo.yanue.net/HTML5element/
@@ -66,16 +81,16 @@ var mhtml = {
     mark: 1
 }
 var svgTags = oneObject('' +
-// structure
-'svg,g,defs,desc,metadata,symbol,use,' +
-// image & shape
-'image,path,rect,circle,line,ellipse,polyline,polygon,' +
-// text
-'text,tspan,tref,textpath,' +
-// other
-'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
-// font
-'font,font-face,glyph,missing-glyph', svgNs)
+    // structure
+    'svg,g,defs,desc,metadata,symbol,use,' +
+    // image & shape
+    'image,path,rect,circle,line,ellipse,polyline,polygon,' +
+    // text
+    'text,tspan,tref,textpath,' +
+    // other
+    'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
+    // font
+    'font,font-face,glyph,missing-glyph', svgNs)
 
 var rmathTags = /^m/
 var mathNs = 'http://www.w3.org/1998/Math/MathML'
