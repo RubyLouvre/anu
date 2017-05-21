@@ -44,10 +44,10 @@ function inherit(SubClass, SupClass) {
 }
 /**
  *  收集一个元素的所有孩子
- * 
+ *
  * @export
- * @param {any} dom 
- * @returns 
+ * @param {any} dom
+ * @returns
  */
 function getNodes(dom) {
     var ret = [],
@@ -642,15 +642,15 @@ function getDOMNode() {
 
 /**
  * 收集DOM到组件实例的refs中
- * 
- * @param {any} instance 
- * @param {any} ref 
- * @param {any} dom 
+ *
+ * @param {any} instance
+ * @param {any} ref
+ * @param {any} dom
  */
 function patchRef(instance, ref, dom) {
     if (typeof ref === 'function') {
         ref(dom);
-    } else if (instance && typeof ref === 'string') {
+    } else if (instance && ref + '' === ref) {
         instance.refs[ref] = dom;
         dom.getDOMNode = getDOMNode;
     }
@@ -659,7 +659,7 @@ function patchRef(instance, ref, dom) {
 function removeRef(instance, ref) {
     if (typeof ref === 'function') {
         ref(null);
-    } else if (instance && typeof ref === 'string') {
+    } else if (instance && _typeof(ref + '') === ref) {
         delete instance.refs[ref];
     }
 }
@@ -764,10 +764,9 @@ function patchStyle(dom, oldStyle, newStyle) {
 
 var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom');
 
-var cssMap = oneObject('float', 'cssFloat');
-
 //var testStyle = document.documentElement.style
 var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-'];
+var cssMap = oneObject('float', 'cssFloat');
 
 /**
  * 转换成当前浏览器可用的样式名
@@ -822,7 +821,7 @@ function dispatchEvent(e) {
         //从上到下
         var path = paths[i];
         var fn = path.props[captured];
-        if (typeof fn === 'function') {
+        if (isFn(fn)) {
             e.currentTarget = path._hostNode;
             fn.call(path._hostNode, e);
             if (e._stopPropagation) {
@@ -835,7 +834,7 @@ function dispatchEvent(e) {
         //从下到上
         var path = paths[i];
         var fn = path.props[bubble];
-        if (typeof fn === 'function') {
+        if (isFn(fn)) {
             e.currentTarget = path._hostNode;
             fn.call(path._hostNode, e);
             if (e._stopPropagation) {
@@ -1160,7 +1159,8 @@ function setControlledComponent(vnode) {
 }
 
 function getOptionValue(props) {
-    return typeof props.value != 'undefined' ? props.value : props.children[0].text;
+    //typeof props.value === 'undefined'
+    return props.value != void 666 ? props.value : props.children[0].text;
 }
 
 function postUpdateSelectedOptions(vnode) {
@@ -1243,9 +1243,9 @@ function updateComponent(instance) {
         context = instance.context,
         lastProps = instance.lastProps;
 
-    var oldRendered = instance._rendered;
+    var lastRendered = instance._rendered;
     var baseVnode = instance.getBaseVnode();
-    var hostParent = baseVnode._hostParent || oldRendered._hostParent;
+    var hostParent = baseVnode._hostParent || lastRendered._hostParent;
 
     var nextProps = props;
     lastProps = lastProps || props;
@@ -1266,9 +1266,9 @@ function updateComponent(instance) {
     var rendered = transaction.renderWithoutSetState(instance, nextProps, context);
     context = getContext(instance, context);
     instance._rendered = rendered;
-    // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, oldRendered,
+    // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
     // hostParent, context, baseVnode._hostNode)
-    var dom = diffChildren([rendered], [oldRendered], hostParent, context);
+    var dom = diffChildren([rendered], [lastRendered], hostParent, context);
     baseVnode._hostNode = dom;
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context);
@@ -1583,9 +1583,9 @@ function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     var parentNode = hostParent._hostNode;
     var instance = vnode._instance || vnode._owner;
     var canComponentDidMount = instance && !vnode._hostNode;
-    //每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
-
-    if (typeof vnode.type === 'string') {
+    // 每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
+    // 相当于typeof vnode.type === 'string'
+    if (vnode.type + '' === vnode.type) {
         vnode._hostNode = hostNode;
         vnode._hostParent = hostParent;
     }

@@ -81,7 +81,8 @@ export function setControlledComponent(vnode) {
 }
 
 function getOptionValue(props) {
-    return typeof props.value != 'undefined' ?
+    //typeof props.value === 'undefined'
+    return  props.value != void 666 ?
         props.value :
         props.children[0].text
 }

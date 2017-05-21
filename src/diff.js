@@ -382,9 +382,9 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     var parentNode = hostParent._hostNode
     var instance = vnode._instance || vnode._owner
     var canComponentDidMount = instance && !vnode._hostNode
-    //每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
-
-    if (typeof vnode.type === 'string') {
+    // 每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
+    // 相当于typeof vnode.type === 'string'
+    if ( vnode.type +'' ===  vnode.type) {
         vnode._hostNode = hostNode
         vnode._hostParent = hostParent
     }

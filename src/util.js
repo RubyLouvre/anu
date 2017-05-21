@@ -8,7 +8,7 @@
 export function extend(obj, props) {
     if (props) {
         for (let i in props) {
-            if (props.hasOwnProperty(i))
+            if (props.hasOwnProperty(i)) 
                 obj[i] = props[i]
         }
     }
@@ -39,13 +39,14 @@ export function inherit(SubClass, SupClass) {
 }
 /**
  *  收集一个元素的所有孩子
- * 
+ *
  * @export
- * @param {any} dom 
- * @returns 
+ * @param {any} dom
+ * @returns
  */
 export function getNodes(dom) {
-    var ret = [], c = dom.childNodes || []
+    var ret = [],
+        c = dom.childNodes || []
     for (var i = 0, el; el = c[i++];) {
         ret.push(el)
     }
@@ -100,9 +101,9 @@ export function oneObject(array, val) {
         array = array.match(rword) || []
     }
     var result = {},
-        value = val !== void 0 ?
-        val :
-        1
+        value = val !== void 0
+            ? val
+            : 1
     for (var i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value
     }
@@ -133,9 +134,8 @@ export var midway = {
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 }
 
-export function isKeyed(lastChildren,nextChildren) {
-	return nextChildren.length > 0  && !isNullOrUndef(nextChildren[ 0 ].key)
-		&& lastChildren.length > 0 && !isNullOrUndef(lastChildren[ 0 ].key);
+export function isKeyed(lastChildren, nextChildren) {
+    return nextChildren.length > 0 && !isNullOrUndef(nextChildren[0].key) && lastChildren.length > 0 && !isNullOrUndef(lastChildren[0].key);
 }
 
 /**
@@ -147,6 +147,8 @@ export function isKeyed(lastChildren,nextChildren) {
  */
 
 export function getComponentName(type) {
-    return typeof type === 'function' ? (type.displayName || type.name) : type
+    return typeof type === 'function'
+        ? (type.displayName || type.name)
+        : type
 }
 export var recyclableNodes = []

@@ -1,5 +1,7 @@
 import {transaction} from './transaction'
 import {document} from './browser'
+import {isFn} from './util'
+
 export var eventMap = {}
 /**
  * 判定否为与事件相关
@@ -31,7 +33,7 @@ function dispatchEvent(e) {
     for (var i = paths.length; i--;) { //从上到下
         var path = paths[i]
         var fn = path.props[captured]
-        if (typeof fn === 'function') {
+        if (isFn(fn)) {
             e.currentTarget = path._hostNode
             fn.call(path._hostNode, e)
             if (e._stopPropagation) {
@@ -43,7 +45,7 @@ function dispatchEvent(e) {
     for (var i = 0, n = paths.length; i < n; i++) { //从下到上
         var path = paths[i]
         var fn = path.props[bubble]
-        if (typeof fn === 'function') {
+        if (isFn(fn)) {
             e.currentTarget = path._hostNode
             fn.call(path._hostNode, e)
             if (e._stopPropagation) {
