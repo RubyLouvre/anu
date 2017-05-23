@@ -13,6 +13,9 @@ describe('createElement', function () {
 
         el = React.createElement('p', null, null)
         expect(el.props.children.length).toBe(0)
+        el = React.createElement('div',{key:'xxx'})
+        
+        expect(el.key).toBe('xxx')
 
         el = React.createElement('p', null, [])
         expect(el.props.children.length).toBe(0)
@@ -84,6 +87,7 @@ describe('createElement', function () {
             text: 'aaaccc',
             deep: 0
         })
+         
 
         var el = React.createElement('p', null, 'aaa', '', 'ccc')
         expect(el.props.children[0]).toEqual({

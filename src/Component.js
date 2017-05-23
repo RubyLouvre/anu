@@ -4,7 +4,7 @@ import {
 
 import {
     extend,
-    midway,
+    options,
     noop,
     isFn
 } from './util'
@@ -19,7 +19,6 @@ import {
 export function Component(props, context) {
     this.context = context
     this.props = props
-    // this.uuid = Math.random()
     this.refs = {}
     if (!this.state)
         this.state = {}
@@ -85,7 +84,7 @@ function setStateProxy(instance, cb) {
             cb: cb
         })
     if (!instance._updateBatchNumber) {
-        instance._updateBatchNumber = midway.updateBatchNumber + 1
+        instance._updateBatchNumber = options.updateBatchNumber + 1
     }
     transaction.enqueue(instance)
 }

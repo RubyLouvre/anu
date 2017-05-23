@@ -3,7 +3,7 @@ import {
     getInstances,
     getComponentName,
     recyclableNodes,
-    midway,
+    options,
     isFn,
     extend,
     getNodes
@@ -14,7 +14,6 @@ import {transaction} from './transaction'
 import {toVnode} from './toVnode'
 import {diffProps} from './diffProps'
 import {document, createDOMElement} from './browser'
-import {removeRef} from './ref'
 import {setControlledComponent} from './ControlledComponent'
 
 // createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
@@ -65,19 +64,25 @@ export function updateComponent(instance) {
  * @param {any} vnode
  */
 function removeComponent(vnode) {
+  
     if (vnode._hostNode && vnode.type === '#text' && recyclableNodes.length < 512) {
         recyclableNodes.push(vnode._hostNode)
     }
-    var instance = vnode._instance
 
-    instance && applyComponentHook(instance, 7) //componentWillUnmount hook
+    var instance = vnode._instance
+    if(instance){
+       if (options.beforeUnmount) 
+           options.beforeUnmount(instance);
+        applyComponentHook(instance, 7) //componentWillUnmount hook
+    }
+
 
     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
         vnode[name] = NaN
     })
     var props = vnode.props
     if (props) {
-        removeRef(instance, props.ref)
+        vnode.__ref && vnode.__ref(null)
         props
             .children
             .forEach(function (el) {
@@ -210,6 +215,7 @@ export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastIns
             }
         }
         diffProps(props, lastProps, vnode, lastVnode)
+        vnode.__ref && vnode.__ref( hostNode)
     }
 
     var wrapperState = vnode._wrapperState
@@ -421,10 +427,12 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         if (props) {
             diffProps(props, {}, vnode, {})
             setControlledComponent(vnode)
+            vnode.__ref && vnode.__ref(vnode._hostNode)
         }
         if (instances) {
 
             while (instance = instances.shift()) {
+                options.afterMount && options.afterMount (instance)
                 applyComponentHook(instance, 2)
             }
         }
@@ -433,7 +441,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     return hostNode
 }
 //将Component中这个东西移动这里
-midway.immune.updateComponent = function updateComponentProxy(instance) { //这里触发视图更新
+options.immune.updateComponent = function updateComponentProxy(instance) { //这里触发视图更新
 
     updateComponent(instance)
     instance._forceUpdate = false

@@ -35,10 +35,10 @@ function extend(obj, props) {
 
 /**
  *  收集一个元素的所有孩子
- * 
+ *
  * @export
- * @param {any} dom 
- * @returns 
+ * @param {any} dom
+ * @returns
  */
 
 

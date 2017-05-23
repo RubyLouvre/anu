@@ -1,12 +1,6 @@
-import {
-    extend
-} from './util'
-import {
-    getNs
-} from './browser'
-import {
-    CurrentOwner
-} from './CurrentOwner'
+import {extend} from './util'
+import {getNs} from './browser'
+import {CurrentOwner} from './CurrentOwner'
 
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 /**
@@ -25,6 +19,10 @@ export function createElement(type, configs, children) {
         key = configs.key + ''
         delete configs.key
     }
+
+    var ref = configs.ref
+    delete configs.ref
+
     extend(props, configs)
     var c = []
         .slice
@@ -48,19 +46,38 @@ export function createElement(type, configs, children) {
 
     props.children = c
     Object.freeze(props)
-    return new Vnode(type, props, key, CurrentOwner.cur)
+    return new Vnode(type, props, key, CurrentOwner.cur, ref)
+}
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this
 }
 
-function Vnode(type, props, key, owner) {
+function Vnode(type, props, key, owner, ref) {
     this.type = type
     this.props = props
-   
+
     if (key) {
         this.key = key
     }
     var ns = getNs(type)
     if (ns) {
         this.ns = ns
+    }
+    var refType = typeof ref
+    if (refType === 'string') {
+        var refKey = ref
+        this.__ref = function (dom) {
+            var instance = this._owner
+            if(dom && !dom.getDOMNode){
+                dom.getDOMNode = getDOMNode
+            }
+            if(instance){
+                instance.refs[refKey] = dom
+            }
+        }
+    } else if (refType === 'function') {
+        this.__ref = ref
     }
     /*
     this._hostNode = null
@@ -104,12 +121,13 @@ function flatChildren(children, ret, deep) {
                 continue
             }
             if (ret.merge) {
-                ret[0].text = (el.type ?
-                    el.text :
-                    el) + ret[0].text
+                ret[0].text = (el.type
+                    ? el.text
+                    : el) + ret[0].text
             } else {
-                ret.unshift(el.type ?
-                    el : {
+                ret.unshift(el.type
+                    ? el
+                    : {
                         type: '#text',
                         text: String(el),
                         deep: deep

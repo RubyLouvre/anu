@@ -1,5 +1,5 @@
 import {CurrentOwner} from './CurrentOwner'
-import {midway} from './util'
+import {options} from './util'
 var queue = []
 var callbacks = []
 
@@ -45,8 +45,8 @@ export var transaction = {
             this.isInTransation = true
 
             if (instance) 
-                midway.updateBatchNumber++;
-            var globalBatchNumber = midway.updateBatchNumber
+                options.updateBatchNumber++;
+            var globalBatchNumber = options.updateBatchNumber
 
             var renderQueue = queue.concat()
             var processingCallbacks = callbacks.concat()
@@ -55,7 +55,7 @@ export var transaction = {
             renderQueue.forEach(function (inst) {
                 try {
                     if (inst._updateBatchNumber === globalBatchNumber) {
-                        midway
+                        options
                             .immune
                             .updateComponent(inst)
                     }

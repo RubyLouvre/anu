@@ -10,10 +10,7 @@ import {
 import {
     oneObject
 } from './util'
-import {
-    patchRef,
-    removeRef
-} from './ref'
+
 import {
     document
 } from './browser'
@@ -87,22 +84,16 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
         delete prevVnode._wrapperState
     }
     var isHTML = !vnode.ns
-    var diffRef = false
     for (let name in nextProps) {
         let val = nextProps[name]
         switch (name) {
             case 'children':
             case 'key':
+             case 'ref':
                 break
             case 'style':
                 patchStyle(dom, lastProps.style || {}, val)
-                break
-            case 'ref':
-                if (lastProps[name] !== val) {
-                    diffRef = {
-                        val: val
-                    }
-                }
+        
                 break
             case 'dangerouslySetInnerHTML':
                 var oldhtml = lastProps[name] && lastProps[name].__html
@@ -154,9 +145,7 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
     //如果旧属性在新属性对象不存在，那么移除DOM
     for (let name in lastProps) {
         if (!(name in nextProps)) {
-            if (name === 'ref') {
-                removeRef(instance, lastProps.ref)
-            } else if (isEventName(name)) { //移除事件
+            if (isEventName(name)) { //移除事件
                 var events = dom.__events || {}
                 delete events[name]
             } else { //移除属性
@@ -169,9 +158,6 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
                 }
             }
         }
-    }
-    if (diffRef) {
-        patchRef(instance, diffRef.val, dom)
     }
 }
 

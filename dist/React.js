@@ -126,7 +126,7 @@ function camelize(target) {
         return match.charAt(1).toUpperCase();
     });
 }
-var midway = {
+var options = {
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
@@ -276,6 +276,10 @@ function createElement(type, configs, children) {
         key = configs.key + '';
         delete configs.key;
     }
+
+    var ref = configs.ref;
+    delete configs.ref;
+
     extend(props, configs);
     var c = [].slice.call(arguments, 2);
     var useEmpty = true;
@@ -297,19 +301,38 @@ function createElement(type, configs, children) {
 
     props.children = c;
     Object.freeze(props);
-    return new Vnode(type, props, key, CurrentOwner.cur);
+    return new Vnode(type, props, key, CurrentOwner.cur, ref);
+}
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
 }
 
-function Vnode(type, props, key, owner) {
+function Vnode(type, props, key, owner, ref) {
     this.type = type;
     this.props = props;
 
     if (key) {
-        this.key;
+        this.key = key;
     }
     var ns = getNs(type);
     if (ns) {
         this.ns = ns;
+    }
+    var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
+    if (refType === 'string') {
+        var refKey = ref;
+        this.__ref = function (dom) {
+            var instance = this._owner;
+            if (dom && !dom.getDOMNode) {
+                dom.getDOMNode = getDOMNode;
+            }
+            if (instance) {
+                instance.refs[refKey] = dom;
+            }
+        };
+    } else if (refType === 'function') {
+        this.__ref = ref;
     }
     /*
     this._hostNode = null
@@ -416,8 +439,8 @@ var transaction = {
         if (!this.isInTransation) {
             this.isInTransation = true;
 
-            if (instance) midway.updateBatchNumber++;
-            var globalBatchNumber = midway.updateBatchNumber;
+            if (instance) options.updateBatchNumber++;
+            var globalBatchNumber = options.updateBatchNumber;
 
             var renderQueue = queue.concat();
             var processingCallbacks = callbacks.concat();
@@ -426,7 +449,7 @@ var transaction = {
             renderQueue.forEach(function (inst) {
                 try {
                     if (inst._updateBatchNumber === globalBatchNumber) {
-                        midway.immune.updateComponent(inst);
+                        options.immune.updateComponent(inst);
                     }
                 } catch (e) {
                     /* istanbul ignore next */
@@ -455,7 +478,6 @@ var transaction = {
 function Component(props, context) {
     this.context = context;
     this.props = props;
-    // this.uuid = Math.random()
     this.refs = {};
     if (!this.state) this.state = {};
 }
@@ -515,7 +537,7 @@ function setStateProxy(instance, cb) {
         cb: cb
     });
     if (!instance._updateBatchNumber) {
-        instance._updateBatchNumber = midway.updateBatchNumber + 1;
+        instance._updateBatchNumber = options.updateBatchNumber + 1;
     }
     transaction.enqueue(instance);
 }
@@ -635,43 +657,14 @@ function applyComponentHook(instance, index) {
     }
 }
 
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
-
-/**
- * 收集DOM到组件实例的refs中
- *
- * @param {any} instance
- * @param {any} ref
- * @param {any} dom
- */
-function patchRef(instance, ref, dom) {
-    if (typeof ref === 'function') {
-        ref(dom);
-    } else if (instance && ref + '' === ref) {
-        instance.refs[ref] = dom;
-        dom.getDOMNode = getDOMNode;
-    }
-}
-
-function removeRef(instance, ref) {
-    if (typeof ref === 'function') {
-        ref(null);
-    } else if (instance && _typeof(ref + '') === ref) {
-        delete instance.refs[ref];
-    }
-}
-
 /**
  * 将组件节点转化为简单的虚拟节点
- * 
+ *
  * @export
- * @param {any} vnode 
- * @param {any} context 
- * @param {any} parentInstance 
- * @returns 
+ * @param {any} vnode
+ * @param {any} context
+ * @param {any} parentInstance
+ * @returns
  */
 function toVnode(vnode, context, parentInstance) {
 
@@ -689,11 +682,13 @@ function toVnode(vnode, context, parentInstance) {
         } else {
 
             //处理普通组件
-            var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {};
+            var defaultProps = Type.defaultProps;
             props = extend({}, props); //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-            for (var i in defaultProps) {
-                if (props[i] === void 666) {
-                    props[i] = defaultProps[i];
+            if (defaultProps) {
+                for (var i in defaultProps) {
+                    if (props[i] === void 666) {
+                        props[i] = defaultProps[i];
+                    }
                 }
             }
             instance = new Type(props, context);
@@ -715,7 +710,7 @@ function toVnode(vnode, context, parentInstance) {
         }
 
         //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
-        patchRef(vnode._owner, vnode.props.ref, instance);
+        vnode.__ref && vnode.__ref(instance);
 
         if (instance.getChildContext) {
             context = rendered.context = getContext(instance, context); //将context往下传
@@ -979,22 +974,16 @@ function diffProps(nextProps, lastProps, vnode, prevVnode) {
         delete prevVnode._wrapperState;
     }
     var isHTML = !vnode.ns;
-    var diffRef = false;
     for (var name in nextProps) {
         var val = nextProps[name];
         switch (name) {
             case 'children':
             case 'key':
+            case 'ref':
                 break;
             case 'style':
                 patchStyle(dom, lastProps.style || {}, val);
-                break;
-            case 'ref':
-                if (lastProps[name] !== val) {
-                    diffRef = {
-                        val: val
-                    };
-                }
+
                 break;
             case 'dangerouslySetInnerHTML':
                 var oldhtml = lastProps[name] && lastProps[name].__html;
@@ -1045,9 +1034,7 @@ function diffProps(nextProps, lastProps, vnode, prevVnode) {
     //如果旧属性在新属性对象不存在，那么移除DOM
     for (var _name in lastProps) {
         if (!(_name in nextProps)) {
-            if (_name === 'ref') {
-                removeRef(instance, lastProps.ref);
-            } else if (isEventName(_name)) {
+            if (isEventName(_name)) {
                 //移除事件
                 var events = dom.__events || {};
                 delete events[_name];
@@ -1060,9 +1047,6 @@ function diffProps(nextProps, lastProps, vnode, prevVnode) {
                 }
             }
         }
-    }
-    if (diffRef) {
-        patchRef(instance, diffRef.val, dom);
     }
 }
 
@@ -1184,7 +1168,7 @@ function collectOptions(vnode, ret) {
 
 function updateOptions(vnode, multiple, propValue) {
 
-    var options = collectOptions(vnode),
+    var options$$1 = collectOptions(vnode),
         selectedValue;
     if (multiple) {
         selectedValue = {};
@@ -1196,7 +1180,7 @@ function updateOptions(vnode, multiple, propValue) {
             /* istanbul ignore next */
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
         }
-        for (var i = 0, option; option = options[i++];) {
+        for (var i = 0, option; option = options$$1[i++];) {
             var state = option._wrapperState || /* istanbul ignore next */handleSpecialNode(option);
             var selected = selectedValue.hasOwnProperty(state.value);
             if (state.selected !== selected) {
@@ -1208,15 +1192,15 @@ function updateOptions(vnode, multiple, propValue) {
         // Do not set `select.value` as exact behavior isn't consistent across all
         // browsers for all cases.
         selectedValue = '' + propValue;
-        for (var i = 0, option; option = options[i++];) {
+        for (var i = 0, option; option = options$$1[i++];) {
             var state = option._wrapperState;
             if (state.value === selectedValue) {
                 setDomSelected(option, true);
                 return;
             }
         }
-        if (options.length) {
-            setDomSelected(options[0], true);
+        if (options$$1.length) {
+            setDomSelected(options$$1[0], true);
         }
     }
 }
@@ -1272,7 +1256,7 @@ function updateComponent(instance) {
     baseVnode._hostNode = dom;
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context);
-
+    //if (options.afterUpdate) options.afterUpdate(instance);
     return dom; //注意
 }
 /**
@@ -1281,19 +1265,23 @@ function updateComponent(instance) {
  * @param {any} vnode
  */
 function removeComponent(vnode) {
+
     if (vnode._hostNode && vnode.type === '#text' && recyclableNodes.length < 512) {
         recyclableNodes.push(vnode._hostNode);
     }
-    var instance = vnode._instance;
 
-    instance && applyComponentHook(instance, 7); //componentWillUnmount hook
+    var instance = vnode._instance;
+    if (instance) {
+        if (options.beforeUnmount) options.beforeUnmount(instance);
+        applyComponentHook(instance, 7); //componentWillUnmount hook
+    }
 
     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
         vnode[name] = NaN;
     });
     var props = vnode.props;
     if (props) {
-        removeRef(instance, props.ref);
+        vnode.__ref && vnode.__ref(null);
         props.children.forEach(function (el) {
             removeComponent(el);
         });
@@ -1417,6 +1405,7 @@ function diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance) 
             }
         }
         diffProps(props, lastProps, vnode, lastVnode);
+        vnode.__ref && vnode.__ref(hostNode);
     }
 
     var wrapperState = vnode._wrapperState;
@@ -1622,10 +1611,12 @@ function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         if (props) {
             diffProps(props, {}, vnode, {});
             setControlledComponent(vnode);
+            vnode.__ref && vnode.__ref(vnode._hostNode);
         }
         if (instances) {
 
             while (instance = instances.shift()) {
+                options.afterMount && options.afterMount(instance);
                 applyComponentHook(instance, 2);
             }
         }
@@ -1634,7 +1625,7 @@ function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     return hostNode;
 }
 //将Component中这个东西移动这里
-midway.immune.updateComponent = function updateComponentProxy(instance) {
+options.immune.updateComponent = function updateComponentProxy(instance) {
     //这里触发视图更新
 
     updateComponent(instance);

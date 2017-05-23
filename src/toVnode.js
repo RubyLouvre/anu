@@ -1,40 +1,23 @@
-import {
-    extend,
-    getContext,
-    isFn,
-    isStateless,
-    noop
-} from './util'
-import {
-    applyComponentHook
-} from './lifecycle'
-import {
-    transaction
-} from './transaction'
-import {
-    patchRef
-} from './ref'
-import {
-    Component
-} from './Component'
-import {
-    CurrentOwner
-} from './CurrentOwner'
-
+import {extend, getContext, isFn, isStateless, noop} from './util'
+import {applyComponentHook} from './lifecycle'
+import {transaction} from './transaction'
+import {Component} from './Component'
+import {CurrentOwner} from './CurrentOwner'
 
 /**
  * 将组件节点转化为简单的虚拟节点
- * 
+ *
  * @export
- * @param {any} vnode 
- * @param {any} context 
- * @param {any} parentInstance 
- * @returns 
+ * @param {any} vnode
+ * @param {any} context
+ * @param {any} parentInstance
+ * @returns
  */
 export function toVnode(vnode, context, parentInstance) {
 
     var Type = vnode.type,
-        instance, rendered
+        instance,
+        rendered
 
     if (isFn(Type)) {
         var props = vnode.props
@@ -47,11 +30,13 @@ export function toVnode(vnode, context, parentInstance) {
         } else {
 
             //处理普通组件
-            var defaultProps = Type.defaultProps || applyComponentHook(Type, -2) || {}
+            var defaultProps = Type.defaultProps
             props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-            for (var i in defaultProps) {
-                if (props[i] === void 666) {
-                    props[i] = defaultProps[i]
+            if (defaultProps) {
+                for (var i in defaultProps) {
+                    if (props[i] === void 666) {
+                        props[i] = defaultProps[i]
+                    }
                 }
             }
             instance = new Type(props, context)
@@ -60,10 +45,9 @@ export function toVnode(vnode, context, parentInstance) {
             Component.call(instance, props, context) //重点！！
             applyComponentHook(instance, 0) //componentWillMount
             rendered = transaction.renderWithoutSetState(instance)
-
         }
         instance._rendered = rendered
-      
+
         vnode._instance = instance
 
         if (parentInstance) {
@@ -74,16 +58,15 @@ export function toVnode(vnode, context, parentInstance) {
         }
 
         //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
-        patchRef(vnode._owner, vnode.props.ref, instance)
+        vnode.__ref && vnode.__ref(instance)
 
         if (instance.getChildContext) {
             context = rendered.context = getContext(instance, context) //将context往下传
         }
         return toVnode(rendered, context, instance)
     } else {
-        
+
         vnode.context = context
         return vnode
     }
 }
-

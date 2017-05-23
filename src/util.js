@@ -129,7 +129,7 @@ export function camelize(target) {
             .toUpperCase()
     })
 }
-export var midway = {
+export var options = {
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 }
