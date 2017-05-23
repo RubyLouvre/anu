@@ -116,6 +116,7 @@ function getContext(instance, context) {
     return context;
 }
 var rcamelize = /[-_][^-_]/g;
+var HTML_KEY = 'dangerouslySetInnerHTML';
 function camelize(target) {
     //提前判断，提高getStyle等的效率
     if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
@@ -985,7 +986,7 @@ function diffProps(nextProps, lastProps, vnode, prevVnode) {
                 patchStyle(dom, lastProps.style || {}, val);
 
                 break;
-            case 'dangerouslySetInnerHTML':
+            case HTML_KEY:
                 var oldhtml = lastProps[name] && lastProps[name].__html;
                 if (val && val.__html !== oldhtml) {
                     dom.innerHTML = val.__html;
@@ -1256,7 +1257,7 @@ function updateComponent(instance) {
     baseVnode._hostNode = dom;
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context);
-    //if (options.afterUpdate) options.afterUpdate(instance);
+    if (options.afterUpdate) options.afterUpdate(instance);
     return dom; //注意
 }
 /**
@@ -1264,10 +1265,10 @@ function updateComponent(instance) {
  *
  * @param {any} vnode
  */
-function removeComponent(vnode) {
+function removeComponent(vnode, dom) {
 
-    if (vnode._hostNode && vnode.type === '#text' && recyclableNodes.length < 512) {
-        recyclableNodes.push(vnode._hostNode);
+    if (dom && vnode.type === '#text' && recyclableNodes.length < 512) {
+        recyclableNodes.push(dom);
     }
 
     var instance = vnode._instance;
@@ -1276,30 +1277,34 @@ function removeComponent(vnode) {
         applyComponentHook(instance, 7); //componentWillUnmount hook
     }
 
-    '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
-        vnode[name] = NaN;
-    });
     var props = vnode.props;
     if (props) {
         vnode.__ref && vnode.__ref(null);
-        props.children.forEach(function (el) {
-            removeComponent(el);
-        });
+        dom && (dom.__events = null);
+        var nodes = props.children;
+        for (var i = 0, el; el = nodes[i++];) {
+            removeComponent(el, el._hostNode);
+        }
     }
+    '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
+        vnode[name] = NaN;
+    });
 }
 
 function removeComponents(nodes) {
     for (var i = 0, el; el = nodes[i++];) {
         var dom = el._hostNode;
-        if (!dom && el._instance) {
-            var a = el._instance.getBaseVnode();
-            dom = a && a._hostNode;
-        }
-
+        /*   if (!dom && el._instance) {
+               var a = el
+                   ._instance
+                   .getBaseVnode()
+               dom = a && a._hostNode
+           }
+        */
         if (dom && dom.parentNode) {
             dom.parentNode.removeChild(dom);
         }
-        removeComponent(el);
+        removeComponent(el, dom);
     }
 }
 
@@ -1362,7 +1367,7 @@ function diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance) 
         if (insertPoint) {
             parentNode.removeChild(insertPoint);
         }
-        removeComponent(lastVnode);
+        removeComponent(lastVnode, hostNode);
 
         hostNode = nextNode;
     }
@@ -1382,7 +1387,7 @@ function diff(vnode, lastVnode, hostParent, context, insertPoint, lastInstance) 
         if (vnode._prevCached) {
             alignChildren(nextChildren, getNodes(hostNode), baseVnode, context);
         } else {
-            if (!props.angerouslySetInnerHTML) {
+            if (!props[HTML_KEY]) {
                 var nextChildren = props.children;
                 var n1 = nextChildren.length;
                 var n2 = lastChildren.length;
@@ -1593,7 +1598,7 @@ function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         parentNode.insertBefore(hostNode, insertPoint || null);
     }
     //只有元素与组件才有props
-    if (props && !props.dangerouslySetInnerHTML) {
+    if (props && !props[HTML_KEY]) {
         // 先diff Children 再 diff Props 最后是 diff ref
         if (hasDOM) {
             alignChildren(props.children, getNodes(hasDOM), vnode, context);

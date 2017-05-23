@@ -8,6 +8,7 @@ import {
     isEventName
 } from './event'
 import {
+    HTML_KEY,
     oneObject
 } from './util'
 
@@ -95,7 +96,7 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
                 patchStyle(dom, lastProps.style || {}, val)
         
                 break
-            case 'dangerouslySetInnerHTML':
+            case HTML_KEY:
                 var oldhtml = lastProps[name] && lastProps[name].__html
                 if (val && val.__html !== oldhtml) {
                     dom.innerHTML = val.__html

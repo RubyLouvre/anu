@@ -117,6 +117,7 @@ export function getContext(instance, context) {
     return context
 }
 var rcamelize = /[-_][^-_]/g
+export var HTML_KEY = 'dangerouslySetInnerHTML'
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
     if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
