@@ -56,7 +56,7 @@ function Vnode(type, props, key, owner) {
     this.props = props
    
     if (key) {
-        this.key
+        this.key = key
     }
     var ns = getNs(type)
     if (ns) {

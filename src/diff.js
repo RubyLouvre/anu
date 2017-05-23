@@ -56,7 +56,7 @@ export function updateComponent(instance) {
     baseVnode._hostNode = dom
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
-
+//if (options.afterUpdate) options.afterUpdate(instance);
     return dom //注意
 }
 /**
