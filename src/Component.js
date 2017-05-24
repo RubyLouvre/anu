@@ -1,13 +1,6 @@
-import {
-    transaction
-} from './transaction'
+import {transaction} from './transaction'
 
-import {
-    extend,
-    options,
-    noop,
-    isFn
-} from './util'
+import {extend, options, noop, isFn} from './util'
 
 /**
  *
@@ -20,9 +13,9 @@ export function Component(props, context) {
     this.context = context
     this.props = props
     this.refs = {}
-    if (!this.state)
+    if (!this.state) 
         this.state = {}
-}
+    }
 
 Component.prototype = {
 
@@ -34,10 +27,11 @@ Component.prototype = {
     getBaseVnode() {
         var p = this
         do {
-            if (p.vnode) {
-                return p.vnode
+            var pp = p.parentInstance
+            if (!pp) {
+                return p._currentElement
             }
-        } while (p = p.parentInstance)
+        } while (p = pp);
     },
     forceUpdate(cb) {
         this._pendingForceUpdate = true
@@ -52,13 +46,12 @@ Component.prototype = {
             return this.state
         }
 
-
         var nextState = extend({}, this.state);
         for (var i = 0; i < queue.length; i++) {
             var partial = queue[i]
-            extend(nextState, isFn( partial ) ?
-                partial.call(this, nextState, props, context) :
-                partial)
+            extend(nextState, isFn(partial)
+                ? partial.call(this, nextState, props, context)
+                : partial)
         }
 
         return nextState
@@ -78,7 +71,7 @@ Component.prototype = {
  */
 
 function setStateProxy(instance, cb) {
-    if (isFn( cb ))
+    if (isFn(cb)) 
         transaction.enqueueCallback({ //确保回调先进入
             component: instance,
             cb: cb

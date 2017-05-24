@@ -46,15 +46,15 @@ export function toVnode(vnode, context, parentInstance) {
             applyComponentHook(instance, 0) //componentWillMount
             rendered = transaction.renderWithoutSetState(instance)
         }
+        instance._currentElement = vnode
         instance._rendered = rendered
 
         vnode._instance = instance
 
         if (parentInstance) {
-
             instance.parentInstance = parentInstance
         } else {
-            instance.vnode = vnode
+          //  instance.vnode = vnode
         }
 
         //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance

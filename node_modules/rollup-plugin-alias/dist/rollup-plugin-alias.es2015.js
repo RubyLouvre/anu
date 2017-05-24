@@ -1,0 +1,108 @@
+import { posix } from 'path';
+import { platform } from 'os';
+import fs from 'fs';
+import slash from 'slash';
+
+var VOLUME = /^([A-Z]:)/;
+var IS_WINDOWS = platform() === 'win32';
+
+// Helper functions
+var noop = function () {
+  return null;
+};
+var matches = function (key, importee) {
+  if (importee.length < key.length) {
+    return false;
+  }
+  if (importee === key) {
+    return true;
+  }
+  var importeeStartsWithKey = importee.indexOf(key) === 0;
+  var importeeHasSlashAfterKey = importee.substring(key.length)[0] === '/';
+  return importeeStartsWithKey && importeeHasSlashAfterKey;
+};
+var endsWith = function (needle, haystack) {
+  return haystack.slice(-needle.length) === needle;
+};
+var isFilePath = function (id) {
+  return (/^\.?\//.test(id)
+  );
+};
+var exists = function (uri) {
+  try {
+    return fs.statSync(uri).isFile();
+  } catch (e) {
+    return false;
+  }
+};
+
+var normalizeId = function (id) {
+  if (IS_WINDOWS && typeof id === 'string') {
+    return slash(id.replace(VOLUME, ''));
+  }
+
+  return id;
+};
+
+function alias() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  var hasResolve = Array.isArray(options.resolve);
+  var resolve = hasResolve ? options.resolve : ['.js'];
+  var aliasKeys = hasResolve ? Object.keys(options).filter(function (k) {
+    return k !== 'resolve';
+  }) : Object.keys(options);
+
+  // No aliases?
+  if (!aliasKeys.length) {
+    return {
+      resolveId: noop
+    };
+  }
+
+  return {
+    resolveId: function (importee, importer) {
+      var importeeId = normalizeId(importee);
+      var importerId = normalizeId(importer);
+
+      // First match is supposed to be the correct one
+      var toReplace = aliasKeys.find(function (key) {
+        return matches(key, importeeId);
+      });
+
+      if (!toReplace) {
+        return null;
+      }
+
+      var entry = options[toReplace];
+
+      var updatedId = importeeId.replace(toReplace, entry);
+
+      if (isFilePath(updatedId)) {
+        var directory = posix.dirname(importerId);
+
+        // Resolve file names
+        var filePath = posix.resolve(directory, updatedId);
+        var match = resolve.map(function (ext) {
+          return '' + filePath + ext;
+        }).find(exists);
+
+        if (match) {
+          return match;
+        }
+
+        // To keep the previous behaviour we simply return the file path
+        // with extension
+        if (endsWith('.js', filePath)) {
+          return filePath;
+        }
+
+        return filePath + '.js';
+      }
+
+      return updatedId;
+    }
+  };
+}
+
+export default alias;
