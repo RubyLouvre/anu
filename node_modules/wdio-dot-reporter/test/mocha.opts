@@ -1,4 +1,0 @@
---colors
---require should
---reporter spec
---timeout 60000
