@@ -10,26 +10,13 @@ import {
     extend,
     getNodes
 } from './util'
-import {
-    applyComponentHook
-} from './lifecycle'
+import {applyComponentHook} from './lifecycle'
 
-import {
-    transaction
-} from './transaction'
-import {
-    toVnode
-} from './toVnode'
-import {
-    diffProps
-} from './diffProps'
-import {
-    document,
-    createDOMElement
-} from './browser'
-import {
-    setControlledComponent
-} from './ControlledComponent'
+import {transaction} from './transaction'
+import {toVnode} from './toVnode'
+import {diffProps} from './diffProps'
+import {document, createDOMElement} from './browser'
+import {setControlledComponent} from './ControlledComponent'
 
 // createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
 // 如果baseVnode的type类型为函数，那么产生实例
@@ -40,12 +27,7 @@ import {
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {
-        props,
-        state,
-        context,
-        lastProps
-    } = instance
+    var {props, state, context, lastProps} = instance
     var lastRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent || lastRendered._hostParent
@@ -71,14 +53,14 @@ export function updateComponent(instance) {
     instance._rendered = rendered
     // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
     // hostParent, context, baseVnode._hostNode)
-   
+
     var dom = diffChildren([rendered], [lastRendered], hostParent, context)
     baseVnode._hostNode = dom
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
-     if (options.afterUpdate)
-        options.afterUpdate( instance, props);
-   
+    if (options.afterUpdate) 
+        options.afterUpdate(instance._currentElement);
+    
     return dom //注意
 }
 /**
@@ -94,11 +76,12 @@ function removeComponent(vnode, dom) {
 
     var instance = vnode._instance
     if (instance) {
-        if (options.beforeUnmount)
-            options.beforeUnmount(instance);
+        if (options.beforeUnmount) {
+            options.beforeUnmount(instance._currentElement)
+        }
+
         applyComponentHook(instance, 7) //componentWillUnmount hook
     }
-
 
     var props = vnode.props
     if (props) {
@@ -281,9 +264,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep
     }
-    return type + '/' + (vnode.deep || 0) + (vnode.key ?
-        '/' + vnode.key :
-        '')
+    return type + '/' + (vnode.deep || 0) + (vnode.key
+        ? '/' + vnode.key
+        : '')
 }
 
 /**
@@ -400,7 +383,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     vnode = toVnode(vnode, context, parentIntance)
     if (vnode.context) {
         context = vnode.context
-        if (vnode.refs)
+        if (vnode.refs) 
             delete vnode.context
     }
 
@@ -409,8 +392,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     var parentNode = hostParent._hostNode
     var instance = vnode._instance || vnode._owner
     var canComponentDidMount = instance && !vnode._hostNode
-    // 每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
-    // 相当于typeof vnode.type === 'string'
+    // 每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance 相当于typeof vnode.type === 'string'
     if (vnode.type + '' === vnode.type) {
         vnode._hostNode = hostNode
         vnode._hostParent = hostParent
@@ -426,7 +408,6 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     //文本是没有instance, 只有empty与元素节点有instance
 
     if (parentNode && !hasDOM) {
-
         parentNode.insertBefore(hostNode, insertPoint || null)
     }
     //只有元素与组件才有props
@@ -454,11 +435,11 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         if (instances) {
 
             while (instance = instances.shift()) {
-                afterMount(instance._rendered)
+                afterMount(instance._currentElement)
                 applyComponentHook(instance, 2)
             }
         } else {
-            afterMount(vnode)
+            //  afterMount(vnode)
         }
     }
 

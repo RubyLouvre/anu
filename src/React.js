@@ -61,7 +61,7 @@ function render(vnode, container, cb) {
         return instance
 
     } else {
-        return rootVnode
+        return rootNode
     }
 
 }

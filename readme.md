@@ -10,6 +10,7 @@
 4. 生命周期函数的参数与官方保持一致
 5. 直接与react-redux, react-router-dom, react-router-redux混用
 6. 支持[后端渲染](https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
+6. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
 
 

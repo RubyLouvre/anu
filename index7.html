@@ -16,45 +16,25 @@
             background: lawngreen;
         }
     </style>
-<!--<script type='text/javascript' src="./dist/React.js"></script>-->
+<script type='text/javascript' src="./dist/React.js"></script>
+<script type='text/javascript' src="./dist/devtools.js"></script>
+
 <!-- <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
-     <script src="./test/preact.js"></script>
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
 var s
 
 window.onload = function(){
-/** @jsx h */
-const { h, render, Component } = preact;    // normally this would be an import statement.
 
-class Clock extends Component {
-    constructor() {
-        super();
-        // set initial time:
-        this.state.time = Date.now();
-    }
 
-    componentDidMount() {
-        // update time every second
-        this.timer = setInterval(() => {
-            this.setState({ time: Date.now() });
-        }, 1000);
-    }
 
-    componentWillUnmount() {
-        // stop when not renderable
-        clearInterval(this.timer);
-    }
-
-    render(props, state) {
-        let time = new Date(state.time).toLocaleTimeString();
-        return <span>{ time }<p>---</p></span>;
-    }
-}
-
-// render an instance of Clock into <body>:
-   s = render(<Clock />, document.body);
+ var s = ReactDOM.render(<svg><line
+            x1='5'
+            y1='5'
+            x2='45'
+            y2='45'
+            stroke='green' /></svg>, document.getElementById('example'))
 }
     </script>
 </head>

@@ -29,7 +29,7 @@ describe('无狀态组件', function () {
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('Hello Sebastian')
+        expect(s._currentElement._hostNode.innerHTML).toBe('Hello Sebastian')
 
     })
 
@@ -67,12 +67,12 @@ describe('无狀态组件', function () {
         await browser
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('1')
+        expect(s._currentElement._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode._hostNode)
+            .click(s._currentElement._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('3')
+        expect(s._currentElement._hostNode.innerHTML).toBe('3')
 
         expect(a).toBe(3)
 
@@ -112,12 +112,12 @@ describe('无狀态组件', function () {
             .pause(200)
             .$apply()
 
-        expect(s.vnode._hostNode.innerHTML).toBe('1')
+        expect(s._currentElement._hostNode.innerHTML).toBe('1')
         await browser
-            .click(s.vnode._hostNode)
+            .click(s._currentElement._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('1')
+        expect(s._currentElement._hostNode.innerHTML).toBe('1')
         expect(a).toBe(3)
 
     });
@@ -150,12 +150,12 @@ describe('无狀态组件', function () {
             .pause(200)
             .$apply()
 
-        expect(s.vnode._hostNode.innerHTML).toBe('7')
+        expect(s._currentElement._hostNode.innerHTML).toBe('7')
         await browser
-            .click(s.vnode._hostNode)
+            .click(s._currentElement._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('7')
+        expect(s._currentElement._hostNode.innerHTML).toBe('7')
 
 
     });
@@ -187,13 +187,13 @@ describe('无狀态组件', function () {
         await browser
             .pause(100)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('7')
+        expect(s._currentElement._hostNode.innerHTML).toBe('7')
 
         await browser
-            .click(s.vnode._hostNode)
+            .click(s._currentElement._hostNode)
             .pause(200)
             .$apply()
-        expect(s.vnode._hostNode.innerHTML).toBe('9')
+        expect(s._currentElement._hostNode.innerHTML).toBe('9')
 
 
     });

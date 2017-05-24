@@ -154,6 +154,8 @@ function createDevToolsBridge() {
         // console.log('添加虚拟DOM到调试面板',vnode)
 
         const instance = updateReactComponent(vnode, null);
+       // console.log('[',instance,']')
+        
         if (isRootVNode(vnode)) {
             instance._rootID = nextRootKey(roots);
             roots[instance._rootID] = instance;
@@ -170,14 +172,9 @@ function createDevToolsBridge() {
     };
 
 
-    const componentUpdated = (component, props) => {
+    const componentUpdated = (vnode) => {
 
-        var componentType = component.statelessRender || component.constructor
-        var vnode = {
-            type: componentType,
-            props: props,
-            _instance: component
-        }
+      
         var key = getKeyForVNode(vnode)
         const prevRenderedChildren = [];
 
@@ -212,18 +209,8 @@ function createDevToolsBridge() {
     };
 
     /** Notify devtools that a component has been unmounted from the DOM. */
-    const componentRemoved = (component) => {
-        if(component.type === 'string'){
-            vnode = component
-        }else{
-            var componentType = component.statelessRender || component.constructor 
-            var vnode = {
-                type: componentType,
-                props: component.props,
-                _instance: component
-            }
-        }
-        const instance = updateReactComponent(vnode)
+    const componentRemoved = (vnode) => {
+        const instance =  getInstanceFromVNode(vnode)  // updateReactComponent(vnode)
         
         visitNonCompositeChildren(instance, (childInst) => {
             deleteInstanceForVNode(childInst.vnode);
@@ -452,7 +439,7 @@ if (document.readyState === "complete") {
     initDevTools()
 } else {
     window.addEventListener('load', initDevTools)
-    document.addEventListener('DOMContentLoaded', initDevTools)
+   // document.addEventListener('DOMContentLoaded', initDevTools)
 }
 
 
