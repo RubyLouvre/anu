@@ -1362,11 +1362,13 @@
 	    instance._rendered = rendered;
 	    // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
 	    // hostParent, context, baseVnode._hostNode)
+
 	    var dom = diffChildren([rendered], [lastRendered], hostParent, context);
 	    baseVnode._hostNode = dom;
 	    //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
 	    applyComponentHook(instance, 6, nextProps, nextState, context);
-	    if (options.afterUpdate) options.afterUpdate(instance);
+	    if (options.afterUpdate) options.afterUpdate(instance, props);
+
 	    return dom; //注意
 	}
 	/**
@@ -1403,13 +1405,11 @@
 	function removeComponents(nodes) {
 	    for (var i = 0, el; el = nodes[i++];) {
 	        var dom = el._hostNode;
-	        /*   if (!dom && el._instance) {
-	               var a = el
-	                   ._instance
-	                   .getBaseVnode()
-	               dom = a && a._hostNode
-	           }
-	        */
+	        if (!dom && el._instance) {
+	            var a = el._instance.getBaseVnode();
+	            dom = a && a._hostNode;
+	        }
+
 	        if (dom && dom.parentNode) {
 	            dom.parentNode.removeChild(dom);
 	        }
@@ -1562,8 +1562,7 @@
 	    if (type === '#text') {
 	        return type + '/' + vnode.deep;
 	    }
-
-	    return type + '/' + vnode.deep + (vnode.key ? '/' + vnode.key : '');
+	    return type + '/' + (vnode.deep || 0) + (vnode.key ? '/' + vnode.key : '');
 	}
 
 	/**
@@ -1597,7 +1596,7 @@
 	        }
 	    }
 
-	    //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
+	    //第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
 	    debugString = '';
 	    var firstDOM = lastChildren[0] && lastChildren[0]._hostNode;
 	    var insertPoint = firstDOM;
@@ -1610,7 +1609,6 @@
 	        var lastVnode = null;
 	        if (mapping[_uuid]) {
 	            lastVnode = mapping[_uuid].shift();
-
 	            if (!mapping[_uuid].length) {
 	                delete mapping[_uuid];
 	            }

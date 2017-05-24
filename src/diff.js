@@ -10,13 +10,26 @@ import {
     extend,
     getNodes
 } from './util'
-import {applyComponentHook} from './lifecycle'
+import {
+    applyComponentHook
+} from './lifecycle'
 
-import {transaction} from './transaction'
-import {toVnode} from './toVnode'
-import {diffProps} from './diffProps'
-import {document, createDOMElement} from './browser'
-import {setControlledComponent} from './ControlledComponent'
+import {
+    transaction
+} from './transaction'
+import {
+    toVnode
+} from './toVnode'
+import {
+    diffProps
+} from './diffProps'
+import {
+    document,
+    createDOMElement
+} from './browser'
+import {
+    setControlledComponent
+} from './ControlledComponent'
 
 // createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
 // 如果baseVnode的type类型为函数，那么产生实例
@@ -27,7 +40,12 @@ import {setControlledComponent} from './ControlledComponent'
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {props, state, context, lastProps} = instance
+    var {
+        props,
+        state,
+        context,
+        lastProps
+    } = instance
     var lastRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent || lastRendered._hostParent
@@ -53,12 +71,14 @@ export function updateComponent(instance) {
     instance._rendered = rendered
     // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
     // hostParent, context, baseVnode._hostNode)
+   
     var dom = diffChildren([rendered], [lastRendered], hostParent, context)
     baseVnode._hostNode = dom
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
-    if (options.afterUpdate) 
-       options.afterUpdate(instance);
+     if (options.afterUpdate)
+        options.afterUpdate( instance, props);
+   
     return dom //注意
 }
 /**
@@ -67,15 +87,15 @@ export function updateComponent(instance) {
  * @param {any} vnode
  */
 function removeComponent(vnode, dom) {
-  
+
     if (dom && vnode.type === '#text' && recyclableNodes.length < 512) {
         recyclableNodes.push(dom)
     }
 
     var instance = vnode._instance
-    if(instance){
-       if (options.beforeUnmount) 
-           options.beforeUnmount(instance);
+    if (instance) {
+        if (options.beforeUnmount)
+            options.beforeUnmount(instance);
         applyComponentHook(instance, 7) //componentWillUnmount hook
     }
 
@@ -85,11 +105,11 @@ function removeComponent(vnode, dom) {
         vnode.__ref && vnode.__ref(null)
         dom && (dom.__events = null)
         var nodes = props.children
-        for(var i = 0, el; el = nodes[i++];){
-             removeComponent(el, el._hostNode)
+        for (var i = 0, el; el = nodes[i++];) {
+            removeComponent(el, el._hostNode)
         }
     };
-     '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
+    '_hostNode,_hostParent,_instance,_wrapperState,_owner'.replace(/\w+/g, function (name) {
         vnode[name] = NaN
     })
 
@@ -98,13 +118,13 @@ function removeComponent(vnode, dom) {
 function removeComponents(nodes) {
     for (var i = 0, el; el = nodes[i++];) {
         var dom = el._hostNode
-     /*   if (!dom && el._instance) {
+        if (!dom && el._instance) {
             var a = el
                 ._instance
                 .getBaseVnode()
             dom = a && a._hostNode
         }
-   */
+
         if (dom && dom.parentNode) {
             dom
                 .parentNode
@@ -218,7 +238,7 @@ export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastIns
             }
         }
         diffProps(props, lastProps, vnode, lastVnode)
-        vnode.__ref && vnode.__ref( hostNode)
+        vnode.__ref && vnode.__ref(hostNode)
     }
 
     var wrapperState = vnode._wrapperState
@@ -261,10 +281,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep
     }
-
-    return type + '/' + vnode.deep + (vnode.key
-        ? '/' + vnode.key
-        : '')
+    return type + '/' + (vnode.deep || 0) + (vnode.key ?
+        '/' + vnode.key :
+        '')
 }
 
 /**
@@ -298,7 +317,7 @@ function diffChildren(nextChildren, lastChildren, hostParent, context) {
         }
     }
 
-    //console.log('旧的',debugString) 第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
+    //第2步，遍历新children, 从hash中取出旧节点, 然后一一比较
     debugString = ''
     var firstDOM = lastChildren[0] && lastChildren[0]._hostNode
     var insertPoint = firstDOM
@@ -311,7 +330,6 @@ function diffChildren(nextChildren, lastChildren, hostParent, context) {
         var lastVnode = null
         if (mapping[uuid]) {
             lastVnode = mapping[uuid].shift()
-
             if (!mapping[uuid].length) {
                 delete mapping[uuid]
             }
@@ -382,10 +400,10 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     vnode = toVnode(vnode, context, parentIntance)
     if (vnode.context) {
         context = vnode.context
-        if (vnode.refs) 
+        if (vnode.refs)
             delete vnode.context
     }
-   
+
     var hostNode = hasDOM || createDOMElement(vnode)
     var props = vnode.props
     var parentNode = hostParent._hostNode
@@ -393,7 +411,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     var canComponentDidMount = instance && !vnode._hostNode
     // 每个实例保存其虚拟DOM 最开始的虚拟DOM保存instance
     // 相当于typeof vnode.type === 'string'
-    if ( vnode.type +'' ===  vnode.type) {
+    if (vnode.type + '' === vnode.type) {
         vnode._hostNode = hostNode
         vnode._hostParent = hostParent
     }
@@ -408,7 +426,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     //文本是没有instance, 只有empty与元素节点有instance
 
     if (parentNode && !hasDOM) {
-      
+
         parentNode.insertBefore(hostNode, insertPoint || null)
     }
     //只有元素与组件才有props
@@ -421,7 +439,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         }
 
     }
-    var afterMount = options.afterMount || noop 
+    var afterMount = options.afterMount || noop
     //尝试插入DOM树
     if (parentNode) {
         var instances
@@ -436,11 +454,11 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         if (instances) {
 
             while (instance = instances.shift()) {
-                afterMount (instance._rendered)
+                afterMount(instance._rendered)
                 applyComponentHook(instance, 2)
             }
-        }else{
-             afterMount (vnode)
+        } else {
+            afterMount(vnode)
         }
     }
 

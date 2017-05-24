@@ -14,11 +14,7 @@
     var instanceMap = new Map();
 
     function getKeyForVNode(vnode) {
-        if (vnode._instance) {
-            return vnode._instance;
-        } else {
-            return vnode._hostNode;
-        }
+        return vnode._instance || vnode._hostNode;
     }
 
     function getInstanceFromVNode(vnode) {
@@ -29,7 +25,6 @@
 
     function createInstanceFromVNode(vnode, instance) {
         var key = getKeyForVNode(vnode);
-
         instanceMap.set(key, instance);
     }
 
@@ -118,14 +113,18 @@
             return queueUpdate(Reconciler.unmountComponent, queuedUnmountComponents, component);
         };
 
-        /** Notify devtools that a new component instance has been mounted into the DOM. */
+        // 创建 componentAdded， componentUpdated，componentRemoved三个重要钩子
         var componentAdded = function componentAdded(vnode) {
+            // 添加虚拟DOM到调试面板
+            // console.log('添加虚拟DOM到调试面板',vnode)
+
             var instance = updateReactComponent(vnode, null);
             if (isRootVNode(vnode)) {
                 instance._rootID = nextRootKey(roots);
                 roots[instance._rootID] = instance;
                 Mount._renderNewRootComponent(instance);
             }
+            //遍历非实组件的孩子
             visitNonCompositeChildren(instance, function (childInst) {
                 if (childInst) {
                     childInst._inDevTools = true;
@@ -135,14 +134,21 @@
             queueMountComponent(instance);
         };
 
-        /** Notify devtools that a component has been updated with new props/state. */
-        var componentUpdated = function componentUpdated(vnode) {
+        var componentUpdated = function componentUpdated(component, props) {
+
+            var componentType = component.statelessRender || component.constructor;
+            var vnode = {
+                type: componentType,
+                props: props,
+                _instance: component
+            };
+            var key = getKeyForVNode(vnode);
             var prevRenderedChildren = [];
 
+            //通过anu的虚拟DOM的_instance或_hostNode得到之前被封装过newInstance
             visitNonCompositeChildren(getInstanceFromVNode(vnode), function (childInst) {
                 prevRenderedChildren.push(childInst);
             });
-
             // Notify devtools about updates to this component and any non-composite
             // children
             var instance = updateReactComponent(vnode, null);
@@ -170,10 +176,20 @@
         };
 
         /** Notify devtools that a component has been unmounted from the DOM. */
-        var componentRemoved = function componentRemoved(vnode) {
-            var instance = updateReactComponent(vnode, null);
+        var componentRemoved = function componentRemoved(component) {
+            if (component.type === 'string') {
+                vnode = component;
+            } else {
+                var componentType = component.statelessRender || component.constructor;
+                var vnode = {
+                    type: componentType,
+                    props: component.props,
+                    _instance: component
+                };
+            }
+            var instance = updateReactComponent(vnode);
 
-            visitNonCompositeChildren(function (childInst) {
+            visitNonCompositeChildren(instance, function (childInst) {
                 deleteInstanceForVNode(childInst.vnode);
                 queueUnmountComponent(childInst);
             });
@@ -233,7 +249,7 @@
         } else {
             newInstance = createReactDOMComponent(vnode, parentDom);
         }
-        // console.log(newInstance)
+
         var oldInstance = getInstanceFromVNode(vnode);
 
         if (oldInstance) {
@@ -246,6 +262,7 @@
         }
 
         createInstanceFromVNode(vnode, newInstance);
+        //将它存入instanceMap中
         return newInstance;
     }
 
@@ -293,19 +310,20 @@
         var typeName = type.displayName || type.name;
         var instance = vnode._instance;
         var dom = vnode._hostNode;
-        var a = {
+        return {
             getName: function getName() {
                 return typeName;
             },
 
+            type: type,
             _currentElement: {
-                type: typeName,
+                type: type,
                 key: normalizeKey(vnode.key),
                 props: vnode.props,
                 ref: null
             },
             _instance: instance,
-            _renderedComponent: updateReactComponent(instance, dom),
+            _renderedComponent: updateReactComponent(instance._rendered, dom),
             forceUpdate: instance.forceUpdate.bind(instance),
             node: dom,
             props: instance.props,
@@ -313,8 +331,6 @@
             state: instance.state,
             vnode: vnode
         };
-        console.log('createReactCompositeComponent', a, typeName);
-        return a;
     }
 
     function nextRootKey(roots) {
@@ -333,17 +349,14 @@
      */
     function visitNonCompositeChildren(component, callback) {
         if (component._renderedComponent) {
-            if (!component._renderedComponent._component) {
-                callback(component._renderedComponent);
-                visitNonCompositeChildren(component._renderedComponent, callback);
-            }
+
+            callback(component._renderedComponent);
+            visitNonCompositeChildren(component._renderedComponent, callback);
         } else if (component._renderedChildren) {
             component._renderedChildren.forEach(function (child) {
                 if (child) {
                     callback(child);
-                    if (!child._component) {
-                        visitNonCompositeChildren(child, callback);
-                    }
+                    visitNonCompositeChildren(child, callback);
                 }
             });
         }
@@ -366,8 +379,8 @@
 
         var nextAfterUpdate = options.afterUpdate;
 
-        options.afterUpdate = function (vnode) {
-            bridge.componentUpdated(vnode);
+        options.afterUpdate = function (vnode, props) {
+            bridge.componentUpdated(vnode, props);
             if (nextAfterUpdate) {
                 nextAfterUpdate(vnode);
             }
