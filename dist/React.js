@@ -20,6 +20,12 @@
 	    return obj;
 	}
 	/**
+	 * 一个空函数
+	 *
+	 * @export
+	 */
+	function noop() {}
+	/**
 	 * 类继承
 	 *
 	 * @export
@@ -120,7 +126,6 @@
 	    });
 	}
 	var options = {
-	    roots: {},
 	    updateBatchNumber: 1,
 	    immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 	};
@@ -1710,6 +1715,7 @@
 	            diffChildren(props.children, [], vnode, context); //添加第4参数
 	        }
 	    }
+	    var afterMount = options.afterMount || noop;
 	    //尝试插入DOM树
 	    if (parentNode) {
 	        var instances;
@@ -1725,9 +1731,11 @@
 	        if (instances) {
 
 	            while (instance = instances.shift()) {
-	                options.afterMount && options.afterMount(instance);
+	                afterMount(instance._rendered);
 	                applyComponentHook(instance, 2);
 	            }
+	        } else {
+	            afterMount(vnode);
 	        }
 	    }
 

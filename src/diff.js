@@ -5,6 +5,7 @@ import {
     recyclableNodes,
     options,
     isFn,
+    noop,
     HTML_KEY,
     extend,
     getNodes
@@ -420,6 +421,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         }
 
     }
+    var afterMount = options.afterMount || noop 
     //尝试插入DOM树
     if (parentNode) {
         var instances
@@ -434,9 +436,11 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
         if (instances) {
 
             while (instance = instances.shift()) {
-                options.afterMount && options.afterMount (instance)
+                afterMount (instance._rendered)
                 applyComponentHook(instance, 2)
             }
+        }else{
+             afterMount (vnode)
         }
     }
 
