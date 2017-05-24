@@ -1,7 +1,0 @@
-{
-    "extends": "standard",
-    "parser": "typescript-eslint-parser",
-    "rules": {
-        // Additional, per-project rules...
-    }
-}
