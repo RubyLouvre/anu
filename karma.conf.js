@@ -5,7 +5,7 @@ var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
 
 module.exports = function (config) {
-    config.set({
+    var configuration = {
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
         //  basePath: '',
@@ -50,7 +50,7 @@ module.exports = function (config) {
             dir: 'coverage/'
         },
         webpack: {
-            
+
             module: {
                 /* Transpile source and test files */
                 preLoaders: [{
@@ -117,9 +117,15 @@ module.exports = function (config) {
         customLaunchers: {
             'Chrome': {
                 base: 'WebDriverio',
-                browserName: 'chrome',
+                browserName: 'Chrome',
                 name: 'Karma'
 
+            },
+            Chrome_travis_ci: {
+                base: 'WebDriverio',
+                flags: ['--no-sandbox'],
+                browserName: 'Chrome',
+                name: 'Karma'
             }
         },
         browsers: ['Chrome'],
@@ -131,5 +137,12 @@ module.exports = function (config) {
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity
-    })
+    }
+
+    if (process.env.TRAVIS) {
+        configuration.browsers = [
+            'Chrome_travis_ci'
+        ]
+    }
+    config.set(configuration)
 }
