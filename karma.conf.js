@@ -120,12 +120,8 @@ module.exports = function (config) {
                 browserName: 'chrome',
                 name: 'Karma'
 
-            },
-            Chrome_travis_ci: {
-                base: 'WebDriverio',
-                browserName: 'chrome',
-                name: 'Karma'
             }
+           
         },
         browsers: ['Chrome'],
 
@@ -138,11 +134,6 @@ module.exports = function (config) {
         concurrency: Infinity
     }
 
-    if (process.env.TRAVIS) {
-        console.log('====')
-        configuration.browsers = [
-            'Chrome_travis_ci'
-        ]
-    }
+
     config.set(configuration)
 }
