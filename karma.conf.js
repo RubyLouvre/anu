@@ -117,14 +117,15 @@ module.exports = function (config) {
         customLaunchers: {
             'Chrome': {
                 base: 'WebDriverio',
-                browserName: 'Chrome',
+                browserName: 'chrome',
                 name: 'Karma'
 
             },
             Chrome_travis_ci: {
-                base: 'WebDriverio',
+               // base: 'WebDriverio',
+              //  browserName: 'chrome',
+                 base: 'Chrome',
                 flags: ['--no-sandbox'],
-                browserName: 'Chrome',
                 name: 'Karma'
             }
         },
