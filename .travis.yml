@@ -18,7 +18,7 @@ before_install:
 
 install:
   - npm install
-  - selenium-standalone install --config-./s.js
+  - selenium-standalone install --config＝./s.js
   - selenium-standalone start
 
 script:
