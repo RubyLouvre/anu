@@ -71,7 +71,7 @@ export function updateComponent(instance) {
     // rendered的type为函数时，会多次进入toVnode  var dom = diff(rendered, lastRendered,
     // hostParent, context, baseVnode._hostNode)
 
-    var dom = diffChildren([rendered], [lastRendered], hostParent, context)
+    var dom = diffChildren([rendered], [lastRendered], hostParent,  context)
     baseVnode._hostNode = dom
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
@@ -258,7 +258,9 @@ function alignChildren(children, nodes, hostParent, context) {
     var parentNode = hostParent._hostNode
     for (let i = 0, n = children.length; i < n; i++) {
         var vnode = children[i]
-        vnode = toVnode(vnode)
+        var data = {context}
+        vnode = toVnode(vnode, data)
+        context = data.context
         var dom = nodes[i]
         if (!dom || vnode.type !== dom.nodeName.toLowerCase()) {
 
@@ -402,12 +404,9 @@ function diffChildren(nextChildren, lastChildren, hostParent, context) {
 export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     //如果一个虚拟DOM的type为字符串 或 它拥有instance，且这个instance不再存在parentInstance, 那么它就可以拥有_dom属性
     var hasDOM = vnode._prevCached
-    vnode = toVnode(vnode, context, parentIntance)
-    if (vnode.context) {
-        context = vnode.context
-        if (vnode.refs)
-            delete vnode.context
-    }
+    var data = {context}
+    vnode = toVnode(vnode, data, parentIntance)
+   
 
     var hostNode = hasDOM || createDOMElement(vnode)
     var props = vnode.props
@@ -436,9 +435,9 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     if (props && !props[HTML_KEY]) {
         // 先diff Children 再 diff Props 最后是 diff ref
         if (hasDOM) {
-            alignChildren(props.children, getNodes(hasDOM), vnode, context)
+            alignChildren(props.children, getNodes(hasDOM), vnode, data.context)
         } else {
-            diffChildren(props.children, [], vnode, context) //添加第4参数
+            diffChildren(props.children, [], vnode, data.context) //添加第4参数
         }
 
     }

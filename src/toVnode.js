@@ -9,21 +9,21 @@ import {CurrentOwner} from './CurrentOwner'
  *
  * @export
  * @param {any} vnode
- * @param {any} context
+ * @param {any} data 拥有context的对象
  * @param {any} parentInstance
  * @returns
  */
-export function toVnode(vnode, context, parentInstance) {
+export function toVnode(vnode, data, parentInstance) {
 
     var Type = vnode.type,
         instance,
         rendered
-    
+    var context = data.context
     if (vnode.vtype % 2 == 0) {
         var props = vnode.props
         if (vnode.vtype === 4) {
             //处理无状态组件
-            instance = new Component(null, context)
+            instance = new Component(null, data.context)
             instance.render = instance.statelessRender = Type
             rendered = transaction.renderWithoutSetState(instance, props, context)
 
@@ -61,12 +61,10 @@ export function toVnode(vnode, context, parentInstance) {
         vnode.__ref && vnode.__ref(instance)
 
         if (instance.getChildContext) {
-            context = rendered.context = getContext(instance, context) //将context往下传
+            data.context = getContext(instance, context) //将context往下传
         }
-        return toVnode(rendered, context, instance)
+        return toVnode(rendered, data, instance)
     } else {
-
-        vnode.context = context
         return vnode
     }
 }
