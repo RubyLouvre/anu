@@ -276,8 +276,9 @@ ReactDOM.render(
 
 cli
 
+
 ```
-  
+    npm install selenium-standalone
     selenium－standalone install --config=./s.js
     selenium－standalone start
     //另开窗口
@@ -285,5 +286,14 @@ cli
 
 
 ```
+或者
+//linux32可以改成mac, window
+```
+ wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip
+ unzip chromedriver_linux32.zip
+ wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
+ java -jar selenium-server-standalone-3.3.1.jar
+//另开窗口
+    npm run build
 
-
+``
