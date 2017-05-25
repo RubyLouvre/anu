@@ -1,4 +1,6 @@
 
+sudo: true
+
 language: node_js
 
 node_js:
