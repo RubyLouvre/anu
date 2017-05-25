@@ -30,12 +30,15 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3 # give xvfb some time to start
-  - echo "Download selenium-server-standalone jar file"
-  - wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
-  - unzip chromedriver_linux64.zip
-  - wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
-  - echo "Run selenium server - background process"
-  - java -jar selenium-server-standalone-3.3.1.jar &
+  - selenium-standalone install --config=./s.js
+  - echo "selenium-standalone start - background process"
+  - selenium-standalone start &
+ # - echo "Download selenium-server-standalone jar file"
+ # - wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
+ # - unzip chromedriver_linux64.zip
+#  - wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
+#  - echo "Run selenium server - background process"
+ # - java -jar selenium-server-standalone-3.3.1.jar &
 
 install:
   - npm install
