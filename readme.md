@@ -277,12 +277,13 @@ ReactDOM.render(
 cli
 
 ```
-    // start selenium-server-standalone
-    java -jar selenium-server-standalone-3.3.1.jar
-    // start karma server && event-driver server
-    node node_modules/karma-event-driver-ext
-    // or 
-    ./node_modules/.bin/karma-event-driver-ext
+  
+    selenium－standalone install --config=./s.js
+    selenium－standalone start
+    //另开窗口
+    npm run build
+
+
 ```
 
 
