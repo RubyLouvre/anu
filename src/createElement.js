@@ -1,6 +1,12 @@
-import {extend} from './util'
-import {getNs} from './browser'
-import {CurrentOwner} from './CurrentOwner'
+import {
+    extend
+} from './util'
+import {
+    getNs
+} from './browser'
+import {
+    CurrentOwner
+} from './CurrentOwner'
 
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 /**
@@ -60,24 +66,31 @@ function Vnode(type, props, key, owner, ref) {
     if (key) {
         this.key = key
     }
-    var ns = getNs(type)
-    if (ns) {
-        this.ns = ns
-    }
+
     var refType = typeof ref
     if (refType === 'string') {
         var refKey = ref
         this.__ref = function (dom) {
             var instance = this._owner
-            if(dom && !dom.getDOMNode){
+            if (dom) {
                 dom.getDOMNode = getDOMNode
             }
-            if(instance){
+            if (instance) {
                 instance.refs[refKey] = dom
             }
         }
     } else if (refType === 'function') {
         this.__ref = ref
+    }
+    if (typeof type === 'string') {
+        this.vtype === 1
+        var ns = getNs(type)
+        if (ns) {
+            this.ns = ns
+        }
+
+    } else if (typeof type === 'function') {
+        this.vtype = type.prototype && type.prototype.render ? 2 : 4
     }
     /*
     this._hostNode = null
@@ -121,13 +134,12 @@ function flatChildren(children, ret, deep) {
                 continue
             }
             if (ret.merge) {
-                ret[0].text = (el.type
-                    ? el.text
-                    : el) + ret[0].text
+                ret[0].text = (el.type ?
+                    el.text :
+                    el) + ret[0].text
             } else {
-                ret.unshift(el.type
-                    ? el
-                    : {
+                ret.unshift(el.type ?
+                    el : {
                         type: '#text',
                         text: String(el),
                         deep: deep

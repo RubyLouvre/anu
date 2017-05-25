@@ -82,17 +82,6 @@ export function isFn(type) {
     return typeof type === 'function'
 }
 
-/**
- *
- *
- * @export
- * @param {any} type
- * @returns
- */
-export function isStateless(type) {
-    var fn = type.prototype
-    return isFn(type) && (!fn || !fn.render)
-}
 
 var rword = /[^, ]+/g
 
@@ -152,4 +141,4 @@ export function getComponentName(type) {
         ? (type.displayName || type.name)
         : type
 }
-export var recyclableNodes = []
+export var recyclables = []

@@ -1,4 +1,4 @@
-import {extend, getContext, isFn, isStateless, noop} from './util'
+import {extend, getContext, isFn, noop} from './util'
 import {applyComponentHook} from './lifecycle'
 import {transaction} from './transaction'
 import {Component} from './Component'
@@ -18,10 +18,10 @@ export function toVnode(vnode, context, parentInstance) {
     var Type = vnode.type,
         instance,
         rendered
-
-    if (isFn(Type)) {
+    
+    if (vnode.vtype % 2 == 0) {
         var props = vnode.props
-        if (isStateless(Type)) {
+        if (vnode.vtype === 4) {
             //处理无状态组件
             instance = new Component(null, context)
             instance.render = instance.statelessRender = Type

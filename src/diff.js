@@ -2,21 +2,33 @@ import {
     getContext,
     getInstances,
     getComponentName,
-    recyclableNodes,
+    recyclables,
     options,
-    isFn,
     noop,
     HTML_KEY,
     extend,
     getNodes
 } from './util'
-import {applyComponentHook} from './lifecycle'
+import {
+    applyComponentHook
+} from './lifecycle'
 
-import {transaction} from './transaction'
-import {toVnode} from './toVnode'
-import {diffProps} from './diffProps'
-import {document, createDOMElement} from './browser'
-import {setControlledComponent} from './ControlledComponent'
+import {
+    transaction
+} from './transaction'
+import {
+    toVnode
+} from './toVnode'
+import {
+    diffProps
+} from './diffProps'
+import {
+    document,
+    createDOMElement
+} from './browser'
+import {
+    setControlledComponent
+} from './ControlledComponent'
 
 // createElement创建的虚拟DOM叫baseVnode,用于确定DOM树的结构与保存原始数据与DOM节点
 // 如果baseVnode的type类型为函数，那么产生实例
@@ -27,7 +39,12 @@ import {setControlledComponent} from './ControlledComponent'
  * @param {any} instance
  */
 export function updateComponent(instance) {
-    var {props, state, context, lastProps} = instance
+    var {
+        props,
+        state,
+        context,
+        lastProps
+    } = instance
     var lastRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
     var hostParent = baseVnode._hostParent || lastRendered._hostParent
@@ -58,9 +75,9 @@ export function updateComponent(instance) {
     baseVnode._hostNode = dom
     //生命周期 componentDidUpdate(lastProps, prevState, prevContext)
     applyComponentHook(instance, 6, nextProps, nextState, context)
-    if (options.afterUpdate) 
+    if (options.afterUpdate)
         options.afterUpdate(instance._currentElement);
-    
+
     return dom //注意
 }
 /**
@@ -70,8 +87,13 @@ export function updateComponent(instance) {
  */
 function removeComponent(vnode, dom) {
 
-    if (dom && vnode.type === '#text' && recyclableNodes.length < 512) {
-        recyclableNodes.push(dom)
+    if (dom) {
+        var nodeName = dom.__n || (dom.__n = dom.nodeName.toLowerCase())
+        if (recyclables[nodeName] && recyclables[nodeName].length < 512) {
+            recyclables[nodeName].push(dom)
+        } else {
+            recyclables[nodeName] = [dom]
+        }
     }
 
     var instance = vnode._instance
@@ -159,7 +181,7 @@ export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastIns
         return updateComponent(instance, context)
     }
 
-    if (isFn(vnode.type)) {
+    if (vnode.vtype % 2 === 0) {
         var parentInstance = lastInstance && lastInstance.parentInstance
         return toDOM(vnode, context, hostParent, insertPoint, parentInstance)
 
@@ -264,9 +286,9 @@ function computeUUID(type, vnode) {
     if (type === '#text') {
         return type + '/' + vnode.deep
     }
-    return type + '/' + (vnode.deep || 0) + (vnode.key
-        ? '/' + vnode.key
-        : '')
+    return type + '/' + (vnode.deep || 0) + (vnode.key ?
+        '/' + vnode.key :
+        '')
 }
 
 /**
@@ -383,7 +405,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
     vnode = toVnode(vnode, context, parentIntance)
     if (vnode.context) {
         context = vnode.context
-        if (vnode.refs) 
+        if (vnode.refs)
             delete vnode.context
     }
 

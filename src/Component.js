@@ -1,6 +1,13 @@
-import {transaction} from './transaction'
+import {
+    transaction
+} from './transaction'
 
-import {extend, options, noop, isFn} from './util'
+import {
+    extend,
+    options,
+    noop,
+    isFn
+} from './util'
 
 /**
  *
@@ -13,15 +20,16 @@ export function Component(props, context) {
     this.context = context
     this.props = props
     this.refs = {}
-    if (!this.state) 
+    this._pendingStateQueue = []
+    if (!this.state)
         this.state = {}
-    }
+}
 
 Component.prototype = {
 
     setState(state, cb) {
-        var arr = this._pendingStateQueue = this._pendingStateQueue || []
-        arr.push(state)
+        this._pendingStateQueue.push(state)
+     
         setStateProxy(this, cb)
     },
     getBaseVnode() {
@@ -38,20 +46,19 @@ Component.prototype = {
         setStateProxy(this, cb)
     },
     _processPendingState: function (props, context) {
-
-        var queue = this._pendingStateQueue
-        delete this._pendingStateQueue
-
-        if (!queue) {
+        var n = this._pendingStateQueue.length
+        if (n == 0) {
             return this.state
         }
-
+        var queue = this._pendingStateQueue.concat()
+        this._pendingStateQueue.length = 0
+        
         var nextState = extend({}, this.state);
-        for (var i = 0; i < queue.length; i++) {
+        for (var i = 0; i < n; i++) {
             var partial = queue[i]
-            extend(nextState, isFn(partial)
-                ? partial.call(this, nextState, props, context)
-                : partial)
+            extend(nextState, isFn(partial) ?
+                partial.call(this, nextState, props, context) :
+                partial)
         }
 
         return nextState
@@ -71,7 +78,7 @@ Component.prototype = {
  */
 
 function setStateProxy(instance, cb) {
-    if (isFn(cb)) 
+    if (isFn(cb))
         transaction.enqueueCallback({ //确保回调先进入
             component: instance,
             cb: cb

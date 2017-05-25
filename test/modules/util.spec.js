@@ -47,14 +47,6 @@ describe('util', function() {
 
     })
 
-    it('isStateless', function() {
-        var a = () => {}
-        var b = function() {}
-        b.prototype.render = function() {}
-        expect(isStateless(a)).toBe(true)
-        expect(isStateless(b)).toBe(false)
-    })
-
     it('isEventName', () => {
         expect(isEventName('onaaa')).toBe(false)
         expect(isEventName('onAaa')).toBe(true)

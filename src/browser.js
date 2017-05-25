@@ -1,6 +1,6 @@
 import {
     oneObject,
-    recyclableNodes
+    recyclables
 } from './util'
 
 
@@ -30,7 +30,7 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean
 fakeDoc.documentElement = new DOMElement('html')
 fakeDoc.nodeName = '#document'
-export var inBrowser =  typeof window === 'object' && window.alert 
+export var inBrowser = typeof window === 'object' && window.alert
 
 export var win = inBrowser ?
     window : {
@@ -52,12 +52,12 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8
 
 export function createDOMElement(vnode) {
     var type = vnode.type
+    var node = recyclables[type] && recyclables[type].pop()
+    if (node) {
+        node.nodeValue = vnode.text
+        return node
+    }
     if (type === '#text') {
-        var node = recyclableNodes.pop()
-        if (node) {
-            node.nodeValue = vnode.text
-            return node
-        }
         return document.createTextNode(vnode.text)
     }
     if (type === '#comment') {

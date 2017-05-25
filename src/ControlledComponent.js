@@ -9,16 +9,28 @@ var hasReadOnlyValue = {
     'reset': true,
     'submit': true
 }
+var formElements = {
+    select: 1,
+    datalist: 1,
+    textarea: 1,
+    input: 1,
+    option: 1
+}
 export function setControlledComponent(vnode) {
     var props = vnode.props
+
     var type = props.type
+    var nodeName = vnode.type
+   if (!formElements[nodeName])
+        return
+
     // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
     // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
     // 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
     // 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变 但如果用户使用了defaultValue,
     // defaultChecked，那么它不做任何转换
 
-    switch (vnode.type) {
+    switch (nodeName) {
         case "select":
         case "datalist":
             type = 'select'
@@ -82,7 +94,7 @@ export function setControlledComponent(vnode) {
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return  props.value != void 666 ?
+    return props.value != void 666 ?
         props.value :
         props.children[0].text
 }
@@ -92,7 +104,7 @@ function postUpdateSelectedOptions(vnode) {
     var multiple = !!props.multiple
     var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] :
         ''
-      updateOptions(vnode, multiple, value)
+    updateOptions(vnode, multiple, value)
 
 }
 
@@ -109,7 +121,7 @@ function collectOptions(vnode, ret) {
 }
 
 function updateOptions(vnode, multiple, propValue) {
-    
+
     var options = collectOptions(vnode),
         selectedValue
     if (multiple) {
@@ -123,7 +135,7 @@ function updateOptions(vnode, multiple, propValue) {
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
         }
         for (var i = 0, option; option = options[i++];) {
-            var state = option._wrapperState || /* istanbul ignore next */handleSpecialNode(option)
+            var state = option._wrapperState || /* istanbul ignore next */ handleSpecialNode(option)
             var selected = selectedValue.hasOwnProperty(state.value)
             if (state.selected !== selected) {
                 state.selected = selected
@@ -148,9 +160,9 @@ function updateOptions(vnode, multiple, propValue) {
 }
 
 function setDomSelected(option, selected) {
-   if(option._hostNode){
-       option._hostNode.selected = selected
-   }   
+    if (option._hostNode) {
+        option._hostNode.selected = selected
+    }
 }
 
 //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制

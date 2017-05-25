@@ -27,14 +27,35 @@ var s
 
 window.onload = function(){
 
+ class A extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 1
+                }
+            }
+            shouldComponentUpdate() {
+              //  console.log('shouldComponentUpdate')
+            }
+            click() {
+                this.setState(function (a) {
+                    a.aaa++
+                }, function () {
+                    a++
+                })
 
-
- var s = ReactDOM.render(<svg><line
-            x1='5'
-            y1='5'
-            x2='45'
-            y2='45'
-            stroke='green' /></svg>, document.getElementById('example'))
+                this.setState(function (a) {
+                    a.aaa++
+                }, function () {
+                    a++
+                })
+            }
+            render() {
+                return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
+            }
+        }
+        
+     s =   ReactDOM.render(<A />, document.getElementById('example'))
 }
     </script>
 </head>
