@@ -11,7 +11,7 @@ addons:
     packages:
       - oracle-java8-set-default
   chrome: stable
-  
+
 cache:
   directories:
     - node_modules
@@ -36,7 +36,7 @@ before_install:
   - unzip chromedriver_linux64.zip
   - wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
   - echo "Run selenium server - background process"
-  - nohup bash -c "java -jar selenium-server-standalone-3.3.1.jar &" && sleep 1; cat nohup.out
+  - java -jar selenium-server-standalone-3.3.1.jar &
 
 install:
   - npm install
