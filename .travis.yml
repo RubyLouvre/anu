@@ -10,7 +10,6 @@ addons:
   apt:
     packages:
       - oracle-java8-set-default
-  chrome: stable
 
 cache:
   directories:

@@ -122,10 +122,8 @@ module.exports = function (config) {
 
             },
             Chrome_travis_ci: {
-               // base: 'WebDriverio',
-              //  browserName: 'chrome',
-                 base: 'Chrome',
-                flags: ['--no-sandbox'],
+                base: 'WebDriverio',
+                browserName: 'chrome',
                 name: 'Karma'
             }
         },
@@ -141,6 +139,7 @@ module.exports = function (config) {
     }
 
     if (process.env.TRAVIS) {
+        console.log('====')
         configuration.browsers = [
             'Chrome_travis_ci'
         ]
