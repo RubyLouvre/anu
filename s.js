@@ -19,5 +19,7 @@ selenium.install({
   } else {
     console.log('安装成功')
   }
+// node 
+// node node_modules/karma-event-driver-ext
 
 });
