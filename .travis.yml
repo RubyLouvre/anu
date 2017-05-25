@@ -35,7 +35,6 @@ before_install:
   - echo "Download selenium-server-standalone jar file"
   - wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
   - unzip chromedriver_linux64.zip
-  - sudo whereis google-chrome
   - wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
   - echo "Run selenium server - background process"
   - nohup bash -c "java -jar selenium-server-standalone-3.3.1.jar &" && sleep 1; cat nohup.out
