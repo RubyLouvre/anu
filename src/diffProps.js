@@ -23,7 +23,6 @@ var eventNameCache = {
 
 function clickHack() {}
 let inMobile = 'ontouchstart' in document
-
 var xlink = "http://www.w3.org/1999/xlink"
 var stringAttributes = {}
 export var builtIdProperties = {} //不规则的属性名映射

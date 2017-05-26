@@ -20,7 +20,7 @@ function findvnodeFromDom(vnode, dom) {
         var findNode
         var component = vnode._instance
         if (component) {
-            var baseVnode = component.vnode //如果是组件
+            var baseVnode = component.getBaseVnode() //如果是组件
             if (baseVnode && baseVnode._hostNode) {
                 return baseVnode
             }
