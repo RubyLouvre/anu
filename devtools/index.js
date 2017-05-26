@@ -270,7 +270,7 @@ function updateReactComponent(vnode, parentDom) {
     if (!vnode) {
         return null;
     }
-    let newInstance;
+    let newInstance, returnInts;
 
     if (vnode._instance) {
         newInstance = createReactCompositeComponent(vnode);
@@ -285,13 +285,24 @@ function updateReactComponent(vnode, parentDom) {
 
             oldInstance[key] = newInstance[key];
         }
-
-        return oldInstance;
+        returnInts = oldInstance;
+    } else {
+        createInstanceFromVNode(vnode, newInstance)
+        returnInts = newInstance;
     }
 
-    createInstanceFromVNode(vnode, newInstance)
-    //将它存入instanceMap中
-    return newInstance;
+
+    var _inst = returnInts._instance, _forceUpdate;
+    if (_inst) {
+        _forceUpdate = _inst.forceUpdate;
+        _inst.forceUpdate = function () {
+            _inst.lastProps = _inst.props;
+            _inst.props = _inst._currentElement.props = returnInts._currentElement.props;
+            return _forceUpdate.call(_inst)
+        }
+    }
+
+    return returnInts;
 
 }
 
