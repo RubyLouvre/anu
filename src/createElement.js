@@ -142,7 +142,7 @@ function flatChildren(children, ret, deep) {
                     el : {
                         type: '#text',
                         text: String(el),
-                        deep: deep
+                        _deep: deep
                     })
                 ret.merge = true
             }
@@ -150,7 +150,7 @@ function flatChildren(children, ret, deep) {
             flatChildren(el, ret, deep + 1)
         } else {
             ret.unshift(el)
-            el.deep = deep
+            el._deep = deep
             ret.merge = false
         }
 

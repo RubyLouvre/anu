@@ -21,7 +21,7 @@ export function Component(props, context) {
     this.props = props
     this.refs = {}
     this._pendingStateQueue = []
-    if (!this.state)
+  //  if (!this.state)
         this.state = {}
 }
 

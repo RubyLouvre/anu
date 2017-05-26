@@ -1,10 +1,15 @@
-import { Component } from './Component'
-import { inherit } from './util'
-import { shallowEqual } from './shallowEqual'
+import {
+    Component
+} from './Component'
+import {
+    inherit
+} from './util'
+import {
+    shallowEqual
+} from './shallowEqual'
 
 export function PureComponent(props, context) {
-    this.props = props
-    this.context = context
+    Component.call(this, props,context)
 }
 
 inherit(PureComponent, Component)

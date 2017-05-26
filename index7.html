@@ -27,17 +27,29 @@ var s
 
 window.onload = function(){
 
- class Test extends React.Component{
-      click(){
-          console.log('=========')
-      }
-      render(){
-          return <h1>{this.props.name}
-          <p onClick={this.click.bind(this)}>事件</p>
-          </h1>;
-      }
-  }
-     s =   ReactDOM.render(<Test name="司徒正美" />, document.getElementById('example'))
+ var a = 1
+        class App extends React.PureComponent {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
+            }
+
+            click() {
+
+                this.setState(function (state) {
+                    state.aaa.a = 8
+                })
+
+            }
+            render() {
+                return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
+            }
+        }
+     s =   ReactDOM.render(<App name="司徒正美" />, document.getElementById('example'))
 }
     </script>
 </head>

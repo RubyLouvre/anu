@@ -486,7 +486,7 @@
 	                ret.unshift(el.type ? el : {
 	                    type: '#text',
 	                    text: String(el),
-	                    deep: deep
+	                    _deep: deep
 	                });
 	                ret.merge = true;
 	            }
@@ -494,7 +494,7 @@
 	            flatChildren(el, ret, deep + 1);
 	        } else {
 	            ret.unshift(el);
-	            el.deep = deep;
+	            el._deep = deep;
 	            ret.merge = false;
 	        }
 	    }
@@ -584,7 +584,8 @@
 	    this.props = props;
 	    this.refs = {};
 	    this._pendingStateQueue = [];
-	    if (!this.state) this.state = {};
+	    //  if (!this.state)
+	    this.state = {};
 	}
 
 	Component.prototype = {
@@ -697,8 +698,12 @@
 	}
 
 	function PureComponent(props, context) {
-	    this.props = props;
-	    this.context = context;
+	    Component.call(this, props, context);
+	    //  this.props = props
+	    //  this.context = context
+	    //  this.refs = {}
+	    //  this._pendingStateQueue = []
+	    //  this.state = {}
 	}
 
 	inherit(PureComponent, Component);
@@ -781,7 +786,7 @@
 	        var props = vnode.props;
 	        if (vnode.vtype === 4) {
 	            //处理无状态组件
-	            instance = new Component(null, data.context);
+	            instance = new Component(null, context);
 	            instance.render = instance.statelessRender = Type;
 	            rendered = transaction.renderWithoutSetState(instance, props, context);
 	        } else {
@@ -798,8 +803,9 @@
 	            }
 	            instance = new Type(props, context);
 
+	            instance.props = instance.props || props;
+	            instance.context = instance.context || context;
 	            //必须在这里添加vnode，因为willComponent里可能进行setState操作
-	            Component.call(instance, props, context); //重点！！
 	            applyComponentHook(instance, 0); //componentWillMount
 	            rendered = transaction.renderWithoutSetState(instance);
 	        }
@@ -810,9 +816,7 @@
 
 	        if (parentInstance) {
 	            instance.parentInstance = parentInstance;
-	        } else {}
-	        //  instance.vnode = vnode
-
+	        }
 
 	        //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
 	        vnode.__ref && vnode.__ref(instance);
@@ -1573,9 +1577,9 @@
 	 */
 	function computeUUID(type, vnode) {
 	    if (type === '#text') {
-	        return type + '/' + vnode.deep;
+	        return type + '/' + vnode._deep;
 	    }
-	    return type + '/' + (vnode.deep || 0) + (vnode.key ? '/' + vnode.key : '');
+	    return type + '/' + (vnode._deep || 0) + (vnode.key ? '/' + vnode.key : '');
 	}
 
 	/**
@@ -1740,9 +1744,6 @@
 	                afterMount(instance._currentElement);
 	                applyComponentHook(instance, 2);
 	            }
-	        } else {
-
-	            //  afterMount(vnode)
 	        }
 	    }
 

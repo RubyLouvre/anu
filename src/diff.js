@@ -286,9 +286,9 @@ function alignChildren(children, nodes, hostParent, context) {
  */
 function computeUUID(type, vnode) {
     if (type === '#text') {
-        return type + '/' + vnode.deep
+        return type + '/' + vnode._deep
     }
-    return type + '/' + (vnode.deep || 0) + (vnode.key ?
+    return type + '/' + (vnode._deep || 0) + (vnode.key ?
         '/' + vnode.key :
         '')
 }

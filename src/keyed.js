@@ -74,3 +74,16 @@ function _syncChildrenNaive(nextChildren, lastChildren, hostParent, context) {
         } while (bStart <= bEnd);
     }
 }
+
+export function initVnode(vnode, parentContext, namespaceURI) {
+    let { vtype } = vnode
+    let node = null
+    if (!vtype || vtype === 1) { // init text
+        node = createDOMNode(vnode, namespaceURI)
+    } else if (vtype === 2) { // init stateful component
+        node = initVcomponent(vnode, parentContext, namespaceURI)
+    } else if (vtype === 4) { // init stateless component
+        node = initVstateless(vnode, parentContext, namespaceURI)
+    } 
+    return node
+}

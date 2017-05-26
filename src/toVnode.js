@@ -1,8 +1,21 @@
-import {extend, getContext, isFn, noop} from './util'
-import {applyComponentHook} from './lifecycle'
-import {transaction} from './transaction'
-import {Component} from './Component'
-import {CurrentOwner} from './CurrentOwner'
+import {
+    extend,
+    getContext,
+    isFn,
+    noop
+} from './util'
+import {
+    applyComponentHook
+} from './lifecycle'
+import {
+    transaction
+} from './transaction'
+import {
+    Component
+} from './Component'
+import {
+    CurrentOwner
+} from './CurrentOwner'
 
 /**
  * 将组件节点转化为简单的虚拟节点
@@ -23,7 +36,7 @@ export function toVnode(vnode, data, parentInstance) {
         var props = vnode.props
         if (vnode.vtype === 4) {
             //处理无状态组件
-            instance = new Component(null, data.context)
+            instance = new Component(null, context)
             instance.render = instance.statelessRender = Type
             rendered = transaction.renderWithoutSetState(instance, props, context)
 
@@ -40,9 +53,10 @@ export function toVnode(vnode, data, parentInstance) {
                 }
             }
             instance = new Type(props, context)
-
+            	        
+            instance.props = instance.props || props
+            instance.context = instance.context || context
             //必须在这里添加vnode，因为willComponent里可能进行setState操作
-            Component.call(instance, props, context) //重点！！
             applyComponentHook(instance, 0) //componentWillMount
             rendered = transaction.renderWithoutSetState(instance)
         }
@@ -53,8 +67,6 @@ export function toVnode(vnode, data, parentInstance) {
 
         if (parentInstance) {
             instance.parentInstance = parentInstance
-        } else {
-          //  instance.vnode = vnode
         }
 
         //<App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
