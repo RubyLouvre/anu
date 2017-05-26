@@ -48,9 +48,34 @@
 
 <body>
 
-    <div>这个默认会被清掉</div>
-    <div id='example'>ddd</div>
 
+  <math id='aaa'>
+    <mrow>
+      <mrow>
+        <msup>
+          <mi>a</mi>
+          <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <msup>
+          <mi>b</mi>
+          <mn>2</mn>
+        </msup>
+      </mrow>
+      <mo>=</mo>
+      <msup>
+        <mi>c</mi>
+        <mn>2</mn>
+      </msup>
+    </mrow>
+  </math>
+
+
+    <div id='example'>ddd</div>
+<script>
+    var el = document.getElementById('aaa')
+    console.log(el.namespaceURI)
+</script>
 
 </body>
 

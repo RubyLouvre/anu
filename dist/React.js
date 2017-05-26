@@ -699,11 +699,6 @@
 
 	function PureComponent(props, context) {
 	    Component.call(this, props, context);
-	    //  this.props = props
-	    //  this.context = context
-	    //  this.refs = {}
-	    //  this._pendingStateQueue = []
-	    //  this.state = {}
 	}
 
 	inherit(PureComponent, Component);
@@ -1079,7 +1074,10 @@
 	        vnode._wrapperState = prevVnode._wrapperState;
 	        delete prevVnode._wrapperState;
 	    }
-	    var isHTML = !vnode.ns;
+	    var namespaceURL = dom.namepaceURI;
+
+	    var isSVG = vnode.ns === 'http://www.w3.org/2000/svg';
+	    var isHTML = !isSVG;
 	    for (var name in nextProps) {
 	        var val = nextProps[name];
 	        switch (name) {
@@ -1121,7 +1119,7 @@
 	                        dom[name] = !!val;
 	                    }
 	                    if (val === false || val === void 666 || val === null) {
-	                        operateAttribute(dom, name, '', !isHTML);
+	                        operateAttribute(dom, name, '', isSVG);
 	                        continue;
 	                    }
 	                    if (isHTML && builtIdProperties[name]) {
@@ -1132,7 +1130,7 @@
 	                            dom[name] = val;
 	                        }
 	                    } else {
-	                        operateAttribute(dom, name, val, !isHTML);
+	                        operateAttribute(dom, name, val, isSVG);
 	                    }
 	                }
 	        }
@@ -1149,12 +1147,13 @@
 	                if (isHTML && builtIdProperties[_name]) {
 	                    dom[_name] = builtIdProperties[_name] === true ? false : '';
 	                } else {
-	                    operateAttribute(dom, _name, '', !isHTML);
+	                    operateAttribute(dom, _name, '', isSVG);
 	                }
 	            }
 	        }
 	    }
 	}
+	var xlinkProps = /^xlink(.+)/;
 
 	function operateAttribute(dom, name, value, isSVG) {
 
@@ -1164,8 +1163,9 @@
 	    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enha
 	    // ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
 	    // xlinkTitle, xlinkType
-	    if (isSVG && name.indexOf('xlink') === 0) {
-	        name = name.replace(/^xlink\:?/, '');
+	    var match;
+	    if (isSVG && (match = name.match(xlinkProps))) {
+	        name = 'xlink:' + match[1];
 	        namespace = xlink;
 	    }
 	    try {
@@ -1346,7 +1346,7 @@
 
 	    var lastRendered = instance._rendered;
 	    var baseVnode = instance.getBaseVnode();
-	    var hostParent = baseVnode._hostParent || lastRendered._hostParent;
+	    var hostParent = baseVnode._hostParent; //|| lastRendered._hostParent
 
 	    var nextProps = props;
 	    lastProps = lastProps || props;
@@ -1475,7 +1475,7 @@
 	        return updateComponent(instance, context);
 	    }
 
-	    if (vnode.vtype % 2 === 0) {
+	    if (vnode.vtype > 1) {
 	        var parentInstance = lastInstance && lastInstance.parentInstance;
 	        return toDOM(vnode, context, hostParent, insertPoint, parentInstance);
 	    }
@@ -1801,9 +1801,10 @@
 	    delete vnode._prevCached;
 	    if (instance) {
 	        //组件返回组件实例，而普通虚拟DOM 返回元素节点
-	        while (instance.parentInstance) {
-	            instance = instance.parentInstance;
-	        }
+	        instance._currentElement._hostParent = hostParent;
+	        // while (instance.parentInstance) {
+	        //     instance = instance.parentInstance
+	        //  }
 	        return instance;
 	    } else {
 	        return rootNode;

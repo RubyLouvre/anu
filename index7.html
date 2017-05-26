@@ -27,29 +27,18 @@ var s
 
 window.onload = function(){
 
- var a = 1
-        class App extends React.PureComponent {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: {
-                        a: 7
-                    }
-                }
-            }
 
-            click() {
+function Test() {
+	return (
+		<svg className="icon-twitter" width="16px" height="16px">
+			<use xlinkHref="#twitter" />
+		</svg>
+	)
+}
 
-                this.setState(function (state) {
-                    state.aaa.a = 8
-                })
-
-            }
-            render() {
-                return <div onClick={this.click.bind(this)}>{this.state.aaa.a}</div>
-            }
-        }
-     s =   ReactDOM.render(<App name="司徒正美" />, document.getElementById('example'))
+ReactDOM.render(
+	<Test />,
+ document.getElementById('example'))
 }
     </script>
 </head>

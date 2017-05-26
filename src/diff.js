@@ -47,7 +47,7 @@ export function updateComponent(instance) {
     } = instance
     var lastRendered = instance._rendered
     var baseVnode = instance.getBaseVnode()
-    var hostParent = baseVnode._hostParent || lastRendered._hostParent
+    var hostParent = baseVnode._hostParent //|| lastRendered._hostParent
 
     var nextProps = props
     lastProps = lastProps || props
@@ -181,7 +181,7 @@ export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastIns
         return updateComponent(instance, context)
     }
 
-    if (vnode.vtype % 2 === 0) {
+    if (vnode.vtype > 1) {
         var parentInstance = lastInstance && lastInstance.parentInstance
         return toDOM(vnode, context, hostParent, insertPoint, parentInstance)
 

@@ -83,17 +83,20 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
         vnode._wrapperState = prevVnode._wrapperState
         delete prevVnode._wrapperState
     }
-    var isHTML = !vnode.ns
+    var namespaceURL = dom.namepaceURI
+
+    var isSVG = vnode.ns === 'http://www.w3.org/2000/svg'
+    var isHTML = !isSVG
     for (let name in nextProps) {
         let val = nextProps[name]
         switch (name) {
             case 'children':
             case 'key':
-             case 'ref':
+            case 'ref':
                 break
             case 'style':
                 patchStyle(dom, lastProps.style || {}, val)
-        
+
                 break
             case HTML_KEY:
                 var oldhtml = lastProps[name] && lastProps[name].__html
@@ -125,7 +128,7 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
                         dom[name] = !!val
                     }
                     if (val === false || val === void 666 || val === null) {
-                        operateAttribute(dom, name, '', !isHTML)
+                        operateAttribute(dom, name, '', isSVG)
                         continue
                     }
                     if (isHTML && builtIdProperties[name]) {
@@ -137,7 +140,7 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
                             dom[name] = val
                         }
                     } else {
-                        operateAttribute(dom, name, val, !isHTML)
+                        operateAttribute(dom, name, val, isSVG)
                     }
                 }
         }
@@ -154,12 +157,13 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
                         false :
                         ''
                 } else {
-                    operateAttribute(dom, name, '', !isHTML)
+                    operateAttribute(dom, name, '',isSVG)
                 }
             }
         }
     }
 }
+var xlinkProps = /^xlink(.+)/
 
 function operateAttribute(dom, name, value, isSVG) {
 
@@ -171,8 +175,9 @@ function operateAttribute(dom, name, value, isSVG) {
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enha
     // ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
     // xlinkTitle, xlinkType
-    if (isSVG && name.indexOf('xlink') === 0) {
-        name = name.replace(/^xlink\:?/, '')
+    var match
+    if (isSVG && (match = name.match(xlinkProps))) {
+        name = 'xlink:' + match[1]
         namespace = xlink
     }
     try {

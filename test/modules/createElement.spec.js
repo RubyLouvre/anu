@@ -20,6 +20,7 @@ describe('createElement', function () {
         el = React.createElement('p', null, [])
         expect(el.props.children.length).toBe(0)
 
+
         el = React.createElement('p', {children: ["aaa","bbb"]})
         expect(el.props.children.length).toBe(1)
 
@@ -31,7 +32,7 @@ describe('createElement', function () {
         expect(React.Children.only(el.props.children)).toEqual({
             type:'#text',
             text: 'aaabbbccc',
-            deep: 0
+            _deep: 0
         })
 
         el = React.createElement('p', null, null)
@@ -39,7 +40,7 @@ describe('createElement', function () {
 
         el = React.createElement('p', null, [])
         expect(el.props.children.length).toBe(0)
-
+        expect(el.vtype).toBe(1)
         el = React.createElement('p', {children: ["aaa","bbb"]})
         expect(el.props.children.length).toBe(1)
 
@@ -52,21 +53,21 @@ describe('createElement', function () {
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            deep: 0
+            _deep: 0
         })
 
         var el = React.createElement('p', null, 'aaa', true, 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            deep: 0
+            _deep: 0
         })
 
         var el = React.createElement('p', null, 'aaa', 111, 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaa111ccc',
-            deep: 0
+            _deep: 0
         })
         var el = React.createElement('p', null, 'aaa', {
             type: '#text',
@@ -75,7 +76,7 @@ describe('createElement', function () {
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            deep: 0
+            _deep: 0
         })
      
         var el = React.createElement('p', null, 'aaa', 'ccc', {
@@ -85,7 +86,7 @@ describe('createElement', function () {
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            deep: 0
+            _deep: 0
         })
          
 
@@ -93,14 +94,14 @@ describe('createElement', function () {
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            deep: 0
+            _deep: 0
         })
 
         var el = React.createElement('p', null, 111, 222, 333)
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: '111222333',
-            deep: 0
+            _deep: 0
         })
 
         var el = React.createElement('p', null, 111, {
@@ -110,7 +111,7 @@ describe('createElement', function () {
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: '111ddd333',
-            deep: 0
+            _deep: 0
         })
 
 
@@ -121,7 +122,10 @@ describe('createElement', function () {
                 return <div id = "aaa" / >
             }
         }
-
+        var el = React.createElement(A, {})
+        expect(el.vtype).toBe(2)
+        el = React.createElement(function(){}, {})
+        expect(el.vtype).toBe(4)
         var obj = (new A()).render()
         expect(obj.props.children).toEqual([])
         expect(obj.props.id).toBe('aaa')

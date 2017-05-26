@@ -67,7 +67,7 @@ describe('SVG元素', function () {
             d='M5,5 C5,45 45,45 45,5'
             fill="none"
             stroke='red' /></svg>, div)
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
 
         expect(rsvg.test(s.firstChild)).toBe(true)
 
@@ -79,7 +79,7 @@ describe('SVG元素', function () {
             points='5,5 45,45 5,45 45,5'
             fill="none"
             stroke='red' /></svg>, div)
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
         expect(rsvg.test(s.firstChild)).toBe(true)
 
     })
@@ -91,7 +91,7 @@ describe('SVG元素', function () {
             points='5,5 45,45 5,45 45,5'
             fill="none"
             stroke='red' /></svg>, div)
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
         expect(rsvg.test(s.firstChild)).toBe(true)
 
     })
@@ -106,7 +106,7 @@ describe('SVG元素', function () {
             width='40'
             height='40'
             fill="green" stroke='red' /></svg>, div)
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
         expect(rsvg.test(s.firstChild)).toBe(true)
 
 
@@ -123,7 +123,7 @@ describe('SVG元素', function () {
             </svg>, div)
 
 
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
         expect(rsvg.test(s.firstChild)).toBe(true)
 
     })
@@ -136,8 +136,28 @@ describe('SVG元素', function () {
         var s = ReactDOM.render(React.createElement('div', {
             aaa: a
         }), div)
-        await browser.pause(300).$apply()
+        await browser.pause(100).$apply()
         expect(s.getAttribute('aaa')).toBeNull()
     })
+
+    it('use元素的xlinkHref', async () => {
+        function Test() {
+            return (
+                <svg className="icon-twitter" width="16px" height="16px">
+                    <use xlinkHref="#twitter" id='aaa' />
+                </svg>
+            )
+        }
+
+        ReactDOM.render( <Test />,div)
+       
+     
+        await browser.pause(300).$apply()
+        var el = div.getElementsByTagName('use') 
+        expect(el.length).toBe(1)
+        expect(el[0].getAttribute('xlink:href')).toBe('#twitter')
+    })
+
+
 })
 
