@@ -256,11 +256,12 @@ export function diff(vnode, lastVnode, hostParent, context, insertPoint, lastIns
 function alignChildren(children, nodes, hostParent, context) {
     var insertPoint = nodes[0] || null
     var parentNode = hostParent._hostNode
+    var transfer = {}
     for (let i = 0, n = children.length; i < n; i++) {
         var vnode = children[i]
-        var data = {context}
-        vnode = toVnode(vnode, data)
-        context = data.context
+        transfer.context = context
+        vnode = toVnode(vnode, transfer)
+        context = transfer.context
         var dom = nodes[i]
         if (!dom || vnode.type !== dom.nodeName.toLowerCase()) {
 

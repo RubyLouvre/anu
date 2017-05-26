@@ -94,24 +94,13 @@
 
  function initVstateless(vstateless, parentContext) {
      let vnode = renderVstateless(vstateless, parentContext)
+     vnode = checkNull(vnode)
      let node = initVnode(vnode, parentContext)
 
      return node
  }
 
- function updateVstateless(vstateless, newVstateless, node, parentContext) {
-     let uid = vstateless.uid
-     let vnode = node.cache[uid]
-     delete node.cache[uid]
-     let newVnode = renderVstateless(newVstateless, parentContext)
-     let newNode = compareTwoVnodes(vnode, newVnode, node, parentContext)
-     newNode.cache = newNode.cache || {}
-     newNode.cache[newVstateless.uid] = newVnode
-     if (newNode !== node) {
-         syncCache(newNode.cache, node.cache, newNode)
-     }
-     return newNode
- }
+
  var pendingComponents = []
 
  function initVcomponent(vcomponent, parentContext) {
@@ -156,12 +145,53 @@
 
  }
 
- export function getChildContext(component, parentContext) {
-     if (component.getChildContext) {
-         let curContext = component.getChildContext()
+function checkNull(vnode, type) {
+    if (vnode === null || vnode === false) {
+        return {
+            type: '#comment',
+            text: 'empty'
+        }
+    } else if (!vnode || !vnode.vtype) {
+        throw new Error(`@${type.name}#render:You may have returned undefined, an array or some other invalid object`)
+    }
+    return vnode
+}
+ export function getChildContext(instance, parentContext) {
+     if (instance.getChildContext) {
+         let curContext = instance.getChildContext()
          if (curContext) {
-             parentContext = _.extend(_.extend({}, parentContext), curContext)
+             parentContext = Object.assign({}, parentContext, curContext)
          }
      }
      return parentContext
  }
+
+  function updateVstateless(vstateless, newVstateless, node, parentContext) {
+     let uid = vstateless.uid
+     let vnode = node.cache[uid]
+     delete node.cache[uid]
+     let newVnode = renderVstateless(newVstateless, parentContext)
+     let newNode = compareTwoVnodes(vnode, newVnode, node, parentContext)
+     newNode.cache = newNode.cache || {}
+     newNode.cache[newVstateless.uid] = newVnode
+     if (newNode !== node) {
+         syncCache(newNode.cache, node.cache, newNode)
+     }
+     return newNode
+ }
+
+
+export function syncCache(cache, oldCache, node) {
+    for (let key in oldCache) {
+        if (!oldCache.hasOwnProperty(key)) {
+            continue
+        }
+        let value = oldCache[key]
+        cache[key] = value
+
+        // is component, update component.$cache.node
+        if (value.forceUpdate) {
+            value.$cache.node = node
+        }
+    }
+}
