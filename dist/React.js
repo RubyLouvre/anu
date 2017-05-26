@@ -1741,6 +1741,7 @@
 	                applyComponentHook(instance, 2);
 	            }
 	        } else {
+
 	            //  afterMount(vnode)
 	        }
 	    }

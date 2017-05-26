@@ -83,7 +83,7 @@ function Vnode(type, props, key, owner, ref) {
         this.__ref = ref
     }
     if (typeof type === 'string') {
-        this.vtype === 1
+        this.vtype = 1
         var ns = getNs(type)
         if (ns) {
             this.ns = ns

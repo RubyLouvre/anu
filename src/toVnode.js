@@ -19,7 +19,7 @@ export function toVnode(vnode, data, parentInstance) {
         instance,
         rendered
     var context = data.context
-    if (vnode.vtype % 2 == 0) {
+    if (vnode.vtype > 1) {
         var props = vnode.props
         if (vnode.vtype === 4) {
             //处理无状态组件

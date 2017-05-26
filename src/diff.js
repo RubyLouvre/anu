@@ -459,9 +459,7 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
                 afterMount(instance._currentElement)
                 applyComponentHook(instance, 2)
             }
-        } else {
-            //  afterMount(vnode)
-        }
+        } 
     }
 
     return hostNode
