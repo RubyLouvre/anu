@@ -165,15 +165,17 @@
   }();
 
   var React = global.React;
-
+  var skipAttributes = {
+      ref: 1,
+      key: 1,
+      children: 1
+  };
   var Component = React.Component;
-
   function renderVNode(vnode, context) {
       var _vnode = vnode,
           vtype = _vnode.vtype,
           type = _vnode.type,
           props = _vnode.props;
-
 
       switch (type) {
           case '#text':
@@ -311,7 +313,7 @@
           } else {
 
               //处理普通组件
-              var defaultProps = Type.defaultProps || instance && instance.getDefaultProps && instance.getDefaultProps();
+              var defaultProps = Type.defaultProps;
               props = extend({}, props); //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
               for (var i in defaultProps) {
                   if (props[i] === void 666) {
@@ -332,8 +334,6 @@
 
           if (parentInstance) {
               instance.parentInstance = parentInstance;
-          } else {
-              instance.vnode = vnode;
           }
 
           // <App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance

@@ -430,7 +430,7 @@
 	        this.__ref = ref;
 	    }
 	    if (typeof type === 'string') {
-	        this.vtype === 1;
+	        this.vtype = 1;
 	        var ns = getNs(type);
 	        if (ns) {
 	            this.ns = ns;
@@ -777,7 +777,7 @@
 	        instance,
 	        rendered;
 	    var context = data.context;
-	    if (vnode.vtype % 2 == 0) {
+	    if (vnode.vtype > 1) {
 	        var props = vnode.props;
 	        if (vnode.vtype === 4) {
 	            //处理无状态组件
@@ -1023,7 +1023,6 @@
 
 	function clickHack() {}
 	var inMobile = 'ontouchstart' in document;
-
 	var xlink = "http://www.w3.org/1999/xlink";
 	var stringAttributes = {};
 	var builtIdProperties = {}; //不规则的属性名映射

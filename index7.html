@@ -27,35 +27,17 @@ var s
 
 window.onload = function(){
 
- class A extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 1
-                }
-            }
-            shouldComponentUpdate() {
-              //  console.log('shouldComponentUpdate')
-            }
-            click() {
-                this.setState(function (a) {
-                    a.aaa++
-                }, function () {
-                    a++
-                })
-
-                this.setState(function (a) {
-                    a.aaa++
-                }, function () {
-                    a++
-                })
-            }
-            render() {
-                return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>
-            }
-        }
-        
-     s =   ReactDOM.render(<A />, document.getElementById('example'))
+ class Test extends React.Component{
+      click(){
+          console.log('=========')
+      }
+      render(){
+          return <h1>{this.props.name}
+          <p onClick={this.click.bind(this)}>事件</p>
+          </h1>;
+      }
+  }
+     s =   ReactDOM.render(<Test name="司徒正美" />, document.getElementById('example'))
 }
     </script>
 </head>
