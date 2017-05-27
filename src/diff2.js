@@ -104,9 +104,11 @@ function initVelem(vnode, parentContext) {
     let node = createDOMElement(vnode)
     vnode._hostNode = node
     initVchildren(vnode, node, parentContext)
+
     diffProps(props, {}, vnode, {})
     setControlledComponent(vnode)
     if (vnode.type === 'select') {
+
         vnode
             ._wrapperState
             .postUpdate(vnode)
@@ -141,7 +143,9 @@ var pendingComponents = []
 var instanceMap = new Map()
 
 function initVcomponent(vnode, parentContext, parentInstance) {
-    let {type, props, uid} = vnode
+    let {type, props} = vnode
+
+     props = getComponentProps(type, props)
 
     let instance = new type(props, parentContext) //互相持有引用
 
@@ -199,9 +203,22 @@ function checkNull(vnode, type) {
     }
     return vnode
 }
+function getComponentProps(type, props) {
+    var defaultProps = type.defaultProps
+    props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+    for (var i in defaultProps) {
+        if (props[i] === void 666) {
+            props[i] = defaultProps[i]
+        }
+    }
+    return props
+}
 
 function initVstateless(vnode, parentContext, parentInstance) {
-    let rendered = vnode.type(vnode.props, parentContext)
+    var {type, props} = vnode
+     props = getComponentProps(type, props)
+
+    let rendered = type(props, parentContext)
     rendered = checkNull(rendered)
 
     let dom = initVnode(rendered, parentContext, parentInstance)
@@ -407,7 +424,7 @@ function updateVcomponent(vnode, newVcomponent, node, parentContext) {
     var nextProps = newVcomponent.props
 
     if (instance.componentWillReceiveProps) {
-        instance.componentWillReceiveProps(nextProps, componentContext)
+        instance.componentWillReceiveProps(nextProps, parentContext)
     }
     instance.lastProps = instance.props
     instance.props = nextProps
