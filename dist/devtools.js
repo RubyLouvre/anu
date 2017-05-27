@@ -225,32 +225,45 @@
     }
 
     function updateReactComponent(vnode, parentDom) {
-        if (!vnode) {
-            return null;
-        }
-        var newInstance = void 0;
-
-        if (vnode._instance) {
-            newInstance = createReactCompositeComponent(vnode);
-        } else {
-            newInstance = createReactDOMComponent(vnode, parentDom);
-        }
-
-        var oldInstance = getInstanceFromVNode(vnode);
-
-        if (oldInstance) {
-            for (var key in newInstance) {
-
-                oldInstance[key] = newInstance[key];
-            }
-
-            return oldInstance;
-        }
-
-        createInstanceFromVNode(vnode, newInstance);
-        //将它存入instanceMap中
-        return newInstance;
+    if (!vnode) {
+        return null;
     }
+    var newInstance = void 0,
+        returnInts = void 0;
+
+    if (vnode._instance) {
+        newInstance = createReactCompositeComponent(vnode);
+    } else {
+        newInstance = createReactDOMComponent(vnode, parentDom);
+    }
+
+    var oldInstance = getInstanceFromVNode(vnode);
+
+    if (oldInstance) {
+        for (var key in newInstance) {
+
+            oldInstance[key] = newInstance[key];
+        }
+        returnInts = oldInstance;
+    } else {
+        createInstanceFromVNode(vnode, newInstance);
+        returnInts = newInstance;
+    }
+
+    var _inst = returnInts._instance,
+        _forceUpdate;
+    if (_inst) {
+        _forceUpdate = _inst.forceUpdate;
+        _inst.forceUpdate = function () {
+            _inst.lastProps = _inst.props;
+            _inst.props = _inst._currentElement.props = returnInts._currentElement.props;
+            return _forceUpdate.call(_inst);
+        };
+    }
+
+    return returnInts;
+}
+
 
     function normalizeChildren(children, dom) {
         return children.map(function (child) {
