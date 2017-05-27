@@ -99,7 +99,7 @@ export function oneObject(array, val) {
     return result
 }
 
-export function getContext(instance, context) {
+export function getChildContext(instance, context) {
     if (instance.getChildContext) {
         return extend(extend({}, context), instance.getChildContext())
     }

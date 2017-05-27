@@ -1,5 +1,5 @@
 import {
-    getContext,
+    getChildContext,
     getInstances,
     getComponentName,
     recyclables,

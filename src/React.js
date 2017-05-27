@@ -22,8 +22,8 @@ import {
 } from './util'
 
 import {
-    diff
-} from './diff'
+    render
+} from './diff2'
 
 var React = {
     Children, //为了react-redux
@@ -38,7 +38,7 @@ var React = {
  * @param {any} vnode
  * @param {any} container
  */
-function render(vnode, container, cb) {
+function render2(vnode, container, cb) {
     var context = {},
         prevVnode = container._component,
         hostParent = {

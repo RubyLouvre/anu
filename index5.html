@@ -25,22 +25,47 @@
     var s
      class App extends React.Component {
             render() {
-                return <div title='1'><A ref='a' /></div>
+                return <div title='1' ref='a'>222<p ref='b'>33333</p><A ref='c' /></div>
             }
         }
         var index = 1
         class A extends React.Component {
+            constructor(props){
+               super(props)
+               this.state = {
+                 a: 111
+               }
+            }
             componentWillReceiveProps() {
                 index = 0
                 this.forceUpdate()
             }
+            change(a){
+              this.setState({
+                    a: a
+              })
+            }
+            componentDidMount(){
+               console.log('A did mount')
+            }
             render() {
-                return index ? <strong>111</strong> : <em>111</em>
+                return  <strong>{this.state.a}</strong> 
+            }
+        }
+        class B extends React.Component {
+            componentWillReceiveProps() {
+                this.forceUpdate()
+            }
+            componentDidMount(){
+               console.log('B did mount')
+            }
+            render() {
+                return <span>B</span>
             }
         }
   window.onload = function(){
       console.log('--------')
-        s = ReactDOM.render( <App />, document.getElementById('example'))
+        s = ReactDOM.render( <A />, document.getElementById('example'))
   
   }
     </script>

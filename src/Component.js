@@ -21,15 +21,15 @@ export function Component(props, context) {
     this.props = props
     this.refs = {}
     this._pendingStateQueue = []
-  //  if (!this.state)
-        this.state = {}
+    //  if (!this.state)
+    this.state = {}
 }
 
 Component.prototype = {
 
     setState(state, cb) {
         this._pendingStateQueue.push(state)
-     
+
         setStateProxy(this, cb)
     },
     getBaseVnode() {
@@ -52,7 +52,7 @@ Component.prototype = {
         }
         var queue = this._pendingStateQueue.concat()
         this._pendingStateQueue.length = 0
-        
+
         var nextState = extend({}, this.state);
         for (var i = 0; i < n; i++) {
             var partial = queue[i]

@@ -1,6 +1,6 @@
 import {
     extend,
-    getContext,
+    getChildContext,
     isFn,
     noop
 } from './util'

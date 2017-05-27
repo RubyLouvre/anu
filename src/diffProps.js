@@ -69,9 +69,9 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
  * @param {any} nextProps
  * @param {any} lastProps
  * @param {any} vnode
- * @param {any} prevVnode
+ * @param {any} lastVnode
  */
-export function diffProps(nextProps, lastProps, vnode, prevVnode) {
+export function diffProps(nextProps, lastProps, vnode, lastVnode) {
     /* istanbul ignore if */
     if (nextProps === lastProps) {
         return
@@ -79,11 +79,10 @@ export function diffProps(nextProps, lastProps, vnode, prevVnode) {
     var dom = vnode._hostNode
 
     var instance = vnode._owner
-    if (prevVnode._wrapperState) {
-        vnode._wrapperState = prevVnode._wrapperState
-        delete prevVnode._wrapperState
+    if (lastVnode._wrapperState) {
+        vnode._wrapperState = lastVnode._wrapperState
+        delete lastVnode._wrapperState
     }
-    var namespaceURL = dom.namepaceURI
 
     var isSVG = vnode.ns === 'http://www.w3.org/2000/svg'
     var isHTML = !isSVG
