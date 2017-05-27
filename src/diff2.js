@@ -10,7 +10,7 @@ import {
     getNodes
 } from './util'
 import {document, createDOMElement} from './browser'
-
+import {setControlledComponent} from './ControlledComponent'
 export function render(vnode, container, callback) {
     return renderTreeIntoContainer(vnode, container, callback)
 }
@@ -86,6 +86,7 @@ export function initVnode(vnode, parentContext, parentInstance) {
                     vnode.__ref(vnode._hostNode)
                 })
         }
+
         node = initVelem(vnode, parentContext)
 
     } else if (vtype === 2) { // init stateful component
@@ -104,6 +105,13 @@ function initVelem(vnode, parentContext) {
     vnode._hostNode = node
     initVchildren(vnode, node, parentContext)
     diffProps(props, {}, vnode, {})
+    setControlledComponent(vnode)
+    if (vnode.type === 'select') {
+        vnode
+            ._wrapperState
+            .postUpdate(vnode)
+
+    }
     return node
 }
 var readyComponents = []
@@ -382,6 +390,12 @@ function updateVnode(vnode, newVnode, node, parentContext) {
 function updateVelem(lastVnode, nextVnode, node) {
     nextVnode._hostNode = node
     diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode)
+    if (nextVnode.type === 'select') {
+        nextVnode
+            ._wrapperState
+            .postUpdate(nextVnode)
+
+    }
     if (nextVnode.__ref) {
         nextVnode.__ref(node)
     }
@@ -400,9 +414,7 @@ function updateVcomponent(vnode, newVcomponent, node, parentContext) {
     console.log(parentContext)
     instance.context = parentContext
     if (vnode.__ref !== newVcomponent.__ref) {
-
         vnode.__ref && vnode.__ref(null)
-
     }
     console.log(instance._updateBatchNumber, options.updateBatchNumber)
     //  if (instance._updateBatchNumber === options.updateBatchNumber) {

@@ -1,6 +1,4 @@
-import {
-    inherit
-} from './util'
+import {inherit} from './util'
 
 var hasReadOnlyValue = {
     'button': true,
@@ -11,20 +9,18 @@ var hasReadOnlyValue = {
 }
 var formElements = {
     select: 1,
-    datalist: 1,
     textarea: 1,
-    input: 1,
-    option: 1
+    input: 1
 }
 export function setControlledComponent(vnode) {
     var props = vnode.props
 
     var type = props.type
     var nodeName = vnode.type
-   if (!formElements[nodeName])
+    if (!formElements[nodeName]) 
         return
 
-    // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
+        // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
     // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
     // 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
     // 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变 但如果用户使用了defaultValue,
@@ -32,14 +28,15 @@ export function setControlledComponent(vnode) {
 
     switch (nodeName) {
         case "select":
-        case "datalist":
-            type = 'select'
+            vnode._wrapperState = {
+                postUpdate: postUpdateSelectedOptions
+            }
         case 'textarea':
             if (!type) { //必须指定
                 type = 'textarea'
             }
         case 'input':
-            if (hasReadOnlyValue[type])
+            if (hasReadOnlyValue[type]) 
                 return
 
             if (!type) {
@@ -47,15 +44,15 @@ export function setControlledComponent(vnode) {
             }
 
             var isChecked = type === 'radio' || type === 'checkbox'
-            var propName = isChecked ?
-                'checked' :
-                'value'
-            var defaultName = propName === 'value' ?
-                'defaultValue' :
-                'defaultChecked'
-            var initValue = props[propName] != null ?
-                props[propName] :
-                props[defaultName]
+            var propName = isChecked
+                ? 'checked'
+                : 'value'
+            var defaultName = propName === 'value'
+                ? 'defaultValue'
+                : 'defaultChecked'
+            var initValue = props[propName] != null
+                ? props[propName]
+                : props[defaultName]
             var isControlled = props.onChange || props.readOnly || props.disabled
             if (/text|password/.test(type)) {
                 isControlled = isControlled || props.onInput
@@ -73,37 +70,32 @@ export function setControlledComponent(vnode) {
                 if (type !== 'select') {
                     vnode
                         ._hostNode
-                        .addEventListener(isChecked ?
-                            'click' :
-                            'input', keepInitValue)
+                        .addEventListener(isChecked
+                            ? 'click'
+                            : 'input', keepInitValue)
                 }
             }
             break
-        case "option":
-            return vnode._wrapperState = {
-                value: getOptionValue(props)
-            }
-    }
-    if (type === 'select') {
-        postUpdateSelectedOptions(vnode) //先在mount时执行一次
-        return vnode._wrapperState = {
-            postUpdate: postUpdateSelectedOptions
-        }
     }
 }
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return props.value != void 666 ?
-        props.value :
-        props.children[0].text
+    return props.value != void 666
+        ? props.value
+        : props.children[0].text
 }
 
 function postUpdateSelectedOptions(vnode) {
     var props = vnode.props
     var multiple = !!props.multiple
-    var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] :
-        ''
+    var value = props.value != null
+        ? props.value
+        : props.defaultValue != null
+            ? props.defaultValue
+            : multiple
+                ? []
+                : ''
     updateOptions(vnode, multiple, value)
 
 }
@@ -119,7 +111,11 @@ function collectOptions(vnode, ret) {
     }
     return ret
 }
-
+function setOptionState(vnode) {
+    return {
+        value: getOptionValue(vnode.props)
+    }
+}
 function updateOptions(vnode, multiple, propValue) {
 
     var options = collectOptions(vnode),
@@ -135,7 +131,7 @@ function updateOptions(vnode, multiple, propValue) {
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
         }
         for (var i = 0, option; option = options[i++];) {
-            var state = option._wrapperState || /* istanbul ignore next */ handleSpecialNode(option)
+            var state = setOptionState(option)
             var selected = selectedValue.hasOwnProperty(state.value)
             if (state.selected !== selected) {
                 state.selected = selected
@@ -147,7 +143,7 @@ function updateOptions(vnode, multiple, propValue) {
         // browsers for all cases.
         selectedValue = '' + propValue;
         for (var i = 0, option; option = options[i++];) {
-            var state = option._wrapperState
+            var state = setOptionState(option)
             if (state.value === selectedValue) {
                 setDomSelected(option, true)
                 return
@@ -160,7 +156,9 @@ function updateOptions(vnode, multiple, propValue) {
 }
 
 function setDomSelected(option, selected) {
+
     if (option._hostNode) {
+
         option._hostNode.selected = selected
     }
 }
