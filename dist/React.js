@@ -360,13 +360,16 @@
 	    }
 	    if (useEmpty) {
 	        c = shallowEqualHack;
+	        if (typeof type !== 'function') {
+	            props.children = c;
+	        }
 	    } else {
 	        c = flatChildren(c);
 	        delete c.merge; //注意这里的顺序
 	        Object.freeze(c);
+	        props.children = c;
 	    }
 
-	    props.children = c;
 	    Object.freeze(props);
 	    return new Vnode(type, props, key, CurrentOwner.cur, ref);
 	}
@@ -1114,6 +1117,7 @@
 	            }
 	        }
 	        prevVnode = {};
+	        vnode._hostParent = hostParent;
 	        rootNode = initVnode(vnode, {});
 	        container.appendChild(rootNode);
 	    } else {
@@ -1131,7 +1135,7 @@
 	    delete vnode._prevCached;
 	    if (instance) {
 	        //组件返回组件实例，而普通虚拟DOM 返回元素节点
-	        instance._currentElement._hostParent = hostParent;
+	        //   instance._currentElement._hostParent = hostParent
 
 	        return instance;
 	    } else {
@@ -1183,9 +1187,13 @@
 	//将虚拟DOM转换为真实DOM并插入父元素
 	function initVchildren(vnode, node, parentContext) {
 	    var vchildren = vnode.props.children;
-	    for (var i = 0, len = vchildren.length; i < len; i++) {
-	        node.appendChild(initVnode(vchildren[i], parentContext));
+	    for (var i = 0, n = vchildren.length; i < n; i++) {
+	        var el = vchildren[i];
+	        el._hostParent = vnode;
+	        console.log(el);
+	        node.appendChild(initVnode(el, parentContext));
 	    }
+
 	    if (readyComponents.length) {
 	        fireMount();
 	    }
@@ -1223,19 +1231,20 @@
 	    // 空虚拟DOM {type: '#comment', text: 'empty'}
 	    // 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-	    var vnode = renderComponent(instance);
-	    instance._rendered = vnode;
+	    var rendered = renderComponent(instance);
+	    instance._rendered = rendered;
+	    rendered._hostParent = vcomponent._hostParent;
 	    if (instance.componentDidMount) {
 	        readyComponents.push(function () {
 	            instance.componentDidMount();
 	        });
 	    }
-	    var node = initVnode(vnode, getChildContext(instance, parentContext), instance);
-	    instanceMap.set(instance, node);
+	    var dom = initVnode(rendered, getChildContext(instance, parentContext));
+	    instanceMap.set(instance, dom);
 	    //vcomponent._instance._rendered._hostNode === node
 
 
-	    return node;
+	    return dom;
 	}
 
 	function renderComponent(instance, parentContext) {
@@ -1263,7 +1272,7 @@
 
 	    var dom = initVnode(rendered, parentContext);
 	    vnode._rendered = rendered;
-
+	    rendered._hostParent = vnode._hostParent;
 	    return dom;
 	}
 
@@ -1299,13 +1308,11 @@
 	        context = instance.context,
 	        lastProps = instance.lastProps;
 
-	    console.log('updateComponent');
 	    var lastRendered = instance._rendered;
 	    var node = instanceMap.get(instance);
 
-	    var baseVnode = instance.getBaseVnode();
-	    var hostParent = baseVnode._hostParent; //|| lastRendered._hostParent
-
+	    var hostParent = lastRendered._hostParent;
+	    console.log('updateComponent');
 	    var nextProps = props;
 	    lastProps = lastProps || props;
 	    var nextState = instance._processPendingState(props, context);
@@ -1332,7 +1339,6 @@
 
 	    var dom = compareTwoVnodes(lastRendered, rendered, node, context);
 	    instanceMap.set(instance, dom);
-	    baseVnode._hostNode = dom;
 	    if (instance.componentDidUpdate) {
 	        //    updateComponents.push(function () {
 	        instance.componentDidUpdate(nextProps, nextState, context);
@@ -1365,8 +1371,8 @@
 	    var vtype = vnode.vtype;
 
 	    if (!vtype) {
-	        vnode._hostNode = null;
-	        vnode._hostParent = null;
+	        //   vnode._hostNode = null
+	        //   vnode._hostParent = null
 	    } else if (vtype === 1) {
 	        // destroy element
 	        destroyVelem(vnode, node);

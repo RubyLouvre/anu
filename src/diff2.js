@@ -51,6 +51,7 @@
              }
          }
          prevVnode = {}
+         vnode._hostParent = hostParent
          rootNode = initVnode(vnode, {})
          container.appendChild(rootNode)
      } else {
@@ -67,7 +68,7 @@
      container._component = vnode
      delete vnode._prevCached
      if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
-         instance._currentElement._hostParent = hostParent
+      //   instance._currentElement._hostParent = hostParent
 
          return instance
 
@@ -96,7 +97,7 @@
      }
      if (vtype === 1) { // init element
          node = initVelem(vnode, parentContext)
-
+    
      } else if (vtype === 2) { // init stateful component
          node = initVcomponent(vnode, parentContext)
 
@@ -111,7 +112,7 @@
          type,
          props
      } = vnode
-     var node = createDOMElement(vnode)
+     let node = createDOMElement(vnode)
      vnode._hostNode = node
      initVchildren(vnode, node, parentContext)
      diffProps(props, {}, vnode, {})
@@ -121,10 +122,13 @@
  //将虚拟DOM转换为真实DOM并插入父元素
  function initVchildren(vnode, node, parentContext) {
      let vchildren = vnode.props.children
-     for (let i = 0, len = vchildren.length; i < len; i++) {
-         node.appendChild(initVnode(vchildren[i], parentContext))
-
+     for (let i = 0, n = vchildren.length; i < n; i++) {
+         let el = vchildren[i]
+         el._hostParent = vnode
+  console.log(el)
+         node.appendChild(initVnode(el, parentContext))
      }
+   
      if (readyComponents.length) {
          fireMount()
      }
@@ -165,19 +169,20 @@
      // 空虚拟DOM {type: '#comment', text: 'empty'}
      // 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-     let vnode = renderComponent(instance)
-     instance._rendered = vnode
+     let rendered = renderComponent(instance)
+     instance._rendered = rendered
+     rendered._hostParent = vcomponent._hostParent
      if (instance.componentDidMount) {
          readyComponents.push(function () {
              instance.componentDidMount()
          })
      }
-     let node = initVnode(vnode, getChildContext(instance, parentContext), instance)
-     instanceMap.set(instance, node)
+     let dom = initVnode(rendered, getChildContext(instance, parentContext))
+     instanceMap.set(instance, dom)
      //vcomponent._instance._rendered._hostNode === node
 
 
-     return node
+     return dom
  }
 
  export function renderComponent(instance, parentContext) {
@@ -206,7 +211,7 @@
 
      let dom = initVnode(rendered, parentContext)
      vnode._rendered = rendered
-
+     rendered._hostParent = vnode._hostParent
      return dom
  }
 
@@ -247,13 +252,12 @@
          context,
          lastProps
      } = instance
-     console.log('updateComponent')
      var lastRendered = instance._rendered
      var node = instanceMap.get(instance)
 
-     var baseVnode = instance.getBaseVnode()
-     var hostParent = baseVnode._hostParent //|| lastRendered._hostParent
 
+     var hostParent = lastRendered._hostParent
+console.log('updateComponent')
      var nextProps = props
      lastProps = lastProps || props
      var nextState = instance._processPendingState(props, context)
@@ -277,10 +281,9 @@
      context = getChildContext(instance, context)
      instance._rendered = rendered
      rendered._hostParent = hostParent
-   
+
      var dom = compareTwoVnodes(lastRendered, rendered, node, context)
      instanceMap.set(instance, dom)
-     baseVnode._hostNode = dom
      if (instance.componentDidUpdate) {
          //    updateComponents.push(function () {
          instance.componentDidUpdate(nextProps, nextState, context)
@@ -314,8 +317,8 @@
          vtype
      } = vnode
      if (!vtype) {
-         vnode._hostNode = null
-         vnode._hostParent = null
+         //   vnode._hostNode = null
+         //   vnode._hostParent = null
      } else if (vtype === 1) { // destroy element
          destroyVelem(vnode, node)
      } else if (vtype === 2) { // destroy state component
@@ -354,7 +357,7 @@
  }
 
  function updateVnode(vnode, newVnode, node, parentContext) {
-    console.log('updateVnode')
+     console.log('updateVnode')
      let {
          vtype
      } = vnode
@@ -379,7 +382,7 @@
          updateVelem(vnode, newVnode, node, parentContext)
          initVchildren(newVnode, node, parentContext)
      } else {
-       
+
          updateVChildren(vnode, newVnode, node, parentContext)
          updateVelem(vnode, newVnode, node, parentContext)
      }
@@ -428,7 +431,7 @@
  }
 
  function updateVChildren(vnode, newVnode, node, parentContext) {
-     console.log('updateVChildren',node)
+     console.log('updateVChildren', node)
      let patches = {
          removes: [],
          updates: [],
