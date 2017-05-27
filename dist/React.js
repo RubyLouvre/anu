@@ -1257,26 +1257,26 @@
 	    return vnode;
 	}
 
-	function initVstateless(vstateless, parentContext) {
-	    var vnode = vstateless.type(vstateless, parentContext);
-	    vnode = checkNull(vnode);
+	function initVstateless(vnode, parentContext) {
+	    var rendered = vnode.type(vnode, parentContext);
+	    rendered = checkNull(rendered);
 
-	    var node = initVnode(vnode, parentContext);
-	    stateless._rendered = vnode;
+	    var dom = initVnode(rendered, parentContext);
+	    vnode._rendered = rendered;
 
-	    return node;
+	    return dom;
 	}
 
-	function updateVstateless(vstateless, newVstateless, node, parentContext) {
-	    var vnode = vstateless._rendered;
+	function updateVstateless(lastVnode, nextVnode, node, parentContext) {
+	    var vnode = lastVnode._rendered;
 
-	    var newVnode = vstateless.type(vstateless, parentContext);
+	    var newVnode = nextVnode.type(nextVnode.props, parentContext);
 	    newVnode = checkNull(newVnode);
 
-	    var newNode = compareTwoVnodes(vnode, newVnode, node, parentContext);
-	    newVstateless._rendered = newVnode;
+	    var dom = compareTwoVnodes(vnode, newVnode, node, parentContext);
+	    nextVnode._rendered = newVnode;
 
-	    return newNode;
+	    return dom;
 	}
 
 	function destroyVstateless(vnode, node) {
@@ -1299,7 +1299,7 @@
 	        context = instance.context,
 	        lastProps = instance.lastProps;
 
-	    console.log('更新组件');
+	    console.log('updateComponent');
 	    var lastRendered = instance._rendered;
 	    var node = instanceMap.get(instance);
 
@@ -1329,15 +1329,17 @@
 	    context = getChildContext(instance, context);
 	    instance._rendered = rendered;
 	    rendered._hostParent = hostParent;
-	    console.log(lastRendered, rendered, node, context);
-	    var newNode = compareTwoVnodes(lastRendered, rendered, node, context);
+
+	    var dom = compareTwoVnodes(lastRendered, rendered, node, context);
+	    instanceMap.set(instance, dom);
+	    baseVnode._hostNode = dom;
 	    if (instance.componentDidUpdate) {
 	        //    updateComponents.push(function () {
 	        instance.componentDidUpdate(nextProps, nextState, context);
 	        //    })
 	    }
 
-	    return newNode;
+	    return dom;
 	}
 
 	function compareTwoVnodes(vnode, newVnode, node, parentContext) {
@@ -1352,7 +1354,7 @@
 	        newNode = initVnode(newVnode, parentContext);
 	        node.parentNode.replaceChild(newNode, node);
 	    } else if (vnode !== newVnode) {
-	        console.log('updateVnode');
+	        console.log('compareTwoVnodes');
 	        // same type and same key -> update
 	        newNode = updateVnode(vnode, newVnode, node, parentContext);
 	    }
@@ -1403,6 +1405,7 @@
 	}
 
 	function updateVnode(vnode, newVnode, node, parentContext) {
+	    console.log('updateVnode');
 	    var vtype = vnode.vtype;
 
 
@@ -1426,7 +1429,7 @@
 	        updateVelem(vnode, newVnode, node, parentContext);
 	        initVchildren(newVnode, node, parentContext);
 	    } else {
-	        console.log('update 元素节点');
+
 	        updateVChildren(vnode, newVnode, node, parentContext);
 	        updateVelem(vnode, newVnode, node, parentContext);
 	    }
@@ -1473,6 +1476,7 @@
 	}
 
 	function updateVChildren(vnode, newVnode, node, parentContext) {
+	    console.log('updateVChildren', node);
 	    var patches = {
 	        removes: [],
 	        updates: [],
@@ -1485,7 +1489,7 @@
 	}
 
 	function diffVchildren(patches, vnode, newVnode, node, parentContext) {
-
+	    console.log('diffVchildren', node);
 	    var vchildren = vnode.props.children;
 	    var childNodes = node.childNodes;
 	    var newVchildren = newVnode.props.children;
@@ -1517,7 +1521,6 @@
 	    var updates = Array(newVchildrenLen);
 	    var removes = null;
 	    var creates = null;
-	    console.log(vchildrenLen, newVchildrenLen);
 	    // isEqual
 	    for (var _i2 = 0; _i2 < vchildrenLen; _i2++) {
 	        var _vnode = vchildren[_i2];
@@ -1592,7 +1595,6 @@
 	            diffVchildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
 	        }
 	    }
-	    console.log(patches);
 	    if (removes) {
 	        __push.apply(patches.removes, removes);
 	    }
@@ -1612,18 +1614,18 @@
 	    var dom = data.node;
 
 	    // update
-	    if (!data.shouldIgnore) {
-	        if (!vnode.vtype) {
-	            if (vnode.text !== nextVnode.text) {
-	                dom.nodeValue = nextVnode.text;
-	            }
-	        } else if (vnode.vtype === 1) {
-	            updateVelem(vnode, nextVnode, dom, data.parentContext);
-	        } else if (vnode.vtype === 4) {
-	            dom = updateVstateless(vnode, nextVnode, dom, data.parentContext);
-	        } else if (vnode.vtype === 2) {
-	            dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext);
+
+	    if (!vnode.vtype) {
+	        if (vnode.text !== nextVnode.text) {
+	            console.log('update nodeValue');
+	            dom.nodeValue = nextVnode.text;
 	        }
+	    } else if (vnode.vtype === 1) {
+	        updateVelem(vnode, nextVnode, dom, data.parentContext);
+	    } else if (vnode.vtype === 4) {
+	        dom = updateVstateless(vnode, nextVnode, dom, data.parentContext);
+	    } else if (vnode.vtype === 2) {
+	        dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext);
 	    }
 
 	    // re-order

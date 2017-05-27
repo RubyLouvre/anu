@@ -37,10 +37,11 @@
                }
             }
             componentWillReceiveProps() {
-                index = 0
+              
                 this.forceUpdate()
             }
             change(a){
+                index++
               this.setState({
                     a: a
               })
@@ -49,7 +50,10 @@
                console.log('A did mount')
             }
             render() {
-                return  <strong>{this.state.a}</strong> 
+                return index ==1 ? <strong>111{this.state.a}2222</strong> :
+                index ==2 ?   <span>xxxx<b>333</b><span>555</span></span>:
+                <span>yyy<b>333</b><strong>5552</strong></span>
+
             }
         }
         class B extends React.Component {

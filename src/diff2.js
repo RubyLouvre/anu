@@ -200,34 +200,32 @@
      return vnode
  }
 
- function initVstateless(vstateless, parentContext) {
-     let vnode = vstateless.type(vstateless, parentContext)
-     vnode = checkNull(vnode)
+ function initVstateless(vnode, parentContext) {
+     let rendered = vnode.type(vnode, parentContext)
+     rendered = checkNull(rendered)
 
-     let node = initVnode(vnode, parentContext)
-     stateless._rendered = vnode
+     let dom = initVnode(rendered, parentContext)
+     vnode._rendered = rendered
 
-     return node
+     return dom
  }
 
 
- function updateVstateless(vstateless, newVstateless, node, parentContext) {
-     let vnode = vstateless._rendered
+ function updateVstateless(lastVnode, nextVnode, node, parentContext) {
+     let vnode = lastVnode._rendered
 
-     let newVnode = vstateless.type(vstateless, parentContext)
+     let newVnode = nextVnode.type(nextVnode.props, parentContext)
      newVnode = checkNull(newVnode)
 
-     let newNode = compareTwoVnodes(vnode, newVnode, node, parentContext)
-     newVstateless._rendered = newVnode
+     let dom = compareTwoVnodes(vnode, newVnode, node, parentContext)
+     nextVnode._rendered = newVnode
 
-     return newNode
+     return dom
  }
 
  function destroyVstateless(vnode, node) {
      destroyVnode(vnode._rendered, node)
  }
-
-
 
 
  //将Component中这个东西移动这里
@@ -236,8 +234,6 @@
      updateComponent(instance)
      instance._forceUpdate = false
  }
-
-
 
 
 
@@ -251,7 +247,7 @@
          context,
          lastProps
      } = instance
-     console.log('更新组件')
+     console.log('updateComponent')
      var lastRendered = instance._rendered
      var node = instanceMap.get(instance)
 
@@ -281,15 +277,17 @@
      context = getChildContext(instance, context)
      instance._rendered = rendered
      rendered._hostParent = hostParent
-     console.log(lastRendered, rendered, node, context)
-     var newNode = compareTwoVnodes(lastRendered, rendered, node, context)
+   
+     var dom = compareTwoVnodes(lastRendered, rendered, node, context)
+     instanceMap.set(instance, dom)
+     baseVnode._hostNode = dom
      if (instance.componentDidUpdate) {
          //    updateComponents.push(function () {
          instance.componentDidUpdate(nextProps, nextState, context)
          //    })
      }
 
-     return newNode
+     return dom
  }
 
  export function compareTwoVnodes(vnode, newVnode, node, parentContext) {
@@ -304,7 +302,7 @@
          newNode = initVnode(newVnode, parentContext)
          node.parentNode.replaceChild(newNode, node)
      } else if (vnode !== newVnode) {
-         console.log('updateVnode')
+         console.log('compareTwoVnodes')
          // same type and same key -> update
          newNode = updateVnode(vnode, newVnode, node, parentContext)
      }
@@ -356,6 +354,7 @@
  }
 
  function updateVnode(vnode, newVnode, node, parentContext) {
+    console.log('updateVnode')
      let {
          vtype
      } = vnode
@@ -380,7 +379,7 @@
          updateVelem(vnode, newVnode, node, parentContext)
          initVchildren(newVnode, node, parentContext)
      } else {
-         console.log('update 元素节点')
+       
          updateVChildren(vnode, newVnode, node, parentContext)
          updateVelem(vnode, newVnode, node, parentContext)
      }
@@ -429,6 +428,7 @@
  }
 
  function updateVChildren(vnode, newVnode, node, parentContext) {
+     console.log('updateVChildren',node)
      let patches = {
          removes: [],
          updates: [],
@@ -441,7 +441,7 @@
  }
 
  function diffVchildren(patches, vnode, newVnode, node, parentContext) {
-
+     console.log('diffVchildren', node)
      let vchildren = vnode.props.children
      let childNodes = node.childNodes
      let newVchildren = newVnode.props.children
@@ -474,7 +474,6 @@
      let updates = Array(newVchildrenLen)
      let removes = null
      let creates = null
-console.log(vchildrenLen,newVchildrenLen)
      // isEqual
      for (let i = 0; i < vchildrenLen; i++) {
          let vnode = vchildren[i]
@@ -550,9 +549,8 @@ console.log(vchildrenLen,newVchildrenLen)
              })
          } else if (item.vnode.vtype === 1) {
              diffVchildren(patches, item.vnode, item.newVnode, item.node, item.parentContext)
-         } 
+         }
      }
-    console.log(patches)
      if (removes) {
          __push.apply(patches.removes, removes)
      }
@@ -573,19 +571,20 @@ console.log(vchildrenLen,newVchildrenLen)
      let dom = data.node
 
      // update
-     if (!data.shouldIgnore) {
-         if (!vnode.vtype) {
-            if(vnode.text !== nextVnode.text){
-                dom.nodeValue = nextVnode.text
-            }
-         } else if (vnode.vtype === 1) {
-             updateVelem(vnode, nextVnode, dom, data.parentContext)
-         } else if (vnode.vtype === 4) {
-             dom = updateVstateless(vnode, nextVnode, dom, data.parentContext)
-         } else if (vnode.vtype === 2) {
-             dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
+
+     if (!vnode.vtype) {
+         if (vnode.text !== nextVnode.text) {
+             console.log('update nodeValue')
+             dom.nodeValue = nextVnode.text
          }
+     } else if (vnode.vtype === 1) {
+         updateVelem(vnode, nextVnode, dom, data.parentContext)
+     } else if (vnode.vtype === 4) {
+         dom = updateVstateless(vnode, nextVnode, dom, data.parentContext)
+     } else if (vnode.vtype === 2) {
+         dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
      }
+
 
      // re-order
      let currentNode = dom.parentNode.childNodes[data.index]
