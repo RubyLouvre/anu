@@ -7,12 +7,14 @@ import {
     options,
     noop,
     extend,
-    getNodes
+    getNodes,
+    checkNull,
+    getComponentProps
 } from './util'
 import {document, createDOMElement} from './browser'
 import {setControlledComponent} from './ControlledComponent'
 export function render(vnode, container, callback) {
-    return renderTreeIntoContainer(vnode, container, callback)
+    return renderTreeIntoContainer(vnode, container, callback, {})
 }
 
 function renderTreeIntoContainer(vnode, container, callback, parentContext) {
@@ -40,12 +42,15 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
                     .removeChild(el)
             }
         }
-        prevVnode = {}
         vnode._hostParent = hostParent
-        rootNode = initVnode(vnode, {})
+        rootNode = initVnode(vnode, parentContext)
+
         container.appendChild(rootNode)
+        if (readyComponents.length) {
+            fireMount()
+        }
     } else {
-        rootNode = diffVnode(vnode, prevVnode, container.firstChild, {})
+        rootNode = compareTwoVnodes(prevVnode, vnode, container.firstChild, parentContext)
     }
     // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
     // 并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
@@ -57,9 +62,11 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
     var instance = vnode._instance
     container._component = vnode
     delete vnode._prevCached
+    if (callback) {
+        callback()
+    }
     if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
         //   instance._currentElement._hostParent = hostParent
-
         return instance
 
     } else {
@@ -68,7 +75,6 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
 
 }
 
-function diffVnode() {}
 export function initVnode(vnode, parentContext, parentInstance) {
     let {vtype} = vnode
     let node = null
@@ -79,13 +85,6 @@ export function initVnode(vnode, parentContext, parentInstance) {
     }
 
     if (vtype === 1) { // init element
-        if (vnode.__ref) {
-            readyComponents
-                .push(function () {
-                    console.log('attach ref')
-                    vnode.__ref(vnode._hostNode)
-                })
-        }
 
         node = initVelem(vnode, parentContext)
 
@@ -96,6 +95,7 @@ export function initVnode(vnode, parentContext, parentInstance) {
     } else if (vtype === 4) { // init stateless component
         node = initVstateless(vnode, parentContext, parentInstance)
     }
+
     return node
 }
 
@@ -104,11 +104,15 @@ function initVelem(vnode, parentContext) {
     let node = createDOMElement(vnode)
     vnode._hostNode = node
     initVchildren(vnode, node, parentContext)
-
     diffProps(props, {}, vnode, {})
     setControlledComponent(vnode)
+    if (vnode.__ref) {
+        readyComponents
+            .push(function () {
+                vnode.__ref(node)
+            })
+    }
     if (vnode.type === 'select') {
-
         vnode
             ._wrapperState
             .postUpdate(vnode)
@@ -126,9 +130,6 @@ function initVchildren(vnode, node, parentContext) {
         node.appendChild(initVnode(el, parentContext))
     }
 
-    if (readyComponents.length) {
-        fireMount()
-    }
 }
 
 function fireMount() {
@@ -145,7 +146,7 @@ var instanceMap = new Map()
 function initVcomponent(vnode, parentContext, parentInstance) {
     let {type, props} = vnode
 
-     props = getComponentProps(type, props)
+    props = getComponentProps(type, props)
 
     let instance = new type(props, parentContext) //互相持有引用
 
@@ -195,28 +196,9 @@ export function renderComponent(instance, parentContext) {
 
 }
 
-function checkNull(vnode, type) {
-    if (vnode === null || vnode === false) {
-        return {type: '#comment', text: 'empty'}
-    } else if (!vnode || !vnode.vtype) {
-        throw new Error(`@${type.name}#render:You may have returned undefined, an array or some other invalid object`)
-    }
-    return vnode
-}
-function getComponentProps(type, props) {
-    var defaultProps = type.defaultProps
-    props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-    for (var i in defaultProps) {
-        if (props[i] === void 666) {
-            props[i] = defaultProps[i]
-        }
-    }
-    return props
-}
-
 function initVstateless(vnode, parentContext, parentInstance) {
     var {type, props} = vnode
-     props = getComponentProps(type, props)
+    props = getComponentProps(type, props)
 
     let rendered = type(props, parentContext)
     rendered = checkNull(rendered)
@@ -257,6 +239,9 @@ options.immune.updateComponent = function updateComponentProxy(instance) { //这
 
     updateComponent(instance)
     instance._forceUpdate = false
+    if (readyComponents.length) {
+        fireMount()
+    }
 }
 
 var updateComponents = []
@@ -292,8 +277,6 @@ function updateComponent(instance) { // instance._currentElement
     var childContext = getChildContext(instance, context)
     instance._rendered = rendered
     rendered._hostParent = hostParent
-
-    console.log(childContext)
 
     var dom = compareTwoVnodes(lastRendered, rendered, node, childContext)
     instanceMap.set(instance, dom)
@@ -366,33 +349,40 @@ function destroyVcomponent(vnode, node) {
     }
 }
 
-function updateVnode(vnode, newVnode, node, parentContext) {
+function updateVnode(lastVnode, nextVnode, node, parentContext) {
     console.log('updateVnode')
-    let {vtype} = vnode
+    let {vtype, props} = lastVnode
 
     if (vtype === 2) {
         //类型肯定相同的
-        return updateVcomponent(vnode, newVnode, node, parentContext)
+        return updateVcomponent(lastVnode, nextVnode, node, parentContext)
     }
 
     if (vtype === 4) {
-        return updateVstateless(vnode, newVnode, node, parentContext)
+        return updateVstateless(lastVnode, nextVnode, node, parentContext)
     }
 
     // ignore VCOMMENT and other vtypes
     if (vtype !== 1) {
+
         return node
     }
-
-    let oldHtml = vnode.props[HTML_KEY] && vnode.props[HTML_KEY].__html
-    if (oldHtml != null) {
-        node.innerHTML = ''
-        updateVelem(vnode, newVnode, node, parentContext)
-        initVchildren(newVnode, node, parentContext)
+    var onlyAdd = false
+    var nextProps = nextVnode.props
+    if (props[HTML_KEY]) {
+        while (node.firstChild) {
+            node.removeChild(node.firstChild)
+        }
+        updateVelem(lastVnode, nextVnode, node, parentContext)
+        initVchildren(nextVnode, node, parentContext)
     } else {
+        if (nextProps[HTML_KEY]) {
+            node.innerHTML = nextProps[HTML_KEY].__html
+        } else {
+            updateVChildren(lastVnode, nextVnode, node, parentContext)
 
-        updateVChildren(vnode, newVnode, node, parentContext)
-        updateVelem(vnode, newVnode, node, parentContext)
+        }
+        updateVelem(lastVnode, nextVnode, node, parentContext)
     }
     return node
 }
@@ -414,30 +404,33 @@ function updateVelem(lastVnode, nextVnode, node) {
 
     }
     if (nextVnode.__ref) {
-        nextVnode.__ref(node)
+        readyComponents
+            .push(function () {
+                nextVnode.__ref(nextVnode._hostNode)
+            })
     }
     return node
 }
 
-function updateVcomponent(vnode, newVcomponent, node, parentContext) {
-    var instance = newVcomponent._instance = vnode._instance
-    var nextProps = newVcomponent.props
+function updateVcomponent(lastVnode, nextVnode, node, parentContext) {
+    var instance = nextVnode._instance = lastVnode._instance
+    var nextProps = nextVnode.props
 
     if (instance.componentWillReceiveProps) {
         instance.componentWillReceiveProps(nextProps, parentContext)
     }
     instance.lastProps = instance.props
     instance.props = nextProps
-    console.log(parentContext)
     instance.context = parentContext
-    if (vnode.__ref !== newVcomponent.__ref) {
-        vnode.__ref && vnode.__ref(null)
+    if (nextVnode.__ref) {
+
+        nextVnode
+            .push(function () {
+                nextVnode.__ref(instance)
+            })
     }
-    console.log(instance._updateBatchNumber, options.updateBatchNumber)
-    //  if (instance._updateBatchNumber === options.updateBatchNumber) {
 
     return updateComponent(instance)
-    //   } else {      return node  }
 }
 
 function updateVChildren(vnode, newVnode, node, parentContext) {
@@ -573,20 +566,20 @@ function applyUpdate(data) {
     let dom = data.node
 
     // update
-
-    if (!vnode.vtype) {
-        if (vnode.text !== nextVnode.text) {
-            console.log('update nodeValue')
-            dom.nodeValue = nextVnode.text
+    if (!data.shouldIgnore) {
+        if (!vnode.vtype) {
+            if (vnode.text !== nextVnode.text) {
+                console.log('update nodeValue')
+                dom.nodeValue = nextVnode.text
+            }
+        } else if (vnode.vtype === 1) {
+            updateVelem(vnode, nextVnode, dom, data.parentContext)
+        } else if (vnode.vtype === 4) {
+            dom = updateVstateless(vnode, nextVnode, dom, data.parentContext)
+        } else if (vnode.vtype === 2) {
+            dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
         }
-    } else if (vnode.vtype === 1) {
-        updateVelem(vnode, nextVnode, dom, data.parentContext)
-    } else if (vnode.vtype === 4) {
-        dom = updateVstateless(vnode, nextVnode, dom, data.parentContext)
-    } else if (vnode.vtype === 2) {
-        dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
     }
-
     // re-order
     let currentNode = dom.parentNode.childNodes[data.index]
     if (currentNode !== dom) {

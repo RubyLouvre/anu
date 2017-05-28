@@ -293,7 +293,7 @@ function computeUUID(type, vnode) {
         '/' + vnode.key :
         '')
 }
-
+var select = null
 /**
  *
  *v
@@ -455,7 +455,6 @@ export function toDOM(vnode, context, hostParent, insertPoint, parentIntance) {
             vnode.__ref && vnode.__ref(vnode._hostNode)
         }
         if (instances) {
-
             while (instance = instances.shift()) {
                 afterMount(instance._currentElement)
                 applyComponentHook(instance, 2)
