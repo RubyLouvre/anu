@@ -865,7 +865,6 @@ function diffProps(nextProps, lastProps, vnode, lastVnode) {
     var instance = vnode._owner;
     if (lastVnode._wrapperState) {
         vnode._wrapperState = lastVnode._wrapperState;
-        delete lastVnode._wrapperState;
     }
 
     var isSVG = vnode.ns === 'http://www.w3.org/2000/svg';
@@ -877,9 +876,15 @@ function diffProps(nextProps, lastProps, vnode, lastVnode) {
             case 'key':
             case 'ref':
                 break;
+            case 'className':
+                if (isHTML) {
+                    dom.className = val;
+                } else {
+                    dom.setAttribute('class', val);
+                }
+                break;
             case 'style':
                 patchStyle(dom, lastProps.style || {}, val);
-
                 break;
             case HTML_KEY:
                 var oldhtml = lastProps[name] && lastProps[name].__html;
@@ -952,8 +957,8 @@ function operateAttribute(dom, name, value, isSVG) {
     var method = value === '' ? 'removeAttribute' : 'setAttribute',
         namespace = null;
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
-    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enha
-    // ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
+    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
+    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
     // xlinkTitle, xlinkType
     var match;
     if (isSVG && (match = name.match(xlinkProps))) {
@@ -1172,7 +1177,7 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
         }
         vnode._hostParent = hostParent;
 
-        rootNode = initVnode(vnode, parentContext, null, prevRendered);
+        rootNode = initVnode(vnode, parentContext, prevRendered);
         container.appendChild(rootNode);
 
         if (readyComponents.length) {
@@ -1203,7 +1208,7 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
     }
 }
 
-function initVnode(vnode, parentContext, parentInstance, prevRendered) {
+function initVnode(vnode, parentContext, prevRendered) {
     var vtype = vnode.vtype;
 
     var node = null;
@@ -1220,10 +1225,10 @@ function initVnode(vnode, parentContext, parentInstance, prevRendered) {
         node = initVelem(vnode, parentContext, prevRendered);
     } else if (vtype === 2) {
         // init stateful component
-        node = initComponent(vnode, parentContext, parentInstance, prevRendered);
+        node = initComponent(vnode, parentContext, prevRendered);
     } else if (vtype === 4) {
         // init stateless component
-        node = initVstateless(vnode, parentContext, parentInstance, prevRendered);
+        node = initVstateless(vnode, parentContext, prevRendered);
     }
 
     return node;
@@ -1286,7 +1291,7 @@ function aglinChildren(vnode, parentNode, parentContext, childNodes) {
         var el = vchildren[i];
         el._hostParent = vnode;
         var prevDom = childNodes[j];
-        var dom = initVnode(el, parentContext, null, prevDom);
+        var dom = initVnode(el, parentContext, prevDom);
         if (dom === prevDom) {
             j++;
         }
@@ -1305,7 +1310,7 @@ function fireMount() {
 
 var instanceMap = new Map();
 
-function initComponent(vnode, parentContext, parentInstance, prevRendered) {
+function initComponent(vnode, parentContext, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1318,7 +1323,6 @@ function initComponent(vnode, parentContext, parentInstance, prevRendered) {
     instance._currentElement = vnode;
     instance.props = instance.props || props;
     instance.context = instance.context || parentContext;
-    if (parentInstance) instance.parentInstance = parentInstance;
 
     if (instance.componentWillMount) {
         instance.componentWillMount();
@@ -1340,7 +1344,7 @@ function initComponent(vnode, parentContext, parentInstance, prevRendered) {
             vnode.__ref(instance);
         });
     }
-    var dom = initVnode(rendered, getChildContext(instance, parentContext), parentInstance, prevRendered);
+    var dom = initVnode(rendered, getChildContext(instance, parentContext), prevRendered);
     instanceMap.set(instance, dom);
     vnode._hostNode = dom;
     //vnode._instance._rendered._hostNode === node
@@ -1359,7 +1363,7 @@ function safeRenderComponent(instance) {
     return rendered;
 }
 
-function initVstateless(vnode, parentContext, parentInstance, prevRendered) {
+function initVstateless(vnode, parentContext, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1368,9 +1372,8 @@ function initVstateless(vnode, parentContext, parentInstance, prevRendered) {
     var rendered = type(props, parentContext);
     rendered = checkNull(rendered);
 
-    var dom = initVnode(rendered, parentContext, parentInstance, prevRendered);
+    var dom = initVnode(rendered, parentContext, prevRendered);
     vnode._instance = {
-        parentInstance: parentInstance,
         _currentElement: vnode, // ???
         _rendered: rendered
     };
@@ -1749,7 +1752,7 @@ function applyDestroy(data) {
 }
 
 function applyCreate(data) {
-    var node = initVnode(data.vnode, data.parentContext, data.parentNode.namespaceURI);
+    var node = initVnode(data.vnode, data.parentContext);
     data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
 

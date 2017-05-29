@@ -47,7 +47,7 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
         }
         vnode._hostParent = hostParent
 
-        rootNode = initVnode(vnode, parentContext, null, prevRendered)
+        rootNode = initVnode(vnode, parentContext, prevRendered)
         container.appendChild(rootNode)
 
         if (readyComponents.length) {
@@ -79,7 +79,7 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
 
 }
 
-export function initVnode(vnode, parentContext, parentInstance, prevRendered) {
+export function initVnode(vnode, parentContext, prevRendered) {
     let {vtype} = vnode
     let node = null
     if (!vtype) { // init text comment
@@ -95,9 +95,9 @@ export function initVnode(vnode, parentContext, parentInstance, prevRendered) {
         node = initVelem(vnode, parentContext, prevRendered)
 
     } else if (vtype === 2) { // init stateful component
-        node = initComponent(vnode, parentContext, parentInstance, prevRendered)
+        node = initComponent(vnode, parentContext, prevRendered)
     } else if (vtype === 4) { // init stateless component
-        node = initVstateless(vnode, parentContext, parentInstance, prevRendered)
+        node = initVstateless(vnode, parentContext, prevRendered)
     }
 
     return node
@@ -163,7 +163,7 @@ function aglinChildren(vnode, parentNode, parentContext, childNodes) {
         let el = vchildren[i]
         el._hostParent = vnode
         var prevDom = childNodes[j]
-        var dom = initVnode(el, parentContext, null, prevDom)
+        var dom = initVnode(el, parentContext, prevDom)
         if (dom === prevDom) {
             j++
         }
@@ -183,7 +183,7 @@ function fireMount() {
 
 var instanceMap = new Map()
 
-function initComponent(vnode, parentContext, parentInstance, prevRendered) {
+function initComponent(vnode, parentContext, prevRendered) {
     let {type, props} = vnode
 
     props = getComponentProps(type, props)
@@ -194,9 +194,7 @@ function initComponent(vnode, parentContext, parentInstance, prevRendered) {
     instance._currentElement = vnode
     instance.props = instance.props || props
     instance.context = instance.context || parentContext
-    if (parentInstance) 
-        instance.parentInstance = parentInstance
-
+   
     if (instance.componentWillMount) {
         instance.componentWillMount()
     }
@@ -219,7 +217,7 @@ function initComponent(vnode, parentContext, parentInstance, prevRendered) {
                 vnode.__ref(instance)
             })
     }
-    let dom = initVnode(rendered, getChildContext(instance, parentContext), parentInstance, prevRendered)
+    let dom = initVnode(rendered, getChildContext(instance, parentContext), prevRendered)
     instanceMap.set(instance, dom)
     vnode._hostNode = dom
     //vnode._instance._rendered._hostNode === node
@@ -238,16 +236,15 @@ export function safeRenderComponent(instance) {
     return rendered
 }
 
-function initVstateless(vnode, parentContext, parentInstance, prevRendered) {
+function initVstateless(vnode, parentContext, prevRendered) {
     var {type, props} = vnode
     props = getComponentProps(type, props)
 
     let rendered = type(props, parentContext)
     rendered = checkNull(rendered)
 
-    let dom = initVnode(rendered, parentContext, parentInstance, prevRendered)
+    let dom = initVnode(rendered, parentContext, prevRendered)
     vnode._instance = {
-        parentInstance: parentInstance,
         _currentElement: vnode, // ???
         _rendered: rendered
     }
@@ -637,7 +634,7 @@ function applyDestroy(data) {
 }
 
 function applyCreate(data) {
-    let node = initVnode(data.vnode, data.parentContext, data.parentNode.namespaceURI)
+    let node = initVnode(data.vnode, data.parentContext)
     data
         .parentNode
         .insertBefore(node, data.parentNode.childNodes[data.index])
