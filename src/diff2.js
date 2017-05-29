@@ -121,7 +121,7 @@ function initVelem(vnode, parentContext, prevRendered) {
     } else {
         initChildren(vnode, dom, parentContext)
     }
-    diffProps(props, {}, vnode, {})
+    vnode.checkProps && diffProps(props, {}, vnode, {})
 
     if (vnode.__ref) {
         readyComponents
@@ -432,7 +432,9 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
   */
 function updateVelem(lastVnode, nextVnode, node) {
     nextVnode._hostNode = node
-    diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode)
+    if (lastVnode.checkProps || nextVnode.checkProps) {
+        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode)
+    }
     if (nextVnode._wrapperState) {
         nextVnode
             ._wrapperState
@@ -634,7 +636,7 @@ function applyDestroy(data) {
         .removeChild(data.node)
     var node = data.node
     var nodeName = node.__n || (node.__n = node.nodeName.toLowerCase())
-    if (recyclables[nodeName] && recyclables[nodeName].length < 512) {
+    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
         recyclables[nodeName].push(node)
     } else {
         recyclables[nodeName] = [node]

@@ -271,16 +271,19 @@ var shallowEqualHack = Object.freeze([]); //用于绕过shallowEqual
  *
  * @param {string} type
  * @param {object} props
- * @param {array} children
+ * @param {array} ...children
  * @returns
  */
-function createElement(type, configs, children) {
+function createElement(type, configs) {
     var props = {};
     var key = null,
         ref = null,
-        props = {},
+        pChildren = null,
+        //位于props中的children
+    props = {},
         vtype = 1,
-        typeType = typeof type === 'undefined' ? 'undefined' : _typeof(type);
+        typeType = typeof type === 'undefined' ? 'undefined' : _typeof(type),
+        isEmptyProps = true;
     if (configs) {
         for (var i in configs) {
             var val = configs[i];
@@ -288,53 +291,48 @@ function createElement(type, configs, children) {
                 key = val;
             } else if (i === 'ref') {
                 ref = val;
+            } else if (i === 'children') {
+                pChildren = val;
             } else {
+                isEmptyProps = false;
                 props[i] = val;
             }
         }
     }
-
+    if (typeType === 'function') {
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
+    }
     var c = [];
     for (var i = 2, n = arguments.length; i < n; i++) {
         c.push(arguments[i]);
     }
-    var useEmpty = true;
-    if (!c.length) {
-        if (props.children && props.children.length) {
-            c = props.children;
-            useEmpty = false;
-        }
-    } else {
-        useEmpty = false;
-    }
-    if (typeType === 'function') {
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
+
+    if (!c.length && pChildren && pChildren) {
+        c = pChildren;
     }
 
-    if (useEmpty) {
-        c = shallowEqualHack;
-        if (vtype === 1) {
-            props.children = c;
-        }
-    } else {
+    if (c.length) {
         c = flatChildren(c);
         delete c.merge; //注意这里的顺序
         //  Object.freeze(c) //超紴影响性能
         props.children = c;
+    } else if (vtype === 1) {
+        props.children = shallowEqualHack;
     }
 
     //  Object.freeze(props) //超紴影响性能
-    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur);
+    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps);
 }
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
 }
 
-function Vnode(type, props, key, ref, vtype, owner) {
+function Vnode(type, props, key, ref, vtype, owner, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
+    this.checkProps = checkProps;
     if (key) {
         this.key = key;
     }
@@ -888,8 +886,8 @@ function diffProps(nextProps, lastProps, vnode, lastVnode) {
         var val = nextProps[name];
         switch (name) {
             case 'children':
-            case 'key':
-            case 'ref':
+                //  case 'key':
+                //  case 'ref':
                 break;
             case 'className':
                 if (isHTML) {
@@ -1269,7 +1267,7 @@ function initVelem(vnode, parentContext, prevRendered) {
     } else {
         initChildren(vnode, dom, parentContext);
     }
-    diffProps(props, {}, vnode, {});
+    vnode.checkProps && diffProps(props, {}, vnode, {});
 
     if (vnode.__ref) {
         readyComponents.push(function () {
@@ -1584,7 +1582,9 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
   */
 function updateVelem(lastVnode, nextVnode, node) {
     nextVnode._hostNode = node;
-    diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode);
+    if (lastVnode.checkProps || nextVnode.checkProps) {
+        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode);
+    }
     if (nextVnode._wrapperState) {
         nextVnode._wrapperState.postUpdate(nextVnode);
     }
@@ -1767,7 +1767,7 @@ function applyDestroy(data) {
     data.node.parentNode.removeChild(data.node);
     var node = data.node;
     var nodeName = node.__n || (node.__n = node.nodeName.toLowerCase());
-    if (recyclables[nodeName] && recyclables[nodeName].length < 512) {
+    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
         recyclables[nodeName].push(node);
     } else {
         recyclables[nodeName] = [node];

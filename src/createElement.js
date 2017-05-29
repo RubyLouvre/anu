@@ -1,23 +1,26 @@
 import {extend} from './util'
 import {getNs} from './browser'
 import {CurrentOwner} from './CurrentOwner'
-
+var __slice = Array.prototype.slice
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 /**
  * 创建虚拟DOM
  *
  * @param {string} type
  * @param {object} props
- * @param {array} children
+ * @param {array} ...children
  * @returns
  */
-export function createElement(type, configs, children) {
+export function createElement(type, configs) {
     var props = {}
         var key = null,
             ref = null,
+            pChildren = null, //位于props中的children
             props = {},
             vtype = 1,
-            typeType = typeof type
+            typeType = typeof type,
+
+            isEmptyProps = true
         if (configs) {
             for (var i in configs) {
                 var val = configs[i]
@@ -25,55 +28,50 @@ export function createElement(type, configs, children) {
                     key = val
                 } else if (i === 'ref') {
                     ref = val
+                } else if (i === 'children') {
+                    pChildren = val
                 } else {
+                    isEmptyProps = false
                     props[i] = val
                 }
             }
-        }
-
-        var c = []
-        for (var i = 2, n = arguments.length; i < n; i++) {
-            c.push(arguments[i])
-        }
-        var useEmpty = true
-        if (!c.length) {
-            if (props.children && props.children.length) {
-                c = props.children
-                useEmpty = false
-            }
-        } else {
-            useEmpty = false
         }
         if (typeType === 'function') {
             vtype = type.prototype && type.prototype.render
                 ? 2
                 : 4
         }
+        var c = []
+        for (var i = 2, n = arguments.length; i < n; i++) {
+            c.push(arguments[i])
+        }
 
-        if (useEmpty) {
-            c = shallowEqualHack
-            if (vtype === 1) {
-                props.children = c
-            }
-        } else {
+        if (!c.length && pChildren && pChildren) {
+            c = pChildren
+        }
+
+        if (c.length) {
             c = flatChildren(c)
             delete c.merge //注意这里的顺序
             //  Object.freeze(c) //超紴影响性能
             props.children = c
+        } else if (vtype === 1) {
+            props.children = shallowEqualHack
         }
 
         //  Object.freeze(props) //超紴影响性能
-        return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur)
+        return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
     }
     //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
     function getDOMNode() {
         return this
     }
 
-    function Vnode(type, props, key, ref, vtype, owner) {
+    function Vnode(type, props, key, ref, vtype, owner, checkProps) {
         this.type = type
         this.props = props
         this.vtype = vtype
+        this.checkProps = checkProps
         if (key) {
             this.key = key
         }
