@@ -494,15 +494,16 @@ Component.prototype = {
 
         setStateProxy(this, cb);
     },
-    getBaseVnode: function getBaseVnode() {
-        var p = this;
-        do {
-            var pp = p.parentInstance;
-            if (!pp) {
-                return p._currentElement;
-            }
-        } while (p = pp);
-    },
+
+    /*  getBaseVnode() {
+          var p = this
+          do {
+              var pp = p.parentInstance
+              if (!pp) {
+                  return p._currentElement
+              }
+          } while (p = pp);
+      },*/
     forceUpdate: function forceUpdate(cb) {
         this._pendingForceUpdate = true;
         setStateProxy(this, cb);

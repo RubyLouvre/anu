@@ -32,7 +32,7 @@ Component.prototype = {
 
         setStateProxy(this, cb)
     },
-    getBaseVnode() {
+  /*  getBaseVnode() {
         var p = this
         do {
             var pp = p.parentInstance
@@ -40,7 +40,7 @@ Component.prototype = {
                 return p._currentElement
             }
         } while (p = pp);
-    },
+    },*/
     forceUpdate(cb) {
         this._pendingForceUpdate = true
         setStateProxy(this, cb)
