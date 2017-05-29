@@ -27,8 +27,9 @@ export function createElement(type, configs, children) {
     }
 
     var ref = configs.ref
-    delete configs.ref
-
+    if(ref){
+       delete configs.ref
+    }
     extend(props, configs)
     var c = []
         .slice
@@ -50,11 +51,11 @@ export function createElement(type, configs, children) {
     } else {
         c = flatChildren(c)
         delete c.merge //注意这里的顺序
-        Object.freeze(c)
+      //  Object.freeze(c) //超紴影响性能
         props.children = c
     }
 
-    Object.freeze(props)
+  //  Object.freeze(props) //超紴影响性能
     return new Vnode(type, props, key, CurrentOwner.cur, ref)
 }
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM

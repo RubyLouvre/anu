@@ -9,7 +9,7 @@ import {
     extend,
     getNodes,
     checkNull,
-
+    recyclables,
     getComponentProps
 } from './util'
 import {document, createDOMElement} from './browser'
@@ -194,7 +194,7 @@ function initComponent(vnode, parentContext, prevRendered) {
     instance._currentElement = vnode
     instance.props = instance.props || props
     instance.context = instance.context || parentContext
-   
+
     if (instance.componentWillMount) {
         instance.componentWillMount()
     }
@@ -369,6 +369,7 @@ function destroyVelem(vnode, node) {
     for (let i = 0, len = vchildren.length; i < len; i++) {
         destroyVnode(vchildren[i], childNodes[i])
     }
+
     vnode.__ref && vnode.__ref(null)
     vnode._hostNode = null
     vnode._hostParent = null
@@ -631,6 +632,13 @@ function applyDestroy(data) {
         .node
         .parentNode
         .removeChild(data.node)
+    var node = data.node
+    var nodeName = node.__n || (node.__n = node.nodeName.toLowerCase())
+    if (recyclables[nodeName] && recyclables[nodeName].length < 512) {
+        recyclables[nodeName].push(node)
+    } else {
+        recyclables[nodeName] = [node]
+    }
 }
 
 function applyCreate(data) {

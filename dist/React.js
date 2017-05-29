@@ -305,11 +305,11 @@ function createElement(type, configs, children) {
     } else {
         c = flatChildren(c);
         delete c.merge; //注意这里的顺序
-        Object.freeze(c);
+        //  Object.freeze(c)
         props.children = c;
     }
 
-    Object.freeze(props);
+    //  Object.freeze(props)
     return new Vnode(type, props, key, CurrentOwner.cur, ref);
 }
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
@@ -1504,6 +1504,7 @@ function destroyVelem(vnode, node) {
     for (var i = 0, len = vchildren.length; i < len; i++) {
         destroyVnode(vchildren[i], childNodes[i]);
     }
+
     vnode.__ref && vnode.__ref(null);
     vnode._hostNode = null;
     vnode._hostParent = null;
@@ -1749,6 +1750,13 @@ function applyUpdate(data) {
 function applyDestroy(data) {
     destroyVnode(data.vnode, data.node);
     data.node.parentNode.removeChild(data.node);
+    var node = data.node;
+    var nodeName = node.__n || (node.__n = node.nodeName.toLowerCase());
+    if (recyclables[nodeName] && recyclables[nodeName].length < 512) {
+        recyclables[nodeName].push(node);
+    } else {
+        recyclables[nodeName] = [node];
+    }
 }
 
 function applyCreate(data) {
