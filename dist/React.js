@@ -143,7 +143,14 @@ function getComponentProps(type, props) {
  */
 
 
-var recyclables = [];
+var recyclables = {
+    '#text': [],
+    '#comment': [],
+    'span': [],
+    'div': [],
+    'td': [],
+    'p': []
+};
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -408,38 +415,13 @@ function flatChildren(children, ret, deep) {
 var queue = [];
 var callbacks = [];
 
-function setStateWarn() {
-    /* istanbul ignore next */
-    if (transaction.isInTransation) {
-        console.warn('\u8BF7\u4E0D\u8981\u5728\'render\', \'componentWillUpdate\',\'componentDidUpdate\',\u6216\u7EC4\u4EF6\u7684\u6784\u9020\u5668\u4E2D\n       \xA0\u8C03\u7528setState\uFF0CforceUpdate\u65B9\u6CD5\uFF0C\u5426\u5219\u4F1A\u9020\u6210\u6B7B\u5FAA\u73AF\uFF0C\u4F60\u53EF\u4EE5\u5C06\u76F8\u5173\u903B\u8F91\u653E\u5230\'componentWillMount\'\u94A9\u5B50');
-    }
-}
-
 var transaction = {
     isInTransation: false,
     enqueueCallback: function enqueueCallback(obj) {
         //它们是保证在ComponentDidUpdate后执行
         callbacks.push(obj);
     },
-    renderWithoutSetState: function renderWithoutSetState(instance, nextProps, context) {
-        instance.setState = instance.forceUpdate = setStateWarn;
-        try {
-            CurrentOwner.cur = instance;
-            var vnode = instance.render(nextProps, context);
-            if (vnode === null) {
-                vnode = {
-                    type: '#comment',
-                    text: 'empty'
-                };
-            }
-        } finally {
-            CurrentOwner.cur = null;
-            delete instance.setState;
-            delete instance.forceUpdate;
-        }
 
-        return vnode;
-    },
     enqueue: function enqueue(instance) {
         if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) === 'object') {
             queue.push(instance);
@@ -457,7 +439,7 @@ var transaction = {
             renderQueue.forEach(function (inst) {
                 try {
                     if (inst._updateBatchNumber === globalBatchNumber) {
-                        options.immune.updateComponent(inst);
+                        options.immune.refreshComponent(inst);
                     }
                 } catch (e) {
                     /* istanbul ignore next */
@@ -1028,17 +1010,12 @@ var hasReadOnlyValue = {
     'reset': true,
     'submit': true
 };
-var formElements = {
-    select: 1,
-    textarea: 1,
-    input: 1
-};
+
 function setControlledComponent(vnode) {
     var props = vnode.props;
 
     var type = props.type;
     var nodeName = vnode.type;
-    if (!formElements[nodeName]) return;
 
     // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
     // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
@@ -1184,18 +1161,20 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
     if (!prevVnode) {
 
         var nodes = getNodes(container);
+        var prevRendered = null;
         for (var i = 0, el; el = nodes[i++];) {
             if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
                 hostNode = el;
-                vnode._prevCached = el; //进入节点对齐模块
+                prevRendered = el;
             } else {
                 el.parentNode.removeChild(el);
             }
         }
         vnode._hostParent = hostParent;
-        rootNode = initVnode(vnode, parentContext);
 
+        rootNode = initVnode(vnode, parentContext, null, prevRendered);
         container.appendChild(rootNode);
+
         if (readyComponents.length) {
             fireMount();
         }
@@ -1211,7 +1190,7 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
 
     var instance = vnode._instance;
     container._component = vnode;
-    delete vnode._prevCached;
+    delete vnode._prevRendered;
     if (callback) {
         callback();
     }
@@ -1224,13 +1203,13 @@ function renderTreeIntoContainer(vnode, container, callback, parentContext) {
     }
 }
 
-function initVnode(vnode, parentContext, parentInstance) {
+function initVnode(vnode, parentContext, parentInstance, prevRendered) {
     var vtype = vnode.vtype;
 
     var node = null;
     if (!vtype) {
         // init text comment
-        node = createDOMElement(vnode);
+        node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
         vnode._hostNode = node;
         return node;
     }
@@ -1238,46 +1217,81 @@ function initVnode(vnode, parentContext, parentInstance) {
     if (vtype === 1) {
         // init element
 
-        node = initVelem(vnode, parentContext);
+        node = initVelem(vnode, parentContext, prevRendered);
     } else if (vtype === 2) {
         // init stateful component
-
-        node = initVcomponent(vnode, parentContext, parentInstance);
+        node = initComponent(vnode, parentContext, parentInstance, prevRendered);
     } else if (vtype === 4) {
         // init stateless component
-        node = initVstateless(vnode, parentContext, parentInstance);
+        node = initVstateless(vnode, parentContext, parentInstance, prevRendered);
     }
 
     return node;
 }
-
-function initVelem(vnode, parentContext) {
+var formElements = {
+    select: 1,
+    textarea: 1,
+    input: 1
+};
+function initVelem(vnode, parentContext, prevRendered) {
     var type = vnode.type,
-        props = vnode.props;
+        props = vnode.props,
+        dom = void 0;
 
-    var node = createDOMElement(vnode);
-    vnode._hostNode = node;
-    initVchildren(vnode, node, parentContext);
+    if (prevRendered && prevRendered.nodeName.toLowerCase() === type) {
+        dom = prevRendered;
+    } else {
+        dom = createDOMElement(vnode);
+    }
+    vnode._hostNode = dom;
+    if (prevRendered) {
+        aglinChildren(vnode, dom, parentContext, getNodes(prevRendered));
+    } else {
+        initChildren(vnode, dom, parentContext);
+    }
     diffProps(props, {}, vnode, {});
-    setControlledComponent(vnode);
+
     if (vnode.__ref) {
         readyComponents.push(function () {
-            vnode.__ref(node);
+            vnode.__ref(dom);
         });
     }
-    if (vnode.type === 'select') {
-        vnode._wrapperState.postUpdate(vnode);
+    if (formElements[type]) {
+        setControlledComponent(vnode);
+        if (type === 'select') {
+            vnode._wrapperState.postUpdate(vnode);
+        }
     }
-    return node;
+
+    return dom;
 }
 var readyComponents = [];
 //将虚拟DOM转换为真实DOM并插入父元素
-function initVchildren(vnode, node, parentContext) {
+function initChildren(vnode, parentNode, parentContext) {
     var vchildren = vnode.props.children;
+
     for (var i = 0, n = vchildren.length; i < n; i++) {
         var el = vchildren[i];
         el._hostParent = vnode;
-        node.appendChild(initVnode(el, parentContext));
+
+        parentNode.appendChild(initVnode(el, parentContext));
+    }
+}
+
+function aglinChildren(vnode, parentNode, parentContext, childNodes) {
+    var vchildren = vnode.props.children,
+        insertPoint = childNodes[0] || null,
+        j = 0;
+    for (var i = 0, n = vchildren.length; i < n; i++) {
+        var el = vchildren[i];
+        el._hostParent = vnode;
+        var prevDom = childNodes[j];
+        var dom = initVnode(el, parentContext, null, prevDom);
+        if (dom === prevDom) {
+            j++;
+        }
+        parentNode.insertBefore(dom, insertPoint);
+        insertPoint = dom.nextSibling;
     }
 }
 
@@ -1291,7 +1305,7 @@ function fireMount() {
 
 var instanceMap = new Map();
 
-function initVcomponent(vnode, parentContext, parentInstance) {
+function initComponent(vnode, parentContext, parentInstance, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1313,7 +1327,7 @@ function initVcomponent(vnode, parentContext, parentInstance) {
     // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
     // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-    var rendered = renderComponent(instance);
+    var rendered = safeRenderComponent(instance);
     instance._rendered = rendered;
     rendered._hostParent = vnode._hostParent;
     if (instance.componentDidMount) {
@@ -1323,26 +1337,29 @@ function initVcomponent(vnode, parentContext, parentInstance) {
     }
     if (vnode.__ref) {
         readyComponents.push(function () {
-            console.log('attach ref');
             vnode.__ref(instance);
         });
     }
-    var dom = initVnode(rendered, getChildContext(instance, parentContext), parentInstance);
+    var dom = initVnode(rendered, getChildContext(instance, parentContext), parentInstance, prevRendered);
     instanceMap.set(instance, dom);
     vnode._hostNode = dom;
     //vnode._instance._rendered._hostNode === node
 
     return dom;
 }
+function safeRenderComponent(instance) {
 
-function renderComponent(instance, parentContext) {
+    //  instance.setState = instance.forceUpdate = noop   try {
     CurrentOwner.cur = instance;
-    var vnode = instance.render();
+    var rendered = instance.render();
+    rendered = checkNull(rendered);
+    //  } finally {
     CurrentOwner.cur = null;
-    return checkNull(vnode);
+    //      delete instance.setState      delete instance.forceUpdate  }
+    return rendered;
 }
 
-function initVstateless(vnode, parentContext, parentInstance) {
+function initVstateless(vnode, parentContext, parentInstance, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1351,7 +1368,7 @@ function initVstateless(vnode, parentContext, parentInstance) {
     var rendered = type(props, parentContext);
     rendered = checkNull(rendered);
 
-    var dom = initVnode(rendered, parentContext, parentInstance);
+    var dom = initVnode(rendered, parentContext, parentInstance, prevRendered);
     vnode._instance = {
         parentInstance: parentInstance,
         _currentElement: vnode, // ???
@@ -1382,17 +1399,17 @@ function destroyVstateless(vnode, node) {
 }
 
 //将Component中这个东西移动这里
-options.immune.updateComponent = function updateComponentProxy(instance) {
+options.immune.refreshComponent = function refreshComponent(instance) {
     //这里触发视图更新
 
-    updateComponent(instance);
+    reRenderComponent(instance);
     instance._forceUpdate = false;
     if (readyComponents.length) {
         fireMount();
     }
 };
 
-function updateComponent(instance) {
+function reRenderComponent(instance) {
     // instance._currentElement
 
     var props = instance.props,
@@ -1404,7 +1421,6 @@ function updateComponent(instance) {
     var node = instanceMap.get(instance);
 
     var hostParent = lastRendered._hostParent;
-    console.log('updateComponent');
     var nextProps = props;
     lastProps = lastProps || props;
     var nextState = instance._processPendingState(props, context);
@@ -1424,7 +1440,7 @@ function updateComponent(instance) {
     instance.state = nextState;
     delete instance._updateBatchNumber;
 
-    var rendered = renderComponent(instance);
+    var rendered = safeRenderComponent(instance);
     var childContext = getChildContext(instance, context);
     instance._rendered = rendered;
     rendered._hostParent = hostParent;
@@ -1452,8 +1468,9 @@ function compareTwoVnodes(vnode, newVnode, node, parentContext) {
         newNode = initVnode(newVnode, parentContext);
         node.parentNode.replaceChild(newNode, node);
     } else if (vnode !== newVnode) {
-        console.log('compareTwoVnodes');
         // same type and same key -> update
+        newNode = updateVnode(vnode, newVnode, node, parentContext);
+    } else if (vnode._prevRendered) {
         newNode = updateVnode(vnode, newVnode, node, parentContext);
     }
     return newNode;
@@ -1502,7 +1519,6 @@ function destroyVcomponent(vnode, node) {
 }
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
-    console.log('updateVnode');
     var vtype = lastVnode.vtype,
         props = lastVnode.props;
 
@@ -1528,12 +1544,12 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
             node.removeChild(node.firstChild);
         }
         updateVelem(lastVnode, nextVnode, node, parentContext);
-        initVchildren(nextVnode, node, parentContext);
+        initChildren(nextVnode, node, parentContext);
     } else {
         if (nextProps[HTML_KEY]) {
             node.innerHTML = nextProps[HTML_KEY].__html;
         } else {
-            updateVChildren(lastVnode, nextVnode, node, parentContext);
+            updateChildren(lastVnode, nextVnode, node, parentContext);
         }
         updateVelem(lastVnode, nextVnode, node, parentContext);
     }
@@ -1550,7 +1566,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
 function updateVelem(lastVnode, nextVnode, node) {
     nextVnode._hostNode = node;
     diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode);
-    if (nextVnode.type === 'select') {
+    if (nextVnode._wrapperState) {
         nextVnode._wrapperState.postUpdate(nextVnode);
     }
     if (nextVnode.__ref) {
@@ -1578,24 +1594,26 @@ function updateVcomponent(lastVnode, nextVnode, node, parentContext) {
         });
     }
 
-    return updateComponent(instance);
+    return reRenderComponent(instance);
 }
 
-function updateVChildren(vnode, newVnode, node, parentContext) {
-    console.log('updateVChildren');
+function updateChildren(vnode, newVnode, node, parentContext) {
+    if (vnode._prevRendered) {
+
+        return;
+    }
     var patches = {
         removes: [],
         updates: [],
         creates: []
     };
-    diffVchildren(patches, vnode, newVnode, node, parentContext);
+    diffChildren(patches, vnode, newVnode, node, parentContext);
     patches.removes.forEach(applyDestroy);
     patches.updates.forEach(applyUpdate);
     patches.creates.forEach(applyCreate);
 }
 
-function diffVchildren(patches, vnode, newVnode, node, parentContext) {
-    console.log('diffVchildren');
+function diffChildren(patches, vnode, newVnode, node, parentContext) {
     var vchildren = vnode.props.children;
     var childNodes = node.childNodes;
     var newVchildren = newVnode.props.children;
@@ -1682,7 +1700,7 @@ function diffVchildren(patches, vnode, newVnode, node, parentContext) {
             }
             creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
         } else if (item.vnode.vtype === 1) {
-            diffVchildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
+            diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
         }
     }
     if (removes) {
@@ -1707,7 +1725,6 @@ function applyUpdate(data) {
     if (!data.shouldIgnore) {
         if (!vnode.vtype) {
             if (vnode.text !== nextVnode.text) {
-                console.log('update nodeValue');
                 dom.nodeValue = nextVnode.text;
             }
         } else if (vnode.vtype === 1) {
@@ -1745,6 +1762,7 @@ var React = {
     PureComponent: PureComponent,
     Component: Component
 };
+
 win.ReactDOM = React;
 
 return React;

@@ -128,6 +128,25 @@ export function isKeyed(lastChildren, nextChildren) {
     return nextChildren.length > 0 && !isNullOrUndef(nextChildren[0].key) && lastChildren.length > 0 && !isNullOrUndef(lastChildren[0].key);
 }
 
+
+export function checkNull(vnode, type) {
+    if (vnode === null || vnode === false) {
+        return {type: '#comment', text: 'empty'}
+    } else if (!vnode || !vnode.vtype) {
+        throw new Error(`@${type.name}#render:You may have returned undefined, an array or some other invalid object`)
+    }
+    return vnode
+}
+export function getComponentProps(type, props) {
+    var defaultProps = type.defaultProps
+    props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
+    for (var i in defaultProps) {
+        if (props[i] === void 666) {
+            props[i] = defaultProps[i]
+        }
+    }
+    return props
+}
 /**
  * 获取虚拟DOM对应的顶层组件实例的类型
  *
@@ -141,4 +160,11 @@ export function getComponentName(type) {
         ? (type.displayName || type.name)
         : type
 }
-export var recyclables = []
+export var recyclables = {
+    '#text': [],
+    '#comment': [],
+    'span': [],
+    'div': [],
+    'td': [],
+    'p': []
+}

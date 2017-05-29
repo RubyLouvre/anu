@@ -7,18 +7,13 @@ var hasReadOnlyValue = {
     'reset': true,
     'submit': true
 }
-var formElements = {
-    select: 1,
-    textarea: 1,
-    input: 1
-}
+
 export function setControlledComponent(vnode) {
     var props = vnode.props
 
     var type = props.type
     var nodeName = vnode.type
-    if (!formElements[nodeName]) 
-        return
+  
 
         // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
     // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，

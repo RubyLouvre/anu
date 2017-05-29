@@ -1,11 +1,5 @@
-import {
-    extend,
-    getContext
-} from '../src/util'
-import {
-    rnumber,
-    cssNumber
-} from '../src/style'
+import {extend, getChildContext, checkNull, getComponentProps} from '../src/util'
+import {rnumber, cssNumber} from '../src/style'
 var React = global.React
 var skipAttributes = {
     ref: 1,
@@ -14,11 +8,7 @@ var skipAttributes = {
 }
 var Component = React.Component
 function renderVNode(vnode, context) {
-    var {
-        vtype,
-        type,
-        props
-    } = vnode
+    var {vtype, type, props} = vnode
     switch (type) {
         case '#text':
             return encodeEntities(vnode.text)
@@ -51,9 +41,9 @@ function renderVNode(vnode, context) {
                         attrs.push(i + '=' + encodeAttributes(v + ''))
                     }
                 }
-                attrs = attrs.length ?
-                    ' ' + attrs.join(' ') :
-                    ''
+                attrs = attrs.length
+                    ? ' ' + attrs.join(' ')
+                    : ''
                 var str = '<' + type + attrs
                 if (voidTags[type]) {
                     return str + '/>\n'
@@ -64,9 +54,9 @@ function renderVNode(vnode, context) {
                 } else {
                     str += props
                         .children
-                        .map(el => (el ?
-                            renderVNode(el, context) :
-                            ''))
+                        .map(el => (el
+                            ? renderVNode(el, context)
+                            : ''))
                         .join('')
                 }
                 return str + '</' + type + '>\n'
@@ -136,7 +126,7 @@ var cssCached = {
 }
 
 function cssName(name) {
-    if (cssCached[name])
+    if (cssCached[name]) 
         return cssCached[name]
 
     return cssCached[name] = name
@@ -146,61 +136,36 @@ function cssName(name) {
 }
 
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
-function setStateWarn() {}
-var transaction = {
-    renderWithoutSetState: function (instance, nextProps, context) {
-        instance.setState = instance.forceUpdate = setStateWarn
-        try {
-            var vnode = instance.render(nextProps, context)
-            if (vnode === null) {
-                vnode = {
-                    type: '#comment',
-                    text: 'empty'
-                };
-            }
-        } finally {
-            delete instance.setState
-            delete instance.forceUpdate
-
-        }
-        return vnode
-    }
-}
 
 function toVnode(vnode, data, parentInstance) {
-    var context = data.context
-    var Type = vnode.type,
+    var parentContext = data.context,
+        Type = vnode.type,
         instance,
-        rendered
+        rendered;
 
     if (vnode.vtype > 1) {
         var props = vnode.props
+        props = getComponentProps(Type, props)
         if (vnode.vtype === 4) {
             //处理无状态组件
-            instance = new Component(null, context)
-            instance.render = instance.statelessRender = Type
-            rendered = transaction.renderWithoutSetState(instance, props, context)
+
+            rendered = type(props, parentContext)
+            instance = {}
 
         } else {
 
             //处理普通组件
-            var defaultProps = Type.defaultProps
-            props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
-            for (var i in defaultProps) {
-                if (props[i] === void 666) {
-                    props[i] = defaultProps[i]
-                }
-            }
-            instance = new Type(props, context)
+            instance = new Type(props, parentContext)
+            instance.props = instance.props || propx
+            instance.context = instance.context || parentContext
+            rendered = instance.render()
 
-            //必须在这里添加vnode，因为willComponent里可能进行setState操作
-            Component.call(instance, props, context) //重点！！
-            instance.componentWillMount && instance.componentWillMount()
-
-            rendered = transaction.renderWithoutSetState(instance)
-
+            
         }
+
+        rendered = checkNull(rendered)
         instance._rendered = rendered
+        instance._currentElement = vnode
 
         vnode._instance = instance
 
@@ -208,17 +173,21 @@ function toVnode(vnode, data, parentInstance) {
             instance.parentInstance = parentInstance
         }
 
+        if (instance.componentWillMount) {
+            instance.componentWillMount()
+        }
         // <App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getContext(instance, context) //将context往下传
+            data.context = getChildContext(instance, context) //将context往下传
         }
         return toVnode(rendered, data, instance)
     } else {
         return vnode
     }
-}
+};
+
 //==================实现序列化文本节点与属性值的相关方法=============
 
 var matchHtmlRegExp = /["'&<>]/;
@@ -270,9 +239,9 @@ function escapeHtml(string) {
         html += escape;
     }
 
-    return lastIndex !== index ?
-        html + str.substring(lastIndex, index) :
-        html;
+    return lastIndex !== index
+        ? html + str.substring(lastIndex, index)
+        : html;
 }
 
 function encodeEntities(text) {
@@ -311,7 +280,7 @@ function adler32(data) {
     var b = 0;
     var i = 0;
     var l = data.length;
-    var m = l & ~0x3;
+    var m = l & ~ 0x3;
     while (i < m) {
         var n = Math.min(i + 4096, m);
         for (; i < n; i += 4) {
