@@ -276,18 +276,28 @@ var shallowEqualHack = Object.freeze([]); //用于绕过shallowEqual
  */
 function createElement(type, configs, children) {
     var props = {};
-    var key = null;
-    configs = configs || {};
-    if (configs.key != null) {
-        key = configs.key + '';
-        delete configs.key;
+    var key = null,
+        ref = null,
+        props = {},
+        vtype = 1,
+        typeType = typeof type === 'undefined' ? 'undefined' : _typeof(type);
+    if (configs) {
+        for (var i in configs) {
+            var val = configs[i];
+            if (i === 'key') {
+                key = val;
+            } else if (i === 'ref') {
+                ref = val;
+            } else {
+                props[i] = val;
+            }
+        }
     }
 
-    var ref = configs.ref;
-    delete configs.ref;
-
-    extend(props, configs);
-    var c = [].slice.call(arguments, 2);
+    var c = [];
+    for (var i = 2, n = arguments.length; i < n; i++) {
+        c.push(arguments[i]);
+    }
     var useEmpty = true;
     if (!c.length) {
         if (props.children && props.children.length) {
@@ -297,82 +307,86 @@ function createElement(type, configs, children) {
     } else {
         useEmpty = false;
     }
+    if (typeType === 'function') {
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
+    }
+
     if (useEmpty) {
         c = shallowEqualHack;
-        if (typeof type !== 'function') {
+        if (vtype === 1) {
             props.children = c;
         }
     } else {
         c = flatChildren(c);
         delete c.merge; //注意这里的顺序
-        //  Object.freeze(c)
+        //  Object.freeze(c) //超紴影响性能
         props.children = c;
     }
 
-    //  Object.freeze(props)
-    return new Vnode(type, props, key, CurrentOwner.cur, ref);
+    //  Object.freeze(props) //超紴影响性能
+    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur);
 }
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
 }
 
-function Vnode(type, props, key, owner, ref) {
+function Vnode(type, props, key, ref, vtype, owner) {
     this.type = type;
     this.props = props;
-
+    this.vtype = vtype;
     if (key) {
         this.key = key;
     }
-
-    var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
-    if (refType === 'string') {
-        var refKey = ref;
-        this.__ref = function (dom) {
-            var instance = this._owner;
-            if (dom) {
-                dom.getDOMNode = getDOMNode;
-            }
-            if (instance) {
-                instance.refs[refKey] = dom;
-            }
-        };
-    } else if (refType === 'function') {
-        this.__ref = ref;
+    if (owner) {
+        this._owner = owner;
     }
-    if (typeof type === 'string') {
-        this.vtype = 1;
+    if (vtype === 1) {
         var ns = getNs(type);
         if (ns) {
             this.ns = ns;
         }
-    } else if (typeof type === 'function') {
-        this.vtype = type.prototype && type.prototype.render ? 2 : 4;
     }
+    var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
+    if (refType === 'string') {
+        this._refKey = ref;
+    } else if (refType === 'function') {
+        this.__ref = ref;
+    } else {
+        this.__ref = null;
+    }
+
     /*
     this._hostNode = null
     this._instance = null
     this._hostParent = null
     */
-    if (owner) {
-        this._owner = owner;
-    }
 }
 
 Vnode.prototype = {
     getDOMNode: function getDOMNode() {
         return this._hostNode || null;
     },
+    __ref: function __ref(dom) {
+        var instance = this._owner;
+        if (dom) {
+            dom.getDOMNode = getDOMNode;
+        }
+        if (instance) {
+            instance.refs[this._refKey] = dom;
+        }
+    },
+
     $$typeof: 1
 };
 // 如果是组件的虚拟DOM，如果它
 /**
- * 遍平化children，并合并相邻的简单数据类型
- *
- * @param {array} children
- * @param {any} [ret=[]]
- * @returns
- */
+* 遍平化children，并合并相邻的简单数据类型
+*
+* @param {array} children
+* @param {any} [ret=[]]
+* @returns
+*/
 
 function flatChildren(children, ret, deep) {
     ret = ret || [];
