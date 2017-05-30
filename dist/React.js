@@ -42,6 +42,7 @@ function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype);
     fn.constructor = SubClass;
 }
+
 /**
  *  收集一个元素的所有孩子
  *
@@ -865,12 +866,11 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
  * @param {any} vnode
  * @param {any} lastVnode
  */
-function diffProps(nextProps, lastProps, vnode, lastVnode) {
+function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
     if (nextProps === lastProps) {
         return;
     }
-    var dom = vnode._hostNode;
 
     var instance = vnode._owner;
     if (lastVnode._wrapperState) {
@@ -883,8 +883,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode) {
         var val = nextProps[name];
         switch (name) {
             case 'children':
-                //  case 'key':
-                //  case 'ref':
+                //  case 'key':  case 'ref':
                 break;
             case 'className':
                 if (isHTML) {
@@ -943,6 +942,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
+
     for (var _name in lastProps) {
         if (!(_name in nextProps)) {
             if (isEventName(_name)) {
@@ -1268,7 +1268,7 @@ function mountElement(vnode, parentContext, prevRendered) {
     } else {
         mountChildren(vnode, dom, parentContext);
     }
-    vnode.checkProps && diffProps(props, {}, vnode, {});
+    vnode.checkProps && diffProps(props, {}, vnode, {}, dom);
 
     if (vnode.__ref) {
         readyComponents.push(function () {
@@ -1578,13 +1578,13 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
   *
   * @param {any} lastVnode
   * @param {any} nextVnode
-  * @param {any} node
+  * @param {any} dom
   * @returns
   */
-function updateVelem(lastVnode, nextVnode, node) {
-    nextVnode._hostNode = node;
+function updateVelem(lastVnode, nextVnode, dom) {
+    nextVnode._hostNode = dom;
     if (lastVnode.checkProps || nextVnode.checkProps) {
-        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode);
+        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom);
     }
     if (nextVnode._wrapperState) {
         nextVnode._wrapperState.postUpdate(nextVnode);
@@ -1594,7 +1594,7 @@ function updateVelem(lastVnode, nextVnode, node) {
             nextVnode.__ref(nextVnode._hostNode);
         });
     }
-    return node;
+    return dom;
 }
 
 function updateVcomponent(lastVnode, nextVnode, node, parentContext) {

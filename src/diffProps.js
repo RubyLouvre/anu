@@ -52,12 +52,11 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
  * @param {any} vnode
  * @param {any} lastVnode
  */
-export function diffProps(nextProps, lastProps, vnode, lastVnode) {
+export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
     if (nextProps === lastProps) {
         return
     }
-    var dom = vnode._hostNode
 
     var instance = vnode._owner
     if (lastVnode._wrapperState) {
@@ -70,8 +69,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode) {
         let val = nextProps[name]
         switch (name) {
             case 'children':
-          //  case 'key':
-          //  case 'ref':
+                //  case 'key':  case 'ref':
                 break
             case 'className':
                 if (isHTML) {
@@ -131,21 +129,23 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
-    for (let name in lastProps) {
-        if (!(name in nextProps)) {
-            if (isEventName(name)) { //移除事件
-                var events = dom.__events || {}
-                delete events[name]
-            } else { //移除属性
-                if (isHTML && builtIdProperties[name]) {
-                    dom[name] = builtIdProperties[name] === true
-                        ? false
-                        : ''
-                } else {
-                    operateAttribute(dom, name, '', isSVG)
+  
+        for (let name in lastProps) {
+            if (!(name in nextProps)) {
+                if (isEventName(name)) { //移除事件
+                    var events = dom.__events || {}
+                    delete events[name]
+                } else { //移除属性
+                    if (isHTML && builtIdProperties[name]) {
+                        dom[name] = builtIdProperties[name] === true
+                            ? false
+                            : ''
+                    } else {
+                        operateAttribute(dom, name, '', isSVG)
+                    }
                 }
             }
-        }
+        
     }
 }
 var xlinkProps = /^xlink(.+)/

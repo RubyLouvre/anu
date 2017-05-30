@@ -126,7 +126,7 @@ function mountElement(vnode, parentContext, prevRendered) {
     } else {
         mountChildren(vnode, dom, parentContext)
     }
-    vnode.checkProps && diffProps(props, {}, vnode, {})
+    vnode.checkProps && diffProps(props, {}, vnode, {}, dom)
 
     if (vnode.__ref) {
         readyComponents
@@ -348,9 +348,10 @@ export function compareTwoVnodes(vnode, newVnode, node, parentContext) {
     } else if (vnode !== newVnode) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext)
-    } else if (vnode._prevRendered) {
-        newNode = updateVnode(vnode, newVnode, node, parentContext)
     }
+    // else if (vnode._prevRendered) {
+    //    newNode = updateVnode(vnode, newVnode, node, parentContext)
+   // }
     return newNode
 }
 
@@ -432,13 +433,13 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
   *
   * @param {any} lastVnode
   * @param {any} nextVnode
-  * @param {any} node
+  * @param {any} dom
   * @returns
   */
-function updateVelem(lastVnode, nextVnode, node) {
-    nextVnode._hostNode = node
+function updateVelem(lastVnode, nextVnode, dom) {
+    nextVnode._hostNode = dom
     if (lastVnode.checkProps || nextVnode.checkProps) {
-        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode)
+        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom)
     }
     if (nextVnode._wrapperState) {
         nextVnode
@@ -451,7 +452,7 @@ function updateVelem(lastVnode, nextVnode, node) {
                 nextVnode.__ref(nextVnode._hostNode)
             })
     }
-    return node
+    return dom
 }
 
 function updateVcomponent(lastVnode, nextVnode, node, parentContext) {

@@ -33,6 +33,7 @@ function extend(obj, props) {
  * @param {any} SupClass
  */
 
+
 /**
  *  收集一个元素的所有孩子
  *
@@ -250,7 +251,6 @@ function cssName$$1(name) {
 }
 
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
-
 
 function toVnode(vnode, data, parentInstance) {
     var parentContext = data.context,
