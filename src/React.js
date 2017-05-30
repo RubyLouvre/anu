@@ -23,7 +23,7 @@ import {
 
 import {
     render
-} from './diff2'
+} from './diff'
 
 var React = {
     Children, //为了react-redux

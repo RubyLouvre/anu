@@ -42,7 +42,6 @@ function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype);
     fn.constructor = SubClass;
 }
-
 /**
  *  收集一个元素的所有孩子
  *
@@ -339,20 +338,23 @@ var transaction = {
             if (instance) options.updateBatchNumber++;
             var globalBatchNumber = options.updateBatchNumber;
 
-            var renderQueue = queue.concat();
-            var processingCallbacks = callbacks.concat();
-
-            queue.length = callbacks.length = 0;
-            renderQueue.forEach(function (inst) {
+            var renderQueue = queue;
+            queue = [];
+            var processingCallbacks = callbacks;
+            callbacks = [];
+            var refreshComponent = options.immune.refreshComponent;
+            //  queue.length = callbacks.length = 0
+            for (var i = 0, n = renderQueue.length; i < n; i++) {
+                var inst = renderQueue[i];
                 try {
                     if (inst._updateBatchNumber === globalBatchNumber) {
-                        options.immune.refreshComponent(inst);
+                        refreshComponent(inst);
                     }
                 } catch (e) {
                     /* istanbul ignore next */
                     console.warn(e);
                 }
-            });
+            }
             this.isInTransation = false;
             processingCallbacks.forEach(function (request) {
                 request.cb.call(request.instance);
@@ -1487,9 +1489,10 @@ function compareTwoVnodes(vnode, newVnode, node, parentContext) {
     } else if (vnode !== newVnode) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext);
-    } else if (vnode._prevRendered) {
-        newNode = updateVnode(vnode, newVnode, node, parentContext);
     }
+    // else if (vnode._prevRendered) {
+    //    newNode = updateVnode(vnode, newVnode, node, parentContext)
+    // }
     return newNode;
 }
 
@@ -1618,10 +1621,7 @@ function updateVcomponent(lastVnode, nextVnode, node, parentContext) {
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
-    if (vnode._prevRendered) {
 
-        return;
-    }
     var patches = {
         removes: [],
         updates: [],

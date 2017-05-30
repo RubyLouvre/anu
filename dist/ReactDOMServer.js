@@ -33,7 +33,6 @@ function extend(obj, props) {
  * @param {any} SupClass
  */
 
-
 /**
  *  收集一个元素的所有孩子
  *
