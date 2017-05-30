@@ -152,117 +152,14 @@ var recyclables = {
     'p': []
 };
 
+var CurrentOwner = {
+    cur: null
+};
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-//用于后端的元素节点
-function DOMElement(type) {
-    this.nodeName = type;
-    this.style = {};
-    this.children = [];
-}
-var fn = DOMElement.prototype = {
-    contains: Boolean
-};
-String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' + ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' + ',detachEvent').replace(/\w+/g, function (name) {
-    fn[name] = function () {
-        console.log('fire ' + name);
-    };
-});
-
-//用于后端的document
-var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
-    return new DOMElement(type);
-};
-fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
-fakeDoc.documentElement = new DOMElement('html');
-fakeDoc.nodeName = '#document';
-var inBrowser = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.alert;
-
-var win = inBrowser ? window : {
-    document: fakeDoc
-};
-
-var document = win.document || fakeDoc;
-
-var versions = {
-    objectobject: 7, //IE7-8
-    objectundefined: 6, //IE6
-    undefinedfunction: NaN, // other modern browsers
-    undefinedobject: NaN
-};
-/* istanbul ignore next  */
-var msie = document.documentMode || versions[_typeof(document.all) + (typeof XMLHttpRequest === 'undefined' ? 'undefined' : _typeof(XMLHttpRequest))];
-
-var modern = /NaN|undefined/.test(msie) || msie > 8;
-
-function createDOMElement(vnode) {
-    var type = vnode.type;
-    var node = recyclables[type] && recyclables[type].pop();
-    if (node) {
-        node.nodeValue = vnode.text;
-        return node;
-    }
-    if (type === '#text') {
-        return document.createTextNode(vnode.text);
-    }
-    if (type === '#comment') {
-        return document.createComment(vnode.text);
-    }
-
-    try {
-        if (vnode.ns) {
-            return document.createElementNS(vnode.ns, type);
-        }
-    } catch (e) {}
-    return document.createElement(type);
-}
-// https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
-// http://demo.yanue.net/HTML5element/
-var mhtml = {
-    meter: 1,
-    menu: 1,
-    map: 1,
-    meta: 1,
-    mark: 1
-};
-var svgTags = oneObject('' +
-// structure
-'svg,g,defs,desc,metadata,symbol,use,' +
-// image & shape
-'image,path,rect,circle,line,ellipse,polyline,polygon,' +
-// text
-'text,tspan,tref,textpath,' +
-// other
-'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
-// font
-'font,font-face,glyph,missing-glyph', svgNs);
-
-var rmathTags = /^m/;
-var mathNs = 'http://www.w3.org/1998/Math/MathML';
-var svgNs = 'http://www.w3.org/2000/svg';
-var mathTags = {
-    semantics: mathNs
-};
-
-function getNs(type) {
-    if (svgTags[type]) {
-        return svgNs;
-    } else if (mathTags[type]) {
-        return mathNs;
-    } else {
-        if (!mhtml[type] && rmathTags.test(type)) {
-            return mathTags[type] = mathNs;
-        }
-    }
-}
-
-var CurrentOwner = {
-    cur: null
 };
 
 var shallowEqualHack = Object.freeze([]); //用于绕过shallowEqual
@@ -339,12 +236,9 @@ function Vnode(type, props, key, ref, vtype, owner, checkProps) {
     if (owner) {
         this._owner = owner;
     }
-    if (vtype === 1) {
-        var ns = getNs(type);
-        if (ns) {
-            this.ns = ns;
-        }
-    }
+    //   if (vtype === 1) {
+
+    //   }
     var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
     if (refType === 'string') {
         this._refKey = ref;
@@ -602,14 +496,14 @@ function PureComponent(props, context) {
 
 inherit(PureComponent, Component);
 
-var fn$1 = PureComponent.prototype;
+var fn = PureComponent.prototype;
 
-fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
+fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     var a = shallowEqual(this.props, nextProps);
     var b = shallowEqual(this.state, nextState);
     return !a || !b;
 };
-fn$1.isPureComponent = true;
+fn.isPureComponent = true;
 
 var Children = {
 	only: function only(children) {
@@ -630,6 +524,109 @@ export const PropTypes = {
 	instanceOf: ()=> proptype
 };
 */
+
+//用于后端的元素节点
+function DOMElement(type) {
+    this.nodeName = type;
+    this.style = {};
+    this.children = [];
+}
+var fn$1 = DOMElement.prototype = {
+    contains: Boolean
+};
+String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' + ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' + ',detachEvent').replace(/\w+/g, function (name) {
+    fn$1[name] = function () {
+        console.log('fire ' + name);
+    };
+});
+
+//用于后端的document
+var fakeDoc = new DOMElement();
+fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
+    return new DOMElement(type);
+};
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
+fakeDoc.documentElement = new DOMElement('html');
+fakeDoc.nodeName = '#document';
+var inBrowser = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.alert;
+
+var win = inBrowser ? window : {
+    document: fakeDoc
+};
+
+var document = win.document || fakeDoc;
+
+var versions = {
+    objectobject: 7, //IE7-8
+    objectundefined: 6, //IE6
+    undefinedfunction: NaN, // other modern browsers
+    undefinedobject: NaN
+};
+/* istanbul ignore next  */
+var msie = document.documentMode || versions[_typeof(document.all) + (typeof XMLHttpRequest === 'undefined' ? 'undefined' : _typeof(XMLHttpRequest))];
+
+var modern = /NaN|undefined/.test(msie) || msie > 8;
+
+function createDOMElement(vnode) {
+    var type = vnode.type;
+    var node = recyclables[type] && recyclables[type].pop();
+    if (node) {
+        node.nodeValue = vnode.text;
+        return node;
+    }
+    if (type === '#text') {
+        return document.createTextNode(vnode.text);
+    }
+    if (type === '#comment') {
+        return document.createComment(vnode.text);
+    }
+
+    try {
+        if (vnode.ns) {
+            return document.createElementNS(vnode.ns, type);
+        }
+    } catch (e) {}
+    return document.createElement(type);
+}
+// https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
+// http://demo.yanue.net/HTML5element/
+var mhtml = {
+    meter: 1,
+    menu: 1,
+    map: 1,
+    meta: 1,
+    mark: 1
+};
+var svgTags = oneObject('' +
+// structure
+'svg,g,defs,desc,metadata,symbol,use,' +
+// image & shape
+'image,path,rect,circle,line,ellipse,polyline,polygon,' +
+// text
+'text,tspan,tref,textpath,' +
+// other
+'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
+// font
+'font,font-face,glyph,missing-glyph', svgNs);
+
+var rmathTags = /^m/;
+var mathNs = 'http://www.w3.org/1998/Math/MathML';
+var svgNs = 'http://www.w3.org/2000/svg';
+var mathTags = {
+    semantics: mathNs
+};
+
+function getNs(type) {
+    if (svgTags[type]) {
+        return svgNs;
+    } else if (mathTags[type]) {
+        return mathNs;
+    } else {
+        if (!mhtml[type] && rmathTags.test(type)) {
+            return mathTags[type] = mathNs;
+        }
+    }
+}
 
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**
@@ -1235,13 +1232,13 @@ function initVnode(vnode, parentContext, prevRendered) {
     if (vtype === 1) {
         // init element
 
-        node = initVelem(vnode, parentContext, prevRendered);
+        node = mountElement(vnode, parentContext, prevRendered);
     } else if (vtype === 2) {
         // init stateful component
-        node = initComponent(vnode, parentContext, prevRendered);
+        node = mountComponent(vnode, parentContext, prevRendered);
     } else if (vtype === 4) {
         // init stateless component
-        node = initVstateless(vnode, parentContext, prevRendered);
+        node = mountStateless(vnode, parentContext, prevRendered);
     }
 
     return node;
@@ -1251,7 +1248,7 @@ var formElements = {
     textarea: 1,
     input: 1
 };
-function initVelem(vnode, parentContext, prevRendered) {
+function mountElement(vnode, parentContext, prevRendered) {
     var type = vnode.type,
         props = vnode.props,
         dom = void 0;
@@ -1259,13 +1256,17 @@ function initVelem(vnode, parentContext, prevRendered) {
     if (prevRendered && prevRendered.nodeName.toLowerCase() === type) {
         dom = prevRendered;
     } else {
+        var ns = getNs(type);
+        if (ns) {
+            vnode.ns = ns;
+        }
         dom = createDOMElement(vnode);
     }
     vnode._hostNode = dom;
     if (prevRendered) {
-        aglinChildren(vnode, dom, parentContext, getNodes(prevRendered));
+        aglinChildren(vnode, dom, parentContext, prevRendered.childNodes);
     } else {
-        initChildren(vnode, dom, parentContext);
+        mountChildren(vnode, dom, parentContext);
     }
     vnode.checkProps && diffProps(props, {}, vnode, {});
 
@@ -1285,11 +1286,11 @@ function initVelem(vnode, parentContext, prevRendered) {
 }
 var readyComponents = [];
 //将虚拟DOM转换为真实DOM并插入父元素
-function initChildren(vnode, parentNode, parentContext) {
-    var vchildren = vnode.props.children;
+function mountChildren(vnode, parentNode, parentContext) {
+    var children = vnode.props.children;
 
-    for (var i = 0, n = vchildren.length; i < n; i++) {
-        var el = vchildren[i];
+    for (var i = 0, n = children.length; i < n; i++) {
+        var el = children[i];
         el._hostParent = vnode;
 
         parentNode.appendChild(initVnode(el, parentContext));
@@ -1297,11 +1298,11 @@ function initChildren(vnode, parentNode, parentContext) {
 }
 
 function aglinChildren(vnode, parentNode, parentContext, childNodes) {
-    var vchildren = vnode.props.children,
+    var children = vnode.props.children,
         insertPoint = childNodes[0] || null,
         j = 0;
-    for (var i = 0, n = vchildren.length; i < n; i++) {
-        var el = vchildren[i];
+    for (var i = 0, n = children.length; i < n; i++) {
+        var el = children[i];
         el._hostParent = vnode;
         var prevDom = childNodes[j];
         var dom = initVnode(el, parentContext, prevDom);
@@ -1323,7 +1324,7 @@ function fireMount() {
 
 var instanceMap = new Map();
 
-function initComponent(vnode, parentContext, prevRendered) {
+function mountComponent(vnode, parentContext, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1376,7 +1377,7 @@ function safeRenderComponent(instance) {
     return rendered;
 }
 
-function initVstateless(vnode, parentContext, prevRendered) {
+function mountStateless(vnode, parentContext, prevRendered) {
     var type = vnode.type,
         props = vnode.props;
 
@@ -1396,7 +1397,7 @@ function initVstateless(vnode, parentContext, prevRendered) {
     return dom;
 }
 
-function updateVstateless(lastVnode, nextVnode, node, parentContext) {
+function updateStateless(lastVnode, nextVnode, node, parentContext) {
     var instance = lastVnode._instance;
     var vnode = instance._rendered;
 
@@ -1512,10 +1513,10 @@ function destroyVnode(vnode, node) {
 function destroyVelem(vnode, node) {
     var props = vnode.props;
 
-    var vchildren = props.children;
+    var children = props.children;
     var childNodes = node.childNodes;
-    for (var i = 0, len = vchildren.length; i < len; i++) {
-        destroyVnode(vchildren[i], childNodes[i]);
+    for (var i = 0, len = children.length; i < len; i++) {
+        destroyVnode(children[i], childNodes[i]);
     }
 
     vnode.__ref && vnode.__ref(null);
@@ -1546,7 +1547,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
     }
 
     if (vtype === 4) {
-        return updateVstateless(lastVnode, nextVnode, node, parentContext);
+        return updateStateless(lastVnode, nextVnode, node, parentContext);
     }
 
     // ignore VCOMMENT and other vtypes
@@ -1561,7 +1562,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
             node.removeChild(node.firstChild);
         }
         updateVelem(lastVnode, nextVnode, node, parentContext);
-        initChildren(nextVnode, node, parentContext);
+        mountChildren(nextVnode, node, parentContext);
     } else {
         if (nextProps[HTML_KEY]) {
             node.innerHTML = nextProps[HTML_KEY].__html;
@@ -1633,13 +1634,13 @@ function updateChildren(vnode, newVnode, node, parentContext) {
 }
 
 function diffChildren(patches, vnode, newVnode, node, parentContext) {
-    var vchildren = vnode.props.children;
+    var children = vnode.props.children;
     var childNodes = node.childNodes;
     var newVchildren = newVnode.props.children;
-    var vchildrenLen = vchildren.length;
+    var childrenLen = children.length;
     var newVchildrenLen = newVchildren.length;
 
-    if (vchildrenLen === 0) {
+    if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (var i = 0; i < newVchildrenLen; i++) {
                 patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
@@ -1647,8 +1648,8 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         }
         return;
     } else if (newVchildrenLen === 0) {
-        for (var _i = 0; _i < vchildrenLen; _i++) {
-            patches.removes.push({ vnode: vchildren[_i], node: childNodes[_i] });
+        for (var _i = 0; _i < childrenLen; _i++) {
+            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
         }
         return;
     }
@@ -1657,8 +1658,8 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     var removes = null;
     var creates = null;
     // isEqual
-    for (var _i2 = 0; _i2 < vchildrenLen; _i2++) {
-        var _vnode = vchildren[_i2];
+    for (var _i2 = 0; _i2 < childrenLen; _i2++) {
+        var _vnode = children[_i2];
         for (var j = 0; j < newVchildrenLen; j++) {
             if (updates[j]) {
                 continue;
@@ -1673,15 +1674,15 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
                     parentContext: parentContext,
                     index: j
                 };
-                vchildren[_i2] = null;
+                children[_i2] = null;
                 break;
             }
         }
     }
 
     // isSimilar
-    for (var _i3 = 0; _i3 < vchildrenLen; _i3++) {
-        var _vnode2 = vchildren[_i3];
+    for (var _i3 = 0; _i3 < childrenLen; _i3++) {
+        var _vnode2 = children[_i3];
         if (_vnode2 === null) {
             continue;
         }
@@ -1749,7 +1750,7 @@ function applyUpdate(data) {
         } else if (vnode.vtype === 1) {
             updateVelem(vnode, nextVnode, dom, data.parentContext);
         } else if (vnode.vtype === 4) {
-            dom = updateVstateless(vnode, nextVnode, dom, data.parentContext);
+            dom = updateStateless(vnode, nextVnode, dom, data.parentContext);
         } else if (vnode.vtype === 2) {
             dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext);
         }

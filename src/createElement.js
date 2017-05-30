@@ -1,5 +1,4 @@
 import {extend} from './util'
-import {getNs} from './browser'
 import {CurrentOwner} from './CurrentOwner'
 var __slice = Array.prototype.slice
 var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
@@ -78,12 +77,9 @@ export function createElement(type, configs) {
         if (owner) {
             this._owner = owner
         }
-        if (vtype === 1) {
-            var ns = getNs(type)
-            if (ns) {
-                this.ns = ns
-            }
-        }
+     //   if (vtype === 1) {
+          
+     //   }
         var refType = typeof ref
         if (refType === 'string') {
             this._refKey = ref

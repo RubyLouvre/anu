@@ -12,7 +12,8 @@ import {
     recyclables,
     getComponentProps
 } from './util'
-import {document, createDOMElement} from './browser'
+
+import {document, createDOMElement,getNs} from './browser'
 import {setControlledComponent} from './ControlledComponent'
 export function render(vnode, container, callback) {
     return renderTreeIntoContainer(vnode, container, callback, {})
@@ -92,12 +93,12 @@ export function initVnode(vnode, parentContext, prevRendered) {
 
     if (vtype === 1) { // init element
 
-        node = initVelem(vnode, parentContext, prevRendered)
+        node = mountElement(vnode, parentContext, prevRendered)
 
     } else if (vtype === 2) { // init stateful component
-        node = initComponent(vnode, parentContext, prevRendered)
+        node = mountComponent(vnode, parentContext, prevRendered)
     } else if (vtype === 4) { // init stateless component
-        node = initVstateless(vnode, parentContext, prevRendered)
+        node = mountStateless(vnode, parentContext, prevRendered)
     }
 
     return node
@@ -107,19 +108,23 @@ var formElements = {
     textarea: 1,
     input: 1
 }
-function initVelem(vnode, parentContext, prevRendered) {
+function mountElement(vnode, parentContext, prevRendered) {
     let {type, props} = vnode,
         dom
     if (prevRendered && prevRendered.nodeName.toLowerCase() === type) {
         dom = prevRendered
     } else {
+        var ns = getNs(type)
+        if (ns) {
+            vnode.ns = ns
+        }
         dom = createDOMElement(vnode)
     }
     vnode._hostNode = dom
     if (prevRendered) {
-        aglinChildren(vnode, dom, parentContext, getNodes(prevRendered))
+        aglinChildren(vnode, dom, parentContext, prevRendered.childNodes)
     } else {
-        initChildren(vnode, dom, parentContext)
+        mountChildren(vnode, dom, parentContext)
     }
     vnode.checkProps && diffProps(props, {}, vnode, {})
 
@@ -143,11 +148,11 @@ function initVelem(vnode, parentContext, prevRendered) {
 }
 var readyComponents = []
 //将虚拟DOM转换为真实DOM并插入父元素
-function initChildren(vnode, parentNode, parentContext) {
-    var vchildren = vnode.props.children
+function mountChildren(vnode, parentNode, parentContext) {
+    var children = vnode.props.children
 
-    for (let i = 0, n = vchildren.length; i < n; i++) {
-        let el = vchildren[i]
+    for (let i = 0, n = children.length; i < n; i++) {
+        let el = children[i]
         el._hostParent = vnode
 
         parentNode.appendChild(initVnode(el, parentContext))
@@ -156,11 +161,11 @@ function initChildren(vnode, parentNode, parentContext) {
 }
 
 function aglinChildren(vnode, parentNode, parentContext, childNodes) {
-    var vchildren = vnode.props.children,
+    var children = vnode.props.children,
         insertPoint = childNodes[0] || null,
         j = 0
-    for (let i = 0, n = vchildren.length; i < n; i++) {
-        let el = vchildren[i]
+    for (let i = 0, n = children.length; i < n; i++) {
+        let el = children[i]
         el._hostParent = vnode
         var prevDom = childNodes[j]
         var dom = initVnode(el, parentContext, prevDom)
@@ -183,7 +188,7 @@ function fireMount() {
 
 var instanceMap = new Map()
 
-function initComponent(vnode, parentContext, prevRendered) {
+function mountComponent(vnode, parentContext, prevRendered) {
     let {type, props} = vnode
 
     props = getComponentProps(type, props)
@@ -236,7 +241,7 @@ export function safeRenderComponent(instance) {
     return rendered
 }
 
-function initVstateless(vnode, parentContext, prevRendered) {
+function mountStateless(vnode, parentContext, prevRendered) {
     var {type, props} = vnode
     props = getComponentProps(type, props)
 
@@ -255,7 +260,7 @@ function initVstateless(vnode, parentContext, prevRendered) {
 
 }
 
-function updateVstateless(lastVnode, nextVnode, node, parentContext) {
+function updateStateless(lastVnode, nextVnode, node, parentContext) {
     var instance = lastVnode._instance
     let vnode = instance._rendered
 
@@ -364,10 +369,10 @@ export function destroyVnode(vnode, node) {
 
 function destroyVelem(vnode, node) {
     var {props} = vnode
-    var vchildren = props.children
+    var children = props.children
     var childNodes = node.childNodes
-    for (let i = 0, len = vchildren.length; i < len; i++) {
-        destroyVnode(vchildren[i], childNodes[i])
+    for (let i = 0, len = children.length; i < len; i++) {
+        destroyVnode(children[i], childNodes[i])
     }
 
     vnode.__ref && vnode.__ref(null)
@@ -396,7 +401,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
     }
 
     if (vtype === 4) {
-        return updateVstateless(lastVnode, nextVnode, node, parentContext)
+        return updateStateless(lastVnode, nextVnode, node, parentContext)
     }
 
     // ignore VCOMMENT and other vtypes
@@ -411,7 +416,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
             node.removeChild(node.firstChild)
         }
         updateVelem(lastVnode, nextVnode, node, parentContext)
-        initChildren(nextVnode, node, parentContext)
+        mountChildren(nextVnode, node, parentContext)
     } else {
         if (nextProps[HTML_KEY]) {
             node.innerHTML = nextProps[HTML_KEY].__html
@@ -493,13 +498,13 @@ function updateChildren(vnode, newVnode, node, parentContext) {
 }
 
 function diffChildren(patches, vnode, newVnode, node, parentContext) {
-    let vchildren = vnode.props.children
+    let children = vnode.props.children
     let childNodes = node.childNodes
     let newVchildren = newVnode.props.children
-    let vchildrenLen = vchildren.length
+    let childrenLen = children.length
     let newVchildrenLen = newVchildren.length
 
-    if (vchildrenLen === 0) {
+    if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (let i = 0; i < newVchildrenLen; i++) {
                 patches
@@ -509,10 +514,10 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         }
         return
     } else if (newVchildrenLen === 0) {
-        for (let i = 0; i < vchildrenLen; i++) {
+        for (let i = 0; i < childrenLen; i++) {
             patches
                 .removes
-                .push({vnode: vchildren[i], node: childNodes[i]})
+                .push({vnode: children[i], node: childNodes[i]})
         }
         return
     }
@@ -521,8 +526,8 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     let removes = null
     let creates = null
     // isEqual
-    for (let i = 0; i < vchildrenLen; i++) {
-        let vnode = vchildren[i]
+    for (let i = 0; i < childrenLen; i++) {
+        let vnode = children[i]
         for (let j = 0; j < newVchildrenLen; j++) {
             if (updates[j]) {
                 continue
@@ -537,15 +542,15 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
                     parentContext: parentContext,
                     index: j
                 }
-                vchildren[i] = null
+                children[i] = null
                 break
             }
         }
     }
 
     // isSimilar
-    for (let i = 0; i < vchildrenLen; i++) {
-        let vnode = vchildren[i]
+    for (let i = 0; i < childrenLen; i++) {
+        let vnode = children[i]
         if (vnode === null) {
             continue
         }
@@ -582,7 +587,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
                 creates = []
             }
             creates.push({vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i})
-        } else if (item.vnode.vtype === 1) {
+        }else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext)
         }
     }
@@ -613,7 +618,7 @@ function applyUpdate(data) {
         } else if (vnode.vtype === 1) {
             updateVelem(vnode, nextVnode, dom, data.parentContext)
         } else if (vnode.vtype === 4) {
-            dom = updateVstateless(vnode, nextVnode, dom, data.parentContext)
+            dom = updateStateless(vnode, nextVnode, dom, data.parentContext)
         } else if (vnode.vtype === 2) {
             dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
         }
