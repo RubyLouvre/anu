@@ -1,97 +1,28 @@
-import {
-    inherit
-} from './util'
-
-var hasReadOnlyValue = {
-    'button': true,
-    'image': true,
-    'hidden': true,
-    'reset': true,
-    'submit': true
-}
-
-export function setControlledComponent(vnode) {
-    var props = vnode.props
-
-    var type = props.type
-    var nodeName = vnode.type
 
 
-    // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
-    // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
-    // 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
-    // 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变 但如果用户使用了defaultValue,
-    // defaultChecked，那么它不做任何转换
-
-    switch (nodeName) {
-        case "select":
-            vnode._wrapperState = {
-                postUpdate: postUpdateSelectedOptions
-            }
-        case 'textarea':
-            if (!type) { //必须指定
-                type = 'textarea'
-            }
-        case 'input':
-            if (hasReadOnlyValue[type])
-                return
-
-            if (!type) {
-                type = 'text'
-            }
-
-            var isChecked = type === 'radio' || type === 'checkbox'
-            var propName = isChecked ?
-                'checked' :
-                'value'
-            var defaultName = propName === 'value' ?
-                'defaultValue' :
-                'defaultChecked'
-            var initValue = props[propName] != null ?
-                props[propName] :
-                props[defaultName]
-            var isControlled = props.onChange || props.readOnly || props.disabled
-            if (/text|password/.test(type)) {
-                isControlled = isControlled || props.onInput
-            }
-            if (!isControlled && propName in props) {
-                var dom = vnode._hostNode
-                console.warn('你在表单元素指定了' + propName + '属性,但没有添加onChange或onInput事件或readOnly或disabled，它将变成非受控组件，无法更换' + propName)
-
-                function keepInitValue(e) {
-                    dom[propName] = initValue
-                }
-                vnode
-                    ._hostNode
-                    .addEventListener('change', keepInitValue)
-                if (type !== 'select') {
-                    vnode
-                        ._hostNode
-                        .addEventListener(isChecked ?
-                            'click' :
-                            'input', keepInitValue)
-                }
-            }
-            break
-    }
-}
+// input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
+// 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
+// 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
+// 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变 但如果用户使用了defaultValue,
+// defaultChecked，那么它不做任何转换
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return props.value != void 666 ?
-        props.value :
-        props.children[0].text
+    return props.value != void 666
+        ? props.value
+        : props.children[0].text
 }
 
-function postUpdateSelectedOptions(vnode) {
+export function postUpdateSelectedOptions(vnode) {
     var props = vnode.props
     var multiple = !!props.multiple
-    var value = props.value != null ?
-        props.value :
-        props.defaultValue != null ?
-        props.defaultValue :
-        multiple ? [] :
-        ''
+    var value = props.value != null
+        ? props.value
+        : props.defaultValue != null
+            ? props.defaultValue
+            : multiple
+                ? []
+                : ''
     updateOptions(vnode, multiple, value)
 
 }
@@ -163,18 +94,58 @@ function setDomSelected(option, selected) {
 
 //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
 
+function stopUserInput(e) {
+    var target = e.target
+    var name = e.type === 'textarea'
+        ? 'innerHTML'
+        : 'value'
+    target[name] = target._lastValue
+}
 
-function inputWrapper(vnode, dom, props, type) {
-    if (hasReadOnlyValue[type]) {
-        return
-    }
-    if ('value' in props && !('onChange' in props || 'onInput' in props || 'readOnly' in props)) {
-        dom.oninput = dom.onclick = inputHandle
+function stopUserClick(e) {
+    e.preventDefault()
+}
+
+export function processFormElement(vnode, dom, props) {
+    var domType = dom.type
+    if (/text|password|number|date|time|color|month/.test(domType)) {
+        if ('value' in props && !hasOtherControllProperty(props, textMap)) {
+            console.warn('你为', domType, `元素指定了value属性，但是没有提供另外的${Object.keys(textMap)}
+           等用于控制value变化的属性，那么它是一个非受控组件，用户无法通过输入改变元素的value值`)
+            dom.oninput = stopUserInput
+        }
+    } else if (/checkbox|radio/.test(domType)) {
+        if ('checked' in props && !hasOtherControllProperty(props, checkedMap)) {
+            console.warn('你为', domType, `元素指定了value属性，但是没有提供另外的${Object.keys(checkedMap)}
+           等用于控制value变化的属性，那么它是一个非受控组件，用户无法通过输入改变元素的value值`)
+            dom.onclick = stopUserClick
+        }
+    } else if (/select/.test(domType)) {
+        if (!('value' in props || 'defaultValue' in props)) {
+            console.warn(`select元素必须指定value或defaultValue属性`)
+        }
+        postUpdateSelectedOptions(vnode)
     }
 }
 
-function inputHandle(e) {
-    var target = e.target
-    var name = e.type === 'checkbox' || e.type ==='radio' ? 'checked': 'value'
-    target[name] = target._lastValue
+var textMap = {
+    onChange: 1,
+    onInput: 1,
+    readyOnly: 1,
+    disabled: 1
+}
+var checkedMap = {
+    onChange: 1,
+    onClick: 1,
+    readyOnly: 1,
+    disabled: 1
+}
+
+function hasOtherControllProperty(props, map) {
+    for (var i in props) {
+        if (map[i]) {
+            return true
+        }
+    }
+    return false
 }

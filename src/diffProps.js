@@ -75,9 +75,6 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
 
     var instance = vnode._owner
-    if (lastVnode._wrapperState) {
-        vnode._wrapperState = lastVnode._wrapperState
-    }
 
     var isSVG = vnode.ns === 'http://www.w3.org/2000/svg'
     var isHTML = !isSVG
@@ -125,9 +122,6 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
                         // 会影响到样式,需要进一步处理
                         dom[name] = !!val
-                        if (name === 'checked') {
-                            dom._lastValue = !!val
-                        }
                     }
                     if (val === false || val === void 666 || val === null) {
                         operateAttribute(dom, name, '', isSVG)

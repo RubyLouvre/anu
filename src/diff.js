@@ -24,7 +24,8 @@ import {
     getNs
 } from './browser'
 import {
-    setControlledComponent
+    processFormElement,
+    postUpdateSelectedOptions
 } from './ControlledComponent'
 export function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {})
@@ -150,13 +151,7 @@ function mountElement(vnode, parentContext, prevRendered) {
             })
     }
     if (formElements[type]) {
-        setControlledComponent(vnode)
-        if (type === 'select') {
-            vnode
-                ._wrapperState
-                .postUpdate(vnode)
-
-        }
+        processFormElement(vnode, dom, props)
     }
 
     return dom
@@ -476,10 +471,8 @@ function updateElement(lastVnode, nextVnode, dom) {
     if (lastVnode.checkProps || nextVnode.checkProps) {
         diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom)
     }
-    if (nextVnode._wrapperState) {
-        nextVnode
-            ._wrapperState
-            .postUpdate(nextVnode)
+    if (nextVnode.type === 'select') {
+        postUpdateSelectedOptions(nextVnode)
     }
     if (nextVnode.__ref) {
         readyComponents

@@ -55,8 +55,35 @@ class Checkbox extends React.Component{
     return <input type="checkbox" name='xxx' checked={this.state.checked}  />;
   }
 }
+class Radio extends React.Component{
+ constructor(props) {
+   super(props);
+   this.state={checked: false};
+   this.handleChange=this.handleChange.bind(this);
+  }
+  handleChange(event) {
+    this.setState({checked: event.target.checked});
+  }
+  render() {
+    var value = this.state.value;
+    return <input type="radio" name='xxx' checked={this.state.checked}  />
+  }
+}
+class TextArea extends React.Component{
+ constructor(props) {
+   super(props);
+   this.state={value: 'dddd'};
+   this.handleChange=this.handleChange.bind(this);
+  }
+  handleChange(event) {
+    this.setState({value: event.target.checked});
+  }
+  render() {
+    return <textarea value={this.state.value}></textarea>
+  }
+}
 s = ReactDOM.render(
-	<Checkbox />,
+	<TextArea />,
  document.getElementById('example'))
 }
     </script>
