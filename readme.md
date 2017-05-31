@@ -9,7 +9,7 @@
 </a>
 </p>
 ```
-npm install anu
+npm install anujs
 ```
 
 读作 安努 ，苏美尔的主神，开天辟地。一个无痛替换线上React的迷你React框架
