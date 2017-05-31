@@ -1,5 +1,5 @@
 {
-  "name": "anu",
+  "name": "anujs",
   "version": "1.0.0",
   "description": "a mini react-like framework",
   "main": "dist/index.js",
@@ -38,7 +38,6 @@
     "express": "^4.15.3",
     "karma": "^1.5",
     "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^2.1.1",
     "karma-coverage": "^1.1.1",
     "karma-event-driver-ext": "0.0.12",
     "karma-firefox-launcher": "^1.0.1",
