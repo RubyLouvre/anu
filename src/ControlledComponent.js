@@ -1,5 +1,3 @@
-
-
 // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
 // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
 // 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
@@ -8,17 +6,19 @@
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return props.value != void 666
+    return isDefined(props.value)
         ? props.value
         : props.children[0].text
 }
-
+function isDefined(a) {
+    return !(a === null || a === void 666)
+}
 export function postUpdateSelectedOptions(vnode) {
     var props = vnode.props
     var multiple = !!props.multiple
-    var value = props.value != null
+    var value = isDefined(props.value)
         ? props.value
-        : props.defaultValue != null
+        : isDefined(props.defaultValue)
             ? props.defaultValue
             : multiple
                 ? []
@@ -39,55 +39,49 @@ function collectOptions(vnode, ret) {
     return ret
 }
 
-function setOptionState(vnode) {
-    return {
-        value: getOptionValue(vnode.props)
-    }
-}
-
 function updateOptions(vnode, multiple, propValue) {
 
     var options = collectOptions(vnode),
         selectedValue
+    var n = options.length
     if (multiple) {
         selectedValue = {}
         try {
-            for (i = 0; i < propValue.length; i++) {
-                selectedValue['' + propValue[i]] = true
+            for (let i = 0; i < propValue.length; i++) {
+                selectedValue['&' + propValue[i]] = true
             }
         } catch (e) {
             /* istanbul ignore next */
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组')
         }
-        for (var i = 0, option; option = options[i++];) {
-            var state = setOptionState(option)
-            var selected = selectedValue.hasOwnProperty(state.value)
-            if (state.selected !== selected) {
-                state.selected = selected
-                setDomSelected(option, selected)
-            }
+        for (let i = 0; i < n; i++) {
+            let option = options[i]
+            let value = getOptionValue(option.props)
+            let selected = selectedValue.hasOwnProperty('&' + value)
+
+            setDomSelected(option, selected)
+
         }
     } else {
         // Do not set `select.value` as exact behavior isn't consistent across all
         // browsers for all cases.
         selectedValue = '' + propValue;
-        for (var i = 0, option; option = options[i++];) {
-            var state = setOptionState(option)
-            if (state.value === selectedValue) {
+        for (let i = 0; i < n; i++) {
+            let option = options[i]
+            let value = getOptionValue(option.props)
+            if (value === selectedValue) {
                 setDomSelected(option, true)
                 return
             }
         }
-        if (options.length) {
+        if (n) {
             setDomSelected(options[0], true)
         }
     }
 }
 
 function setDomSelected(option, selected) {
-
     if (option._hostNode) {
-
         option._hostNode.selected = selected
     }
 }

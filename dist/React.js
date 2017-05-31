@@ -1005,13 +1005,15 @@ function operateAttribute(dom, name, value, isSVG) {
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return props.value != void 666 ? props.value : props.children[0].text;
+    return isDefined(props.value) ? props.value : props.children[0].text;
 }
-
+function isDefined(a) {
+    return !(a === null || a === void 666);
+}
 function postUpdateSelectedOptions(vnode) {
     var props = vnode.props;
     var multiple = !!props.multiple;
-    var value = props.value != null ? props.value : props.defaultValue != null ? props.defaultValue : multiple ? [] : '';
+    var value = isDefined(props.value) ? props.value : isDefined(props.defaultValue) ? props.defaultValue : multiple ? [] : '';
     updateOptions(vnode, multiple, value);
 }
 
@@ -1027,55 +1029,48 @@ function collectOptions(vnode, ret) {
     return ret;
 }
 
-function setOptionState(vnode) {
-    return {
-        value: getOptionValue(vnode.props)
-    };
-}
-
 function updateOptions(vnode, multiple, propValue) {
 
     var options = collectOptions(vnode),
         selectedValue;
+    var n = options.length;
     if (multiple) {
         selectedValue = {};
         try {
-            for (i = 0; i < propValue.length; i++) {
-                selectedValue['' + propValue[i]] = true;
+            for (var i = 0; i < propValue.length; i++) {
+                selectedValue['&' + propValue[i]] = true;
             }
         } catch (e) {
             /* istanbul ignore next */
             console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
         }
-        for (var i = 0, option; option = options[i++];) {
-            var state = setOptionState(option);
-            var selected = selectedValue.hasOwnProperty(state.value);
-            if (state.selected !== selected) {
-                state.selected = selected;
-                setDomSelected(option, selected);
-            }
+        for (var _i = 0; _i < n; _i++) {
+            var option = options[_i];
+            var value = getOptionValue(option.props);
+            var selected = selectedValue.hasOwnProperty('&' + value);
+
+            setDomSelected(option, selected);
         }
     } else {
         // Do not set `select.value` as exact behavior isn't consistent across all
         // browsers for all cases.
         selectedValue = '' + propValue;
-        for (var i = 0, option; option = options[i++];) {
-            var state = setOptionState(option);
-            if (state.value === selectedValue) {
-                setDomSelected(option, true);
+        for (var _i2 = 0; _i2 < n; _i2++) {
+            var _option = options[_i2];
+            var _value = getOptionValue(_option.props);
+            if (_value === selectedValue) {
+                setDomSelected(_option, true);
                 return;
             }
         }
-        if (options.length) {
+        if (n) {
             setDomSelected(options[0], true);
         }
     }
 }
 
 function setDomSelected(option, selected) {
-
     if (option._hostNode) {
-
         option._hostNode.selected = selected;
     }
 }
