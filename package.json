@@ -38,6 +38,7 @@
     "express": "^4.15.3",
     "karma": "^1.5",
     "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.1.1",
     "karma-coverage": "^1.1.1",
     "karma-event-driver-ext": "0.0.12",
     "karma-mocha": "^1.3.0",

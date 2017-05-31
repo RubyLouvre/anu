@@ -3,8 +3,9 @@
 var path = require('path')
 var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
+process.env.TRAVIS = 1
 module.exports = function (config) {
-    var configuration = {
+    var options = {
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
         //  basePath: '',
@@ -16,7 +17,7 @@ module.exports = function (config) {
 
 
         // list of files / patterns to load in the browser
-        files: ['./test/matchers.js',process.env.TRAVIS ? './test/spec2.js': './test/spec.js'],
+        files: ['./test/matchers.js', process.env.TRAVIS ? './test/spec2.js' : './test/spec.js'],
 
 
         // list of files to exclude
@@ -120,7 +121,7 @@ module.exports = function (config) {
                 name: 'Karma'
 
             }
-           
+
         },
         browsers: ['Chrome'],
 
@@ -132,7 +133,14 @@ module.exports = function (config) {
         // how many browser should be started simultaneous
         concurrency: Infinity
     }
+    if (process.env.TRAVIS) {
+        options.customLaunchers = {
+            Chrome_travis_ci: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        }
+    }
 
-
-    config.set(configuration)
+    config.set(options)
 }
