@@ -51,6 +51,12 @@
 	    }
 	    return ret;
 	}
+	var lowerCache = {};
+
+	function toLowerCase(s) {
+	    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
+	}
+
 	/**
 	 *
 	 *
@@ -322,9 +328,7 @@
 	    if (owner) {
 	        this._owner = owner;
 	    }
-	    //   if (vtype === 1) {
 
-	    //   }
 	    var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
 	    if (refType === 'string') {
 	        this._refKey = ref;
@@ -1076,36 +1080,6 @@
 	    }
 	}
 
-	var lifecycle = {
-	    '-2': 'getDefaultProps',
-	    '-1': 'getInitialState',
-	    '0': 'componentWillMount',
-	    '1': 'render',
-	    '2': 'componentDidMount',
-	    '3': 'componentWillReceiveProps',
-	    '4': 'shouldComponentUpdate',
-	    '5': 'componentWillUpdate',
-	    '6': 'componentDidUpdate',
-	    '7': 'componentWillUnmount'
-	};
-
-	/**
-	 * 
-	 * 
-	 * @export
-	 * @param {Component} instance 
-	 * @param {number} index 
-	 * @returns 
-	 */
-	function applyComponentHook(instance, index) {
-	    if (instance) {
-	        var method = lifecycle[index];
-	        if (instance[method]) {
-	            return instance[method].apply(instance, [].slice.call(arguments, 2));
-	        }
-	    }
-	}
-
 	var hasReadOnlyValue = {
 	    'button': true,
 	    'image': true,
@@ -1246,15 +1220,15 @@
 	//react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
 
 	function render(vnode, container, callback) {
-	    return renderTreeIntoContainer(vnode, container, callback, {});
+	    return updateView(vnode, container, callback, {});
 	}
 
-	function renderTreeIntoContainer(vnode, container, callback, parentContext) {
+	function updateView(vnode, container, callback, parentContext) {
 	    if (!vnode.vtype) {
-	        throw new Error('cannot render ' + vnode + ' to container');
+	        throw new Error(vnode + '\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9');
 	    }
 	    if (!container || container.nodeType !== 1) {
-	        throw new Error('container ' + container + ' is not a DOM element');
+	        throw new Error(container + '\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9');
 	    }
 	    var prevVnode = container._component,
 	        rootNode,
@@ -1275,7 +1249,7 @@
 	        }
 	        vnode._hostParent = hostParent;
 
-	        rootNode = initVnode(vnode, parentContext, prevRendered);
+	        rootNode = mountVnode(vnode, parentContext, prevRendered);
 	        container.appendChild(rootNode);
 
 	        if (readyComponents.length) {
@@ -1306,7 +1280,7 @@
 	    }
 	}
 
-	function initVnode(vnode, parentContext, prevRendered) {
+	function mountVnode(vnode, parentContext, prevRendered) {
 	    var vtype = vnode.vtype;
 
 	    var node = null;
@@ -1318,14 +1292,13 @@
 	    }
 
 	    if (vtype === 1) {
-	        // init element
-
+	        // mount element
 	        node = mountElement(vnode, parentContext, prevRendered);
 	    } else if (vtype === 2) {
-	        // init stateful component
+	        // mount stateful component
 	        node = mountComponent(vnode, parentContext, prevRendered);
 	    } else if (vtype === 4) {
-	        // init stateless component
+	        // mount stateless component
 	        node = mountStateless(vnode, parentContext, prevRendered);
 	    }
 
@@ -1336,12 +1309,13 @@
 	    textarea: 1,
 	    input: 1
 	};
+
 	function mountElement(vnode, parentContext, prevRendered) {
 	    var type = vnode.type,
 	        props = vnode.props,
 	        dom = void 0;
 
-	    if (prevRendered && prevRendered.nodeName.toLowerCase() === type) {
+	    if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
 	        dom = prevRendered;
 	    } else {
 	        var ns = getNs(type);
@@ -1352,7 +1326,7 @@
 	    }
 	    vnode._hostNode = dom;
 	    if (prevRendered) {
-	        aglinChildren(vnode, dom, parentContext, prevRendered.childNodes);
+	        alignChildren(vnode, dom, parentContext, prevRendered.childNodes);
 	    } else {
 	        mountChildren(vnode, dom, parentContext);
 	    }
@@ -1373,6 +1347,7 @@
 	    return dom;
 	}
 	var readyComponents = [];
+
 	//将虚拟DOM转换为真实DOM并插入父元素
 	function mountChildren(vnode, parentNode, parentContext) {
 	    var children = vnode.props.children;
@@ -1380,12 +1355,11 @@
 	    for (var i = 0, n = children.length; i < n; i++) {
 	        var el = children[i];
 	        el._hostParent = vnode;
-
-	        parentNode.appendChild(initVnode(el, parentContext));
+	        parentNode.appendChild(mountVnode(el, parentContext));
 	    }
 	}
 
-	function aglinChildren(vnode, parentNode, parentContext, childNodes) {
+	function alignChildren(vnode, parentNode, parentContext, childNodes) {
 	    var children = vnode.props.children,
 	        insertPoint = childNodes[0] || null,
 	        j = 0;
@@ -1393,7 +1367,7 @@
 	        var el = children[i];
 	        el._hostParent = vnode;
 	        var prevDom = childNodes[j];
-	        var dom = initVnode(el, parentContext, prevDom);
+	        var dom = mountVnode(el, parentContext, prevDom);
 	        if (dom === prevDom) {
 	            j++;
 	        }
@@ -1446,7 +1420,7 @@
 	            vnode.__ref(instance);
 	        });
 	    }
-	    var dom = initVnode(rendered, getChildContext(instance, parentContext), prevRendered);
+	    var dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
 	    instanceMap.set(instance, dom);
 	    vnode._hostNode = dom;
 	    //vnode._instance._rendered._hostNode === node
@@ -1474,9 +1448,9 @@
 	    var rendered = type(props, parentContext);
 	    rendered = checkNull(rendered);
 
-	    var dom = initVnode(rendered, parentContext, prevRendered);
+	    var dom = mountVnode(rendered, parentContext, prevRendered);
 	    vnode._instance = {
-	        _currentElement: vnode, // ???
+	        _currentElement: vnode,
 	        _rendered: rendered
 	    };
 	    vnode._hostNode = dom;
@@ -1533,7 +1507,7 @@
 	    instance.props = lastProps;
 	    delete instance.lastProps;
 	    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
-	    if (!instance._forceUpdate && applyComponentHook(instance, 4, nextProps, nextState, context) === false) {
+	    if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
 	        return node; //注意
 	    }
 	    //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
@@ -1570,7 +1544,7 @@
 
 	        // replace
 	        disposeVnode(vnode, node);
-	        newNode = initVnode(newVnode, parentContext);
+	        newNode = mountVnode(newVnode, parentContext);
 	        node.parentNode.replaceChild(newNode, node);
 	    } else if (vnode !== newVnode) {
 	        // same type and same key -> update
@@ -1644,13 +1618,13 @@
 
 	        return node;
 	    }
-	    var onlyAdd = false;
+
 	    var nextProps = nextVnode.props;
 	    if (props[HTML_KEY]) {
 	        while (node.firstChild) {
 	            node.removeChild(node.firstChild);
 	        }
-	        updateVelem(lastVnode, nextVnode, node, parentContext);
+	        updateElement(lastVnode, nextVnode, node, parentContext);
 	        mountChildren(nextVnode, node, parentContext);
 	    } else {
 	        if (nextProps[HTML_KEY]) {
@@ -1658,19 +1632,19 @@
 	        } else {
 	            updateChildren(lastVnode, nextVnode, node, parentContext);
 	        }
-	        updateVelem(lastVnode, nextVnode, node, parentContext);
+	        updateElement(lastVnode, nextVnode, node, parentContext);
 	    }
 	    return node;
 	}
 	/**
-	  *
-	  *
-	  * @param {any} lastVnode
-	  * @param {any} nextVnode
-	  * @param {any} dom
-	  * @returns
-	  */
-	function updateVelem(lastVnode, nextVnode, dom) {
+	 *
+	 *
+	 * @param {any} lastVnode
+	 * @param {any} nextVnode
+	 * @param {any} dom
+	 * @returns
+	 */
+	function updateElement(lastVnode, nextVnode, dom) {
 	    nextVnode._hostNode = dom;
 	    if (lastVnode.checkProps || nextVnode.checkProps) {
 	        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom);
@@ -1732,13 +1706,21 @@
 	    if (childrenLen === 0) {
 	        if (newVchildrenLen > 0) {
 	            for (var i = 0; i < newVchildrenLen; i++) {
-	                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
+	                patches.creates.push({
+	                    vnode: newVchildren[i],
+	                    parentNode: node,
+	                    parentContext: parentContext,
+	                    index: i
+	                });
 	            }
 	        }
 	        return;
 	    } else if (newVchildrenLen === 0) {
 	        for (var _i = 0; _i < childrenLen; _i++) {
-	            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
+	            patches.removes.push({
+	                vnode: children[_i],
+	                node: childNodes[_i]
+	            });
 	        }
 	        return;
 	    }
@@ -1797,7 +1779,10 @@
 	            if (!removes) {
 	                removes = [];
 	            }
-	            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
+	            removes.push({
+	                vnode: _vnode2,
+	                node: childNodes[_i3]
+	            });
 	        }
 	    }
 
@@ -1807,7 +1792,12 @@
 	            if (!creates) {
 	                creates = [];
 	            }
-	            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
+	            creates.push({
+	                vnode: newVchildren[_i4],
+	                parentNode: node,
+	                parentContext: parentContext,
+	                index: _i4
+	            });
 	        } else if (item.vnode.vtype === 1) {
 	            diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
 	        }
@@ -1837,7 +1827,7 @@
 	                dom.nodeValue = nextVnode.text;
 	            }
 	        } else if (vnode.vtype === 1) {
-	            updateVelem(vnode, nextVnode, dom, data.parentContext);
+	            updateElement(vnode, nextVnode, dom, data.parentContext);
 	        } else if (vnode.vtype === 4) {
 	            dom = updateStateless(vnode, nextVnode, dom, data.parentContext);
 	        } else if (vnode.vtype === 2) {
@@ -1856,7 +1846,7 @@
 	    disposeVnode(data.vnode, data.node);
 	    data.node.parentNode.removeChild(data.node);
 	    var node = data.node;
-	    var nodeName = node.__n || (node.__n = node.nodeName.toLowerCase());
+	    var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
 	    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
 	        recyclables[nodeName].push(node);
 	    } else {
@@ -1865,7 +1855,7 @@
 	}
 
 	function applyCreate(data) {
-	    var node = initVnode(data.vnode, data.parentContext);
+	    var node = mountVnode(data.vnode, data.parentContext);
 	    data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 	}
 
