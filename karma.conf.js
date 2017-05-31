@@ -3,7 +3,6 @@
 var path = require('path')
 var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
-
 module.exports = function (config) {
     var configuration = {
 
@@ -17,7 +16,7 @@ module.exports = function (config) {
 
 
         // list of files / patterns to load in the browser
-        files: ['./test/matchers.js', './test/spec.js'],
+        files: ['./test/matchers.js',process.env.TRAVIS ? './test/spec2.js': './test/spec.js'],
 
 
         // list of files to exclude

@@ -77,9 +77,7 @@ export function createElement(type, configs) {
         if (owner) {
             this._owner = owner
         }
-     //   if (vtype === 1) {
-          
-     //   }
+
         var refType = typeof ref
         if (refType === 'string') {
             this._refKey = ref
