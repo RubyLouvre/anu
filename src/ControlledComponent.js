@@ -107,13 +107,13 @@ export function processFormElement(vnode, dom, props) {
     var domType = dom.type
     if (/text|password|number|date|time|color|month/.test(domType)) {
         if ('value' in props && !hasOtherControllProperty(props, textMap)) {
-            console.warn('你为', domType, `元素指定了value属性，但是没有提供另外的${Object.keys(textMap)}
+            console.warn(`你为${domType}元素指定了value属性，但是没有提供另外的${Object.keys(textMap)}
            等用于控制value变化的属性，那么它是一个非受控组件，用户无法通过输入改变元素的value值`)
             dom.oninput = stopUserInput
         }
     } else if (/checkbox|radio/.test(domType)) {
         if ('checked' in props && !hasOtherControllProperty(props, checkedMap)) {
-            console.warn('你为', domType, `元素指定了value属性，但是没有提供另外的${Object.keys(checkedMap)}
+            console.warn(`你为${domType}元素指定了value属性，但是没有提供另外的${Object.keys(checkedMap)}
            等用于控制value变化的属性，那么它是一个非受控组件，用户无法通过输入改变元素的value值`)
             dom.onclick = stopUserClick
         }
@@ -141,7 +141,7 @@ var checkedMap = {
 function hasOtherControllProperty(props, map) {
     for (var i in props) {
         if (map[i]) {
-            return true
+           return true
         }
     }
     return false
