@@ -19,7 +19,7 @@ notifications:
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
-  - sudo chmod 4755 /opt/google/chrome/chrome-sandbox
+  - sudo chmod 4755 /usr/lib/chromium-browser/chrome-sandbox
 
   - sh -e /etc/init.d/xvfb start
   - sleep 3 # give xvfb some time to start
