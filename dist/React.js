@@ -1011,61 +1011,63 @@ function isDefined(a) {
     return !(a === null || a === void 666);
 }
 function postUpdateSelectedOptions(vnode) {
-    var props = vnode.props;
-    var multiple = !!props.multiple;
-    var value = isDefined(props.value) ? props.value : isDefined(props.defaultValue) ? props.defaultValue : multiple ? [] : '';
-    updateOptions(vnode, multiple, value);
+    var props = vnode.props,
+        multiple = !!props.multiple,
+        value = isDefined(props.value) ? props.value : isDefined(props.defaultValue) ? props.defaultValue : multiple ? [] : '',
+        options = [];
+    collectOptions(vnode, props, options);
+    if (multiple) {
+        updateOptionsMore(vnode, options, options.length, value);
+    } else {
+        updateOptionsOne(vnode, optipns, options.length, value);
+    }
 }
 
-function collectOptions(vnode, ret) {
-    ret = ret || [];
-    for (var i = 0, el; el = vnode.props.children[i++];) {
+function collectOptions(vnode, props, ret) {
+    var arr = props.children;
+    for (var i = 0, n = arr.length; i < n; i++) {
+        var el = arr[i];
         if (el.type === 'option') {
             ret.push(el);
         } else if (el.type === 'optgroup') {
-            collectOptions(el, ret);
+            collectOptions(el, el.props, ret);
         }
     }
-    return ret;
 }
 
-function updateOptions(vnode, multiple, propValue) {
+function updateOptionsOne(vnode, options, n, propValue) {
+    // Do not set `select.value` as exact behavior isn't consistent across all
+    // browsers for all cases.
+    var selectedValue = '' + propValue;
+    for (var i = 0; i < n; i++) {
+        var option = options[i];
+        var value = getOptionValue(option.props);
+        if (value === selectedValue) {
+            setDomSelected(option, true);
+            return;
+        }
+    }
+    if (n) {
+        setDomSelected(options[0], true);
+    }
+}
 
-    var options = collectOptions(vnode),
-        selectedValue;
-    var n = options.length;
-    if (multiple) {
-        selectedValue = {};
-        try {
-            for (var i = 0; i < propValue.length; i++) {
-                selectedValue['&' + propValue[i]] = true;
-            }
-        } catch (e) {
-            /* istanbul ignore next */
-            console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
-        }
-        for (var _i = 0; _i < n; _i++) {
-            var option = options[_i];
-            var value = getOptionValue(option.props);
-            var selected = selectedValue.hasOwnProperty('&' + value);
+function updateOptionsMore(vnode, options, n, propValue) {
 
-            setDomSelected(option, selected);
+    var selectedValue = {};
+    try {
+        for (var i = 0; i < propValue.length; i++) {
+            selectedValue['&' + propValue[i]] = true;
         }
-    } else {
-        // Do not set `select.value` as exact behavior isn't consistent across all
-        // browsers for all cases.
-        selectedValue = '' + propValue;
-        for (var _i2 = 0; _i2 < n; _i2++) {
-            var _option = options[_i2];
-            var _value = getOptionValue(_option.props);
-            if (_value === selectedValue) {
-                setDomSelected(_option, true);
-                return;
-            }
-        }
-        if (n) {
-            setDomSelected(options[0], true);
-        }
+    } catch (e) {
+        /* istanbul ignore next */
+        console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
+    }
+    for (var _i = 0; _i < n; _i++) {
+        var option = options[_i];
+        var value = getOptionValue(option.props);
+        var selected = selectedValue.hasOwnProperty('&' + value);
+        setDomSelected(option, selected);
     }
 }
 
