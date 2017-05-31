@@ -1,9 +1,20 @@
-import {patchStyle} from './style'
+import {
+    patchStyle
+} from './style'
 
-import {addGlobalEventListener, getBrowserName, isEventName} from './event'
-import {HTML_KEY, oneObject} from './util'
+import {
+    addGlobalEventListener,
+    getBrowserName,
+    isEventName
+} from './event'
+import {
+    HTML_KEY,
+    oneObject
+} from './util'
 
-import {document} from './browser'
+import {
+    document
+} from './browser'
 
 var eventNameCache = {
     'onClick': 'click',
@@ -43,6 +54,11 @@ String('value,id,title,alt,htmlFor,longDesc,className').replace(/\w+/g, function
     builtIdProperties[name] = name
     stringAttributes[name] = name
 })
+var controlled　 = {
+    value: 1,
+    checked: 1,
+    defaultValue: 1
+}
 /**
  *
  * 修改dom的属性与事件
@@ -94,7 +110,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
                         var curType = typeof val
                         /* istanbul ignore if */
-                        if (curType !== 'function') 
+                        if (curType !== 'function')
                             throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
                         addGlobalEventListener(eventName)
                     }
@@ -109,6 +125,9 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
                         // 会影响到样式,需要进一步处理
                         dom[name] = !!val
+                        if (name === 'checked') {
+                            dom._lastValue = !!val
+                        }
                     }
                     if (val === false || val === void 666 || val === null) {
                         operateAttribute(dom, name, '', isSVG)
@@ -117,10 +136,13 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                     if (isHTML && builtIdProperties[name]) {
                         // 特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的 <input
                         // value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                        if (stringAttributes[name]) 
+                        if (stringAttributes[name])
                             val = val + ''
                         if (name !== 'value' || dom[name] !== val) {
                             dom[name] = val
+                            if (controlled[name]) {
+                                dom._lastValue = val
+                            }
                         }
                     } else {
                         operateAttribute(dom, name, val, isSVG)
@@ -129,32 +151,32 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
-  
-        for (let name in lastProps) {
-            if (!(name in nextProps)) {
-                if (isEventName(name)) { //移除事件
-                    var events = dom.__events || {}
-                    delete events[name]
-                } else { //移除属性
-                    if (isHTML && builtIdProperties[name]) {
-                        dom[name] = builtIdProperties[name] === true
-                            ? false
-                            : ''
-                    } else {
-                        operateAttribute(dom, name, '', isSVG)
-                    }
+
+    for (let name in lastProps) {
+        if (!(name in nextProps)) {
+            if (isEventName(name)) { //移除事件
+                var events = dom.__events || {}
+                delete events[name]
+            } else { //移除属性
+                if (isHTML && builtIdProperties[name]) {
+                    dom[name] = builtIdProperties[name] === true ?
+                        false :
+                        ''
+                } else {
+                    operateAttribute(dom, name, '', isSVG)
                 }
             }
-        
+        }
+
     }
 }
 var xlinkProps = /^xlink(.+)/
 
 function operateAttribute(dom, name, value, isSVG) {
 
-    var method = value === ''
-            ? 'removeAttribute'
-            : 'setAttribute',
+    var method = value === '' ?
+        'removeAttribute' :
+        'setAttribute',
         namespace = null
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh

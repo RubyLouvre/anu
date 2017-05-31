@@ -1,4 +1,6 @@
-import {inherit} from './util'
+import {
+    inherit
+} from './util'
 
 var hasReadOnlyValue = {
     'button': true,
@@ -13,9 +15,9 @@ export function setControlledComponent(vnode) {
 
     var type = props.type
     var nodeName = vnode.type
-  
 
-        // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
+
+    // input, select, textarea, datalist这几个元素都会包装成受控组件或非受控组件 **受控组件**
     // 是指定指定了value或checked 并绑定了事件的元素 **非受控组件** 是指定指定了value或checked，
     // 但没有绑定事件，也没有使用readOnly, disabled来限制状态变化的元素
     // 这时框架会弹出为它绑定事件，以重置用户的输入，确保它的value或checked值不被改变 但如果用户使用了defaultValue,
@@ -31,7 +33,7 @@ export function setControlledComponent(vnode) {
                 type = 'textarea'
             }
         case 'input':
-            if (hasReadOnlyValue[type]) 
+            if (hasReadOnlyValue[type])
                 return
 
             if (!type) {
@@ -39,15 +41,15 @@ export function setControlledComponent(vnode) {
             }
 
             var isChecked = type === 'radio' || type === 'checkbox'
-            var propName = isChecked
-                ? 'checked'
-                : 'value'
-            var defaultName = propName === 'value'
-                ? 'defaultValue'
-                : 'defaultChecked'
-            var initValue = props[propName] != null
-                ? props[propName]
-                : props[defaultName]
+            var propName = isChecked ?
+                'checked' :
+                'value'
+            var defaultName = propName === 'value' ?
+                'defaultValue' :
+                'defaultChecked'
+            var initValue = props[propName] != null ?
+                props[propName] :
+                props[defaultName]
             var isControlled = props.onChange || props.readOnly || props.disabled
             if (/text|password/.test(type)) {
                 isControlled = isControlled || props.onInput
@@ -65,9 +67,9 @@ export function setControlledComponent(vnode) {
                 if (type !== 'select') {
                     vnode
                         ._hostNode
-                        .addEventListener(isChecked
-                            ? 'click'
-                            : 'input', keepInitValue)
+                        .addEventListener(isChecked ?
+                            'click' :
+                            'input', keepInitValue)
                 }
             }
             break
@@ -76,21 +78,20 @@ export function setControlledComponent(vnode) {
 
 function getOptionValue(props) {
     //typeof props.value === 'undefined'
-    return props.value != void 666
-        ? props.value
-        : props.children[0].text
+    return props.value != void 666 ?
+        props.value :
+        props.children[0].text
 }
 
 function postUpdateSelectedOptions(vnode) {
     var props = vnode.props
     var multiple = !!props.multiple
-    var value = props.value != null
-        ? props.value
-        : props.defaultValue != null
-            ? props.defaultValue
-            : multiple
-                ? []
-                : ''
+    var value = props.value != null ?
+        props.value :
+        props.defaultValue != null ?
+        props.defaultValue :
+        multiple ? [] :
+        ''
     updateOptions(vnode, multiple, value)
 
 }
@@ -106,11 +107,13 @@ function collectOptions(vnode, ret) {
     }
     return ret
 }
+
 function setOptionState(vnode) {
     return {
         value: getOptionValue(vnode.props)
     }
 }
+
 function updateOptions(vnode, multiple, propValue) {
 
     var options = collectOptions(vnode),
@@ -159,3 +162,19 @@ function setDomSelected(option, selected) {
 }
 
 //react的单向流动是由生命周期钩子的setState选择性调用（不是所有钩子都能用setState）,受控组件，事务机制
+
+
+function inputWrapper(vnode, dom, props, type) {
+    if (hasReadOnlyValue[type]) {
+        return
+    }
+    if ('value' in props && !('onChange' in props || 'onInput' in props || 'readOnly' in props)) {
+        dom.oninput = dom.onclick = inputHandle
+    }
+}
+
+function inputHandle(e) {
+    var target = e.target
+    var name = e.type === 'checkbox' || e.type ==='radio' ? 'checked': 'value'
+    target[name] = target._lastValue
+}
