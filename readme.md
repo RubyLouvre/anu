@@ -1,8 +1,8 @@
 # anu
 
 <p align="center">
-<a href="https://badge.fury.io/js/anu">
-<img src="https://badge.fury.io/js/anu.svg" alt="npm version" height="18">
+<a href="https://badge.fury.io/js/anujs">
+<img src="https://badge.fury.io/js/anujs.svg" alt="npm version" height="18">
 </a>
 <a href="https://travis-ci.org/RubyLouvre/anu">
 <img src="https://travis-ci.org/RubyLouvre/anu.svg?branch=master" alt="Travis CI Status"/>
