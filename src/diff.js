@@ -391,7 +391,7 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
 
     if (vtype === 2) {
         //类型肯定相同的
-        return updateVcomponent(lastVnode, nextVnode, node, parentContext)
+        return updateComponent(lastVnode, nextVnode, node, parentContext)
     }
 
     if (vtype === 4) {
@@ -446,7 +446,7 @@ function updateElement(lastVnode, nextVnode, dom) {
     return dom
 }
 
-function updateVcomponent(lastVnode, nextVnode, node, parentContext) {
+function updateComponent(lastVnode, nextVnode, node, parentContext) {
     var instance = nextVnode._instance = lastVnode._instance
     var nextProps = nextVnode.props
 
@@ -607,7 +607,7 @@ function applyUpdate(data) {
         } else if (vnode.vtype === 4) {
             dom = updateStateless(vnode, nextVnode, dom, data.parentContext)
         } else if (vnode.vtype === 2) {
-            dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)
+            dom = updateComponent(vnode, nextVnode, dom, data.parentContext)
         }
     }
     // re-order

@@ -115,7 +115,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                     if (inMobile && eventName === 'click') {
                         elem.addEventListener('click', clickHack)
                     }
-                    var events = (dom.__events || (dom.__events = {}))
+                    let events = (dom.__events || (dom.__events = {}))
                     events[name] = val
                 } else if (val !== lastProps[name]) {
                     if (isHTML && boolAttributes[name] && typeof dom[name] === 'boolean') {
@@ -149,7 +149,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     for (let name in lastProps) {
         if (!(name in nextProps)) {
             if (isEventName(name)) { //移除事件
-                var events = dom.__events || {}
+                let events = dom.__events || {}
                 delete events[name]
             } else { //移除属性
                 if (isHTML && builtIdProperties[name]) {

@@ -1093,12 +1093,12 @@ function processFormElement(vnode, dom, props) {
     var domType = dom.type;
     if (/text|password|number|date|time|color|month/.test(domType)) {
         if ('value' in props && !hasOtherControllProperty(props, textMap)) {
-            console.warn('你为', domType, '\u5143\u7D20\u6307\u5B9A\u4E86value\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(textMap) + '\n           \u7B49\u7528\u4E8E\u63A7\u5236value\u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684value\u503C');
+            console.warn('\u4F60\u4E3A' + domType + '\u5143\u7D20\u6307\u5B9A\u4E86value\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(textMap) + '\n           \u7B49\u7528\u4E8E\u63A7\u5236value\u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684value\u503C');
             dom.oninput = stopUserInput;
         }
     } else if (/checkbox|radio/.test(domType)) {
         if ('checked' in props && !hasOtherControllProperty(props, checkedMap)) {
-            console.warn('你为', domType, '\u5143\u7D20\u6307\u5B9A\u4E86value\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(checkedMap) + '\n           \u7B49\u7528\u4E8E\u63A7\u5236value\u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684value\u503C');
+            console.warn('\u4F60\u4E3A' + domType + '\u5143\u7D20\u6307\u5B9A\u4E86value\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(checkedMap) + '\n           \u7B49\u7528\u4E8E\u63A7\u5236value\u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684value\u503C');
             dom.onclick = stopUserClick;
         }
     } else if (/select/.test(domType)) {
@@ -1459,9 +1459,8 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext);
     }
-    // else if (vnode._prevRendered) {
-    //    newNode = updateVnode(vnode, newVnode, node, parentContext)
-    // }
+    // else if (vnode._prevRendered) {    newNode = updateVnode(vnode, newVnode,
+    // node, parentContext) }
     return newNode;
 }
 
@@ -1615,28 +1614,20 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (var i = 0; i < newVchildrenLen; i++) {
-                patches.creates.push({
-                    vnode: newVchildren[i],
-                    parentNode: node,
-                    parentContext: parentContext,
-                    index: i
-                });
+                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
             }
         }
         return;
     } else if (newVchildrenLen === 0) {
         for (var _i = 0; _i < childrenLen; _i++) {
-            patches.removes.push({
-                vnode: children[_i],
-                node: childNodes[_i]
-            });
+            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
         }
         return;
     }
 
     var updates = Array(newVchildrenLen);
-    var removes = null;
-    var creates = null;
+    var removes = [];
+    var creates = [];
     // isEqual
     for (var _i2 = 0; _i2 < childrenLen; _i2++) {
         var _vnode = children[_i2];
@@ -1685,36 +1676,23 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            if (!removes) {
-                removes = [];
-            }
-            removes.push({
-                vnode: _vnode2,
-                node: childNodes[_i3]
-            });
+            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
         }
     }
 
     for (var _i4 = 0; _i4 < newVchildrenLen; _i4++) {
         var item = updates[_i4];
         if (!item) {
-            if (!creates) {
-                creates = [];
-            }
-            creates.push({
-                vnode: newVchildren[_i4],
-                parentNode: node,
-                parentContext: parentContext,
-                index: _i4
-            });
+
+            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
         }
     }
-    if (removes) {
+    if (removes.length) {
         __push.apply(patches.removes, removes);
     }
-    if (creates) {
+    if (creates.length) {
         __push.apply(patches.creates, creates);
     }
     __push.apply(patches.updates, updates);
