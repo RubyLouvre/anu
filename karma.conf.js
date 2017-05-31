@@ -134,12 +134,8 @@ module.exports = function (config) {
         concurrency: Infinity
     }
     if (process.env.TRAVIS) {
-        options.customLaunchers = {
-            Chrome_travis_ci: {
-                base: 'Chrome',
-                flags: ['--no-sandbox']
-            }
-        }
+
+        options.browsers = ['Firefox']
     }
 
     config.set(options)
