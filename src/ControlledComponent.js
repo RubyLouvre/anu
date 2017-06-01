@@ -85,13 +85,13 @@ var duplexData = {
     1: ['value', {
         onChange: 1,
         onInput: 1,
-        readyOnly: 1,
+        readOnly: 1,
         disabled: 1
     }, 'oninput', preventUserInput],
     2: ['checked', {
         onChange: 1,
         onClick: 1,
-        readyOnly: 1,
+        readOnly: 1,
         disabled: 1
     }, 'onclick', preventUserClick],
     3: ['value', {
