@@ -1,6 +1,6 @@
 import {transaction} from './transaction'
 import {document} from './browser'
-import {isFn} from './util'
+import {isFn, options} from './util'
 
 export var eventMap = {}
 /**
@@ -54,7 +54,8 @@ function dispatchEvent(e) {
         }
     }
     transaction.isInTransation = false
-    transaction.enqueue(true)
+    options.updateBatchNumber++
+    transaction.dequeue()
 }
 
 function capitalize(str) {

@@ -4,9 +4,9 @@ import {
 
 import {
     extend,
-    options,
     noop,
-    isFn
+    isFn,
+    options
 } from './util'
 
 /**
@@ -32,15 +32,7 @@ Component.prototype = {
 
         setStateProxy(this, cb)
     },
-  /*  getBaseVnode() {
-        var p = this
-        do {
-            var pp = p.parentInstance
-            if (!pp) {
-                return p._currentElement
-            }
-        } while (p = pp);
-    },*/
+
     forceUpdate(cb) {
         this._pendingForceUpdate = true
         setStateProxy(this, cb)
@@ -79,12 +71,16 @@ Component.prototype = {
 
 function setStateProxy(instance, cb) {
     if (isFn(cb))
-        transaction.enqueueCallback({ //确保回调先进入
+        transaction.queueCallback({ //确保回调先进入
             component: instance,
             cb: cb
         })
     if (!instance._updateBatchNumber) {
         instance._updateBatchNumber = options.updateBatchNumber + 1
     }
-    transaction.enqueue(instance)
+    transaction.queueComponent(instance)
+    if(!transaction.isInTransation){
+        options.updateBatchNumber++
+        transaction.dequeue()
+    }
 }

@@ -37,7 +37,7 @@
 	    fn.constructor = SubClass;
 	}
 	/**
-	 *  收集一个元素的所有孩子
+	 * 收集一个元素的所有孩子
 	 *
 	 * @export
 	 * @param {any} dom
@@ -46,6 +46,7 @@
 	function getNodes(dom) {
 	    var ret = [],
 	        c = dom.childNodes || [];
+	    // eslint-disable-next-line
 	    for (var i = 0, el; el = c[i++];) {
 	        ret.push(el);
 	    }
@@ -74,7 +75,9 @@
 	        array = array.match(rword) || [];
 	    }
 	    var result = {},
-	        value = val !== void 0 ? val : 1;
+
+	    // eslint-disable-line
+	    value = val !== void 666 ? val : 1;
 	    for (var i = 0, n = array.length; i < n; i++) {
 	        result[array[i]] = value;
 	    }
@@ -99,6 +102,7 @@
 	        return match.charAt(1).toUpperCase();
 	    });
 	}
+
 	var options = {
 	    updateBatchNumber: 1,
 	    immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
@@ -116,6 +120,7 @@
 	    var defaultProps = type.defaultProps;
 	    props = extend({}, props); //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
 	    for (var i in defaultProps) {
+	        //eslint-disable-next-line
 	        if (props[i] === void 666) {
 	            props[i] = defaultProps[i];
 	        }
@@ -413,47 +418,43 @@
 
 	var transaction = {
 	    isInTransation: false,
-	    enqueueCallback: function enqueueCallback(obj) {
+	    queueCallback: function queueCallback(obj) {
 	        //它们是保证在ComponentDidUpdate后执行
 	        callbacks.push(obj);
 	    },
+	    queueComponent: function queueComponent(instance) {
+	        queue.push(instance);
+	    },
+	    dequeue: function dequeue(recursion) {
 
-	    enqueue: function enqueue(instance) {
-	        if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) === 'object') {
-	            queue.push(instance);
-	        }
-	        if (!this.isInTransation) {
-	            this.isInTransation = true;
-
-	            if (instance) options.updateBatchNumber++;
-	            var globalBatchNumber = options.updateBatchNumber;
-
-	            var renderQueue = queue;
-	            queue = [];
-	            var processingCallbacks = callbacks;
-	            callbacks = [];
-	            var refreshComponent = options.immune.refreshComponent;
-	            //  queue.length = callbacks.length = 0
-	            for (var i = 0, n = renderQueue.length; i < n; i++) {
-	                var inst = renderQueue[i];
-	                try {
-	                    if (inst._updateBatchNumber === globalBatchNumber) {
-	                        refreshComponent(inst);
-	                    }
-	                } catch (e) {
-	                    /* istanbul ignore next */
-	                    console.warn(e);
+	        // if (!this.isInTransation) {
+	        this.isInTransation = true;
+	        var globalBatchNumber = options.updateBatchNumber;
+	        var renderQueue = queue;
+	        queue = [];
+	        var processingCallbacks = callbacks;
+	        callbacks = [];
+	        var refreshComponent = options.immune.refreshComponent;
+	        for (var i = 0, n = renderQueue.length; i < n; i++) {
+	            var inst = renderQueue[i];
+	            try {
+	                if (inst._updateBatchNumber === globalBatchNumber) {
+	                    refreshComponent(inst);
 	                }
-	            }
-	            this.isInTransation = false;
-	            processingCallbacks.forEach(function (request) {
-	                request.cb.call(request.instance);
-	            });
-	            /* istanbul ignore next */
-	            if (queue.length) {
-	                this.enqueue(); //用于递归调用自身)
+	            } catch (e) {
+	                /* istanbul ignore next */
+	                console.warn(e);
 	            }
 	        }
+	        this.isInTransation = false;
+	        processingCallbacks.forEach(function (request) {
+	            request.cb.call(request.instance);
+	        });
+	        /* istanbul ignore next */
+	        if (queue.length) {
+	            this.dequeue(); //用于递归调用自身)
+	        }
+	        //     }
 	    }
 	};
 
@@ -479,16 +480,6 @@
 
 	        setStateProxy(this, cb);
 	    },
-
-	    /*  getBaseVnode() {
-	          var p = this
-	          do {
-	              var pp = p.parentInstance
-	              if (!pp) {
-	                  return p._currentElement
-	              }
-	          } while (p = pp);
-	      },*/
 	    forceUpdate: function forceUpdate(cb) {
 	        this._pendingForceUpdate = true;
 	        setStateProxy(this, cb);
@@ -524,14 +515,18 @@
 	 */
 
 	function setStateProxy(instance, cb) {
-	    if (isFn(cb)) transaction.enqueueCallback({ //确保回调先进入
+	    if (isFn(cb)) transaction.queueCallback({ //确保回调先进入
 	        component: instance,
 	        cb: cb
 	    });
 	    if (!instance._updateBatchNumber) {
 	        instance._updateBatchNumber = options.updateBatchNumber + 1;
 	    }
-	    transaction.enqueue(instance);
+	    transaction.queueComponent(instance);
+	    if (!transaction.isInTransation) {
+	        options.updateBatchNumber++;
+	        transaction.dequeue();
+	    }
 	}
 
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -678,6 +673,7 @@
 	        if (vnode.ns) {
 	            return document.createElementNS(vnode.ns, type);
 	        }
+	        // eslint-disable-line
 	    } catch (e) {}
 	    return document.createElement(type);
 	}
@@ -716,6 +712,7 @@
 	        return mathNs;
 	    } else {
 	        if (!mhtml[type] && rmathTags.test(type)) {
+	            // eslint-disable-line
 	            return mathTags[type] = mathNs;
 	        }
 	    }
@@ -836,7 +833,8 @@
 	        }
 	    }
 	    transaction.isInTransation = false;
-	    transaction.enqueue(true);
+	    options.updateBatchNumber++;
+	    transaction.dequeue();
 	}
 
 	function capitalize(str) {

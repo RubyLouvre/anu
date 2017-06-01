@@ -47,7 +47,7 @@ export function inherit(SubClass, SupClass) {
 export function getNodes(dom) {
     var ret = [],
         c = dom.childNodes || []
-    // eslint-disable-line
+    // eslint-disable-next-line
     for (var i = 0, el; el = c[i++];) {
         ret.push(el)
     }
@@ -59,19 +59,7 @@ export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase())
 }
 
-/**
- * 收集该虚拟DOM的所有组件实例，方便依次执行它们的生命周期钩子
- *
- * @param {any} instance
- * @returns
- */
-export function getInstances(instance) {
-    var instances = [instance]
-    while (instance = instance.parentInstance) {
-        instances.push(instance)
-    }
-    return instances
-}
+
 
 /**
  *
@@ -121,6 +109,7 @@ export function camelize(target) {
             .toUpperCase()
     })
 }
+
 export var options = {
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
@@ -143,7 +132,7 @@ export function getComponentProps(type, props) {
     var defaultProps = type.defaultProps
     props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
     for (var i in defaultProps) {
-        // eslint-disable-line
+        //eslint-disable-next-line
         if (props[i] === void 666) {
             props[i] = defaultProps[i]
         }
