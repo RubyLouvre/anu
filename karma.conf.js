@@ -3,7 +3,7 @@
 var path = require('path')
 var webpack = require('webpack')
 var coverage = String(process.env.COVERAGE) !== 'false'
-process.env.TRAVIS = 1
+
 module.exports = function (config) {
     var options = {
 

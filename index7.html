@@ -16,84 +16,119 @@
             background: lawngreen;
         }
     </style>
-<!--<script type='text/javascript' src="./dist/React.js"></script>-->
+<script type='text/javascript' src="./dist/React.js"></script>
 
-<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
+<!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-var s
+var textarea, radio, text, select, checkbox
 
 window.onload = function(){
 
 
-class Input extends React.Component{
+class Text extends React.Component{
  constructor(props) {
-   super(props);
-   this.state={value:'Hello'};
-   this.handleChange=this.handleChange.bind(this);
+    super(props);
+    this.state={value:'Hello'};
+    this.handleChange=this.handleChange.bind(this);
   }
   handleChange(event) {
-    this.setState({value: event.target.value});
+     this.setState({value: event.target.value});
   }
   render() {
-    var value = this.state.value;
+     var value = this.state.value;
     return <input type="text" value={this.state.value}  />;
   }
 }
 class Checkbox extends React.Component{
  constructor(props) {
-   super(props);
-   this.state={checked: false};
-   this.handleChange=this.handleChange.bind(this);
+    super(props);
+    this.state={checked: false};
+    this.handleChange=this.handleChange.bind(this);
   }
   handleChange(event) {
-    this.setState({checked: event.target.checked});
+     this.setState({checked: event.target.checked});
   }
   render() {
-    var value = this.state.value;
-    return <input type="checkbox" name='xxx' checked={this.state.checked}  />;
+     var value = this.state.value;
+     return <input type="checkbox" name='xxx' checked={this.state.checked}  />;
   }
 }
 class Radio extends React.Component{
- constructor(props) {
-   super(props);
-   this.state={checked: false};
-   this.handleChange=this.handleChange.bind(this);
+    constructor(props) {
+        super(props);
+        this.state={checked: false};
+        this.handleChange=this.handleChange.bind(this);
   }
   handleChange(event) {
-    this.setState({checked: event.target.checked});
+        this.setState({checked: event.target.checked});
   }
   render() {
-    var value = this.state.value;
-    return <input type="radio" name='xxx' checked={this.state.checked}  />
+        var value = this.state.value;
+        return <input type="radio" name='xxx' checked={this.state.checked}  />
   }
 }
 class TextArea extends React.Component{
- constructor(props) {
-   super(props);
-   this.state={value: 'dddd'};
-   this.handleChange=this.handleChange.bind(this);
-  }
-  handleChange(event) {
-    this.setState({value: event.target.checked});
-  }
-  render() {
-    return <textarea value={this.state.value}></textarea>
-  }
+    constructor(props) {
+        super(props);
+        this.state={value: 'dddd'};
+        this.handleChange=this.handleChange.bind(this);
+    }
+    handleChange(event) {
+        this.setState({value: event.target.checked});
+    }
+    render() {
+        return <textarea value={this.state.value}></textarea>
+    }
 }
-s = ReactDOM.render(
-	<TextArea />,
- document.getElementById('example'))
+class Select extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            value: 'bbb'
+        }
+    }
+    render() {
+        return <select id='node8' value={this.state.value}>
+            <option value='aaa'>aaa</option>
+            <option value='bbb'>bbb</option>
+            <option value='ccc'>ccc</option>
+        </select>
+    }
+}
+    text = ReactDOM.render(
+        <Text />,
+    document.getElementById('text')
+    )
+    checkbox = ReactDOM.render(
+        <Checkbox />,
+    document.getElementById('checkbox')
+    )
+    radio = ReactDOM.render(
+        <Radio />,
+    document.getElementById('radio')
+    )
+    textarea = ReactDOM.render(
+        <TextArea />,
+    document.getElementById('textarea')
+    )
+    select = ReactDOM.render(
+        <Select />,
+    document.getElementById('select')
+    )
 }
     </script>
 </head>
 
 <body>
 
-    <div>这个默认会被清掉</div>
-    <div id='example'></div>
-
+    <div>各种非受控组件</div>
+    <div id='text'></div>
+    <div id='checkbox'></div>
+    <div id='radio'></div>
+    <div id='textarea'></div>
+   <div id='select'></div>
 
 </body>
 
