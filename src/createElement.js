@@ -125,13 +125,11 @@ export function createElement(type, configs) {
         deep = deep || 0
         for (var i = children.length; i--;) { //从后向前添加
             var el = children[i]
-            if (el == null) {
-                el = ''
+            if (el === undefined || el === null || el === false || el === true) {
+               continue
             }
             var type = typeof el
-            if (el === '' || type === 'boolean') {
-                continue
-            }
+           
             if (/number|string/.test(type) || el.type === '#text') {
                 if (el === '' || el.text == '') {
                     continue
