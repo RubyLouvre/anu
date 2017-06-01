@@ -329,18 +329,10 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     let newNode = node
     if (newVnode == null) {
         // remove
-        disposeVnode(vnode, node)
-        node
-            .parentNode
-            .removeChild(node)
+        removeVnode(vnode, node);
     } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
-
         // replace
-        disposeVnode(vnode, node)
-        newNode = mountVnode(newVnode, parentContext)
-        node
-            .parentNode
-            .replaceChild(newNode, node)
+        removeVnode(vnode, node, mountVnode(newVnode, parentContext))
     } else if (vnode !== newVnode) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext)
@@ -364,7 +356,25 @@ export function disposeVnode(vnode, node) {
     } else if (vtype === 4) { // destroy stateless component
         disposeStateless(vnode, node)
     }
+  
 }
+
+function removeVnode(vnode, node, newNode){
+    _removeNodes = [];
+    disposeVnode(vnode, node);
+    for(var i=0, l= _removeNodes.length; i< l; i++){
+        if(!(_removeNodes[i] && _removeNodes[i].parentNode)){
+            continue
+        }
+        if(newNode && i === _removeNodes.length -1){
+            _removeNodes[i].parentNode.replaceChild(newNode, _removeNodes[i]);
+        }else{
+            _removeNodes[i].parentNode.removeChild(_removeNodes[i]);
+        }
+    }
+    
+}
+
 
 function disposeElement(vnode, node) {
     var {props} = vnode
@@ -626,16 +636,9 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-    disposeVnode(data.vnode, data.node)    
-    _removeNodes.forEach(function(n, index){
-        try{
-            n.parentNode.removeChild(n);
-        }catch(err){
-            
-        }
-    })
+    removeVnode(data.vnode, data.node)    
+    
 
-    _removeNodes = [];
     // data
     //     .node
     //     .parentNode
