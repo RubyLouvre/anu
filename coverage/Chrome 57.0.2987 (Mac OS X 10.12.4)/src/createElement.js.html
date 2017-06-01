@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/createElement.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> createElement.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>54/54</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">95.65% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>44/46</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>4/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>54/54</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">127×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">211×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">125×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">213×</span>
+<span class="cline-any cline-yes">213×</span>
+<span class="cline-any cline-yes">213×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-yes">338×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">221×</span>
+<span class="cline-any cline-yes">221×</span>
+<span class="cline-any cline-yes">221×</span>
+<span class="cline-any cline-yes">348×</span>
+<span class="cline-any cline-yes">348×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">348×</span>
+<span class="cline-any cline-yes">348×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">343×</span>
+<span class="cline-any cline-yes">167×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">165×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">146×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">146×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">176×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">168×</span>
+<span class="cline-any cline-yes">168×</span>
+<span class="cline-any cline-yes">168×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">221×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {extend} from './util'
+import {getNs} from './browser'
+import {CurrentOwner} from './CurrentOwner'
+&nbsp;
+var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
+/**
+ * 创建虚拟DOM
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} children
+ * @returns
+ */
+export function createElement(type, configs, children) {
+    var props = {}
+    var key = null
+    configs = configs || {}
+    if (configs.key != null) {
+        key = configs.key + ''
+        delete configs.key
+    }
+    extend(props, configs)
+    var c = []
+        .slice
+        .call(arguments, 2)
+    var useEmpty = true
+    if (!c.length) {
+        if (props.children &amp;&amp; props.children.length) {
+            c = props.children
+            useEmpty = false
+        }
+    } else {
+        useEmpty = false
+    }
+    if (useEmpty) {
+        c = shallowEqualHack
+    } else {
+        c = flatChildren(c)
+        delete c.merge //注意这里的顺序
+        Object.freeze(c)
+    }
+    props.children = c
+    Object.freeze(props)
+    return new Vnode(type, props, key, CurrentOwner.cur)
+}
+&nbsp;
+function Vnode(type, props, key, owner) {
+    this.type = type
+    this.props = props
+    var ns = getNs(type)
+    if (ns) {
+        this.ns = ns
+    }
+    this.key = key || null
+    this._owner = owner || null
+}
+&nbsp;
+Vnode.prototype = {
+    getDOMNode: function () {
+        return this.dom || <span class="branch-1 cbranch-no" title="branch not covered" >null</span>
+    },
+    $$typeof: 1
+}
+&nbsp;
+/**
+ * 遍平化children，并合并相邻的简单数据类型
+ *
+ * @param {array} children
+ * @param {any} [ret=[]]
+ * @returns
+ */
+&nbsp;
+function flatChildren(children, ret, deep) {
+    ret = ret || []
+    deep = deep || 0
+    for (var i = children.length; i--;) { //从后向前添加
+        var el = children[i]
+        if (el == null) {
+            el = ''
+        }
+        var type = typeof el
+        if (el === '' || type === 'boolean') {
+            continue
+        }
+        if (/number|string/.test(type) || el.type === '#text') {
+            if (el === '' || el.text == '') {
+                continue
+            }
+            if (ret.merge) {
+                ret[0].text = (el.type
+                    ? el.text
+                    : el) + ret[0].text
+            } else {
+                ret.unshift(el.type
+                    ? <span class="branch-0 cbranch-no" title="branch not covered" >el</span>
+                    : {
+                        type: '#text',
+                        text: String(el),
+                        deep: deep
+                    })
+                ret.merge = true
+            }
+        } else if (Array.isArray(el)) {
+            flatChildren(el, ret, deep + 1)
+        } else {
+            ret.unshift(el)
+            el.deep = deep
+            ret.merge = false
+        }
+&nbsp;
+    }
+    return ret
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon May 08 2017 11:06:22 GMT+0800 (CST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

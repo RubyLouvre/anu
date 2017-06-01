@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/browser.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> browser.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.91% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>40/44</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">78.57% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>22/28</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>6/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.91% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>40/44</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
+    oneObject,
+    recyclables
+} from './util'
+&nbsp;
+&nbsp;
+&nbsp;
+//用于后端的元素节点
+export function DOMElement(type) {
+    this.nodeName = type
+    this.style = {}
+    this.children = []
+}
+var fn = DOMElement.prototype = {
+    contains: Boolean
+}
+String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' +
+    ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' +
+    ',detachEvent').replace(/\w+/g, function (name) {
+    fn[name] = function () {
+        console.log('fire ' + name)
+    }
+})
+&nbsp;
+//用于后端的document
+export var fakeDoc = new DOMElement
+fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
+    return new DOMElement(type)
+}
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean
+fakeDoc.documentElement = new DOMElement('html')
+fakeDoc.nodeName = '#document'
+export var inBrowser = typeof window === 'object' &amp;&amp; window.alert
+&nbsp;
+export var win = inBrowser ?
+    window : <span class="branch-1 cbranch-no" title="branch not covered" >{</span>
+        document: fakeDoc
+    };
+&nbsp;
+export var document = win.document || <span class="branch-1 cbranch-no" title="branch not covered" >fakeDoc</span>
+&nbsp;
+var versions = {
+    objectobject: 7, //IE7-8
+    objectundefined: 6, //IE6
+    undefinedfunction: NaN, // other modern browsers
+    undefinedobject: NaN
+};
+/* istanbul ignore next  */
+export var msie = document.documentMode || versions[typeof document.all + typeof XMLHttpRequest]
+&nbsp;
+export var modern = /NaN|undefined/.test(msie) || <span class="branch-1 cbranch-no" title="branch not covered" >msie &gt; 8</span>
+&nbsp;
+export function createDOMElement(vnode) {
+    var type = vnode.type
+    var node = recyclables[type] &amp;&amp; recyclables[type].pop()
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (node) {
+<span class="cstat-no" title="statement not covered" >        node.nodeValue = vnode.text</span>
+<span class="cstat-no" title="statement not covered" >        return node</span>
+    }
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (type === '#text') {
+<span class="cstat-no" title="statement not covered" >        return document.createTextNode(vnode.text)</span>
+    }
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (type === '#comment') {
+<span class="cstat-no" title="statement not covered" >        return document.createComment(vnode.text)</span>
+    }
+&nbsp;
+    try {
+        if (vnode.ns) {
+            return document.createElementNS(vnode.ns, type)
+        }
+        //eslint-disable-next-line
+    } catch (e) {}
+    return document.createElement(type)
+}
+// https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
+// http://demo.yanue.net/HTML5element/
+var mhtml = {
+    meter: 1,
+    menu: 1,
+    map: 1,
+    meta: 1,
+    mark: 1
+}
+var svgTags = oneObject('' +
+    // structure
+    'svg,g,defs,desc,metadata,symbol,use,' +
+    // image &amp; shape
+    'image,path,rect,circle,line,ellipse,polyline,polygon,' +
+    // text
+    'text,tspan,tref,textpath,' +
+    // other
+    'marker,pattern,clippath,mask,filter,cursor,view,animate,' +
+    // font
+    'font,font-face,glyph,missing-glyph', svgNs)
+&nbsp;
+var rmathTags = /^m/
+var mathNs = 'http://www.w3.org/1998/Math/MathML'
+var svgNs = 'http://www.w3.org/2000/svg'
+var mathTags = {
+    semantics: mathNs
+}
+&nbsp;
+export function getNs(type) {
+    if (svgTags[type]) {
+        return svgNs
+    } else if (mathTags[type]) {
+        return mathNs
+    } else {
+        if (!mhtml[type] &amp;&amp; rmathTags.test(type)) {
+            //eslint-disable-next-line
+            return mathTags[type] = mathNs
+        }
+    }
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Jun 01 2017 16:56:35 GMT+0800 (CST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

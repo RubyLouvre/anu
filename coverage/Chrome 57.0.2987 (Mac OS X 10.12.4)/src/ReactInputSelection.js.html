@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/ReactInputSelection.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> ReactInputSelection.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">22% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>11/50</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">24% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>12/50</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">44.44% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>4/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">22% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>11/50</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">function getActiveElement() {
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (typeof document === 'object') {
+        return document.activeElement
+    }
+}
+&nbsp;
+&nbsp;
+function containsNode(outerNode, innerNode) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    if (!outerNode || !innerNode) {</span>
+<span class="cstat-no" title="statement not covered" >        return false;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (outerNode === innerNode) {</span>
+<span class="cstat-no" title="statement not covered" >        return true;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (outerNode.nodeType === 3) {</span>
+<span class="cstat-no" title="statement not covered" >        return false;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (innerNode.nodeType === 3) {</span>
+<span class="cstat-no" title="statement not covered" >        return containsNode(outerNode, innerNode.parentNode);</span>
+    } else <span class="cstat-no" title="statement not covered" >if ('contains' in outerNode) {</span>
+<span class="cstat-no" title="statement not covered" >        return outerNode.contains(innerNode);</span>
+    } else <span class="cstat-no" title="statement not covered" >if (outerNode.compareDocumentPosition) {</span>
+<span class="cstat-no" title="statement not covered" >        return !!(outerNode.compareDocumentPosition(innerNode) &amp; 16);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        return false;</span>
+    }
+}
+&nbsp;
+function isInDocument(node) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    return containsNode(document.documentElement, node);</span>
+}
+export var  ReactInputSelection = {
+&nbsp;
+    hasSelectionCapabilities: function (elem) {
+        var nodeName = elem &amp;&amp; elem.nodeName &amp;&amp; elem.nodeName.toLowerCase();
+        return nodeName &amp;&amp; (nodeName === 'input' &amp;&amp; elem.type === 'text' || nodeName === 'textarea' || elem.contentEditable === 'true');
+    },
+&nbsp;
+    getSelectionInformation: function () {
+        var focusedElem = getActiveElement();
+        return {
+            focusedElem: focusedElem,
+            selectionRange: ReactInputSelection.hasSelectionCapabilities(focusedElem) ? <span class="branch-0 cbranch-no" title="branch not covered" >ReactInputSelection.getSelection(focusedElem) </span>: null
+        };
+    },
+&nbsp;
+    /**
+     * @restoreSelection: If any selection information was potentially lost,
+     * restore it. This is useful when performing operations that could remove dom
+     * nodes and place them back in, resulting in focus being lost.
+     */
+    restoreSelection: function (priorSelectionInformation) {
+        var curFocusedElem = getActiveElement();
+        var priorFocusedElem = priorSelectionInformation.focusedElem;
+        var priorSelectionRange = priorSelectionInformation.selectionRange;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (curFocusedElem !== priorFocusedElem &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >isInDocument(priorFocusedElem))</span> {
+<span class="cstat-no" title="statement not covered" >            if (ReactInputSelection.hasSelectionCapabilities(priorFocusedElem)) {</span>
+<span class="cstat-no" title="statement not covered" >                ReactInputSelection.setSelection(priorFocusedElem, priorSelectionRange);</span>
+            }
+<span class="cstat-no" title="statement not covered" >            focusNode(priorFocusedElem);</span>
+        }
+    },
+&nbsp;
+    /**
+     * @getSelection: Gets the selection bounds of a focused textarea, input or
+     * contentEditable node.
+     * -@input: Look up selection bounds of this input
+     * -@return {start: selectionStart, end: selectionEnd}
+     */
+    getSelection: function (input) <span class="fstat-no" title="function not covered" >{</span>
+        var selection;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if ('selectionStart' in input) {</span>
+            // Modern browser with input or textarea.
+<span class="cstat-no" title="statement not covered" >            selection = {</span>
+                start: input.selectionStart,
+                end: input.selectionEnd
+            };
+        } else <span class="cstat-no" title="statement not covered" >if (document.selection &amp;&amp; input.nodeName) {</span>
+            // IE8 input.
+            var range = <span class="cstat-no" title="statement not covered" >document.selection.createRange();</span>
+            // There can only be one selection per document in IE, so it must
+            // be in our element.
+<span class="cstat-no" title="statement not covered" >            if (range.parentElement() === input) {</span>
+<span class="cstat-no" title="statement not covered" >                selection = {</span>
+                    start: -range.moveStart('character', -input.value.length),
+                    end: -range.moveEnd('character', -input.value.length)
+                };
+            }
+        }
+<span class="cstat-no" title="statement not covered" >        return selection || {</span>
+            start: 0,
+            end: 0
+        };
+    },
+&nbsp;
+    /**
+     * @setSelection: Sets the selection bounds of a textarea or input and focuses
+     * the input.
+     * -@input     Set selection bounds of this input or textarea
+     * -@offsets   Object of same form that is returned from get*
+     */
+    setSelection: function (input, offsets) <span class="fstat-no" title="function not covered" >{</span>
+        var start = <span class="cstat-no" title="statement not covered" >offsets.start;</span>
+        var end = <span class="cstat-no" title="statement not covered" >offsets.end;</span>
+<span class="cstat-no" title="statement not covered" >        if (end === undefined) {</span>
+<span class="cstat-no" title="statement not covered" >            end = start;</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if ('selectionStart' in input) {</span>
+<span class="cstat-no" title="statement not covered" >            input.selectionStart = start;</span>
+<span class="cstat-no" title="statement not covered" >            input.selectionEnd = Math.min(end, input.value.length);</span>
+        } else <span class="cstat-no" title="statement not covered" >if (document.selection &amp;&amp; input.nodeName) {</span>
+            var range = <span class="cstat-no" title="statement not covered" >input.createTextRange();</span>
+<span class="cstat-no" title="statement not covered" >            range.collapse(true);</span>
+<span class="cstat-no" title="statement not covered" >            range.moveStart('character', start);</span>
+<span class="cstat-no" title="statement not covered" >            range.moveEnd('character', end - start);</span>
+<span class="cstat-no" title="statement not covered" >            range.select();</span>
+        }
+    }
+};
+&nbsp;
+function focusNode(node) <span class="fstat-no" title="function not covered" >{</span>
+    // IE8 can throw "Can't move focus to the control because it is invisible,
+    // not enabled, or of a type that does not accept the focus." for all kinds of
+    // reasons that are too expensive and fragile to test.
+<span class="cstat-no" title="statement not covered" >    try {</span>
+<span class="cstat-no" title="statement not covered" >        node.focus();</span>
+    } catch (e) {}
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 27 2017 18:14:47 GMT+0800 (CST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
