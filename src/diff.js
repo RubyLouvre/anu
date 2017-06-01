@@ -14,6 +14,8 @@ import {
     getComponentProps
 } from './util'
 
+var _removeNodes = [];
+
 import {document, createDOMElement, getNs} from './browser'
 import {processFormElement, postUpdateSelectedOptions} from './ControlledComponent'
 export function render(vnode, container, callback) {
@@ -350,6 +352,9 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
 
 export function disposeVnode(vnode, node) {
     let {vtype} = vnode
+    if(node){
+        _removeNodes.unshift(node);
+    }
     if (!vtype) {
         //   vnode._hostNode = null   vnode._hostParent = null
     } else if (vtype === 1) { // destroy element
@@ -621,11 +626,20 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-    disposeVnode(data.vnode, data.node)
-    data
-        .node
-        .parentNode
-        .removeChild(data.node)
+    disposeVnode(data.vnode, data.node)    
+    _removeNodes.forEach(function(n, index){
+        try{
+            n.parentNode.removeChild(n);
+        }catch(err){
+            
+        }
+    })
+
+    _removeNodes = [];
+    // data
+    //     .node
+    //     .parentNode
+    //     .removeChild(data.node)
     var node = data.node
     var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName))
     if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
