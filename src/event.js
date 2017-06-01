@@ -1,6 +1,13 @@
-import {transaction} from './transaction'
-import {document} from './browser'
-import {isFn, options} from './util'
+import {
+    transaction
+} from './transaction'
+import {
+    document
+} from './browser'
+import {
+    isFn,
+    options
+} from './util'
 
 export var eventMap = {}
 /**
@@ -20,42 +27,42 @@ function dispatchEvent(e) {
     do {
         var events = target.__events
         if (events) {
-            paths.push({dom: target, props: events})
+            paths.push({
+                dom: target,
+                props: events
+            })
         }
     } while ((target = target.parentNode) && target.nodeType === 1)
-
+    // target --> parentNode --> body --> html
     var type = eventMap[e.type] || e.type
 
     var capitalized = capitalize(type)
     var bubble = 'on' + capitalized
     var captured = 'on' + capitalized + 'Capture'
     transaction.isInTransation = true
-    for (var i = paths.length; i--;) { //从上到下
-        var path = paths[i]
-        var fn = path.props[captured]
-        if (isFn(fn)) {
-            e.currentTarget = path._hostNode
-            fn.call(path._hostNode, e)
-            if (e._stopPropagation) {
-                break
-            }
-        }
-    }
+    triggerEventFlow(paths, captured, e)
 
-    for (var i = 0, n = paths.length; i < n; i++) { //从下到上
-        var path = paths[i]
-        var fn = path.props[bubble]
-        if (isFn(fn)) {
-            e.currentTarget = path._hostNode
-            fn.call(path._hostNode, e)
-            if (e._stopPropagation) {
-                break
-            }
-        }
+    if (!e._stopPropagation) {
+        
+        triggerEventFlow(paths.reverse(), bubble, e)
     }
     transaction.isInTransation = false
     options.updateBatchNumber++
-    transaction.dequeue()
+        transaction.dequeue()
+}
+
+function triggerEventFlow(paths, prop, e) {
+    for (var i = paths.length; i--;) { 
+        var path = paths[i]
+        var fn = path.props[prop]
+        if (isFn(fn)) {
+            e.currentTarget = path._hostNode
+            fn.call(path._hostNode, e)
+            if (e._stopPropagation) {
+                break
+            }
+        }
+    }
 }
 
 function capitalize(str) {

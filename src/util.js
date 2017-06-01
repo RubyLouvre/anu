@@ -79,7 +79,7 @@ export function oneObject(array, val) {
         array = array.match(rword) || []
     }
     var result = {},
-    // eslint-disable-line
+     //eslint-disable-next-line
         value = val !== void 666
             ? val
             : 1
