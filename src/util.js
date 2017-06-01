@@ -38,7 +38,7 @@ export function inherit(SubClass, SupClass) {
     fn.constructor = SubClass
 }
 /**
- *  收集一个元素的所有孩子
+ * 收集一个元素的所有孩子
  *
  * @export
  * @param {any} dom
@@ -47,6 +47,7 @@ export function inherit(SubClass, SupClass) {
 export function getNodes(dom) {
     var ret = [],
         c = dom.childNodes || []
+    // eslint-disable-line
     for (var i = 0, el; el = c[i++];) {
         ret.push(el)
     }
@@ -90,7 +91,8 @@ export function oneObject(array, val) {
         array = array.match(rword) || []
     }
     var result = {},
-        value = val !== void 0
+    // eslint-disable-line
+        value = val !== void 666
             ? val
             : 1
     for (var i = 0, n = array.length; i < n; i++) {
@@ -141,6 +143,7 @@ export function getComponentProps(type, props) {
     var defaultProps = type.defaultProps
     props = extend({}, props) //注意，上面传下来的props已经被冻结，无法修改，需要先复制一份
     for (var i in defaultProps) {
+        // eslint-disable-line
         if (props[i] === void 666) {
             props[i] = defaultProps[i]
         }
