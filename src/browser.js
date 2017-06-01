@@ -68,7 +68,7 @@ export function createDOMElement(vnode) {
         if (vnode.ns) {
             return document.createElementNS(vnode.ns, type)
         }
-        // eslint-disable-line
+        //eslint-disable-next-line
     } catch (e) {}
     return document.createElement(type)
 }
@@ -107,7 +107,7 @@ export function getNs(type) {
         return mathNs
     } else {
         if (!mhtml[type] && rmathTags.test(type)) {
-            // eslint-disable-line
+            //eslint-disable-next-line
             return mathTags[type] = mathNs
         }
     }

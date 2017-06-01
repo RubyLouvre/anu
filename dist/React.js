@@ -76,7 +76,7 @@
 	    }
 	    var result = {},
 
-	    // eslint-disable-line
+	    //eslint-disable-next-line
 	    value = val !== void 666 ? val : 1;
 	    for (var i = 0, n = array.length; i < n; i++) {
 	        result[array[i]] = value;
@@ -673,7 +673,7 @@
 	        if (vnode.ns) {
 	            return document.createElementNS(vnode.ns, type);
 	        }
-	        // eslint-disable-line
+	        //eslint-disable-next-line
 	    } catch (e) {}
 	    return document.createElement(type);
 	}
@@ -712,7 +712,7 @@
 	        return mathNs;
 	    } else {
 	        if (!mhtml[type] && rmathTags.test(type)) {
-	            // eslint-disable-line
+	            //eslint-disable-next-line
 	            return mathTags[type] = mathNs;
 	        }
 	    }
@@ -797,44 +797,42 @@
 	    do {
 	        var events = target.__events;
 	        if (events) {
-	            paths.push({ dom: target, props: events });
+	            paths.push({
+	                dom: target,
+	                props: events
+	            });
 	        }
 	    } while ((target = target.parentNode) && target.nodeType === 1);
-
+	    // target --> parentNode --> body --> html
 	    var type = eventMap[e.type] || e.type;
 
 	    var capitalized = capitalize(type);
 	    var bubble = 'on' + capitalized;
 	    var captured = 'on' + capitalized + 'Capture';
 	    transaction.isInTransation = true;
-	    for (var i = paths.length; i--;) {
-	        //从上到下
-	        var path = paths[i];
-	        var fn = path.props[captured];
-	        if (isFn(fn)) {
-	            e.currentTarget = path._hostNode;
-	            fn.call(path._hostNode, e);
-	            if (e._stopPropagation) {
-	                break;
-	            }
-	        }
-	    }
+	    triggerEventFlow(paths, captured, e);
 
-	    for (var i = 0, n = paths.length; i < n; i++) {
-	        //从下到上
-	        var path = paths[i];
-	        var fn = path.props[bubble];
-	        if (isFn(fn)) {
-	            e.currentTarget = path._hostNode;
-	            fn.call(path._hostNode, e);
-	            if (e._stopPropagation) {
-	                break;
-	            }
-	        }
+	    if (!e._stopPropagation) {
+
+	        triggerEventFlow(paths.reverse(), bubble, e);
 	    }
 	    transaction.isInTransation = false;
 	    options.updateBatchNumber++;
 	    transaction.dequeue();
+	}
+
+	function triggerEventFlow(paths, prop, e) {
+	    for (var i = paths.length; i--;) {
+	        var path = paths[i];
+	        var fn = path.props[prop];
+	        if (isFn(fn)) {
+	            e.currentTarget = path._hostNode;
+	            fn.call(path._hostNode, e);
+	            if (e._stopPropagation) {
+	                break;
+	            }
+	        }
+	    }
 	}
 
 	function capitalize(str) {
@@ -1270,6 +1268,8 @@
 	    dom.selected = selected;
 	}
 
+	var _removeNodes = [];
+
 	function render(vnode, container, callback) {
 	    return updateView(vnode, container, callback, {});
 	}
@@ -1606,6 +1606,9 @@
 	function disposeVnode(vnode, node) {
 	    var vtype = vnode.vtype;
 
+	    if (node) {
+	        _removeNodes.unshift(node);
+	    }
 	    if (!vtype) {
 	        //   vnode._hostNode = null   vnode._hostParent = null
 	    } else if (vtype === 1) {
@@ -1870,7 +1873,17 @@
 
 	function applyDestroy(data) {
 	    disposeVnode(data.vnode, data.node);
-	    data.node.parentNode.removeChild(data.node);
+	    _removeNodes.forEach(function (n, index) {
+	        try {
+	            n.parentNode.removeChild(n);
+	        } catch (err) {}
+	    });
+
+	    _removeNodes = [];
+	    // data
+	    //     .node
+	    //     .parentNode
+	    //     .removeChild(data.node)
 	    var node = data.node;
 	    var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
 	    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {

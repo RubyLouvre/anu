@@ -1,0 +1,2186 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/diff.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> diff.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">1.52% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>5/330</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/175</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/31</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">1.52% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>5/330</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
+    diffProps
+} from './diffProps'
+import {
+    CurrentOwner
+} from './CurrentOwner'
+&nbsp;
+import {
+    getChildContext,
+    HTML_KEY,
+    options,
+    noop,
+    extend,
+    getNodes,
+    checkNull,
+    recyclables,
+    toLowerCase,
+    getComponentProps
+} from './util'
+&nbsp;
+import {
+    document,
+    createDOMElement,
+    getNs
+} from './browser'
+import {
+    setControlledComponent
+} from './ControlledComponent'
+export function render(vnode, container, callback) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    return updateView(vnode, container, callback, {})</span>
+}
+&nbsp;
+function updateView(vnode, container, callback, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    if (!vnode.vtype) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new Error(`${vnode}必须为组件或元素节点`)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    if (!container || container.nodeType !== 1) {</span>
+<span class="cstat-no" title="statement not covered" >        throw new Error(`${container}必须为元素节点`)</span>
+    }
+    var prevVnode = <span class="cstat-no" title="statement not covered" >container._component,</span>
+        rootNode,
+        hostParent = <span class="cstat-no" title="statement not covered" >{</span>
+            _hostNode: container
+        }
+<span class="cstat-no" title="statement not covered" >    if (!prevVnode) {</span>
+&nbsp;
+        var nodes = <span class="cstat-no" title="statement not covered" >getNodes(container)</span>
+        var prevRendered = <span class="cstat-no" title="statement not covered" >null;</span>
+<span class="cstat-no" title="statement not covered" >        for (var i = 0, el; el = nodes[i++];) {</span>
+<span class="cstat-no" title="statement not covered" >            if (el.getAttribute &amp;&amp; el.getAttribute('data-reactroot') !== null) {</span>
+<span class="cstat-no" title="statement not covered" >                hostNode = el</span>
+<span class="cstat-no" title="statement not covered" >                prevRendered = el</span>
+&nbsp;
+            } else {
+<span class="cstat-no" title="statement not covered" >                el</span>
+                    .parentNode
+                    .removeChild(el)
+            }
+        }
+<span class="cstat-no" title="statement not covered" >        vnode._hostParent = hostParent</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        rootNode = mountVnode(vnode, parentContext, prevRendered)</span>
+<span class="cstat-no" title="statement not covered" >        container.appendChild(rootNode)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (readyComponents.length) {</span>
+<span class="cstat-no" title="statement not covered" >            fireMount()</span>
+        }
+    } else {
+<span class="cstat-no" title="statement not covered" >        rootNode = alignVnodes(prevVnode, vnode, container.firstChild, parentContext)</span>
+    }
+    // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
+    // 并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (rootNode.setAttribute) {</span>
+<span class="cstat-no" title="statement not covered" >        rootNode.setAttribute('data-reactroot', '')</span>
+    }
+&nbsp;
+    var instance = <span class="cstat-no" title="statement not covered" >vnode._instance</span>
+<span class="cstat-no" title="statement not covered" >    container._component = vnode</span>
+<span class="cstat-no" title="statement not covered" >    delete vnode._prevRendered</span>
+<span class="cstat-no" title="statement not covered" >    if (callback) {</span>
+<span class="cstat-no" title="statement not covered" >        callback()</span>
+    }
+<span class="cstat-no" title="statement not covered" >    if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点</span>
+        //   instance._currentElement._hostParent = hostParent
+<span class="cstat-no" title="statement not covered" >        return instance</span>
+&nbsp;
+    } else {
+<span class="cstat-no" title="statement not covered" >        return rootNode</span>
+    }
+&nbsp;
+}
+&nbsp;
+export function mountVnode(vnode, parentContext, prevRendered) <span class="fstat-no" title="function not covered" >{</span>
+    let {
+        vtype
+    } = <span class="cstat-no" title="statement not covered" >vnode</span>
+    let node = <span class="cstat-no" title="statement not covered" >null</span>
+<span class="cstat-no" title="statement not covered" >    if (!vtype) { // init text comment</span>
+<span class="cstat-no" title="statement not covered" >        node = prevRendered &amp;&amp; prevRendered.nodeName === vnode.type ?</span>
+            prevRendered :
+            createDOMElement(vnode)
+<span class="cstat-no" title="statement not covered" >        vnode._hostNode = node</span>
+<span class="cstat-no" title="statement not covered" >        return node</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (vtype === 1) { // mount element</span>
+<span class="cstat-no" title="statement not covered" >        node = mountElement(vnode, parentContext, prevRendered)</span>
+    } else <span class="cstat-no" title="statement not covered" >if (vtype === 2) { // mount stateful component</span>
+<span class="cstat-no" title="statement not covered" >        node = mountComponent(vnode, parentContext, prevRendered)</span>
+    } else <span class="cstat-no" title="statement not covered" >if (vtype === 4) { // mount stateless component</span>
+<span class="cstat-no" title="statement not covered" >        node = mountStateless(vnode, parentContext, prevRendered)</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return node</span>
+}
+var formElements = {
+    select: 1,
+    textarea: 1,
+    input: 1
+}
+&nbsp;
+function mountElement(vnode, parentContext, prevRendered) <span class="fstat-no" title="function not covered" >{</span>
+    let {
+        type,
+        props
+    } = <span class="cstat-no" title="statement not covered" >vnode,</span>
+    dom
+<span class="cstat-no" title="statement not covered" >    if (prevRendered &amp;&amp; toLowerCase(prevRendered.nodeName) === type) {</span>
+<span class="cstat-no" title="statement not covered" >        dom = prevRendered</span>
+    } else {
+        var ns = <span class="cstat-no" title="statement not covered" >getNs(type)</span>
+<span class="cstat-no" title="statement not covered" >        if (ns) {</span>
+<span class="cstat-no" title="statement not covered" >            vnode.ns = ns</span>
+        }
+<span class="cstat-no" title="statement not covered" >        dom = createDOMElement(vnode)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    vnode._hostNode = dom</span>
+<span class="cstat-no" title="statement not covered" >    if (prevRendered) {</span>
+<span class="cstat-no" title="statement not covered" >        alignChildren(vnode, dom, parentContext, prevRendered.childNodes)</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        mountChildren(vnode, dom, parentContext)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    vnode.checkProps &amp;&amp; diffProps(props, {}, vnode, {}, dom)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (vnode.__ref) {</span>
+<span class="cstat-no" title="statement not covered" >        readyComponents</span>
+            .push(function () <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >                vnode.__ref(dom)</span>
+            })
+    }
+<span class="cstat-no" title="statement not covered" >    if (formElements[type]) {</span>
+<span class="cstat-no" title="statement not covered" >        setControlledComponent(vnode)</span>
+<span class="cstat-no" title="statement not covered" >        if (type === 'select') {</span>
+<span class="cstat-no" title="statement not covered" >            vnode</span>
+                ._wrapperState
+                .postUpdate(vnode)
+&nbsp;
+        }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+var readyComponents = []
+&nbsp;
+//将虚拟DOM转换为真实DOM并插入父元素
+function mountChildren(vnode, parentNode, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    var children = <span class="cstat-no" title="statement not covered" >vnode.props.children</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (let i = 0, n = children.length; i &lt; n; i++) {</span>
+        let el = <span class="cstat-no" title="statement not covered" >children[i]</span>
+<span class="cstat-no" title="statement not covered" >        el._hostParent = vnode</span>
+<span class="cstat-no" title="statement not covered" >        parentNode.appendChild(mountVnode(el, parentContext))</span>
+    }
+&nbsp;
+}
+&nbsp;
+function alignChildren(vnode, parentNode, parentContext, childNodes) <span class="fstat-no" title="function not covered" >{</span>
+    var children = <span class="cstat-no" title="statement not covered" >vnode.props.children,</span>
+        insertPoint = <span class="cstat-no" title="statement not covered" >childNodes[0] || null,</span>
+        j = <span class="cstat-no" title="statement not covered" >0</span>
+<span class="cstat-no" title="statement not covered" >    for (let i = 0, n = children.length; i &lt; n; i++) {</span>
+        let el = <span class="cstat-no" title="statement not covered" >children[i]</span>
+<span class="cstat-no" title="statement not covered" >        el._hostParent = vnode</span>
+        var prevDom = <span class="cstat-no" title="statement not covered" >childNodes[j]</span>
+        var dom = <span class="cstat-no" title="statement not covered" >mountVnode(el, parentContext, prevDom)</span>
+<span class="cstat-no" title="statement not covered" >        if (dom === prevDom) {</span>
+<span class="cstat-no" title="statement not covered" >            j++</span>
+        }
+<span class="cstat-no" title="statement not covered" >        parentNode.insertBefore(dom, insertPoint)</span>
+<span class="cstat-no" title="statement not covered" >        insertPoint = dom.nextSibling</span>
+    }
+&nbsp;
+}
+&nbsp;
+function fireMount() <span class="fstat-no" title="function not covered" >{</span>
+    var queue = <span class="cstat-no" title="statement not covered" >readyComponents.concat()</span>
+<span class="cstat-no" title="statement not covered" >    readyComponents.length = 0</span>
+<span class="cstat-no" title="statement not covered" >    for (var i = 0, cb; cb = queue[i++];) {</span>
+<span class="cstat-no" title="statement not covered" >        cb()</span>
+    }
+}
+&nbsp;
+var instanceMap = new Map()
+&nbsp;
+function mountComponent(vnode, parentContext, prevRendered) <span class="fstat-no" title="function not covered" >{</span>
+    let {
+        type,
+        props
+    } = <span class="cstat-no" title="statement not covered" >vnode</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    props = getComponentProps(type, props)</span>
+&nbsp;
+    let instance = <span class="cstat-no" title="statement not covered" >new type(props, parentContext) </span>//互相持有引用
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    vnode._instance = instance</span>
+<span class="cstat-no" title="statement not covered" >    instance._currentElement = vnode</span>
+<span class="cstat-no" title="statement not covered" >    instance.props = instance.props || props</span>
+<span class="cstat-no" title="statement not covered" >    instance.context = instance.context || parentContext</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (instance.componentWillMount) {</span>
+<span class="cstat-no" title="statement not covered" >        instance.componentWillMount()</span>
+    }
+    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
+    // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
+    // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
+&nbsp;
+    let rendered = <span class="cstat-no" title="statement not covered" >safeRenderComponent(instance)</span>
+<span class="cstat-no" title="statement not covered" >    instance._rendered = rendered</span>
+<span class="cstat-no" title="statement not covered" >    rendered._hostParent = vnode._hostParent</span>
+<span class="cstat-no" title="statement not covered" >    if (instance.componentDidMount) {</span>
+<span class="cstat-no" title="statement not covered" >        readyComponents</span>
+            .push(function () <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >                instance.componentDidMount()</span>
+            })
+    }
+<span class="cstat-no" title="statement not covered" >    if (vnode.__ref) {</span>
+<span class="cstat-no" title="statement not covered" >        readyComponents</span>
+            .push(function () <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >                vnode.__ref(instance)</span>
+            })
+    }
+    let dom = <span class="cstat-no" title="statement not covered" >mountVnode(rendered, getChildContext(instance, parentContext), prevRendered)</span>
+<span class="cstat-no" title="statement not covered" >    instanceMap.set(instance, dom)</span>
+<span class="cstat-no" title="statement not covered" >    vnode._hostNode = dom</span>
+    //vnode._instance._rendered._hostNode === node
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+export function safeRenderComponent(instance) <span class="fstat-no" title="function not covered" >{</span>
+&nbsp;
+    //  instance.setState = instance.forceUpdate = noop   try {
+<span class="cstat-no" title="statement not covered" >    CurrentOwner.cur = instance</span>
+    var rendered = <span class="cstat-no" title="statement not covered" >instance.render()</span>
+<span class="cstat-no" title="statement not covered" >    rendered = checkNull(rendered)</span>
+    //  } finally {
+<span class="cstat-no" title="statement not covered" >    CurrentOwner.cur = null</span>
+    //      delete instance.setState      delete instance.forceUpdate  }
+<span class="cstat-no" title="statement not covered" >    return rendered</span>
+}
+&nbsp;
+function mountStateless(vnode, parentContext, prevRendered) <span class="fstat-no" title="function not covered" >{</span>
+    var {
+        type,
+        props
+    } = <span class="cstat-no" title="statement not covered" >vnode</span>
+<span class="cstat-no" title="statement not covered" >    props = getComponentProps(type, props)</span>
+&nbsp;
+    let rendered = <span class="cstat-no" title="statement not covered" >type(props, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >    rendered = checkNull(rendered)</span>
+&nbsp;
+    let dom = <span class="cstat-no" title="statement not covered" >mountVnode(rendered, parentContext, prevRendered)</span>
+<span class="cstat-no" title="statement not covered" >    vnode._instance = {</span>
+        _currentElement: vnode,
+        _rendered: rendered
+    }
+<span class="cstat-no" title="statement not covered" >    vnode._hostNode = dom</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    rendered._hostParent = vnode._hostParent</span>
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+&nbsp;
+}
+&nbsp;
+function updateStateless(lastVnode, nextVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    var instance = <span class="cstat-no" title="statement not covered" >lastVnode._instance</span>
+    let vnode = <span class="cstat-no" title="statement not covered" >instance._rendered</span>
+&nbsp;
+    let newVnode = <span class="cstat-no" title="statement not covered" >nextVnode.type(nextVnode.props, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >    newVnode = checkNull(newVnode)</span>
+&nbsp;
+    let dom = <span class="cstat-no" title="statement not covered" >alignVnodes(vnode, newVnode, node, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >    nextVnode._instance = instance</span>
+<span class="cstat-no" title="statement not covered" >    instance._rendered = newVnode</span>
+<span class="cstat-no" title="statement not covered" >    nextVnode._hostNode = dom</span>
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+&nbsp;
+function disposeStateless(vnode, node) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    disposeVnode(vnode._instance._rendered, node)</span>
+}
+&nbsp;
+//将Component中这个东西移动这里
+options.immune.refreshComponent = function refreshComponent(instance) <span class="fstat-no" title="function not covered" >{ //这里触发视图更新</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    reRenderComponent(instance)</span>
+<span class="cstat-no" title="statement not covered" >    instance._forceUpdate = false</span>
+<span class="cstat-no" title="statement not covered" >    if (readyComponents.length) {</span>
+<span class="cstat-no" title="statement not covered" >        fireMount()</span>
+    }
+}
+&nbsp;
+function reRenderComponent(instance) <span class="fstat-no" title="function not covered" >{ // instance._currentElement</span>
+&nbsp;
+    var {
+        props,
+        state,
+        context,
+        lastProps
+    } = <span class="cstat-no" title="statement not covered" >instance</span>
+    var lastRendered = <span class="cstat-no" title="statement not covered" >instance._rendered</span>
+    var node = <span class="cstat-no" title="statement not covered" >instanceMap.get(instance)</span>
+&nbsp;
+    var hostParent = <span class="cstat-no" title="statement not covered" >lastRendered._hostParent</span>
+    var nextProps = <span class="cstat-no" title="statement not covered" >props</span>
+<span class="cstat-no" title="statement not covered" >    lastProps = lastProps || props</span>
+    var nextState = <span class="cstat-no" title="statement not covered" >instance._processPendingState(props, context)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    instance.props = lastProps</span>
+<span class="cstat-no" title="statement not covered" >    delete instance.lastProps</span>
+    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
+<span class="cstat-no" title="statement not covered" >    if (!instance._forceUpdate &amp;&amp;</span>
+        instance.shouldComponentUpdate &amp;&amp;
+        instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
+<span class="cstat-no" title="statement not covered" >        return node </span>//注意
+    }
+    //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
+<span class="cstat-no" title="statement not covered" >    if (instance.componentWillUpdate) {</span>
+<span class="cstat-no" title="statement not covered" >        instance.componentWillUpdate(nextProps, nextState, context)</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    instance.props = nextProps</span>
+<span class="cstat-no" title="statement not covered" >    instance.state = nextState</span>
+<span class="cstat-no" title="statement not covered" >    delete instance._updateBatchNumber</span>
+&nbsp;
+    var rendered = <span class="cstat-no" title="statement not covered" >safeRenderComponent(instance)</span>
+    var childContext = <span class="cstat-no" title="statement not covered" >getChildContext(instance, context)</span>
+<span class="cstat-no" title="statement not covered" >    instance._rendered = rendered</span>
+<span class="cstat-no" title="statement not covered" >    rendered._hostParent = hostParent</span>
+&nbsp;
+    var dom = <span class="cstat-no" title="statement not covered" >alignVnodes(lastRendered, rendered, node, childContext)</span>
+<span class="cstat-no" title="statement not covered" >    instanceMap.set(instance, dom)</span>
+<span class="cstat-no" title="statement not covered" >    instance._currentElement._hostNode = dom</span>
+<span class="cstat-no" title="statement not covered" >    if (instance.componentDidUpdate) {</span>
+<span class="cstat-no" title="statement not covered" >        instance.componentDidUpdate(nextProps, nextState, context)</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+&nbsp;
+export function alignVnodes(vnode, newVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    let newNode = <span class="cstat-no" title="statement not covered" >node</span>
+<span class="cstat-no" title="statement not covered" >    if (newVnode == null) {</span>
+        // remove
+<span class="cstat-no" title="statement not covered" >        disposeVnode(vnode, node)</span>
+<span class="cstat-no" title="statement not covered" >        node</span>
+            .parentNode
+            .removeChild(node)
+    } else <span class="cstat-no" title="statement not covered" >if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {</span>
+&nbsp;
+        // replace
+<span class="cstat-no" title="statement not covered" >        disposeVnode(vnode, node)</span>
+<span class="cstat-no" title="statement not covered" >        newNode = mountVnode(newVnode, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >        node</span>
+            .parentNode
+            .replaceChild(newNode, node)
+    } else <span class="cstat-no" title="statement not covered" >if (vnode !== newVnode) {</span>
+        // same type and same key -&gt; update
+<span class="cstat-no" title="statement not covered" >        newNode = updateVnode(vnode, newVnode, node, parentContext)</span>
+    }
+    // else if (vnode._prevRendered) {
+    //    newNode = updateVnode(vnode, newVnode, node, parentContext)
+    // }
+<span class="cstat-no" title="statement not covered" >    return newNode</span>
+}
+&nbsp;
+export function disposeVnode(vnode, node) <span class="fstat-no" title="function not covered" >{</span>
+    let {
+        vtype
+    } = <span class="cstat-no" title="statement not covered" >vnode</span>
+<span class="cstat-no" title="statement not covered" >    if (!vtype) {</span>
+        //   vnode._hostNode = null   vnode._hostParent = null
+    } else <span class="cstat-no" title="statement not covered" >if (vtype === 1) { // destroy element</span>
+<span class="cstat-no" title="statement not covered" >        disposeElement(vnode, node)</span>
+    } else <span class="cstat-no" title="statement not covered" >if (vtype === 2) { // destroy state component</span>
+<span class="cstat-no" title="statement not covered" >        disposeComponent(vnode, node)</span>
+    } else <span class="cstat-no" title="statement not covered" >if (vtype === 4) { // destroy stateless component</span>
+<span class="cstat-no" title="statement not covered" >        disposeStateless(vnode, node)</span>
+    }
+}
+&nbsp;
+function disposeElement(vnode, node) <span class="fstat-no" title="function not covered" >{</span>
+    var {
+        props
+    } = <span class="cstat-no" title="statement not covered" >vnode</span>
+    var children = <span class="cstat-no" title="statement not covered" >props.children</span>
+    var childNodes = <span class="cstat-no" title="statement not covered" >node.childNodes</span>
+<span class="cstat-no" title="statement not covered" >    for (let i = 0, len = children.length; i &lt; len; i++) {</span>
+<span class="cstat-no" title="statement not covered" >        disposeVnode(children[i], childNodes[i])</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    vnode.__ref &amp;&amp; vnode.__ref(null)</span>
+<span class="cstat-no" title="statement not covered" >    vnode._hostNode = null</span>
+<span class="cstat-no" title="statement not covered" >    vnode._hostParent = null</span>
+}
+&nbsp;
+function disposeComponent(vnode, node) <span class="fstat-no" title="function not covered" >{</span>
+    var instance = <span class="cstat-no" title="statement not covered" >vnode._instance</span>
+<span class="cstat-no" title="statement not covered" >    if (instance) {</span>
+<span class="cstat-no" title="statement not covered" >        instanceMap.delete(instance)</span>
+<span class="cstat-no" title="statement not covered" >        if (instance.componentWillUnmount) {</span>
+<span class="cstat-no" title="statement not covered" >            instance.componentWillUnmount()</span>
+        }
+<span class="cstat-no" title="statement not covered" >        vnode._instance = instance._currentElement = instance.props = null</span>
+<span class="cstat-no" title="statement not covered" >        disposeVnode(instance._rendered, node)</span>
+    }
+}
+&nbsp;
+function updateVnode(lastVnode, nextVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    let {
+        vtype,
+        props
+    } = <span class="cstat-no" title="statement not covered" >lastVnode</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (vtype === 2) {</span>
+        //类型肯定相同的
+<span class="cstat-no" title="statement not covered" >        return updateVcomponent(lastVnode, nextVnode, node, parentContext)</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (vtype === 4) {</span>
+<span class="cstat-no" title="statement not covered" >        return updateStateless(lastVnode, nextVnode, node, parentContext)</span>
+    }
+&nbsp;
+    // ignore VCOMMENT and other vtypes
+<span class="cstat-no" title="statement not covered" >    if (vtype !== 1) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return node</span>
+    }
+&nbsp;
+    var nextProps = <span class="cstat-no" title="statement not covered" >nextVnode.props</span>
+<span class="cstat-no" title="statement not covered" >    if (props[HTML_KEY]) {</span>
+<span class="cstat-no" title="statement not covered" >        while (node.firstChild) {</span>
+<span class="cstat-no" title="statement not covered" >            node.removeChild(node.firstChild)</span>
+        }
+<span class="cstat-no" title="statement not covered" >        updateElement(lastVnode, nextVnode, node, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >        mountChildren(nextVnode, node, parentContext)</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        if (nextProps[HTML_KEY]) {</span>
+<span class="cstat-no" title="statement not covered" >            node.innerHTML = nextProps[HTML_KEY].__html</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            updateChildren(lastVnode, nextVnode, node, parentContext)</span>
+        }
+<span class="cstat-no" title="statement not covered" >        updateElement(lastVnode, nextVnode, node, parentContext)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return node</span>
+}
+/**
+ *
+ *
+ * @param {any} lastVnode
+ * @param {any} nextVnode
+ * @param {any} dom
+ * @returns
+ */
+function updateElement(lastVnode, nextVnode, dom) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    nextVnode._hostNode = dom</span>
+<span class="cstat-no" title="statement not covered" >    if (lastVnode.checkProps || nextVnode.checkProps) {</span>
+<span class="cstat-no" title="statement not covered" >        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    if (nextVnode._wrapperState) {</span>
+<span class="cstat-no" title="statement not covered" >        nextVnode</span>
+            ._wrapperState
+            .postUpdate(nextVnode)
+    }
+<span class="cstat-no" title="statement not covered" >    if (nextVnode.__ref) {</span>
+<span class="cstat-no" title="statement not covered" >        readyComponents</span>
+            .push(function () <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >                nextVnode.__ref(nextVnode._hostNode)</span>
+            })
+    }
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+&nbsp;
+function updateVcomponent(lastVnode, nextVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    var instance = <span class="cstat-no" title="statement not covered" >nextVnode._instance = lastVnode._instance</span>
+    var nextProps = <span class="cstat-no" title="statement not covered" >nextVnode.props</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (instance.componentWillReceiveProps) {</span>
+<span class="cstat-no" title="statement not covered" >        instance.componentWillReceiveProps(nextProps, parentContext)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    instance.lastProps = instance.props</span>
+<span class="cstat-no" title="statement not covered" >    instance.props = nextProps</span>
+<span class="cstat-no" title="statement not covered" >    instance.context = parentContext</span>
+<span class="cstat-no" title="statement not covered" >    if (nextVnode.__ref) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        nextVnode</span>
+            .push(function () <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >                nextVnode.__ref(instance)</span>
+            })
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return reRenderComponent(instance)</span>
+}
+&nbsp;
+function updateChildren(vnode, newVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    if (vnode._prevRendered) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return</span>
+    }
+    let patches = <span class="cstat-no" title="statement not covered" >{</span>
+        removes: [],
+        updates: [],
+        creates: []
+    }
+<span class="cstat-no" title="statement not covered" >    diffChildren(patches, vnode, newVnode, node, parentContext)</span>
+<span class="cstat-no" title="statement not covered" >    patches</span>
+        .removes
+        .forEach(applyDestroy)
+<span class="cstat-no" title="statement not covered" >    patches</span>
+        .updates
+        .forEach(applyUpdate)
+<span class="cstat-no" title="statement not covered" >    patches</span>
+        .creates
+        .forEach(applyCreate)
+}
+&nbsp;
+function diffChildren(patches, vnode, newVnode, node, parentContext) <span class="fstat-no" title="function not covered" >{</span>
+    let children = <span class="cstat-no" title="statement not covered" >vnode.props.children</span>
+    let childNodes = <span class="cstat-no" title="statement not covered" >node.childNodes</span>
+    let newVchildren = <span class="cstat-no" title="statement not covered" >newVnode.props.children</span>
+    let childrenLen = <span class="cstat-no" title="statement not covered" >children.length</span>
+    let newVchildrenLen = <span class="cstat-no" title="statement not covered" >newVchildren.length</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (childrenLen === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        if (newVchildrenLen &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >            for (let i = 0; i &lt; newVchildrenLen; i++) {</span>
+<span class="cstat-no" title="statement not covered" >                patches</span>
+                    .creates
+                    .push({
+                        vnode: newVchildren[i],
+                        parentNode: node,
+                        parentContext: parentContext,
+                        index: i
+                    })
+            }
+        }
+<span class="cstat-no" title="statement not covered" >        return</span>
+    } else <span class="cstat-no" title="statement not covered" >if (newVchildrenLen === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        for (let i = 0; i &lt; childrenLen; i++) {</span>
+<span class="cstat-no" title="statement not covered" >            patches</span>
+                .removes
+                .push({
+                    vnode: children[i],
+                    node: childNodes[i]
+                })
+        }
+<span class="cstat-no" title="statement not covered" >        return</span>
+    }
+&nbsp;
+    let updates = <span class="cstat-no" title="statement not covered" >Array(newVchildrenLen)</span>
+    let removes = <span class="cstat-no" title="statement not covered" >null</span>
+    let creates = <span class="cstat-no" title="statement not covered" >null</span>
+    // isEqual
+<span class="cstat-no" title="statement not covered" >    for (let i = 0; i &lt; childrenLen; i++) {</span>
+        let vnode = <span class="cstat-no" title="statement not covered" >children[i]</span>
+<span class="cstat-no" title="statement not covered" >        for (let j = 0; j &lt; newVchildrenLen; j++) {</span>
+<span class="cstat-no" title="statement not covered" >            if (updates[j]) {</span>
+<span class="cstat-no" title="statement not covered" >                continue</span>
+            }
+            let newVnode = <span class="cstat-no" title="statement not covered" >newVchildren[j]</span>
+<span class="cstat-no" title="statement not covered" >            if (vnode === newVnode) {</span>
+<span class="cstat-no" title="statement not covered" >                updates[j] = {</span>
+                    shouldIgnore: true,
+                    vnode: vnode,
+                    newVnode: newVnode,
+                    node: childNodes[i],
+                    parentContext: parentContext,
+                    index: j
+                }
+<span class="cstat-no" title="statement not covered" >                children[i] = null</span>
+<span class="cstat-no" title="statement not covered" >                break</span>
+            }
+        }
+    }
+&nbsp;
+    // isSimilar
+<span class="cstat-no" title="statement not covered" >    for (let i = 0; i &lt; childrenLen; i++) {</span>
+        let vnode = <span class="cstat-no" title="statement not covered" >children[i]</span>
+<span class="cstat-no" title="statement not covered" >        if (vnode === null) {</span>
+<span class="cstat-no" title="statement not covered" >            continue</span>
+        }
+        let shouldRemove = <span class="cstat-no" title="statement not covered" >true</span>
+<span class="cstat-no" title="statement not covered" >        for (let j = 0; j &lt; newVchildrenLen; j++) {</span>
+<span class="cstat-no" title="statement not covered" >            if (updates[j]) {</span>
+<span class="cstat-no" title="statement not covered" >                continue</span>
+            }
+            let newVnode = <span class="cstat-no" title="statement not covered" >newVchildren[j]</span>
+<span class="cstat-no" title="statement not covered" >            if (newVnode.type === vnode.type &amp;&amp; newVnode.key === vnode.key) {</span>
+<span class="cstat-no" title="statement not covered" >                updates[j] = {</span>
+                    vnode: vnode,
+                    newVnode: newVnode,
+                    node: childNodes[i],
+                    parentContext: parentContext,
+                    index: j
+                }
+<span class="cstat-no" title="statement not covered" >                shouldRemove = false</span>
+<span class="cstat-no" title="statement not covered" >                break</span>
+            }
+        }
+<span class="cstat-no" title="statement not covered" >        if (shouldRemove) {</span>
+<span class="cstat-no" title="statement not covered" >            if (!removes) {</span>
+<span class="cstat-no" title="statement not covered" >                removes = []</span>
+            }
+<span class="cstat-no" title="statement not covered" >            removes.push({</span>
+                vnode: vnode,
+                node: childNodes[i]
+            })
+        }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (let i = 0; i &lt; newVchildrenLen; i++) {</span>
+        let item = <span class="cstat-no" title="statement not covered" >updates[i]</span>
+<span class="cstat-no" title="statement not covered" >        if (!item) {</span>
+<span class="cstat-no" title="statement not covered" >            if (!creates) {</span>
+<span class="cstat-no" title="statement not covered" >                creates = []</span>
+            }
+<span class="cstat-no" title="statement not covered" >            creates.push({</span>
+                vnode: newVchildren[i],
+                parentNode: node,
+                parentContext: parentContext,
+                index: i
+            })
+        } else <span class="cstat-no" title="statement not covered" >if (item.vnode.vtype === 1) {</span>
+<span class="cstat-no" title="statement not covered" >            diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext)</span>
+        }
+    }
+<span class="cstat-no" title="statement not covered" >    if (removes) {</span>
+<span class="cstat-no" title="statement not covered" >        __push.apply(patches.removes, removes)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    if (creates) {</span>
+<span class="cstat-no" title="statement not covered" >        __push.apply(patches.creates, creates)</span>
+    }
+<span class="cstat-no" title="statement not covered" >    __push.apply(patches.updates, updates)</span>
+}
+var __push = Array.prototype.push
+&nbsp;
+function applyUpdate(data) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    if (!data) {</span>
+<span class="cstat-no" title="statement not covered" >        return</span>
+    }
+    let vnode = <span class="cstat-no" title="statement not covered" >data.vnode</span>
+    let nextVnode = <span class="cstat-no" title="statement not covered" >data.newVnode</span>
+    let dom = <span class="cstat-no" title="statement not covered" >data.node</span>
+&nbsp;
+    // update
+<span class="cstat-no" title="statement not covered" >    if (!data.shouldIgnore) {</span>
+<span class="cstat-no" title="statement not covered" >        if (!vnode.vtype) {</span>
+<span class="cstat-no" title="statement not covered" >            if (vnode.text !== nextVnode.text) {</span>
+<span class="cstat-no" title="statement not covered" >                dom.nodeValue = nextVnode.text</span>
+            }
+        } else <span class="cstat-no" title="statement not covered" >if (vnode.vtype === 1) {</span>
+<span class="cstat-no" title="statement not covered" >            updateElement(vnode, nextVnode, dom, data.parentContext)</span>
+        } else <span class="cstat-no" title="statement not covered" >if (vnode.vtype === 4) {</span>
+<span class="cstat-no" title="statement not covered" >            dom = updateStateless(vnode, nextVnode, dom, data.parentContext)</span>
+        } else <span class="cstat-no" title="statement not covered" >if (vnode.vtype === 2) {</span>
+<span class="cstat-no" title="statement not covered" >            dom = updateVcomponent(vnode, nextVnode, dom, data.parentContext)</span>
+        }
+    }
+    // re-order
+    let currentNode = <span class="cstat-no" title="statement not covered" >dom.parentNode.childNodes[data.index]</span>
+<span class="cstat-no" title="statement not covered" >    if (currentNode !== dom) {</span>
+<span class="cstat-no" title="statement not covered" >        dom</span>
+            .parentNode
+            .insertBefore(dom, currentNode)
+    }
+<span class="cstat-no" title="statement not covered" >    return dom</span>
+}
+&nbsp;
+function applyDestroy(data) <span class="fstat-no" title="function not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    disposeVnode(data.vnode, data.node)</span>
+<span class="cstat-no" title="statement not covered" >    data</span>
+        .node
+        .parentNode
+        .removeChild(data.node)
+    var node = <span class="cstat-no" title="statement not covered" >data.node</span>
+    var nodeName = <span class="cstat-no" title="statement not covered" >node.__n || (node.__n = toLowerCase(node.nodeName))</span>
+<span class="cstat-no" title="statement not covered" >    if (recyclables[nodeName] &amp;&amp; recyclables[nodeName].length &lt; 72) {</span>
+<span class="cstat-no" title="statement not covered" >        recyclables[nodeName].push(node)</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        recyclables[nodeName] = [node]</span>
+    }
+}
+&nbsp;
+function applyCreate(data) <span class="fstat-no" title="function not covered" >{</span>
+    let node = <span class="cstat-no" title="statement not covered" >mountVnode(data.vnode, data.parentContext)</span>
+<span class="cstat-no" title="statement not covered" >    data</span>
+        .parentNode
+        .insertBefore(node, data.parentNode.childNodes[data.index])
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed May 31 2017 15:09:52 GMT+0800 (CST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
