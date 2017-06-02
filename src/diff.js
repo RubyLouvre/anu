@@ -331,8 +331,11 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
         // remove
         removeVnode(vnode, node);
     } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
-        // replace
-        removeVnode(vnode, node, mountVnode(newVnode, parentContext))
+
+        //replace
+        newNode = mountVnode(newVnode, parentContext)
+        removeVnode(vnode, node, newNode)
+
     } else if (vnode !== newVnode) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext)
@@ -340,6 +343,23 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     // else if (vnode._prevRendered) {    newNode = updateVnode(vnode, newVnode,
     // node, parentContext) }
     return newNode
+}
+
+function removeVnode(vnode, node, newNode){
+    _removeNodes = [];
+    disposeVnode(vnode, node);
+    for(var i=0, l= _removeNodes.length; i< l; i++){
+        let _node = _removeNodes[i], _nodeParent = _node.parentNode;
+        if(!(_node && _nodeParent)){
+            continue
+        }
+        if(newNode && i === l -1){
+            _nodeParent.replaceChild(newNode, _node);
+        }else{
+            _nodeParent.removeChild(_node);
+        }
+    }
+    
 }
 
 export function disposeVnode(vnode, node) {
@@ -356,25 +376,7 @@ export function disposeVnode(vnode, node) {
     } else if (vtype === 4) { // destroy stateless component
         disposeStateless(vnode, node)
     }
-  
 }
-
-function removeVnode(vnode, node, newNode){
-    _removeNodes = [];
-    disposeVnode(vnode, node);
-    for(var i=0, l= _removeNodes.length; i< l; i++){
-        if(!(_removeNodes[i] && _removeNodes[i].parentNode)){
-            continue
-        }
-        if(newNode && i === _removeNodes.length -1){
-            _removeNodes[i].parentNode.replaceChild(newNode, _removeNodes[i]);
-        }else{
-            _removeNodes[i].parentNode.removeChild(_removeNodes[i]);
-        }
-    }
-    
-}
-
 
 function disposeElement(vnode, node) {
     var {props} = vnode
@@ -638,7 +640,6 @@ function applyUpdate(data) {
 function applyDestroy(data) {
     removeVnode(data.vnode, data.node)    
     
-
     // data
     //     .node
     //     .parentNode
