@@ -49,7 +49,7 @@ export function createElement(type, configs) {
         c.push(arguments[i])
     }
 
-    if (!c.length && pChildren && pChildren) {
+    if (!c.length && pChildren && pChildren.length) {
         c = pChildren
     }
 
