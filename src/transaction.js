@@ -15,7 +15,6 @@ export var transaction = {
     },
     dequeue: function (recursion) {
 
-        // if (!this.isInTransation) {
         this.isInTransation = true
         var globalBatchNumber = options.updateBatchNumber
         var renderQueue = queue
@@ -44,6 +43,5 @@ export var transaction = {
         if (queue.length) {
             this.dequeue() //用于递归调用自身)
         }
-        //     }
     }
 }

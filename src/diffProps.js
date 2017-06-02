@@ -82,7 +82,8 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         let val = nextProps[name]
         switch (name) {
             case 'children':
-                //  case 'key':  case 'ref':
+                //  case 'key': 
+                //  case 'ref':
                 break
             case 'className':
                 if (isHTML) {

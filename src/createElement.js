@@ -22,9 +22,9 @@ export function createElement(type, configs) {
         ref = null,
         pChildren = null, //位于props中的children
         vtype = 1,
-        typeType = typeof type,
         isEmptyProps = true
     if (configs) {
+        // eslint-disable-next-line
         for (let i in configs) {
             var val = configs[i]
             switch (i) {
@@ -52,7 +52,7 @@ export function createElement(type, configs) {
     }
     var children = flattenChildren(stack)
 
-    if (typeType === 'function') {
+    if (typeof type === 'function') {
         vtype = type.prototype && type.prototype.render ?
             2 :
             4
@@ -74,6 +74,7 @@ function flattenChildren(stack) {
                 stack.push(child[i])
             }
         } else {
+            // eslint-disable-next-line
             if (child === null || child === void 666 || child === false || child === true) {
                 continue
             }
