@@ -5,7 +5,6 @@ import {
     CurrentOwner
 } from './CurrentOwner'
 
-const shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
 const stack = [];
 const EMPTY_CHILDREN = [];
 /**
@@ -24,29 +23,26 @@ export function createElement(type, configs) {
         pChildren = null, //位于props中的children
         vtype = 1,
         typeType = typeof type,
-
         isEmptyProps = true
     if (configs) {
         for (let i in configs) {
             var val = configs[i]
-            if (i === 'key') {
-                key = val
-            } else if (i === 'ref') {
-                ref = val
-            } else if (i === 'children') {
-                pChildren = val
-            } else {
-                isEmptyProps = false
-                props[i] = val
+            switch (i) {
+                case 'key':
+                    key = val
+                    break
+                case 'ref':
+                    ref = val
+                    break
+                case 'children':
+                    pChildren = val
+                    break
+                default:
+                    isEmptyProps = false
+                    props[i] = val
             }
         }
     }
-    if (typeType === 'function') {
-        vtype = type.prototype && type.prototype.render ?
-            2 :
-            4
-    }
-
     for (let i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i])
     }
@@ -56,16 +52,21 @@ export function createElement(type, configs) {
     }
     var children = flattenChildren(stack)
 
-    if (children !== EMPTY_CHILDREN) {
+    if (typeType === 'function') {
+        vtype = type.prototype && type.prototype.render ?
+            2 :
+            4
+        if (children.length)
+            props.children = children
+    } else {
         props.children = children
-    } else if (vtype === 1) {
-        props.children = shallowEqualHack
     }
+
     return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
 }
 
 function flattenChildren(stack) {
-    var lastText, child, text, children = EMPTY_CHILDREN
+    var lastText, child, children = EMPTY_CHILDREN
     while (stack.length) {
         //比较巧妙地判定是否为子数组
         if ((child = stack.pop()) && child.pop !== undefined) {
@@ -78,32 +79,29 @@ function flattenChildren(stack) {
             }
             var childType = typeof child
             if (childType !== 'object') {
-                text = true
+                if (lastText) {
+                    lastText.text = child + lastText.text
+                    continue
+                }
                 child = child + ''
                 childType = 'string'
-            } else {
-                text = child.type === '#text'
-
             }
 
-            if (text && lastText) {
-                lastText.text = child + lastText.text
+            if (childType === 'string') {
+                child = {
+                    type: '#text',
+                    text: child
+                }
+                lastText = child
             } else {
-                if (childType === 'string') {
-                    child = {
-                        type: '#text',
-                        text: child
-                    }
-                    lastText = child
-                } else {
-                    lastText = null
-                }
-                if (children === EMPTY_CHILDREN) {
-                    children = [child];
-                } else {
-                    children.unshift(child);
-                }
+                lastText = null
             }
+            if (children === EMPTY_CHILDREN) {
+                children = [child];
+            } else {
+                children.unshift(child);
+            }
+
         }
     }
     return children

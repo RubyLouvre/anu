@@ -259,7 +259,6 @@
 	  };
 	}();
 
-	var shallowEqualHack = Object.freeze([]); //用于绕过shallowEqual
 	var stack = [];
 	var EMPTY_CHILDREN = [];
 	/**
@@ -283,22 +282,22 @@
 	    if (configs) {
 	        for (var i in configs) {
 	            var val = configs[i];
-	            if (i === 'key') {
-	                key = val;
-	            } else if (i === 'ref') {
-	                ref = val;
-	            } else if (i === 'children') {
-	                pChildren = val;
-	            } else {
-	                isEmptyProps = false;
-	                props[i] = val;
+	            switch (i) {
+	                case 'key':
+	                    key = val;
+	                    break;
+	                case 'ref':
+	                    ref = val;
+	                    break;
+	                case 'children':
+	                    pChildren = val;
+	                    break;
+	                default:
+	                    isEmptyProps = false;
+	                    props[i] = val;
 	            }
 	        }
 	    }
-	    if (typeType === 'function') {
-	        vtype = type.prototype && type.prototype.render ? 2 : 4;
-	    }
-
 	    for (var _i = 2, n = arguments.length; _i < n; _i++) {
 	        stack.push(arguments[_i]);
 	    }
@@ -308,18 +307,19 @@
 	    }
 	    var children = flattenChildren(stack);
 
-	    if (children !== EMPTY_CHILDREN) {
+	    if (typeType === 'function') {
+	        vtype = type.prototype && type.prototype.render ? 2 : 4;
+	        if (children.length) props.children = children;
+	    } else {
 	        props.children = children;
-	    } else if (vtype === 1) {
-	        props.children = shallowEqualHack;
 	    }
+
 	    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps);
 	}
 
 	function flattenChildren(stack) {
 	    var lastText,
 	        child,
-	        text,
 	        children = EMPTY_CHILDREN;
 	    while (stack.length) {
 	        //比较巧妙地判定是否为子数组
@@ -333,30 +333,27 @@
 	            }
 	            var childType = typeof child === 'undefined' ? 'undefined' : _typeof(child);
 	            if (childType !== 'object') {
-	                text = true;
+	                if (lastText) {
+	                    lastText.text = child + lastText.text;
+	                    continue;
+	                }
 	                child = child + '';
 	                childType = 'string';
-	            } else {
-	                text = child.type === '#text';
 	            }
 
-	            if (text && lastText) {
-	                lastText.text = child + lastText.text;
+	            if (childType === 'string') {
+	                child = {
+	                    type: '#text',
+	                    text: child
+	                };
+	                lastText = child;
 	            } else {
-	                if (childType === 'string') {
-	                    child = {
-	                        type: '#text',
-	                        text: child
-	                    };
-	                    lastText = child;
-	                } else {
-	                    lastText = null;
-	                }
-	                if (children === EMPTY_CHILDREN) {
-	                    children = [child];
-	                } else {
-	                    children.unshift(child);
-	                }
+	                lastText = null;
+	            }
+	            if (children === EMPTY_CHILDREN) {
+	                children = [child];
+	            } else {
+	                children.unshift(child);
 	            }
 	        }
 	    }
