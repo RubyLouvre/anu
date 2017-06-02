@@ -24,10 +24,11 @@ npm install anujs
 1. 支持React的无狀态组件，纯组件，高阶组件，受控组件与非受控组件，
 2. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
 3. 体积足够少
-4. 生命周期函数的参数与官方保持一致
-5. 直接与react-redux, react-router-dom, react-router-redux混用
-6. 支持[后端渲染](https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
-6. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
+4. 性能是官方React的近**两倍**或更高（https://github.com/RubyLouvre/anu/blob/master/pref/index.html）[相关图片统计](https://github.com/RubyLouvre/anu/issues/10#issuecomment-305694971)
+5. 生命周期函数的参数与官方保持一致
+6. 直接与react-redux, react-router-dom, react-router-redux混用
+7. 支持[后端渲染](https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
+8. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
 
 
@@ -46,6 +47,7 @@ npm install anujs
 2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
 3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
 4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
+5. [es6-Map](https://github.com/medikoo/es6-map/blob/master/polyfill.js)
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
 

@@ -205,7 +205,7 @@ var shallowEqualHack = Object.freeze([] //用于绕过shallowEqual
         c.push(arguments[i]);
     }
 
-    if (!c.length && pChildren && pChildren) {
+    if (!c.length && pChildren && pChildren.length) {
         c = pChildren;
     }
 
@@ -1487,10 +1487,9 @@ function reRenderComponent(instance) {
 function alignVnodes(vnode, newVnode, node, parentContext) {
     var newNode = node;
     if (newVnode == null) {
-        // remove
-        removeVnode(vnode, node);
+        disposeVnode(vnode, node);
+        node.parentNode.removeChild(node);
     } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
-
         //replace
         newNode = mountVnode(newVnode, parentContext);
         removeVnode(vnode, node, newNode);
@@ -1498,8 +1497,7 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext);
     }
-    // else if (vnode._prevRendered) {    newNode = updateVnode(vnode, newVnode,
-    // node, parentContext) }
+
     return newNode;
 }
 
@@ -1527,7 +1525,8 @@ function disposeVnode(vnode, node) {
         _removeNodes.unshift(node);
     }
     if (!vtype) {
-        //   vnode._hostNode = null   vnode._hostParent = null
+        vnode._hostNode = null;
+        vnode._hostParent = null;
     } else if (vtype === 1) {
         // destroy element
         disposeElement(vnode, node);
@@ -1673,13 +1672,21 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (var i = 0; i < newVchildrenLen; i++) {
-                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
+                patches.creates.push({
+                    vnode: newVchildren[i],
+                    parentNode: node,
+                    parentContext: parentContext,
+                    index: i
+                });
             }
         }
         return;
     } else if (newVchildrenLen === 0) {
         for (var _i = 0; _i < childrenLen; _i++) {
-            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
+            patches.removes.push({
+                vnode: children[_i],
+                node: childNodes[_i]
+            });
         }
         return;
     }
@@ -1735,7 +1742,10 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
+            removes.push({
+                vnode: _vnode2,
+                node: childNodes[_i3]
+            });
         }
     }
 
@@ -1743,7 +1753,12 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         var item = updates[_i4];
         if (!item) {
 
-            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
+            creates.push({
+                vnode: newVchildren[_i4],
+                parentNode: node,
+                parentContext: parentContext,
+                index: _i4
+            });
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
         }
@@ -1789,13 +1804,8 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-    removeVnode(data.vnode, data.node
-
-    // data
-    //     .node
-    //     .parentNode
-    //     .removeChild(data.node)
-    );var node = data.node;
+    removeVnode(data.vnode, data.node);
+    var node = data.node;
     var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
     if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
         recyclables[nodeName].push(node);

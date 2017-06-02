@@ -49,7 +49,7 @@ export function createElement(type, configs) {
         c.push(arguments[i])
     }
 
-    if (!c.length && pChildren && pChildren) {
+    if (!c.length && pChildren && pChildren.length) {
         c = pChildren
     }
 
@@ -129,7 +129,7 @@ function flatChildren(children, ret, deep) {
     deep = deep || 0
     for (var i = children.length; i--;) { //从后向前添加
         var el = children[i]
-        if (el === undefined || el === null || el === false || el === true) {
+         if (el === undefined || el === null || el === false || el === true) {
             continue
         }
         var type = typeof el
@@ -144,8 +144,7 @@ function flatChildren(children, ret, deep) {
                     el) + ret[0].text
             } else {
                 ret.unshift(el.type ?
-                    el :
-                    {
+                    el : {
                         type: '#text',
                         text: String(el),
                         _deep: deep
