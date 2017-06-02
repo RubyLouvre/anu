@@ -269,8 +269,8 @@
 	 * @returns
 	 */
 	function createElement(type, configs) {
-	    var props = {};
-	    var key = null,
+	    var props = {},
+	        key = null,
 	        ref = null,
 	        pChildren = null,
 	        //位于props中的children
@@ -368,12 +368,12 @@
 	};
 	// 如果是组件的虚拟DOM，如果它
 	/**
-	* 遍平化children，并合并相邻的简单数据类型
-	*
-	* @param {array} children
-	* @param {any} [ret=[]]
-	* @returns
-	*/
+	 * 遍平化children，并合并相邻的简单数据类型
+	 *
+	 * @param {array} children
+	 * @param {any} [ret=[]]
+	 * @returns
+	 */
 
 	function flatChildren(children, ret, deep) {
 	    ret = ret || [];
@@ -381,13 +381,11 @@
 	    for (var i = children.length; i--;) {
 	        //从后向前添加
 	        var el = children[i];
-	        if (el == null) {
-	            el = '';
-	        }
-	        var type = typeof el === 'undefined' ? 'undefined' : _typeof(el);
-	        if (el === '' || type === 'boolean') {
+	        if (el === undefined || el === null || el === false || el === true) {
 	            continue;
 	        }
+	        var type = typeof el === 'undefined' ? 'undefined' : _typeof(el);
+
 	        if (/number|string/.test(type) || el.type === '#text') {
 	            if (el === '' || el.text == '') {
 	                continue;
@@ -523,6 +521,7 @@
 	        instance._updateBatchNumber = options.updateBatchNumber + 1;
 	    }
 	    transaction.queueComponent(instance);
+
 	    if (!transaction.isInTransation) {
 	        options.updateBatchNumber++;
 	        transaction.dequeue();
@@ -1585,12 +1584,10 @@
 	function alignVnodes(vnode, newVnode, node, parentContext) {
 	    var newNode = node;
 	    if (newVnode == null) {
-	        // remove
 	        disposeVnode(vnode, node);
 	        node.parentNode.removeChild(node);
 	    } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
-
-	        // replace
+	        //replace
 	        disposeVnode(vnode, node);
 	        newNode = mountVnode(newVnode, parentContext);
 	        node.parentNode.replaceChild(newNode, node);
@@ -1598,8 +1595,7 @@
 	        // same type and same key -> update
 	        newNode = updateVnode(vnode, newVnode, node, parentContext);
 	    }
-	    // else if (vnode._prevRendered) {    newNode = updateVnode(vnode, newVnode,
-	    // node, parentContext) }
+
 	    return newNode;
 	}
 
@@ -1610,7 +1606,8 @@
 	        _removeNodes.unshift(node);
 	    }
 	    if (!vtype) {
-	        //   vnode._hostNode = null   vnode._hostParent = null
+	        vnode._hostNode = null;
+	        vnode._hostParent = null;
 	    } else if (vtype === 1) {
 	        // destroy element
 	        disposeElement(vnode, node);
@@ -1756,13 +1753,21 @@
 	    if (childrenLen === 0) {
 	        if (newVchildrenLen > 0) {
 	            for (var i = 0; i < newVchildrenLen; i++) {
-	                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
+	                patches.creates.push({
+	                    vnode: newVchildren[i],
+	                    parentNode: node,
+	                    parentContext: parentContext,
+	                    index: i
+	                });
 	            }
 	        }
 	        return;
 	    } else if (newVchildrenLen === 0) {
 	        for (var _i = 0; _i < childrenLen; _i++) {
-	            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
+	            patches.removes.push({
+	                vnode: children[_i],
+	                node: childNodes[_i]
+	            });
 	        }
 	        return;
 	    }
@@ -1818,7 +1823,10 @@
 	            }
 	        }
 	        if (shouldRemove) {
-	            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
+	            removes.push({
+	                vnode: _vnode2,
+	                node: childNodes[_i3]
+	            });
 	        }
 	    }
 
@@ -1826,7 +1834,12 @@
 	        var item = updates[_i4];
 	        if (!item) {
 
-	            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
+	            creates.push({
+	                vnode: newVchildren[_i4],
+	                parentNode: node,
+	                parentContext: parentContext,
+	                index: _i4
+	            });
 	        } else if (item.vnode.vtype === 1) {
 	            diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
 	        }
@@ -1880,10 +1893,6 @@
 	    });
 
 	    _removeNodes = [];
-	    // data
-	    //     .node
-	    //     .parentNode
-	    //     .removeChild(data.node)
 	    var node = data.node;
 	    var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
 	    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
