@@ -20,9 +20,12 @@ export function createElement(type, configs) {
     var props = {},
         key = null,
         ref = null,
-        pChildren = null, //位于props中的children
         vtype = 1,
         isEmptyProps = true
+
+    for (let i = 2, n = arguments.length; i < n; i++) {
+        stack.push(arguments[i])
+    }
     if (configs) {
         // eslint-disable-next-line
         for (let i in configs) {
@@ -35,7 +38,9 @@ export function createElement(type, configs) {
                     ref = val
                     break
                 case 'children':
-                    pChildren = val
+                    if (!stack.length && val && val.length) {
+                        stack.push(val)
+                    }
                     break
                 default:
                     isEmptyProps = false
@@ -43,13 +48,8 @@ export function createElement(type, configs) {
             }
         }
     }
-    for (let i = 2, n = arguments.length; i < n; i++) {
-        stack.push(arguments[i])
-    }
 
-    if (!stack.length && pChildren && pChildren.length) {
-        stack.push(pChildren)
-    }
+
     var children = flattenChildren(stack)
 
     if (typeof type === 'function') {
@@ -79,19 +79,14 @@ function flattenChildren(stack) {
                 continue
             }
             var childType = typeof child
-            if (childType !== 'object') {
+            if (childType !== 'object') { //不是对象就是字符串或数字
                 if (lastText) {
                     lastText.text = child + lastText.text
                     continue
                 }
-                child = child + ''
-                childType = 'string'
-            }
-
-            if (childType === 'string') {
                 child = {
                     type: '#text',
-                    text: child
+                    text: child + ''
                 }
                 lastText = child
             } else {

@@ -274,15 +274,17 @@
 	    var props = {},
 	        key = null,
 	        ref = null,
-	        pChildren = null,
-	        //位于props中的children
-	    vtype = 1,
-	        typeType = typeof type === 'undefined' ? 'undefined' : _typeof(type),
+	        vtype = 1,
 	        isEmptyProps = true;
+
+	    for (var i = 2, n = arguments.length; i < n; i++) {
+	        stack.push(arguments[i]);
+	    }
 	    if (configs) {
-	        for (var i in configs) {
-	            var val = configs[i];
-	            switch (i) {
+	        // eslint-disable-next-line
+	        for (var _i in configs) {
+	            var val = configs[_i];
+	            switch (_i) {
 	                case 'key':
 	                    key = val;
 	                    break;
@@ -290,24 +292,20 @@
 	                    ref = val;
 	                    break;
 	                case 'children':
-	                    pChildren = val;
+	                    if (!stack.length && val && val.length) {
+	                        stack.push(val);
+	                    }
 	                    break;
 	                default:
 	                    isEmptyProps = false;
-	                    props[i] = val;
+	                    props[_i] = val;
 	            }
 	        }
 	    }
-	    for (var _i = 2, n = arguments.length; _i < n; _i++) {
-	        stack.push(arguments[_i]);
-	    }
 
-	    if (!stack.length && pChildren && pChildren.length) {
-	        stack.push(pChildren);
-	    }
 	    var children = flattenChildren(stack);
 
-	    if (typeType === 'function') {
+	    if (typeof type === 'function') {
 	        vtype = type.prototype && type.prototype.render ? 2 : 4;
 	        if (children.length) props.children = children;
 	    } else {
@@ -328,23 +326,20 @@
 	                stack.push(child[i]);
 	            }
 	        } else {
+	            // eslint-disable-next-line
 	            if (child === null || child === void 666 || child === false || child === true) {
 	                continue;
 	            }
 	            var childType = typeof child === 'undefined' ? 'undefined' : _typeof(child);
 	            if (childType !== 'object') {
+	                //不是对象就是字符串或数字
 	                if (lastText) {
 	                    lastText.text = child + lastText.text;
 	                    continue;
 	                }
-	                child = child + '';
-	                childType = 'string';
-	            }
-
-	            if (childType === 'string') {
 	                child = {
 	                    type: '#text',
-	                    text: child
+	                    text: child + ''
 	                };
 	                lastText = child;
 	            } else {
@@ -424,7 +419,6 @@
 	    },
 	    dequeue: function dequeue(recursion) {
 
-	        // if (!this.isInTransation) {
 	        this.isInTransation = true;
 	        var globalBatchNumber = options.updateBatchNumber;
 	        var renderQueue = queue;
@@ -451,7 +445,6 @@
 	        if (queue.length) {
 	            this.dequeue(); //用于递归调用自身)
 	        }
-	        //     }
 	    }
 	};
 
@@ -971,7 +964,8 @@
 	        var val = nextProps[name];
 	        switch (name) {
 	            case 'children':
-	                //  case 'key':  case 'ref':
+	                //  case 'key': 
+	                //  case 'ref':
 	                break;
 	            case 'className':
 	                if (isHTML) {
