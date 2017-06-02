@@ -27,7 +27,7 @@ export function createElement(type, configs) {
 
         isEmptyProps = true
     if (configs) {
-        for (var i in configs) {
+        for (let i in configs) {
             var val = configs[i]
             if (i === 'key') {
                 key = val
@@ -47,19 +47,29 @@ export function createElement(type, configs) {
             4
     }
 
-    for (var i = 2, n = arguments.length; i < n; i++) {
+    for (let i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i])
     }
 
     if (!stack.length && pChildren && pChildren.length) {
         stack.push(pChildren)
     }
+    var children = flattenChildren(stack)
 
-    var lastText, child, text, i, children = EMPTY_CHILDREN
+    if (children !== EMPTY_CHILDREN) {
+        props.children = children
+    } else if (vtype === 1) {
+        props.children = shallowEqualHack
+    }
+    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
+}
+
+function flattenChildren(stack) {
+    var lastText, child, text, children = EMPTY_CHILDREN
     while (stack.length) {
         //比较巧妙地判定是否为子数组
         if ((child = stack.pop()) && child.pop !== undefined) {
-            for (i = 0; i < child.length; i++) {
+            for (let i = 0; i < child.length; i++) {
                 stack.push(child[i])
             }
         } else {
@@ -96,12 +106,7 @@ export function createElement(type, configs) {
             }
         }
     }
-    if (children !== EMPTY_CHILDREN) {
-        props.children = children
-    } else if (vtype === 1) {
-        props.children = shallowEqualHack
-    }
-    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
+    return children
 }
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
