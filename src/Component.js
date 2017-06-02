@@ -79,8 +79,10 @@ function setStateProxy(instance, cb) {
         instance._updateBatchNumber = options.updateBatchNumber + 1
     }
     transaction.queueComponent(instance)
-    if(!transaction.isInTransation){
-        options.updateBatchNumber++
+
+    if (!transaction.isInTransation) {
+        options.updateBatchNumber++;
         transaction.dequeue()
     }
+
 }
