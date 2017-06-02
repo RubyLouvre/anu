@@ -129,13 +129,11 @@ function flatChildren(children, ret, deep) {
     deep = deep || 0
     for (var i = children.length; i--;) { //从后向前添加
         var el = children[i]
-        if (el == null) {
-            el = ''
-        }
-        var type = typeof el
-        if (el === '' || type === 'boolean') {
+        if (el === undefined || el === null || el === false || el === true) {
             continue
         }
+        var type = typeof el
+
         if (/number|string/.test(type) || el.type === '#text') {
             if (el === '' || el.text == '') {
                 continue
@@ -146,7 +144,8 @@ function flatChildren(children, ret, deep) {
                     el) + ret[0].text
             } else {
                 ret.unshift(el.type ?
-                    el : {
+                    el :
+                    {
                         type: '#text',
                         text: String(el),
                         _deep: deep

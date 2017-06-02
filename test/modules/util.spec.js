@@ -2,19 +2,18 @@ import {
     oneObject,
     extend,
     isFn,
-    isStateless,
     toLowerCase,
     inherit,
     camelize,
-    getInstances,
-    getNodes
+    getNodes,
+    getChildContext
 } from 'src/util'
 import {
     isEventName
 } from 'src/event'
-describe('util', function() {
+describe('util', function () {
 
-    it('oneObject', function() {
+    it('oneObject', function () {
 
         expect(oneObject('aa,bb,cc')).toEqual({
             aa: 1,
@@ -28,20 +27,25 @@ describe('util', function() {
             3: false
         })
     })
-    it('extend', function() {
+    it('extend', function () {
 
-        expect(extend({}, { a: 1, b: 2 })).toEqual({
+        expect(extend({}, {
+            a: 1,
+            b: 2
+        })).toEqual({
             a: 1,
             b: 2
         })
-        expect(extend({ a: 1 }, null)).toEqual({
+        expect(extend({
+            a: 1
+        }, null)).toEqual({
             a: 1
         })
 
     })
 
 
-    it('isFn', function() {
+    it('isFn', function () {
         expect(isFn('sss')).toBe(false)
         expect(isFn(function a() {})).toBe(true)
 
@@ -69,37 +73,46 @@ describe('util', function() {
         expect(a instanceof B).toBe(true)
     })
 
-    it('camelize', function() {
+    it('camelize', function () {
 
         expect(typeof camelize).toBe('function')
         expect(camelize('aaa-bbb-ccc')).toBe('aaaBbbCcc')
         expect(camelize('aaa_bbb_ccc')).toBe('aaaBbbCcc')
         expect(camelize('')).toBe('')
     })
-    it('getInstances', () => {
-        var a = {}
-        var b = {}
-        var c = {}
-        a.parentInstance = b
-        b.parentInstance = c
-        var arr = getInstances(a)
-        expect(arr.length).toBe(3)
-    })
+
     it('getNodes', () => {
-       var dom = {childNodes:[{},{},{}]}
-       expect(getNodes(dom).length).toBe(3)
+        var dom = {
+            childNodes: [{}, {}, {}]
+        }
+        expect(getNodes(dom).length).toBe(3)
+    })
+    it('getChildContext', () => {
+        var instance = {
+            getChildContext: function () {
+                return {
+                    a: 1
+                }
+            }
+        }
+        var b = getChildContext(instance, {
+            b: 4
+        })
+        expect(b).toEqual({
+            a: 1,
+            b: 4
+        })
     })
 
-  /*  it('matchInstance', () => {
-        var A = function() {}
-        var a = new A
-       
-        var C = function() {}
-        var c = { statelessRender: C }
-       
-        expect(matchInstance(a, A)).toBe(a)
-        expect(matchInstance(c, C)).toBe(c)
-    })
-    */
+    /*  it('matchInstance', () => {
+          var A = function() {}
+          var a = new A
+         
+          var C = function() {}
+          var c = { statelessRender: C }
+         
+          expect(matchInstance(a, A)).toBe(a)
+          expect(matchInstance(c, C)).toBe(c)
+      })
+      */
 })
-
