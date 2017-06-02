@@ -361,17 +361,31 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
             .removeChild(node)
     } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
         //replace
-        disposeVnode(vnode, node)
         newNode = mountVnode(newVnode, parentContext)
-        node
-            .parentNode
-            .replaceChild(newNode, node)
+        removeVnode(vnode, node, newNode)
     } else if (vnode !== newVnode) {
         // same type and same key -> update
         newNode = updateVnode(vnode, newVnode, node, parentContext)
     }
 
     return newNode
+}
+
+function removeVnode(vnode, node, newNode){
+    _removeNodes = [];
+    disposeVnode(vnode, node);
+    for(var i=0, l= _removeNodes.length; i< l; i++){
+        let _node = _removeNodes[i], _nodeParent = _node.parentNode;
+        if(!(_node && _nodeParent)){
+            continue
+        }
+        if(newNode && i === l -1){
+            _nodeParent.replaceChild(newNode, _node);
+        }else{
+            _nodeParent.removeChild(_node);
+        }
+    }
+    
 }
 
 export function disposeVnode(vnode, node) {
@@ -391,10 +405,7 @@ export function disposeVnode(vnode, node) {
     } else if (vtype === 4) { // destroy stateless component
         disposeStateless(vnode, node)
     }
-
 }
-
-
 
 
 function disposeElement(vnode, node) {
@@ -678,16 +689,7 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-    disposeVnode(data.vnode, data.node)    
-    _removeNodes.forEach(function (n, index) {
-        try {
-            n.parentNode.removeChild(n);
-        } catch (err) {
-
-        }
-    })
-
-    _removeNodes = [];
+    removeVnode(data.vnode, data.node)    
     var node = data.node
     var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName))
     if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
