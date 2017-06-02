@@ -1,11 +1,11 @@
-(function(global) {
+(function (global) {
     'use strict';
     if (!global.console) {
         global.console = {};
     }
     var con = global.console;
     var prop, method;
-    var dummy = function() {};
+    var dummy = function () {};
     var properties = ['memory'];
     var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
         'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
@@ -14,9 +14,9 @@
         if (!con[prop]) con[prop] = {};
     while (method = methods.pop())
         if (!con[method]) con[method] = dummy;
-        // Using `this` for web workers & supports Browserify / Webpack.
+    // Using `this` for web workers & supports Browserify / Webpack.
 
-        //https://github.com/flowersinthesand/stringifyJSON/blob/master/stringifyjson.js
+    //https://github.com/flowersinthesand/stringifyJSON/blob/master/stringifyjson.js
     if (typeof JSON === 'undefined') {
 
 
@@ -34,7 +34,7 @@
             };
 
         function quote(string) {
-            return '"' + string.replace(escapable, function(a) {
+            return '"' + string.replace(escapable, function (a) {
                 var c = meta[a];
                 return typeof c === "string" ? c : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
             }) + '"';
@@ -97,11 +97,13 @@
 
 
         global.JSON = {
-            stringify: function(value) {
-                return str("", { "": value });
+            stringify: function (value) {
+                return str("", {
+                    "": value
+                });
             },
             //http://www.cnblogs.com/fengzekun/p/3940918.html
-            parse: function() {
+            parse: function () {
                 return (new Function('return ' + data))()
             }
         }
@@ -110,7 +112,7 @@
     //https://github.com/ryanhefner/Object.assign/blob/master/index.js
     if (typeof Object.assign != 'function') {
 
-        Object.assign = function(target) {
+        Object.assign = function (target) {
             if (target === undefined || target === null) {
                 throw new TypeError('Cannot convert undefined or null to object');
             }
@@ -131,9 +133,63 @@
     }
     var toString = {}.toString;
 
-    Array.isArray || (Array.isArray = function(arr) {
+    Array.isArray || (Array.isArray = function (arr) {
         return toString.call(arr) == '[object Array]';
     });
+
+
+    function Map() {
+        this.map = {}
+    }
+
+    function tos(a) {
+        return Object.prototype.toString.call(a).slice(8, -1)
+    }
+
+    var idN = 1
+
+    function getID(a) {
+        var _type = typeof a
+        var complex = a && _type === 'object'
+        if (complex) {
+            if (a.nodeType) {
+                if (a.uniqueID) {
+                    return 'Node' + a.uniqueID
+                }
+                if (!a.uniqueID) {
+                    a.uniqueID = "_" + (idN++)
+                    return 'Node' + a.uniqueID
+                }
+            } else {
+                var type = tos(a)
+                if (a.uniqueID) {
+                    return type + a.uniqueID
+                }
+                if (!a.uniqueID) {
+                    a.uniqueID = "_" + (idN++)
+                    return type + a.uniqueID
+                }
+            }
+        } else {
+            return _type + a
+        }
+    }
+    Map.prototype = {
+        get: function (a) {
+            var id = getID(a)
+            return this.map[id]
+        },
+        set: function (a, v) {
+            var id = getID(a)
+            this.map[id] = v
+        },
+        "delete": function () {
+            var id = getID(a)
+            delete this.map[id]
+        }
+    }
+
+    window.Map = window.Map || Map
 
 
 })(typeof window === 'undefined' ? this : window);

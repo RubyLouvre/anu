@@ -47,6 +47,7 @@ npm install anujs
 2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
 3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
 4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
+5. [es6-Map](https://github.com/medikoo/es6-map/blob/master/polyfill.js)
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
 
