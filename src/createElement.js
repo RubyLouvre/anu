@@ -4,8 +4,10 @@ import {
 import {
     CurrentOwner
 } from './CurrentOwner'
-var __slice = Array.prototype.slice
-var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
+
+const shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
+const stack = [];
+const EMPTY_CHILDREN = [];
 /**
  * 创建虚拟DOM
  *
@@ -14,12 +16,12 @@ var shallowEqualHack = Object.freeze([]) //用于绕过shallowEqual
  * @param {array} ...children
  * @returns
  */
+
 export function createElement(type, configs) {
     var props = {},
         key = null,
         ref = null,
         pChildren = null, //位于props中的children
-        props = {},
         vtype = 1,
         typeType = typeof type,
 
@@ -44,27 +46,64 @@ export function createElement(type, configs) {
             2 :
             4
     }
-    var c = []
+
     for (var i = 2, n = arguments.length; i < n; i++) {
-        c.push(arguments[i])
+        stack.push(arguments[i])
     }
 
-    if (!c.length && pChildren && pChildren.length) {
-        c = pChildren
+    if (!stack.length && pChildren && pChildren.length) {
+        stack.push(pChildren)
     }
 
-    if (c.length) {
-        c = flatChildren(c)
-        delete c.merge //注意这里的顺序
-        //  Object.freeze(c) //超紴影响性能
-        props.children = c
+    var lastText, child, text, i, children = EMPTY_CHILDREN
+    while (stack.length) {
+        //比较巧妙地判定是否为子数组
+        if ((child = stack.pop()) && child.pop !== undefined) {
+            for (i = 0; i < child.length; i++) {
+                stack.push(child[i])
+            }
+        } else {
+            if (child === null || child === void 666 || child === false || child === true) {
+                continue
+            }
+            var childType = typeof child
+            if (childType !== 'object') {
+                text = true
+                child = child + ''
+                childType = 'string'
+            } else {
+                text = child.type === '#text'
+
+            }
+
+            if (text && lastText) {
+                lastText.text = child + lastText.text
+            } else {
+                if (childType === 'string') {
+                    child = {
+                        type: '#text',
+                        text: child
+                    }
+                    lastText = child
+                } else {
+                    lastText = null
+                }
+                if (children === EMPTY_CHILDREN) {
+                    children = [child];
+                } else {
+                    children.unshift(child);
+                }
+            }
+        }
+    }
+    if (children !== EMPTY_CHILDREN) {
+        props.children = children
     } else if (vtype === 1) {
         props.children = shallowEqualHack
     }
-
-    //  Object.freeze(props) //超紴影响性能
     return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
 }
+
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this
@@ -114,51 +153,4 @@ Vnode.prototype = {
     },
 
     $$typeof: 1
-}
-// 如果是组件的虚拟DOM，如果它
-/**
- * 遍平化children，并合并相邻的简单数据类型
- *
- * @param {array} children
- * @param {any} [ret=[]]
- * @returns
- */
-
-function flatChildren(children, ret, deep) {
-    ret = ret || []
-    deep = deep || 0
-    for (var i = children.length; i--;) { //从后向前添加
-        var el = children[i]
-         if (el === undefined || el === null || el === false || el === true) {
-            continue
-        }
-        var type = typeof el
-
-        if (/number|string/.test(type) || el.type === '#text') {
-            if (el === '' || el.text == '') {
-                continue
-            }
-            if (ret.merge) {
-                ret[0].text = (el.type ?
-                    el.text :
-                    el) + ret[0].text
-            } else {
-                ret.unshift(el.type ?
-                    el : {
-                        type: '#text',
-                        text: String(el),
-                        _deep: deep
-                    })
-                ret.merge = true
-            }
-        } else if (Array.isArray(el)) {
-            flatChildren(el, ret, deep + 1)
-        } else {
-            ret.unshift(el)
-            el._deep = deep
-            ret.merge = false
-        }
-
-    }
-    return ret
 }

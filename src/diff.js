@@ -107,11 +107,11 @@ export function mountVnode(vnode, parentContext, prevRendered) {
         return node
     }
 
-    if (vtype === 1) { // mount element
+    if (vtype === 1) { // 处理元素节点
         node = mountElement(vnode, parentContext, prevRendered)
-    } else if (vtype === 2) { // mount stateful component
+    } else if (vtype === 2) { // 处理有状态组件
         node = mountComponent(vnode, parentContext, prevRendered)
-    } else if (vtype === 4) { // mount stateless component
+    } else if (vtype === 4) { // 处理无状态组件
         node = mountStateless(vnode, parentContext, prevRendered)
     }
 
@@ -374,12 +374,12 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
 function removeVnode(vnode, node, newNode){
     _removeNodes = [];
     disposeVnode(vnode, node);
-    for(var i=0, l= _removeNodes.length; i< l; i++){
+    for(var i=0, n= _removeNodes.length; i< n; i++){
         let _node = _removeNodes[i], _nodeParent = _node.parentNode;
         if(!(_node && _nodeParent)){
             continue
         }
-        if(newNode && i === l -1){
+        if(newNode && i === n -1){
             _nodeParent.replaceChild(newNode, _node);
         }else{
             _nodeParent.removeChild(_node);

@@ -16,9 +16,9 @@
             background: lawngreen;
         }
     </style>
-<!--<script type='text/javascript' src="./dist/React.js"></script>-->
-  <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
+<script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
      <script src="./test/redux.js"></script>
     <script src="./test/react-redux.js"></script>
     <script src="./test/babel.js"></script>
@@ -26,32 +26,15 @@
 var s
 
 window.onload = function(){
-      //  React.PropTypes =  (React.PropTypes || {})
-        function Select(props) {
-           return <strong>{props.value}</strong>
-        }
-       // <Select value={this.state.value} />
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    value: '南京'
-                }
-            }
-
-            onChange(e) {
-                this.setState({
-                    value: e
-                })
-
-            }
-            render() {
-                return <div><span><Select value={111}/></span><span>{this.state.value}</span></div>
-            }
-
+        function Test() {
+            return (
+                <svg className="icon-twitter" width="16px" height="16px">
+                    <use xlinkHref="#twitter" id='aaa' />
+                </svg>
+            )
         }
 
-       s = ReactDOM.render( <App/>, document.getElementById('example'))
+       s = ReactDOM.render(  <Test />, document.getElementById('example'))
 }
     </script>
 </head>
