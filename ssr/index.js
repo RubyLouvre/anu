@@ -84,22 +84,6 @@ function hashToClassName() {
 }
 const rXlink = /^xlink\:?(.+)/
 
-const voidTags = [
-    'area',
-    'base',
-    'br',
-    'col',
-    'embed',
-    'hr',
-    'img',
-    'input',
-    'link',
-    'meta',
-    'param',
-    'source',
-    'track',
-    'wbr'
-];
 
 function skipFalseAndFunction(a) {
     return a !== false && (Object(a) !== a)
@@ -120,6 +104,22 @@ function styleObjToCss(obj) {
     return arr.join('; ')
 
 }
+const voidTags = [
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr'
+];
 var cssCached = {
     styleFloat: 'float',
     cssFloat: 'float'

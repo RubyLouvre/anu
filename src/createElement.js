@@ -21,7 +21,7 @@ export function createElement(type, configs) {
         key = null,
         ref = null,
         vtype = 1,
-        isEmptyProps = true
+        checkProps = 0
 
     for (let i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i])
@@ -43,7 +43,7 @@ export function createElement(type, configs) {
                     }
                     break
                 default:
-                    isEmptyProps = false
+                    checkProps = 1
                     props[i] = val
             }
         }
@@ -62,7 +62,7 @@ export function createElement(type, configs) {
         props.children = children
     }
 
-    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps)
+    return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur)
 }
 
 function flattenChildren(stack) {
@@ -108,18 +108,20 @@ function getDOMNode() {
     return this
 }
 
-function Vnode(type, props, key, ref, vtype, owner, checkProps) {
+function Vnode(type, props, key, ref, vtype, checkProps, owner) {
     this.type = type
     this.props = props
     this.vtype = vtype
-    this.checkProps = checkProps
+
     if (key) {
         this.key = key
     }
     if (owner) {
         this._owner = owner
     }
-
+    if (vtype === 1) {
+        this.checkProps = checkProps
+    }
     var refType = typeof ref
     if (refType === 'string') {
         this._refKey = ref

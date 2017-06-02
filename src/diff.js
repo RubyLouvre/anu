@@ -144,7 +144,10 @@ function mountElement(vnode, parentContext, prevRendered) {
     } else {
         mountChildren(vnode, dom, parentContext)
     }
-    vnode.checkProps && diffProps(props, {}, vnode, {}, dom)
+    if (vnode.checkProps) {
+        diffProps(props, {}, vnode, {}, dom)
+    }
+
 
     if (vnode.__ref) {
         readyComponents
@@ -240,19 +243,16 @@ function mountComponent(vnode, parentContext, prevRendered) {
     let dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered)
     instanceMap.set(instance, dom)
     vnode._hostNode = dom
-    //vnode._instance._rendered._hostNode === node
 
     return dom
 }
 export function safeRenderComponent(instance) {
 
-    //  instance.setState = instance.forceUpdate = noop   try {
     CurrentOwner.cur = instance
     var rendered = instance.render()
     rendered = checkNull(rendered)
-    //  } finally {
+  
     CurrentOwner.cur = null
-    //      delete instance.setState      delete instance.forceUpdate  }
     return rendered
 }
 
@@ -371,21 +371,22 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     return newNode
 }
 
-function removeVnode(vnode, node, newNode){
+function removeVnode(vnode, node, newNode) {
     _removeNodes = [];
     disposeVnode(vnode, node);
-    for(var i=0, n= _removeNodes.length; i< n; i++){
-        let _node = _removeNodes[i], _nodeParent = _node.parentNode;
-        if(!(_node && _nodeParent)){
+    for (var i = 0, n = _removeNodes.length; i < n; i++) {
+        let _node = _removeNodes[i],
+            _nodeParent = _node.parentNode;
+        if (!(_node && _nodeParent)) {
             continue
         }
-        if(newNode && i === n -1){
+        if (newNode && i === n - 1) {
             _nodeParent.replaceChild(newNode, _node);
-        }else{
+        } else {
             _nodeParent.removeChild(_node);
         }
     }
-    
+
 }
 
 export function disposeVnode(vnode, node) {
@@ -396,8 +397,8 @@ export function disposeVnode(vnode, node) {
         _removeNodes.unshift(node);
     }
     if (!vtype) {
-           vnode._hostNode = null  
-            vnode._hostParent = null
+        vnode._hostNode = null
+        vnode._hostParent = null
     } else if (vtype === 1) { // destroy element
         disposeElement(vnode, node)
     } else if (vtype === 2) { // destroy state component
@@ -689,7 +690,7 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-    removeVnode(data.vnode, data.node)    
+    removeVnode(data.vnode, data.node)
     var node = data.node
     var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName))
     if (recyclables[nodeName] && recyclables[nodeName].length < 72) {

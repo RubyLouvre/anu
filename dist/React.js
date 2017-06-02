@@ -275,7 +275,7 @@
 	        key = null,
 	        ref = null,
 	        vtype = 1,
-	        isEmptyProps = true;
+	        checkProps = 0;
 
 	    for (var i = 2, n = arguments.length; i < n; i++) {
 	        stack.push(arguments[i]);
@@ -297,7 +297,7 @@
 	                    }
 	                    break;
 	                default:
-	                    isEmptyProps = false;
+	                    checkProps = 1;
 	                    props[_i] = val;
 	            }
 	        }
@@ -312,7 +312,7 @@
 	        props.children = children;
 	    }
 
-	    return new Vnode(type, props, key, ref, vtype, CurrentOwner.cur, !isEmptyProps);
+	    return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur);
 	}
 
 	function flattenChildren(stack) {
@@ -360,18 +360,20 @@
 	    return this;
 	}
 
-	function Vnode(type, props, key, ref, vtype, owner, checkProps) {
+	function Vnode(type, props, key, ref, vtype, checkProps, owner) {
 	    this.type = type;
 	    this.props = props;
 	    this.vtype = vtype;
-	    this.checkProps = checkProps;
+
 	    if (key) {
 	        this.key = key;
 	    }
 	    if (owner) {
 	        this._owner = owner;
 	    }
-
+	    if (vtype === 1) {
+	        this.checkProps = checkProps;
+	    }
 	    var refType = typeof ref === 'undefined' ? 'undefined' : _typeof(ref);
 	    if (refType === 'string') {
 	        this._refKey = ref;
@@ -1373,7 +1375,9 @@
 	    } else {
 	        mountChildren(vnode, dom, parentContext);
 	    }
-	    vnode.checkProps && diffProps(props, {}, vnode, {}, dom);
+	    if (vnode.checkProps) {
+	        diffProps(props, {}, vnode, {}, dom);
+	    }
 
 	    if (vnode.__ref) {
 	        readyComponents.push(function () {
@@ -1463,19 +1467,16 @@
 	    var dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
 	    instanceMap.set(instance, dom);
 	    vnode._hostNode = dom;
-	    //vnode._instance._rendered._hostNode === node
 
 	    return dom;
 	}
 	function safeRenderComponent(instance) {
 
-	    //  instance.setState = instance.forceUpdate = noop   try {
 	    CurrentOwner.cur = instance;
 	    var rendered = instance.render();
 	    rendered = checkNull(rendered);
-	    //  } finally {
+
 	    CurrentOwner.cur = null;
-	    //      delete instance.setState      delete instance.forceUpdate  }
 	    return rendered;
 	}
 
