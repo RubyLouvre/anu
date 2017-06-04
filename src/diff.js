@@ -36,29 +36,7 @@ function updateView(vnode, container, callback, parentContext) {
             _hostNode: container
         }
     if (!prevVnode) {
-
-        var nodes = getNodes(container)
-        var prevRendered = null;
-        //eslint-disable-next-line
-        for (var i = 0, el; el = nodes[i++];) {
-            if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
-                hostNode = el
-                prevRendered = el
-
-            } else {
-                el
-                    .parentNode
-                    .removeChild(el)
-            }
-        }
-        vnode._hostParent = hostParent
-
-        rootNode = mountVnode(vnode, parentContext, prevRendered)
-        container.appendChild(rootNode)
-
-        if (readyComponents.length) {
-            fireMount()
-        }
+        rootNode = genVnodes(vnode, container, hostParent, parentContext)
     } else {
         rootNode = alignVnodes(prevVnode, vnode, container.firstChild, parentContext)
     }
@@ -71,18 +49,37 @@ function updateView(vnode, container, callback, parentContext) {
 
     var instance = vnode._instance
     container._component = vnode
-    delete vnode._prevRendered
+    // delete vnode._prevRendered
     if (callback) {
         callback()
     }
-    if (instance) { //组件返回组件实例，而普通虚拟DOM 返回元素节点
-        //   instance._currentElement._hostParent = hostParent
-        return instance
+    return instance || rootNode
+    //组件返回组件实例，而普通虚拟DOM 返回元素节点
+}
+function genVnodes(vnode, container, hostParent, parentContext) {
+    var nodes = getNodes(container)
+    var prevRendered = null;
+    //eslint-disable-next-line
+    for (var i = 0, el; el = nodes[i++];) {
+        if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
+            //   hostNode = el
+            prevRendered = el
 
-    } else {
-        return rootNode
+        } else {
+            el
+                .parentNode
+                .removeChild(el)
+        }
     }
+    vnode._hostParent = hostParent
 
+    var rootNode = mountVnode(vnode, parentContext, prevRendered)
+    container.appendChild(rootNode)
+
+    if (readyComponents.length) {
+        fireMount()
+    }
+    return rootNode
 }
 
 export function mountVnode(vnode, parentContext, prevRendered) {
@@ -181,6 +178,7 @@ function fireMount() {
     //eslint-disable-next-line
     readyComponents.length = 0
     for (var i = 0, cb; cb = queue[i++];) {
+          //eslint-disable-next-line
         cb()
     }
 }
@@ -487,10 +485,9 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
-    if (vnode._prevRendered) {
-
-        return
-    }
+   // if (vnode._prevRendered) {
+   //     return
+   // }
     let patches = {
         removes: [],
         updates: [],
