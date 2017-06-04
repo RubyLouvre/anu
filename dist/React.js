@@ -851,9 +851,7 @@ String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g
  */
 function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
-    if (nextProps === lastProps) {
-        return;
-    }
+
     if (vnode.ns === 'http://www.w3.org/2000/svg') {
         return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom);
     }
@@ -870,6 +868,28 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         if (!(_name in nextProps)) {
             var hookName = getHookType(_name, false, vnode.type, dom);
             propHooks[hookName](dom, _name, builtIdProperties[_name] ? '' : false, lastProps);
+        }
+    }
+}
+
+function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
+    // http://www.w3school.com.cn/xlink/xlink_reference.asp
+    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
+    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
+    // xlinkTitle, xlinkType
+    for (var name in nextProps) {
+
+        var val = nextProps[name];
+        if (val !== lastProps[name]) {
+            var hookName = getHookTypeSVG(name, val, vnode.type, dom);
+            propHooks[hookName](dom, name, val, lastProps);
+        }
+    }
+    for (var _name2 in lastProps) {
+        if (!nextProps.hasOwnProperty(_name2)) {
+            var _val = nextProps[_name2];
+            var hookName = getHookTypeSVG(_name2, _val, vnode.type, dom);
+            propHooks[hookName](dom, _name2, false, lastProps);
         }
     }
 }
@@ -911,49 +931,20 @@ function getHookType(name, val, type, dom) {
     if (!val && val !== '' && val !== 0) {
         return 'removeAttribute';
     }
-    return !builtIdProperties[name] && (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined') ? 'setAttribute' : 'property';
+    return name.indexOf('data-') === 0 || typeof dom[name] === 'undefined' ? 'setAttribute' : 'property';
 }
 
-//children style HTML_KEY, 事件
-function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    // http://www.w3school.com.cn/xlink/xlink_reference.asp
-    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
-    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType
-    for (var name in nextProps) {
-        if (isEventName(name)) {
-            propHooks.__event__(dom, name, val, lastProps);
-            continue;
-        }
-        if (name === 'style') {
-            patchStyle(dom, lastProps.style || {}, val);
-            continue;
-        }
-        var val = nextProps[name];
-        var method = val === false || val === null || val === undefined ? 'removeAttribute' : 'setAttribute';
-        if (svgprops[name]) {
-            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], val + '');
-            continue;
-        } else if (name === 'className') {
-            name = 'class';
-        } else {
-            name = toLowerCase(name);
-        }
-        dom[method](name, val + '');
+function getHookTypeSVG(name, val, type, dom) {
+    if (name === 'className') {
+        return 'svgClass';
     }
-    for (var _name2 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name2)) {
-            if (svgprops[_name2]) {
-                dom.removeAttributeNS('http://www.w3.org/1999/xlink', _name2);
-                continue;
-            } else if (_name2 === 'className') {
-                _name2 = 'class';
-            } else {
-                _name2 = toLowerCase(_name2);
-            }
-            dom.removeAttribute(_name2);
-        }
+
+    if (specialProps[name]) return name;
+
+    if (isEventName(name)) {
+        return '__event__';
     }
+    return 'svgAttr';
 }
 
 var svgprops = {
@@ -983,6 +974,21 @@ var propHooks = {
             console.log('setAttribute error', name, val);
         }
     },
+    svgClass: function svgClass(dom, name, val, lastProp) {
+        if (!val) {
+            dom.removeAttribute('class');
+        } else {
+            dom.setAttribute('class', val);
+        }
+    },
+    svgAttr: function svgAttr(dom, name, val) {
+        var method = val === false || val === null || val === undefined ? 'removeAttribute' : 'setAttribute';
+        if (svgprops[name]) {
+            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], val || '');
+        } else {
+            dom[method](toLowerCase(name), val || '');
+        }
+    },
     property: function property(dom, name, val) {
         if (name !== 'value' || dom[name] !== val) {
             dom[name] = val;
@@ -999,22 +1005,21 @@ var propHooks = {
         patchStyle(dom, lastProps.style || {}, val);
     },
     __event__: function __event__(dom, name, val, lastProps) {
+        var events = dom.__events || (dom.__events = {});
+
         if (val === false) {
-            if (dom.__events) delete dom.__events[name];
+
+            delete events[name];
         } else {
             if (!lastProps[name]) {
                 //添加全局监听事件
-                var eventName = getBrowserName(name); //带on
-                var curType = typeof val === 'undefined' ? 'undefined' : _typeof(val);
-                /* istanbul ignore if */
-                if (curType !== 'function') throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType;
-                addGlobalEventListener(eventName);
+
+                addGlobalEventListener(getBrowserName(name));
             }
             /* istanbul ignore if */
-            if (inMobile && eventName === 'click') {
+            if (inMobile && name === 'onClick') {
                 dom.addEventListener('click', clickHack);
             }
-            var events = dom.__events || (dom.__events = {});
             events[name] = val;
         }
     },

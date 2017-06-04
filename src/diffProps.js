@@ -54,9 +54,7 @@ String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
-    if (nextProps === lastProps) {
-        return
-    }
+  
     if (vnode.ns === 'http://www.w3.org/2000/svg') {
         return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom)
     }
@@ -88,7 +86,7 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
         let val = nextProps[name]
         if (val !== lastProps[name]) {
-            var hookName = getHookType(name, val, vnode.type, dom)
+            var hookName = getHookTypeSVG(name, val, vnode.type, dom)
             propHooks[hookName](dom, name, val, lastProps)
         }
 
@@ -96,7 +94,7 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
             let val = nextProps[name]
-            var hookName = getHookType(name, val, vnode.type, dom)
+            var hookName = getHookTypeSVG(name, val, vnode.type, dom)
             propHooks[hookName](dom, name, false, lastProps)
         }
     }
@@ -200,8 +198,6 @@ var propHooks = {
             : 'setAttribute'
         if (svgprops[name]) {
             dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], (val || ''))
-            continue
-
         } else {
             dom[method](toLowerCase(name), val || '')
         }
