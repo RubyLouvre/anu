@@ -15,7 +15,8 @@ import {
     checkNull,
     recyclables,
     toLowerCase,
-    getComponentProps
+    getComponentProps,
+    __push
 } from './util'
 
 var _removeNodes = [];
@@ -655,7 +656,6 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     }
     __push.apply(patches.updates, updates)
 }
-var __push = Array.prototype.push
 
 function applyUpdate(data) {
     if (!data) {

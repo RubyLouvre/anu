@@ -34,6 +34,7 @@ describe('context', function () {
             }
             handleClick() {
                 this.getChildContext = function () {
+                    console.log('----')
                     return {
                         name: "Jonas",
                         fruit: arr.shift() 

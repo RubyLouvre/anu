@@ -27,44 +27,56 @@
     <script src="./test/react-redux.js"></script>
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-        var index = 0
-       var map = [
-             <div >1111<p>ddd</p><span>333</span><Link /></div>,
-             <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
-             <div><span>33</span></div>
-        ]
-        function Link(){
-            return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
+    var s
+   var str = ''
+        class Component1 extends React.Component {
+            componentWillUnmount() {
+                str += 'xxxx'
+            }
+            render() {
+                return <div className="component1">{this.props.children}</div>
+            }
+        }
+        class Component2 extends React.Component {
+            componentWillUnmount() {
+                str += ' yyyy'
+            }
+            render() {
+                return <div className="component1">xxx</div>
+            }
+        }
+        var index = 1
+        function detect(a) {
+            if (index === 1) {
+               // expect(typeof a).toBe('object')
+            } else {
+               // expect(a).toBeNull()
+            }
         }
         class App extends React.Component {
             constructor(props) {
                 super(props)
-                this.state = {
-                    aaa: 'aaa'
-                }
+                this.handleClick = this.handleClick.bind(this)
             }
-            change(a){
-                this.setState({
-                    aaa:a
-                })
-            }
-            componentDidMount(){
-                console.log('App componentDidMount')
-            }
-            componentWillUpdate(){
-                console.log('App componentWillUpdate')
+            handleClick() {
+                index = 0
+                this.forceUpdate()
             }
             render() {
-                 return map[index++]
-             
-            }
-        }
-        var s
+                return index ?
+                    <div ref='a' onClick={this.handleClick.bind(this)}>
+                        <Component1>
+                            <p ref={detect}>这是子节点</p>
+                            <Component2 />
+                        </Component1>
+                    </div> : <div>文本节点</div>
 
-window.onload = function(){
-    
-       s = ReactDOM.render( <App/>, document.getElementById('example'))
-}
+            }
+        };
+
+    window.onload = function(){
+        s = ReactDOM.render( <App />, document.getElementById('example'))
+    }
     </script>
 </head>
 

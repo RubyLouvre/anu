@@ -96,6 +96,8 @@ export function getChildContext(instance, context) {
     return context
 }
 var rcamelize = /[-_][^-_]/g
+export var __push = Array.prototype.push
+
 export var HTML_KEY = 'dangerouslySetInnerHTML'
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
@@ -113,10 +115,6 @@ export function camelize(target) {
 export var options = {
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
-}
-
-export function isKeyed(lastChildren, nextChildren) {
-    return nextChildren.length > 0 && !isNullOrUndef(nextChildren[0].key) && lastChildren.length > 0 && !isNullOrUndef(lastChildren[0].key);
 }
 
 

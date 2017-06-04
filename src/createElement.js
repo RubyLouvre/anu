@@ -1,10 +1,6 @@
-import {
-    extend
-} from './util'
-import {
-    CurrentOwner
-} from './CurrentOwner'
-
+import {extend} from './util'
+import {CurrentOwner} from './CurrentOwner'
+import {__push} from './util'
 const stack = [];
 const EMPTY_CHILDREN = [];
 /**
@@ -39,7 +35,8 @@ export function createElement(type, configs) {
                     break
                 case 'children':
                     if (!stack.length && val && val.length) {
-                        stack.push(val)
+                        __push.apply(stack, val)
+
                     }
                     break
                 default:
@@ -49,14 +46,13 @@ export function createElement(type, configs) {
         }
     }
 
-
     var children = flattenChildren(stack)
 
     if (typeof type === 'function') {
-        vtype = type.prototype && type.prototype.render ?
-            2 :
-            4
-        if (children.length)
+        vtype = type.prototype && type.prototype.render
+            ? 2
+            : 4
+        if (children.length) 
             props.children = children
     } else {
         props.children = children
@@ -66,7 +62,9 @@ export function createElement(type, configs) {
 }
 
 function flattenChildren(stack) {
-    var lastText, child, children = EMPTY_CHILDREN
+    var lastText,
+        child,
+        children = EMPTY_CHILDREN
     while (stack.length) {
         //比较巧妙地判定是否为子数组
         if ((child = stack.pop()) && child.pop !== undefined) {
