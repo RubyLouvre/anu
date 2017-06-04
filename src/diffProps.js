@@ -41,7 +41,7 @@ anomaly.replace(/\w+/g, function (name) {
 })
 String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g, function (name) {
     builtIdProperties[name] = name
-    stringAttributes[name] = name
+    //  stringAttributes[name] = name
 })
 var controlled = {
     value: 1,
@@ -75,15 +75,14 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             continue
         }
         if (val !== lastProps[name]) {
-            if (boolAttributes[name] && typeof dom[name] === 'boolean') {
+            if (boolAttributes[name] && booleanTag[vnode.type] && typeof dom[name] === 'boolean') {
                 // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
-                // 会影响到样式,需要进一步处理
-                // eslint-disable-next-line
+                // 会影响到样式,需要进一步处理 eslint-disable-next-line
                 if (dom[name] = !!val) {
                     continue
                 }
             }
-             //eslint-disable-next-line
+            //eslint-disable-next-line
             if (val === false || val === void 666 || val === null) {
                 dom.removeAttribute(dom, name)
                 continue
@@ -91,8 +90,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             if (builtIdProperties[name]) {
                 // 特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的 <input
                 // value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-                if (stringAttributes[name]) 
-                    val = val + ''
+
                 if (name !== 'value' || dom[name] !== val) {
                     dom[name] = val
                     if (controlled[name]) {
@@ -100,10 +98,10 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                     }
                 }
             } else {
-                try{
-                   dom.setAttribute(name, val)
-                }catch(e){
-                    console.log('setAttribute error',name, val)
+                try {
+                    dom.setAttribute(name, val)
+                } catch (e) {
+                    console.log('setAttribute error', name, val)
                 }
             }
         }
@@ -127,6 +125,41 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
 
     }
+}
+var booleanTag = {
+
+    SCRIP: 1,
+    IFRAME: 1,
+    A: 1,
+    MAP: 1,
+
+    VEDIO: 1,
+    BGSOUND: 1,
+
+    FORM: 1,
+    SELECT: 1,
+    INPUT: 1,
+    TEXTAREA: 1,
+    OPTION: 1,
+    KEYGEN: 1
+}
+function propType(name, dom, vnode, val) {
+    if (isEventName(name)) {
+        return '__event__'
+    }
+
+    if (map[name]) 
+        return name
+    if (boolAttributes[name] && booleanTag[vnode.type]) {
+        return 'boolean'
+    }
+    if (val === false || val === void 666 || val === null) {
+        return 'remove'
+    }
+    return (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined')
+        ? 'attribute'
+        : 'property'
+
 }
 
 //children style HTML_KEY, 事件
@@ -205,6 +238,24 @@ var propHooks = {
         let events = (dom.__events || (dom.__events = {}))
         events[name] = val
     },
+    'boolean': function (dom, name, val, lastProp) {
+        dom[name] = !!val
+
+    },
+    'remove': function (dom, name) {
+        dom.removeAttribute(name)
+    },
+    'attribute': function (dom, name, val) {
+        dom.setAttribute(name, val)
+    },
+    'property': function (dom, name, val) {
+        if (name !== 'value' || dom[name] !== val) {
+            dom[name] = val
+            if (controlled[name]) {
+                dom._lastValue = val
+            }
+        }
+    },
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html
         if (val && val.__html !== oldhtml) {
@@ -212,3 +263,12 @@ var propHooks = {
         }
     }
 }
+
+姓名： 钟钦成
+性别： 男
+年龄： 33
+约会城市：北京
+学历： 一本
+财产 : 国内有百万，国外股票三百万
+收入：到手3万
+嗜好：看动画，漫画
