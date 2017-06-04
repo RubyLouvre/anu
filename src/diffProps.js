@@ -79,46 +79,25 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
 }
 
-
 function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
     // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
     // xlinkTitle, xlinkType
     for (let name in nextProps) {
-        if (isEventName(name)) {
-            propHooks.__event__(dom, name, val, lastProps)
-            continue
-        }
-        if (name === 'style') {
-            patchStyle(dom, lastProps.style || {}, val)
-            continue
-        }
+
         let val = nextProps[name]
-        var method = val === false || val === null || val === undefined
-            ? 'removeAttribute'
-            : 'setAttribute'
-        if (svgprops[name]) {
-            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], val + '')
-            continue
-        } else if (name === 'className') {
-            name = 'class'
-        } else {
-            name = toLowerCase(name)
+        if (val !== lastProps[name]) {
+            var hookName = getHookType(name, val, vnode.type, dom)
+            propHooks[hookName](dom, name, val, lastProps)
         }
-        dom[method](name, val + '')
+
     }
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
-            if (svgprops[name]) {
-                dom.removeAttributeNS('http://www.w3.org/1999/xlink', name)
-                continue
-            } else if (name === 'className') {
-                name = 'class'
-            } else {
-                name = toLowerCase(name)
-            }
-            dom.removeAttribute(name)
+            let val = nextProps[name]
+            var hookName = getHookType(name, val, vnode.type, dom)
+            propHooks[hookName](dom, name, false, lastProps)
         }
     }
 }
@@ -161,12 +140,24 @@ function getHookType(name, val, type, dom) {
     if (!val && val !== '' && val !== 0) {
         return 'removeAttribute'
     }
-    return (!builtIdProperties[name] && (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined'))
+    return (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined')
         ? 'setAttribute'
         : 'property'
 }
 
+function getHookTypeSVG(name, val, type, dom) {
+    if (name === 'className') {
+        return 'svgClass'
+    }
 
+    if (specialProps[name]) 
+        return name
+
+    if (isEventName(name)) {
+        return '__event__'
+    }
+    return 'svgAttr'
+}
 
 var svgprops = {
     xlinkActuate: 'xlink:actuate',
@@ -194,7 +185,26 @@ var propHooks = {
         } catch (e) {
             console.log('setAttribute error', name, val)
         }
+    },
+    svgClass: function (dom, name, val, lastProp) {
+        if (!val) {
+            dom.removeAttribute('class')
+        } else {
+            dom.setAttribute('class', val)
+        }
 
+    },
+    svgAttr: function (dom, name, val) {
+        var method = val === false || val === null || val === undefined
+            ? 'removeAttribute'
+            : 'setAttribute'
+        if (svgprops[name]) {
+            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], (val || ''))
+            continue
+
+        } else {
+            dom[method](toLowerCase(name), val || '')
+        }
     },
     property: function (dom, name, val) {
         if (name !== 'value' || dom[name] !== val) {
@@ -212,23 +222,20 @@ var propHooks = {
         patchStyle(dom, lastProps.style || {}, val)
     },
     __event__: function (dom, name, val, lastProps) {
+        let events = (dom.__events || (dom.__events = {}));
+
         if (val === false) {
-            if (dom.__events) 
-                delete dom.__events[name]
+
+            delete events[name]
         } else {
             if (!lastProps[name]) { //添加全局监听事件
-                var eventName = getBrowserName(name) //带on
-                var curType = typeof val
-                /* istanbul ignore if */
-                if (curType !== 'function') 
-                    throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
-                addGlobalEventListener(eventName)
+
+                addGlobalEventListener(getBrowserName(name))
             }
             /* istanbul ignore if */
-            if (inMobile && eventName === 'click') {
+            if (inMobile && name === 'onClick') {
                 dom.addEventListener('click', clickHack)
             }
-            let events = (dom.__events || (dom.__events = {}))
             events[name] = val
         }
 
