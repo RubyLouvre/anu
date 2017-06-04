@@ -868,18 +868,8 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
     for (var _name in lastProps) {
         if (!(_name in nextProps)) {
-            if (isEventName(_name)) {
-                //移除事件
-                var events = dom.__events || {};
-                delete events[_name];
-            } else {
-                //移除属性
-                if (builtIdProperties[_name]) {
-                    dom[_name] = builtIdProperties[_name] === true ? false : '';
-                } else {
-                    dom.removeAttribute(_name);
-                }
-            }
+            var hookName = getHookType(_name, false, vnode.type, dom);
+            propHooks[hookName](dom, _name, builtIdProperties[_name] ? '' : false, lastProps);
         }
     }
 }
@@ -1009,20 +999,24 @@ var propHooks = {
         patchStyle(dom, lastProps.style || {}, val);
     },
     __event__: function __event__(dom, name, val, lastProps) {
-        if (!lastProps[name]) {
-            //添加全局监听事件
-            var eventName = getBrowserName(name); //带on
-            var curType = typeof val === 'undefined' ? 'undefined' : _typeof(val);
+        if (val === false) {
+            if (dom.__events) delete dom.__events[name];
+        } else {
+            if (!lastProps[name]) {
+                //添加全局监听事件
+                var eventName = getBrowserName(name); //带on
+                var curType = typeof val === 'undefined' ? 'undefined' : _typeof(val);
+                /* istanbul ignore if */
+                if (curType !== 'function') throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType;
+                addGlobalEventListener(eventName);
+            }
             /* istanbul ignore if */
-            if (curType !== 'function') throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType;
-            addGlobalEventListener(eventName);
+            if (inMobile && eventName === 'click') {
+                dom.addEventListener('click', clickHack);
+            }
+            var events = dom.__events || (dom.__events = {});
+            events[name] = val;
         }
-        /* istanbul ignore if */
-        if (inMobile && eventName === 'click') {
-            dom.addEventListener('click', clickHack);
-        }
-        var events = dom.__events || (dom.__events = {});
-        events[name] = val;
     },
 
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {

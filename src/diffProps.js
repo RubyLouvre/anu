@@ -71,20 +71,55 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
     for (let name in lastProps) {
         if (!(name in nextProps)) {
-            if (isEventName(name)) { //移除事件
-                let events = dom.__events || {}
-                delete events[name]
-            } else { //移除属性
-                if (builtIdProperties[name]) {
-                    dom[name] = builtIdProperties[name] === true
-                        ? false
-                        : ''
-                } else {
-                    dom.removeAttribute(name)
-                }
-            }
+            var hookName = getHookType(name, false, vnode.type, dom)
+            propHooks[hookName](dom, name, builtIdProperties[name]
+                ? ''
+                : false, lastProps)
         }
+    }
+}
 
+
+function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
+    // http://www.w3school.com.cn/xlink/xlink_reference.asp
+    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
+    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
+    // xlinkTitle, xlinkType
+    for (let name in nextProps) {
+        if (isEventName(name)) {
+            propHooks.__event__(dom, name, val, lastProps)
+            continue
+        }
+        if (name === 'style') {
+            patchStyle(dom, lastProps.style || {}, val)
+            continue
+        }
+        let val = nextProps[name]
+        var method = val === false || val === null || val === undefined
+            ? 'removeAttribute'
+            : 'setAttribute'
+        if (svgprops[name]) {
+            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], val + '')
+            continue
+        } else if (name === 'className') {
+            name = 'class'
+        } else {
+            name = toLowerCase(name)
+        }
+        dom[method](name, val + '')
+    }
+    for (let name in lastProps) {
+        if (!nextProps.hasOwnProperty(name)) {
+            if (svgprops[name]) {
+                dom.removeAttributeNS('http://www.w3.org/1999/xlink', name)
+                continue
+            } else if (name === 'className') {
+                name = 'class'
+            } else {
+                name = toLowerCase(name)
+            }
+            dom.removeAttribute(name)
+        }
     }
 }
 var controlled = {
@@ -131,49 +166,7 @@ function getHookType(name, val, type, dom) {
         : 'property'
 }
 
-//children style HTML_KEY, 事件
-function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    // http://www.w3school.com.cn/xlink/xlink_reference.asp
-    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
-    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType
-    for (let name in nextProps) {
-        if (isEventName(name)) {
-            propHooks.__event__(dom, name, val, lastProps)
-            continue
-        }
-        if (name === 'style') {
-            patchStyle(dom, lastProps.style || {}, val)
-            continue
-        }
-        let val = nextProps[name]
-        var method = val === false || val === null || val === undefined
-            ? 'removeAttribute'
-            : 'setAttribute'
-        if (svgprops[name]) {
-            dom[method + 'NS']('http://www.w3.org/1999/xlink', svgprops[name], val + '')
-            continue
-        } else if (name === 'className') {
-            name = 'class'
-        } else {
-            name = toLowerCase(name)
-        }
-        dom[method](name, val + '')
-    }
-    for (let name in lastProps) {
-        if (!nextProps.hasOwnProperty(name)) {
-            if (svgprops[name]) {
-                dom.removeAttributeNS('http://www.w3.org/1999/xlink', name)
-                continue
-            } else if (name === 'className') {
-                name = 'class'
-            } else {
-                name = toLowerCase(name)
-            }
-            dom.removeAttribute(name)
-        }
-    }
-}
+
 
 var svgprops = {
     xlinkActuate: 'xlink:actuate',
@@ -219,20 +212,26 @@ var propHooks = {
         patchStyle(dom, lastProps.style || {}, val)
     },
     __event__: function (dom, name, val, lastProps) {
-        if (!lastProps[name]) { //添加全局监听事件
-            var eventName = getBrowserName(name) //带on
-            var curType = typeof val
+        if (val === false) {
+            if (dom.__events) 
+                delete dom.__events[name]
+        } else {
+            if (!lastProps[name]) { //添加全局监听事件
+                var eventName = getBrowserName(name) //带on
+                var curType = typeof val
+                /* istanbul ignore if */
+                if (curType !== 'function') 
+                    throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
+                addGlobalEventListener(eventName)
+            }
             /* istanbul ignore if */
-            if (curType !== 'function') 
-                throw 'Expected ' + name + ' listener to be a function, instead got type ' + curType
-            addGlobalEventListener(eventName)
+            if (inMobile && eventName === 'click') {
+                dom.addEventListener('click', clickHack)
+            }
+            let events = (dom.__events || (dom.__events = {}))
+            events[name] = val
         }
-        /* istanbul ignore if */
-        if (inMobile && eventName === 'click') {
-            dom.addEventListener('click', clickHack)
-        }
-        let events = (dom.__events || (dom.__events = {}))
-        events[name] = val
+
     },
 
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
