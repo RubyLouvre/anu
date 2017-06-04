@@ -951,7 +951,7 @@ var svgprops = {
     xlinkActuate: 'xlink:actuate',
     xlinkArcrole: 'xlink:arcrole',
     xlinkHref: 'xlink:href',
-    xlinkRole: 'xlinkRole',
+    xlinkRole: 'xlink:role',
     xlinkShow: 'xlink:show'
 };
 
