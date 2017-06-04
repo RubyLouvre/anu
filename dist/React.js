@@ -851,10 +851,10 @@ String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g
  */
 function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
-
     if (vnode.ns === 'http://www.w3.org/2000/svg') {
         return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom);
     }
+    //eslint-disable-next-line
     for (var name in nextProps) {
         var val = nextProps[name];
         if (val !== lastProps[name]) {
@@ -862,12 +862,11 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             propHooks[hookName](dom, name, val, lastProps);
         }
     }
-    //如果旧属性在新属性对象不存在，那么移除DOM
-
+    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (var _name in lastProps) {
-        if (!(_name in nextProps)) {
-            var hookName = getHookType(_name, false, vnode.type, dom);
-            propHooks[hookName](dom, _name, builtIdProperties[_name] ? '' : false, lastProps);
+        if (!nextProps.hasOwnProperty(_name)) {
+            var hookName2 = getHookType(_name, false, vnode.type, dom);
+            propHooks[hookName2](dom, _name, builtIdProperties[_name] ? '' : false, lastProps);
         }
     }
 }
@@ -876,20 +875,21 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
     // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType
+    // xlinkTitle, xlinkType 
+    // eslint-disable-next-line
     for (var name in nextProps) {
-
         var val = nextProps[name];
         if (val !== lastProps[name]) {
             var hookName = getHookTypeSVG(name, val, vnode.type, dom);
             propHooks[hookName](dom, name, val, lastProps);
         }
     }
+    //eslint-disable-next-line
     for (var _name2 in lastProps) {
         if (!nextProps.hasOwnProperty(_name2)) {
             var _val = nextProps[_name2];
-            var hookName = getHookTypeSVG(_name2, _val, vnode.type, dom);
-            propHooks[hookName](dom, _name2, false, lastProps);
+            var hookName2 = getHookTypeSVG(_name2, _val, vnode.type, dom);
+            propHooks[hookName2](dom, _name2, false, lastProps);
         }
     }
 }
@@ -1006,9 +1006,7 @@ var propHooks = {
     },
     __event__: function __event__(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
-
         if (val === false) {
-
             delete events[name];
         } else {
             if (!lastProps[name]) {
@@ -1241,6 +1239,7 @@ function updateView(vnode, container, callback, parentContext) {
 
         var nodes = getNodes(container);
         var prevRendered = null;
+        //eslint-disable-next-line
         for (var i = 0, el; el = nodes[i++];) {
             if (el.getAttribute && el.getAttribute('data-reactroot') !== null) {
                 hostNode = el;
@@ -1321,9 +1320,7 @@ function mountElement(vnode, parentContext, prevRendered) {
         dom = prevRendered;
     } else {
         var ns = getNs(type);
-        if (ns) {
-            vnode.ns = ns;
-        }
+        vnode.ns = ns;
         dom = createDOMElement(vnode);
     }
     vnode._hostNode = dom;
@@ -1379,6 +1376,7 @@ function alignChildren(vnode, parentNode, parentContext, childNodes) {
 
 function fireMount() {
     var queue = readyComponents.concat();
+    //eslint-disable-next-line
     readyComponents.length = 0;
     for (var i = 0, cb; cb = queue[i++];) {
         cb();
@@ -1534,6 +1532,7 @@ function reRenderComponent(instance) {
 
 function alignVnodes(vnode, newVnode, node, parentContext) {
     var newNode = node;
+    //eslint-disable-next-line
     if (newVnode == null) {
         disposeVnode(vnode, node);
         node.parentNode.removeChild(node);
@@ -1595,7 +1594,7 @@ function disposeElement(vnode, node) {
     for (var i = 0, len = children.length; i < len; i++) {
         disposeVnode(children[i], childNodes[i]);
     }
-
+    //eslint-disable-next-line
     vnode.__ref && vnode.__ref(null);
     vnode._hostNode = null;
     vnode._hostParent = null;
@@ -1720,21 +1719,13 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (var i = 0; i < newVchildrenLen; i++) {
-                patches.creates.push({
-                    vnode: newVchildren[i],
-                    parentNode: node,
-                    parentContext: parentContext,
-                    index: i
-                });
+                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
             }
         }
         return;
     } else if (newVchildrenLen === 0) {
         for (var _i = 0; _i < childrenLen; _i++) {
-            patches.removes.push({
-                vnode: children[_i],
-                node: childNodes[_i]
-            });
+            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
         }
         return;
     }
@@ -1790,10 +1781,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            removes.push({
-                vnode: _vnode2,
-                node: childNodes[_i3]
-            });
+            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
         }
     }
 
@@ -1801,12 +1789,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         var item = updates[_i4];
         if (!item) {
 
-            creates.push({
-                vnode: newVchildren[_i4],
-                parentNode: node,
-                parentContext: parentContext,
-                index: _i4
-            });
+            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
         }

@@ -54,10 +54,10 @@ String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     /* istanbul ignore if */
-  
     if (vnode.ns === 'http://www.w3.org/2000/svg') {
         return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom)
     }
+    //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name]
         if (val !== lastProps[name]) {
@@ -65,12 +65,11 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             propHooks[hookName](dom, name, val, lastProps)
         }
     }
-    //如果旧属性在新属性对象不存在，那么移除DOM
-
+    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
-        if (!(name in nextProps)) {
-            var hookName = getHookType(name, false, vnode.type, dom)
-            propHooks[hookName](dom, name, builtIdProperties[name]
+        if (!nextProps.hasOwnProperty(name)) {
+            var hookName2 = getHookType(name, false, vnode.type, dom)
+            propHooks[hookName2](dom, name, builtIdProperties[name]
                 ? ''
                 : false, lastProps)
         }
@@ -81,9 +80,9 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
     // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType
+    // xlinkTitle, xlinkType 
+    // eslint-disable-next-line
     for (let name in nextProps) {
-
         let val = nextProps[name]
         if (val !== lastProps[name]) {
             var hookName = getHookTypeSVG(name, val, vnode.type, dom)
@@ -91,11 +90,12 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
 
     }
+    //eslint-disable-next-line
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
             let val = nextProps[name]
-            var hookName = getHookTypeSVG(name, val, vnode.type, dom)
-            propHooks[hookName](dom, name, false, lastProps)
+            var hookName2 = getHookTypeSVG(name, val, vnode.type, dom)
+            propHooks[hookName2](dom, name, false, lastProps)
         }
     }
 }
@@ -219,9 +219,7 @@ var propHooks = {
     },
     __event__: function (dom, name, val, lastProps) {
         let events = (dom.__events || (dom.__events = {}));
-
         if (val === false) {
-
             delete events[name]
         } else {
             if (!lastProps[name]) { //添加全局监听事件
