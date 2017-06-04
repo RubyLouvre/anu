@@ -41,13 +41,8 @@ anomaly.replace(/\w+/g, function (name) {
 })
 String('value,id,title,alt,htmlFor,name,type,longDesc,className').replace(/\w+/g, function (name) {
     builtIdProperties[name] = name
-    //  stringAttributes[name] = name
 })
-var controlled = {
-    value: 1,
-    checked: 1,
-    defaultValue: 1
-}
+
 /**
  *
  * 修改dom的属性与事件
@@ -67,43 +62,9 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
     for (let name in nextProps) {
         let val = nextProps[name]
-        var prop = isEventName(name)
-            ? '__event__'
-            : name
-        if (hook = propHooks[prop]) {
-            hook(dom, name, val, lastProps)
-            continue
-        }
         if (val !== lastProps[name]) {
-            if (boolAttributes[name] && booleanTag[vnode.type] && typeof dom[name] === 'boolean') {
-                // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
-                // 会影响到样式,需要进一步处理 eslint-disable-next-line
-                if (dom[name] = !!val) {
-                    continue
-                }
-            }
-            //eslint-disable-next-line
-            if (val === false || val === void 666 || val === null) {
-                dom.removeAttribute(dom, name)
-                continue
-            }
-            if (builtIdProperties[name]) {
-                // 特殊照顾value, 因为value可以是用户自己输入的，这时再触发onInput，再修改value，但这时它们是一致的 <input
-                // value={this.state.value} onInput={(e)=>setState({value: e.target.value})} />
-
-                if (name !== 'value' || dom[name] !== val) {
-                    dom[name] = val
-                    if (controlled[name]) {
-                        dom._lastValue = val
-                    }
-                }
-            } else {
-                try {
-                    dom.setAttribute(name, val)
-                } catch (e) {
-                    console.log('setAttribute error', name, val)
-                }
-            }
+            var hookName = getHookType(name, val, vnode.type, dom)
+            propHooks[hookName](dom, name, val, lastProps)
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM
@@ -119,47 +80,55 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
                         ? false
                         : ''
                 } else {
-                    dom.removeAttribute(dom, name)
+                    dom.removeAttribute(name)
                 }
             }
         }
 
     }
 }
-var booleanTag = {
-
-    SCRIP: 1,
-    IFRAME: 1,
-    A: 1,
-    MAP: 1,
-
-    VEDIO: 1,
-    BGSOUND: 1,
-
-    FORM: 1,
-    SELECT: 1,
-    INPUT: 1,
-    TEXTAREA: 1,
-    OPTION: 1,
-    KEYGEN: 1
+var controlled = {
+    value: 1,
+    defaultValue: 1
 }
-function propType(name, dom, vnode, val) {
+var booleanTag = {
+    script: 1,
+    iframe: 1,
+    a: 1,
+    map: 1,
+
+    vedio: 1,
+    bgsound: 1,
+
+    form: 1,
+    select: 1,
+    inout: 1,
+    textarea: 1,
+    option: 1,
+    keygen: 1
+}
+var specialProps = {
+    children: 1,
+    style: 1,
+    className: 1,
+    dangerouslySetInnerHTML: 1
+}
+
+function getHookType(name, val, type, dom) {
+    if (specialProps[name]) 
+        return name
+    if (boolAttributes[name] && booleanTag[type]) {
+        return 'boolean'
+    }
     if (isEventName(name)) {
         return '__event__'
     }
-
-    if (map[name]) 
-        return name
-    if (boolAttributes[name] && booleanTag[vnode.type]) {
-        return 'boolean'
+    if (!val && val !== '' && val !== 0) {
+        return 'removeAttribute'
     }
-    if (val === false || val === void 666 || val === null) {
-        return 'remove'
-    }
-    return (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined')
-        ? 'attribute'
+    return (!builtIdProperties[name] && (name.indexOf('data-') === 0 || typeof dom[name] === 'undefined'))
+        ? 'setAttribute'
         : 'property'
-
 }
 
 //children style HTML_KEY, 事件
@@ -215,6 +184,33 @@ var svgprops = {
 }
 
 var propHooks = {
+    boolean: function (dom, name, val, lastProp) {
+        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
+        // 会影响到样式,需要进一步处理 eslint-disable-next-line
+        dom[name] = !!val
+        if (!val) {
+            dom.removeAttribute(name)
+        }
+    },
+    removeAttribute: function (dom, name) {
+        dom.removeAttribute(name)
+    },
+    setAttribute: function (dom, name, val) {
+        try {
+            dom.setAttribute(name, val)
+        } catch (e) {
+            console.log('setAttribute error', name, val)
+        }
+
+    },
+    property: function (dom, name, val) {
+        if (name !== 'value' || dom[name] !== val) {
+            dom[name] = val
+            if (controlled[name]) {
+                dom._lastValue = val
+            }
+        }
+    },
     children: noop,
     className: function (dom, _, val, lastProps) {
         dom.className = val
@@ -238,24 +234,7 @@ var propHooks = {
         let events = (dom.__events || (dom.__events = {}))
         events[name] = val
     },
-    'boolean': function (dom, name, val, lastProp) {
-        dom[name] = !!val
 
-    },
-    'remove': function (dom, name) {
-        dom.removeAttribute(name)
-    },
-    'attribute': function (dom, name, val) {
-        dom.setAttribute(name, val)
-    },
-    'property': function (dom, name, val) {
-        if (name !== 'value' || dom[name] !== val) {
-            dom[name] = val
-            if (controlled[name]) {
-                dom._lastValue = val
-            }
-        }
-    },
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html
         if (val && val.__html !== oldhtml) {
@@ -263,12 +242,3 @@ var propHooks = {
         }
     }
 }
-
-姓名： 钟钦成
-性别： 男
-年龄： 33
-约会城市：北京
-学历： 一本
-财产 : 国内有百万，国外股票三百万
-收入：到手3万
-嗜好：看动画，漫画
