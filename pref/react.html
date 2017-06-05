@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="DBMON REACT" />
+  <meta charset="utf-8">
+  <link href="./bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="./styles.css" rel="stylesheet" type="text/css" />
+  <title>dbmon (react)</title>
+</head>
+<body>
+  <div id="dbmon"></div>
+  <!--<script src="../dist/React.js"></script>-->
+  <script src="../test/react.js"></script>
+  <script src="../test/react-dom.js"></script>
+  <script src="../test/babel.js"></script>
+  <script src="./ENV.js"></script>
+  <script src="./memory-stats.js"></script>
+  <script src="./monitor.js"></script>
+  <script type="text/babel">
+ class DBMon extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      databases: []
+    };
+  }
+
+  loadSamples() {
+    this.setState({
+      databases: ENV.generateData().toArray()
+    });
+    Monitoring.renderRate.ping();
+    setTimeout(this.loadSamples.bind(this), ENV.timeout);
+  }
+
+  componentDidMount() {
+    this.loadSamples();
+  }
+
+  render() {
+    return (<div id="container" >
+      <table className="table table-striped latest-data" >
+        <tbody > {
+          this.state.databases.map(function (database) {
+            return (<tr key={database.dbname} >
+              <td className="dbname" > {database.dbname} </td>
+              <td className="query-count" >
+                <span className={database.lastSample.countClassName} >
+                  {database.lastSample.queries.length}
+                </span>
+              </td>
+              {database.lastSample.topFiveQueries.map(function (query, index) {
+                return (<td className={"Query " + query.elapsedClassName} >
+                  {query.formatElapsed
+                  } <div className="popover left" >
+                    <div className="popover-content" > {
+                      query.query
+                    } </div>
+                    <div className="arrow" />
+                  </div>
+                </td>);
+              })
+              }
+            </tr>
+            );
+          })
+        } </tbody>
+      </table>
+    </div>
+    );
+  }
+};
+
+ReactDOM.render(<DBMon />, document.getElementById('dbmon')); 
+  </script>
+</body>
+</html>
