@@ -8,7 +8,8 @@
 * [Props](props.md)
 * [State](state.md)
 * [Context](context.md)
+* [Refs](refs.md)
 * [组件的生命周期](lifecycle.md)
-* [受控组件与非受控组件](uncontrolledComponent.md)
 * [事件](event.md)
-* [refs](refs.md)
+* [受控组件与非受控组件](uncontrolledComponent.md)
+

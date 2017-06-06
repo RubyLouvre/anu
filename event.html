@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html lang="cn" >
     <head>
-        <title>注意事项 · GitBook</title>
+        <title>事件 · GitBook</title>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -68,10 +68,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="jsx.html" />
+    <link rel="next" href="uncontrolledComponent.html" />
     
     
-    <link rel="prev" href="install.html" />
+    <link rel="prev" href="lifecycle.html" />
     
 
     </head>
@@ -126,7 +126,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.3" data-path="warn.html">
+        <li class="chapter " data-level="1.3" data-path="warn.html">
             
                 <a href="warn.html">
             
@@ -230,7 +230,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11" data-path="event.html">
+        <li class="chapter active" data-level="1.11" data-path="event.html">
             
                 <a href="event.html">
             
@@ -286,7 +286,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >注意事项</a>
+        <a href="." >事件</a>
     </h1>
 </div>
 
@@ -301,27 +301,61 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h2 id="&#x6CE8;&#x610F;&#x70B9;">&#x6CE8;&#x610F;&#x70B9;</h2>
-<h3 id="&#x76EE;&#x524D;&#x6CA1;&#x6709;&#x652F;&#x6301;&#x7684;&#x65B9;&#x6CD5;&#x4E0E;&#x5BF9;&#x8C61;">&#x76EE;&#x524D;&#x6CA1;&#x6709;&#x652F;&#x6301;&#x7684;&#x65B9;&#x6CD5;&#x4E0E;&#x5BF9;&#x8C61;</h3>
+                                <h2 id="&#x4E8B;&#x4EF6;&#x7CFB;&#x7EDF;">&#x4E8B;&#x4EF6;&#x7CFB;&#x7EDF;</h2>
+<p>&#x65E9;&#x671F;&#x7684;DOM 0&#x4E8B;&#x4EF6;&#x7CFB;&#x7EDF;&#xFF0C;&#x662F;&#x5728;&#x6807;&#x7B7E;&#x5185;&#x76F4;&#x63A5;&#x6DFB;&#x52A0; onxxx=&quot;fn&quot;&#x5C5E;&#x6027;&#xFF0C;&#x8FD9;&#x6709;&#x5DE8;&#x5927;&#x7684;&#x7F3A;&#x70B9;&#xFF1A;</p>
+<p>&#x4E00;&#x662F;&#x53EA;&#x80FD;&#x5E94;&#x7528;&#x4E8E;&#x5192;&#x6CE1;&#x9636;&#x6BB5;
+&#x4E8C;&#x662F;fn&#x4E3A;&#x5168;&#x5C40;&#x51FD;&#x6570;
+&#x4E09;&#x662F;this&#x4E0E;&#x4E8B;&#x4EF6;&#x5BF9;&#x8C61;&#x5B58;&#x5728;&#x517C;&#x5BB9;&#x6027;&#x95EE;&#x9898;</p>
+<p>&#x4F46;onxxx&#x65B9;&#x6CD5;&#x975E;&#x5E38;&#x660E;&#x4E86;&#xFF0C;&#x56E0;&#x6B64;React&#x5BF9;&#x5B83;&#x505A;&#x4E86;&#x4E00;&#x4E9B;&#x6539;&#x8FDB;&#xFF0C;</p>
 <ol>
-<li>PropTypes</li>
-<li>childContextTypes(&#x4E0D;&#x9700;&#x8981;&#x5B9A;&#x4E49;&#x5B83;&#xFF0C;&#x5C31;&#x80FD;&#x4F7F;&#x7528;context)</li>
-<li>Children&#x7684;&#x65B9;&#x6CD5;&#x96C6;&#x5408;&#xFF08;&#x4E0D;&#x5B8C;&#x6574;&#xFF09;</li>
-<li>mixin&#x673A;&#x5236;</li>
-<li>createClass</li>
-<li>cloneElement</li>
-<li>isValidElement</li>
-<li>createFactory</li>
+<li>onClick&#x5C5E;&#x6027;&#x53EF;&#x4EE5;&#x5728;&#x540E;&#x9762;&#x6DFB;&#x52A0;Capture&#x5B57;&#x6837;&#xFF0C;&#x8BA9;&#x5B83;&#x5728;&#x6355;&#x83B7;&#x9636;&#x6BB5;&#x6267;&#x884C;&#xFF0C;&#x5373;onClick&#x5BF9;&#x5E94;&#x7740;onClickCapture&#xFF0C; onChange&#x5BF9;&#x5E94;&#x7740;onChangeCapture</li>
+<li>&#x56DE;&#x8C03;&#x51FD;&#x6570;&#x901A;&#x8FC7;&#x7F16;&#x8BD1;&#x624B;&#x6BB5;&#xFF0C;&#x5C06;&#x5B83;&#x6539;&#x6210;&#x5C40;&#x90E8;</li>
+<li>&#x56DE;&#x8C03;&#x7684;this&#x6307;&#x5411;&#x7EC4;&#x4EF6;&#x5B9E;&#x4F8B;&#xFF0C;&#x4E8B;&#x4EF6;&#x5BF9;&#x8C61;&#x6846;&#x67B6;&#x505A;&#x4E86;&#x6807;&#x51C6;&#x5316;&#x5904;&#x7406;&#xFF0C;&#x5E76;&#x4E14;&#x901A;&#x8FC7;&#x56DE;&#x6536;&#x673A;&#x5236;&#xFF0C;&#x4E0D;&#x65AD;&#x91CD;&#x590D;&#x4F7F;&#x7528;&#x6B64;&#x65B9;&#x6CD5;&#x3002;</li>
 </ol>
-<h3 id="&#x4F4E;&#x7248;&#x672C;&#x6D4F;&#x89C8;&#x5668;&#x53EF;&#x80FD;&#x9700;&#x8981;&#x4EE5;&#x4E0B;-&#x8BED;&#x8A00;&#x8865;&#x4E01;">&#x4F4E;&#x7248;&#x672C;&#x6D4F;&#x89C8;&#x5668;&#x53EF;&#x80FD;&#x9700;&#x8981;&#x4EE5;&#x4E0B; &#x8BED;&#x8A00;&#x8865;&#x4E01;</h3>
-<ol>
-<li><a href="https://github.com/juliangruber/isarray/blob/master/index.js" target="_blank">Array.isArray</a></li>
-<li><a href="https://github.com/ryanhefner/Object.assign/blob/master/index.js" target="_blank">Object.assign</a></li>
-<li><a href="https://github.com/flowersinthesand/stringifyJSON" target="_blank">JSON.stringify</a></li>
-<li><a href="https://github.com/paulmillr/console-polyfill" target="_blank">console-polyfill</a> </li>
-<li><a href="https://github.com/medikoo/es6-map/blob/master/polyfill.js" target="_blank">es6-Map</a></li>
-</ol>
-<p>&#x6216;&#x8005;&#x76F4;&#x63A5;&#x4F7F;&#x7528;<strong>polyfill.js</strong> <a href="https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js" target="_blank">https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js</a></p>
+<pre><code class="lang-jsx">&lt;div onClick={this.onClickHandle} onClickCaputure={this.onClickHandle2}&gt;&#x70B9;&#x6211;&lt;/div&gt;
+</code></pre>
+<p>&#x5728;React.createClass&#x65F6;&#x4EE3;&#xFF0C;&#x7EC4;&#x4EF6;&#x7684;&#x56DE;&#x8C03;&#x51FD;&#x6570;&#x90FD;&#x662F;&#x81EA;&#x52A8;bind this&#xFF0C;&#x4FDD;&#x6301;&#x5B83;&#x4EEC;&#x603B;&#x662F;&#x6307;&#x5411;&#x5B9E;&#x4F8B;&#x672C;&#x8EAB;&#x3002;&#x4F46;&#x662F;&#x5728;es6&#x65F6;&#xFF0C;&#x5219;&#x6CA1;&#x6709;&#x8FD9;&#x4E2A;&#x514D;&#x8D39;&#x670D;&#x52A1;&#x4E86;&#x3002;</p>
+<p>&#x4F60;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#xFF40;babel-plugin-transform-class-properties`&#x8FD9;&#x63D2;&#x4EF6;&#xFF0C; &#x5B9E;&#x73B0;&#x5728;class&#x5757;&#x4E2D;&#x76F4;&#x63A5;&#x4F7F;&#x7528;&#x7BAD;&#x5934;&#x51FD;&#x6570;&#x3002;&#x4F17;&#x6240;&#x5468;&#x77E5;&#xFF0C; &#x7BAD;&#x5934;&#x51FD;&#x6570;&#x662F;autobind this&#x7684;</p>
+<pre><code>let {Component, PropTypes} = React;
+
+export default class MyComponent extends Component {  
+  // lifecycle methods and statics
+  static propTypes = {
+    foo: PropTypes.bool.isRequired
+  }
+
+  handler = (e) =&gt; { ... }
+
+  // render actual DOM output
+  render() {
+    return &lt;div onClick={this.handler}&gt;&lt;/div&gt;;
+  }
+}
+</code></pre><p>&#x6B64;&#x5916;&#x4F60;&#x4E5F;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;autobind-decorator&#x8FD9;&#x4E2A;&#x6A21;&#x5757;&#xFF0C;&#x76F4;&#x63A5;&#x7528;es7&#x7684;&#x6CE8;&#x89E3; &#x641E;&#x5B9A;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;</p>
+<p><a href="https://github.com/andreypopp/autobind-decorator" target="_blank">https://github.com/andreypopp/autobind-decorator</a></p>
+<pre><code class="lang-jsx">
+<span class="hljs-keyword">import</span> autobind <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;autobind-decorator&apos;</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Component</span> </span>{
+  <span class="hljs-keyword">constructor</span>(value) {
+    <span class="hljs-keyword">this</span>.value = value
+  }
+
+  @autobind
+  method() {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.value
+  }
+}
+
+<span class="hljs-keyword">let</span> component = <span class="hljs-keyword">new</span> Component(<span class="hljs-number">42</span>)
+<span class="hljs-keyword">let</span> method = component.method <span class="hljs-comment">// .bind(component) isn&apos;t needed!</span>
+method() <span class="hljs-comment">// returns 42</span>
+
+
+<span class="hljs-comment">// Also usable on the class to bind all methods</span>
+@autobind
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Component</span> </span>{ }
+</code></pre>
 
                                 
                                 </section>
@@ -349,12 +383,12 @@
 
             
                 
-                <a href="install.html" class="navigation navigation-prev " aria-label="Previous page: 安装">
+                <a href="lifecycle.html" class="navigation navigation-prev " aria-label="Previous page: 组件的生命周期">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="jsx.html" class="navigation navigation-next " aria-label="Next page: JSX">
+                <a href="uncontrolledComponent.html" class="navigation navigation-next " aria-label="Next page: 受控组件与非受控组件">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -365,7 +399,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"注意事项","level":"1.3","depth":1,"next":{"title":"JSX","level":"1.4","depth":1,"path":"jsx.md","ref":"jsx.md","articles":[]},"previous":{"title":"安装","level":"1.2","depth":1,"path":"install.md","ref":"install.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"warn.md","mtime":"2017-06-06T07:54:05.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T10:51:13.779Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"事件","level":"1.11","depth":1,"next":{"title":"受控组件与非受控组件","level":"1.12","depth":1,"path":"uncontrolledComponent.md","ref":"uncontrolledComponent.md","articles":[]},"previous":{"title":"组件的生命周期","level":"1.10","depth":1,"path":"lifecycle.md","ref":"lifecycle.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"event.md","mtime":"2017-06-06T10:38:55.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T10:51:13.779Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

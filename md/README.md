@@ -96,84 +96,8 @@ anu, 读作［安努］，原意为苏美尔的主神。
 </html>
 ```
 -----------
-```html
-<!DOCTYPE html>
-<html>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script> 
-    <script src="https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js"></script>
-    <script  type="text/babel" >
-  
-    class Select extends React.Component{
-        constructor(props){
-           super(props)
 
-           this.state = {
-               value: props.value
-           }
-           this.onUpdate = props.onUpdate
-           this.onChange = this.onChange.bind(this)
-        }
-        componentWillReceiveProps(props){
-           this.state = { //更新自己
-               value: props.value
-           }
-        }
-        onChange(e){//让父组件更新自己
-            this.onUpdate(e.target.value)
-        }
-        render(){
-            return <select value={this.state.value} onChange={this.onChange}>
-                <option>北京</option>
-                <option>南京</option>
-                <option>东京</option>
-                </select>
-        }
-    }
-    class App extends React.Component{
-       constructor(props){
-           super(props)
-           this.state = {
-               value: '南京'
-           }
-        }
-        onUpdate(value){ //让子组件调用这个父组件的方法
-             this.setState({
-                value: value
-            })
-        }
-        onChange(e){
-           this.onUpdate(e.target.value)
- 
-        }
-        render(){
-          return  <div><Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /><input value={this.state.value} onChange={this.onChange.bind(this)} /></div>
-        }
-
-    }
-
-window.onload = function () {
-   
- ReactDOM.render(<App />,
-   document.getElementById('example'))
-
-}
-    </script>
-</head>
-
-<body>
-  
-    <div>测试</div>
-    <blockquote id='example'></blockquote>
-
-</body>
-
-</html>
-
-```
 与Redux使用的例子
 ```html
 <!DOCTYPE html>
@@ -285,26 +209,28 @@ ReactDOM.render(
 
 依赖于
 
+```
 + [selenium-server-standalone](http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar)
 + [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/), [more available drivers](http://www.seleniumhq.org/projects/webdriver/)
 + nodejs v6.10.0+
 + karma
+```
 
 cli
 
 
 ```
-    npm install selenium-standalone
-    selenium-standalone install --config=./s.js
-    selenium-standalone start
-    //另开窗口
-    npm run build
-
-
+npm install selenium-standalone
+selenium-standalone install --config=./s.js
+selenium-standalone start
+//另开窗口
+npm run build
 ```
 或者
-//linux32可以改成mac, window
+
 ```
+//linux32可以改成mac, window
+
  wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip
  unzip chromedriver_linux32.zip
  wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
@@ -312,4 +238,4 @@ cli
 //另开窗口
     npm run build
 
-``
+```

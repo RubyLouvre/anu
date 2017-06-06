@@ -202,9 +202,22 @@
             
         </li>
     
-        <li class="chapter " data-level="1.9" data-path="lifecycle.md">
+        <li class="chapter " data-level="1.9" data-path="refs.html">
             
-                <span>
+                <a href="refs.html">
+            
+                    
+                    Refs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="lifecycle.html">
+            
+                <a href="lifecycle.html">
             
                     
                     组件的生命周期
@@ -215,22 +228,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.10" data-path="uncontrolledComponent.md">
+        <li class="chapter " data-level="1.11" data-path="event.html">
             
-                <span>
-            
-                    
-                    受控组件与非受控组件
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.11" data-path="event.md">
-            
-                <span>
+                <a href="event.html">
             
                     
                     事件
@@ -241,12 +241,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.12" data-path="refs.md">
+        <li class="chapter " data-level="1.12" data-path="uncontrolledComponent.html">
             
-                <span>
+                <a href="uncontrolledComponent.html">
             
                     
-                    refs
+                    受控组件与非受控组件
             
                 </a>
             
@@ -383,82 +383,6 @@
 <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
 </code></pre>
 <hr>
-<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/React.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span> 
-    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>  <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text/babel&quot;</span> &gt;</span><span class="javascript">
-
-    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Select</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span></span>{
-        <span class="hljs-keyword">constructor</span>(props){
-           <span class="hljs-keyword">super</span>(props)
-
-           <span class="hljs-keyword">this</span>.state = {
-               value: props.value
-           }
-           <span class="hljs-keyword">this</span>.onUpdate = props.onUpdate
-           <span class="hljs-keyword">this</span>.onChange = <span class="hljs-keyword">this</span>.onChange.bind(<span class="hljs-keyword">this</span>)
-        }
-        componentWillReceiveProps(props){
-           <span class="hljs-keyword">this</span>.state = { <span class="hljs-comment">//&#x66F4;&#x65B0;&#x81EA;&#x5DF1;</span>
-               value: props.value
-           }
-        }
-        onChange(e){<span class="hljs-comment">//&#x8BA9;&#x7236;&#x7EC4;&#x4EF6;&#x66F4;&#x65B0;&#x81EA;&#x5DF1;</span>
-            <span class="hljs-keyword">this</span>.onUpdate(e.target.value)
-        }
-        render(){
-            <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">value</span>=<span class="hljs-string">{this.state.value}</span> <span class="hljs-attr">onChange</span>=<span class="hljs-string">{this.onChange}</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x5317;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x5357;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x4E1C;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-                <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span></span>
-        }
-    }
-    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">App</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span></span>{
-       <span class="hljs-keyword">constructor</span>(props){
-           <span class="hljs-keyword">super</span>(props)
-           <span class="hljs-keyword">this</span>.state = {
-               value: <span class="hljs-string">&apos;&#x5357;&#x4EAC;&apos;</span>
-           }
-        }
-        onUpdate(value){ <span class="hljs-comment">//&#x8BA9;&#x5B50;&#x7EC4;&#x4EF6;&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x7236;&#x7EC4;&#x4EF6;&#x7684;&#x65B9;&#x6CD5;</span>
-             <span class="hljs-keyword">this</span>.setState({
-                value: value
-            })
-        }
-        onChange(e){
-           <span class="hljs-keyword">this</span>.onUpdate(e.target.value)
-
-        }
-        render(){
-          <span class="hljs-keyword">return</span>  &lt;div&gt;&lt;Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /&gt;&lt;input value={this.state.value} onChange={this.onChange.bind(this)} /&gt;&lt;/div&gt;
-        }
-
-    }
-
-window.onload = function () {
-
- ReactDOM.render(&lt;App /&gt;,
-   document.getElementById(&apos;example&apos;))
-
-}
-    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
-
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x6D4B;&#x8BD5;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
-
-<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
-
-<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
-</code></pre>
 <p>&#x4E0E;Redux&#x4F7F;&#x7528;&#x7684;&#x4F8B;&#x5B50;</p>
 <pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
@@ -561,29 +485,26 @@ ReactDOM.render(
 </code></pre>
 <h3 id="&#x6D4B;&#x8BD5;">&#x6D4B;&#x8BD5;</h3>
 <p>&#x4F9D;&#x8D56;&#x4E8E;</p>
-<ul>
-<li><a href="http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar" target="_blank">selenium-server-standalone</a></li>
-<li><a href="https://sites.google.com/a/chromium.org/chromedriver/" target="_blank">chromedriver</a>, <a href="http://www.seleniumhq.org/projects/webdriver/" target="_blank">more available drivers</a></li>
-<li>nodejs v6.10.0+</li>
-<li>karma</li>
-</ul>
-<p>cli</p>
-<pre><code>    npm install selenium-standalone
-    selenium-standalone install --config=./s.js
-    selenium-standalone start
-    //&#x53E6;&#x5F00;&#x7A97;&#x53E3;
-    npm run build
-</code></pre><p>&#x6216;&#x8005;
-//linux32&#x53EF;&#x4EE5;&#x6539;&#x6210;mac, window
-```
- wget <a href="https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip" target="_blank">https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip</a>
+<pre><code>+ [selenium-server-standalone](http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar)
++ [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/), [more available drivers](http://www.seleniumhq.org/projects/webdriver/)
++ nodejs v6.10.0+
++ karma
+</code></pre><p>cli</p>
+<pre><code>npm install selenium-standalone
+selenium-standalone install --config=./s.js
+selenium-standalone start
+//&#x53E6;&#x5F00;&#x7A97;&#x53E3;
+npm run build
+</code></pre><p>&#x6216;&#x8005;</p>
+<pre><code>//linux32&#x53EF;&#x4EE5;&#x6539;&#x6210;mac, window
+
+ wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip
  unzip chromedriver_linux32.zip
- wget <a href="http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar" target="_blank">http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar</a>
+ wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
  java -jar selenium-server-standalone-3.3.1.jar
 //&#x53E6;&#x5F00;&#x7A97;&#x53E3;
-    npm run build</p>
-<p>``</p>
-
+    npm run build
+</code></pre>
                                 
                                 </section>
                             
@@ -622,7 +543,7 @@ ReactDOM.render(
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"介绍","level":"1.1","depth":1,"next":{"title":"安装","level":"1.2","depth":1,"path":"install.md","ref":"install.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"README.md","mtime":"2017-06-06T06:49:24.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T08:19:48.544Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"介绍","level":"1.1","depth":1,"next":{"title":"安装","level":"1.2","depth":1,"path":"install.md","ref":"install.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"README.md","mtime":"2017-06-06T10:51:05.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T10:51:13.779Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
