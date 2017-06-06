@@ -8,6 +8,8 @@
 4. mixin机制
 5. createClass
 6. cloneElement
+7. isValidElement
+8. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁
 
