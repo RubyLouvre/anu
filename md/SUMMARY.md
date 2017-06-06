@@ -5,7 +5,7 @@
 * [注意事项](warn.md)
 * [JSX](jsx.md)
 * [组件](component.md)
-* [Props](prop.md)
+* [Props](props.md)
 * [State](state.md)
 * [context](context.md)
 * [组件的生命周期](lifecycle.md)

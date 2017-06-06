@@ -1,0 +1,607 @@
+
+<!DOCTYPE HTML>
+<html lang="cn" >
+    <head>
+        <title>Props · GitBook</title>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.1.1">
+        
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-disqus/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-pro/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    
+    <link rel="stylesheet" type="text/css" href="https:/cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    
+    <link rel="stylesheet" type="text/css" href="https:/cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css" />
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="state.html" />
+    
+    
+    <link rel="prev" href="component.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    介绍
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="install.html">
+            
+                <a href="install.html">
+            
+                    
+                    安装
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="warn.html">
+            
+                <a href="warn.html">
+            
+                    
+                    注意事项
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="jsx.html">
+            
+                <a href="jsx.html">
+            
+                    
+                    JSX
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="component.html">
+            
+                <a href="component.html">
+            
+                    
+                    组件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.6" data-path="props.html">
+            
+                <a href="props.html">
+            
+                    
+                    Props
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="state.html">
+            
+                <a href="state.html">
+            
+                    
+                    State
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8" data-path="context.md">
+            
+                <span>
+            
+                    
+                    context
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="lifecycle.md">
+            
+                <span>
+            
+                    
+                    组件的生命周期
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="uncontrolledComponent.md">
+            
+                <span>
+            
+                    
+                    受控组件与非受控组件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="event.md">
+            
+                <span>
+            
+                    
+                    事件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12" data-path="refs.md">
+            
+                <span>
+            
+                    
+                    refs
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Props</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h2 id="props">props</h2>
+<p>props&#x662F;&#x7528;&#x6765;&#x63CF;&#x8FF0;&#x7EC4;&#x4EF6;&#x7684;&#x5916;&#x90E8;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x4E14;&#x80FD;&#x5F80;&#x4E0B;&#x4F20;&#x9012;&#x7684;&#xFF0C;&#x901A;&#x5E38;&#x6765;&#x8BF4;&#xFF0C;props&#x91CC;&#x9762;&#x8FD8;&#x5B58;&#x5728;&#x4E00;&#x4E2A;children&#x6570;&#x7EC4;&#xFF0C;&#x5982;&#x679C;&#x4E0D;&#x5B58;&#x5728;&#x5B50;&#x7EC4;&#x4EF6;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x4E0D;&#x7528;&#x5199;&#x3002;&#x4E3A;&#x4E86;&#x6027;&#x80FD;&#x8D77;&#x89C1;&#xFF0C;props&#x53D8;&#x8BBE;&#x8BA1;&#x6210;&#x4E0D;&#x53EF;&#x6539;&#x53D8;&#xFF0C;&#x53EA;&#x80FD;&#x5728;JSX &#x91CC;&#x4F7F;&#x7528;attributes&#x5F62;&#x5F0F;&#x8FDB;&#x884C;&#x5B9A;&#x4E49;&#x3002;</p>
+<pre><code class="lang-jsx"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span></span>{
+  render: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-comment">//&#x8FD9;&#x91CC;&#x7684;props&#x5C31;&#x7B49;&#x4E8E;rubylouvre</span>
+    <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Hello {this.props.name}<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span></span>;
+  }
+}
+
+ReactDOM.render(
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">HelloMessage</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;rubylouvre&quot;</span> /&gt;</span>,
+  document.getElementById(&apos;example&apos;)
+</span></code></pre>
+<h3 id="&#x9ED8;&#x8BA4;&#x5C5E;&#x6027;">&#x9ED8;&#x8BA4;&#x5C5E;&#x6027;</h3>
+<p>&#x4E3A;&#x4E86;&#x51CF;&#x5C11;&#x6700;&#x7EC8;&#x4F7F;&#x7528;&#x7EC4;&#x4EF6;&#x7684;&#x7528;&#x6237;&#x7684;&#x5DE5;&#x4F5C;&#x91CF;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x5728;<code>&#x7C7B;&#x540D;&#x91CC;&#x6DFB;&#x52A0;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;</code>&#xFF0C;&#x6765;&#x96C6;&#x4E2D;&#x5B9A;&#x4E49;<strong>&#x9ED8;&#x8BA4;&#x5C5E;&#x6027;</strong>&#x3002;</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&apos;./dist/React.js&apos;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/babel&apos;</span>&gt;</span><span class="actionscript">
+
+       <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Parent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span> </span>{
+
+            render() {
+                <span class="hljs-keyword">return</span> (&lt;HelloComponent name={<span class="hljs-keyword">this</span>.props.name} /&gt;)
+            }
+        }
+        Parent.defaultProps = {
+            name: <span class="hljs-string">&apos;&#x6211;&#x5728;&#x8FD9;&#x91CC;&apos;</span>
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">HelloComponent</span><span class="hljs-params">(props, context)</span> </span>{
+            <span class="hljs-keyword">return</span> (&lt;div&gt;Hello {props.name}&lt;/div&gt;)
+        }
+
+        window.onload = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+            ReactDOM.render(&lt;Parent /&gt;, document.getElementById(<span class="hljs-string">&apos;example&apos;</span>));
+        }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span>&#x8FD9;&#x4E2A;&#x9ED8;&#x8BA4;&#x4F1A;&#x88AB;&#x6E05;&#x6389;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p>&#x4F60;&#x4E5F;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;<code>&#x9759;&#x6001;&#x7684;&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;</code></p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&apos;./dist/React.js&apos;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/babel&apos;</span>&gt;</span><span class="actionscript">
+
+       <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Parent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span> </span>{
+            <span class="hljs-keyword">static</span> defaultProps =  {
+              name: <span class="hljs-string">&quot;&#x9759;&#x6001;&quot;</span>
+            }
+            render() {
+                <span class="hljs-keyword">return</span> (&lt;HelloComponent name={<span class="hljs-keyword">this</span>.props.name} /&gt;)
+            }
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">HelloComponent</span><span class="hljs-params">(props, context)</span> </span>{
+            <span class="hljs-keyword">return</span> (&lt;div&gt;Hello {props.name}&lt;/div&gt;)
+        }
+
+        window.onload = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+            ReactDOM.render(&lt;Parent /&gt;, document.getElementById(<span class="hljs-string">&apos;example&apos;</span>));
+        }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span>&#x8FD9;&#x4E2A;&#x9ED8;&#x8BA4;&#x4F1A;&#x88AB;&#x6E05;&#x6389;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p>&#x5982;&#x679C;&#x4F60;&#x5B89;&#x88C5;&#x4E86;bable&#x8FD9;&#x4E2A;<code>babel-plugin-transform-class-properties</code>&#x63D2;&#x4EF6;&#xFF0C;&#x8FD8;&#x53EF;&#x4EE5;&#x8FD9;&#x6837;&#x5199;</p>
+<p><a href="https://www.npmjs.com/package/babel-plugin-transform-class-properties" target="_blank">https://www.npmjs.com/package/babel-plugin-transform-class-properties</a></p>
+<pre><code class="lang-html">
+
+</code></pre>
+<p>&lt;!DOCTYPE html&gt;</p>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <script src="./dist/React.js"></script>
+    <script src="./test/babel.js"></script>
+    <script type="text/babel">
+
+       class Parent extends React.Component {
+             static get defaultProps() {
+                return {
+                    name: "静态"
+                }
+            }
+            render() {
+                return (<HelloComponent name={this.props.name} />)
+            }
+        }
+
+        function HelloComponent(props, context) {
+            return (<div>Hello {props.name}</div>)
+        }
+
+        window.onload = function() {
+            ReactDOM.render(<Parent />, document.getElementById('example'));
+        }
+    </script>
+</head>
+
+<body>
+    <div id="example">&#x8FD9;&#x4E2A;&#x9ED8;&#x8BA4;&#x4F1A;&#x88AB;&#x6E05;&#x6389;</div>
+</body>
+
+</html>
+
+<pre><code>```
+
+###&#x5C5E;&#x6027;&#x9A8C;&#x8BC1;
+
+
+&#x5728;&#x5F00;&#x53D1;&#x73AF;&#x5883;&#x4E2D;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;PropTypes &#x63D0;&#x4F9B;&#x7684;&#x8BB8;&#x591A;&#x9A8C;&#x8BC1;&#x5668; (validator) &#x6765;&#x68C0;&#x67E5;&#x4F20;&#x5165;&#x6570;&#x636E;&#x7684;&#x6709;&#x6548;&#x6027;&#x3002;&#x5F53;&#x5411; props &#x4F20;&#x5165;&#x65E0;&#x6548;&#x6570;&#x636E;&#x65F6;&#xFF0C;JavaScript &#x63A7;&#x5236;&#x53F0;&#x4F1A;&#x629B;&#x51FA;&#x8B66;&#x544A;&#x3002;&#x4E0B;&#x9762;&#x7528;&#x4F8B;&#x5B50;&#x6765;&#x8BF4;&#x660E;&#x4E0D;&#x540C;&#x9A8C;&#x8BC1;&#x5668;&#x7684;&#x533A;&#x522B;&#xFF1A;
+
+```jsx
+class Hello extends Component {
+    render(){
+        return (
+            &lt;div&gt; hello { this.props.name } &lt;/div&gt;
+        );
+    }
+}
+Hello.propTypes &#xFF1D; {
+    // &#x53EF;&#x4EE5;&#x58F0;&#x660E; prop &#x4E3A;&#x6307;&#x5B9A;&#x7684; JS &#x57FA;&#x672C;&#x7C7B;&#x578B;&#x3002;&#x9ED8;&#x8BA4;
+    // &#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8FD9;&#x4E9B; prop &#x90FD;&#x662F;&#x53EF;&#x4F20;&#x53EF;&#x4E0D;&#x4F20;&#x7684;&#x3002;
+    optionalArray: React.PropTypes.array,
+    optionalBool: React.PropTypes.bool,
+    optionalFunc: React.PropTypes.func,
+    optionalNumber: React.PropTypes.number,
+    optionalObject: React.PropTypes.object,
+    optionalString: React.PropTypes.string,
+
+    // &#x6240;&#x6709;&#x53EF;&#x4EE5;&#x88AB;&#x6E32;&#x67D3;&#x7684;&#x5BF9;&#x8C61;&#xFF1A;&#x6570;&#x5B57;&#xFF0C;
+    // &#x5B57;&#x7B26;&#x4E32;&#xFF0C;DOM &#x5143;&#x7D20;&#x6216;&#x5305;&#x542B;&#x8FD9;&#x4E9B;&#x7C7B;&#x578B;&#x7684;&#x6570;&#x7EC4;&#x3002;
+    optionalNode: React.PropTypes.node,
+
+    // React &#x5143;&#x7D20;
+    optionalElement: React.PropTypes.element,
+
+    // &#x7528; JS &#x7684; instanceof &#x64CD;&#x4F5C;&#x7B26;&#x58F0;&#x660E; prop &#x4E3A;&#x7C7B;&#x7684;&#x5B9E;&#x4F8B;&#x3002;
+    optionalMessage: React.PropTypes.instanceOf(Message),
+
+    // &#x7528; enum &#x6765;&#x9650;&#x5236; prop &#x53EA;&#x63A5;&#x53D7;&#x6307;&#x5B9A;&#x7684;&#x503C;&#x3002;
+    optionalEnum: React.PropTypes.oneOf([&apos;News&apos;, &apos;Photos&apos;]),
+
+    // &#x6307;&#x5B9A;&#x7684;&#x591A;&#x4E2A;&#x5BF9;&#x8C61;&#x7C7B;&#x578B;&#x4E2D;&#x7684;&#x4E00;&#x4E2A;
+    optionalUnion: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.number,
+      React.PropTypes.instanceOf(Message)
+    ]),
+
+    // &#x6307;&#x5B9A;&#x7C7B;&#x578B;&#x7EC4;&#x6210;&#x7684;&#x6570;&#x7EC4;
+    optionalArrayOf: React.PropTypes.arrayOf(React.PropTypes.number),
+
+    // &#x6307;&#x5B9A;&#x7C7B;&#x578B;&#x7684;&#x5C5E;&#x6027;&#x6784;&#x6210;&#x7684;&#x5BF9;&#x8C61;
+    optionalObjectOf: React.PropTypes.objectOf(React.PropTypes.number),
+
+    // &#x7279;&#x5B9A;&#x5F62;&#x72B6;&#x53C2;&#x6570;&#x7684;&#x5BF9;&#x8C61;
+    optionalObjectWithShape: React.PropTypes.shape({
+      color: React.PropTypes.string,
+      fontSize: React.PropTypes.number
+    }),
+
+    // &#x4EE5;&#x540E;&#x4EFB;&#x610F;&#x7C7B;&#x578B;&#x52A0;&#x4E0A; `isRequired` &#x6765;&#x4F7F; prop &#x4E0D;&#x53EF;&#x7A7A;&#x3002;
+    requiredFunc: React.PropTypes.func.isRequired,
+
+    // &#x4E0D;&#x53EF;&#x7A7A;&#x7684;&#x4EFB;&#x610F;&#x7C7B;&#x578B;
+    requiredAny: React.PropTypes.any.isRequired,
+
+    // &#x81EA;&#x5B9A;&#x4E49;&#x9A8C;&#x8BC1;&#x5668;&#x3002;&#x5982;&#x679C;&#x9A8C;&#x8BC1;&#x5931;&#x8D25;&#x9700;&#x8981;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A; Error &#x5BF9;&#x8C61;&#x3002;&#x4E0D;&#x8981;&#x76F4;&#x63A5;
+    // &#x4F7F;&#x7528; `console.warn` &#x6216;&#x629B;&#x5F02;&#x5E38;&#xFF0C;&#x56E0;&#x4E3A;&#x8FD9;&#x6837; `oneOfType` &#x4F1A;&#x5931;&#x6548;&#x3002;
+    customProp: function(props, propName, componentName) {
+      if (!/matchme/.test(props[propName])) {
+        return new Error(&apos;Validation failed!&apos;);
+      }
+    }
+  }
+</code></pre><p>&#x5728;React 15.5&#x4E2D;&#xFF0C;&#x4E3B; React.PropTypes&#x5DF2;&#x7ECF;&#x88AB;&#x5265;&#x79BB;&#x5230;&#x72EC;&#x7ACB;&#x7684;&#x4ED3;&#x5E93;&#x4E2D;&#x3002;</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="component.html" class="navigation navigation-prev " aria-label="Previous page: 组件">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="state.html" class="navigation navigation-next " aria-label="Next page: State">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Props","level":"1.6","depth":1,"next":{"title":"State","level":"1.7","depth":1,"path":"state.md","ref":"state.md","articles":[]},"previous":{"title":"组件","level":"1.5","depth":1,"path":"component.md","ref":"component.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"livereload":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"props.md","mtime":"2017-06-06T07:43:31.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T07:48:14.737Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.16.1/URI.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-disqus/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-pro/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-pro/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"></script>
+    
+
+    </body>
+</html>
+

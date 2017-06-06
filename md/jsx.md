@@ -10,6 +10,13 @@ React的核心机制之一就是可以在内存中创建虚拟DOM。React利用�
 
 [http://www.bootcdn.cn/babel-core/](http://www.bootcdn.cn/babel-core/)
 
+###JSX的特点：
+
+1. 类XML语法容易接受，结构清晰
+2. 增强JS语义
+3. 抽象程度高，屏蔽DOM操作，跨平台
+4. 代码模块化
+
 
 我们从最简单的一个官网例子helloworld开始：
 ```html
@@ -168,6 +175,8 @@ React.render(
 );
 ```
 
+注意：JSX里面br，input, hr等标签必须自闭合，如`<br>`必须写成`<br />`
+
 
 ###自定义组件
 
@@ -175,7 +184,7 @@ React.render(
 
 一般来说，我们可以通过标签名的第一个字母是大写还是小写来识别组件与普通标签。
 
-```
+```jsx
 class HelloWorld extends React.Component{
   render() {
     return (
