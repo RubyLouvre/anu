@@ -1,10 +1,36 @@
 {
-    "plugins": ["disqus", "-lunr", "-search", "search-pro", "addcssjs"],
-    "language": "cn", 
+    "plugins": [
+        "-lunr",
+        "-search",
+        "search-pro",
+        "addcssjs",
+        "header",
+        "betterchinese",
+        "splitter",
+        "github",
+        "-emphasize",
+        "include-codeblock",
+        "tbfed-pagefooter",
+        "toggle-chapters",
+        "page-toc",
+        "include",
+        "style",
+        "toolbar"
+    ],
+    "language": "cn",
     "pluginsConfig": {
         "disqus": {
             "shortName": "NAME-FROM-DISQUS"
 
+        },
+         "github": {
+            "url": "https://github.com/RubyLouvre"
+        },
+
+        "tbfed-pagefooter": {
+            "copyright": "Copyright &copy; 司徒正美 2013－2016",
+            "modify_label": "该文件修订时间：",
+            "modify_format": "YYYY-MM-DD HH:mm:ss"
         },
         "addcssjs": {
             "js": [

@@ -105,8 +105,6 @@ ReactDOM.render(
 [https://www.npmjs.com/package/babel-plugin-transform-class-properties](https://www.npmjs.com/package/babel-plugin-transform-class-properties)
 
 ```html
-
-```
 <!DOCTYPE html>
 <html>
 
@@ -144,9 +142,8 @@ ReactDOM.render(
 </body>
 
 </html>
+```
 
-```
-```
 
 ###属性验证
 
