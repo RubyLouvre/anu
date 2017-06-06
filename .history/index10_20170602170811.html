@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    
+
+<script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
+    <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>
+    <script src="./test/babel.js"></script>-->
+    <script>
+        window.onload = function () {
+
+            var el = React.createElement('p', null, 'aaa', {
+            type: '#text',
+            text: ''
+        }, 'ccc')
+            console.log(el)
+        }
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

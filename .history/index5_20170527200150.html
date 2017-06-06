@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>测试注释节点</title>
+    <meta name="viewport" content="width=device-width">
+    <style>
+      .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+    <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+  <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+    var s
+     class App extends React.Component {
+            render() {
+                return <div title='1' ref='a'>222<p ref='b'>33333</p><A ref='c' /></div>
+            }
+        }
+        var index = 1
+        class A extends React.Component {
+            constructor(props){
+               super(props)
+               this.state = {
+                 a: 111
+               }
+            }
+            componentWillReceiveProps() {
+              
+                this.forceUpdate()
+            }
+            change(a){
+                index++
+              this.setState({
+                    a: a
+              })
+            }
+            componentDidMount(){
+               console.log('A did mount')
+            }
+            render() {
+                return index ==1 ? <strong>111{this.state.a}2222</strong> :
+                index ==2 ?   <span>xxxx<b>333</b><span>555</span></span>:
+                <span>yyy<b>333</b><strong>777</strong></span>
+
+            }
+        }
+        class B extends React.Component {
+            componentWillReceiveProps() {
+                this.forceUpdate()
+            }
+            componentDidMount(){
+               console.log('B did mount')
+            }
+            render() {
+                return <span>B</span>
+            }
+        }
+  window.onload = function(){
+      console.log('--------')
+        s = ReactDOM.render( <A />, document.getElementById('example'))
+  
+  }
+    </script>
+</head>
+
+<body>
+
+
+  <math id='aaa'>
+    <mrow>
+      <mrow>
+        <msup>
+          <mi>a</mi>
+          <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <msup>
+          <mi>b</mi>
+          <mn>2</mn>
+        </msup>
+      </mrow>
+      <mo>=</mo>
+      <msup>
+        <mi>c</mi>
+        <mn>2</mn>
+      </msup>
+    </mrow>
+  </math>
+
+
+    <div id='example'>ddd</div>
+<script>
+    var el = document.getElementById('aaa')
+    console.log(el.namespaceURI)
+</script>
+
+</body>
+
+</html>

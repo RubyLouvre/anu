@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+
+        .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+
+    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+    <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
+    <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>
+    <script src="./test/babel.js"></script>-->
+    <script>
+        window.onload = function () {
+            const stack = [];
+
+            const EMPTY_CHILDREN = [];
+            var React = {
+                createElement: function (type, configs) {
+
+                    var props = {},
+                        key = null,
+                        ref = null,
+                        pChildren = null, //位于props中的children
+                        props = {},
+                        vtype = 1,
+                        typeType = typeof type,
+                         lastSimple, child, simple, i,
+                        children = EMPTY_CHILDREN
+                    isEmptyProps = true
+                    if (configs) {
+                        for (var i in configs) {
+                            var val = configs[i]
+                            if (i === 'key') {
+                                key = val
+                            } else if (i === 'ref') {
+                                ref = val
+                            } else if (i === 'children') {
+                                pChildren = val
+                            } else {
+                                isEmptyProps = false
+                                props[i] = val
+                            }
+                        }
+                    }
+                    if (typeType === 'function') {
+                        vtype = type.prototype && type.prototype.render ?
+                            2 :
+                            4
+                    }
+                    for (var i = 2, n = arguments.length; i < n; i++) {
+                        var el = arguments[i]
+                        if (el && el.pop) {
+                            el.deep = 1
+                        }
+
+                        stack.push(el)
+                    }
+
+                    while (stack.length) {
+                        console.log(lastSimple, '--')
+                        if ((child = stack.pop()) && child.pop !== undefined) {
+                            for (i = child.length; i--;) stack.push(child[i]);
+                        } else {
+                            if (typeof child === 'boolean') child = null;
+
+                            if ((simple = typeof type !== 'function')) {
+                                if (child == null) child = '';
+                                else if (typeof child === 'number') child = String(child);
+                                else if (typeof child !== 'string') simple = false;
+                            }
+
+                            if (simple && lastSimple && children.length) {
+                                console.log(children, simple, children[children.length-1 ], child)
+                                children[children.length-1 ].text += child;
+                            }
+                            if (typeof child === 'string') {
+                                child = {
+                                    type: '#text',
+                                    text: child
+                                }
+                            } else if (children === EMPTY_CHILDREN) {
+                                children = [child];
+                            } else {
+                                children.push(child);
+                            }
+
+                            lastSimple = simple;
+                        }
+                    }
+                    props.children = children
+                    return new VNode(type, props, key, vtype)
+
+                }
+            }
+
+
+            function VNode(type, props, key, vtype) {
+                this.type = type
+                this.props = props
+                this.vtype = vtype
+                this.deep = 0
+                if (key) {
+                    this.key = key
+                }
+
+            }
+
+            var a = React.createElement('div', {}, "xxx", "yyy", ["aaa", 'bbb', [React.createElement('span', {})],
+                React.createElement('p', {}), [React.createElement('b', {})]
+            ], "zzzz")
+            console.log(a)
+        }
+    </script>
+</head>
+
+<body>
+    
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

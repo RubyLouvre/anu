@@ -1,71 +1,678 @@
-<!DOCTYPE html>
-<html>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-    </style>
-    <title>后端</title>
-     <script type='text/javascript' src="./json5.js"></script>  
-   <script type='text/javascript' src="./dist/React.js"></script>  
- <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-   
-    <script type='text/javascript' src="./test/react-router-dom.js"></script>
+<!DOCTYPE HTML>
+<html lang="cn" >
+    <head>
+        <title>介绍 · GitBook</title>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.1.1">
+        
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
 
-     <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./test/babel.js"></script>
-    <script type='text/babel'>
- 
-var {
-  BrowserRouter ,
-  Route,
-  Link
-} = ReactRouterDOM
-var Router = BrowserRouter
-const Child = function({ match }) {
-  console.log('Child render')
-  return <div>
-    <h3>ID: {match.params.id}</h3>
-  </div>
-}
-const ParamsExample = () => (
-  <Router>
-    <div>
-      <h2>Accounts</h2>
-      <ul>
-        <li><Link to="/netflix">Netflix</Link></li>
-        <li><Link to="/zillow-group">Zillow Group</Link></li>
-        <li><Link to="/yahoo">Yahoo</Link></li>
-        <li><Link to="/modus-create">Modus Create</Link></li>
-      </ul>
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-disqus/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-pro/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
 
-      <Route path="/:id" component={Child}/>
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    
+    <link rel="stylesheet" type="text/css" href="https:/cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    
+    <link rel="stylesheet" type="text/css" href="https:/cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css" />
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="install.html" />
+    
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter active" data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    介绍
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="install.html">
+            
+                <a href="install.html">
+            
+                    
+                    安装
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="warn.html">
+            
+                <a href="warn.html">
+            
+                    
+                    注意事项
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="jsx.html">
+            
+                <a href="jsx.html">
+            
+                    
+                    JSX
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="component.md">
+            
+                <span>
+            
+                    
+                    组件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6" data-path="prop.md">
+            
+                <span>
+            
+                    
+                    Props
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="state.md">
+            
+                <span>
+            
+                    
+                    State
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8" data-path="context.md">
+            
+                <span>
+            
+                    
+                    context
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="lifecycle.md">
+            
+                <span>
+            
+                    
+                    组件的生命周期
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="uncontrolledComponent.md">
+            
+                <span>
+            
+                    
+                    受控组件与非受控组件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="event.md">
+            
+                <span>
+            
+                    
+                    事件
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12" data-path="refs.md">
+            
+                <span>
+            
+                    
+                    refs
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
     </div>
-  </Router>
-)
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >介绍</a>
+    </h1>
+</div>
 
 
-var s 
-window.onload = function(){
-  s =  ReactDOM.render(<ParamsExample />, document.getElementById('example'))
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="anu">anu</h1>
+<p align="center">
+<a href="https://badge.fury.io/js/anujs" target="_blank">
+<img src="https://badge.fury.io/js/anujs.svg" alt="npm version" height="18">
+</a>
+<a href="https://travis-ci.org/RubyLouvre/anu" target="_blank">
+<img src="https://travis-ci.org/RubyLouvre/anu.svg?branch=master" alt="Travis CI Status">
+</a>
+<a href="https://codeclimate.com/github/RubyLouvre/anu" target="_blank">
+<img src="https://codeclimate.com/github/RubyLouvre/anu/badges/gpa.svg">
+</a>
+</p>
+
+
+<pre><code>npm install anujs
+</code></pre><p>anu, &#x8BFB;&#x4F5C;&#xFF3B;&#x5B89;&#x52AA;&#xFF3D;&#xFF0C;&#x539F;&#x610F;&#x4E3A;&#x82CF;&#x7F8E;&#x5C14;&#x7684;&#x4E3B;&#x795E;&#x3002;</p>
+<p>&#x6B64;&#x6846;&#x67B6;&#x7684;&#x521B;&#x7ACB;&#x4E4B;&#x610F;&#x6709;&#x4E09;&#xFF1A; </p>
+<ol>
+<li><p>&#x63D0;&#x5347;&#x6027;&#x80FD;&#xFF0C; &#x867D;&#x7136;React&#x7684;&#x6027;&#x80FD;&#x76F8;&#x5BF9;&#x4E8E;&#x4F20;&#x7EDF;&#x7684;MVVM&#x6846;&#x67B6;&#x662F;&#x5F88;&#x5389;&#x5BB3;&#x4E86;&#xFF0C;&#x4F46;&#x8FD1;&#x51E0;&#x5E74;&#x5192;&#x51FA;&#x6765;&#x7684;diff&#x7B97;&#x6CD5;&#x6BD4;&#x5B98;&#x65B9;&#x7248;&#x66F4;&#x4F18;&#x79C0;&#xFF0C;&#x5B98;&#x65B9;&#x7248;&#x79EF;&#x91CD;&#x96BE;&#x8FD4;&#xFF0C;&#x5F88;&#x96BE;&#x77ED;&#x65F6;&#x671F;&#x5438;&#x6536;&#x8FD9;&#x4E9B;&#x6210;&#x679C;&#x3002;anu&#x5219;&#x5C0F;&#x8239;&#x597D;&#x8C03;&#x5934;&#xFF0C;&#x7B2C;&#x4E00;&#x65F6;&#x95F4;&#x6536;&#x7EB3;&#x5176;&#x4E2D;&#x3002;&#x6027;&#x80FD;&#x662F;&#x738B;&#x9053;&#x3002;&#x5929;&#x4E0B;&#x6B66;&#x529F;&#xFF0C;&#x552F;&#x5FEB;&#x4E0D;&#x7834;&#x3002;</p>
+</li>
+<li><p>&#x538B;&#x7F29;&#x4F53;&#x79EF;&#x3002; React+React-dom&#x52A0;&#x8D77;&#x6765;&#x6709;&#x4E09;&#x4E07;&#x591A;&#x884C;&#xFF0C;&#x8FD9;&#x4E48;&#x5927;&#x7684;&#x4F53;&#x91CF;&#x4EFB;&#x4F55;code splitting&#x4E0E;&#x6309;&#x9700;&#x52A0;&#x8F7D;&#x6280;&#x672F;&#x90FD;&#x65E0;&#x80FD;&#x4E3A;&#x529B;&#xFF0C;&#x56E0;&#x6B64;&#x6211;&#x4EEC;&#x9700;&#x8981;&#x8FF7;&#x4F60;&#x7248;&#x7684;&#x4F53;&#x79EF;&#x3002;</p>
+</li>
+<li><p>&#x5353;&#x8D8A;&#x7684;&#x6D4F;&#x89C8;&#x5668;&#x517C;&#x5BB9;&#x6027;&#x3002; React&#x5728;&#x751F;&#x4EA7;&#x73AF;&#x5883;&#x4E2D;&#x6CA1;&#x6709;&#x7528;&#x5230;&#x4EC0;&#x4E48;&#x65B0;&#x5F0F;&#x504F;&#x95E8;&#x7684;API&#xFF0C;&#x56E0;&#x6B64;&#x672C;&#x6765;&#x5C31;&#x53EF;&#x4EE5;&#x517C;&#x5BB9;&#x5230;IE8&#x4E4B;&#x4E0B;&#x3002;&#x517C;&#x5BB9;&#x6027;&#x8D8A;&#x597D;&#xFF0C;&#x6211;&#x4EEC;&#x7684;&#x540E;&#x987E;&#x4E4B;&#x5FE7;&#x8D8A;&#x5C11;&#x3002;</p>
+</li>
+</ol>
+<p>&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;&#xFF0D;</p>
+<p>&#x7279;&#x70B9;&#xFF1A;</p>
+<ol>
+<li>&#x652F;&#x6301;React&#x7684;&#x65E0;&#x72C0;&#x6001;&#x7EC4;&#x4EF6;&#xFF0C;&#x7EAF;&#x7EC4;&#x4EF6;&#xFF0C;&#x9AD8;&#x9636;&#x7EC4;&#x4EF6;&#xFF0C;&#x53D7;&#x63A7;&#x7EC4;&#x4EF6;&#x4E0E;<a href="https://github.com/RubyLouvre/anu/wiki/%E9%9D%9E%E5%8F%97%E6%8E%A7%E7%BB%84%E4%BB%B6" target="_blank">&#x975E;&#x53D7;&#x63A7;&#x7EC4;&#x4EF6;</a>&#xFF0C;</li>
+<li>&#x547D;&#x540D;&#x7A7A;&#x95F4;&#x5C31;&#x662F;React&#xFF0C;&#x6B64;&#x5916;&#x8FD8;&#x66B4;&#x9732;&#x4E86;&#x53E6;&#x4E00;&#x4E2A;&#x522B;&#x540D;ReactDOM&#x5728;window&#x4E0A;</li>
+<li>&#x4F53;&#x79EF;&#x8DB3;&#x591F;&#x5C11;(1700&#x884C;&#x76F8;&#x5BF9;&#x4E8E;react+react-dom&#x7684;3&#x4E07;&#x884C;)</li>
+<li>&#x6027;&#x80FD;&#x662F;&#x5B98;&#x65B9;React&#x7684;&#x8FD1;<strong>&#x4E24;&#x500D;</strong>&#x6216;&#x66F4;&#x9AD8;  <a href="https://github.com/RubyLouvre/anu/blob/master/pref/anu.html" target="_blank">&#x6D4B;&#x8BD5;&#x9875;&#x9762;</a>&#x3001; <a href="https://github.com/RubyLouvre/anu/issues/10#issuecomment-305694971" target="_blank">&#x7ED3;&#x679C;&#x7EDF;&#x8BA1;</a></li>
+<li>&#x751F;&#x547D;&#x5468;&#x671F;&#x51FD;&#x6570;&#x7684;&#x53C2;&#x6570;&#x4E0E;&#x5B98;&#x65B9;&#x4FDD;&#x6301;&#x4E00;&#x81F4;</li>
+<li>&#x76F4;&#x63A5;&#x4E0E;<a href="https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90" target="_blank">react-redux, react-router-dom, react-router-redux</a>&#x6DF7;&#x7528;</li>
+<li>&#x652F;&#x6301;<a href="https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93" target="_blank">&#x540E;&#x7AEF;&#x6E32;&#x67D3;</a></li>
+<li>&#x652F;&#x6301;<a href="https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7" target="_blank">&#x5B98;&#x65B9;&#x7684;chrome DevTools</a></li>
+</ol>
+<p><img src="https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png" alt="image"></p>
+<p>&#x8BE6;&#x7EC6;&#x7528;&#x6CD5;&#x4E0E;&#x793A;&#x4F8B;&#x89C1; <strong> <a href="https://github.com/RubyLouvre/anu/wiki" target="_blank">wiki</a> </strong></p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/React.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>  <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text/babel&quot;</span> &gt;</span><span class="javascript">
+       <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">PureComponent</span> </span>{
+            <span class="hljs-keyword">constructor</span>(props) {
+                <span class="hljs-keyword">super</span>(props)
+                <span class="hljs-keyword">this</span>.state = {
+                    aaa: {
+                        a: <span class="hljs-number">7</span>
+                    }
+                }
+            }
+
+            click() {
+                <span class="hljs-keyword">this</span>.setState(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">state</span>)</span>{
+                   state.aaa.a = <span class="hljs-number">8</span>
+                })
+            }
+            render() {
+                <span class="hljs-keyword">return</span>  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.click.bind(this)</span> }&gt;</span>{this.state.aaa.a}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+            }
+        }
+        <span class="hljs-built_in">window</span>.onload = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            ReactDOM.render(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">A</span> /&gt;</span>, document.getElementById(&apos;example&apos;))
+        }
+    </span></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x8FD9;&#x4E2A;&#x600E;&#x4E48;&#x70B9;&#x51FB;&#x4E5F;&#x4E0D;&#x4F1A;&#x53D8;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
+
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<hr>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/React.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span> 
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://cdn.bootcss.com/babel-standalone/6.24.0/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>  <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text/babel&quot;</span> &gt;</span><span class="javascript">
+
+    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Select</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span></span>{
+        <span class="hljs-keyword">constructor</span>(props){
+           <span class="hljs-keyword">super</span>(props)
+
+           <span class="hljs-keyword">this</span>.state = {
+               value: props.value
+           }
+           <span class="hljs-keyword">this</span>.onUpdate = props.onUpdate
+           <span class="hljs-keyword">this</span>.onChange = <span class="hljs-keyword">this</span>.onChange.bind(<span class="hljs-keyword">this</span>)
+        }
+        componentWillReceiveProps(props){
+           <span class="hljs-keyword">this</span>.state = { <span class="hljs-comment">//&#x66F4;&#x65B0;&#x81EA;&#x5DF1;</span>
+               value: props.value
+           }
+        }
+        onChange(e){<span class="hljs-comment">//&#x8BA9;&#x7236;&#x7EC4;&#x4EF6;&#x66F4;&#x65B0;&#x81EA;&#x5DF1;</span>
+            <span class="hljs-keyword">this</span>.onUpdate(e.target.value)
+        }
+        render(){
+            <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">value</span>=<span class="hljs-string">{this.state.value}</span> <span class="hljs-attr">onChange</span>=<span class="hljs-string">{this.onChange}</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x5317;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x5357;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">option</span>&gt;</span>&#x4E1C;&#x4EAC;<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span></span>
+        }
+    }
+    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">App</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span></span>{
+       <span class="hljs-keyword">constructor</span>(props){
+           <span class="hljs-keyword">super</span>(props)
+           <span class="hljs-keyword">this</span>.state = {
+               value: <span class="hljs-string">&apos;&#x5357;&#x4EAC;&apos;</span>
+           }
+        }
+        onUpdate(value){ <span class="hljs-comment">//&#x8BA9;&#x5B50;&#x7EC4;&#x4EF6;&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x7236;&#x7EC4;&#x4EF6;&#x7684;&#x65B9;&#x6CD5;</span>
+             <span class="hljs-keyword">this</span>.setState({
+                value: value
+            })
+        }
+        onChange(e){
+           <span class="hljs-keyword">this</span>.onUpdate(e.target.value)
+
+        }
+        render(){
+          <span class="hljs-keyword">return</span>  &lt;div&gt;&lt;Select onUpdate={this.onUpdate.bind(this)} value={this.state.value} /&gt;&lt;input value={this.state.value} onChange={this.onChange.bind(this)} /&gt;&lt;/div&gt;
+        }
+
+    }
+
+window.onload = function () {
+
+ ReactDOM.render(&lt;App /&gt;,
+   document.getElementById(&apos;example&apos;))
+
 }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x6D4B;&#x8BD5;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p>&#x4E0E;Redux&#x4F7F;&#x7528;&#x7684;&#x4F8B;&#x5B50;</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/React.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://cdn.bootcss.com/redux/3.6.0/redux.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/babel&apos;</span>&gt;</span><span class="actionscript">
+        <span class="hljs-keyword">var</span> addTodoActions = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(text)</span> </span>{
+            <span class="hljs-keyword">return</span> {
+                type: <span class="hljs-string">&apos;add_todo&apos;</span>,
+                text: text
+            };
+        }
+        <span class="hljs-keyword">var</span> todoReducer = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(state, action)</span> </span>{
+
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> state === <span class="hljs-string">&apos;undefined&apos;</span>) {
+                <span class="hljs-keyword">return</span> [];
+            }
+
+            <span class="hljs-keyword">switch</span> (action.type) {
+                <span class="hljs-keyword">case</span> <span class="hljs-string">&apos;add_todo&apos;</span>:
+                    <span class="hljs-keyword">return</span> state.slice(<span class="hljs-number">0</span>).concat({
+                        text: action.text,
+                        completed: <span class="hljs-literal">false</span>
+                    });
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">default</span>:
+                    <span class="hljs-keyword">return</span> state;
+            }
+        };
+        <span class="hljs-keyword">var</span> store = Redux.createStore(todoReducer);
+        <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">App</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">React</span>.<span class="hljs-title">Component</span> </span>{
+            constructor(props){
+                <span class="hljs-keyword">super</span>(props)
+                <span class="hljs-keyword">this</span>.state = {
+                    items: store.getState()
+                }
+                <span class="hljs-keyword">this</span>.onChange = <span class="hljs-keyword">this</span>.onChange.bind(<span class="hljs-keyword">this</span>)
+                <span class="hljs-keyword">this</span>.handleKeyUp = <span class="hljs-keyword">this</span>.handleKeyUp.bind(<span class="hljs-keyword">this</span>)
+                <span class="hljs-keyword">this</span>.handleAdd = <span class="hljs-keyword">this</span>.handleAdd.bind(<span class="hljs-keyword">this</span>)
+            }
+            componentDidMount(){
+                <span class="hljs-keyword">var</span> unsubscribe = store.subscribe(<span class="hljs-keyword">this</span>.onChange);
+            }
+            onChange(){
+                <span class="hljs-keyword">this</span>.setState({
+                    items: store.getState()
+                });
+            }
+            handleKeyUp(e){
+                <span class="hljs-keyword">if</span>(e.which === <span class="hljs-number">13</span>){
+                   <span class="hljs-keyword">this</span>.handleAdd()
+                }
+            }
+            handleAdd(){
+                <span class="hljs-keyword">var</span> input = <span class="hljs-keyword">this</span>.refs.todo
+                <span class="hljs-keyword">var</span> value = input.value.trim();
+
+                <span class="hljs-keyword">if</span>(value)
+                    store.dispatch(addTodoActions(value));
+
+                input.value = <span class="hljs-string">&apos;&apos;</span>;
+            }
+            render(){
+                <span class="hljs-keyword">return</span> (
+                    &lt;div&gt;
+                        &lt;input ref=<span class="hljs-string">&quot;todo&quot;</span> type=<span class="hljs-string">&quot;text&quot;</span> placeholder=<span class="hljs-string">&quot;&#x8F93;&#x5165;todo&#x9879;&quot;</span> style={{marginRight:<span class="hljs-string">&apos;10px&apos;</span>}} onKeyUp={<span class="hljs-keyword">this</span>.handleKeyUp} /&gt;
+                        &lt;button onClick={<span class="hljs-keyword">this</span>.handleAdd}&gt;&#x70B9;&#x51FB;&#x6DFB;&#x52A0;&lt;/button&gt;
+                        &lt;ul&gt;
+                            {<span class="hljs-keyword">this</span>.state.items.map(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(item)</span></span>{
+                                <span class="hljs-keyword">return</span> &lt;li&gt;{item.text}&lt;/li&gt;;
+                            })}
+                        &lt;/ul&gt;
+                    &lt;/div&gt;            
+                    );
+            }
+        };
+
+ReactDOM.render(
+    &lt;App /&gt;, 
+    document.getElementById(<span class="hljs-string">&apos;example&apos;</span>)
+    );
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x6D4B;&#x8BD5;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
+
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<h3 id="&#x6D4B;&#x8BD5;">&#x6D4B;&#x8BD5;</h3>
+<p>&#x4F9D;&#x8D56;&#x4E8E;</p>
+<ul>
+<li><a href="http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar" target="_blank">selenium-server-standalone</a></li>
+<li><a href="https://sites.google.com/a/chromium.org/chromedriver/" target="_blank">chromedriver</a>, <a href="http://www.seleniumhq.org/projects/webdriver/" target="_blank">more available drivers</a></li>
+<li>nodejs v6.10.0+</li>
+<li>karma</li>
+</ul>
+<p>cli</p>
+<pre><code>    npm install selenium-standalone
+    selenium-standalone install --config=./s.js
+    selenium-standalone start
+    //&#x53E6;&#x5F00;&#x7A97;&#x53E3;
+    npm run build
+</code></pre><p>&#x6216;&#x8005;
+//linux32&#x53EF;&#x4EE5;&#x6539;&#x6210;mac, window
+```
+ wget <a href="https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip" target="_blank">https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip</a>
+ unzip chromedriver_linux32.zip
+ wget <a href="http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar" target="_blank">http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar</a>
+ java -jar selenium-server-standalone-3.3.1.jar
+//&#x53E6;&#x5F00;&#x7A97;&#x53E3;
+    npm run build</p>
+<p>``</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                
+                <a href="install.html" class="navigation navigation-next navigation-unique" aria-label="Next page: 安装">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"介绍","level":"1.1","depth":1,"next":{"title":"安装","level":"1.2","depth":1,"path":"install.md","ref":"install.md","articles":[]},"dir":"ltr"},"config":{"plugins":["disqus","-lunr","-search","search-pro","addcssjs"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"disqus":{"useIdentifier":false,"shortName":"NAME-FROM-DISQUS"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"search-pro":{},"highlight":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"README.md","mtime":"2017-06-06T03:17:06.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-06T06:37:51.297Z"},"basePath":".","book":{"language":""}});
+        });
     </script>
-</head>
+</div>
 
-<body>
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.16.1/URI.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-disqus/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-pro/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-pro/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
 
-    <div>这个默认会被清掉</div>
-    <div id='example'></div>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js"></script>
+    
+    <script type="text/javascript" src="https:/cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"></script>
+    
 
-
-</body>
-
+    </body>
 </html>
+
