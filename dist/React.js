@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-07T13:14:02.276Z
+ * by 司徒正美 Copyright 2017-06-07T13:17:49.136Z
  */
 
 (function (global, factory) {
@@ -1964,7 +1964,7 @@
 	    Children: Children, //为了react-redux
 	    render: render,
 	    options: options,
-	    version: "1.0.0",
+	    version: "1.0.1",
 	    createElement: createElement,
 	    cloneElement: cloneElement,
 	    PureComponent: PureComponent,
