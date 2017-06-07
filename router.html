@@ -84,6 +84,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="redux.html">
+    
     
     <link rel="prev" href="ssr.html">
     
@@ -328,14 +330,14 @@
             
         </li>
     
-        <li class="chapter " data-level="1.10">
+        <li class="chapter " data-level="1.10" data-path="redux.html">
             
-                <span>
+                <a href="redux.html">
             
                     
-                    redux&#x4E0E;mobx
+                    redux
             
-                </span>
+                </a>
             
 
             
@@ -413,8 +415,174 @@
                                 <section class="normal markdown-section">
                                 
                                 <h2 id="&#x8DEF;&#x7531;&#x5668;">&#x8DEF;&#x7531;&#x5668;</h2>
+<p>anu&#x53EF;&#x4EE5;&#x5B8C;&#x7F8E;&#x4E0E;react-router&#x4E00;&#x8D77;&#x4F7F;&#x7528;&#x3002;</p>
+<p>&#x4EE5;&#x4E0B;&#x4F8B;&#x5B50;&#x662F;&#x57FA;&#x4E8E;&#x8FD9;&#x4E2A;&#x9879;&#x76EE;&#x6539;&#x8FC7;&#x6765;&#x7684;[<a href="https://github.com/reactjs/react-router-redux/]&#xFF08;https://github.com/reactjs/react-router-redux/&#xFF09;" target="_blank">https://github.com/reactjs/react-router-redux/]&#xFF08;https://github.com/reactjs/react-router-redux/&#xFF09;</a> &#x6CE8;&#x610F;react-router&#x7684;&#x7248;&#x672C;&#x53F7;&#x4E3A;3.0 &#x6240;&#x6709;&#x6587;&#x4EF6;&#x53EF;&#x4EE5;&#x4ECE;<a href="http://www.bootcdn.cn/" target="_blank">&#x8FD9;&#x91CC;</a>&#x4E0B;</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+      <span class="hljs-selector-class">.aaa</span> {
+            <span class="hljs-attribute">width</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">height</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">background</span>: red;
+        }
+       <span class="hljs-selector-class">.bbb</span> {
+            <span class="hljs-attribute">width</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">height</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">background</span>: lawngreen;
+        }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+  <span class="hljs-comment">&lt;!--&lt;script type=&apos;text/javascript&apos; src=&quot;./dist/React.js&quot;&gt;&lt;/script&gt;--&gt;</span>
+ <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/react.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/react-dom.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+     <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/redux.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+   <span class="hljs-comment">&lt;!--  &lt;script src=&quot;https://cdn.bootcss.com/react-router/3.0.0-beta.1/ReactRouter.js&quot;&gt;&lt;/script&gt; --&gt;</span>
+     <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./ReactRouter.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/react-redux.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/ReactRouterRedux.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./test/babel.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/babel&apos;</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">var</span> s
+
+<span class="hljs-built_in">window</span>.onload = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">var</span> combineReducers = Redux.combineReducers
+
+        <span class="hljs-keyword">var</span> createStore = Redux.createStore
+        <span class="hljs-keyword">var</span> Component = React.Component
+
+        <span class="hljs-keyword">var</span> Provider = ReactRedux.Provider
+        <span class="hljs-keyword">var</span> connect = ReactRedux.connect
+
+        <span class="hljs-keyword">var</span> Router =  ReactRouter.Router
+        <span class="hljs-keyword">var</span> Route = ReactRouter.Route
+        <span class="hljs-keyword">var</span> IndexRoute=ReactRouter.IndexRoute
+
+        <span class="hljs-keyword">var</span> browserHistory= ReactRouter.browserHistory
+        <span class="hljs-keyword">var</span> Link = ReactRouter.Link
+        <span class="hljs-keyword">var</span> syncHistoryWithStore = ReactRouterRedux.syncHistoryWithStore
+        <span class="hljs-keyword">var</span> routerReducer= ReactRouterRedux.routerReducer
+
+        <span class="hljs-keyword">const</span> INCREASE = <span class="hljs-string">&apos;INCREASE&apos;</span>
+        <span class="hljs-keyword">const</span> DECREASE = <span class="hljs-string">&apos;DECREASE&apos;</span>
+
+        <span class="hljs-keyword">const</span> initialState = {
+            number: <span class="hljs-number">1</span>
+        }
+      <span class="hljs-comment">// reducers</span>
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reducers</span>(<span class="hljs-params">state = initialState, action</span>) </span>{
+            <span class="hljs-keyword">if</span>(action.type === INCREASE) {
+                <span class="hljs-keyword">return</span> { number: state.number + action.amount }
+            }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(action.type === DECREASE) {
+                <span class="hljs-keyword">return</span> { number: state.number - action.amount }
+            }
+            <span class="hljs-keyword">return</span> state
+        }
+
+
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">increase</span>(<span class="hljs-params">n</span>) </span>{
+            <span class="hljs-keyword">return</span> {
+                type: INCREASE,
+                amount: n
+            }
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">decrease</span>(<span class="hljs-params">n</span>) </span>{
+            <span class="hljs-keyword">return</span> {
+                type: DECREASE,
+                amount: n
+            }
+        }
+       <span class="hljs-comment">//========  &#x7EC4;&#x4EF6; =========</span>
+       <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">App</span>(<span class="hljs-params">{ children }</span>) </span>{
+        <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
+                    Links:
+                    {&apos; &apos;}
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/&quot;</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                    {&apos; &apos;}
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/foo&quot;</span>&gt;</span>Foo<span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                    {&apos; &apos;}
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/bar&quot;</span>&gt;</span>Bar<span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> browserHistory.push(&apos;/foo&apos;)}&gt;Go to /foo<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">marginTop:</span> &apos;<span class="hljs-attr">1.5em</span>&apos; }}&gt;</span>{children}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+            )
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Bar</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>And I am Bar!<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Foo</span>(<span class="hljs-params"></span>) </span>{
+             <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>I am Foo!<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Home</span>(<span class="hljs-params">{ number, increase, decrease }</span>) </span>{
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Some state changes:<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+                   <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>  {number}  <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+                   <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>  
+                       <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> increase(1)}&gt;Increase<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                       <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> decrease(1)}&gt;Decrease<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+            )
+         }
+
+       <span class="hljs-keyword">var</span> Home = connect(
+                state =&gt; ({ number: state.number }),
+                { increase, decrease }
+        )(Home)
+
+        <span class="hljs-keyword">const</span> reducer = combineReducers({
+            ...reducers,
+            routing: routerReducer
+        })
+
+
+
+        <span class="hljs-keyword">const</span> store = createStore(
+            reducer
+        )
+        <span class="hljs-keyword">const</span> history = syncHistoryWithStore(browserHistory, store)
+<span class="hljs-built_in">console</span>.log(history)
+        ReactDOM.render(
+            &lt;Provider store={store}&gt;
+                &lt;div&gt;
+                &lt;Router history={history}&gt;
+                    &lt;Route path=&quot;/&quot; component={App}&gt;
+                    &lt;IndexRoute component={Home}/&gt;
+                    &lt;Route path=&quot;foo&quot; component={Foo}/&gt;
+                    &lt;Route path=&quot;bar&quot; component={Bar}/&gt;
+                    &lt;/Route&gt;
+                &lt;/Router&gt;
+                &lt;/div&gt;
+            &lt;/Provider&gt;,
+            document.getElementById(&apos;mount&apos;)
+        )
+}
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x8FD9;&#x4E2A;&#x9ED8;&#x8BA4;&#x4F1A;&#x88AB;&#x6E05;&#x6389;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;mount&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
 <footer class="page-footer"><span class="copyright">Copyright &#xA9; &#x53F8;&#x5F92;&#x6B63;&#x7F8E; 2013&#xFF0D;2016 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
-2017-06-07 11:18:52
+2017-06-07 14:27:14
 </span></footer>
                                 
                                 </section>
@@ -442,10 +610,14 @@
 
             
                 
-                <a href="ssr.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: &#x540E;&#x7AEF;&#x6E32;&#x67D3;">
+                <a href="ssr.html" class="navigation navigation-prev " aria-label="Previous page: &#x540E;&#x7AEF;&#x6E32;&#x67D3;">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
+                
+                <a href="redux.html" class="navigation navigation-next " aria-label="Next page: redux">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -454,7 +626,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"路由","level":"1.9","depth":1,"next":{"title":"redux与mobx","level":"1.10","depth":1,"ref":"","articles":[]},"previous":{"title":"后端渲染","level":"1.8","depth":1,"path":"ssr.md","ref":"ssr.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"router.md","mtime":"2017-06-07T03:18:52.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-07T03:46:50.433Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"路由","level":"1.9","depth":1,"next":{"title":"redux","level":"1.10","depth":1,"path":"redux.md","ref":"redux.md","articles":[]},"previous":{"title":"后端渲染","level":"1.8","depth":1,"path":"ssr.md","ref":"ssr.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"livereload":{},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"router.md","mtime":"2017-06-07T06:27:14.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-07T06:38:34.836Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -494,6 +666,10 @@
     
         
         <script src="gitbook/gitbook-plugin-toolbar/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-livereload/plugin.js"></script>
         
     
         

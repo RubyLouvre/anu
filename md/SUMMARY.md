@@ -16,6 +16,6 @@
 * [调试](debug.md)
 * [后端渲染](ssr.md)
 * [路由](router.md)
-* [redux与mobx]()
+* [redux](redux.md)
 * [组件库](ui.md)
 * [旧式IE的支持](ie.md)
