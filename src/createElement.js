@@ -69,7 +69,7 @@ function flattenChildren(stack) {
         //比较巧妙地判定是否为子数组
         if ((child = stack.pop()) && child.pop !== undefined) {
             for (let i = 0; i < child.length; i++) {
-                stack.push(child[i])
+                stack[stack.length] = child[i]
             }
         } else {
             // eslint-disable-next-line
