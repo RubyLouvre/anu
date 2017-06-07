@@ -1,0 +1,8 @@
+.book-body p, .book-body h1, .book-body h2,.book-body h3,.book-body h4,.book-body h5,.book-body h6,.book-body div, .summary , .summary li , .summary li a  {
+    font-family : "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+.book .book-body .book-body span .page-wrapper .page-inner section.normal code {
+	font-family: Consolas, Monaco, Courier, monospace;
+}
