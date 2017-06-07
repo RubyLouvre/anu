@@ -1,5 +1,5 @@
 import {diffProps} from './diffProps'
-import {CurrentOwner} from './CurrentOwner'
+import {CurrentOwner} from './createElement'
 
 import {
     getChildContext,

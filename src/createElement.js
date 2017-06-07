@@ -1,8 +1,11 @@
-import {extend} from './util'
-import {CurrentOwner} from './CurrentOwner'
-import {__push} from './util'
+import {extend,__push} from './util'
 const stack = [];
 const EMPTY_CHILDREN = [];
+
+
+export var CurrentOwner = {
+    cur: null
+}
 /**
  * 创建虚拟DOM
  *

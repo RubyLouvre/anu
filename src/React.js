@@ -1,6 +1,9 @@
 import {
     createElement
 } from './createElement'
+import {
+    cloneElement
+} from './cloneElement'
 
 import {
     PureComponent
@@ -11,13 +14,11 @@ import {
 import {
     Children
 } from './compat'
-//import {transaction} from './transaction'
 import {
     win as window
 } from './browser'
 
 import {
-    getNodes,
     options
 } from './util'
 
@@ -29,11 +30,12 @@ var React = {
     Children, //为了react-redux
     render,
     options,
+    version: "VERSION",
     createElement,
+    cloneElement,
     PureComponent,
     Component
 }
-
 
 window.ReactDOM = React
 

@@ -7,14 +7,3 @@ export const Children = {
 		return children && children.length || 0;
 	},
 };
-/*
-function proptype() {}
-proptype.isRequired = proptype;
-
-export const PropTypes = {
-	element: proptype,
-	func: proptype,
-	shape: () => proptype,
-	instanceOf: ()=> proptype
-};
-*/

@@ -1,3 +1,7 @@
+/**
+ * by 司徒正美 Copyright 2017-06-07T13:14:02.276Z
+ */
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -144,10 +148,6 @@
 	    'p': []
 	};
 
-	var CurrentOwner = {
-	    cur: null
-	};
-
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
 	  return typeof obj;
 	} : function (obj) {
@@ -269,6 +269,10 @@
 
 	var stack = [];
 	var EMPTY_CHILDREN = [];
+
+	var CurrentOwner = {
+	    cur: null
+	};
 	/**
 	 * 创建虚拟DOM
 	 *
@@ -414,6 +418,22 @@
 
 	    $$typeof: 1
 	};
+
+	function cloneElement(vnode, props) {
+	  if (!vnode.vtype) {
+	    return Object.assign({}, vnode);
+	  }
+	  if (vnode.key) {
+	    vnode.props.key = vode.key;
+	  }
+	  if (vnode._refKey) {
+	    vnode.props.ref = vnode._refKey;
+	  } else if (vnode.ref && vnode.ref !== vnode.constructor.prototype.ref) {
+	    vnode.props.ref = vnode.ref;
+	  }
+
+	  return createElement(vnode.type, Object.assign({}, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
+	}
 
 	var queue = [];
 	var callbacks = [];
@@ -602,17 +622,6 @@
 			return children && children.length || 0;
 		}
 	};
-	/*
-	function proptype() {}
-	proptype.isRequired = proptype;
-
-	export const PropTypes = {
-		element: proptype,
-		func: proptype,
-		shape: () => proptype,
-		instanceOf: ()=> proptype
-	};
-	*/
 
 	//用于后端的元素节点
 	function DOMElement(type) {
@@ -1955,7 +1964,9 @@
 	    Children: Children, //为了react-redux
 	    render: render,
 	    options: options,
+	    version: "1.0.0",
 	    createElement: createElement,
+	    cloneElement: cloneElement,
 	    PureComponent: PureComponent,
 	    Component: Component
 	};
