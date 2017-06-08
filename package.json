@@ -1,7 +1,7 @@
 {
   "name": "anujs",
   "version": "1.0.1",
-  "description": "a mini react-like framework",
+  "description": "a mini React-like framework",
   "main": "dist/index.js",
   "scripts": {
     "sele": "selenium-standalone start",
