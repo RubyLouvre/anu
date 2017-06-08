@@ -59,8 +59,6 @@ export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase())
 }
 
-
-
 /**
  *
  *
@@ -71,7 +69,6 @@ export function isFn(type) {
     return typeof type === 'function'
 }
 
-
 var rword = /[^, ]+/g
 
 export function oneObject(array, val) {
@@ -79,7 +76,7 @@ export function oneObject(array, val) {
         array = array.match(rword) || []
     }
     var result = {},
-     //eslint-disable-next-line
+        //eslint-disable-next-line
         value = val !== void 666
             ? val
             : 1
@@ -113,10 +110,10 @@ export function camelize(target) {
 }
 
 export var options = {
+   
     updateBatchNumber: 1,
     immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 }
-
 
 export function checkNull(vnode, type) {
     if (vnode === null || vnode === false) {

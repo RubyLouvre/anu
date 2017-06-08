@@ -1,17 +1,8 @@
 import {patchStyle} from './style'
 
-import {addGlobalEventListener, getBrowserName, isEventName} from './event'
+import {addGlobalEventListener, getBrowserName, isEventName, eventHooks} from './event'
 import {oneObject, toLowerCase, noop} from './util'
 
-import {document} from './browser'
-
-var eventNameCache = {
-    'onClick': 'click',
-    'onChange': 'change'
-}
-
-function clickHack() {}
-let inMobile = 'ontouchstart' in document
 var xlink = "http://www.w3.org/1999/xlink"
 var stringAttributes = {}
 export var builtIdProperties = {} //不规则的属性名映射
@@ -80,8 +71,7 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     // http://www.w3school.com.cn/xlink/xlink_reference.asp
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
     // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType 
-    // eslint-disable-next-line
+    // xlinkTitle, xlinkType eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name]
         if (val !== lastProps[name]) {
@@ -223,12 +213,11 @@ var propHooks = {
             delete events[name]
         } else {
             if (!lastProps[name]) { //添加全局监听事件
-
                 addGlobalEventListener(getBrowserName(name))
             }
-            /* istanbul ignore if */
-            if (inMobile && name === 'onClick') {
-                dom.addEventListener('click', clickHack)
+            var hook = eventHooks[name]
+            if (hook) {
+                hook(dom, name)
             }
             events[name] = val
         }
