@@ -14,7 +14,7 @@ import {
     getComponentProps,
     __push
 } from './util'
-
+var instanceMap = new Map()
 var _removeNodes = [];
 
 import {document, createDOMElement, getNs} from './browser'
@@ -76,7 +76,7 @@ function genVnodes(vnode, container, hostParent, parentContext) {
     var rootNode = mountVnode(vnode, parentContext, prevRendered)
     container.appendChild(rootNode)
 
-    if (readyComponents.length) {
+    if (readyCallbacks.length) {
         fireMount()
     }
     return rootNode
@@ -130,7 +130,7 @@ function mountElement(vnode, parentContext, prevRendered) {
     }
 
     if (vnode.__ref) {
-        readyComponents
+        readyCallbacks
             .push(function () {
                 vnode.__ref(dom)
             })
@@ -141,7 +141,7 @@ function mountElement(vnode, parentContext, prevRendered) {
 
     return dom
 }
-var readyComponents = []
+var readyCallbacks = []
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(vnode, parentNode, parentContext) {
@@ -174,16 +174,16 @@ function alignChildren(vnode, parentNode, parentContext, childNodes) {
 }
 
 function fireMount() {
-    var queue = readyComponents.concat()
-    //eslint-disable-next-line
-    readyComponents.length = 0
+    var queue = readyCallbacks
+    readyCallbacks = []
+     //eslint-disable-next-line
     for (var i = 0, cb; cb = queue[i++];) {
           //eslint-disable-next-line
         cb()
     }
 }
 
-var instanceMap = new Map()
+
 
 function mountComponent(vnode, parentContext, prevRendered) {
     let {type, props} = vnode
@@ -207,20 +207,21 @@ function mountComponent(vnode, parentContext, prevRendered) {
     let rendered = safeRenderComponent(instance)
     instance._rendered = rendered
     rendered._hostParent = vnode._hostParent
-    if (instance.componentDidMount) {
-        readyComponents
-            .push(function () {
-                instance.componentDidMount()
-            })
-    }
+    
     if (vnode.__ref) {
-        readyComponents
+        readyCallbacks
             .push(function () {
                 vnode.__ref(instance)
             })
     }
     let dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered)
     instanceMap.set(instance, dom)
+    if (instance.componentDidMount) {
+        readyCallbacks
+            .push(function () {
+                instance.componentDidMount()
+            })
+    }
     vnode._hostNode = dom
 
     return dom
@@ -277,7 +278,7 @@ options.immune.refreshComponent = function refreshComponent(instance) { //这里
 
     reRenderComponent(instance)
     instance._forceUpdate = false
-    if (readyComponents.length) {
+    if (readyCallbacks.length) {
         fireMount()
     }
 }
@@ -377,6 +378,16 @@ export function disposeVnode(vnode, node) {
         disposeStateless(vnode, node)
     }
 }
+export function findDOMNode(componentOrElement) {
+  if (componentOrElement == null) {
+    return null
+  }
+  if (componentOrElement.nodeType === 1) {
+    return componentOrElement
+  }
+
+  return instanceMap.get(componentOrElement) || null
+}
 
 function disposeElement(vnode, node) {
     var {props} = vnode
@@ -455,7 +466,7 @@ function updateElement(lastVnode, nextVnode, dom) {
         postUpdateSelectedOptions(nextVnode)
     }
     if (nextVnode.__ref) {
-        readyComponents
+        readyCallbacks
             .push(function () {
                 nextVnode.__ref(nextVnode._hostNode)
             })

@@ -424,4 +424,33 @@ describe('无狀态组件', function () {
         expect(div.firstChild.childNodes[1].nodeType).toBe(1)
         expect(destroyCount).toBe(0)
     })
+   it('确保ref执行在componentDidMount之前', async()=>{
+        var str = ''
+        class Test extends React.Component{
+            componentDidMount(){
+                expect(typeof this.refs.wrapper).toBe('object')
+                str += '111'
+            }
+            render(){
+                return <div ref="wrapper" id='aaa' >xxx<B /></div>
+            }
+        }
+        class B extends React.Component{
+            componentDidMount(){
+               expect(typeof this.refs.wrapper2).toBe('object')
+                str += '222'
+            }
+            render(){
+                return <p ref="wrapper2" >son</p>
+            }
+        }
+        var s = React.render(<Test />, div)
+        await browser
+            .pause(100)
+            .$apply()
+        expect(str).toBe('222111')
+        expect(React.findDOMNode(s.refs.wrapper)).toBe(div.querySelector('#aaa'))
+
+     })
+
 })

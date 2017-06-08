@@ -23,12 +23,35 @@ import {
 } from './util'
 
 import {
-    render
+    render, findDOMNode
 } from './diff'
 
+var check = function(){
+	return check
+}
+check.isRequired = check
+var PropTypes = {
+    "array": check,
+    "bool": check,
+    "func": check,
+    "number": check,
+    "object": check,
+    "string": check,
+    "any": check,
+    "arrayOf": check,
+    "element": check,
+    "instanceOf": check,
+    "node": check,
+    "objectOf": check,
+    "oneOf": check,
+    "oneOfType": check,
+    "shape": check
+}
 var React = {
+    PropTypes,
     Children, //为了react-redux
     render,
+    findDOMNode,
     options,
     version: "VERSION",
     createElement,

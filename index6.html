@@ -26,13 +26,22 @@
 var s
 
 window.onload = function(){
-        function Test() {
-            return (
-                <svg className="icon-twitter" width="16px" height="16px">
-                    <use xlinkHref="#twitter" id='aaa' />
-                </svg>
-            )
+    class Test extends React.Component{
+        componentDidMount(){
+            console.log(this.refs.wrapper, 'Test componentDidMount')
         }
+        render(){
+            return <div ref="wrapper" >xxx<B /></div>
+        }
+    }
+       class B extends React.Component{
+        componentDidMount(){
+            console.log(this.refs.wrapper2, 'B componentDidMount')
+        }
+        render(){
+            return <p ref="wrapper2" >son</p>
+        }
+    }
 
        s = ReactDOM.render(  <Test />, document.getElementById('example'))
 }
