@@ -6,5 +6,5 @@
 // import './modules/classInherit.spec'
 // import './modules/shallow.spec'
 // import './modules/browser.spec'
-//import './browser/components.js'
-import './browser/cloneElement.js'
+import './browser/components.js'
+//import './browser/cloneElement.js'
