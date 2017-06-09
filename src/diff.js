@@ -500,9 +500,6 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
-   // if (vnode._prevRendered) {
-   //     return
-   // }
     let patches = {
         removes: [],
         updates: [],

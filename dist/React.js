@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-09T03:08:31.185Z
+ * by 司徒正美 Copyright 2017-06-09T06:17:35.782Z
  */
 
 (function (global, factory) {
@@ -153,7 +153,7 @@
 	const EMPTY_CHILDREN = [];
 
 	var CurrentOwner = {
-	    cur: null
+	  cur: null
 	};
 	/**
 	 * 创建虚拟DOM
@@ -165,156 +165,154 @@
 	 */
 
 	function createElement(type, configs) {
-	    var props = {},
-	        key = null,
-	        ref = null,
-	        vtype = 1,
-	        checkProps = 0;
+	  var props = {},
+	      key = null,
+	      ref = null,
+	      vtype = 1,
+	      checkProps = 0;
 
-	    for (let i = 2, n = arguments.length; i < n; i++) {
-	        stack.push(arguments[i]);
+	  for (let i = 2, n = arguments.length; i < n; i++) {
+	    stack.push(arguments[i]);
+	  }
+	  if (configs) {
+	    // eslint-disable-next-line
+	    for (let i in configs) {
+	      var val = configs[i];
+	      switch (i) {
+	        case "key":
+	          key = val;
+	          break;
+	        case "ref":
+	          ref = val;
+	          break;
+	        case "children":
+	          if (!stack.length && val && val.length) {
+	            __push.apply(stack, val);
+	          }
+	          break;
+	        default:
+	          checkProps = 1;
+	          props[i] = val;
+	      }
 	    }
-	    if (configs) {
-	        // eslint-disable-next-line
-	        for (let i in configs) {
-	            var val = configs[i];
-	            switch (i) {
-	                case 'key':
-	                    key = val;
-	                    break;
-	                case 'ref':
-	                    ref = val;
-	                    break;
-	                case 'children':
-	                    if (!stack.length && val && val.length) {
-	                        __push.apply(stack, val);
-	                    }
-	                    break;
-	                default:
-	                    checkProps = 1;
-	                    props[i] = val;
-	            }
-	        }
-	    }
+	  }
 
-	    var children = flattenChildren(stack);
+	  var children = flattenChildren(stack);
 
-	    if (typeof type === 'function') {
-	        vtype = type.prototype && type.prototype.render ? 2 : 4;
-	        if (children.length) props.children = children;
-	    } else {
-	        props.children = children;
-	    }
+	  if (typeof type === "function") {
+	    vtype = type.prototype && type.prototype.render ? 2 : 4;
+	    if (children.length) props.children = children;
+	  } else {
+	    props.children = children;
+	  }
 
-	    return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur);
+	  return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur);
 	}
 
 	function flattenChildren(stack) {
-	    var lastText,
-	        child,
-	        children = EMPTY_CHILDREN;
-	    while (stack.length) {
-	        //比较巧妙地判定是否为子数组
-	        if ((child = stack.pop()) && child.pop !== undefined) {
-	            for (let i = 0; i < child.length; i++) {
-	                stack[stack.length] = child[i];
-	            }
-	        } else {
-	            // eslint-disable-next-line
-	            if (child === null || child === void 666 || child === false || child === true) {
-	                continue;
-	            }
-	            var childType = typeof child;
-	            if (childType !== 'object') {
-	                //不是对象就是字符串或数字
-	                if (lastText) {
-	                    lastText.text = child + lastText.text;
-	                    continue;
-	                }
-	                child = {
-	                    type: '#text',
-	                    text: child + ''
-	                };
-	                lastText = child;
-	            } else {
-	                lastText = null;
-	            }
-	            if (children === EMPTY_CHILDREN) {
-	                children = [child];
-	            } else {
-	                children.unshift(child);
-	            }
+	  var lastText,
+	      child,
+	      children = EMPTY_CHILDREN;
+	  while (stack.length) {
+	    //比较巧妙地判定是否为子数组
+	    if ((child = stack.pop()) && child.pop !== undefined) {
+	      for (let i = 0; i < child.length; i++) {
+	        stack[stack.length] = child[i];
+	      }
+	    } else {
+	      // eslint-disable-next-line
+	      if (child === null || child === void 666 || child === false || child === true) {
+	        continue;
+	      }
+	      var childType = typeof child;
+	      if (childType !== "object") {
+	        //不是对象就是字符串或数字
+	        if (lastText) {
+	          lastText.text = child + lastText.text;
+	          continue;
 	        }
+	        child = {
+	          type: "#text",
+	          text: child + ""
+	        };
+	        lastText = child;
+	      } else {
+	        lastText = null;
+	      }
+	      if (children === EMPTY_CHILDREN) {
+	        children = [child];
+	      } else {
+	        children.unshift(child);
+	      }
 	    }
-	    return children;
+	  }
+	  return children;
 	}
 
 	//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 	function getDOMNode() {
-	    return this;
+	  return this;
 	}
-
+	function __ref(dom) {
+	  var instance = this._owner;
+	  if (dom) {
+	    dom.getDOMNode = getDOMNode;
+	  }
+	  if (instance) {
+	    instance.refs[this.__refKey] = dom;
+	  }
+	}
 	function Vnode(type, props, key, ref, vtype, checkProps, owner) {
-	    this.type = type;
-	    this.props = props;
-	    this.vtype = vtype;
+	  this.type = type;
+	  this.props = props;
+	  this.vtype = vtype;
 
-	    if (key) {
-	        this.key = key;
-	    }
-	    if (owner) {
-	        this._owner = owner;
-	    }
-	    if (vtype === 1) {
-	        this.checkProps = checkProps;
-	    }
-	    var refType = typeof ref;
-	    if (refType === 'string') {
-	        this._refKey = ref;
-	    } else if (refType === 'function') {
-	        this.__ref = ref;
-	    } else {
-	        this.__ref = null;
-	    }
-
-	    /*
+	  if (key) {
+	    this.key = key;
+	  }
+	  if (owner) {
+	    this._owner = owner;
+	  }
+	  if (vtype === 1) {
+	    this.checkProps = checkProps;
+	  }
+	  var refType = typeof ref;
+	  if (refType === "string") {
+	    this.__refKey = ref;
+	    this.__ref = __ref;
+	  } else if (refType === "function") {
+	    this.__ref = ref;
+	  }
+	  /*
 	    this._hostNode = null
 	    this._instance = null
 	    this._hostParent = null
-	    */
+	  */
 	}
 
 	Vnode.prototype = {
-	    getDOMNode: function () {
-	        return this._hostNode || null;
-	    },
-	    __ref: function (dom) {
-	        var instance = this._owner;
-	        if (dom) {
-	            dom.getDOMNode = getDOMNode;
-	        }
-	        if (instance) {
-	            instance.refs[this._refKey] = dom;
-	        }
-	    },
+	  getDOMNode: function () {
+	    return this._hostNode || null;
+	  },
 
-	    $$typeof: 1
+	  $$typeof: 1
 	};
 
 	function cloneElement(vnode, props) {
 	  if (!vnode.vtype) {
 	    return Object.assign({}, vnode);
 	  }
+	  var obj = {};
 	  if (vnode.key) {
-	    vnode.props.key = vode.key;
+	    obj.key = vnode.key;
 	  }
-	  if (vnode._refKey) {
-	    vnode.props.ref = vnode._refKey;
-	  } else if (vnode.ref && vnode.ref !== vnode.constructor.prototype.ref) {
-	    vnode.props.ref = vnode.ref;
+	  if (vnode.__refKey) {
+	    obj.ref = vnode.__refKey;
+	  } else if (vnode.__ref !== __ref) {
+	    obj.ref = vnode.__ref;
 	  }
 
-	  return createElement(vnode.type, Object.assign({}, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
+	  return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
 	}
 
 	var queue = [];
@@ -1696,9 +1694,6 @@
 	}
 
 	function updateChildren(vnode, newVnode, node, parentContext) {
-	    // if (vnode._prevRendered) {
-	    //     return
-	    // }
 	    let patches = {
 	        removes: [],
 	        updates: [],
