@@ -938,4 +938,27 @@ describe('node模块', function () {
         await browser.pause(100).$apply()
         expect(getString(div.firstChild.childNodes)).toBe('span')
     })
+
+    it('should remove orphaned elements replaced by Components', async () => {
+		class Comp extends React.Component {
+			render() {
+				return <span>span in a component</span>;
+			}
+		}
+		let root;
+		function test(content) {
+			root = React.render(content, div);
+		}
+
+		test(<Comp />);
+	    await browser.pause(50).$apply()
+		test(<div>just a div</div>);
+		await browser.pause(50).$apply()
+		test(<Comp />);
+		await browser.pause(50).$apply()
+
+		expect(div.firstChild.innerHTML).to.equal('span in a component');
+	});
+    
+
 })

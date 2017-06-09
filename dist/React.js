@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-08T12:43:01.579Z
+ * by 司徒正美 Copyright 2017-06-09T03:08:31.185Z
  */
 
 (function (global, factory) {
@@ -1531,6 +1531,10 @@
 	    } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
 	        //replace
 	        newNode = mountVnode(newVnode, parentContext);
+	        var p = node.parentNode;
+	        if (p) {
+	            p.replaceChild(newNode, node);
+	        }
 	        removeVnode(vnode, node, newNode);
 	    } else if (vnode !== newVnode) {
 	        // same type and same key -> update

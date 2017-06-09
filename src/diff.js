@@ -335,6 +335,10 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
         //replace
         newNode = mountVnode(newVnode, parentContext)
+        var p = node.parentNode
+        if(p){
+            p.replaceChild(newNode, node);
+        }
         removeVnode(vnode, node, newNode)
     } else if (vnode !== newVnode) {
         // same type and same key -> update
