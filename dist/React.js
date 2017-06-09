@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-09T06:24:39.304Z
+ * by 司徒正美 Copyright 2017-06-09T09:30:05.698Z
  */
 
 (function (global, factory) {
@@ -1259,6 +1259,7 @@
 	    return instance || rootNode;
 	    //组件返回组件实例，而普通虚拟DOM 返回元素节点
 	}
+
 	function genVnodes(vnode, container, hostParent, parentContext) {
 	    var nodes = getNodes(container);
 	    var prevRendered = null;
@@ -1283,7 +1284,9 @@
 	}
 
 	function mountVnode(vnode, parentContext, prevRendered) {
-	    let { vtype } = vnode;
+	    let {
+	        vtype
+	    } = vnode;
 	    let node = null;
 	    if (!vtype) {
 	        // init text comment
@@ -1312,7 +1315,10 @@
 	};
 
 	function mountElement(vnode, parentContext, prevRendered) {
-	    let { type, props } = vnode,
+	    let {
+	        type,
+	        props
+	    } = vnode,
 	        dom;
 	    if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
 	        dom = prevRendered;
@@ -1383,7 +1389,10 @@
 	}
 
 	function mountComponent(vnode, parentContext, prevRendered) {
-	    let { type, props } = vnode;
+	    let {
+	        type,
+	        props
+	    } = vnode;
 
 	    props = getComponentProps(type, props);
 
@@ -1432,7 +1441,10 @@
 	}
 
 	function mountStateless(vnode, parentContext, prevRendered) {
-	    var { type, props } = vnode;
+	    var {
+	        type,
+	        props
+	    } = vnode;
 	    props = getComponentProps(type, props);
 
 	    let rendered = type(props, parentContext);
@@ -1481,7 +1493,12 @@
 	function reRenderComponent(instance) {
 	    // instance._currentElement
 
-	    var { props, state, context, lastProps } = instance;
+	    var {
+	        props,
+	        state,
+	        context,
+	        lastProps
+	    } = instance;
 	    var lastRendered = instance._rendered;
 	    var node = instanceMap.get(instance);
 
@@ -1560,10 +1577,15 @@
 	}
 
 	function disposeVnode(vnode, node) {
-	    let { vtype } = vnode;
 	    if (node) {
 	        _removeNodes.unshift(node);
 	    }
+	    if (!vnode) {
+	        return;
+	    }
+	    let {
+	        vtype
+	    } = vnode;
 	    if (!vtype) {
 	        vnode._hostNode = null;
 	        vnode._hostParent = null;
@@ -1590,7 +1612,9 @@
 	}
 
 	function disposeElement(vnode, node) {
-	    var { props } = vnode;
+	    var {
+	        props
+	    } = vnode;
 	    var children = props.children;
 	    var childNodes = node.childNodes;
 	    for (let i = 0, len = children.length; i < len; i++) {
@@ -1615,7 +1639,10 @@
 	}
 
 	function updateVnode(lastVnode, nextVnode, node, parentContext) {
-	    let { vtype, props } = lastVnode;
+	    let {
+	        vtype,
+	        props
+	    } = lastVnode;
 
 	    if (vtype === 2) {
 	        //类型肯定相同的
@@ -1628,7 +1655,6 @@
 
 	    // ignore VCOMMENT and other vtypes
 	    if (vtype !== 1) {
-
 	        return node;
 	    }
 
@@ -1684,7 +1710,7 @@
 	    instance.props = nextProps;
 	    instance.context = parentContext;
 	    if (nextVnode.ref) {
-	        nextVnode.push(function () {
+	        readyCallbacks.push(function () {
 	            nextVnode.ref(instance);
 	        });
 	    }
@@ -1714,13 +1740,21 @@
 	    if (childrenLen === 0) {
 	        if (newVchildrenLen > 0) {
 	            for (let i = 0; i < newVchildrenLen; i++) {
-	                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
+	                patches.creates.push({
+	                    vnode: newVchildren[i],
+	                    parentNode: node,
+	                    parentContext: parentContext,
+	                    index: i
+	                });
 	            }
 	        }
 	        return;
 	    } else if (newVchildrenLen === 0) {
 	        for (let i = 0; i < childrenLen; i++) {
-	            patches.removes.push({ vnode: children[i], node: childNodes[i] });
+	            patches.removes.push({
+	                vnode: children[i],
+	                node: childNodes[i]
+	            });
 	        }
 	        return;
 	    }
@@ -1776,7 +1810,10 @@
 	            }
 	        }
 	        if (shouldRemove) {
-	            removes.push({ vnode: vnode, node: childNodes[i] });
+	            removes.push({
+	                vnode: vnode,
+	                node: childNodes[i]
+	            });
 	        }
 	    }
 
@@ -1784,7 +1821,12 @@
 	        let item = updates[i];
 	        if (!item) {
 
-	            creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
+	            creates.push({
+	                vnode: newVchildren[i],
+	                parentNode: node,
+	                parentContext: parentContext,
+	                index: i
+	            });
 	        } else if (item.vnode.vtype === 1) {
 	            diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
 	        }
