@@ -129,10 +129,10 @@ function mountElement(vnode, parentContext, prevRendered) {
         diffProps(props, {}, vnode, {}, dom)
     }
 
-    if (vnode.__ref) {
+    if (vnode.ref) {
         readyCallbacks
             .push(function () {
-                vnode.__ref(dom)
+                vnode.ref(dom)
             })
     }
     if (formElements[type]) {
@@ -208,10 +208,10 @@ function mountComponent(vnode, parentContext, prevRendered) {
     instance._rendered = rendered
     rendered._hostParent = vnode._hostParent
     
-    if (vnode.__ref) {
+    if (vnode.ref) {
         readyCallbacks
             .push(function () {
-                vnode.__ref(instance)
+                vnode.ref(instance)
             })
     }
     let dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered)
@@ -401,7 +401,7 @@ function disposeElement(vnode, node) {
         disposeVnode(children[i], childNodes[i])
     }
     //eslint-disable-next-line
-    vnode.__ref && vnode.__ref(null)
+    vnode.ref && vnode.ref(null)
     vnode._hostNode = null
     vnode._hostParent = null
 }
@@ -469,10 +469,10 @@ function updateElement(lastVnode, nextVnode, dom) {
     if (nextVnode.type === 'select') {
         postUpdateSelectedOptions(nextVnode)
     }
-    if (nextVnode.__ref) {
+    if (nextVnode.ref) {
         readyCallbacks
             .push(function () {
-                nextVnode.__ref(nextVnode._hostNode)
+                nextVnode.ref(nextVnode._hostNode)
             })
     }
     return dom
@@ -488,11 +488,10 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
     instance.lastProps = instance.props
     instance.props = nextProps
     instance.context = parentContext
-    if (nextVnode.__ref) {
-
+    if (nextVnode.ref) {
         nextVnode
             .push(function () {
-                nextVnode.__ref(instance)
+                nextVnode.ref(instance)
             })
     }
 
@@ -500,9 +499,6 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
-   // if (vnode._prevRendered) {
-   //     return
-   // }
     let patches = {
         removes: [],
         updates: [],

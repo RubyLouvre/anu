@@ -19,41 +19,27 @@ describe('node模块', function () {
         body.removeChild(div)
 
     })
-    
-    it('非受控组件select的value不可变', async () => {
-
-        class Com extends React.Component {
-            constructor() {
-                super()
-                this.state = {
-                    value: 'bbb'
-                }
-            }
-            render() {
-                return <select id='node8' value={this.state.value}>
-                    <option value='aaa'>aaa</option>
-                    <option value='bbb'>bbb</option>
-                    <option value='ccc'>ccc</option>
-                </select>
-            }
-        }
-
-        var s = React.render(<Com />, div)
-        await browser
-            .pause(100)
-            .$apply()
-
-        expect(s._currentElement._hostNode.children[1].selected).toBe(true)
-        await browser
-            .selectByVisibleText('#node8', 'ccc')
-            .pause(200)
-            .$apply()
-
-        expect(s._currentElement._hostNode.children[2].selected).toBe(false)
-        expect(s._currentElement._hostNode.children[1].selected).toBe(true)
 
 
+it('should remove orphaned elements replaced by Components', () => {
+		class Comp extends React.Component {
+			render() {
+				return <span>span in a component</span>;
+			}
+		}
+		let root;
+		function test(content) {
+			root = React.render(content, div);
+		}
 
-    })
+		test(<Comp />);
+		console.log(root)
+		test(<div>just a div</div>);
+		console.log(root)
+		test(<Comp />);
+		console.log(root)
+        console.log(div)
+		expect(div.innerHTML).to.equal('<span>span in a component</span>');
+	});
     
 })
