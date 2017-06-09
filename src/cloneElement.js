@@ -13,8 +13,8 @@ export function cloneElement(vnode, props) {
   }
   if (vnode.__refKey) {
     obj.ref = vnode.__refKey;
-  } else if (vnode.__ref !== __ref) {
-    obj.ref = vnode.__ref;
+  } else if (vnode.ref !== __ref) {
+    obj.ref = vnode.ref;
   }
 
   return createElement(

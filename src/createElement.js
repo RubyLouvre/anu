@@ -134,9 +134,9 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   var refType = typeof ref;
   if (refType === "string") {
     this.__refKey = ref;
-    this.__ref = __ref;
+    this.ref = __ref;
   } else if (refType === "function") {
-    this.__ref = ref;
+    this.ref = ref;
   }
   /*
     this._hostNode = null

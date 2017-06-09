@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-09T06:17:35.782Z
+ * by 司徒正美 Copyright 2017-06-09T06:24:39.304Z
  */
 
 (function (global, factory) {
@@ -279,9 +279,9 @@
 	  var refType = typeof ref;
 	  if (refType === "string") {
 	    this.__refKey = ref;
-	    this.__ref = __ref;
+	    this.ref = __ref;
 	  } else if (refType === "function") {
-	    this.__ref = ref;
+	    this.ref = ref;
 	  }
 	  /*
 	    this._hostNode = null
@@ -308,8 +308,8 @@
 	  }
 	  if (vnode.__refKey) {
 	    obj.ref = vnode.__refKey;
-	  } else if (vnode.__ref !== __ref) {
-	    obj.ref = vnode.__ref;
+	  } else if (vnode.ref !== __ref) {
+	    obj.ref = vnode.ref;
 	  }
 
 	  return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
@@ -1331,9 +1331,9 @@
 	        diffProps(props, {}, vnode, {}, dom);
 	    }
 
-	    if (vnode.__ref) {
+	    if (vnode.ref) {
 	        readyCallbacks.push(function () {
-	            vnode.__ref(dom);
+	            vnode.ref(dom);
 	        });
 	    }
 	    if (formElements[type]) {
@@ -1405,9 +1405,9 @@
 	    instance._rendered = rendered;
 	    rendered._hostParent = vnode._hostParent;
 
-	    if (vnode.__ref) {
+	    if (vnode.ref) {
 	        readyCallbacks.push(function () {
-	            vnode.__ref(instance);
+	            vnode.ref(instance);
 	        });
 	    }
 	    let dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
@@ -1597,7 +1597,7 @@
 	        disposeVnode(children[i], childNodes[i]);
 	    }
 	    //eslint-disable-next-line
-	    vnode.__ref && vnode.__ref(null);
+	    vnode.ref && vnode.ref(null);
 	    vnode._hostNode = null;
 	    vnode._hostParent = null;
 	}
@@ -1665,9 +1665,9 @@
 	    if (nextVnode.type === 'select') {
 	        postUpdateSelectedOptions(nextVnode);
 	    }
-	    if (nextVnode.__ref) {
+	    if (nextVnode.ref) {
 	        readyCallbacks.push(function () {
-	            nextVnode.__ref(nextVnode._hostNode);
+	            nextVnode.ref(nextVnode._hostNode);
 	        });
 	    }
 	    return dom;
@@ -1683,10 +1683,9 @@
 	    instance.lastProps = instance.props;
 	    instance.props = nextProps;
 	    instance.context = parentContext;
-	    if (nextVnode.__ref) {
-
+	    if (nextVnode.ref) {
 	        nextVnode.push(function () {
-	            nextVnode.__ref(instance);
+	            nextVnode.ref(instance);
 	        });
 	    }
 
