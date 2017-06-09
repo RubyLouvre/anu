@@ -16,27 +16,39 @@
             background: lawngreen;
         }
     </style>
- <!--<script type='text/javascript' src="./dist/React.js"></script>-->
-  <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
+<script type='text/javascript' src="./dist/React.js"></script>
+ <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
 
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
     var root
     var div = document.getElementById('example')
- 		class Comp extends React.Component {
-			render() {
-				return <span ref={(dom)=>{this.DOMNode = dom}}>span in a component</span>;
-			}
-		}
-	
-		function test(content) {
-			root = ReactDOM.render(content, div);
-            console.log(root)
-		}
-		test(<Comp />);
+ 	
 
+   var index =1
+    class Comp extends React.Component {
+        render() {
+            return <span style={ index ? {color: 'red'}: null}>span in a component</span>;
+        }
+    }
+    
+    function test(content) {
+        root = React.render(content, div);
+    }
+
+    test(<Comp />);
+    setTimeout(function(){
+        console.log(div.firstChild.style.color)
+        index = 0
+        setTimeout(function(){
+            test(<Comp />);
+            console.log(div.firstChild.style.color)
+        })
+
+    },300)
+      
    
 	
 

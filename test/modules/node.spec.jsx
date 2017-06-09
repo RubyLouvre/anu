@@ -960,5 +960,26 @@ describe('node模块', function () {
 		expect(div.firstChild.innerHTML).to.equal('span in a component');
 	});
     
+      it('切换style对象', async () => {
+          var index =1
+		class Comp extends React.Component {
+			render() {
+				return <span style={ index ? {color: 'red'}: null}>span in a component</span>;
+			}
+		}
+		let root;
+		function test(content) {
+			root = React.render(content, div);
+		}
+
+		test(<Comp />);
+	    await browser.pause(50).$apply()
+        expect(div.firstChild.style.color).to.equal('red');
+        index = 0
+		
+		test(<Comp />);
+		await browser.pause(50).$apply()
+       expect(div.firstChild.style.color).to.equal('');
+	});
 
 })

@@ -12,7 +12,7 @@ export function patchStyle(dom, oldStyle, newStyle) {
     if (oldStyle === newStyle) {
         return
     }
-    var old = {}
+
     for (var name in newStyle) {
         let val = newStyle[name]
         if (oldStyle[name] !== val) {

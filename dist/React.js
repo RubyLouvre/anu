@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-09T09:30:05.698Z
+ * by 司徒正美 Copyright 2017-06-09T09:49:28.190Z
  */
 
 (function (global, factory) {
@@ -623,7 +623,7 @@
 	    if (oldStyle === newStyle) {
 	        return;
 	    }
-	    var old = {};
+
 	    for (var name in newStyle) {
 	        let val = newStyle[name];
 	        if (oldStyle[name] !== val) {
@@ -956,7 +956,7 @@
 	    xlinkRole: 'xlink:role',
 	    xlinkShow: 'xlink:show'
 	};
-
+	var emptyStyle = {};
 	var propHooks = {
 	    boolean: function (dom, name, val, lastProp) {
 	        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
@@ -1004,7 +1004,7 @@
 	        dom.className = val;
 	    },
 	    style: function (dom, _, val, lastProps) {
-	        patchStyle(dom, lastProps.style || {}, val);
+	        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
 	    },
 	    __event__: function (dom, name, val, lastProps) {
 	        let events = dom.__events || (dom.__events = {});
