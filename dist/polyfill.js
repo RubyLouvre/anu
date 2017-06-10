@@ -15,7 +15,22 @@
     while (method = methods.pop())
         if (!con[method]) con[method] = dummy;
     // Using `this` for web workers & supports Browserify / Webpack.
+if (typeof Object.create !== 'function') {
+  Object.create = function (o) {
+    function F() {}
+    F.prototype = o;
 
+    return new F();
+  };
+}
+Function.prototype.bind = Function.prototype.bind
+   || function(){
+     var fn = this, presetArgs = [].slice.call(arguments); 
+     var context = presetArgs.shift();
+     return function(){
+       return fn.apply(context, presetArgs.concat([].slice.call(arguments)));
+     };
+   };
     //https://github.com/flowersinthesand/stringifyJSON/blob/master/stringifyjson.js
     if (typeof JSON === 'undefined') {
 
