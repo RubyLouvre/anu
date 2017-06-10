@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-10T08:49:47.615Z
+ * by 司徒正美 Copyright 2017-06-10T09:21:22.952Z
  */
 
 (function (global, factory) {
@@ -158,12 +158,7 @@ var recyclables = {
     'p': []
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var stack = [];
 var EMPTY_CHILDREN = [];
@@ -447,6 +442,8 @@ function setStateProxy(instance, cb) {
     }
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 /**
@@ -476,7 +473,7 @@ function shallowEqual(objA, objB) {
         return true;
     }
 
-    if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
+    if ((typeof objA === 'undefined' ? 'undefined' : _typeof$1(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof$1(objB)) !== 'object' || objB === null) {
         return false;
     }
 
@@ -520,6 +517,8 @@ var Children = {
 	}
 };
 
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 //用于后端的元素节点
 function DOMElement(type) {
     this.nodeName = type;
@@ -543,7 +542,7 @@ fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement('html');
 fakeDoc.nodeName = '#document';
-var inBrowser = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.alert;
+var inBrowser = (typeof window === 'undefined' ? 'undefined' : _typeof$2(window)) === 'object' && window.alert;
 
 var win = inBrowser ? window : {
     document: fakeDoc
@@ -558,7 +557,7 @@ var versions = {
     undefinedobject: NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[_typeof(document.all) + (typeof XMLHttpRequest === 'undefined' ? 'undefined' : _typeof(XMLHttpRequest))];
+var msie = document.documentMode || versions[_typeof$2(document.all) + (typeof XMLHttpRequest === 'undefined' ? 'undefined' : _typeof$2(XMLHttpRequest))];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 

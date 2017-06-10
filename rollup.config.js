@@ -11,7 +11,20 @@ export default {
   exports: "default",
   dest: "./dist/React.js",
   plugins: [
-    babel(),
+    babel({
+    //  plugins: ['external-helpers'],
+     // externalHelpers: true,
+      babelrc: false,
+      presets: [
+        [
+          "es2015",
+          {
+            "modules": false
+          }
+        ]
+      ]
+
+    }),
 
     license({
       banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).slice(1, -1)}`

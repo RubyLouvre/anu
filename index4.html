@@ -16,93 +16,10 @@
             background: lawngreen;
         }
     </style>
-    </style> <script type='text/javascript' src="./dist/polyfill.js"></script>
-<script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-
-
-   <!--  <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>-->
-    <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 'aaa'
-                }
-            }
-            change(a){
-                this.setState({
-                    aaa:a
-                })
-            }
-            componentDidMount(){
-                console.log('App componentDidMount')
-            }
-            componentWillUpdate(){
-                console.log('App componentWillUpdate')
-            }
-            render() {
-                 return this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} />:
-             <Inner2 className={this.state.aaa} />
-             
-            }
-        }
-
-        class Inner extends React.Component{
-             constructor(props){
-                super(props)
-            }
-            componentWillMount(){
-                console.log('Inner componentWillMount')
-            }
-            componentDidMount(){
-                console.log('Inner componentDidMount')
-            }
-            
-            componentWillUpdate(){
-                console.log('Inner componentWillUpdate')
-            }
-            componentDidUpdate(){
-                console.log('Inner componentDidUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner componentWillUnmount')
-            }
-            render() {
-                return  <div className={this.props.className}><p>xxx{111}</p></div> 
-            }
-
-        }
-        class Inner2 extends React.Component{
-            constructor(props){
-                super(props)
-            }
-            componentWillMount(){
-                console.log('Inner2 componentWillMount')
-            }
-            componentDidMount(){
-                console.log('Inner2 componentDidMount')
-            }
-             componentWillUpdate(){
-                console.log('Inner2 componentWillUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner2 componentWillUnmount')
-            }
-            render() {
-                return  <strong className={this.props.className}>yyy</strong>
-            }
-
-        }
-
-var s 
-window.onload = function(){
-   s = ReactDOM.render( <App/>, document.getElementById('example'))
-}
-    </script>
+    </style>
+     <script type='text/javascript' src="./dist/polyfill.js"></script>
+     <script type='text/javascript' src="./dist/React.js"></script>
+  <script type='text/javascript' src="./dist/app.js"></script>
 
 </head>
 
@@ -110,12 +27,8 @@ window.onload = function(){
 
     <div>开发者工具</div>
     <div id='example'></div>
-<select disabled value='aaa' multiple>
-    <option>sss</option>
-      <option>aaa</option>
-        <option>bbb</option>
-          <option>ccc</option>
-</select>
+
+
 
 </body>
 
