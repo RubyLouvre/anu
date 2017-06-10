@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-09T09:49:28.190Z
+ * by 司徒正美 Copyright 2017-06-10T02:09:51.746Z
  */
 
 (function (global, factory) {
@@ -1531,7 +1531,7 @@
 	    instanceMap.set(instance, dom);
 	    instance._currentElement._hostNode = dom;
 	    if (instance.componentDidUpdate) {
-	        instance.componentDidUpdate(nextProps, nextState, context);
+	        instance.componentDidUpdate(lastProps, state, context);
 	    }
 
 	    return dom;
@@ -1758,7 +1758,7 @@
 	        }
 	        return;
 	    }
-
+	    let cloneChildren = children.slice();
 	    let updates = Array(newVchildrenLen);
 	    let removes = [];
 	    let creates = [];
@@ -1779,7 +1779,7 @@
 	                    parentContext: parentContext,
 	                    index: j
 	                };
-	                children[i] = null;
+	                cloneChildren[i] = null;
 	                break;
 	            }
 	        }
@@ -1787,7 +1787,7 @@
 
 	    // isSimilar
 	    for (let i = 0; i < childrenLen; i++) {
-	        let vnode = children[i];
+	        let vnode = cloneChildren[i];
 	        if (vnode === null) {
 	            continue;
 	        }

@@ -346,7 +346,7 @@ function reRenderComponent(instance) { // instance._currentElement
     instanceMap.set(instance, dom)
     instance._currentElement._hostNode = dom
     if (instance.componentDidUpdate) {
-        instance.componentDidUpdate(nextProps, nextState, context)
+        instance.componentDidUpdate(lastProps, state, context)
     }
 
     return dom
@@ -559,6 +559,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     let newVchildren = newVnode.props.children
     let childrenLen = children.length
     let newVchildrenLen = newVchildren.length
+   
 
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
@@ -585,7 +586,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         }
         return
     }
-
+    let cloneChildren = children.slice()
     let updates = Array(newVchildrenLen)
     let removes = []
     let creates = []
@@ -606,7 +607,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
                     parentContext: parentContext,
                     index: j
                 }
-                children[i] = null
+                cloneChildren[i] = null
                 break
             }
         }
@@ -614,7 +615,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
 
     // isSimilar
     for (let i = 0; i < childrenLen; i++) {
-        let vnode = children[i]
+        let vnode = cloneChildren[i]
         if (vnode === null) {
             continue
         }

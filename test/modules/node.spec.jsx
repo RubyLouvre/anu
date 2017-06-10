@@ -979,7 +979,7 @@ describe('node模块', function () {
 		
 		test(<Comp />);
 		await browser.pause(50).$apply()
-       expect(div.firstChild.style.color).to.equal('');
+        expect(div.firstChild.style.color).to.equal('');
 	});
 
 })
