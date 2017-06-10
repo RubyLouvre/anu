@@ -118,8 +118,20 @@ var Inner = function (_React$Component2) {
     function Inner(props) {
         _classCallCheck(this, Inner);
 
-        return _possibleConstructorReturn(this, _React$Component2.call(this, props));
+        var _this2 = _possibleConstructorReturn(this, _React$Component2.call(this, props));
+
+        _this2.state = {
+            value: '111'
+        };
+        _this2.onInput = _this2.onInput.bind(_this2);
+        return _this2;
     }
+
+    Inner.prototype.onInput = function onInput(e) {
+        this.setState({
+            value: e.target.value
+        });
+    };
 
     Inner.prototype.componentWillMount = function componentWillMount() {
         console.log('Inner componentWillMount');
@@ -149,7 +161,12 @@ var Inner = function (_React$Component2) {
                 'p',
                 null,
                 'xxx',
-                111
+                this.state.value
+            ),
+            React.createElement(
+                'p',
+                null,
+                React.createElement('input', { value: this.state.value, onInput: this.onInput })
             )
         );
     };

@@ -41,5 +41,5 @@ if (msie < 9) {
     eventHooks.onInputCapture = fixIEInput
     eventHooks.onChange = fixIEChange
     eventHooks.onChangeCapture = fixIEChange
-    efentHooks.onSubmit = fixIESubmit
+    eventHooks.onSubmit = fixIESubmit
 }

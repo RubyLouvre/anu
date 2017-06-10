@@ -56,7 +56,7 @@
                 console.log('Inner componentWillUnmount')
             }
             render() {
-                return  <div className={this.props.className}><p>xxx{111}</p>
+                return  <div className={this.props.className}><p>xxx{this.state.value}</p>
                 <p><input value={this.state.value} onInput={this.onInput} /></p>
                 </div> 
             }

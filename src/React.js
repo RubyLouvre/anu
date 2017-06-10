@@ -25,7 +25,6 @@ import {
 import {
     render, findDOMNode
 } from './diff'
-
 var check = function(){
 	return check
 }
