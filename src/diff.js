@@ -323,7 +323,7 @@ function reRenderComponent(instance) { // instance._currentElement
     var nextState = instance._processPendingState(props, context)
 
     instance.props = lastProps
-    delete instance.lastProps
+   // delete instance.lastProps
     //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
     if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
         return node //注意
@@ -518,11 +518,11 @@ function updateElement(lastVnode, nextVnode, dom) {
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
     var instance = nextVnode._instance = lastVnode._instance
     var nextProps = nextVnode.props
-
+    instance.lastProps = instance.props
     if (instance.componentWillReceiveProps) {
         instance.componentWillReceiveProps(nextProps, parentContext)
     }
-    instance.lastProps = instance.props
+  
     instance.props = nextProps
     instance.context = parentContext
     if (nextVnode.ref) {
