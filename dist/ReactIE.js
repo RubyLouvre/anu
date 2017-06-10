@@ -698,6 +698,7 @@ function isEventName(name) {
 
 function dispatchEvent(e) {
     var __type__ = e.__type__ || e.type;
+   
     e = new SyntheticEvent(e);
     var target = e.target;
     var paths = [];
