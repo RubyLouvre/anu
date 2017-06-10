@@ -444,7 +444,7 @@ function disposeElement(vnode, node) {
 function disposeComponent(vnode, node) {
     var instance = vnode._instance
     if (instance) {
-        instanceMap.delete(instance)
+        instanceMap['delete'](instance)
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount()
         }
