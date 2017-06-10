@@ -29,6 +29,15 @@
         class Inner extends React.Component{
              constructor(props){
                 super(props)
+                this.state = {
+                    value: '111'
+                }
+                this.onInput = this.onInput.bind(this)
+            }
+            onInput(e){
+                this.setState({
+                    value: e.target.value
+                })
             }
             componentWillMount(){
                 console.log('Inner componentWillMount')
@@ -47,7 +56,9 @@
                 console.log('Inner componentWillUnmount')
             }
             render() {
-                return  <div className={this.props.className}><p>xxx{111}</p></div> 
+                return  <div className={this.props.className}><p>xxx{111}</p>
+                <p><input value={this.state.value} onInput={this.onInput} /></p>
+                </div> 
             }
 
         }
