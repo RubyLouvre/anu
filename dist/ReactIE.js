@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-11T15:31:29.350Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-11T17:16:14.462Z
  */
 
 (function (global, factory) {
@@ -737,7 +737,8 @@ function addEvent(el, type, fn) {
 
 var eventLowerCache = {
     'onClick': 'click',
-    'onChange': 'change'
+    'onChange': 'change',
+    'onWheel': 'wheel'
 };
 
 var ron = /^on/;
@@ -754,9 +755,38 @@ function getBrowserName(onStr) {
     return lower;
 }
 
-var inMobile = 'ontouchstart' in document;
+addEvent.fire = function fire(elem, name, opts) {
+    var hackEvent = document.createEvent("Events");
+    hackEvent.initEvent('datasetchanged', true, true, opts);
+    if (opts) {
+        Object.assign(hackEvent, opts);
+    }
+    hackEvent.__type__ = name;
+    elem.dispatchEvent(hackEvent);
+};
 
+var inMobile = 'ontouchstart' in document;
 var eventHooks = {};
+eventLowerCache.onWheel = 'datasetchanged';
+/* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
+            firefox DOMMouseScroll detail 下3 上-3
+            firefox wheel detlaY 下3 上-3
+            IE9-11 wheel deltaY 下40 上-40
+            chrome wheel deltaY 下100 上-100 */
+var fixWheelType = "onmousewheel" in document ? 'mousewheel' : document.onwheel !== void 0 ? 'wheel' : "DOMMouseScroll";
+var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
+eventHooks.onWheel = function (dom) {
+    addEvent(dom, fixWheelType, function (e) {
+        var delta = e[fixWheelDelta] > 0 ? -120 : 120;
+        var wheelDelta = ~~dom._ms_wheel_ + delta;
+        dom._ms_wheel_ = wheelDelta;
+        addEvent.fire(dom, 'wheel', {
+            detail: wheelDelta,
+            wheelDeltaY: wheelDelta,
+            wheelDelta: wheelDelta
+        });
+    });
+};
 
 if (inMobile) {
     eventHooks.onClick = noop;
@@ -1893,20 +1923,24 @@ function applyCreate(data) {
     data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
 
-function dispatchIEEvent(dom, type) {
-    try {
-        var hackEvent = document.createEventObject();
-        hackEvent.__type__ = type;
-        //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
-        dom.fireEvent("ondatasetchanged", hackEvent);
-    } catch (e) {}
+if (msie < 9) {
+    addEvent.fire = function dispatchIEEvent(dom, type, obj) {
+        try {
+            var hackEvent = document.createEventObject();
+            if (obj) {
+                Object.assign(hackEvent, obj);
+            }
+            hackEvent.__type__ = type;
+            //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
+            dom.fireEvent("ondatasetchanged", hackEvent);
+        } catch (e) {}
+    };
 }
-
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInput(dom, name) {
     addEvent(dom, 'propertychange', function (e) {
         if (e.propertyName === 'value') {
-            dispatchIEEvent(dom, 'input');
+            addEvent.fire(dom, 'input');
         }
     });
 }
@@ -1926,7 +1960,7 @@ function fixIEChange(dom, name) {
                 dom.value = attr && attr.specified ? option.value : option.text;
             }
         }
-        dispatchIEEvent(dom, 'change');
+        addEvent.fire(dom, 'change');
     });
 }
 

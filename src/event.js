@@ -78,7 +78,8 @@ export function addEvent(el, type, fn) {
 
 export var eventLowerCache = {
     'onClick': 'click',
-    'onChange': 'change'
+    'onChange': 'change',
+    'onWheel': 'wheel'
 }
 
 var ron = /^on/
@@ -97,16 +98,53 @@ export function getBrowserName(onStr) {
     return lower
 }
 
+addEvent.fire = function fire(dom, name, opts) {
+    var hackEvent = document.createEvent("Events");
+    hackEvent.initEvent('datasetchanged', true, true, opts)
+    if (opts) {
+        Object.assign(hackEvent, opts)
+    }
+    hackEvent.__type__ = name
+    dom.dispatchEvent(hackEvent)
+}
 
 let inMobile = 'ontouchstart' in document
-
 export var eventHooks = {}
+eventLowerCache.onWheel = 'datasetchanged'
+/* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
+            firefox DOMMouseScroll detail 下3 上-3
+            firefox wheel detlaY 下3 上-3
+            IE9-11 wheel deltaY 下40 上-40
+            chrome wheel deltaY 下100 上-100 */
+const fixWheelType = "onmousewheel" in document
+    ? 'mousewheel'
+    : document.onwheel !== void 0
+        ? 'wheel'
+        : "DOMMouseScroll"
+const fixWheelDelta = fixWheelType === "mousewheel"
+    ? "wheelDetla"
+    : fixWheelType === "wheel"
+        ? "deltaY"
+        : "detail"
+eventHooks.onWheel = function (dom) {
+    addEvent(dom, fixWheelType, function (e) {
+        var delta = e[fixWheelDelta] > 0
+            ? -120
+            : 120;
+        var wheelDelta = ~~dom._ms_wheel_ + delta;
+        dom._ms_wheel_ = wheelDelta
+        addEvent.fire(dom, 'wheel', {
+            detail: wheelDelta,
+            wheelDeltaY: wheelDelta,
+            wheelDelta: wheelDelta
+        })
+    })
+}
 
 if (inMobile) {
     eventHooks.onClick = noop
     eventHooks.onClickCapture = noop
 }
-
 
 export function SyntheticEvent(event) {
     if (event.originalEvent) {

@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-11T14:16:54.776Z
+ * by 司徒正美 Copyright 2017-06-11T17:16:23.016Z
  */
 
 (function (global, factory) {
@@ -737,7 +737,8 @@ function addEvent(el, type, fn) {
 
 var eventLowerCache = {
     'onClick': 'click',
-    'onChange': 'change'
+    'onChange': 'change',
+    'onWheel': 'wheel'
 };
 
 var ron = /^on/;
@@ -754,9 +755,38 @@ function getBrowserName(onStr) {
     return lower;
 }
 
-var inMobile = 'ontouchstart' in document;
+addEvent.fire = function fire(elem, name, opts) {
+    var hackEvent = document.createEvent("Events");
+    hackEvent.initEvent('datasetchanged', true, true, opts);
+    if (opts) {
+        Object.assign(hackEvent, opts);
+    }
+    hackEvent.__type__ = name;
+    elem.dispatchEvent(hackEvent);
+};
 
+var inMobile = 'ontouchstart' in document;
 var eventHooks = {};
+eventLowerCache.onWheel = 'datasetchanged';
+/* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
+            firefox DOMMouseScroll detail 下3 上-3
+            firefox wheel detlaY 下3 上-3
+            IE9-11 wheel deltaY 下40 上-40
+            chrome wheel deltaY 下100 上-100 */
+var fixWheelType = "onmousewheel" in document ? 'mousewheel' : document.onwheel !== void 0 ? 'wheel' : "DOMMouseScroll";
+var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
+eventHooks.onWheel = function (dom) {
+    addEvent(dom, fixWheelType, function (e) {
+        var delta = e[fixWheelDelta] > 0 ? -120 : 120;
+        var wheelDelta = ~~dom._ms_wheel_ + delta;
+        dom._ms_wheel_ = wheelDelta;
+        addEvent.fire(dom, 'wheel', {
+            detail: wheelDelta,
+            wheelDeltaY: wheelDelta,
+            wheelDelta: wheelDelta
+        });
+    });
+};
 
 if (inMobile) {
     eventHooks.onClick = noop;

@@ -1,20 +1,24 @@
 import {document, msie} from './browser'
 import {eventLowerCache, eventHooks, addEvent, dispatchEvent} from './event'
 
-function dispatchIEEvent(dom, type) {
-    try {
-        var hackEvent = document.createEventObject()
-        hackEvent.__type__ = type
-        //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
-        dom.fireEvent("ondatasetchanged", hackEvent)
-    } catch (e) {}
+if (msie < 9) {
+    addEvent.fire = function dispatchIEEvent(dom, type, obj) {
+        try {
+            var hackEvent = document.createEventObject()
+            if (obj) {
+                Object.assign(hackEvent, obj)
+            }
+            hackEvent.__type__ = type
+            //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
+            dom.fireEvent("ondatasetchanged", hackEvent)
+        } catch (e) {}
+    }
 }
-
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInput(dom, name) {
     addEvent(dom, 'propertychange', function (e) {
         if (e.propertyName === 'value') {
-            dispatchIEEvent(dom, 'input')
+            addEvent.fire(dom, 'input')
         }
     })
 }
@@ -37,7 +41,7 @@ function fixIEChange(dom, name) {
                     : option.text
             }
         }
-        dispatchIEEvent(dom, 'change')
+        addEvent.fire(dom, 'change')
     })
 }
 
