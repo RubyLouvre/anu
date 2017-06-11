@@ -1,10 +1,6 @@
-import {
-    diffProps
-} from './diffProps'
-import {
-    CurrentOwner
-} from './createElement'
-
+import {diffProps} from './diffProps'
+import {CurrentOwner} from './createElement'
+import {window, document} from './browser'
 import {
     getChildContext,
     HTML_KEY,
@@ -18,18 +14,49 @@ import {
     getComponentProps,
     __push
 } from './util'
+var innerMap = window.Map
+try {
+    var a = document.createComment('')
+    var map = new innerMap
+    map.set(a, noop)
+    if (map.get(a) !== noop) {
+        throw '使用自定义Map'
+    }
+
+} catch (e) {
+    innerMap = function () {
+        this.map = {}
+    }
+    function getID(a) {
+        if (a.uniqueID) {
+            return 'Node' + a.uniqueID
+        }
+        if (!a.uniqueID) {
+            a.uniqueID = "_" + (idN++)
+            return 'Node' + a.uniqueID
+        }
+    }
+    innerMap.prototype = {
+        get: function (a) {
+            var id = getID(a)
+            return this.map[id]
+        },
+        set: function (a, v) {
+            var id = getID(a)
+            this.map[id] = v
+        },
+        "delete": function () {
+            var id = getID(a)
+            delete this.map[id]
+        }
+    }
+}
+
 var instanceMap = new Map()
 var _removeNodes = [];
 
-import {
-    document,
-    createDOMElement,
-    getNs
-} from './browser'
-import {
-    processFormElement,
-    postUpdateSelectedOptions
-} from './ControlledComponent'
+import {document, createDOMElement, getNs} from './browser'
+import {processFormElement, postUpdateSelectedOptions} from './ControlledComponent'
 export function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {})
 }
@@ -95,14 +122,12 @@ function genVnodes(vnode, container, hostParent, parentContext) {
 }
 
 export function mountVnode(vnode, parentContext, prevRendered) {
-    let {
-        vtype
-    } = vnode
+    let {vtype} = vnode
     let node = null
     if (!vtype) { // init text comment
-        node = prevRendered && prevRendered.nodeName === vnode.type ?
-            prevRendered :
-            createDOMElement(vnode)
+        node = prevRendered && prevRendered.nodeName === vnode.type
+            ? prevRendered
+            : createDOMElement(vnode)
         vnode._hostNode = node
         return node
     }
@@ -124,11 +149,8 @@ var formElements = {
 }
 
 function mountElement(vnode, parentContext, prevRendered) {
-    let {
-        type,
-        props
-    } = vnode,
-    dom
+    let {type, props} = vnode,
+        dom
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         dom = prevRendered
     } else {
@@ -200,13 +222,8 @@ function fireMount() {
     }
 }
 
-
-
 function mountComponent(vnode, parentContext, prevRendered) {
-    let {
-        type,
-        props
-    } = vnode
+    let {type, props} = vnode
 
     props = getComponentProps(type, props)
 
@@ -257,10 +274,7 @@ export function safeRenderComponent(instance) {
 }
 
 function mountStateless(vnode, parentContext, prevRendered) {
-    var {
-        type,
-        props
-    } = vnode
+    var {type, props} = vnode
     props = getComponentProps(type, props)
 
     let rendered = type(props, parentContext)
@@ -308,12 +322,7 @@ options.immune.refreshComponent = function refreshComponent(instance) { //这里
 
 function reRenderComponent(instance) { // instance._currentElement
 
-    var {
-        props,
-        state,
-        context,
-        lastProps
-    } = instance
+    var {props, state, context, lastProps} = instance
     var lastRendered = instance._rendered
     var node = instanceMap.get(instance)
 
@@ -323,8 +332,8 @@ function reRenderComponent(instance) { // instance._currentElement
     var nextState = instance._processPendingState(props, context)
 
     instance.props = lastProps
-   // delete instance.lastProps
-    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
+    // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
+    // nextContext)
     if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
         return node //注意
     }
@@ -401,9 +410,7 @@ export function disposeVnode(vnode, node) {
     if (!vnode) {
         return
     }
-    let {
-        vtype
-    } = vnode;
+    let {vtype} = vnode;
     if (!vtype) {
         vnode._hostNode = null
         vnode._hostParent = null
@@ -427,9 +434,7 @@ export function findDOMNode(componentOrElement) {
 }
 
 function disposeElement(vnode, node) {
-    var {
-        props
-    } = vnode
+    var {props} = vnode
     var children = props.children
     var childNodes = node.childNodes
     for (let i = 0, len = children.length; i < len; i++) {
@@ -454,10 +459,7 @@ function disposeComponent(vnode, node) {
 }
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
-    let {
-        vtype,
-        props
-    } = lastVnode
+    let {vtype, props} = lastVnode
 
     if (vtype === 2) {
         //类型肯定相同的
@@ -522,7 +524,7 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
     if (instance.componentWillReceiveProps) {
         instance.componentWillReceiveProps(nextProps, parentContext)
     }
-  
+
     instance.props = nextProps
     instance.context = parentContext
     if (nextVnode.ref) {
@@ -559,19 +561,13 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     let newVchildren = newVnode.props.children
     let childrenLen = children.length
     let newVchildrenLen = newVchildren.length
-   
 
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (let i = 0; i < newVchildrenLen; i++) {
                 patches
                     .creates
-                    .push({
-                        vnode: newVchildren[i],
-                        parentNode: node,
-                        parentContext: parentContext,
-                        index: i
-                    })
+                    .push({vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i})
             }
         }
         return
@@ -579,10 +575,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         for (let i = 0; i < childrenLen; i++) {
             patches
                 .removes
-                .push({
-                    vnode: children[i],
-                    node: childNodes[i]
-                })
+                .push({vnode: children[i], node: childNodes[i]})
         }
         return
     }
@@ -638,10 +631,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            removes.push({
-                vnode: vnode,
-                node: childNodes[i]
-            })
+            removes.push({vnode: vnode, node: childNodes[i]})
         }
     }
 
@@ -649,12 +639,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         let item = updates[i]
         if (!item) {
 
-            creates.push({
-                vnode: newVchildren[i],
-                parentNode: node,
-                parentContext: parentContext,
-                index: i
-            })
+            creates.push({vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i})
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext)
         }

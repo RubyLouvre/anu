@@ -1,39 +1,43 @@
 (function (global) {
-   
+
     if (!global.console) {
         global.console = {};
     }
     var con = global.console;
-    var prop, method;
+    var prop,
+        method;
     var dummy = function () {};
     var properties = ['memory'];
-    var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-        'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-        'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
-    while (prop = properties.pop())
-        if (!con[prop]) con[prop] = {};
-    while (method = methods.pop())
-        if (!con[method]) con[method] = dummy;
-    // Using `this` for web workers & supports Browserify / Webpack.
-if (typeof Object.create !== 'function') {
-  Object.create = function (o) {
-    function F() {}
-    F.prototype = o;
+    var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEn' +
+            'd,info,log,markTimeline,profile,profiles,profileEnd,show,table,time,timeEnd,time' +
+            'line,timelineEnd,timeStamp,trace,warn').split(',');
+    while (prop = properties.pop()) 
+        if (!con[prop]) 
+            con[prop] = {};
+while (method = methods.pop()) 
+        if (!con[method]) 
+            con[method] = dummy;
+// Using `this` for web workers & supports Browserify / Webpack.
+    if (typeof Object.create !== 'function') {
+        Object.create = function (o) {
+            function F() {}
+            F.prototype = o;
 
-    return new F();
-  };
-}
-Function.prototype.bind = Function.prototype.bind
-   || function(){
-     var fn = this, presetArgs = [].slice.call(arguments); 
-     var context = presetArgs.shift();
-     return function(){
-       return fn.apply(context, presetArgs.concat([].slice.call(arguments)));
-     };
-   };
+            return new F();
+        };
+    }
+    Function.prototype.bind = Function.prototype.bind || function () {
+        var fn = this,
+            presetArgs = []
+                .slice
+                .call(arguments);
+        var context = presetArgs.shift();
+        return function () {
+            return fn.apply(context, presetArgs.concat([].slice.call(arguments)));
+        };
+    };
     //https://github.com/flowersinthesand/stringifyJSON/blob/master/stringifyjson.js
     if (typeof JSON === 'undefined') {
-
 
         var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
             meta = {
@@ -49,16 +53,24 @@ Function.prototype.bind = Function.prototype.bind
         function quote(string) {
             return '"' + string.replace(escapable, function (a) {
                 var c = meta[a];
-                return typeof c === "string" ? c : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
+                return typeof c === "string"
+                    ? c
+                    : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
             }) + '"';
         }
 
         function f(n) {
-            return n < 10 ? "0" + n : n;
+            return n < 10
+                ? "0" + n
+                : n;
         }
 
         function str(key, holder) {
-            var i, v, len, partial, value = holder[key],
+            var i,
+                v,
+                len,
+                partial,
+                value = holder[key],
                 type = typeof value;
 
             if (value && typeof value === "object" && typeof value.toJSON === "function") {
@@ -70,7 +82,9 @@ Function.prototype.bind = Function.prototype.bind
                 case "string":
                     return quote(value);
                 case "number":
-                    return isFinite(value) ? String(value) : "null";
+                    return isFinite(value)
+                        ? String(value)
+                        : "null";
                 case "boolean":
                     return String(value);
                 case "object":
@@ -80,10 +94,10 @@ Function.prototype.bind = Function.prototype.bind
 
                     switch (Object.prototype.toString.call(value)) {
                         case "[object Date]":
-                            return isFinite(value.valueOf()) ?
-                                '"' + value.getUTCFullYear() + "-" + f(value.getUTCMonth() + 1) + "-" + f(value.getUTCDate()) +
-                                "T" + f(value.getUTCHours()) + ":" + f(value.getUTCMinutes()) + ":" + f(value.getUTCSeconds()) + "Z" + '"' :
-                                "null";
+                            return isFinite(value.valueOf())
+                                ? '"' + value.getUTCFullYear() + "-" + f(value.getUTCMonth() + 1) + "-" + f(value.getUTCDate()) + "T" + f(value.getUTCHours()) + ":" + f(value.getUTCMinutes()) + ":" + f(value.getUTCSeconds()) + "Z" "
+
+                                : "null";
                         case "[object Array]":
                             len = value.length;
                             partial = [];
@@ -108,12 +122,9 @@ Function.prototype.bind = Function.prototype.bind
             }
         }
 
-
         global.JSON = {
             stringify: function (value) {
-                return str("", {
-                    "": value
-                });
+                return str("", {"": value});
             },
             //http://www.cnblogs.com/fengzekun/p/3940918.html
             parse: function () {
@@ -145,92 +156,100 @@ Function.prototype.bind = Function.prototype.bind
 
     }
     var toString = {}.toString;
-/*
+    /*
 * polyfill
 * @ forEach()是ECMAScript5中的方法
 */
-if(!Array.prototype.forEach){
-    Array.prototype.forEach = function(callback,thisArg){
-        var T, k;
-        if(this === null){
-            throw new TypeError("this is null or not defined")
-        }
-        var O = Object(this);
-        var len = O.length >>> 0;
-        if(typeof callback !== "function"){
-            throw new TypeError(callback + " is not a function");
-        }
-        if(arguments.length > 1){
-            T = thisArg;
-        }
-        k = 0;
-        while(k < len){
-            var kValue;
-            if(k in O){
-                kValue = O[k];
-                callback.call(T,kValue,k,O);
+    if (!Array.prototype.forEach) {
+        Array.prototype.forEach = function (callback, thisArg) {
+            var T,
+                k;
+            if (this === null) {
+                throw new TypeError("this is null or not defined")
             }
-            k++;
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (typeof callback !== "function") {
+                throw new TypeError(callback + " is not a function");
+            }
+            if (arguments.length > 1) {
+                T = thisArg;
+            }
+            k = 0;
+            while (k < len) {
+                var kValue;
+                if (k in O) {
+                    kValue = O[k];
+                    callback.call(T, kValue, k, O);
+                }
+                k++;
+            }
         }
     }
-}
     Array.isArray || (Array.isArray = function (arr) {
         return toString.call(arr) == '[object Array]';
     });
 
-
-    function Map() {
-        this.map = {}
-    }
-
-    function tos(a) {
-        return Object.prototype.toString.call(a).slice(8, -1)
-    }
-
-    var idN = 1
-
-    function getID(a) {
-        var _type = typeof a
-        var complex = a && _type === 'object'
-        if (complex) {
-            if (a.nodeType) {
-                if (a.uniqueID) {
-                    return 'Node' + a.uniqueID
-                }
-                if (!a.uniqueID) {
-                    a.uniqueID = "_" + (idN++)
-                    return 'Node' + a.uniqueID
-                }
-            } else {
-                var type = tos(a)
-                if (a.uniqueID) {
-                    return type + a.uniqueID
-                }
-                if (!a.uniqueID) {
-                    a.uniqueID = "_" + (idN++)
-                    return type + a.uniqueID
-                }
-            }
+    Object.is || (Object.is = is)
+    /**
+ * inlined Object.is polyfill to avoid requiring consumers ship their own
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+ */
+    function is(x, y) {
+        // SameValue algorithm
+        if (x === y) {
+            // Steps 1-5, 7-10 Steps 6.b-6.e: +0 != -0 Added the nonzero y check to make
+            // Flow happy, but it is redundant
+            return x !== 0 || y !== 0 || 1 / x === 1 / y;
         } else {
-            return _type + a
+            // Step 6.a: NaN == NaN
+            return x !== x && y !== y;
         }
-    }
-    Map.prototype = {
-        get: function (a) {
-            var id = getID(a)
-            return this.map[id]
-        },
-        set: function (a, v) {
-            var id = getID(a)
-            this.map[id] = v
-        },
-        "delete": function () {
-            var id = getID(a)
-            delete this.map[id]
+    }(function () {
+        if (!Object.keys) {
+            Object.keys = (function () {
+                'use strict';
+                var hasOwnProperty = Object.prototype.hasOwnProperty,
+                    hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+                    dontEnums = [
+                        'toString',
+                        'toLocaleString',
+                        'valueOf',
+                        'hasOwnProperty',
+                        'isPrototypeOf',
+                        'propertyIsEnumerable',
+                        'constructor'
+                    ],
+                    dontEnumsLength = dontEnums.length;
+
+                return function (obj) {
+                    if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+                        throw new TypeError('Object.keys called on non-object');
+                    }
+
+                    var result = [],
+                        prop,
+                        i;
+
+                    for (prop in obj) {
+                        if (hasOwnProperty.call(obj, prop)) {
+                            result.push(prop);
+                        }
+                    }
+
+                    if (hasDontEnumBug) {
+                        for (i = 0; i < dontEnumsLength; i++) {
+                            if (hasOwnProperty.call(obj, dontEnums[i])) {
+                                result.push(dontEnums[i]);
+                            }
+                        }
+                    }
+                    return result;
+                };
+            }());
         }
-    }
+    })();
 
-    window.Map = window.Map || Map
-
-
-})(typeof window === 'undefined' ? this : window);
+})(typeof window === 'undefined'
+    ? this
+    : window);

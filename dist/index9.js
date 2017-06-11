@@ -93,12 +93,15 @@ var Select = function (_React$Component) {
 
     Select.prototype.onChange = function onChange(e) {
         console.log(e.target.value);
+        this.setState({
+            value: e.target.value
+        });
     };
 
     Select.prototype.render = function render() {
         return React.createElement(
             'select',
-            { id: 'node8', value: this.state.value, onChange: this.onChange },
+            { id: 'node8', multiple: 'true', value: this.state.value, onChange: this.onChange },
             React.createElement(
                 'option',
                 { value: 'aaa' },
