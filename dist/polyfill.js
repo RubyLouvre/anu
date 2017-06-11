@@ -95,8 +95,7 @@ while (method = methods.pop())
                     switch (Object.prototype.toString.call(value)) {
                         case "[object Date]":
                             return isFinite(value.valueOf())
-                                ? '"' + value.getUTCFullYear() + "-" + f(value.getUTCMonth() + 1) + "-" + f(value.getUTCDate()) + "T" + f(value.getUTCHours()) + ":" + f(value.getUTCMinutes()) + ":" + f(value.getUTCSeconds()) + "Z" "
-
+                                ? '"' + value.getUTCFullYear() + "-" + f(value.getUTCMonth() + 1) + "-" + f(value.getUTCDate()) + "T" + f(value.getUTCHours()) + ":" + f(value.getUTCMinutes()) + ":" + f(value.getUTCSeconds()) + 'Z"'
                                 : "null";
                         case "[object Array]":
                             len = value.length;
@@ -190,12 +189,7 @@ while (method = methods.pop())
         return toString.call(arr) == '[object Array]';
     });
 
-    Object.is || (Object.is = is)
-    /**
- * inlined Object.is polyfill to avoid requiring consumers ship their own
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
- */
-    function is(x, y) {
+    Object.is || (Object.is = function is(x, y) {
         // SameValue algorithm
         if (x === y) {
             // Steps 1-5, 7-10 Steps 6.b-6.e: +0 != -0 Added the nonzero y check to make
@@ -205,7 +199,13 @@ while (method = methods.pop())
             // Step 6.a: NaN == NaN
             return x !== x && y !== y;
         }
-    }(function () {
+    });
+    /**
+ * inlined Object.is polyfill to avoid requiring consumers ship their own
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+ */
+
+    (function () {
         if (!Object.keys) {
             Object.keys = (function () {
                 'use strict';
