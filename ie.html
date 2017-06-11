@@ -2,12 +2,12 @@
 <!DOCTYPE HTML>
 <html lang="cn">
     <head>
-        <title>&#x65E7;&#x5F0F;IE&#x7684;&#x652F;&#x6301; &#xB7; GitBook</title>
         <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>&#x65E7;&#x5F0F;IE&#x7684;&#x652F;&#x6301; &#xB7; GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="description" content="">
-        <meta name="generator" content="GitBook 3.1.1">
+        <meta name="generator" content="GitBook 3.2.2">
         
         
         
@@ -413,8 +413,210 @@
                                 <section class="normal markdown-section">
                                 
                                 <h2 id="&#x65E7;&#x5F0F;ie&#x7684;&#x652F;&#x6301;">&#x65E7;&#x5F0F;IE&#x7684;&#x652F;&#x6301;</h2>
+<h3 id="polyfill">Polyfill</h3>
+<p>anu&#x867D;&#x7136;&#x6CA1;&#x6709;&#x7528;&#x592A;&#x591A;&#x9AD8;&#x7EA7;&#xFF0C;&#x4F46;&#x60F3;&#x8BA9;&#x5B83;&#x80FD;&#x8FD0;&#x884C;IE6-8,&#x8FD8;&#x662F;&#x9700;&#x8981;&#x52A0;&#x8BB8;&#x591A;&#x8865;&#x4E01;&#x7684;&#xFF0C;&#x7F57;&#x5217;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ol>
+<li>Array.prototype.forEach</li>
+<li>Function.prototype.bind</li>
+<li>JSON</li>
+<li>window.console</li>
+<li>Object.keys</li>
+<li>Object.is</li>
+<li>Object.assign</li>
+<li>Array.isArray</li>
+</ol>
+<p>&#x8FD9;&#x4E9B;&#x90FD;&#x662F;&#x6574;&#x5408;&#x5230;<strong>dist/polyfill</strong>&#x4E2D;</p>
+<h3 id="react-ie&#x4E13;&#x7528;&#x5E93;">React IE&#x4E13;&#x7528;&#x5E93;</h3>
+<p>&#x6B64;&#x5916;&#xFF0C;&#x6838;&#x5FC3;&#x5E93;&#x5E94;&#x8BE5;&#x7531;<strong>dist/React.js</strong>&#x6539;&#x6210;<strong>dist/ReactIE.js</strong></p>
+<p>&#x5B83;&#x76F8;&#x5F53;&#x4E8E;&#x539F;&#x6765;&#x7684;&#x5E93;&#xFF0C;&#x591A;&#x4E86;Map&#x65B9;&#x6CD5;&#x8865;&#x4E01;&#x4E0E;IE &#x4E8B;&#x4EF6;&#x8865;&#x4E01;&#x3002;</p>
+<p>Map&#x8865;&#x4E01;&#x662F;es6&#x7684;&#x65B0;&#x6570;&#x636E;&#x5BF9;&#x8C61;Map&#x7684;&#x4E00;&#x4E2A;&#x8865;&#x4E01;&#xFF0C;&#x4F46;&#x5B83;&#x53EA;&#x7528;&#x4E8E;anu&#x5185;&#x90E8;&#x7684;&#x67D0;&#x4E2A;&#x7C7B;&#xFF0C;&#x6CA1;&#x6709;&#x5B8C;&#x5168;&#x5B9E;&#x73B0;es6 Map</p>
+<p>IE&#x4E8B;&#x4EF6;&#x8865;&#x4E01;&#x662F;&#x9488;&#x5BF9;&#x4E00;&#x4E9B;&#x4E0D;&#x5192;&#x6CE1;&#x4E8B;&#x4EF6;&#x7684;&#x4FEE;&#x590D;</p>
+<p><a href="http://www.cnblogs.com/rubylouvre/p/5080464.html" target="_blank">http://www.cnblogs.com/rubylouvre/p/5080464.html</a></p>
+<p>&#x73B0;&#x5728;&#x53EA;&#x5904;&#x7406;oninput, onchange, onsubmit</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">//src/diff.js</span>
+<span class="hljs-keyword">var</span> innerMap = <span class="hljs-built_in">window</span>.Map
+<span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">var</span> a = <span class="hljs-built_in">document</span>.createComment(<span class="hljs-string">&apos;&apos;</span>)
+    <span class="hljs-keyword">var</span> map = <span class="hljs-keyword">new</span> innerMap
+    map.set(a, noop)
+    <span class="hljs-keyword">if</span> (map.get(a) !== noop) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-string">&apos;&#x4F7F;&#x7528;&#x81EA;&#x5B9A;&#x4E49;Map&apos;</span>
+    }
+
+} <span class="hljs-keyword">catch</span> (e) {
+    innerMap = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">this</span>.map = {}
+    }
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getID</span>(<span class="hljs-params">a</span>) </span>{
+        <span class="hljs-keyword">if</span> (a.uniqueID) {
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;Node&apos;</span> + a.uniqueID
+        }
+        <span class="hljs-keyword">if</span> (!a.uniqueID) {
+            a.uniqueID = <span class="hljs-string">&quot;_&quot;</span> + (idN++)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;Node&apos;</span> + a.uniqueID
+        }
+    }
+    innerMap.prototype = {
+        get: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">a</span>) </span>{
+            <span class="hljs-keyword">var</span> id = getID(a)
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.map[id]
+        },
+        set: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">a, v</span>) </span>{
+            <span class="hljs-keyword">var</span> id = getID(a)
+            <span class="hljs-keyword">this</span>.map[id] = v
+        },
+        <span class="hljs-string">&quot;delete&quot;</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">var</span> id = getID(a)
+            <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>.map[id]
+        }
+    }
+}
+
+<span class="hljs-keyword">var</span> instanceMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()
+</code></pre>
+<pre><code class="lang-javascript"><span class="hljs-comment">//src/ieEvent</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">dispatchIEEvent</span>(<span class="hljs-params">dom, type</span>) </span>{
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">var</span> hackEvent = <span class="hljs-built_in">document</span>.createEventObject()
+        hackEvent.__type__ = <span class="hljs-string">&apos;input&apos;</span>
+        <span class="hljs-comment">//IE6-8&#x89E6;&#x53D1;&#x4E8B;&#x4EF6;&#x5FC5;&#x987B;&#x4FDD;&#x8BC1;&#x5728;DOM&#x6811;&#x4E2D;,&#x5426;&#x5219;&#x62A5;&quot;SCRIPT16389: &#x672A;&#x6307;&#x660E;&#x7684;&#x9519;&#x8BEF;&quot;</span>
+        dom.fireEvent(<span class="hljs-string">&quot;ondatasetchanged&quot;</span>, hackEvent)
+    } <span class="hljs-keyword">catch</span> (e) {}
+}
+
+<span class="hljs-comment">//Ie6-8 oninput&#x4F7F;&#x7528;propertychange&#x8FDB;&#x884C;&#x5192;&#x5145;&#xFF0C;&#x89E6;&#x53D1;&#x4E00;&#x4E2A;ondatasetchanged&#x4E8B;&#x4EF6;</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fixIEInput</span>(<span class="hljs-params">dom, name</span>) </span>{
+    addEvent(dom, <span class="hljs-string">&apos;propertychange&apos;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">e</span>) </span>{
+        <span class="hljs-keyword">if</span> (e.propertyName === <span class="hljs-string">&apos;value&apos;</span>) {
+            dispatchIEEvent(dom, <span class="hljs-string">&apos;input&apos;</span>)
+        }
+    })
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fixIEChange</span>(<span class="hljs-params">dom, name</span>) </span>{
+    addEvent(dom, <span class="hljs-string">&apos;change&apos;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">e</span>) </span>{
+        dispatchIEEvent(dom, <span class="hljs-string">&apos;change&apos;</span>)
+    })
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fixIESubmit</span>(<span class="hljs-params">dom, name</span>) </span>{
+    <span class="hljs-keyword">if</span> (dom.nodeName === <span class="hljs-string">&apos;FORM&apos;</span>) {
+        addEvent(dom, <span class="hljs-string">&apos;submit&apos;</span>, dispatchEvent)
+    }
+}
+
+
+<span class="hljs-keyword">if</span> (msie &lt; <span class="hljs-number">9</span>) {
+    eventLowerCache.onInput = <span class="hljs-string">&apos;datasetchanged&apos;</span>
+    eventLowerCache.onChange = <span class="hljs-string">&apos;datasetchanged&apos;</span>
+    eventLowerCache.onInputCapture = <span class="hljs-string">&apos;datasetchanged&apos;</span>
+    eventLowerCache.onChangeCapture = <span class="hljs-string">&apos;datasetchanged&apos;</span>
+    eventHooks.onInput = fixIEInput
+    eventHooks.onInputCapture = fixIEInput
+    eventHooks.onChange = fixIEChange
+    eventHooks.onChangeCapture = fixIEChange
+    eventHooks.onSubmit = fixIESubmit
+}
+</code></pre>
+<p>&#x5F53;&#x6211;&#x4EEC;&#x5728;&#x4E1A;&#x52A1;&#x7EBF;&#x4F7F;&#x7528;&#x65F6;&#xFF0C;&#x9700;&#x8981;&#x7528;webpack&#x8FDB;&#x884C;&#x5904;&#x7406;&#xFF0C;&#x4E0B;&#x9762;&#x4F8B;&#x5B50;&#x662F;webpack2</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> webpack = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;webpack&quot;</span>);
+<span class="hljs-keyword">const</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;path&quot;</span>);
+<span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;fs&quot;</span>);
+<span class="hljs-keyword">var</span> es3ifyPlugin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;es3ify-webpack-plugin&apos;</span>);
+
+<span class="hljs-built_in">module</span>.exports = {
+  context: __dirname,
+  entry: {
+     index9: <span class="hljs-string">&quot;./src/index9.js&quot;</span> <span class="hljs-comment">//&#x5165;&#x53E3;&#x6587;&#x4EF6;</span>
+  },
+  output: {
+    path: __dirname + <span class="hljs-string">&quot;/dist/&quot;</span>,
+    filename: <span class="hljs-string">&quot;[name].js&quot;</span>
+  },
+  plugins: [<span class="hljs-keyword">new</span> es3ifyPlugin()],<span class="hljs-comment">//&#x6CE8;&#x610F;&#x4F7F;&#x7528;&#x8FD9;&#x4E2A;es5&#x8F6C;es3</span>
+  <span class="hljs-built_in">module</span>: {
+    rules: [
+      {
+        test: <span class="hljs-regexp">/\.jsx?$/</span>,
+        loader: <span class="hljs-string">&quot;babel-loader&quot;</span>,
+        options: {
+          presets: [
+            <span class="hljs-string">&quot;avalon&quot;</span>, <span class="hljs-string">&quot;react&quot;</span>
+          ],
+          <span class="hljs-string">&quot;plugins&quot;</span>: [
+            [
+              <span class="hljs-string">&quot;transform-es2015-classes&quot;</span>, {
+                <span class="hljs-string">&quot;loose&quot;</span>: <span class="hljs-literal">true</span>
+              }
+            ]
+          ]
+        },
+
+        exclude: path.resolve(__dirname, <span class="hljs-string">&quot;node_modules&quot;</span>)
+      }
+    ]
+  },
+
+  resolve: {
+    <span class="hljs-comment">//&#x5982;&#x679C;&#x4E0D;&#x4F7F;&#x7528;anu&#xFF0C;&#x5C31;&#x53EF;&#x4EE5;&#x628A;&#x8FD9;&#x91CC;&#x6CE8;&#x91CA;&#x6389;</span>
+    alias: {
+      react: <span class="hljs-string">&quot;anujs/dist/ReactIE.js&quot;</span>,
+      <span class="hljs-string">&quot;react-dom&quot;</span>: <span class="hljs-string">&quot;anujs/dist/ReactIE.js&quot;</span>
+    }
+  }
+};
+</code></pre>
+<p>&#x5982;&#x679C;&#x4F60;&#x7528;&#x5230;&#x538B;&#x7F29;&#xFF0C;&#x5C31;&#x9700;&#x8981;&#x5904;&#x7406; uglify-js&#x4EA7;&#x751F;&#x95EE;&#x9898;&#xFF0C;&#x56E0;&#x4E3A;IE6-8 ,&#x5BF9;&#x4E8E;<strong>map.delete(&quot;ddd&quot;)</strong>, <strong>modulex.default</strong>&#x8FD9;&#x6837;&#x7684;&#x5199;&#x6CD5;&#x4F1A;&#x62A5;&#x8BED;&#x6CD5;&#x9519;&#x8BEF;
+&#x56E0;&#x4E3A;&#x5173;&#x952E;&#x5B57;&#x4E0D;&#x80FD;&#x505A;&#x5C5E;&#x6027;&#x540D;&#x4E0E;&#x65B9;&#x6CD5;&#x540D;</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">//&#x8BE6;&#x89C1; https://github.com/zuojj/fedlab/issues/5</span>
+<span class="hljs-keyword">new</span> webpack.optimize.UglifyJsPlugin({
+    compress: {
+        properties: <span class="hljs-literal">false</span>,
+        warnings: <span class="hljs-literal">false</span>
+    },
+    output: {
+        beautify: <span class="hljs-literal">true</span>,
+        quote_keys: <span class="hljs-literal">true</span>
+    },
+    mangle: {
+        screw_ie8: <span class="hljs-literal">false</span>
+    },
+    sourceMap: <span class="hljs-literal">false</span>
+})
+</code></pre>
+<p>&#x4E0B;&#x9762;&#x793A;&#x4F8B;&#x6587;&#x4EF6;&#xFF0C;&#x5927;&#x5BB6;&#x4E5F;&#x53EF;&#x4EE5;&#x5C06;polyfill&#x4E0E;ReactIE &#x53CA;bable&#x7528;&#x5230;&#x7684;helpers&#x6253;&#x5305;&#x4E00;&#x4E2A;common.js</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;utf-8&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+        <span class="hljs-selector-class">.aaa</span> {
+            <span class="hljs-attribute">width</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">height</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">background</span>: red;
+        }
+        <span class="hljs-selector-class">.bbb</span> {
+            <span class="hljs-attribute">width</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">height</span>: <span class="hljs-number">200px</span>;
+            <span class="hljs-attribute">background</span>: lawngreen;
+        }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+   <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/polyfill.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+   <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&apos;text/javascript&apos;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/ReactIE.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;./dist/index9.js&quot;</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>&#x8FD9;&#x4E2A;&#x9ED8;&#x8BA4;&#x4F1A;&#x88AB;&#x6E05;&#x6389;<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&apos;example&apos;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</code></pre>
 <footer class="page-footer"><span class="copyright">Copyright &#xA9; &#x53F8;&#x5F92;&#x6B63;&#x7F8E; 2013&#xFF0D;2016 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
-2017-06-07 14:21:44
+2017-06-11 15:42:47
 </span></footer>
                                 
                                 </section>
@@ -454,7 +656,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"旧式IE的支持","level":"1.12","depth":1,"previous":{"title":"组件库","level":"1.11","depth":1,"path":"ui.md","ref":"ui.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"livereload":{},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"ie.md","mtime":"2017-06-07T06:21:44.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-06-07T06:38:34.836Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"旧式IE的支持","level":"1.12","depth":1,"previous":{"title":"组件库","level":"1.11","depth":1,"path":"ui.md","ref":"ui.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"livereload":{},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"ie.md","mtime":"2017-06-11T07:42:47.000Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-11T08:00:39.529Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
