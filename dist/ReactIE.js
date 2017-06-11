@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-11T13:30:06.182Z
+ * by 司徒正美 Copyright 2017-06-11T13:57:12.290Z
  */
 
 (function (global, factory) {
@@ -1229,6 +1229,7 @@ try {
         }
     };
 
+    var idN = 1;
     innerMap = function innerMap() {
         this.map = {};
     };
@@ -1890,6 +1891,48 @@ function applyDestroy(data) {
 function applyCreate(data) {
     var node = mountVnode(data.vnode, data.parentContext);
     data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
+}
+
+function dispatchIEEvent(dom, type) {
+    try {
+        var hackEvent = document.createEventObject();
+        hackEvent.__type__ = 'input';
+        //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
+        dom.fireEvent("ondatasetchanged", hackEvent);
+    } catch (e) {}
+}
+
+//Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
+function fixIEInput(dom, name) {
+    addEvent(dom, 'propertychange', function (e) {
+        if (e.propertyName === 'value') {
+            dispatchIEEvent(dom, 'input');
+        }
+    });
+}
+
+function fixIEChange(dom, name) {
+    addEvent(dom, 'change', function (e) {
+        dispatchIEEvent(dom, 'change');
+    });
+}
+
+function fixIESubmit(dom, name) {
+    if (dom.nodeName === 'FORM') {
+        addEvent(dom, 'submit', dispatchEvent);
+    }
+}
+
+if (msie < 9) {
+    eventLowerCache.onInput = 'datasetchanged';
+    eventLowerCache.onChange = 'datasetchanged';
+    eventLowerCache.onInputCapture = 'datasetchanged';
+    eventLowerCache.onChangeCapture = 'datasetchanged';
+    eventHooks.onInput = fixIEInput;
+    eventHooks.onInputCapture = fixIEInput;
+    eventHooks.onChange = fixIEChange;
+    eventHooks.onChangeCapture = fixIEChange;
+    eventHooks.onSubmit = fixIESubmit;
 }
 
 var check = function check() {

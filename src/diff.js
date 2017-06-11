@@ -25,6 +25,7 @@ try {
     }
 
 } catch (e) {
+    var idN = 1;
     innerMap = function () {
         this.map = {}
     }
