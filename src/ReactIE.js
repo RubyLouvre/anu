@@ -25,7 +25,6 @@ import {
 import {
     render, findDOMNode
 } from './diff'
-import './ieEvent'
 var check = function(){
 	return check
 }

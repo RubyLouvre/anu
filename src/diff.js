@@ -1,6 +1,7 @@
 import {diffProps} from './diffProps'
 import {CurrentOwner} from './createElement'
-import {window, document} from './browser'
+import {document, win, createDOMElement, getNs} from './browser'
+import {processFormElement, postUpdateSelectedOptions} from './ControlledComponent'
 import {
     getChildContext,
     HTML_KEY,
@@ -14,7 +15,7 @@ import {
     getComponentProps,
     __push
 } from './util'
-var innerMap = window.Map
+var innerMap = win.Map
 try {
     var a = document.createComment('')
     var map = new innerMap
@@ -55,8 +56,7 @@ try {
 var instanceMap = new Map()
 var _removeNodes = [];
 
-import {document, createDOMElement, getNs} from './browser'
-import {processFormElement, postUpdateSelectedOptions} from './ControlledComponent'
+
 export function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {})
 }

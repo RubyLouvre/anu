@@ -1,5 +1,6 @@
 import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-replace";
+
 const license = require("rollup-plugin-license");
 
 var json = require("./package.json");

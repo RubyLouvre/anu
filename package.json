@@ -59,7 +59,7 @@
     "rollup-plugin-replace": "^1.1.1",
     "selenium-standalone": "^6.4.1",
     "semicolon-less": "^0.7.0",
-   "webpack": "^1.14.0"
+    "webpack": "^1.14.0"
   },
   "dependencies": {}
 }
