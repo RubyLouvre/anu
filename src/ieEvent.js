@@ -26,7 +26,7 @@ function fixIEChange(dom, name) {
                 option,
                 attr;
             if (idx > -1) { //IE 下select.value不会改变
-                option = select.options[idx]
+                option = dom.options[idx]
                 attr = option.attributes.value
                 dom.value = (attr && attr.specified)
                     ? option.value
@@ -44,6 +44,18 @@ function fixIESubmit(dom, name) {
 }
 
 if (msie < 9) {
+    //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value
+    //只能通过这个hack改变
+    try{
+    Object.defineProperty(HTMLSelectElement.prototype, 'value', {
+        set: function (v) {
+            this._fixIEValue = v
+        },
+        get: function () {
+            return this._fixIEValue
+        }
+    })
+    }catch(e){}
     eventLowerCache.onInput = 'datasetchanged'
     eventLowerCache.onChange = 'datasetchanged'
     eventLowerCache.onInputCapture = 'datasetchanged'
