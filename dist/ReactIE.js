@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-11T15:23:47.088Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-11T15:31:29.350Z
  */
 
 (function (global, factory) {
@@ -1912,7 +1912,9 @@ function fixIEInput(dom, name) {
 }
 
 function fixIEChange(dom, name) {
-    addEvent(dom, 'change', function (e) {
+    //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
+    var eventType = dom.type === 'radio' || dom.type === 'checkbox' ? 'click' : 'change';
+    addEvent(dom, eventType, function (e) {
         if (dom.type === 'select-one') {
             var idx = dom.selectedIndex,
                 option,
@@ -1935,8 +1937,7 @@ function fixIESubmit(dom, name) {
 }
 
 if (msie < 9) {
-    //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value
-    //只能通过这个hack改变
+    //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
     try {
         Object.defineProperty(HTMLSelectElement.prototype, 'value', {
             set: function set(v) {
