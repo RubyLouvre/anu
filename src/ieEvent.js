@@ -4,7 +4,7 @@ import {eventLowerCache, eventHooks, addEvent, dispatchEvent} from './event'
 function dispatchIEEvent(dom, type) {
     try {
         var hackEvent = document.createEventObject()
-        hackEvent.__type__ = 'input'
+        hackEvent.__type__ = type
         //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
         dom.fireEvent("ondatasetchanged", hackEvent)
     } catch (e) {}
@@ -21,6 +21,18 @@ function fixIEInput(dom, name) {
 
 function fixIEChange(dom, name) {
     addEvent(dom, 'change', function (e) {
+        if (dom.type === 'select-one') {
+            var idx = dom.selectedIndex,
+                option,
+                attr;
+            if (idx > -1) { //IE 下select.value不会改变
+                option = select.options[idx]
+                attr = option.attributes.value
+                dom.value = (attr && attr.specified)
+                    ? option.value
+                    : option.text
+            }
+        }
         dispatchIEEvent(dom, 'change')
     })
 }
@@ -30,7 +42,6 @@ function fixIESubmit(dom, name) {
         addEvent(dom, 'submit', dispatchEvent)
     }
 }
-
 
 if (msie < 9) {
     eventLowerCache.onInput = 'datasetchanged'

@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-11T13:56:33.765Z
+ * by 司徒正美 Copyright 2017-06-11T14:16:54.776Z
  */
 
 (function (global, factory) {
