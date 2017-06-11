@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-10T09:35:58.098Z
+ * by 司徒正美 Copyright 2017-06-11T13:30:06.182Z
  */
 
 (function (global, factory) {
@@ -446,30 +446,8 @@ var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symb
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-/**
- * inlined Object.is polyfill to avoid requiring consumers ship their own
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
- */
-function is(x, y) {
-    // SameValue algorithm
-    if (x === y) {
-        // Steps 1-5, 7-10
-        // Steps 6.b-6.e: +0 != -0
-        // Added the nonzero y check to make Flow happy, but it is redundant
-        return x !== 0 || y !== 0 || 1 / x === 1 / y;
-    } else {
-        // Step 6.a: NaN == NaN
-        return x !== x && y !== y;
-    }
-}
-
-/**
- * Performs equality by iterating through keys on an object and returning false
- * when any key has values which are not strictly equal between the arguments.
- * Returns true when the values of all keys are strictly equal.
- */
 function shallowEqual(objA, objB) {
-    if (is(objA, objB)) {
+    if (Object.is(objA, objB)) {
         return true;
     }
 
@@ -485,7 +463,7 @@ function shallowEqual(objA, objB) {
 
     // Test for A's keys different from B.
     for (var i = 0; i < keysA.length; i++) {
-        if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
             return false;
         }
     }
@@ -698,7 +676,6 @@ function isEventName(name) {
 
 function dispatchEvent(e) {
     var __type__ = e.__type__ || e.type;
-   
     e = new SyntheticEvent(e);
     var target = e.target;
     var paths = [];
@@ -1233,10 +1210,49 @@ function getOptionSelected(option, selected) {
     dom.selected = selected;
 }
 
-var instanceMap = new Map();
+var innerMap = win.Map;
+try {
+    var a = document.createComment('');
+    var map = new innerMap();
+    map.set(a, noop);
+    if (map.get(a) !== noop) {
+        throw '使用自定义Map';
+    }
+} catch (e) {
+    var getID = function getID(a) {
+        if (a.uniqueID) {
+            return 'Node' + a.uniqueID;
+        }
+        if (!a.uniqueID) {
+            a.uniqueID = "_" + idN++;
+            return 'Node' + a.uniqueID;
+        }
+    };
+
+    innerMap = function innerMap() {
+        this.map = {};
+    };
+
+    innerMap.prototype = {
+        get: function get(a) {
+            var id = getID(a);
+            return this.map[id];
+        },
+        set: function set(a, v) {
+            var id = getID(a);
+            this.map[id] = v;
+        },
+        "delete": function _delete() {
+            var id = getID(a);
+            delete this.map[id];
+        }
+    };
+}
+
+var instanceMap = new innerMap();
 var _removeNodes = [];
 
-function render$1(vnode, container, callback) {
+function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {});
 }
 
@@ -1517,8 +1533,8 @@ function reRenderComponent(instance) {
     var nextState = instance._processPendingState(props, context);
 
     instance.props = lastProps;
-    // delete instance.lastProps
-    //生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
+    // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
+    // nextContext)
     if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
         return node; //注意
     }
@@ -1746,21 +1762,13 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
     if (childrenLen === 0) {
         if (newVchildrenLen > 0) {
             for (var i = 0; i < newVchildrenLen; i++) {
-                patches.creates.push({
-                    vnode: newVchildren[i],
-                    parentNode: node,
-                    parentContext: parentContext,
-                    index: i
-                });
+                patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
             }
         }
         return;
     } else if (newVchildrenLen === 0) {
         for (var _i = 0; _i < childrenLen; _i++) {
-            patches.removes.push({
-                vnode: children[_i],
-                node: childNodes[_i]
-            });
+            patches.removes.push({ vnode: children[_i], node: childNodes[_i] });
         }
         return;
     }
@@ -1816,10 +1824,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            removes.push({
-                vnode: _vnode2,
-                node: childNodes[_i3]
-            });
+            removes.push({ vnode: _vnode2, node: childNodes[_i3] });
         }
     }
 
@@ -1827,12 +1832,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         var item = updates[_i4];
         if (!item) {
 
-            creates.push({
-                vnode: newVchildren[_i4],
-                parentNode: node,
-                parentContext: parentContext,
-                index: _i4
-            });
+            creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
         }
@@ -1892,48 +1892,6 @@ function applyCreate(data) {
     data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
 
-function dispatchIEEvent(dom, type) {
-    try {
-        var hackEvent = document.createEventObject();
-        hackEvent.__type__ = 'input';
-        //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
-        dom.fireEvent("ondatasetchanged", hackEvent);
-    } catch (e) {}
-}
-
-//Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
-function fixIEInput(dom, name) {
-    addEvent(dom, 'propertychange', function (e) {
-        if (e.propertyName === 'value') {
-            dispatchIEEvent(dom, 'input');
-        }
-    });
-}
-
-function fixIEChange(dom, name) {
-    addEvent(dom, 'change', function (e) {
-        dispatchIEEvent(dom, 'change');
-    });
-}
-
-function fixIESubmit(dom, name) {
-    if (dom.nodeName === 'FORM') {
-        addEvent(dom, 'submit', dispatchEvent);
-    }
-}
-
-if (msie < 9) {
-    eventLowerCache.onInput = 'datasetchanged';
-    eventLowerCache.onChange = 'datasetchanged';
-    eventLowerCache.onInputCapture = 'datasetchanged';
-    eventLowerCache.onChangeCapture = 'datasetchanged';
-    eventHooks.onInput = fixIEInput;
-    eventHooks.onInputCapture = fixIEInput;
-    eventHooks.onChange = fixIEChange;
-    eventHooks.onChangeCapture = fixIEChange;
-    eventHooks.onSubmit = fixIESubmit;
-}
-
 var check = function check() {
     return check;
 };
@@ -1958,7 +1916,7 @@ var PropTypes = {
 var React = {
     PropTypes: PropTypes,
     Children: Children, //为了react-redux
-    render: render$1,
+    render: render,
     findDOMNode: findDOMNode,
     options: options,
     version: "1.0.1",

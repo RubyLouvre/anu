@@ -14,23 +14,10 @@ module.exports = {
   },
   plugins: [new es3ifyPlugin()],
   module: {
-    rules: [
+    loaders: [
       {
         test: /\.jsx?$/,
         loader: "babel-loader",
-        options: {
-          presets: [
-            "avalon", "react"
-          ],
-          "plugins": [
-            [
-              "transform-es2015-classes", {
-                "loose": true
-              }
-            ]
-          ]
-        },
-
         exclude: path.resolve(__dirname, "node_modules")
       }
     ]
@@ -39,8 +26,8 @@ module.exports = {
   resolve: {
     //如果不使用anu，就可以把这里注释掉
     alias: {
-      react: "anujs/dist/React.js",
-      "react-dom": "anujs/dist/React.js"
+      react: "anujs/dist/ReactIE.js",
+      "react-dom": "anujs/dist/ReactIE.js"
     }
   }
 };

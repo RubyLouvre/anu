@@ -53,7 +53,7 @@ try {
     }
 }
 
-var instanceMap = new Map()
+var instanceMap = new innerMap()
 var _removeNodes = [];
 
 

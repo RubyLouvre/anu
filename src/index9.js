@@ -13,11 +13,11 @@ class Select extends React.Component{
        })
     }
     render() {
-        return <select multiple="true" value={this.state.value} onChange={this.onChange}>
+        return <div><select  value={this.state.value} onChange={this.onChange}>
             <option value='aaa'>aaa</option>
             <option value='bbb'>bbb</option>
             <option value='ccc'>ccc</option>
-        </select>
+        </select><p>{this.state.value}</p></div>
     }
 }
 window.onload = function(){
