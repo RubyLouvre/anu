@@ -106,8 +106,82 @@
 	    return Select;
 	}(React.Component);
 	
+	var Input = function (_React$Component2) {
+	    _inherits(Input, _React$Component2);
+	
+	    function Input() {
+	        _classCallCheck(this, Input);
+	
+	        var _this2 = _possibleConstructorReturn(this, _React$Component2.call(this));
+	
+	        _this2.state = {
+	            value: 'input'
+	        };
+	        _this2.onInput = _this2.onInput.bind(_this2);
+	        return _this2;
+	    }
+	
+	    Input.prototype.onInput = function onInput(e) {
+	        this.setState({
+	            value: e.target.value
+	        });
+	    };
+	
+	    Input.prototype.render = function render() {
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement('input', { value: this.state.value, onInput: this.onInput }),
+	            this.state.value
+	        );
+	    };
+	
+	    return Input;
+	}(React.Component);
+	
+	var Radio = function (_React$Component3) {
+	    _inherits(Radio, _React$Component3);
+	
+	    function Radio(props) {
+	        _classCallCheck(this, Radio);
+	
+	        var _this3 = _possibleConstructorReturn(this, _React$Component3.call(this, props));
+	
+	        _this3.state = {
+	            value: _this3.props.value
+	        };
+	        _this3.onChange = _this3.onChange.bind(_this3);
+	        return _this3;
+	    }
+	
+	    Radio.prototype.onChange = function onChange(e) {
+	        console.log(e.target.value);
+	        this.setState({
+	            value: e.target.value
+	        });
+	    };
+	
+	    Radio.prototype.render = function render() {
+	        return React.createElement(
+	            'span',
+	            null,
+	            React.createElement('input', { type: 'radio', name: this.props.name, value: this.props.value, onChange: this.onChange }),
+	            this.state.value + ''
+	        );
+	    };
+	
+	    return Radio;
+	}(React.Component);
+	
 	window.onload = function () {
-	    window.s = ReactDOM.render(React.createElement(Select, null), document.getElementById('example'));
+	    window.s = ReactDOM.render(React.createElement(
+	        'div',
+	        null,
+	        React.createElement(Select, null),
+	        React.createElement(Input, null),
+	        React.createElement(Radio, { name: 'sex', value: '\u7537' }),
+	        React.createElement(Radio, { name: 'sex', value: '\u5973' })
+	    ), document.getElementById('example'));
 	};
 
 /***/ })
