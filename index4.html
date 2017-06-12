@@ -20,6 +20,14 @@
      <script type='text/javascript' src="./dist/polyfill.js"></script>
      <script type='text/javascript' src="./dist/ReactIE.js"></script>
   <script type='text/javascript' src="./dist/app.js"></script>
+  <script>
+  window.onload = function(){
+var el = document.getElementById('aaa')
+el.onwheel = function(e){
+    console.log(e)
+}
+  }
+  </script>
 
 </head>
 
@@ -28,7 +36,7 @@
     <div>开发者工具</div>
     <div id='example'></div>
 
-
+<div style='width:300px;height:400px;border:1px solid red' id='aaa'></div>
 
 </body>
 
