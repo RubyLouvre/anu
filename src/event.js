@@ -42,7 +42,7 @@ export function dispatchEvent(e) {
   var bubble = "on" + capitalized;
   var captured = "on" + capitalized + "Capture";
 
-  var hook = eventPropHooks[type];
+  var hook = eventPropHooks[__type__];
   if (hook) {
     hook(e);
   }

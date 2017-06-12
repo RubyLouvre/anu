@@ -102,7 +102,7 @@ class FocusEl extends React.Component{
        console.log(e.target.title)
     }
     render() {
-        return <input  title={this.props.title} style={{width:100,height:50,backgroundColor:'green',display:'inline-block'}} onFocus={this.onFocus} />
+        return <input  title={this.props.title} onKeyUp={(e)=>{console.log(e.which)}} style={{width:100,height:50,backgroundColor:'green',display:'inline-block'}} onFocus={this.onFocus} />
     }
 }
 window.onload = function(){

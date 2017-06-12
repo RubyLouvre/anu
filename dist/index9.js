@@ -284,7 +284,9 @@ var FocusEl = function (_React$Component6) {
     };
 
     FocusEl.prototype.render = function render() {
-        return React.createElement('input', { title: this.props.title, style: { width: 100, height: 50, backgroundColor: 'green', display: 'inline-block' }, onFocus: this.onFocus });
+        return React.createElement('input', { title: this.props.title, onKeyUp: function onKeyUp(e) {
+                console.log(e.which);
+            }, style: { width: 100, height: 50, backgroundColor: 'green', display: 'inline-block' }, onFocus: this.onFocus });
     };
 
     return FocusEl;
