@@ -1,6 +1,6 @@
 import { transaction } from "./transaction";
 import { document, msie } from "./browser";
-import { isFn, options, noop } from "./util";
+import { isFn, options, noop, oneObject } from "./util";
 
 var globalEvents = {};
 export var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
