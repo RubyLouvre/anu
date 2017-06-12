@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-12T06:51:21.268Z
+ * by 司徒正美 Copyright 2017-06-12T07:50:36.421Z
  */
 
 (function (global, factory) {
@@ -693,7 +693,7 @@
 	  var bubble = "on" + capitalized;
 	  var captured = "on" + capitalized + "Capture";
 
-	  var hook = eventPropHooks[type];
+	  var hook = eventPropHooks[__type__];
 	  if (hook) {
 	    hook(e);
 	  }
@@ -1962,7 +1962,7 @@
 	    render: render,
 	    findDOMNode: findDOMNode,
 	    options: options,
-	    version: "1.0.1",
+	    version: "1.0.2",
 	    createElement: createElement,
 	    cloneElement: cloneElement,
 	    PureComponent: PureComponent,
