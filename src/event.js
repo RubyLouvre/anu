@@ -1,6 +1,6 @@
 import { transaction } from "./transaction";
 import { document, msie } from "./browser";
-import { isFn, options, noop, oneObject } from "./util";
+import { isFn, options, noop } from "./util";
 
 var globalEvents = {};
 export var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
@@ -10,7 +10,9 @@ export var eventLowerCache = {
   //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
   onClick: "click",
   onChange: "change",
-  onWheel: "wheel"
+  onWheel: "wheel",
+  onFocus: "datasetchanged",
+  onBlur: "datasetchanged"
 };
 /**
  * 判定否为与事件相关
@@ -158,8 +160,6 @@ eventHooks.onBlur = function(dom) {
     true
   );
 };
-eventLowerCache.onFocus = "datasetchanged";
-eventLowerCache.onBlur = "datasetchanged";
 
 if (inMobile) {
   eventHooks.onClick = noop;

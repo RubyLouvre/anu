@@ -6,6 +6,7 @@ import {
   eventPropHooks,
   dispatchEvent
 } from "./event";
+import { oneObject } from "./util";
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInput(dom, name) {

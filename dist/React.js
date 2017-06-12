@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-12T06:38:36.381Z
+ * by 司徒正美 Copyright 2017-06-12T06:51:21.268Z
  */
 
 (function (global, factory) {
@@ -660,7 +660,9 @@
 	  //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
 	  onClick: "click",
 	  onChange: "change",
-	  onWheel: "wheel"
+	  onWheel: "wheel",
+	  onFocus: "datasetchanged",
+	  onBlur: "datasetchanged"
 	};
 	/**
 	 * 判定否为与事件相关
@@ -795,8 +797,6 @@
 	    addEvent.fire(dom, "blur");
 	  }, true);
 	};
-	eventLowerCache.onFocus = "datasetchanged";
-	eventLowerCache.onBlur = "datasetchanged";
 
 	if (inMobile) {
 	  eventHooks.onClick = noop;
