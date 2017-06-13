@@ -1,7 +1,8 @@
  {
      "presets": [
-         "avalon", "react"
+         ["es2015",{ "modules": false }], "react"
      ],
+    
      "plugins": [
          [
              "transform-es2015-classes", {

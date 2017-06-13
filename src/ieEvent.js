@@ -9,33 +9,36 @@ import {
 import { oneObject } from "./util";
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
+function fixIEInputHandle(e) {
+  if (e.propertyName === "value") {
+    addEvent.fire(e.srcElement, "input");
+  }
+}
 function fixIEInput(dom, name) {
-  addEvent(dom, "propertychange", function(e) {
-    if (e.propertyName === "value") {
-      addEvent.fire(dom, "input");
-    }
-  });
+  addEvent(dom, "propertychange", fixIEInputHandle);
 }
 
+function fixIEChangeHandle(e) {
+  var dom = e.srcElement;
+  if (dom.type === "select-one") {
+    var idx = dom.selectedIndex,
+      option,
+      attr;
+    if (idx > -1) {
+      //IE 下select.value不会改变
+      option = dom.options[idx];
+      attr = option.attributes.value;
+      dom.value = attr && attr.specified ? option.value : option.text;
+    }
+  }
+  addEvent.fire(dom, "change");
+}
 function fixIEChange(dom, name) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
   var eventType = dom.type === "radio" || dom.type === "checkbox"
     ? "click"
     : "change";
-  addEvent(dom, eventType, function(e) {
-    if (dom.type === "select-one") {
-      var idx = dom.selectedIndex,
-        option,
-        attr;
-      if (idx > -1) {
-        //IE 下select.value不会改变
-        option = dom.options[idx];
-        attr = option.attributes.value;
-        dom.value = attr && attr.specified ? option.value : option.text;
-      }
-    }
-    addEvent.fire(dom, "change");
-  });
+  addEvent(dom, eventType, fixIEChangeHandle);
 }
 
 function fixIESubmit(dom, name) {
