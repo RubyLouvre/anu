@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-13T08:48:47.361Z
+ * by 司徒正美 Copyright 2017-06-13T12:45:29.858Z
  */
 
 (function (global, factory) {
@@ -1301,10 +1301,15 @@
 	function render(vnode, container, callback) {
 	  return updateView(vnode, container, callback, {});
 	}
+	function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
+	  console.warn('未见于文档的内部方法，不建议使用');
+	  var parentContext = parentInstance && parentInstance.context || {};
+	  return updateView(vnode, container, callback, parentContext);
+	}
 
 	function updateView(vnode, container, callback, parentContext) {
-	  if (!vnode.vtype) {
-	    throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9");
+	  if (!vnode || !vnode.vtype) {
+	    throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
 	  }
 	  if (!container || container.nodeType !== 1) {
 	    throw new Error(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9");
@@ -1364,7 +1369,7 @@
 
 	  var node = null;
 	  if (!vtype) {
-	    // init text comment
+	    // init 文本与注释节点
 	    node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
 	    vnode._hostNode = node;
 	    return node;
@@ -1969,6 +1974,10 @@
 	    render: render,
 	    findDOMNode: findDOMNode,
 	    options: options,
+	    unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+	    isValidElement: function isValidElement(el) {
+	        return el && el.$$typeof === 1;
+	    },
 	    version: "1.0.2",
 	    createElement: createElement,
 	    cloneElement: cloneElement,

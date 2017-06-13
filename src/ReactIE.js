@@ -55,6 +55,9 @@ var React = {
     render,
     findDOMNode,
     options,
+    isValidElement:function(el){
+        return el && el.$$typeof === 1
+    },
     version: "VERSION",
     createElement,
     cloneElement,

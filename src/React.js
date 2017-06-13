@@ -23,7 +23,7 @@ import {
 } from './util'
 
 import {
-    render, findDOMNode
+    render, findDOMNode, unstable_renderSubtreeIntoContainer
 } from './diff'
 var check = function(){
 	return check
@@ -52,6 +52,7 @@ var React = {
     render,
     findDOMNode,
     options,
+    unstable_renderSubtreeIntoContainer,
     version: "VERSION",
     createElement,
     cloneElement,

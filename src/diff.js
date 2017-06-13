@@ -62,10 +62,17 @@ var _removeNodes = [];
 export function render(vnode, container, callback) {
   return updateView(vnode, container, callback, {});
 }
+export function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
+  console.warn('未见于文档的内部方法，不建议使用')
+  var parentContext = parentInstance && parentInstance.context || {}
+  return updateView(vnode, container, callback, parentContext);
+}
 
 function updateView(vnode, container, callback, parentContext) {
-  if (!vnode.vtype) {
-    throw new Error(`${vnode}必须为组件或元素节点`);
+  if (!vnode || !vnode.vtype) {
+    throw new Error(
+      `${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`
+    );
   }
   if (!container || container.nodeType !== 1) {
     throw new Error(`${container}必须为元素节点`);
@@ -129,7 +136,7 @@ export function mountVnode(vnode, parentContext, prevRendered) {
   let { vtype } = vnode;
   let node = null;
   if (!vtype) {
-    // init text comment
+    // init 文本与注释节点
     node = prevRendered && prevRendered.nodeName === vnode.type
       ? prevRendered
       : createDOMElement(vnode);
