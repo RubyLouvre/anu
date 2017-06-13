@@ -2,3 +2,5 @@
 /ui/*
 /node_modules/*
 /md/*
+/coverage/
+package-lock.json
