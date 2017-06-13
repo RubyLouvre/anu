@@ -1,5 +1,5 @@
 import babel from "rollup-plugin-babel";
-import replace from "rollup-plugin-replace";
+import replace from "rollup-plugin-re";
 
 const license = require("rollup-plugin-license");
 
@@ -13,27 +13,33 @@ export default {
   dest: "./dist/React.js",
   plugins: [
     babel({
-    //  plugins: ['external-helpers'],
-     // externalHelpers: true,
+      //  plugins: ['external-helpers'],
+      // externalHelpers: true,
       babelrc: false,
       presets: [
         [
           "es2015",
           {
-            "modules": false
+            modules: false
           }
         ]
       ]
-
     }),
 
     license({
       banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).slice(1, -1)}`
     }),
 
-    replace({
-      exclude: "node_modules/**",
-      VERSION: json.version
+     replace({
+      // ... do replace before commonjs
+      patterns: [
+        {
+          test: 'VERSION', 
+          // string or function to replaced with
+          replace: json.version,
+        },
+     
+      ]
     })
   ],
   moduleName: "React",

@@ -6,7 +6,8 @@ import {
     inherit,
     camelize,
     getNodes,
-    getChildContext
+    getChildContext,
+    getComponentProps
 } from 'src/util'
 import {
     isEventName
@@ -101,6 +102,37 @@ describe('util', function () {
         expect(b).toEqual({
             a: 1,
             b: 4
+        })
+    })
+    it('getComponentProps', () => {
+        function A() {
+
+        }
+        A.defaultProps = {
+            title: 1
+        }
+        var a = getComponentProps({
+            type: A,
+            props: {}
+        })
+        expect(a).toEqual({
+            title: 1
+        })
+
+        function B() {
+
+        }
+        B.defaultProps = {
+            title: 1
+        }
+        var b = getComponentProps({
+            type: B,
+            props: {
+                title: 3
+            }
+        })
+        expect(b).toEqual({
+            title: 3
         })
     })
 

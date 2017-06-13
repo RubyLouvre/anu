@@ -1,3 +1,4 @@
+/*
 class Select extends React.Component{
      constructor() {
         super()
@@ -105,9 +106,45 @@ class FocusEl extends React.Component{
         return <input  title={this.props.title} onKeyUp={(e)=>{console.log(e.which)}} style={{width:100,height:50,backgroundColor:'green',display:'inline-block'}} onFocus={this.onFocus} />
     }
 }
-window.onload = function(){
-    window.s = ReactDOM.render( <div><Select /><Input /><Radio name='sex' value="男" /><Radio name='sex' value='女'/>
-    <p><Playground /> <MouseMove /><FocusEl title="aaa" /><FocusEl title="bbb" /></p>
-    
-    </div>, document.getElementById('example'))
+*/
+class HasChild extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.onClick = this.onClick.bind(this);
+    this.a = 0
+  }
+  onClick() {
+    this.a = 1;
+    this.forceUpdate();
+  }
+  render() {
+    return <div onClick={this.onClick}>{ this.a ==0 ? <A  title="xxx" ref='a' >ddd</A> : <A ddd="ddd" ref='a' >3333</A>}</div>;
+  }
 }
+  class A extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      componentDidUpdate(a) {
+     
+      }
+      render() {
+        return <span title={this.props.title}>{this.props.children}</span>;
+      }
+    }
+    A.defaultProps = {
+      title: "默认值"
+    };
+
+window.onload = function() {
+  var s = ReactDOM.render(
+   
+      <HasChild />,
+   
+    document.getElementById("example")
+  );
+  console.log(s)
+  console.log(s.refs.a)
+};
