@@ -197,39 +197,21 @@
 	    return HasChild;
 	}(React.Component);
 	
-	var A = function (_React$Component2) {
-	    _inherits(A, _React$Component2);
+	function A(props) {
 	
-	    function A(props) {
-	        _classCallCheck(this, A);
-	
-	        var _this2 = _possibleConstructorReturn(this, _React$Component2.call(this, props));
-	
-	        _this2.state = {};
-	        return _this2;
-	    }
-	
-	    A.prototype.componentDidUpdate = function componentDidUpdate(a) {};
-	
-	    A.prototype.render = function render() {
-	        return React.createElement(
-	            "span",
-	            { title: this.props.title },
-	            this.props.children
-	        );
-	    };
-	
-	    return A;
-	}(React.Component);
-	
+	    return React.createElement(
+	        "span",
+	        { title: props.title },
+	        props.children
+	    );
+	}
 	A.defaultProps = {
 	    title: "默认值"
 	};
 	
 	window.onload = function () {
-	    var s = ReactDOM.render(React.createElement(HasChild, null), document.getElementById("example"));
-	    console.log(s);
-	    console.log(s.refs.a);
+	    //<A title="eee">XXXX</A>
+	    var s = window.s = ReactDOM.render(null, document.getElementById("example"));
 	};
 
 /***/ })
