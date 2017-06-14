@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-13T12:45:26.699Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-14T03:56:12.565Z
  */
 
 (function (global, factory) {
@@ -7,6 +7,11 @@
 	typeof define === 'function' && define.amd ? define(factory) :
 	(global.React = factory());
 }(this, function () {
+
+	var __type = Object.prototype.toString;
+	var __push = Array.prototype.push;
+
+	var HTML_KEY = "dangerouslySetInnerHTML";
 
 	/**
 	 * 复制一个对象的属性到另一个对象
@@ -46,6 +51,7 @@
 	  extend(fn, SupClass.prototype);
 	  fn.constructor = SubClass;
 	}
+
 	/**
 	 * 收集一个元素的所有孩子
 	 *
@@ -62,8 +68,15 @@
 	  }
 	  return ret;
 	}
-	var lowerCache = {};
 
+	var lowerCache = {};
+	/**
+	 * 小写化的优化
+	 * 
+	 * @export
+	 * @param {any} s 
+	 * @returns 
+	 */
 	function toLowerCase(s) {
 	  return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 	}
@@ -71,17 +84,17 @@
 	/**
 	 *
 	 *
-	 * @param {any} type
+	 * @param {any} obj
 	 * @returns
 	 */
-	function isFn(type) {
-	  return typeof type === "function";
+	function isFn(obj) {
+	  return __type.call(obj) === "[object Function]";
 	}
 
 	var rword = /[^, ]+/g;
 
 	function oneObject(array, val) {
-	  if (typeof array === "string") {
+	  if (__type.call(array) === "[object String]") {
 	    array = array.match(rword) || [];
 	  }
 	  var result = {},
@@ -96,14 +109,12 @@
 
 	function getChildContext(instance, context) {
 	  if (instance.getChildContext) {
-	    return extend(extend({}, context), instance.getChildContext());
+	    return Object.assign({}, context, instance.getChildContext());
 	  }
 	  return context;
 	}
 	var rcamelize = /[-_][^-_]/g;
-	var __push = Array.prototype.push;
 
-	var HTML_KEY = "dangerouslySetInnerHTML";
 	function camelize(target) {
 	  //提前判断，提高getStyle等的效率
 	  if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
@@ -142,6 +153,7 @@
 	  }
 	  return props;
 	}
+
 	var recyclables = {
 	  "#text": [],
 	  "#comment": [],
@@ -850,34 +862,13 @@
 	  }
 	};
 
-	var builtIdProperties = {}; //不规则的属性名映射
+	var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls," + "declare,disabled,defer,defaultChecked,defaultSelected," + "isMap,loop,multiple,noHref,noResize,noShade," + "open,readOnly,selected", true);
 
-	//防止压缩时出错
+	var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan," + "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth," + "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
+	"value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
 
-	/*
-	  contenteditable不是布尔属性
-	  http://www.zhangxinxu.com/wordpress/2016/01/contenteditable-plaintext-only/
-	  contenteditable=''
-	  contenteditable='events'
-	  contenteditable='caret'
-	  contenteditable='plaintext-only'
-	  contenteditable='true'
-	  contenteditable='false'
-	   */
-	var bools = ["autofocus,autoplay,async,allowTransparency,checked,controls", "declare,disabled,defer,defaultChecked,defaultSelected,", "isMap,loop,multiple,noHref,noResize,noShade", "open,readOnly,selected"].join(",");
-	var boolAttributes = {};
-	bools.replace(/\w+/g, function (name) {
-	  boolAttributes[name] = true;
-	});
-
-	var anomaly = ["accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan", "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth", "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign"].join(",");
-
-	anomaly.replace(/\w+/g, function (name) {
-	  builtIdProperties[name] = name;
-	});
-	String("value,id,title,alt,htmlFor,name,type,longDesc,className").replace(/\w+/g, function (name) {
-	  builtIdProperties[name] = name;
-	});
+	var booleanTag = oneObject('script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label');
+	var xlink = "http://www.w3.org/1999/xlink";
 
 	/**
 	 *
@@ -935,22 +926,7 @@
 	  value: 1,
 	  defaultValue: 1
 	};
-	var booleanTag = {
-	  script: 1,
-	  iframe: 1,
-	  a: 1,
-	  map: 1,
 
-	  vedio: 1,
-	  bgsound: 1,
-
-	  form: 1,
-	  select: 1,
-	  inout: 1,
-	  textarea: 1,
-	  option: 1,
-	  keygen: 1
-	};
 	var specialProps = {
 	  children: 1,
 	  style: 1,
@@ -1022,7 +998,7 @@
 	  svgAttr: function svgAttr(dom, name, val) {
 	    var method = val === false || val === null || val === undefined ? "removeAttribute" : "setAttribute";
 	    if (svgprops[name]) {
-	      dom[method + "NS"]("http://www.w3.org/1999/xlink", svgprops[name], val || "");
+	      dom[method + "NS"](xlink, svgprops[name], val || "");
 	    } else {
 	      dom[method](toLowerCase(name), val || "");
 	    }
@@ -1306,9 +1282,11 @@
 	  var parentContext = parentInstance && parentInstance.context || {};
 	  return updateView(vnode, container, callback, parentContext);
 	}
-
+	function isValidElement(vnode) {
+	  return vnode && vnode.vtype;
+	}
 	function updateView(vnode, container, callback, parentContext) {
-	  if (!vnode || !vnode.vtype) {
+	  if (!isValidElement(vnode)) {
 	    throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
 	  }
 	  if (!container || container.nodeType !== 1) {
@@ -2073,9 +2051,7 @@
 	    findDOMNode: findDOMNode,
 	    options: options,
 	    unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-	    isValidElement: function isValidElement(el) {
-	        return el && el.$$typeof === 1;
-	    },
+	    isValidElement: isValidElement,
 	    version: "1.0.2",
 	    createElement: createElement,
 	    cloneElement: cloneElement,

@@ -67,9 +67,11 @@ export function unstable_renderSubtreeIntoContainer(parentInstance, vnode, conta
   var parentContext = parentInstance && parentInstance.context || {}
   return updateView(vnode, container, callback, parentContext);
 }
-
+export function isValidElement(vnode){
+   return vnode && vnode.vtype
+}
 function updateView(vnode, container, callback, parentContext) {
-  if (!vnode || !vnode.vtype) {
+  if (!isValidElement(vnode)) {
     throw new Error(
       `${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`
     );
