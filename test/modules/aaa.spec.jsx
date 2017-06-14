@@ -21,25 +21,5 @@ describe('node模块', function () {
     })
 
 
-it('should remove orphaned elements replaced by Components', () => {
-		class Comp extends React.Component {
-			render() {
-				return <span>span in a component</span>;
-			}
-		}
-		let root;
-		function test(content) {
-			root = React.render(content, div);
-		}
-
-		test(<Comp />);
-		console.log(root)
-		test(<div>just a div</div>);
-		console.log(root)
-		test(<Comp />);
-		console.log(root)
-        console.log(div)
-		expect(div.innerHTML).to.equal('<span>span in a component</span>');
-	});
     
 })

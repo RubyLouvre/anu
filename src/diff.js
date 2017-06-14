@@ -1,5 +1,9 @@
-import {diffProps} from './diffProps'
-import {CurrentOwner} from './createElement'
+import {
+    diffProps
+} from './diffProps'
+import {
+    CurrentOwner
+} from './createElement'
 
 import {
     getChildContext,
@@ -17,8 +21,15 @@ import {
 var instanceMap = new Map()
 var _removeNodes = [];
 
-import {document, createDOMElement, getNs} from './browser'
-import {processFormElement, postUpdateSelectedOptions} from './ControlledComponent'
+import {
+    document,
+    createDOMElement,
+    getNs
+} from './browser'
+import {
+    processFormElement,
+    postUpdateSelectedOptions
+} from './ControlledComponent'
 export function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {})
 }
@@ -56,6 +67,7 @@ function updateView(vnode, container, callback, parentContext) {
     return instance || rootNode
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
+
 function genVnodes(vnode, container, hostParent, parentContext) {
     var nodes = getNodes(container)
     var prevRendered = null;
@@ -83,12 +95,14 @@ function genVnodes(vnode, container, hostParent, parentContext) {
 }
 
 export function mountVnode(vnode, parentContext, prevRendered) {
-    let {vtype} = vnode
+    let {
+        vtype
+    } = vnode
     let node = null
     if (!vtype) { // init text comment
-        node = prevRendered && prevRendered.nodeName === vnode.type
-            ? prevRendered
-            : createDOMElement(vnode)
+        node = prevRendered && prevRendered.nodeName === vnode.type ?
+            prevRendered :
+            createDOMElement(vnode)
         vnode._hostNode = node
         return node
     }
@@ -110,8 +124,11 @@ var formElements = {
 }
 
 function mountElement(vnode, parentContext, prevRendered) {
-    let {type, props} = vnode,
-        dom
+    let {
+        type,
+        props
+    } = vnode,
+    dom
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         dom = prevRendered
     } else {
@@ -176,9 +193,9 @@ function alignChildren(vnode, parentNode, parentContext, childNodes) {
 function fireMount() {
     var queue = readyCallbacks
     readyCallbacks = []
-     //eslint-disable-next-line
+    //eslint-disable-next-line
     for (var i = 0, cb; cb = queue[i++];) {
-          //eslint-disable-next-line
+        //eslint-disable-next-line
         cb()
     }
 }
@@ -186,7 +203,10 @@ function fireMount() {
 
 
 function mountComponent(vnode, parentContext, prevRendered) {
-    let {type, props} = vnode
+    let {
+        type,
+        props
+    } = vnode
 
     props = getComponentProps(type, props)
 
@@ -207,7 +227,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
     let rendered = safeRenderComponent(instance)
     instance._rendered = rendered
     rendered._hostParent = vnode._hostParent
-    
+
     if (vnode.ref) {
         readyCallbacks
             .push(function () {
@@ -237,7 +257,10 @@ export function safeRenderComponent(instance) {
 }
 
 function mountStateless(vnode, parentContext, prevRendered) {
-    var {type, props} = vnode
+    var {
+        type,
+        props
+    } = vnode
     props = getComponentProps(type, props)
 
     let rendered = type(props, parentContext)
@@ -285,7 +308,12 @@ options.immune.refreshComponent = function refreshComponent(instance) { //这里
 
 function reRenderComponent(instance) { // instance._currentElement
 
-    var {props, state, context, lastProps} = instance
+    var {
+        props,
+        state,
+        context,
+        lastProps
+    } = instance
     var lastRendered = instance._rendered
     var node = instanceMap.get(instance)
 
@@ -336,7 +364,7 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
         //replace
         newNode = mountVnode(newVnode, parentContext)
         var p = node.parentNode
-        if(p){
+        if (p) {
             p.replaceChild(newNode, node);
         }
         removeVnode(vnode, node, newNode)
@@ -367,10 +395,15 @@ function removeVnode(vnode, node, newNode) {
 }
 
 export function disposeVnode(vnode, node) {
-    let {vtype} = vnode
     if (node) {
         _removeNodes.unshift(node);
     }
+    if (!vnode) {
+        return
+    }
+    let {
+        vtype
+    } = vnode;
     if (!vtype) {
         vnode._hostNode = null
         vnode._hostParent = null
@@ -383,18 +416,20 @@ export function disposeVnode(vnode, node) {
     }
 }
 export function findDOMNode(componentOrElement) {
-  if (componentOrElement == null) {
-    return null
-  }
-  if (componentOrElement.nodeType === 1) {
-    return componentOrElement
-  }
+    if (componentOrElement == null) {
+        return null
+    }
+    if (componentOrElement.nodeType === 1) {
+        return componentOrElement
+    }
 
-  return instanceMap.get(componentOrElement) || null
+    return instanceMap.get(componentOrElement) || null
 }
 
 function disposeElement(vnode, node) {
-    var {props} = vnode
+    var {
+        props
+    } = vnode
     var children = props.children
     var childNodes = node.childNodes
     for (let i = 0, len = children.length; i < len; i++) {
@@ -419,7 +454,10 @@ function disposeComponent(vnode, node) {
 }
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
-    let {vtype, props} = lastVnode
+    let {
+        vtype,
+        props
+    } = lastVnode
 
     if (vtype === 2) {
         //类型肯定相同的
@@ -432,7 +470,6 @@ function updateVnode(lastVnode, nextVnode, node, parentContext) {
 
     // ignore VCOMMENT and other vtypes
     if (vtype !== 1) {
-
         return node
     }
 
@@ -489,7 +526,7 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
     instance.props = nextProps
     instance.context = parentContext
     if (nextVnode.ref) {
-        nextVnode
+        readyCallbacks
             .push(function () {
                 nextVnode.ref(instance)
             })
@@ -528,7 +565,12 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             for (let i = 0; i < newVchildrenLen; i++) {
                 patches
                     .creates
-                    .push({vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i})
+                    .push({
+                        vnode: newVchildren[i],
+                        parentNode: node,
+                        parentContext: parentContext,
+                        index: i
+                    })
             }
         }
         return
@@ -536,7 +578,10 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         for (let i = 0; i < childrenLen; i++) {
             patches
                 .removes
-                .push({vnode: children[i], node: childNodes[i]})
+                .push({
+                    vnode: children[i],
+                    node: childNodes[i]
+                })
         }
         return
     }
@@ -592,7 +637,10 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
             }
         }
         if (shouldRemove) {
-            removes.push({vnode: vnode, node: childNodes[i]})
+            removes.push({
+                vnode: vnode,
+                node: childNodes[i]
+            })
         }
     }
 
@@ -600,7 +648,12 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
         let item = updates[i]
         if (!item) {
 
-            creates.push({vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i})
+            creates.push({
+                vnode: newVchildren[i],
+                parentNode: node,
+                parentContext: parentContext,
+                index: i
+            })
         } else if (item.vnode.vtype === 1) {
             diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext)
         }
