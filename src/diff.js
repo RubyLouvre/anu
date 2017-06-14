@@ -255,7 +255,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
   // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
   // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-  let rendered = safeRenderComponent(instance);
+  let rendered = safeRenderComponent(instance, type);
   instance._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
 
@@ -279,10 +279,10 @@ function mountComponent(vnode, parentContext, prevRendered) {
 
   return dom;
 }
-export function safeRenderComponent(instance) {
+export function safeRenderComponent(instance, type) {
   CurrentOwner.cur = instance;
   var rendered = instance.render();
-  rendered = checkNull(rendered,instance.type);
+  rendered = checkNull(rendered, type);
 
   CurrentOwner.cur = null;
   return rendered;
@@ -337,7 +337,7 @@ options.immune.refreshComponent = function refreshComponent(instance) {
 function reRenderComponent(instance) {
   // instance._currentElement
 
-  var { props, state, context, lastProps } = instance;
+  var { props, state, context, lastProps,type } = instance;
   var lastRendered = instance._rendered;
   var node = instanceMap.get(instance);
 
@@ -365,7 +365,7 @@ function reRenderComponent(instance) {
   instance.state = nextState;
   delete instance._updateBatchNumber;
 
-  var rendered = safeRenderComponent(instance);
+  var rendered = safeRenderComponent(instance, type);
   var childContext = getChildContext(instance, context);
   instance._rendered = rendered;
   rendered._hostParent = hostParent;

@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-14T06:38:32.773Z
+ * by 司徒正美 Copyright 2017-06-14T06:50:41.146Z
  */
 
 (function (global, factory) {
@@ -1465,7 +1465,7 @@
 	  // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
 	  // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-	  var rendered = safeRenderComponent(instance);
+	  var rendered = safeRenderComponent(instance, type);
 	  instance._rendered = rendered;
 	  rendered._hostParent = vnode._hostParent;
 
@@ -1485,10 +1485,10 @@
 
 	  return dom;
 	}
-	function safeRenderComponent(instance) {
+	function safeRenderComponent(instance, type) {
 	  CurrentOwner.cur = instance;
 	  var rendered = instance.render();
-	  rendered = checkNull(rendered, instance.type);
+	  rendered = checkNull(rendered, type);
 
 	  CurrentOwner.cur = null;
 	  return rendered;
@@ -1546,7 +1546,8 @@
 	  var props = instance.props,
 	      state = instance.state,
 	      context = instance.context,
-	      lastProps = instance.lastProps;
+	      lastProps = instance.lastProps,
+	      type = instance.type;
 
 	  var lastRendered = instance._rendered;
 	  var node = instanceMap.get(instance);
@@ -1571,7 +1572,7 @@
 	  instance.state = nextState;
 	  delete instance._updateBatchNumber;
 
-	  var rendered = safeRenderComponent(instance);
+	  var rendered = safeRenderComponent(instance, type);
 	  var childContext = getChildContext(instance, context);
 	  instance._rendered = rendered;
 	  rendered._hostParent = hostParent;
