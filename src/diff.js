@@ -282,7 +282,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
 export function safeRenderComponent(instance) {
   CurrentOwner.cur = instance;
   var rendered = instance.render();
-  rendered = checkNull(rendered);
+  rendered = checkNull(rendered,instance.type);
 
   CurrentOwner.cur = null;
   return rendered;
@@ -292,7 +292,7 @@ function mountStateless(vnode, parentContext, prevRendered) {
   var props = getComponentProps(vnode);
 
   let rendered = vnode.type(props, parentContext);
-  rendered = checkNull(rendered);
+  rendered = checkNull(rendered, vnode.type);
 
   let dom = mountVnode(rendered, parentContext, prevRendered);
   vnode._instance = {
@@ -310,7 +310,7 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
   let vnode = instance._rendered;
 
   let newVnode = nextVnode.type(getComponentProps(nextVnode), parentContext);
-  newVnode = checkNull(newVnode);
+  newVnode = checkNull(newVnode, nextVnode.type);
 
   let dom = alignVnodes(vnode, newVnode, node, parentContext);
   nextVnode._instance = instance;

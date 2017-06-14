@@ -523,4 +523,8 @@ describe("无狀态组件", function() {
     await browser.click("#componentDidUpdate2").pause(100).$apply();
     expect(span.innerHTML).toBe("默认值");
   });
+
+  it('checkNull 中如果组件返回字符串应该报错',()=>{
+    
+  })
 });

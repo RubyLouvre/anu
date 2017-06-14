@@ -29,6 +29,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
                 }
             }
             click(e) {
+                expect(e.currentTarget.nodeType).toBe(1)
                 this.setState({
                     aaa: this.state.aaa + 1
                 })

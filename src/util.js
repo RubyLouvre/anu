@@ -135,6 +135,7 @@ export function checkNull(vnode, type) {
   return vnode;
 }
 
+
 export function getComponentProps(vnode) {
   var defaultProps = vnode.type.defaultProps;
   var props =  vnode.props
