@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-14T06:50:41.146Z
+ * by 司徒正美 Copyright 2017-06-14T07:58:24.089Z
  */
 
 (function (global, factory) {
@@ -1278,7 +1278,7 @@
 	  return updateView(vnode, container, callback, {});
 	}
 	function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
-	  console.warn('未见于文档的内部方法，不建议使用');
+	  console.warn("未见于文档的内部方法，不建议使用");
 	  var parentContext = parentInstance && parentInstance.context || {};
 	  return updateView(vnode, container, callback, parentContext);
 	}
@@ -1459,8 +1459,13 @@
 	  instance.context = instance.context || parentContext;
 
 	  if (instance.componentWillMount) {
+	    var prevInTransaction = transaction.isInTransation;
+	    transaction.isInTransation = true;
 	    instance.componentWillMount();
+	    transaction.isInTransation = prevInTransaction;
+	    instance.state = instance._processPendingState();
 	  }
+
 	  // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
 	  // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
 	  // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性

@@ -6,7 +6,7 @@ import {
 import React from "dist/React";
 import PureComponent from "src/PureComponent";
 
-describe("无狀态组件", function() {
+describe("组件相关", function() {
   this.timeout(200000);
   before(async () => {
     await beforeHook();
@@ -499,13 +499,13 @@ describe("无狀态组件", function() {
         );
       }
     }
-  function A(props){
-    return <span>{props.title}</span>
-  }
+    function A(props) {
+      return <span>{props.title}</span>;
+    }
 
-  A.defaultProps = {
-    title: "默认值"
-  };
+    A.defaultProps = {
+      title: "默认值"
+    };
 
     window.onload = function() {
       window.s = ReactDOM.render(
@@ -518,13 +518,35 @@ describe("无狀态组件", function() {
 
     var s = React.render(<HasChild />, div);
     await browser.pause(100).$apply();
-    var span = div.getElementsByTagName('span')[0]
+    var span = div.getElementsByTagName("span")[0];
     expect(span.innerHTML).toBe("xxx");
     await browser.click("#componentDidUpdate2").pause(100).$apply();
     expect(span.innerHTML).toBe("默认值");
   });
 
-  it('checkNull 中如果组件返回字符串应该报错',()=>{
-    
-  })
+  it("checkNull 中如果组件返回字符串应该报错", () => {});
+
+  it("在componentWillMount中使用setState", async () => {
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 1111
+        };
+      }
+      componentWillMount() {
+        this.setState({
+          aaa: 333
+        });
+      }
+      render() {
+        return <p>{this.state.aaa}</p>;
+      }
+    }
+
+    var s = React.render(<App />, div);
+    await browser.pause(200).$apply();
+    expect(s.state.aaa).toBe(333);
+    expect(div.textContent || div.innerText).toBe("333");
+  });
 });

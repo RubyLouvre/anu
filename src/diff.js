@@ -1,6 +1,8 @@
 import { diffProps } from "./diffProps";
 import { CurrentOwner } from "./createElement";
 import { document, win, createDOMElement, getNs } from "./browser";
+import { transaction } from "./transaction";
+
 import {
   processFormElement,
   postUpdateSelectedOptions
@@ -62,13 +64,18 @@ var _removeNodes = [];
 export function render(vnode, container, callback) {
   return updateView(vnode, container, callback, {});
 }
-export function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
-  console.warn('未见于文档的内部方法，不建议使用')
-  var parentContext = parentInstance && parentInstance.context || {}
+export function unstable_renderSubtreeIntoContainer(
+  parentInstance,
+  vnode,
+  container,
+  callback
+) {
+  console.warn("未见于文档的内部方法，不建议使用");
+  var parentContext = (parentInstance && parentInstance.context) || {};
   return updateView(vnode, container, callback, parentContext);
 }
-export function isValidElement(vnode){
-   return vnode && vnode.vtype
+export function isValidElement(vnode) {
+  return vnode && vnode.vtype;
 }
 function updateView(vnode, container, callback, parentContext) {
   if (!isValidElement(vnode)) {
@@ -249,8 +256,13 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.context = instance.context || parentContext;
 
   if (instance.componentWillMount) {
+    var prevInTransaction = transaction.isInTransation;
+    transaction.isInTransation = true;
     instance.componentWillMount();
+    transaction.isInTransation = prevInTransaction;
+    instance.state = instance._processPendingState();
   }
+
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
   // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
   // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
@@ -337,7 +349,7 @@ options.immune.refreshComponent = function refreshComponent(instance) {
 function reRenderComponent(instance) {
   // instance._currentElement
 
-  var { props, state, context, lastProps,type } = instance;
+  var { props, state, context, lastProps, type } = instance;
   var lastRendered = instance._rendered;
   var node = instanceMap.get(instance);
 
