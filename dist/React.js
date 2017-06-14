@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-14T07:58:24.089Z
+ * by 司徒正美 Copyright 2017-06-14T09:47:23.905Z
  */
 
 (function (global, factory) {
@@ -315,6 +315,9 @@
 	};
 
 	function cloneElement(vnode, props) {
+	  if (Array.isArray(vnode)) {
+	    vnode = vnode[0];
+	  }
 	  if (!vnode.vtype) {
 	    return Object.assign({}, vnode);
 	  }
