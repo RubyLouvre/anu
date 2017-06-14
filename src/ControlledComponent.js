@@ -121,7 +121,7 @@ export function postUpdateSelectedOptions(vnode) {
 }
 
 function isDefined(a) {
-    return !(a === null || a === undefined)
+    return !(a === null || typeof a === 'undefined')
 }
 
 /**
@@ -181,7 +181,7 @@ function getOptionValue(option, props) {
     if (!props) {
         return getDOMOptionValue(option)
     }
-    return props.value === undefined ? props.children[0].text : props.value
+    return typeof props.value === 'undefined' ? props.children[0].text : props.value
 }
 
 function getDOMOptionValue(node) {

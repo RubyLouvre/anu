@@ -198,7 +198,7 @@ var propHooks = {
     }
   },
   svgAttr: function(dom, name, val) {
-    var method = val === false || val === null || val === undefined
+    var method = val === false || val === null || typeof val === 'undefined'
       ? "removeAttribute"
       : "setAttribute";
     if (svgprops[name]) {
