@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-14T03:56:15.256Z
+ * by 司徒正美 Copyright 2017-06-14T06:38:32.773Z
  */
 
 (function (global, factory) {
@@ -698,7 +698,7 @@
 	  do {
 	    var events = target.__events;
 	    if (events) {
-	      paths.push({ dom: target, props: events });
+	      paths.push({ dom: target, events: events });
 	    }
 	  } while ((target = target.parentNode) && target.nodeType === 1);
 	  // target --> parentNode --> body --> html
@@ -726,10 +726,10 @@
 	function triggerEventFlow(paths, prop, e) {
 	  for (var i = paths.length; i--;) {
 	    var path = paths[i];
-	    var fn = path.props[prop];
+	    var fn = path.events[prop];
 	    if (isFn(fn)) {
-	      e.currentTarget = path._hostNode;
-	      fn.call(path._hostNode, e);
+	      e.currentTarget = path.dom;
+	      fn.call(path.dom, e);
 	      if (e._stopPropagation) {
 	        break;
 	      }
@@ -1488,7 +1488,7 @@
 	function safeRenderComponent(instance) {
 	  CurrentOwner.cur = instance;
 	  var rendered = instance.render();
-	  rendered = checkNull(rendered);
+	  rendered = checkNull(rendered, instance.type);
 
 	  CurrentOwner.cur = null;
 	  return rendered;
@@ -1498,7 +1498,7 @@
 	  var props = getComponentProps(vnode);
 
 	  var rendered = vnode.type(props, parentContext);
-	  rendered = checkNull(rendered);
+	  rendered = checkNull(rendered, vnode.type);
 
 	  var dom = mountVnode(rendered, parentContext, prevRendered);
 	  vnode._instance = {
@@ -1516,7 +1516,7 @@
 	  var vnode = instance._rendered;
 
 	  var newVnode = nextVnode.type(getComponentProps(nextVnode), parentContext);
-	  newVnode = checkNull(newVnode);
+	  newVnode = checkNull(newVnode, nextVnode.type);
 
 	  var dom = alignVnodes(vnode, newVnode, node, parentContext);
 	  nextVnode._instance = instance;
