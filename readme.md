@@ -39,11 +39,9 @@ npm install anujs
 
 1. PropTypes
 2. childContextTypes(不需要定义它，就能使用context)
-3. Children的方法集合（不完整）
-4. mixin机制
-5. createClass
-6. isValidElement
-7. createFactory
+3. mixin机制
+4. createClass
+5. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁
 
