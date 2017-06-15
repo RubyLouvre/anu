@@ -1,3 +1,5 @@
+
+import {flattenChildren} from './createElement'
 export const Children = {
   only(children) {
     return (children && children[0]) || null;
@@ -10,5 +12,6 @@ export const Children = {
   },
   map(children, callback, context) {
     return children.map(callback, context);
-  }
+  },
+  toArray: flattenChildren
 };

@@ -13,7 +13,7 @@ import {
 } from './Component'
 import {
     Children
-} from './compat'
+} from './Children'
 import {
     win as window
 } from './browser'

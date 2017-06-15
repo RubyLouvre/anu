@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-15T02:52:55.617Z
+ * by 司徒正美 Copyright 2017-06-15T03:40:51.097Z
  */
 
 (function (global, factory) {
@@ -506,7 +506,9 @@
     },
     map: function map(children, callback, context) {
       return children.map(callback, context);
-    }
+    },
+
+    toArray: flattenChildren
   };
 
   var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
