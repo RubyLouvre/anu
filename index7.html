@@ -18,16 +18,54 @@
     </style>
 <script type='text/javascript' src="./dist/React.js"></script>
 
-<!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+<!--<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+  <script src="https://cdn.bootcss.com/react/15.5.4/react-dom.js"></script>-->
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-var textarea, radio, text, select, checkbox
+function  RealModal (props){
+   return <div className='modal'>{props.children}</div>
+}
+  class Modal extends React.Component {
+    appendMaskIntoDoc() {
+        console.log(this)
+        ReactDOM.unstable_renderSubtreeIntoContainer(
+            this,
+            <RealModal {...this.props}>
+                {this.props.children}
+            </RealModal>,
+            this.container
+        )
+    }
 
+    componentDidMount() {
+      var div = this.container = document.createElement('div')
+        div.innerHTML = '<p>1111</p><p>222</p>'
+        div.className = 'placeholder'
+        document.body.appendChild(div)
+      
+        this.appendMaskIntoDoc()
+    }
+
+    componentDidUpdate() {
+        console.log('更新')
+        this.appendMaskIntoDoc()
+    }
+
+    componentWillUnmount() {
+        console.log('componentWillUnmount')
+        document.body.removeChild(this.container)
+    }
+
+    render() {
+        return null
+    }
+}
 window.onload = function(){
+    ReactDOM.render(<Modal title="aaa">99999</Modal>, document.getElementById('select'))
 
-
-     ReactDOM.render(<p>000{[111,222,<span>333</span>,444]}555</p>, document.getElementById('text'))
+    setTimeout(function(){
+       ReactDOM.render(<Modal title="aaa">新内容</Modal>, document.getElementById('select'))
+    },500)
 }
     </script>
 </head>
@@ -39,8 +77,7 @@ window.onload = function(){
     <div id='checkbox'></div>
     <div id='radio'></div>
     <div id='textarea'></div>
-   <div id='select'></div>
-
+    <div id='select'></div>
 </body>
 
 </html>
