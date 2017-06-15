@@ -4,20 +4,19 @@
 
 1. PropTypes
 2. childContextTypes(不需要定义它，就能使用context)
-3. Children的方法集合（不完整）
-4. mixin机制
-5. createClass
-7. isValidElement
-8. createFactory
+3. mixin机制
+4. createClass
+5. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁, 详见IE栏目的处理
 
-1. [Array.isArray](https://github.com/juliangruber/isarray/blob/master/index.js)
-2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
+1. [Array.isArray](https://github.com/juliangruber/isarray/)
+2. [Object.assign](https://github.com/ryanhefner/Object.assign)
 3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
 4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
-5. Object.keys
-6. Object.is
-7. Array.prototype.forEach
+5. [Object.keys](https://github.com/ljharb/object-keys)
+6. [Object.is](https://github.com/ljharb/object-is)
+7. [Array.prototype.forEach](polyfill/Array.prototype.forEach)
+8. [Function.prototype.bind](https://github.com/leahciMic/polyfill-function-prototype-bind)
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js

@@ -3,6 +3,7 @@
 * [介绍](README.md)
 * [安装](install.md)
 * [注意事项](warn.md)
+* [版本变更](version.md)
 * [JSX](jsx.md)
 * [组件](component.md)
     * [Props](props.md)

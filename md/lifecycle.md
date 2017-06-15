@@ -68,13 +68,13 @@ React的组件机制非常出色，不仅在于其标签化的设计，还在于
 
 在首次渲染期间或者调用了forceUpdate方法后，该方法不会被调用
 
-####componentWillUpdate
+####componentWillUpdate(nextProps, nextState, parentContext)
 
 接收到新的props或者state后，进行渲染之前调用，此时不允许更新props或state。
 
-####componentDidUpdate
+####componentDidUpdate(prevProps, prevState, prevContext)
 
-完成渲染新的props或者state后调用，此时可以访问到新的DOM元素。
+完成渲染新的props或者state后调用，此时可以访问到新的DOM元素。注意这里的参数，props, state, context都是没有更新前的，可以给你一个回滚的机会
 
 ####componentWillUnmount
 
