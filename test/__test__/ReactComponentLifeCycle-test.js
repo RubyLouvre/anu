@@ -194,7 +194,6 @@ describe('ReactComponentLifeCycle', () => {
   });
 
   it('warns if findDOMNode is used inside render', () => {
-    //sinon.spy(console, 'error');
     class Component extends React.Component {
         constructor(){
             super(),

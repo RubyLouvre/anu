@@ -379,4 +379,5 @@ describe('ReactCompositeComponent-state', () => {
       'callback -- step: 3, extra: false',
     ]);
   });
+
 });

@@ -45,7 +45,6 @@ describe('ReactComponent', () => {
   });
 
   it('should warn when children are mutated during render', () => {
-    //sinon.spy(console, 'error');
     function Wrapper(props) {
       props.children[1] = <p key={1} />; // Mutation is illegal
       return <div>{props.children}</div>;

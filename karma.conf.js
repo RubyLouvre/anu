@@ -13,11 +13,11 @@ module.exports = function (config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['mocha', 'chai'],
+        frameworks: ['mocha','sinon-chai','chai','sinon'],
 
 
         // list of files / patterns to load in the browser
-        files: ['./test/matchers.js', process.env.TRAVIS ? './test/spec2.js' : './test/spec.js'],
+        files: ['./test/matchers.js', './test/spec2.js'],
 
 
         // list of files to exclude
