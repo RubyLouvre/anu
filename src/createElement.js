@@ -59,7 +59,7 @@ export function createElement(type, configs) {
   return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur);
 }
 
-export function flattenChildren(stack) {
+function flattenChildren(stack) {
   var lastText,
     child,
     children = EMPTY_CHILDREN;
