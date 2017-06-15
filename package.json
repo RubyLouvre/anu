@@ -59,6 +59,8 @@
     "rollup-plugin-re": "^1.0.6",
     "selenium-standalone": "^6.4.1",
     "semicolon-less": "^0.7.0",
+    "sinon": "^2.3.4",
+    "sinon-chai": "^2.11.0",
     "webpack": "^1.14.0"
   },
   "dependencies": {}
