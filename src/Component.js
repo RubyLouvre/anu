@@ -84,5 +84,4 @@ function setStateProxy(instance, cb) {
         options.updateBatchNumber++;
         transaction.dequeue()
     }
-
 }

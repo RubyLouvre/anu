@@ -17,56 +17,54 @@
         }
     </style>
 <script type='text/javascript' src="./dist/React.js"></script>
-
-<!--<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-  <script src="https://cdn.bootcss.com/react/15.5.4/react-dom.js"></script>-->
+<!--
+<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
+  <script src="https://cdn.bootcss.com/react/15.5.4/react-dom.js"></script>
+  -->
+  <script type='text/javascript' src="./dist/React.js"></script>
     <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-function  RealModal (props){
-   return <div className='modal'>{props.children}</div>
-}
-  class Modal extends React.Component {
-    appendMaskIntoDoc() {
-        console.log(this)
-        ReactDOM.unstable_renderSubtreeIntoContainer(
-            this,
-            <RealModal {...this.props}>
-                {this.props.children}
-            </RealModal>,
-            this.container
-        )
+  <script type='text/babel'>
+   const log = [];
+    class Parent extends React.Component {
+      constructor(){
+            super(),
+            this.state={
+                value: 'one'
+            }
+        }
+      render() {
+        log.push('parent render ' + this.state.value);
+        console.log('parent render ' + this.state.value)
+        return <Child parent={this} value={this.state.value} />;
+      }
     }
-
-    componentDidMount() {
-      var div = this.container = document.createElement('div')
-        div.innerHTML = '<p>1111</p><p>222</p>'
-        div.className = 'placeholder'
-        document.body.appendChild(div)
-      
-        this.appendMaskIntoDoc()
+    let updated = false;
+    class Child extends React.Component {
+      componentWillReceiveProps() {
+        if (updated) {
+          return;
+        }
+        log.push('child componentWillReceiveProps ' + this.props.value);
+         console.log('child componentWillReceiveProps ' + this.props.value)
+        this.props.parent.setState({value: 'two'});
+        log.push('child componentWillReceiveProps done ' + this.props.value);
+        console.log('child componentWillReceiveProps done ' + this.props.value);
+        updated = true;
+      }
+      render() {
+        log.push('child render ' + this.props.value);
+        console.log('child render ' + this.props.value);
+        return <div>{this.props.value}</div>;
+      }
     }
-
-    componentDidUpdate() {
-        console.log('更新')
-        this.appendMaskIntoDoc()
+    window.onload = function(){
+        var container = document.getElementById('select')
+        ReactDOM.render(<Parent />, container);
+        console.log('开始第二次渲染')
+        ReactDOM.render(<Parent />, container);
     }
-
-    componentWillUnmount() {
-        console.log('componentWillUnmount')
-        document.body.removeChild(this.container)
-    }
-
-    render() {
-        return null
-    }
-}
-window.onload = function(){
-    ReactDOM.render(<Modal title="aaa">99999</Modal>, document.getElementById('select'))
-
-    setTimeout(function(){
-       ReactDOM.render(<Modal title="aaa">新内容</Modal>, document.getElementById('select'))
-    },500)
-}
+  
+   
     </script>
 </head>
 

@@ -11,7 +11,7 @@ export var transaction = {
         callbacks.push(obj)
     },
     queueComponent: function (instance) {
-        queue.push(instance)
+        this.count = queue.push(instance)
     },
     dequeue: function (recursion) {
 
@@ -21,7 +21,9 @@ export var transaction = {
         queue = []
         var processingCallbacks = callbacks
         callbacks = []
+         this.count = 0
         var refreshComponent = options.immune.refreshComponent
+      //  console.log(renderQueue.concat(), '---')
         for (var i = 0, n = renderQueue.length; i < n; i++) {
             var inst = renderQueue[i]
             try {
@@ -40,7 +42,7 @@ export var transaction = {
                 .call(request.instance)
         })
         /* istanbul ignore next */
-        if (queue.length) {
+        if (this.count) {
             this.dequeue() //用于递归调用自身)
         }
     }

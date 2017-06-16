@@ -2,21 +2,26 @@ import { diffProps } from "./diffProps";
 import { CurrentOwner } from "./createElement";
 import { document, win, createDOMElement, getNs } from "./browser";
 import { transaction } from "./transaction";
-
+function switchTransaction(callback) {
+  var prevInTransaction = transaction.isInTransation;
+  transaction.isInTransation = true;
+  callback();
+  transaction.isInTransation = prevInTransaction;
+}
 import {
   processFormElement,
   postUpdateSelectedOptions
 } from "./ControlledComponent";
 import {
-  getChildContext,
-  HTML_KEY,
-  options,
   noop,
   extend,
   getNodes,
+  HTML_KEY,
+  options,
   checkNull,
   recyclables,
   toLowerCase,
+  getChildContext,
   getComponentProps,
   __push
 } from "./util";
@@ -70,7 +75,7 @@ export function unstable_renderSubtreeIntoContainer(
   container,
   callback
 ) {
-  console.warn("未见于文档的内部方法，不建议使用");
+  console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用");
   var parentContext = (parentInstance && parentInstance.context) || {};
   return updateView(vnode, container, callback, parentContext);
 }
@@ -145,7 +150,7 @@ export function mountVnode(vnode, parentContext, prevRendered) {
   let { vtype } = vnode;
   let node = null;
   if (!vtype) {
-    // init 文本与注释节点
+    // 处理 文本与注释节点
     node = prevRendered && prevRendered.nodeName === vnode.type
       ? prevRendered
       : createDOMElement(vnode);
@@ -256,10 +261,9 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.context = instance.context || parentContext;
 
   if (instance.componentWillMount) {
-    var prevInTransaction = transaction.isInTransation;
-    transaction.isInTransation = true;
-    instance.componentWillMount();
-    transaction.isInTransation = prevInTransaction;
+    switchTransaction(function() {
+      instance.componentWillMount();
+    });
     instance.state = instance._processPendingState();
   }
 
@@ -340,6 +344,10 @@ options.immune.refreshComponent = function refreshComponent(instance) {
   //这里触发视图更新
 
   reRenderComponent(instance);
+  if (transaction.count) {
+    options.updateBatchNumber++;
+    transaction.dequeue();
+  }
   instance._forceUpdate = false;
   if (readyCallbacks.length) {
     fireMount();
@@ -385,6 +393,7 @@ function reRenderComponent(instance) {
   var dom = alignVnodes(lastRendered, rendered, node, childContext);
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
+
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
   }
@@ -552,7 +561,9 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
   if (instance.componentWillReceiveProps) {
-    instance.componentWillReceiveProps(nextProps, parentContext);
+    switchTransaction(function() {
+      instance.componentWillReceiveProps(nextProps, parentContext);
+    });
   }
 
   instance.props = nextProps;
