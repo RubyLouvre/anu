@@ -8,7 +8,6 @@ import {
 } from "./event";
 import { oneObject, toLowerCase, noop } from "./util";
 
-
 var boolAttributes = oneObject(
   "autofocus,autoplay,async,allowTransparency,checked,controls," +
     "declare,disabled,defer,defaultChecked,defaultSelected," +
@@ -25,7 +24,9 @@ var builtIdProperties = oneObject(
   1
 );
 
-var booleanTag = oneObject('script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label')
+var booleanTag = oneObject(
+  "script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label"
+);
 var xlink = "http://www.w3.org/1999/xlink";
 
 /**
@@ -89,7 +90,6 @@ var controlled = {
   value: 1,
   defaultValue: 1
 };
-
 
 var specialProps = {
   children: 1,
