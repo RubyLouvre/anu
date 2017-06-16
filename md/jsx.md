@@ -176,6 +176,38 @@ React.render(
 ```
 
 注意：JSX里面br，input, hr等标签必须自闭合，如`<br>`必须写成`<br />`
+     并且使用了dangerouslySetInnerHTML，就不能在元素内部添加子元素，像下面的写法是错的
+
+```jsx
+<div dangerouslySetInnerHTML={{__html: content}}><span>1</span><span>2</span></div>
+```
+
+###属性的定义
+
+JSX是严格区分固有属性与自定义属性， 固有属性是指元素原形链上就已存在的属性，比如id, title, className, htmlFor, style，colSpan。这些属性是严格区分大小写。并且对属性值也有要求。
+
+固有属性根据其值的类型，可以分为布尔属性与字符串属性。布尔属性一般出现在表单元素与A，script等标签上，如disabled, readOnly, selected, checked等等。布尔属性时，大家在使用时，值必须是布尔
+```jsx
+<input type='radio' checked={true} />
+
+```
+
+```javascript
+//anu内部的所有布尔属性
+autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,defer,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,open,readOnly,selected
+```
+
+字符串属性也比较常见：
+```
+value,id,title,alt,htmlFor,longDesc,className
+```
+
+ 还有一些不规则的属性(不需要刻意记，只要记住上面两种就是)
+ ```
+ accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign
+ ```
+
+ 而自定义属性，则是用户随便设置的。
 
 
 ###自定义组件
