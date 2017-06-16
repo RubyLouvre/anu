@@ -8,47 +8,26 @@ import {
 } from "./event";
 import { oneObject, toLowerCase, noop } from "./util";
 
+var boolAttributes = oneObject(
+  "autofocus,autoplay,async,allowTransparency,checked,controls," +
+    "declare,disabled,defer,defaultChecked,defaultSelected," +
+    "isMap,loop,multiple,noHref,noResize,noShade," +
+    "open,readOnly,selected",
+  true
+);
+
+var builtIdProperties = oneObject(
+  "accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan," +
+  "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth," +
+  "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
+    "value,id,title,alt,htmlFor,name,type,longDesc,className",
+  1
+);
+
+var booleanTag = oneObject(
+  "script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label"
+);
 var xlink = "http://www.w3.org/1999/xlink";
-var stringAttributes = {};
-export var builtIdProperties = {}; //不规则的属性名映射
-
-//防止压缩时出错
-
-/*
-  contenteditable不是布尔属性
-  http://www.zhangxinxu.com/wordpress/2016/01/contenteditable-plaintext-only/
-  contenteditable=''
-  contenteditable='events'
-  contenteditable='caret'
-  contenteditable='plaintext-only'
-  contenteditable='true'
-  contenteditable='false'
-   */
-var bools = [
-  "autofocus,autoplay,async,allowTransparency,checked,controls",
-  "declare,disabled,defer,defaultChecked,defaultSelected,",
-  "isMap,loop,multiple,noHref,noResize,noShade",
-  "open,readOnly,selected"
-].join(",");
-var boolAttributes = {};
-bools.replace(/\w+/g, function(name) {
-  boolAttributes[name] = true;
-});
-
-var anomaly = [
-  "accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan",
-  "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth",
-  "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign"
-].join(",");
-
-anomaly.replace(/\w+/g, function(name) {
-  builtIdProperties[name] = name;
-});
-String(
-  "value,id,title,alt,htmlFor,name,type,longDesc,className"
-).replace(/\w+/g, function(name) {
-  builtIdProperties[name] = name;
-});
 
 /**
  *
@@ -111,22 +90,7 @@ var controlled = {
   value: 1,
   defaultValue: 1
 };
-var booleanTag = {
-  script: 1,
-  iframe: 1,
-  a: 1,
-  map: 1,
 
-  vedio: 1,
-  bgsound: 1,
-
-  form: 1,
-  select: 1,
-  inout: 1,
-  textarea: 1,
-  option: 1,
-  keygen: 1
-};
 var specialProps = {
   children: 1,
   style: 1,
@@ -202,11 +166,7 @@ var propHooks = {
       ? "removeAttribute"
       : "setAttribute";
     if (svgprops[name]) {
-      dom[method + "NS"](
-        "http://www.w3.org/1999/xlink",
-        svgprops[name],
-        val || ""
-      );
+      dom[method + "NS"](xlink, svgprops[name], val || "");
     } else {
       dom[method](toLowerCase(name), val || "");
     }

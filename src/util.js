@@ -1,3 +1,9 @@
+var __type = Object.prototype.toString
+export var __push = Array.prototype.push;
+
+export var HTML_KEY = "dangerouslySetInnerHTML";
+
+
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -36,6 +42,8 @@ export function inherit(SubClass, SupClass) {
   extend(fn, SupClass.prototype);
   fn.constructor = SubClass;
 }
+
+
 /**
  * 收集一个元素的所有孩子
  *
@@ -52,8 +60,16 @@ export function getNodes(dom) {
   }
   return ret;
 }
-var lowerCache = {};
 
+
+var lowerCache = {};
+/**
+ * 小写化的优化
+ * 
+ * @export
+ * @param {any} s 
+ * @returns 
+ */
 export function toLowerCase(s) {
   return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
@@ -61,17 +77,17 @@ export function toLowerCase(s) {
 /**
  *
  *
- * @param {any} type
+ * @param {any} obj
  * @returns
  */
-export function isFn(type) {
-  return typeof type === "function";
+export function isFn(obj) {
+  return __type.call(obj) === "[object Function]";
 }
 
 var rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
-  if (typeof array === "string") {
+  if (__type.call(array) === "[object String]") {
     array = array.match(rword) || [];
   }
   var result = {},
@@ -85,14 +101,12 @@ export function oneObject(array, val) {
 
 export function getChildContext(instance, context) {
   if (instance.getChildContext) {
-    return extend(extend({}, context), instance.getChildContext());
+    return Object.assign({}, context, instance.getChildContext());
   }
   return context;
 }
 var rcamelize = /[-_][^-_]/g;
-export var __push = Array.prototype.push;
 
-export var HTML_KEY = "dangerouslySetInnerHTML";
 export function camelize(target) {
   //提前判断，提高getStyle等的效率
   if (!target || (target.indexOf("-") < 0 && target.indexOf("_") < 0)) {
@@ -109,6 +123,7 @@ export var options = {
   immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
 
+
 export function checkNull(vnode, type) {
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty" };
@@ -119,6 +134,7 @@ export function checkNull(vnode, type) {
   }
   return vnode;
 }
+
 
 export function getComponentProps(vnode) {
   var defaultProps = vnode.type.defaultProps;
@@ -133,17 +149,7 @@ export function getComponentProps(vnode) {
   }
   return props;
 }
-/**
- * 获取虚拟DOM对应的顶层组件实例的类型
- *
- * @param {any} vnode
- * @param {any} instance
- * @param {any} pool
- */
 
-export function getComponentName(type) {
-  return typeof type === "function" ? type.displayName || type.name : type;
-}
 export var recyclables = {
   "#text": [],
   "#comment": [],

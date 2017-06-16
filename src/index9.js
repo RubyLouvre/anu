@@ -122,29 +122,22 @@ class HasChild extends React.Component {
     return <div onClick={this.onClick}>{ this.a ==0 ? <A  title="xxx" ref='a' >ddd</A> : <A ddd="ddd" ref='a' >3333</A>}</div>;
   }
 }
-  class A extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {};
-      }
-      componentDidUpdate(a) {
+  function A (props) {
      
-      }
-      render() {
-        return <span title={this.props.title}>{this.props.children}</span>;
-      }
+        return <span title={props.title}>{props.children}</span>;
+      
     }
     A.defaultProps = {
       title: "默认值"
     };
 
 window.onload = function() {
-  var s = ReactDOM.render(
-   
-      <HasChild />,
+    //<A title="eee">XXXX</A>
+  var s = window.s = ReactDOM.render(
+  <span>333</span>
+      ,
    
     document.getElementById("example")
   );
-  console.log(s)
-  console.log(s.refs.a)
+
 };

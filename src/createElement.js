@@ -1,4 +1,4 @@
-import { extend, __push } from "./util";
+import { __push } from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 

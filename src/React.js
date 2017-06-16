@@ -13,7 +13,7 @@ import {
 } from './Component'
 import {
     Children
-} from './compat'
+} from './Children'
 import {
     win as window
 } from './browser'
@@ -23,7 +23,7 @@ import {
 } from './util'
 
 import {
-    render, findDOMNode, unstable_renderSubtreeIntoContainer
+    render, findDOMNode, unstable_renderSubtreeIntoContainer, isValidElement
 } from './diff'
 var check = function(){
 	return check
@@ -53,6 +53,7 @@ var React = {
     findDOMNode,
     options,
     unstable_renderSubtreeIntoContainer,
+    isValidElement,
     version: "VERSION",
     createElement,
     cloneElement,

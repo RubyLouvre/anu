@@ -1,20 +1,27 @@
 import { diffProps } from "./diffProps";
 import { CurrentOwner } from "./createElement";
 import { document, win, createDOMElement, getNs } from "./browser";
+import { transaction } from "./transaction";
+function switchTransaction(callback) {
+  var prevInTransaction = transaction.isInTransation;
+  transaction.isInTransation = true;
+  callback();
+  transaction.isInTransation = prevInTransaction;
+}
 import {
   processFormElement,
   postUpdateSelectedOptions
 } from "./ControlledComponent";
 import {
-  getChildContext,
-  HTML_KEY,
-  options,
   noop,
   extend,
   getNodes,
+  HTML_KEY,
+  options,
   checkNull,
   recyclables,
   toLowerCase,
+  getChildContext,
   getComponentProps,
   __push
 } from "./util";
@@ -62,14 +69,21 @@ var _removeNodes = [];
 export function render(vnode, container, callback) {
   return updateView(vnode, container, callback, {});
 }
-export function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
-  console.warn('未见于文档的内部方法，不建议使用')
-  var parentContext = parentInstance && parentInstance.context || {}
+export function unstable_renderSubtreeIntoContainer(
+  parentInstance,
+  vnode,
+  container,
+  callback
+) {
+  console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用");
+  var parentContext = (parentInstance && parentInstance.context) || {};
   return updateView(vnode, container, callback, parentContext);
 }
-
+export function isValidElement(vnode) {
+  return vnode && vnode.vtype;
+}
 function updateView(vnode, container, callback, parentContext) {
-  if (!vnode || !vnode.vtype) {
+  if (!isValidElement(vnode)) {
     throw new Error(
       `${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`
     );
@@ -136,7 +150,7 @@ export function mountVnode(vnode, parentContext, prevRendered) {
   let { vtype } = vnode;
   let node = null;
   if (!vtype) {
-    // init 文本与注释节点
+    // 处理 文本与注释节点
     node = prevRendered && prevRendered.nodeName === vnode.type
       ? prevRendered
       : createDOMElement(vnode);
@@ -247,13 +261,17 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.context = instance.context || parentContext;
 
   if (instance.componentWillMount) {
-    instance.componentWillMount();
+    switchTransaction(function() {
+      instance.componentWillMount();
+    });
+    instance.state = instance._processPendingState();
   }
+
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
   // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
   // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-  let rendered = safeRenderComponent(instance);
+  let rendered = safeRenderComponent(instance, type);
   instance._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
 
@@ -277,10 +295,10 @@ function mountComponent(vnode, parentContext, prevRendered) {
 
   return dom;
 }
-export function safeRenderComponent(instance) {
+export function safeRenderComponent(instance, type) {
   CurrentOwner.cur = instance;
   var rendered = instance.render();
-  rendered = checkNull(rendered);
+  rendered = checkNull(rendered, type);
 
   CurrentOwner.cur = null;
   return rendered;
@@ -290,7 +308,7 @@ function mountStateless(vnode, parentContext, prevRendered) {
   var props = getComponentProps(vnode);
 
   let rendered = vnode.type(props, parentContext);
-  rendered = checkNull(rendered);
+  rendered = checkNull(rendered, vnode.type);
 
   let dom = mountVnode(rendered, parentContext, prevRendered);
   vnode._instance = {
@@ -308,7 +326,7 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
   let vnode = instance._rendered;
 
   let newVnode = nextVnode.type(getComponentProps(nextVnode), parentContext);
-  newVnode = checkNull(newVnode);
+  newVnode = checkNull(newVnode, nextVnode.type);
 
   let dom = alignVnodes(vnode, newVnode, node, parentContext);
   nextVnode._instance = instance;
@@ -326,6 +344,10 @@ options.immune.refreshComponent = function refreshComponent(instance) {
   //这里触发视图更新
 
   reRenderComponent(instance);
+  if (transaction.count) {
+    options.updateBatchNumber++;
+    transaction.dequeue();
+  }
   instance._forceUpdate = false;
   if (readyCallbacks.length) {
     fireMount();
@@ -335,7 +357,7 @@ options.immune.refreshComponent = function refreshComponent(instance) {
 function reRenderComponent(instance) {
   // instance._currentElement
 
-  var { props, state, context, lastProps } = instance;
+  var { props, state, context, lastProps, type } = instance;
   var lastRendered = instance._rendered;
   var node = instanceMap.get(instance);
 
@@ -363,7 +385,7 @@ function reRenderComponent(instance) {
   instance.state = nextState;
   delete instance._updateBatchNumber;
 
-  var rendered = safeRenderComponent(instance);
+  var rendered = safeRenderComponent(instance, type);
   var childContext = getChildContext(instance, context);
   instance._rendered = rendered;
   rendered._hostParent = hostParent;
@@ -371,6 +393,7 @@ function reRenderComponent(instance) {
   var dom = alignVnodes(lastRendered, rendered, node, childContext);
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
+
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
   }
@@ -538,7 +561,9 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
   if (instance.componentWillReceiveProps) {
-    instance.componentWillReceiveProps(nextProps, parentContext);
+    switchTransaction(function() {
+      instance.componentWillReceiveProps(nextProps, parentContext);
+    });
   }
 
   instance.props = nextProps;

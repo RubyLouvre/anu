@@ -32,7 +32,7 @@ export function dispatchEvent(e) {
   do {
     var events = target.__events;
     if (events) {
-      paths.push({ dom: target, props: events });
+      paths.push({ dom: target, events: events });
     }
   } while ((target = target.parentNode) && target.nodeType === 1);
   // target --> parentNode --> body --> html
@@ -60,10 +60,10 @@ export function dispatchEvent(e) {
 function triggerEventFlow(paths, prop, e) {
   for (var i = paths.length; i--; ) {
     var path = paths[i];
-    var fn = path.props[prop];
+    var fn = path.events[prop];
     if (isFn(fn)) {
-      e.currentTarget = path._hostNode;
-      fn.call(path._hostNode, e);
+      e.currentTarget = path.dom;
+      fn.call(path.dom, e);
       if (e._stopPropagation) {
         break;
       }

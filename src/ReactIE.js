@@ -13,7 +13,7 @@ import {
 } from './Component'
 import {
     Children
-} from './compat'
+} from './Children'
 import {
     win as window
 } from './browser'
@@ -23,7 +23,7 @@ import {
 } from './util'
 
 import {
-    render, findDOMNode
+    render, findDOMNode, unstable_renderSubtreeIntoContainer, isValidElement
 } from './diff'
 import './ieEvent'
 
@@ -55,9 +55,8 @@ var React = {
     render,
     findDOMNode,
     options,
-    isValidElement:function(el){
-        return el && el.$$typeof === 1
-    },
+    unstable_renderSubtreeIntoContainer,
+    isValidElement,
     version: "VERSION",
     createElement,
     cloneElement,

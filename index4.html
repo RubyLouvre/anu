@@ -18,14 +18,29 @@
     </style>
     </style>
      <script type='text/javascript' src="./dist/polyfill.js"></script>
-     <script type='text/javascript' src="./dist/ReactIE.js"></script>
+     <script type='text/javascript' src="./dist/React.js"></script>
      <script type='text/javascript' src="./dist/app.js"></script>
-  <script>
+      <script src="./test/babel.js"></script>
+  <script type='text/babel'>
   window.onload = function(){
-       function Test(prop){
-           return <div>{prop.text}</div>
-       }
-       ReactDOM.render(<Test text={'ddd'} />, document.getElementById('example'))
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 1111
+        };
+      }
+      componentWillMount() {
+        this.setState({
+          aaa: 333
+        });
+      }
+      render() {
+        return <p>{this.state.aaa}</p>;
+      }
+    }
+
+    var s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 
