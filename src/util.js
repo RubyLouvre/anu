@@ -1,8 +1,7 @@
-var __type = Object.prototype.toString
+var __type = Object.prototype.toString;
 export var __push = Array.prototype.push;
 
 export var HTML_KEY = "dangerouslySetInnerHTML";
-
 
 /**
  * 复制一个对象的属性到另一个对象
@@ -43,7 +42,6 @@ export function inherit(SubClass, SupClass) {
   fn.constructor = SubClass;
 }
 
-
 /**
  * 收集一个元素的所有孩子
  *
@@ -60,7 +58,6 @@ export function getNodes(dom) {
   }
   return ret;
 }
-
 
 var lowerCache = {};
 /**
@@ -123,7 +120,6 @@ export var options = {
   immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
 
-
 export function checkNull(vnode, type) {
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty" };
@@ -135,10 +131,9 @@ export function checkNull(vnode, type) {
   return vnode;
 }
 
-
 export function getComponentProps(vnode) {
   var defaultProps = vnode.type.defaultProps;
-  var props =  vnode.props
+  var props = vnode.props;
   if (defaultProps) {
     for (var i in defaultProps) {
       //eslint-disable-next-line

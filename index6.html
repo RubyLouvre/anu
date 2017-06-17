@@ -18,9 +18,28 @@
     </style> 
     <script type='text/javascript' src="./dist/polyfill.js"></script>
 <script type='text/javascript' src="./dist/React.js"></script>
-<script type='text/javascript' src="./dist/app.js"></script>
+ <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+       class Touchable extends React.Component{
+      
+           render(){
+               var a = Object.assign({}, this.props)
+               var child = a.children[0]
+               delete a.children
+               for(var i in a){
+                    child.checkProps = 1
+                   child.props[i] = a[i]
+               }
+           
+               return this.props.children[0]
+           }
+       }
 
-   
+       ReactDOM.render(<div><Touchable title="ccc"
+       onClick={(e)=>{console.log(e.target.innerHTML)}} className='red'>
+       <p>这是内容</p>
+       </Touchable></div>, document.getElementById('example'))
+       </script>
 </head>
 
 <body>

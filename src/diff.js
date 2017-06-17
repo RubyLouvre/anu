@@ -367,8 +367,8 @@ function reRenderComponent(instance) {
   var nextState = instance._processPendingState(props, context);
 
   instance.props = lastProps;
-  // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
-  // nextContext)
+  // delete instance.lastProps 
+  // 生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
   if (
     !instance._forceUpdate &&
     instance.shouldComponentUpdate &&
@@ -409,12 +409,13 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     node.parentNode.removeChild(node);
   } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
     //replace
+     disposeVnode(vnode, node);
     newNode = mountVnode(newVnode, parentContext);
     var p = node.parentNode;
     if (p) {
       p.replaceChild(newNode, node);
     }
-    removeVnode(vnode, node, newNode);
+   // removeVnode(vnode, node, newNode);
   } else if (vnode !== newVnode) {
     // same type and same key -> update
     newNode = updateVnode(vnode, newVnode, node, parentContext);
@@ -729,8 +730,12 @@ function applyUpdate(data) {
 }
 
 function applyDestroy(data) {
-  removeVnode(data.vnode, data.node);
+  disposeVnode(data.vnode, data.node);
+ 
   var node = data.node;
+  if(node && node.parentNode){
+    node.parentNode.removeChild(node)
+  }
   var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
   if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
     recyclables[nodeName].push(node);
