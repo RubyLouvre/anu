@@ -8,9 +8,10 @@ describe('browser', function () {
         expect(typeof win.document).toBe('object')
 
         expect(fakeDoc.createElementNS()).toInstanceOf(DOMElement)
+        expect(fakeDoc.createDocumentFragment()).toInstanceOf(DOMElement)
         expect(fakeDoc.createTextNode()).toA('boolean')
         expect(fakeDoc.createComment()).toA('boolean')
-
+        expect(fakeDoc.textContent).toA('string')
     })
     it('createDOMElement', function () {
         var a = createDOMElement({type: 'div'})

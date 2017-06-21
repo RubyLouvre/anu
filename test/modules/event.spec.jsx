@@ -171,7 +171,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
 
     })
-    it('event', function () {
+    it('测试事件对象的属性', function () {
         var obj = {
             type: 'change',
             srcElement: 1

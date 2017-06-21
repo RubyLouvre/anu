@@ -665,7 +665,7 @@ describe('node模块', function () {
                 str += ' yyyy'
             }
             render() {
-                return <div className="component1">xxx</div>
+                return <div className="component2">xxx</div>
             }
         }
         var index = 1
@@ -684,6 +684,9 @@ describe('node模块', function () {
             handleClick() {
                 index = 0
                 this.forceUpdate()
+                setTimeout(function(){
+                    console.log('应该输出', str)
+                })
             }
             render() {
                 return index ?
@@ -718,8 +721,8 @@ describe('node模块', function () {
             render() {
                 return index ?
                     <div ref='a' onClick={this.handleClick.bind(this)}>
-                        <div ref='b'><span>222</span></div>
-                    </div> : <div><p><span>222</span></p></div>
+                        <div ref='b'><span>这是点击前</span></div>
+                    </div> : <div><p><strong>这是点击后</strong></p></div>
 
             }
         };
@@ -939,7 +942,7 @@ describe('node模块', function () {
         expect(getString(div.firstChild.childNodes)).toBe('span')
     })
 
-    it('should remove orphaned elements replaced by Components', async () => {
+    it('对一个容器节点反复渲染组件或元素 ', async () => {
 		class Comp extends React.Component {
 			render() {
 				return <span>span in a component</span>;

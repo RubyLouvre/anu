@@ -363,6 +363,7 @@ describe("组件相关", function() {
       }
       componentWillReceiveProps(props) {
         receiveCount++;
+        console.log('receiveCount',receiveCount)
         this.setState(function(nextState, props) {
           nextState.path = props.path;
           return nextState;
@@ -370,9 +371,11 @@ describe("组件相关", function() {
       }
       componentWillUpdate() {
         updateCount++;
+        console.log('updateCount',updateCount)
       }
       componentWillUnmount() {
         destroyCount++;
+        console.log("destroyCount",destroyCount)
       }
       render() {
         return this.state.path == "111" ? <p>{this.state.path}</p> : null;

@@ -1,4 +1,4 @@
-import { oneObject, recyclables } from "./util";
+import { oneObject, recyclables, toLowerCase } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -21,12 +21,15 @@ String(
 
 //用于后端的document
 export var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = function(type) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(
+  type
+) {
   return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.nodeName = "#document";
+fakeDoc.textContent = ''
 export var inBrowser = typeof window === "object" && window.alert;
 
 export var win = inBrowser
@@ -36,6 +39,35 @@ export var win = inBrowser
     };
 
 export var document = win.document || fakeDoc;
+var isStandard = 'textContent' in document
+var fragment = document.createDocumentFragment();
+function emptyElement(node) {
+  var child 
+  while (child = node.firstChild) {
+    if (child.nodeType === 1) {
+      emptyElement(child);
+    }
+    node.removeChild(child);
+  }
+}
+
+export function removeDOMElement(node) {
+  if (node.nodeType === 1) {
+    if(isStandard){
+      node.textContent = ''
+    }else{
+      emptyElement(node)
+    }
+  }
+  fragment.appendChild(node);
+  fragment.removeChild(node);
+  var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
+  if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
+    recyclables[nodeName].push(node);
+  } else {
+    recyclables[nodeName] = [node];
+  }
+}
 
 var versions = {
   objectobject: 7, //IE7-8
