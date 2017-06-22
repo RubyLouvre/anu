@@ -62,12 +62,18 @@ export function createElement(type, configs) {
 function flattenChildren(stack) {
   var lastText,
     child,
+    deep,
     children = EMPTY_CHILDREN;
+
   while (stack.length) {
     //比较巧妙地判定是否为子数组
     if ((child = stack.pop()) && child.pop !== undefined) {
+      deep = child._deep ? child._deep + 1 : 1;
       for (let i = 0; i < child.length; i++) {
-        stack[stack.length] = child[i];
+        var el = (stack[stack.length] = child[i]);
+        if (el) {
+          el._deep = deep;
+        }
       }
     } else {
       // eslint-disable-next-line
@@ -94,6 +100,7 @@ function flattenChildren(stack) {
       } else {
         lastText = null;
       }
+
       if (children === EMPTY_CHILDREN) {
         children = [child];
       } else {
@@ -152,3 +159,5 @@ Vnode.prototype = {
 
   $$typeof: 1
 };
+
+[1, 2, [3, 4, 5]];

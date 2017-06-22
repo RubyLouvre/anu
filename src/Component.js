@@ -13,6 +13,7 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
+  this._hasMount = false;
   this._pendingStateQueue = [];
   this.state = {};
 }
@@ -25,6 +26,9 @@ Component.prototype = {
   },
 
   forceUpdate(cb) {
+    if(!this._hasMount){
+        return
+      }
     this._pendingForceUpdate = true;
     setStateProxy(this, cb);
   },
@@ -67,6 +71,7 @@ function setStateProxy(instance, cb) {
       component: instance,
       cb: cb
     });
+ 
   if (!instance._updateBatchNumber) {
     instance._updateBatchNumber = options.updateBatchNumber + 1;
   }
