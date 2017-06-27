@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-16T08:35:45.892Z
+ * by 司徒正美 Copyright 2017-06-27T09:29:32.390Z
  */
 
 (function (global, factory) {
@@ -228,12 +228,18 @@
   function flattenChildren(stack) {
     var lastText,
         child,
+        deep,
         children = EMPTY_CHILDREN;
+
     while (stack.length) {
       //比较巧妙地判定是否为子数组
       if ((child = stack.pop()) && child.pop !== undefined) {
+        deep = child._deep ? child._deep + 1 : 1;
         for (var i = 0; i < child.length; i++) {
-          stack[stack.length] = child[i];
+          var el = stack[stack.length] = child[i];
+          if (el) {
+            el._deep = deep;
+          }
         }
       } else {
         // eslint-disable-next-line
@@ -255,6 +261,7 @@
         } else {
           lastText = null;
         }
+
         if (children === EMPTY_CHILDREN) {
           children = [child];
         } else {
@@ -335,41 +342,30 @@
   }
 
   var queue = [];
-  var callbacks = [];
 
   var transaction = {
     isInTransation: false,
-    queueCallback: function queueCallback(obj) {
-      //它们是保证在ComponentDidUpdate后执行
-      callbacks.push(obj);
-    },
     queueComponent: function queueComponent(instance) {
       this.count = queue.push(instance);
     },
     dequeue: function dequeue(recursion) {
       this.isInTransation = true;
-      var globalBatchNumber = options.updateBatchNumber;
       var renderQueue = queue;
       queue = [];
-      var processingCallbacks = callbacks;
-      callbacks = [];
       this.count = 0;
       var refreshComponent = options.immune.refreshComponent;
       for (var i = 0, n = renderQueue.length; i < n; i++) {
         var inst = renderQueue[i];
+        inst._disabled = false;
         try {
-          if (inst._updateBatchNumber === globalBatchNumber) {
-            refreshComponent(inst);
-          }
+          refreshComponent(inst);
         } catch (e) {
           /* istanbul ignore next */
           console.warn(e);
         }
       }
       this.isInTransation = false;
-      processingCallbacks.forEach(function (request) {
-        request.cb.call(request.instance);
-      });
+
       /* istanbul ignore next */
       if (this.count) {
         this.dequeue(); //用于递归调用自身)
@@ -388,28 +384,33 @@
     this.context = context;
     this.props = props;
     this.refs = {};
-    this._pendingStateQueue = [];
+    this._hasMount = false;
+    this._pendingCallbacks = [];
+    this._pendingStates = [];
     this.state = {};
   }
 
   Component.prototype = {
     setState: function setState(state, cb) {
-      this._pendingStateQueue.push(state);
+      this._pendingStates.push(state);
 
       setStateProxy(this, cb);
     },
     forceUpdate: function forceUpdate(cb) {
+      if (!this._hasMount) {
+        return;
+      }
       this._pendingForceUpdate = true;
       setStateProxy(this, cb);
     },
 
     _processPendingState: function _processPendingState(props, context) {
-      var n = this._pendingStateQueue.length;
+      var n = this._pendingStates.length;
       if (n == 0) {
         return this.state;
       }
-      var queue = this._pendingStateQueue.concat();
-      this._pendingStateQueue.length = 0;
+      var queue = this._pendingStates.concat();
+      this._pendingStates.length = 0;
 
       var nextState = extend({}, this.state);
       for (var i = 0; i < n; i++) {
@@ -433,18 +434,17 @@
    */
 
   function setStateProxy(instance, cb) {
-    if (isFn(cb)) transaction.queueCallback({
-      //确保回调先进入
-      component: instance,
-      cb: cb
-    });
-    if (!instance._updateBatchNumber) {
-      instance._updateBatchNumber = options.updateBatchNumber + 1;
+    if (isFn(cb)) {
+      instance._pendingCallbacks.push(cb);
     }
+    if (!instance._hasMount || instance._disabled === true) {
+      //如果是componentWillMount钩子中使用了setState 或forceUpdate，那么不应该放进列队
+      //如果是componentWillReceiveProps钩子中使用了setState 或forceUpdate，那么也不应该放进列队
+      return;
+    }
+    instance._disabled = true;
     transaction.queueComponent(instance);
-
     if (!transaction.isInTransation) {
-      options.updateBatchNumber++;
       transaction.dequeue();
     }
   }
@@ -530,12 +530,13 @@
 
   //用于后端的document
   var fakeDoc = new DOMElement();
-  fakeDoc.createElement = fakeDoc.createElementNS = function (type) {
+  fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
     return new DOMElement(type);
   };
   fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
   fakeDoc.documentElement = new DOMElement("html");
   fakeDoc.nodeName = "#document";
+  fakeDoc.textContent = '';
   var inBrowser = (typeof window === "undefined" ? "undefined" : _typeof$2(window)) === "object" && window.alert;
 
   var win = inBrowser ? window : {
@@ -543,6 +544,35 @@
   };
 
   var document = win.document || fakeDoc;
+  var isStandard = 'textContent' in document;
+  var fragment = document.createDocumentFragment();
+  function emptyElement(node) {
+    var child;
+    while (child = node.firstChild) {
+      if (child.nodeType === 1) {
+        emptyElement(child);
+      }
+      node.removeChild(child);
+    }
+  }
+
+  function removeDOMElement(node) {
+    if (node.nodeType === 1) {
+      if (isStandard) {
+        node.textContent = '';
+      } else {
+        emptyElement(node);
+      }
+    }
+    fragment.appendChild(node);
+    fragment.removeChild(node);
+    var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
+    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
+      recyclables[nodeName].push(node);
+    } else {
+      recyclables[nodeName] = [node];
+    }
+  }
 
   var versions = {
     objectobject: 7, //IE7-8
@@ -1312,8 +1342,7 @@
   }
 
   var instanceMap = new innerMap();
-  var _removeNodes = [];
-
+  var mounts = [];
   function render(vnode, container, callback) {
     return updateView(vnode, container, callback, {});
   }
@@ -1351,10 +1380,37 @@
 
     var instance = vnode._instance;
     container._component = vnode;
-    // delete vnode._prevRendered
     if (callback) {
       callback();
     }
+    var queue = mounts;
+    mounts = [];
+    queue.forEach(function (el) {
+      if (typeof el === "function") {
+        el();
+      } else if (el.componentDidMount) {
+        var instance = el;
+        switchTransaction(function () {
+          var hook = instance.componentDidMount;
+          instance.componentDidMount = NaN;
+          instance._disabled = true;
+          hook.call(instance);
+          instance._disabled = false;
+          if (instance._pendingStates.length) if (!instance._dirty) {
+            instance._dirty = true;
+            setTimeout(function () {
+              instance._dirty = false;
+              reRenderComponent(instance);
+              instance._pendingCallbacks.forEach(function (fn) {
+                fn.call(instance);
+              });
+              instance._pendingCallbacks.length = 0;
+            });
+          }
+        });
+      }
+    });
+
     return instance || rootNode;
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
   }
@@ -1376,54 +1432,53 @@
     var rootNode = mountVnode(vnode, parentContext, prevRendered);
     container.appendChild(rootNode);
 
-    if (readyCallbacks.length) {
-      fireMount();
-    }
     return rootNode;
   }
 
   function mountVnode(vnode, parentContext, prevRendered) {
     var vtype = vnode.vtype;
 
-    var node = null;
-    if (!vtype) {
-      // 处理 文本与注释节点
-      node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
-      vnode._hostNode = node;
-      return node;
+    switch (vtype) {
+      case 1:
+        return mountElement(vnode, parentContext, prevRendered);
+      case 2:
+        return mountComponent(vnode, parentContext, prevRendered);
+      case 4:
+        return mountStateless(vnode, parentContext, prevRendered);
+      default:
+        var node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
+        vnode._hostNode = node;
+        return node;
     }
-
-    if (vtype === 1) {
-      // 处理元素节点
-      node = mountElement(vnode, parentContext, prevRendered);
-    } else if (vtype === 2) {
-      // 处理有状态组件
-      node = mountComponent(vnode, parentContext, prevRendered);
-    } else if (vtype === 4) {
-      // 处理无状态组件
-      node = mountStateless(vnode, parentContext, prevRendered);
-    }
-
-    return node;
   }
+
   var formElements = {
     select: 1,
     textarea: 1,
     input: 1
   };
-
-  function mountElement(vnode, parentContext, prevRendered) {
-    var type = vnode.type,
-        props = vnode.props,
-        dom = void 0;
-
+  function genMountElement(vnode, type, prevRendered) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
-      dom = prevRendered;
+      return prevRendered;
     } else {
       var ns = getNs(type);
       vnode.ns = ns;
-      dom = createDOMElement(vnode);
+      var dom = createDOMElement(vnode);
+      if (prevRendered && dom !== prevRendered) {
+        while (prevRendered.firstChild) {
+          dom.appendChild(prevRendered.firstChild);
+        }
+      }
+      return dom;
     }
+  }
+
+  function mountElement(vnode, parentContext, prevRendered) {
+    var type = vnode.type,
+        props = vnode.props;
+
+    var dom = genMountElement(vnode, type, prevRendered);
+
     vnode._hostNode = dom;
     if (prevRendered) {
       alignChildren(vnode, dom, parentContext, prevRendered.childNodes);
@@ -1435,7 +1490,7 @@
     }
 
     if (vnode.ref) {
-      readyCallbacks.push(function () {
+      mounts.push(function () {
         vnode.ref(dom);
       });
     }
@@ -1445,16 +1500,15 @@
 
     return dom;
   }
-  var readyCallbacks = [];
 
   //将虚拟DOM转换为真实DOM并插入父元素
   function mountChildren(vnode, parentNode, parentContext) {
     var children = vnode.props.children;
-
     for (var i = 0, n = children.length; i < n; i++) {
       var el = children[i];
       el._hostParent = vnode;
-      parentNode.appendChild(mountVnode(el, parentContext));
+      var curNode = mountVnode(el, parentContext);
+      parentNode.appendChild(curNode);
     }
   }
 
@@ -1475,16 +1529,6 @@
     }
   }
 
-  function fireMount() {
-    var queue = readyCallbacks;
-    readyCallbacks = [];
-    //eslint-disable-next-line
-    for (var i = 0, cb; cb = queue[i++];) {
-      //eslint-disable-next-line
-      cb();
-    }
-  }
-
   function mountComponent(vnode, parentContext, prevRendered) {
     var type = vnode.type;
 
@@ -1499,9 +1543,7 @@
     instance.context = instance.context || parentContext;
 
     if (instance.componentWillMount) {
-      switchTransaction(function () {
-        instance.componentWillMount();
-      });
+      instance.componentWillMount();
       instance.state = instance._processPendingState();
     }
 
@@ -1512,17 +1554,16 @@
     var rendered = safeRenderComponent(instance, type);
     instance._rendered = rendered;
     rendered._hostParent = vnode._hostParent;
+    instance._hasMount = true;
 
-    if (vnode.ref) {
-      readyCallbacks.push(function () {
-        vnode.ref(instance);
-      });
-    }
     var dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
     instanceMap.set(instance, dom);
-    if (instance.componentDidMount) {
-      readyCallbacks.push(function () {
-        instance.componentDidMount();
+    if (instance.componentDidMount || instance._pendingCallbacks.length) {
+      mounts.push(instance);
+    }
+    if (vnode.ref) {
+      mounts.push(function () {
+        vnode.ref(instance);
       });
     }
     vnode._hostNode = dom;
@@ -1569,8 +1610,8 @@
     return dom;
   }
 
-  function disposeStateless(vnode, node) {
-    disposeVnode(vnode._instance._rendered, node);
+  function disposeStateless(vnode) {
+    disposeVnode(vnode._instance._rendered);
   }
 
   //将Component中这个东西移动这里
@@ -1578,24 +1619,22 @@
     //这里触发视图更新
 
     reRenderComponent(instance);
-    if (transaction.count) {
-      options.updateBatchNumber++;
-      transaction.dequeue();
-    }
+
     instance._forceUpdate = false;
-    if (readyCallbacks.length) {
-      fireMount();
-    }
+
+    instance._pendingCallbacks.forEach(function (fn) {
+      fn.call(instance);
+    });
+    instance._pendingCallbacks.length = 0;
   };
 
   function reRenderComponent(instance) {
-    // instance._currentElement
-
     var props = instance.props,
         state = instance.state,
         context = instance.context,
         lastProps = instance.lastProps,
-        type = instance.type;
+        constructor = instance.constructor;
+
 
     var lastRendered = instance._rendered;
     var node = instanceMap.get(instance);
@@ -1606,11 +1645,12 @@
     var nextState = instance._processPendingState(props, context);
 
     instance.props = lastProps;
-    // delete instance.lastProps 
+    // delete instance.lastProps
     // 生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
     if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
       return node; //注意
     }
+
     //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
     if (instance.componentWillUpdate) {
       instance.componentWillUpdate(nextProps, nextState, context);
@@ -1620,12 +1660,13 @@
     instance.state = nextState;
     delete instance._updateBatchNumber;
 
-    var rendered = safeRenderComponent(instance, type);
+    var rendered = safeRenderComponent(instance, constructor);
     var childContext = getChildContext(instance, context);
     instance._rendered = rendered;
     rendered._hostParent = hostParent;
 
     var dom = alignVnodes(lastRendered, rendered, node, childContext);
+
     instanceMap.set(instance, dom);
     instance._currentElement._hostNode = dom;
 
@@ -1640,17 +1681,17 @@
     var newNode = node;
     //eslint-disable-next-line
     if (newVnode == null) {
-      disposeVnode(vnode, node);
-      node.parentNode.removeChild(node);
-    } else if (vnode.type !== newVnode.type || vnode.key !== newVnode.key) {
+      removeDOMElement(node);
+      disposeVnode(vnode);
+    } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key && vnode._deep === newVnode._deep)) {
       //replace
-      disposeVnode(vnode, node);
+      disposeVnode(vnode);
       newNode = mountVnode(newVnode, parentContext);
       var p = node.parentNode;
       if (p) {
         p.replaceChild(newNode, node);
+        removeDOMElement(node);
       }
-      // removeVnode(vnode, node, newNode);
     } else if (vnode !== newVnode) {
       // same type and same key -> update
       newNode = updateVnode(vnode, newVnode, node, parentContext);
@@ -1659,27 +1700,25 @@
     return newNode;
   }
 
-  function disposeVnode(vnode, node) {
-    if (node) {
-      _removeNodes.unshift(node);
-    }
+  function disposeVnode(vnode) {
     if (!vnode) {
+      console.warn("in `disposeVnode` method, vnode is undefined", vnode);
       return;
     }
-    var vtype = vnode.vtype;
-
-    if (!vtype) {
-      vnode._hostNode = null;
-      vnode._hostParent = null;
-    } else if (vtype === 1) {
-      // destroy element
-      disposeElement(vnode, node);
-    } else if (vtype === 2) {
-      // destroy state component
-      disposeComponent(vnode, node);
-    } else if (vtype === 4) {
-      // destroy stateless component
-      disposeStateless(vnode, node);
+    switch (vnode.vtype) {
+      case 1:
+        disposeElement(vnode);
+        break;
+      case 2:
+        disposeComponent(vnode);
+        break;
+      case 4:
+        disposeStateless(vnode);
+        break;
+      default:
+        vnode._hostNode = null;
+        vnode._hostParent = null;
+        break;
     }
   }
   function findDOMNode(componentOrElement) {
@@ -1693,13 +1732,13 @@
     return instanceMap.get(componentOrElement) || null;
   }
 
-  function disposeElement(vnode, node) {
+  function disposeElement(vnode) {
     var props = vnode.props;
 
     var children = props.children;
-    var childNodes = node.childNodes;
+    // var childNodes = node.childNodes;
     for (var i = 0, len = children.length; i < len; i++) {
-      disposeVnode(children[i], childNodes[i]);
+      disposeVnode(children[i]);
     }
     //eslint-disable-next-line
     vnode.ref && vnode.ref(null);
@@ -1707,7 +1746,7 @@
     vnode._hostParent = null;
   }
 
-  function disposeComponent(vnode, node) {
+  function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
       instanceMap["delete"](instance);
@@ -1715,7 +1754,7 @@
         instance.componentWillUnmount();
       }
       vnode._instance = instance._currentElement = instance.props = null;
-      disposeVnode(instance._rendered, node);
+      disposeVnode(instance._rendered);
     }
   }
 
@@ -1772,9 +1811,9 @@
       postUpdateSelectedOptions(nextVnode);
     }
     if (nextVnode.ref) {
-      readyCallbacks.push(function () {
-        nextVnode.ref(nextVnode._hostNode);
-      });
+      // pendingRefs.push(function() {
+      nextVnode.ref(nextVnode._hostNode);
+      // });
     }
     return dom;
   }
@@ -1784,17 +1823,17 @@
     var nextProps = getComponentProps(nextVnode);
     instance.lastProps = instance.props;
     if (instance.componentWillReceiveProps) {
-      switchTransaction(function () {
-        instance.componentWillReceiveProps(nextProps, parentContext);
-      });
+      instance._disabled = true;
+      instance.componentWillReceiveProps(nextProps, parentContext);
+      instance._disabled = false;
     }
 
     instance.props = nextProps;
     instance.context = parentContext;
     if (nextVnode.ref) {
-      readyCallbacks.push(function () {
-        nextVnode.ref(instance);
-      });
+      //  pendingRefs.push(function() {
+      nextVnode.ref(instance);
+      // });
     }
 
     return reRenderComponent(instance);
@@ -1876,7 +1915,7 @@
           continue;
         }
         var _newVnode2 = newVchildren[_j];
-        if (_newVnode2.type === _vnode2.type && _newVnode2.key === _vnode2.key) {
+        if (_newVnode2.type === _vnode2.type && _newVnode2.key === _vnode2.key && _newVnode2._deep === _vnode2._deep) {
           updates[_j] = {
             vnode: _vnode2,
             newVnode: _newVnode2,
@@ -1946,18 +1985,11 @@
   }
 
   function applyDestroy(data) {
-    disposeVnode(data.vnode, data.node);
-
     var node = data.node;
-    if (node && node.parentNode) {
-      node.parentNode.removeChild(node);
+    if (node) {
+      removeDOMElement(node);
     }
-    var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
-    if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
-      recyclables[nodeName].push(node);
-    } else {
-      recyclables[nodeName] = [node];
-    }
+    disposeVnode(data.vnode);
   }
 
   function applyCreate(data) {

@@ -4,12 +4,82 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-<script src="https://cdn.bootcss.com/react/15.5.4/react-dom.js"></script>
-   <!--<script type='text/javascript' src="./dist/polyfill.js"></script>
-    <script type='text/javascript' src="./dist/React.js"></script>-->
-    <script src="./dist/index9.js"></script>
+    <style>
+      .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style> 
+   <!-- <script type='text/javascript' src="./dist/polyfill.js"></script>-->
+  <script type='text/javascript' src="./dist/React.js"></script>
+ <!-- <script src="./test/react-lite.js"></script> 
+ <script src="./test/react.js"></script>
+  <!--   <script src="./test/react-dom.js"></script> -->
+ <script src="./dist/babel.js"></script>
+    <script type='text/babel'>
+//var ReactDOM = React
+    var str = ''
+        class Component1 extends React.Component {
+            componentWillUnmount() {
+                str += 'xxxx'
+            }
+            render() {
+                return <div className="component1">{this.props.children}</div>
+            }
+        }
+        class Component2 extends React.Component {
+            componentWillUnmount() {
+                str += ' yyyy'
+            }
+            render() {
+                return <div className="component2">xxx</div>
+            }
+        }
+        var index = 1
+        function detect(a) {
+            console.log(a, index)
+            if (index === 1) {
+              //  expect(typeof a).toBe('object')
+            } else {
+               // expect(a).toBeNull()
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.handleClick = this.handleClick.bind(this)
+            }
+            handleClick() {
+                index = 0
+                this.forceUpdate()
+                setTimeout(function(){
+                    console.log('应该输出', str)
+                })
+            }
+            render() {
+                return index ?
+                    <div ref='a' onClick={this.handleClick.bind(this)}>
+                        <Component1>
+                            <p ref={detect}>这是子节点</p>
+                            <Component2 />
+                        </Component1>
+                    </div> : <div>文本节点</div>
 
+            }
+        };
+
+       
+      
+       window.onload = function(){
+           ReactDOM.render(<App />, document.getElementById('example'))
+       }
+       </script>
 </head>
 
 <body>

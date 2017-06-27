@@ -670,6 +670,7 @@ describe('node模块', function () {
         }
         var index = 1
         function detect(a) {
+            console.log('detect 方法', index , a)
             if (index === 1) {
                 expect(typeof a).toBe('object')
             } else {
@@ -692,7 +693,7 @@ describe('node模块', function () {
                 return index ?
                     <div ref='a' onClick={this.handleClick.bind(this)}>
                         <Component1>
-                            <p ref={detect}>这是子节点</p>
+                            <p ref={detect}>这是子节点(移除节点测试1)</p>
                             <Component2 />
                         </Component1>
                     </div> : <div>文本节点</div>

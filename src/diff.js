@@ -69,8 +69,7 @@ try {
 }
 
 var instanceMap = new innerMap();
-var pendingCallbacks = [];
-var pendingRefs = [];
+var mounts = [];
 export function render(vnode, container, callback) {
   return updateView(vnode, container, callback, {});
 }
@@ -120,10 +119,38 @@ function updateView(vnode, container, callback, parentContext) {
 
   var instance = vnode._instance;
   container._component = vnode;
-  // delete vnode._prevRendered
   if (callback) {
     callback();
   }
+  var queue = mounts;
+  mounts = [];
+  queue.forEach(function(el) {
+    if (typeof el === "function") {
+      el();
+    } else if (el.componentDidMount) {
+      var instance = el;
+      switchTransaction(function() {
+        var hook = instance.componentDidMount;
+        instance.componentDidMount = NaN;
+        instance._disabled = true;
+        hook.call(instance);
+        instance._disabled = false;
+        if (instance._pendingStates.length)
+          if (!instance._dirty) {
+            instance._dirty = true;
+            setTimeout(function() {
+              instance._dirty = false;
+              reRenderComponent(instance);
+              instance._pendingCallbacks.forEach(function(fn) {
+                fn.call(instance);
+              });
+              instance._pendingCallbacks.length = 0;
+            });
+          }
+      });
+    }
+  });
+  
   return instance || rootNode;
   //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
@@ -145,9 +172,6 @@ function genVnodes(vnode, container, hostParent, parentContext) {
   var rootNode = mountVnode(vnode, parentContext, prevRendered);
   container.appendChild(rootNode);
 
-  if (pendingCallbacks.length + pendingRefs.length) {
-    fireRefsAndCallbacks();
-  }
   return rootNode;
 }
 
@@ -205,7 +229,7 @@ function mountElement(vnode, parentContext, prevRendered) {
   }
 
   if (vnode.ref) {
-    pendingRefs.push(function() {
+    mounts.push(function() {
       vnode.ref(dom);
     });
   }
@@ -244,22 +268,6 @@ function alignChildren(vnode, parentNode, parentContext, childNodes) {
   }
 }
 
-function fireRefsAndCallbacks() {
-  var refs = pendingRefs;
-  pendingRefs = [];
-  for (var i = 0, cb; (cb = refs[i++]); ) {
-    //eslint-disable-next-line
-    cb();
-  }
-  var queue = pendingCallbacks;
-  pendingCallbacks = [];
-  //eslint-disable-next-line
-  for (var i = 0, cb; (cb = queue[i++]); ) {
-    //eslint-disable-next-line
-    cb();
-  }
-}
-
 function mountComponent(vnode, parentContext, prevRendered) {
   let { type } = vnode;
 
@@ -273,9 +281,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.context = instance.context || parentContext;
 
   if (instance.componentWillMount) {
-    switchTransaction(function() {
-      instance.componentWillMount();
-    });
+    instance.componentWillMount();
     instance.state = instance._processPendingState();
   }
 
@@ -288,23 +294,18 @@ function mountComponent(vnode, parentContext, prevRendered) {
   rendered._hostParent = vnode._hostParent;
   instance._hasMount = true;
 
-  if (vnode.ref) {
-    pendingRefs.push(function() {
-      vnode.ref(instance);
-    });
-  }
   let dom = mountVnode(
     rendered,
     getChildContext(instance, parentContext),
     prevRendered
   );
   instanceMap.set(instance, dom);
-  if (instance.componentDidMount) {
-    pendingCallbacks.push(function() {
-      if (instance.componentDidMount) {
-        instance.componentDidMount();
-        delete instance.componentDidMount;
-      }
+  if (instance.componentDidMount || instance._pendingCallbacks.length) {
+    mounts.push(instance);
+  }
+  if (vnode.ref) {
+    mounts.push(function() {
+      vnode.ref(instance);
     });
   }
   vnode._hostNode = dom;
@@ -360,14 +361,13 @@ options.immune.refreshComponent = function refreshComponent(instance) {
   //这里触发视图更新
 
   reRenderComponent(instance);
-  if (transaction.count) {
-    options.updateBatchNumber++;
-    transaction.dequeue();
-  }
+
   instance._forceUpdate = false;
-  if (pendingCallbacks.length + pendingRefs.length) {
-    fireRefsAndCallbacks();
-  }
+
+  instance._pendingCallbacks.forEach(function(fn) {
+    fn.call(instance);
+  });
+  instance._pendingCallbacks.length = 0;
 };
 
 function reRenderComponent(instance) {
@@ -410,10 +410,6 @@ function reRenderComponent(instance) {
 
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
-  if (instance.componentDidMount) {
-    instance.componentDidMount();
-    delete instance.componentDidMount;
-  }
 
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
@@ -559,9 +555,9 @@ function updateElement(lastVnode, nextVnode, dom) {
     postUpdateSelectedOptions(nextVnode);
   }
   if (nextVnode.ref) {
-    pendingRefs.push(function() {
-      nextVnode.ref(nextVnode._hostNode);
-    });
+    // pendingRefs.push(function() {
+    nextVnode.ref(nextVnode._hostNode);
+    // });
   }
   return dom;
 }
@@ -571,17 +567,17 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
   if (instance.componentWillReceiveProps) {
-    switchTransaction(function() {
-      instance.componentWillReceiveProps(nextProps, parentContext);
-    });
+    instance._disabled = true;
+    instance.componentWillReceiveProps(nextProps, parentContext);
+    instance._disabled = false;
   }
 
   instance.props = nextProps;
   instance.context = parentContext;
   if (nextVnode.ref) {
-    pendingRefs.push(function() {
-      nextVnode.ref(instance);
-    });
+    //  pendingRefs.push(function() {
+    nextVnode.ref(instance);
+    // });
   }
 
   return reRenderComponent(instance);
