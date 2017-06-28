@@ -24,6 +24,8 @@ export function extend(obj, props) {
  * @export
  */
 export function noop() {}
+
+
 /**
  * 类继承
  *
@@ -116,7 +118,6 @@ export function camelize(target) {
 }
 
 export var options = {
-  updateBatchNumber: 1,
   immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
 

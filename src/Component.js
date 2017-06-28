@@ -1,6 +1,4 @@
-import { transaction } from "./transaction";
-
-import { extend, noop, isFn, options } from "./util";
+import { extend, isFn, options } from "./util";
 
 /**
  *组件的基因
@@ -30,7 +28,7 @@ Component.prototype = {
     if (!this._hasMount) {
       return;
     }
-    this._pendingForceUpdate = true;
+    this._forceUpdate = true;
     setStateProxy(this, cb);
   },
   _processPendingState: function(props, context) {
@@ -75,8 +73,16 @@ function setStateProxy(instance, cb) {
     return;
   }
   instance._disabled = true;
-  transaction.queueComponent(instance);
-  if (!transaction.isInTransation) {
-    transaction.dequeue();
+  if (instance._forceUpdate) {
+    instance._disabled = false;
+    options.refreshComponent(instance);
+    return;
   }
+  var timeoutID = setTimeout(function() {
+    clearTimeout(timeoutID);
+    if (instance.props) {
+      instance._disabled = false;
+      options.refreshComponent(instance);
+    }
+  }, 0);
 }

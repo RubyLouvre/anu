@@ -1,6 +1,6 @@
-import { transaction } from "./transaction";
+import { scheduler } from "./scheduler";
 import { document, msie } from "./browser";
-import { isFn, options, noop } from "./util";
+import { isFn, noop } from "./util";
 
 var globalEvents = {};
 export var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
@@ -46,18 +46,17 @@ export function dispatchEvent(e) {
   if (hook) {
     hook(e);
   }
-  transaction.isInTransation = true;
+   scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
     triggerEventFlow(paths.reverse(), bubble, e);
   }
-  transaction.isInTransation = false;
-  options.updateBatchNumber++;
-  transaction.dequeue();
+ 
 }
 
 function triggerEventFlow(paths, prop, e) {
+  
   for (var i = paths.length; i--; ) {
     var path = paths[i];
     var fn = path.events[prop];
