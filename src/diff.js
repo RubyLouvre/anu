@@ -122,9 +122,10 @@ export function mountVnode(vnode, parentContext, prevRendered) {
     case 4:
       return mountStateless(vnode, parentContext, prevRendered);
     default:
-      var node = prevRendered && prevRendered.nodeName === vnode.type
-        ? prevRendered
-        : createDOMElement(vnode);
+      var node =
+        prevRendered && prevRendered.nodeName === vnode.type
+          ? prevRendered
+          : createDOMElement(vnode);
       vnode._hostNode = node;
       return node;
   }
@@ -237,7 +238,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
     prevRendered
   );
   instanceMap.set(instance, dom);
-    instance._hasMount = true;
+  instance._hasMount = true;
   if (instance.componentDidMount) {
     scheduler.add(instance);
   } else {
@@ -315,9 +316,14 @@ options.refreshComponent = refreshComponent;
 
 function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
-  if(!instance._fireDidMount){
-    scheduler.run()
-    return node
+  if (!instance._fireDidMount) {
+    scheduler.add(function() {
+      setTimeout(function() {
+        refreshComponent(instance);
+      });
+    });
+    scheduler.run();
+    return node;
   }
   var { props, state, context, lastProps, constructor } = instance;
 
@@ -506,6 +512,7 @@ function updateElement(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = (nextVnode._instance = lastVnode._instance);
+
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
   if (instance.componentWillReceiveProps) {
