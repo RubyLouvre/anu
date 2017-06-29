@@ -1,6 +1,5 @@
-import { transaction } from "./transaction";
-
-import { extend, noop, isFn, options } from "./util";
+import { extend, isFn, options } from "./util";
+import { scheduler } from "./scheduler";
 
 /**
  *组件的基因
@@ -13,32 +12,38 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
-  this._hasMount = false;
-  this._pendingStateQueue = [];
+  this._disableSetState = true;
+  /**
+   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps进行render
+   * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
+   * this._disposed = true 阻止组件在销毁后还进行diff
+   * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
+   * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
+   * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
+   * 此flag是确保 component在update前就要执行componentDidMount
+   */
+  this._pendingCallbacks = [];
+  this._pendingStates = [];
   this.state = {};
 }
 
 Component.prototype = {
   setState(state, cb) {
-    this._pendingStateQueue.push(state);
-
+    this._pendingStates.push(state);
     setStateProxy(this, cb);
   },
 
   forceUpdate(cb) {
-    if(!this._hasMount){
-        return
-      }
-    this._pendingForceUpdate = true;
+    this._forceUpdate = true;
     setStateProxy(this, cb);
   },
   _processPendingState: function(props, context) {
-    var n = this._pendingStateQueue.length;
+    var n = this._pendingStates.length;
     if (n == 0) {
       return this.state;
     }
-    var queue = this._pendingStateQueue.concat();
-    this._pendingStateQueue.length = 0;
+    var queue = this._pendingStates.concat();
+    this._pendingStates.length = 0;
 
     var nextState = extend({}, this.state);
     for (var i = 0; i < n; i++) {
@@ -65,20 +70,29 @@ Component.prototype = {
  */
 
 function setStateProxy(instance, cb) {
-  if (isFn(cb))
-    transaction.queueCallback({
-      //确保回调先进入
-      component: instance,
-      cb: cb
+  if (isFn(cb)) {
+    instance._pendingCallbacks.push(cb);
+  }
+  if (instance._disableSetState === true) {
+    this._forceUpdate = false;
+    //只存储回调，但不会触发组件的更新
+    return;
+  }
+  if (instance._updating) {
+    scheduler.add(function() {
+      options.refreshComponent(instance);
     });
- 
-  if (!instance._updateBatchNumber) {
-    instance._updateBatchNumber = options.updateBatchNumber + 1;
+    return;
   }
-  transaction.queueComponent(instance);
 
-  if (!transaction.isInTransation) {
-    options.updateBatchNumber++;
-    transaction.dequeue();
+  if (instance._forceUpdate) {
+    options.refreshComponent(instance);
+    return;
   }
+  var timeoutID = setTimeout(function() {
+    clearTimeout(timeoutID);
+    //  if (instance.props) {
+    options.refreshComponent(instance);
+    //   }
+  }, 0);
 }

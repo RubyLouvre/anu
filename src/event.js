@@ -1,6 +1,6 @@
-import { transaction } from "./transaction";
+import { scheduler } from "./scheduler";
 import { document, msie } from "./browser";
-import { isFn, options, noop } from "./util";
+import { isFn, noop } from "./util";
 
 var globalEvents = {};
 export var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
@@ -46,15 +46,12 @@ export function dispatchEvent(e) {
   if (hook) {
     hook(e);
   }
-  transaction.isInTransation = true;
+  scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
     triggerEventFlow(paths.reverse(), bubble, e);
   }
-  transaction.isInTransation = false;
-  options.updateBatchNumber++;
-  transaction.dequeue();
 }
 
 function triggerEventFlow(paths, prop, e) {
@@ -121,12 +118,14 @@ eventLowerCache.onWheel = "datasetchanged";
             firefox wheel detlaY 下3 上-3
             IE9-11 wheel deltaY 下40 上-40
             chrome wheel deltaY 下100 上-100 */
-const fixWheelType = "onmousewheel" in document
-  ? "mousewheel"
-  : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
-const fixWheelDelta = fixWheelType === "mousewheel"
-  ? "wheelDetla"
-  : fixWheelType === "wheel" ? "deltaY" : "detail";
+const fixWheelType =
+  "onmousewheel" in document
+    ? "mousewheel"
+    : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
+const fixWheelDelta =
+  fixWheelType === "mousewheel"
+    ? "wheelDetla"
+    : fixWheelType === "wheel" ? "deltaY" : "detail";
 eventHooks.onWheel = function(dom) {
   addEvent(dom, fixWheelType, function(e) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;

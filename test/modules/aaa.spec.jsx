@@ -1,7 +1,7 @@
 import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'dist/React'
 
-describe('node模块', function () {
+describe('临时测试模块', function () {
     this.timeout(200000);
     before(async () => {
         await beforeHook();
@@ -20,7 +20,7 @@ describe('node模块', function () {
 
     })
 
-it('should update state when called from child cWRP', function() {
+it('should update state when called from child cWRP', function(done) {
     const log = [];
     class Parent extends React.Component {
       constructor(){
@@ -52,20 +52,30 @@ it('should update state when called from child cWRP', function() {
     }
     var container = document.createElement('div');
     React.render(<Parent />, container);
-    
-    React.render(<Parent />, container);
-    console.log(log)
-    expect(log).toEqual([
-      'parent render one',
-      'child render one',
-      'parent render one',
-      'child componentWillReceiveProps one',
-      'child componentWillReceiveProps done one',
-      'child render one',
-      'parent render two',
-      'child render two',
-    ]);
+    //setTimeout(function(){
+      
+      React.render(<Parent />, container);
+     
+      console.log(log)
+      expect(log).toEqual([
+        'parent render one',
+        'child render one',
+        'parent render one',
+        'child componentWillReceiveProps one',
+        'child componentWillReceiveProps done one',
+        'child render one',
+        'parent render two',
+        'child render two',
+      ]);
+
+      done()
+     
+  //  })
+   
   });
+
+
+
 /**
  * 'parent render one', 
  * 'child render one',

@@ -552,4 +552,47 @@ describe("组件相关", function() {
     expect(s.state.aaa).toBe(333);
     expect(div.textContent || div.innerText).toBe("333");
   });
+
+   it('componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素', () => {
+    var assertions = 0;
+
+    class Inner extends React.Component {
+      render() {
+        return <span />;
+      }
+
+      componentDidMount() {
+        console.log(ReactDOM.findDOMNode(this),'111')
+        expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+        assertions++;
+      }
+
+      componentWillUnmount() {
+        console.log(ReactDOM.findDOMNode(this),'222')
+        expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+        assertions++;
+      }
+    }
+
+    class Wrapper extends React.Component {
+      render() {
+        return this.props.showInner ? <Inner /> : null;
+      }
+    }
+
+    var el = document.createElement('div');
+    var component;
+
+    component = React.render(<Wrapper showInner={true} />, el);
+    expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+
+    component = React.render(<Wrapper showInner={false} />, el);
+    console.log(ReactDOM.findDOMNode(component))
+    expect(ReactDOM.findDOMNode(component).tagName).toBe(undefined);
+
+    component = React.render(<Wrapper showInner={true} />, el);
+    expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+
+    expect(assertions).toBe(3);
+  });
 });

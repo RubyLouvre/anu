@@ -27,4 +27,4 @@ require('./modules/redux.spec.jsx')
 
 
 
-//require('./modules/aaa.spec.jsx')
+require('./modules/aaa.spec.jsx')

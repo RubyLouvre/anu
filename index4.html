@@ -33,6 +33,8 @@
       componentWillMount() {
         this.setState({
           aaa: 333
+        }, function(){
+          console.log('---')
         });
       }
       render() {
