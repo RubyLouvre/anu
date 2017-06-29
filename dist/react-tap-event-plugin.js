@@ -9,20 +9,20 @@ var {
   dispatchEvent
 } = React.eventSystem;
 //==============isXXX系列
-function isEndish(topLevelType) {
+function isEndish(eventType) {
   return (
-    topLevelType === "mouseup" ||
-    topLevelType === "touchend" ||
-    topLevelType === "touchcancel"
+    eventType === "mouseup" ||
+    eventType === "touchend" ||
+    eventType === "touchcancel"
   );
 }
 
-function isMoveish(topLevelType) {
-  return topLevelType === "mousemove" || topLevelType === "touchmove";
+function isMoveish(eventType) {
+  return eventType === "mousemove" || eventType === "touchmove";
 }
 
-function isStartish(topLevelType) {
-  return topLevelType === "mousedown" || topLevelType === "touchstart";
+function isStartish(eventType) {
+  return eventType === "mousedown" || eventType === "touchstart";
 }
 
 //=============
@@ -38,33 +38,16 @@ var Axis = {
 
 // fbjs/lib/TouchEventUtils
 var TouchEventUtils = {
-  /**
-	   * Utility function for common case of extracting out the primary touch from a
-	   * touch event.
-	   * - `touchEnd` events usually do not have the `touches` property.
-	   *   http://stackoverflow.com/questions/3666929/
-	   *   mobile-sarai-touchend-event-not-firing-when-last-touch-is-removed
-	   *
-	   * @param {Event} nativeEvent Native event that may or may not be a touch.
-	   * @return {TouchesObject?} an object with pageX and pageY or null.
-	   */
   extractSingleTouch: function(nativeEvent) {
-    var touches = nativeEvent.touches;
-    var changedTouches = nativeEvent.changedTouches;
-    var hasTouches = touches && touches.length > 0;
-    var hasChangedTouches = changedTouches && changedTouches.length > 0;
+    var touches = nativeEvent.touches || [];
+    var changedTouches = nativeEvent.changedTouches || [];
 
-    return !hasTouches && hasChangedTouches
-      ? changedTouches[0]
-      : hasTouches ? touches[0] : nativeEvent;
+    return changedTouches[0] || touches[0] || nativeEvent;
   }
 };
 function getAxisCoordOfEvent(axis, nativeEvent) {
   var singleTouch = TouchEventUtils.extractSingleTouch(nativeEvent);
-  if (singleTouch) {
-    return singleTouch[axis.page];
-  }
-  return nativeEvent[axis.page];
+  return singleTouch[axis.page];
 }
 
 function getDistance(coords, nativeEvent) {
@@ -76,6 +59,9 @@ function getDistance(coords, nativeEvent) {
   );
 }
 
+function now(){
+  return new Date - 0
+}
 function shouldRejectClick() {}
 
 eventLowerCache["touchtap"] = "touchTap";
@@ -85,7 +71,7 @@ eventPropHooks.touchtap = function(event) {
     return false;
   }
 
-  if (isTouch(topLevelType)) {
+  if (isTouch) {
     lastTouchTime = now();
   } else {
     if (shouldRejectClick(lastTouchTime, now())) {
@@ -94,23 +80,24 @@ eventPropHooks.touchtap = function(event) {
   }
 
   var distance = getDistance(startCoords, event);
+  var returnFalse = true;
   if (isEndish(type) && distance < tapMoveThreshold) {
     event.type = "touchTap";
   } else {
-    event = false;
+    returnFalse = false;
   }
   if (isStartish(type)) {
     startCoords.x = getAxisCoordOfEvent(Axis.x, event);
     startCoords.y = getAxisCoordOfEvent(Axis.y, event);
-  } else if (isEndish(topLevelType)) {
+  } else if (isEndish(type)) {
     startCoords.x = 0;
     startCoords.y = 0;
   }
-  return event;
+  return returnFalse && event;
 };
 
 export function injectTapEventPlugin() {
-  if (alreadyInjected) return;
+  if (alreadyInjected || typeof window !== 'object') return;
   alreadyInjected = true;
   var events = isTouch
     ? ["touchstart", "touchmove", "touchend", "touchcancel"]
