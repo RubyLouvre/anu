@@ -34,15 +34,15 @@ events.forEach(function(type){
     })
 })
 
-function isEndish(topLevelType) {
-  return topLevelType === 'mouseup' || topLevelType === 'touchend' || topLevelType === 'touchcancel';
+function isEndish(eventType) {
+  return  eventType === 'mouseup' || eventType === 'touchend' || eventType === 'touchcancel';
 }
 
-function isMoveish(topLevelType) {
-  return topLevelType === 'mousemove' || topLevelType === 'touchmove';
+function isMoveish(eventType) {
+  return eventType === 'mousemove' || eventType === 'touchmove';
 }
-function isStartish(topLevelType) {
-  return topLevelType === 'mousedown' || topLevelType === 'touchstart';
+function isStartish(eventType) {
+  return eventType === 'mousedown' || eventType === 'touchstart';
 }
 
 var tapMoveThreshold = 10;

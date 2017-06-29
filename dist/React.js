@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-29T13:00:26.153Z
+ * by 司徒正美 Copyright 2017-06-29T13:12:47.513Z
  */
 
 (function (global, factory) {
@@ -864,6 +864,9 @@
       return "[object Event]";
     }
   };
+  Object.freeze || (Object.freeze = function (a) {
+    return a;
+  });
 
 var eventSystem = Object.freeze({
     eventCamelCache: eventCamelCache,
