@@ -26,9 +26,7 @@ import { scheduler } from "./scheduler";
  *
  */
 export function render(vnode, container, callback) {
-
   return updateView(vnode, container, callback, {});
-
 }
 /**
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
@@ -232,7 +230,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
   // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
   let rendered = safeRenderComponent(instance, type);
-  
+
   instance._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
 
@@ -304,12 +302,12 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
 function disposeStateless(vnode) {
   vnode._disposed = true;
   disposeVnode(vnode._instance._rendered);
-  vnode._instance = null
+  vnode._instance = null;
 }
 
 function refreshComponent(instance) {
   //这里触发视图更新
-  
+
   reRenderComponent(instance);
 
   instance._forceUpdate = false;
@@ -324,7 +322,7 @@ options.refreshComponent = refreshComponent;
 
 function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
-  
+
   if (!instance._hasDidMount) {
     scheduler.add(function() {
       setTimeout(function() {
@@ -361,7 +359,7 @@ function reRenderComponent(instance) {
   instance.props = nextProps;
   instance.state = nextState;
   delete instance._updateBatchNumber;
-   instance._updating = true
+  instance._updating = true;
   var rendered = safeRenderComponent(instance, constructor);
 
   var childContext = getChildContext(instance, context);
@@ -371,7 +369,7 @@ function reRenderComponent(instance) {
   var dom = alignVnodes(lastRendered, rendered, node, childContext);
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
-  instance._updating = false
+  instance._updating = false;
 
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
@@ -461,7 +459,6 @@ function disposeComponent(vnode) {
   vnode._disposed = true;
   var instance = vnode._instance;
   if (instance) {
-   
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
     }
@@ -525,23 +522,23 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
-   
+
   if (instance.componentWillReceiveProps) {
-   instance._disableSetState = true;
+    instance._disableSetState = true;
     instance.componentWillReceiveProps(nextProps, parentContext);
-   instance._disableSetState = false;
+    instance._disableSetState = false;
   }
- 
+
   instance.props = nextProps;
   instance.context = parentContext;
   if (nextVnode.ref) {
     nextVnode.ref(instance);
   }
-try{
-  return reRenderComponent(instance);
-}catch(e){
-  scheduler.run()
-}
+  try {
+    return reRenderComponent(instance);
+  } catch (e) {
+    scheduler.run();
+  }
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
@@ -623,7 +620,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
       if (
         !vnode._disposed &&
         newVnode.type === vnode.type &&
-        newVnode.key === vnode.key 
+        newVnode.key === vnode.key
       ) {
         updates[j] = {
           vnode: vnode,
