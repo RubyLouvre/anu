@@ -68,12 +68,12 @@ function flattenChildren(stack) {
   while (stack.length) {
     //比较巧妙地判定是否为子数组
     if ((child = stack.pop()) && child.pop !== undefined) {
-      deep = child._deep ? child._deep + 1 : 1;
+   //   deep = child._deep ? child._deep + 1 : 1;
       for (let i = 0; i < child.length; i++) {
         var el = (stack[stack.length] = child[i]);
-        if (el) {
-          el._deep = deep;
-        }
+      //  if (el) {
+      //    el._deep = deep;
+      //  }
       }
     } else {
       // eslint-disable-next-line

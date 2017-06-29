@@ -20,33 +20,48 @@
 
 <script type='text/javascript' src="./dist/React.js"></script>
    
-  <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+  <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
 
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
-    var s
-   var str = ''
-
+        var index = 1, s
         class App extends React.Component {
-            constructor(props) {
-                super(props)
-            }
-            componentWillMount(){
-                console.log(this.a)
-            }
-        componentDidMount(){
-                console.log(this.a)
+
+            handleClick() {
+                index = 0
+                console.log('============')
+                this.forceUpdate()
+                console.log('-----------')
+
             }
             render() {
-                return  <div ref={(dom)=>{ this.a = dom}} >
-                        cccc
-                    </div> 
+                return <div onClick={this.handleClick.bind(this)}>
+                    {index ? <A /> : <B />}</div>
             }
-        };
+        }
+        class A extends React.Component {
+
+            render() {
+                return <strong>111</strong>
+            }
+        }
+
+        class B extends React.Component {
+            render() {
+                return <em>222</em>
+            }
+        }
 
     window.onload = function(){
-        s = ReactDOM.render( <App />, document.getElementById('example'))
+        var div = document.getElementById('example')
+        s = ReactDOM.render( <App />, div)
+
+        setTimeout(function(){
+            console.log(div.getElementsByTagName('strong').length, 'strong')
+              s.handleClick()
+               console.log(div.getElementsByTagName('em').length, 'em')
+        })
     }
     </script>
 </head>

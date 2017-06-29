@@ -1,4 +1,5 @@
 import { extend, isFn, options } from "./util";
+import { scheduler } from "./scheduler";
 
 /**
  *组件的基因
@@ -11,7 +12,16 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
-  this._hasMount = false;
+  this._disableSetState = true;
+  /**
+   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps进行render
+   * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
+   * this._disposed = true 阻止组件在销毁后还进行diff
+   * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
+   * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
+   * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
+   * 此flag是确保 component在update前就要执行componentDidMount
+   */
   this._pendingCallbacks = [];
   this._pendingStates = [];
   this.state = {};
@@ -20,14 +30,10 @@ export function Component(props, context) {
 Component.prototype = {
   setState(state, cb) {
     this._pendingStates.push(state);
-
     setStateProxy(this, cb);
   },
 
   forceUpdate(cb) {
-    if (!this._hasMount) {
-      return;
-    }
     this._forceUpdate = true;
     setStateProxy(this, cb);
   },
@@ -67,22 +73,26 @@ function setStateProxy(instance, cb) {
   if (isFn(cb)) {
     instance._pendingCallbacks.push(cb);
   }
-  if (!instance._hasMount || instance._disabled === true) {
-    //如果是componentWillMount钩子中使用了setState 或forceUpdate，那么不应该放进列队
-    //如果是componentWillReceiveProps钩子中使用了setState 或forceUpdate，那么也不应该放进列队
+  if (instance._disableSetState === true) {
+    this._forceUpdate = false;
+    //只存储回调，但不会触发组件的更新
     return;
   }
-  instance._disabled = true;
+  if (instance._updating) {
+    scheduler.add(function() {
+      options.refreshComponent(instance);
+    });
+    return;
+  }
+
   if (instance._forceUpdate) {
-    instance._disabled = false;
     options.refreshComponent(instance);
     return;
   }
   var timeoutID = setTimeout(function() {
     clearTimeout(timeoutID);
-    if (instance.props) {
-      instance._disabled = false;
-      options.refreshComponent(instance);
-    }
+    //  if (instance.props) {
+    options.refreshComponent(instance);
+    //   }
   }, 0);
 }

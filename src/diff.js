@@ -26,7 +26,9 @@ import { scheduler } from "./scheduler";
  *
  */
 export function render(vnode, container, callback) {
+
   return updateView(vnode, container, callback, {});
+
 }
 /**
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
@@ -87,6 +89,7 @@ function updateView(vnode, container, callback, parentContext) {
   if (callback) {
     callback();
   }
+
   scheduler.run();
 
   return instance || rootNode;
@@ -229,6 +232,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
   // '#comment', text: 'empty'} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
   let rendered = safeRenderComponent(instance, type);
+  
   instance._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
 
@@ -238,11 +242,12 @@ function mountComponent(vnode, parentContext, prevRendered) {
     prevRendered
   );
   instanceMap.set(instance, dom);
-  instance._hasMount = true;
+  instance._disableSetState = false;
   if (instance.componentDidMount) {
     scheduler.add(instance);
   } else {
-    instance._fireDidMount = true;
+    instance._hasDidMount = true;
+    //componentWillMount钩子会产生一些回调
     if (instance._pendingCallbacks.length) {
       scheduler.add(instance);
     }
@@ -303,7 +308,9 @@ function disposeStateless(vnode) {
 
 function refreshComponent(instance) {
   //这里触发视图更新
+  
   reRenderComponent(instance);
+
   instance._forceUpdate = false;
   instance._pendingCallbacks.forEach(function(fn) {
     fn.call(instance);
@@ -316,7 +323,8 @@ options.refreshComponent = refreshComponent;
 
 function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
-  if (!instance._fireDidMount) {
+  
+  if (!instance._hasDidMount) {
     scheduler.add(function() {
       setTimeout(function() {
         refreshComponent(instance);
@@ -352,16 +360,17 @@ function reRenderComponent(instance) {
   instance.props = nextProps;
   instance.state = nextState;
   delete instance._updateBatchNumber;
-
+   instance._updating = true
   var rendered = safeRenderComponent(instance, constructor);
+
   var childContext = getChildContext(instance, context);
   instance._rendered = rendered;
   rendered._hostParent = hostParent;
 
   var dom = alignVnodes(lastRendered, rendered, node, childContext);
-
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
+  instance._updating = false
 
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
@@ -448,14 +457,15 @@ function disposeElement(vnode) {
 function disposeComponent(vnode) {
   if (!vnode._instance) return;
   var instance = vnode._instance;
-  instance._disabled = true;
+  instance._disableSetState = true;
   vnode._disposed = true;
   var instance = vnode._instance;
   if (instance) {
-    instanceMap["delete"](instance);
+   
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
     }
+    instanceMap["delete"](instance);
     vnode._instance = instance._currentElement = instance.props = null;
     disposeVnode(instance._rendered);
   }
@@ -515,19 +525,23 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
+   
   if (instance.componentWillReceiveProps) {
-    instance._disabled = true;
+   instance._disableSetState = true;
     instance.componentWillReceiveProps(nextProps, parentContext);
-    instance._disabled = false;
+   instance._disableSetState = false;
   }
-
+ 
   instance.props = nextProps;
   instance.context = parentContext;
   if (nextVnode.ref) {
     nextVnode.ref(instance);
   }
-
+try{
   return reRenderComponent(instance);
+}catch(e){
+  scheduler.run()
+}
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
@@ -609,8 +623,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
       if (
         !vnode._disposed &&
         newVnode.type === vnode.type &&
-        newVnode.key === vnode.key &&
-        newVnode._deep === vnode._deep
+        newVnode.key === vnode.key 
       ) {
         updates[j] = {
           vnode: vnode,

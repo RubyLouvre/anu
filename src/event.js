@@ -46,17 +46,15 @@ export function dispatchEvent(e) {
   if (hook) {
     hook(e);
   }
-   scheduler.run();
+  scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
     triggerEventFlow(paths.reverse(), bubble, e);
   }
- 
 }
 
 function triggerEventFlow(paths, prop, e) {
-  
   for (var i = paths.length; i--; ) {
     var path = paths[i];
     var fn = path.events[prop];
@@ -120,12 +118,14 @@ eventLowerCache.onWheel = "datasetchanged";
             firefox wheel detlaY 下3 上-3
             IE9-11 wheel deltaY 下40 上-40
             chrome wheel deltaY 下100 上-100 */
-const fixWheelType = "onmousewheel" in document
-  ? "mousewheel"
-  : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
-const fixWheelDelta = fixWheelType === "mousewheel"
-  ? "wheelDetla"
-  : fixWheelType === "wheel" ? "deltaY" : "detail";
+const fixWheelType =
+  "onmousewheel" in document
+    ? "mousewheel"
+    : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
+const fixWheelDelta =
+  fixWheelType === "mousewheel"
+    ? "wheelDetla"
+    : fixWheelType === "wheel" ? "deltaY" : "detail";
 eventHooks.onWheel = function(dom) {
   addEvent(dom, fixWheelType, function(e) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
