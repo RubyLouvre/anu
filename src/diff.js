@@ -304,6 +304,7 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
 function disposeStateless(vnode) {
   vnode._disposed = true;
   disposeVnode(vnode._instance._rendered);
+  vnode._instance = null
 }
 
 function refreshComponent(instance) {
@@ -457,7 +458,6 @@ function disposeElement(vnode) {
 function disposeComponent(vnode) {
   if (!vnode._instance) return;
   var instance = vnode._instance;
-  instance._disableSetState = true;
   vnode._disposed = true;
   var instance = vnode._instance;
   if (instance) {

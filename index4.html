@@ -31,10 +31,12 @@
         };
       }
       componentWillMount() {
-        this.setState({
-          aaa: 333
-        }, function(){
-          console.log('---')
+        this.state = {
+            aaa: 333
+          }
+        this.forceUpdate( function(){
+          
+          console.log('forceUpdate')
         });
       }
       render() {

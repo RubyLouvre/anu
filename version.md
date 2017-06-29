@@ -11,15 +11,16 @@
 
 
 ##1.0.3
-1. 实现focus, blur, wheel的兼容处理，
-2. 实现unstable_renderSubtreeIntoContainer方法
-3. 实现isValidElement方法
+
+1. 实现unstable_renderSubtreeIntoContainer, findDOMNode, isValidElement方法
+2. 实现对Children的完整支持 (only, count, forEach,map, toArray)
+3. 实现focus, blur, wheel的兼容处理，
 4. 修正更新组件时，没有添加defaultProps的BUG
 5. 修正diffProps一些错别字
 6. 实现事件对象pagex,pageY,which,currentTarget的兼容
 7. 修正用户在componentWillMount时调用 setState引发的BUG
 8. cloneElement应该能处理数组并取出其第一个元素进制复制 
-9. 添加Children.forEach, Children.map的支持
+9. 取消事务机制，改成调度任务
 
 
 

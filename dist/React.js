@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-29T07:54:49.702Z
+ * by 司徒正美 Copyright 2017-06-29T08:21:26.477Z
  */
 
 (function (global, factory) {
@@ -399,6 +399,7 @@
      * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
      * this._disposed = true 阻止组件在销毁后还进行diff
      * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
+     * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
      * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
      * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
      * 此flag是确保 component在update前就要执行componentDidMount
@@ -469,9 +470,7 @@
     }
     var timeoutID = setTimeout(function () {
       clearTimeout(timeoutID);
-      //  if (instance.props) {
       options.refreshComponent(instance);
-      //   }
     }, 0);
   }
 
@@ -1629,6 +1628,7 @@
   function disposeStateless(vnode) {
     vnode._disposed = true;
     disposeVnode(vnode._instance._rendered);
+    vnode._instance = null;
   }
 
   function refreshComponent(instance) {
@@ -1778,7 +1778,6 @@
   function disposeComponent(vnode) {
     if (!vnode._instance) return;
     var instance = vnode._instance;
-    instance._disableSetState = true;
     vnode._disposed = true;
     var instance = vnode._instance;
     if (instance) {
