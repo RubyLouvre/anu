@@ -208,3 +208,6 @@ var eventProto = (SyntheticEvent.prototype = {
     return "[object Event]";
   }
 });
+Object.freeze || (Object.freeze = function(a){
+   return a
+})
