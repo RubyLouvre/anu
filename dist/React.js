@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-29T12:56:05.139Z
+ * by 司徒正美 Copyright 2017-06-29T13:00:26.153Z
  */
 
 (function (global, factory) {
@@ -718,7 +718,6 @@
 
     var hook = eventPropHooks[__type__];
     if (hook && false === hook(e)) {
-      console.log('返回', bubble);
       return;
     }
     scheduler.run();

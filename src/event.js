@@ -23,10 +23,12 @@ export var eventLowerCache = {
 export function isEventName(name) {
   return /^on[A-Z]/.test(name);
 }
+export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
   var __type__ = e.__type__ || e.type;
   e = new SyntheticEvent(e);
+  
   var target = e.target;
   var paths = [];
   do {
@@ -43,8 +45,8 @@ export function dispatchEvent(e) {
   var captured = "on" + capitalized + "Capture";
 
   var hook = eventPropHooks[__type__];
-  if (hook) {
-    hook(e);
+  if (hook && false === hook(e)) {
+    return;
   }
   scheduler.run();
   triggerEventFlow(paths, captured, e);
@@ -110,8 +112,6 @@ addEvent.fire = function fire(dom, name, opts) {
   dom.dispatchEvent(hackEvent);
 };
 
-let inMobile = "ontouchstart" in document;
-
 eventLowerCache.onWheel = "datasetchanged";
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -160,7 +160,7 @@ eventHooks.onBlur = function(dom) {
   );
 };
 
-if (inMobile) {
+if (isTouch) {
   eventHooks.onClick = noop;
   eventHooks.onClickCapture = noop;
 }

@@ -5,6 +5,7 @@ import { PureComponent } from "./PureComponent";
 import { Component } from "./Component";
 import { Children } from "./Children";
 import { win as window } from "./browser";
+import  * as eventSystem  from "./event";
 
 import { options } from "./util";
 import { PropTypes } from "./PropTypes";
@@ -28,7 +29,8 @@ var React = {
   createElement,
   cloneElement,
   PureComponent,
-  Component
+  Component,
+  eventSystem
 };
 
 window.ReactDOM = React;
