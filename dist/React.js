@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-29T13:26:07.496Z
+ * by 司徒正美 Copyright 2017-06-30T06:56:18.222Z
  */
 
 (function (global, factory) {
@@ -1383,7 +1383,6 @@ var eventSystem = Object.freeze({
    *
    */
   function render(vnode, container, callback) {
-
     return updateView(vnode, container, callback, {});
   }
   /**
@@ -1798,7 +1797,6 @@ var eventSystem = Object.freeze({
     vnode._disposed = true;
     var instance = vnode._instance;
     if (instance) {
-
       if (instance.componentWillUnmount) {
         instance.componentWillUnmount();
       }
