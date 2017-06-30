@@ -40,7 +40,7 @@ Component.prototype = {
   },
   _processPendingState: function(props, context) {
     var n = this._pendingStates.length;
-    if (n == 0) {
+    if (n === 0) {
       return this.state;
     }
     var queue = this._pendingStates.concat();

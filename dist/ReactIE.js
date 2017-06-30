@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T09:23:17.619Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T12:18:06.095Z
  */
 
 (function (global, factory) {
@@ -421,7 +421,7 @@
 
     _processPendingState: function _processPendingState(props, context) {
       var n = this._pendingStates.length;
-      if (n == 0) {
+      if (n === 0) {
         return this.state;
       }
       var queue = this._pendingStates.concat();
@@ -714,7 +714,7 @@
       var val = newStyle[name];
       if (oldStyle[name] !== val) {
         name = cssName(name, dom);
-        if (val === void 0 || val === null || val === false) {
+        if (val !== 0 && !val) {
           val = ""; //清除样式
         } else if (rnumber.test(val) && !cssNumber[name]) {
           val = val + "px"; //添加单位
@@ -723,9 +723,9 @@
       }
     }
     // 如果旧样式存在，但新样式已经去掉
-    for (var name in oldStyle) {
-      if (!(name in newStyle)) {
-        dom.style[name] = ""; //清除样式
+    for (var _name in oldStyle) {
+      if (!(_name in newStyle)) {
+        dom.style[_name] = ""; //清除样式
       }
     }
   }

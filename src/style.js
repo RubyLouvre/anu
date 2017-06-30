@@ -13,11 +13,11 @@ export function patchStyle(dom, oldStyle, newStyle) {
     return;
   }
 
-  for (var name in newStyle) {
+  for (let name in newStyle) {
     let val = newStyle[name];
     if (oldStyle[name] !== val) {
       name = cssName(name, dom);
-      if (val === void 0 || val === null || val === false) {
+      if (val !== 0 && !val) {
         val = ""; //清除样式
       } else if (rnumber.test(val) && !cssNumber[name]) {
         val = val + "px"; //添加单位
@@ -26,7 +26,7 @@ export function patchStyle(dom, oldStyle, newStyle) {
     }
   }
   // 如果旧样式存在，但新样式已经去掉
-  for (var name in oldStyle) {
+  for (let name in oldStyle) {
     if (!(name in newStyle)) {
       dom.style[name] = ""; //清除样式
     }
