@@ -81,7 +81,9 @@ if (msie < 9) {
   Object.assign(
     eventPropHooks,
     oneObject("keyup, keydown, keypress", function(event) {
+      /* istanbul ignore next  */
       if (event.which == null && event.type.indexOf("key") === 0) {
+        /* istanbul ignore next  */
         event.which = event.charCode != null ? event.charCode : event.keyCode;
       }
     })

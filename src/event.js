@@ -28,7 +28,26 @@ export var isTouch = "ontouchstart" in document;
 export function dispatchEvent(e) {
   var __type__ = e.__type__ || e.type;
   e = new SyntheticEvent(e);
-  
+
+  var hook = eventPropHooks[__type__];
+  if (hook && false === hook(e)) {
+    return;
+  }
+
+  var paths = collectPaths(e)
+  var type = eventCamelCache[__type__] || __type__;
+  var capitalized = capitalize(type);
+  var bubble = "on" + capitalized;
+  var captured = "on" + capitalized + "Capture";
+  scheduler.run();
+  triggerEventFlow(paths, captured, e);
+
+  if (!e._stopPropagation) {
+    triggerEventFlow(paths.reverse(), bubble, e);
+  }
+}
+
+function collectPaths(e) {
   var target = e.target;
   var paths = [];
   do {
@@ -38,23 +57,9 @@ export function dispatchEvent(e) {
     }
   } while ((target = target.parentNode) && target.nodeType === 1);
   // target --> parentNode --> body --> html
-  var type = eventCamelCache[__type__] || __type__;
-
-  var capitalized = capitalize(type);
-  var bubble = "on" + capitalized;
-  var captured = "on" + capitalized + "Capture";
-
-  var hook = eventPropHooks[__type__];
-  if (hook && false === hook(e)) {
-    return;
-  }
-  scheduler.run();
-  triggerEventFlow(paths, captured, e);
-
-  if (!e._stopPropagation) {
-    triggerEventFlow(paths.reverse(), bubble, e);
-  }
+  return paths;
 }
+
 
 function triggerEventFlow(paths, prop, e) {
   for (var i = paths.length; i--; ) {
@@ -80,6 +85,7 @@ export function addGlobalEventListener(name) {
     addEvent(document, name, dispatchEvent);
   }
 }
+
 export function addEvent(el, type, fn) {
   if (el.addEventListener) {
     el.addEventListener(type, fn);
@@ -118,10 +124,11 @@ eventLowerCache.onWheel = "datasetchanged";
             firefox wheel detlaY 下3 上-3
             IE9-11 wheel deltaY 下40 上-40
             chrome wheel deltaY 下100 上-100 */
+/* istanbul ignore next  */
 const fixWheelType =
   "onmousewheel" in document
     ? "mousewheel"
-    : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
+    : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
 const fixWheelDelta =
   fixWheelType === "mousewheel"
     ? "wheelDetla"
@@ -188,7 +195,7 @@ var eventProto = (SyntheticEvent.prototype = {
   preventDefault: function() {
     var e = this.originalEvent || {};
     e.returnValue = this.returnValue = false;
-    if (e.preventDefault) {
+    if (e.preventDefault && !event.defaultPrevented) {
       e.preventDefault();
     }
   },
@@ -208,6 +215,8 @@ var eventProto = (SyntheticEvent.prototype = {
     return "[object Event]";
   }
 });
-Object.freeze || (Object.freeze = function(a){
-   return a
-})
+/* istanbul ignore next  */
+Object.freeze ||
+  (Object.freeze = function(a) {
+    return a;
+  });

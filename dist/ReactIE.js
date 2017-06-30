@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T07:07:29.851Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T07:41:56.830Z
  */
 
 (function (global, factory) {
@@ -784,6 +784,25 @@
     var __type__ = e.__type__ || e.type;
     e = new SyntheticEvent(e);
 
+    var hook = eventPropHooks[__type__];
+    if (hook && false === hook(e)) {
+      return;
+    }
+
+    var paths = collectPaths(e);
+    var type = eventCamelCache[__type__] || __type__;
+    var capitalized = capitalize(type);
+    var bubble = "on" + capitalized;
+    var captured = "on" + capitalized + "Capture";
+    scheduler.run();
+    triggerEventFlow(paths, captured, e);
+
+    if (!e._stopPropagation) {
+      triggerEventFlow(paths.reverse(), bubble, e);
+    }
+  }
+
+  function collectPaths(e) {
     var target = e.target;
     var paths = [];
     do {
@@ -793,22 +812,7 @@
       }
     } while ((target = target.parentNode) && target.nodeType === 1);
     // target --> parentNode --> body --> html
-    var type = eventCamelCache[__type__] || __type__;
-
-    var capitalized = capitalize(type);
-    var bubble = "on" + capitalized;
-    var captured = "on" + capitalized + "Capture";
-
-    var hook = eventPropHooks[__type__];
-    if (hook && false === hook(e)) {
-      return;
-    }
-    scheduler.run();
-    triggerEventFlow(paths, captured, e);
-
-    if (!e._stopPropagation) {
-      triggerEventFlow(paths.reverse(), bubble, e);
-    }
+    return paths;
   }
 
   function triggerEventFlow(paths, prop, e) {
@@ -835,6 +839,7 @@
       addEvent(document, name, dispatchEvent);
     }
   }
+
   function addEvent(el, type, fn) {
     if (el.addEventListener) {
       el.addEventListener(type, fn);
@@ -873,7 +878,8 @@
               firefox wheel detlaY 下3 上-3
               IE9-11 wheel deltaY 下40 上-40
               chrome wheel deltaY 下100 上-100 */
-  var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 0 ? "wheel" : "DOMMouseScroll";
+  /* istanbul ignore next  */
+  var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
   var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
   eventHooks.onWheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
@@ -927,7 +933,7 @@
     preventDefault: function preventDefault() {
       var e = this.originalEvent || {};
       e.returnValue = this.returnValue = false;
-      if (e.preventDefault) {
+      if (e.preventDefault && !event.defaultPrevented) {
         e.preventDefault();
       }
     },
@@ -947,6 +953,7 @@
       return "[object Event]";
     }
   };
+  /* istanbul ignore next  */
   Object.freeze || (Object.freeze = function (a) {
     return a;
   });
@@ -2082,7 +2089,9 @@
     }));
 
     Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
+      /* istanbul ignore next  */
       if (event.which == null && event.type.indexOf("key") === 0) {
+        /* istanbul ignore next  */
         event.which = event.charCode != null ? event.charCode : event.keyCode;
       }
     }));
