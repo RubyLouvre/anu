@@ -27,11 +27,11 @@ anu完全兼容官方的chrome开发者工具
             background: lawngreen;
         }
     </style>
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./dist/devtools.js"></script>
-    <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./test/babel.js"></script>
+    <script src="./dist/React.js"></script>
+    <script src="./libs/devtools.js"></script>
+    <script src="./libs/redux.js"></script>
+    <script src="./libs/react-redux.js"></script>
+    <script src="./libs/babel.js"></script>
     <script type='text/babel'>
       
         class App extends React.Component {

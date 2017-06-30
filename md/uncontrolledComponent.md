@@ -21,7 +21,7 @@ value, checked是表单元素两个很特殊的属性，决定着元素的外观
     <meta name="viewport" content="width=device-width">
    <script type='text/javascript' src="./dist/React.js"></script>
 
-    <script src="./test/babel.js"></script>
+    <script src="./libs/babel.js"></script>
     <script type='text/babel'>
 var textarea, radio, text, select, checkbox
 window.onload = function(){

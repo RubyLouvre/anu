@@ -25,14 +25,14 @@ anu可以完美与react-router一起使用。
         }
     </style>
   <!--<script type='text/javascript' src="./dist/React.js"></script>-->
- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
-     <script src="./test/redux.js"></script>
+    <script src="./lins/react.js"></script>
+    <script src="./libs/react-dom.js"></script>
+    <script src="./libs/redux.js"></script>
    <!--  <script src="https://cdn.bootcss.com/react-router/3.0.0-beta.1/ReactRouter.js"></script> -->
-     <script src="./ReactRouter.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./test/ReactRouterRedux.js"></script>
-    <script src="./test/babel.js"></script>
+    <script src="./ReactRouter.js"></script>
+    <script src="./libs/react-redux.js"></script>
+    <script src="./libs/ReactRouterRedux.js"></script>
+    <script src="./libs/babel.js"></script>
     <script type='text/babel'>
 var s
 
@@ -141,7 +141,6 @@ window.onload = function(){
             reducer
         )
         const history = syncHistoryWithStore(browserHistory, store)
-console.log(history)
         ReactDOM.render(
             <Provider store={store}>
                 <div>

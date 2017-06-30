@@ -19,7 +19,7 @@
 
 在React.createClass时代，组件的回调函数都是自动bind this，保持它们总是指向实例本身。但是在es6时，则没有这个免费服务了。
 
-你可以通过｀babel-plugin-transform-class-properties`这插件， 实现在class块中直接使用箭头函数。众所周知， 箭头函数是autobind this的
+你可以通过**babel-plugin-transform-class-properties**这插件， 实现在class块中直接使用箭头函数。众所周知， 箭头函数是autobind this的
 
 ```
 let {Component, PropTypes} = React;
@@ -40,6 +40,8 @@ export default class MyComponent extends Component {
 ```
 
 此外你也可以使用autobind-decorator这个模块，直接用es7的注解 搞定这个问题
+
+anujs在0.0.3版，可以通过React.eventSystem来访问各种事件API
 
 [https://github.com/andreypopp/autobind-decorator](https://github.com/andreypopp/autobind-decorator)
 
@@ -66,4 +68,55 @@ method() // returns 42
 // Also usable on the class to bind all methods
 @autobind
 class Component { }
+```
+
+ 如果大家想在移动端使用触屏事件，可以尝试使用** libs/injectTapEventPlugin.js **
+
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    </style>
+     <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./libs/injectTapEventPlugin.js"></script>
+     <script type='text/javascript' src="./libs/babel.js"></script>
+  <script type='text/babel'>
+  injectTapEventPlugin() //必须执行这个
+  window.onload = function(){
+  
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 1111
+        };
+      }
+      componentWillMount() {
+        this.state = {
+            aaa: 333
+          }
+        this.forceUpdate();
+      }
+      render() {
+        return <p onTouchTap={(e)=>{ console.log('用户触发',e.type)}}>{this.state.aaa}</p>;
+      }
+    }
+    var s = ReactDOM.render(<App />, document.getElementById('example'));
+  }
+  </script>
+
+</head>
+
+<body>
+
+    <div>开发者工具</div>
+    <div id='example'></div>
+
+</body>
+
+</html>
+
 ```

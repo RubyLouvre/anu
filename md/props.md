@@ -70,7 +70,7 @@ ReactDOM.render(
     <meta name="viewport" content="width=device-width">
    
     <script src='./dist/React.js'></script>
-    <script src="./test/babel.js"></script>
+    <script src="./libs/babel.js"></script>
     <script type='text/babel'>
   
        class Parent extends React.Component {

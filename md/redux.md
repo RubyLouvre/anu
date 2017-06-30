@@ -11,9 +11,9 @@ anu可以直接与redux, react-redux一起使用。
     <meta name="viewport" content="width=device-width">
  <script type='text/javascript' src="./dist/React.js"></script>
 
-    <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./test/babel.js"></script>
+    <script src="./libs/redux.js"></script>
+    <script src="./libs/react-redux.js"></script>
+    <script src="./libs/babel.js"></script>
     <script type='text/babel'>
    
     var combineReducers = Redux.combineReducers
