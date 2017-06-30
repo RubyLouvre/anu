@@ -1,4 +1,6 @@
-import React from "anujs";
+if(typeof React !== 'object' ||  !React.eventSystem){
+  throw '请先加载anujs'
+}
 
 var alreadyInjected = false;
 var {
@@ -59,8 +61,8 @@ function getDistance(coords, nativeEvent) {
   );
 }
 
-function now(){
-  return new Date - 0
+function now() {
+  return new Date() - 0;
 }
 function shouldRejectClick() {}
 
@@ -96,8 +98,8 @@ eventPropHooks.touchtap = function(event) {
   return returnFalse && event;
 };
 
-export function injectTapEventPlugin() {
-  if (alreadyInjected || typeof window !== 'object') return;
+export default function injectTapEventPlugin() {
+  if (alreadyInjected || typeof window !== "object") return;
   alreadyInjected = true;
   var events = isTouch
     ? ["touchstart", "touchmove", "touchend", "touchcancel"]
