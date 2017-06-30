@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-30T06:56:18.222Z
+ * by 司徒正美 Copyright 2017-06-30T07:07:13.169Z
  */
 
 (function (global, factory) {
@@ -2045,7 +2045,7 @@ var eventSystem = Object.freeze({
     options: options,
     unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
     isValidElement: isValidElement,
-    version: "1.0.2",
+    version: "1.0.3",
     createElement: createElement,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
