@@ -1,22 +1,26 @@
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global.injectTapEventPlugin = factory());
-}(this, function () {
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-  if ((typeof React === 'undefined' ? 'undefined' : _typeof(React)) !== 'object' || !React.eventSystem) {
-    throw '请先加载anujs';
+(function(root, factory) {
+  
+  if (typeof define === 'function' && define.amd) {
+    define(['react'], function(React) {
+      root.injectTapEventPlugin = factory(root, React);
+    });
+} else if (typeof exports !== 'undefined') {
+    var React = require('react');
+    factory(root, React);
+} else {
+    root.injectTapEventPlugin = factory(root, root.React||root.ReactDOM);
   }
-
+}(this, function(window, React) {
   var alreadyInjected = false;
-  var _React$eventSystem = React.eventSystem;
-  var isTouch = _React$eventSystem.isTouch;
-  var eventPropHooks = _React$eventSystem.eventPropHooks;
-  var addEvent = _React$eventSystem.addEvent;
-  var eventLowerCache = _React$eventSystem.eventLowerCache;
-  var dispatchEvent = _React$eventSystem.dispatchEvent;
+  var eventSystem = React.eventSystem;
+  if(!eventSystem){
+     throw new Error('请确保你加载的是anujs')
+  }
+  var isTouch = eventSystem.isTouch;
+  var eventPropHooks = eventSystem.eventPropHooks;
+  var addEvent = eventSystem.addEvent;
+  var eventLowerCache = eventSystem.eventLowerCache;
+  var dispatchEvent = eventSystem.dispatchEvent;
   //==============isXXX系列
 
   function isEndish(eventType) {
@@ -93,20 +97,19 @@
     }
     return returnFalse && event;
   };
+ var events = isTouch ? ["touchstart", "touchmove", "touchend", "touchcancel"] : ["mousedown", "mousemove", "mouseup"];
 
   function injectTapEventPlugin() {
-    if (alreadyInjected || (typeof window === 'undefined' ? 'undefined' : _typeof(window)) !== "object") return;
+    if (alreadyInjected || typeof window !== "object") return;
     alreadyInjected = true;
-    var events = isTouch ? ["touchstart", "touchmove", "touchend", "touchcancel"] : ["mousedown", "mousemove", "mouseup"];
     events.forEach(function (type) {
       addEvent(window, type, function (e) {
         e.__type__ = "touchtap";
         dispatchEvent(e);
       });
     });
-
-    // touchTap
   }
+  injectTapEventPlugin()
 
   return injectTapEventPlugin;
 
