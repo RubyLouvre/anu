@@ -18,6 +18,7 @@ exclude_paths:
 - node_modules/**/*
 - test/**/*
 - dist/**/*
+- libs/**/*
 - perf/**/*
 - dist/**/*
 - ssr/**/*
