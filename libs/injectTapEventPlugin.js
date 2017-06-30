@@ -100,10 +100,10 @@
  var events = isTouch ? ["touchstart", "touchmove", "touchend", "touchcancel"] : ["mousedown", "mousemove", "mouseup"];
 
   function injectTapEventPlugin() {
-    if (alreadyInjected || typeof window !== "object") return;
+    if (alreadyInjected) return;
     alreadyInjected = true;
     events.forEach(function (type) {
-      addEvent(window, type, function (e) {
+      addEvent(document, type, function (e) {
         e.__type__ = "touchtap";
         dispatchEvent(e);
       });

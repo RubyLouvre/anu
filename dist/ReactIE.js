@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T07:41:56.830Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T08:20:27.680Z
  */
 
 (function (global, factory) {
@@ -933,7 +933,7 @@
     preventDefault: function preventDefault() {
       var e = this.originalEvent || {};
       e.returnValue = this.returnValue = false;
-      if (e.preventDefault && !event.defaultPrevented) {
+      if (e.preventDefault) {
         e.preventDefault();
       }
     },

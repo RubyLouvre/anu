@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-30T07:41:35.846Z
+ * by 司徒正美 Copyright 2017-06-30T08:20:19.734Z
  */
 
 (function (global, factory) {
@@ -850,7 +850,7 @@
     preventDefault: function preventDefault() {
       var e = this.originalEvent || {};
       e.returnValue = this.returnValue = false;
-      if (e.preventDefault && !event.defaultPrevented) {
+      if (e.preventDefault) {
         e.preventDefault();
       }
     },

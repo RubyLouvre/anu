@@ -195,7 +195,7 @@ var eventProto = (SyntheticEvent.prototype = {
   preventDefault: function() {
     var e = this.originalEvent || {};
     e.returnValue = this.returnValue = false;
-    if (e.preventDefault && !event.defaultPrevented) {
+    if (e.preventDefault) {
       e.preventDefault();
     }
   },
