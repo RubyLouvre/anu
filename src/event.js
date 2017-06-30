@@ -27,14 +27,14 @@ export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
   var __type__ = e.__type__ || e.type;
-  e = new SyntheticEvent(e);
+  e = new SyntheticEvent(e)
 
   var hook = eventPropHooks[__type__];
   if (hook && false === hook(e)) {
     return;
   }
 
-  var paths = collectPaths(e)
+  var paths = collectPaths(e);
   var type = eventCamelCache[__type__] || __type__;
   var capitalized = capitalize(type);
   var bubble = "on" + capitalized;
@@ -46,6 +46,7 @@ export function dispatchEvent(e) {
     triggerEventFlow(paths.reverse(), bubble, e);
   }
 }
+
 
 function collectPaths(e) {
   var target = e.target;
@@ -59,7 +60,6 @@ function collectPaths(e) {
   // target --> parentNode --> body --> html
   return paths;
 }
-
 
 function triggerEventFlow(paths, prop, e) {
   for (var i = paths.length; i--; ) {
@@ -136,12 +136,10 @@ const fixWheelDelta =
 eventHooks.onWheel = function(dom) {
   addEvent(dom, fixWheelType, function(e) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-    var wheelDelta = ~~dom._ms_wheel_ + delta;
-    dom._ms_wheel_ = wheelDelta;
+    var deltaY = ~~dom._ms_wheel_ + delta;
+    dom._ms_wheel_ = deltaY;
     addEvent.fire(dom, "wheel", {
-      detail: wheelDelta,
-      wheelDeltaY: wheelDelta,
-      wheelDelta: wheelDelta
+      deltaY: deltaY
     });
   });
 };

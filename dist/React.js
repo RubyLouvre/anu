@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-06-30T08:20:19.734Z
+ * by 司徒正美 Copyright 2017-06-30T09:23:12.814Z
  */
 
 (function (global, factory) {
@@ -801,12 +801,10 @@
   eventHooks.onWheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
       var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-      var wheelDelta = ~~dom._ms_wheel_ + delta;
-      dom._ms_wheel_ = wheelDelta;
+      var deltaY = ~~dom._ms_wheel_ + delta;
+      dom._ms_wheel_ = deltaY;
       addEvent.fire(dom, "wheel", {
-        detail: wheelDelta,
-        wheelDeltaY: wheelDelta,
-        wheelDelta: wheelDelta
+        deltaY: deltaY
       });
     });
   };
