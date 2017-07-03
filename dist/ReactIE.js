@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-06-30T12:18:06.095Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-03T03:41:33.419Z
  */
 
 (function (global, factory) {
@@ -719,7 +719,13 @@
         } else if (rnumber.test(val) && !cssNumber[name]) {
           val = val + "px"; //添加单位
         }
-        dom.style[name] = val; //应用样式
+        try {
+          //node.style.width = NaN;node.style.width = 'xxxxxxx';
+          //node.style.width = undefine 在旧式IE下会抛异常
+          dom.style[name] = val; //应用样式
+        } catch (e) {
+          console.log("dom.style[" + name + "] = " + val + "throw error");
+        }
       }
     }
     // 如果旧样式存在，但新样式已经去掉

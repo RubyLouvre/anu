@@ -88,7 +88,8 @@ export function addGlobalEventListener(name) {
 
 export function addEvent(el, type, fn) {
   if (el.addEventListener) {
-    el.addEventListener(type, fn);
+    //Unable to preventDefault inside passive event listener due to target being treated as passive
+    el.addEventListener(type, fn, supportsPassive ? { passive: true } : false);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
   }
@@ -107,6 +108,15 @@ export function getBrowserName(onStr) {
   eventCamelCache[lower] = camel;
   return lower;
 }
+var supportsPassive = false;
+try {
+  var opts = Object.defineProperty({}, 'passive', {
+    get: function() {
+      supportsPassive = true;
+    }
+  });
+  window.addEventListener("test", null, opts);
+} catch (e) {}
 
 addEvent.fire = function fire(dom, name, opts) {
   var hackEvent = document.createEvent("Events");

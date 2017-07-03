@@ -1,16 +1,16 @@
-(function(root, factory) {
-  
+(function(global, factory) {
+  //https://github.com/jquery/jquery/blob/master/src/wrapper.js
   if (typeof define === 'function' && define.amd) {
     define(['react'], function(React) {
-      root.injectTapEventPlugin = factory(root, React);
+      global.injectTapEventPlugin = factory(global, React);
     });
 } else if (typeof exports !== 'undefined') {
     var React = require('react');
-    factory(root, React);
+    factory(global, React);
 } else {
-    root.injectTapEventPlugin = factory(root, root.React||root.ReactDOM);
+    global.injectTapEventPlugin = factory(global, global.React || global.ReactDOM);
   }
-}(this, function(window, React) {
+}(typeof window !== "undefined" ? window : this, function(window, React) {
   var alreadyInjected = false;
   var eventSystem = React.eventSystem;
   if(!eventSystem){
@@ -37,8 +37,8 @@
   var lastTouchTime = null;
 
   var Axis = {
-    x: { page: "pageX", client: "clientX", envScroll: "currentPageScrollLeft" },
-    y: { page: "pageY", client: "clientY", envScroll: "currentPageScrollTop" }
+    x: { page: "pageX" },
+    y: { page: "pageY" }
   };
 
   // fbjs/lib/TouchEventUtils
@@ -100,10 +100,10 @@
  var events = isTouch ? ["touchstart", "touchmove", "touchend", "touchcancel"] : ["mousedown", "mousemove", "mouseup"];
 
   function injectTapEventPlugin() {
-    if (alreadyInjected) return;
+    if (alreadyInjected ) return;
     alreadyInjected = true;
     events.forEach(function (type) {
-      addEvent(document, type, function (e) {
+      addEvent(window.document, type, function (e) {
         e.__type__ = "touchtap";
         dispatchEvent(e);
       });
