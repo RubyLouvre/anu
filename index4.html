@@ -32,17 +32,22 @@
           aaa: 1111
         };
       }
+      onChange(){
+         this.setState({
+           aaa: new Date - 0
+         })
+      }
       componentWillMount() {
         this.state = {
             aaa: 333
-          }
+        }
         this.forceUpdate( function(){
           
           console.log('forceUpdate')
         });
       }
       render() {
-        return <p onTouchTap={(e)=>{ console.log('用户触发',e.type)}}>{this.state.aaa}</p>;
+        return <p onTouchTap={this.onChange.bind(this)}>{this.state.aaa}</p>;
       }
     }
 

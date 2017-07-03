@@ -240,6 +240,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
     prevRendered
   );
   instanceMap.set(instance, dom);
+  vnode._hostNode = dom;
   instance._disableSetState = false;
   if (instance.componentDidMount) {
     scheduler.add(instance);
@@ -541,6 +542,169 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   }
 }
 
+function patchVnode(vnode, nextVnode, parentContext) {
+  var dom = vnode._hostNode;
+  if (vnode !== nextVnode) {
+    // same type and same key -> update
+    if (!vnode.vtype) {
+      if (vnode.text !== nextVnode.text) {
+        dom.nodeValue = nextVnode.text;
+        nextVnode._hostNode = dom
+      }
+    } else if (vnode.vtype === 1) {
+      updateElement(vnode, nextVnode, dom, parentContext);
+    } else if (vnode.vtype === 4) {
+      dom = updateStateless(vnode, nextVnode, dom, parentContext);
+    } else if (vnode.vtype === 2) {
+      dom = updateComponent(vnode, nextVnode, dom, parentContext);
+    }
+  }
+  return dom;
+}
+
+function sameVnode(a, b) {
+  return a.type === b.type && a.key === b.key;
+}
+function updateChildren(vnode, newVnode, parentNode, parentContext) {
+  let oldChildren = vnode.props.children;
+  let newChildren = newVnode.props.children;
+  let oldStartIdx = 0;
+  let newStartIdx = 0;
+  let oldEndIdx = oldChildren.length - 1;
+  let oldStartVnode = oldChildren[0];
+  let oldEndVnode = oldChildren[oldEndIdx];
+  let newEndIdx = newChildren.length - 1;
+  let newStartVnode = newChildren[0];
+  let newEndVnode = newChildren[newEndIdx];
+  let keyHash;
+  let idxInOld;
+  let elmToMove;
+  let before;
+
+  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+    if (oldStartVnode == null) {
+      oldStartVnode = oldChildren[++oldStartIdx]; // Vnode might have been moved left
+    } else if (oldEndVnode == null) {
+      oldEndVnode = oldChildren[--oldEndIdx];
+    } else if (newStartVnode == null) {
+      newStartVnode = newChildren[++newStartIdx];
+    } else if (newEndVnode == null) {
+      newEndVnode = newChildren[--newEndIdx];
+    } else if (sameVnode(oldStartVnode, newStartVnode)) {
+      patchVnode(oldStartVnode, newStartVnode, parentContext);
+
+      oldStartVnode = oldChildren[++oldStartIdx];
+      newStartVnode = newChildren[++newStartIdx];
+    } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      patchVnode(oldEndVnode, newEndVnode, parentContext);
+      oldEndVnode = oldChildren[--oldEndIdx];
+      newEndVnode = newChildren[--newEndIdx];
+    } else if (sameVnode(oldStartVnode, newEndVnode)) {
+      // Vnode moved right
+      patchVnode(oldStartVnode, newEndVnode, parentContext);
+      parentNode.insertBefore(
+        oldStartVnode._hostNode,
+        nextSibling(oldEndVnode._hostNode)
+      );
+      oldStartVnode = oldChildren[++oldStartIdx];
+      newEndVnode = newChildren[--newEndIdx];
+    } else if (sameVnode(oldEndVnode, newStartVnode)) {
+      // Vnode moved left
+      patchVnode(oldEndVnode, newStartVnode, parentContext);
+      parentNode.insertBefore(oldEndVnode._hostNode, oldStartVnode._hostNode);
+
+      oldEndVnode = oldChildren[--oldEndIdx];
+      newStartVnode = newChildren[++newStartIdx];
+    } else {
+      if (keyHash === undefined) {
+        keyHash = createKeyToOldIdx(oldChildren, oldStartIdx, oldEndIdx);
+      }
+      idxInOld = keyHash[newStartVnode.key];
+      if (!idxInOld && indexOnOld !== 0) {
+        // New element
+        parentNode.insertBefore(
+          parentNode,
+          mountVnode(newStartVnode, parentContext),
+          oldStartVnode._hostNode
+        );
+        newStartVnode = newChildren[++newStartIdx];
+      } else {
+        elmToMove = oldChildren[idxInOld];
+        if (elmToMove.type !== newStartVnode.type) {
+          parentNode.insertBefore(
+            mountVnode(newStartVnode, parentContext),
+            oldStartVnode._hostNode
+          );
+        } else {
+          patchVnode(elmToMove, newStartVnode);
+          oldChildren[idxInOld] = undefined;
+          parentNode.insertBefore(elmToMove._hostNode, oldStartVnode._hostNode);
+        }
+        newStartVnode = newChildren[++newStartIdx];
+      }
+    }
+  }
+  if (oldStartIdx > oldEndIdx) {
+    before =
+      newChildren[newEndIdx + 1] == null
+        ? null
+        : newChildren[newEndIdx + 1]._hostNode;
+    addVnodes(
+      parentNode,
+      before,
+      newChildren,
+      newStartIdx,
+      newEndIdx,
+      parentContext
+    );
+  } else if (newStartIdx > newEndIdx) {
+    removeVnodes(parentNode, oldChildren, oldStartIdx, oldEndIdx);
+  }
+}
+function createKeyToOldIdx(children, beginIdx, endIdx) {
+    var i, map = {}, key, ch;
+    for (i = beginIdx; i <= endIdx; ++i) {
+        ch = children[i];
+        if (ch != null) {
+            key = ch.key;
+            if (key !== undefined)
+                map[key] = i;
+        }
+    }
+    return map;
+}
+function removeVnodes(parentElm, vnodes, startIdx, endIdx) {
+  for (; startIdx <= endIdx; ++startIdx) {
+    var vnode = vnodes[startIdx];
+    if (ch != null) {
+      parentNode.removeChild(vnode._hostNode);
+      disposeVnode(vnode);
+    }
+  }
+}
+
+function nextSibling(node) {
+  return node.nextSibling;
+}
+
+function addVnodes(
+  parentNode,
+  before,
+  vnodes,
+  startIdx,
+  endIdx,
+  parentContext
+) {
+  for (; startIdx <= endIdx; ++startIdx) {
+    var ch = vnodes[startIdx];
+    if (ch != null) {
+      parentNode.insertBefore(mountVnode(ch, parentContext), before);
+    }
+  }
+}
+/*
+
+/*
 function updateChildren(vnode, newVnode, node, parentContext) {
   let patches = {
     removes: [],
@@ -708,3 +872,4 @@ function applyCreate(data) {
   let node = mountVnode(data.vnode, data.parentContext);
   data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
+*/
