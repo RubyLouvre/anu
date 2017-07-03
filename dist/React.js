@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-03T13:44:51.795Z
+ * by 司徒正美 Copyright 2017-07-03T15:24:47.546Z
  */
 
 (function (global, factory) {
@@ -1606,6 +1606,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
 
   var dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
   instanceMap.set(instance, dom);
+  vnode._hostNode = dom;
   instance._disableSetState = false;
   if (instance.componentDidMount) {
     scheduler.add(instance);
@@ -1712,8 +1713,8 @@ function reRenderComponent(instance) {
   var nextState = instance._processPendingState(props, context);
 
   instance.props = lastProps;
-  // delete instance.lastProps
-  // 生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
+  // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
+  // nextContext)
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
     return node; //注意
   }
@@ -1925,12 +1926,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   if (childrenLen === 0) {
     if (newVchildrenLen > 0) {
       for (var i = 0; i < newVchildrenLen; i++) {
-        patches.creates.push({
-          vnode: newVchildren[i],
-          parentNode: node,
-          parentContext: parentContext,
-          index: i
-        });
+        patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
       }
     }
     return;
@@ -1999,12 +1995,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   for (var _i4 = 0; _i4 < newVchildrenLen; _i4++) {
     var item = updates[_i4];
     if (!item) {
-      creates.push({
-        vnode: newVchildren[_i4],
-        parentNode: node,
-        parentContext: parentContext,
-        index: _i4
-      });
+      creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
     } else if (item.vnode.vtype === 1) {
       diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
     }
