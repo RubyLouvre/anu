@@ -2,7 +2,7 @@
   "name": "anujs",
   "version": "1.0.3",
   "description": "a mini React-like framework",
-  "main": "dist/index.js",
+  "main": "dist/React.js",
   "scripts": {
     "sele": "selenium-standalone start",
     "test": "echo \"Error: no test specified\" && exit 1",
