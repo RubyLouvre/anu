@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-04T13:26:35.982Z
+ * by 司徒正美 Copyright 2017-07-04T14:52:27.736Z
  */
 
 (function (global, factory) {
@@ -1401,6 +1401,67 @@ try {
 
 var instanceMap = new innerMap();
 
+function disposeVnode(vnode) {
+    if (!vnode) {
+        console.warn("in `disposeVnode` method, vnode is undefined", vnode);
+        return;
+    }
+    switch (vnode.vtype) {
+        case 1:
+            disposeElement(vnode);
+            break;
+        case 2:
+            disposeComponent(vnode);
+            break;
+        case 4:
+            disposeStateless(vnode);
+            break;
+        default:
+            vnode._disposed = true;
+            vnode._hostNode = null;
+            vnode._hostParent = null;
+            break;
+    }
+}
+function disposeStateless(vnode) {
+    vnode._disposed = true;
+    disposeVnode(vnode._instance._rendered);
+    vnode._instance = null;
+}
+
+function disposeElement(vnode) {
+    var props = vnode.props;
+
+    var children = props.children;
+    // var childNodes = node.childNodes;
+    for (var i = 0, len = children.length; i < len; i++) {
+        disposeVnode(children[i]);
+    }
+    //eslint-disable-next-line
+    vnode.ref && vnode.ref(null);
+    vnode._hostNode = null;
+    vnode._hostParent = null;
+}
+
+function disposeComponent(vnode) {
+    var instance = vnode._instance;
+    if (instance) {
+        vnode._disposed = true;
+        instance._disableSetState = true;
+        if (instance.componentWillUnmount) {
+            instance.componentWillUnmount();
+        }
+        //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
+        var node = instanceMap.get(instance);
+        if (node) {
+            node._component = null;
+            instanceMap["delete"](instance);
+        }
+        vnode._instance = instance._currentElement = null;
+        disposeVnode(instance._rendered);
+    }
+}
+
 /**
  * ReactDOM.render 方法
  *
@@ -1666,12 +1727,6 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
   return dom;
 }
 
-function disposeStateless(vnode) {
-  vnode._disposed = true;
-  disposeVnode(vnode._instance._rendered);
-  vnode._instance = null;
-}
-
 function refreshComponent(instance) {
   //这里触发视图更新
 
@@ -1769,28 +1824,6 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
   return newNode;
 }
 
-function disposeVnode(vnode) {
-  if (!vnode) {
-    console.warn("in `disposeVnode` method, vnode is undefined", vnode);
-    return;
-  }
-  switch (vnode.vtype) {
-    case 1:
-      disposeElement(vnode);
-      break;
-    case 2:
-      disposeComponent(vnode);
-      break;
-    case 4:
-      disposeStateless(vnode);
-      break;
-    default:
-      vnode._disposed = true;
-      vnode._hostNode = null;
-      vnode._hostParent = null;
-      break;
-  }
-}
 function findDOMNode(componentOrElement) {
   if (componentOrElement == null) {
     return null;
@@ -1800,44 +1833,6 @@ function findDOMNode(componentOrElement) {
   }
 
   return instanceMap.get(componentOrElement) || null;
-}
-
-function disposeElement(vnode) {
-  var props = vnode.props;
-
-  var children = props.children;
-  // var childNodes = node.childNodes;
-  for (var i = 0, len = children.length; i < len; i++) {
-    disposeVnode(children[i]);
-  }
-  //eslint-disable-next-line
-  vnode.ref && vnode.ref(null);
-  vnode._hostNode = null;
-  vnode._hostParent = null;
-}
-
-function disposeComponent(vnode) {
-  if (!vnode._instance) return;
-  var instance = vnode._instance;
-  vnode._disposed = true;
-  var instance = vnode._instance;
-  if (instance) {
-    if (instance.componentWillUnmount) {
-      instance.componentWillUnmount();
-    }
-    //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用
-    //findDOMNode方法
-    instance._disableSetState = true;
-    instanceMap["delete"](instance);
-    var node = instanceMap.get(instance);
-    if (node) {
-      node._component = null;
-      instanceMap["delete"](instance);
-    }
-    //不应该将instance.props置为null
-    vnode._instance = instance._currentElement = null;
-    disposeVnode(instance._rendered);
-  }
 }
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
