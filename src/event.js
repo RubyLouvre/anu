@@ -89,7 +89,7 @@ export function addGlobalEventListener(name) {
 export function addEvent(el, type, fn) {
   if (el.addEventListener) {
     //Unable to preventDefault inside passive event listener due to target being treated as passive
-    el.addEventListener(type, fn, supportsPassive ? { passive: true } : false);
+    el.addEventListener(type, fn, supportsPassive ? { passive: false } : false);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
   }
@@ -115,7 +115,7 @@ try {
       supportsPassive = true;
     }
   });
-  window.addEventListener("test", null, opts);
+  document.addEventListener("test", null, opts);
 } catch (e) {}
 
 addEvent.fire = function fire(dom, name, opts) {

@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-04T07:55:14.322Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-04T08:21:19.256Z
  */
 
 (function (global, factory) {
@@ -852,7 +852,7 @@
   function addEvent(el, type, fn) {
     if (el.addEventListener) {
       //Unable to preventDefault inside passive event listener due to target being treated as passive
-      el.addEventListener(type, fn, supportsPassive ? { passive: true } : false);
+      el.addEventListener(type, fn, supportsPassive ? { passive: false } : false);
     } else if (el.attachEvent) {
       el.attachEvent("on" + type, fn);
     }
@@ -878,7 +878,7 @@
         supportsPassive = true;
       }
     });
-    window.addEventListener("test", null, opts);
+    document.addEventListener("test", null, opts);
   } catch (e) {}
 
   addEvent.fire = function fire(dom, name, opts) {
