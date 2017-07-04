@@ -26,16 +26,17 @@ export var scheduler = {
         instance._updating = false;
         instance._hasDidMount = true;
 
-        if (instance._pendingStates.length)
-          if (!instance._asyncUpdating) {
-            instance._asyncUpdating = true;
-            var timeoutID = setTimeout(function() {
-              clearTimeout(timeoutID);
-              instance._asyncUpdating = false;
+        if (instance._pendingStates.length && !instance._asyncUpdating) {
+          instance._asyncUpdating = true;
+          var timeoutID = setTimeout(function() {
+            clearTimeout(timeoutID);
+            instance._asyncUpdating = false;
+            if (!instance._disableSetState) {
               options.refreshComponent(instance);
-              //处理componentDidMount产生的回调
-            }, 0);
-          }
+            }
+            //处理componentDidMount产生的回调
+          }, 0);
+        }
       }
     });
   }

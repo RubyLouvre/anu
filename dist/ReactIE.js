@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-03T03:41:33.419Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-04T07:42:08.513Z
  */
 
 (function (global, factory) {
@@ -368,12 +368,14 @@
           instance._updating = false;
           instance._hasDidMount = true;
 
-          if (instance._pendingStates.length) if (!instance._asyncUpdating) {
+          if (instance._pendingStates.length && !instance._asyncUpdating) {
             instance._asyncUpdating = true;
             var timeoutID = setTimeout(function () {
               clearTimeout(timeoutID);
               instance._asyncUpdating = false;
-              options.refreshComponent(instance);
+              if (!instance._disableSetState) {
+                options.refreshComponent(instance);
+              }
               //处理componentDidMount产生的回调
             }, 0);
           }
@@ -592,6 +594,7 @@
     fragment.appendChild(node);
     fragment.removeChild(node);
     var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
+    node.__events = null;
     if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
       recyclables[nodeName].push(node);
     } else {
@@ -848,7 +851,8 @@
 
   function addEvent(el, type, fn) {
     if (el.addEventListener) {
-      el.addEventListener(type, fn);
+      //Unable to preventDefault inside passive event listener due to target being treated as passive
+      el.addEventListener(type, fn, supportsPassive ? { passive: true } : false);
     } else if (el.attachEvent) {
       el.attachEvent("on" + type, fn);
     }
@@ -867,6 +871,15 @@
     eventCamelCache[lower] = camel;
     return lower;
   }
+  var supportsPassive = false;
+  try {
+    var opts = Object.defineProperty({}, 'passive', {
+      get: function get() {
+        supportsPassive = true;
+      }
+    });
+    window.addEventListener("test", null, opts);
+  } catch (e) {}
 
   addEvent.fire = function fire(dom, name, opts) {
     var hackEvent = document.createEvent("Events");
@@ -1405,7 +1418,8 @@
       throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
     }
     if (!container || container.nodeType !== 1) {
-      throw new Error(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9");
+      console.warn(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9");
+      return;
     }
     var prevVnode = container._component,
         rootNode,
@@ -1579,6 +1593,7 @@
 
     var dom = mountVnode(rendered, getChildContext(instance, parentContext), prevRendered);
     instanceMap.set(instance, dom);
+    vnode._hostNode = dom;
     instance._disableSetState = false;
     if (instance.componentDidMount) {
       scheduler.add(instance);
@@ -1685,8 +1700,8 @@
     var nextState = instance._processPendingState(props, context);
 
     instance.props = lastProps;
-    // delete instance.lastProps
-    // 生命周期 shouldComponentUpdate(nextProps, nextState, nextContext)
+    // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
+    // nextContext)
     if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
       return node; //注意
     }
@@ -1797,8 +1812,17 @@
       if (instance.componentWillUnmount) {
         instance.componentWillUnmount();
       }
+      //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用
+      //findDOMNode方法
+      instance._disableSetState = true;
       instanceMap["delete"](instance);
-      vnode._instance = instance._currentElement = instance.props = null;
+      var node = instanceMap.get(instance);
+      if (node) {
+        node._component = null;
+        instanceMap["delete"](instance);
+      }
+      //不应该将instance.props置为null
+      vnode._instance = instance._currentElement = null;
       disposeVnode(instance._rendered);
     }
   }
