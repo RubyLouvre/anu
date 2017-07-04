@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-04T07:41:41.967Z
+ * by 司徒正美 Copyright 2017-07-04T07:54:07.308Z
  */
 
 (function (global, factory) {
@@ -1753,7 +1753,7 @@ var eventSystem = Object.freeze({
     if (newVnode == null) {
       removeDOMElement(node);
       disposeVnode(vnode);
-    } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key && vnode._deep === newVnode._deep)) {
+    } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key)) {
       //replace
       disposeVnode(vnode);
       newNode = mountVnode(newVnode, parentContext);

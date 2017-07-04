@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-04T07:42:08.513Z
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-04T07:55:14.322Z
  */
 
 (function (global, factory) {
@@ -1739,7 +1739,7 @@
     if (newVnode == null) {
       removeDOMElement(node);
       disposeVnode(vnode);
-    } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key && vnode._deep === newVnode._deep)) {
+    } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key)) {
       //replace
       disposeVnode(vnode);
       newNode = mountVnode(newVnode, parentContext);

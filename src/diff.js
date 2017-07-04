@@ -389,8 +389,7 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
   } else if (
     !(
       vnode.type == newVnode.type &&
-      vnode.key === newVnode.key &&
-      vnode._deep === newVnode._deep
+      vnode.key === newVnode.key 
     )
   ) {
     //replace
