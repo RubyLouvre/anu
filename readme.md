@@ -18,6 +18,7 @@ npm install anujs
 ```
 
 读作 安努 ，苏美尔的主神，开天辟地。一个无痛替换线上React的迷你React框架
+QQ交流学习群：  370262116
 
 特点：
 
@@ -29,6 +30,8 @@ npm install anujs
 6. 直接与[react-redux, react-router-dom, react-router-redux](https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90)混用
 7. 支持[后端渲染](https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
 8. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
+
+手脚架  https://github.com/Levan-Du/anu-cli
 
 
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
