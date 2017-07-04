@@ -22,6 +22,11 @@
 8. cloneElement应该能处理数组并取出其第一个元素进制复制 
 9. 取消事务机制，改成调度任务
 
+##1.0.4
 
+1. 修正 unable to preventdefault inside passive event listener due to target 的错误处理，
+   这是chrome51+, 为了提高性能，默认对touchmove/mousemove/mousewheel事件禁用preventDefault方法引发的问题
+2. 销毁元素节点，彻底清除_component与__events引用
+3. 取消refs.xxx = null 操作，确保组件销毁后可能还进行动画，这时会有DOM操作不会报错
 
 
