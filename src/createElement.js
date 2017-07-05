@@ -1,4 +1,4 @@
-import { __push } from "./util";
+import {__push} from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 
@@ -50,9 +50,13 @@ export function createElement(type, configs) {
   var children = flattenChildren(stack);
 
   if (typeof type === "function") {
-    vtype = type.prototype && type.prototype.render ? 2 : 4;
-    if (children.length) props.children = children;
-  } else {
+    vtype = type.prototype && type.prototype.render
+      ? 2
+      : 4;
+    if (children.length) 
+      props.children = children;
+    }
+  else {
     props.children = children;
   }
 
@@ -68,21 +72,14 @@ function flattenChildren(stack) {
   while (stack.length) {
     //比较巧妙地判定是否为子数组
     if ((child = stack.pop()) && child.pop !== undefined) {
-   //   deep = child._deep ? child._deep + 1 : 1;
+      //   deep = child._deep ? child._deep + 1 : 1;
       for (let i = 0; i < child.length; i++) {
         var el = (stack[stack.length] = child[i]);
-      //  if (el) {
-      //    el._deep = deep;
-      //  }
+        //  if (el) {    el._deep = deep;  }
       }
     } else {
       // eslint-disable-next-line
-      if (
-        child === null ||
-        child === void 666 ||
-        child === false ||
-        child === true
-      ) {
+      if (child === null || child === void 666 || child === false || child === true) {
         continue;
       }
       var childType = typeof child;
@@ -117,10 +114,8 @@ function getDOMNode() {
 }
 export function __ref(dom) {
   var instance = this._owner;
-  if (dom) {
+  if (dom && instance) {
     dom.getDOMNode = getDOMNode;
-  }
-  if (instance) {
     instance.refs[this.__refKey] = dom;
   }
 }
@@ -153,10 +148,9 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
 }
 
 Vnode.prototype = {
-  getDOMNode: function() {
+  getDOMNode: function () {
     return this._hostNode || null;
   },
 
   $$typeof: 1
 };
-
