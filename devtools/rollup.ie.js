@@ -2,16 +2,19 @@ import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-re";
 
 const license = require("rollup-plugin-license");
-
-var json = require("./package.json");
-
+const json = require("../package.json");
 const now = new Date();
+
 export default {
-  entry: "./src/React.js",
+  entry: "./src/ReactIE.js",
   format: "umd",
   exports: "default",
-  dest: "./dist/React.js",
+  dest: "./dist/ReactIE.js",
   plugins: [
+   //  alias({
+   //   instanceMap: './instanceMap.js'
+   // }),
+
     babel({
       //  plugins: ['external-helpers'],
       // externalHelpers: true,
@@ -27,18 +30,18 @@ export default {
     }),
 
     license({
-      banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).slice(1, -1)}`
+      banner: `兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright ${JSON.stringify(
+        new Date()
+      ).replace(/T.*|"/g,'')}`
     }),
 
-     replace({
-      // ... do replace before commonjs
+    replace({
       patterns: [
         {
-          test: 'VERSION', 
-          // string or function to replaced with
-          replace: json.version,
-        },
-     
+          test: "VERSION",
+          replace: json.version
+        }
+        
       ]
     })
   ],

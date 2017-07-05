@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-05
+ * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-05
  */
 
 (function (global, factory) {
@@ -516,24 +516,6 @@ fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
 };
 fn.isPureComponent = true;
 
-var Children = {
-  only: function only(children) {
-    return children && children[0] || null;
-  },
-  count: function count(children) {
-    return children && children.length || 0;
-  },
-  forEach: function forEach(children, callback, context) {
-    children.forEach(callback, context);
-  },
-  map: function map(children, callback, context) {
-    return children.map(callback, context);
-  },
-  toArray: function toArray(children) {
-    return children.slice(0);
-  }
-};
-
 var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 //用于后端的元素节点
@@ -672,27 +654,22 @@ function getNs(type) {
   }
 }
 
-//为了兼容yo
-var check = function check() {
-  return check;
-};
-check.isRequired = check;
-var PropTypes = {
-  array: check,
-  bool: check,
-  func: check,
-  number: check,
-  object: check,
-  string: check,
-  any: check,
-  arrayOf: check,
-  element: check,
-  instanceOf: check,
-  node: check,
-  objectOf: check,
-  oneOf: check,
-  oneOfType: check,
-  shape: check
+var Children = {
+  only: function only(children) {
+    return children && children[0] || null;
+  },
+  count: function count(children) {
+    return children && children.length || 0;
+  },
+  forEach: function forEach(children, callback, context) {
+    children.forEach(callback, context);
+  },
+  map: function map(children, callback, context) {
+    return children.map(callback, context);
+  },
+  toArray: function toArray(children) {
+    return children.slice(0);
+  }
 };
 
 var rnumber = /^-?\d+(\.\d+)?$/;
@@ -850,7 +827,7 @@ function addEvent(el, type, fn) {
     //Unable to preventDefault inside passive event listener due to target being treated as passive
     el.addEventListener(type, fn, supportsPassive ? { passive: false } : false);
   } else if (el.attachEvent) {
-    el.attachEvent("on" + type, fn);
+    
   }
 }
 
@@ -1458,19 +1435,7 @@ function disposeComponent(vnode) {
 function render(vnode, container, callback) {
   return updateView(vnode, container, callback, {});
 }
-/**
- * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
- *
- */
-var warnOne = 1;
-function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
-  if (warnOne) {
-    console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用");
-    warnOne = 0;
-  }
-  var parentContext = parentInstance && parentInstance.context || {};
-  return updateView(vnode, container, callback, parentContext);
-}
+
 
 function isValidElement(vnode) {
   return vnode && vnode.vtype;
@@ -1813,16 +1778,7 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
   return newNode;
 }
 
-function findDOMNode(componentOrElement) {
-  if (componentOrElement == null) {
-    return null;
-  }
-  if (componentOrElement.nodeType === 1) {
-    return componentOrElement;
-  }
 
-  return instanceMap.get(componentOrElement) || null;
-}
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
   switch (lastVnode.vtype) {
@@ -2156,13 +2112,10 @@ if (msie < 9) {
 }
 
 var React = {
-  PropTypes: PropTypes,
   Children: Children, //为了react-redux
   render: render,
   findDOMNode: findDOMNode,
   options: options,
-  unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-  isValidElement: isValidElement,
   version: "1.0.3",
   createElement: createElement,
   cloneElement: cloneElement,

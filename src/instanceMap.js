@@ -1,7 +1,9 @@
 /**!
  * 有些版本其实不需要这个模块的
  */
+
 import { document, win } from "./browser";
+//AAAStart
 var innerMap = win.Map;
 
 try {
@@ -42,3 +44,4 @@ try {
 }
 
 export var instanceMap = new innerMap();
+//AAAEnd

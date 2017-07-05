@@ -1,4 +1,4 @@
-import {extend, getChildContext, checkNull, getComponentProps} from '../src/util'
+import {getChildContext, checkNull, getComponentProps} from '../src/util'
 import {rnumber, cssNumber} from '../src/style'
 var React = global.React
 var skipAttributes = {

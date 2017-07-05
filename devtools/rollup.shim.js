@@ -2,15 +2,14 @@ import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-re";
 
 const license = require("rollup-plugin-license");
-
-var json = require("./package.json");
-
+const json = require("../package.json");
 const now = new Date();
+
 export default {
-  entry: "./src/ReactIE.js",
+  entry: "./src/ReactShim.js",
   format: "umd",
   exports: "default",
-  dest: "./dist/ReactIE.js",
+  dest: "./dist/ReactShim.js",
   plugins: [
     babel({
       //  plugins: ['external-helpers'],
@@ -27,9 +26,9 @@ export default {
     }),
 
     license({
-      banner: `兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright ${JSON.stringify(
+      banner: `此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright ${JSON.stringify(
         new Date()
-      ).slice(1, -1)}`
+      ).replace(/T.*|"/g, "")}`
     }),
 
     replace({
@@ -37,6 +36,10 @@ export default {
         {
           test: "VERSION",
           replace: json.version
+        },
+         {
+          test: 'el.attachEvent("on" + type, fn);',
+          replace: ''
         }
       ]
     })
