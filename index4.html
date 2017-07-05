@@ -17,9 +17,10 @@
         }
     </style>
     </style>
-     <script type='text/javascript' src="./libs/polyfill.js"></script>
+   
      <script type='text/javascript' src="./dist/React.js"></script>
-     <script type='text/javascript' src="./libs/injectTapEventPlugin.js"></script>
+    <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
      <script type='text/javascript' src="./libs/babel.js"></script>
   <script type='text/babel'>
   
@@ -29,7 +30,7 @@
       constructor(props) {
         super(props);
         this.state = {
-          aaa: 1111
+          aaa: 111
         };
       }
       onChange(){
@@ -37,19 +38,21 @@
            aaa: new Date - 0
          })
       }
-      componentWillMount() {
-        this.state = {
-            aaa: 333
-        }
-        this.forceUpdate( function(){
-          
-          console.log('forceUpdate')
-        });
-      }
       render() {
-        return <p onTouchTap={this.onChange.bind(this)}>{this.state.aaa}</p>;
+        return <p  onClick={this.onChange.bind(this)}>{this.state.aaa === 111 ? <Child />: <span>333</span>}</p>;
       }
     }
+     class Child extends React.Component {
+         componentDidMount(){
+           console.log(this.refs.aaa,'componentWillMount')
+         }
+         componentWillUnmount(){
+           console.log(this.refs.aaa,'componentWillUnmount')
+         }
+         render(){
+           return <strong ref='aaa'>组件</strong>
+         }
+     }
 
     var s = ReactDOM.render(<App />, document.getElementById('example'));
   }

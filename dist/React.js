@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-04T08:21:07.046Z
+ * by 司徒正美 Copyright 2017-07-04T09:54:51.422Z
  */
 
 (function (global, factory) {
@@ -1812,7 +1812,12 @@ var eventSystem = Object.freeze({
       disposeVnode(children[i]);
     }
     //eslint-disable-next-line
-    vnode.ref && vnode.ref(null);
+    if (vnode.ref) {
+      setTimeout(function () {
+        console.log('====');
+        vnode.ref(null);
+      });
+    }
     vnode._hostNode = null;
     vnode._hostParent = null;
   }

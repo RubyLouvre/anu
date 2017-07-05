@@ -449,7 +449,11 @@ function disposeElement(vnode) {
     disposeVnode(children[i]);
   }
   //eslint-disable-next-line
-  vnode.ref && vnode.ref(null);
+  if(vnode.ref){
+  setTimeout(function(){
+     vnode.ref(null);
+  })
+ }
   vnode._hostNode = null;
   vnode._hostParent = null;
 }
