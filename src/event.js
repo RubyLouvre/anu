@@ -27,7 +27,7 @@ export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
   var __type__ = e.__type__ || e.type;
-  e = new SyntheticEvent(e)
+  e = new SyntheticEvent(e);
 
   var hook = eventPropHooks[__type__];
   if (hook && false === hook(e)) {
@@ -46,7 +46,6 @@ export function dispatchEvent(e) {
     triggerEventFlow(paths.reverse(), bubble, e);
   }
 }
-
 
 function collectPaths(e) {
   var target = e.target;
@@ -86,10 +85,16 @@ export function addGlobalEventListener(name) {
   }
 }
 
-export function addEvent(el, type, fn) {
+export function addEvent(el, type, fn, bool) {
   if (el.addEventListener) {
     //Unable to preventDefault inside passive event listener due to target being treated as passive
-    el.addEventListener(type, fn, supportsPassive ? { passive: false } : false);
+    el.addEventListener(
+      type,
+      fn,
+      /true|false/.test(bool)
+        ? bool
+        : supportsPassive ? { passive: false } : false
+    );
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
   }
@@ -110,7 +115,7 @@ export function getBrowserName(onStr) {
 }
 var supportsPassive = false;
 try {
-  var opts = Object.defineProperty({}, 'passive', {
+  var opts = Object.defineProperty({}, "passive", {
     get: function() {
       supportsPassive = true;
     }

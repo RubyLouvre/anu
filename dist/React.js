@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-05
+ * by 司徒正美 Copyright 2017-07-06
  */
 
 (function (global, factory) {
@@ -381,7 +381,7 @@ var scheduler = {
 };
 
 /**
- *组件的基因
+ *组件的基类
  *
  * @param {any} props
  * @param {any} context
@@ -756,10 +756,10 @@ function addGlobalEventListener(name) {
   }
 }
 
-function addEvent(el, type, fn) {
+function addEvent(el, type, fn, bool) {
   if (el.addEventListener) {
     //Unable to preventDefault inside passive event listener due to target being treated as passive
-    el.addEventListener(type, fn, supportsPassive ? { passive: false } : false);
+    el.addEventListener(type, fn, /true|false/.test(bool) ? bool : supportsPassive ? { passive: false } : false);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
   }
@@ -780,7 +780,7 @@ function getBrowserName(onStr) {
 }
 var supportsPassive = false;
 try {
-  var opts = Object.defineProperty({}, 'passive', {
+  var opts = Object.defineProperty({}, "passive", {
     get: function get() {
       supportsPassive = true;
     }
@@ -1358,7 +1358,6 @@ function getOptionSelected(option, selected) {
  * 有些版本其实不需要这个模块的
  */
 
-//AAAStart
 var innerMap = win.Map;
 
 try {
@@ -1373,8 +1372,7 @@ try {
   var getID = function getID(a) {
     if (a.uniqueID) {
       return "Node" + a.uniqueID;
-    }
-    if (!a.uniqueID) {
+    } else {
       a.uniqueID = "_" + uniqueID++;
       return "Node" + a.uniqueID;
     }
@@ -1402,7 +1400,6 @@ try {
 }
 
 var instanceMap = new innerMap();
-//AAAEnd
 
 function disposeVnode(vnode) {
     if (!vnode) {

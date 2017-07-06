@@ -3,7 +3,6 @@
  */
 
 import { document, win } from "./browser";
-//AAAStart
 var innerMap = win.Map;
 
 try {
@@ -21,8 +20,7 @@ try {
   function getID(a) {
     if (a.uniqueID) {
       return "Node" + a.uniqueID;
-    }
-    if (!a.uniqueID) {
+    }else{
       a.uniqueID = "_" + uniqueID++;
       return "Node" + a.uniqueID;
     }
@@ -44,4 +42,3 @@ try {
 }
 
 export var instanceMap = new innerMap();
-//AAAEnd

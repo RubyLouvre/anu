@@ -2,7 +2,7 @@ import { extend, isFn, options } from "./util";
 import { scheduler } from "./scheduler";
 
 /**
- *组件的基因
+ *组件的基类
  *
  * @param {any} props
  * @param {any} context
