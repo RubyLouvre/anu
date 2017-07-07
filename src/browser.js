@@ -30,15 +30,20 @@ fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
-export var inBrowser = typeNumber(window) === 7 && window.alert;
+try {
+  var w = window;
+  var b = !!w.alert;
+} catch (e) {
+  b = false;
+  w = {
+    document: fakeDoc
+  };
+}
 
-export var win = inBrowser
-  ? window
-  : {
-      document: fakeDoc
-    };
+export var inBrowser = b;
+export var win = w;
 
-export var document = win.document || fakeDoc;
+export var document = w.document || fakeDoc;
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 function emptyElement(node) {
@@ -71,9 +76,9 @@ export function removeDOMElement(node) {
 }
 
 var versions = {
-  77: 7,//IE7-8 objectobject
-  70: 6,//IE6 objectundefined
-  "00": NaN,// other modern browsers
+  77: 7, //IE7-8 objectobject
+  70: 6, //IE6 objectundefined
+  "00": NaN, // other modern browsers
   "07": NaN
 };
 /* istanbul ignore next  */

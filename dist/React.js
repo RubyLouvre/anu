@@ -584,13 +584,20 @@ fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
-var inBrowser = typeNumber(window) === 7 && window.alert;
+try {
+  var w = window;
+  var b = !!w.alert;
+} catch (e) {
+  b = false;
+  w = {
+    document: fakeDoc
+  };
+}
 
-var win = inBrowser ? window : {
-  document: fakeDoc
-};
 
-var document = win.document || fakeDoc;
+var win = w;
+
+var document = w.document || fakeDoc;
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 function emptyElement(node) {
