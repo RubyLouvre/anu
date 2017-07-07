@@ -967,11 +967,11 @@ var specHandle = {
   childContextTypes: mergeObject,
   contextTypes: mergeObject,
 
-  getDefaultProps: function getDefaultProps(Ctor, value) {
-    if (Ctor.getDefaultProps) {
-      Ctor.getDefaultProps = createMergedResultFunction(Ctor.getDefaultProps, value);
+  getDefaultProps: function getDefaultProps(Ctor, value, name) {
+    if (Ctor[name]) {
+      Ctor[name] = createMergedResultFunction(Ctor[name], value);
     } else {
-      Ctor.getDefaultProps = value;
+      Ctor[name] = value;
     }
   },
   statics: function statics(Ctor, value) {
@@ -1049,15 +1049,6 @@ function mixSpecIntoComponent(Ctor, spec) {
   }
 }
 
-function mergeIntoWithNoDuplicateKeys(one, two) {
-  for (var key in two) {
-    if (two.hasOwnProperty(key)) {
-      one[key] = two[key];
-    }
-  }
-  return one;
-}
-
 function createMergedResultFunction(one, two) {
   return function mergedResult() {
     var a = one.apply(this, arguments);
@@ -1068,8 +1059,8 @@ function createMergedResultFunction(one, two) {
       return a;
     }
     var c = {};
-    mergeIntoWithNoDuplicateKeys(c, a);
-    mergeIntoWithNoDuplicateKeys(c, b);
+    mergeOwnProperties(c, a);
+    mergeOwnProperties(c, b);
     return c;
   };
 }
@@ -1116,7 +1107,7 @@ function createClass(spec) {
     Constructor.defaultProps = Constructor.getDefaultProps();
   }
 
-  //性能优化， 为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为bull
+  //性能优化，为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为null
   for (var methodName in ReactClassInterface) {
     if (!proto[methodName]) {
       proto[methodName] = null;
@@ -1397,7 +1388,7 @@ var propHooks = {
   }
 };
 
-/** 
+/**
  input, select, textarea这几个元素如果指定了value/checked的**状态属性**，就会包装成受控组件或非受控组件
  受控组件是指，用户除了为它指定**状态属性**，还为它指定了onChange/onInput/disabled等用于控制此状态属性
  变动的属性
@@ -1412,7 +1403,7 @@ function processFormElement(vnode, dom, props) {
     var keys = data[1];
     var eventName = data[2];
     if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
-      console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n           \u7B49\u7528\u4E8E\u63A7\u5236" + duplexProp + "\u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
+      console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u7B49\u7528\u4E8E\u63A7\u5236" + duplexProp + "\n\n      \u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
       dom[eventName] = data[3];
     }
     if (duplexType === 3) {
@@ -1506,10 +1497,10 @@ function postUpdateSelectedOptions(vnode) {
 
 /**
  * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
- * 
- * @param {VNode} vnode 
- * @param {any} props 
- * @param {Array} ret 
+ *
+ * @param {VNode} vnode
+ * @param {any} props
+ * @param {Array} ret
  */
 function collectOptions(vnode, props, ret) {
   var arr = props.children;
@@ -2006,7 +1997,6 @@ function reRenderComponent(instance) {
 
   instance.props = nextProps;
   instance.state = nextState;
-  delete instance._updateBatchNumber;
   instance._updating = true;
   var rendered = safeRenderComponent(instance, constructor);
 

@@ -39,14 +39,14 @@ var specHandle = {
   childContextTypes: mergeObject,
   contextTypes: mergeObject,
 
-  getDefaultProps(Ctor, value) {
-    if (Ctor.getDefaultProps) {
-      Ctor.getDefaultProps = createMergedResultFunction(
-        Ctor.getDefaultProps,
+  getDefaultProps(Ctor, value, name) {
+    if (Ctor[name]) {
+      Ctor[name] = createMergedResultFunction(
+        Ctor[name],
         value
       );
     } else {
-      Ctor.getDefaultProps = value;
+      Ctor[name] = value;
     }
   },
 
@@ -128,7 +128,7 @@ function mixSpecIntoComponent(Ctor, spec) {
   }
 }
 
-function mergeIntoWithNoDuplicateKeys(one, two) {
+function mergeOwnerProperties(one, two) {
   for (var key in two) {
     if (two.hasOwnProperty(key)) {
       one[key] = two[key];
@@ -147,8 +147,8 @@ function createMergedResultFunction(one, two) {
       return a;
     }
     var c = {};
-    mergeIntoWithNoDuplicateKeys(c, a);
-    mergeIntoWithNoDuplicateKeys(c, b);
+    mergeOwnProperties(c, a);
+    mergeOwnProperties(c, b);
     return c;
   };
 }
@@ -205,7 +205,7 @@ export function createClass(spec) {
     Constructor.defaultProps = Constructor.getDefaultProps();
   }
 
-  //性能优化， 为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为bull
+  //性能优化，为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为null
   for (var methodName in ReactClassInterface) {
     if (!proto[methodName]) {
       proto[methodName] = null;

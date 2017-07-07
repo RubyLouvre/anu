@@ -357,7 +357,6 @@ function reRenderComponent(instance) {
 
   instance.props = nextProps;
   instance.state = nextState;
-  delete instance._updateBatchNumber;
   instance._updating = true;
   var rendered = safeRenderComponent(instance, constructor);
 
