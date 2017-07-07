@@ -2282,7 +2282,7 @@ var React = {
   unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
   isValidElement: isValidElement,
   createClass: createClass,
-  version: "1.0.3",
+  version: "1.0.4",
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,
