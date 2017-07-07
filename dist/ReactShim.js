@@ -605,13 +605,9 @@ function removeDOMElement(node) {
 }
 
 var versions = {
-  //  objectobject: 7, //IE7-8
-  //  objectundefined: 6, //IE6
-  // undefinedfunction: NaN, // other modern browsers
-  // undefinedobject: NaN
-  77: 7,
-  70: 6,
-  "00": NaN,
+  77: 7, //IE7-8 objectobject
+  70: 6, //IE6 objectundefined
+  "00": NaN, // other modern browsers
   "07": NaN
 };
 /* istanbul ignore next  */

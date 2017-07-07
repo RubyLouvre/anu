@@ -623,13 +623,9 @@ function removeDOMElement(node) {
 }
 
 var versions = {
-  //  objectobject: 7, //IE7-8
-  //  objectundefined: 6, //IE6
-  // undefinedfunction: NaN, // other modern browsers
-  // undefinedobject: NaN
-  77: 7,
-  70: 6,
-  "00": NaN,
+  77: 7, //IE7-8 objectobject
+  70: 6, //IE6 objectundefined
+  "00": NaN, // other modern browsers
   "07": NaN
 };
 /* istanbul ignore next  */
@@ -927,24 +923,25 @@ var eventSystem = Object.freeze({
 /**
  * 为了兼容0.13之前的版本
  */
-
+var MANY = "DEFINE_MANY";
+var MANY_MERGED = "MANY_MERGED";
 var ReactClassInterface = {
-  mixins: "DEFINE_MANY",
-  statics: "DEFINE_MANY",
-  propTypes: "DEFINE_MANY",
-  contextTypes: "DEFINE_MANY",
-  childContextTypes: "DEFINE_MANY",
-  getDefaultProps: "DEFINE_MANY_MERGED",
-  getInitialState: "DEFINE_MANY_MERGED",
-  getChildContext: "DEFINE_MANY_MERGED",
-  render: "DEFINE_ONCE",
-  componentWillMount: "DEFINE_MANY",
-  componentDidMount: "DEFINE_MANY",
-  componentWillReceiveProps: "DEFINE_MANY",
+  mixins: MANY,
+  statics: MANY,
+  propTypes: MANY,
+  contextTypes: MANY,
+  childContextTypes: MANY,
+  getDefaultProps: MANY_MERGED,
+  getInitialState: MANY_MERGED,
+  getChildContext: MANY_MERGED,
+  render: "ONCE",
+  componentWillMount: MANY,
+  componentDidMount: MANY,
+  componentWillReceiveProps: MANY,
   shouldComponentUpdate: "DEFINE_ONCE",
-  componentWillUpdate: "DEFINE_MANY",
-  componentDidUpdate: "DEFINE_MANY",
-  componentWillUnmount: "DEFINE_MANY"
+  componentWillUpdate: MANY,
+  componentDidUpdate: MANY,
+  componentWillUnmount: MANY
 };
 
 var specHandle = {
@@ -1030,10 +1027,10 @@ function mixSpecIntoComponent(Ctor, spec) {
         if (isAlreadyDefined) {
           var specPolicy = ReactClassInterface[name];
           //合并多个同名函数
-          if (specPolicy === "DEFINE_MANY_MERGED") {
+          if (specPolicy === MANY_MERGED) {
             //这个是有返回值
             proto[name] = createMergedResultFunction(proto[name], property);
-          } else if (specPolicy === "DEFINE_MANY") {
+          } else if (specPolicy === MANY) {
             //这个没有返回值
             proto[name] = createChainedFunction(proto[name], property);
           }

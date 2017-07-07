@@ -115,9 +115,12 @@ var duplexData = {
 export function postUpdateSelectedOptions(vnode) {
   var props = vnode.props,
     multiple = !!props.multiple,
-    value = typeNumber(props.value) > 1
-      ? props.value
-      : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
+    value =
+      typeNumber(props.value) > 1
+        ? props.value
+        : typeNumber(props.defaultValue) > 1
+          ? props.defaultValue
+          : multiple ? [] : "",
     options = [];
   collectOptions(vnode, props, options);
   if (multiple) {
@@ -126,8 +129,6 @@ export function postUpdateSelectedOptions(vnode) {
     updateOptionsOne(options, options.length, value);
   }
 }
-
-
 
 /**
  * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
