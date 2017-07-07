@@ -109,7 +109,7 @@ function getHookType(name, val, type, dom) {
   if (!val && val !== "" && val !== 0) {
     return "removeAttribute";
   }
-  return name.indexOf("data-") === 0 || typeof dom[name] === "undefined"
+  return name.indexOf("data-") === 0 || dom[name] === void 666
     ? "setAttribute"
     : "property";
 }
@@ -162,9 +162,10 @@ var propHooks = {
     }
   },
   svgAttr: function(dom, name, val) {
-    var method = val === false || val === null || val === undefined
-      ? "removeAttribute"
-      : "setAttribute";
+    var method =
+      val === false || val === null || val === undefined
+        ? "removeAttribute"
+        : "setAttribute";
     if (svgprops[name]) {
       dom[method + "NS"](xlink, svgprops[name], val || "");
     } else {

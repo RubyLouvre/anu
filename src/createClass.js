@@ -73,7 +73,7 @@ function mixSpecIntoComponent(Ctor, spec) {
   if (!spec) {
     return;
   }
-  if (typeof spec === "function") {
+  if (isFn(spec)) {
     console.warn("createClass(spec)中的spec不能为函数，只能是纯对象");
   }
 
@@ -197,7 +197,7 @@ export function createClass(spec) {
   var Constructor = newCtor(spec.displayName || "Component");
   var proto = inherit(Constructor, Component);
   proto.__reactAutoBindPairs = [];
-  delete proto.render
+  delete proto.render;
 
   mixSpecIntoComponent(Constructor, spec);
   if (isFn(Constructor.getDefaultProps)) {

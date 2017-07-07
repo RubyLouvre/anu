@@ -25,7 +25,6 @@ export function extend(obj, props) {
  */
 export function noop() {}
 
-
 /**
  * 类继承
  *
@@ -42,7 +41,7 @@ export function inherit(SubClass, SupClass) {
   // 避免原型链拉长导致方法查找的性能开销
   extend(fn, SupClass.prototype);
   fn.constructor = SubClass;
-  return fn
+  return fn;
 }
 
 /**
@@ -81,13 +80,13 @@ export function toLowerCase(s) {
  * @returns
  */
 export function isFn(obj) {
-  return __type.call(obj) === "[object Function]";
+  return typeNumber(obj) === 5;
 }
 
 var rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
-  if (__type.call(array) === "[object String]") {
+  if (typeNumber(array) === 4) {
     array = array.match(rword) || [];
   }
   var result = {},
@@ -131,6 +130,22 @@ export function checkNull(vnode, type) {
     );
   }
   return vnode;
+}
+var numberMap = {
+  "[object Null]": 1,
+  "[object Boolean]": 2,
+  "[object Number]": 3,
+  "[object String]": 4,
+  "[object Function]": 5,
+  "[object Array]": 6
+};
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
+export function typeNumber(data) {
+  if (data === void 666) {
+    return 0;
+  }
+  var a = numberMap[__type.call(data)];
+  return a || 7;
 }
 
 export function getComponentProps(vnode) {

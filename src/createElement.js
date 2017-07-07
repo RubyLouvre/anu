@@ -1,4 +1,4 @@
-import { __push } from "./util";
+import { __push, typeNumber } from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 
@@ -56,7 +56,7 @@ export function createElement(type, configs) {
 
   var children = flattenChildren(stack);
 
-  if (typeof type === "function") {
+  if (typeNumber(type) === 5) {
     vtype = type.prototype && type.prototype.render ? 2 : 4;
     if (children.length) props.children = children;
   } else {
@@ -77,21 +77,19 @@ function flattenChildren(stack) {
     if ((child = stack.pop()) && child.pop !== undefined) {
       //   deep = child._deep ? child._deep + 1 : 1;
       for (let i = 0; i < child.length; i++) {
-        var el = (stack[stack.length] = child[i]);
+        stack[stack.length] = child[i];
         //  if (el) {    el._deep = deep;  }
       }
     } else {
       // eslint-disable-next-line
+      var childType = typeNumber(child);
       if (
-        child === null ||
-        child === void 666 ||
-        child === false ||
-        child === true
+        childType < 3 // 0, 1,2
       ) {
         continue;
       }
-      var childType = typeof child;
-      if (childType !== "object") {
+
+      if (childType < 6) {//!== 'object'
         //不是对象就是字符串或数字
         if (lastText) {
           lastText.text = child + lastText.text;
@@ -141,11 +139,11 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   if (vtype === 1) {
     this.checkProps = checkProps;
   }
-  var refType = typeof ref;
-  if (refType === "string") {
+  var refType = typeNumber(ref);
+  if (refType === 4) {
     this.__refKey = ref;
     this.ref = __ref;
-  } else if (refType === "function") {
+  } else if (refType === 5) {
     this.ref = ref;
   }
   /*

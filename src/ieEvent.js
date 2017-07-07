@@ -35,9 +35,8 @@ function fixIEChangeHandle(e) {
 }
 function fixIEChange(dom, name) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
-  var eventType = dom.type === "radio" || dom.type === "checkbox"
-    ? "click"
-    : "change";
+  var eventType =
+    dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
   addEvent(dom, eventType, fixIEChangeHandle);
 }
 
@@ -66,9 +65,8 @@ if (msie < 9) {
       function(event) {
         if (!("pageX" in event)) {
           var doc = event.target.ownerDocument || document;
-          var box = doc.compatMode === "BackCompat"
-            ? doc.body
-            : doc.documentElement;
+          var box =
+            doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
           event.pageX =
             event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
           event.pageY =

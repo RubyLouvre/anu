@@ -7,7 +7,8 @@ var innerMap = win.Map;
 
 try {
   var testNode = document.createComment("");
-  var map = new innerMap(), value = "anujs"
+  var map = new innerMap(),
+    value = "anujs";
   map.set(testNode, value);
   if (map.get(testNode) !== value) {
     throw "使用自定义Map";
@@ -20,7 +21,7 @@ try {
   function getID(a) {
     if (a.uniqueID) {
       return "Node" + a.uniqueID;
-    }else{
+    } else {
       a.uniqueID = "_" + uniqueID++;
       return "Node" + a.uniqueID;
     }

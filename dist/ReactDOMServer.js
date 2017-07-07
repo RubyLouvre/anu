@@ -62,7 +62,7 @@ var __type = Object.prototype.toString;
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-  if (__type.call(array) === "[object String]") {
+  if (typeNumber(array) === 4) {
     array = array.match(rword) || [];
   }
   var result = {},
@@ -92,6 +92,22 @@ function checkNull(vnode, type) {
     throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
   }
   return vnode;
+}
+var numberMap = {
+  "[object Null]": 1,
+  "[object Boolean]": 2,
+  "[object Number]": 3,
+  "[object String]": 4,
+  "[object Function]": 5,
+  "[object Array]": 6
+};
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
+function typeNumber(data) {
+  if (data === void 666) {
+    return 0;
+  }
+  var a = numberMap[__type.call(data)];
+  return a || 7;
 }
 
 function getComponentProps(vnode) {

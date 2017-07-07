@@ -1,4 +1,4 @@
-import { oneObject, recyclables, toLowerCase } from "./util";
+import { oneObject, recyclables, toLowerCase,typeNumber } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -29,8 +29,8 @@ fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.nodeName = "#document";
-fakeDoc.textContent = ''
-export var inBrowser = typeof window === "object" && window.alert;
+fakeDoc.textContent = "";
+export var inBrowser = typeNumber(window) === 7 && window.alert;
 
 export var win = inBrowser
   ? window
@@ -39,11 +39,11 @@ export var win = inBrowser
     };
 
 export var document = win.document || fakeDoc;
-var isStandard = 'textContent' in document
+var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 function emptyElement(node) {
-  var child 
-  while (child = node.firstChild) {
+  var child;
+  while ((child = node.firstChild)) {
     if (child.nodeType === 1) {
       emptyElement(child);
     }
@@ -53,16 +53,16 @@ function emptyElement(node) {
 
 export function removeDOMElement(node) {
   if (node.nodeType === 1) {
-    if(isStandard){
-      node.textContent = ''
-    }else{
-      emptyElement(node)
+    if (isStandard) {
+      node.textContent = "";
+    } else {
+      emptyElement(node);
     }
   }
   fragment.appendChild(node);
   fragment.removeChild(node);
   var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
-  node.__events = null
+  node.__events = null;
   if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
     recyclables[nodeName].push(node);
   } else {
@@ -71,15 +71,19 @@ export function removeDOMElement(node) {
 }
 
 var versions = {
-  objectobject: 7, //IE7-8
-  objectundefined: 6, //IE6
-  undefinedfunction: NaN, // other modern browsers
-  undefinedobject: NaN
+  //  objectobject: 7, //IE7-8
+  //  objectundefined: 6, //IE6
+  // undefinedfunction: NaN, // other modern browsers
+  // undefinedobject: NaN
+  77: 7,
+  70: 6,
+  "00": NaN,
+  "07": NaN
 };
 /* istanbul ignore next  */
 export var msie =
   document.documentMode ||
-  versions[typeof document.all + typeof XMLHttpRequest];
+  versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -148,5 +152,3 @@ export function getNs(type) {
     }
   }
 }
-
-

@@ -90,13 +90,13 @@ function toLowerCase(s) {
  * @returns
  */
 function isFn(obj) {
-  return __type.call(obj) === "[object Function]";
+  return typeNumber(obj) === 5;
 }
 
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-  if (__type.call(array) === "[object String]") {
+  if (typeNumber(array) === 4) {
     array = array.match(rword) || [];
   }
   var result = {},
@@ -140,6 +140,22 @@ function checkNull(vnode, type) {
   }
   return vnode;
 }
+var numberMap = {
+  "[object Null]": 1,
+  "[object Boolean]": 2,
+  "[object Number]": 3,
+  "[object String]": 4,
+  "[object Function]": 5,
+  "[object Array]": 6
+};
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
+function typeNumber(data) {
+  if (data === void 666) {
+    return 0;
+  }
+  var a = numberMap[__type.call(data)];
+  return a || 7;
+}
 
 function getComponentProps(vnode) {
   var defaultProps = vnode.type.defaultProps;
@@ -163,8 +179,6 @@ var recyclables = {
   td: [],
   p: []
 };
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var stack = [];
 var EMPTY_CHILDREN = [];
@@ -223,7 +237,7 @@ function createElement(type, configs) {
 
   var children = flattenChildren(stack);
 
-  if (typeof type === "function") {
+  if (typeNumber(type) === 5) {
     vtype = type.prototype && type.prototype.render ? 2 : 4;
     if (children.length) props.children = children;
   } else {
@@ -244,16 +258,19 @@ function flattenChildren(stack) {
     if ((child = stack.pop()) && child.pop !== undefined) {
       //   deep = child._deep ? child._deep + 1 : 1;
       for (var i = 0; i < child.length; i++) {
-        var el = stack[stack.length] = child[i];
+        stack[stack.length] = child[i];
         //  if (el) {    el._deep = deep;  }
       }
     } else {
       // eslint-disable-next-line
-      if (child === null || child === void 666 || child === false || child === true) {
-        continue;
-      }
-      var childType = typeof child === "undefined" ? "undefined" : _typeof(child);
-      if (childType !== "object") {
+      var childType = typeNumber(child);
+      if (childType < 3 // 0, 1,2
+      ) {
+          continue;
+        }
+
+      if (childType < 6) {
+        //!== 'object'
         //不是对象就是字符串或数字
         if (lastText) {
           lastText.text = child + lastText.text;
@@ -303,11 +320,11 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   if (vtype === 1) {
     this.checkProps = checkProps;
   }
-  var refType = typeof ref === "undefined" ? "undefined" : _typeof(ref);
-  if (refType === "string") {
+  var refType = typeNumber(ref);
+  if (refType === 4) {
     this.__refKey = ref;
     this.ref = __ref;
-  } else if (refType === "function") {
+  } else if (refType === 5) {
     this.ref = ref;
   }
   /*
@@ -355,7 +372,7 @@ var scheduler = {
     if (!list.length) return;
     list = [];
     queue.forEach(function (instance) {
-      if (typeof instance === "function") {
+      if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
         return;
       }
@@ -483,7 +500,7 @@ function setStateProxy(instance, cb) {
   }, 0);
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -492,7 +509,7 @@ function shallowEqual(objA, objB) {
     return true;
   }
 
-  if ((typeof objA === "undefined" ? "undefined" : _typeof$1(objA)) !== "object" || objA === null || (typeof objB === "undefined" ? "undefined" : _typeof$1(objB)) !== "object" || objB === null) {
+  if ((typeof objA === "undefined" ? "undefined" : _typeof(objA)) !== "object" || objA === null || (typeof objB === "undefined" ? "undefined" : _typeof(objB)) !== "object" || objB === null) {
     return false;
   }
 
@@ -543,8 +560,6 @@ var Children = {
   }
 };
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 //用于后端的元素节点
 function DOMElement(type) {
   this.nodeName = type;
@@ -568,15 +583,15 @@ fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.nodeName = "#document";
-fakeDoc.textContent = '';
-var inBrowser = (typeof window === "undefined" ? "undefined" : _typeof$2(window)) === "object" && window.alert;
+fakeDoc.textContent = "";
+var inBrowser = typeNumber(window) === 7 && window.alert;
 
 var win = inBrowser ? window : {
   document: fakeDoc
 };
 
 var document = win.document || fakeDoc;
-var isStandard = 'textContent' in document;
+var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 function emptyElement(node) {
   var child;
@@ -591,7 +606,7 @@ function emptyElement(node) {
 function removeDOMElement(node) {
   if (node.nodeType === 1) {
     if (isStandard) {
-      node.textContent = '';
+      node.textContent = "";
     } else {
       emptyElement(node);
     }
@@ -608,13 +623,17 @@ function removeDOMElement(node) {
 }
 
 var versions = {
-  objectobject: 7, //IE7-8
-  objectundefined: 6, //IE6
-  undefinedfunction: NaN, // other modern browsers
-  undefinedobject: NaN
+  //  objectobject: 7, //IE7-8
+  //  objectundefined: 6, //IE6
+  // undefinedfunction: NaN, // other modern browsers
+  // undefinedobject: NaN
+  77: 7,
+  70: 6,
+  "00": NaN,
+  "07": NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[_typeof$2(document.all) + (typeof XMLHttpRequest === "undefined" ? "undefined" : _typeof$2(XMLHttpRequest))];
+var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -976,7 +995,7 @@ function mixSpecIntoComponent(Ctor, spec) {
   if (!spec) {
     return;
   }
-  if (typeof spec === "function") {
+  if (isFn(spec)) {
     console.warn("createClass(spec)中的spec不能为函数，只能是纯对象");
   }
 
@@ -1275,7 +1294,7 @@ function getHookType(name, val, type, dom) {
   if (!val && val !== "" && val !== 0) {
     return "removeAttribute";
   }
-  return name.indexOf("data-") === 0 || typeof dom[name] === "undefined" ? "setAttribute" : "property";
+  return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
 }
 
 function getHookTypeSVG(name, val, type, dom) {
@@ -1380,7 +1399,6 @@ var propHooks = {
  变动的属性
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
-
 function processFormElement(vnode, dom, props) {
   var domType = dom.type;
   var duplexType = duplexMap[domType];
@@ -1442,11 +1460,11 @@ function preventUserClick(e) {
 function preventUserChange(e) {
   var target = e.target;
   var value = target._lastValue;
-  var options = target.options;
+  var options$$1 = target.options;
   if (target.multiple) {
-    updateOptionsMore(options, options.length, value);
+    updateOptionsMore(options$$1, options$$1.length, value);
   } else {
-    updateOptionsOne(options, options.length, value);
+    updateOptionsOne(options$$1, options$$1.length, value);
   }
 }
 
@@ -1472,18 +1490,14 @@ var duplexData = {
 function postUpdateSelectedOptions(vnode) {
   var props = vnode.props,
       multiple = !!props.multiple,
-      value = isDefined(props.value) ? props.value : isDefined(props.defaultValue) ? props.defaultValue : multiple ? [] : "",
-      options = [];
-  collectOptions(vnode, props, options);
+      value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
+      options$$1 = [];
+  collectOptions(vnode, props, options$$1);
   if (multiple) {
-    updateOptionsMore(options, options.length, value);
+    updateOptionsMore(options$$1, options$$1.length, value);
   } else {
-    updateOptionsOne(options, options.length, value);
+    updateOptionsOne(options$$1, options$$1.length, value);
   }
-}
-
-function isDefined(a) {
-  return !(a === null || a === undefined);
 }
 
 /**
@@ -1505,10 +1519,10 @@ function collectOptions(vnode, props, ret) {
   }
 }
 
-function updateOptionsOne(options, n, propValue) {
+function updateOptionsOne(options$$1, n, propValue) {
   var selectedValue = "" + propValue;
   for (var i = 0; i < n; i++) {
-    var option = options[i];
+    var option = options$$1[i];
     var value = getOptionValue(option, option.props);
     if (value === selectedValue) {
       getOptionSelected(option, true);
@@ -1516,11 +1530,11 @@ function updateOptionsOne(options, n, propValue) {
     }
   }
   if (n) {
-    getOptionSelected(options[0], true);
+    getOptionSelected(options$$1[0], true);
   }
 }
 
-function updateOptionsMore(options, n, propValue) {
+function updateOptionsMore(options$$1, n, propValue) {
   var selectedValue = {};
   try {
     for (var i = 0; i < propValue.length; i++) {
@@ -1531,7 +1545,7 @@ function updateOptionsMore(options, n, propValue) {
     console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
   }
   for (var _i = 0; _i < n; _i++) {
-    var option = options[_i];
+    var option = options$$1[_i];
     var value = getOptionValue(option, option.props);
     var selected = selectedValue.hasOwnProperty("&" + value);
     getOptionSelected(option, selected);

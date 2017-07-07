@@ -1,4 +1,4 @@
-import { options } from "./util";
+import { options, typeNumber } from "./util";
 var list = [];
 export var scheduler = {
   add: function(el) {
@@ -9,7 +9,7 @@ export var scheduler = {
     if (!list.length) return;
     list = [];
     queue.forEach(function(instance) {
-      if (typeof instance === "function") {
+      if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
         return;
       }

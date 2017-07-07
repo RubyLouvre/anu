@@ -4,6 +4,7 @@
  变动的属性
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
+import { typeNumber } from "./util";
 
 export function processFormElement(vnode, dom, props) {
   var domType = dom.type;
@@ -114,9 +115,9 @@ var duplexData = {
 export function postUpdateSelectedOptions(vnode) {
   var props = vnode.props,
     multiple = !!props.multiple,
-    value = isDefined(props.value)
+    value = typeNumber(props.value) > 1
       ? props.value
-      : isDefined(props.defaultValue) ? props.defaultValue : multiple ? [] : "",
+      : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
     options = [];
   collectOptions(vnode, props, options);
   if (multiple) {
@@ -126,9 +127,7 @@ export function postUpdateSelectedOptions(vnode) {
   }
 }
 
-function isDefined(a) {
-  return !(a === null || a === undefined);
-}
+
 
 /**
  * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
