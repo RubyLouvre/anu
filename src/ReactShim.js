@@ -8,17 +8,15 @@ import { Children } from "./Children";
 
 import { options } from "./util";
 
-import {
-  render,
-} from "./diff";
+import { render } from "./diff";
 import "./ieEvent";
 
 var React = {
+  version: "VERSION",
   Children, //为了react-redux
   render,
   findDOMNode,
   options,
-  version: "VERSION",
   createElement,
   cloneElement,
   PureComponent,

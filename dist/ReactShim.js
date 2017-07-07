@@ -1,5 +1,5 @@
 /**
- * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-06
+ * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-07
  */
 
 (function (global, factory) {
@@ -51,6 +51,7 @@ function inherit(SubClass, SupClass) {
   // 避免原型链拉长导致方法查找的性能开销
   extend(fn, SupClass.prototype);
   fn.constructor = SubClass;
+  return fn;
 }
 
 /**
@@ -202,8 +203,15 @@ function createElement(type, configs) {
           ref = val;
           break;
         case "children":
-          if (!stack.length && val && val.length) {
-            __push.apply(stack, val);
+          //只要不是通过JSX产生的createElement调用，props内部就千奇百度，
+          //children可能是一个数组，也可能是一个字符串，数字，布尔，
+          //也可能是一个虚拟DOM
+          if (!stack.length && val) {
+            if (Array.isArray(val)) {
+              __push.apply(stack, val);
+            } else {
+              stack.push(val);
+            }
           }
           break;
         default:
@@ -408,6 +416,9 @@ function Component(props, context) {
 }
 
 Component.prototype = {
+  replaceState: function replaceState() {
+    console.warn('此方法末实现');
+  },
   setState: function setState(state, cb) {
     this._pendingStates.push(state);
     setStateProxy(this, cb);
@@ -505,9 +516,7 @@ function PureComponent(props, context) {
   Component.call(this, props, context);
 }
 
-inherit(PureComponent, Component);
-
-var fn = PureComponent.prototype;
+var fn = inherit(PureComponent, Component);
 
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
   var a = shallowEqual(this.props, nextProps);
@@ -2109,11 +2118,11 @@ if (msie < 9) {
 }
 
 var React = {
+  version: "1.0.3",
   Children: Children, //为了react-redux
   render: render,
   findDOMNode: findDOMNode,
   options: options,
-  version: "1.0.3",
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,

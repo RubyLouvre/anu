@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-06
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-07
  */
 
 (function (global, factory) {
@@ -51,6 +51,7 @@ function inherit(SubClass, SupClass) {
   // 避免原型链拉长导致方法查找的性能开销
   extend(fn, SupClass.prototype);
   fn.constructor = SubClass;
+  return fn;
 }
 
 /**
@@ -202,8 +203,15 @@ function createElement(type, configs) {
           ref = val;
           break;
         case "children":
-          if (!stack.length && val && val.length) {
-            __push.apply(stack, val);
+          //只要不是通过JSX产生的createElement调用，props内部就千奇百度，
+          //children可能是一个数组，也可能是一个字符串，数字，布尔，
+          //也可能是一个虚拟DOM
+          if (!stack.length && val) {
+            if (Array.isArray(val)) {
+              __push.apply(stack, val);
+            } else {
+              stack.push(val);
+            }
           }
           break;
         default:
@@ -408,6 +416,9 @@ function Component(props, context) {
 }
 
 Component.prototype = {
+  replaceState: function replaceState() {
+    console.warn('此方法末实现');
+  },
   setState: function setState(state, cb) {
     this._pendingStates.push(state);
     setStateProxy(this, cb);
@@ -505,9 +516,7 @@ function PureComponent(props, context) {
   Component.call(this, props, context);
 }
 
-inherit(PureComponent, Component);
-
-var fn = PureComponent.prototype;
+var fn = inherit(PureComponent, Component);
 
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
   var a = shallowEqual(this.props, nextProps);
@@ -670,6 +679,204 @@ function getNs(type) {
       return mathTags[type] = mathNs;
     }
   }
+}
+
+/**
+ * 为了兼容0.13之前的版本
+ */
+
+var ReactClassInterface = {
+  mixins: "DEFINE_MANY",
+  statics: "DEFINE_MANY",
+  propTypes: "DEFINE_MANY",
+  contextTypes: "DEFINE_MANY",
+  childContextTypes: "DEFINE_MANY",
+  getDefaultProps: "DEFINE_MANY_MERGED",
+  getInitialState: "DEFINE_MANY_MERGED",
+  getChildContext: "DEFINE_MANY_MERGED",
+  render: "DEFINE_ONCE",
+  componentWillMount: "DEFINE_MANY",
+  componentDidMount: "DEFINE_MANY",
+  componentWillReceiveProps: "DEFINE_MANY",
+  shouldComponentUpdate: "DEFINE_ONCE",
+  componentWillUpdate: "DEFINE_MANY",
+  componentDidUpdate: "DEFINE_MANY",
+  componentWillUnmount: "DEFINE_MANY"
+};
+
+var specHandle = {
+  displayName: function displayName(Ctor, value, name) {
+    Ctor[name] = value;
+  },
+  mixins: function mixins(Ctor, value) {
+    if (value) {
+      for (var i = 0; i < value.length; i++) {
+        mixSpecIntoComponent(Ctor, value[i]);
+      }
+    }
+  },
+
+  propTypes: mergeObject,
+  childContextTypes: mergeObject,
+  contextTypes: mergeObject,
+
+  getDefaultProps: function getDefaultProps(Ctor, value) {
+    if (Ctor.getDefaultProps) {
+      Ctor.getDefaultProps = createMergedResultFunction(Ctor.getDefaultProps, value);
+    } else {
+      Ctor.getDefaultProps = value;
+    }
+  },
+  statics: function statics(Ctor, value) {
+    extend(Ctor, Object(value));
+  },
+
+  autobind: noop
+};
+
+function mergeObject(fn, value, name) {
+  fn[name] = Object.assign({}, fn[name], value);
+}
+
+//防止覆盖Component内部一些重要的方法或属性
+var protectedProps = {
+  mixin: 1,
+  setState: 1,
+  forceUpdate: 1,
+  _processPendingState: 1,
+  _pendingCallbacks: 1,
+  _pendingStates: 1
+};
+
+function mixSpecIntoComponent(Ctor, spec) {
+  if (!spec) {
+    return;
+  }
+  if (typeof spec === "function") {
+    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象");
+  }
+
+  var proto = Ctor.prototype;
+  var autoBindPairs = proto.__reactAutoBindPairs;
+
+  if (spec.hasOwnProperty("mixin")) {
+    specHandle.mixins(Ctor, spec.mixins);
+  }
+
+  for (var name in spec) {
+    if (!spec.hasOwnProperty(name)) {
+      continue;
+    }
+    if (protectedProps[name] === 1) {
+      continue;
+    }
+
+    var property = spec[name];
+    var isAlreadyDefined = proto.hasOwnProperty(name);
+
+    if (specHandle.hasOwnProperty(name)) {
+      specHandle[name](Ctor, property, name);
+    } else {
+      var isReactClassMethod = ReactClassInterface.hasOwnProperty(name);
+      var shouldAutoBind = isFn(property) && !isReactClassMethod && !isAlreadyDefined && spec.autobind !== false;
+
+      if (shouldAutoBind) {
+        autoBindPairs.push(name, property);
+        proto[name] = property;
+      } else {
+        if (isAlreadyDefined) {
+          var specPolicy = ReactClassInterface[name];
+          //合并多个同名函数
+          if (specPolicy === "DEFINE_MANY_MERGED") {
+            //这个是有返回值
+            proto[name] = createMergedResultFunction(proto[name], property);
+          } else if (specPolicy === "DEFINE_MANY") {
+            //这个没有返回值
+            proto[name] = createChainedFunction(proto[name], property);
+          }
+        } else {
+          proto[name] = property;
+        }
+      }
+    }
+  }
+}
+
+function mergeIntoWithNoDuplicateKeys(one, two) {
+  for (var key in two) {
+    if (two.hasOwnProperty(key)) {
+      one[key] = two[key];
+    }
+  }
+  return one;
+}
+
+function createMergedResultFunction(one, two) {
+  return function mergedResult() {
+    var a = one.apply(this, arguments);
+    var b = two.apply(this, arguments);
+    if (a == null) {
+      return b;
+    } else if (b == null) {
+      return a;
+    }
+    var c = {};
+    mergeIntoWithNoDuplicateKeys(c, a);
+    mergeIntoWithNoDuplicateKeys(c, b);
+    return c;
+  };
+}
+
+function createChainedFunction(one, two) {
+  return function chainedFunction() {
+    one.apply(this, arguments);
+    two.apply(this, arguments);
+  };
+}
+
+function bindAutoBindMethod(component, method) {
+  var boundMethod = method.bind(component);
+  return boundMethod;
+}
+
+function bindAutoBindMethods(component) {
+  var pairs = component.__reactAutoBindPairs;
+  for (var i = 0; i < pairs.length; i += 2) {
+    var autoBindKey = pairs[i];
+    var method = pairs[i + 1];
+    component[autoBindKey] = bindAutoBindMethod(component, method);
+  }
+}
+
+//创建一个构造器
+function newCtor(className) {
+  var curry = Function("ReactComponent", "bindAutoBindMethods", "return function " + className + "(props, context) {\n    ReactComponent.call(this, props, context);\n    this.state = this.getInitialState ? this.getInitialState() : {};\n    if (this.__reactAutoBindPairs.length) {\n      bindAutoBindMethods(this);\n    }\n  };");
+  return curry(Component, bindAutoBindMethods);
+}
+var warnOnce = 1;
+function createClass(spec) {
+  if (warnOnce) {
+    warnOnce = 0;
+    console.warn("createClass已经过时，强烈建议使用es6方式定义类");
+  }
+  var Constructor = newCtor(spec.displayName || "Component");
+  var proto = inherit(Constructor, Component);
+  proto.__reactAutoBindPairs = [];
+  delete proto.render;
+
+  mixSpecIntoComponent(Constructor, spec);
+  if (isFn(Constructor.getDefaultProps)) {
+    Constructor.defaultProps = Constructor.getDefaultProps();
+  }
+
+  //性能优化， 为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为bull
+  for (var methodName in ReactClassInterface) {
+    if (!proto[methodName]) {
+      proto[methodName] = null;
+    }
+  }
+
+  return Constructor;
 }
 
 //为了兼容yo
@@ -2153,6 +2360,7 @@ if (msie < 9) {
 }
 
 var React = {
+  version: "1.0.3",
   PropTypes: PropTypes,
   Children: Children, //为了react-redux
   render: render,
@@ -2160,7 +2368,7 @@ var React = {
   options: options,
   unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
   isValidElement: isValidElement,
-  version: "1.0.3",
+  createClass: createClass,
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,

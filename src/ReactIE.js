@@ -7,6 +7,8 @@ import { Children } from "./Children";
 import { win as window } from "./browser";
 
 import { options } from "./util";
+import { createClass } from "./createClass";
+
 import { PropTypes } from "./PropTypes";
 
 import {
@@ -18,6 +20,7 @@ import {
 import "./ieEvent";
 
 var React = {
+  version: "VERSION",
   PropTypes,
   Children, //为了react-redux
   render,
@@ -25,7 +28,7 @@ var React = {
   options,
   unstable_renderSubtreeIntoContainer,
   isValidElement,
-  version: "VERSION",
+  createClass,
   createElement,
   cloneElement,
   PureComponent,

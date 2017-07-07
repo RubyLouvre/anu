@@ -28,5 +28,8 @@
    这是chrome51+, 为了提高性能，默认对touchmove/mousemove/mousewheel事件禁用preventDefault方法引发的问题
 2. 销毁元素节点，彻底清除_component与__events引用
 3. 取消refs.xxx = null 操作，确保组件销毁后可能还进行动画，这时会有DOM操作不会报错
+4. 对props.children进行增强，支持更多合法的类型
+5. 实现对createClass的支持
+6. 实现对mixin的支持
 
 

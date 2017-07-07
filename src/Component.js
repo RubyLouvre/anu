@@ -29,6 +29,9 @@ export function Component(props, context) {
 }
 
 Component.prototype = {
+  replaceState(){
+    console.warn('此方法末实现')
+  },
   setState(state, cb) {
     this._pendingStates.push(state);
     setStateProxy(this, cb);

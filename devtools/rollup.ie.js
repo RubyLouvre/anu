@@ -1,5 +1,6 @@
 import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-re";
+import filesize from 'rollup-plugin-filesize';
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
@@ -43,7 +44,8 @@ export default {
         }
         
       ]
-    })
+    }),
+    filesize()
   ],
   moduleName: "React",
   useStrict: false

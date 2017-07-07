@@ -5,7 +5,8 @@ import { PureComponent } from "./PureComponent";
 import { Component } from "./Component";
 import { Children } from "./Children";
 import { win as window } from "./browser";
-import  * as eventSystem  from "./event";
+import * as eventSystem from "./event";
+import { createClass } from "./createClass";
 
 import { options } from "./util";
 import { PropTypes } from "./PropTypes";
@@ -25,6 +26,7 @@ var React = {
   options,
   unstable_renderSubtreeIntoContainer,
   isValidElement,
+  createClass,
   version: "VERSION",
   createElement,
   cloneElement,

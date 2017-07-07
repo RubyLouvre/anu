@@ -36,15 +36,15 @@ QQ交流学习群：  370262116
 
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
 
-
+### dist目录下的变种说明
+1. React 支持IE9+, 拥有PropTypes, createClass
+2. ReactIE 支持IE6+, 拥有PropTypes, createClass (需要与lib目录下的polyfill配套使用)
+3. ReactShim 支持IE
 
 ### 目前没有支持的方法与对象
 
-1. PropTypes
-2. childContextTypes(不需要定义它，就能使用context)
-3. mixin机制
-4. createClass
-5. createFactory
+1. childContextTypes(不需要定义它，就能使用context)
+2. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁
 

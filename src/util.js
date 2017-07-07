@@ -37,11 +37,12 @@ export function inherit(SubClass, SupClass) {
   function Bridge() {}
   Bridge.prototype = SupClass.prototype;
 
-  let fn = (SubClass.prototype = new Bridge());
+  var fn = (SubClass.prototype = new Bridge());
 
   // 避免原型链拉长导致方法查找的性能开销
   extend(fn, SupClass.prototype);
   fn.constructor = SubClass;
+  return fn
 }
 
 /**

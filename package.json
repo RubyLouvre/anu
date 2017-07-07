@@ -53,6 +53,7 @@
     "node-jsx": "^0.13.3",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-filesize": "^1.4.2",
     "rollup-plugin-istanbul": "^1.1.0",
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",

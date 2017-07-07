@@ -1,4 +1,4 @@
-import {__push} from "./util";
+import { __push } from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 
@@ -36,8 +36,15 @@ export function createElement(type, configs) {
           ref = val;
           break;
         case "children":
-          if (!stack.length && val && val.length) {
-            __push.apply(stack, val);
+          //只要不是通过JSX产生的createElement调用，props内部就千奇百度，
+          //children可能是一个数组，也可能是一个字符串，数字，布尔，
+          //也可能是一个虚拟DOM
+          if (!stack.length && val) {
+            if (Array.isArray(val)) {
+              __push.apply(stack, val);
+            } else {
+              stack.push(val);
+            }
           }
           break;
         default:
@@ -50,13 +57,9 @@ export function createElement(type, configs) {
   var children = flattenChildren(stack);
 
   if (typeof type === "function") {
-    vtype = type.prototype && type.prototype.render
-      ? 2
-      : 4;
-    if (children.length) 
-      props.children = children;
-    }
-  else {
+    vtype = type.prototype && type.prototype.render ? 2 : 4;
+    if (children.length) props.children = children;
+  } else {
     props.children = children;
   }
 
@@ -79,7 +82,12 @@ function flattenChildren(stack) {
       }
     } else {
       // eslint-disable-next-line
-      if (child === null || child === void 666 || child === false || child === true) {
+      if (
+        child === null ||
+        child === void 666 ||
+        child === false ||
+        child === true
+      ) {
         continue;
       }
       var childType = typeof child;
@@ -148,7 +156,7 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
 }
 
 Vnode.prototype = {
-  getDOMNode: function () {
+  getDOMNode: function() {
     return this._hostNode || null;
   },
 

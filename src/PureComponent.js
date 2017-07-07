@@ -6,9 +6,7 @@ export function PureComponent(props, context) {
   Component.call(this, props, context);
 }
 
-inherit(PureComponent, Component);
-
-let fn = PureComponent.prototype;
+let fn = inherit(PureComponent, Component);
 
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
   var a = shallowEqual(this.props, nextProps);

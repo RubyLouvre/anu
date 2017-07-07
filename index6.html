@@ -147,6 +147,15 @@
            ReactDOM.render(<App />, document.getElementById('example'))
        }
        </script>
+       <script>
+         function newCtor(a, name){
+            var fn = new Function('a', 'return function '+name+'(){ console.log("b"); a();}' )
+            return fn(a, name)
+         }
+        var a =  newCtor(function f(){ console.log('===')},"APP")
+        console.log(a)
+        a()
+       </script>
 </head>
 
 <body>
