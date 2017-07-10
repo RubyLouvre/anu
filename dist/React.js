@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-07
+ * by 司徒正美 Copyright 2017-07-10
  */
 
 (function (global, factory) {
@@ -129,7 +129,7 @@ function camelize(target) {
 }
 
 var options = {
-  immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+  immune: {} // extend(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
 };
 
 function checkNull(vnode, type) {
@@ -146,7 +146,8 @@ var numberMap = {
   "[object Number]": 3,
   "[object String]": 4,
   "[object Function]": 5,
-  "[object Array]": 6
+  "[object Symbol]": 6,
+  "[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
 function typeNumber(data) {
@@ -154,7 +155,7 @@ function typeNumber(data) {
     return 0;
   }
   var a = numberMap[__type.call(data)];
-  return a || 7;
+  return a || 8;
 }
 
 function getComponentProps(vnode) {
@@ -238,6 +239,7 @@ function createElement(type, configs) {
   var children = flattenChildren(stack);
 
   if (typeNumber(type) === 5) {
+    //fn
     vtype = type.prototype && type.prototype.render ? 2 : 4;
     if (children.length) props.children = children;
   } else {
@@ -322,9 +324,11 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   }
   var refType = typeNumber(ref);
   if (refType === 4) {
+    //string
     this.__refKey = ref;
     this.ref = __ref;
   } else if (refType === 5) {
+    //function
     this.ref = ref;
   }
   /*
@@ -500,19 +504,24 @@ function setStateProxy(instance, cb) {
   }, 0);
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-
 function shallowEqual(objA, objB) {
   if (Object.is(objA, objB)) {
     return true;
   }
-
-  if ((typeof objA === "undefined" ? "undefined" : _typeof(objA)) !== "object" || objA === null || (typeof objB === "undefined" ? "undefined" : _typeof(objB)) !== "object" || objB === null) {
+  /*
+    if (
+      typeof objA !== "object" ||
+      objA === null ||
+      typeof objB !== "object" ||
+      objB === null
+    ) {
+      return false;
+    }*/
+  //确保objA, objB都是对象
+  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
     return false;
   }
-
   var keysA = Object.keys(objA);
   var keysB = Object.keys(objB);
   if (keysA.length !== keysB.length) {
@@ -630,10 +639,10 @@ function removeDOMElement(node) {
 }
 
 var versions = {
-  77: 7, //IE7-8 objectobject
-  70: 6, //IE6 objectundefined
+  88: 7, //IE7-8 objectobject
+  80: 6, //IE6 objectundefined
   "00": NaN, // other modern browsers
-  "07": NaN
+  "08": NaN
 };
 /* istanbul ignore next  */
 var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
@@ -909,11 +918,9 @@ var eventProto = SyntheticEvent.prototype = {
   }
 };
 /* istanbul ignore next  */
-Object.freeze || (Object.freeze = function (a) {
-  return a;
-});
 
-var eventSystem = Object.freeze({
+
+var eventSystem = extend({
 	eventCamelCache: eventCamelCache,
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
@@ -1570,10 +1577,7 @@ function getOptionSelected(option, selected) {
   dom.selected = selected;
 }
 
-/**!
- * 有些版本其实不需要这个模块的
- */
-
+//innerMap_start
 var innerMap = win.Map;
 
 try {
@@ -1614,7 +1618,7 @@ try {
     }
   };
 }
-
+//innerMap_end
 var instanceMap = new innerMap();
 
 function disposeVnode(vnode) {

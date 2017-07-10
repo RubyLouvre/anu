@@ -76,10 +76,10 @@ export function removeDOMElement(node) {
 }
 
 var versions = {
-  77: 7, //IE7-8 objectobject
-  70: 6, //IE6 objectundefined
+  88: 7, //IE7-8 objectobject
+  80: 6, //IE6 objectundefined
   "00": NaN, // other modern browsers
-  "07": NaN
+  "08": NaN
 };
 /* istanbul ignore next  */
 export var msie =

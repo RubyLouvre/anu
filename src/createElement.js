@@ -56,7 +56,7 @@ export function createElement(type, configs) {
 
   var children = flattenChildren(stack);
 
-  if (typeNumber(type) === 5) {
+  if (typeNumber(type) === 5) {//fn
     vtype = type.prototype && type.prototype.render ? 2 : 4;
     if (children.length) props.children = children;
   } else {
@@ -140,10 +140,10 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
     this.checkProps = checkProps;
   }
   var refType = typeNumber(ref);
-  if (refType === 4) {
+  if (refType === 4) {//string
     this.__refKey = ref;
     this.ref = __ref;
-  } else if (refType === 5) {
+  } else if (refType === 5) {//function
     this.ref = ref;
   }
   /*

@@ -99,7 +99,8 @@ var numberMap = {
   "[object Number]": 3,
   "[object String]": 4,
   "[object Function]": 5,
-  "[object Array]": 6
+  "[object Symbol]": 6,
+  "[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
 function typeNumber(data) {
@@ -107,7 +108,7 @@ function typeNumber(data) {
     return 0;
   }
   var a = numberMap[__type.call(data)];
-  return a || 7;
+  return a || 8;
 }
 
 function getComponentProps(vnode) {

@@ -1,19 +1,13 @@
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-
+import { typeNumber } from "./util";
 export function shallowEqual(objA, objB) {
   if (Object.is(objA, objB)) {
     return true;
   }
-
-  if (
-    typeof objA !== "object" ||
-    objA === null ||
-    typeof objB !== "object" ||
-    objB === null
-  ) {
+  //确保objA, objB都是对象
+  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
     return false;
   }
-
   var keysA = Object.keys(objA);
   var keysB = Object.keys(objB);
   if (keysA.length !== keysB.length) {
