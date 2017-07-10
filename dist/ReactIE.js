@@ -253,15 +253,13 @@ function flattenChildren(stack) {
   var lastText,
       child,
       deep,
-      children = EMPTY_CHILDREN;
+      children = [];
 
   while (stack.length) {
     //比较巧妙地判定是否为子数组
-    if ((child = stack.pop()) && child.pop !== undefined) {
-      //   deep = child._deep ? child._deep + 1 : 1;
+    if ((child = stack.pop()) && child.pop) {
       for (var i = 0; i < child.length; i++) {
         stack[stack.length] = child[i];
-        //  if (el) {    el._deep = deep;  }
       }
     } else {
       // eslint-disable-next-line
@@ -287,12 +285,11 @@ function flattenChildren(stack) {
         lastText = null;
       }
 
-      if (children === EMPTY_CHILDREN) {
-        children = [child];
-      } else {
-        children.unshift(child);
-      }
+      children.unshift(child);
     }
+  }
+  if (!children.length) {
+    children = EMPTY_CHILDREN;
   }
   return children;
 }
@@ -509,15 +506,6 @@ function shallowEqual(objA, objB) {
   if (Object.is(objA, objB)) {
     return true;
   }
-  /*
-    if (
-      typeof objA !== "object" ||
-      objA === null ||
-      typeof objB !== "object" ||
-      objB === null
-    ) {
-      return false;
-    }*/
   //确保objA, objB都是对象
   if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
     return false;
@@ -1279,7 +1267,7 @@ function getHookType(name, val, type, dom) {
   if (isEventName(name)) {
     return "__event__";
   }
-  if (!val && val !== "" && val !== 0) {
+  if (typeNumber(val) < 3 && !val) {
     return "removeAttribute";
   }
   return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
@@ -1333,7 +1321,7 @@ var propHooks = {
     }
   },
   svgAttr: function svgAttr(dom, name, val) {
-    var method = val === false || val === null || val === undefined ? "removeAttribute" : "setAttribute";
+    var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
     if (svgprops[name]) {
       dom[method + "NS"](xlink, svgprops[name], val || "");
     } else {

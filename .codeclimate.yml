@@ -19,7 +19,6 @@ exclude_paths:
 - test/**/*
 - dist/**/*
 - lib/**/*
-- libs/**/*
 - perf/**/*
 - dist/**/*
 - ssr/**/*

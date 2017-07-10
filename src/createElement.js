@@ -56,7 +56,8 @@ export function createElement(type, configs) {
 
   var children = flattenChildren(stack);
 
-  if (typeNumber(type) === 5) {//fn
+  if (typeNumber(type) === 5) {
+    //fn
     vtype = type.prototype && type.prototype.render ? 2 : 4;
     if (children.length) props.children = children;
   } else {
@@ -70,15 +71,13 @@ function flattenChildren(stack) {
   var lastText,
     child,
     deep,
-    children = EMPTY_CHILDREN;
+    children = [];
 
   while (stack.length) {
     //比较巧妙地判定是否为子数组
-    if ((child = stack.pop()) && child.pop !== undefined) {
-      //   deep = child._deep ? child._deep + 1 : 1;
+    if ((child = stack.pop()) && child.pop ) {
       for (let i = 0; i < child.length; i++) {
         stack[stack.length] = child[i];
-        //  if (el) {    el._deep = deep;  }
       }
     } else {
       // eslint-disable-next-line
@@ -89,7 +88,8 @@ function flattenChildren(stack) {
         continue;
       }
 
-      if (childType < 6) {//!== 'object'
+      if (childType < 6) {
+        //!== 'object'
         //不是对象就是字符串或数字
         if (lastText) {
           lastText.text = child + lastText.text;
@@ -104,12 +104,11 @@ function flattenChildren(stack) {
         lastText = null;
       }
 
-      if (children === EMPTY_CHILDREN) {
-        children = [child];
-      } else {
-        children.unshift(child);
-      }
+      children.unshift(child);
     }
+  }
+  if (!children.length) {
+    children = EMPTY_CHILDREN;
   }
   return children;
 }
@@ -140,10 +139,12 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
     this.checkProps = checkProps;
   }
   var refType = typeNumber(ref);
-  if (refType === 4) {//string
+  if (refType === 4) {
+    //string
     this.__refKey = ref;
     this.ref = __ref;
-  } else if (refType === 5) {//function
+  } else if (refType === 5) {
+    //function
     this.ref = ref;
   }
   /*

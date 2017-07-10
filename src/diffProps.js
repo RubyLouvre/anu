@@ -6,7 +6,7 @@ import {
   isEventName,
   eventHooks
 } from "./event";
-import { oneObject, toLowerCase, noop } from "./util";
+import { oneObject, toLowerCase, noop,typeNumber } from "./util";
 
 var boolAttributes = oneObject(
   "autofocus,autoplay,async,allowTransparency,checked,controls," +
@@ -106,7 +106,7 @@ function getHookType(name, val, type, dom) {
   if (isEventName(name)) {
     return "__event__";
   }
-  if (!val && val !== "" && val !== 0) {
+  if (typeNumber(val) < 3 && !val) {
     return "removeAttribute";
   }
   return name.indexOf("data-") === 0 || dom[name] === void 666
@@ -162,8 +162,7 @@ var propHooks = {
     }
   },
   svgAttr: function(dom, name, val) {
-    var method =
-      val === false || val === null || val === undefined
+    var method = typeNumber(val) < 3 && !val
         ? "removeAttribute"
         : "setAttribute";
     if (svgprops[name]) {
