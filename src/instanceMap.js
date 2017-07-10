@@ -1,8 +1,6 @@
-/**!
- * 有些版本其实不需要这个模块的
- */
 
 import { document, win } from "./browser";
+//innerMap_start
 var innerMap = win.Map;
 
 try {
@@ -41,5 +39,5 @@ try {
     }
   };
 }
-
+//innerMap_end
 export var instanceMap = new innerMap();
