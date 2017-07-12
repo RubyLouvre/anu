@@ -128,7 +128,7 @@ function mixSpecIntoComponent(Ctor, spec) {
   }
 }
 
-function mergeOwnerProperties(one, two) {
+function mergeOwnProperties(one, two) {
   for (var key in two) {
     if (two.hasOwnProperty(key)) {
       one[key] = two[key];

@@ -29,8 +29,8 @@ export function Component(props, context) {
 }
 
 Component.prototype = {
-  replaceState(){
-    console.warn('此方法末实现')
+  replaceState() {
+    console.warn("此方法末实现");
   },
   setState(state, cb) {
     this._pendingStates.push(state);
@@ -83,9 +83,15 @@ function setStateProxy(instance, cb) {
     return;
   }
   if (instance._updating) {
-    scheduler.add(function() {
-      options.refreshComponent(instance);
-    });
+      scheduler.add(function() {
+        options.refreshComponent(instance);
+     });
+      /*
+    setTimeout(function() {
+      if (instance._pendingStates.length) {
+        options.refreshComponent(instance);
+      }
+    });*/
     return;
   }
 
@@ -93,8 +99,8 @@ function setStateProxy(instance, cb) {
     options.refreshComponent(instance);
     return;
   }
-  var timeoutID = setTimeout(function() {
-    clearTimeout(timeoutID);
+  //var timeoutID = setTimeout(function() {
+  //  clearTimeout(timeoutID);
     options.refreshComponent(instance);
-  }, 0);
+ // }, 0);
 }

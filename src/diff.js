@@ -258,8 +258,11 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
-  vnode._hostNode = dom;
 
+  vnode._hostNode = dom;
+  if(scheduler.count){
+  //  scheduler.run()
+  }
   return dom;
 }
 export function safeRenderComponent(instance, type) {
@@ -323,12 +326,12 @@ function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
 
   if (!instance._hasDidMount) {
-    scheduler.add(function() {
-      setTimeout(function() {
-        refreshComponent(instance);
-      });
+    scheduler.addAndRun(function() {
+    //  setTimeout(function() {
+        refreshComponent(instance); //这里要去掉异步吗？
+    //  });
     });
-    scheduler.run();
+   
     return node;
   }
   var { props, state, context, lastProps, constructor } = instance;
@@ -340,16 +343,17 @@ function reRenderComponent(instance) {
   var nextState = instance._processPendingState(props, context);
 
   instance.props = lastProps;
-  // delete instance.lastProps 生命周期 shouldComponentUpdate(nextProps, nextState,
-  // nextContext)
+  //防止用户在shouldComponentUpdate中调用setState
+   instance._disableSetState = true;
   if (
     !instance._forceUpdate &&
     instance.shouldComponentUpdate &&
     instance.shouldComponentUpdate(nextProps, nextState, context) === false
   ) {
-    return node; //注意
+     instance._disableSetState = false
+    return node; 
   }
-
+  instance._disableSetState = false;
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
@@ -486,7 +490,10 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   try {
     return reRenderComponent(instance);
   } catch (e) {
-    scheduler.run();
+    setTimeout(function(){
+       scheduler.run();
+    })
+    
   }
 }
 

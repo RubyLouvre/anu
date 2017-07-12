@@ -1,13 +1,21 @@
 import { options, typeNumber } from "./util";
-var list = [];
+
 export var scheduler = {
+  list: [],
   add: function(el) {
-    list.push(el);
+    this.count = this.list.push(el);
+  },
+  addAndRun: function(fn) {
+    this.add(fn);
+    setTimeout(function() {
+      scheduler.run();
+    },0);
   },
   run: function(no) {
-    var queue = list;
-    if (!list.length) return;
-    list = [];
+    if (this.count === 0) return;
+    this.count = 0;
+    var queue = this.list;
+    this.list = [];
     queue.forEach(function(instance) {
       if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
@@ -26,7 +34,11 @@ export var scheduler = {
         instance._updating = false;
         instance._hasDidMount = true;
 
-        if (instance._pendingStates.length && !instance._asyncUpdating) {
+        if (instance._pendingStates.length && !instance._disableSetState) {
+          options.refreshComponent(instance);
+        }
+        //消灭里面的异步
+        /*    if (instance._pendingStates.length && !instance._asyncUpdating) {
           instance._asyncUpdating = true;
           var timeoutID = setTimeout(function() {
             clearTimeout(timeoutID);
@@ -37,6 +49,7 @@ export var scheduler = {
             //处理componentDidMount产生的回调
           }, 0);
         }
+        */
       }
     });
   }
