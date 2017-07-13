@@ -9,7 +9,7 @@ export var scheduler = {
     this.add(fn);
     setTimeout(function() {
       scheduler.run();
-    },0);
+    }, 0);
   },
   run: function(no) {
     if (this.count === 0) return;
@@ -31,25 +31,12 @@ export var scheduler = {
       if (instance.componentDidMount) {
         instance._updating = true;
         instance.componentDidMount();
-        instance._updating = false;
+        instance.componentDidMount = instance._updating = false;
         instance._hasDidMount = true;
-
+        //处理componentDidMount里调用 setState产生重绘
         if (instance._pendingStates.length && !instance._disableSetState) {
           options.refreshComponent(instance);
         }
-        //消灭里面的异步
-        /*    if (instance._pendingStates.length && !instance._asyncUpdating) {
-          instance._asyncUpdating = true;
-          var timeoutID = setTimeout(function() {
-            clearTimeout(timeoutID);
-            instance._asyncUpdating = false;
-            if (!instance._disableSetState) {
-              options.refreshComponent(instance);
-            }
-            //处理componentDidMount产生的回调
-          }, 0);
-        }
-        */
       }
     });
   }

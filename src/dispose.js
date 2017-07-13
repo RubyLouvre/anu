@@ -1,11 +1,7 @@
 import { instanceMap } from "./instanceMap";
 
 export function disposeVnode(vnode) {
-  if (!vnode) {
-    console.warn("in `disposeVnode` method, vnode is undefined", vnode);
-    return;
-  }
-  if (vnode._disposed) {
+  if (!vnode || vnode._disposed) {
     return;
   }
   switch (vnode.vtype) {
@@ -19,36 +15,33 @@ export function disposeVnode(vnode) {
       disposeStateless(vnode);
       break;
     default:
-      vnode._hostNode = null;
-      vnode._hostParent = null;
+      vnode._hostNode = vnode._hostParent = null;
       break;
   }
   vnode._disposed = true;
 }
+
 function disposeStateless(vnode) {
-  // vnode._disposed = true;
-  if (vnode._instance)
-     disposeVnode(vnode._instance._rendered);
-  vnode._instance = null;
+  if (vnode._instance) {
+    disposeVnode(vnode._instance._rendered);
+    vnode._instance = null;
+  }
 }
 
 function disposeElement(vnode) {
   var { props } = vnode;
   var children = props.children;
-  // var childNodes = node.childNodes;
-  for (let i = 0, len = children.length; i < len; i++) {
+  for (let i = 0, n = children.length; i < n; i++) {
     disposeVnode(children[i]);
   }
   //eslint-disable-next-line
   vnode.ref && vnode.ref(null);
-  vnode._hostNode = null;
-  vnode._hostParent = null;
+  vnode._hostNode = vnode._hostParent = null;
 }
 
 function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
-   // vnode._disposed = true;
     instance._disableSetState = true;
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();

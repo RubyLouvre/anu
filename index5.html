@@ -17,60 +17,55 @@
             background: lawngreen;
         }
     </style>
-    <script src="./dist/React.js"></script>
-  <!-- <script src="./test/react.js"></script>
+<script src="./dist/React.js"></script>
+   <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
-  <script src="./libs/babel.js"></script>  <script type='text/babel'>
-        var str = '', s
-        class Component1 extends React.Component {
-            componentWillUnmount() {
-                console.log('移除1111')
-                str += 'xxxx'
-            }
-            render() {
-                return <div className="component1">{this.props.children}</div>
+  <script src="./lib/babel.js"></script>  <script type='text/babel'>
+var s
+     var i = 0
+     var expect = function(a){
+        return {
+            toBe: function(b){
+                console.log(a, b, a === b)
             }
         }
-        class Component2 extends React.Component {
-            componentWillUnmount() {
-                console.log('移除2222')
-                str += ' yyyy'
-            }
+     }
+      var div = document.createElement('div')
+        let outer = function (a) {
+            expect(a).toBe(div.firstChild);
+            i++
+        }
+        let inner = function (a) {
+            expect(a).toBe(div.firstChild.firstChild);
+            i++
+        }
+        class Foo extends React.Component {
             render() {
-                return <div className="component2">xxx</div>
+                return (
+                    <div ref={outer}>
+                        <span ref={inner} />
+                    </div>
+                );
             }
         }
-        var index = 1
-        function detect(a) {
-            console.log('detect 方法', index , a)
-            
-        }
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.handleClick = this.handleClick.bind(this)
-            }
-            handleClick() {
-                index = 0
-                this.forceUpdate()
-                setTimeout(function(){
-                    console.log('应该输出', str)
-                })
-            }
-            render() {
-                return index ?
-                    <div ref='a' onClick={this.handleClick.bind(this)}>
-                        <Component1>
-                            <p ref={detect}>这是子节点(移除节点测试1)</p>
-                            <Component2 />
-                        </Component1>
-                    </div> : <div>文本节点</div>
-
-            }
-        };
-
+       
+    
   window.onload = function(){
-     s = ReactDOM.render(<App/>, document.getElementById('example'))
+     
+       s = ReactDOM.render(<Foo />, div);
+      /*
+      expect(log).toEqual([
+        'parent render one',
+        'child render one',
+        'parent render one',
+        'child componentWillReceiveProps one',
+        'child componentWillReceiveProps done one',
+        'child render one',
+        'parent render two',
+        'child render two',
+      ]);*/
+
+     
   }
     </script>
 </head>

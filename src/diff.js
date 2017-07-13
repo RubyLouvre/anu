@@ -60,7 +60,7 @@ function updateView(vnode, container, callback, parentContext) {
   }
   if (!container || container.nodeType !== 1) {
     console.warn(`${container}必须为元素节点`);
-    return
+    return;
   }
   var prevVnode = container._component,
     rootNode,
@@ -189,6 +189,7 @@ function mountChildren(vnode, parentNode, parentContext) {
     let el = children[i];
     el._hostParent = vnode;
     let curNode = mountVnode(el, parentContext);
+
     parentNode.appendChild(curNode);
   }
 }
@@ -206,10 +207,10 @@ function alignChildren(vnode, parentNode, parentContext, childNodes) {
       j++;
     }
     parentNode.insertBefore(dom, insertPoint);
+
     insertPoint = dom.nextSibling;
   }
 }
-
 function mountComponent(vnode, parentContext, prevRendered) {
   let { type } = vnode;
 
@@ -222,9 +223,13 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
+  //scheduler.run(); //执行之前的东西
+
   if (instance.componentWillMount) {
+    instance._disableSetState = true;
     instance.componentWillMount();
     instance.state = instance._processPendingState();
+    instance._disableSetState = false;
   }
 
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
@@ -253,18 +258,17 @@ function mountComponent(vnode, parentContext, prevRendered) {
       scheduler.add(instance);
     }
   }
+
   if (vnode.ref) {
     scheduler.add(function() {
       vnode.ref(instance);
     });
   }
-
+  // scheduler.run(); //执行之前的东西
   vnode._hostNode = dom;
-  if(scheduler.count){
-  //  scheduler.run()
-  }
   return dom;
 }
+
 export function safeRenderComponent(instance, type) {
   CurrentOwner.cur = instance;
   var rendered = instance.render();
@@ -305,8 +309,6 @@ function updateStateless(lastVnode, nextVnode, node, parentContext) {
   return dom;
 }
 
-
-
 function refreshComponent(instance) {
   //这里触发视图更新
 
@@ -327,11 +329,9 @@ function reRenderComponent(instance) {
 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function() {
-    //  setTimeout(function() {
-        refreshComponent(instance); //这里要去掉异步吗？
-    //  });
+      refreshComponent(instance);
     });
-   
+
     return node;
   }
   var { props, state, context, lastProps, constructor } = instance;
@@ -344,14 +344,14 @@ function reRenderComponent(instance) {
 
   instance.props = lastProps;
   //防止用户在shouldComponentUpdate中调用setState
-   instance._disableSetState = true;
+  instance._disableSetState = true;
   if (
     !instance._forceUpdate &&
     instance.shouldComponentUpdate &&
     instance.shouldComponentUpdate(nextProps, nextState, context) === false
   ) {
-     instance._disableSetState = false
-    return node; 
+    instance._disableSetState = false;
+    return node;
   }
   instance._disableSetState = false;
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
@@ -386,12 +386,7 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
   if (newVnode == null) {
     removeDOMElement(node);
     disposeVnode(vnode);
-  } else if (
-    !(
-      vnode.type == newVnode.type &&
-      vnode.key === newVnode.key 
-    )
-  ) {
+  } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key)) {
     //replace
     disposeVnode(vnode);
     newNode = mountVnode(newVnode, parentContext);
@@ -408,7 +403,6 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
   return newNode;
 }
 
-
 export function findDOMNode(componentOrElement) {
   if (componentOrElement == null) {
     return null;
@@ -419,7 +413,6 @@ export function findDOMNode(componentOrElement) {
 
   return instanceMap.get(componentOrElement) || null;
 }
-
 
 function updateVnode(lastVnode, nextVnode, node, parentContext) {
   switch (lastVnode.vtype) {
@@ -487,14 +480,7 @@ function updateComponent(lastVnode, nextVnode, node, parentContext) {
   if (nextVnode.ref) {
     nextVnode.ref(instance);
   }
-  try {
-    return reRenderComponent(instance);
-  } catch (e) {
-    setTimeout(function(){
-       scheduler.run();
-    })
-    
-  }
+  return reRenderComponent(instance);
 }
 
 function updateChildren(vnode, newVnode, node, parentContext) {
@@ -507,6 +493,7 @@ function updateChildren(vnode, newVnode, node, parentContext) {
   patches.removes.forEach(applyDestroy);
   patches.updates.forEach(applyUpdate);
   patches.creates.forEach(applyCreate);
+  scheduler.run()
 }
 
 function diffChildren(patches, vnode, newVnode, node, parentContext) {
@@ -635,6 +622,10 @@ function applyUpdate(data) {
     if (!vnode.vtype) {
       if (vnode.text !== nextVnode.text) {
         dom.nodeValue = nextVnode.text;
+      }
+      if (!nextVnode._hostNode) {
+        nextVnode._hostNode = dom;
+        nextVnode._hostParent = vnode._hostParent;
       }
     } else if (vnode.vtype === 1) {
       updateElement(vnode, nextVnode, dom, data.parentContext);

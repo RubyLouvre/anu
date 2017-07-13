@@ -14,7 +14,8 @@ export function Component(props, context) {
   this.refs = {};
   this._disableSetState = true;
   /**
-   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps进行render
+   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
+   * 被setState，从而提前发生render;
    * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
    * this._disposed = true 阻止组件在销毁后还进行diff
    * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
@@ -78,29 +79,14 @@ function setStateProxy(instance, cb) {
     instance._pendingCallbacks.push(cb);
   }
   if (instance._disableSetState === true) {
-    this._forceUpdate = false;
     //只存储回调，但不会触发组件的更新
-    return;
-  }
-  if (instance._updating) {
-      scheduler.add(function() {
-        options.refreshComponent(instance);
-     });
-      /*
-    setTimeout(function() {
-      if (instance._pendingStates.length) {
-        options.refreshComponent(instance);
-      }
-    });*/
-    return;
-  }
-
-  if (instance._forceUpdate) {
+    this._forceUpdate = false;
+  } else if (instance._updating) {
+    //防止在父组件更新过程中，子组件执行父组件的setState
+    scheduler.add(function() {
+      options.refreshComponent(instance);
+    });
+  } else {
     options.refreshComponent(instance);
-    return;
   }
-  //var timeoutID = setTimeout(function() {
-  //  clearTimeout(timeoutID);
-    options.refreshComponent(instance);
- // }, 0);
 }
