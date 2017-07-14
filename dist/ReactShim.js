@@ -2078,7 +2078,7 @@ if (msie < 9) {
 }
 
 var React = {
-  version: "1.0.4",
+  version: "1.0.5",
   Children: Children, //为了react-redux
   render: render,
   findDOMNode: findDOMNode,

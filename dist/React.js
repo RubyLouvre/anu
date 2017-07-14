@@ -2284,7 +2284,7 @@ var React = {
   unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
   isValidElement: isValidElement,
   createClass: createClass,
-  version: "1.0.4",
+  version: "1.0.5",
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,
