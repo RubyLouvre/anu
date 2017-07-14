@@ -33,3 +33,10 @@
 6. 实现对mixin的支持
 
 
+
+##1.0.5
+
+1. 优化scheduler机制
+2. 实现对createFactory的支持
+3. 优化dispose模块
+4. 使用typeNumber代替typeof关键字，减少打包后的体积
