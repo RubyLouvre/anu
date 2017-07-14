@@ -364,6 +364,10 @@ function cloneElement(vnode, props) {
   return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
 }
 
+if (0 === [1, 2].splice(0).length) {
+  console.warn("请引入polyfill进行修复");
+}
+
 var scheduler = {
   list: [],
   add: function add(el) {
@@ -378,20 +382,16 @@ var scheduler = {
   run: function run(no) {
     if (this.count === 0) return;
     this.count = 0;
-    //splice optimate
-    var queue = this.list;
-    this.list = [];
-    queue.forEach(function (instance) {
+    this.list.splice(0).forEach(function (instance) {
       if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
         return;
       }
       if (instance._pendingCallbacks.length) {
         //处理componentWillMount产生的回调
-        instance._pendingCallbacks.forEach(function (fn) {
+        instance._pendingCallbacks.splice(0).forEach(function (fn) {
           fn.call(instance);
         });
-        instance._pendingCallbacks.length = 0;
       }
       if (instance.componentDidMount) {
         instance._updating = true;
@@ -452,9 +452,7 @@ Component.prototype = {
     if (n === 0) {
       return this.state;
     }
-    var states = this._pendingStates.concat();
-    this._pendingStates.length = 0;
-
+    var states = this._pendingStates.splice(0);
     var nextState = extend({}, this.state);
     for (var i = 0; i < n; i++) {
       var partial = states[i];
@@ -1943,10 +1941,9 @@ function refreshComponent(instance) {
   reRenderComponent(instance);
 
   instance._forceUpdate = false;
-  instance._pendingCallbacks.forEach(function (fn) {
+  instance._pendingCallbacks.splice(0).forEach(function (fn) {
     fn.call(instance);
   });
-  instance._pendingCallbacks.length = 0;
 }
 
 //将Component中这个东西移动这里

@@ -1,4 +1,7 @@
 import { options, typeNumber } from "./util";
+if (0 === [1, 2].splice(0).length) {
+  console.warn("请引入polyfill进行修复");
+}
 
 export var scheduler = {
   list: [],
@@ -14,20 +17,16 @@ export var scheduler = {
   run: function(no) {
     if (this.count === 0) return;
     this.count = 0;
-    //splice optimate
-    var queue = this.list;
-    this.list = [];
-    queue.forEach(function(instance) {
+    this.list.splice(0).forEach(function(instance) {
       if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
         return;
       }
       if (instance._pendingCallbacks.length) {
         //处理componentWillMount产生的回调
-        instance._pendingCallbacks.forEach(function(fn) {
+        instance._pendingCallbacks.splice(0).forEach(function(fn) {
           fn.call(instance);
         });
-        instance._pendingCallbacks.length = 0;
       }
       if (instance.componentDidMount) {
         instance._updating = true;

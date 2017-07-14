@@ -223,7 +223,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
-
   if (instance.componentWillMount) {
     instance._disableSetState = true;
     instance.componentWillMount();
@@ -313,10 +312,9 @@ function refreshComponent(instance) {
   reRenderComponent(instance);
 
   instance._forceUpdate = false;
-  instance._pendingCallbacks.forEach(function(fn) {
+  instance._pendingCallbacks.splice(0).forEach(function(fn) {
     fn.call(instance);
   });
-  instance._pendingCallbacks.length = 0;
 }
 
 //将Component中这个东西移动这里
@@ -491,7 +489,7 @@ function updateChildren(vnode, newVnode, node, parentContext) {
   patches.removes.forEach(applyDestroy);
   patches.updates.forEach(applyUpdate);
   patches.creates.forEach(applyCreate);
-  scheduler.run()
+  scheduler.run();
 }
 
 function diffChildren(patches, vnode, newVnode, node, parentContext) {

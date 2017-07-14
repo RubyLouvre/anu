@@ -1,18 +1,13 @@
 var fs = require("fs");
 var path = require("path");
 
-
 var dir1 = path.join(__dirname, "../dist/ReactShim.js");
 var str = fs.readFileSync(dir1, "utf-8");
 var text = str
   .replace(/Object\.freeze/g, "extend")
   .replace(/\/\/freeze_start[\s\S]+?freeze_end/, "")
   .replace(/\/\/innerMap_start[\s\S]+?innerMap_end/, "")
-  .replace("new innerMap", "new Map")
-  .replace(/\/\/splice([\s\S]+?)\[\]/, "var queue = this.list.splice(0)")
-  .replace(/_pendingCallbacks\.forEach[\s\S]+?0/g,`_pendingCallbacks.splice(0)\.forEach(function(fn){
-         fn.call(instance);
-     })`)
+  .replace("new innerMap", "new Map");
 
 fs.writeFileSync(dir1, text, { encoding: "utf8" });
 console.log("对ReactShim瘦身完毕");

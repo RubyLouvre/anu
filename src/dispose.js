@@ -30,7 +30,7 @@ function disposeStateless(vnode) {
 
 function disposeElement(vnode) {
   var { props } = vnode;
-  var children = props.children;
+  var children = props.children
   for (let i = 0, n = children.length; i < n; i++) {
     disposeVnode(children[i]);
   }

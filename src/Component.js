@@ -46,9 +46,7 @@ Component.prototype = {
     if (n === 0) {
       return this.state;
     }
-    var states = this._pendingStates.concat();
-    this._pendingStates.length = 0;
-
+    var states = this._pendingStates.splice(0);
     var nextState = extend({}, this.state);
     for (var i = 0; i < n; i++) {
       var partial = states[i];
