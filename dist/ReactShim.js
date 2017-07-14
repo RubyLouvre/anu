@@ -378,8 +378,7 @@ var scheduler = {
   run: function run(no) {
     if (this.count === 0) return;
     this.count = 0;
-    var queue = this.list;
-    this.list = [];
+    var queue = this.list.splice(0);
     queue.forEach(function (instance) {
       if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
@@ -387,10 +386,9 @@ var scheduler = {
       }
       if (instance._pendingCallbacks.length) {
         //处理componentWillMount产生的回调
-        instance._pendingCallbacks.forEach(function (fn) {
-          fn.call(instance);
-        });
-        instance._pendingCallbacks.length = 0;
+        instance._pendingCallbacks.splice(0).forEach(function(fn){
+         fn.call(instance);
+     });
       }
       if (instance.componentDidMount) {
         instance._updating = true;
@@ -423,7 +421,6 @@ function Component(props, context) {
    * 被setState，从而提前发生render;
    * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
    * this._disposed = true 阻止组件在销毁后还进行diff
-   * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
    * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
    * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
    * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
@@ -1654,10 +1651,9 @@ function refreshComponent(instance) {
   reRenderComponent(instance);
 
   instance._forceUpdate = false;
-  instance._pendingCallbacks.forEach(function (fn) {
-    fn.call(instance);
-  });
-  instance._pendingCallbacks.length = 0;
+  instance._pendingCallbacks.splice(0).forEach(function(fn){
+         fn.call(instance);
+     });
 }
 
 //将Component中这个东西移动这里

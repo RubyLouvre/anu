@@ -14,6 +14,7 @@ export var scheduler = {
   run: function(no) {
     if (this.count === 0) return;
     this.count = 0;
+    //splice optimate
     var queue = this.list;
     this.list = [];
     queue.forEach(function(instance) {

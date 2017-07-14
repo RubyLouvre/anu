@@ -378,6 +378,7 @@ var scheduler = {
   run: function run(no) {
     if (this.count === 0) return;
     this.count = 0;
+    //splice optimate
     var queue = this.list;
     this.list = [];
     queue.forEach(function (instance) {
@@ -423,7 +424,6 @@ function Component(props, context) {
    * 被setState，从而提前发生render;
    * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
    * this._disposed = true 阻止组件在销毁后还进行diff
-   * this._asyncUpdating = true 让组件的异步更新在同一个时间段只触发一次
    * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
    * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
    * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
