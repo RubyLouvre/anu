@@ -1601,7 +1601,7 @@ try {
       var id = getID(a);
       this.map[id] = v;
     },
-    delete: function _delete(a) {
+    "delete": function _delete(a) {
       var id = getID(a);
       delete this.map[id];
     }
@@ -1858,8 +1858,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
-  //scheduler.run(); //执行之前的东西
-
   if (instance.componentWillMount) {
     instance._disableSetState = true;
     instance.componentWillMount();
@@ -1895,7 +1893,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
-  // scheduler.run(); //执行之前的东西
   vnode._hostNode = dom;
   return dom;
 }

@@ -223,7 +223,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
-  //scheduler.run(); //执行之前的东西
 
   if (instance.componentWillMount) {
     instance._disableSetState = true;
@@ -264,7 +263,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
-  // scheduler.run(); //执行之前的东西
   vnode._hostNode = dom;
   return dom;
 }

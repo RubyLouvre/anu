@@ -33,7 +33,7 @@ try {
       var id = getID(a);
       this.map[id] = v;
     },
-    delete: function(a) {
+    "delete": function(a) {
       var id = getID(a);
       delete this.map[id];
     }

@@ -1,5 +1,6 @@
 /**
- * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-14
+ * 此版本要求浏览器支持Map对象，没有createClass, createFactory,  PropTypes, isValidElement,
+ * QQ 453286795 by 司徒正美 Copyright 2017-07-14
  */
 
 (function (global, factory) {
@@ -1568,8 +1569,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
-  //scheduler.run(); //执行之前的东西
-
   if (instance.componentWillMount) {
     instance._disableSetState = true;
     instance.componentWillMount();
@@ -1605,7 +1604,6 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
-  // scheduler.run(); //执行之前的东西
   vnode._hostNode = dom;
   return dom;
 }

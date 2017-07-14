@@ -44,20 +44,20 @@ QQ交流学习群：  370262116
 
 ### 低版本浏览器可能需要以下 语言补丁
 
-1. [Array.isArray](https://github.com/juliangruber/isarray/blob/master/index.js)
-2. [Object.assign](https://github.com/ryanhefner/Object.assign/blob/master/index.js)
+1. [Array.isArray](https://github.com/juliangruber/isarray/)
+2. [Object.assign](https://github.com/ryanhefner/Object.assign/)
 3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
 4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
-5. Object.is
-6. Object.keys
-7. Array.prototype.forEach
-8. Function.prototype.bind
+5. [Object.is](https://github.com/ljharb/object-is)
+6. [Object.keys](https://github.com/ryanhefner/Object.keys)
+7. [Array.prototype.forEach](https://github.com/polyfill/Array.prototype.forEach/)
+8. [Function.prototype.bind](https://github.com/mikol/bind)
 
 
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
 
-详细用法与示例见 ** [wiki](https://github.com/RubyLouvre/anu/wiki) **
+详细用法与示例见  [wiki](https://github.com/RubyLouvre/anu/wiki) 
 
 ```html
 <!DOCTYPE html>
