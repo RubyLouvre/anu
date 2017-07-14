@@ -41,10 +41,6 @@ QQ交流学习群：  370262116
 2. ReactIE 支持IE6+, 拥有PropTypes, createClass (需要与lib目录下的polyfill配套使用)
 3. ReactShim 支持IE
 
-### 目前没有支持的方法与对象
-
-1. childContextTypes(不需要定义它，就能使用context)
-2. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁
 

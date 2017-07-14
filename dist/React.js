@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-13
+ * by 司徒正美 Copyright 2017-07-14
  * 兼容yo-router
  */
 
@@ -2292,7 +2292,13 @@ var React = {
   cloneElement: cloneElement,
   PureComponent: PureComponent,
   Component: Component,
-  eventSystem: eventSystem
+  eventSystem: eventSystem,
+  createFactory: function createFactory(type) {
+    console.warn('createFactory将被废弃');
+    var factory = createElement.bind(null, type);
+    factory.type = type;
+    return factory;
+  }
 };
 
 win.ReactDOM = React;

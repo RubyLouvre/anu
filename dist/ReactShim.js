@@ -1,5 +1,5 @@
 /**
- * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-13
+ * 此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright 2017-07-14
  */
 
 (function (global, factory) {

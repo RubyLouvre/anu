@@ -32,7 +32,13 @@ var React = {
   createElement,
   cloneElement,
   PureComponent,
-  Component
+  Component,
+  createFactory(type) {
+    console.warn('createFactory将被废弃')
+    var factory = createElement.bind(null, type);
+    factory.type = type;
+    return factory;
+  }
 };
 
 window.ReactDOM = React;
