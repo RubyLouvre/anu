@@ -27,7 +27,8 @@ export default {
     }),
 
     license({
-      banner: `此版本没有isValidElement, PropTypes, QQ 453286795 by 司徒正美 Copyright ${JSON.stringify(
+      banner: `此版本要求浏览器支持Map对象，没有createClass, createFactory,  PropTypes, isValidElement,
+        QQ 453286795 by 司徒正美 Copyright ${JSON.stringify(
         new Date()
       ).replace(/T.*|"/g, "")}`
     }),
