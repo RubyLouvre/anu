@@ -37,9 +37,9 @@ QQ交流学习群：  370262116
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
 
 ### dist目录下的变种说明
-1. React 支持IE9+, 拥有PropTypes, createClass
-2. ReactIE 支持IE6+, 拥有PropTypes, createClass (需要与lib目录下的polyfill配套使用)
-3. ReactShim 支持IE
+1. React 支持IE9+, 拥有PropTypes, createClass, createFactory
+2. ReactIE 支持IE6+, 拥有PropTypes, createClass, createFactory (需要与lib目录下的polyfill配套使用)
+3. ReactShim 要求浏览器支持es6 Map对象，并且与react1.6靠近，删除了PropTypes, createClass, createFactory
 
 
 ### 低版本浏览器可能需要以下 语言补丁
