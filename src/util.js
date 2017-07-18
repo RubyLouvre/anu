@@ -118,7 +118,9 @@ export function camelize(target) {
 }
 
 export var options = {
-  immune: {} // Object.freeze(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+  beforeUnmount:noop,
+  afterMount: noop,
+  afterUpdate: noop
 };
 
 export function checkNull(vnode, type) {

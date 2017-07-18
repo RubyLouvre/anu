@@ -1,68 +1,109 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-<!--
-<script src="https://cdn.bootcss.com/react/15.5.4/react.js"></script>
-  <script src="https://cdn.bootcss.com/react/15.5.4/react-dom.js"></script>
-  -->
-  <script  src="./dist/React.js"></script>
-    <script src="./libs/babel.js"></script>
-  <script type='text/babel'>
-   const log = [];
-    class Parent extends React.Component {
-      constructor(){
-            super(),
-            this.state={
-                value: 'one'
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./lib/devtools.js"></script>
+
+    <script src="./test/babel.js"></script>
+    <script type='text/babel'>
+      
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            change(a){
+                this.setState({
+                    aaa:a
+                })
+            }
+            componentDidMount(){
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                 return this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} />:
+             <Inner2 className={this.state.aaa} />
+             
             }
         }
-      render() {
-        log.push('parent render ' + this.state.value);
-        console.log('parent render ' + this.state.value)
-        return <Child parent={this} value={this.state.value} />;
-      }
-    }
-    let updated = false;
-    class Child extends React.Component {
-      componentWillReceiveProps() {
-        if (updated) {
-          return;
-        }
-        log.push('child componentWillReceiveProps ' + this.props.value);
-         console.log('child componentWillReceiveProps ' + this.props.value)
-        this.props.parent.setState({value: 'two'});
-        log.push('child componentWillReceiveProps done ' + this.props.value);
-        console.log('child componentWillReceiveProps done ' + this.props.value);
-        updated = true;
-      }
-      render() {
-        log.push('child render ' + this.props.value);
-        console.log('child render ' + this.props.value);
-        return <div>{this.props.value}</div>;
-      }
-    }
-    window.onload = function(){
-        var container = document.getElementById('select')
-        ReactDOM.render(<Parent />, container);
-        console.log('开始第二次渲染')
-        ReactDOM.render(<Parent />, container);
-    }
-  
-   
-    </script>
-</head>
 
+        class Inner extends React.Component{
+             constructor(props){
+                super(props)
+            }
+            componentWillMount(){
+                console.log('Inner componentWillMount')
+            }
+            componentDidMount(){
+                console.log('Inner componentDidMount')
+            }
+            
+            componentWillUpdate(){
+                console.log('Inner componentWillUpdate')
+            }
+            componentDidUpdate(){
+                console.log('Inner componentDidUpdate')
+            }
+            componentWillUnmount(){
+                console.log('Inner componentWillUnmount')
+            }
+            render() {
+                return  <div className={this.props.className}>xxx</div> 
+            }
+
+        }
+        class Inner2 extends React.Component{
+            constructor(props){
+                super(props)
+            }
+            componentWillMount(){
+                console.log('Inner2 componentWillMount')
+            }
+            componentDidMount(){
+                console.log('Inner2 componentDidMount')
+            }
+             componentWillUpdate(){
+                console.log('Inner2 componentWillUpdate')
+            }
+            componentWillUnmount(){
+                console.log('Inner2 componentWillUnmount')
+            }
+            render() {
+                return  <strong className={this.props.className}>yyy</strong>
+            }
+
+        }
+
+var s 
+window.onload = function(){
+   s = ReactDOM.render( <App/>, document.getElementById('example'))
+}
+    </script>
+
+</head>
 <body>
 
-    <div>各种非受控组件</div>
-    <div id='text'></div>
-    <div id='checkbox'></div>
-    <div id='radio'></div>
-    <div id='textarea'></div>
-    <div id='select'></div>
+    <div>开发者工具</div>
+    <div id='example'></div>
 </body>
 
 </html>

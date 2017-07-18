@@ -262,6 +262,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
+  options.afterMount(instance)
   vnode._hostNode = dom;
   return dom;
 }
@@ -372,7 +373,7 @@ function reRenderComponent(instance) {
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
   }
-
+  options.afterUpdate(instance)
   return dom;
 }
 

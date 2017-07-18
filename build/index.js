@@ -1,11 +1,3 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.DevTools = factory());
-}(this, (function () {
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var options = React.options || {};
 
 var roots = {};
@@ -28,8 +20,8 @@ function f(vnode) {
 function findVNodeFromDOM(vnode, dom) {
   if (!vnode) {
     for (var i in roots) {
-      var root = roots[i];
-      var result = findVNodeFromDOM(root.input, dom);
+      const root = roots[i];
+      const result = findVNodeFromDOM(root.input, dom);
 
       if (result) {
         return result;
@@ -45,14 +37,14 @@ function findVNodeFromDOM(vnode, dom) {
     var children = findNode.props && findNode.props.children;
 
     if (children) {
-      for (var _i = 0; _i < children.length; _i++) {
-        var child = children[_i];
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
 
         if (child) {
-          var _result = findVNodeFromDOM(child, dom);
+          const result = findVNodeFromDOM(child, dom);
 
-          if (_result) {
-            return _result;
+          if (result) {
+            return result;
           }
         }
       }
@@ -60,25 +52,25 @@ function findVNodeFromDOM(vnode, dom) {
   }
 }
 //===================================      用于根据一个虚拟DOM找到它的组件实例
-var instanceMap = new Map();
+const instanceMap = new Map();
 
 function getKeyForVNode(vnode) {
   return vnode._instance || vnode._hostNode;
 }
 
 function getInstanceFromVNode(vnode) {
-  var key = getKeyForVNode(vnode);
+  const key = getKeyForVNode(vnode);
 
   return instanceMap.get(key);
 }
 
 function createInstanceFromVNode(vnode, instance) {
-  var key = getKeyForVNode(vnode);
+  const key = getKeyForVNode(vnode);
   instanceMap.set(key, instance);
 }
 
 function deleteInstanceForVNode(vnode) {
-  var key = getKeyForVNode(vnode);
+  const key = getKeyForVNode(vnode);
 
   instanceMap.delete(key);
 }
@@ -98,13 +90,13 @@ function deleteInstanceForVNode(vnode) {
  */
 function createDevToolsBridge() {
   console.log("createDevToolsBridge.....");
-  var ComponentTree = {
-    getNodeFromInstance: function getNodeFromInstance(instance) {
+  const ComponentTree = {
+    getNodeFromInstance(instance) {
       //createReactDOMComponent生成的实例有vnode对象
       return instance.node;
     },
-    getClosestInstanceFromNode: function getClosestInstanceFromNode(dom) {
-      var vnode = findVNodeFromDOM(null, dom);
+    getClosestInstanceFromNode(dom) {
+      const vnode = findVNodeFromDOM(null, dom);
       //转换为ReactCompositeComponent或ReactDOMComponent
       return vnode ? updateReactComponent(vnode, null) : null;
     }
@@ -114,60 +106,62 @@ function createDevToolsBridge() {
   //会根据vnode创建实例，并保存在instanceMap与roots中
   findRoots(document.body, roots);
   if (!Object.keys(roots).length) {
-    setTimeout(function () {
+    setTimeout(function() {
       findRoots(document.body, roots);
     }, 100);
   }
 
-  var Mount = {
+  const Mount = {
     _instancesByReactRootID: roots,
     // tslint:disable-next-line:no-empty
-    _renderNewRootComponent: function _renderNewRootComponent(instance) {}
+    _renderNewRootComponent(instance) {}
   };
 
-  var Reconciler = {
+  const Reconciler = {
     // tslint:disable-next-line:no-empty
-    mountComponent: function mountComponent(instance) {},
-
+    mountComponent(instance) {},
     // tslint:disable-next-line:no-empty
-    performUpdateIfNecessary: function performUpdateIfNecessary(instance) {},
-
+    performUpdateIfNecessary(instance) {},
     // tslint:disable-next-line:no-empty
-    receiveComponent: function receiveComponent(instance) {},
-
+    receiveComponent(instance) {},
     // tslint:disable-next-line:no-empty
-    unmountComponent: function unmountComponent(instance) {}
+    unmountComponent(instance) {}
   };
 
-  var queuedMountComponents = new Map();
-  var queuedReceiveComponents = new Map();
-  var queuedUnmountComponents = new Map();
+  const queuedMountComponents = new Map();
+  const queuedReceiveComponents = new Map();
+  const queuedUnmountComponents = new Map();
 
-  var queueUpdate = function queueUpdate(updater, map, component) {
+  const queueUpdate = (updater, map, component) => {
     if (!map.has(component)) {
       map.set(component, true);
-      requestAnimationFrame(function () {
+      requestAnimationFrame(function() {
         updater(component);
         map.delete(component);
       });
     }
   };
 
-  var queueMountComponent = function queueMountComponent(component) {
-    return queueUpdate(Reconciler.mountComponent, queuedMountComponents, component);
-  };
-  var queueReceiveComponent = function queueReceiveComponent(component) {
-    return queueUpdate(Reconciler.receiveComponent, queuedReceiveComponents, component);
-  };
-  var queueUnmountComponent = function queueUnmountComponent(component) {
-    return queueUpdate(Reconciler.unmountComponent, queuedUnmountComponents, component);
-  };
+  const queueMountComponent = component =>
+    queueUpdate(Reconciler.mountComponent, queuedMountComponents, component);
+  const queueReceiveComponent = component =>
+    queueUpdate(
+      Reconciler.receiveComponent,
+      queuedReceiveComponents,
+      component
+    );
+  const queueUnmountComponent = component =>
+    queueUpdate(
+      Reconciler.unmountComponent,
+      queuedUnmountComponents,
+      component
+    );
 
   // 创建 componentAdded， componentUpdated，componentRemoved三个重要钩子
-  var componentAdded = function componentAdded(vnode) {
+  const componentAdded = vnode => {
     // 添加虚拟DOM到调试面板 console.log('添加虚拟DOM到调试面板',vnode)
 
-    var instance = updateReactComponent(vnode, null);
+    const instance = updateReactComponent(vnode, null);
     // console.log('[',instance,']')
 
     if (isRootVNode(vnode)) {
@@ -176,7 +170,7 @@ function createDevToolsBridge() {
       Mount._renderNewRootComponent(instance);
     }
     //遍历非实组件的孩子
-    visitNonCompositeChildren(instance, function (childInst) {
+    visitNonCompositeChildren(instance, childInst => {
       if (childInst) {
         childInst._inDevTools = true;
         queueMountComponent(childInst);
@@ -185,19 +179,19 @@ function createDevToolsBridge() {
     queueMountComponent(instance);
   };
 
-  var componentUpdated = function componentUpdated(vnode) {
+  const componentUpdated = vnode => {
     var key = getKeyForVNode(vnode);
-    var prevRenderedChildren = [];
+    const prevRenderedChildren = [];
 
     //通过anu的虚拟DOM的_instance或_hostNode得到之前被封装过newInstance
-    visitNonCompositeChildren(getInstanceFromVNode(vnode), function (childInst) {
+    visitNonCompositeChildren(getInstanceFromVNode(vnode), childInst => {
       prevRenderedChildren.push(childInst);
     });
     // Notify devtools about updates to this component and any non-composite
     // children
-    var instance = updateReactComponent(vnode, null);
+    const instance = updateReactComponent(vnode, null);
     queueReceiveComponent(instance);
-    visitNonCompositeChildren(instance, function (childInst) {
+    visitNonCompositeChildren(instance, childInst => {
       if (!childInst._inDevTools) {
         // New DOM child component
         childInst._inDevTools = true;
@@ -210,7 +204,7 @@ function createDevToolsBridge() {
 
     // For any non-composite children that were removed by the latest render, remove
     // the corresponding ReactDOMComponent-like instances and notify the devtools
-    prevRenderedChildren.forEach(function (childInst) {
+    prevRenderedChildren.forEach(childInst => {
       if (!document.body.contains(childInst.node)) {
         deleteInstanceForVNode(childInst.vnode);
         queueUnmountComponent(childInst);
@@ -219,10 +213,10 @@ function createDevToolsBridge() {
   };
 
   /** Notify devtools that a component has been unmounted from the DOM. */
-  var componentRemoved = function componentRemoved(vnode) {
-    var instance = getInstanceFromVNode(vnode); // updateReactComponent(vnode)
+  const componentRemoved = vnode => {
+    const instance = getInstanceFromVNode(vnode); // updateReactComponent(vnode)
 
-    visitNonCompositeChildren(instance, function (childInst) {
+    visitNonCompositeChildren(instance, childInst => {
       deleteInstanceForVNode(childInst.vnode);
       queueUnmountComponent(childInst);
     });
@@ -234,19 +228,19 @@ function createDevToolsBridge() {
   };
 
   return {
-    componentAdded: componentAdded,
-    componentUpdated: componentUpdated,
-    componentRemoved: componentRemoved,
+    componentAdded,
+    componentUpdated,
+    componentRemoved,
 
-    ComponentTree: ComponentTree,
-    Mount: Mount,
-    Reconciler: Reconciler
+    ComponentTree,
+    Mount,
+    Reconciler
   };
 }
 //是否为根节点的虚拟DOM
 function isRootVNode(vnode) {
   for (var i in roots) {
-    if (roots[i] === vnode) {
+    if ((roots[i] === vnode)) {
       return true;
     }
   }
@@ -260,7 +254,7 @@ function isRootVNode(vnode) {
  * @param {[key: string] => ReactDOMComponent|ReactCompositeComponent}
  */
 function findRoots(node, roots) {
-  Array.from(node.childNodes).forEach(function (child) {
+  Array.from(node.childNodes).forEach(child => {
     if (child._component) {
       roots[nextRootKey(roots)] = updateReactComponent(child._component);
     } else {
@@ -269,11 +263,15 @@ function findRoots(node, roots) {
   });
 }
 
+function nextRootKey(roots) {
+  return "." + Object.keys(roots).length;
+}
+
 function updateReactComponent(vnode, parentDom) {
   if (!vnode) {
     return null;
   }
-  var newInstance = void 0;
+  let newInstance;
 
   if (vnode._instance) {
     newInstance = createReactCompositeComponent(vnode);
@@ -281,10 +279,10 @@ function updateReactComponent(vnode, parentDom) {
     newInstance = createReactDOMComponent(vnode, parentDom);
   }
 
-  var oldInstance = getInstanceFromVNode(vnode);
+  const oldInstance = getInstanceFromVNode(vnode);
 
   if (oldInstance) {
-    for (var key in newInstance) {
+    for (const key in newInstance) {
       oldInstance[key] = newInstance[key];
     }
 
@@ -297,32 +295,32 @@ function updateReactComponent(vnode, parentDom) {
 }
 
 function normalizeChildren(children, dom) {
-  console.log(children);
-  return children.map(function (child) {
-    return updateReactComponent(child, dom);
-  });
+    console.log(children)
+  return children.map(child => updateReactComponent(child, dom));
 }
 
 function createReactDOMComponent(vnode, parentDom) {
-  var type = vnode.type;
+  const type = vnode.type;
 
   if (type === "#comment") {
     return null;
   }
-  var props = vnode.props;
-  var dom = vnode._hostNode;
-  var isText = type === "#text";
-  console.log(vnode, typeof type === "undefined" ? "undefined" : _typeof(type));
+  const props = vnode.props;
+  const dom = vnode._hostNode;
+  const isText = type === "#text";
+console.log(vnode,typeof type)
   return {
-    _currentElement: isText ? vnode.text + "" : {
-      type: type,
-      props: props
-    },
+    _currentElement: isText
+      ? vnode.text + ""
+      : {
+          type,
+          props
+        },
     _inDevTools: false,
     _renderedChildren: !isText && normalizeChildren(props.children, dom),
     _stringText: isText ? vnode.text + "" : null,
     node: dom || parentDom,
-    vnode: vnode
+    vnode
   };
 }
 
@@ -342,10 +340,9 @@ function createReactCompositeComponent(vnode) {
   var instance = vnode._instance;
   var dom = vnode._hostNode;
   return {
-    getName: function getName() {
+    getName() {
       return typeName;
     },
-
     type: type,
     _currentElement: {
       type: type,
@@ -360,7 +357,7 @@ function createReactCompositeComponent(vnode) {
     props: instance.props,
     setState: instance.setState.bind(instance),
     state: instance.state,
-    vnode: vnode
+    vnode
   };
 }
 
@@ -374,6 +371,12 @@ function normalizeKey(key) {
   }
 }
 
+function typeName(type) {
+  if (typeof type === "function") {
+    return type.displayName || type.name;
+  }
+  return type;
+}
 /**
  * Visit all child instances of a ReactCompositeComponent-like object that are
  * not composite components (ie. they represent DOM elements or text)
@@ -383,7 +386,7 @@ function visitNonCompositeChildren(instance, callback) {
     callback(instance._renderedComponent);
     visitNonCompositeChildren(instance._renderedComponent, callback);
   } else if (instance._renderedChildren) {
-    instance._renderedChildren.forEach(function (child) {
+    instance._renderedChildren.forEach(child => {
       if (child) {
         callback(child);
         visitNonCompositeChildren(child, callback);
@@ -395,17 +398,17 @@ function visitNonCompositeChildren(instance, callback) {
 function initDevTools() {
   /* tslint:disable */
   console.log("初始chrome react 调试工具");
-  var bridge = createDevToolsBridge();
+  const bridge = createDevToolsBridge();
   var Methods = {
     afterMount: "componentAdded",
     afterUpdate: "componentUpdated",
     beforeUnmount: "componentRemoved"
   };
   for (var name in Methods) {
-    (function (key, alias) {
+    (function(key, alias) {
       var oldMethod = options[key];
       //重写anujs原有的方法
-      options[key] = function (instance) {
+      options[key] = function(instance) {
         bridge[alias](instance);
         if (oldMethod) {
           oldMethod(instance);
@@ -422,6 +425,4 @@ if (document.readyState === "complete") {
   window.addEventListener("load", initDevTools);
 }
 
-return initDevTools;
-
-})));
+export default initDevTools;

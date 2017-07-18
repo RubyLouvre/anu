@@ -1,5 +1,7 @@
 import { instanceMap } from "./instanceMap";
-
+import {
+  options
+} from "./util";
 export function disposeVnode(vnode) {
   if (!vnode || vnode._disposed) {
     return;
@@ -43,6 +45,7 @@ function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
     instance._disableSetState = true;
+    options.beforeUnmount(instance)
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
     }

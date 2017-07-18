@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-14
+ * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-18
  */
 
 (function (global, factory) {
@@ -129,7 +129,9 @@ function camelize(target) {
 }
 
 var options = {
-  immune: {} // extend(midway) ;midway.aaa = 'throw err';midway.immune.aaa = 'safe'
+  beforeUnmount: noop,
+  afterMount: noop,
+  afterUpdate: noop
 };
 
 function checkNull(vnode, type) {
@@ -1637,6 +1639,7 @@ function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
     instance._disableSetState = true;
+    options.beforeUnmount(instance);
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
     }
@@ -1876,6 +1879,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
+  options.afterMount(instance);
   vnode._hostNode = dom;
   return dom;
 }
@@ -1987,7 +1991,7 @@ function reRenderComponent(instance) {
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
   }
-
+  options.afterUpdate(instance);
   return dom;
 }
 
