@@ -111,7 +111,7 @@ function genVnodes(vnode, container, hostParent, parentContext) {
 
   var rootNode = mountVnode(vnode, parentContext, prevRendered);
   container.appendChild(rootNode);
- 
+
   return rootNode;
 }
 
@@ -228,8 +228,8 @@ function mountComponent(vnode, parentContext, prevRendered) {
     instance.componentWillMount();
     instance.state = instance._processPendingState();
     instance._disableSetState = false;
-  }else{
-    instance.componentWillMount = null
+  } else {
+    instance.componentWillMount = null;
   }
 
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
@@ -264,7 +264,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
       vnode.ref(instance);
     });
   }
-  options.afterMount(instance)
+  options.afterMount(instance);
   vnode._hostNode = dom;
   return dom;
 }
@@ -328,7 +328,10 @@ function reRenderComponent(instance) {
 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function() {
-      refreshComponent(instance);
+      instance._forceUpdate = false;
+      instance._pendingCallbacks.splice(0).forEach(function(fn) {
+        fn.call(instance);
+      });
     });
 
     return node;
@@ -356,8 +359,8 @@ function reRenderComponent(instance) {
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
-  }else{
-    instance.componentWillUpdate = null
+  } else {
+    instance.componentWillUpdate = null;
   }
 
   instance.props = nextProps;
@@ -376,10 +379,10 @@ function reRenderComponent(instance) {
 
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
-  }else{
-    instance.componentDidUpdate = null
+  } else {
+    instance.componentDidUpdate = null;
   }
-  options.afterUpdate(instance)
+  options.afterUpdate(instance);
   return dom;
 }
 

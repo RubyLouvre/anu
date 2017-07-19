@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 453286795 by 司徒正美 Copyright 2017-07-19
+ * 兼容IE6-8的版本，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-07-19
  */
 
 (function (global, factory) {
@@ -1945,7 +1945,10 @@ function reRenderComponent(instance) {
 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function () {
-      refreshComponent(instance);
+      instance._forceUpdate = false;
+      instance._pendingCallbacks.splice(0).forEach(function (fn) {
+        fn.call(instance);
+      });
     });
 
     return node;

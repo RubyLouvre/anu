@@ -12,9 +12,7 @@ export default {
   exports: "default",
   dest: "./dist/React.js",
   plugins: [
-    // alias({
-    //  instanceMap: './instanceMap.js'
-    //}),
+  
     babel({
       //  plugins: ['external-helpers'],
       // externalHelpers: true,

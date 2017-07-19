@@ -1960,7 +1960,10 @@ function reRenderComponent(instance) {
 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function () {
-      refreshComponent(instance);
+      instance._forceUpdate = false;
+      instance._pendingCallbacks.splice(0).forEach(function (fn) {
+        fn.call(instance);
+      });
     });
 
     return node;

@@ -1,6 +1,6 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory,  PropTypes, isValidElement,
- * QQ 453286795 by 司徒正美 Copyright 2017-07-19
+ * QQ 370262116 by 司徒正美 Copyright 2017-07-19
  */
 
 (function (global, factory) {
@@ -1671,7 +1671,10 @@ function reRenderComponent(instance) {
 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function () {
-      refreshComponent(instance);
+      instance._forceUpdate = false;
+      instance._pendingCallbacks.splice(0).forEach(function (fn) {
+        fn.call(instance);
+      });
     });
 
     return node;
