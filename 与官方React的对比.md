@@ -72,4 +72,4 @@
 | （非）受控组件                 | 特性  | ✔️         | ✔️     | ✖️              |
 | IE8支持                   | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
 
-anu可以兼容到IE6，三方都支持React官方的Chrome DevTools
+anu提交ReactIE＋polyfill可以兼容到IE6，三方都支持React官方的Chrome DevTools
