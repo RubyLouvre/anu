@@ -1,7 +1,7 @@
-###顶层API 对照表
+## 顶层API 对照表
 
 
-preact(-compat) 是指preact+ peact-compat
+> preact(-compat) 是指preact+ peact-compat
 
 | 名称                                           | 类别            | React | anu    | preact(-compat) |
 |----------------------------------------------|---------------|-------|--------|-----------------|
@@ -22,7 +22,7 @@ preact(-compat) 是指preact+ peact-compat
 | ReactDOMServer.renderToStaticMarkup          | Top-Level API | ✔️    | ✖️     | ✖️              |
 
 
-###组件实例API 对照表
+## 组件实例API 对照表
 
 | 名称                     | 类别            | React | anu | preact(-compat) |
 |------------------------|---------------|-------|-----|-----------------|
@@ -31,7 +31,7 @@ preact(-compat) 是指preact+ peact-compat
 | Instance .forceUpdate  | Component API | ✔️    | ✔️  | ✔️              |
 | Instance .isMounted    | Component API | ✔️    | ✖️  | ✔️              |
 
-### 组件Specs 对照表
+## 组件Specs 对照表
 
 
 | 名称           | 类别        | Specs | React | anu | preact(-compat) |
@@ -43,7 +43,7 @@ preact(-compat) 是指preact+ peact-compat
 
 
 
-###组件生命周期 对照表
+## 组件生命周期 对照表
 
 | 名称                                    | 类别                 | React | anu | preact(-compat) |
 |---------------------------------------|--------------------|-------|-----|-----------------|
@@ -55,7 +55,7 @@ preact(-compat) 是指preact+ peact-compat
 | componentDidUpdate                    | Component Lifecyle | ✔️    | ✔️  | ✔️              |
 | componentWillUnmount                  | Component Lifecyle | ✔️    | ✔️  | ✔️              |
 
-###特性支持对照
+## 特性支持对照
 
 | 名称              | 类别  | React      | anu    | preact(-compat) |
 |-----------------|-----|------------|--------|-----------------|
