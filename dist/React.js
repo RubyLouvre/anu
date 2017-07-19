@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-18
+ * by 司徒正美 Copyright 2017-07-19
  * 兼容yo-router
  */
 
@@ -1864,6 +1864,8 @@ function mountComponent(vnode, parentContext, prevRendered) {
     instance.componentWillMount();
     instance.state = instance._processPendingState();
     instance._disableSetState = false;
+  } else {
+    instance.componentWillMount = null;
   }
 
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
@@ -1987,6 +1989,8 @@ function reRenderComponent(instance) {
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
+  } else {
+    instance.componentWillUpdate = null;
   }
 
   instance.props = nextProps;
@@ -2005,6 +2009,8 @@ function reRenderComponent(instance) {
 
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
+  } else {
+    instance.componentDidUpdate = null;
   }
   options.afterUpdate(instance);
   return dom;
