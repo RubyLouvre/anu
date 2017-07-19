@@ -7,7 +7,14 @@
     "build": "rollup -c build/rollup.js && rollup -c build/rollup.ie.js && rollup -c build/rollup.shim.js && rollup -c build/rollup.ssr.js && node build/shim.script.js ",
     "test": "node node_modules/karma-event-driver-ext",
     "devtools": "rollup -c build/rollup.tools.js",
+    "precommit": "lint-staged",
     "webpack": "^1.14.0"
+  },
+  "lint-staged": {
+    "src/**/*.js": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
@@ -40,7 +47,10 @@
     "chai": "^3.5.0",
     "ejs": "^2.5.6",
     "es3ify-webpack-plugin": "0.0.1",
+    "eslint": "^4.2.0",
+    "eslint-plugin-react": "^7.1.0",
     "express": "^4.15.3",
+    "husky": "^0.14.3",
     "karma": "^1.5",
     "karma-chai": "^0.1.0",
     "karma-coverage": "^1.1.1",
@@ -50,6 +60,7 @@
     "karma-mocha-reporter": "^2.2.3",
     "karma-spec-reporter": "0.0.30",
     "karma-webpack": "^2.0.3",
+    "lint-staged": "^4.0.2",
     "mocha": "^3.2.0",
     "node-jsx": "^0.13.3",
     "rollup": "^0.41.6",
