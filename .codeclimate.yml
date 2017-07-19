@@ -22,4 +22,4 @@ exclude_paths:
 - perf/**/*
 - dist/**/*
 - ssr/**/*
-- builds/**/*
+- build/**/*
