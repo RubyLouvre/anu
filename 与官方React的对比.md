@@ -13,7 +13,7 @@
 | React.isValidElement                         | Top-Level API | ✔️    | ✔️     | ✔️              |
 | React.DOM                                    | Top-Level API | ✔️    | ✖️     | ✔️              |
 | React.PropTypes                              | Top-Level API | ✔️    | compat | compat          |
-| React.Children                               | Top-Level API | ✔️    | ✖️     | ✔️              |
+| React.Children                               | Top-Level API | ✔️    | ✔️     | ✔️              |
 | ReactDOM.render                              | Top-Level API | ✔️    | ✔️     | ✔️              |
 | ReactDOM.unmountComponentAtNode              | Top-Level API | ✔️    | ✔️     | ✔️              |
 | ReactDOM.unstable_renderSubtreeIntoContainer | Top-Level API | ✔️    | ✔️     | ✔️              |
