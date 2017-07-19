@@ -27,7 +27,8 @@ export default {
     }),
 
     license({
-      banner: `此版本要求浏览器支持Map对象，没有createClass, createFactory,  PropTypes, isValidElement,
+      banner: `此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
+        unmountComponentAtNode,unstable_renderSubtreeIntoContainer
         QQ 370262116 by 司徒正美 Copyright ${JSON.stringify(
         new Date()
       ).replace(/T.*|"/g, "")}`

@@ -15,6 +15,7 @@ import {
   render,
   findDOMNode,
   unstable_renderSubtreeIntoContainer,
+  unmountComponentAtNode,
   isValidElement
 } from "./diff";
 
@@ -25,6 +26,7 @@ var React = {
   findDOMNode,
   options,
   unstable_renderSubtreeIntoContainer,
+  unmountComponentAtNode,  
   isValidElement,
   createClass,
   version: "VERSION",

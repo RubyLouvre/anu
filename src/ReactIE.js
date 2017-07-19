@@ -15,6 +15,7 @@ import {
   render,
   findDOMNode,
   unstable_renderSubtreeIntoContainer,
+  unmountComponentAtNode,
   isValidElement
 } from "./diff";
 import "./ieEvent";
@@ -27,6 +28,7 @@ var React = {
   findDOMNode,
   options,
   unstable_renderSubtreeIntoContainer,
+  unmountComponentAtNode,
   isValidElement,
   createClass,
   createElement,
@@ -34,7 +36,7 @@ var React = {
   PureComponent,
   Component,
   createFactory(type) {
-    console.warn('createFactory将被废弃')
+    console.warn("createFactory将被废弃");
     var factory = createElement.bind(null, type);
     factory.type = type;
     return factory;

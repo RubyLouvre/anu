@@ -1,5 +1,6 @@
 /**
- * 此版本要求浏览器支持Map对象，没有createClass, createFactory,  PropTypes, isValidElement,
+ * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
+ * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
  * QQ 370262116 by 司徒正美 Copyright 2017-07-19
  */
 
@@ -1397,7 +1398,7 @@ function disposeComponent(vnode) {
  *
  */
 function render(vnode, container, callback) {
-  return updateView(vnode, container, callback, {});
+  return renderByAnu(vnode, container, callback, {});
 }
 
 
@@ -1405,7 +1406,7 @@ function isValidElement(vnode) {
   return vnode && vnode.vtype;
 }
 
-function updateView(vnode, container, callback, parentContext) {
+function renderByAnu(vnode, container, callback, parentContext) {
   if (!isValidElement(vnode)) {
     throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
   }

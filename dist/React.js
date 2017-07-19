@@ -1674,7 +1674,7 @@ function disposeComponent(vnode) {
  *
  */
 function render(vnode, container, callback) {
-  return updateView(vnode, container, callback, {});
+  return renderByAnu(vnode, container, callback, {});
 }
 /**
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
@@ -1687,14 +1687,20 @@ function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, c
     warnOne = 0;
   }
   var parentContext = parentInstance && parentInstance.context || {};
-  return updateView(vnode, container, callback, parentContext);
+  return renderByAnu(vnode, container, callback, parentContext);
 }
-
+function unmountComponentAtNode(dom) {
+  var prevVnode = dom._component;
+  if (prevVnode) {
+    var conext = prevVnode._instance ? prevVnode._instance.context : {};
+    alignVnodes(prevVnode, { type: "#text", text: "empty" }, container.firstChild, parentContext);
+  }
+}
 function isValidElement(vnode) {
   return vnode && vnode.vtype;
 }
 
-function updateView(vnode, container, callback, parentContext) {
+function renderByAnu(vnode, container, callback, parentContext) {
   if (!isValidElement(vnode)) {
     throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
   }
@@ -2292,6 +2298,7 @@ var React = {
   findDOMNode: findDOMNode,
   options: options,
   unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+  unmountComponentAtNode: unmountComponentAtNode,
   isValidElement: isValidElement,
   createClass: createClass,
   version: "1.0.5",

@@ -27,7 +27,7 @@ import { scheduler } from "./scheduler";
  *
  */
 export function render(vnode, container, callback) {
-  return updateView(vnode, container, callback, {});
+  return renderByAnu(vnode, container, callback, {});
 }
 /**
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
@@ -45,14 +45,25 @@ export function unstable_renderSubtreeIntoContainer(
     warnOne = 0;
   }
   var parentContext = (parentInstance && parentInstance.context) || {};
-  return updateView(vnode, container, callback, parentContext);
+  return renderByAnu(vnode, container, callback, parentContext);
 }
-
+export function unmountComponentAtNode(dom) {
+  var prevVnode = dom._component;
+  if (prevVnode) {
+    var conext = prevVnode._instance ? prevVnode._instance.context : {};
+    alignVnodes(
+      prevVnode,
+      { type: "#text", text: "empty" },
+      container.firstChild,
+      parentContext
+    );
+  }
+}
 export function isValidElement(vnode) {
   return vnode && vnode.vtype;
 }
 
-function updateView(vnode, container, callback, parentContext) {
+function renderByAnu(vnode, container, callback, parentContext) {
   if (!isValidElement(vnode)) {
     throw new Error(
       `${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`

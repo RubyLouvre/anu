@@ -1,25 +1,25 @@
 ###顶层API 对照表
 
-✔️ 支持 ✖️ 不支持 ✔️(Noop) 仅Compat，未真正实现
+
 preact(-compat) 是指preact+ peact-compat
 
-| 名称                                           | 类别            | React | anu     | preact(-compat) |
-|----------------------------------------------|---------------|-------|---------|-----------------|
-| React.Component                              | class         | ✔️    | ✔️      | ✔️              |
-| React.createClass                            | Top-Level API | ✔️    | ✔️      | ✔️              |
-| React.createElement                          | Top-Level API | ✔️    | ✔️      | ✔️              |
-| React.cloneElement                           | Top-Level API | ✔️    | ✔️      | ✔️              |
-| React.createFactory                          | Top-Level API | ✔️    | ✔️      | ✔️              |
-| React.isValidElement                         | Top-Level API | ✔️    | ✔️      | ✔️              |
-| React.DOM                                    | Top-Level API | ✔️    | ✖️      | ✔️              |
-| React.PropTypes                              | Top-Level API | ✔️    | ✔️(空实现) | ✔️(空实现)         |
-| React.Children                               | Top-Level API | ✔️    | ✖️      | ✔️              |
-| ReactDOM.render                              | Top-Level API | ✔️    | ✔️      | ✔️              |
-| ReactDOM.unmountComponentAtNode              | Top-Level API | ✔️    | ✖️      | ✔️              |
-| ReactDOM.unstable_renderSubtreeIntoContainer | Top-Level API | ✔️    | ✔️      | ✔️              |
-| ReactDOM.findDOMNode                         | Top-Level API | ✔️    | ✔️      | ✔️              |
-| ReactDOMServer.renderToString                | Top-Level API | ✔️    | ✔️      | ✔️              |
-| ReactDOMServer.renderToStaticMarkup          | Top-Level API | ✔️    | ✖️      | ✖️              |
+| 名称                                           | 类别            | React | anu    | preact(-compat) |
+|----------------------------------------------|---------------|-------|--------|-----------------|
+| React.Component                              | class         | ✔️    | ✔️     | ✔️              |
+| React.createClass                            | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.createElement                          | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.cloneElement                           | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.createFactory                          | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.isValidElement                         | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.DOM                                    | Top-Level API | ✔️    | ✖️     | ✔️              |
+| React.PropTypes                              | Top-Level API | ✔️    | compat | compat          |
+| React.Children                               | Top-Level API | ✔️    | ✖️     | ✔️              |
+| ReactDOM.render                              | Top-Level API | ✔️    | ✔️     | ✔️              |
+| ReactDOM.unmountComponentAtNode              | Top-Level API | ✔️    | ✔️     | ✔️              |
+| ReactDOM.unstable_renderSubtreeIntoContainer | Top-Level API | ✔️    | ✔️     | ✔️              |
+| ReactDOM.findDOMNode                         | Top-Level API | ✔️    | ✔️     | ✔️              |
+| ReactDOMServer.renderToString                | Top-Level API | ✔️    | ✔️     | ✔️              |
+| ReactDOMServer.renderToStaticMarkup          | Top-Level API | ✔️    | ✖️     | ✖️              |
 
 
 ###组件实例API 对照表
@@ -57,15 +57,15 @@ preact(-compat) 是指preact+ peact-compat
 
 ###特性支持对照
 
-| 名称              | 类别  | React      | anu      | preact(-compat) |
-|-----------------|-----|------------|----------|-----------------|
-| contextTypes    | 特性  | ✔️         | ✔️ (空实现) | ✔️              |
-| getChildContext | 特性  | ✔️         | ✔️       | ✔️              |
-| ref             | 特性  | ✔️         | ✔️       | ✔️️             |
-| getDOMNode      | 特性  | ✔️         | ✔️       | ✖️              |
-| style           | 特性  | ✔️         | ✔️       | ✖️              |
-| onEvent         | 特性  | ✔️         | ✔️       | ✔️              |
-| onEventCapture  | 特性  | ✔️         | ✔️       | ✖️              |
-| （非）受控组件         | 特性  | ✔️         | ✔️       | ✖️              |
-| IE8支持           | 特性  | ✔️（高版本不支持） | ✔️       | ✖️              |
+| 名称              | 类别  | React      | anu    | preact(-compat) |
+|-----------------|-----|------------|--------|-----------------|
+| contextTypes    | 特性  | ✔️         | ✔️     | ✔️              |
+| getChildContext | 特性  | ✔️         | compat | compat          |
+| ref             | 特性  | ✔️         | ✔️     | ✔️️             |
+| getDOMNode      | 特性  | ✔️         | ✔️     | ✖️              |
+| style           | 特性  | ✔️         | ✔️     | ✖️              |
+| onEvent         | 特性  | ✔️         | ✔️     | ✔️              |
+| onEventCapture  | 特性  | ✔️         | ✔️     | ✖️              |
+| （非）受控组件         | 特性  | ✔️         | ✔️     | ✖️              |
+| IE8支持           | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
 
