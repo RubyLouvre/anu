@@ -6,6 +6,7 @@
 | 名称                                           | 类别            | React | anu    | preact(-compat) |
 |----------------------------------------------|---------------|-------|--------|-----------------|
 | React.Component                              | class         | ✔️    | ✔️     | ✔️              |
+| React.PureComponent                          | class         | ✔️    | ✔️     | ✔️              |
 | React.createClass                            | Top-Level API | ✔️    | ✔️     | ✔️              |
 | React.createElement                          | Top-Level API | ✔️    | ✔️     | ✔️              |
 | React.cloneElement                           | Top-Level API | ✔️    | ✔️     | ✔️              |
@@ -21,6 +22,7 @@
 | ReactDOMServer.renderToString                | Top-Level API | ✔️    | ✔️     | ✔️              |
 | ReactDOMServer.renderToStaticMarkup          | Top-Level API | ✔️    | ✖️     | ✖️              |
 
+其中，createClass，isValidElement，PropTypes，Children，unmountComponentAtNode，unstable_renderSubtreeIntoContainer不建议大家使用了。
 
 ## 组件实例API 对照表
 
@@ -57,16 +59,17 @@
 
 ## 特性支持对照
 
-| 名称                      | 类别  | React | anu    | preact(-compat) |
-|-------------------------|-----|-------|--------|-----------------|
-| contextTypes            | 特性  | ✔️    | ✔️     | ✔️              |
-| getChildContext         | 特性  | ✔️    | compat | compat          |
-| ref                     | 特性  | ✔️    | ✔️     | ✔️️             |
-| getDOMNode              | 特性  | ✔️    | ✔️     | ✖️              |
-| style                   | 特性  | ✔️    | ✔️     | ✖️              |
-| onEvent                 | 特性  | ✔️    | ✔️     | ✔️              |
-| onEventCapture          | 特性  | ✔️    | ✔️     | ✖️              |
-| dangerouslySetInnerHTML | 特性  | ✔️    | ✔️     | ✖️              |
-| （非）受控组件         | 特性  | ✔️         | ✔️     | ✖️              |
-| IE8支持           | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
+| 名称                      | 类别  | React      | anu    | preact(-compat) |
+|-------------------------|-----|------------|--------|-----------------|
+| contextTypes            | 特性  | ✔️         | ✔️     | ✔️              |
+| getChildContext         | 特性  | ✔️         | compat | compat          |
+| ref                     | 特性  | ✔️         | ✔️     | ✔️️             |
+| getDOMNode              | 特性  | ✔️         | ✔️     | ✖️              |
+| style                   | 特性  | ✔️         | ✔️     | ✖️              |
+| onEvent                 | 特性  | ✔️         | ✔️     | ✔️              |
+| onEventCapture          | 特性  | ✔️         | ✔️     | ✖️              |
+| dangerouslySetInnerHTML | 特性  | ✔️         | ✔️     | ✖️              |
+| （非）受控组件                 | 特性  | ✔️         | ✔️     | ✖️              |
+| IE8支持                   | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
 
+anu可以兼容到IE6，三方都支持React官方的Chrome DevTools
