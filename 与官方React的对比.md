@@ -57,15 +57,16 @@
 
 ## 特性支持对照
 
-| 名称              | 类别  | React      | anu    | preact(-compat) |
-|-----------------|-----|------------|--------|-----------------|
-| contextTypes    | 特性  | ✔️         | ✔️     | ✔️              |
-| getChildContext | 特性  | ✔️         | compat | compat          |
-| ref             | 特性  | ✔️         | ✔️     | ✔️️             |
-| getDOMNode      | 特性  | ✔️         | ✔️     | ✖️              |
-| style           | 特性  | ✔️         | ✔️     | ✖️              |
-| onEvent         | 特性  | ✔️         | ✔️     | ✔️              |
-| onEventCapture  | 特性  | ✔️         | ✔️     | ✖️              |
+| 名称                      | 类别  | React | anu    | preact(-compat) |
+|-------------------------|-----|-------|--------|-----------------|
+| contextTypes            | 特性  | ✔️    | ✔️     | ✔️              |
+| getChildContext         | 特性  | ✔️    | compat | compat          |
+| ref                     | 特性  | ✔️    | ✔️     | ✔️️             |
+| getDOMNode              | 特性  | ✔️    | ✔️     | ✖️              |
+| style                   | 特性  | ✔️    | ✔️     | ✖️              |
+| onEvent                 | 特性  | ✔️    | ✔️     | ✔️              |
+| onEventCapture          | 特性  | ✔️    | ✔️     | ✖️              |
+| dangerouslySetInnerHTML | 特性  | ✔️    | ✔️     | ✖️              |
 | （非）受控组件         | 特性  | ✔️         | ✔️     | ✖️              |
 | IE8支持           | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
 
