@@ -55,7 +55,7 @@ QQ交流学习群：  370262116
 
 
 
-或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
+或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js
 
 详细用法与示例见  [wiki](https://github.com/RubyLouvre/anu/wiki) 
 
