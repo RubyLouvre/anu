@@ -358,6 +358,7 @@ function reRenderComponent(instance) {
   instance.props = lastProps;
   //防止用户在shouldComponentUpdate中调用setState
   instance._disableSetState = true;
+
   if (
     !instance._forceUpdate &&
     instance.shouldComponentUpdate &&
@@ -366,7 +367,7 @@ function reRenderComponent(instance) {
     instance._disableSetState = false;
     return node;
   }
-  instance._disableSetState = false;
+
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
@@ -394,6 +395,7 @@ function reRenderComponent(instance) {
     instance.componentDidUpdate = null;
   }
   options.afterUpdate(instance);
+  instance._disableSetState = false;
   return dom;
 }
 
@@ -672,3 +674,5 @@ function applyCreate(data) {
   let node = mountVnode(data.vnode, data.parentContext);
   data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
+
+

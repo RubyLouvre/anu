@@ -15,8 +15,12 @@
             background: lawngreen;
         }
     </style>
-    <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+      <script type='text/javascript' src="./test/react-dom.js"></script>-->
+      <script type='text/javascript' src="./dist/React.js"></script>
     <script type='text/javascript' src="./lib/devtools.js"></script>
+   <script src="https://cdn.bootcss.com/immutable/3.8.1/immutable.js"></script>
+
 
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
@@ -24,79 +28,42 @@
         class App extends React.Component {
             constructor(props) {
                 super(props)
+               
                 this.state = {
-                    aaa: 'aaa'
+                    aaa: 1
                 }
             }
-            change(a){
-                this.setState({
-                    aaa:a
-                })
-            }
+           
             componentDidMount(){
+                this.setState({
+                     aaa: new Date - 0
+                 })
                 console.log('App componentDidMount')
             }
             componentWillUpdate(){
                 console.log('App componentWillUpdate')
+                 console.log('开始改变')
+                 this.setState({
+                     aaa: new Date - 0
+                 })
+            }
+             componentDidUpdate(){
+                   console.log('App componentDidUpdate')
+                
+              
             }
             render() {
-                 return this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} />:
-             <Inner2 className={this.state.aaa} />
+                 return <div>{this.state.aaa}  </div>
              
             }
         }
 
-        class Inner extends React.Component{
-             constructor(props){
-                super(props)
-            }
-            componentWillMount(){
-                console.log('Inner componentWillMount')
-            }
-            componentDidMount(){
-                console.log('Inner componentDidMount')
-            }
-            
-            componentWillUpdate(){
-                console.log('Inner componentWillUpdate')
-            }
-            componentDidUpdate(){
-                console.log('Inner componentDidUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner componentWillUnmount')
-            }
-            render() {
-                return  <div className={this.props.className}>xxx</div> 
-            }
+      
 
+        var s 
+        window.onload = function(){
+           s = ReactDOM.render( <App/>, document.getElementById('example'))
         }
-        class Inner2 extends React.Component{
-            constructor(props){
-                super(props)
-            }
-            componentWillMount(){
-                console.log('Inner2 componentWillMount')
-            }
-            componentDidMount(){
-                console.log('Inner2 componentDidMount')
-            }
-             componentWillUpdate(){
-                console.log('Inner2 componentWillUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner2 componentWillUnmount')
-            }
-            render() {
-                return  <strong className={this.props.className}>yyy</strong>
-            }
-
-        }
-
-var s 
-window.onload = function(){
-   s = ReactDOM.render( <App/>, document.getElementById('example'))
-}
     </script>
 
 </head>

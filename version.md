@@ -43,4 +43,6 @@
 
 ##1.0.6
 
-1. 重新支持devtools
+1. 重新支持chrome DevTools
+2. 添加对Immutable.js的支持
+3. 修复用户在componentWillUpdate/shouldComponentUpdate/componentDidUpdate钩子中执行setState引发死循环的BUG

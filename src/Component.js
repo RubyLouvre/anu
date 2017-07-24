@@ -75,14 +75,14 @@ function setStateProxy(instance, cb) {
   if (isFn(cb)) {
     instance._pendingCallbacks.push(cb);
   }
-  if (instance._disableSetState === true) {
-    //只存储回调，但不会触发组件的更新
-    this._forceUpdate = false;
-  } else if (instance._updating) {
+  if (instance._updating) {
     //防止在父组件更新过程中，子组件执行父组件的setState
     scheduler.add(function() {
       options.refreshComponent(instance);
     });
+  } else if (instance._disableSetState === true) {
+    //只存储回调，但不会触发组件的更新
+    this._forceUpdate = false;
   } else {
     options.refreshComponent(instance);
   }

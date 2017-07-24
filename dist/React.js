@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-19
+ * by 司徒正美 Copyright 2017-07-24
  * 兼容yo-router
  */
 
@@ -225,6 +225,10 @@ function createElement(type, configs) {
           //children可能是一个数组，也可能是一个字符串，数字，布尔，
           //也可能是一个虚拟DOM
           if (!stack.length && val) {
+            if (val.toJS) {
+              val = val.toJS();
+              console.log(val);
+            }
             if (Array.isArray(val)) {
               __push.apply(stack, val);
             } else {
@@ -261,6 +265,10 @@ function flattenChildren(stack) {
   while (stack.length) {
     //比较巧妙地判定是否为子数组
     if ((child = stack.pop()) && child.pop) {
+      if (child.toJS) {
+        //兼容Immutable.js
+        child = child.toJS();
+      }
       for (var i = 0; i < child.length; i++) {
         stack[stack.length] = child[i];
       }
@@ -480,14 +488,14 @@ function setStateProxy(instance, cb) {
   if (isFn(cb)) {
     instance._pendingCallbacks.push(cb);
   }
-  if (instance._disableSetState === true) {
-    //只存储回调，但不会触发组件的更新
-    this._forceUpdate = false;
-  } else if (instance._updating) {
+  if (instance._updating) {
     //防止在父组件更新过程中，子组件执行父组件的setState
     scheduler.add(function () {
       options.refreshComponent(instance);
     });
+  } else if (instance._disableSetState === true) {
+    //只存储回调，但不会触发组件的更新
+    this._forceUpdate = false;
   } else {
     options.refreshComponent(instance);
   }
@@ -1990,11 +1998,12 @@ function reRenderComponent(instance) {
   instance.props = lastProps;
   //防止用户在shouldComponentUpdate中调用setState
   instance._disableSetState = true;
+
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
     instance._disableSetState = false;
     return node;
   }
-  instance._disableSetState = false;
+
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
@@ -2022,6 +2031,7 @@ function reRenderComponent(instance) {
     instance.componentDidUpdate = null;
   }
   options.afterUpdate(instance);
+  instance._disableSetState = false;
   return dom;
 }
 
