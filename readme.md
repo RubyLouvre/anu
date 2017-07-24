@@ -57,6 +57,17 @@ QQ交流学习群：  370262116
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js
 
+如果想用anujs代替已经用React.js写好或正在进行的的项目，可以这样配置webpack
+```js
+// webpack.config.js
+    resolve: {
+        alias: {
+            'react': 'anujs',
+            'react-dom': 'anujs'
+        }
+    }
+```
+
 详细用法与示例见  [wiki](https://github.com/RubyLouvre/anu/wiki) 
 
 ```html
