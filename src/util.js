@@ -118,12 +118,15 @@ export function camelize(target) {
 }
 
 export var options = {
-  beforeUnmount:noop,
+  beforeUnmount: noop,
   afterMount: noop,
   afterUpdate: noop
 };
 
 export function checkNull(vnode, type) {
+  if (Array.isArray(vnode) && vnode.length === 1) {
+    vnode = vnode[0];
+  }
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty" };
   } else if (!vnode || !vnode.vtype) {

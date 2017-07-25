@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-07-24
+ * QQ 370262116 by 司徒正美 Copyright 2017-07-25
  */
 
 (function (global, factory) {
@@ -137,6 +137,9 @@ var options = {
 };
 
 function checkNull(vnode, type) {
+  if (Array.isArray(vnode) && vnode.length === 1) {
+    vnode = vnode[0];
+  }
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty" };
   } else if (!vnode || !vnode.vtype) {
@@ -1817,6 +1820,9 @@ function updateElement(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = nextVnode._instance = lastVnode._instance;
+  if (!instance) {
+    return node;
+  }
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;

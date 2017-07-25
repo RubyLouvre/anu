@@ -484,6 +484,9 @@ function updateElement(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = (nextVnode._instance = lastVnode._instance);
+  if(!instance){
+    return node
+  }
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;

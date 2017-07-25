@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-24
+ * by 司徒正美 Copyright 2017-07-25
  * 兼容yo-router
  */
 
@@ -136,6 +136,9 @@ var options = {
 };
 
 function checkNull(vnode, type) {
+  if (Array.isArray(vnode) && vnode.length === 1) {
+    vnode = vnode[0];
+  }
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty" };
   } else if (!vnode || !vnode.vtype) {
@@ -2120,6 +2123,9 @@ function updateElement(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = nextVnode._instance = lastVnode._instance;
+  if (!instance) {
+    return node;
+  }
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
