@@ -84,7 +84,6 @@ function hashToClassName() {
 }
 const rXlink = /^xlink\:?(.+)/
 
-
 function skipFalseAndFunction(a) {
     return a !== false && (Object(a) !== a)
 }
@@ -160,7 +159,6 @@ function toVnode(vnode, data, parentInstance) {
             instance.context = instance.context || parentContext
             rendered = instance.render()
 
-            
         }
 
         rendered = checkNull(rendered)
@@ -297,5 +295,6 @@ function adler32(data) {
     return a | b << 16;
 }
 export default {
-    renderToString
+    renderToString,
+    renderToStaticMarkup : renderToString
 }

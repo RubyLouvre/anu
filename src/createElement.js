@@ -40,10 +40,6 @@ export function createElement(type, configs) {
           //children可能是一个数组，也可能是一个字符串，数字，布尔，
           //也可能是一个虚拟DOM
           if (!stack.length && val) {
-            if (val.toJS) {
-              val = val.toJS();
-              console.log(val);
-            }
             if (Array.isArray(val)) {
               __push.apply(stack, val);
             } else {
@@ -80,7 +76,8 @@ function flattenChildren(stack) {
   while (stack.length) {
     //比较巧妙地判定是否为子数组
     if ((child = stack.pop()) && child.pop) {
-      if (child.toJS) {//兼容Immutable.js
+      if (child.toJS) {
+        //兼容Immutable.js
         child = child.toJS();
       }
       for (let i = 0; i < child.length; i++) {
