@@ -46,3 +46,8 @@
 1. 重新支持chrome DevTools
 2. 添加对Immutable.js的支持
 3. 修复用户在componentWillUpdate/shouldComponentUpdate/componentDidUpdate钩子中执行setState引发死循环的BUG
+
+
+## 1.0.7
+1. 处理用户在render方法 return this.props.children 的情况，需要将数组转换为单个虚拟DOM
+2. 处理两个组件虚拟DOM都没有实例化的情况
