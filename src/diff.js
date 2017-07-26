@@ -485,7 +485,11 @@ function updateElement(lastVnode, nextVnode, dom) {
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = (nextVnode._instance = lastVnode._instance);
   if(!instance){
-    return node
+     lastVnode._return = lastVnode._disposed = true
+      var dom =  mountComponent(nextVnode, parentContext)
+     node.parentNode && node.parentNode.replaceChild(dom, node);
+     
+      return dom
   }
 
   var nextProps = getComponentProps(nextVnode);
@@ -655,7 +659,13 @@ function applyUpdate(data) {
       dom = updateStateless(vnode, nextVnode, dom, data.parentContext);
     } else if (vnode.vtype === 2) {
       dom = updateComponent(vnode, nextVnode, dom, data.parentContext);
+      if(vnode._return){ //如果vnode, nextVnode都没有实例
+        return dom
+      }
     }
+  }
+  if(dom.parentNode === null){
+      return dom
   }
   // re-order
   let currentNode = dom.parentNode.childNodes[data.index];

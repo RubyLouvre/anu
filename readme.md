@@ -315,7 +315,6 @@ cli
 
 ```
     npm install selenium-standalone
-    selenium-standalone install --config=./s.js
     selenium-standalone start
     //另开窗口
     npm run build
@@ -333,3 +332,5 @@ cli
     npm run build
 
 ``
+
+
