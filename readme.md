@@ -314,12 +314,10 @@ cli
 
 
 ```
-    npm install selenium-standalone
-    selenium-standalone start
-    //另开窗口
-    npm run build
-
-
+npm install selenium-standalone
+selenium-standalone start
+//另开窗口
+npm run build
 ```
 或者
 //linux32可以改成mac, window
@@ -329,7 +327,6 @@ cli
  wget http://selenium-release.storage.googleapis.com/3.3/selenium-server-standalone-3.3.1.jar
  java -jar selenium-server-standalone-3.3.1.jar
 //另开窗口
-    npm run build
-
+npm run build
 ```
 
