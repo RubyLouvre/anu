@@ -14,3 +14,5 @@
 8. [Function.prototype.bind](https://github.com/leahciMic/polyfill-function-prototype-bind)
 
 或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js
+=======
+并且还需要修复Array.prototype.splice的BUG 
