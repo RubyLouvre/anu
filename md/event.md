@@ -70,7 +70,7 @@ method() // returns 42
 class Component { }
 ```
 
- 如果大家想在移动端使用触屏事件，可以尝试使用** libs/injectTapEventPlugin.js **
+ 如果大家想在移动端使用触屏事件，可以尝试使用** lib/injectTapEventPlugin.js **
 
 ```html
 <!DOCTYPE html>
@@ -81,8 +81,8 @@ class Component { }
     <meta name="viewport" content="width=device-width">
     </style>
      <script type='text/javascript' src="./dist/React.js"></script>
-     <script type='text/javascript' src="./libs/injectTapEventPlugin.js"></script>
-     <script type='text/javascript' src="./libs/babel.js"></script>
+     <script type='text/javascript' src="./lib/injectTapEventPlugin.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
   injectTapEventPlugin() //必须执行这个
   window.onload = function(){

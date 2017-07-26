@@ -25,14 +25,14 @@ anu可以完美与react-router一起使用。
         }
     </style>
   <!--<script type='text/javascript' src="./dist/React.js"></script>-->
-    <script src="./lins/react.js"></script>
-    <script src="./libs/react-dom.js"></script>
-    <script src="./libs/redux.js"></script>
+    <script src="./lib/react.js"></script>
+    <script src="./lib/react-dom.js"></script>
+    <script src="./lib/redux.js"></script>
    <!--  <script src="https://cdn.bootcss.com/react-router/3.0.0-beta.1/ReactRouter.js"></script> -->
     <script src="./ReactRouter.js"></script>
-    <script src="./libs/react-redux.js"></script>
-    <script src="./libs/ReactRouterRedux.js"></script>
-    <script src="./libs/babel.js"></script>
+    <script src="./lib/react-redux.js"></script>
+    <script src="./lib/ReactRouterRedux.js"></script>
+    <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 var s
 

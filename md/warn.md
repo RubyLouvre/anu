@@ -1,12 +1,6 @@
 ##注意点
 
-### 目前没有支持的方法与对象
 
-1. PropTypes
-2. childContextTypes(不需要定义它，就能使用context)
-3. mixin机制
-4. createClass
-5. createFactory
 
 ### 低版本浏览器可能需要以下 语言补丁, 详见IE栏目的处理
 
@@ -19,4 +13,4 @@
 7. [Array.prototype.forEach](polyfill/Array.prototype.forEach)
 8. [Function.prototype.bind](https://github.com/leahciMic/polyfill-function-prototype-bind)
 
-或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/tree/master/dist/polyfill.js
+或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js

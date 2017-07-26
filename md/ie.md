@@ -48,8 +48,7 @@ try {
     function getID(a) {
         if (a.uniqueID) {
             return 'Node' + a.uniqueID
-        }
-        if (!a.uniqueID) {
+        }else{
             a.uniqueID = "_" + (idN++)
             return 'Node' + a.uniqueID
         }
@@ -273,7 +272,7 @@ window.onload = function(){
             background: lawngreen;
         }
     </style>
-   <script type='text/javascript' src="./dist/polyfill.js"></script>
+   <script type='text/javascript' src="./lib/polyfill.js"></script>
    <script type='text/javascript' src="./dist/ReactIE.js"></script>
     <script src="./dist/index9.js"></script>
    
