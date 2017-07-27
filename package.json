@@ -42,7 +42,7 @@
     "babel-preset-avalon": "^1.0.0",
     "babel-preset-env": "^1.4.0",
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.22.0",
+    "babel-preset-react": "^6.24.1",
     "babel-runtime": "^5.8.38",
     "chai": "^3.5.0",
     "ejs": "^2.5.6",

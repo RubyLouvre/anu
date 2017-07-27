@@ -19,9 +19,7 @@
     </style>
    
      <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script> -->
-     <script type='text/javascript' src="./libs/babel.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
   
   window.onload = function(){
@@ -33,26 +31,14 @@
           aaa: 111
         };
       }
-      onChange(){
-         this.setState({
-           aaa: new Date - 0
-         })
+      onChange(e){
+        console.log(e.type, 'xxxx')
       }
       render() {
-        return <p  onClick={this.onChange.bind(this)}>{this.state.aaa === 111 ? <Child />: <span>333</span>}</p>;
+        return <p  onMouseEnter={this.onChange.bind(this)}>磊大</p>;
       }
     }
-     class Child extends React.Component {
-         componentDidMount(){
-           console.log(this.refs.aaa,'componentWillMount')
-         }
-         componentWillUnmount(){
-           console.log(this.refs.aaa,'componentWillUnmount')
-         }
-         render(){
-           return <strong ref='aaa'>组件</strong>
-         }
-     }
+
 
     var s = ReactDOM.render(<App />, document.getElementById('example'));
   }
@@ -65,7 +51,6 @@
     <div>开发者工具</div>
     <div id='example'></div>
 
-<div id='aaa'></div>
 
 </body>
 

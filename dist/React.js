@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-26
+ * by 司徒正美 Copyright 2017-07-27
  * 兼容yo-router
  */
 
@@ -737,6 +737,7 @@ function dispatchEvent(e) {
   var capitalized = capitalize(type);
   var bubble = "on" + capitalized;
   var captured = "on" + capitalized + "Capture";
+
   scheduler.run();
   triggerEventFlow(paths, captured, e);
 
@@ -845,16 +846,13 @@ eventHooks.onWheel = function (dom) {
   });
 };
 
-eventHooks.onFocus = function (dom) {
-  addEvent(dom, "focus", function (e) {
-    addEvent.fire(dom, "focus");
-  }, true);
-};
-eventHooks.onBlur = function (dom) {
-  addEvent(dom, "blur", function (e) {
-    addEvent.fire(dom, "blur");
-  }, true);
-};
+"Blur,Focus,MouseEnter,MouseLeave".replace(/\w+/g, function (a) {
+  eventHooks["on" + a] = function (dom) {
+    addEvent(dom, a.toLowerCase(), function (e) {
+      dispatchEvent(e);
+    }, true);
+  };
+});
 
 if (isTouch) {
   eventHooks.onClick = noop;
