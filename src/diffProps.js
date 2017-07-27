@@ -6,26 +6,26 @@ import {
   isEventName,
   eventHooks
 } from "./event";
-import { oneObject, toLowerCase, noop,typeNumber } from "./util";
+import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
 var boolAttributes = oneObject(
-  "autofocus,autoplay,async,allowTransparency,checked,controls," +
-    "declare,disabled,defer,defaultChecked,defaultSelected," +
-    "isMap,loop,multiple,noHref,noResize,noShade," +
-    "open,readOnly,selected",
+  "autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" +
+    "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" +
+    "en,readOnly,selected",
   true
 );
 
 var builtIdProperties = oneObject(
-  "accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan," +
-  "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth," +
-  "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
+  "accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" +
+  "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" +
+  ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
     "value,id,title,alt,htmlFor,name,type,longDesc,className",
   1
 );
 
 var booleanTag = oneObject(
-  "script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label"
+  "script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" +
+    "oup,label"
 );
 var xlink = "http://www.w3.org/1999/xlink";
 
@@ -162,9 +162,8 @@ var propHooks = {
     }
   },
   svgAttr: function(dom, name, val) {
-    var method = typeNumber(val) < 3 && !val
-        ? "removeAttribute"
-        : "setAttribute";
+    var method =
+      typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
     if (svgprops[name]) {
       dom[method + "NS"](xlink, svgprops[name], val || "");
     } else {
@@ -188,19 +187,21 @@ var propHooks = {
   },
   __event__: function(dom, name, val, lastProps) {
     let events = dom.__events || (dom.__events = {});
+
     if (val === false) {
-      delete events[name];
+      delete events[toLowerCase(name.slice(2))];
     } else {
       if (!lastProps[name]) {
         //添加全局监听事件
-        addGlobalEventListener(getBrowserName(name));
-        var hook = eventHooks[name];
+        var _name = getBrowserName(name);
+        addGlobalEventListener(_name);
+        var hook = eventHooks[_name];
         if (hook) {
           hook(dom, name);
         }
       }
-
-      events[name] = val;
+      //onClick --> click, onClickCapture --> clickcapture
+      events[toLowerCase(name.slice(2))] = val;
     }
   },
 

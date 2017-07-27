@@ -55,33 +55,32 @@ function fixIESubmit(dom, name) {
 }
 
 if (msie < 9) {
-  eventHooks.onFocus = function(dom) {
-    addEvent(dom, "focusin", function(e) {
-      fireEvent(e, "focus");
-    });
-  };
-  eventHooks.onBlur = function(dom) {
-    addEvent(dom, "blurout", function(e) {
-      fireEvent(e, "blur");
-    });
-  };
+  String("focus,blur").replace(/\w+/g, function(type) {
+    eventHooks[type] = function(dom) {
+      var eventType = type === "focus" ? "focusin" : "focusout";
+      addEvent(dom, eventType, function(e) {
+        fireEvent(e, type);
+      });
+    };
+  });
 
-  "MouseEnter,MouseLeave".replace(/\w+/g, function(method) {
-    eventHooks["on" + method] = function(dom) {
-      var eventType = method === "MouseEnter" ? "mouseover" : "mouseout";
+  String("mouseenter,mouseleave").replace(/\w+/g, function(type) {
+    eventHooks[type] = function(dom) {
+      var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
       addEvent(dom, eventType, function(e) {
         var t = e.relatedTarget;
         if (!t || (t !== elem && elem.contains(t))) {
-          fireEvent(e, toLowerCase(method));
+          fireEvent(e, type);
         }
       });
     };
   });
+
   Object.assign(
     eventPropHooks,
     oneObject(
-      "mousemove, mouseout,mouseenter, mouseleave, mouseout, mousewheel, mousewheel, wh" +
-        "eel, click",
+      "mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" +
+        "el, click",
       function(event) {
         if (!("pageX" in event)) {
           var doc = event.target.ownerDocument || document;
@@ -118,10 +117,9 @@ if (msie < 9) {
       }
     });
   } catch (e) {}
-  eventHooks.onInput = fixIEInput;
-  eventHooks.onInputCapture = fixIEInput;
-  eventHooks.onChange = fixIEChange;
-  eventHooks.onChangeCapture = fixIEChange;
-  eventHooks.onSubmit = fixIESubmit;
-  eventHooks.mousewheelFix = eventHooks.mousewheel;
+  eventHooks.input = fixIEInput;
+  eventHooks.inputcapture = fixIEInput;
+  eventHooks.change = fixIEChange;
+  eventHooks.changecapture = fixIEChange;
+  eventHooks.submit = fixIESubmit;
 }

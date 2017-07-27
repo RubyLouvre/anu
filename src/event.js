@@ -3,11 +3,12 @@ import { document, msie } from "./browser";
 import { isFn, noop } from "./util";
 
 var globalEvents = {};
-export var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 export var eventHooks = {}; //用于在元素上绑定特定的事件
+//根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
+// onMouseMove --> mousemove
+
 export var eventLowerCache = {
-  //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
   onClick: "click",
   onChange: "change",
   onWheel: "wheel"
@@ -24,19 +25,18 @@ export function isEventName(name) {
 export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
-  var __type__ = e.type;
+  var bubble = e.type;
+
   e = new SyntheticEvent(e);
 
-  var hook = eventPropHooks[__type__];
+  var hook = eventPropHooks[bubble];
   if (hook && false === hook(e)) {
     return;
   }
 
   var paths = collectPaths(e);
-  var type = eventCamelCache[__type__] || __type__;
-  var capitalized = capitalize(type);
-  var bubble = "on" + capitalized;
-  var captured = "on" + capitalized + "Capture";
+
+  var captured = bubble + "capture";
 
   scheduler.run();
   triggerEventFlow(paths, captured, e);
@@ -114,7 +114,6 @@ export function getBrowserName(onStr) {
   var camel = onStr.replace(ron, "").replace(rcapture, "");
   lower = camel.toLowerCase();
   eventLowerCache[onStr] = lower;
-  eventCamelCache[lower] = camel;
   return lower;
 }
 var supportsPassive = false;
@@ -127,7 +126,6 @@ try {
   document.addEventListener("test", null, opts);
 } catch (e) {}
 
-eventLowerCache.onWheel = "datasetchanged";
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
             firefox wheel detlaY 下3 上-3
@@ -142,7 +140,7 @@ const fixWheelDelta =
   fixWheelType === "mousewheel"
     ? "wheelDetla"
     : fixWheelType === "wheel" ? "deltaY" : "detail";
-eventHooks.onWheel = function(dom) {
+eventHooks.wheel = function(dom) {
   addEvent(dom, fixWheelType, function(e) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
     var deltaY = ~~dom._ms_wheel_ + delta;
@@ -154,11 +152,11 @@ eventHooks.onWheel = function(dom) {
   });
 };
 
-"Blur,Focus,MouseEnter,MouseLeave".replace(/\w+/g, function(a) {
-  eventHooks["on" + a] = function(dom) {
+"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function(type) {
+  eventHooks[type] = function(dom) {
     addEvent(
       dom,
-      a.toLowerCase(),
+      type,
       function(e) {
         dispatchEvent(e);
       },
@@ -168,8 +166,8 @@ eventHooks.onWheel = function(dom) {
 });
 
 if (isTouch) {
-  eventHooks.onClick = noop;
-  eventHooks.onClickCapture = noop;
+  eventHooks.click = noop;
+  eventHooks.clickcapture = noop;
 }
 
 export function SyntheticEvent(event) {
