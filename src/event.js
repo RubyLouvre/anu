@@ -10,9 +10,7 @@ export var eventLowerCache = {
   //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
   onClick: "click",
   onChange: "change",
-  onWheel: "wheel",
-  onFocus: "datasetchanged",
-  onBlur: "datasetchanged"
+  onWheel: "wheel"
 };
 /**
  * 判定否为与事件相关
@@ -26,7 +24,7 @@ export function isEventName(name) {
 export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
-  var __type__ = e.__type__ || e.type;
+  var __type__ = e.type;
   e = new SyntheticEvent(e);
 
   var hook = eventPropHooks[__type__];
@@ -88,13 +86,18 @@ export function addGlobalEventListener(name) {
 
 export function addEvent(el, type, fn, bool) {
   if (el.addEventListener) {
-    //Unable to preventDefault inside passive event listener due to target being treated as passive
+    // Unable to preventDefault inside passive event listener due to target being
+    // treated as passive
     el.addEventListener(
       type,
       fn,
       /true|false/.test(bool)
         ? bool
-        : supportsPassive ? { passive: false } : false
+        : supportsPassive
+          ? {
+              passive: false
+            }
+          : false
     );
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
@@ -124,16 +127,6 @@ try {
   document.addEventListener("test", null, opts);
 } catch (e) {}
 
-addEvent.fire = function fire(dom, name, opts) {
-  var hackEvent = document.createEvent("Events");
-  hackEvent.initEvent("datasetchanged", true, true, opts);
-  if (opts) {
-    Object.assign(hackEvent, opts);
-  }
-  hackEvent.__type__ = name;
-  dom.dispatchEvent(hackEvent);
-};
-
 eventLowerCache.onWheel = "datasetchanged";
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -154,9 +147,10 @@ eventHooks.onWheel = function(dom) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
     var deltaY = ~~dom._ms_wheel_ + delta;
     dom._ms_wheel_ = deltaY;
-    addEvent.fire(dom, "wheel", {
-      deltaY: deltaY
-    });
+    e = new SyntheticEvent(e);
+    e.type = "wheel";
+    e.deltaY = deltaY;
+    dispatchEvent(e);
   });
 };
 

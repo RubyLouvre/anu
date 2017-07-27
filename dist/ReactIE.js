@@ -617,6 +617,7 @@ function removeDOMElement(node) {
   fragment.removeChild(node);
   var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
   node.__events = null;
+  node.className = '';
   if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
     recyclables[nodeName].push(node);
   } else {
@@ -994,9 +995,7 @@ var eventLowerCache = {
   //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
   onClick: "click",
   onChange: "change",
-  onWheel: "wheel",
-  onFocus: "datasetchanged",
-  onBlur: "datasetchanged"
+  onWheel: "wheel"
 };
 /**
  * 判定否为与事件相关
@@ -1011,7 +1010,7 @@ function isEventName(name) {
 var isTouch = "ontouchstart" in document;
 
 function dispatchEvent(e) {
-  var __type__ = e.__type__ || e.type;
+  var __type__ = e.type;
   e = new SyntheticEvent(e);
 
   var hook = eventPropHooks[__type__];
@@ -1073,8 +1072,11 @@ function addGlobalEventListener(name) {
 
 function addEvent(el, type, fn, bool) {
   if (el.addEventListener) {
-    //Unable to preventDefault inside passive event listener due to target being treated as passive
-    el.addEventListener(type, fn, /true|false/.test(bool) ? bool : supportsPassive ? { passive: false } : false);
+    // Unable to preventDefault inside passive event listener due to target being
+    // treated as passive
+    el.addEventListener(type, fn, /true|false/.test(bool) ? bool : supportsPassive ? {
+      passive: false
+    } : false);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
   }
@@ -1103,16 +1105,6 @@ try {
   document.addEventListener("test", null, opts);
 } catch (e) {}
 
-addEvent.fire = function fire(dom, name, opts) {
-  var hackEvent = document.createEvent("Events");
-  hackEvent.initEvent("datasetchanged", true, true, opts);
-  if (opts) {
-    Object.assign(hackEvent, opts);
-  }
-  hackEvent.__type__ = name;
-  dom.dispatchEvent(hackEvent);
-};
-
 eventLowerCache.onWheel = "datasetchanged";
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -1127,9 +1119,10 @@ eventHooks.onWheel = function (dom) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
     var deltaY = ~~dom._ms_wheel_ + delta;
     dom._ms_wheel_ = deltaY;
-    addEvent.fire(dom, "wheel", {
-      deltaY: deltaY
-    });
+    e = new SyntheticEvent(e);
+    e.type = 'wheel';
+    e.deltaY = deltaY;
+    dispatchEvent(e);
   });
 };
 
@@ -2297,10 +2290,16 @@ function applyCreate(data) {
   data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
 
+function fireEvent(e, type, dom) {
+  e = new SyntheticEvent(e);
+  e.type = type;
+  dispatchEvent(e);
+}
+
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInputHandle(e) {
   if (e.propertyName === "value") {
-    addEvent.fire(e.srcElement, "input");
+    fireEvent(e, "input");
   }
 }
 function fixIEInput(dom, name) {
@@ -2320,7 +2319,8 @@ function fixIEChangeHandle(e) {
       dom.value = attr && attr.specified ? option.value : option.text;
     }
   }
-  addEvent.fire(dom, "change");
+
+  fireEvent(e, "change");
 }
 function fixIEChange(dom, name) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
@@ -2337,16 +2337,27 @@ function fixIESubmit(dom, name) {
 if (msie < 9) {
   eventHooks.onFocus = function (dom) {
     addEvent(dom, "focusin", function (e) {
-      addEvent.fire(dom, "focus");
+      fireEvent(e, "focus");
     });
   };
   eventHooks.onBlur = function (dom) {
     addEvent(dom, "blurout", function (e) {
-      addEvent.fire(dom, "blur");
+      fireEvent(e, 'blur');
     });
   };
 
-  Object.assign(eventPropHooks, oneObject("mousemove, mouseout, mouseout, mousewheel, mousewheel, wheel, click", function (event) {
+  "MouseEnter,MouseLeave".replace(/\w+/g, function (method) {
+    eventHooks['on' + method] = function (dom) {
+      var eventType = method === 'MouseEnter' ? "mouseover" : "mouseout";
+      addEvent(dom, eventType, function (e) {
+        var t = e.relatedTarget;
+        if (!t || t !== elem && elem.contains(t)) {
+          fireEvent(e, toLowerCase(method));
+        }
+      });
+    };
+  });
+  Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout, mousewheel, mousewheel, wh" + "eel, click", function (event) {
     if (!("pageX" in event)) {
       var doc = event.target.ownerDocument || document;
       var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
@@ -2363,17 +2374,6 @@ if (msie < 9) {
     }
   }));
 
-  addEvent.fire = function dispatchIEEvent(dom, type, obj) {
-    try {
-      var hackEvent = document.createEventObject();
-      if (obj) {
-        Object.assign(hackEvent, obj);
-      }
-      hackEvent.__type__ = type;
-      //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
-      dom.fireEvent("ondatasetchanged", hackEvent);
-    } catch (e) {}
-  };
   //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
   try {
     Object.defineProperty(HTMLSelectElement.prototype, "value", {
@@ -2385,10 +2385,6 @@ if (msie < 9) {
       }
     });
   } catch (e) {}
-  eventLowerCache.onInput = "datasetchanged";
-  eventLowerCache.onChange = "datasetchanged";
-  eventLowerCache.onInputCapture = "datasetchanged";
-  eventLowerCache.onChangeCapture = "datasetchanged";
   eventHooks.onInput = fixIEInput;
   eventHooks.onInputCapture = fixIEInput;
   eventHooks.onChange = fixIEChange;

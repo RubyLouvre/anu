@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
@@ -9,64 +10,37 @@
             height: 200px;
             background: red;
         }
-       .bbb {
+
+        .bbb {
             width: 200px;
             height: 200px;
             background: lawngreen;
         }
     </style>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <!-- <script type='text/javascript' src="./test/react.js"></script>
       <script type='text/javascript' src="./test/react-dom.js"></script>-->
-      <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
     <script type='text/javascript' src="./lib/devtools.js"></script>
-   <script src="https://cdn.bootcss.com/immutable/3.8.1/immutable.js"></script>
+    <script src="https://cdn.bootcss.com/immutable/3.8.1/immutable.js"></script>
 
 
     <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-      
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-               
-                this.state = {
-                    aaa: 1
-                }
+    <script>
+        var arr = [2, 11, 15, 7]
+        var target = 9, uniq = {}
+        for(var i = 0, n = arr.length; i < n; i++){
+            var other = 9 - arr[i]
+            if(other in uniq){
+            console.log( [i, uniq[other]] )
+            break
             }
-           
-            componentDidMount(){
-                this.setState({
-                     aaa: new Date - 0
-                 })
-                console.log('App componentDidMount')
-            }
-            componentWillUpdate(){
-                console.log('App componentWillUpdate')
-                 console.log('开始改变')
-                 this.setState({
-                     aaa: new Date - 0
-                 })
-            }
-             componentDidUpdate(){
-                   console.log('App componentDidUpdate')
-                
-              
-            }
-            render() {
-                 return <div>{this.state.aaa}  </div>
-             
-            }
+            uniq[arr[i]] = i
         }
-
-      
-
-        var s 
-        window.onload = function(){
-           s = ReactDOM.render( <App/>, document.getElementById('example'))
-        }
+        
     </script>
 
 </head>
+
 <body>
 
     <div>开发者工具</div>

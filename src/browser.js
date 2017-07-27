@@ -68,6 +68,7 @@ export function removeDOMElement(node) {
   fragment.removeChild(node);
   var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
   node.__events = null;
+  node.className = "";
   if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
     recyclables[nodeName].push(node);
   } else {

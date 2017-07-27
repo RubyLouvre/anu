@@ -4,14 +4,21 @@ import {
   eventHooks,
   addEvent,
   eventPropHooks,
-  dispatchEvent
+  dispatchEvent,
+  SyntheticEvent
 } from "./event";
-import { oneObject } from "./util";
+import { oneObject, toLowerCase } from "./util";
+
+function fireEvent(e, type, dom) {
+  e = new SyntheticEvent(e);
+  e.type = type;
+  dispatchEvent(e);
+}
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInputHandle(e) {
   if (e.propertyName === "value") {
-    addEvent.fire(e.srcElement, "input");
+    fireEvent(e, "input");
   }
 }
 function fixIEInput(dom, name) {
@@ -31,7 +38,8 @@ function fixIEChangeHandle(e) {
       dom.value = attr && attr.specified ? option.value : option.text;
     }
   }
-  addEvent.fire(dom, "change");
+
+  fireEvent(e, "change");
 }
 function fixIEChange(dom, name) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
@@ -49,19 +57,31 @@ function fixIESubmit(dom, name) {
 if (msie < 9) {
   eventHooks.onFocus = function(dom) {
     addEvent(dom, "focusin", function(e) {
-      addEvent.fire(dom, "focus");
+      fireEvent(e, "focus");
     });
   };
   eventHooks.onBlur = function(dom) {
     addEvent(dom, "blurout", function(e) {
-      addEvent.fire(dom, "blur");
+      fireEvent(e, "blur");
     });
   };
 
+  "MouseEnter,MouseLeave".replace(/\w+/g, function(method) {
+    eventHooks["on" + method] = function(dom) {
+      var eventType = method === "MouseEnter" ? "mouseover" : "mouseout";
+      addEvent(dom, eventType, function(e) {
+        var t = e.relatedTarget;
+        if (!t || (t !== elem && elem.contains(t))) {
+          fireEvent(e, toLowerCase(method));
+        }
+      });
+    };
+  });
   Object.assign(
     eventPropHooks,
     oneObject(
-      "mousemove, mouseout, mouseout, mousewheel, mousewheel, wheel, click",
+      "mousemove, mouseout,mouseenter, mouseleave, mouseout, mousewheel, mousewheel, wh" +
+        "eel, click",
       function(event) {
         if (!("pageX" in event)) {
           var doc = event.target.ownerDocument || document;
@@ -87,17 +107,6 @@ if (msie < 9) {
     })
   );
 
-  addEvent.fire = function dispatchIEEvent(dom, type, obj) {
-    try {
-      var hackEvent = document.createEventObject();
-      if (obj) {
-        Object.assign(hackEvent, obj);
-      }
-      hackEvent.__type__ = type;
-      //IE6-8触发事件必须保证在DOM树中,否则报"SCRIPT16389: 未指明的错误"
-      dom.fireEvent("ondatasetchanged", hackEvent);
-    } catch (e) {}
-  };
   //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
   try {
     Object.defineProperty(HTMLSelectElement.prototype, "value", {
@@ -109,10 +118,6 @@ if (msie < 9) {
       }
     });
   } catch (e) {}
-  eventLowerCache.onInput = "datasetchanged";
-  eventLowerCache.onChange = "datasetchanged";
-  eventLowerCache.onInputCapture = "datasetchanged";
-  eventLowerCache.onChangeCapture = "datasetchanged";
   eventHooks.onInput = fixIEInput;
   eventHooks.onInputCapture = fixIEInput;
   eventHooks.onChange = fixIEChange;

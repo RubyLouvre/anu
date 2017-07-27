@@ -303,8 +303,7 @@ function toVnode(vnode, data, parentInstance) {
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getChildContext(instance, context //将context往下传
-            );
+            data.context = getChildContext(instance, context); //将context往下传
         }
         return toVnode(rendered, data, instance);
     } else {
@@ -381,9 +380,9 @@ function renderToString(vnode, context) {
     var TAG_END = /\/?>/;
     var COMMENT_START = /^<\!\-\-/;
     var markup = renderVNode(vnode, context || {});
-    var checksum = adler32(markup
+    var checksum = adler32(markup);
     // Add checksum (handle both parent tags, comments and self-closing tags)
-    );if (COMMENT_START.test(markup)) {
+    if (COMMENT_START.test(markup)) {
         return markup;
     } else {
         return markup.replace(TAG_END, ' data-reactroot="" data-react-checksum="' + checksum + '"$&');
