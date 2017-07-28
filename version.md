@@ -51,3 +51,5 @@
 ## 1.0.7
 1. 处理用户在render方法 return this.props.children 的情况，需要将数组转换为单个虚拟DOM
 2. 处理两个组件虚拟DOM都没有实例化的情况
+3. 只回收文本节点
+4. 支持mouseenter/mouseleave及重构事件系统
