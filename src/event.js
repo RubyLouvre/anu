@@ -1,5 +1,5 @@
 import { scheduler } from "./scheduler";
-import { document, msie } from "./browser";
+import { document } from "./browser";
 import { isFn, noop } from "./util";
 
 var globalEvents = {};
@@ -74,10 +74,6 @@ function triggerEventFlow(paths, prop, e) {
   }
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 export function addGlobalEventListener(name) {
   if (!globalEvents[name]) {
     globalEvents[name] = true;
@@ -125,7 +121,9 @@ try {
     }
   });
   document.addEventListener("test", null, opts);
-} catch (e) {}
+} catch (e) {
+  // no catch
+}
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -183,7 +181,6 @@ export function SyntheticEvent(event) {
   if (!this.target) {
     this.target = event.srcElement;
   }
-  var target = this.target;
   this.fixEvent();
   this.timeStamp = new Date() - 0;
   this.nativeEvent = event;

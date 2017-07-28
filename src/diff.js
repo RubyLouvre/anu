@@ -41,7 +41,7 @@ export function unstable_renderSubtreeIntoContainer(
   callback
 ) {
   if (warnOne) {
-    console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用");
+    console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用"); // eslint-disable-line
     warnOne = 0;
   }
   var parentContext = (parentInstance && parentInstance.context) || {};
@@ -50,11 +50,11 @@ export function unstable_renderSubtreeIntoContainer(
 export function unmountComponentAtNode(dom) {
   var prevVnode = dom._component;
   if (prevVnode) {
-    var conext = prevVnode._instance ? prevVnode._instance.context : {};
+    var parentContext = prevVnode._instance ? prevVnode._instance.context : {};
     alignVnodes(
       prevVnode,
       { type: "#text", text: "empty" },
-      container.firstChild,
+      dom.firstChild,
       parentContext
     );
   }
@@ -70,7 +70,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     );
   }
   if (!container || container.nodeType !== 1) {
-    console.warn(`${container}必须为元素节点`);
+    console.warn(`${container}必须为元素节点`); // eslint-disable-line
     return;
   }
   var prevVnode = container._component,
@@ -484,12 +484,12 @@ function updateElement(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext) {
   var instance = (nextVnode._instance = lastVnode._instance);
-  if(!instance){
-     lastVnode._return = lastVnode._disposed = true
-      var dom =  mountComponent(nextVnode, parentContext)
-     node.parentNode && node.parentNode.replaceChild(dom, node);
-     
-      return dom
+  if (!instance) {
+    lastVnode._return = lastVnode._disposed = true;
+    var dom = mountComponent(nextVnode, parentContext);
+    node.parentNode && node.parentNode.replaceChild(dom, node);
+
+    return dom;
   }
 
   var nextProps = getComponentProps(nextVnode);
@@ -659,13 +659,14 @@ function applyUpdate(data) {
       dom = updateStateless(vnode, nextVnode, dom, data.parentContext);
     } else if (vnode.vtype === 2) {
       dom = updateComponent(vnode, nextVnode, dom, data.parentContext);
-      if(vnode._return){ //如果vnode, nextVnode都没有实例
-        return dom
+      if (vnode._return) {
+        //如果vnode, nextVnode都没有实例
+        return dom;
       }
     }
   }
-  if(dom.parentNode === null){
-      return dom
+  if (dom.parentNode === null) {
+    return dom;
   }
   // re-order
   let currentNode = dom.parentNode.childNodes[data.index];
@@ -687,5 +688,3 @@ function applyCreate(data) {
   let node = mountVnode(data.vnode, data.parentContext);
   data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
 }
-
-

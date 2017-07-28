@@ -27,11 +27,11 @@ export function patchStyle(dom, oldStyle, newStyle) {
         //node.style.width = undefine 在旧式IE下会抛异常
         dom.style[name] = val; //应用样式
       } catch (e) {
-        console.log("dom.style[" + name + "] = " + val + "throw error");
+        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
       }
     }
   }
-  // 如果旧样式存在，但新样式已经去掉
+  // 如果旧样式存在，但新样式已经去掉
   for (let name in oldStyle) {
     if (!(name in newStyle)) {
       dom.style[name] = ""; //清除样式

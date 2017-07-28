@@ -1,4 +1,4 @@
-import { oneObject, recyclables, toLowerCase, typeNumber } from "./util";
+import { oneObject, recyclables, typeNumber } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -15,7 +15,7 @@ String(
     ",detachEvent"
 ).replace(/\w+/g, function(name) {
   fn[name] = function() {
-    console.log("fire " + name);
+    console.log("fire " + name); // eslint-disable-line
   };
 });
 

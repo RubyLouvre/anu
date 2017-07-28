@@ -41,10 +41,7 @@ var specHandle = {
 
   getDefaultProps(Ctor, value, name) {
     if (Ctor[name]) {
-      Ctor[name] = createMergedResultFunction(
-        Ctor[name],
-        value
-      );
+      Ctor[name] = createMergedResultFunction(Ctor[name], value);
     } else {
       Ctor[name] = value;
     }
@@ -75,7 +72,7 @@ function mixSpecIntoComponent(Ctor, spec) {
     return;
   }
   if (isFn(spec)) {
-    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象");
+    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象"); // eslint-disable-line
   }
 
   var proto = Ctor.prototype;
@@ -193,7 +190,7 @@ var warnOnce = 1;
 export function createClass(spec) {
   if (warnOnce) {
     warnOnce = 0;
-    console.warn("createClass已经过时，强烈建议使用es6方式定义类");
+    console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
   }
   var Constructor = newCtor(spec.displayName || "Component");
   var proto = inherit(Constructor, Component);

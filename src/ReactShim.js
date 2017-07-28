@@ -8,7 +8,7 @@ import { Children } from "./Children";
 
 import { options } from "./util";
 
-import { render } from "./diff";
+import { render, findDOMNode } from "./diff";
 import "./ieEvent";
 
 var React = {

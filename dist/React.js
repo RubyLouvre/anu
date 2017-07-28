@@ -254,7 +254,6 @@ function createElement(type, configs) {
 function flattenChildren(stack) {
   var lastText,
       child,
-      deep,
       children = [];
 
   while (stack.length) {
@@ -370,7 +369,7 @@ function cloneElement(vnode, props) {
 }
 
 if (0 === [1, 2].splice(0).length) {
-  console.warn("请引入polyfill进行修复");
+  console.warn("请引入polyfill进行修复"); // eslint-disable-line
 }
 
 var scheduler = {
@@ -384,7 +383,7 @@ var scheduler = {
       scheduler.run();
     }, 0);
   },
-  run: function run(no) {
+  run: function run() {
     if (this.count === 0) return;
     this.count = 0;
     this.list.splice(0).forEach(function (instance) {
@@ -441,7 +440,7 @@ function Component(props, context) {
 
 Component.prototype = {
   replaceState: function replaceState() {
-    console.warn("此方法末实现");
+    console.warn("此方法末实现"); // eslint-disable-line
   },
   setState: function setState(state, cb) {
     this._pendingStates.push(state);
@@ -563,7 +562,7 @@ var fn$1 = DOMElement.prototype = {
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
   fn$1[name] = function () {
-    console.log("fire " + name);
+    console.log("fire " + name); // eslint-disable-line
   };
 });
 
@@ -807,6 +806,8 @@ try {
   });
   document.addEventListener("test", null, opts);
 } catch (e) {}
+// no catch
+
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -853,7 +854,6 @@ function SyntheticEvent(event) {
   if (!this.target) {
     this.target = event.srcElement;
   }
-  var target = this.target;
   this.fixEvent();
   this.timeStamp = new Date() - 0;
   this.nativeEvent = event;
@@ -973,7 +973,7 @@ function mixSpecIntoComponent(Ctor, spec) {
     return;
   }
   if (isFn(spec)) {
-    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象");
+    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象"); // eslint-disable-line
   }
 
   var proto = Ctor.prototype;
@@ -1077,7 +1077,7 @@ var warnOnce = 1;
 function createClass(spec) {
   if (warnOnce) {
     warnOnce = 0;
-    console.warn("createClass已经过时，强烈建议使用es6方式定义类");
+    console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
   }
   var Constructor = newCtor(spec.displayName || "Component");
   var proto = inherit(Constructor, Component);
@@ -1150,11 +1150,11 @@ function patchStyle(dom, oldStyle, newStyle) {
         //node.style.width = undefine 在旧式IE下会抛异常
         dom.style[name] = val; //应用样式
       } catch (e) {
-        console.log("dom.style[" + name + "] = " + val + "throw error");
+        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
       }
     }
   }
-  // 如果旧样式存在，但新样式已经去掉
+  // 如果旧样式存在，但新样式已经去掉
   for (var _name in oldStyle) {
     if (!(_name in newStyle)) {
       dom.style[_name] = ""; //清除样式
@@ -1274,7 +1274,7 @@ function getHookType(name, val, type, dom) {
   return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
 }
 
-function getHookTypeSVG(name, val, type, dom) {
+function getHookTypeSVG(name) {
   if (name === "className") {
     return "svgClass";
   }
@@ -1296,7 +1296,7 @@ var svgprops = {
 };
 var emptyStyle = {};
 var propHooks = {
-  boolean: function boolean(dom, name, val, lastProp) {
+  boolean: function boolean(dom, name, val) {
     // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
     // 会影响到样式,需要进一步处理 eslint-disable-next-line
     dom[name] = !!val;
@@ -1311,10 +1311,10 @@ var propHooks = {
     try {
       dom.setAttribute(name, val);
     } catch (e) {
-      console.log("setAttribute error", name, val);
+      console.log("setAttribute error", name, val); // eslint-disable-line
     }
   },
-  svgClass: function svgClass(dom, name, val, lastProp) {
+  svgClass: function svgClass(dom, name, val) {
     if (!val) {
       dom.removeAttribute("class");
     } else {
@@ -1338,7 +1338,7 @@ var propHooks = {
     }
   },
   children: noop,
-  className: function className(dom, _, val, lastProps) {
+  className: function className(dom, _, val) {
     dom.className = val;
   },
   style: function style(dom, _, val, lastProps) {
@@ -1387,6 +1387,7 @@ function processFormElement(vnode, dom, props) {
     var keys = data[1];
     var eventName = data[2];
     if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
+      // eslint-disable-next-line
       console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u7B49\u7528\u4E8E\u63A7\u5236" + duplexProp + "\n\n      \u53D8\u5316\u7684\u5C5E\u6027\uFF0C\u90A3\u4E48\u5B83\u662F\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
       dom[eventName] = data[3];
     }
@@ -1521,7 +1522,7 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
   } catch (e) {
     /* istanbul ignore next */
-    console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
+    console.warn("<select multiple=\"true\"> 的value应该对应一个字符串数组"); // eslint-disable-line
   }
   for (var _i = 0; _i < n; _i++) {
     var option = options$$1[_i];
@@ -1557,6 +1558,15 @@ function getOptionSelected(option, selected) {
 //innerMap_start
 var innerMap = win.Map;
 
+function getID(a) {
+  if (a.uniqueID) {
+    return "Node" + a.uniqueID;
+  } else {
+    a.uniqueID = "_" + uniqueID++;
+    return "Node" + a.uniqueID;
+  }
+}
+
 try {
   var testNode = document.createComment("");
   var map = new innerMap(),
@@ -1566,20 +1576,10 @@ try {
     throw "使用自定义Map";
   }
 } catch (e) {
-  var getID = function getID(a) {
-    if (a.uniqueID) {
-      return "Node" + a.uniqueID;
-    } else {
-      a.uniqueID = "_" + uniqueID++;
-      return "Node" + a.uniqueID;
-    }
-  };
-
   var uniqueID = 1;
   innerMap = function innerMap() {
     this.map = {};
   };
-
   innerMap.prototype = {
     get: function get(a) {
       var id = getID(a);
@@ -1671,7 +1671,7 @@ function render(vnode, container, callback) {
 var warnOne = 1;
 function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, callback) {
   if (warnOne) {
-    console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用");
+    console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用"); // eslint-disable-line
     warnOne = 0;
   }
   var parentContext = parentInstance && parentInstance.context || {};
@@ -1680,8 +1680,8 @@ function unstable_renderSubtreeIntoContainer(parentInstance, vnode, container, c
 function unmountComponentAtNode(dom) {
   var prevVnode = dom._component;
   if (prevVnode) {
-    var conext = prevVnode._instance ? prevVnode._instance.context : {};
-    alignVnodes(prevVnode, { type: "#text", text: "empty" }, container.firstChild, parentContext);
+    var parentContext = prevVnode._instance ? prevVnode._instance.context : {};
+    alignVnodes(prevVnode, { type: "#text", text: "empty" }, dom.firstChild, parentContext);
   }
 }
 function isValidElement(vnode) {
@@ -1693,7 +1693,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
   }
   if (!container || container.nodeType !== 1) {
-    console.warn(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9");
+    console.warn(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
     return;
   }
   var prevVnode = container._component,
@@ -2312,7 +2312,7 @@ var React = {
   Component: Component,
   eventSystem: eventSystem,
   createFactory: function createFactory(type) {
-    console.warn('createFactory将被废弃');
+    console.warn("createFactory将被废弃"); // eslint-disable-line
     var factory = createElement.bind(null, type);
     factory.type = type;
     return factory;

@@ -1,15 +1,14 @@
 import { document, msie } from "./browser";
 import {
-  eventLowerCache,
   eventHooks,
   addEvent,
   eventPropHooks,
   dispatchEvent,
   SyntheticEvent
 } from "./event";
-import { oneObject, toLowerCase } from "./util";
+import { oneObject } from "./util";
 
-function fireEvent(e, type, dom) {
+function fireEvent(e, type) {
   e = new SyntheticEvent(e);
   e.type = type;
   dispatchEvent(e);
@@ -21,7 +20,7 @@ function fixIEInputHandle(e) {
     fireEvent(e, "input");
   }
 }
-function fixIEInput(dom, name) {
+function fixIEInput(dom) {
   addEvent(dom, "propertychange", fixIEInputHandle);
 }
 
@@ -41,14 +40,14 @@ function fixIEChangeHandle(e) {
 
   fireEvent(e, "change");
 }
-function fixIEChange(dom, name) {
+function fixIEChange(dom) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
   var eventType =
     dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
   addEvent(dom, eventType, fixIEChangeHandle);
 }
 
-function fixIESubmit(dom, name) {
+function fixIESubmit(dom) {
   if (dom.nodeName === "FORM") {
     addEvent(dom, "submit", dispatchEvent);
   }
@@ -69,7 +68,7 @@ if (msie < 9) {
       var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
       addEvent(dom, eventType, function(e) {
         var t = e.relatedTarget;
-        if (!t || (t !== elem && elem.contains(t))) {
+        if (!t || (t !== dom && dom.contains(t))) {
           fireEvent(e, type);
         }
       });
@@ -116,7 +115,9 @@ if (msie < 9) {
         return this._fixIEValue;
       }
     });
-  } catch (e) {}
+  } catch (e) {
+    // no catch
+  }
   eventHooks.input = fixIEInput;
   eventHooks.inputcapture = fixIEInput;
   eventHooks.change = fixIEChange;

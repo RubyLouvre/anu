@@ -114,7 +114,7 @@ function getHookType(name, val, type, dom) {
     : "property";
 }
 
-function getHookTypeSVG(name, val, type, dom) {
+function getHookTypeSVG(name) {
   if (name === "className") {
     return "svgClass";
   }
@@ -136,7 +136,7 @@ var svgprops = {
 };
 var emptyStyle = {};
 var propHooks = {
-  boolean: function(dom, name, val, lastProp) {
+  boolean: function(dom, name, val) {
     // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
     // 会影响到样式,需要进一步处理 eslint-disable-next-line
     dom[name] = !!val;
@@ -151,10 +151,10 @@ var propHooks = {
     try {
       dom.setAttribute(name, val);
     } catch (e) {
-      console.log("setAttribute error", name, val);
+      console.log("setAttribute error", name, val); // eslint-disable-line
     }
   },
-  svgClass: function(dom, name, val, lastProp) {
+  svgClass: function(dom, name, val) {
     if (!val) {
       dom.removeAttribute("class");
     } else {
@@ -179,7 +179,7 @@ var propHooks = {
     }
   },
   children: noop,
-  className: function(dom, _, val, lastProps) {
+  className: function(dom, _, val) {
     dom.className = val;
   },
   style: function(dom, _, val, lastProps) {

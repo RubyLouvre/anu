@@ -1,6 +1,6 @@
 import { options, typeNumber } from "./util";
 if (0 === [1, 2].splice(0).length) {
-  console.warn("请引入polyfill进行修复");
+  console.warn("请引入polyfill进行修复"); // eslint-disable-line
 }
 
 export var scheduler = {
@@ -14,7 +14,7 @@ export var scheduler = {
       scheduler.run();
     }, 0);
   },
-  run: function(no) {
+  run: function() {
     if (this.count === 0) return;
     this.count = 0;
     this.list.splice(0).forEach(function(instance) {

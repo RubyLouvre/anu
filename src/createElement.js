@@ -70,7 +70,6 @@ export function createElement(type, configs) {
 function flattenChildren(stack) {
   var lastText,
     child,
-    deep,
     children = [];
 
   while (stack.length) {

@@ -1,7 +1,5 @@
 import { instanceMap } from "./instanceMap";
-import {
-  options
-} from "./util";
+import { options } from "./util";
 export function disposeVnode(vnode) {
   if (!vnode || vnode._disposed) {
     return;
@@ -32,7 +30,7 @@ function disposeStateless(vnode) {
 
 function disposeElement(vnode) {
   var { props } = vnode;
-  var children = props.children
+  var children = props.children;
   for (let i = 0, n = children.length; i < n; i++) {
     disposeVnode(children[i]);
   }
@@ -45,7 +43,7 @@ function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
     instance._disableSetState = true;
-    options.beforeUnmount(instance)
+    options.beforeUnmount(instance);
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
     }

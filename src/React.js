@@ -26,7 +26,7 @@ var React = {
   findDOMNode,
   options,
   unstable_renderSubtreeIntoContainer,
-  unmountComponentAtNode,  
+  unmountComponentAtNode,
   isValidElement,
   createClass,
   version: "VERSION",
@@ -36,7 +36,7 @@ var React = {
   Component,
   eventSystem,
   createFactory(type) {
-    console.warn('createFactory将被废弃')
+    console.warn("createFactory将被废弃"); // eslint-disable-line
     var factory = createElement.bind(null, type);
     factory.type = type;
     return factory;

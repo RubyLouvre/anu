@@ -1,7 +1,15 @@
-
 import { document, win } from "./browser";
 //innerMap_start
 var innerMap = win.Map;
+
+function getID(a) {
+  if (a.uniqueID) {
+    return "Node" + a.uniqueID;
+  } else {
+    a.uniqueID = "_" + uniqueID++;
+    return "Node" + a.uniqueID;
+  }
+}
 
 try {
   var testNode = document.createComment("");
@@ -16,14 +24,6 @@ try {
   innerMap = function() {
     this.map = {};
   };
-  function getID(a) {
-    if (a.uniqueID) {
-      return "Node" + a.uniqueID;
-    } else {
-      a.uniqueID = "_" + uniqueID++;
-      return "Node" + a.uniqueID;
-    }
-  }
   innerMap.prototype = {
     get: function(a) {
       var id = getID(a);
@@ -33,7 +33,7 @@ try {
       var id = getID(a);
       this.map[id] = v;
     },
-    "delete": function(a) {
+    delete: function(a) {
       var id = getID(a);
       delete this.map[id];
     }
