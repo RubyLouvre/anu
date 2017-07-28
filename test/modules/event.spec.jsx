@@ -122,6 +122,94 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
     })
 
+    it('模拟mouseover,mouseout',async() => {
+        var aaa = ''
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
+            }
+
+            mouseover() {
+                aaa += 'aaa '
+
+            }
+            mouseout(e) {
+                aaa += 'bbb '
+            
+            }
+  
+            render() {
+                return <div><div id='mouse1' onMouseOver={this.mouseover} onMouseOut={this.mouseout} style={{width:200, height:200}}>
+                    
+                </div>
+                <div id='mouse2'></div>
+                </div>
+            }
+        }
+
+ 
+        var s = ReactDOM.render(
+            <App/>, div)
+        await browser
+            .pause(100)
+            .moveToObject('#mouse1')
+            .pause(100)
+            .moveToObject('#mouse2')
+            .$apply()
+
+        expect(aaa.trim()).toBe('aaa bbb')
+
+
+    })
+ it('模拟mouseenter,mouseleave',async() => {
+        var aaa = ''
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
+            }
+
+            mouseover() {
+                aaa += 'aaa '
+
+            }
+            mouseout(e) {
+                aaa += 'bbb '
+            
+            }
+  
+            render() {
+                return <div><div id='mouse3' onMouseEnter={this.mouseover} onMouseLeave={this.mouseout} style={{width:200, height:200}}>
+                    
+                </div>
+                <div id='mouse4'></div>
+                </div>
+            }
+        }
+
+ 
+        var s = ReactDOM.render(
+            <App/>, div)
+        await browser
+            .pause(100)
+            .moveToObject('#mouse3')
+            .pause(100)
+            .moveToObject('#mouse4')
+            .$apply()
+
+        expect(aaa.trim()).toBe('aaa bbb')
+
+
+    })
     it('捕获', async() => {
         var aaa = ''
         class App extends React.PureComponent {

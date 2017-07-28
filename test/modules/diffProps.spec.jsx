@@ -88,11 +88,11 @@ describe('diffProps', function () {
             .pause(100)
             .$apply()
         var dom = s.refs.a
-        console.log(dom, '1111')
         expect(dom.title).toBe('xxx')
         expect(dom.className).toBe('ddd')
         expect(dom.id).toBe('h33')
-        expect((dom.__events || {}).onClick).toA('function')
+        var events = dom.__events || {}
+        expect(events.onClick || events.click).toA('function')
         expect(dom.getElementsByTagName('b').length).toBe(1)
         index = 0
         await browser
@@ -105,7 +105,8 @@ describe('diffProps', function () {
         expect(dom.className).toBe('')
         expect(dom.id).toBe('h44')
         expect(dom.getAttribute('data-bbb')).toBe('sss')
-        expect((dom.__events || {}).onClick).toA('undefined')
+        var events = dom.__events || {}
+        expect(events.onClick || events.click).toA('undefined')
         expect(dom.getElementsByTagName('b').length).toBe(0)
       
     })

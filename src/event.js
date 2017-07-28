@@ -25,7 +25,8 @@ export function isEventName(name) {
 export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e) {
-  var bubble = e.type;
+  //__type__ 在injectTapEventPlugin里用到
+  var bubble = e.__type__ || e.type;
 
   e = new SyntheticEvent(e);
 
