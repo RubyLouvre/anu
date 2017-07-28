@@ -2383,7 +2383,7 @@ if (msie < 9) {
 }
 
 var React = {
-  version: "1.0.6",
+  version: "1.0.7",
   PropTypes: PropTypes,
   Children: Children, //为了react-redux
   render: render,

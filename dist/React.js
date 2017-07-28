@@ -2305,7 +2305,7 @@ var React = {
   unmountComponentAtNode: unmountComponentAtNode,
   isValidElement: isValidElement,
   createClass: createClass,
-  version: "1.0.6",
+  version: "1.0.7",
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,
