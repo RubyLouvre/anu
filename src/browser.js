@@ -63,17 +63,13 @@ export function removeDOMElement(node) {
     } else {
       emptyElement(node);
     }
+    node.__events = null;
+  } else if (node.nodeType === 3) {
+    //只回收文本节点
+    recyclables["#text"].push(node);
   }
   fragment.appendChild(node);
   fragment.removeChild(node);
-  var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
-  node.__events = null;
-  node.className = "";
-  if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
-    recyclables[nodeName].push(node);
-  } else {
-    recyclables[nodeName] = [node];
-  }
 }
 
 var versions = {
@@ -91,14 +87,16 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createDOMElement(vnode) {
   var type = vnode.type;
-  var node = recyclables[type] && recyclables[type].pop();
-  if (node) {
-    node.nodeValue = vnode.text;
-    return node;
-  }
   if (type === "#text") {
+    //只重复利用文本节点
+    var node = recyclables[type].pop();
+    if (node) {
+      node.nodeValue = vnode.text;
+      return node;
+    }
     return document.createTextNode(vnode.text);
   }
+
   if (type === "#comment") {
     return document.createComment(vnode.text);
   }

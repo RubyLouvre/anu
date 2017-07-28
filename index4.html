@@ -32,10 +32,13 @@
         };
       }
       onChange(e){
-        console.log(e.type, 'xxxx')
+        console.log(e.type, e.pageX)
       }
       render() {
-        return <p  onMouseEnter={this.onChange.bind(this)}>磊大</p>;
+        return <p  onMouseLeave={this.onChange.bind(this)}>测试各种事件
+          <input onFocus={(e)=>{console.log(e.type)}} onInput={(e)=>{console.log(e.type)}} />
+          <input onBlur={(e)=>{console.log(e.type)}} onChange={(e)=>{console.log(e.type)}}/>
+          </p>;
       }
     }
 

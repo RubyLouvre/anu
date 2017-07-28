@@ -170,9 +170,5 @@ export function getComponentProps(vnode) {
 
 export var recyclables = {
   "#text": [],
-  "#comment": [],
-  span: [],
-  div: [],
-  td: [],
-  p: []
+  "#comment": []
 };

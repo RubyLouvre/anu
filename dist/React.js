@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-27
+ * by 司徒正美 Copyright 2017-07-28
  * 兼容yo-router
  */
 
@@ -180,11 +180,7 @@ function getComponentProps(vnode) {
 
 var recyclables = {
   "#text": [],
-  "#comment": [],
-  span: [],
-  div: [],
-  td: [],
-  p: []
+  "#comment": []
 };
 
 var stack = [];
@@ -613,17 +609,13 @@ function removeDOMElement(node) {
     } else {
       emptyElement(node);
     }
+    node.__events = null;
+  } else if (node.nodeType === 3) {
+    //只回收文本节点
+    recyclables["#text"].push(node);
   }
   fragment.appendChild(node);
   fragment.removeChild(node);
-  var nodeName = node.__n || (node.__n = toLowerCase(node.nodeName));
-  node.__events = null;
-  node.className = '';
-  if (recyclables[nodeName] && recyclables[nodeName].length < 72) {
-    recyclables[nodeName].push(node);
-  } else {
-    recyclables[nodeName] = [node];
-  }
 }
 
 var versions = {
@@ -639,14 +631,16 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 function createDOMElement(vnode) {
   var type = vnode.type;
-  var node = recyclables[type] && recyclables[type].pop();
-  if (node) {
-    node.nodeValue = vnode.text;
-    return node;
-  }
   if (type === "#text") {
+    //只重复利用文本节点
+    var node = recyclables[type].pop();
+    if (node) {
+      node.nodeValue = vnode.text;
+      return node;
+    }
     return document.createTextNode(vnode.text);
   }
+
   if (type === "#comment") {
     return document.createComment(vnode.text);
   }
@@ -701,11 +695,12 @@ function getNs(type) {
 }
 
 var globalEvents = {};
-var eventCamelCache = {}; //根据事件对象的type得到驼峰风格的type， 如 click --> Click, mousemove --> MouseMove
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 var eventHooks = {}; //用于在元素上绑定特定的事件
+//根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
+// onMouseMove --> mousemove
+
 var eventLowerCache = {
-  //根据onXXX得到其全小写的事件名, onClick --> click, onMouseMove --> mousemove
   onClick: "click",
   onChange: "change",
   onWheel: "wheel"
@@ -723,19 +718,18 @@ function isEventName(name) {
 var isTouch = "ontouchstart" in document;
 
 function dispatchEvent(e) {
-  var __type__ = e.type;
+  var bubble = e.type;
+
   e = new SyntheticEvent(e);
 
-  var hook = eventPropHooks[__type__];
+  var hook = eventPropHooks[bubble];
   if (hook && false === hook(e)) {
     return;
   }
 
   var paths = collectPaths(e);
-  var type = eventCamelCache[__type__] || __type__;
-  var capitalized = capitalize(type);
-  var bubble = "on" + capitalized;
-  var captured = "on" + capitalized + "Capture";
+
+  var captured = bubble + "capture";
 
   scheduler.run();
   triggerEventFlow(paths, captured, e);
@@ -772,10 +766,6 @@ function triggerEventFlow(paths, prop, e) {
   }
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 function addGlobalEventListener(name) {
   if (!globalEvents[name]) {
     globalEvents[name] = true;
@@ -805,7 +795,6 @@ function getBrowserName(onStr) {
   var camel = onStr.replace(ron, "").replace(rcapture, "");
   lower = camel.toLowerCase();
   eventLowerCache[onStr] = lower;
-  eventCamelCache[lower] = camel;
   return lower;
 }
 var supportsPassive = false;
@@ -818,7 +807,6 @@ try {
   document.addEventListener("test", null, opts);
 } catch (e) {}
 
-eventLowerCache.onWheel = "datasetchanged";
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
             firefox wheel detlaY 下3 上-3
@@ -827,29 +815,29 @@ eventLowerCache.onWheel = "datasetchanged";
 /* istanbul ignore next  */
 var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
 var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
-eventHooks.onWheel = function (dom) {
+eventHooks.wheel = function (dom) {
   addEvent(dom, fixWheelType, function (e) {
     var delta = e[fixWheelDelta] > 0 ? -120 : 120;
     var deltaY = ~~dom._ms_wheel_ + delta;
     dom._ms_wheel_ = deltaY;
     e = new SyntheticEvent(e);
-    e.type = 'wheel';
+    e.type = "wheel";
     e.deltaY = deltaY;
     dispatchEvent(e);
   });
 };
 
-"Blur,Focus,MouseEnter,MouseLeave".replace(/\w+/g, function (a) {
-  eventHooks["on" + a] = function (dom) {
-    addEvent(dom, a.toLowerCase(), function (e) {
+"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
+  eventHooks[type] = function (dom) {
+    addEvent(dom, type, function (e) {
       dispatchEvent(e);
     }, true);
   };
 });
 
 if (isTouch) {
-  eventHooks.onClick = noop;
-  eventHooks.onClickCapture = noop;
+  eventHooks.click = noop;
+  eventHooks.clickcapture = noop;
 }
 
 function SyntheticEvent(event) {
@@ -899,7 +887,6 @@ var eventProto = SyntheticEvent.prototype = {
 
 
 var eventSystem = extend({
-	eventCamelCache: eventCamelCache,
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -1200,12 +1187,12 @@ function cssName(name, dom) {
   return null;
 }
 
-var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls," + "declare,disabled,defer,defaultChecked,defaultSelected," + "isMap,loop,multiple,noHref,noResize,noShade," + "open,readOnly,selected", true);
+var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" + "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" + "en,readOnly,selected", true);
 
-var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan," + "dateTime,defaultValue,contentEditable,frameBorder,maxLength,marginWidth," + "marginHeight,rowSpan,tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
+var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" + "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" + ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
 "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
 
-var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgroup,label");
+var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
 var xlink = "http://www.w3.org/1999/xlink";
 
 /**
@@ -1231,10 +1218,10 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
   }
   //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
-  for (var _name in lastProps) {
-    if (!nextProps.hasOwnProperty(_name)) {
-      var hookName2 = getHookType(_name, false, vnode.type, dom);
-      propHooks[hookName2](dom, _name, builtIdProperties[_name] ? "" : false, lastProps);
+  for (var _name2 in lastProps) {
+    if (!nextProps.hasOwnProperty(_name2)) {
+      var hookName2 = getHookType(_name2, false, vnode.type, dom);
+      propHooks[hookName2](dom, _name2, builtIdProperties[_name2] ? "" : false, lastProps);
     }
   }
 }
@@ -1252,11 +1239,11 @@ function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
   }
   //eslint-disable-next-line
-  for (var _name2 in lastProps) {
-    if (!nextProps.hasOwnProperty(_name2)) {
-      var _val = nextProps[_name2];
-      var hookName2 = getHookTypeSVG(_name2, _val, vnode.type, dom);
-      propHooks[hookName2](dom, _name2, false, lastProps);
+  for (var _name3 in lastProps) {
+    if (!nextProps.hasOwnProperty(_name3)) {
+      var _val = nextProps[_name3];
+      var hookName2 = getHookTypeSVG(_name3, _val, vnode.type, dom);
+      propHooks[hookName2](dom, _name3, false, lastProps);
     }
   }
 }
@@ -1358,19 +1345,21 @@ var propHooks = {
   },
   __event__: function __event__(dom, name, val, lastProps) {
     var events = dom.__events || (dom.__events = {});
+
     if (val === false) {
-      delete events[name];
+      delete events[toLowerCase(name.slice(2))];
     } else {
       if (!lastProps[name]) {
         //添加全局监听事件
-        addGlobalEventListener(getBrowserName(name));
-        var hook = eventHooks[name];
+        var _name = getBrowserName(name);
+        addGlobalEventListener(_name);
+        var hook = eventHooks[_name];
         if (hook) {
           hook(dom, name);
         }
       }
-
-      events[name] = val;
+      //onClick --> click, onClickCapture --> clickcapture
+      events[toLowerCase(name.slice(2))] = val;
     }
   },
 
