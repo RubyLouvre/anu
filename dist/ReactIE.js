@@ -1129,7 +1129,7 @@ if (isTouch) {
 }
 
 function SyntheticEvent(event) {
-  if (event.originalEvent) {
+  if (event.nativeEvent) {
     return event;
   }
   for (var i in event) {
@@ -1143,13 +1143,13 @@ function SyntheticEvent(event) {
   var target = this.target;
   this.fixEvent();
   this.timeStamp = new Date() - 0;
-  this.originalEvent = event;
+  this.nativeEvent = event;
 }
 
 var eventProto = SyntheticEvent.prototype = {
   fixEvent: function fixEvent() {}, //留给以后扩展用
   preventDefault: function preventDefault() {
-    var e = this.originalEvent || {};
+    var e = this.nativeEvent || {};
     e.returnValue = this.returnValue = false;
     if (e.preventDefault) {
       e.preventDefault();
@@ -1157,7 +1157,7 @@ var eventProto = SyntheticEvent.prototype = {
   },
   fixHooks: function fixHooks() {},
   stopPropagation: function stopPropagation() {
-    var e = this.originalEvent || {};
+    var e = this.nativeEvent || {};
     e.cancelBubble = this._stopPropagation = true;
     if (e.stopPropagation) {
       e.stopPropagation();

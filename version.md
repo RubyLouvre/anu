@@ -53,3 +53,6 @@
 2. 处理两个组件虚拟DOM都没有实例化的情况
 3. 只回收文本节点
 4. 支持mouseenter/mouseleave及重构事件系统
+
+## 1.0.8
+1. event.originalEvent更名为 event.nativeEvent
