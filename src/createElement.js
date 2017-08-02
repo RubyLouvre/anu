@@ -158,7 +158,7 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
 }
 
 Vnode.prototype = {
-  getDOMNode: function() {
+  getDOMNode: function () {
     return this._hostNode || null;
   },
 

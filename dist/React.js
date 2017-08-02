@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-28
+ * by 司徒正美 Copyright 2017-08-02
  * 兼容yo-router
  */
 
@@ -731,7 +731,7 @@ function dispatchEvent(e) {
 
   var captured = bubble + "capture";
 
-  scheduler.run();
+  //scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
@@ -766,7 +766,7 @@ function triggerEventFlow(paths, prop, e) {
   }
 }
 
-function addGlobalEventListener(name) {
+function addGlobalEvent(name) {
   if (!globalEvents[name]) {
     globalEvents[name] = true;
     addEvent(document, name, dispatchEvent);
@@ -894,7 +894,7 @@ var eventSystem = extend({
 	isEventName: isEventName,
 	isTouch: isTouch,
 	dispatchEvent: dispatchEvent,
-	addGlobalEventListener: addGlobalEventListener,
+	addGlobalEvent: addGlobalEvent,
 	addEvent: addEvent,
 	getBrowserName: getBrowserName,
 	SyntheticEvent: SyntheticEvent
@@ -1353,7 +1353,7 @@ var propHooks = {
       if (!lastProps[name]) {
         //添加全局监听事件
         var _name = getBrowserName(name);
-        addGlobalEventListener(_name);
+        addGlobalEvent(_name);
         var hook = eventHooks[_name];
         if (hook) {
           hook(dom, name);
@@ -1522,7 +1522,7 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
   } catch (e) {
     /* istanbul ignore next */
-    console.warn("<select multiple=\"true\"> 的value应该对应一个字符串数组"); // eslint-disable-line
+    console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
   }
   for (var _i = 0; _i < n; _i++) {
     var option = options$$1[_i];
@@ -1589,7 +1589,7 @@ try {
       var id = getID(a);
       this.map[id] = v;
     },
-    "delete": function _delete(a) {
+    delete: function _delete(a) {
       var id = getID(a);
       delete this.map[id];
     }
@@ -2014,7 +2014,6 @@ function reRenderComponent(instance) {
   instance._disableSetState = false;
   return dom;
 }
-
 function alignVnodes(vnode, newVnode, node, parentContext) {
   var newNode = node;
   //eslint-disable-next-line
@@ -2025,6 +2024,12 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
     //replace
     disposeVnode(vnode);
     newNode = mountVnode(newVnode, parentContext);
+    if (newVnode._instance && scheduler.count) {
+      //  schedulerID = setTimeout(function(){
+      scheduler.run();
+      //  schedulerID = null
+      //  })
+    }
     var p = node.parentNode;
     if (p) {
       p.replaceChild(newNode, node);

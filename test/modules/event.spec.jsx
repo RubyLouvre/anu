@@ -268,7 +268,7 @@ describe('ReactDOM.render返回根组件的实例', function () {
         expect(e.type).toBe('change')
         expect(e.timeStamp).toA('number')
         expect(e.target).toBe(1)
-        expect(e.originalEvent).toBe(obj)
+        expect(e.nativeEvent).toBe(obj)
         e.stopImmediatePropagation()
         expect(e._stopPropagation).toBe(true)
         expect(e.toString()).toBe('[object Event]')

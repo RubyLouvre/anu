@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-07-28
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-02
  */
 
 (function (global, factory) {
@@ -798,7 +798,7 @@ function dispatchEvent(e) {
 
   var captured = bubble + "capture";
 
-  scheduler.run();
+  //scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
@@ -833,7 +833,7 @@ function triggerEventFlow(paths, prop, e) {
   }
 }
 
-function addGlobalEventListener(name) {
+function addGlobalEvent(name) {
   if (!globalEvents[name]) {
     globalEvents[name] = true;
     addEvent(document, name, dispatchEvent);
@@ -1119,7 +1119,7 @@ var propHooks = {
       if (!lastProps[name]) {
         //添加全局监听事件
         var _name = getBrowserName(name);
-        addGlobalEventListener(_name);
+        addGlobalEvent(_name);
         var hook = eventHooks[_name];
         if (hook) {
           hook(dom, name);
@@ -1288,7 +1288,7 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
   } catch (e) {
     /* istanbul ignore next */
-    console.warn("<select multiple=\"true\"> 的value应该对应一个字符串数组"); // eslint-disable-line
+    console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
   }
   for (var _i = 0; _i < n; _i++) {
     var option = options$$1[_i];
@@ -1722,7 +1722,6 @@ function reRenderComponent(instance) {
   instance._disableSetState = false;
   return dom;
 }
-
 function alignVnodes(vnode, newVnode, node, parentContext) {
   var newNode = node;
   //eslint-disable-next-line
@@ -1733,6 +1732,12 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
     //replace
     disposeVnode(vnode);
     newNode = mountVnode(newVnode, parentContext);
+    if (newVnode._instance && scheduler.count) {
+      //  schedulerID = setTimeout(function(){
+      scheduler.run();
+      //  schedulerID = null
+      //  })
+    }
     var p = node.parentNode;
     if (p) {
       p.replaceChild(newNode, node);

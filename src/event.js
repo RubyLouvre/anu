@@ -39,7 +39,7 @@ export function dispatchEvent(e) {
 
   var captured = bubble + "capture";
 
-  scheduler.run();
+  //scheduler.run();
   triggerEventFlow(paths, captured, e);
 
   if (!e._stopPropagation) {
@@ -74,7 +74,7 @@ function triggerEventFlow(paths, prop, e) {
   }
 }
 
-export function addGlobalEventListener(name) {
+export function addGlobalEvent(name) {
   if (!globalEvents[name]) {
     globalEvents[name] = true;
     addEvent(document, name, dispatchEvent);

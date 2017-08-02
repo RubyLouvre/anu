@@ -111,7 +111,7 @@ function genVnodes(vnode, container, hostParent, parentContext) {
   var nodes = getNodes(container);
   var prevRendered = null;
   //eslint-disable-next-line
-  for (var i = 0, el; (el = nodes[i++]); ) {
+  for (var i = 0, el; (el = nodes[i++]);) {
     if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
       prevRendered = el;
     } else {
@@ -182,7 +182,7 @@ function mountElement(vnode, parentContext, prevRendered) {
   }
 
   if (vnode.ref) {
-    scheduler.add(function() {
+    scheduler.add(function () {
       vnode.ref(dom);
     });
   }
@@ -271,7 +271,7 @@ function mountComponent(vnode, parentContext, prevRendered) {
   }
 
   if (vnode.ref) {
-    scheduler.add(function() {
+    scheduler.add(function () {
       vnode.ref(instance);
     });
   }
@@ -326,7 +326,7 @@ function refreshComponent(instance) {
   reRenderComponent(instance);
 
   instance._forceUpdate = false;
-  instance._pendingCallbacks.splice(0).forEach(function(fn) {
+  instance._pendingCallbacks.splice(0).forEach(function (fn) {
     fn.call(instance);
   });
 }
@@ -338,9 +338,9 @@ function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
 
   if (!instance._hasDidMount) {
-    scheduler.addAndRun(function() {
+    scheduler.addAndRun(function () {
       instance._forceUpdate = false;
-      instance._pendingCallbacks.splice(0).forEach(function(fn) {
+      instance._pendingCallbacks.splice(0).forEach(function (fn) {
         fn.call(instance);
       });
     });
@@ -409,6 +409,9 @@ export function alignVnodes(vnode, newVnode, node, parentContext) {
     //replace
     disposeVnode(vnode);
     newNode = mountVnode(newVnode, parentContext);
+    if (newVnode._instance && scheduler.count) {
+        scheduler.run()
+    }
     var p = node.parentNode;
     if (p) {
       p.replaceChild(newNode, node);

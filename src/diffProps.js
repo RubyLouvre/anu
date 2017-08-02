@@ -1,7 +1,7 @@
 import { patchStyle } from "./style";
 
 import {
-  addGlobalEventListener,
+  addGlobalEvent,
   getBrowserName,
   isEventName,
   eventHooks
@@ -194,7 +194,7 @@ var propHooks = {
       if (!lastProps[name]) {
         //添加全局监听事件
         var _name = getBrowserName(name);
-        addGlobalEventListener(_name);
+        addGlobalEvent(_name);
         var hook = eventHooks[_name];
         if (hook) {
           hook(dom, name);
