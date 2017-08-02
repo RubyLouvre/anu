@@ -146,7 +146,7 @@ function checkNull(vnode, type) {
   return vnode;
 }
 var numberMap = {
-  "[object Null]": 1,
+  "[object Null]": 1, //IE6-8这里会返回[object Object]
   "[object Boolean]": 2,
   "[object Number]": 3,
   "[object String]": 4,
@@ -158,6 +158,9 @@ var numberMap = {
 function typeNumber(data) {
   if (data === void 666) {
     return 0;
+  }
+  if (data === null) {
+    return 1;
   }
   var a = numberMap[__type.call(data)];
   return a || 8;
@@ -2000,6 +2003,7 @@ function reRenderComponent(instance) {
   instance._disableSetState = false;
   return dom;
 }
+
 function alignVnodes(vnode, newVnode, node, parentContext) {
   var newNode = node;
   //eslint-disable-next-line
@@ -2011,10 +2015,7 @@ function alignVnodes(vnode, newVnode, node, parentContext) {
     disposeVnode(vnode);
     newNode = mountVnode(newVnode, parentContext);
     if (newVnode._instance && scheduler.count) {
-      //  schedulerID = setTimeout(function(){
       scheduler.run();
-      //  schedulerID = null
-      //  })
     }
     var p = node.parentNode;
     if (p) {
