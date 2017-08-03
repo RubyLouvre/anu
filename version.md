@@ -56,7 +56,7 @@
 
 ## 1.0.8
 1. event.originalEvent更名为 event.nativeEvent
-2. 修正polyfill中的BUG
+2. 修正polyfill中forEach的BUG
 3. 调整scheduler机制
 4. 修正typeNumber在iE6－8下的BUG
 5. eventSystem.addGlobalEventListener更名为eventSystem.addGlobalEvent
