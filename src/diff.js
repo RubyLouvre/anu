@@ -53,7 +53,10 @@ export function unmountComponentAtNode(dom) {
     var parentContext = prevVnode._instance ? prevVnode._instance.context : {};
     alignVnodes(
       prevVnode,
-      { type: "#text", text: "empty" },
+      {
+        type: "#text",
+        text: "empty"
+      },
       dom.firstChild,
       parentContext
     );
@@ -687,4 +690,45 @@ function applyDestroy(data) {
 function applyCreate(data) {
   let node = mountVnode(data.vnode, data.parentContext);
   data.parentNode.insertBefore(node, data.parentNode.childNodes[data.index]);
+}
+
+var diffLevel = 0;
+var isSvgMode = false;
+
+export function diff(prevDom, vnode, context, parentNode) {
+  if (!diffLevel++) {
+    isSvgMode = parentNode && parent.ownerSVGElement !== undefined;
+  }
+
+  let ret = diffNoLevel(prevDom, vnode, context);
+
+  if (parentNode && ret.parentNode !== parentNode) parentNode.appendChild(ret);
+
+  // diffLevel being reduced to 0 means we're exiting the diff
+  if (!--diffLevel) {
+    flushMounts();
+  }
+
+  return ret;
+}
+
+let items = [];
+var defer = setTimeout;
+export function enqueueRender(component) {
+  if (
+    !component._dirty &&
+    (component._dirty = true) &&
+    items.push(component) == 1
+  ) {
+    defer(rerender);
+  }
+}
+
+export function rerender() {
+  let p,
+    list = items;
+  items = [];
+  while ((p = list.pop())) {
+    if (p._dirty) renderComponent(p);
+  }
 }

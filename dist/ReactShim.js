@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-07-28
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-03
  */
 
 (function (global, factory) {
@@ -1288,7 +1288,7 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
   } catch (e) {
     /* istanbul ignore next */
-    console.warn("<select multiple=\"true\"> 的value应该对应一个字符串数组"); // eslint-disable-line
+    console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
   }
   for (var _i = 0; _i < n; _i++) {
     var option = options$$1[_i];
@@ -1856,12 +1856,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   if (childrenLen === 0) {
     if (newVchildrenLen > 0) {
       for (var i = 0; i < newVchildrenLen; i++) {
-        patches.creates.push({
-          vnode: newVchildren[i],
-          parentNode: node,
-          parentContext: parentContext,
-          index: i
-        });
+        patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
       }
     }
     return;
@@ -1930,12 +1925,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   for (var _i4 = 0; _i4 < newVchildrenLen; _i4++) {
     var item = updates[_i4];
     if (!item) {
-      creates.push({
-        vnode: newVchildren[_i4],
-        parentNode: node,
-        parentContext: parentContext,
-        index: _i4
-      });
+      creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
     } else if (item.vnode.vtype === 1) {
       diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
     }

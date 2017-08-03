@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-07-28
+ * by 司徒正美 Copyright 2017-08-03
  * 兼容yo-router
  */
 
@@ -1522,7 +1522,7 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
   } catch (e) {
     /* istanbul ignore next */
-    console.warn("<select multiple=\"true\"> 的value应该对应一个字符串数组"); // eslint-disable-line
+    console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
   }
   for (var _i = 0; _i < n; _i++) {
     var option = options$$1[_i];
@@ -1589,7 +1589,7 @@ try {
       var id = getID(a);
       this.map[id] = v;
     },
-    "delete": function _delete(a) {
+    delete: function _delete(a) {
       var id = getID(a);
       delete this.map[id];
     }
@@ -1681,7 +1681,10 @@ function unmountComponentAtNode(dom) {
   var prevVnode = dom._component;
   if (prevVnode) {
     var parentContext = prevVnode._instance ? prevVnode._instance.context : {};
-    alignVnodes(prevVnode, { type: "#text", text: "empty" }, dom.firstChild, parentContext);
+    alignVnodes(prevVnode, {
+      type: "#text",
+      text: "empty"
+    }, dom.firstChild, parentContext);
   }
 }
 function isValidElement(vnode) {
@@ -2148,12 +2151,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   if (childrenLen === 0) {
     if (newVchildrenLen > 0) {
       for (var i = 0; i < newVchildrenLen; i++) {
-        patches.creates.push({
-          vnode: newVchildren[i],
-          parentNode: node,
-          parentContext: parentContext,
-          index: i
-        });
+        patches.creates.push({ vnode: newVchildren[i], parentNode: node, parentContext: parentContext, index: i });
       }
     }
     return;
@@ -2222,12 +2220,7 @@ function diffChildren(patches, vnode, newVnode, node, parentContext) {
   for (var _i4 = 0; _i4 < newVchildrenLen; _i4++) {
     var item = updates[_i4];
     if (!item) {
-      creates.push({
-        vnode: newVchildren[_i4],
-        parentNode: node,
-        parentContext: parentContext,
-        index: _i4
-      });
+      creates.push({ vnode: newVchildren[_i4], parentNode: node, parentContext: parentContext, index: _i4 });
     } else if (item.vnode.vtype === 1) {
       diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentContext);
     }
