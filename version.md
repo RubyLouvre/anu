@@ -59,3 +59,5 @@
 2. 修正polyfill中的BUG
 3. 调整scheduler机制
 4. 修正typeNumber在iE6－8下的BUG
+5. eventSystem.addGlobalEventListener更名为eventSystem.addGlobalEvent
+6. 修正typeNumber在IE6－8的BUG

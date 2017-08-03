@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-02
+ * 兼容IE6-8的版本，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-03
  */
 
 (function (global, factory) {
@@ -146,7 +146,7 @@ function checkNull(vnode, type) {
   return vnode;
 }
 var numberMap = {
-  "[object Null]": 1, //IE6-8这里会返回[object Object]
+  //null undefined IE6-8这里会返回[object Object]
   "[object Boolean]": 2,
   "[object Number]": 3,
   "[object String]": 4,
@@ -156,11 +156,11 @@ var numberMap = {
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
 function typeNumber(data) {
-  if (data === void 666) {
-    return 0;
-  }
   if (data === null) {
     return 1;
+  }
+  if (data === void 666) {
+    return 0;
   }
   var a = numberMap[__type.call(data)];
   return a || 8;

@@ -23,7 +23,7 @@ export function extend(obj, props) {
  *
  * @export
  */
-export function noop() {}
+export function noop() { }
 
 /**
  * 类继承
@@ -33,7 +33,7 @@ export function noop() {}
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-  function Bridge() {}
+  function Bridge() { }
   Bridge.prototype = SupClass.prototype;
 
   var fn = (SubClass.prototype = new Bridge());
@@ -55,7 +55,7 @@ export function getNodes(dom) {
   var ret = [],
     c = dom.childNodes || [];
   // eslint-disable-next-line
-  for (var i = 0, el; (el = c[i++]); ) {
+  for (var i = 0, el; (el = c[i++]);) {
     ret.push(el);
   }
   return ret;
@@ -112,7 +112,7 @@ export function camelize(target) {
     return target;
   }
   //转换为驼峰风格
-  return target.replace(rcamelize, function(match) {
+  return target.replace(rcamelize, function (match) {
     return match.charAt(1).toUpperCase();
   });
 }
@@ -137,7 +137,7 @@ export function checkNull(vnode, type) {
   return vnode;
 }
 var numberMap = {
-  "[object Null]": 1,
+  //null undefined IE6-8这里会返回[object Object]
   "[object Boolean]": 2,
   "[object Number]": 3,
   "[object String]": 4,
@@ -147,6 +147,9 @@ var numberMap = {
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
 export function typeNumber(data) {
+  if (data === null) {
+    return 1;
+  }
   if (data === void 666) {
     return 0;
   }
