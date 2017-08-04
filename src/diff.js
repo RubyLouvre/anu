@@ -336,7 +336,7 @@ options.refreshComponent = refreshComponent;
 
 function reRenderComponent(instance) {
   var node = instanceMap.get(instance);
-
+ 
   if (!instance._hasDidMount) {
     scheduler.addAndRun(function () {
       instance._forceUpdate = false;

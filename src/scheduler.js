@@ -1,30 +1,31 @@
 import { options, typeNumber } from "./util";
+
 if (0 === [1, 2].splice(0).length) {
   console.warn("请引入polyfill进行修复"); // eslint-disable-line
 }
 
 export var scheduler = {
   list: [],
-  add: function(el) {
+  add: function (el) {
     this.count = this.list.push(el);
   },
-  addAndRun: function(fn) {
+  addAndRun: function (fn) {
     this.add(fn);
-    setTimeout(function() {
+    setTimeout(function () {
       scheduler.run();
     }, 0);
   },
-  run: function() {
+  run: function () {
     if (this.count === 0) return;
     this.count = 0;
-    this.list.splice(0).forEach(function(instance) {
+    this.list.splice(0).forEach(function (instance) {
       if (typeNumber(instance) === 5) {
         instance(); //处理ref方法
         return;
       }
       if (instance._pendingCallbacks.length) {
         //处理componentWillMount产生的回调
-        instance._pendingCallbacks.splice(0).forEach(function(fn) {
+        instance._pendingCallbacks.splice(0).forEach(function (fn) {
           fn.call(instance);
         });
       }

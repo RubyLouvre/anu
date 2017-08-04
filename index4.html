@@ -21,9 +21,20 @@
      <script type='text/javascript' src="./dist/React.js"></script>
      <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
-  
+  var s
   window.onload = function(){
-  
+    class A extends React.Component{
+      componentDidMount(){
+
+        console.log('====', !!this.refs.eee)
+      }
+      render(){
+        return <p>A组件<span ref='eee'>444</span></p>
+      }
+    }
+    function B(props){
+      return props.aa == 111 ? null : <A/>
+    }
     class App extends React.Component {
       constructor(props) {
         super(props);
@@ -31,19 +42,17 @@
           aaa: 111
         };
       }
-      onChange(e){
-        console.log(e.type, e.pageX)
+      change(e){
+        console.log(Date.now())
+        this.setState({aaa: e})
       }
       render() {
-        return <p  onMouseLeave={this.onChange.bind(this)}>测试各种事件
-          <input onFocus={(e)=>{console.log(e.type)}} onInput={(e)=>{console.log(e.type)}} />
-          <input onBlur={(e)=>{console.log(e.type)}} onChange={(e)=>{console.log(e.type)}}/>
-          </p>;
+        return <div>这里有东西<B aa={this.state.aaa} /></div>
       }
     }
 
 
-    var s = ReactDOM.render(<App />, document.getElementById('example'));
+   s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 

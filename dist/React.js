@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-08-03
+ * by 司徒正美 Copyright 2017-08-04
  * 兼容yo-router
  */
 

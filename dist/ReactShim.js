@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-08-03
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-04
  */
 
 (function (global, factory) {
