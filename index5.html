@@ -3,88 +3,63 @@
 
 <head>
     <meta charset="utf-8">
-    <title>测试注释节点</title>
     <meta name="viewport" content="width=device-width">
-    <style>
-      .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-       .bbb {
-            width: 200px;
-            height: 200px;
-            background: lawngreen;
-        }
-    </style>
-<script src="./dist/React.js"></script>
-   <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-  <script src="./lib/babel.js"></script>  <script type='text/babel'>
- var index = 1
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    title: 'xxx',
-                    className: 'aaa'
-                }
-            }
-            onClick() {
-                index = 0
-                this.forceUpdate()
-            }
-            render() {
-                return index
-                    ? <div
-                            ref='a'
-                            title='xxx'
-                            className='ddd'
-                            id='h33'
-                            onClick={this
-                            .onClick
-                            .bind(this)}
-                            dangerouslySetInnerHTML={{
-                            __html: '<b>xxx</b>'
-                        }}></div>
-                    : <div ref='a' title='yyy' id='h44' data-bbb='sss'>
-                        xxx{new Date - 0}
-                    </div>
-            }
-        }
-   window.onload = function(){
-       var div = document.body
-        var s = ReactDOM.render(<App/>, div)
-       
-        var dom = s.refs.a
-        console.log(dom, '1111')
-        expect(dom.title).toBe('xxx')
-        expect(dom.className).toBe('ddd')
-        expect(dom.id).toBe('h33')
-        expect((dom.__events || {}).click).toA('function')
-        expect(dom.getElementsByTagName('b').length).toBe(1)
-        index = 0
-        /*
-        await browser
-            .click('#h33')
-            .pause(100)
-            .$apply()
+     <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/babel'>
+  var s
+  window.onload = function(){
+     function A(props){
+      return  <B/>
+    }
+    class B extends React.Component{
+      componentDidMount(){
+        console.log('B did mount', this.refs.b, this.refs.c)
+      }
+      render(){
+        return <div ref='b'>B组件<span ref={(e)=>{console.log(e)}}>BBBBB</span><C ref='c'/></div>
+      }
+    }
+   class C extends React.Component{
+      componentDidMount(){
+        console.log('C did mount', this.refs.d)
+      }
+      render(){
+        return <p>C组件<span ref='d'>CCCCC</span></p>
+      }
+    }
+   
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 111
+        };
+      }
+      componentDidMount(){
+        console.log('App did mount',this.refs.a)
+      }
+      change(e){
+      
+        this.setState({aaa: e})
+      }
+      render() {
+        return <div ref='a'>这里有东西<B />{this.state.aaa}</div>
+      }
+    }
 
-        dom = s.refs.a
-        expect(dom.title).toBe('yyy')
-        expect(dom.className).toBe('')
-        expect(dom.id).toBe('h44')
-        expect(dom.getAttribute('data-bbb')).toBe('sss')
-        expect((dom.__events || {}).onClick).toA('undefined')
-        expect(dom.getElementsByTagName('b').length).toBe(0)*/
-   }
-    </script>
+
+   s = ReactDOM.render(<App />, document.getElementById('example'));
+  }
+  </script>
+
 </head>
 
 <body>
 
-    <div id='example'>ddd</div>
-  
+    <div>开发者工具</div>
+    <div id='example'></div>
+
 
 </body>
 

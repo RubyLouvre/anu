@@ -120,12 +120,13 @@ function flattenChildren(stack) {
 function getDOMNode() {
   return this;
 }
-export function __ref(dom) {
-  var instance = this._owner;
-  if (dom && instance) {
-    dom.getDOMNode = getDOMNode;
-    instance.refs[this.__refKey] = dom;
-  }
+export function __ref(refValue, instance) {
+  instance.refs[this.__refKey] = refValue
+ // var instance = this._owner;
+ // if (dom && instance) {
+ //   dom.getDOMNode = getDOMNode;
+ //   instance.refs[this.__refKey] = dom;
+ // }
 }
 function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   this.type = type;

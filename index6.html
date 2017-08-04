@@ -3,164 +3,62 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <style>
-      .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-       .bbb {
-            width: 200px;
-            height: 200px;
-            background: lawngreen;
-        }
-    </style> 
-   <!-- <script type='text/javascript' src="./dist/polyfill.js"></script>-->
-  <script type='text/javascript' src="./dist/React.js"></script> 
- <!-- <script src="./test/react-lite.js"></script> -->
- <!-- <script src="./test/react.js"></script>
-     <script src="./test/react-dom.js"></script> -->
-   <script src="./libs/babel.js"></script>
-    <script type='text/babel'>
-//var ReactDOM = React
-       class A extends React.Component{
-           constructor(props){
-               super(props)
-               this.state = {
-                   aaa: 1
-               }
-           }
-           componentWillMount(){
-              console.log('A will mount')
-               this.setState({
-                   aaa: 111
-               })
-           }
-            componentDidMount(){
-              console.log('A did mount')
-           }
-           componentWillUpdate(){
-              console.log('A will change')
-           }
-           render(){
-               return <strong ref={(a)=>{console.log('A的内部',a)}}  >A内容{this.state.aaa}<B /></strong>
-           }
-       }
-      class B extends React.Component{
-           constructor(props){
-               super(props)
-               this.state = {
-                   aaa: 2
-               }
-           }
-           componentWillMount(){
-               console.log('B will mount')
-               this.setState({
-                   aaa: 222
-               })
-           }
-          componentDidMount(){
-               console.log('B did mount 开始')
-               console.log(this.state.aaa,'B 1次')
-               this.setState({
-                   aaa: 2222
-               },function(a){
-                   console.log('这是回调',a, this)
-               })
-               console.log(this.state.aaa,'B 2次')
-               console.log('B did mount 结束')
-           }
-           componentWillUpdate(){
-              console.log('B will change')
-           }
-           render(){
-               return <strong>{this.state.aaa}</strong>
-           }
-       }
-        class C extends React.Component{
-           constructor(props){
-               super(props)
-               this.state = {
-                   aaa: 3
-               }
-           }
-           componentWillMount(){
-              console.log('C will mount')
-               this.setState({
-                   aaa: 333
-               })
-           }
-            componentDidMount(){
-              console.log('C did mount')
-           }
-            componentDidUpdate(){
-              console.log('C did update')
-           }
-           onclick(){
-               console.log('执行点击事件')
-               this.setState({
-                   aaa: new Date - 0
-               })
-           }
-           render(){
-               return <span onClick={this.onclick.bind(this)} ref={(a)=>{console.log(a, 'ref C')}}>{this.state.aaa}<D /></span>
-           }
-       }
-        class D extends React.Component{
-           constructor(props){
-               super(props)
-               this.state = {
-                   aaa: 4
-               }
-           }
-           componentWillMount(){
-              console.log('D will mount')
-               this.setState({
-                   aaa: 444
-               })
-           }
-            componentDidMount(){
-              console.log('D did mount')
-           }
-            componentDidUpdate(){
-              console.log('D did update')
-           }
-           render(){
-               return <span  ref={(a)=>{console.log(a, 'ref D')}}>{this.state.aaa}</span>
-           }
-       }
-  
-       
-       class App extends React.Component{
-            click(){
-                length = 7
-                length2 = 5
-                this.forceUpdate()
-            }
-            render(){
-               return <div><A ref={(a)=>{console.log(a)}}/><div ref={()=>{console.log('1.1 A ref')}}><div ref={()=>{console.log('1.2 A ref')}}>AC之间</div></div><C /><div ref={()=>{console.log('执行aaa ref')}} >xxxx</div></div>
-           }
-       }
+    <meta name="viewport" content="width=device-width">   
+     <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/babel'>
+  var s
+  window.onload = function(){
+   
+    class B extends React.Component{
+      componentDidMount(){
+        console.log('B did mount', this.refs.b)
+      }
+      render(){
+        return <div ref='b'>B组件<span ref={(e)=>{console.log(e)}}>BBBBB</span></div>
+      }
+    }
+   class C extends React.Component{
+      componentDidMount(){
+        console.log('C did mount', this.refs.b)
+      }
+      render(){
+        return <p ref='b'>B组件<span ref={(e)=>{console.log(e)}}>CCC</span></p>
+      }
+    }
+   
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 111
+        };
+      }
+      componentDidMount(){
+        console.log('App did mount',this.refs.a)
+      }
+      componentDidUpdate(){
+        console.log('App did update',this.refs.a)
+      }
+      change(e){
       
-       window.onload = function(){
-           ReactDOM.render(<App />, document.getElementById('example'))
-       }
-       </script>
-       <script>
-         function newCtor(a, name){
-            var fn = new Function('a', 'return function '+name+'(){ console.log("b"); a();}' )
-            return fn(a, name)
-         }
-        var a =  newCtor(function f(){ console.log('===')},"APP")
-        console.log(a)
-        a()
-       </script>
+        this.setState({aaa: e})
+      }
+      render() {
+        return <div ref='a'>这里有东西{this.state.aaa === 111 ? <B/>: <C/>}{this.state.aaa}</div>
+      }
+    }
+
+
+   s = ReactDOM.render(<App />, document.getElementById('example'));
+  }
+  </script>
+
 </head>
 
 <body>
 
-    <div>这个默认会被清掉</div>
+    <div>开发者工具</div>
     <div id='example'></div>
 
 
