@@ -1,15 +1,15 @@
 import { instanceMap } from "./instanceMap";
 import { options } from "./util";
-export function disposeVnode(vnode) {
+export function disposeVnode(vnode, parentInstance) {
   if (!vnode || vnode._disposed) {
     return;
   }
   switch (vnode.vtype) {
     case 1:
-      disposeElement(vnode);
+      disposeElement(vnode, parentInstance);
       break;
     case 2:
-      disposeComponent(vnode);
+      disposeComponent(vnode, parentInstance);
       break;
     case 4:
       disposeStateless(vnode);
@@ -22,24 +22,25 @@ export function disposeVnode(vnode) {
 }
 
 function disposeStateless(vnode) {
-  if (vnode._instance) {
-    disposeVnode(vnode._instance._rendered);
+  var instance = vnode._instance
+  if (instance) {
+    disposeVnode(instance._rendered, instance);
     vnode._instance = null;
   }
 }
 
-function disposeElement(vnode) {
+function disposeElement(vnode, parentInstance) {
   var { props } = vnode;
   var children = props.children;
   for (let i = 0, n = children.length; i < n; i++) {
-    disposeVnode(children[i]);
+    disposeVnode(children[i], parentInstance);
   }
   //eslint-disable-next-line
-  vnode.ref && vnode.ref(null);
+  vnode.ref && vnode.ref(null, parentInstance);
   vnode._hostNode = vnode._hostParent = null;
 }
 
-function disposeComponent(vnode) {
+function disposeComponent(vnode, parentInstance) {
   var instance = vnode._instance;
   if (instance) {
     instance._disableSetState = true;
@@ -54,6 +55,6 @@ function disposeComponent(vnode) {
       instanceMap["delete"](instance);
     }
     vnode._instance = instance._currentElement = null;
-    disposeVnode(instance._rendered);
+    disposeVnode(instance._rendered, instance);
   }
 }

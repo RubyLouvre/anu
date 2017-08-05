@@ -64,7 +64,7 @@ export function createElement(type, configs) {
     props.children = children;
   }
 
-  return new Vnode(type, props, key, ref, vtype, checkProps, CurrentOwner.cur);
+  return new Vnode(type, props, key, ref, vtype, checkProps);
 }
 
 function flattenChildren(stack) {
@@ -121,6 +121,9 @@ function getDOMNode() {
   return this;
 }
 export function __ref(refValue, instance) {
+  if(refValue && refValue.nodeType){
+    refValue.getDOMNode = getDOMNode;
+  }
   instance.refs[this.__refKey] = refValue
  // var instance = this._owner;
  // if (dom && instance) {
@@ -128,7 +131,7 @@ export function __ref(refValue, instance) {
  //   instance.refs[this.__refKey] = dom;
  // }
 }
-function Vnode(type, props, key, ref, vtype, checkProps, owner) {
+function Vnode(type, props, key, ref, vtype, checkProps) {
   this.type = type;
   this.props = props;
   this.vtype = vtype;
@@ -136,9 +139,7 @@ function Vnode(type, props, key, ref, vtype, checkProps, owner) {
   if (key) {
     this.key = key;
   }
-  if (owner) {
-    this._owner = owner;
-  }
+ 
   if (vtype === 1) {
     this.checkProps = checkProps;
   }

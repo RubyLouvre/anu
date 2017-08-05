@@ -1,6 +1,9 @@
-import { extend, isFn, options } from "./util";
-import { scheduler } from "./scheduler";
+import {extend, isFn, options} from "./util";
+//import {scheduler} from "./scheduler";
+import {CurrentOwner} from "./createElement";
+import {win} from "./browser";
 
+let dirtyComponents = []
 /**
  *组件的基类
  *
@@ -12,7 +15,6 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
-  this._disableSetState = true;
   /**
    * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
@@ -25,6 +27,7 @@ export function Component(props, context) {
    */
   this._pendingCallbacks = [];
   this._pendingStates = [];
+  this._pendingRefs = [];
   this.state = {};
 }
 
@@ -32,58 +35,75 @@ Component.prototype = {
   replaceState() {
     console.warn("此方法末实现"); // eslint-disable-line
   },
+  _collectRefs: function (a, b) {
+    this
+      ._pendingRefs
+      .push(a, b)
+  },
   setState(state, cb) {
-    this._pendingStates.push(state);
-    setStateProxy(this, cb);
+
+    setStateImpl.call(this, state, cb)
   },
 
   forceUpdate(cb) {
-    this._forceUpdate = true;
-    setStateProxy(this, cb);
+    setStateImpl.call(this, true, cb)
   },
-  _processPendingState: function(props, context) {
+  _processPendingState: function (props, context) {
     var n = this._pendingStates.length;
     if (n === 0) {
       return this.state;
     }
-    var states = this._pendingStates.splice(0);
+    var states = this
+      ._pendingStates
+      .splice(0);
     var nextState = extend({}, this.state);
     for (var i = 0; i < n; i++) {
       var partial = states[i];
-      extend(
-        nextState,
-        isFn(partial) ? partial.call(this, nextState, props, context) : partial
-      );
+      extend(nextState, isFn(partial)
+        ? partial.call(this, nextState, props, context)
+        : partial);
     }
-
     return nextState;
   },
 
   render() {}
 };
 
-/**
- * 让外面的setState与forceUpdate都共用同一通道
- *
- * @param {any} instance
- * @param {any} state
- * @param {any} cb fire by component did update
- * @param {any} force ignore shouldComponentUpdate
- */
-
-function setStateProxy(instance, cb) {
+function setStateImpl(state, cb) {
   if (isFn(cb)) {
-    instance._pendingCallbacks.push(cb);
+    this
+      ._pendingCallbacks
+      .push(cb);
   }
-  if (instance._updating) {
-    //防止在父组件更新过程中，子组件执行父组件的setState
-    scheduler.add(function() {
-      options.refreshComponent(instance);
-    });
-  } else if (instance._disableSetState === true) {
-    //只存储回调，但不会触发组件的更新
-    this._forceUpdate = false;
+  //forceUpate是同步渲染
+  if (state === true) {
+    this._forceUpdate = true;
+    options.refreshComponent(this);
   } else {
-    options.refreshComponent(instance);
+    //setState是异步渲染
+    this
+      ._pendingStates
+      .push(state);
+    //子组件在componentWillReiveProps调用父组件的setState方法
+    if (this._updating && CurrentOwner.cur) {
+      CurrentOwner.cur.after = this
+      return
+    }
+    if (!this._dirty && (this._dirty = true) && dirtyComponents.push(this) === 1) {
+      defer(rerender, 0);
+    }
   }
+}
+var defer = win.webkitRequestAnimationFrame || win.requestAnimationFrame || function(job){
+   setTimeout(job, 16)
+}
+
+function rerender() {
+  dirtyComponents
+    .splice(0)
+    .forEach(function (el) {
+      if (el._dirty) {
+        options.refreshComponent(el);
+      }
+    })
 }

@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-     <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./test/react.js"></script>
+     <script type='text/javascript' src="./test/react-dom.js"></script> -->
      <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
   var s
@@ -39,10 +41,10 @@
       }
     }
     var container = document.createElement('div');
-    React.render(<Parent />, container);
+    ReactDOM.render(<Parent />, container);
     //setTimeout(function(){
       
-      React.render(<Parent />, container);
+      ReactDOM.render(<Parent />, container);
      
       console.log(log.join('\n'))
       console.log(log)

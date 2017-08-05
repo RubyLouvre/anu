@@ -105,7 +105,7 @@ var numberMap = {
   "[object Symbol]": 6,
   "[object Array]": 7
 };
-// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:7
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
 function typeNumber(data) {
   if (data === null) {
     return 1;
