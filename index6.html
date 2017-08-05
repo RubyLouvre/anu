@@ -14,6 +14,9 @@
       componentDidMount(){
         console.log('B did mount', this.refs.b)
       }
+      componentWillUnmount(){
+        console.log('B will unmount', this.refs.b)
+      }
       render(){
         return <div ref='b'>B组件<span ref={(e)=>{console.log(e)}}>BBBBB</span></div>
       }
@@ -37,15 +40,20 @@
       componentDidMount(){
         console.log('App did mount',this.refs.a)
       }
+      componentWillUpdate(){
+        console.log('App will update',this.refs.a)
+      }
       componentDidUpdate(){
         console.log('App did update',this.refs.a)
       }
       change(e){
       
-        this.setState({aaa: e})
+        this.setState({aaa: e}, function(){
+          console.log('setState cb')
+        })
       }
       render() {
-        return <div ref='a'>这里有东西{this.state.aaa === 111 ? <B/>: <C/>}{this.state.aaa}</div>
+        return <div ref='a' className="app">这里有东西{this.state.aaa === 111 ? <B/>: <C/>}{this.state.aaa}</div>
       }
     }
 

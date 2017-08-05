@@ -343,7 +343,9 @@ describe('node模块', function () {
 
 
             componentDidUpdate() {
-                expect(s._currentElement._hostNode.children[0].value).toBe(values.shift())
+                var el = values.shift()
+                console.log(el)
+                expect(s._currentElement._hostNode.children[0].value).toBe(el)
 
             }
             render() {

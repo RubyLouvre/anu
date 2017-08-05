@@ -3,41 +3,59 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
+    <meta name="viewport" content="width=device-width">   
+     <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/babel'>
+  var s
+  window.onload = function(){
+   
+   
+   
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 111
+        };
+      }
+      componentDidMount(){
+        console.log('App did mount',this.refs.a)
+      }
+      componentWillUpdate(){
+        console.log('App will update',this.refs.a.innerHTML)
+      }
+      componentDidUpdate(){
+        console.log('App did update',this.refs.a.innerHTML)
+      }
+      change(e){
+      
+        this.setState({aaa: 1111}, function(){
+          console.log('setState cb')
+        })
+         this.setState({aaa: 2222}, function(){
+          console.log('setState cb')
+        })
+      }
+      update(e){
+          this.state.aaa = 444
+          this.forceUpdate(function(){
+           console.log('forceUpdate cb')
+         })
+          this.state.aaa = 555
+          this.forceUpdate(function(){
+           console.log('forceUpdate cb')
+         })
+      }
+      render() {
+        return <div ref='a' className="app">这里有东西{this.state.aaa}</div>
+      }
+    }
 
-        .bbb {
-            width: 200px;
-            height: 200px;
-            background: lawngreen;
-        }
-    </style>
-    <!-- <script type='text/javascript' src="./test/react.js"></script>
-      <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./lib/devtools.js"></script>
-    <script src="https://cdn.bootcss.com/immutable/3.8.1/immutable.js"></script>
 
-
-    <script src="./test/babel.js"></script>
-    <script>
-        var arr = [2, 11, 15, 7]
-        var target = 9, uniq = {}
-        for(var i = 0, n = arr.length; i < n; i++){
-            var other = 9 - arr[i]
-            if(other in uniq){
-            console.log( [i, uniq[other]] )
-            break
-            }
-            uniq[arr[i]] = i
-        }
-        
-    </script>
+   s = ReactDOM.render(<App />, document.getElementById('example'));
+  }
+  </script>
 
 </head>
 
@@ -45,6 +63,8 @@
 
     <div>开发者工具</div>
     <div id='example'></div>
+
+
 </body>
 
 </html>

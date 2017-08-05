@@ -7,7 +7,8 @@ import {
     camelize,
     getNodes,
     getChildContext,
-    getComponentProps
+    getComponentProps,
+    typeNumber
 } from 'src/util'
 import {
     isEventName
@@ -136,15 +137,21 @@ describe('util', function () {
         })
     })
 
-    /*  it('matchInstance', () => {
+      it('typeNumber', () => {
           var A = function() {}
           var a = new A
          
-          var C = function() {}
-          var c = { statelessRender: C }
+       
          
-          expect(matchInstance(a, A)).toBe(a)
-          expect(matchInstance(c, C)).toBe(c)
+          expect(typeNumber(void 2)).toBe(0)
+          expect(typeNumber(null)).toBe(1)
+          expect(typeNumber(false)).toBe(2)
+          expect(typeNumber(true)).toBe(2)
+          expect(typeNumber(1)).toBe(3)
+          expect(typeNumber('333')).toBe(4)
+          expect(typeNumber(A)).toBe(5)
+          expect(typeNumber([])).toBe(7)
+          expect(typeNumber(a)).toBe(8)
       })
-      */
+      
 })

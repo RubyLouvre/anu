@@ -3,38 +3,41 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-       .bbb {
-            width: 200px;
-            height: 200px;
-            background: lawngreen;
-        }
-    </style>
-    </style>
-   
-     <script type='text/javascript' src="./dist/React.js"></script>
+    <meta name="viewport" content="width=device-width">   
+  <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+   <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script> 
      <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
   var s
   window.onload = function(){
-    class A extends React.Component{
+   
+    class B extends React.Component{
+      constructor(props) {
+        super(props);
+        this.state = {
+          bbb: 111
+        };
+      }
       componentDidMount(){
+        console.log('B did mount', this.refs.b)
+      }
+      componentWillUnmount(){
+        console.log('B will unmount', this.refs.b)
+      }
+       componentWillUpdate(){
+        console.log('B will update', this.refs.b)
+      }
+      componentWillReceiveProps(){
 
-        console.log('====', !!this.refs.eee)
+          this.setState({bbb:32424})
+      
       }
       render(){
-        return <p>A组件<span ref='eee'>444</span></p>
+        return <div ref='b'>B组件<span ref={(e)=>{console.log(e, '!!!!')}}>{this.state.bbb}</span></div>
       }
     }
-    function B(props){
-      return props.aa == 111 ? null : <A/>
-    }
+ 
     class App extends React.Component {
       constructor(props) {
         super(props);
@@ -42,17 +45,36 @@
           aaa: 111
         };
       }
+      
+      componentDidMount(){
+        console.log('App did mount',this.refs.a)
+      
+         this.setState({aaa: 222})
+      }
+      componentWillUpdate(){
+        console.log('App will update',this.refs.a)
+      }
+      componentDidUpdate(){
+        console.log('App did update',this.refs.a)
+        
+      }
+      componentWillMount(){
+          console.log('App will mount')
+      }
       change(e){
-        console.log(Date.now())
-        this.setState({aaa: e})
+      
+        this.setState({aaa: e}, function(){
+          console.log('setState cb')
+        })
       }
       render() {
-        return <div>这里有东西<B aa={this.state.aaa} /></div>
+        return <div ref='a' className="app">这里有东西{this.state.aaa }<B /></div>
       }
     }
 
 
    s = ReactDOM.render(<App />, document.getElementById('example'));
+   console.log(s, 'render')
   }
   </script>
 

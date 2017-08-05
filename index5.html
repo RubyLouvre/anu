@@ -9,47 +9,57 @@
   <script type='text/babel'>
   var s
   window.onload = function(){
-     function A(props){
-      return  <B/>
-    }
-    class B extends React.Component{
-      componentDidMount(){
-        console.log('B did mount', this.refs.b, this.refs.c)
-      }
-      render(){
-        return <div ref='b'>B组件<span ref={(e)=>{console.log(e)}}>BBBBB</span><C ref='c'/></div>
-      }
-    }
-   class C extends React.Component{
-      componentDidMount(){
-        console.log('C did mount', this.refs.d)
-      }
-      render(){
-        return <p>C组件<span ref='d'>CCCCC</span></p>
+     const log = [];
+    class Parent extends React.Component {
+      constructor(){
+            super(),
+            this.state={
+                value: 'one'
+            }
+        }
+      render() {
+        log.push('parent render ' + this.state.value);
+        return <Child parent={this} value={this.state.value} />;
       }
     }
-   
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 111
-        };
-      }
-      componentDidMount(){
-        console.log('App did mount',this.refs.a)
-      }
-      change(e){
-      
-        this.setState({aaa: e})
+    let updated = false;
+    class Child extends React.Component {
+      componentWillReceiveProps() {
+        if (updated) {
+          return;
+        }
+        log.push('child componentWillReceiveProps ' + this.props.value);
+        this.props.parent.setState({value: 'two'});
+        log.push('child componentWillReceiveProps done ' + this.props.value);
+        updated = true;
       }
       render() {
-        return <div ref='a'>这里有东西<B />{this.state.aaa}</div>
+        log.push('child render ' + this.props.value);
+        return <div>{this.props.value}</div>;
       }
     }
+    var container = document.createElement('div');
+    React.render(<Parent />, container);
+    //setTimeout(function(){
+      
+      React.render(<Parent />, container);
+     
+      console.log(log.join('\n'))
+      console.log(log)
+     /* expect(log).toEqual([
+        'parent render one',
+        'child render one',
+        'parent render one',
+        'child componentWillReceiveProps one',
+        'child componentWillReceiveProps done one',
+        'child render one',
+        'parent render two',
+        'child render two',
+      ]);*/
 
+    //  done()
 
-   s = ReactDOM.render(<App />, document.getElementById('example'));
+ //  s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 
@@ -59,7 +69,7 @@
 
     <div>开发者工具</div>
     <div id='example'></div>
-
+    <div id='example2'></div>
 
 </body>
 
