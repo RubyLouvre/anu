@@ -285,7 +285,7 @@ export function safeRenderComponent(instance, type, vnode, context) {
   return rendered;
 }
 
-function Stateless(render, props, context) {
+function Stateless(render) {
   this._render = render
   this.refs = {}
   this._collectRefs = noop
@@ -296,25 +296,27 @@ Stateless.prototype.render = function (vnode, context) {
   let rendered = this._render(props, context);
   rendered = checkNull(rendered, this._render);
   vnode._instance = this;
+  this.context = context
+  this.props = props
   this._currentElement = vnode;
   this._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
   return rendered
 }
 function mountStateless(vnode, parentInstance, prevRendered, mountQueue) {
-  let parentContext = parentInstance.context
+  let context = parentInstance.context
   let instance = new Stateless(vnode.type)
-  let rendered = instance.render(vnode, parentContext);
+  let rendered = instance.render(vnode, context);
   let dom = mountVnode(rendered, instance, prevRendered, mountQueue);
 
   return vnode._hostNode = dom;
 }
 
 function updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue) {
-  let parentContext = parentInstance.context
+  let context = parentInstance.context
   let instance = lastVnode._instance;
   let prevVnode = instance._rendered;
-  nextVnode = instance.render(nextVnode, parentContext);
+  nextVnode = instance.render(nextVnode, context);
 
   let dom = alignVnodes(prevVnode, nextVnode, node, instance, mountQueue);
 
