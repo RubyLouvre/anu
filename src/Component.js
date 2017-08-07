@@ -94,7 +94,7 @@ function setStateImpl(state, cb) {
     }
   }
 }
-var defer = win.webkitRequestAnimationFrame || win.requestAnimationFrame || function(job){
+var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function(job){
    setTimeout(job, 16)
 }
 
