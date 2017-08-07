@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-08-05
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-07
  */
 
 (function (global, factory) {
@@ -517,7 +517,6 @@ function getNs(type) {
 }
 
 //import {scheduler} from "./scheduler";
-var dirtyComponents = [];
 /**
  *组件的基类
  *
@@ -588,28 +587,30 @@ function setStateImpl(state, cb) {
     options.refreshComponent(this);
   } else {
     //setState是异步渲染
-    this._pendingStates.push(state);
+    try {
+      this._pendingStates.push(state);
+    } catch (e) {
+      console.log(e);
+      console.log(this);
+    }
     //子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating && CurrentOwner.cur) {
       CurrentOwner.cur.after = this;
       return;
     }
-    if (!this._dirty && (this._dirty = true) && dirtyComponents.push(this) === 1) {
-      defer(rerender, 0);
+
+    if (!this._dirty && (this._dirty = true)) {
+      var el = this;
+      defer(function () {
+        options.refreshComponent(el);
+      }, 16);
+      // defer(rerender);
     }
   }
 }
-var defer = win.webkitRequestAnimationFrame || win.requestAnimationFrame || function (job) {
+var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
   setTimeout(job, 16);
 };
-
-function rerender() {
-  dirtyComponents.splice(0).forEach(function (el) {
-    if (el._dirty) {
-      options.refreshComponent(el);
-    }
-  });
-}
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
@@ -1384,6 +1385,9 @@ function clearRefsAndMounts(queue) {
         obj.ref(value, el);
       }
       arr.length = 0;
+      el._pendingCallbacks.splice(0).forEach(function (fn) {
+        fn.call(el);
+      });
       if (el.componentDidMount) {
         el.componentDidMount();
         el.componentDidMount = null;
@@ -1595,7 +1599,7 @@ function safeRenderComponent(instance, type, vnode, context) {
   return rendered;
 }
 
-function Stateless(render, props, context) {
+function Stateless(render) {
   this._render = render;
   this.refs = {};
   this._collectRefs = noop;
@@ -1606,48 +1610,40 @@ Stateless.prototype.render = function (vnode, context) {
   var rendered = this._render(props, context);
   rendered = checkNull(rendered, this._render);
   vnode._instance = this;
+  this.context = context;
+  this.props = props;
   this._currentElement = vnode;
   this._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
   return rendered;
 };
 function mountStateless(vnode, parentInstance, prevRendered, mountQueue) {
-  var parentContext = parentInstance.context;
+  var context = parentInstance.context;
   var instance = new Stateless(vnode.type);
-  var rendered = instance.render(vnode, parentContext);
+  var rendered = instance.render(vnode, context);
   var dom = mountVnode(rendered, instance, prevRendered, mountQueue);
 
   return vnode._hostNode = dom;
 }
 
 function updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue) {
-  var parentContext = parentInstance.context;
+  var context = parentInstance.context;
   var instance = lastVnode._instance;
   var prevVnode = instance._rendered;
-  nextVnode = instance.render(nextVnode, parentContext);
+  nextVnode = instance.render(nextVnode, context);
 
   var dom = alignVnodes(prevVnode, nextVnode, node, instance, mountQueue);
 
   return nextVnode._hostNode = dom;
 }
 
-function refreshComponent(instance) {
-  //这里触发视图更新
-
-  reRenderComponent(instance);
-
-  instance._forceUpdate = false;
-  instance._pendingCallbacks.splice(0).forEach(function (fn) {
-    fn.call(instance);
-  });
-}
-
 //将Component中这个东西移动这里
 options.refreshComponent = refreshComponent;
 
-function reRenderComponent(instance) {
+function refreshComponent(instance, mountQueue) {
   var node = instanceMap.get(instance);
   if (instance._disable) {
+    console.log('instance._disable');
     return node;
   }
   instance._disable = true;
@@ -1668,7 +1664,7 @@ function reRenderComponent(instance) {
       state = instance.state,
       context = instance.context,
       lastProps = instance.lastProps,
-      constructor = instance.constructor;
+      type = instance.constructor;
 
 
   var lastRendered = instance._rendered;
@@ -1677,7 +1673,6 @@ function reRenderComponent(instance) {
   var nextState = instance._processPendingState(props, context);
 
   instance.props = lastProps;
-  //防止用户在shouldComponentUpdate中调用setState instance._disableSetState = true;
 
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
     instance._disable = false;
@@ -1687,35 +1682,36 @@ function reRenderComponent(instance) {
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, context);
-  } else {
-    instance.componentWillUpdate = null;
   }
 
   instance.props = nextProps;
   instance.state = nextState;
+
   instance._dirty = false;
-
-  var rendered = safeRenderComponent(instance, constructor, lastRendered, context);
-
-  var mountQueue = [];
+  var rendered = safeRenderComponent(instance, type, lastRendered, context);
+  var hasQueue = !mountQueue;
+  mountQueue = mountQueue || [];
   CurrentOwner.cur = instance;
   instance._updating = true;
   var dom = alignVnodes(lastRendered, rendered, node, instance, mountQueue);
   instance.context = context;
   instance._updating = false;
+  CurrentOwner.cur = null;
 
   instanceMap.set(instance, dom);
   instance._currentElement._hostNode = dom;
-
-  clearRefsAndMounts(mountQueue);
-
+  if (!hasQueue) {
+    clearRefsAndMounts(mountQueue);
+  }
   if (instance.componentDidUpdate) {
     instance.componentDidUpdate(lastProps, state, context);
-  } else {
-    instance.componentDidUpdate = null;
   }
   options.afterUpdate(instance);
   instance._disable = false;
+  instance._forceUpdate = false;
+  instance._pendingCallbacks.splice(0).forEach(function (fn) {
+    fn.call(instance);
+  });
   var f = instance.after;
   if (f) {
     instance.after = null;
@@ -1834,7 +1830,7 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   if (nextVnode.ref) {
     nextVnode.ref(instance, parentInstance);
   }
-  return reRenderComponent(instance);
+  return refreshComponent(instance, mountQueue);
 }
 
 function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
@@ -2117,7 +2113,7 @@ var React = {
   Component: Component
 };
 
-win.ReactDOM = React;
+win.React = win.ReactDOM = React;
 
 return React;
 

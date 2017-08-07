@@ -1,7 +1,7 @@
-import {extend, isFn, options} from "./util";
+import { extend, isFn, options } from "./util";
 //import {scheduler} from "./scheduler";
-import {CurrentOwner} from "./createElement";
-import {win} from "./browser";
+import { CurrentOwner } from "./createElement";
+import { win } from "./browser";
 
 let dirtyComponents = []
 /**
@@ -66,7 +66,7 @@ Component.prototype = {
     return nextState;
   },
 
-  render() {}
+  render() { }
 };
 
 function setStateImpl(state, cb) {
@@ -81,26 +81,31 @@ function setStateImpl(state, cb) {
     options.refreshComponent(this);
   } else {
     //setState是异步渲染
-    this
-      ._pendingStates
+
+    this._pendingStates
       .push(state);
+
     //子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating && CurrentOwner.cur) {
       CurrentOwner.cur.after = this
       return
     }
-    if (!this._dirty && (this._dirty = true) && dirtyComponents.push(this) === 1) {
-      defer(rerender, 0);
+
+    if (!this._dirty && (this._dirty = true)) {
+      var el = this
+      defer(function () {
+        options.refreshComponent(el);
+      }, 16)
+      // defer(rerender);
     }
   }
 }
-var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function(job){
-   setTimeout(job, 16)
+var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
+  setTimeout(job, 16)
 }
 
 function rerender() {
   dirtyComponents
-    .splice(0)
     .forEach(function (el) {
       if (el._dirty) {
         options.refreshComponent(el);
