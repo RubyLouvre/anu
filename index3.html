@@ -4,65 +4,68 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-    </style>
- <script type='text/javascript' src="./dist/React.js"></script> 
-<!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
- <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script> 
-    <script type='text/javascript' src="./test/react-router-dom.js"></script>-->
-
-     <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./libs/babel.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script> 
+    <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+    <script src="./lib/babel.js"></script>
     <script type='text/babel'>
-    var s
-     class Counter extends React.Component {
-            render() {
-                return <div>
-                    <h1 ref='value'>{this.props.value}</h1>
-                    <button ref='a' onClick={this.props.onIncrement}>+</button>&nbsp;
-                    <button ref='b' onClick={this.props.onDecrement}>-</button>
-                </div>
-            }
-        };
-
-        const reducer = (state = 0, action) => {
-            switch (action.type) {
-                case 'INCREMENT': return state + 1;
-                case 'DECREMENT': return state - 1;
-                default: return state;
-            }
-        };
-
-        const store = Redux.createStore(reducer);
-        function onIncrement() {
-            store.dispatch({ type: 'INCREMENT' })
-        }
-        function onDecrement() {
-            store.dispatch({ type: 'DECREMENT' })
-        }
-
-        const render = () => {
-            return ReactDOM.render(
-                <Counter
-                    value={store.getState()}
-                    onIncrement={onIncrement}
-                    onDecrement={onDecrement}
-                />,
-               document.getElementById('example')
-            );
-        };
-
     window.onload = function(){
-      
-        var s = render();
-        store.subscribe(render)
+    var a = 1;
+    class A extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 1
+        };
+      }
+      shouldComponentUpdate() {
+        console.log('shouldComponentUpdate')
+       // return false;
+      }
+      click() {
+        console.log('click')
+        this.setState(
+          function(a) {
+            a.aaa++;
+          },
+          function() {
+              console.log('cb1')
+            a++;
+          }
+        );
+
+        this.setState(
+          function(a) {
+            a.aaa++;
+          },
+          function() {
+            console.log('cb2')
+            a++;
+          }
+        );
+      }
+      render() {
+        return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
+      }
+    }
+    var div = document.body
+    var s = ReactDOM.render(<A />, div);
+    setTimeout(function(){
+        console.log(s)
+        console.log(div.firstChild.innerHTML)
+
+       div.firstChild.click()
+        setTimeout(function(){
+            console.log(div.firstChild.innerHTML)
+            console.log(a)
+        }, 200)
+    }, 200)
+   // await browser.pause(200).$apply();
+
+   // expect(s._currentElement._hostNode.innerHTML).toBe("1");
+   // await browser.click(s._currentElement._hostNode).pause(200).$apply();
+   // expect(s._currentElement._hostNode.innerHTML).toBe("1");
+   // expect(a).toBe(3);
     }
     </script>
 </head>

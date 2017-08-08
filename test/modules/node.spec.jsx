@@ -330,6 +330,7 @@ describe('node模块', function () {
     it('测试input元素的oninput事件', async () => {
 
         var values = ['x', 'xx', 'xxx', 'xxxx']
+        var el = ''
         class Input extends React.Component {
             constructor() {
                 super()
@@ -338,13 +339,14 @@ describe('node模块', function () {
                 }
             }
             onInput(e) {
+                 console.log('oninput', e.type, e.target.value)
+                 el = values.shift()
                 this.setState({ value: e.target.value })
             }
 
 
             componentDidUpdate() {
-                var el = values.shift()
-                console.log(el)
+              
                 expect(s._currentElement._hostNode.children[0].value).toBe(el)
 
             }
@@ -370,14 +372,15 @@ describe('node模块', function () {
         expect(s._currentElement._hostNode.children[0].value).toBe('2')
 
         await browser
-            .setValue('#node4', 'xxxx').pause(100).$apply()
+            .setValue('#node4', 'xxxx').pause(300).$apply()
 
 
 
     })
     it('测试textarea元素的oninput事件', async () => {
 
-        var values = ['x', 'xx', 'xxx', 'xxxx']
+        var values = ['y', 'yy', 'yyy', 'yyyy']
+        var el = ''
         class TextArea extends React.Component {
             constructor() {
                 super()
@@ -386,12 +389,12 @@ describe('node模块', function () {
                 }
             }
             onInput(e) {
-                // console.log('oninput', e.type, e.target.value)
+                el = values.shift()
                 this.setState({ value: e.target.value })
             }
 
             componentDidUpdate() {
-                expect(s._currentElement._hostNode.children[0].value).toBe(values.shift())
+                expect(s._currentElement._hostNode.children[0].value).toBe(el)
             }
             render() {
                 return <div>
@@ -414,7 +417,7 @@ describe('node模块', function () {
         expect(s._currentElement._hostNode.children[0].value).toBe('4')
 
         await browser
-            .setValue('#node5', 'xxxx').pause(100).$apply()
+            .setValue('#node5', 'yyyy').pause(300).$apply()
 
 
     })

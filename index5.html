@@ -20,7 +20,8 @@
             }
         }
       render() {
-        log.push('parent render ' + this.state.value);
+        console.log('parent render ' + this.state.value);
+        log.push('parent render ' + this.state.value)
         return <Child parent={this} value={this.state.value} />;
       }
     }
@@ -30,24 +31,26 @@
         if (updated) {
           return;
         }
+        console.log('child componentWillReceiveProps ' + this.props.value);
         log.push('child componentWillReceiveProps ' + this.props.value);
         this.props.parent.setState({value: 'two'});
+        console.log('child componentWillReceiveProps done ' + this.props.value);
         log.push('child componentWillReceiveProps done ' + this.props.value);
         updated = true;
       }
       render() {
+        console.log('child render ' + this.props.value);
         log.push('child render ' + this.props.value);
         return <div>{this.props.value}</div>;
       }
     }
     var container = document.createElement('div');
     ReactDOM.render(<Parent />, container);
-    //setTimeout(function(){
+     console.log('开始第二次react-dom.render')
       
       ReactDOM.render(<Parent />, container);
-     
-      console.log(log.join('\n'))
-      console.log(log)
+     console.log(log.join('\n '))
+    
      /* expect(log).toEqual([
         'parent render one',
         'child render one',
