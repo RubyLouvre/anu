@@ -1,5 +1,5 @@
 import { diffProps } from "./diffProps";
-import { CurrentOwner } from "./createElement";
+import { CurrentOwner, dirtyComponents } from "./createElement";
 import { createDOMElement, removeDOMElement, getNs } from "./browser";
 
 import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
@@ -332,37 +332,36 @@ function updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue)
 options.refreshComponent = refreshComponent;
 
 function refreshComponent(instance, mountQueue) {
+  //shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
+  var dom = _refreshComponent(instance, mountQueue)
+  instance._forceUpdate = false;
+ 
+  instance
+    ._pendingCallbacks
+    .splice(0)
+    .forEach(function (fn) {
+      fn.call(instance);
+    });
+ var f = instance.after
+ if (f) {
+   
+   f.splice(0).forEach(function(el){
+       refreshComponent(el)
+   })
+    
+ }
+  return dom;
+}
+function _refreshComponent(instance, mountQueue){
   var node = instanceMap.get(instance);
-  if (instance._disable) {
-    console.log('instance._disable')
-    return node
-  }
-  instance._disable = true;
-  /* if (!instance._hasDidMount) {
-    scheduler
-      .addAndRun(function () {
-        instance._forceUpdate = false;
-        instance
-          ._pendingCallbacks
-          .splice(0)
-          .forEach(function (fn) {
-            fn.call(instance);
-          });
-      });
-
-    return node;
-  }*/
   var { props, state, context, lastProps, constructor: type } = instance;
-
   var lastRendered = instance._rendered;
   var nextProps = props;
   lastProps = lastProps || props;
   var nextState = instance._processPendingState(props, context);
-
   instance.props = lastProps;
-
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
-    instance._disable = false;
+  //  instance._disable = false;
     return node;
   }
 
@@ -376,6 +375,7 @@ function refreshComponent(instance, mountQueue) {
 
   instance._dirty = false
   var rendered = safeRenderComponent(instance, type, lastRendered, context);
+
   var hasQueue = !mountQueue
   mountQueue = mountQueue || []
   CurrentOwner.cur = instance
@@ -394,20 +394,7 @@ function refreshComponent(instance, mountQueue) {
     instance.componentDidUpdate(lastProps, state, context);
   }
   options.afterUpdate(instance);
-  instance._disable = false;
-  instance._forceUpdate = false;
-  instance
-    ._pendingCallbacks
-    .splice(0)
-    .forEach(function (fn) {
-      fn.call(instance);
-    });
-  var f = instance.after
-  if (f) {
-    instance.after = null
-    refreshComponent(f)
-  }
-  return dom;
+  return dom
 }
 
 export function alignVnodes(vnode, newVnode, node, parentInstance, mountQueue) {
@@ -498,7 +485,6 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   var parentContext = parentInstance.context
   var instance = (nextVnode._instance = lastVnode._instance);
   if (!instance) {
-    console.log('updateComponent...')
     lastVnode._return = lastVnode._disposed = true;
     var dom = mountComponent(nextVnode, parentInstance, null, mountQueue);
     node.parentNode && node
@@ -512,9 +498,9 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   instance.lastProps = instance.props;
 
   if (instance.componentWillReceiveProps) {
-    instance._disable = true;
+    instance._dirty = true;
     instance.componentWillReceiveProps(nextProps, parentContext);
-    instance._disable = false;
+    instance._dirty = false;
   }
 
   instance.props = nextProps;
@@ -524,6 +510,8 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   }
   return refreshComponent(instance, mountQueue);
 }
+
+
 
 function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
   let patches = {
@@ -541,6 +529,15 @@ function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
   patches
     .creates
     .forEach(applyCreate, mountQueue);
+    /*
+    for(var i in dirtyComponents){
+      var el = dirtyComponents[i]
+      if(!el._updating){
+         refreshComponent(el)
+         delete  dirtyComponents[i]
+      }
+    }
+    */
   //scheduler.run();
 }
 

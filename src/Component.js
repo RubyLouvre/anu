@@ -1,9 +1,9 @@
 import { extend, isFn, options } from "./util";
 //import {scheduler} from "./scheduler";
-import { CurrentOwner } from "./createElement";
+import { CurrentOwner,dirtyComponents } from "./createElement";
 import { win } from "./browser";
 
-let dirtyComponents = []
+
 /**
  *组件的基类
  *
@@ -15,6 +15,7 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
+  this._uid = Math.random()
   /**
    * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
@@ -87,14 +88,21 @@ function setStateImpl(state, cb) {
 
     //子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating && CurrentOwner.cur) {
-      CurrentOwner.cur.after = this
+      CurrentOwner.cur.after = CurrentOwner.cur.after || []
+      var list = CurrentOwner.cur.after
+      list.push(this)
+
       return
     }
 
     if (!this._dirty && (this._dirty = true)) {
+      dirtyComponents[this._uid] = this
       var el = this
       defer(function () {
+        el._dirty = false
         options.refreshComponent(el);
+        delete dirtyComponents[el._uid]
+        // rerender()
       }, 16)
       // defer(rerender);
     }
@@ -105,10 +113,10 @@ var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || func
 }
 
 function rerender() {
-  dirtyComponents
-    .forEach(function (el) {
-      if (el._dirty) {
-        options.refreshComponent(el);
-      }
-    })
+  var el
+  while (el = dirtyComponents.pop()) {
+    if (el._dirty) {
+      options.refreshComponent(el);
+    }
+  }
 }
