@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+    <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+window.onload = function(){
+ var index = 0
+        var map = [
+            <div>xxx</div>,
+             <div>yyyy</div>,
+        ]
+   
+         class A extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+           
+            componentDidMount() {
+                console.log('A componentDidMount')
+            }
+            componentWillUpdate() {
+                console.log('A componentWillUpdate')
+            }
+            render() {
+                return map[index++]
+
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            change(a) {
+                this.setState({
+                    aaa: a
+                })
+            }
+            componentDidMount() {
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate() {
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                return <div onClick={()=>{ this.change(11) }}> <A /> </div>
+
+            }
+        }
+         var div = document.body
+        var s = React.render(<App />, div)
+
+       
+        
+   
+    
+
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

@@ -1,4 +1,3 @@
-import { instanceMap } from "./instanceMap";
 import { options } from "./util";
 export function disposeVnode(vnode, parentInstance) {
   if (!vnode || vnode._disposed) {
@@ -49,10 +48,9 @@ function disposeComponent(vnode, parentInstance) {
       instance.componentWillUnmount();
     }
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-    var node = instanceMap.get(instance);
+    var node = instance._currentElement._hostNode
     if (node) {
       node._component = null;
-      instanceMap["delete"](instance);
     }
     vnode._instance = instance._currentElement = null;
     disposeVnode(instance._rendered, instance);

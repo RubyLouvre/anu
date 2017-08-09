@@ -1,8 +1,8 @@
-import { diffProps } from "./diffProps";
-import { CurrentOwner, dirtyComponents } from "./createElement";
-import { createDOMElement, removeDOMElement, getNs } from "./browser";
+import {diffProps} from "./diffProps";
+import {CurrentOwner, dirtyComponents} from "./createElement";
+import {createDOMElement, removeDOMElement, getNs} from "./browser";
 
-import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
+import {processFormElement, postUpdateSelectedOptions} from "./ControlledComponent";
 
 import {
   getNodes,
@@ -16,8 +16,7 @@ import {
   __push
 } from "./util";
 
-import { instanceMap } from "./instanceMap";
-import { disposeVnode } from "./dispose";
+import {disposeVnode} from "./dispose";
 
 //import {scheduler} from "./scheduler";
 /**
@@ -66,9 +65,12 @@ function clearRefsAndMounts(queue) {
           obj.ref(value, el)
         }
         arr.length = 0
-        el._pendingCallbacks.splice(0).forEach(function (fn) {
-          fn.call(el)
-        })
+        el
+          ._pendingCallbacks
+          .splice(0)
+          .forEach(function (fn) {
+            fn.call(el)
+          })
         if (el.componentDidMount) {
           el.componentDidMount();
           el.componentDidMount = null
@@ -81,7 +83,7 @@ function clearRefsAndMounts(queue) {
 
 }
 function getFakeInstance() {
-  return { refs: {}, context: {}, _collectRefs: noop }
+  return {refs: {}, context: {}, _collectRefs: noop}
 }
 function renderByAnu(vnode, container, callback, parentInstance) {
   if (!isValidElement(vnode)) {
@@ -141,7 +143,7 @@ function genVnodes(vnode, container, hostParent, parentInstance, mountQueue) {
 }
 
 export function mountVnode(vnode, parentInstance, prevRendered, mountQueue) {
-  let { vtype } = vnode;
+  let {vtype} = vnode;
   switch (vtype) {
     case 1:
       return mountElement(vnode, parentInstance, prevRendered, mountQueue);
@@ -172,17 +174,17 @@ function genMountElement(vnode, type, prevRendered) {
     var ns = getNs(type);
     vnode.ns = ns;
     var dom = createDOMElement(vnode);
-    if (prevRendered)
+    if (prevRendered) 
       while (prevRendered.firstChild) {
         dom.appendChild(prevRendered.firstChild);
       }
-
+    
     return dom;
   }
 }
 
 function mountElement(vnode, parentInstance, prevRendered, mountQueue) {
-  let { type, props } = vnode;
+  let {type, props} = vnode;
   let dom = genMountElement(vnode, type, prevRendered);
   vnode._hostNode = dom;
   var method = prevRendered
@@ -237,14 +239,12 @@ function alignChildren(vnode, parentNode, parentInstance, mountQueue) {
   }
 }
 function mountComponent(vnode, parentInstance, prevRendered, mountQueue) {
-  let { type } = vnode;
+  let {type} = vnode;
 
   let props = getComponentProps(vnode);
   let parentContext = parentInstance.context
   let instance = new type(props, parentContext); //互相持有引用
 
-  vnode._instance = instance;
-  instance._currentElement = vnode;
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
   let currContext = instance.context
@@ -253,8 +253,6 @@ function mountComponent(vnode, parentInstance, prevRendered, mountQueue) {
     instance.componentWillMount();
     instance.state = instance._processPendingState();
   }
-
-  instance.parentInstance = parentInstance
 
   // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
   // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
@@ -266,22 +264,20 @@ function mountComponent(vnode, parentInstance, prevRendered, mountQueue) {
   let dom = mountVnode(rendered, instance, prevRendered, mountQueue);
 
   instance.context = currContext;
-  instanceMap.set(instance, dom);
   vnode._hostNode = dom;
 
   mountQueue.push(instance)
-
   if (vnode.ref) {
     parentInstance._collectRefs(vnode, instance)
   }
-
   options.afterMount(instance);
-  vnode._hostNode = dom;
   return dom;
 }
 
 export function safeRenderComponent(instance, type, vnode, context) {
   let rendered = instance.render();
+  instance._currentElement = vnode;
+  vnode._instance = instance
   rendered = checkNull(rendered, type);
   rendered._hostParent = vnode._hostParent;
   instance._rendered = rendered;
@@ -302,7 +298,7 @@ Stateless.prototype.render = function (vnode, context) {
   vnode._instance = this;
   this.context = context
   this.props = props
-  this._currentElement = this._currentElement || vnode;
+  this._currentElement = vnode;
   this._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
   return rendered
@@ -316,17 +312,15 @@ function mountStateless(vnode, parentInstance, prevRendered, mountQueue) {
   return vnode._hostNode = dom;
 }
 
-function updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue) {
+function updateStateless(lastTypeVnode, nextTypeVnode, node, parentInstance, mountQueue) {
   let context = parentInstance.context
-  let instance = lastVnode._instance;
-  let prevVnode = instance._rendered;
-  nextVnode = instance.render(nextVnode, context);
-  console.log(lastVnode, nextVnode, '333')
-  let dom = alignVnodes(prevVnode, nextVnode, node, instance, mountQueue);
-  instance._currentElement._hostNode = nextVnode._hostNode = dom;
-  return  dom;
+  let instance = lastTypeVnode._instance;
+  let lastVnode = instance._rendered;
+  let nextVnode = instance.render(nextTypeVnode, context);
+  let dom = alignVnodes(lastVnode, nextVnode, node, instance, mountQueue);
+  nextTypeVnode._hostNode = nextVnode._hostNode = dom;
+  return dom;
 }
-
 
 //将Component中这个东西移动这里
 options.refreshComponent = refreshComponent;
@@ -345,24 +339,33 @@ function refreshComponent(instance, mountQueue) {
   var f = instance.after
   if (f) {
 
-    f.splice(0).forEach(function (el) {
-      refreshComponent(el)
-    })
+    f
+      .splice(0)
+      .forEach(function (el) {
+        refreshComponent(el)
+      })
 
   }
   return dom;
 }
 function _refreshComponent(instance, mountQueue) {
-  var node = instanceMap.get(instance);
-  var { props, state, context, lastProps, constructor: type } = instance;
-  var lastRendered = instance._rendered;
-  var nextProps = props;
-  lastProps = lastProps || props;
-  var nextState = instance._processPendingState(props, context);
+  var dom = instance._currentElement._hostNode
+  var {
+
+    state,
+    context,
+    lastProps,
+    props: nextProps,
+    constructor: type,
+    _rendered: lastRendered
+  } = instance;
+
+  lastProps = lastProps || nextProps;
+  var nextState = instance._processPendingState(nextProps, context);
   instance.props = lastProps;
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
     //  instance._disable = false;
-    return node;
+    return dom;
   }
 
   //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
@@ -374,19 +377,19 @@ function _refreshComponent(instance, mountQueue) {
   instance.state = nextState;
 
   instance._dirty = false
-  var rendered = safeRenderComponent(instance, type, lastRendered, context);
-
+  var hostNode = instance._nextElement || instance._currentElement
+  var rendered = safeRenderComponent(instance, type, hostNode, context);
+  instance._nextElement = null
   var hasQueue = !mountQueue
   mountQueue = mountQueue || []
   CurrentOwner.cur = instance
   instance._updating = true
-  var dom = alignVnodes(lastRendered, rendered, node, instance, mountQueue);
+  dom = alignVnodes(lastRendered, rendered, dom, instance, mountQueue);
   instance.context = context
   instance._updating = false
   CurrentOwner.cur = null
 
-  instanceMap.set(instance, dom);
-  instance._currentElement._hostNode = dom;
+  hostNode._hostNode = dom;
   if (!hasQueue) {
     clearRefsAndMounts(mountQueue)
   }
@@ -421,15 +424,15 @@ export function alignVnodes(vnode, newVnode, node, parentInstance, mountQueue) {
   return newNode;
 }
 
-export function findDOMNode(componentOrElement) {
-  if (componentOrElement == null) {
+export function findDOMNode(ref) {
+  if (ref == null) {
     return null;
   }
-  if (componentOrElement.nodeType === 1) {
-    return componentOrElement;
+  if (ref.nodeType === 1) {
+    return ref;
   }
-
-  return instanceMap.get(componentOrElement) || null;
+  var vnode = ref._currentElement
+  return vnode._hostNode || null;
 }
 
 function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
@@ -446,7 +449,7 @@ function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
         if (nextProps[HTML_KEY]) {
           node.innerHTML = nextProps[HTML_KEY].__html;
         } else {
-          updateChildren2(lastVnode, nextVnode, node, parentInstance, mountQueue);
+          updateChildren(lastVnode, nextVnode, node, parentInstance, mountQueue);
         }
         updateElement(lastVnode, nextVnode, node, parentInstance);
       }
@@ -456,8 +459,8 @@ function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
     case 4:
       return updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue);
     default:
+      nextVnode._hostNode = node
       if (lastVnode.text !== nextVnode.text) {
-        nextVnode._hostNode = node
         node.nodeValue = nextVnode.text
       }
       return node;
@@ -488,15 +491,7 @@ function updateElement(lastVnode, nextVnode, dom, parentInstance) {
 function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue) {
   var parentContext = parentInstance.context
   var instance = (nextVnode._instance = lastVnode._instance);
-  if (!instance) {
-    lastVnode._return = lastVnode._disposed = true;
-    var dom = mountComponent(nextVnode, parentInstance, null, mountQueue);
-    node.parentNode && node
-      .parentNode
-      .replaceChild(dom, node);
-
-    return dom;
-  }
+  instance._nextElement = nextVnode
 
   var nextProps = getComponentProps(nextVnode);
   instance.lastProps = instance.props;
@@ -515,7 +510,7 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   return refreshComponent(instance, mountQueue);
 }
 
-function updateChildren2(vnode, newVnode, parentNode, parentInstance, mountQueue) {
+function updateChildren(vnode, newVnode, parentNode, parentInstance, mountQueue) {
   let children = vnode.props.children;
   let childNodes = parentNode.childNodes;
   let newVchildren = newVnode.props.children
@@ -544,231 +539,42 @@ function updateChildren2(vnode, newVnode, parentNode, parentInstance, mountQueue
   for (var i in map) {
     var list = map[i];
     if (Array.isArray(list)) {
-      list.forEach(function (el) {
-        if (el.vtype === 2) {
-          var instance = el._instance
-          node = instanceMap.get(instance);
-        } else {
+      list
+        .forEach(function (el) {
           var node = el._hostNode;
-        }
-        if (node) {
-          removeDOMElement(node);
-        }
-        disposeVnode(el, parentInstance);
-      });
+          if (node) {
+            removeDOMElement(node);
+          }
+          disposeVnode(el, parentInstance);
+        });
     }
   }
 
-  newVchildren.forEach(function (el, index) {
-    var old = el.old;
-    if (old) {
-      el.old = null;
-      var oldNode = old._hostNode
-      console.log(oldNode, '!!!',old, el)
-      var dom = updateVnode(old, el, oldNode, parentInstance, mountQueue)
-      if (dom !== childNodes[index]) {
-        //  if (oldNode.parentNode) {
-        parentNode.insertBefore(dom, childNodes[index]);
-        //  } else {
-        //   parentNode.appendChild(dom);
-        //  }
-      }
-    } else {
-      dom = mountVnode(el, parentInstance, null, mountQueue)
-      if (!childNodes[index]) {
-        parentNode.appendChild(dom)
+  newVchildren
+    .forEach(function (el, index) {
+      var old = el.old,
+        ref,
+        dom
+
+      if (old) {
+        el.old = null;
+        dom = updateVnode(old, el, old._hostNode, parentInstance, mountQueue)
+        ref = childNodes[index]
+        if (dom !== ref) {
+          insertDOM(parentNode, dom, ref)
+        }
       } else {
-        parentNode.insertBefore(dom, childNodes[index])
+        dom = mountVnode(el, parentInstance, null, mountQueue)
+        ref = childNodes[index]
+        insertDOM(parentNode, dom, ref)
       }
-    }
-  });
+    });
 }
 
-
-function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
-  let patches = {
-    removes: [],
-    updates: [],
-    creates: []
-  };
-  diffChildren(patches, vnode, newVnode, node, parentInstance, mountQueue);
-  patches
-    .removes
-    .forEach(applyDestroy, mountQueue);
-  patches
-    .updates
-    .forEach(applyUpdate, mountQueue);
-  patches
-    .creates
-    .forEach(applyCreate, mountQueue);
-  /*
-  for(var i in dirtyComponents){
-    var el = dirtyComponents[i]
-    if(!el._updating){
-       refreshComponent(el)
-       delete  dirtyComponents[i]
-    }
+function insertDOM(parentNode, dom, ref) {
+  if (!ref) {
+    parentNode.appendChild(dom)
+  } else {
+    parentNode.insertBefore(dom, ref)
   }
-  */
-  //scheduler.run();
-}
-
-function diffChildren(patches, vnode, newVnode, node, parentInstance, mountQueue) {
-  let children = vnode.props.children;
-  let childNodes = node.childNodes;
-  let newVchildren = newVnode.props.children;
-  let childrenLen = children.length;
-  let newVchildrenLen = newVchildren.length;
-
-  if (childrenLen === 0) {
-    if (newVchildrenLen > 0) {
-      for (let i = 0; i < newVchildrenLen; i++) {
-        patches
-          .creates
-          .push({ vnode: newVchildren[i], parentNode: node, parentInstance, index: i });
-      }
-    }
-    return;
-  } else if (newVchildrenLen === 0) {
-    for (let i = 0; i < childrenLen; i++) {
-      patches
-        .removes
-        .push({ vnode: children[i], node: childNodes[i], parentInstance });
-    }
-    return;
-  }
-  let cloneChildren = children.slice();
-  let updates = Array(newVchildrenLen);
-  let removes = [];
-  let creates = [];
-  // isEqual
-  for (let i = 0; i < childrenLen; i++) {
-    let vnode = children[i];
-    for (let j = 0; j < newVchildrenLen; j++) {
-      if (updates[j]) {
-        continue;
-      }
-      let newVnode = newVchildren[j];
-      if (vnode === newVnode) {
-        updates[j] = {
-          shouldIgnore: true,
-          vnode: vnode,
-          newVnode: newVnode,
-          node: childNodes[i],
-          parentInstance,
-          index: j
-        };
-        cloneChildren[i] = null;
-        break;
-      }
-    }
-  }
-
-  // isSimilar
-  for (let i = 0; i < childrenLen; i++) {
-    let vnode = cloneChildren[i];
-    if (vnode === null) {
-      continue;
-    }
-    let shouldRemove = true;
-    for (let j = 0; j < newVchildrenLen; j++) {
-      if (updates[j]) {
-        continue;
-      }
-      let newVnode = newVchildren[j];
-      if (newVnode.type === vnode.type && newVnode.key === vnode.key) {
-        if (vnode._disposed) {
-          console.log(vnode._disposed, '被销毁')
-        }
-        updates[j] = {
-          vnode: vnode,
-          newVnode: newVnode,
-          node: childNodes[i],
-          parentInstance,
-          index: j
-        };
-        shouldRemove = false;
-        break;
-      }
-    }
-    if (shouldRemove) {
-      removes.push({ vnode: vnode, node: childNodes[i], parentInstance });
-    }
-  }
-
-  for (let i = 0; i < newVchildrenLen; i++) {
-    let item = updates[i];
-    if (!item) {
-      creates.push({ vnode: newVchildren[i], parentNode: node, parentInstance, index: i });
-    } else if (item.vnode.vtype === 1) {
-      diffChildren(patches, item.vnode, item.newVnode, item.node, item.parentInstance, mountQueue);
-    }
-  }
-  if (removes.length) {
-    __push.apply(patches.removes, removes);
-  }
-  if (creates.length) {
-    __push.apply(patches.creates, creates);
-  }
-  __push.apply(patches.updates, updates);
-}
-
-function applyUpdate(data) {
-  if (!data) {
-    return;
-  }
-  let vnode = data.vnode;
-  let nextVnode = data.newVnode;
-  let dom = data.node;
-  let parentInstance = data.parentInstance
-  let mountQueue = this
-  // update
-  if (!data.shouldIgnore) {
-    if (!vnode.vtype) {
-      if (vnode.text !== nextVnode.text) {
-        dom.nodeValue = nextVnode.text;
-      }
-      if (!nextVnode._hostNode) {
-        nextVnode._hostNode = dom;
-        nextVnode._hostParent = vnode._hostParent;
-      }
-    } else if (vnode.vtype === 1) {
-      updateElement(vnode, nextVnode, dom, parentInstance);
-    } else if (vnode.vtype === 4) {
-      dom = updateStateless(vnode, nextVnode, dom, parentInstance, mountQueue);
-    } else if (vnode.vtype === 2) {
-      dom = updateComponent(vnode, nextVnode, dom, parentInstance, mountQueue);
-      if (vnode._return) {
-        console.log('这里出问题')
-        //如果vnode, nextVnode都没有实例
-        return dom;
-      }
-    }
-  }
-  if (dom.parentNode === null) {
-    return dom;
-  }
-  // re-order
-  let currentNode = dom.parentNode.childNodes[data.index];
-  if (currentNode !== dom) {
-    dom
-      .parentNode
-      .insertBefore(dom, currentNode);
-  }
-  return dom;
-}
-
-function applyDestroy(data) {
-  var node = data.node;
-  if (node) {
-    removeDOMElement(node);
-  }
-  disposeVnode(data.vnode, data.parentInstance);
-}
-
-function applyCreate(data) {
-  let node = mountVnode(data.vnode, data.parentInstance, null, this);
-  data
-    .parentNode
-    .insertBefore(node, data.parentNode.childNodes[data.index]);
 }

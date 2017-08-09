@@ -10,7 +10,7 @@
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
- class App extends React.Component {
+   class App extends React.Component {
       constructor(props) {
         super(props);
         this.state = {
@@ -23,7 +23,7 @@ window.onload = function(){
         });
       }
       render() {
-        return <div><span>xx</span><Route path={this.state.path} /></div>;
+        return <div><span>span</span><Route path={this.state.path} /></div>;
       }
     }
     var updateCount = 0;
@@ -53,7 +53,7 @@ window.onload = function(){
         console.log("destroyCount",destroyCount)
       }
       render() {
-        return this.state.path == "111" ? <p>{this.state.path}</p> : null;
+        return this.state.path == "111" ? <strong>{this.state.path}</strong> : null;
       }
     }
     var div = document.body
