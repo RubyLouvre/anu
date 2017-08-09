@@ -302,7 +302,7 @@ Stateless.prototype.render = function (vnode, context) {
   vnode._instance = this;
   this.context = context
   this.props = props
-  this._currentElement = vnode;
+  this._currentElement = this._currentElement || vnode;
   this._rendered = rendered;
   rendered._hostParent = vnode._hostParent;
   return rendered
@@ -321,10 +321,10 @@ function updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue)
   let instance = lastVnode._instance;
   let prevVnode = instance._rendered;
   nextVnode = instance.render(nextVnode, context);
-
+  console.log(lastVnode, nextVnode, '333')
   let dom = alignVnodes(prevVnode, nextVnode, node, instance, mountQueue);
-
-  return nextVnode._hostNode = dom;
+  instance._currentElement._hostNode = nextVnode._hostNode = dom;
+  return  dom;
 }
 
 
@@ -335,24 +335,24 @@ function refreshComponent(instance, mountQueue) {
   //shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
   var dom = _refreshComponent(instance, mountQueue)
   instance._forceUpdate = false;
- 
+
   instance
     ._pendingCallbacks
     .splice(0)
     .forEach(function (fn) {
       fn.call(instance);
     });
- var f = instance.after
- if (f) {
-   
-   f.splice(0).forEach(function(el){
-       refreshComponent(el)
-   })
-    
- }
+  var f = instance.after
+  if (f) {
+
+    f.splice(0).forEach(function (el) {
+      refreshComponent(el)
+    })
+
+  }
   return dom;
 }
-function _refreshComponent(instance, mountQueue){
+function _refreshComponent(instance, mountQueue) {
   var node = instanceMap.get(instance);
   var { props, state, context, lastProps, constructor: type } = instance;
   var lastRendered = instance._rendered;
@@ -361,7 +361,7 @@ function _refreshComponent(instance, mountQueue){
   var nextState = instance._processPendingState(props, context);
   instance.props = lastProps;
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, context) === false) {
-  //  instance._disable = false;
+    //  instance._disable = false;
     return node;
   }
 
@@ -446,7 +446,7 @@ function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
         if (nextProps[HTML_KEY]) {
           node.innerHTML = nextProps[HTML_KEY].__html;
         } else {
-          updateChildren(lastVnode, nextVnode, node, parentInstance, mountQueue);
+          updateChildren2(lastVnode, nextVnode, node, parentInstance, mountQueue);
         }
         updateElement(lastVnode, nextVnode, node, parentInstance);
       }
@@ -456,6 +456,10 @@ function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
     case 4:
       return updateStateless(lastVnode, nextVnode, node, parentInstance, mountQueue);
     default:
+      if (lastVnode.text !== nextVnode.text) {
+        nextVnode._hostNode = node
+        node.nodeValue = nextVnode.text
+      }
       return node;
   }
 }
@@ -511,6 +515,74 @@ function updateComponent(lastVnode, nextVnode, node, parentInstance, mountQueue)
   return refreshComponent(instance, mountQueue);
 }
 
+function updateChildren2(vnode, newVnode, parentNode, parentInstance, mountQueue) {
+  let children = vnode.props.children;
+  let childNodes = parentNode.childNodes;
+  let newVchildren = newVnode.props.children
+  var map = {};
+  children.forEach(function (el) {
+    var key = el.type + (el.key || "");
+    var list = map[key];
+    if (list) {
+      list.push(el);
+    } else {
+      map[key] = [el];
+    }
+  });
+  newVchildren.forEach(function (el) {
+    var key = el.type + (el.key || "");
+    var list = map[key];
+    if (list) {
+      var old = list.shift();
+      if (old) {
+        el.old = old;
+      } else {
+        delete map[key];
+      }
+    }
+  });
+  for (var i in map) {
+    var list = map[i];
+    if (Array.isArray(list)) {
+      list.forEach(function (el) {
+        if (el.vtype === 2) {
+          var instance = el._instance
+          node = instanceMap.get(instance);
+        } else {
+          var node = el._hostNode;
+        }
+        if (node) {
+          removeDOMElement(node);
+        }
+        disposeVnode(el, parentInstance);
+      });
+    }
+  }
+
+  newVchildren.forEach(function (el, index) {
+    var old = el.old;
+    if (old) {
+      el.old = null;
+      var oldNode = old._hostNode
+      console.log(oldNode, '!!!',old, el)
+      var dom = updateVnode(old, el, oldNode, parentInstance, mountQueue)
+      if (dom !== childNodes[index]) {
+        //  if (oldNode.parentNode) {
+        parentNode.insertBefore(dom, childNodes[index]);
+        //  } else {
+        //   parentNode.appendChild(dom);
+        //  }
+      }
+    } else {
+      dom = mountVnode(el, parentInstance, null, mountQueue)
+      if (!childNodes[index]) {
+        parentNode.appendChild(dom)
+      } else {
+        parentNode.insertBefore(dom, childNodes[index])
+      }
+    }
+  });
+}
 
 
 function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
@@ -529,15 +601,15 @@ function updateChildren(vnode, newVnode, node, parentInstance, mountQueue) {
   patches
     .creates
     .forEach(applyCreate, mountQueue);
-    /*
-    for(var i in dirtyComponents){
-      var el = dirtyComponents[i]
-      if(!el._updating){
-         refreshComponent(el)
-         delete  dirtyComponents[i]
-      }
+  /*
+  for(var i in dirtyComponents){
+    var el = dirtyComponents[i]
+    if(!el._updating){
+       refreshComponent(el)
+       delete  dirtyComponents[i]
     }
-    */
+  }
+  */
   //scheduler.run();
 }
 

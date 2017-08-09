@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script> 
+    <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
@@ -18,9 +18,13 @@
           aaa: 1
         };
       }
+      componentWillMount(){
+        console.log(this.state)
+      }
       shouldComponentUpdate() {
+        
         console.log('shouldComponentUpdate')
-       // return false;
+        return true;
       }
       click() {
         console.log('click')
@@ -56,16 +60,11 @@
 
        div.firstChild.click()
         setTimeout(function(){
-            console.log(div.firstChild.innerHTML)
+            console.log(div.firstChild.innerHTML, '点击之后')
             console.log(a)
         }, 200)
     }, 200)
-   // await browser.pause(200).$apply();
-
-   // expect(s._currentElement._hostNode.innerHTML).toBe("1");
-   // await browser.click(s._currentElement._hostNode).pause(200).$apply();
-   // expect(s._currentElement._hostNode.innerHTML).toBe("1");
-   // expect(a).toBe(3);
+ 
     }
     </script>
 </head>

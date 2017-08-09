@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script> 
+    <!--   <script type='text/javascript' src="./test/react.js"></script>
+     <script type='text/javascript' src="./test/react-dom.js"></script> -->
+   <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+        function Select(props) {
+      return <strong>{props.value}</strong>;
+    }
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          value: "南京"
+        };
+      }
+
+      onChange(e) {
+        this.setState({
+          value: e.target.value
+        });
+      }
+      render() {
+        return (
+          <div>
+            <Select value={this.state.value} />
+            <input
+              ref="a"
+              value={this.state.value}
+              onInput={this.onChange.bind(this)}
+            />
+          </div>
+        );
+      }
+    }
+      
+       window.onload = function(){
+           ReactDOM.render(<App />, document.getElementById('example'))
+       }
+       </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

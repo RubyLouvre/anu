@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+    <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+window.onload = function(){
+ class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          path: "111"
+        };
+      }
+      change(path) {
+        this.setState({
+          path: path || "333"
+        });
+      }
+      render() {
+        return <div><span>xx</span><Route path={this.state.path} /></div>;
+      }
+    }
+    var updateCount = 0;
+    var receiveCount = 0;
+    var destroyCount = 0;
+    class Route extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          path: props.path
+        };
+      }
+      componentWillReceiveProps(props) {
+        receiveCount++;
+        console.log('receiveCount',receiveCount)
+        this.setState(function(nextState, props) {
+          nextState.path = props.path;
+          return nextState;
+        });
+      }
+      componentWillUpdate() {
+        updateCount++;
+        console.log('updateCount',updateCount)
+      }
+      componentWillUnmount() {
+        destroyCount++;
+        console.log("destroyCount",destroyCount)
+      }
+      render() {
+        return this.state.path == "111" ? <p>{this.state.path}</p> : null;
+      }
+    }
+    var div = document.body
+    var s = ReactDOM.render(<App />, div);
+    setTimeout(function(){
+      //expect(updateCount).toBe(0);
+      //expect(receiveCount).toBe(0);
+       console.log(updateCount)
+       console.log(receiveCount)
+       s.change("111");
+       setTimeout(function(){
+            //expect(updateCount).toBe(0);
+            //expect(receiveCount).toBe(0);
+            console.log(updateCount)
+            console.log(receiveCount)
+            s.change("111x");
+            setTimeout(function(){
+                //expect(updateCount).toBe(0);
+                //expect(receiveCount).toBe(0);
+                console.log(updateCount)
+                console.log(receiveCount)
+                console.log(div.firstChild.childNodes[1].nodeType)
+                console.log(destroyCount)
+                s.change("111");
+               setTimeout(function(){
+                //expect(updateCount).toBe(0);
+                //expect(receiveCount).toBe(0);
+                console.log(updateCount)
+                console.log(receiveCount)
+                console.log(div.firstChild.childNodes[1].nodeType)
+                console.log(destroyCount)
+               }, 200)
+            }, 200)
+       }, 200)
+    }, 200)
+    
+
+
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

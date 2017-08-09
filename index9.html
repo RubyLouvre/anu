@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+    <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+window.onload = function(){
+ var index = 0
+        var map = [
+            <div>yyy<p>ddd</p><span>333</span><Link /></div>,
+            <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
+            <div><span>33</span></div>
+        ]
+        function Link() {
+            return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            change(a) {
+                this.setState({
+                    aaa: a
+                })
+            }
+            componentDidMount() {
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate() {
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                return map[index++]
+
+            }
+        }
+         var div = document.body
+        var s = React.render(<App />, div)
+
+        setTimeout(function(){
+                function getString(nodes) {
+                    var str = []
+                    for (var i = 0, node; node = nodes[i++];) {
+                        str.push(node.nodeName.toLowerCase())
+                    }
+                    return str.join(' ')
+                }
+                console.log(getString(div.firstChild.childNodes))//.toBe('#text p span strong')
+                s.change(100)
+                setTimeout(function(){
+
+               
+                console.log(getString(div.firstChild.childNodes))//.toBe('em span #text span b i')
+                  console.log('=====')
+                s.change(100)
+                setTimeout(function(){
+                 
+                   console.log(getString(div.firstChild.childNodes))//.toBe('em span #text span b i')
+
+                },100)
+              
+                 }, 100)
+        }, 100)
+        
+   
+    
+
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>
