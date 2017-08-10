@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script> 
-    <!--   <script type='text/javascript' src="./test/react.js"></script>
+    <!-- <script type='text/javascript' src="./test/react.js"></script>
      <script type='text/javascript' src="./test/react-dom.js"></script> -->
      <style>
          .yo-modal{
@@ -446,6 +446,7 @@ class ModalDemo extends Component {
                     this.setState({ [showKey]: false });
                 }}
                 onShow={() => {
+                     console.log(refKey, this,'111')
                     this.refs[refKey].resize();
                 }}
             >
@@ -508,12 +509,12 @@ class ModalDemo extends Component {
                     }}
                     onShow={() => {
                         // const refOfRange = 'rangeDom';
-                        console.log(refs.priceFilterStepless)
+                      
                         this.refs[refs.priceFilterStepless].resize();
                     }}
                 >
                     <span className="text">价格区间</span>
-                     <Range  ref={`${refs.priceFilterStepless}`} />
+                    <Range  ref={`${refs.priceFilterStepless}`} />
                     
                 </Popup>
             </div>

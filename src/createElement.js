@@ -122,22 +122,18 @@ function flattenChildren(stack) {
 function getDOMNode() {
   return this;
 }
-export function __ref(refValue, instance) {
-  if(refValue && refValue.nodeType){
-    refValue.getDOMNode = getDOMNode;
+export function __ref(dom) {
+  var instance = this._owner;
+  if (dom && instance) {
+    dom.getDOMNode = getDOMNode;
+    instance.refs[this.__refKey] = dom;
   }
-  instance.refs[this.__refKey] = refValue
- // var instance = this._owner;
- // if (dom && instance) {
- //   dom.getDOMNode = getDOMNode;
- //   instance.refs[this.__refKey] = dom;
- // }
 }
 function Vnode(type, props, key, ref, vtype, checkProps) {
   this.type = type;
   this.props = props;
   this.vtype = vtype;
-
+  this._owner = CurrentOwner.cur
   if (key) {
     this.key = key;
   }

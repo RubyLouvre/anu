@@ -88,9 +88,9 @@ function setStateImpl(state, cb) {
       .push(state);
 
     //子组件在componentWillReiveProps调用父组件的setState方法
-    if (this._updating && CurrentOwner.cur) {
-      CurrentOwner.cur.after = CurrentOwner.cur.after || []
-      var list = CurrentOwner.cur.after
+    if (this._updating && CurrentOwner.update) {
+      CurrentOwner.update.after = CurrentOwner.update.after || []
+      var list = CurrentOwner.update.after
       list.push(this)
       return
     }

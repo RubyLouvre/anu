@@ -1,14 +1,14 @@
 import { options } from "./util";
-export function disposeVnode(vnode, parentInstance) {
+export function disposeVnode(vnode) {
   if (!vnode || vnode._disposed) {
     return;
   }
   switch (vnode.vtype) {
     case 1:
-      disposeElement(vnode, parentInstance);
+      disposeElement(vnode);
       break;
     case 2:
-      disposeComponent(vnode, parentInstance);
+      disposeComponent(vnode);
       break;
     case 4:
       disposeStateless(vnode);
@@ -28,18 +28,18 @@ function disposeStateless(vnode) {
   }
 }
 
-function disposeElement(vnode, parentInstance) {
+function disposeElement(vnode) {
   var { props } = vnode;
   var children = props.children;
   for (let i = 0, n = children.length; i < n; i++) {
-    disposeVnode(children[i], parentInstance);
+    disposeVnode(children[i]);
   }
   //eslint-disable-next-line
-  vnode.ref && vnode.ref(null, parentInstance);
+  vnode.ref && vnode.ref(null);
   vnode._hostNode = vnode._hostParent = null;
 }
 
-function disposeComponent(vnode, parentInstance) {
+function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
     instance._disableSetState = true;
@@ -53,6 +53,6 @@ function disposeComponent(vnode, parentInstance) {
       node._component = null;
     }
     vnode._instance = instance._currentElement = null;
-    disposeVnode(instance._rendered, instance);
+    disposeVnode(instance._rendered);
   }
 }

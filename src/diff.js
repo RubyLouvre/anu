@@ -62,7 +62,8 @@ function clearRefsAndMounts(queue) {
         for (var i = 0, n = arr.length; i < n; i += 2) {
           let obj = arr[i]
           let value = arr[i + 1]
-          obj.ref(value, el)
+          //console.log(obj.__refKey, value, el)
+          obj.ref(value)
         }
         arr.length = 0
         if (el.componentDidMount) {
@@ -280,8 +281,10 @@ function mountComponent(vnode, parentInstance, prevRendered, mountQueue) {
 }
 
 export function safeRenderComponent(instance, type, vnode, context) {
+  CurrentOwner.cur = instance
   let rendered = instance.render();
   instance._currentElement = vnode;
+  CurrentOwner.cur = null
   vnode._instance = instance
   rendered = checkNull(rendered, type);
   rendered._hostParent = vnode._hostParent;
@@ -386,12 +389,12 @@ function _refreshComponent(instance, mountQueue) {
   instance._nextElement = null
   var hasQueue = !mountQueue
   mountQueue = mountQueue || []
-  CurrentOwner.cur = instance
+  CurrentOwner.update = instance
   instance._updating = true
   dom = alignVnodes(lastRendered, rendered, dom, instance, mountQueue);
   instance.context = context
   instance._updating = false
-  CurrentOwner.cur = null
+  CurrentOwner.update = null
 
   hostNode._hostNode = dom;
   if (!hasQueue) {
@@ -409,10 +412,10 @@ export function alignVnodes(vnode, newVnode, node, parentInstance, mountQueue) {
   //eslint-disable-next-line
   if (newVnode == null) {
     removeDOMElement(node);
-    disposeVnode(vnode, parentInstance);
+    disposeVnode(vnode);
   } else if (!(vnode.type == newVnode.type && vnode.key === newVnode.key)) {
     //replace
-    disposeVnode(vnode, parentInstance);
+    disposeVnode(vnode);
     var clear = !mountQueue.mountAll
     if (clear) {
       var innerMountQueue = []
@@ -462,6 +465,7 @@ function updateVnode(lastVnode, nextVnode, node, parentInstance, mountQueue) {
         if (nextProps[HTML_KEY]) {
           node.innerHTML = nextProps[HTML_KEY].__html;
         } else {
+          console.log(node)
           updateChildren(lastVnode, nextVnode, node, parentInstance, mountQueue);
         }
         updateElement(lastVnode, nextVnode, node, parentInstance);
@@ -559,7 +563,7 @@ function updateChildren(vnode, newVnode, parentNode, parentInstance, mountQueue)
           if (node) {
             removeDOMElement(node);
           }
-          disposeVnode(el, parentInstance);
+          disposeVnode(el);
         });
     }
   }
@@ -572,6 +576,7 @@ function updateChildren(vnode, newVnode, parentNode, parentInstance, mountQueue)
 
       if (old) {
         el.old = null;
+        console.log(old, old._hostNode, '1111')
         dom = updateVnode(old, el, old._hostNode, parentInstance, mountQueue)
         ref = childNodes[index]
         if (dom !== ref) {
