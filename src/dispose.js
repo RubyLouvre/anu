@@ -13,9 +13,6 @@ export function disposeVnode(vnode) {
     case 4:
       disposeStateless(vnode);
       break;
-    default:
-      vnode._hostNode = vnode._hostParent = null;
-      break;
   }
   vnode._disposed = true;
 }
@@ -36,7 +33,6 @@ function disposeElement(vnode) {
   }
   //eslint-disable-next-line
   vnode.ref && vnode.ref(null);
-  vnode._hostNode = vnode._hostParent = null;
 }
 
 function disposeComponent(vnode) {
