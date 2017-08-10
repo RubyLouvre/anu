@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script> 
+    <!--   <script type='text/javascript' src="./test/react.js"></script>
+     <script type='text/javascript' src="./test/react-dom.js"></script> -->
+     <style>
+         .yo-modal{
+             background: green;
+         }
+    </style>
+   <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+var Component = React.Component
+
+var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg) && arg.length) {
+				var inner = classNames.apply(null, arg);
+				if (inner) {
+					classes.push(inner);
+				}
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+
+const defaultProps = {
+    show: false,
+    extraClass: '',
+    contentExtraClass: '',
+    align: 'center',
+    onMaskTap: () => {
+    },
+    contentOffset: [0, 0],
+    maskOffset: [0, 0],
+    maskExtraClass: '',
+    animation: '',
+    onShow: () => {
+    },
+    onHide: () => {
+    },
+    width: null,
+    height: null,
+    delayBeforeAnimationStart: 100
+};
+
+
+
+// 默认提供的动画效果
+const ANIMATION_MAP = {
+    fade: { animation: ['fade-in', 'fade-out'], duration: 200 },
+    zoom: { animation: ['zoom-in', 'zoom-out'], duration: 300 },
+    'fade-in-up': { animation: ['fade-in-up', 'fade-out-down'], duration: 200 },
+    'fade-in-down': { animation: ['fade-in-down', 'fade-out-up'], duration: 200 }
+};
+
+ class RealModal extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: props.show,
+            animation: this.getAnimationClass(props.animation, props.show)
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.show) {
+            this.props.onShow();
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.toggleShowStatus(nextProps);
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.hideTimeout);
+        clearTimeout(this.showTimeout);
+    }
+
+    /**
+     * 根据动画名字和打开/关闭状态获取对应的animation属性配置
+     * @param name
+     * @param isShow
+     * @returns {{name: string, duration: number}}
+     */
+    getAnimationClass(name, isShow) {
+        let contentAnimation = '',
+            duration = 0;
+        if (name) {
+            const targetMap = typeof this.props.animation === 'object' ? this.props.animation : ANIMATION_MAP[name];
+            if (targetMap) {
+                contentAnimation = [targetMap.animation[isShow ? 0 : 1], 'ani'].join(' ');
+                duration = targetMap.duration;
+            }
+        }
+        return { name: contentAnimation, duration };
+    }
+
+    /**
+     * 根据nextProps中的show属性更新内部state
+     * @param nextProps
+     */
+    toggleShowStatus(nextProps) {
+        const current = this.state.show;
+        const next = nextProps.show;
+        const { onShow, onHide } = this.props;
+        // 如果新属性的show是true并且模态框处于打开状态
+        if (!next && current) {
+            // 提取需要指定的动画
+            const animationData = this.getAnimationClass(nextProps.animation, next);
+            clearTimeout(this.showTimeout);
+            // show动画开始前执行onHide回调
+            onHide();
+            // 先走关闭动画
+            this.setState({ animation: animationData });
+            // 等到动画结束后处理整个modal的show状态,并且保存timeout引用
+            this.hideTimeout = setTimeout(() => {
+                this.setState({ show: false });
+            }, animationData.duration);
+        } else if (next && !current) {
+            // 清理关闭timeout
+            // 写这一行的目的是用户可能在关闭的同时打开modal
+            clearTimeout(this.hideTimeout);
+            this.setState({ show: next });
+            this.contentDom.style.visibility = 'hidden';
+
+            // 如果直接运行动画会出现闪烁,这里先将contentDom隐藏然后再运行动画
+            this.showTimeout = setTimeout(() => {
+                // hide动画开始前执行onShow回调
+                onShow();
+                this.setState({ animation: this.getAnimationClass(nextProps.animation, next) });
+                this.contentDom.style.visibility = 'visible';
+            }, this.props.delayBeforeAnimationStart);
+        }
+    }
+
+    render() {
+        const { show, animation } = this.state;
+        const { duration, name } = animation;
+        const {
+            extraClass,
+            onMaskTap,
+            maskOffset,
+            contentOffset,
+            align,
+            contentExtraClass,
+            width,
+            height
+        } = this.props;
+        const containerClass = classNames('yo-modal', extraClass, `yo-modal-${align}`);
+        const contentClass = classNames('cont', contentExtraClass, name);
+
+        return (
+            <div
+                ref="container"
+                className={containerClass}
+                onClick={(evt) => {
+                    if (evt.target === this.refs.container) {
+                        onMaskTap(evt);
+                    }
+                }}
+                style={Object.assign(
+                    {
+                        top: parseInt(maskOffset[0], 10),
+                        bottom: parseInt(maskOffset[1], 10),
+                        transform: 'translate3d(0,0,0)',
+                        WebkitTransform: 'translate3d(0,0,0)'
+                    },
+                    show ? null : { display: 'none' }
+                )}
+            >
+                <div
+                    className={contentClass}
+                    ref={component => {
+                        this.contentDom = component;
+                    }}
+                    style={{
+                        position: 'relative',
+                        top: parseInt(contentOffset[1], 10) || 0,
+                        left: parseInt(contentOffset[0], 10) || 0,
+                        WebkitAnimationDuration: `${duration}ms`,
+                        animationDuration: `${duration}ms`,
+                        width,
+                        height
+                    }}
+                >
+                    {this.props.children}
+                </div>
+            </div>
+        );
+    }
+}
+
+RealModal.defaultProps = defaultProps;
+class Modal extends Component {
+
+
+    componentDidMount() {
+        this.wrapper = document.createElement('div');
+        document.body.appendChild(this.wrapper);
+        this.appendWrapperToDocBody();
+    }
+
+    componentDidUpdate() {
+        this.appendWrapperToDocBody();
+    }
+
+    componentWillUnmount() {
+        document.body.removeChild(this.wrapper);
+    }
+
+    appendWrapperToDocBody() {
+        ReactDOM.unstable_renderSubtreeIntoContainer(
+            this,
+            <RealModal {...this.props}>
+                {this.props.children}
+            </RealModal>,
+            this.wrapper
+        );
+    }
+
+    render() {
+        return null;
+    }
+}
+
+const noop = () => {
+};
+
+
+class Popup extends Component {
+    render() {
+        const {
+            show,
+            duration,
+            height,
+            direction,
+            onMaskTap,
+            onShow,
+            onHide,
+            maskOffset,
+            extraClass,
+            wrapperExtraClass,
+            children,
+            delayBeforeAnimationStart
+        } = this.props;
+        const animation = direction === 'up' ?
+            ['fade-in-up', 'fade-out-down'] : ['fade-in-down', 'fade-out-up'];
+        const align = direction === 'up' ? 'bottom' : 'top';
+        return (
+            <Modal
+                show={show}
+                height={height}
+                width={'100%'}
+                direction={direction}
+                onMaskTap={onMaskTap}
+                onShow={onShow}
+                onHide={onHide}
+                align={align}
+                animation={{ animation, duration }}
+                maskOffset={maskOffset}
+                extraClass={wrapperExtraClass}
+                contentExtraClass={extraClass}
+                delayBeforeAnimationStart={delayBeforeAnimationStart}
+            >
+                {children}
+            </Modal>
+        );
+    }
+}
+
+Popup.propTypes =  {
+    duration: 200,
+    height: 'auto',
+    direction: 'up',
+    onMaskTap: noop,
+    onShow: noop,
+    onHide: noop
+};;
+
+class ModalDemo extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = { show: false };
+    }
+
+    render() {
+        return (
+            <div className="test-wrap">
+                <Modal
+                    align="center"
+                    show={this.state.show}
+                    contentExtraClass="test"
+                    animation="none"
+                    onMaskTap={() => {
+                        this.setState({ show: false });
+                    }}
+                    width={200}
+                    height={100}
+                >
+                    <div>我是弹窗</div>
+                </Modal>
+                <button
+                    type="button"
+                    onClick={() => {
+                        this.setState({ show: true });
+                    }}
+                >
+                    显示弹窗
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        this.setState({ show: false });
+                    }}
+                >
+                   关闭弹窗
+                </button>
+            </div>
+        );
+    }
+}
+
+  class Range extends Component{
+      resize(){
+          console.log('resize')
+      }
+      render(){
+          return <div>====</div>
+      }
+  }
+             
+                       
+   class RangeDemo extends Component {
+    constructor(props) {
+        super(props);
+        this.popupFirstPos = 0;
+        this.ticks = ['￥0', '￥150', '￥300', '￥500', '￥800', '不限'];
+        this.keys = {
+            value: {
+                priceFilterStepless: 'valueOfPriceStepless',
+                priceFilterByStep: 'valueWithStep',
+                lightAdjust: 'valueOfLightAdjust'
+            },
+            showPopup: {
+                priceFilterStepless: 'popRangeStepless',
+                priceFilterByStep: 'popRangeWithStep',
+                lightAdjust: 'popRangeOfLightAdjust'
+            },
+            refs: {
+                priceFilterStepless: 'priceFilterStepless',
+                priceFilterByStep: 'priceFilterByStep',
+                lightAdjust: 'lightAdjust'
+            }
+        };
+        const { value, refs, showPopup } = this.keys;
+        this.config = {
+            priceFilterByStep: {
+                ref: refs.priceFilterByStep,
+                key: 'range1',
+                max: 750,
+                min: 0,
+                step: 150,
+                scaleFormat: (value, index) => {
+                    return [
+                        <span key="0">{this.ticks[index]}</span>,
+                        <i key="1" className="yo-ico">&#xf083;</i>
+                    ];
+                },
+                onChange: val => {
+                    this.setState({ valueWithStep: val });
+                }
+            },
+            lightAdjust: {
+                ref: refs.lightAdjust,
+                key: 'range2',
+                showScale: false,
+                isSingle: true,
+                max: 800,
+                min: 0,
+                onSliderTouchMove: val => {
+                    this.refs.light.innerText = val;
+                },
+                onChange: val => {
+                    this.setState({ valueOfLightAdjust: val });
+                }
+            }
+        };
+        this.state = {
+            [value.priceFilterByStep]: [150, 600],
+            [value.lightAdjust]: 400,
+            // [value.priceFilterStepless]: [0, 1010],
+            valueMoving: 0,
+            [showPopup.priceFilterStepless]: false,
+            [showPopup.priceFilterByStep]: false,
+            [showPopup.lightAdjust]: false
+        };
+        this.prevSlider = 0;
+        this.valueMoving = 0;
+    }
+
+    prefix(str) {
+        return !Array.isArray(str) ? str : `[${str.join(', ')}]`;
+    }
+
+    mapValueToIndex(value) {
+        const priceConfig = this.config.priceFilterByStep,
+            index = (value - priceConfig.min) / priceConfig.step;
+        return index;
+    }
+
+    _renderPopup(showKey, refKey, children) {
+        return (
+            <Popup
+                height="auto"
+                width="100%"
+                direction="up"
+                show={this.state[showKey]}
+                onMaskTap={() => {
+                    this.setState({ [showKey]: false });
+                }}
+                onShow={() => {
+                    this.refs[refKey].resize();
+                }}
+            >
+                {children}
+            </Popup>
+        );
+    }
+
+    render() {
+        const { showPopup, value, refs } = this.keys;
+        return (
+            <div title="Range Demo" >
+                <ul className="yo-list">
+                    <li className="item range-item"  onClick={() => {
+                        this.setState({ [showPopup.priceFilterByStep]: true });
+                    }}>
+                        <span className="flex">价格筛选样式一</span>
+                        <span className="value">{this.prefix(this.state[value.priceFilterByStep].map(value =>
+                            this.ticks[this.mapValueToIndex(value)]
+                        ))}</span>
+                        <i className="yo-ico more">{'\uf07f'}</i>
+                    </li>
+
+    
+                    <li className="item range-item"  onClick={() => {
+                        this.setState({ [showPopup.priceFilterStepless]: true });
+                    }}>
+                        <span className="flex">价格筛选样式二</span>
+                        <span className="value">{this.prefix(this.state[value.priceFilterStepless])}</span>
+                        <i className="yo-ico more">{'\uf07f'}</i>
+                    </li>
+
+                    <li className="item range-item"  onClick={() => {
+                        this.setState({ [showPopup.lightAdjust]: true });
+                    }}>
+                        <span className="flex">调整亮度</span>
+                        <span ref="light" className="value">{this.prefix(this.state[value.lightAdjust])}</span>
+                        <i className="yo-ico more">{'\uf07f'}</i>
+                    </li>
+                </ul>
+                {this._renderPopup(showPopup.priceFilterByStep, refs.priceFilterByStep, [
+                    <span className="text" key="price0">价格区间</span>,
+                     <Range {...this.config.priceFilterByStep} />
+                ])}
+                {this._renderPopup(showPopup.lightAdjust, refs.lightAdjust, [
+                    <span className="text" key="light0">调整亮度</span>,
+                    (<div className="range-container" key="light1">
+                        <i className="yo-ico">{'\uf032'}</i>
+                        <Range {...this.config.lightAdjust} />
+                        <i className="yo-ico">{'\uf027'}</i>
+                    </div>)
+                ])}
+                <Popup
+                    height="auto"
+                    width="100%"
+                    direction="up"
+                    show={this.state[showPopup.priceFilterStepless]}
+                    onMaskTap={() => {
+                        this.setState({ [showPopup.priceFilterStepless]: false });
+                    }}
+                    onShow={() => {
+                        // const refOfRange = 'rangeDom';
+                        console.log(refs.priceFilterStepless)
+                        this.refs[refs.priceFilterStepless].resize();
+                    }}
+                >
+                    <span className="text">价格区间</span>
+                     <Range  ref={`${refs.priceFilterStepless}`} />
+                    
+                </Popup>
+            </div>
+        );
+    }
+}   
+       window.onload = function(){
+
+            ReactDOM.render(
+                <RangeDemo />,
+                document.getElementById('content')
+            );
+       }
+       </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='content'></div>
+
+
+</body>
+
+</html>

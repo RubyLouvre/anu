@@ -21,18 +21,24 @@ window.onload = function(){
             constructor(props) {
                 super(props)
                 this.state = {
-                    aaa: 'aaa'
+                   time: new Date -0
                 }
             }
            
             componentDidMount() {
                 console.log('A componentDidMount')
             }
+            componentWillReceiveProps() {
+                this.setState({
+                      time: new Date -0
+                })
+                console.log('A componentWillReceiveProps')
+            }
             componentWillUpdate() {
                 console.log('A componentWillUpdate')
             }
             render() {
-                return map[index++]
+                return <span>{this.state.time}</span>
 
             }
         }
@@ -40,12 +46,12 @@ window.onload = function(){
             constructor(props) {
                 super(props)
                 this.state = {
-                    aaa: 'aaa'
+                    time: new Date -0
                 }
             }
             change(a) {
                 this.setState({
-                    aaa: a
+                     time: new Date -0
                 })
             }
             componentDidMount() {
@@ -55,7 +61,9 @@ window.onload = function(){
                 console.log('App componentWillUpdate')
             }
             render() {
-                return <div onClick={()=>{ this.change(11) }}> <A /> </div>
+                return <div onClick={()=>{ this.change(11) }}>
+                    <p>App {this.state.time}</p>
+                    <A /> </div>
 
             }
         }

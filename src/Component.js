@@ -1,6 +1,6 @@
 import { extend, isFn, options } from "./util";
 //import {scheduler} from "./scheduler";
-import { CurrentOwner,dirtyComponents } from "./createElement";
+import { CurrentOwner, dirtyComponents } from "./createElement";
 import { win } from "./browser";
 
 
@@ -16,6 +16,7 @@ export function Component(props, context) {
   this.props = props;
   this.refs = {};
   this._uid = Math.random()
+  this._dirty = true
   /**
    * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
@@ -91,20 +92,14 @@ function setStateImpl(state, cb) {
       CurrentOwner.cur.after = CurrentOwner.cur.after || []
       var list = CurrentOwner.cur.after
       list.push(this)
-
       return
     }
-
     if (!this._dirty && (this._dirty = true)) {
-      dirtyComponents[this._uid] = this
-      var el = this
-      defer(function () {
-        el._dirty = false
-        options.refreshComponent(el);
-        delete dirtyComponents[el._uid]
+      defer(() => {
+        this._dirty = false
+        options.refreshComponent(this);
         // rerender()
       }, 16)
-      // defer(rerender);
     }
   }
 }

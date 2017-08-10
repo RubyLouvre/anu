@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script> 
+     <!--  <script type='text/javascript' src="./test/react.js"></script>
+     <script type='text/javascript' src="./test/react-dom.js"></script> -->
+     <style>
+         .yo-modal{
+             background: green;
+         }
+    </style>
+   <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+var Component = React.Component
+
+var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg) && arg.length) {
+				var inner = classNames.apply(null, arg);
+				if (inner) {
+					classes.push(inner);
+				}
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+
+const defaultProps = {
+    show: false,
+    extraClass: '',
+    contentExtraClass: '',
+    align: 'center',
+    onMaskTap: () => {
+    },
+    contentOffset: [0, 0],
+    maskOffset: [0, 0],
+    maskExtraClass: '',
+    animation: '',
+    onShow: () => {
+    },
+    onHide: () => {
+    },
+    width: null,
+    height: null,
+    delayBeforeAnimationStart: 100
+};
+
+
+
+// 默认提供的动画效果
+const ANIMATION_MAP = {
+    fade: { animation: ['fade-in', 'fade-out'], duration: 200 },
+    zoom: { animation: ['zoom-in', 'zoom-out'], duration: 300 },
+    'fade-in-up': { animation: ['fade-in-up', 'fade-out-down'], duration: 200 },
+    'fade-in-down': { animation: ['fade-in-down', 'fade-out-up'], duration: 200 }
+};
+
+ class RealModal extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: props.show,
+            animation: this.getAnimationClass(props.animation, props.show)
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.show) {
+            this.props.onShow();
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.toggleShowStatus(nextProps);
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.hideTimeout);
+        clearTimeout(this.showTimeout);
+    }
+
+    /**
+     * 根据动画名字和打开/关闭状态获取对应的animation属性配置
+     * @param name
+     * @param isShow
+     * @returns {{name: string, duration: number}}
+     */
+    getAnimationClass(name, isShow) {
+        let contentAnimation = '',
+            duration = 0;
+        if (name) {
+            const targetMap = typeof this.props.animation === 'object' ? this.props.animation : ANIMATION_MAP[name];
+            if (targetMap) {
+                contentAnimation = [targetMap.animation[isShow ? 0 : 1], 'ani'].join(' ');
+                duration = targetMap.duration;
+            }
+        }
+        return { name: contentAnimation, duration };
+    }
+
+    /**
+     * 根据nextProps中的show属性更新内部state
+     * @param nextProps
+     */
+    toggleShowStatus(nextProps) {
+        const current = this.state.show;
+        const next = nextProps.show;
+        const { onShow, onHide } = this.props;
+        // 如果新属性的show是true并且模态框处于打开状态
+        if (!next && current) {
+            // 提取需要指定的动画
+            const animationData = this.getAnimationClass(nextProps.animation, next);
+            clearTimeout(this.showTimeout);
+            // show动画开始前执行onHide回调
+            onHide();
+            // 先走关闭动画
+            this.setState({ animation: animationData });
+            // 等到动画结束后处理整个modal的show状态,并且保存timeout引用
+            this.hideTimeout = setTimeout(() => {
+                this.setState({ show: false });
+            }, animationData.duration);
+        } else if (next && !current) {
+            // 清理关闭timeout
+            // 写这一行的目的是用户可能在关闭的同时打开modal
+            clearTimeout(this.hideTimeout);
+            this.setState({ show: next });
+            this.contentDom.style.visibility = 'hidden';
+
+            // 如果直接运行动画会出现闪烁,这里先将contentDom隐藏然后再运行动画
+            this.showTimeout = setTimeout(() => {
+                // hide动画开始前执行onShow回调
+                onShow();
+                this.setState({ animation: this.getAnimationClass(nextProps.animation, next) });
+                this.contentDom.style.visibility = 'visible';
+            }, this.props.delayBeforeAnimationStart);
+        }
+    }
+
+    render() {
+        const { show, animation } = this.state;
+        const { duration, name } = animation;
+        const {
+            extraClass,
+            onMaskTap,
+            maskOffset,
+            contentOffset,
+            align,
+            contentExtraClass,
+            width,
+            height
+        } = this.props;
+        const containerClass = classNames('yo-modal', extraClass, `yo-modal-${align}`);
+        const contentClass = classNames('cont', contentExtraClass, name);
+
+        return (
+            <div
+                ref="container"
+                className={containerClass}
+                onTouchTap={(evt) => {
+                    if (evt.target === this.refs.container) {
+                        onMaskTap(evt);
+                    }
+                }}
+                style={Object.assign(
+                    {
+                        top: parseInt(maskOffset[0], 10),
+                        bottom: parseInt(maskOffset[1], 10),
+                        transform: 'translate3d(0,0,0)',
+                        WebkitTransform: 'translate3d(0,0,0)'
+                    },
+                    show ? null : { display: 'none' }
+                )}
+            >
+                <div
+                    className={contentClass}
+                    ref={component => {
+                        this.contentDom = component;
+                    }}
+                    style={{
+                        position: 'relative',
+                        top: parseInt(contentOffset[1], 10) || 0,
+                        left: parseInt(contentOffset[0], 10) || 0,
+                        WebkitAnimationDuration: `${duration}ms`,
+                        animationDuration: `${duration}ms`,
+                        width,
+                        height
+                    }}
+                >
+                    {this.props.children}
+                </div>
+            </div>
+        );
+    }
+}
+
+RealModal.defaultProps = defaultProps;
+class Modal extends Component {
+
+
+    componentDidMount() {
+        this.wrapper = document.createElement('div');
+        document.body.appendChild(this.wrapper);
+        this.appendWrapperToDocBody();
+    }
+
+    componentDidUpdate() {
+        this.appendWrapperToDocBody();
+    }
+
+    componentWillUnmount() {
+        document.body.removeChild(this.wrapper);
+    }
+
+    appendWrapperToDocBody() {
+        ReactDOM.unstable_renderSubtreeIntoContainer(
+            this,
+            <RealModal {...this.props}>
+                {this.props.children}
+            </RealModal>,
+            this.wrapper
+        );
+    }
+
+    render() {
+        return null;
+    }
+}
+class ModalDemo extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = { show: false };
+    }
+
+    render() {
+        return (
+            <div className="test-wrap">
+                <Modal
+                    align="center"
+                    show={this.state.show}
+                    contentExtraClass="test"
+                    animation="none"
+                    onMaskTap={() => {
+                        this.setState({ show: false });
+                    }}
+                    width={200}
+                    height={100}
+                >
+                    <div>我是弹窗</div>
+                </Modal>
+                <button
+                    type="button"
+                    onClick={() => {
+                        this.setState({ show: true });
+                    }}
+                >
+                    显示弹窗
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        this.setState({ show: false });
+                    }}
+                >
+                   关闭弹窗
+                </button>
+            </div>
+        );
+    }
+}
+      
+       window.onload = function(){
+
+            ReactDOM.render(
+                <ModalDemo />,
+                document.getElementById('content')
+            );
+       }
+       </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='content'></div>
+
+
+</body>
+
+</html>
