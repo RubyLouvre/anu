@@ -177,14 +177,14 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-
-        expect(s._currentElement._hostNode.children[1].selected).toBe(true)
+       //s._currentElement._hostNode
+        expect(div.firstChild.children[1].selected).toBe(true)
         await browser.selectByVisibleText('#node2', '上海').pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[2].selected).toBe(true)
+        expect(div.firstChild.children[2].selected).toBe(true)
         await browser.selectByVisibleText('#node2', '杭州').pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].selected).toBe(true)
+        expect(div.firstChild.children[0].selected).toBe(true)
 
 
     })

@@ -20,7 +20,7 @@ export function disposeVnode(vnode) {
 function disposeStateless(vnode) {
   var instance = vnode._instance
   if (instance) {
-    disposeVnode(instance._rendered, instance);
+    disposeVnode(instance._renderedVnode);
     vnode._instance = null;
   }
 }
@@ -49,6 +49,6 @@ function disposeComponent(vnode) {
       node._component = null;
     }
     vnode._instance = instance._currentElement = null;
-    disposeVnode(instance._rendered);
+    disposeVnode(vnode._renderedVnode);
   }
 }
