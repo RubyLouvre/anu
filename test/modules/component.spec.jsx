@@ -595,4 +595,44 @@ describe("组件相关", function() {
 
     expect(assertions).toBe(3);
   });
+
+  it('虚拟DOM的_owner必须在render中加上',async ()=>{
+
+ 
+    class B extends React.Component{
+      render(){
+        return <div className="xxx">{this.props.children}</div>
+      }
+    }
+    var b , c
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          value: "南京"
+        };
+      }
+      _renderPopup(a){
+        return <B><p {...a}></p></B>
+      }
+      onChange(e) {
+        this.setState({
+          value: e.target.value
+        });
+      }
+      render() {
+        return (
+          <div>
+            {this._renderPopup({ref: "xxxx",children: [b = <span>333</span>]})}
+            {this._renderPopup({ref: "yyyy",children: [c = <strong>444</strong>]})}
+          </div>
+        );
+      }
+    }
+     var s = React.render(<App/>, div);
+      await browser.pause(100).$apply();
+     // console.log( s._rendered.props.children[0]._instance._rendered.props.children[0].props.children[0] )
+     expect(b._owner.constructor).toBe(App)
+     expect(c._owner.constructor).toBe(App)
+  })
 });
