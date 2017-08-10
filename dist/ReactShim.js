@@ -340,7 +340,6 @@ function Vnode(type, props, key, ref, vtype, checkProps) {
   /*
     this._hostNode = null
     this._instance = null
-    this._hostParent = null
   */
 }
 
@@ -529,7 +528,7 @@ function Component(props, context) {
   this._uid = Math.random();
   this._dirty = true;
   /**
-   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
+   * this._dirty = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
    * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
    * this._disposed = true 阻止组件在销毁后还进行diff
@@ -611,6 +610,16 @@ function setStateImpl(state, cb) {
 var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
   setTimeout(job, 16);
 };
+/*
+function rerender() {
+  var el
+  while (el = dirtyComponents.pop()) {
+    if (el._dirty) {
+      options.refreshComponent(el);
+    }
+  }
+}
+*/
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
@@ -1403,9 +1412,9 @@ function renderByAnu(vnode, container, callback, parentContext) {
   }
   var mountQueue = [];
   mountQueue.mountAll = true;
-  var prevVnode = container._component;
+  var lastVnode = container._component;
   parentContext = parentContext || {};
-  var rootNode = prevVnode ? alignVnodes(prevVnode, vnode, container.firstChild, parentContext, mountQueue) : genVnodes(vnode, container, parentContext, mountQueue);
+  var rootNode = lastVnode ? alignVnodes(lastVnode, vnode, container.firstChild, parentContext, mountQueue) : genVnodes(vnode, container, parentContext, mountQueue);
 
   // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
   // 并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
@@ -1664,7 +1673,6 @@ function _refreshComponent(instance, mountQueue) {
   var hostNode = instance._nextElement || instance._currentElement;
   var rendered = safeRenderComponent(instance, type, hostNode, context);
   instance._nextElement = null;
-  var hasQueue = !mountQueue;
   mountQueue = mountQueue || [];
   CurrentOwner.update = instance;
   instance._updating = true;

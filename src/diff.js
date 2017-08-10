@@ -93,10 +93,10 @@ function renderByAnu(vnode, container, callback, parentContext) {
   }
   var mountQueue = [];
   mountQueue.mountAll = true
-  var prevVnode = container._component;
+  var lastVnode = container._component;
   parentContext = parentContext || {}
-  var rootNode = prevVnode
-    ? alignVnodes(prevVnode, vnode, container.firstChild, parentContext, mountQueue)
+  var rootNode = lastVnode
+    ? alignVnodes(lastVnode, vnode, container.firstChild, parentContext, mountQueue)
     : genVnodes(vnode, container, parentContext, mountQueue);
 
   // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
@@ -370,7 +370,6 @@ function _refreshComponent(instance, mountQueue) {
   var hostNode = instance._nextElement || instance._currentElement
   var rendered = safeRenderComponent(instance, type, hostNode, context);
   instance._nextElement = null
-  var hasQueue = !mountQueue
   mountQueue = mountQueue || []
   CurrentOwner.update = instance
   instance._updating = true

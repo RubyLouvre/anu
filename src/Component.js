@@ -18,7 +18,7 @@ export function Component(props, context) {
   this._uid = Math.random()
   this._dirty = true
   /**
-   * this._disableSetState = true 用于阻止组件在componentWillMount/componentWillReceiveProps
+   * this._dirty = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
    * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
    * this._disposed = true 阻止组件在销毁后还进行diff
@@ -106,7 +106,7 @@ function setStateImpl(state, cb) {
 var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
   setTimeout(job, 16)
 }
-
+/*
 function rerender() {
   var el
   while (el = dirtyComponents.pop()) {
@@ -115,3 +115,4 @@ function rerender() {
     }
   }
 }
+*/

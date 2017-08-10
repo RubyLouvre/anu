@@ -153,7 +153,6 @@ function Vnode(type, props, key, ref, vtype, checkProps) {
   /*
     this._hostNode = null
     this._instance = null
-    this._hostParent = null
   */
 }
 
