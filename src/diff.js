@@ -276,7 +276,7 @@ export function renderComponent(instance, type, vnode, context) {
   vnode._instance = instance
   rendered = checkNull(rendered, type);
   vnode._renderedVnode = rendered
- // instance._rendered = rendered;
+  // instance._rendered = rendered;
   instance._childContext = getChildContext(instance, context);
   return rendered;
 }
@@ -349,7 +349,7 @@ function _refreshComponent(instance, mountQueue) {
     lastProps,
     _currentElement: vnode,
     props: nextProps,
-    constructor: type,
+    constructor: type
   } = instance;
 
   lastProps = lastProps || nextProps;
@@ -672,3 +672,24 @@ function insertDOM(parentNode, dom, ref) {
     parentNode.insertBefore(dom, ref)
   }
 }
+/*
+function createKeyToOldIdx(children, beginIdx, endIdx) {
+  let map = {}
+  for (let i = beginIdx; i <= endIdx; ++i) {
+    let ch = children[i];
+    key = ch.key;
+    if (key !== undefined) {
+      map[key] = i;
+    }
+  }
+  return map;
+}
+
+function addVnodes(parentElm, before, vnodes, startIdx, endIdx, parentContext, mountQueue) {
+  for (; startIdx <= endIdx; ++startIdx) {
+    const ch = vnodes[startIdx];
+    dom = mountVnode(newStartVnode, parentContext, null, mountQueue)
+    parentElm.insertBefore(dom, before);
+  }
+}
+*/
