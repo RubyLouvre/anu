@@ -81,7 +81,8 @@ function setStateImpl(state, cb) {
   //forceUpate是同步渲染
   if (state === true) {
     this._forceUpdate = true;
-    options.refreshComponent(this);
+    options.refreshComponent(this, []);
+    this._dirty = false
   } else {
     //setState是异步渲染
 
@@ -96,10 +97,12 @@ function setStateImpl(state, cb) {
       return
     }
     if (!this._dirty && (this._dirty = true)) {
+      options.refreshComponent(this, []);
       defer(() => {
-        this._dirty = false
-        options.refreshComponent(this);
-        // rerender()
+        if (this._dirty) {
+          options.refreshComponent(this, []);
+          this._dirty = false
+        }
       }, 16)
     }
   }
@@ -107,13 +110,3 @@ function setStateImpl(state, cb) {
 var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
   setTimeout(job, 16)
 }
-/*
-function rerender() {
-  var el
-  while (el = dirtyComponents.pop()) {
-    if (el._dirty) {
-      options.refreshComponent(el);
-    }
-  }
-}
-*/

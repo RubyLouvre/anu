@@ -102,7 +102,8 @@ function flattenChildren(stack) {
         }
         child = {
           type: "#text",
-          text: child + ""
+          text: child + "",
+          vtype: 0
         };
         lastText = child;
       } else {
