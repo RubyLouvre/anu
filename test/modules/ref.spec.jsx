@@ -140,4 +140,44 @@ describe('ref', function () {
 
         expect(i).toBe(2)
     });
+
+    it('用户在构造器里生成虚拟DOM',async () => {
+        var a 
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.sliderLeftJSX = this.renderSlider('btnLeft');
+                this.state = { };
+            }
+            renderSlider(which = 'btnLeft') {
+                return (
+                    <span
+                        ref={dom => {
+                            this[which] = dom;
+                        }}
+                    />);
+            }
+            componentDidMount() {
+                a = !!this.btnLeft
+            }
+
+            render() {
+                return (
+                    <div >
+                        <div className="track" ref="track">
+                            {this.sliderLeftJSX}
+                        </div>
+                    </div>
+                );
+            }
+        }
+        var s = React.render(<App />, div);
+        await browser
+            .pause(100)
+            .$apply()
+
+        expect(a).toBe(true)
+
+    })
+
 })

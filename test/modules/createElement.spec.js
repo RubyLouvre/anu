@@ -126,7 +126,7 @@ describe('createElement', function () {
         })
         expect(obj.type).toEqual('div')
         expect(obj.key == null).toBe(true)
-        expect(obj._owner == null).toBe(true)
+        expect(typeof obj._owner).toBe('object')
 
 
 
