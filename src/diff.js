@@ -446,7 +446,7 @@ export function findDOMNode(ref) {
   if (ref.nodeType === 1) {
     return ref;
   }
-  var vnode = ref._currentElement
+  let vnode = ref._currentElement
   return vnode._hostNode || null;
 }
 
@@ -459,7 +459,7 @@ function updateText(lastVnode, nextVnode, dom) {
 }
 
 function updateElement(lastVnode, nextVnode, node, parentContext, mountQueue) {
-  var nextProps = nextVnode.props;
+  let nextProps = nextVnode.props;
   if (lastVnode.props[HTML_KEY]) {
     while (node.firstChild) {
       node.removeChild(node.firstChild);
