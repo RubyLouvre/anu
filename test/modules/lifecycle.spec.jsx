@@ -181,7 +181,7 @@ describe('生命周期例子', function () {
         }
         React.render(<App />, div);
         await browser
-            .pause(300)
+            .pause(200)
             .$apply()
 
         var list2 = ['app will mount',
@@ -203,4 +203,80 @@ describe('生命周期例子', function () {
             'componentWillReceiveProps 2']
         expect(list.join('-')).toBe(list2.join('-'))
     })
+
+    it('第一次渲染时不会触发componentWillUpdate', async () => {
+        var a = 1
+        class ReceivePropsComponent extends React.Component {
+            componentWillUpdate() {
+                a = 2
+            }
+            render() {
+                return <div />;
+            }
+        }
+
+        React.render(<ReceivePropsComponent />, div);
+        await browser
+            .pause(200)
+            .$apply()
+        expect(a).toBe(1)
+    });
+
+    it('先执行子组件的mount钩子再到父组件的mount钩子', async () => {
+        let log = [];
+
+        class Inner extends React.Component {
+            componentDidMount() {
+                log.push('inner');
+            }
+
+            render() {
+                return <div id="inner" />;
+            }
+        }
+
+        class Outer extends React.Component {
+            componentDidMount() {
+                log.push('outer');
+            }
+
+            render(props) {
+                return <Inner />
+            }
+        }
+
+        React.render(<Outer />, div);
+        await browser
+            .pause(200)
+            .$apply()
+        expect(log.join('-')).toBe('inner-ounter')
+    });
+    it("在componentWillMount中使用setState", async () => {
+        var list = []
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 111
+                };
+            }
+            componentWillMount() {
+                this.setState({
+                    aaa: 333
+                },function(){
+                   list.push('4444')
+                });
+            }
+            render() {
+                list.push(this.state.aaa)
+                return <p>{this.state.aaa}</p>;
+            }
+        }
+
+        var s = React.render(<App />, div);
+        await browser.pause(200).$apply();
+        expect(list.join('-')).toBe('111-333-4444');
+        expect(div.textContent || div.innerText).toBe("333");
+    });
+
 })

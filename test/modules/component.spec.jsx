@@ -521,30 +521,7 @@ describe("组件相关", function() {
 
   it("checkNull 中如果组件返回字符串应该报错", () => {});
 
-  it("在componentWillMount中使用setState", async () => {
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 1111
-        };
-      }
-      componentWillMount() {
-        this.setState({
-          aaa: 333
-        });
-      }
-      render() {
-        return <p>{this.state.aaa}</p>;
-      }
-    }
-
-    var s = React.render(<App />, div);
-    await browser.pause(200).$apply();
-    expect(s.state.aaa).toBe(333);
-    expect(div.textContent || div.innerText).toBe("333");
-  });
-
+  
    it('componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素', () => {
     var assertions = 0;
 
