@@ -32,7 +32,7 @@ export function createElement(type, configs) {
       var val = configs[i];
       switch (i) {
         case "key":
-          key = val;
+          key = val+"";
           break;
         case "ref":
           ref = val;
