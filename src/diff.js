@@ -343,8 +343,7 @@ function refreshComponent(instance, mountQueue) {
 
   if (instance.__rerender) {
     delete instance.__rerender
-   instance._pendingCallbacks =  instance._updateCallbacks 
-
+   instance._pendingCallbacks = instance._updateCallbacks 
    instance._updateCallbacks = null
 
     if (instance._currentElement._hostNode) {

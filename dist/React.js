@@ -591,23 +591,17 @@ function setStateImpl(state, cb) {
     this._pendingStates.push(state);
     // 子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating) {
-      var args = this._pendingCallbacks;
-      var list = this._updateCallbacks = this._updateCallbacks || [];
-      args.push.apply(list, args);
-      this._pendingCallbacks = [];
+      devolveCallbacks.call(this, '_updateCallbacks');
       this._rerender = true;
       return;
     }
     if (!this._hasDidMount) {
       //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-      var args = this._pendingCallbacks;
-      var list = this._updateCallbacks = this._updateCallbacks || [];
-      args.push.apply(list, args);
-      this._pendingCallbacks = [];
+      devolveCallbacks.call(this, '_mountingCallbacks');
       if (!this._dirty && (this._dirty = true)) {
         defer(function () {
           if (_this._dirty) {
-            _this._pendingCallbacks = _this._updateCallbacks;
+            _this._pendingCallbacks = _this._mountingCallbacks;
             options.refreshComponent(_this, []);
           }
           _this._dirty = false;
@@ -631,6 +625,13 @@ function setStateImpl(state, cb) {
       }, 16);
     }
   }
+}
+
+function devolveCallbacks(name) {
+  var args = this._pendingCallbacks;
+  var list = this[name] = this[name] || [];
+  list.push.apply(list, args);
+  this._pendingCallbacks = [];
 }
 var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
   setTimeout(job, 16);
@@ -1921,7 +1922,6 @@ function refreshComponent(instance, mountQueue) {
   if (instance.__rerender) {
     delete instance.__rerender;
     instance._pendingCallbacks = instance._updateCallbacks;
-
     instance._updateCallbacks = null;
 
     if (instance._currentElement._hostNode) {
