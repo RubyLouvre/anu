@@ -16,8 +16,11 @@ export function Component(props, context) {
   this.context = context;
   this.props = props;
   this.refs = {};
-  this._uid = Math.random()
+  this.state = null
   this._dirty = true
+  this._pendingCallbacks = [];
+  this._pendingStates = [];
+  this._pendingRefs = [];
   /**
    * this._dirty = true 用于阻止组件在componentWillMount/componentWillReceiveProps
    * 被setState，从而提前发生render;
@@ -28,10 +31,6 @@ export function Component(props, context) {
    * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
    * 此flag是确保 component在update前就要执行componentDidMount
    */
-  this._pendingCallbacks = [];
-  this._pendingStates = [];
-  this._pendingRefs = [];
-  this.state = {};
 }
 
 Component.prototype = {
@@ -44,7 +43,6 @@ Component.prototype = {
       .push(a, b)
   },
   setState(state, cb) {
-
     setStateImpl.call(this, state, cb)
   },
 
@@ -73,40 +71,60 @@ Component.prototype = {
 };
 
 function setStateImpl(state, cb) {
+  var _this = this;
+
   if (isFn(cb)) {
-    this
-      ._pendingCallbacks
-      .push(cb);
+    this._pendingCallbacks.push(cb);
   }
-  //forceUpate是同步渲染
+  // forceUpate是同步渲染
   if (state === true) {
     this._forceUpdate = true;
     options.refreshComponent(this, []);
-    this._dirty = false
+    this._dirty = false;
   } else {
-    //setState是异步渲染
-
-    this._pendingStates
-      .push(state);
-
-    //子组件在componentWillReiveProps调用父组件的setState方法
-    if (this._updating && CurrentOwner.update) {
-      CurrentOwner.update.after = CurrentOwner.update.after || []
-      var list = CurrentOwner.update.after
-      list.push(this)
-      return
+    // setState是异步渲染
+    this._pendingStates.push(state);
+    // 子组件在componentWillReiveProps调用父组件的setState方法
+    if (this._updating) {
+      this._rerender = true
+      return;
+    }
+    if(!this._hasDidMount){
+      //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
+      var args = this._pendingCallbacks
+      var list = this._updateCallbacks = this._updateCallbacks || []
+      args.push.apply(list, args)
+      this._pendingCallbacks =[]
+      if (!this._dirty && (this._dirty = true)) {       
+        defer(function () {
+          if (_this._dirty) {
+            _this._pendingCallbacks = _this._updateCallbacks
+            options.refreshComponent(_this, []);
+          }
+          _this._dirty = false;
+        }, 16);
+    }
+    return
+  }
+    //在DidMount钩子执行之前被子组件调用了setState方法
+    if (this._mountQueue) {
+      this._mountQueue.push(this);
+      return;
     }
     if (!this._dirty && (this._dirty = true)) {
       options.refreshComponent(this, []);
-      defer(() => {
-        if (this._dirty) {
-          options.refreshComponent(this, []);
-          this._dirty = false
+      defer(function () {
+        if (_this._dirty) {
+          console.log(this.constructor.name, "异步被刷新");
+          options.refreshComponent(_this, []);
         }
-      }, 16)
+        _this._dirty = false;
+      }, 16);
     }
   }
 }
-var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
-  setTimeout(job, 16)
-}
+var defer =win.requestAnimationFrame ||
+  win.webkitRequestAnimationFrame ||
+  function (job) {
+    setTimeout(job, 16);
+  };

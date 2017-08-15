@@ -4,6 +4,7 @@ describe('createElement', function () {
     it('type', () => {
         var el = React.createElement('p', null, 'aaa')
         expect(el.type).toBe('p')
+        expect(el.vtype).toBe(1)
         expect(el.props.children).toA('array')
         expect(el.props.children.length).toBe(1)
     })
@@ -31,7 +32,8 @@ describe('createElement', function () {
         var el = React.createElement('p', null, 'aaa', 'bbb', 'ccc')
         expect(React.Children.only(el.props.children)).toEqual({
             type:'#text',
-            text: 'aaabbbccc'
+            text: 'aaabbbccc',
+            vtype: 0
         })
 
         el = React.createElement('p', null, null)
@@ -52,57 +54,58 @@ describe('createElement', function () {
         console.log(el)
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: 'aaaccc'
+            text: 'aaaccc' ,
+            vtype: 0
          
         })
 
         var el = React.createElement('p', null, 'aaa', true, 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: 'aaaccc'
-           
+            text: 'aaaccc',
+            vtype: 0
         })
 
         var el = React.createElement('p', null, 'aaa', 111, 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: 'aaa111ccc'
-           
+            text: 'aaa111ccc',
+            vtype: 0
         })
         var el = React.createElement('p', null, 'aaa', '', 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: 'aaaccc'
-           
+            text: 'aaaccc',
+            vtype: 0
         })
      
         var el = React.createElement('p', null, 'aaa', 'ccc', '')
         expect(el.props.children[0]).toEqual({
             type: '#text',
             text: 'aaaccc',
-            
+            vtype: 0
         })
          
 
         var el = React.createElement('p', null, 'aaa', '', 'ccc')
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: 'aaaccc'
-           
+            text: 'aaaccc',
+            vtype: 0
         })
 
         var el = React.createElement('p', null, 111, 222, 333)
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: '111222333'
-           
+            text: '111222333',
+            vtype: 0
         })
 
         var el = React.createElement('p', null, 111, 'ddd', 333)
         expect(el.props.children[0]).toEqual({
             type: '#text',
-            text: '111ddd333'
-           
+            text: '111ddd333',
+            vtype: 0
         })
 
 

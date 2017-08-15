@@ -90,7 +90,7 @@ function checkNull(vnode, type) {
     vnode = vnode[0];
   }
   if (vnode === null || vnode === false) {
-    return { type: "#comment", text: "empty" };
+    return { type: "#comment", text: "empty", vtype: 0 };
   } else if (!vnode || !vnode.vtype) {
     throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
   }

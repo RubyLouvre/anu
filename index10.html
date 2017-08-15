@@ -11,62 +11,46 @@
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
- var index = 0
-        var map = [
-            <div>xxx</div>,
-             <div>yyyy</div>,
-        ]
-   
-         class A extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                   time: new Date -0
-                }
-            }
-           
-            componentDidMount() {
-                console.log('A componentDidMount')
-            }
-            componentWillReceiveProps() {
-                this.setState({
-                      time: new Date -0
-                })
-                console.log('A componentWillReceiveProps')
-            }
-            componentWillUpdate() {
-                console.log('A componentWillUpdate')
-            }
-            render() {
-                return <span>{this.state.time}</span>
-
+    class App extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {
+                aaa: 'aaa'
             }
         }
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    time: new Date -0
-                }
-            }
-            change(a) {
-                this.setState({
-                     time: new Date -0
-                })
-            }
-            componentDidMount() {
-                console.log('App componentDidMount')
-            }
-            componentWillUpdate() {
-                console.log('App componentWillUpdate')
-            }
-            render() {
-                return <div onClick={()=>{ this.change(11) }}>
-                    <p>App {this.state.time}</p>
-                    <A /> </div>
-
-            }
+        componentWillMount() {
+            this.setState({
+                aaa: 'bbb'
+            }, function(){
+                console.log('1111')
+            })
         }
+        componentDidMount() {
+            this.setState({
+                aaa: 'cccc'
+            }, function(){
+                console.log('2222')
+            })
+            this.setState({
+                aaa: 'dddd'
+            }, function(){
+                console.log('3333')
+            })
+            console.log('did mount')
+        }
+      
+        componentWillUpdate() {
+            console.log('will update')
+        }
+        componentDidUpdate() {
+            console.log('did update')
+        }
+        render() {
+            console.log(this.state.aaa)
+            return <div>{this.state.aaa}</div>
+
+        }
+    }
          var div = document.body
         var s = React.render(<App />, div)
 

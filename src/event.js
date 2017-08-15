@@ -1,4 +1,3 @@
-import { scheduler } from "./scheduler";
 import { document } from "./browser";
 import { isFn, noop } from "./util";
 

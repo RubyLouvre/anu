@@ -12,6 +12,7 @@ import './modules/cloneElement.spec'
 require('./modules/context.spec.jsx')
 
 require('./modules/component.spec.jsx')
+require('./modules/lifecycle.spec.jsx')
 
 require('./modules/svg.spec.jsx')
 

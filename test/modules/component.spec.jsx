@@ -464,14 +464,6 @@ describe("组件相关", function() {
       title: "默认值"
     };
 
-    window.onload = function() {
-      window.s = ReactDOM.render(
-        <div>
-          <HasChild />
-        </div>,
-        document.getElementById("example")
-      );
-    };
 
     var s = React.render(<HasChild />, div);
     await browser.pause(100).$apply();
