@@ -86,6 +86,10 @@ function setStateImpl(state, cb) {
     this._pendingStates.push(state);
     // 子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating) {
+      var args = this._pendingCallbacks
+      var list = this._updateCallbacks = this._updateCallbacks || []
+      args.push.apply(list, args)
+      this._pendingCallbacks =[]
       this._rerender = true
       return;
     }

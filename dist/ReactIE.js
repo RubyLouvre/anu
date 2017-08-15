@@ -590,7 +590,10 @@ function setStateImpl(state, cb) {
     this._pendingStates.push(state);
     // 子组件在componentWillReiveProps调用父组件的setState方法
     if (this._updating) {
-      console.log(this.constructor.name, '被更新');
+      var args = this._pendingCallbacks;
+      var list = this._updateCallbacks = this._updateCallbacks || [];
+      args.push.apply(list, args);
+      this._pendingCallbacks = [];
       this._rerender = true;
       return;
     }
@@ -1903,6 +1906,9 @@ function refreshComponent(instance, mountQueue) {
 
   if (instance.__rerender) {
     delete instance.__rerender;
+    instance._pendingCallbacks = instance._updateCallbacks;
+
+    instance._updateCallbacks = null;
 
     if (instance._currentElement._hostNode) {
       return refreshComponent(instance, []);
