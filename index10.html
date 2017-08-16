@@ -6,11 +6,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+  <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
+  
     class App extends React.Component {
         constructor(props) {
             super(props)
@@ -19,6 +20,7 @@ window.onload = function(){
             }
         }
         componentWillMount() {
+       
             this.setState({
                 aaa: 'bbb'
             }, function(){
@@ -26,33 +28,43 @@ window.onload = function(){
             })
         }
         componentDidMount() {
-            this.setState({
+            /*
+           this.setState({
                 aaa: 'cccc'
             }, function(){
                 console.log('2222')
             })
-            this.setState({
-                aaa: 'dddd'
-            }, function(){
-                console.log('3333')
-            })
+
             console.log('did mount')
+            */
         }
       
         componentWillUpdate() {
+       
             console.log('will update')
         }
-        componentDidUpdate() {
-            console.log('did update')
+        componentWillReceiveProps() {
+       
+            console.log('will props')
         }
         render() {
-            console.log(this.state.aaa)
-            return <div>{this.state.aaa}</div>
+          
+            console.log('render=========')
+            return <div ref={(a)=>{ 
+               console.log(a, 'ref更新')
+            }}><B  ref={(a)=>{ console.log(a)}}/></div>
 
         }
     }
+    class B extends React.Component {
+      render(){
+          return <p ref={(a)=>{console.log(a)}}>
+                <span ref={(a)=>{console.log(a)}}>span</span>
+            </p>
+      }
+    }
          var div = document.body
-        var s = React.render(<App />, div)
+        var s = ReactDOM.render(<App />, div)
 
        
         
