@@ -531,25 +531,19 @@ function Component(props, context) {
   this._pendingCallbacks = [];
   this._pendingStates = [];
   this._pendingRefs = [];
-  /**
-   * this._dirty = true 用于阻止组件在componentWillMount/componentWillReceiveProps
-   * 被setState，从而提前发生render;
-   * this._updating = true 用于将componentDidMount发生setState/forceUpdate 延迟到整个render后再触发
-   * this._disposed = true 阻止组件在销毁后还进行diff
-   * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
-   * this._hasDidMount = true 表示这个组件已经触发componentDidMount回调，
-   * 如果用户没有指定，那么它在插入DOM树时，自动标识为true
-   * 此flag是确保 component在update前就要执行componentDidMount
-   */
+  /*
+  * this._dirty = true 表示组件不能更新
+  * this._hasRendred = true 表示组件已经渲染了一次
+  * this._rerender = true 表示组件需要再渲染一次
+  * this._hasDidMount = true 表示组件及子孙已经都插入DOM树
+  * this._updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
+  * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
+  */
 }
 
 Component.prototype = {
   replaceState: function replaceState() {
     console.warn("此方法末实现"); // eslint-disable-line
-  },
-
-  _collectRefs: function _collectRefs(a, b) {
-    this._pendingRefs.push(a, b);
   },
   setState: function setState(state, cb) {
     setStateImpl.call(this, state, cb);
@@ -558,6 +552,9 @@ Component.prototype = {
     setStateImpl.call(this, true, cb);
   },
 
+  _collectRefs: function _collectRefs(a, b) {
+    this._pendingRefs.push(a, b);
+  },
   _processPendingState: function _processPendingState(props, context) {
     var n = this._pendingStates.length;
     if (n === 0) {
@@ -576,7 +573,7 @@ Component.prototype = {
 };
 
 function setStateImpl(state, cb) {
-  var _this = this;
+  var _this2 = this;
 
   if (isFn(cb)) {
     this._pendingCallbacks.push(cb);
@@ -601,25 +598,26 @@ function setStateImpl(state, cb) {
       if (this._hasRendered) devolveCallbacks.call(this, '_mountingCallbacks');
       if (!this._dirty && (this._dirty = true)) {
         defer(function () {
-          if (_this._dirty) {
-            console.log(this.constructor.name, "异步被刷新1");
-            _this._pendingCallbacks = _this._mountingCallbacks;
-            options.refreshComponent(_this, []);
+          if (_this2._dirty) {
+            console.log(_this2.constructor.name, "异步被刷新1");
+            _this2._pendingCallbacks = _this2._mountingCallbacks;
+            options.refreshComponent(_this2, []);
           }
-        }, 16);
+        });
       }
       return;
     }
     //在DidMount钩子执行之前被子组件调用了setState方法
     if (!this._dirty && (this._dirty = true)) {
       options.refreshComponent(this, []);
-      //  defer(function () {
-      //    if (_this._dirty) {
-      //      console.log(this.constructor.name, "异步被刷新2");
-      //      options.refreshComponent(_this, []);
-      //    }
-      //  }, 16);
+      return;
     }
+    defer(function () {
+      if (_this2._dirty) {
+        console.log(_this2.constructor.name, "异步被刷新2");
+        options.refreshComponent(_this, []);
+      }
+    });
   }
 }
 
@@ -1591,7 +1589,7 @@ function disposeElement(vnode) {
 function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
-    instance._disableSetState = true;
+    instance._disposed = true;
     options.beforeUnmount(instance);
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();
@@ -1653,18 +1651,12 @@ function clearRefsAndMounts(queue, force) {
       arr.length = 0;
 
       if (el.componentDidMount) {
-
-        el._mounting = true;
         el.componentDidMount();
-        el._mounting = false;
         el.componentDidMount = null;
       }
 
-      el._mountQueue = null;
-      // setTimeout(function () {
       el._pendingCallbacks.splice(0).forEach(function (fn) {
         fn.call(el);
-        //  });
       });
     }
     el._hasDidMount = true;
@@ -1823,7 +1815,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
 
   var props = getComponentProps(vnode);
   var instance = new type(props, parentContext); //互相持有引用
-
+  vnode._instance = instance;
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
@@ -1856,7 +1848,6 @@ function renderComponent(instance, type, vnode, context) {
   var rendered = instance.render();
   instance._currentElement = vnode;
   CurrentOwner.cur = null;
-  vnode._instance = instance;
   rendered = checkNull(rendered, type);
   vnode._renderedVnode = rendered;
   instance._childContext = getChildContext(instance, context);
@@ -1878,14 +1869,12 @@ Stateless.prototype.render = function (vnode, context) {
   this.props = props;
   this._currentElement = vnode;
   vnode._renderedVnode = rendered;
-  // this._rendered = rendered;
   return rendered;
 };
 function mountStateless(vnode, parentContext, prevRendered, mountQueue) {
   var instance = new Stateless(vnode.type);
   var rendered = instance.render(vnode, parentContext);
   var dom = mountVnode(rendered, parentContext, prevRendered, mountQueue);
-
   return vnode._hostNode = dom;
 }
 
@@ -1904,10 +1893,7 @@ options.refreshComponent = refreshComponent;
 function refreshComponent(instance, mountQueue) {
   // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
   var dom = instance._currentElement._hostNode;
-  if (instance._updateQueue) {
-    console.log("instance._updating");
-    return dom;
-  }
+
   dom = _refreshComponent(instance, dom, mountQueue);
   instance._forceUpdate = false;
 
@@ -2066,11 +2052,10 @@ function updateElementProps(lastVnode, nextVnode, dom) {
 }
 
 function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
-  var instance = lastVnode._instance;
+  var instance = nextVnode._instance = lastVnode._instance;
 
   if (!instance._hasDidMount) {
     throw lastVnode.type.name + "没有装载完毕";
-    nextVnode._instance = instance;
     nextVnode._renderedVnode = lastVnode._renderedVnode;
     nextVnode._hostNode = lastVnode._hostNode;
     clearRefsAndMounts([instance], true);
@@ -2158,8 +2143,8 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
       delete el.old;
       if (el.vtype > 1 && !old._instance) {
         //在这里发生没有实例化的情况
-        console.log('没有实例化', el, old, el === old);
-        dom = old._hostNode; //mountVnode(el, parentContext, old._hostNode, innerMountQueue);
+        console.log('没有实例化', el, el === old);
+        dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
       } else if (el === old && old._hostNode) {
         //cloneElement
         dom = old._hostNode;

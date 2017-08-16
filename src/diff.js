@@ -67,18 +67,12 @@ function clearRefsAndMounts(queue, force) {
 
 
       if (el.componentDidMount) {
-
-        el._mounting = true
         el.componentDidMount();
-        el._mounting = false
         el.componentDidMount = null;
       }
 
-      el._mountQueue = null;
-      // setTimeout(function () {
       el._pendingCallbacks.splice(0).forEach(function (fn) {
         fn.call(el);
-        //  });
       });
     }
     el._hasDidMount = true;
@@ -247,7 +241,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
 
   let props = getComponentProps(vnode);
   let instance = new type(props, parentContext); //互相持有引用
-
+  vnode._instance = instance
   instance.props = instance.props || props;
   instance.context = instance.context || parentContext;
 
@@ -282,7 +276,6 @@ export function renderComponent(instance, type, vnode, context) {
   let rendered = instance.render();
   instance._currentElement = vnode;
   CurrentOwner.cur = null
-  vnode._instance = instance
   rendered = checkNull(rendered, type);
   vnode._renderedVnode = rendered
   instance._childContext = getChildContext(instance, context);
@@ -304,14 +297,12 @@ Stateless.prototype.render = function (vnode, context) {
   this.props = props
   this._currentElement = vnode;
   vnode._renderedVnode = rendered
-  // this._rendered = rendered;
   return rendered
 }
 function mountStateless(vnode, parentContext, prevRendered, mountQueue) {
   let instance = new Stateless(vnode.type)
   let rendered = instance.render(vnode, parentContext);
   let dom = mountVnode(rendered, parentContext, prevRendered, mountQueue);
-
   return vnode._hostNode = dom;
 }
 
@@ -330,10 +321,7 @@ options.refreshComponent = refreshComponent;
 function refreshComponent(instance, mountQueue) {
   // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
   var dom = instance._currentElement._hostNode;
-  if (instance._updateQueue) {
-    console.log("instance._updating");
-    return dom;
-  }
+
   dom = _refreshComponent(instance, dom, mountQueue);
   instance._forceUpdate = false;
 
@@ -343,11 +331,11 @@ function refreshComponent(instance, mountQueue) {
 
   if (instance.__rerender) {
     delete instance.__rerender
-   instance._pendingCallbacks = instance._updateCallbacks 
-   instance._updateCallbacks = null
+    instance._pendingCallbacks = instance._updateCallbacks
+    instance._updateCallbacks = null
 
     if (instance._currentElement._hostNode) {
-     return  refreshComponent(instance, []);
+      return refreshComponent(instance, []);
     } else {
       console.warn("此组件没有_hostNode");
       console.warn(instance);
@@ -383,7 +371,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   instance._updating = true
   instance.props = nextProps;
   instance.state = nextState;
-  
+
   var lastRendered = vnode._renderedVnode
   var nextElement = instance._nextElement || vnode
   if (!lastRendered._hostNode) {
@@ -392,7 +380,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   }
   var rendered = renderComponent(instance, type, nextElement, nextContext);
   delete instance._nextElement
-  
+
   dom = alignVnodes(lastRendered, rendered, dom, instance._childContext, mountQueue);
 
   nextElement._hostNode = dom;
@@ -495,11 +483,10 @@ function updateElementProps(lastVnode, nextVnode, dom) {
 }
 
 function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
-  var instance = lastVnode._instance;
+  var instance = nextVnode._instance = lastVnode._instance;
 
   if (!instance._hasDidMount) {
     throw lastVnode.type.name + "没有装载完毕";
-    nextVnode._instance = instance;
     nextVnode._renderedVnode = lastVnode._renderedVnode;
     nextVnode._hostNode = lastVnode._hostNode;
     clearRefsAndMounts([instance], true);
@@ -589,8 +576,8 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
       delete el.old
       if (el.vtype > 1 && !old._instance) {
         //在这里发生没有实例化的情况
-        console.log('没有实例化',el, old, el === old)
-        dom = old._hostNode //mountVnode(el, parentContext, old._hostNode, innerMountQueue);
+        console.log('没有实例化', el, el === old)
+        dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
       } else if (el === old && old._hostNode) {
         //cloneElement
         dom = old._hostNode;

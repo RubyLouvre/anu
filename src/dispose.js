@@ -38,7 +38,7 @@ function disposeElement(vnode) {
 function disposeComponent(vnode) {
   var instance = vnode._instance;
   if (instance) {
-    instance._disableSetState = true;
+    instance._disposed = true;
     options.beforeUnmount(instance);
     if (instance.componentWillUnmount) {
       instance.componentWillUnmount();

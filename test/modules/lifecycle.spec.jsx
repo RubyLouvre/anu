@@ -263,12 +263,12 @@ describe('生命周期例子', function () {
             componentWillMount() {
                 this.setState({
                     aaa: 222
-                },function(){
-                   list.push('555')
+                }, function () {
+                    list.push('555')
                 });
                 this.setState({
                     aaa: 333
-                },function(){
+                }, function () {
                     list.push('666')
                 });
             }
@@ -295,12 +295,12 @@ describe('生命周期例子', function () {
             componentWillMount() {
                 this.setState({
                     aaa: 222
-                },function(){
-                   list.push('555')
+                }, function () {
+                    list.push('555')
                 });
                 this.setState({
                     aaa: 333
-                },function(){
+                }, function () {
                     list.push('666')
                 });
             }
@@ -324,27 +324,27 @@ describe('生命周期例子', function () {
                     aaa: 111
                 };
             }
-          
+
             componentWillMount() {
                 this.setState({
                     aaa: 222
-                },function(){
+                }, function () {
                     list.push('555')
                 });
                 this.setState({
                     aaa: 333
-                },function(){
+                }, function () {
                     list.push('666')
                 });
             }
             componentDidMount() {
                 this.setState({
                     aaa: 444
-                },function(){
+                }, function () {
                     list.push('777')
                 });
             }
-      
+
             render() {
                 list.push(this.state.aaa)
                 return <p>{this.state.aaa}</p>;
