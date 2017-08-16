@@ -62,7 +62,6 @@ function clearRefsAndMounts(queue, force) {
                 var obj = arr[i];
                 var value = arr[i + 1];
                 obj.ref(value);
-
             }
             arr.length = 0;
 
@@ -566,11 +565,12 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
         var innerMountQueue = mountAll ? mountQueue : [];
         if (old) {
             delete el.old
-            if (el.vtype > 1 && !old._instance) {
+            /*if (el.vtype > 1 && !old._instance) {
                 //在这里发生没有实例化的情况
                 console.warn('没有实例化', el, el === old)
                 dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
-            } else if (el === old && old._hostNode) {
+            } else */
+            if (el === old && old._hostNode) {
                 //cloneElement
                 dom = old._hostNode;
             } else {
