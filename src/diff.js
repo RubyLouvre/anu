@@ -264,7 +264,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
     mountQueue.push(instance)
     if (vnode.ref) {
         instance._collectRefs({
-            ref: vnode.ref.bind(instance, instance)
+            ref: vnode.ref.bind(vnode, instance)
         })
     }
     options.afterMount(instance);

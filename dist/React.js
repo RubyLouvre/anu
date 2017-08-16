@@ -368,8 +368,7 @@ function cloneElement(vnode, props) {
   } else if (vnode.ref) {
     obj.ref = vnode.ref;
   }
-  var configs = Object.assign(obj, vnode.props, props);
-  return createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
+  return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
 }
 
 //用于后端的元素节点
@@ -514,7 +513,6 @@ function getNs(type) {
   }
 }
 
-//import {scheduler} from "./scheduler";
 /**
  *组件的基类
  *
@@ -598,7 +596,6 @@ function setStateImpl(state, cb) {
       if (!this._dirty && (this._dirty = true)) {
         defer(function () {
           if (_this._dirty) {
-            console.log(_this.constructor.name, "异步被刷新1");
             _this._pendingCallbacks = _this._mountingCallbacks;
             options.refreshComponent(_this, []);
           }
@@ -607,14 +604,13 @@ function setStateImpl(state, cb) {
     } else if (!this._dirty && (this._dirty = true)) {
       //在DidMount钩子执行之前被子组件调用了setState方法
       options.refreshComponent(this, []);
-    } else {
-      defer(function () {
-        if (_this._dirty) {
-          console.log(_this.constructor.name, "异步被刷新2");
-          options.refreshComponent(_this, []);
-        }
-      });
     }
+    /*  defer(() => {
+        if (this._dirty) {
+          console.log(this.constructor.name, "异步被刷新2");
+          options.refreshComponent(this, []);
+        }
+      });*/
   }
 }
 
@@ -1836,7 +1832,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
     mountQueue.push(instance);
     if (vnode.ref) {
         instance._collectRefs({
-            ref: vnode.ref.bind(instance, instance)
+            ref: vnode.ref.bind(vnode, instance)
         });
     }
     options.afterMount(instance);
