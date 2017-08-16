@@ -21,7 +21,7 @@ function disposeStateless(vnode) {
   var instance = vnode._instance
   if (instance) {
     disposeVnode(instance._renderedVnode);
-    vnode._instance = null;
+    vnode._instance = NaN;
   }
 }
 
@@ -48,7 +48,7 @@ function disposeComponent(vnode) {
     if (node) {
       node._component = null;
     }
-    vnode._instance = instance._currentElement = null;
+    vnode._instance = instance._currentElement = NaN;
     disposeVnode(vnode._renderedVnode);
   }
 }

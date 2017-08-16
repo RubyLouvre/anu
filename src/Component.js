@@ -78,9 +78,10 @@ function setStateImpl(state, cb) {
   }
   // forceUpate是同步渲染
   if (state === true) {
-    this._forceUpdate = true;
-    options.refreshComponent(this, []);
-    this._dirty = false;
+    if (!this._dirty && (this._dirty = true)) {
+        this._forceUpdate = true;
+        options.refreshComponent(this, []);
+    }
   } else {
     // setState是异步渲染
     this._pendingStates.push(state);
@@ -92,32 +93,28 @@ function setStateImpl(state, cb) {
     }
     if (!this._hasDidMount) {
       //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-      devolveCallbacks.call(this, '_mountingCallbacks')
+      if(this._hasRendered)
+         devolveCallbacks.call(this, '_mountingCallbacks')
       if (!this._dirty && (this._dirty = true)) {
         defer(function () {
           if (_this._dirty) {
+            console.log(this.constructor.name, "异步被刷新1");
             _this._pendingCallbacks = _this._mountingCallbacks
             options.refreshComponent(_this, []);
           }
-          _this._dirty = false;
         }, 16);
       }
       return
     }
     //在DidMount钩子执行之前被子组件调用了setState方法
-    if (this._mountQueue) {
-      this._mountQueue.push(this);
-      return;
-    }
     if (!this._dirty && (this._dirty = true)) {
       options.refreshComponent(this, []);
-      defer(function () {
-        if (_this._dirty) {
-          console.log(this.constructor.name, "异步被刷新");
-          options.refreshComponent(_this, []);
-        }
-        _this._dirty = false;
-      }, 16);
+    //  defer(function () {
+    //    if (_this._dirty) {
+    //      console.log(this.constructor.name, "异步被刷新2");
+    //      options.refreshComponent(_this, []);
+    //    }
+    //  }, 16);
     }
   }
 }

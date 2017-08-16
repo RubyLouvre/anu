@@ -262,7 +262,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
 
   let rendered = renderComponent(instance, type, vnode, parentContext);
   instance._dirty = false;
-
+  instance._hasRendered = true
   let dom = mountVnode(rendered, instance._childContext, prevRendered, mountQueue);
 
   vnode._hostNode = dom;
@@ -372,6 +372,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   var nextState = instance._processPendingState(nextProps, nextContext);
   instance.props = lastProps;
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+    instance._dirty = false
     return dom;
   }
 
@@ -379,10 +380,10 @@ function _refreshComponent(instance, dom, mountQueue) {
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, nextContext);
   }
-
+  instance._updating = true
   instance.props = nextProps;
   instance.state = nextState;
-  instance._dirty = false
+  
   var lastRendered = vnode._renderedVnode
   var nextElement = instance._nextElement || vnode
   if (!lastRendered._hostNode) {
@@ -391,7 +392,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   }
   var rendered = renderComponent(instance, type, nextElement, nextContext);
   delete instance._nextElement
-  instance._updating = [];
+  
   dom = alignVnodes(lastRendered, rendered, dom, instance._childContext, mountQueue);
 
   nextElement._hostNode = dom;
@@ -403,6 +404,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.componentDidUpdate(lastProps, lastState, lastContext);
   }
   instance._updating = false
+  instance._dirty = false
   instance.__rerender = instance._rerender
 
   delete instance._rerender
@@ -587,8 +589,8 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
       delete el.old
       if (el.vtype > 1 && !old._instance) {
         //在这里发生没有实例化的情况
-        console.log('没有实例化')
-        dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
+        console.log('没有实例化',el, old, el === old)
+        dom = old._hostNode //mountVnode(el, parentContext, old._hostNode, innerMountQueue);
       } else if (el === old && old._hostNode) {
         //cloneElement
         dom = old._hostNode;

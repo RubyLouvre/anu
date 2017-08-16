@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-08-15
+ * by 司徒正美 Copyright 2017-08-16
  * 兼容yo-router
  */
 
@@ -219,7 +219,7 @@ function createElement(type, configs) {
       var val = configs[_i];
       switch (_i) {
         case "key":
-          key = val;
+          key = val + "";
           break;
         case "ref":
           ref = val;
@@ -583,9 +583,10 @@ function setStateImpl(state, cb) {
   }
   // forceUpate是同步渲染
   if (state === true) {
-    this._forceUpdate = true;
-    options.refreshComponent(this, []);
-    this._dirty = false;
+    if (!this._dirty && (this._dirty = true)) {
+      this._forceUpdate = true;
+      options.refreshComponent(this, []);
+    }
   } else {
     // setState是异步渲染
     this._pendingStates.push(state);
@@ -597,32 +598,27 @@ function setStateImpl(state, cb) {
     }
     if (!this._hasDidMount) {
       //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-      devolveCallbacks.call(this, '_mountingCallbacks');
+      if (this._hasRendered) devolveCallbacks.call(this, '_mountingCallbacks');
       if (!this._dirty && (this._dirty = true)) {
         defer(function () {
           if (_this._dirty) {
+            console.log(this.constructor.name, "异步被刷新1");
             _this._pendingCallbacks = _this._mountingCallbacks;
             options.refreshComponent(_this, []);
           }
-          _this._dirty = false;
         }, 16);
       }
       return;
     }
     //在DidMount钩子执行之前被子组件调用了setState方法
-    if (this._mountQueue) {
-      this._mountQueue.push(this);
-      return;
-    }
     if (!this._dirty && (this._dirty = true)) {
       options.refreshComponent(this, []);
-      defer(function () {
-        if (_this._dirty) {
-          console.log(this.constructor.name, "异步被刷新");
-          options.refreshComponent(_this, []);
-        }
-        _this._dirty = false;
-      }, 16);
+      //  defer(function () {
+      //    if (_this._dirty) {
+      //      console.log(this.constructor.name, "异步被刷新2");
+      //      options.refreshComponent(_this, []);
+      //    }
+      //  }, 16);
     }
   }
 }
@@ -1577,7 +1573,7 @@ function disposeStateless(vnode) {
   var instance = vnode._instance;
   if (instance) {
     disposeVnode(instance._renderedVnode);
-    vnode._instance = null;
+    vnode._instance = NaN;
   }
 }
 
@@ -1605,7 +1601,7 @@ function disposeComponent(vnode) {
     if (node) {
       node._component = null;
     }
-    vnode._instance = instance._currentElement = null;
+    vnode._instance = instance._currentElement = NaN;
     disposeVnode(vnode._renderedVnode);
   }
 }
@@ -1842,7 +1838,7 @@ function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
 
   var rendered = renderComponent(instance, type, vnode, parentContext);
   instance._dirty = false;
-
+  instance._hasRendered = true;
   var dom = mountVnode(rendered, instance._childContext, prevRendered, mountQueue);
 
   vnode._hostNode = dom;
@@ -1948,6 +1944,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   var nextState = instance._processPendingState(nextProps, nextContext);
   instance.props = lastProps;
   if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+    instance._dirty = false;
     return dom;
   }
 
@@ -1955,10 +1952,10 @@ function _refreshComponent(instance, dom, mountQueue) {
   if (instance.componentWillUpdate) {
     instance.componentWillUpdate(nextProps, nextState, nextContext);
   }
-
+  instance._updating = true;
   instance.props = nextProps;
   instance.state = nextState;
-  instance._dirty = false;
+
   var lastRendered = vnode._renderedVnode;
   var nextElement = instance._nextElement || vnode;
   if (!lastRendered._hostNode) {
@@ -1967,7 +1964,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   }
   var rendered = renderComponent(instance, type, nextElement, nextContext);
   delete instance._nextElement;
-  instance._updating = [];
+
   dom = alignVnodes(lastRendered, rendered, dom, instance._childContext, mountQueue);
 
   nextElement._hostNode = dom;
@@ -1979,6 +1976,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.componentDidUpdate(lastProps, lastState, lastContext);
   }
   instance._updating = false;
+  instance._dirty = false;
   instance.__rerender = instance._rerender;
 
   delete instance._rerender;
@@ -2160,8 +2158,8 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
       delete el.old;
       if (el.vtype > 1 && !old._instance) {
         //在这里发生没有实例化的情况
-        console.log('没有实例化');
-        dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
+        console.log('没有实例化', el, old, el === old);
+        dom = old._hostNode; //mountVnode(el, parentContext, old._hostNode, innerMountQueue);
       } else if (el === old && old._hostNode) {
         //cloneElement
         dom = old._hostNode;

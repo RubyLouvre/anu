@@ -249,7 +249,7 @@ describe('生命周期例子', function () {
         await browser
             .pause(200)
             .$apply()
-        expect(log.join('-')).toBe('inner-ounter')
+        expect(log.join('-')).toBe('inner-outer')
     });
     it("在componentWillMount中使用setState", async () => {
         var list = []
@@ -262,9 +262,14 @@ describe('生命周期例子', function () {
             }
             componentWillMount() {
                 this.setState({
+                    aaa: 222
+                },function(){
+                   list.push('555')
+                });
+                this.setState({
                     aaa: 333
                 },function(){
-                   list.push('4444')
+                    list.push('666')
                 });
             }
             render() {
@@ -275,8 +280,80 @@ describe('生命周期例子', function () {
 
         var s = React.render(<App />, div);
         await browser.pause(200).$apply();
-        expect(list.join('-')).toBe('111-333-4444');
+        expect(list.join('-')).toBe('333-555-666');
         expect(div.textContent || div.innerText).toBe("333");
     });
+    it("在componentWillMount中使用setState", async () => {
+        var list = []
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 111
+                };
+            }
+            componentWillMount() {
+                this.setState({
+                    aaa: 222
+                },function(){
+                   list.push('555')
+                });
+                this.setState({
+                    aaa: 333
+                },function(){
+                    list.push('666')
+                });
+            }
+            render() {
+                list.push(this.state.aaa)
+                return <p>{this.state.aaa}</p>;
+            }
+        }
 
+        var s = React.render(<App />, div);
+        await browser.pause(200).$apply();
+        expect(list.join('-')).toBe('333-555-666');
+        expect(div.textContent || div.innerText).toBe("333");
+    });
+    it("在componentDidMount中使用setState，会导致willMount, DidMout中的回调都延后", async () => {
+        var list = []
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 111
+                };
+            }
+          
+            componentWillMount() {
+                this.setState({
+                    aaa: 222
+                },function(){
+                    list.push('555')
+                });
+                this.setState({
+                    aaa: 333
+                },function(){
+                    list.push('666')
+                });
+            }
+            componentDidMount() {
+                this.setState({
+                    aaa: 444
+                },function(){
+                    list.push('777')
+                });
+            }
+      
+            render() {
+                list.push(this.state.aaa)
+                return <p>{this.state.aaa}</p>;
+            }
+        }
+
+        var s = React.render(<App />, div);
+        await browser.pause(200).$apply();
+        expect(list.join('-')).toBe('333-444-555-666-777');
+        expect(div.textContent || div.innerText).toBe("444");
+    });
 })
