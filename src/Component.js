@@ -42,10 +42,10 @@ Component.prototype = {
     forceUpdate(cb) {
         setStateImpl.call(this, true, cb)
     },
-    __collectRefs: function (a, b) {
+    __collectRefs: function (fn) {
         this
             .__pendingRefs
-            .push(a, b)
+            .push(fn)
     },
     __mergeStates: function (props, context) {
         var n = this.__pendingStates.length;

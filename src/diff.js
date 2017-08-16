@@ -54,16 +54,14 @@ export function isValidElement(vnode) {
 }
 
 
-function clearRefsAndMounts(queue, force) {
+function clearRefsAndMounts(queue) {
     queue.forEach(function (el) {
-        var arr = el.__pendingRefs;
-        if (arr) {
-            for (var i = 0, n = arr.length; i < n; i += 2) {
-                var obj = arr[i];
-                var value = arr[i + 1];
-                obj.ref(value);
+        var refFns = el.__pendingRefs;
+        if (refFns) {
+            for (var i = 0, refFn; refFn = refFns[i++];) {
+                refFn()
             }
-            arr.length = 0;
+            refFns.length = 0;
 
             if (el.componentDidMount) {
                 el.componentDidMount();
@@ -113,8 +111,8 @@ function renderByAnu(vnode, container, callback, parentContext) {
 }
 
 function genVnodes(vnode, container, parentContext, mountQueue) {
-    var nodes = getNodes(container);
-    var prevRendered = null;
+    let nodes = getNodes(container);
+    let prevRendered = null;
     //eslint-disable-next-line
     for (var i = 0, el; (el = nodes[i++]);) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
@@ -126,7 +124,7 @@ function genVnodes(vnode, container, parentContext, mountQueue) {
         }
     }
 
-    var rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue);
+    let rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue);
     container.appendChild(rootNode);
 
     return rootNode;
@@ -167,9 +165,8 @@ function genMountElement(vnode, type, prevRendered) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        var ns = getNs(type);
-        vnode.ns = ns;
-        var dom = createDOMElement(vnode);
+        vnode.ns = getNs(type);
+        let dom = createDOMElement(vnode);
         if (prevRendered)
             while (prevRendered.firstChild) {
                 dom.appendChild(prevRendered.firstChild);
@@ -180,10 +177,10 @@ function genMountElement(vnode, type, prevRendered) {
 }
 
 function mountElement(vnode, parentContext, prevRendered, mountQueue) {
-    let { type, props } = vnode;
+    let { type, props, _owner } = vnode;
     let dom = genMountElement(vnode, type, prevRendered);
     vnode._hostNode = dom;
-    var method = prevRendered
+    let method = prevRendered
         ? alignChildren
         : mountChildren
     method.call(0, vnode, dom, parentContext, mountQueue)
@@ -192,10 +189,8 @@ function mountElement(vnode, parentContext, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
 
-    if (vnode.ref && vnode._owner) {
-        vnode
-            ._owner
-            .__collectRefs(vnode, dom)
+    if (vnode.ref && _owner) {
+        _owner.__collectRefs(vnode.ref.bind(vnode, dom))
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
@@ -216,7 +211,7 @@ function mountChildren(vnode, parentNode, parentContext, mountQueue) {
 }
 
 function alignChildren(vnode, parentNode, parentContext, mountQueue) {
-    var children = vnode.props.children,
+    let children = vnode.props.children,
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
@@ -262,9 +257,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     mountQueue.push(instance)
     if (vnode.ref) {
-        instance.__collectRefs({
-            ref: vnode.ref.bind(vnode, instance)
-        })
+        instance.__collectRefs(vnode.ref.bind(vnode, instance))
     }
     options.afterMount(instance);
     return dom;
@@ -340,7 +333,7 @@ function refreshComponent(instance, mountQueue) {
 }
 
 function _refreshComponent(instance, dom, mountQueue) {
-    var {
+    let {
         lastProps,
         lastContext,
         state: lastState,
@@ -351,7 +344,7 @@ function _refreshComponent(instance, dom, mountQueue) {
   } = instance;
 
     lastProps = lastProps || nextProps;
-    var nextState = instance.__mergeStates(nextProps, nextContext);
+    let nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__dirty = false
@@ -366,12 +359,12 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.props = nextProps;
     instance.state = nextState;
 
-    var lastRendered = vnode._renderedVnode
-    var nextElement = instance._nextElement || vnode
+    let lastRendered = vnode._renderedVnode
+    let nextElement = instance._nextElement || vnode
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
-    var rendered = renderComponent(instance, type, nextElement, nextContext);
+    let rendered = renderComponent(instance, type, nextElement, nextContext);
     delete instance._nextElement
 
     dom = alignVnodes(lastRendered, rendered, dom, instance._childContext, mountQueue);
@@ -400,9 +393,9 @@ export function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueu
     } else if (!(lastVnode.type == nextVnode.type && lastVnode.key === nextVnode.key)) {
 
         disposeVnode(lastVnode);
-        var innerMountQueue = mountQueue.mountAll ? mountQueue : []
+        let innerMountQueue = mountQueue.mountAll ? mountQueue : []
         dom = mountVnode(nextVnode, parentContext, null, innerMountQueue);
-        var p = node.parentNode;
+        let p = node.parentNode;
         if (p) {
             p.replaceChild(dom, node);
             removeDOMElement(node);
@@ -472,10 +465,10 @@ function updateElementProps(lastVnode, nextVnode, dom) {
 }
 
 function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
-    var instance = nextVnode._instance = lastVnode._instance;
+    let instance = nextVnode._instance = lastVnode._instance;
     instance._nextElement = nextVnode
 
-    var nextProps = getComponentProps(nextVnode);
+    let nextProps = getComponentProps(nextVnode);
     instance.lastProps = instance.props;
     instance.lastContext = instance.context
 
@@ -517,8 +510,8 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
 
     var hashcode = {};
     children.forEach(function (el) {
-        var key = el.type + (el.key || "");
-        var list = hashcode[key];
+        let key = el.type + (el.key || "");
+        let list = hashcode[key];
         if (list) {
             list.push(el);
         } else {
@@ -526,10 +519,10 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
         }
     });
     newVchildren.forEach(function (el) {
-        var key = el.type + (el.key || "");
-        var list = hashcode[key];
+        let key = el.type + (el.key || "");
+        let list = hashcode[key];
         if (list) {
-            var old = list.shift();
+            let old = list.shift();
             if (old) {
                 el.old = old;
             } else {

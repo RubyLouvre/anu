@@ -550,8 +550,8 @@ Component.prototype = {
         setStateImpl.call(this, true, cb);
     },
 
-    __collectRefs: function __collectRefs(a, b) {
-        this.__pendingRefs.push(a, b);
+    __collectRefs: function __collectRefs(fn) {
+        this.__pendingRefs.push(fn);
     },
     __mergeStates: function __mergeStates(props, context) {
         var n = this.__pendingStates.length;
@@ -1611,16 +1611,14 @@ function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
 
-function clearRefsAndMounts(queue, force) {
+function clearRefsAndMounts(queue) {
     queue.forEach(function (el) {
-        var arr = el.__pendingRefs;
-        if (arr) {
-            for (var i = 0, n = arr.length; i < n; i += 2) {
-                var obj = arr[i];
-                var value = arr[i + 1];
-                obj.ref(value);
+        var refFns = el.__pendingRefs;
+        if (refFns) {
+            for (var i = 0, refFn; refFn = refFns[i++];) {
+                refFn();
             }
-            arr.length = 0;
+            refFns.length = 0;
 
             if (el.componentDidMount) {
                 el.componentDidMount();
@@ -1716,8 +1714,7 @@ function genMountElement(vnode, type, prevRendered) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        var ns = getNs(type);
-        vnode.ns = ns;
+        vnode.ns = getNs(type);
         var dom = createDOMElement(vnode);
         if (prevRendered) while (prevRendered.firstChild) {
             dom.appendChild(prevRendered.firstChild);
@@ -1729,7 +1726,8 @@ function genMountElement(vnode, type, prevRendered) {
 
 function mountElement(vnode, parentContext, prevRendered, mountQueue) {
     var type = vnode.type,
-        props = vnode.props;
+        props = vnode.props,
+        _owner = vnode._owner;
 
     var dom = genMountElement(vnode, type, prevRendered);
     vnode._hostNode = dom;
@@ -1740,8 +1738,8 @@ function mountElement(vnode, parentContext, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
 
-    if (vnode.ref && vnode._owner) {
-        vnode._owner.__collectRefs(vnode, dom);
+    if (vnode.ref && _owner) {
+        _owner.__collectRefs(vnode.ref.bind(vnode, dom));
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
@@ -1809,9 +1807,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     mountQueue.push(instance);
     if (vnode.ref) {
-        instance.__collectRefs({
-            ref: vnode.ref.bind(vnode, instance)
-        });
+        instance.__collectRefs(vnode.ref.bind(vnode, instance));
     }
     options.afterMount(instance);
     return dom;
