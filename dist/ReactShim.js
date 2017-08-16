@@ -1423,7 +1423,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
 
-function genVnodes(vnode, container, parentContext, mountQueue) {
+function genVnodes(vnode, container, context, mountQueue) {
     var nodes = getNodes(container);
     var prevRendered = null;
     //eslint-disable-next-line
@@ -1435,7 +1435,7 @@ function genVnodes(vnode, container, parentContext, mountQueue) {
         }
     }
 
-    var rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue);
+    var rootNode = mountVnode(vnode, context, prevRendered, mountQueue);
     container.appendChild(rootNode);
 
     return rootNode;
@@ -1458,14 +1458,14 @@ var patchAdapter = {
     14: updateStateless
 };
 
-function mountText(vnode, parentContext, prevRendered) {
+function mountText(vnode, context, prevRendered) {
     var node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
     vnode._hostNode = node;
     return node;
 }
 
-function mountVnode(vnode, parentContext, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, parentContext, prevRendered, mountQueue);
+function mountVnode(vnode, context, prevRendered, mountQueue) {
+    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function genMountElement(vnode, type, prevRendered) {
@@ -1482,7 +1482,7 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, parentContext, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue) {
     var type = vnode.type,
         props = vnode.props,
         _owner = vnode._owner;
@@ -1490,7 +1490,7 @@ function mountElement(vnode, parentContext, prevRendered, mountQueue) {
     var dom = genMountElement(vnode, type, prevRendered);
     vnode._hostNode = dom;
     var method = prevRendered ? alignChildren : mountChildren;
-    method.call(0, vnode, dom, parentContext, mountQueue);
+    method.call(0, vnode, dom, context, mountQueue);
 
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
@@ -1507,17 +1507,17 @@ function mountElement(vnode, parentContext, prevRendered, mountQueue) {
 }
 
 //将虚拟DOM转换为真实DOM并插入父元素
-function mountChildren(vnode, parentNode, parentContext, mountQueue) {
+function mountChildren(vnode, parentNode, context, mountQueue) {
     var children = vnode.props.children;
     for (var i = 0, n = children.length; i < n; i++) {
         var el = children[i];
-        var curNode = mountVnode(el, parentContext, null, mountQueue);
+        var curNode = mountVnode(el, context, null, mountQueue);
 
         parentNode.appendChild(curNode);
     }
 }
 
-function alignChildren(vnode, parentNode, parentContext, mountQueue) {
+function alignChildren(vnode, parentNode, context, mountQueue) {
     var children = vnode.props.children,
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
@@ -1526,7 +1526,7 @@ function alignChildren(vnode, parentNode, parentContext, mountQueue) {
     for (var i = 0; i < n; i++) {
         var el = children[i];
         var lastDom = childNodes[j];
-        var dom = mountVnode(el, parentContext, lastDom, mountQueue);
+        var dom = mountVnode(el, context, lastDom, mountQueue);
         if (dom === lastDom) {
             j++;
         }
@@ -1689,7 +1689,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     return dom;
 }
 
-function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueue) {
+function alignVnodes(lastVnode, nextVnode, node, context, mountQueue) {
 
     var dom = node;
     //eslint-disable-next-line
@@ -1700,7 +1700,7 @@ function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueue) {
 
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : [];
-        dom = mountVnode(nextVnode, parentContext, null, innerMountQueue);
+        dom = mountVnode(nextVnode, context, null, innerMountQueue);
         var p = node.parentNode;
         if (p) {
             p.replaceChild(dom, node);
@@ -1710,7 +1710,7 @@ function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
     } else if (lastVnode !== nextVnode) {
-        dom = updateVnode(lastVnode, nextVnode, node || lastVnode._hostNode, parentContext, mountQueue);
+        dom = updateVnode(lastVnode, nextVnode, node || lastVnode._hostNode, context, mountQueue);
     }
 
     return dom;
@@ -1735,21 +1735,21 @@ function updateText(lastVnode, nextVnode, dom) {
     return dom;
 }
 
-function updateElement(lastVnode, nextVnode, node, parentContext, mountQueue) {
+function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     var nextProps = nextVnode.props;
     if (lastVnode.props[HTML_KEY]) {
         while (node.firstChild) {
             node.removeChild(node.firstChild);
         }
-        mountChildren(nextVnode, node, parentContext, mountQueue);
-        updateElementProps(lastVnode, nextVnode, node, parentContext);
+        mountChildren(nextVnode, node, context, mountQueue);
+        updateElementProps(lastVnode, nextVnode, node, context);
     } else {
         if (nextProps[HTML_KEY]) {
             node.innerHTML = nextProps[HTML_KEY].__html;
         } else {
-            updateChildren(lastVnode, nextVnode, node, parentContext, mountQueue);
+            updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
-        updateElementProps(lastVnode, nextVnode, node, parentContext);
+        updateElementProps(lastVnode, nextVnode, node, context);
     }
     return node;
 }
@@ -1791,8 +1791,8 @@ function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) 
     return refreshComponent(instance, mountQueue);
 }
 
-function updateVnode(lastVnode, nextVnode, node, parentContext, mountQueue) {
-    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, node, parentContext, mountQueue);
+function updateVnode(lastVnode, nextVnode, node, context, mountQueue) {
+    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, node, context, mountQueue);
 }
 
 function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) {
