@@ -1,20 +1,20 @@
-import {patchStyle} from "./style";
+import { patchStyle } from "./style";
 
-import {addGlobalEvent, getBrowserName, isEventName, eventHooks} from "./event";
-import {oneObject, toLowerCase, noop, typeNumber} from "./util";
+import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
+import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
 var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" +
-        "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" +
-        "en,readOnly,selected",
-true);
+    "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" +
+    "en,readOnly,selected",
+    true);
 
 var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" +
-        "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" +
-        ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
-        "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
+    "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" +
+    ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
+    "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
 
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" +
-        "oup,label");
+    "oup,label");
 var xlink = "http://www.w3.org/1999/xlink";
 
 /**
@@ -84,7 +84,7 @@ var specialProps = {
 };
 
 function getHookType(name, val, type, dom) {
-    if (specialProps[name]) 
+    if (specialProps[name])
         return name;
     if (boolAttributes[name] && booleanTag[type]) {
         return "boolean";
@@ -105,9 +105,9 @@ function getHookTypeSVG(name, val, type, dom) {
         return "svgClass";
     }
 
-    if (specialProps[name]) 
+    if (specialProps[name])
         return name;
-    
+
     if (isEventName(name)) {
         return "__event__";
     }

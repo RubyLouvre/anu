@@ -391,9 +391,7 @@ function _refreshComponent(instance, dom, mountQueue) {
 }
 
 export function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueue) {
-    if (!lastVnode._hostNode) {
-        throw [lastVnode, "没有_hostNode属性"];
-    }
+    
     let dom = node;
     //eslint-disable-next-line
     if (nextVnode == null) {
@@ -475,11 +473,6 @@ function updateElementProps(lastVnode, nextVnode, dom) {
 
 function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
-
-    if (!instance._hasDidMount) {
-        throw lastVnode.type.name + "没有装载完毕";
-        return node;
-    }
     instance._nextElement = nextVnode
 
     var nextProps = getComponentProps(nextVnode);
