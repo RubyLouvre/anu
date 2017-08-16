@@ -48,6 +48,7 @@ function disposeComponent(vnode) {
     if (node) {
       node._component = null;
     }
+    vnode.ref && vnode.ref(null);
     vnode._instance = instance._currentElement = NaN;
     disposeVnode(vnode._renderedVnode);
   }

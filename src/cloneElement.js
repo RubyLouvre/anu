@@ -11,12 +11,12 @@ export function cloneElement(vnode, props) {
   if (vnode.key) {
     obj.key = vnode.key;
   }
+
   if (vnode.__refKey) {
     obj.ref = vnode.__refKey;
-  } else if (vnode.ref !== __ref) {
+  } else if (vnode.ref) {
     obj.ref = vnode.ref;
   }
-
   return createElement(
     vnode.type,
     Object.assign(obj, vnode.props, props),

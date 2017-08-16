@@ -1,5 +1,4 @@
 import { extend, isFn, options } from "./util";
-//import {scheduler} from "./scheduler";
 import { CurrentOwner, dirtyComponents } from "./createElement";
 import { win } from "./browser";
 
@@ -94,24 +93,21 @@ function setStateImpl(state, cb) {
       if (!this._dirty && (this._dirty = true)) {
         defer(() => {
           if (this._dirty) {
-            console.log(this.constructor.name, "异步被刷新1");
             this._pendingCallbacks = this._mountingCallbacks
             options.refreshComponent(this, []);
           }
         });
       }
-      return
-    } else if (!this._dirty && (this._dirty = true)) {
+    }else if (!this._dirty && (this._dirty = true)) {
       //在DidMount钩子执行之前被子组件调用了setState方法
       options.refreshComponent(this, []);
-      return
     }
-    defer(() => {
-      if (this._dirty) {
-        console.log(this.constructor.name, "异步被刷新2");
-        options.refreshComponent(_this, []);
-      }
-    });
+    /*  defer(() => {
+        if (this._dirty) {
+          console.log(this.constructor.name, "异步被刷新2");
+          options.refreshComponent(this, []);
+        }
+      });*/
   }
 }
 
