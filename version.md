@@ -57,7 +57,11 @@
 ## 1.0.8
 1. event.originalEvent更名为 event.nativeEvent
 2. 修正polyfill中forEach的BUG
-3. 调整scheduler机制
-4. 修正typeNumber在iE6－8下的BUG
-5. eventSystem.addGlobalEventListener更名为eventSystem.addGlobalEvent
-6. insertBfore在IE8的差异性
+3. 移除scheduler模块
+4. 移除instanceMap模块
+5. 修正typeNumber在iE6－8下的BUG
+6. eventSystem.addGlobalEventListener更名为eventSystem.addGlobalEvent
+7. insertBfore在IE8的差异性
+8. 修正ref BUG，ref是从上到下执行
+9. 确保组件在componentDidMount钩子执行setState后，所有回调应延迟到componentDidUpdate外执行
+10. _instance属性在mountComponent方法里应该尽快加入vnode中
