@@ -56,7 +56,7 @@ export function isValidElement(vnode) {
 
 function clearRefsAndMounts(queue, force) {
     queue.forEach(function (el) {
-        var arr = el._pendingRefs;
+        var arr = el.__pendingRefs;
         if (arr) {
             for (var i = 0, n = arr.length; i < n; i += 2) {
                 var obj = arr[i];
@@ -70,11 +70,11 @@ function clearRefsAndMounts(queue, force) {
                 el.componentDidMount = null;
             }
 
-            el._pendingCallbacks.splice(0).forEach(function (fn) {
+            el.__pendingCallbacks.splice(0).forEach(function (fn) {
                 fn.call(el);
             });
         }
-        el._hasDidMount = true;
+        el.__hasDidMount = true;
     });
     queue.length = 0;
 }
@@ -195,7 +195,7 @@ function mountElement(vnode, parentContext, prevRendered, mountQueue) {
     if (vnode.ref && vnode._owner) {
         vnode
             ._owner
-            ._collectRefs(vnode, dom)
+            .__collectRefs(vnode, dom)
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
@@ -235,34 +235,34 @@ function alignChildren(vnode, parentNode, parentContext, mountQueue) {
         parentNode.removeChild(childNodes[n])
     }
 }
-function mountComponent(vnode, parentContext, prevRendered, mountQueue) {
+function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type } = vnode;
 
     let props = getComponentProps(vnode);
-    let instance = new type(props, parentContext); //互相持有引用
+    let instance = new type(props, context); //互相持有引用
     vnode._instance = instance
     instance.props = instance.props || props;
-    instance.context = instance.context || parentContext;
+    instance.context = instance.context || context;
 
     if (instance.componentWillMount) {
         instance.componentWillMount();
-        instance.state = instance._processPendingState();
+        instance.state = instance.__mergeStates(props, context);
     }
 
     // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
     // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
     // '#comment', text: 'empty', vtype: 0} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-    let rendered = renderComponent(instance, type, vnode, parentContext);
-    instance._dirty = false;
-    instance._hasRendered = true
+    let rendered = renderComponent(instance, type, vnode, context);
+    instance.__dirty = false;
+    instance.__hasRendered = true
 
     let dom = mountVnode(rendered, instance._childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
 
     mountQueue.push(instance)
     if (vnode.ref) {
-        instance._collectRefs({
+        instance.__collectRefs({
             ref: vnode.ref.bind(vnode, instance)
         })
     }
@@ -284,7 +284,7 @@ export function renderComponent(instance, type, vnode, context) {
 function Stateless(render) {
     this._render = render
     this.refs = {}
-    this._collectRefs = noop
+    this.__collectRefs = noop
 }
 
 Stateless.prototype.render = function (vnode, context) {
@@ -298,10 +298,10 @@ Stateless.prototype.render = function (vnode, context) {
     vnode._renderedVnode = rendered
     return rendered
 }
-function mountStateless(vnode, parentContext, prevRendered, mountQueue) {
+function mountStateless(vnode, context, prevRendered, mountQueue) {
     let instance = new Stateless(vnode.type)
-    let rendered = instance.render(vnode, parentContext);
-    let dom = mountVnode(rendered, parentContext, prevRendered, mountQueue);
+    let rendered = instance.render(vnode, context);
+    let dom = mountVnode(rendered, context, prevRendered, mountQueue);
     return vnode._hostNode = dom;
 }
 
@@ -322,16 +322,16 @@ function refreshComponent(instance, mountQueue) {
     var dom = instance._currentElement._hostNode;
 
     dom = _refreshComponent(instance, dom, mountQueue);
-    instance._forceUpdate = false;
+    instance.__forceUpdate = false;
 
-    instance._pendingCallbacks.splice(0).forEach(function (fn) {
+    instance.__pendingCallbacks.splice(0).forEach(function (fn) {
         fn.call(instance);
     });
 
-    if (instance.__rerender) {
-        delete instance.__rerender
-        instance._pendingCallbacks = instance._updateCallbacks
-        instance._updateCallbacks = null
+    if (instance.__reRender) {
+        delete instance.__reRender
+        instance.__pendingCallbacks = instance.__tempUpdateCbs
+        instance.__tempUpdateCbs = null
 
         return refreshComponent(instance, []);
 
@@ -351,10 +351,10 @@ function _refreshComponent(instance, dom, mountQueue) {
   } = instance;
 
     lastProps = lastProps || nextProps;
-    var nextState = instance._processPendingState(nextProps, nextContext);
+    var nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
-    if (!instance._forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
-        instance._dirty = false
+    if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        instance.__dirty = false
         return dom;
     }
 
@@ -362,7 +362,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
-    instance._updating = true
+    instance.__updating = true
     instance.props = nextProps;
     instance.state = nextState;
 
@@ -381,17 +381,17 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentDidUpdate) {
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
-    instance._updating = false
-    instance._dirty = false
-    instance.__rerender = instance._rerender
+    instance.__updating = false
+    instance.__dirty = false
+    instance.__reRender = instance.__rerender
 
-    delete instance._rerender
+    delete instance.__rerender
     options.afterUpdate(instance);
     return dom
 }
 
 export function alignVnodes(lastVnode, nextVnode, node, parentContext, mountQueue) {
-    
+
     let dom = node;
     //eslint-disable-next-line
     if (nextVnode == null) {
@@ -480,9 +480,9 @@ function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) 
     instance.lastContext = instance.context
 
     if (instance.componentWillReceiveProps) {
-        instance._dirty = true;
+        instance.__dirty = true;
         instance.componentWillReceiveProps(nextProps, parentContext);
-        instance._dirty = false
+        instance.__dirty = false
     }
 
     instance.props = nextProps;
@@ -558,11 +558,6 @@ function updateChildren(vnode, newVnode, parentNode, parentContext, mountQueue) 
         var innerMountQueue = mountAll ? mountQueue : [];
         if (old) {
             delete el.old
-            /*if (el.vtype > 1 && !old._instance) {
-                //在这里发生没有实例化的情况
-                console.warn('没有实例化', el, el === old)
-                dom = mountVnode(el, parentContext, old._hostNode, innerMountQueue);
-            } else */
             if (el === old && old._hostNode) {
                 //cloneElement
                 dom = old._hostNode;

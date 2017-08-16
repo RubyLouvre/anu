@@ -62,9 +62,9 @@ var protectedProps = {
   mixin: 1,
   setState: 1,
   forceUpdate: 1,
-  _processPendingState: 1,
-  _pendingCallbacks: 1,
-  _pendingStates: 1
+  __processPendingState: 1,
+  __pendingCallbacks: 1,
+  __pendingStates: 1
 };
 
 function mixSpecIntoComponent(Ctor, spec) {

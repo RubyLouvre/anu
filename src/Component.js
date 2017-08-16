@@ -16,17 +16,17 @@ export function Component(props, context) {
     this.props = props;
     this.refs = {};
     this.state = null
-    this._dirty = true
-    this._pendingCallbacks = [];
-    this._pendingStates = [];
-    this._pendingRefs = [];
+    this.__dirty = true
+    this.__pendingCallbacks = [];
+    this.__pendingStates = [];
+    this.__pendingRefs = [];
     /*
-    * this._dirty = true 表示组件不能更新
-    * this._hasRendred = true 表示组件已经渲染了一次
-    * this._rerender = true 表示组件需要再渲染一次
-    * this._hasDidMount = true 表示组件及子孙已经都插入DOM树
-    * this._updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
-    * this._forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
+    * this.__dirty = true 表示组件不能更新
+    * this.__hasRendred = true 表示组件已经渲染了一次
+    * this.__rerender = true 表示组件需要再渲染一次
+    * this.__hasDidMount = true 表示组件及子孙已经都插入DOM树
+    * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
+    * this.__forceUpdate = true 用于强制组件更新，忽略shouldComponentUpdate的结果
     */
 }
 
@@ -42,18 +42,18 @@ Component.prototype = {
     forceUpdate(cb) {
         setStateImpl.call(this, true, cb)
     },
-    _collectRefs: function (a, b) {
+    __collectRefs: function (a, b) {
         this
-            ._pendingRefs
+            .__pendingRefs
             .push(a, b)
     },
-    _processPendingState: function (props, context) {
-        var n = this._pendingStates.length;
+    __mergeStates: function (props, context) {
+        var n = this.__pendingStates.length;
         if (n === 0) {
             return this.state;
         }
         var states = this
-            ._pendingStates
+            .__pendingStates
             .splice(0);
         var nextState = extend({}, this.state);
         for (var i = 0; i < n; i++) {
@@ -71,39 +71,39 @@ Component.prototype = {
 function setStateImpl(state, cb) {
 
     if (isFn(cb)) {
-        this._pendingCallbacks.push(cb);
+        this.__pendingCallbacks.push(cb);
     }
     // forceUpate是同步渲染
     if (state === true) {
-        if (!this._dirty && (this._dirty = true)) {
-            this._forceUpdate = true;
+        if (!this.__dirty && (this.__dirty = true)) {
+            this.__forceUpdate = true;
             options.refreshComponent(this, []);
         }
     } else {
         // setState是异步渲染
-        this._pendingStates.push(state);
+        this.__pendingStates.push(state);
         // 子组件在componentWillReiveProps调用父组件的setState方法
-        if (this._updating) {
-            devolveCallbacks.call(this, '_updateCallbacks')
-            this._rerender = true
-        } else if (!this._hasDidMount) {
+        if (this.__updating) {
+            devolveCallbacks.call(this, '__tempUpdateCbs')
+            this.__rerender = true
+        } else if (!this.__hasDidMount) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-            if (this._hasRendered)
-                devolveCallbacks.call(this, '_mountingCallbacks')
-            if (!this._dirty && (this._dirty = true)) {
+            if (this.__hasRendered)
+                devolveCallbacks.call(this, '__tempMountCbs')
+            if (!this.__dirty && (this.__dirty = true)) {
                 defer(() => {
-                    if (this._dirty) {
-                        this._pendingCallbacks = this._mountingCallbacks
+                    if (this.__dirty) {
+                        this.__pendingCallbacks = this.__tempMountCbs
                         options.refreshComponent(this, []);
                     }
                 });
             }
-        } else if (!this._dirty && (this._dirty = true)) {
+        } else if (!this.__dirty && (this.__dirty = true)) {
             //在DidMount钩子执行之前被子组件调用了setState方法
             options.refreshComponent(this, []);
         }
         /*  defer(() => {
-            if (this._dirty) {
+            if (this.__dirty) {
               console.log(this.constructor.name, "异步被刷新2");
               options.refreshComponent(this, []);
             }
@@ -112,10 +112,10 @@ function setStateImpl(state, cb) {
 }
 
 function devolveCallbacks(name) {
-    var args = this._pendingCallbacks
+    var args = this.__pendingCallbacks
     var list = this[name] = this[name] || []
     list.push.apply(list, args)
-    this._pendingCallbacks = []
+    this.__pendingCallbacks = []
 }
 var defer = win.requestAnimationFrame ||
     win.webkitRequestAnimationFrame ||
