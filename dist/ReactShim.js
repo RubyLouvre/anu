@@ -603,15 +603,8 @@ function setStateImpl(state, cb) {
                 });
             }
         } else if (!this.__dirty && (this.__dirty = true)) {
-            //在DidMount钩子执行之前被子组件调用了setState方法
             options.refreshComponent(this, []);
         }
-        /*  defer(() => {
-            if (this.__dirty) {
-              console.log(this.constructor.name, "异步被刷新2");
-              options.refreshComponent(this, []);
-            }
-          });*/
     }
 }
 
@@ -1348,7 +1341,6 @@ function disposeElement(vnode) {
 function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
-        instance._disposed = true;
         options.beforeUnmount(instance);
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();

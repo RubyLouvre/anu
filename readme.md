@@ -41,6 +41,8 @@ QQ交流学习群：  370262116
 2. ReactIE 支持IE6+, 拥有PropTypes, createClass, createFactory (需要与lib目录下的polyfill配套使用)
 3. ReactShim 要求浏览器支持es6 Map对象，并且与react1.6靠近，删除了PropTypes, createClass, createFactory
 
+### 开源协议 
+Apache Licene 2.0
 
 ### 低版本浏览器可能需要以下 语言补丁
 
