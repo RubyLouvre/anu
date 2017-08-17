@@ -1370,7 +1370,6 @@ var propHooks = {
 
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
-        console.log('xxxxxxxx');
         if (val && val.__html !== oldhtml) {
             dom.innerHTML = val.__html;
         }

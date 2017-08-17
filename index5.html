@@ -11,60 +11,44 @@
   <script type='text/babel'>
   var s
   window.onload = function(){
-     const log = [];
-    class Parent extends React.Component {
+    class App extends React.Component {
       constructor(){
             super(),
             this.state={
-                value: 'one'
+               a: 1
             }
         }
-      render() {
-        console.log('parent render ' + this.state.value);
-        log.push('parent render ' + this.state.value)
-        return <Child parent={this} value={this.state.value} />;
-      }
-    }
-    let updated = false;
-    class Child extends React.Component {
-      componentWillReceiveProps() {
-        if (updated) {
-          return;
+        componentDidMount(){
+          setTimeout(()=>{
+            this.setState({
+              a: 0
+            })
+          },3000)
         }
-        console.log('child componentWillReceiveProps ' + this.props.value);
-        log.push('child componentWillReceiveProps ' + this.props.value);
-        this.props.parent.setState({value: 'two'});
-        console.log('child componentWillReceiveProps done ' + this.props.value);
-        log.push('child componentWillReceiveProps done ' + this.props.value);
-        updated = true;
-      }
       render() {
-        console.log('child render ' + this.props.value);
-        log.push('child render ' + this.props.value);
-        return <div>{this.props.value}</div>;
+        return <div>{ this.state.a ? 
+            <div dangerouslySetInnerHTML={{__html:"<p>11111</p>"}}><span>333</span></div>:
+            <div dangerouslySetInnerHTML={{__html:"<p>2222</p>"}}></div>
+        }</div>
       }
     }
-    var container = document.createElement('div');
-    ReactDOM.render(<Parent />, container);
-     console.log('开始第二次react-dom.render')
+
+    class Child1 extends React.Component {
+     
+      render() {
+       
+        return <div dangerouslySetInnerHTML={{__html:"<p>11111</p>"}}><span>333</span></div>;
+      }
+    }
+    class Child2 extends React.Component {
       
-      ReactDOM.render(<Parent />, container);
-     console.log(log.join('\n '))
-    
-     /* expect(log).toEqual([
-        'parent render one',
-        'child render one',
-        'parent render one',
-        'child componentWillReceiveProps one',
-        'child componentWillReceiveProps done one',
-        'child render one',
-        'parent render two',
-        'child render two',
-      ]);*/
+       render() {
+        
+         return <div dangerouslySetInnerHTML={{__html:"<p>2222</p>"}}></div>;
+       }
+     }
 
-    //  done()
-
- //  s = ReactDOM.render(<App />, document.getElementById('example'));
+     s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 
@@ -74,7 +58,6 @@
 
     <div>开发者工具</div>
     <div id='example'></div>
-    <div id='example2'></div>
 
 </body>
 
