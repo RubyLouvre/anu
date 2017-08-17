@@ -849,7 +849,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         addEvent(dom, eventType, function (e) {
             var t = getRelatedTarget(e);
             if (!t || t !== dom && !dom.contains(t)) {
-                //由于不冒泡，因此只
+                //由于不冒泡，因此paths长度为1 
                 dispatchEvent(e, type, true);
             }
         });

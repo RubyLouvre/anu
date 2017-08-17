@@ -4,40 +4,36 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-  <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
-   <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script> 
+  <script type='text/javascript' src="./dist/ReactIE.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script> -->
      <script type='text/javascript' src="./lib/babel.js"></script>
+     <style>
+       .outer{
+         border: 1px solid rebeccapurple;
+         background: red;
+         width:290px;
+         height:290px;
+       }
+       .inner{
+         border: 1px solid rebeccapurple;
+         background: green;
+         margin:40px;
+         width:200px;
+         height:200px;
+       }
+       .inner2{
+         border: 1px solid rebeccapurple;
+         background: blue;
+         margin:40px;
+         width:100px;
+         height:100px;
+       }
+     </style>
   <script type='text/babel'>
   var s
   window.onload = function(){
-   
-    class B extends React.Component{
-      constructor(props) {
-        super(props);
-        this.state = {
-          bbb: 111
-        };
-      }
-      componentDidMount(){
-        console.log('B did mount', this.refs.b)
-      }
-      componentWillUnmount(){
-        console.log('B will unmount', this.refs.b)
-      }
-       componentWillUpdate(){
-        console.log('B will update', this.refs.b)
-      }
-      componentWillReceiveProps(){
 
-          this.setState({bbb:32424})
-      
-      }
-      render(){
-        return <div ref='b'>B组件<span ref={(e)=>{console.log(e, '!!!!')}}>{this.state.bbb}</span></div>
-      }
-    }
- 
     class App extends React.Component {
       constructor(props) {
         super(props);
@@ -46,29 +42,13 @@
         };
       }
       
-      componentDidMount(){
-        console.log('App did mount',this.refs.a)
-      
-         this.setState({aaa: 222})
-      }
-      componentWillUpdate(){
-        console.log('App will update',this.refs.a)
-      }
-      componentDidUpdate(){
-        console.log('App did update',this.refs.a)
-        
-      }
-      componentWillMount(){
-          console.log('App will mount')
-      }
-      change(e){
-      
-        this.setState({aaa: e}, function(){
-          console.log('setState cb')
-        })
-      }
+
       render() {
-        return <div ref='a' className="app">这里有东西{this.state.aaa }<B /></div>
+        return <div tabIndex={-1} className="outer" onFocus={()=>{ console.log('enter') }}  >
+              <div tabIndex={-1} className="inner" onFocus={()=>{ console.log('enter2') }} >
+                <div tabIndex={-1} className="inner2" onFocus={()=>{ console.log('enter3') }}>{this.state.aaa}</div>
+              </div>
+          </div>
       }
     }
 

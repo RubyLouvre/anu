@@ -916,7 +916,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         addEvent(dom, eventType, function (e) {
             var t = getRelatedTarget(e);
             if (!t || t !== dom && !dom.contains(t)) {
-                //由于不冒泡，因此只
+                //由于不冒泡，因此paths长度为1 
                 dispatchEvent(e, type, true);
             }
         });
@@ -1959,7 +1959,8 @@ if (msie < 9) {
     eventHooks[type] = function (dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
       addEvent(dom, eventType, function (e) {
-        dispatchEvent(e, type);
+        e.target = dom; //因此focusin事件的srcElement有问题，强行修正
+        dispatchEvent(e, type, true);
       });
     };
   });

@@ -53,7 +53,8 @@ if (msie < 9) {
     eventHooks[type] = function (dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
       addEvent(dom, eventType, function (e) {
-        dispatchEvent(e, type);
+        e.target = dom //因此focusin事件的srcElement有问题，强行修正
+        dispatchEvent(e, type, true);
       });
     };
   });
