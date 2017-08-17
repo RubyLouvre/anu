@@ -887,10 +887,7 @@ var fixFocus = {};
     eventHooks[type] = function (dom) {
         if (!fixFocus[type]) {
             fixFocus[type] = true;
-            addEvent(document, type, function (e) {
-                console.log(e.target);
-                dispatchEvent(e);
-            }, true);
+            addEvent(document, type, dispatchEvent, true);
         }
     };
 });
@@ -909,19 +906,30 @@ function getRelatedTarget(e) {
     }
     return e.fromElement === e.srcElement ? e.toElement : e.fromElement;
 }
+function contains(a, b) {
+    if (b) {
+        while (b = b.parentNode) {
+            if (b === a) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
         var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
         addEvent(dom, eventType, function (e) {
             var t = getRelatedTarget(e);
-            if (!t || t !== dom && !dom.contains(t)) {
+            if (!t || t !== dom && !contains(dom, t)) {
                 //由于不冒泡，因此paths长度为1 
                 dispatchEvent(e, type, true);
             }
         });
     };
 });
+
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
@@ -1792,26 +1800,21 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    updateElementProps(lastVnode, nextVnode, node, context);
+    nextVnode._hostNode = node;
 
-    return node;
-}
-
-function updateElementProps(lastVnode, nextVnode, dom) {
-    nextVnode._hostNode = dom;
     if (lastVnode.checkProps || nextVnode.checkProps) {
-        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom);
+        diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
     if (nextVnode.ref) {
-        nextVnode.ref(nextVnode._hostNode);
+        nextVnode.ref(node);
     }
-    return dom;
+    return node;
 }
 
-function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
+function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
     instance._nextElement = nextVnode;
 
@@ -1821,12 +1824,12 @@ function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) 
 
     if (instance.componentWillReceiveProps) {
         instance.__dirty = true;
-        instance.componentWillReceiveProps(nextProps, parentContext);
+        instance.componentWillReceiveProps(nextProps, context);
         instance.__dirty = false;
     }
 
     instance.props = nextProps;
-    instance.context = parentContext;
+    instance.context = context;
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }

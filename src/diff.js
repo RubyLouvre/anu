@@ -448,42 +448,37 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    updateElementProps(lastVnode, nextVnode, node, context);
+    nextVnode._hostNode = node;
 
-    return node;
-}
-
-
-function updateElementProps(lastVnode, nextVnode, dom) {
-    nextVnode._hostNode = dom;
     if (lastVnode.checkProps || nextVnode.checkProps) {
-        diffProps(nextVnode.props, lastVnode.props, nextVnode, lastVnode, dom);
+        diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
     if (nextVnode.ref) {
-        nextVnode.ref(nextVnode._hostNode);
+        nextVnode.ref(node);
     }
-    return dom;
+    return node;
 }
 
-function updateComponent(lastVnode, nextVnode, node, parentContext, mountQueue) {
+
+function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     let instance = nextVnode._instance = lastVnode._instance;
-    instance._nextElement = nextVnode
+    instance._nextElement = nextVnode;
 
     let nextProps = getComponentProps(nextVnode);
     instance.lastProps = instance.props;
-    instance.lastContext = instance.context
+    instance.lastContext = instance.context;
 
     if (instance.componentWillReceiveProps) {
         instance.__dirty = true;
-        instance.componentWillReceiveProps(nextProps, parentContext);
+        instance.componentWillReceiveProps(nextProps, context);
         instance.__dirty = false
     }
 
     instance.props = nextProps;
-    instance.context = parentContext;
+    instance.context = context;
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
