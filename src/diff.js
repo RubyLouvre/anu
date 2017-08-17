@@ -431,21 +431,25 @@ function updateText(lastVnode, nextVnode, dom) {
 }
 
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
+    let lastProps = lastVnode.props
     let nextProps = nextVnode.props;
-    if (lastVnode.props[HTML_KEY]) {
-        while (node.firstChild) {
-            node.removeChild(node.firstChild);
-        }
-        mountChildren(nextVnode, node, context, mountQueue);
-        updateElementProps(lastVnode, nextVnode, node, context);
+
+    if (nextProps[HTML_KEY]) {
+        lastProps.children.forEach(function (el) {
+            disposeVnode(el)
+        })
     } else {
-        if (nextProps[HTML_KEY]) {
-            node.innerHTML = nextProps[HTML_KEY].__html;
+        if (lastProps[HTML_KEY]) {
+            while (node.firstChild) {
+                node.removeChild(node.firstChild);
+            }
+            mountChildren(nextVnode, node, context, mountQueue);
         } else {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
-        updateElementProps(lastVnode, nextVnode, node, context);
     }
+    updateElementProps(lastVnode, nextVnode, node, context);
+
     return node;
 }
 

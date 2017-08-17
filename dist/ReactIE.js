@@ -1370,6 +1370,7 @@ var propHooks = {
 
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
+        console.log('xxxxxxxx');
         if (val && val.__html !== oldhtml) {
             dom.innerHTML = val.__html;
         }
@@ -2017,21 +2018,25 @@ function updateText(lastVnode, nextVnode, dom) {
 }
 
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
+    var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
-    if (lastVnode.props[HTML_KEY]) {
-        while (node.firstChild) {
-            node.removeChild(node.firstChild);
-        }
-        mountChildren(nextVnode, node, context, mountQueue);
-        updateElementProps(lastVnode, nextVnode, node, context);
+
+    if (nextProps[HTML_KEY]) {
+        lastProps.children.forEach(function (el) {
+            disposeVnode(el);
+        });
     } else {
-        if (nextProps[HTML_KEY]) {
-            node.innerHTML = nextProps[HTML_KEY].__html;
+        if (lastProps[HTML_KEY]) {
+            while (node.firstChild) {
+                node.removeChild(node.firstChild);
+            }
+            mountChildren(nextVnode, node, context, mountQueue);
         } else {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
-        updateElementProps(lastVnode, nextVnode, node, context);
     }
+    updateElementProps(lastVnode, nextVnode, node, context);
+
     return node;
 }
 
