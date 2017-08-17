@@ -882,24 +882,14 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-"blur,focus".replace(/\w+/g, function (type) {
+"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
         addEvent(dom, type, function (e) {
             dispatchEvent(e);
         }, true);
     };
 });
-String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-        var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
-        addEvent(dom, eventType, function (e) {
-            var t = e.relatedTarget;
-            if (!t || t !== dom && !dom.contains(t)) {
-                dispatchEvent(e, type);
-            }
-        });
-    };
-});
+
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
@@ -1933,6 +1923,18 @@ function fixIESubmit(dom) {
 }
 
 if (msie < 9) {
+  /**
+   * 
+  DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
+  对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
+  在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
+  在mouseout事件出发时，IE的toElement属性中保存着相关元素。
+  可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
+   */
+  var getRelatedTarget = function getRelatedTarget(e) {
+    return e.fromElement === e.target ? e.toElement : e.fromElement;
+  };
+
   String("focus,blur").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
@@ -1941,7 +1943,17 @@ if (msie < 9) {
       });
     };
   });
-
+  String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
+    eventHooks[type] = function (dom) {
+      var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
+      addEvent(dom, eventType, function (e) {
+        var t = getRelatedTarget(e);
+        if (!t || t !== dom && !dom.contains(t)) {
+          dispatchEvent(e, type);
+        }
+      });
+    };
+  });
   Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
     if (!("pageX" in event)) {
       var doc = event.target.ownerDocument || document;

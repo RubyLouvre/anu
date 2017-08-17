@@ -815,24 +815,14 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-"blur,focus".replace(/\w+/g, function (type) {
+"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
         addEvent(dom, type, function (e) {
             dispatchEvent(e);
         }, true);
     };
 });
-String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-        var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
-        addEvent(dom, eventType, function (e) {
-            var t = e.relatedTarget;
-            if (!t || t !== dom && !dom.contains(t)) {
-                dispatchEvent(e, type);
-            }
-        });
-    };
-});
+
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
