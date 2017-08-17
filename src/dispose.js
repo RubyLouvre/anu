@@ -1,4 +1,5 @@
 import { options } from "./util";
+
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;

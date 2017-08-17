@@ -1,4 +1,6 @@
 import { document, msie } from "./browser";
+import { propHooks } from "./diffProps";
+
 import {
   eventHooks,
   addEvent,
@@ -6,7 +8,7 @@ import {
   dispatchEvent,
   SyntheticEvent
 } from "./event";
-import { oneObject, clearArray } from "./util";
+import { oneObject, clearArray, HTML_KEY } from "./util";
 
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
@@ -37,9 +39,9 @@ function fixIEChangeHandle(e) {
 }
 function fixIEChange(dom) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
-  var eventType =
+  var mask =
     dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
-  addEvent(dom, eventType, fixIEChangeHandle);
+  addEvent(dom, mask, fixIEChangeHandle);
 }
 
 function fixIESubmit(dom) {
@@ -49,13 +51,32 @@ function fixIESubmit(dom) {
 }
 
 if (msie < 9) {
+  propHooks[HTML_KEY] = function (dom, name, val, lastProps) {
+    var oldhtml = lastProps[name] && lastProps[name].__html;
+    var html = val && val.__html;
+    if (html !== oldhtml) {
+      //IE8-会吃掉最前面的空白
+      dom.innerHTML = String.fromCharCode(0xFEFF) + html
+      var textNode = node.firstChild;
+      if (textNode.data.length === 1) {
+        node.removeChild(textNode);
+      } else {
+        textNode.deleteData(0, 1);
+      }
+    }
+  }
+
   String("focus,blur").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
-      var eventType = type === "focus" ? "focusin" : "focusout";
-      addEvent(dom, eventType, function (e) {
-        e.target = dom //因此focusin事件的srcElement有问题，强行修正
-        dispatchEvent(e, type, true);
-      });
+      var mark = '__' + type
+      if (!dom[mark]) {
+        dom[mark] = true
+        var mask = type === "focus" ? "focusin" : "focusout";
+        addEvent(dom, mask, function (e) {
+          e.target = dom //因此focusin事件的srcElement有问题，强行修正
+          dispatchEvent(e, type, true);
+        });
+      }
     };
   });
 

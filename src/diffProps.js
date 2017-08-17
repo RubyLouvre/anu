@@ -1,5 +1,4 @@
 import { patchStyle } from "./style";
-
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
@@ -122,7 +121,7 @@ var svgprops = {
     xlinkShow: "xlink:show"
 };
 var emptyStyle = {};
-var propHooks = {
+export var propHooks = {
     boolean: function (dom, name, val, lastProp) {
         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
@@ -195,8 +194,9 @@ var propHooks = {
 
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
-        if (val && val.__html !== oldhtml) {
-            dom.innerHTML = val.__html;
+        var html = val && val.__html;
+        if (html !== oldhtml) {
+            dom.innerHTML = html;
         }
     }
 };
