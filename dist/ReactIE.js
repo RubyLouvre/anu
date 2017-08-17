@@ -987,7 +987,7 @@ function isEventName(name) {
 }
 var isTouch = "ontouchstart" in document;
 
-function dispatchEvent(e, type) {
+function dispatchEvent(e, type, one) {
     //__type__ 在injectTapEventPlugin里用到
     // var bubble = e.__type__ || e.type;
     e = new SyntheticEvent(e);
@@ -1001,10 +1001,10 @@ function dispatchEvent(e, type) {
     }
 
     var paths = collectPaths(e);
-
+    if (one) {
+        paths = paths.slice(0, 1);
+    }
     var captured = bubble + "capture";
-
-    //scheduler.run();
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
@@ -1102,14 +1102,46 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
+var fixFocus = {};
+"blur,focus".replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
-        addEvent(dom, type, function (e) {
-            dispatchEvent(e);
-        }, true);
+        if (!fixFocus[type]) {
+            fixFocus[type] = true;
+            addEvent(document, type, function (e) {
+                console.log(e.target);
+                dispatchEvent(e);
+            }, true);
+        }
     };
 });
+/**
+ * 
+DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
+对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
+在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
+在mouseout事件出发时，IE的toElement属性中保存着相关元素。
+可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
+ */
+function getRelatedTarget(e) {
+    var t = e.relatedTarget;
+    if (t) {
+        return t;
+    }
+    return e.fromElement === e.srcElement ? e.toElement : e.fromElement;
+}
 
+String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
+    eventHooks[type] = function (dom) {
+        var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
+        addEvent(dom, eventType, function (e) {
+            var t = getRelatedTarget(e);
+            if (!t || t !== dom && !dom.contains(t)) {
+                //由于不冒泡，因此只
+                dispatchEvent(e, type, true);
+            }
+        });
+    };
+});
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
@@ -2165,18 +2197,6 @@ function fixIESubmit(dom) {
 }
 
 if (msie < 9) {
-  /**
-   * 
-  DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
-  对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
-  在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
-  在mouseout事件出发时，IE的toElement属性中保存着相关元素。
-  可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
-   */
-  var getRelatedTarget = function getRelatedTarget(e) {
-    return e.fromElement === e.target ? e.toElement : e.fromElement;
-  };
-
   String("focus,blur").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
@@ -2185,17 +2205,7 @@ if (msie < 9) {
       });
     };
   });
-  String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-      var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
-      addEvent(dom, eventType, function (e) {
-        var t = getRelatedTarget(e);
-        if (!t || t !== dom && !dom.contains(t)) {
-          dispatchEvent(e, type);
-        }
-      });
-    };
-  });
+
   Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
     if (!("pageX" in event)) {
       var doc = event.target.ownerDocument || document;
