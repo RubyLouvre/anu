@@ -36,16 +36,16 @@ function disposeElement(vnode) {
 }
 
 function disposeComponent(vnode) {
-    var instance = vnode._instance;
+    let instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        var node = instance._currentElement._hostNode
-        if (node) {
-            node._component = null;
+        let dom = instance._currentElement._hostNode
+        if (dom) {
+            dom._component = null;
         }
         vnode.ref && vnode.ref(null);
         vnode._instance = instance._currentElement = NaN;
