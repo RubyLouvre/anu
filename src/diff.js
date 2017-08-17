@@ -12,6 +12,7 @@ import {
     toLowerCase,
     getChildContext,
     noop,
+    clearArray,
     getComponentProps,
     __push
 } from "./util";
@@ -68,7 +69,7 @@ function clearRefsAndMounts(queue) {
                 el.componentDidMount = null;
             }
 
-            el.__pendingCallbacks.splice(0).forEach(function (fn) {
+            clearArray(el.__pendingCallbacks).forEach(function (fn) {
                 fn.call(el);
             });
         }
@@ -88,7 +89,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     let mountQueue = [];
     let lastVnode = container._component;
     mountQueue.mountAll = true
-   
+
     parentContext = parentContext || {}
     let rootNode = lastVnode
         ? alignVnodes(lastVnode, vnode, container.firstChild, parentContext, mountQueue)
@@ -318,7 +319,7 @@ function refreshComponent(instance, mountQueue) {
     dom = _refreshComponent(instance, dom, mountQueue);
     instance.__forceUpdate = false;
 
-    instance.__pendingCallbacks.splice(0).forEach(function (fn) {
+    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
         fn.call(instance);
     });
 
@@ -547,9 +548,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         let old = el.old,
             ref,
             dom,
-            queue = mountAll ? mountQueue : innerMountQueue;
+            queue = mountAll ? mountQueue : [];
         if (old) {
             delete el.old
+
             if (el === old && old._hostNode) {
                 //cloneElement
                 dom = old._hostNode;

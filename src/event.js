@@ -23,12 +23,14 @@ export function isEventName(name) {
 }
 export var isTouch = "ontouchstart" in document;
 
-export function dispatchEvent(e) {
+export function dispatchEvent(e, type) {
     //__type__ 在injectTapEventPlugin里用到
-    var bubble = e.__type__ || e.type;
-
+    // var bubble = e.__type__ || e.type;
     e = new SyntheticEvent(e);
-
+    if (type) {
+        e.type = type
+    }
+    var bubble = e.type;
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -150,7 +152,7 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
+"blur,focus".replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
         addEvent(
             dom,
@@ -162,7 +164,17 @@ eventHooks.wheel = function (dom) {
         );
     };
 });
-
+String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
+    eventHooks[type] = function (dom) {
+        var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
+        addEvent(dom, eventType, function (e) {
+            var t = e.relatedTarget;
+            if (!t || (t !== dom && !dom.contains(t))) {
+                dispatchEvent(e, type);
+            }
+        });
+    };
+});
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;

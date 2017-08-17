@@ -6,18 +6,13 @@ import {
   dispatchEvent,
   SyntheticEvent
 } from "./event";
-import { oneObject } from "./util";
+import { oneObject,clearArray } from "./util";
 
-function fireEvent(e, type) {
-  e = new SyntheticEvent(e);
-  e.type = type;
-  dispatchEvent(e);
-}
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInputHandle(e) {
   if (e.propertyName === "value") {
-    fireEvent(e, "input");
+    dispatchEvent(e, "input");
   }
 }
 function fixIEInput(dom) {
@@ -38,7 +33,7 @@ function fixIEChangeHandle(e) {
     }
   }
 
-  fireEvent(e, "change");
+  dispatchEvent(e, "change");
 }
 function fixIEChange(dom) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
@@ -58,19 +53,7 @@ if (msie < 9) {
     eventHooks[type] = function(dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
       addEvent(dom, eventType, function(e) {
-        fireEvent(e, type);
-      });
-    };
-  });
-
-  String("mouseenter,mouseleave").replace(/\w+/g, function(type) {
-    eventHooks[type] = function(dom) {
-      var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
-      addEvent(dom, eventType, function(e) {
-        var t = e.relatedTarget;
-        if (!t || (t !== dom && dom.contains(t))) {
-          fireEvent(e, type);
-        }
+        dispatchEvent(e, type);
       });
     };
   });

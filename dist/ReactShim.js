@@ -85,6 +85,10 @@ function toLowerCase(s) {
   return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
+function clearArray(a) {
+  return a.splice(0, a.length);
+}
+
 /**
  *
  *
@@ -560,7 +564,7 @@ Component.prototype = {
         if (n === 0) {
             return this.state;
         }
-        var states = this.__pendingStates.splice(0);
+        var states = clearArray(this.__pendingStates);
         var nextState = extend({}, this.state);
         for (var i = 0; i < n; i++) {
             var partial = states[i];
@@ -763,12 +767,14 @@ function isEventName(name) {
 }
 var isTouch = "ontouchstart" in document;
 
-function dispatchEvent(e) {
+function dispatchEvent(e, type) {
     //__type__ 在injectTapEventPlugin里用到
-    var bubble = e.__type__ || e.type;
-
+    // var bubble = e.__type__ || e.type;
     e = new SyntheticEvent(e);
-
+    if (type) {
+        e.type = type;
+    }
+    var bubble = e.type;
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -876,14 +882,24 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-"blur,focus,mouseenter,mouseleave".replace(/\w+/g, function (type) {
+"blur,focus".replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom) {
         addEvent(dom, type, function (e) {
             dispatchEvent(e);
         }, true);
     };
 });
-
+String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
+    eventHooks[type] = function (dom) {
+        var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
+        addEvent(dom, eventType, function (e) {
+            var t = e.relatedTarget;
+            if (!t || t !== dom && !dom.contains(t)) {
+                dispatchEvent(e, type);
+            }
+        });
+    };
+});
 if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
@@ -1383,7 +1399,7 @@ function clearRefsAndMounts(queue) {
                 el.componentDidMount = null;
             }
 
-            el.__pendingCallbacks.splice(0).forEach(function (fn) {
+            clearArray(el.__pendingCallbacks).forEach(function (fn) {
                 fn.call(el);
             });
         }
@@ -1627,7 +1643,7 @@ function refreshComponent(instance, mountQueue) {
     dom = _refreshComponent(instance, dom, mountQueue);
     instance.__forceUpdate = false;
 
-    instance.__pendingCallbacks.splice(0).forEach(function (fn) {
+    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
         fn.call(instance);
     });
 
@@ -1850,9 +1866,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         var old = el.old,
             ref = void 0,
             dom = void 0,
-            queue = mountAll ? mountQueue : innerMountQueue;
+            queue = mountAll ? mountQueue : [];
         if (old) {
             delete el.old;
+
             if (el === old && old._hostNode) {
                 //cloneElement
                 dom = old._hostNode;
@@ -1877,16 +1894,10 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
-function fireEvent(e, type) {
-  e = new SyntheticEvent(e);
-  e.type = type;
-  dispatchEvent(e);
-}
-
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
 function fixIEInputHandle(e) {
   if (e.propertyName === "value") {
-    fireEvent(e, "input");
+    dispatchEvent(e, "input");
   }
 }
 function fixIEInput(dom) {
@@ -1907,7 +1918,7 @@ function fixIEChangeHandle(e) {
     }
   }
 
-  fireEvent(e, "change");
+  dispatchEvent(e, "change");
 }
 function fixIEChange(dom) {
   //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
@@ -1926,19 +1937,7 @@ if (msie < 9) {
     eventHooks[type] = function (dom) {
       var eventType = type === "focus" ? "focusin" : "focusout";
       addEvent(dom, eventType, function (e) {
-        fireEvent(e, type);
-      });
-    };
-  });
-
-  String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-      var eventType = type === "mouseenter" ? "mouseover" : "mouseout";
-      addEvent(dom, eventType, function (e) {
-        var t = e.relatedTarget;
-        if (!t || t !== dom && dom.contains(t)) {
-          fireEvent(e, type);
-        }
+        dispatchEvent(e, type);
       });
     };
   });

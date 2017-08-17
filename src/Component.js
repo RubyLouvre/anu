@@ -1,4 +1,4 @@
-import { extend, isFn, options } from "./util";
+import { extend, isFn, options,clearArray } from "./util";
 import { CurrentOwner, dirtyComponents } from "./createElement";
 import { win } from "./browser";
 
@@ -52,9 +52,8 @@ Component.prototype = {
         if (n === 0) {
             return this.state;
         }
-        var states = this
-            .__pendingStates
-            .splice(0);
+        var states = clearArray(this
+            .__pendingStates)
         var nextState = extend({}, this.state);
         for (var i = 0; i < n; i++) {
             var partial = states[i];
