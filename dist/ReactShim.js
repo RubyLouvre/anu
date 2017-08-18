@@ -1972,9 +1972,9 @@ if (msie < 9) {
     if (html !== oldhtml) {
       //IE8-会吃掉最前面的空白
       dom.innerHTML = String.fromCharCode(0xFEFF) + html;
-      var textNode = node.firstChild;
+      var textNode = dom.firstChild;
       if (textNode.data.length === 1) {
-        node.removeChild(textNode);
+        dom.removeChild(textNode);
       } else {
         textNode.deleteData(0, 1);
       }
