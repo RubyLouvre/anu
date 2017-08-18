@@ -1,6 +1,6 @@
 /**
  * by 司徒正美 Copyright 2017-08-18
- * 兼容yo-router
+ * IE9+
  */
 
 (function (global, factory) {
@@ -2045,7 +2045,7 @@ function updateText(lastVnode, nextVnode, dom) {
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
-
+    nextVnode._hostNode = node;
     if (nextProps[HTML_KEY]) {
         lastProps.children.forEach(function (el) {
             disposeVnode(el);
@@ -2060,7 +2060,6 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    nextVnode._hostNode = node;
 
     if (lastVnode.checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
@@ -2193,7 +2192,7 @@ var React = {
   unmountComponentAtNode: unmountComponentAtNode,
   isValidElement: isValidElement,
   createClass: createClass,
-  version: "1.0.7",
+  version: "1.0.8",
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,

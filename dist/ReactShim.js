@@ -1,5 +1,5 @@
 /**
- * 此版本要求浏览器支持Map对象，没有createClass, createFactory, PropTypes, isValidElement,
+ * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
  * QQ 370262116 by 司徒正美 Copyright 2017-08-18
  */
@@ -1789,7 +1789,7 @@ function updateText(lastVnode, nextVnode, dom) {
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
-
+    nextVnode._hostNode = node;
     if (nextProps[HTML_KEY]) {
         lastProps.children.forEach(function (el) {
             disposeVnode(el);
@@ -1804,7 +1804,6 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    nextVnode._hostNode = node;
 
     if (lastVnode.checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
@@ -2033,7 +2032,7 @@ if (msie < 9) {
 }
 
 var React = {
-  version: "1.0.7",
+  version: "1.0.8",
   Children: Children, //为了react-redux
   render: render,
   findDOMNode: findDOMNode,

@@ -1,5 +1,5 @@
 /**
- * 兼容IE6-8的版本，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-18
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-18
  */
 
 (function (global, factory) {
@@ -2031,7 +2031,7 @@ function updateText(lastVnode, nextVnode, dom) {
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
-
+    nextVnode._hostNode = node;
     if (nextProps[HTML_KEY]) {
         lastProps.children.forEach(function (el) {
             disposeVnode(el);
@@ -2046,7 +2046,6 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    nextVnode._hostNode = node;
 
     if (lastVnode.checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
@@ -2275,7 +2274,7 @@ if (msie < 9) {
 }
 
 var React = {
-  version: "1.0.7",
+  version: "1.0.8",
   PropTypes: PropTypes,
   Children: Children, //为了react-redux
   render: render,

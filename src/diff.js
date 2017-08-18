@@ -433,7 +433,7 @@ function updateText(lastVnode, nextVnode, dom) {
 function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     let lastProps = lastVnode.props
     let nextProps = nextVnode.props;
-
+    nextVnode._hostNode = node;
     if (nextProps[HTML_KEY]) {
         lastProps.children.forEach(function (el) {
             disposeVnode(el)
@@ -448,7 +448,6 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
             updateChildren(lastVnode, nextVnode, node, context, mountQueue);
         }
     }
-    nextVnode._hostNode = node;
 
     if (lastVnode.checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, node);
