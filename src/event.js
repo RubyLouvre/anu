@@ -25,7 +25,6 @@ export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e, type, one) {
     //__type__ 在injectTapEventPlugin里用到
-    // var bubble = e.__type__ || e.type;
     e = new SyntheticEvent(e);
     if (type) {
         e.type = type
@@ -174,12 +173,12 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
 在mouseout事件出发时，IE的toElement属性中保存着相关元素。
 可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
  */
-function getRelatedTarget(e) {
+function getRelatedTarget(e, dom) {
     let t = e.relatedTarget;
     if (t) {
         return t;
     }
-    return e.fromElement === e.srcElement ?
+    return e.fromElement === dom ?
         e.toElement :
         e.fromElement;
 }
@@ -201,7 +200,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
             dom[mark] = true
             var mask = type === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function (e) {
-                let t = getRelatedTarget(e)
+                let t = getRelatedTarget(e, dom)
                 if (!t || (t !== dom && !contains(dom, t))) {
                     //由于不冒泡，因此paths长度为1 
                     dispatchEvent(e, type, true)
