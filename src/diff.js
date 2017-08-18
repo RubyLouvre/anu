@@ -548,7 +548,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             dom,
             queue = mountAll ? mountQueue : [];
         if (old) {
-            delete el.old
+           el.old = null
 
             if (el === old && old._hostNode) {
                 //cloneElement

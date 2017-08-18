@@ -2142,7 +2142,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             dom = void 0,
             queue = mountAll ? mountQueue : [];
         if (old) {
-            delete el.old;
+            el.old = null;
 
             if (el === old && old._hostNode) {
                 //cloneElement
@@ -2229,6 +2229,17 @@ if (msie < 9) {
         dom[mark] = true;
         var mask = type === "focus" ? "focusin" : "focusout";
         addEvent(dom, mask, function (e) {
+          //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/
+          //window
+          var tagName = e.srcElement.tagName;
+          if (!tagName) {
+            return;
+          }
+          // <body> #document
+          var tag = toLowerCase(tagName);
+          if (tag == "#document" || tag == "body") {
+            return;
+          }
           e.target = dom; //因此focusin事件的srcElement有问题，强行修正
           dispatchEvent(e, type, true);
         });

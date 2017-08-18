@@ -1,4 +1,4 @@
-var __type = Object.prototype.toString;
+let __type = Object.prototype.toString;
 export var __push = Array.prototype.push;
 
 export var HTML_KEY = "dangerouslySetInnerHTML";
