@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-08-18
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-20
  */
 
 (function (global, factory) {
@@ -1631,7 +1631,7 @@ function renderComponent(instance, type, vnode, context) {
     CurrentOwner.cur = null;
     rendered = checkNull(rendered, type);
     vnode._renderedVnode = rendered;
-    instance._childContext = getChildContext(instance, context);
+    instance._childContext = rendered.vtype ? getChildContext(instance, context) : context;
     return rendered;
 }
 
@@ -1893,12 +1893,11 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             });
         }
     }
-    var innerMountQueue = [];
     nextChildren.forEach(function (el, index) {
         var old = el.old,
             ref = void 0,
             dom = void 0,
-            queue = mountAll ? mountQueue : [];
+            queue = mountQueue;
         if (old) {
             el.old = null;
 
@@ -1909,11 +1908,14 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 dom = updateVnode(old, el, old._hostNode, context, queue);
             }
         } else {
+            if (el.vtype === 2 && !mountAll) {
+                queue = [];
+            }
             dom = mountVnode(el, context, null, queue);
         }
         ref = childNodes[index];
         if (dom !== ref) insertDOM(parentNode, dom, ref);
-        if (!mountAll) {
+        if (mountQueue !== queue) {
             clearRefsAndMounts(queue);
         }
     });
