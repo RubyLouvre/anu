@@ -50,6 +50,7 @@ describe('diffProps', function () {
         expect(dom.id).toBe('uuuu')
      
     })
+    
     it('改变属性', async() => {
         var index = 1
         class App extends React.Component {
