@@ -22,7 +22,7 @@ function disposeStateless(vnode) {
     var instance = vnode._instance
     if (instance) {
         disposeVnode(instance._renderedVnode);
-        vnode._instance = NaN;
+        vnode._instance = null;
     }
 }
 
@@ -49,7 +49,7 @@ function disposeComponent(vnode) {
             dom._component = null;
         }
         vnode.ref && vnode.ref(null);
-        vnode._instance = instance._currentElement = NaN;
+        vnode._instance = instance._currentElement = null;
         disposeVnode(vnode._renderedVnode);
     }
 }
