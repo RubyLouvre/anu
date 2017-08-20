@@ -192,8 +192,6 @@ var recyclables = {
 var stack = [];
 var EMPTY_CHILDREN = [];
 
-
-
 var CurrentOwner = {
     cur: null
 };
@@ -1593,7 +1591,7 @@ function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
         disposeVnode(instance._renderedVnode);
-        vnode._instance = NaN;
+        vnode._instance = null;
     }
 }
 
@@ -1621,7 +1619,7 @@ function disposeComponent(vnode) {
             dom._component = null;
         }
         vnode.ref && vnode.ref(null);
-        vnode._instance = instance._currentElement = NaN;
+        vnode._instance = instance._currentElement = null;
         disposeVnode(vnode._renderedVnode);
     }
 }
@@ -1650,7 +1648,7 @@ function unmountComponentAtNode(dom) {
     var prevVnode = dom._component;
     if (prevVnode) {
         var component = prevVnode._instance;
-        alignVnodes(prevVnode, {
+        alignVnode(prevVnode, {
             type: "#text",
             text: "empty",
             vtype: 0
@@ -1697,7 +1695,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     mountQueue.mountAll = true;
 
     parentContext = parentContext || {};
-    var rootNode = lastVnode ? alignVnodes(lastVnode, vnode, container.firstChild, parentContext, mountQueue) : genVnodes(vnode, container, parentContext, mountQueue);
+    var rootNode = lastVnode ? alignVnode(lastVnode, vnode, container.firstChild, parentContext, mountQueue) : genVnodes(vnode, container, parentContext, mountQueue);
 
     // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
     // 并且它有data-reactroot与data-react-checksum，有就根据数据生成字符串，得到比较数
@@ -1784,7 +1782,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
     var dom = genMountElement(vnode, type, prevRendered);
     vnode._hostNode = dom;
     var method = prevRendered ? alignChildren : mountChildren;
-    method.call(0, vnode, dom, context, mountQueue);
+    method(vnode, dom, context, mountQueue);
 
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
@@ -1905,7 +1903,7 @@ function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue
     var instance = lastTypeVnode._instance;
     var lastVnode = lastTypeVnode._renderedVnode;
     var nextVnode = instance.render(nextTypeVnode, context);
-    var dom = alignVnodes(lastVnode, nextVnode, node, context, mountQueue);
+    var dom = alignVnode(lastVnode, nextVnode, node, context, mountQueue);
     nextTypeVnode._hostNode = nextVnode._hostNode = dom;
     return dom;
 }
@@ -1966,7 +1964,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     var rendered = renderComponent(instance, type, nextElement, nextContext);
     delete instance._nextElement;
 
-    dom = alignVnodes(lastRendered, rendered, dom, instance._childContext, mountQueue);
+    dom = alignVnode(lastRendered, rendered, dom, instance._childContext, mountQueue);
 
     nextElement._hostNode = dom;
 
@@ -1982,17 +1980,14 @@ function _refreshComponent(instance, dom, mountQueue) {
     return dom;
 }
 
-function alignVnodes(lastVnode, nextVnode, node, context, mountQueue) {
+function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
 
     var dom = node;
     //eslint-disable-next-line
-    if (nextVnode == null) {
-        removeDOMElement(dom);
-        disposeVnode(lastVnode);
-    } else if (!(lastVnode.type == nextVnode.type && lastVnode.key === nextVnode.key)) {
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
 
         disposeVnode(lastVnode);
-        var innerMountQueue = mountQueue.mountAll ? mountQueue : [];
+        var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
         dom = mountVnode(nextVnode, context, null, innerMountQueue);
         var p = node.parentNode;
         if (p) {
@@ -2139,9 +2134,9 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         var old = el.old,
             ref = void 0,
             dom = void 0,
-            queue = mountQueue;
+            queue = mountAll ? mountQueue : [];
         if (old) {
-            el.old = null;
+            delete el.old;
 
             if (el === old && old._hostNode) {
                 //cloneElement
@@ -2150,14 +2145,11 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 dom = updateVnode(old, el, old._hostNode, context, queue);
             }
         } else {
-            if (el.vtype === 2 && !mountAll) {
-                queue = [];
-            }
             dom = mountVnode(el, context, null, queue);
         }
         ref = childNodes[index];
         if (dom !== ref) insertDOM(parentNode, dom, ref);
-        if (mountQueue !== queue) {
+        if (!mountAll) {
             clearRefsAndMounts(queue);
         }
     });

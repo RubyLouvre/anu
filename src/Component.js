@@ -1,5 +1,5 @@
 import { extend, isFn, options,clearArray } from "./util";
-import { CurrentOwner, dirtyComponents } from "./createElement";
+import { CurrentOwner } from "./createElement";
 import { win } from "./browser";
 
 

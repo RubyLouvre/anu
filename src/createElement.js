@@ -2,8 +2,6 @@ import { __push, typeNumber } from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 
-export var dirtyComponents = {}
-
 export var CurrentOwner = {
     cur: null
 };
