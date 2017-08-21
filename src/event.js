@@ -30,6 +30,7 @@ export function dispatchEvent(e, type, one) {
         e.type = type
     }
     var bubble = e.type;
+
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -123,6 +124,9 @@ try {
     document.addEventListener("test", null, opts);
 } catch (e) {
     // no catch
+}
+eventPropHooks.click = function(e){
+    return !!e.target.disabled
 }
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
