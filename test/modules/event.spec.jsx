@@ -259,6 +259,50 @@ describe('ReactDOM.render返回根组件的实例', function () {
 
 
     })
+    it('让focus能冒泡',async() => {
+        var aaa = ''
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                }
+            }
+
+            onFocus1() {
+                aaa += 'aaa '
+
+            }
+            onFocus2(e) {
+                aaa += 'bbb '
+            
+            }
+  
+            render() {
+                return<div onFocus={this.onFocus2} style={{width:200, height:200}}>
+                    <div id='focus2' tabIndex={-1} onFocus={this.onFocus1} style={{width:100, height:100}}>222
+                   　</div>
+                </div>
+              
+              
+            }
+        }
+
+ 
+        var s = ReactDOM.render(
+            <App/>, div)
+        await browser
+            .pause(100)
+            .click('#focus2')
+            .pause(100)
+            .$apply()
+
+        expect(aaa.trim()).toBe('aaa bbb')
+
+
+    })
     it('测试事件对象的属性', function () {
         var obj = {
             type: 'change',
