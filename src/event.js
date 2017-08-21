@@ -125,7 +125,7 @@ try {
 } catch (e) {
     // no catch
 }
-eventPropHooks.click = function(e){
+eventPropHooks.click = function (e) {
     return !!e.target.disabled
 }
 
@@ -177,14 +177,8 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
 在mouseout事件出发时，IE的toElement属性中保存着相关元素。
 可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
  */
-function getRelatedTarget(e, dom) {
-    let t = e.relatedTarget;
-    if (t) {
-        return t;
-    }
-    return e.fromElement === dom ?
-        e.toElement :
-        e.fromElement;
+function getRelatedTarget(e) {
+    return e.relatedTarget || e.toElement || e.fromElement || null
 }
 function contains(a, b) {
     if (b) {
