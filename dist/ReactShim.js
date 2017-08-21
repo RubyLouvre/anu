@@ -860,7 +860,7 @@ try {
     // no catch
 }
 eventPropHooks.click = function (e) {
-    return !!e.target.disabled;
+    return !e.target.disabled;
 };
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
