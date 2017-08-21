@@ -67,11 +67,11 @@ if (msie < 9) {
   }
 
   String("focus,blur").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-      var mark = '__' + type
+    eventHooks[type] = function (dom, name) {
+      var mark = '__' + name
       if (!dom[mark]) {
         dom[mark] = true
-        var mask = type === "focus" ? "focusin" : "focusout";
+        var mask = name === "focus" ? "focusin" : "focusout";
         addEvent(dom, mask, function (e) {
           //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/
           //window
@@ -81,7 +81,7 @@ if (msie < 9) {
           var tag = toLowerCase(tagName);
           if (tag == "#document" || tag == "body") { return; }
           e.target = dom //因此focusin事件的srcElement有问题，强行修正
-          dispatchEvent(e, type, true);
+          dispatchEvent(e, name, true);
         });
       }
     };

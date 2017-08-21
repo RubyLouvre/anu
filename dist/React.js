@@ -671,7 +671,7 @@ var Children = {
         return children.map(callback, context);
     },
     toArray: function toArray(children) {
-        return children.slice(0);
+        return children == null ? [] : Array.isArray(children) ? children.slice(0) : [children];
     }
 };
 
@@ -705,6 +705,7 @@ function dispatchEvent(e, type, one) {
         e.type = type;
     }
     var bubble = e.type;
+
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -788,9 +789,12 @@ try {
         }
     });
     document.addEventListener("test", null, opts);
-} catch (e) {}
-// no catch
-
+} catch (e) {
+    // no catch
+}
+eventPropHooks.click = function (e) {
+    return !!e.target.disabled;
+};
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -848,16 +852,16 @@ function contains(a, b) {
 }
 
 String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-        var mark = "__" + type;
+    eventHooks[type] = function (dom, name) {
+        var mark = "__" + name;
         if (!dom[mark]) {
             dom[mark] = true;
-            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            var mask = name === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function (e) {
                 var t = getRelatedTarget(e, dom);
                 if (!t || t !== dom && !contains(dom, t)) {
                     //由于不冒泡，因此paths长度为1 
-                    dispatchEvent(e, type, true);
+                    dispatchEvent(e, name, true);
                 }
             });
         }
@@ -1383,7 +1387,7 @@ var propHooks = {
                 addGlobalEvent(_name);
                 var hook = eventHooks[_name];
                 if (hook) {
-                    hook(dom, name);
+                    hook(dom, _name);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture

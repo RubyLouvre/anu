@@ -184,7 +184,7 @@ export var propHooks = {
                 addGlobalEvent(_name);
                 var hook = eventHooks[_name];
                 if (hook) {
-                    hook(dom, name);
+                    hook(dom, _name);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture

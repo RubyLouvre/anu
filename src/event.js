@@ -198,16 +198,16 @@ function contains(a, b) {
 };
 
 String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
-        var mark = "__" + type
+    eventHooks[type] = function (dom, name) {
+        var mark = "__" + name
         if (!dom[mark]) {
             dom[mark] = true
-            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            var mask = name === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function (e) {
                 let t = getRelatedTarget(e, dom)
                 if (!t || (t !== dom && !contains(dom, t))) {
                     //由于不冒泡，因此paths长度为1 
-                    dispatchEvent(e, type, true)
+                    dispatchEvent(e, name, true)
                 }
             });
         }
