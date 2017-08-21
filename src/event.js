@@ -198,7 +198,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
             dom[mark] = true
             var mask = name === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function (e) {
-                let t = getRelatedTarget(e, dom)
+                let t = getRelatedTarget(e)
                 if (!t || (t !== dom && !contains(dom, t))) {
                     //由于不冒泡，因此paths长度为1 
                     dispatchEvent(e, name, true)
