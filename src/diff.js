@@ -480,7 +480,7 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
         nextVnode.ref(instance);
     }
     return refreshComponent(instance, mountQueue);
-
+    
 }
 
 function updateVnode(lastVnode, nextVnode, node, context, mountQueue) {

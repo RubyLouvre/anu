@@ -69,3 +69,8 @@
 11. 修正updateElement方法中只执行一次dangerouslySetInnerHTML的BUG
 12. 处理mouseenter/mouseleave的兼容问题
 13. 处理focus/blur的兼容问题
+
+## 1.0.9
+1. disabled的元素不能触发点击事件
+2. 修正mouseenter/mouseleave在IE6－8中的BUG
+3. freshComponent时保证currentElement._hostNode存在

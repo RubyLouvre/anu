@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-21
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-22
  */
 
 (function (global, factory) {
@@ -531,6 +531,7 @@ function Component(props, context) {
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
     this.__pendingRefs = [];
+    this._currentElement = {};
     /*
     * this.__dirty = true 表示组件不能更新
     * this.__hasRendred = true 表示组件已经渲染了一次
@@ -580,7 +581,7 @@ function setStateImpl(state, cb) {
     }
     // forceUpate是同步渲染
     if (state === true) {
-        if (!this.__dirty && (this.__dirty = true)) {
+        if (this._currentElement._hostNode && !this.__dirty && (this.__dirty = true)) {
             this.__forceUpdate = true;
             options.refreshComponent(this, []);
         }
@@ -593,9 +594,16 @@ function setStateImpl(state, cb) {
             this.__rerender = true;
         } else if (!this.__hasDidMount) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-            if (this.__hasRendered) devolveCallbacks.call(this, '__tempMountCbs');
+            //componentWillMount时__dirty为true
+            if (this.__hasRendered) {
+                devolveCallbacks.call(this, '__tempMountCbs');
+            }
             if (!this.__dirty && (this.__dirty = true)) {
                 defer(function () {
+                    if (!_this._currentElement._hostNode) {
+                        setStateImpl(_this, {});
+                        return;
+                    }
                     if (_this.__dirty) {
                         _this.__pendingCallbacks = _this.__tempMountCbs;
                         options.refreshComponent(_this, []);

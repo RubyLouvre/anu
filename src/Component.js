@@ -1,4 +1,4 @@
-import { extend, isFn, options,clearArray } from "./util";
+import { extend, isFn, options, clearArray } from "./util";
 import { CurrentOwner } from "./createElement";
 import { win } from "./browser";
 
@@ -20,6 +20,7 @@ export function Component(props, context) {
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
     this.__pendingRefs = [];
+    this._currentElement = {}
     /*
     * this.__dirty = true 表示组件不能更新
     * this.__hasRendred = true 表示组件已经渲染了一次
@@ -74,7 +75,7 @@ function setStateImpl(state, cb) {
     }
     // forceUpate是同步渲染
     if (state === true) {
-        if (!this.__dirty && (this.__dirty = true)) {
+        if (this._currentElement._hostNode && !this.__dirty && (this.__dirty = true)) {
             this.__forceUpdate = true;
             options.refreshComponent(this, []);
         }
@@ -87,10 +88,16 @@ function setStateImpl(state, cb) {
             this.__rerender = true
         } else if (!this.__hasDidMount) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-            if (this.__hasRendered)
+            //componentWillMount时__dirty为true
+            if (this.__hasRendered) {
                 devolveCallbacks.call(this, '__tempMountCbs')
+            }
             if (!this.__dirty && (this.__dirty = true)) {
                 defer(() => {
+                    if (!this._currentElement._hostNode) {
+                        setStateImpl(this,{})
+                        return
+                    }
                     if (this.__dirty) {
                         this.__pendingCallbacks = this.__tempMountCbs
                         options.refreshComponent(this, []);
