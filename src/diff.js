@@ -12,6 +12,8 @@ import {
     toLowerCase,
     getChildContext,
     noop,
+    cbs,
+    devolveCallbacks,
     clearArray,
     getComponentProps,
     __push
@@ -53,6 +55,7 @@ export function unmountComponentAtNode(dom) {
 export function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
+
 
 
 function clearRefsAndMounts(queue) {
@@ -104,10 +107,11 @@ function renderByAnu(vnode, container, callback, parentContext) {
 
     var instance = vnode._instance;
     container._component = vnode;
+    clearRefsAndMounts(mountQueue);
     if (callback) {
         callback();
     }
-    clearRefsAndMounts(mountQueue);
+
     return instance || rootNode;
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
@@ -240,7 +244,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     vnode._instance = instance;
     instance.props = instance.props || props;
     instance.context = instance.context || context;
-
     if (instance.componentWillMount) {
         instance.componentWillMount();
         instance.state = instance.__mergeStates(props, context);
@@ -253,10 +256,10 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let rendered = renderComponent(instance, type, vnode, context);
     instance.__dirty = false;
     instance.__hasRendered = true;
-
-    let dom = mountVnode(rendered, instance._childContext, prevRendered, mountQueue);
+    instance.__diffing = true
+    let dom = mountVnode(rendered, instance.__childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
-
+    instance.__diffing = false
     mountQueue.push(instance);
     if (ref) {
         instance.__collectRefs(ref.bind(vnode, instance));
@@ -267,12 +270,14 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
 export function renderComponent(instance, type, vnode, context) {
     CurrentOwner.cur = instance;
+
     let rendered = instance.render();
+    instance.__blockRender = false
     instance._currentElement = vnode;
-    CurrentOwner.cur = null;
+
     rendered = checkNull(rendered, type);
     vnode._renderedVnode = rendered;
-    instance._childContext = rendered.vtype ? getChildContext(instance, context) : context;
+    instance.__childContext = rendered.vtype ? getChildContext(instance, context) : context;
     return rendered;
 }
 
@@ -282,10 +287,10 @@ function Stateless(render) {
     this.__collectRefs = noop;
 }
 
-Stateless.prototype.render = function (vnode, context) {
+Stateless.prototype.render = function (vnode, factory, context) {
     let props = getComponentProps(vnode);
-    let rendered = this.type(props, context);
-    rendered = checkNull(rendered, this.type);
+    let rendered = factory(props, context);
+    rendered = checkNull(rendered, factory);
     this.context = context;
     this.props = props;
     vnode._instance = this;
@@ -293,9 +298,11 @@ Stateless.prototype.render = function (vnode, context) {
     vnode._renderedVnode = rendered;
     return rendered;
 };
+
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    let instance = new Stateless(vnode.type);
-    let rendered = instance.render(vnode, context);
+    let factory = vnode.type
+    let instance = new Stateless(factory);
+    let rendered = instance.render(vnode, factory, context);
     let dom = mountVnode(rendered, context, prevRendered, mountQueue);
     return vnode._hostNode = dom;
 }
@@ -303,7 +310,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue) {
     let instance = lastTypeVnode._instance;
     let lastVnode = lastTypeVnode._renderedVnode;
-    let nextVnode = instance.render(nextTypeVnode, context);
+    let nextVnode = instance.render(nextTypeVnode, nextTypeVnode.type, context);
     let dom = alignVnode(lastVnode, nextVnode, node, context, mountQueue);
     nextTypeVnode._hostNode = nextVnode._hostNode = dom;
     return dom;
@@ -319,13 +326,14 @@ function refreshComponent(instance, mountQueue) {
     dom = _refreshComponent(instance, dom, mountQueue);
     instance.__forceUpdate = false;
 
-    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+    clearArray(instance[cbs]).forEach(function (fn) {
         fn.call(instance);
     });
 
     if (instance.__reRender) {
-        instance.__pendingCallbacks = instance.__tempUpdateCbs;
-        instance.__reRender = instance.__tempUpdateCbs = null;
+        devolveCallbacks(instance, '__tempUpdateCbs', cbs)
+
+        instance.__reRender = null;
 
         return refreshComponent(instance, []);
 
@@ -368,7 +376,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     let rendered = renderComponent(instance, type, nextElement, nextContext);
     delete instance._nextElement;
 
-    dom = alignVnode(lastRendered, rendered, dom, instance._childContext, mountQueue);
+    dom = alignVnode(lastRendered, rendered, dom, instance.__childContext, mountQueue);
 
     nextElement._hostNode = dom;
 
@@ -463,11 +471,9 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
 function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     let instance = nextVnode._instance = lastVnode._instance;
     instance._nextElement = nextVnode;
-
     let nextProps = getComponentProps(nextVnode);
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
-
     if (instance.componentWillReceiveProps) {
         instance.__dirty = true;
         instance.componentWillReceiveProps(nextProps, context);
@@ -480,7 +486,7 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
         nextVnode.ref(instance);
     }
     return refreshComponent(instance, mountQueue);
-    
+
 }
 
 function updateVnode(lastVnode, nextVnode, node, context, mountQueue) {
@@ -558,12 +564,15 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         }
         ref = childNodes[index];
         if (dom !== ref) insertDOM(parentNode, dom, ref);
-        if (!mountAll) {
+        if (!mountAll && queue.length) {
             clearRefsAndMounts(queue);
         }
     });
 }
 function insertDOM(parentNode, dom, ref) {
+    if (!dom) {
+        return console.warn('元素末初始化')
+    }
     if (!ref) {
         parentNode.appendChild(dom);
     } else {

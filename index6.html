@@ -5,55 +5,58 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
      <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script src="./test/react.js"></script>
+     <script src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
+     <style>
+       .tip{
+         display: none
+       }
+     
+       .g-up-tips{
+         background: green;
+       }
+       .hover .tip{
+         display: block;
+         width:400px;
+         height: 200px;
+         background: lemonchiffon;
+       }
+     </style>
   <script type='text/babel'>
   var s
   window.onload = function(){
    
-    class B extends React.Component{
-      componentDidMount(){
-        console.log('B did mount', this.refs.b)
-      }
-      componentWillUnmount(){
-        console.log('B will unmount', this.refs.b)
-      }
-      render(){
-        return <div ref='b'>B组件<span ref={(e)=>{console.log(e)}}>BBBBB</span></div>
-      }
-    }
-   class C extends React.Component{
-      componentDidMount(){
-        console.log('C did mount', this.refs.b)
-      }
-      render(){
-        return <p ref='b'>B组件<span ref={(e)=>{console.log(e)}}>CCC</span></p>
-      }
-    }
-   
+    
     class App extends React.Component {
       constructor(props) {
         super(props);
         this.state = {
-          aaa: 111
+          tip: 'g-up-tips',
+          text: 'xxxx'
         };
+
       }
-      componentDidMount(){
-        console.log('App did mount',this.refs.a)
-      }
-      componentWillUpdate(){
-        console.log('App will update',this.refs.a)
-      }
-      componentDidUpdate(){
-        console.log('App did update',this.refs.a)
-      }
-      change(e){
-      
-        this.setState({aaa: e}, function(){
-          console.log('setState cb')
-        })
-      }
+     
       render() {
-        return <div ref='a' className="app">这里有东西{this.state.aaa === 111 ? <B/>: <C/>}{this.state.aaa}</div>
+        return <div className={this.state.tip}
+        onMouseEnter={ ()=>{
+          console.log('enter')
+          this.setState({
+            tip:'g-up-tips hover'
+          })
+        }  }
+        onMouseLeave={ ()=>{
+          console.log('leave')
+          this.setState({
+            tip: 'g-up-tips'
+          })
+        }  }
+        
+        >
+            <span className="button"  >郑州</span>
+            <div className='tip'>{this.state.text}</div>
+          </div>
       }
     }
 
@@ -68,7 +71,7 @@
 
     <div>开发者工具</div>
     <div id='example'></div>
-
+    <div>1111</div>
 
 </body>
 

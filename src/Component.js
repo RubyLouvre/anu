@@ -1,4 +1,4 @@
-import { extend, isFn, options, clearArray } from "./util";
+import { extend, isFn, options, clearArray, devolveCallbacks, cbs } from "./util";
 import { CurrentOwner } from "./createElement";
 import { win } from "./browser";
 
@@ -17,7 +17,7 @@ export function Component(props, context) {
     this.refs = {};
     this.state = null
     this.__dirty = true
-    this.__pendingCallbacks = [];
+    this[cbs] = [];
     this.__pendingStates = [];
     this.__pendingRefs = [];
     this._currentElement = {}
@@ -84,22 +84,22 @@ function setStateImpl(state, cb) {
         this.__pendingStates.push(state);
         // 子组件在componentWillReiveProps调用父组件的setState方法
         if (this.__updating) {
-            devolveCallbacks.call(this, '__tempUpdateCbs')
+            devolveCallbacks(this, cbs, '__tempUpdateCbs')
             this.__rerender = true
         } else if (!this.__hasDidMount) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
             //componentWillMount时__dirty为true
             if (this.__hasRendered) {
-                devolveCallbacks.call(this, '__tempMountCbs')
+                devolveCallbacks(this, cbs, '__tempMountCbs')
             }
             if (!this.__dirty && (this.__dirty = true)) {
                 defer(() => {
                     if (!this._currentElement._hostNode) {
-                        setStateImpl(this,{})
+                        setStateImpl(this, {})
                         return
                     }
                     if (this.__dirty) {
-                        this.__pendingCallbacks = this.__tempMountCbs
+                        devolveCallbacks(this, '__tempMountCbs', cbs)
                         options.refreshComponent(this, []);
                     }
                 });
@@ -110,12 +110,6 @@ function setStateImpl(state, cb) {
     }
 }
 
-function devolveCallbacks(name) {
-    var args = this.__pendingCallbacks
-    var list = this[name] = this[name] || []
-    list.push.apply(list, args)
-    this.__pendingCallbacks = []
-}
 var defer = win.requestAnimationFrame ||
     win.webkitRequestAnimationFrame ||
     function (job) {

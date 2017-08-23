@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-08-22
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-23
  */
 
 (function (global, factory) {
@@ -170,6 +170,14 @@ function typeNumber(data) {
   }
   var a = numberMap[__type.call(data)];
   return a || 8;
+}
+var cbs = '__pendingCallbacks';
+function devolveCallbacks(el, name, name2) {
+  //把两个数组挪来挪去
+  var args = el[name];
+  var list = el[name2] = el[name2] || [];
+  list.push.apply(list, args);
+  args.length = 0;
 }
 
 function getComponentProps(vnode) {
@@ -530,7 +538,7 @@ function Component(props, context) {
     this.refs = {};
     this.state = null;
     this.__dirty = true;
-    this.__pendingCallbacks = [];
+    this[cbs] = [];
     this.__pendingStates = [];
     this.__pendingRefs = [];
     this._currentElement = {};
@@ -592,13 +600,13 @@ function setStateImpl(state, cb) {
         this.__pendingStates.push(state);
         // 子组件在componentWillReiveProps调用父组件的setState方法
         if (this.__updating) {
-            devolveCallbacks.call(this, '__tempUpdateCbs');
+            devolveCallbacks(this, cbs, '__tempUpdateCbs');
             this.__rerender = true;
         } else if (!this.__hasDidMount) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
             //componentWillMount时__dirty为true
             if (this.__hasRendered) {
-                devolveCallbacks.call(this, '__tempMountCbs');
+                devolveCallbacks(this, cbs, '__tempMountCbs');
             }
             if (!this.__dirty && (this.__dirty = true)) {
                 defer(function () {
@@ -607,7 +615,8 @@ function setStateImpl(state, cb) {
                         return;
                     }
                     if (_this.__dirty) {
-                        _this.__pendingCallbacks = _this.__tempMountCbs;
+                        devolveCallbacks(_this, '__tempMountCbs', cbs);
+                        // this.__pendingCallbacks = this.__tempMountCbs
                         options.refreshComponent(_this, []);
                     }
                 });
@@ -618,12 +627,6 @@ function setStateImpl(state, cb) {
     }
 }
 
-function devolveCallbacks(name) {
-    var args = this.__pendingCallbacks;
-    var list = this[name] = this[name] || [];
-    list.push.apply(list, args);
-    this.__pendingCallbacks = [];
-}
 var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
     setTimeout(job, 16);
 };
@@ -773,7 +776,7 @@ function isEventName(name) {
 }
 var isTouch = "ontouchstart" in document;
 
-function dispatchEvent(e, type, one) {
+function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
     e = new SyntheticEvent(e);
     if (type) {
@@ -786,10 +789,7 @@ function dispatchEvent(e, type, one) {
         return;
     }
 
-    var paths = collectPaths(e);
-    if (one) {
-        paths = paths.slice(0, 1);
-    }
+    var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     triggerEventFlow(paths, captured, e);
 
@@ -798,15 +798,17 @@ function dispatchEvent(e, type, one) {
     }
 }
 
-function collectPaths(e) {
-    var target = e.target;
+function collectPaths(from, end) {
     var paths = [];
     do {
-        var events = target.__events;
-        if (events) {
-            paths.push({ dom: target, events: events });
+        if (from === end) {
+            break;
         }
-    } while ((target = target.parentNode) && target.nodeType === 1);
+        var events = from.__events;
+        if (events) {
+            paths.push({ dom: from, events: events });
+        }
+    } while ((from = from.parentNode) && from.nodeType === 1);
     // target --> parentNode --> body --> html
     return paths;
 }
@@ -931,13 +933,48 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
             addEvent(dom, mask, function (e) {
                 var t = getRelatedTarget(e);
                 if (!t || t !== dom && !contains(dom, t)) {
+                    var common = getLowestCommonAncestor(dom, t);
                     //由于不冒泡，因此paths长度为1 
-                    dispatchEvent(e, name, true);
+                    dispatchEvent(e, name, common);
                 }
             });
         }
     };
 });
+
+function getLowestCommonAncestor(instA, instB) {
+    var depthA = 0;
+    for (var tempA = instA; tempA; tempA = tempA.parentNode) {
+        depthA++;
+    }
+    var depthB = 0;
+    for (var tempB = instB; tempB; tempB = tempB.parentNode) {
+        depthB++;
+    }
+
+    // If A is deeper, crawl up.
+    while (depthA - depthB > 0) {
+        instA = instA.parentNode;
+        depthA--;
+    }
+
+    // If B is deeper, crawl up.
+    while (depthB - depthA > 0) {
+        instB = instB.parentNode;
+        depthB--;
+    }
+
+    // Walk in lockstep until we find a match.
+    var depth = depthA;
+    while (depth--) {
+        if (instA === instB) {
+            return instA;
+        }
+        instA = instA.parentNode;
+        instB = instB.parentNode;
+    }
+    return null;
+}
 
 if (isTouch) {
     eventHooks.click = noop;
@@ -1472,10 +1509,11 @@ function renderByAnu(vnode, container, callback, parentContext) {
 
     var instance = vnode._instance;
     container._component = vnode;
+    clearRefsAndMounts(mountQueue);
     if (callback) {
         callback();
     }
-    clearRefsAndMounts(mountQueue);
+
     return instance || rootNode;
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
@@ -1605,7 +1643,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     vnode._instance = instance;
     instance.props = instance.props || props;
     instance.context = instance.context || context;
-
     if (instance.componentWillMount) {
         instance.componentWillMount();
         instance.state = instance.__mergeStates(props, context);
@@ -1618,10 +1655,10 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     var rendered = renderComponent(instance, type, vnode, context);
     instance.__dirty = false;
     instance.__hasRendered = true;
-
-    var dom = mountVnode(rendered, instance._childContext, prevRendered, mountQueue);
+    instance.__diffing = true;
+    var dom = mountVnode(rendered, instance.__childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
-
+    instance.__diffing = false;
     mountQueue.push(instance);
     if (ref) {
         instance.__collectRefs(ref.bind(vnode, instance));
@@ -1632,12 +1669,14 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
 function renderComponent(instance, type, vnode, context) {
     CurrentOwner.cur = instance;
+
     var rendered = instance.render();
+    instance.__blockRender = false;
     instance._currentElement = vnode;
-    CurrentOwner.cur = null;
+
     rendered = checkNull(rendered, type);
     vnode._renderedVnode = rendered;
-    instance._childContext = rendered.vtype ? getChildContext(instance, context) : context;
+    instance.__childContext = rendered.vtype ? getChildContext(instance, context) : context;
     return rendered;
 }
 
@@ -1647,10 +1686,10 @@ function Stateless(render) {
     this.__collectRefs = noop;
 }
 
-Stateless.prototype.render = function (vnode, context) {
+Stateless.prototype.render = function (vnode, factory, context) {
     var props = getComponentProps(vnode);
-    var rendered = this.type(props, context);
-    rendered = checkNull(rendered, this.type);
+    var rendered = factory(props, context);
+    rendered = checkNull(rendered, factory);
     this.context = context;
     this.props = props;
     vnode._instance = this;
@@ -1658,9 +1697,11 @@ Stateless.prototype.render = function (vnode, context) {
     vnode._renderedVnode = rendered;
     return rendered;
 };
+
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    var instance = new Stateless(vnode.type);
-    var rendered = instance.render(vnode, context);
+    var factory = vnode.type;
+    var instance = new Stateless(factory);
+    var rendered = instance.render(vnode, factory, context);
     var dom = mountVnode(rendered, context, prevRendered, mountQueue);
     return vnode._hostNode = dom;
 }
@@ -1668,7 +1709,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue) {
     var instance = lastTypeVnode._instance;
     var lastVnode = lastTypeVnode._renderedVnode;
-    var nextVnode = instance.render(nextTypeVnode, context);
+    var nextVnode = instance.render(nextTypeVnode, nextTypeVnode.type, context);
     var dom = alignVnode(lastVnode, nextVnode, node, context, mountQueue);
     nextTypeVnode._hostNode = nextVnode._hostNode = dom;
     return dom;
@@ -1683,13 +1724,14 @@ function refreshComponent(instance, mountQueue) {
     dom = _refreshComponent(instance, dom, mountQueue);
     instance.__forceUpdate = false;
 
-    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+    clearArray(instance[cbs]).forEach(function (fn) {
         fn.call(instance);
     });
 
     if (instance.__reRender) {
-        instance.__pendingCallbacks = instance.__tempUpdateCbs;
-        instance.__reRender = instance.__tempUpdateCbs = null;
+        devolveCallbacks(instance, '__tempUpdateCbs', cbs);
+
+        instance.__reRender = null;
 
         return refreshComponent(instance, []);
     }
@@ -1730,7 +1772,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     var rendered = renderComponent(instance, type, nextElement, nextContext);
     delete instance._nextElement;
 
-    dom = alignVnode(lastRendered, rendered, dom, instance._childContext, mountQueue);
+    dom = alignVnode(lastRendered, rendered, dom, instance.__childContext, mountQueue);
 
     nextElement._hostNode = dom;
 
@@ -1823,11 +1865,9 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
 function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
     instance._nextElement = nextVnode;
-
     var nextProps = getComponentProps(nextVnode);
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
-
     if (instance.componentWillReceiveProps) {
         instance.__dirty = true;
         instance.componentWillReceiveProps(nextProps, context);
@@ -1915,12 +1955,15 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         }
         ref = childNodes[index];
         if (dom !== ref) insertDOM(parentNode, dom, ref);
-        if (!mountAll) {
+        if (!mountAll && queue.length) {
             clearRefsAndMounts(queue);
         }
     });
 }
 function insertDOM(parentNode, dom, ref) {
+    if (!dom) {
+        return console.warn('元素末初始化');
+    }
     if (!ref) {
         parentNode.appendChild(dom);
     } else {
@@ -2001,7 +2044,7 @@ if (msie < 9) {
             return;
           }
           e.target = dom; //因此focusin事件的srcElement有问题，强行修正
-          dispatchEvent(e, name, true);
+          dispatchEvent(e, name, dom.parentNode);
         });
       }
     };

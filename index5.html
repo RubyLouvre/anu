@@ -3,62 +3,71 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./test/react.js"></script>
-     <script type='text/javascript' src="./test/react-dom.js"></script> -->
+    <meta name="viewport" content="width=device-width">   
+  <script type='text/javascript' src="./dist/ReactIE.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script> -->
      <script type='text/javascript' src="./lib/babel.js"></script>
+     <style>
+       .outer{
+         border: 1px solid rebeccapurple;
+         background: red;
+         width:290px;
+         height:290px;
+       }
+       .inner{
+         border: 1px solid rebeccapurple;
+         background: green;
+         margin:40px;
+         width:200px;
+         height:200px;
+       }
+       .inner2{
+         border: 1px solid rebeccapurple;
+         background: blue;
+         margin:40px;
+         width:100px;
+         height:100px;
+       }
+     </style>
   <script type='text/babel'>
   var s
   window.onload = function(){
+
     class App extends React.Component {
-      constructor(){
-            super(),
-            this.state={
-               a: 1
-            }
-        }
-        componentDidMount(){
-          setTimeout(()=>{
-            this.setState({
-              a: 0
-            })
-          },3000)
-        }
-      render() {
-        return <div>{ this.state.a ? 
-            <div dangerouslySetInnerHTML={{__html:"<p>11111</p>"}}><span>333</span></div>:
-            <div dangerouslySetInnerHTML={{__html:"<p>2222</p>"}}></div>
-        }</div>
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 111
+        };
       }
-    }
-
-    class Child1 extends React.Component {
-     
-      render() {
-       
-        return <div dangerouslySetInnerHTML={{__html:"<p>11111</p>"}}><span>333</span></div>;
-      }
-    }
-    class Child2 extends React.Component {
       
-       render() {
-        
-         return <div dangerouslySetInnerHTML={{__html:"<p>2222</p>"}}></div>;
-       }
-     }
 
-     s = ReactDOM.render(<App />, document.getElementById('example'));
+      render() {
+        return <div tabIndex={-1} className="outer" 
+                 onFocus={()=>{ console.log('1111') }} >
+              <div tabIndex={-1} className="inner" 
+                onFocus={()=>{ console.log('2222') }}>
+                <div tabIndex={-1} className="inner2" 
+                onFocus={()=>{ console.log('3333') }}
+                >{this.state.aaa}</div>
+              </div>
+          </div>
+      }
+    }
+
+
+   s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 
 </head>
-
 <body>
-
-    <div>开发者工具</div>
-    <div id='example'></div>
-
-</body>
-
-</html>
+    
+        <div>开发者工具</div>
+        <div id='example'></div>
+    
+    
+    </body>
+    
+    </html>

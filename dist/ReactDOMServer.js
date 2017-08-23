@@ -119,6 +119,8 @@ function typeNumber(data) {
   return a || 8;
 }
 
+
+
 function getComponentProps(vnode) {
   var defaultProps = vnode.type.defaultProps;
   var props = vnode.props;

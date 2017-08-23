@@ -4,73 +4,81 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
-    <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+  
      <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
   var s
   window.onload = function(){
    
-   
-   
+    var list = []
     class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 111
-        };
-      }
-      componentWillMount(){
-        this.setState({
-          aaa: 222
-        }, function(){
-          console.log('callback', new Date - 0)
-        })
-        console.log('App will mount',this.refs.a, new Date - 0)
-      }
-      componentDidMount(){
-         this.setState({
-          aaa: 3333
-        }, function(){
-          console.log('callback2', new Date - 0)
-        })
-        console.log('App did mount',this.refs.a, new Date - 0)
-      }
-      componentWillUpdate(){
-        console.log('App will update',this.refs.a.innerHTML, new Date - 0)
-      }
-      componentDidUpdate(){
-        console.log('App did update',this.refs.a.innerHTML, new Date - 0)
-      }
-      /*
-      change(e){
-      
-        this.setState({aaa: 1111}, function(){
-          console.log('setState cb')
-        })
-         this.setState({aaa: 2222}, function(){
-          console.log('setState cb')
-        })
-      }
-      update(e){
-          this.state.aaa = 444
-          this.forceUpdate(function(){
-           console.log('forceUpdate cb')
-         })
-          this.state.aaa = 555
-          this.forceUpdate(function(){
-           console.log('forceUpdate cb')
-         })
-      }
-        */
-      render() {
-        return <div ref='a' className="app">这里有东西{this.state.aaa}</div>
-      }
+        constructor(props) {
+            super(props)
+            this.state = {
+                aaa: 'app render'
+            }
+        }
+        componentWillMount() {
+          //  list.push('app will mount')
+            console.log('app will mount')
+        }
+        componentDidMount() {
+            list.push('app did mount')
+            console.log('app did mount')
+        }
+
+        componentWillUpdate() {
+            list.push('app will update')
+            console.log('app will update')
+        }
+        componentDidUpdate() {
+            list.push('app did update')
+            console.log('app did update')
+        }
+        render() {
+            list.push(this.state.aaa)
+            console.log(this.state.aaa)
+            return <div ><A parent={this} />{this.state.aaa}</div>
+        }
+    }
+    class A extends React.Component {
+        componentWillMount() {
+            console.log('让父节点更新')
+            this.props.parent.setState({
+                aaa: 'app new render'
+            }, function(){
+                console.log('app new render cb')
+            })
+            this.props.parent.setState({
+                aaa: 'app new render2'
+            },function(){
+                console.log('app new render2 cb')
+            })
+        }
+        componentWillReceiveProps() {
+            console.log('child receive')
+            list.push('child receive')
+        }
+        componentDidMount() {
+            console.log('child did mount')
+        }
+        componentDidUpdate() {
+            console.log('child did update')
+        }
+        render() {
+            console.log('A render')
+            return <p>A</p>
+        }
     }
 
 
    s = ReactDOM.render(<App />, document.getElementById('example'));
+   setTimeout(function(){
+    //   console.log(list.join('\n'))
+   })
   }
   </script>
 
