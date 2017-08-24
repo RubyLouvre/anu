@@ -55,7 +55,7 @@ function collectPaths(from, end) {
         if (events) {
             paths.push({ dom: from, events: events });
         }
-       
+
     } while ((from = from.parentNode) && from.nodeType === 1);
     // target --> parentNode --> body --> html
     return paths;
@@ -175,10 +175,13 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
 对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
 在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
 在mouseout事件出发时，IE的toElement属性中保存着相关元素。
-可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
+但fromElement与toElement可能同时都有值
  */
 function getRelatedTarget(e) {
-    return e.relatedTarget || e.toElement || e.fromElement || null
+    if (!e.timeStamp) {
+        e.relatedTarget = e.type === 'mouseover'?  e.fromElement: e.toElement 
+    }
+    return e.relatedTarget
 }
 function contains(a, b) {
     if (b) {

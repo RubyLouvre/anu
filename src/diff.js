@@ -59,24 +59,24 @@ export function isValidElement(vnode) {
 
 
 function clearRefsAndMounts(queue) {
-    queue.forEach(function (el) {
-        let refFns = el.__pendingRefs;
+    queue.forEach(function (instance) {
+        let refFns = instance.__pendingRefs;
         if (refFns) {
             for (var i = 0, refFn; refFn = refFns[i++];) {
                 refFn();
             }
             refFns.length = 0;
 
-            if (el.componentDidMount) {
-                el.componentDidMount();
-                el.componentDidMount = null;
+            if (instance.componentDidMount) {
+                instance.componentDidMount();
+                instance.componentDidMount = null;
             }
 
-            clearArray(el.__pendingCallbacks).forEach(function (fn) {
-                fn.call(el);
+            clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+                fn.call(instance);
             });
         }
-        el.__hasDidMount = true;
+        instance.__hasDidMount = true;
     });
     queue.length = 0;
 }

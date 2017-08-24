@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-08-23
+ * QQ 370262116 by 司徒正美 Copyright 2017-08-24
  */
 
 (function (global, factory) {
@@ -616,7 +616,6 @@ function setStateImpl(state, cb) {
                     }
                     if (_this.__dirty) {
                         devolveCallbacks(_this, '__tempMountCbs', cbs);
-                        // this.__pendingCallbacks = this.__tempMountCbs
                         options.refreshComponent(_this, []);
                     }
                 });
@@ -911,7 +910,10 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
 可以把下面这个跨浏览器取得相关元素的方法添加到EventUtil对象中：
  */
 function getRelatedTarget(e) {
-    return e.relatedTarget || e.toElement || e.fromElement || null;
+    if (!e.timeStamp) {
+        e.relatedTarget = e.fromElement === e.srcElement ? e.toElement : e.fromElement;
+    }
+    return e.relatedTarget;
 }
 function contains(a, b) {
     if (b) {
@@ -1463,24 +1465,24 @@ function isValidElement(vnode) {
 }
 
 function clearRefsAndMounts(queue) {
-    queue.forEach(function (el) {
-        var refFns = el.__pendingRefs;
+    queue.forEach(function (instance) {
+        var refFns = instance.__pendingRefs;
         if (refFns) {
             for (var i = 0, refFn; refFn = refFns[i++];) {
                 refFn();
             }
             refFns.length = 0;
 
-            if (el.componentDidMount) {
-                el.componentDidMount();
-                el.componentDidMount = null;
+            if (instance.componentDidMount) {
+                instance.componentDidMount();
+                instance.componentDidMount = null;
             }
 
-            clearArray(el.__pendingCallbacks).forEach(function (fn) {
-                fn.call(el);
+            clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+                fn.call(instance);
             });
         }
-        el.__hasDidMount = true;
+        instance.__hasDidMount = true;
     });
     queue.length = 0;
 }
