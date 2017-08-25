@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script  src="./dist/React.js"></script>
-    <!-- <script src="./test/react.js"></script>
+  <!-- <script src="./test/react.js"></script>
    <script src="./test/react-dom.js"></script> -->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
@@ -23,10 +23,14 @@
                 console.log('app will mount')
             }
             componentDidMount() {
+                console.log('componentDIdMount在引发更新')
                 this.setState({
                     aaa: 'app render1'
                 })
                 console.log('app did mount')
+            }
+             componentWillUpdate() {
+                console.log('app will update')
             }
             componentDidUpdate() {
                 console.log('app did update')
@@ -47,7 +51,8 @@
 
             componentWillReceiveProps() {
                 if (a < 2) {
-                    console.log('xxxxxxxxxxxxx')
+                    console.log('父节点在更新子节点的东西')
+                   
                     this.props.parent.setState({
                         aaa: 'child call app render ' + (++a)
                     }, function () {

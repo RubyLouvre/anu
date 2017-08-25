@@ -164,6 +164,8 @@ export function typeNumber(data) {
 export var cbs = '__pendingCallbacks'
 export function devolveCallbacks(el, name, name2) {//把两个数组挪来挪去
   var args = el[name]
+  if(!args)
+    return
   var list = el[name2] = el[name2] || []
   list.push.apply(list, args)
   args.length = 0
