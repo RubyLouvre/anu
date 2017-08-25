@@ -68,18 +68,57 @@ function clearRefsAndMounts(queue) {
             refFns.length = 0;
 
             if (instance.componentDidMount) {
+                instance.__mounting = true
                 instance.componentDidMount();
+                instance.__mounting = false
                 instance.componentDidMount = null;
             }
+            if(instance.__rerender){
+                instance.__rerender = null
+                refreshComponent(instance, [])
+             }else if(instance.__updating){
+                instance.__updating = false
+                refreshComponent(instance, [])
+
+             }
 
             clearArray(instance.__pendingCallbacks).forEach(function (fn) {
                 fn.call(instance);
             });
+            
         }
         instance.__hasDidMount = true;
     });
     queue.length = 0;
 }
+options.clearRefsAndMounts = clearRefsAndMounts
+
+
+options.refreshComponent = refreshComponent;
+
+function refreshComponent(instance, mountQueue) {
+    // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
+    let dom = instance._currentElement._hostNode;
+
+    dom = _refreshComponent(instance, dom, mountQueue);
+    instance.__forceUpdate = false;
+
+    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+        fn.call(instance);
+    });
+/**
+ * 
+    if (instance.__reRender) {
+        devolveCallbacks(instance, '__tempUpdateCbs', cbs)
+
+        instance.__reRender = null;
+
+        return refreshComponent(instance, []);
+
+    }*/
+    return dom;
+}
+
 
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
@@ -108,6 +147,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     var instance = vnode._instance;
     container._component = vnode;
     clearRefsAndMounts(mountQueue);
+
     if (callback) {
         callback();
     }
@@ -211,7 +251,7 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
     for (let i = 0, n = children.length; i < n; i++) {
         let el = children[i];
         let curNode = mountVnode(el, context, null, mountQueue);
-
+       
         parentNode.appendChild(curNode);
     }
 }
@@ -317,29 +357,6 @@ function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue
 }
 
 
-options.refreshComponent = refreshComponent;
-
-function refreshComponent(instance, mountQueue) {
-    // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
-    let dom = instance._currentElement._hostNode;
-
-    dom = _refreshComponent(instance, dom, mountQueue);
-    instance.__forceUpdate = false;
-
-    clearArray(instance[cbs]).forEach(function (fn) {
-        fn.call(instance);
-    });
-
-    if (instance.__reRender) {
-        devolveCallbacks(instance, '__tempUpdateCbs', cbs)
-
-        instance.__reRender = null;
-
-        return refreshComponent(instance, []);
-
-    }
-    return dom;
-}
 
 function _refreshComponent(instance, dom, mountQueue) {
     let {
@@ -358,10 +375,9 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__dirty = false;
         return dom;
-    }
-
-    //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
-    if (instance.componentWillUpdate) {
+    } 
+     if (instance.componentWillUpdate) {
+        //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
     instance.__updating = true;
@@ -431,7 +447,12 @@ export function findDOMNode(ref) {
 function updateText(lastVnode, nextVnode, dom) {
     nextVnode._hostNode = dom;
     if (lastVnode.text !== nextVnode.text) {
+        try{
         dom.nodeValue = nextVnode.text;
+        }catch(e){
+            console.log(nextVnode, dom)
+            throw e
+        }
     }
     return dom;
 }

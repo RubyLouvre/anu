@@ -77,38 +77,29 @@ function setStateImpl(state, cb) {
     if (state === true) {
         if (this._currentElement._hostNode && !this.__dirty && (this.__dirty = true)) {
             this.__forceUpdate = true;
+         //   options.clearRefsAndMounts([this]);
             options.refreshComponent(this, []);
         }
     } else {
         // setState是异步渲染
         this.__pendingStates.push(state);
-        // 子组件在componentWillReiveProps调用父组件的setState方法
-        if (this.__updating) {
-            devolveCallbacks(this, cbs, '__tempUpdateCbs')
-            this.__rerender = true
-        } else if (!this.__hasDidMount) {
+       
+        if (!this._currentElement._hostNode) {
             //如果在componentDidMount中调用setState方法，那么setState的所有回调，都会延迟到componentDidUpdate中执行
-            //componentWillMount时__dirty为true
-            if (this.__hasRendered) {
-                devolveCallbacks(this, cbs, '__tempMountCbs')
+            if (this.__diffing) {
+                this.__rerender = true
             }
-            if (!this.__dirty && (this.__dirty = true)) {
-                defer(() => {
-                    if (!this._currentElement._hostNode) {
-                        setStateImpl(this, {})
-                        return
-                    }
-                    if (this.__dirty) {
-                        devolveCallbacks(this, '__tempMountCbs', cbs)
-                        options.refreshComponent(this, []);
-                    }
-                });
-            }
-        } else if (!this.__dirty && (this.__dirty = true)) {
-            options.refreshComponent(this, []);
+
+        } else {
+            this.__updating = true
+            if(this.__mounting)
+                return
+          
+            options.clearRefsAndMounts([this]);
         }
     }
 }
+
 
 var defer = win.requestAnimationFrame ||
     win.webkitRequestAnimationFrame ||
