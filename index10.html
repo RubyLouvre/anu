@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
+    <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+window.onload = function(){
+  
+    var list = []
+    class App extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {
+                aaa: 'aaa'
+            }
+        }
+        componentWillMount() {
+            this.setState({
+                aaa: 'bbb'
+            }, function () {
+                list.push('1111')
+            })
+        }
+        componentDidMount() {
+            this.setState({
+                aaa: 'cccc'
+            }, function () {
+                list.push('2222')
+            })
+          this.setState({
+                aaa: 'dddd'
+            }, function () {
+                list.push('3333')
+            })
+            list.push('did mount')
+        }
+
+        componentWillUpdate() {
+            list.push('will update')
+        }
+        componentDidUpdate() {
+            list.push('did update')
+        }
+        render() {
+            list.push(this.state.aaa)
+            return <div>{this.state.aaa}</div>
+
+        }
+    }
+console.log(list)
+       
+    var div = document.getElementById('example')
+    var s = ReactDOM.render(<App />, div)
+  
+   
+    
+
+}
+    </script>
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
+</html>

@@ -12,60 +12,39 @@
     <script type='text/babel'>
     window.onload = function(){
 
+        var a = 1;
         class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 'app render'
-                }
-            }
-            componentWillMount() {
-                console.log('app will mount')
-            }
-            componentDidMount() {
-                this.setState({
-                    aaa: 'app render1'
-                })
-                console.log('app did mount')
-            }
-            componentDidUpdate() {
-               console.log('app did update')
-            }
-            render() {
-                console.log(this.state.aaa)
-                return <div ><A parent={this} />{this.state.aaa}<C /></div>
-            }
-        }
-        var a = 1
-        class C extends React.Component{
-            render(){
-               console.log('C render')
-               return <p>C</p>
-           }
-        }
-        class A extends React.Component{
-          
-            componentWillReceiveProps(){
-                if(a<2){
-                    this.props.parent.setState({
-                        aaa: 'child call app render '+(++a) 
-                    }, function(){
-                        console.log('componentWillReceiveProps 1')
-                    })
-                    this.props.parent.setState({
-                        aaa: 'child call app render '+(++a)
-                    },function(){
-                        console.log('componentWillReceiveProps 2')
-                    })
-               }
-           }
-           componentWillUpdate(){
-            console.log('child will update')
-           }
-           render(){
-               console.log('child render')
-               return <p>A</p>
-           }
+          constructor(props) {
+            super(props);
+            this.state = {
+              aaa: 1
+            };
+          }
+          shouldComponentUpdate() {
+            //  console.log('shouldComponentUpdate')
+          }
+          click() {
+            this.setState(
+              function(a) {
+                a.aaa++;
+              },
+              function() {
+                a++;
+              }
+            );
+    
+            this.setState(
+              function(a) {
+                a.aaa++;
+              },
+              function() {
+                a++;
+              }
+            );
+          }
+          render() {
+            return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
+          }
         }
         var div = document.getElementById('example')
         var s = ReactDOM.render(<App />, div)
