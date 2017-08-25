@@ -16,10 +16,9 @@ export function processFormElement(vnode, dom, props) {
     var eventName = data[2];
     if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
       // eslint-disable-next-line
-      console.warn(`你为${vnode.type}[type=${domType}]元素指定了${duplexProp}属性，但是没有提供另外的${Object.keys(
-        keys
-      )}等用于控制${duplexProp}\n
-      变化的属性，那么它是一个非受控组件，用户无法通过输入改变元素的${duplexProp}值`);
+      console.warn(`你为${vnode.type}[type=${domType}]元素指定了${duplexProp}属性，
+      但是没有提供另外的${ Object.keys(keys) }来控制${duplexProp}属性的变化\n
+      那么它即为一个非受控组件，用户无法通过输入改变元素的${duplexProp}值`);
       dom[eventName] = data[3];
     }
     if (duplexType === 3) {
