@@ -77,7 +77,7 @@ export function createElement(type, configs) {
         props.children = children;
     }
 
-    return new Vnode(type, props, key, ref, vtype, checkProps);
+    return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
 function flattenChildren(stack) {
@@ -139,7 +139,7 @@ export function __ref(dom) {
         instance.refs[this.__refKey] = dom;
     }
 }
-function Vnode(type, props, key, ref, vtype, checkProps) {
+function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
