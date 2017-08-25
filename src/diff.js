@@ -352,12 +352,12 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
     instance.state = nextState;
 
     let lastRendered = vnode._renderedVnode;
-    let nextElement = instance._nextElement || vnode;
+    let nextElement = instance.__next || vnode;
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
     let rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
-    delete instance._nextElement;
+    delete instance.__next;
     var childContext = rendered.vtype
         ? getChildContext(instance, nextContext)
         : nextContext;
@@ -379,7 +379,7 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
 
 function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     let instance = nextVnode._instance = lastVnode._instance;
-    instance._nextElement = nextVnode;
+    instance.__next = nextVnode;
     let nextProps = nextVnode.props
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;

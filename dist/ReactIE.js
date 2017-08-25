@@ -1967,12 +1967,12 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
     instance.state = nextState;
 
     var lastRendered = vnode._renderedVnode;
-    var nextElement = instance._nextElement || vnode;
+    var nextElement = instance.__next || vnode;
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
     var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
-    delete instance._nextElement;
+    delete instance.__next;
     var childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext;
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
 
@@ -1992,7 +1992,7 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
 
 function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
-    instance._nextElement = nextVnode;
+    instance.__next = nextVnode;
     var nextProps = nextVnode.props;
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
