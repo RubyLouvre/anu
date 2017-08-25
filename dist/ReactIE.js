@@ -177,195 +177,23 @@ var recyclables = {
   "#comment": []
 };
 
-var stack = [];
-var EMPTY_CHILDREN = [];
-
-var CurrentOwner = {
-    cur: null
-};
-/**
- * 创建虚拟DOM
- *
- * @param {string} type
- * @param {object} props
- * @param {array} ...children
- * @returns
- */
-
-function createElement(type, configs) {
-    var props = {},
-        key = null,
-        ref = null,
-        vtype = 1,
-        checkProps = 0;
-
-    for (var i = 2, n = arguments.length; i < n; i++) {
-        stack.push(arguments[i]);
-    }
-
-    if (configs) {
-
-        // eslint-disable-next-line
-        for (var _i in configs) {
-            var val = configs[_i];
-            switch (_i) {
-                case "key":
-                    key = val + "";
-                    break;
-                case "ref":
-                    ref = val;
-                    break;
-                case "children":
-                    // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
-                    // 也可能是一个虚拟DOM
-                    if (!stack.length && val) {
-                        if (Array.isArray(val)) {
-                            __push.apply(stack, val);
-                        } else {
-                            stack.push(val);
-                        }
-                    }
-                    break;
-                default:
-                    checkProps = 1;
-                    props[_i] = val;
-            }
-        }
-    }
-    var defaultProps = type.defaultProps;
-    if (defaultProps) {
-        for (var propKey in defaultProps) {
-            if (props[propKey] === void 0) {
-                props[propKey] = defaultProps[propKey];
-            }
-        }
-    }
-    var children = flattenChildren(stack);
-
-    if (typeNumber(type) === 5) {
-        //fn
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
-        if (children.length) props.children = children;
-    } else {
-        props.children = children;
-    }
-
-    return new Vnode(type, props, key, ref, vtype, checkProps);
-}
-
-function flattenChildren(stack) {
-    var lastText,
-        child,
-        children = [];
-
-    while (stack.length) {
-        //比较巧妙地判定是否为子数组
-        if ((child = stack.pop()) && child.pop) {
-            if (child.toJS) {
-                //兼容Immutable.js
-                child = child.toJS();
-            }
-            for (var i = 0; i < child.length; i++) {
-                stack[stack.length] = child[i];
-            }
-        } else {
-            // eslint-disable-next-line
-            var childType = typeNumber(child);
-            if (childType < 3 // 0, 1,2
-            ) {
-                    continue;
-                }
-
-            if (childType < 6) {
-                //!== 'object' 不是对象就是字符串或数字
-                if (lastText) {
-                    lastText.text = child + lastText.text;
-                    continue;
-                }
-                child = {
-                    type: "#text",
-                    text: child + "",
-                    vtype: 0
-                };
-                lastText = child;
-            } else {
-                lastText = null;
-            }
-
-            children.unshift(child);
-        }
-    }
-    if (!children.length) {
-        children = EMPTY_CHILDREN;
-    }
-    return children;
-}
-
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
-function __ref(dom) {
-    var instance = this._owner;
-    if (dom && instance) {
-        dom.getDOMNode = getDOMNode;
-        instance.refs[this.__refKey] = dom;
-    }
-}
-function Vnode(type, props, key, ref, vtype, checkProps) {
-    this.type = type;
-    this.props = props;
-    this.vtype = vtype;
-    this._owner = CurrentOwner.cur;
-    if (key) {
-        this.key = key;
-    }
-
-    if (vtype === 1) {
-        this.checkProps = checkProps;
-    }
-    var refType = typeNumber(ref);
-    if (refType === 4) {
-        //string
-        this.__refKey = ref;
-        this.ref = __ref;
-    } else if (refType === 5) {
-        //function
-        this.ref = ref;
-    }
-    /*
-      this._hostNode = null
-      this._instance = null
-    */
-}
-
-Vnode.prototype = {
-    getDOMNode: function getDOMNode() {
-        return this._hostNode || null;
+var Children = {
+    only: function only(children) {
+        return children && children[0] || null;
     },
-
-    $$typeof: 1
+    count: function count(children) {
+        return children && children.length || 0;
+    },
+    forEach: function forEach(children, callback, context) {
+        children.forEach(callback, context);
+    },
+    map: function map(children, callback, context) {
+        return children.map(callback, context);
+    },
+    toArray: function toArray(children) {
+        return children == null ? [] : Array.isArray(children) ? children.slice(0) : [children];
+    }
 };
-
-function cloneElement(vnode, props) {
-    if (Array.isArray(vnode)) {
-        vnode = vnode[0];
-    }
-    if (!vnode.vtype) {
-        return Object.assign({}, vnode);
-    }
-    var obj = {};
-    if (vnode.key) {
-        obj.key = vnode.key;
-    }
-
-    if (vnode.__refKey) {
-        obj.ref = vnode.__refKey;
-    } else if (vnode.ref) {
-        obj.ref = vnode.ref;
-    }
-    return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
-}
 
 //用于后端的元素节点
 function DOMElement(type) {
@@ -373,11 +201,11 @@ function DOMElement(type) {
   this.style = {};
   this.children = [];
 }
-var fn$1 = DOMElement.prototype = {
+var fn = DOMElement.prototype = {
   contains: Boolean
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
-  fn$1[name] = function () {
+  fn[name] = function () {
     console.log("fire " + name); // eslint-disable-line
   };
 });
@@ -507,440 +335,6 @@ function getNs(type) {
       return mathTags[type] = mathNs;
     }
   }
-}
-
-/**
- *组件的基类
- *
- * @param {any} props
- * @param {any} context
- */
-
-function Component(props, context) {
-    CurrentOwner.cur = this; //防止用户在构造器生成JSX
-    this.context = context;
-    this.props = props;
-    this.refs = {};
-    this.state = null;
-    this.__dirty = true;
-    this.__pendingCallbacks = [];
-    this.__pendingStates = [];
-    this.__pendingRefs = [];
-    this.__current = {};
-    /*
-    * this.__dirty = true 表示组件不能更新
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM 
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
-    */
-}
-
-Component.prototype = {
-    replaceState: function replaceState() {
-        console.warn("此方法末实现"); // eslint-disable-line
-    },
-    setState: function setState(state, cb) {
-        setStateImpl.call(this, state, cb);
-    },
-    forceUpdate: function forceUpdate(cb) {
-        setStateImpl.call(this, true, cb);
-    },
-
-    __collectRefs: function __collectRefs(fn) {
-        this.__pendingRefs.push(fn);
-    },
-    __mergeStates: function __mergeStates(props, context) {
-        var n = this.__pendingStates.length;
-        if (n === 0) {
-            return this.state;
-        }
-        var states = clearArray(this.__pendingStates);
-        var nextState = extend({}, this.state);
-        for (var i = 0; i < n; i++) {
-            var partial = states[i];
-            extend(nextState, isFn(partial) ? partial.call(this, nextState, props, context) : partial);
-        }
-        return nextState;
-    },
-
-    render: function render() {}
-};
-
-function setStateImpl(state, cb) {
-
-    if (isFn(cb)) {
-        this.__pendingCallbacks.push(cb);
-    }
-    // forceUpate是同步渲染
-    if (state === true) {
-        if (this.__current._hostNode && !this.__dirty && (this.__dirty = true)) {
-            //   options.clearRefsAndMounts([this]);
-            options.refreshComponent(this, [], true);
-        }
-    } else {
-        // setState是异步渲染
-        this.__pendingStates.push(state);
-        if (!this.__current._hostNode) {
-            //父组件在没有插入DOM树前，被子组件调用了父组件的setState
-            if (this.__hydrating) {
-                this.__renderInNextCycle = true;
-            }
-        } else {
-            //componentWillReceiveProps中，不能自己更新自己
-            if (this.__dirty) return;
-            if (this.__hydrating) {
-                //在componentDidMount里调用自己的setState，延迟到下一周期更新
-                //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-                this.__renderInNextCycle = true;
-                return;
-            }
-            options.refreshComponent(this, []);
-        }
-    }
-}
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-function shallowEqual(objA, objB) {
-  if (Object.is(objA, objB)) {
-    return true;
-  }
-  //确保objA, objB都是对象
-  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-    return false;
-  }
-  var keysA = Object.keys(objA);
-  var keysB = Object.keys(objB);
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  // Test for A's keys different from B.
-  for (var i = 0; i < keysA.length; i++) {
-    if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-
-var fn = inherit(PureComponent, Component);
-
-fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
-};
-fn.isPureComponent = true;
-
-var Children = {
-    only: function only(children) {
-        return children && children[0] || null;
-    },
-    count: function count(children) {
-        return children && children.length || 0;
-    },
-    forEach: function forEach(children, callback, context) {
-        children.forEach(callback, context);
-    },
-    map: function map(children, callback, context) {
-        return children.map(callback, context);
-    },
-    toArray: function toArray(children) {
-        return children == null ? [] : Array.isArray(children) ? children.slice(0) : [children];
-    }
-};
-
-/**
- * 为了兼容0.13之前的版本
- */
-var MANY = "DEFINE_MANY";
-var MANY_MERGED = "MANY_MERGED";
-var ReactClassInterface = {
-  mixins: MANY,
-  statics: MANY,
-  propTypes: MANY,
-  contextTypes: MANY,
-  childContextTypes: MANY,
-  getDefaultProps: MANY_MERGED,
-  getInitialState: MANY_MERGED,
-  getChildContext: MANY_MERGED,
-  render: "ONCE",
-  componentWillMount: MANY,
-  componentDidMount: MANY,
-  componentWillReceiveProps: MANY,
-  shouldComponentUpdate: "DEFINE_ONCE",
-  componentWillUpdate: MANY,
-  componentDidUpdate: MANY,
-  componentWillUnmount: MANY
-};
-
-var specHandle = {
-  displayName: function displayName(Ctor, value, name) {
-    Ctor[name] = value;
-  },
-  mixins: function mixins(Ctor, value) {
-    if (value) {
-      for (var i = 0; i < value.length; i++) {
-        mixSpecIntoComponent(Ctor, value[i]);
-      }
-    }
-  },
-
-  propTypes: mergeObject,
-  childContextTypes: mergeObject,
-  contextTypes: mergeObject,
-
-  getDefaultProps: function getDefaultProps(Ctor, value, name) {
-    if (Ctor[name]) {
-      Ctor[name] = createMergedResultFunction(Ctor[name], value);
-    } else {
-      Ctor[name] = value;
-    }
-  },
-  statics: function statics(Ctor, value) {
-    extend(Ctor, Object(value));
-  },
-
-  autobind: noop
-};
-
-function mergeObject(fn, value, name) {
-  fn[name] = Object.assign({}, fn[name], value);
-}
-
-//防止覆盖Component内部一些重要的方法或属性
-var protectedProps = {
-  mixin: 1,
-  setState: 1,
-  forceUpdate: 1,
-  __processPendingState: 1,
-  __pendingCallbacks: 1,
-  __pendingStates: 1
-};
-
-function mixSpecIntoComponent(Ctor, spec) {
-  if (!spec) {
-    return;
-  }
-  if (isFn(spec)) {
-    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象"); // eslint-disable-line
-  }
-
-  var proto = Ctor.prototype;
-  var autoBindPairs = proto.__reactAutoBindPairs;
-
-  if (spec.hasOwnProperty("mixin")) {
-    specHandle.mixins(Ctor, spec.mixins);
-  }
-
-  for (var name in spec) {
-    if (!spec.hasOwnProperty(name)) {
-      continue;
-    }
-    if (protectedProps[name] === 1) {
-      continue;
-    }
-
-    var property = spec[name];
-    var isAlreadyDefined = proto.hasOwnProperty(name);
-
-    if (specHandle.hasOwnProperty(name)) {
-      specHandle[name](Ctor, property, name);
-    } else {
-      var isReactClassMethod = ReactClassInterface.hasOwnProperty(name);
-      var shouldAutoBind = isFn(property) && !isReactClassMethod && !isAlreadyDefined && spec.autobind !== false;
-
-      if (shouldAutoBind) {
-        autoBindPairs.push(name, property);
-        proto[name] = property;
-      } else {
-        if (isAlreadyDefined) {
-          var specPolicy = ReactClassInterface[name];
-          //合并多个同名函数
-          if (specPolicy === MANY_MERGED) {
-            //这个是有返回值
-            proto[name] = createMergedResultFunction(proto[name], property);
-          } else if (specPolicy === MANY) {
-            //这个没有返回值
-            proto[name] = createChainedFunction(proto[name], property);
-          }
-        } else {
-          proto[name] = property;
-        }
-      }
-    }
-  }
-}
-
-function mergeOwnProperties(one, two) {
-  for (var key in two) {
-    if (two.hasOwnProperty(key)) {
-      one[key] = two[key];
-    }
-  }
-  return one;
-}
-
-function createMergedResultFunction(one, two) {
-  return function mergedResult() {
-    var a = one.apply(this, arguments);
-    var b = two.apply(this, arguments);
-    if (a == null) {
-      return b;
-    } else if (b == null) {
-      return a;
-    }
-    var c = {};
-    mergeOwnProperties(c, a);
-    mergeOwnProperties(c, b);
-    return c;
-  };
-}
-
-function createChainedFunction(one, two) {
-  return function chainedFunction() {
-    one.apply(this, arguments);
-    two.apply(this, arguments);
-  };
-}
-
-function bindAutoBindMethod(component, method) {
-  var boundMethod = method.bind(component);
-  return boundMethod;
-}
-
-function bindAutoBindMethods(component) {
-  var pairs = component.__reactAutoBindPairs;
-  for (var i = 0; i < pairs.length; i += 2) {
-    var autoBindKey = pairs[i];
-    var method = pairs[i + 1];
-    component[autoBindKey] = bindAutoBindMethod(component, method);
-  }
-}
-
-//创建一个构造器
-function newCtor(className) {
-  var curry = Function("ReactComponent", "bindAutoBindMethods", "return function " + className + "(props, context) {\n    ReactComponent.call(this, props, context);\n    this.state = this.getInitialState ? this.getInitialState() : {};\n    if (this.__reactAutoBindPairs.length) {\n      bindAutoBindMethods(this);\n    }\n  };");
-  return curry(Component, bindAutoBindMethods);
-}
-var warnOnce = 1;
-function createClass(spec) {
-  if (warnOnce) {
-    warnOnce = 0;
-    console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
-  }
-  var Constructor = newCtor(spec.displayName || "Component");
-  var proto = inherit(Constructor, Component);
-  proto.__reactAutoBindPairs = [];
-  delete proto.render;
-
-  mixSpecIntoComponent(Constructor, spec);
-  if (isFn(Constructor.getDefaultProps)) {
-    Constructor.defaultProps = Constructor.getDefaultProps();
-  }
-
-  //性能优化，为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为null
-  for (var methodName in ReactClassInterface) {
-    if (!proto[methodName]) {
-      proto[methodName] = null;
-    }
-  }
-
-  return Constructor;
-}
-
-//为了兼容yo
-var check = function check() {
-  return check;
-};
-check.isRequired = check;
-var PropTypes = {
-  array: check,
-  bool: check,
-  func: check,
-  number: check,
-  object: check,
-  string: check,
-  any: check,
-  arrayOf: check,
-  element: check,
-  instanceOf: check,
-  node: check,
-  objectOf: check,
-  oneOf: check,
-  oneOfType: check,
-  shape: check
-};
-
-var rnumber = /^-?\d+(\.\d+)?$/;
-/**
-     * 为元素样子设置样式
-     * 
-     * @export
-     * @param {any} dom 
-     * @param {any} oldStyle 
-     * @param {any} newStyle 
-     */
-function patchStyle(dom, oldStyle, newStyle) {
-  if (oldStyle === newStyle) {
-    return;
-  }
-
-  for (var name in newStyle) {
-    var val = newStyle[name];
-    if (oldStyle[name] !== val) {
-      name = cssName(name, dom);
-      if (val !== 0 && !val) {
-        val = ""; //清除样式
-      } else if (rnumber.test(val) && !cssNumber[name]) {
-        val = val + "px"; //添加单位
-      }
-      try {
-        //node.style.width = NaN;node.style.width = 'xxxxxxx';
-        //node.style.width = undefine 在旧式IE下会抛异常
-        dom.style[name] = val; //应用样式
-      } catch (e) {
-        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
-      }
-    }
-  }
-  // 如果旧样式存在，但新样式已经去掉
-  for (var _name in oldStyle) {
-    if (!(_name in newStyle)) {
-      dom.style[_name] = ""; //清除样式
-    }
-  }
-}
-
-var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-
-//var testStyle = document.documentElement.style
-var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-var cssMap = oneObject("float", "cssFloat");
-
-/**
- * 转换成当前浏览器可用的样式名
- * 
- * @param {any} name 
- * @returns 
- */
-function cssName(name, dom) {
-  if (cssMap[name]) {
-    return cssMap[name];
-  }
-  var host = dom && dom.style || {};
-  for (var i = 0, n = prefixes.length; i < n; i++) {
-    var camelCase = camelize(prefixes[i] + name);
-    if (camelCase in host) {
-      return cssMap[name] = camelCase;
-    }
-  }
-  return null;
 }
 
 var globalEvents = {};
@@ -1218,6 +612,612 @@ var eventProto = SyntheticEvent.prototype = {
 };
 /* istanbul ignore next  */
 
+
+//为了兼容yo
+var check = function check() {
+  return check;
+};
+check.isRequired = check;
+var PropTypes = {
+  array: check,
+  bool: check,
+  func: check,
+  number: check,
+  object: check,
+  string: check,
+  any: check,
+  arrayOf: check,
+  element: check,
+  instanceOf: check,
+  node: check,
+  objectOf: check,
+  oneOf: check,
+  oneOfType: check,
+  shape: check
+};
+
+var stack = [];
+var EMPTY_CHILDREN = [];
+
+var CurrentOwner = {
+    cur: null
+};
+/**
+ * 创建虚拟DOM
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} ...children
+ * @returns
+ */
+
+function createElement(type, configs) {
+    var props = {},
+        key = null,
+        ref = null,
+        vtype = 1,
+        checkProps = 0;
+
+    for (var i = 2, n = arguments.length; i < n; i++) {
+        stack.push(arguments[i]);
+    }
+
+    if (configs) {
+
+        // eslint-disable-next-line
+        for (var _i in configs) {
+            var val = configs[_i];
+            switch (_i) {
+                case "key":
+                    key = val + "";
+                    break;
+                case "ref":
+                    ref = val;
+                    break;
+                case "children":
+                    // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
+                    // 也可能是一个虚拟DOM
+                    if (!stack.length && val) {
+                        if (Array.isArray(val)) {
+                            __push.apply(stack, val);
+                        } else {
+                            stack.push(val);
+                        }
+                    }
+                    break;
+                default:
+                    checkProps = 1;
+                    props[_i] = val;
+            }
+        }
+    }
+    var defaultProps = type.defaultProps;
+    if (defaultProps) {
+        for (var propKey in defaultProps) {
+            if (props[propKey] === void 0) {
+                props[propKey] = defaultProps[propKey];
+            }
+        }
+    }
+    var children = flattenChildren(stack);
+
+    if (typeNumber(type) === 5) {
+        //fn
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
+        if (children.length) props.children = children;
+    } else {
+        props.children = children;
+    }
+
+    return new Vnode(type, props, key, ref, vtype, checkProps);
+}
+
+function flattenChildren(stack) {
+    var lastText,
+        child,
+        children = [];
+
+    while (stack.length) {
+        //比较巧妙地判定是否为子数组
+        if ((child = stack.pop()) && child.pop) {
+            if (child.toJS) {
+                //兼容Immutable.js
+                child = child.toJS();
+            }
+            for (var i = 0; i < child.length; i++) {
+                stack[stack.length] = child[i];
+            }
+        } else {
+            // eslint-disable-next-line
+            var childType = typeNumber(child);
+            if (childType < 3 // 0, 1,2
+            ) {
+                    continue;
+                }
+
+            if (childType < 6) {
+                //!== 'object' 不是对象就是字符串或数字
+                if (lastText) {
+                    lastText.text = child + lastText.text;
+                    continue;
+                }
+                child = {
+                    type: "#text",
+                    text: child + "",
+                    vtype: 0
+                };
+                lastText = child;
+            } else {
+                lastText = null;
+            }
+
+            children.unshift(child);
+        }
+    }
+    if (!children.length) {
+        children = EMPTY_CHILDREN;
+    }
+    return children;
+}
+
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
+}
+function __ref(dom) {
+    var instance = this._owner;
+    if (dom && instance) {
+        dom.getDOMNode = getDOMNode;
+        instance.refs[this.__refKey] = dom;
+    }
+}
+function Vnode(type, props, key, ref, vtype, checkProps) {
+    this.type = type;
+    this.props = props;
+    this.vtype = vtype;
+    this._owner = CurrentOwner.cur;
+    if (key) {
+        this.key = key;
+    }
+
+    if (vtype === 1) {
+        this.checkProps = checkProps;
+    }
+    var refType = typeNumber(ref);
+    if (refType === 4) {
+        //string
+        this.__refKey = ref;
+        this.ref = __ref;
+    } else if (refType === 5) {
+        //function
+        this.ref = ref;
+    }
+    /*
+      this._hostNode = null
+      this._instance = null
+    */
+}
+
+Vnode.prototype = {
+    getDOMNode: function getDOMNode() {
+        return this._hostNode || null;
+    },
+
+    $$typeof: 1
+};
+
+/**
+ *组件的基类
+ *
+ * @param {any} props
+ * @param {any} context
+ */
+
+function Component(props, context) {
+    CurrentOwner.cur = this; //防止用户在构造器生成JSX
+    this.context = context;
+    this.props = props;
+    this.refs = {};
+    this.state = null;
+    this.__dirty = true;
+    this.__pendingCallbacks = [];
+    this.__pendingStates = [];
+    this.__pendingRefs = [];
+    this.__current = {};
+    /*
+    * this.__dirty = true 表示组件不能更新
+    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM 
+    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
+    */
+}
+
+Component.prototype = {
+    replaceState: function replaceState() {
+        console.warn("此方法末实现"); // eslint-disable-line
+    },
+    setState: function setState(state, cb) {
+        setStateImpl.call(this, state, cb);
+    },
+    forceUpdate: function forceUpdate(cb) {
+        setStateImpl.call(this, true, cb);
+    },
+
+    __collectRefs: function __collectRefs(fn) {
+        this.__pendingRefs.push(fn);
+    },
+    __mergeStates: function __mergeStates(props, context) {
+        var n = this.__pendingStates.length;
+        if (n === 0) {
+            return this.state;
+        }
+        var states = clearArray(this.__pendingStates);
+        var nextState = extend({}, this.state);
+        for (var i = 0; i < n; i++) {
+            var partial = states[i];
+            extend(nextState, isFn(partial) ? partial.call(this, nextState, props, context) : partial);
+        }
+        return nextState;
+    },
+
+    render: function render() {}
+};
+
+function setStateImpl(state, cb) {
+
+    if (isFn(cb)) {
+        this.__pendingCallbacks.push(cb);
+    }
+    // forceUpate是同步渲染
+    if (state === true) {
+        if (this.__current._hostNode && !this.__dirty && (this.__dirty = true)) {
+            //   options.clearRefsAndMounts([this]);
+            options.refreshComponent(this, [], true);
+        }
+    } else {
+        // setState是异步渲染
+        this.__pendingStates.push(state);
+        if (!this.__current._hostNode) {
+            //父组件在没有插入DOM树前，被子组件调用了父组件的setState
+            if (this.__hydrating) {
+                this.__renderInNextCycle = true;
+            }
+        } else {
+            //componentWillReceiveProps中，不能自己更新自己
+            if (this.__dirty) return;
+            if (this.__hydrating) {
+                //在componentDidMount里调用自己的setState，延迟到下一周期更新
+                //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+                this.__renderInNextCycle = true;
+                return;
+            }
+            options.refreshComponent(this, []);
+        }
+    }
+}
+
+/**
+ * 为了兼容0.13之前的版本
+ */
+var MANY = "DEFINE_MANY";
+var MANY_MERGED = "MANY_MERGED";
+var ReactClassInterface = {
+  mixins: MANY,
+  statics: MANY,
+  propTypes: MANY,
+  contextTypes: MANY,
+  childContextTypes: MANY,
+  getDefaultProps: MANY_MERGED,
+  getInitialState: MANY_MERGED,
+  getChildContext: MANY_MERGED,
+  render: "ONCE",
+  componentWillMount: MANY,
+  componentDidMount: MANY,
+  componentWillReceiveProps: MANY,
+  shouldComponentUpdate: "DEFINE_ONCE",
+  componentWillUpdate: MANY,
+  componentDidUpdate: MANY,
+  componentWillUnmount: MANY
+};
+
+var specHandle = {
+  displayName: function displayName(Ctor, value, name) {
+    Ctor[name] = value;
+  },
+  mixins: function mixins(Ctor, value) {
+    if (value) {
+      for (var i = 0; i < value.length; i++) {
+        mixSpecIntoComponent(Ctor, value[i]);
+      }
+    }
+  },
+
+  propTypes: mergeObject,
+  childContextTypes: mergeObject,
+  contextTypes: mergeObject,
+
+  getDefaultProps: function getDefaultProps(Ctor, value, name) {
+    if (Ctor[name]) {
+      Ctor[name] = createMergedResultFunction(Ctor[name], value);
+    } else {
+      Ctor[name] = value;
+    }
+  },
+  statics: function statics(Ctor, value) {
+    extend(Ctor, Object(value));
+  },
+
+  autobind: noop
+};
+
+function mergeObject(fn, value, name) {
+  fn[name] = Object.assign({}, fn[name], value);
+}
+
+//防止覆盖Component内部一些重要的方法或属性
+var protectedProps = {
+  mixin: 1,
+  setState: 1,
+  forceUpdate: 1,
+  __processPendingState: 1,
+  __pendingCallbacks: 1,
+  __pendingStates: 1
+};
+
+function mixSpecIntoComponent(Ctor, spec) {
+  if (!spec) {
+    return;
+  }
+  if (isFn(spec)) {
+    console.warn("createClass(spec)中的spec不能为函数，只能是纯对象"); // eslint-disable-line
+  }
+
+  var proto = Ctor.prototype;
+  var autoBindPairs = proto.__reactAutoBindPairs;
+
+  if (spec.hasOwnProperty("mixin")) {
+    specHandle.mixins(Ctor, spec.mixins);
+  }
+
+  for (var name in spec) {
+    if (!spec.hasOwnProperty(name)) {
+      continue;
+    }
+    if (protectedProps[name] === 1) {
+      continue;
+    }
+
+    var property = spec[name];
+    var isAlreadyDefined = proto.hasOwnProperty(name);
+
+    if (specHandle.hasOwnProperty(name)) {
+      specHandle[name](Ctor, property, name);
+    } else {
+      var isReactClassMethod = ReactClassInterface.hasOwnProperty(name);
+      var shouldAutoBind = isFn(property) && !isReactClassMethod && !isAlreadyDefined && spec.autobind !== false;
+
+      if (shouldAutoBind) {
+        autoBindPairs.push(name, property);
+        proto[name] = property;
+      } else {
+        if (isAlreadyDefined) {
+          var specPolicy = ReactClassInterface[name];
+          //合并多个同名函数
+          if (specPolicy === MANY_MERGED) {
+            //这个是有返回值
+            proto[name] = createMergedResultFunction(proto[name], property);
+          } else if (specPolicy === MANY) {
+            //这个没有返回值
+            proto[name] = createChainedFunction(proto[name], property);
+          }
+        } else {
+          proto[name] = property;
+        }
+      }
+    }
+  }
+}
+
+function mergeOwnProperties(one, two) {
+  for (var key in two) {
+    if (two.hasOwnProperty(key)) {
+      one[key] = two[key];
+    }
+  }
+  return one;
+}
+
+function createMergedResultFunction(one, two) {
+  return function mergedResult() {
+    var a = one.apply(this, arguments);
+    var b = two.apply(this, arguments);
+    if (a == null) {
+      return b;
+    } else if (b == null) {
+      return a;
+    }
+    var c = {};
+    mergeOwnProperties(c, a);
+    mergeOwnProperties(c, b);
+    return c;
+  };
+}
+
+function createChainedFunction(one, two) {
+  return function chainedFunction() {
+    one.apply(this, arguments);
+    two.apply(this, arguments);
+  };
+}
+
+function bindAutoBindMethod(component, method) {
+  var boundMethod = method.bind(component);
+  return boundMethod;
+}
+
+function bindAutoBindMethods(component) {
+  var pairs = component.__reactAutoBindPairs;
+  for (var i = 0; i < pairs.length; i += 2) {
+    var autoBindKey = pairs[i];
+    var method = pairs[i + 1];
+    component[autoBindKey] = bindAutoBindMethod(component, method);
+  }
+}
+
+//创建一个构造器
+function newCtor(className) {
+  var curry = Function("ReactComponent", "bindAutoBindMethods", "return function " + className + "(props, context) {\n    ReactComponent.call(this, props, context);\n    this.state = this.getInitialState ? this.getInitialState() : {};\n    if (this.__reactAutoBindPairs.length) {\n      bindAutoBindMethods(this);\n    }\n  };");
+  return curry(Component, bindAutoBindMethods);
+}
+var warnOnce = 1;
+function createClass(spec) {
+  if (warnOnce) {
+    warnOnce = 0;
+    console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
+  }
+  var Constructor = newCtor(spec.displayName || "Component");
+  var proto = inherit(Constructor, Component);
+  proto.__reactAutoBindPairs = [];
+  delete proto.render;
+
+  mixSpecIntoComponent(Constructor, spec);
+  if (isFn(Constructor.getDefaultProps)) {
+    Constructor.defaultProps = Constructor.getDefaultProps();
+  }
+
+  //性能优化，为了防止在原型链进行无用的查找，直接将用户没有定义的生命周期钩子置为null
+  for (var methodName in ReactClassInterface) {
+    if (!proto[methodName]) {
+      proto[methodName] = null;
+    }
+  }
+
+  return Constructor;
+}
+
+function cloneElement(vnode, props) {
+    if (Array.isArray(vnode)) {
+        vnode = vnode[0];
+    }
+    if (!vnode.vtype) {
+        return Object.assign({}, vnode);
+    }
+    var obj = {};
+    if (vnode.key) {
+        obj.key = vnode.key;
+    }
+
+    if (vnode.__refKey) {
+        obj.ref = vnode.__refKey;
+    } else if (vnode.ref) {
+        obj.ref = vnode.ref;
+    }
+    return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
+}
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+function shallowEqual(objA, objB) {
+  if (Object.is(objA, objB)) {
+    return true;
+  }
+  //确保objA, objB都是对象
+  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+    return false;
+  }
+  var keysA = Object.keys(objA);
+  var keysB = Object.keys(objB);
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  // Test for A's keys different from B.
+  for (var i = 0; i < keysA.length; i++) {
+    if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function PureComponent(props, context) {
+    Component.call(this, props, context);
+}
+
+var fn$1 = inherit(PureComponent, Component);
+
+fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
+    var a = shallowEqual(this.props, nextProps);
+    var b = shallowEqual(this.state, nextState);
+    return !a || !b;
+};
+fn$1.isPureComponent = true;
+
+var rnumber = /^-?\d+(\.\d+)?$/;
+/**
+     * 为元素样子设置样式
+     * 
+     * @export
+     * @param {any} dom 
+     * @param {any} oldStyle 
+     * @param {any} newStyle 
+     */
+function patchStyle(dom, oldStyle, newStyle) {
+  if (oldStyle === newStyle) {
+    return;
+  }
+
+  for (var name in newStyle) {
+    var val = newStyle[name];
+    if (oldStyle[name] !== val) {
+      name = cssName(name, dom);
+      if (val !== 0 && !val) {
+        val = ""; //清除样式
+      } else if (rnumber.test(val) && !cssNumber[name]) {
+        val = val + "px"; //添加单位
+      }
+      try {
+        //node.style.width = NaN;node.style.width = 'xxxxxxx';
+        //node.style.width = undefine 在旧式IE下会抛异常
+        dom.style[name] = val; //应用样式
+      } catch (e) {
+        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
+      }
+    }
+  }
+  // 如果旧样式存在，但新样式已经去掉
+  for (var _name in oldStyle) {
+    if (!(_name in newStyle)) {
+      dom.style[_name] = ""; //清除样式
+    }
+  }
+}
+
+var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
+
+//var testStyle = document.documentElement.style
+var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
+var cssMap = oneObject("float", "cssFloat");
+
+/**
+ * 转换成当前浏览器可用的样式名
+ * 
+ * @param {any} name 
+ * @returns 
+ */
+function cssName(name, dom) {
+  if (cssMap[name]) {
+    return cssMap[name];
+  }
+  var host = dom && dom.style || {};
+  for (var i = 0, n = prefixes.length; i < n; i++) {
+    var camelCase = camelize(prefixes[i] + name);
+    if (camelCase in host) {
+      return cssMap[name] = camelCase;
+    }
+  }
+  return null;
+}
 
 var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" + "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" + "en,readOnly,selected", true);
 
@@ -2292,19 +2292,20 @@ if (msie < 9) {
 
 var React = {
   version: "1.0.8",
+  render: render,
+  options: options,
   PropTypes: PropTypes,
   Children: Children, //为了react-redux
-  render: render,
+  Component: Component,
   findDOMNode: findDOMNode,
-  options: options,
-  unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-  unmountComponentAtNode: unmountComponentAtNode,
-  isValidElement: isValidElement,
   createClass: createClass,
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,
-  Component: Component,
+  isValidElement: isValidElement,
+  unmountComponentAtNode: unmountComponentAtNode,
+  unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+
   createFactory: function createFactory(type) {
     console.warn("createFactory将被废弃"); // eslint-disable-line
     var factory = createElement.bind(null, type);

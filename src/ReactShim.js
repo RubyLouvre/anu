@@ -13,7 +13,7 @@ import "./ieEvent";
 
 var React = {
   version: "VERSION",
-  Children, //为了react-redux
+  Children, //支持react-redux
   render,
   findDOMNode,
   options,
