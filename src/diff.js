@@ -5,15 +5,15 @@ import {createDOMElement, removeDOMElement, getNs} from "./browser";
 import {processFormElement, postUpdateSelectedOptions} from "./ControlledComponent";
 
 import {
+    noop,
+    __push,
     getNodes,
-    HTML_KEY,
+    innerHTML,
     options,
+    clearArray,
     checkNull,
     toLowerCase,
-    getChildContext,
-    noop,
-    clearArray,
-    __push
+    getChildContext
 } from "./util";
 
 import {disposeVnode} from "./dispose";
@@ -52,7 +52,7 @@ export function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
 
-function clearRefsAndMounts(queue, a) {
+function clearRefsAndMounts(queue) {
     queue
         .forEach(function (instance) {
             let refFns = instance.__pendingRefs;
@@ -263,8 +263,8 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         instance.state = instance.__mergeStates(props, context);
     }
 
-    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance.__current =
-    // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
+    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance.__current = vnode
+    // instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
     // '#comment', text: 'empty', vtype: 0} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
     let rendered = renderComponent.call(instance, vnode, props, context);
@@ -283,7 +283,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     return dom;
 }
 
-
 function Stateless(render) {
     this.refs = {};
     this.__render = render;
@@ -293,7 +292,9 @@ function Stateless(render) {
 
 var renderComponent = Stateless.prototype.render = function (vnode, props, context) {
     CurrentOwner.cur = this;
-    let rendered = this.__render ? this.__render(props, context): this.render()
+    let rendered = this.__render
+        ? this.__render(props, context)
+        : this.render()
     CurrentOwner.cur = null
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
@@ -319,7 +320,7 @@ function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue
     let lastVnode = lastTypeVnode._renderedVnode;
     let nextVnode = instance.render(nextTypeVnode, nextTypeVnode.props, context);
     let dom = alignVnode(lastVnode, nextVnode, node, context, mountQueue);
-    nextTypeVnode._hostNode =  dom;
+    nextTypeVnode._hostNode = dom;
     return dom;
 }
 
@@ -447,14 +448,14 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     let lastProps = lastVnode.props;
     let nextProps = nextVnode.props;
     nextVnode._hostNode = node;
-    if (nextProps[HTML_KEY]) {
+    if (nextProps[innerHTML]) {
         lastProps
             .children
             .forEach(function (el) {
                 disposeVnode(el);
             });
     } else {
-        if (lastProps[HTML_KEY]) {
+        if (lastProps[innerHTML]) {
             while (node.firstChild) {
                 node.removeChild(node.firstChild);
             }
