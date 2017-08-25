@@ -12,8 +12,6 @@ import {
     toLowerCase,
     getChildContext,
     noop,
-    cbs,
-    devolveCallbacks,
     clearArray,
     __push
 } from "./util";

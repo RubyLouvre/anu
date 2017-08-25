@@ -2,9 +2,7 @@ import {
     extend,
     isFn,
     options,
-    clearArray,
-    devolveCallbacks,
-    cbs
+    clearArray
 } from "./util";
 import {CurrentOwner} from "./createElement";
 import {win} from "./browser";
