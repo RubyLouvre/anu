@@ -1,4 +1,4 @@
-import { __push, typeNumber } from "./util";
+import {__push, typeNumber} from "./util";
 const stack = [];
 const EMPTY_CHILDREN = [];
 
@@ -24,7 +24,9 @@ export function createElement(type, configs) {
     for (let i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i]);
     }
+
     if (configs) {
+
         // eslint-disable-next-line
         for (let i in configs) {
             var val = configs[i];
@@ -36,9 +38,8 @@ export function createElement(type, configs) {
                     ref = val;
                     break;
                 case "children":
-                    //只要不是通过JSX产生的createElement调用，props内部就千奇百度，
-                    //children可能是一个数组，也可能是一个字符串，数字，布尔，
-                    //也可能是一个虚拟DOM
+                    // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
+                    // 也可能是一个虚拟DOM
                     if (!stack.length && val) {
                         if (Array.isArray(val)) {
                             __push.apply(stack, val);
@@ -52,15 +53,27 @@ export function createElement(type, configs) {
                     props[i] = val;
             }
         }
-    }
 
+    }
+    let defaultProps = type.defaultProps
+    if (defaultProps) {
+        for (let propKey in defaultProps) {
+            if (props[propKey] === void 0) {
+                props[propKey] = defaultProps[propKey]
+            }
+        }
+    }
     var children = flattenChildren(stack);
 
     if (typeNumber(type) === 5) {
         //fn
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
-        if (children.length) props.children = children;
-    } else {
+        vtype = type.prototype && type.prototype.render
+            ? 2
+            : 4;
+        if (children.length) 
+            props.children = children;
+        }
+    else {
         props.children = children;
     }
 
@@ -85,15 +98,13 @@ function flattenChildren(stack) {
         } else {
             // eslint-disable-next-line
             var childType = typeNumber(child);
-            if (
-                childType < 3 // 0, 1,2
+            if (childType < 3 // 0, 1,2
             ) {
                 continue;
             }
 
             if (childType < 6) {
-                //!== 'object'
-                //不是对象就是字符串或数字
+                //!== 'object' 不是对象就是字符串或数字
                 if (lastText) {
                     lastText.text = child + lastText.text;
                     continue;

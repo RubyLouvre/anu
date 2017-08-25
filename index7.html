@@ -13,55 +13,15 @@
   var s
   window.onload = function(){
    
-     class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          path: "111"
-        };
-      }
-      change(path) {
-        this.setState({
-          path: path || "333"
-        });
-      }
-      render() {
-        return <div><span>xx</span><Route path={this.state.path} /></div>;
-      }
+   function HelloComponent(
+      props
+    ) {
+      return <div >Hello {props.name}</div>;
     }
-    var updateCount = 0;
-    var receiveCount = 0;
-    var destroyCount = 0;
-    class Route extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          path: props.path
-        };
-      }
-      componentWillReceiveProps(props) {
-        receiveCount++;
-        console.log('receiveCount',receiveCount)
-        this.setState(function(nextState, props) {
-          nextState.path = props.path;
-          return nextState;
-        });
-      }
-      componentWillUpdate() {
-        updateCount++;
-        console.log('updateCount',updateCount)
-      }
-      componentWillUnmount() {
-        destroyCount++;
-        console.log("destroyCount",destroyCount)
-      }
-      render() {
-        return this.state.path == "111" ? <p>{this.state.path}</p> : null;
-      }
-    }
+
+
    
-   
-   s = ReactDOM.render(<App />, document.getElementById('example'));
+   s = ReactDOM.render(<HelloComponent name="Sebastian" />, document.getElementById('example'));
   
   }
   </script>

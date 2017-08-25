@@ -23,13 +23,13 @@ export function Component(props, context) {
     this.refs = {};
     this.state = null
     this.__dirty = true
-    this[cbs] = [];
+    this.__pendingCallbacks = [];
     this.__pendingStates = [];
     this.__pendingRefs = [];
-    this._currentElement = {}
+    this.__current = {}
     /*
     * this.__dirty = true 表示组件不能更新
-    * this.__hasRendred = true 表示组件已经渲染了一次
+    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM 
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
     */
@@ -80,7 +80,7 @@ function setStateImpl(state, cb) {
     }
     // forceUpate是同步渲染
     if (state === true) {
-        if (this._currentElement._hostNode && !this.__dirty && (this.__dirty = true)) {
+        if (this.__current._hostNode && !this.__dirty && (this.__dirty = true)) {
             //   options.clearRefsAndMounts([this]);
             options.refreshComponent(this, [], true);
         }
@@ -89,7 +89,7 @@ function setStateImpl(state, cb) {
         this
             .__pendingStates
             .push(state);
-        if (!this._currentElement._hostNode) {
+        if (!this.__current._hostNode) {
             //父组件在没有插入DOM树前，被子组件调用了父组件的setState
             if (this.__hydrating) {
                 this.__renderInNextCycle = true
@@ -99,7 +99,7 @@ function setStateImpl(state, cb) {
             //componentWillReceiveProps中，不能自己更新自己
             if(this.__dirty)
                return
-            if (this.__mounting || this.__hydrating) {
+            if (this.__hydrating) {
                  //在componentDidMount里调用自己的setState，延迟到下一周期更新
                 //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 this.__renderInNextCycle = true
@@ -110,6 +110,3 @@ function setStateImpl(state, cb) {
     }
 }
 
-var defer = win.requestAnimationFrame || win.webkitRequestAnimationFrame || function (job) {
-    setTimeout(job, 16);
-};

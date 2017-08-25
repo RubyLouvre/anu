@@ -59,13 +59,13 @@ describe('ReactDOM.render返回根组件的实例', function () {
             .$apply()
         expect(s.state.aaa).toBe(111)
         await browser
-            .click(s._currentElement._hostNode)
+            .click(s.__current._hostNode)
             .pause(100)
             .$apply()
 
         expect(s.state.aaa).toBe(112)
         await browser
-            .click(s._currentElement._hostNode)
+            .click(s.__current._hostNode)
             .pause(100)
             .$apply()
 

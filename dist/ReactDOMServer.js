@@ -119,22 +119,6 @@ function typeNumber(data) {
   return a || 8;
 }
 
-
-
-function getComponentProps(vnode) {
-  var defaultProps = vnode.type.defaultProps;
-  var props = vnode.props;
-  if (defaultProps) {
-    for (var i in defaultProps) {
-      //eslint-disable-next-line
-      if (props[i] === void 666) {
-        props[i] = defaultProps[i];
-      }
-    }
-  }
-  return props;
-}
-
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**
      * 为元素样子设置样式
@@ -278,7 +262,7 @@ function toVnode(vnode, data, parentInstance) {
 
     if (vnode.vtype > 1) {
         var props = vnode.props;
-        props = getComponentProps(Type, props);
+        // props = getComponentProps(Type, props)
         if (vnode.vtype === 4) {
             //处理无状态组件
 
@@ -294,11 +278,10 @@ function toVnode(vnode, data, parentInstance) {
         }
 
         rendered = checkNull(rendered);
-        instance._rendered = rendered;
-        instance._currentElement = vnode;
+        vnode._renderedVnode = rendered;
 
         vnode._instance = instance;
-
+        instance.__current = vnode;
         if (parentInstance) {
             instance.parentInstance = parentInstance;
         }

@@ -171,20 +171,6 @@ export function devolveCallbacks(el, name, name2) {//把两个数组挪来挪去
   args.length = 0
 }
 
-export function getComponentProps(vnode) {
-  var defaultProps = vnode.type.defaultProps;
-  var props = vnode.props;
-  if (defaultProps) {
-    for (var i in defaultProps) {
-      //eslint-disable-next-line
-      if (props[i] === void 666) {
-        props[i] = defaultProps[i];
-      }
-    }
-  }
-  return props;
-}
-
 export var recyclables = {
   "#text": [],
   "#comment": []

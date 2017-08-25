@@ -15,7 +15,6 @@ import {
     cbs,
     devolveCallbacks,
     clearArray,
-    getComponentProps,
     __push
 } from "./util";
 
@@ -44,12 +43,11 @@ export function unstable_renderSubtreeIntoContainer(component, vnode, container,
 export function unmountComponentAtNode(dom) {
     var prevVnode = dom._component;
     if (prevVnode) {
-        var component = prevVnode._instance;
         alignVnode(prevVnode, {
             type: "#text",
             text: "empty",
             vtype: 0
-        }, dom.firstChild, component, []);
+        }, dom.firstChild, {}, []);
     }
 }
 export function isValidElement(vnode) {
@@ -67,15 +65,14 @@ function clearRefsAndMounts(queue, a) {
                 refFns.length = 0;
 
                 if (instance.componentDidMount) {
-                    instance.__mounting = true
                     instance.componentDidMount();
-                    instance.__mounting = false
                     instance.componentDidMount = null;
                 }
-            
+                instance.__hydrating = false
+
                 while (instance.__renderInNextCycle) {
                     instance.__renderInNextCycle = null
-                    _refreshComponent(instance, instance._currentElement._hostNode, [])
+                    _refreshComponent(instance, instance.__current._hostNode, [])
                 }
                 clearArray(instance.__pendingCallbacks)
                     .forEach(function (fn) {
@@ -83,7 +80,6 @@ function clearRefsAndMounts(queue, a) {
                     });
 
             }
-          //  instance.__hasDidMount = true;
         });
     queue.length = 0;
 }
@@ -92,7 +88,7 @@ options.refreshComponent = refreshComponent;
 
 function refreshComponent(instance, mountQueue, forceUpdate) {
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
-    let dom = instance._currentElement._hostNode;
+    let dom = instance.__current._hostNode;
 
     dom = _refreshComponent(instance, dom, mountQueue, forceUpdate);
 
@@ -258,29 +254,29 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
     }
 }
 function mountComponent(vnode, context, prevRendered, mountQueue) {
-    let {type, ref} = vnode;
+    let {type, ref, props} = vnode;
 
-    let props = getComponentProps(vnode);
     let instance = new type(props, context); //互相持有引用
-    vnode._instance = instance;
-    instance.props = instance.props || props;
-    instance.context = instance.context || context;
+
+    // vnode._instance = instance; instance.props = instance.props || props;
+    // instance.context = instance.context || context;
     if (instance.componentWillMount) {
         instance.componentWillMount();
         instance.state = instance.__mergeStates(props, context);
     }
 
-    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance._currentElement =
+    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance.__current =
     // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
     // '#comment', text: 'empty', vtype: 0} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
-    let rendered = renderComponent(instance, type, vnode, context);
+    let rendered = renderComponent.call(instance, vnode, props, context);
     instance.__dirty = false;
-    // instance.__hasRendered = true;
     instance.__hydrating = true
-    let dom = mountVnode(rendered, instance.__childContext, prevRendered, mountQueue);
+    var childContext = rendered.vtype
+        ? getChildContext(instance, context)
+        : context;
+    let dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
-    instance.__hydrating = false
     mountQueue.push(instance);
     if (ref) {
         instance.__collectRefs(ref.bind(vnode, instance));
@@ -289,45 +285,33 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     return dom;
 }
 
-export function renderComponent(instance, type, vnode, context) {
-    CurrentOwner.cur = instance;
-
-    let rendered = instance.render();
-    instance.__blockRender = false
-    var old = instance._currentElement
-    instance._currentElement = vnode;
-    vnode._hostNode = old._hostNode
-
-    rendered = checkNull(rendered, type);
-    vnode._renderedVnode = rendered;
-    instance.__childContext = rendered.vtype
-        ? getChildContext(instance, context)
-        : context;
-    return rendered;
-}
 
 function Stateless(render) {
     this.refs = {};
-    this.type = render;
+    this.__render = render;
+    this.__current = {}
     this.__collectRefs = noop;
 }
 
-Stateless.prototype.render = function (vnode, factory, context) {
-    let props = getComponentProps(vnode);
-    let rendered = factory(props, context);
-    rendered = checkNull(rendered, factory);
+var renderComponent = Stateless.prototype.render = function (vnode, props, context) {
+    CurrentOwner.cur = this;
+    let rendered = this.__render ? this.__render(props, context): this.render()
+    CurrentOwner.cur = null
+    rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
     vnode._instance = this;
-    this._currentElement = vnode;
+    var dom = this.__current._hostNode
+    this.__current = vnode;
+    vnode._hostNode = dom
     vnode._renderedVnode = rendered;
     return rendered;
 };
 
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    let factory = vnode.type
-    let instance = new Stateless(factory);
-    let rendered = instance.render(vnode, factory, context);
+    let {type, props} = vnode
+    let instance = new Stateless(type);
+    let rendered = instance.render(vnode, props, context);
     let dom = mountVnode(rendered, context, prevRendered, mountQueue);
     return vnode._hostNode = dom;
 }
@@ -335,9 +319,9 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue) {
     let instance = lastTypeVnode._instance;
     let lastVnode = lastTypeVnode._renderedVnode;
-    let nextVnode = instance.render(nextTypeVnode, nextTypeVnode.type, context);
+    let nextVnode = instance.render(nextTypeVnode, nextTypeVnode.props, context);
     let dom = alignVnode(lastVnode, nextVnode, node, context, mountQueue);
-    nextTypeVnode._hostNode = nextVnode._hostNode = dom;
+    nextTypeVnode._hostNode =  dom;
     return dom;
 }
 
@@ -347,7 +331,7 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
         lastContext,
         state: lastState,
         context: nextContext,
-        _currentElement: vnode,
+        __current: vnode,
         props: nextProps,
         constructor: type
     } = instance;
@@ -372,18 +356,19 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
-    let rendered = renderComponent(instance, type, nextElement, nextContext);
+    let rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
     delete instance._nextElement;
-
-    dom = alignVnode(lastRendered, rendered, dom, instance.__childContext, mountQueue);
+    var childContext = rendered.vtype
+        ? getChildContext(instance, nextContext)
+        : nextContext;
+    dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
 
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
-     instance.__dirty = instance.__hydrating = false;
-   
+    instance.__dirty = instance.__hydrating = false;
 
     options.afterUpdate(instance);
     if (instance.__renderInNextCycle && mountQueue.mountAll) {
@@ -395,7 +380,7 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
 function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     let instance = nextVnode._instance = lastVnode._instance;
     instance._nextElement = nextVnode;
-    let nextProps = getComponentProps(nextVnode);
+    let nextProps = nextVnode.props
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
     if (instance.componentWillReceiveProps) {
@@ -448,7 +433,7 @@ export function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
-    let vnode = ref._currentElement;
+    let vnode = ref.__current;
     return vnode._hostNode || null;
 }
 

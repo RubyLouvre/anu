@@ -131,7 +131,7 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
         var index = 0
-        expect(s._currentElement.getDOMNode().nodeName).toBe('DIV')
+        expect(s.__current.getDOMNode().nodeName).toBe('DIV')
         s.forceUpdate(function () {
             index++
         })
@@ -177,7 +177,7 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-       //s._currentElement._hostNode
+       //s.__current._hostNode
         expect(div.firstChild.children[1].selected).toBe(true)
         await browser.selectByVisibleText('#node2', '上海').pause(100).$apply()
 
@@ -252,15 +252,15 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].text).toBe('北京')
-        expect(s._currentElement._hostNode.children[1].text).toBe('杭州')
-        expect(s._currentElement._hostNode.children[2].text).toBe('南京')
+        expect(s.__current._hostNode.children[0].text).toBe('北京')
+        expect(s.__current._hostNode.children[1].text).toBe('杭州')
+        expect(s.__current._hostNode.children[2].text).toBe('南京')
         s.change()
         await browser.pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].text).toBe('杭州')
-        expect(s._currentElement._hostNode.children[1].text).toBe('南京')
-        expect(s._currentElement._hostNode.children[2].text).toBe('北京')
+        expect(s.__current._hostNode.children[0].text).toBe('杭州')
+        expect(s.__current._hostNode.children[1].text).toBe('南京')
+        expect(s.__current._hostNode.children[2].text).toBe('北京')
 
 
     })
@@ -315,14 +315,14 @@ describe('node模块', function () {
         var s = React.render(<Radio />, div)
         await browser.pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(false)
-        expect(s._currentElement._hostNode.children[1].checked).toBe(true)
-        expect(s._currentElement._hostNode.children[2].checked).toBe(false)
+        expect(s.__current._hostNode.children[0].checked).toBe(false)
+        expect(s.__current._hostNode.children[1].checked).toBe(true)
+        expect(s.__current._hostNode.children[2].checked).toBe(false)
         await browser.click('#radio3').pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(false)
-        expect(s._currentElement._hostNode.children[1].checked).toBe(false)
-        expect(s._currentElement._hostNode.children[2].checked).toBe(true)
+        expect(s.__current._hostNode.children[0].checked).toBe(false)
+        expect(s.__current._hostNode.children[1].checked).toBe(false)
+        expect(s.__current._hostNode.children[2].checked).toBe(true)
 
 
     })
@@ -347,7 +347,7 @@ describe('node模块', function () {
 
             componentDidUpdate() {
               
-                expect(s._currentElement._hostNode.children[0].value).toBe(el)
+                expect(s.__current._hostNode.children[0].value).toBe(el)
 
             }
             render() {
@@ -369,7 +369,7 @@ describe('node模块', function () {
 
         await browser.pause(100).$apply()
 
-        expect(s._currentElement._hostNode.children[0].value).toBe('2')
+        expect(s.__current._hostNode.children[0].value).toBe('2')
 
         await browser
             .setValue('#node4', 'xxxx').pause(300).$apply()
@@ -394,7 +394,7 @@ describe('node模块', function () {
             }
 
             componentDidUpdate() {
-                expect(s._currentElement._hostNode.children[0].value).toBe(el)
+                expect(s.__current._hostNode.children[0].value).toBe(el)
             }
             render() {
                 return <div>
@@ -414,7 +414,7 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].value).toBe('4')
+        expect(s.__current._hostNode.children[0].value).toBe('4')
 
         await browser
             .setValue('#node5', 'yyyy').pause(300).$apply()
@@ -444,14 +444,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].value).toBe('5')
+        expect(s.__current._hostNode.children[0].value).toBe('5')
 
         await browser
             .setValue('#node6', 'xxxx')
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].value).toBe('5')
+        expect(s.__current._hostNode.children[0].value).toBe('5')
 
 
     })
@@ -478,14 +478,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(true)
+        expect(s.__current._hostNode.children[0].checked).toBe(true)
 
         await browser
             .click('#node7')
             .pause(300)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(true)
+        expect(s.__current._hostNode.children[0].checked).toBe(true)
 
 
     })
@@ -512,14 +512,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(false)
+        expect(s.__current._hostNode.children[0].checked).toBe(false)
 
         await browser
             .click('#radio7')
             .pause(300)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[0].checked).toBe(false)
+        expect(s.__current._hostNode.children[0].checked).toBe(false)
 
 
     })
@@ -545,14 +545,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[1].selected).toBe(true)
+        expect(s.__current._hostNode.children[1].selected).toBe(true)
         await browser
             .selectByVisibleText('#node8', 'ccc')
             .pause(200)
             .$apply()
 
-        expect(s._currentElement._hostNode.children[2].selected).toBe(false)
-        expect(s._currentElement._hostNode.children[1].selected).toBe(true)
+        expect(s.__current._hostNode.children[2].selected).toBe(false)
+        expect(s.__current._hostNode.children[1].selected).toBe(true)
 
 
     })

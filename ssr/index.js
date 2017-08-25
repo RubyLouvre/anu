@@ -1,4 +1,4 @@
-import {getChildContext, checkNull, getComponentProps} from '../src/util'
+import {getChildContext, checkNull} from '../src/util'
 import {rnumber, cssNumber} from '../src/style'
 var React = global.React
 var skipAttributes = {
@@ -144,7 +144,7 @@ function toVnode(vnode, data, parentInstance) {
 
     if (vnode.vtype > 1) {
         var props = vnode.props
-        props = getComponentProps(Type, props)
+        // props = getComponentProps(Type, props)
         if (vnode.vtype === 4) {
             //处理无状态组件
 
@@ -162,11 +162,10 @@ function toVnode(vnode, data, parentInstance) {
         }
 
         rendered = checkNull(rendered)
-        instance._rendered = rendered
-        instance._currentElement = vnode
+        vnode._renderedVnode = rendered
 
         vnode._instance = instance
-
+        instance.__current = vnode
         if (parentInstance) {
             instance.parentInstance = parentInstance
         }

@@ -34,7 +34,7 @@ describe("组件相关", function() {
     var s = React.render(<HelloComponent name="Sebastian" />, div);
 
     await browser.pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("Hello Sebastian");
+    expect(s.__current._hostNode.innerHTML).toBe("Hello Sebastian");
   });
 
   it("setState", async () => {
@@ -75,9 +75,9 @@ describe("组件相关", function() {
 
     var s = React.render(<A />, div);
     await browser.pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("1");
-    await browser.click(s._currentElement._hostNode).pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("3");
+    expect(s.__current._hostNode.innerHTML).toBe("1");
+    await browser.click(s.__current._hostNode).pause(200).$apply();
+    expect(s.__current._hostNode.innerHTML).toBe("3");
 
     expect(a).toBe(3);
   });
@@ -120,9 +120,9 @@ describe("组件相关", function() {
     var s = React.render(<A />, div);
     await browser.pause(200).$apply();
 
-    expect(s._currentElement._hostNode.innerHTML).toBe("1");
-    await browser.click(s._currentElement._hostNode).pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("1");
+    expect(s.__current._hostNode.innerHTML).toBe("1");
+    await browser.click(s.__current._hostNode).pause(200).$apply();
+    expect(s.__current._hostNode.innerHTML).toBe("1");
     expect(a).toBe(3);
   });
   it("PureComponent", async () => {
@@ -150,9 +150,9 @@ describe("组件相关", function() {
     var s = React.render(<App />, div);
     await browser.pause(200).$apply();
 
-    expect(s._currentElement._hostNode.innerHTML).toBe("7");
-    await browser.click(s._currentElement._hostNode).pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("7");
+    expect(s.__current._hostNode.innerHTML).toBe("7");
+    await browser.click(s.__current._hostNode).pause(200).$apply();
+    expect(s.__current._hostNode.innerHTML).toBe("7");
   });
   it("PureComponent2", async () => {
     class A extends React.PureComponent {
@@ -180,10 +180,10 @@ describe("组件相关", function() {
 
     var s = React.render(<A />, div);
     await browser.pause(100).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("7");
+    expect(s.__current._hostNode.innerHTML).toBe("7");
 
-    await browser.click(s._currentElement._hostNode).pause(200).$apply();
-    expect(s._currentElement._hostNode.innerHTML).toBe("9");
+    await browser.click(s.__current._hostNode).pause(200).$apply();
+    expect(s.__current._hostNode.innerHTML).toBe("9");
   });
   it("子组件是无状态组件", async () => {
     function Select(props) {
