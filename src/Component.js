@@ -1,9 +1,4 @@
-import {
-    extend,
-    isFn,
-    options,
-    clearArray
-} from "./util";
+import {extend, isFn, options, clearArray} from "./util";
 import {CurrentOwner} from "./createElement";
 import {win} from "./browser";
 
@@ -27,7 +22,7 @@ export function Component(props, context) {
     this.__current = {}
     /*
     * this.__dirty = true 表示组件不能更新
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM 
+    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
     */
@@ -94,23 +89,26 @@ function setStateImpl(state, cb) {
                 this.__renderInNextCycle = true
             }
 
-        } else {  //组件更新期
+        } else { //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
-            if(this.__dirty)
-               return
-            if(options.async){
-                console.log('xxxxxx')
-               options.enqueueUpdate(this)
-               return
-            }
-            if (this.__hydrating) {
-                 //在componentDidMount里调用自己的setState，延迟到下一周期更新
-                //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-                this.__renderInNextCycle = true
+            if (this.__dirty) 
+                return
+            this.__renderInNextCycle = true
+            if (options.async) {
+                //在事件句柄中执行setState会进行合并
+                options.enqueueUpdate(this)
                 return
             }
-            options.refreshComponent(this, []);
+            if (this.__hydrating) {
+                // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
+                // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+                // this.__renderInNextCycle = true
+                return
+            }
+            // this.__renderInNextCycle = true 不在生命周期钩子内执行setState
+            options.flushBatchedUpdates([this])
+
+            //  options.refreshComponent(this, []);
         }
     }
 }
-

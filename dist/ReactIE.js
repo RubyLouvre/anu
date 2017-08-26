@@ -827,7 +827,7 @@ function Component(props, context) {
     this.__current = {};
     /*
     * this.__dirty = true 表示组件不能更新
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM 
+    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
     */
@@ -889,18 +889,22 @@ function setStateImpl(state, cb) {
             //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
             if (this.__dirty) return;
+            this.__renderInNextCycle = true;
             if (options.async) {
-                console.log('xxxxxx');
+                //在事件句柄中执行setState会进行合并
                 options.enqueueUpdate(this);
                 return;
             }
             if (this.__hydrating) {
-                //在componentDidMount里调用自己的setState，延迟到下一周期更新
-                //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-                this.__renderInNextCycle = true;
+                // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
+                // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+                // this.__renderInNextCycle = true
                 return;
             }
-            options.refreshComponent(this, []);
+            // this.__renderInNextCycle = true 不在生命周期钩子内执行setState
+            options.flushBatchedUpdates([this]);
+
+            //  options.refreshComponent(this, []);
         }
     }
 }
@@ -1712,14 +1716,11 @@ function clearRefsAndMounts(queue) {
     queue.length = 0;
 }
 var dirtyComponents = [];
-options.flushBatchedUpdates = function () {
-    clearRefsAndMounts(dirtyComponents);
+options.flushBatchedUpdates = function (queue) {
+    clearRefsAndMounts(queue || dirtyComponents);
 };
 options.enqueueUpdate = function (instance) {
-    if (!instance.__dirty) {
-        instance.__renderInNextCycle = true;
-        dirtyComponents.push(instance);
-    }
+    dirtyComponents.push(instance);
 };
 
 options.refreshComponent = refreshComponent;
