@@ -1,5 +1,5 @@
 import { document } from "./browser";
-import { isFn, noop } from "./util";
+import { isFn, noop,  options } from "./util";
 
 var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -38,11 +38,14 @@ export function dispatchEvent(e, type, end) {
 
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
+    options.async = true
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
+    options.async = false
+    options.flushBatchedUpdates()
 }
 
 function collectPaths(from, end) {

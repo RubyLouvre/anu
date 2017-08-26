@@ -98,6 +98,11 @@ function setStateImpl(state, cb) {
             //componentWillReceiveProps中，不能自己更新自己
             if(this.__dirty)
                return
+            if(options.async){
+                console.log('xxxxxx')
+               options.enqueueUpdate(this)
+               return
+            }
             if (this.__hydrating) {
                  //在componentDidMount里调用自己的setState，延迟到下一周期更新
                 //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新

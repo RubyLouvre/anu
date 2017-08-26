@@ -1,90 +1,53 @@
-
-<!DOCTYPE html>
+<!doctype html>
+ 
 <html>
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script  src="./dist/React.js"></script>
-  <!-- <script src="./test/react.js"></script>
-   <script src="./test/react-dom.js"></script> -->
-    <script src="./lib/babel.js"></script>
-    <script type='text/babel'>
-    window.onload = function(){
-        var list = []
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 'app render'
-                }
-            }
-            componentWillMount() {
-                console.log('app will mount')
-            }
-            componentDidMount() {
-                console.log('componentDIdMount在引发更新')
-                this.setState({
-                    aaa: 'app render1'
-                })
-                console.log('app did mount')
-            }
-             componentWillUpdate() {
-                console.log('app will update')
-            }
-            componentDidUpdate() {
-                console.log('app did update')
-            }
-            render() {
-                console.log(this.state.aaa)
-                return <div ><A parent={this} />{this.state.aaa}</div>
-            }
+ 
+  <head>
+ 
+    <title>postMessage by 司徒正美</title>
+ 
+    <meta charset="utf-8"/>
+ 
+    <meta content="IE=8" http-equiv="X-UA-Compatible"/>
+ 
+    <meta name="keywords" content="postMessage by 司徒正美" />
+ 
+    <meta name="description" content="postMessage by 司徒正美" />
+ 
+ 
+ 
+    <style>
+ 
+ 
+ 
+    </style>
+ 
+    <script type="text/javascript" charset="utf-8">
+ 
+      window.onload = function(){   
+        if(window.attachEvent){//先绑定后监听
+          window.attachEvent('onmessage', function(e) {
+            alert(e.data+"标准浏览器"+ (new Date - e.data));
+          })
+        }else{
+          window.addEventListener('message',function(e) {
+            alert(e.data+"标准浏览器"+ (new Date - e.data));
+          },false);
         }
-        var a = 1
-        class C extends React.Component {
-            render() {
-                console.log('C render')
-                return <p>C</p>
-            }
-        }
-        class A extends React.Component {
-
-            componentWillReceiveProps() {
-                if (a < 2) {
-                    console.log('父节点在更新子节点的东西')
-                   
-                    this.props.parent.setState({
-                        aaa: 'child call app render ' + (++a)
-                    }, function () {
-                        console.log('componentWillReceiveProps 1')
-                    })
-                    this.props.parent.setState({
-                        aaa: 'child call app render ' + (++a)
-                    }, function () {
-                        console.log('componentWillReceiveProps 2')
-                    })
-                }
-            }
-            componentWillUpdate() {
-                console.log('child will update')
-            }
-            render() {
-                console.log('child render')
-                return <p>A</p>
-            }
-        }
-        var div = document.getElementById('example')
-        var s = ReactDOM.render(<App />, div)
-   }
+        window.postMessage(new Date-0, document.URL);
+      }
+      window.onerror = function(e){
+         console.log(new Date-0)
+      }
+      throw new Date- 0
     </script>
-</head>
-
-<body>
-
-    <div>这个默认会被清掉</div>
-    <div id='example'></div>
-
-
-</body>
-
+ 
+  </head>
+ 
+  <body>
+ 
+ 
+ 
+  </body>
+ 
 </html>

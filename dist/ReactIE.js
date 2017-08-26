@@ -373,11 +373,14 @@ function dispatchEvent(e, type, end) {
 
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
+    options.async = true;
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
+    options.async = false;
+    options.flushBatchedUpdates();
 }
 
 function collectPaths(from, end) {
@@ -886,6 +889,11 @@ function setStateImpl(state, cb) {
             //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
             if (this.__dirty) return;
+            if (options.async) {
+                console.log('xxxxxx');
+                options.enqueueUpdate(this);
+                return;
+            }
             if (this.__hydrating) {
                 //在componentDidMount里调用自己的setState，延迟到下一周期更新
                 //在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
@@ -1703,6 +1711,16 @@ function clearRefsAndMounts(queue) {
     });
     queue.length = 0;
 }
+var dirtyComponents = [];
+options.flushBatchedUpdates = function () {
+    clearRefsAndMounts(dirtyComponents);
+};
+options.enqueueUpdate = function (instance) {
+    if (!instance.__dirty) {
+        instance.__renderInNextCycle = true;
+        dirtyComponents.push(instance);
+    }
+};
 
 options.refreshComponent = refreshComponent;
 

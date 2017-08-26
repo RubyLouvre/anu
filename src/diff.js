@@ -81,6 +81,16 @@ function clearRefsAndMounts(queue) {
         });
     queue.length = 0;
 }
+var dirtyComponents = []
+options.flushBatchedUpdates = function(){
+    clearRefsAndMounts(dirtyComponents)
+}
+options.enqueueUpdate = function(instance){
+    if(!instance.__dirty){
+        instance.__renderInNextCycle = true
+        dirtyComponents.push(instance)
+    }
+}
 
 options.refreshComponent = refreshComponent;
 
