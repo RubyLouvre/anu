@@ -160,8 +160,8 @@ function renderVNode(vnode, context) {
         case '#comment':
             return '<!--' + vnode.text + '-->';
         default:
-            var innerHTML = props && props.dangerouslySetInnerHTML;
-            innerHTML = innerHTML && innerHTML.__html;
+            var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
+            innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
             if (vtype === 1) {
                 var attrs = [];
                 for (var i in props) {
@@ -190,8 +190,8 @@ function renderVNode(vnode, context) {
                     return str + '/>\n';
                 }
                 str += '>';
-                if (innerHTML) {
-                    str += innerHTML;
+                if (innerHTML$$1) {
+                    str += innerHTML$$1;
                 } else {
                     str += props.children.map(function (el) {
                         return el ? renderVNode(el, context) : '';

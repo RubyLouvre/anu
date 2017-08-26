@@ -7,8 +7,8 @@
    <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script src="./dist/react.development.js"></script>
     <script src="./dist/react-dom.development.js"></script>-->
-    <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
+   <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
@@ -32,7 +32,7 @@ window.onload = function(){
         })
       }
       render() {
-        console.log('render',this.state.path)
+        console.log('render '+this.state.path)
         return <div><span onClick={this.onClick.bind(this)}>{this.state.path}<Child parent={this} /></span></div>;
       }
       componentDidMount(){

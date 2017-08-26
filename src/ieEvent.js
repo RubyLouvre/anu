@@ -8,7 +8,7 @@ import {
   dispatchEvent,
   SyntheticEvent
 } from "./event";
-import { oneObject, toLowerCase, clearArray, HTML_KEY } from "./util";
+import { oneObject, toLowerCase, clearArray, innerHTML } from "./util";
 
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件

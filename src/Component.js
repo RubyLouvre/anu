@@ -76,9 +76,10 @@ function setStateImpl(state, cb) {
             .__pendingCallbacks
             .push(cb);
     }
+    let hasDOM = this.__current._hostNode
     // forceUpate是同步渲染
     if (state === true) {
-        if (this.__current._hostNode && !this.__dirty && (this.__dirty = true)) {
+        if (hasDOM && !this.__dirty && (this.__dirty = true)) {
             //   options.clearRefsAndMounts([this]);
             options.refreshComponent(this, [], true);
         }
@@ -87,13 +88,13 @@ function setStateImpl(state, cb) {
         this
             .__pendingStates
             .push(state);
-        if (!this.__current._hostNode) {
+        if (!hasDOM) { //组件挂载期
             //父组件在没有插入DOM树前，被子组件调用了父组件的setState
             if (this.__hydrating) {
                 this.__renderInNextCycle = true
             }
 
-        } else {
+        } else {  //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
             if(this.__dirty)
                return

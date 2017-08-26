@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-25
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-26
  */
 
 (function (global, factory) {
@@ -11,7 +11,7 @@
 var __type = Object.prototype.toString;
 var __push = Array.prototype.push;
 
-var HTML_KEY = "dangerouslySetInnerHTML";
+var innerHTML = "dangerouslySetInnerHTML";
 
 /**
  * 复制一个对象的属性到另一个对象
@@ -866,21 +866,24 @@ function setStateImpl(state, cb) {
     if (isFn(cb)) {
         this.__pendingCallbacks.push(cb);
     }
+    var hasDOM = this.__current._hostNode;
     // forceUpate是同步渲染
     if (state === true) {
-        if (this.__current._hostNode && !this.__dirty && (this.__dirty = true)) {
+        if (hasDOM && !this.__dirty && (this.__dirty = true)) {
             //   options.clearRefsAndMounts([this]);
             options.refreshComponent(this, [], true);
         }
     } else {
         // setState是异步渲染
         this.__pendingStates.push(state);
-        if (!this.__current._hostNode) {
+        if (!hasDOM) {
+            //组件挂载期
             //父组件在没有插入DOM树前，被子组件调用了父组件的setState
             if (this.__hydrating) {
                 this.__renderInNextCycle = true;
             }
         } else {
+            //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
             if (this.__dirty) return;
             if (this.__hydrating) {
@@ -1674,7 +1677,7 @@ function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
 
-function clearRefsAndMounts(queue, a) {
+function clearRefsAndMounts(queue) {
     queue.forEach(function (instance) {
         var refFns = instance.__pendingRefs;
         if (refFns) {
@@ -1880,8 +1883,8 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         instance.state = instance.__mergeStates(props, context);
     }
 
-    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance.__current =
-    // vnode instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
+    // 如果一个虚拟DOM vnode的type为函数，那么对type实例化所得的对象instance来说 instance.__current = vnode
+    // instance有一个render方法，它会生成下一级虚拟DOM ，如果是返回false或null，则变成 空虚拟DOM {type:
     // '#comment', text: 'empty', vtype: 0} 这个下一级虚拟DOM，对于instance来说，为其_rendered属性
 
     var rendered = renderComponent.call(instance, vnode, props, context);
@@ -2056,12 +2059,12 @@ function updateElement(lastVnode, nextVnode, node, context, mountQueue) {
     var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
     nextVnode._hostNode = node;
-    if (nextProps[HTML_KEY]) {
+    if (nextProps[innerHTML]) {
         lastProps.children.forEach(function (el) {
             disposeVnode(el);
         });
     } else {
-        if (lastProps[HTML_KEY]) {
+        if (lastProps[innerHTML]) {
             while (node.firstChild) {
                 node.removeChild(node.firstChild);
             }
