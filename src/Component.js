@@ -74,17 +74,12 @@ function setStateImpl(state, cb) {
     let hasDOM = this.__current._hostNode
     // forceUpate是同步渲染
     if (state === true) {
-      
-        //&& !this.__dirty && (this.__dirty = true)
-        if (hasDOM ) {
-            //   options.clearRefsAndMounts([this]);
-            this.__forceUpdate = true
-            this.__renderInNextCycle = true
-            options.flushBatchedUpdates([this])
-            //options.refreshComponent(this, []);
+        if (hasDOM) {
+            this.__forceUpdate = this.__renderInNextCycle = true
+            if( !this.__hydrating)//忽略componentDidMount中的forceUpdate
+              options.flushBatchedUpdates([this])
         }
     } else {
-        // setState是异步渲染
         this
             .__pendingStates
             .push(state);
@@ -106,9 +101,8 @@ function setStateImpl(state, cb) {
                 return
             }
             if (this.__hydrating) {
-                //console.log('在更新过程中执行了setState')
-                // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
-                // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+                // console.log('在更新过程中执行了setState') 在componentDidMount里调用自己的setState，延迟到下一周期更新
+                // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return
             }
             //  不在生命周期钩子内执行setState

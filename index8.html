@@ -7,8 +7,8 @@
    <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script src="./dist/react.development.js"></script>
     <script src="./dist/react-dom.development.js"></script>-->
-   <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+   <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
@@ -19,24 +19,23 @@ window.onload = function(){
           path: "111"
         };
       }
-  
+    
       render() {
         console.log('render '+this.state.path)
-        return <div><span onClick={this.onClick.bind(this)}>{this.state.path}</span></div>;
+        return <div><span >{this.state.path}</span></div>;
       }
- 
-      onClick(){
-       
-        this.setState({
-          path: 'click'
-        }, function(){
-          console.log('click....')
-        })
-        this.setState({
-          path: 'click2'
-        }, function(){
-          console.log('click2....')
-        })
+      componentDidMount(){
+         this.state.path = '2222'
+         this.forceUpdate(function(){
+           console.log('forceUpdate')
+         })
+         this.forceUpdate(function(){
+           console.log('forceUpdate2')
+         })
+         console.log('did mount')
+      }
+      shouldComponentUpdate(){
+        return false
       }
       componentWillUpdate(){
          console.log('will update')
