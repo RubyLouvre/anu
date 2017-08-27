@@ -6,8 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script> 
+   <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
@@ -21,7 +21,41 @@ window.onload = function(){
         };
       }
       componentWillUpdate(){
-          console.log('will update')
+          console.log('app will update')
+      }
+       componentDidUpdate(){
+          console.log('app did update')
+      }
+
+      render() {
+        return (
+          <div><A parent={this}/>{this.state.aaa}</div>
+        );
+      }
+    }
+    var update = 0
+    class A extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: new Date - 0
+        };
+      }
+      shouldComponentUpdate(){
+          if(update === 0){
+              console.log('2222')
+            this.props.parent.setState({
+                aaa: 'update'
+            }, function(){
+                console.log('update parent')
+            })
+          }
+         update = 1
+         return true
+      }
+      componentWillUpdate(){
+          console.log('child will update')
+          
       }
       render() {
         return (
@@ -29,14 +63,14 @@ window.onload = function(){
         );
       }
     }
+
+   
     var div = document.getElementById('example')
     var s = ReactDOM.render(<App />, div)
 
 
     setTimeout(function(){
-        s.setState({
-            aaa:333
-        }, function(){
+        s.forceUpdate( function(){
             console.log('setTimeout')
         })
     },3000)

@@ -74,9 +74,14 @@ function setStateImpl(state, cb) {
     let hasDOM = this.__current._hostNode
     // forceUpate是同步渲染
     if (state === true) {
-        if (hasDOM && !this.__dirty && (this.__dirty = true)) {
+      
+        //&& !this.__dirty && (this.__dirty = true)
+        if (hasDOM ) {
             //   options.clearRefsAndMounts([this]);
-            options.refreshComponent(this, [], true);
+            this.__forceUpdate = true
+            this.__renderInNextCycle = true
+            options.flushBatchedUpdates([this])
+            //options.refreshComponent(this, []);
         }
     } else {
         // setState是异步渲染
@@ -91,8 +96,10 @@ function setStateImpl(state, cb) {
 
         } else { //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
-            if (this.__dirty) 
+            if (this.__receiving) {
+                console.log('???')
                 return
+            }
             this.__renderInNextCycle = true
             if (options.async) {
                 //在事件句柄中执行setState会进行合并
@@ -100,15 +107,13 @@ function setStateImpl(state, cb) {
                 return
             }
             if (this.__hydrating) {
+                console.log('在更新过程中执行了setState')
                 // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
                 // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-                // this.__renderInNextCycle = true
                 return
             }
-            // this.__renderInNextCycle = true 不在生命周期钩子内执行setState
+            //  不在生命周期钩子内执行setState
             options.flushBatchedUpdates([this])
-
-            //  options.refreshComponent(this, []);
         }
     }
 }

@@ -1,53 +1,78 @@
-<!doctype html>
- 
+<!DOCTYPE html>
 <html>
- 
-  <head>
- 
-    <title>postMessage by 司徒正美</title>
- 
-    <meta charset="utf-8"/>
- 
-    <meta content="IE=8" http-equiv="X-UA-Compatible"/>
- 
-    <meta name="keywords" content="postMessage by 司徒正美" />
- 
-    <meta name="description" content="postMessage by 司徒正美" />
- 
- 
- 
-    <style>
- 
- 
- 
-    </style>
- 
-    <script type="text/javascript" charset="utf-8">
- 
-      window.onload = function(){   
-        if(window.attachEvent){//先绑定后监听
-          window.attachEvent('onmessage', function(e) {
-            alert(e.data+"标准浏览器"+ (new Date - e.data));
-          })
-        }else{
-          window.addEventListener('message',function(e) {
-            alert(e.data+"标准浏览器"+ (new Date - e.data));
-          },false);
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script src="./dist/react.development.js"></script>
+    <script src="./dist/react-dom.development.js"></script>-->
+   <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
+    <script src="./lib/babel.js"></script>
+    <script type='text/babel'>
+    var s 
+window.onload = function(){
+
+
+ var arr = ['111', '222', '333']
+        class App extends React.Component {
+
+            getChildContext() {
+                return {
+                    name: "Jonas",
+                    fruit: "Banana"
+                };
+            }
+            handleClick() {
+                
+                this.getChildContext = function () {
+                    return {
+                        name: "Jonas",
+                        fruit: arr.shift() 
+                    };
+                }
+                this.forceUpdate()
+
+            }
+            render() {
+                return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
+            }
         }
-        window.postMessage(new Date-0, document.URL);
-      }
-      window.onerror = function(e){
-         console.log(new Date-0)
-      }
-      throw new Date- 0
+        App.childContextTypes = {
+            name: React.PropTypes.string,
+            fruit: React.PropTypes.string
+        }
+
+        class B extends React.Component {
+
+            render() {
+                return <div><C /><strong>{this.context.fruit}</strong></div>;
+            }
+        }
+        B.contextTypes = {
+            fruit: React.PropTypes.string
+        }
+        class C extends React.Component {
+            render() {
+                return <strong>{this.context.fruit}</strong>;
+            }
+        }
+
+     var div = document.getElementById('example')
+     s = ReactDOM.render(<App />, div)
+}
     </script>
- 
-  </head>
- 
-  <body>
- 
- 
- 
-  </body>
- 
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+
+
+</body>
+
 </html>
+
+       

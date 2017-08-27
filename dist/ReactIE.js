@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-26
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-27
  */
 
 (function (global, factory) {
@@ -872,9 +872,14 @@ function setStateImpl(state, cb) {
     var hasDOM = this.__current._hostNode;
     // forceUpate是同步渲染
     if (state === true) {
-        if (hasDOM && !this.__dirty && (this.__dirty = true)) {
+
+        //&& !this.__dirty && (this.__dirty = true)
+        if (hasDOM) {
             //   options.clearRefsAndMounts([this]);
-            options.refreshComponent(this, [], true);
+            this.__forceUpdate = true;
+            this.__renderInNextCycle = true;
+            options.flushBatchedUpdates([this]);
+            //options.refreshComponent(this, []);
         }
     } else {
         // setState是异步渲染
@@ -888,7 +893,10 @@ function setStateImpl(state, cb) {
         } else {
             //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
-            if (this.__dirty) return;
+            if (this.__receiving) {
+                console.log('???');
+                return;
+            }
             this.__renderInNextCycle = true;
             if (options.async) {
                 //在事件句柄中执行setState会进行合并
@@ -896,15 +904,13 @@ function setStateImpl(state, cb) {
                 return;
             }
             if (this.__hydrating) {
+                console.log('在更新过程中执行了setState');
                 // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
                 // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-                // this.__renderInNextCycle = true
                 return;
             }
-            // this.__renderInNextCycle = true 不在生命周期钩子内执行setState
+            //  不在生命周期钩子内执行setState
             options.flushBatchedUpdates([this]);
-
-            //  options.refreshComponent(this, []);
         }
     }
 }
@@ -1692,29 +1698,31 @@ function isValidElement(vnode) {
 function clearRefsAndMounts(queue) {
     queue.forEach(function (instance) {
         var refFns = instance.__pendingRefs;
-        if (refFns) {
-            for (var i = 0, refFn; refFn = refFns[i++];) {
-                refFn();
-            }
-            refFns.length = 0;
-
-            if (instance.componentDidMount) {
-                instance.componentDidMount();
-                instance.componentDidMount = null;
-            }
-            instance.__hydrating = false;
-
-            while (instance.__renderInNextCycle) {
-                instance.__renderInNextCycle = null;
-                _refreshComponent(instance, instance.__current._hostNode, []);
-            }
-            clearArray(instance.__pendingCallbacks).forEach(function (fn) {
-                fn.call(instance);
-            });
+        for (var i = 0, refFn; refFn = refFns[i++];) {
+            refFn();
         }
+        refFns.length = 0;
+
+        if (instance.componentDidMount) {
+            instance.componentDidMount();
+            instance.componentDidMount = null;
+        }
+        instance.__hydrating = false;
+
+        while (instance.__renderInNextCycle) {
+            instance.__renderInNextCycle = null;
+            instance.__hydrating = true;
+
+            _refreshComponent(instance, instance.__current._hostNode, []);
+            instance.__hydrating = false;
+        }
+        clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+            fn.call(instance);
+        });
     });
     queue.length = 0;
 }
+
 var dirtyComponents = [];
 options.flushBatchedUpdates = function (queue) {
     clearRefsAndMounts(queue || dirtyComponents);
@@ -1723,13 +1731,16 @@ options.enqueueUpdate = function (instance) {
     dirtyComponents.push(instance);
 };
 
-options.refreshComponent = refreshComponent;
-
-function refreshComponent(instance, mountQueue, forceUpdate) {
+function refreshComponent(instance, mountQueue) {
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
     var dom = instance.__current._hostNode;
-
-    dom = _refreshComponent(instance, dom, mountQueue, forceUpdate);
+    instance.__hydrating = true;
+    dom = _refreshComponent(instance, dom, mountQueue);
+    while (instance.__renderInNextCycle) {
+        instance.__renderInNextCycle = null;
+        instance.__hydrating = true;
+        dom = _refreshComponent(instance, dom, mountQueue);
+    }
 
     clearArray(instance.__pendingCallbacks).forEach(function (fn) {
         fn.call(instance);
@@ -1737,7 +1748,7 @@ function refreshComponent(instance, mountQueue, forceUpdate) {
 
     return dom;
 }
-
+options.refreshComponent = refreshComponent;
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
         throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
@@ -1961,7 +1972,7 @@ function updateStateless(lastTypeVnode, nextTypeVnode, node, context, mountQueue
     return dom;
 }
 
-function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
+function _refreshComponent(instance, dom, mountQueue) {
     var lastProps = instance.lastProps,
         lastContext = instance.lastContext,
         lastState = instance.state,
@@ -1974,10 +1985,11 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
     lastProps = lastProps || nextProps;
     var nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
-    if (!forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
-        instance.__dirty = false;
+    if (!this.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        instance.__dirty = this.__forceUpdate = false;
         return dom;
     }
+    this.__forceUpdate = false;
     if (instance.componentWillUpdate) {
         //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
@@ -1991,6 +2003,7 @@ function _refreshComponent(instance, dom, mountQueue, forceUpdate) {
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
+
     var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
     delete instance.__next;
     var childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext;
@@ -2017,9 +2030,9 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
     if (instance.componentWillReceiveProps) {
-        instance.__dirty = true;
+        instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, context);
-        instance.__dirty = false;
+        instance.__receiving = false;
     }
 
     instance.props = nextProps;
@@ -2027,6 +2040,7 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
+    //   instance.__hydrating = true
     //  clearRefsAndMounts([instance])
     return refreshComponent(instance, mountQueue);
 }
