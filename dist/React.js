@@ -895,7 +895,6 @@ function setStateImpl(state, cb) {
             //组件更新期
             //componentWillReceiveProps中，不能自己更新自己
             if (this.__receiving) {
-                console.log('???');
                 return;
             }
             this.__renderInNextCycle = true;
@@ -905,7 +904,7 @@ function setStateImpl(state, cb) {
                 return;
             }
             if (this.__hydrating) {
-                console.log('在更新过程中执行了setState');
+                //console.log('在更新过程中执行了setState')
                 // 在componentDidMount里调用自己的setState，延迟到下一周期更新 在更新过程中，
                 // 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return;
@@ -1711,11 +1710,8 @@ function clearRefsAndMounts(queue) {
         instance.__hydrating = false;
 
         while (instance.__renderInNextCycle) {
-            instance.__renderInNextCycle = null;
-            instance.__hydrating = true;
-
+            // instance.__hydrating = true
             _refreshComponent(instance, instance.__current._hostNode, []);
-            instance.__hydrating = false;
         }
         clearArray(instance.__pendingCallbacks).forEach(function (fn) {
             fn.call(instance);
@@ -1735,11 +1731,10 @@ options.enqueueUpdate = function (instance) {
 function refreshComponent(instance, mountQueue) {
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
     var dom = instance.__current._hostNode;
-    instance.__hydrating = true;
+    //  instance.__hydrating = true
     dom = _refreshComponent(instance, dom, mountQueue);
     while (instance.__renderInNextCycle) {
-        instance.__renderInNextCycle = null;
-        instance.__hydrating = true;
+        //instance.__hydrating = true
         dom = _refreshComponent(instance, dom, mountQueue);
     }
 
@@ -1986,16 +1981,18 @@ function _refreshComponent(instance, dom, mountQueue) {
     lastProps = lastProps || nextProps;
     var nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
+    instance.__renderInNextCycle = null;
     if (!this.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__dirty = this.__forceUpdate = false;
         return dom;
     }
+    instance.__hydrating = true;
     this.__forceUpdate = false;
     if (instance.componentWillUpdate) {
         //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
-    instance.__hydrating = true;
+    // instance.__hydrating = true;
     instance.props = nextProps;
     instance.state = nextState;
 
@@ -2041,8 +2038,7 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
-    //   instance.__hydrating = true
-    //  clearRefsAndMounts([instance])
+    //   instance.__hydrating = true  clearRefsAndMounts([instance])
     return refreshComponent(instance, mountQueue);
 }
 

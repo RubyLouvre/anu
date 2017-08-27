@@ -68,11 +68,8 @@ function clearRefsAndMounts(queue) {
             instance.__hydrating = false
 
             while (instance.__renderInNextCycle) {
-                instance.__renderInNextCycle = null
-                    instance.__hydrating = true
-
+                // instance.__hydrating = true
                 _refreshComponent(instance, instance.__current._hostNode, [])
-                    instance.__hydrating = false
             }
             clearArray(instance.__pendingCallbacks)
                 .forEach(function (fn) {
@@ -83,7 +80,6 @@ function clearRefsAndMounts(queue) {
     queue.length = 0;
 }
 
-
 var dirtyComponents = []
 options.flushBatchedUpdates = function (queue) {
     clearRefsAndMounts(queue || dirtyComponents)
@@ -92,21 +88,20 @@ options.enqueueUpdate = function (instance) {
     dirtyComponents.push(instance)
 }
 
-
 function refreshComponent(instance, mountQueue) {
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
     let dom = instance.__current._hostNode;
-    instance.__hydrating = true
+    //  instance.__hydrating = true
     dom = _refreshComponent(instance, dom, mountQueue);
-    while(instance.__renderInNextCycle){
-        instance.__renderInNextCycle = null
-        instance.__hydrating = true
+    while (instance.__renderInNextCycle) {
+        //instance.__hydrating = true
         dom = _refreshComponent(instance, dom, mountQueue);
     }
 
-    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
-        fn.call(instance);
-    });
+    clearArray(instance.__pendingCallbacks)
+        .forEach(function (fn) {
+            fn.call(instance);
+        });
 
     return dom;
 }
@@ -352,16 +347,18 @@ function _refreshComponent(instance, dom, mountQueue) {
     lastProps = lastProps || nextProps;
     let nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
+    instance.__renderInNextCycle = null
     if (!this.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__dirty = this.__forceUpdate = false;
         return dom;
     }
+    instance.__hydrating = true
     this.__forceUpdate = false
     if (instance.componentWillUpdate) {
         //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
-    instance.__hydrating = true;
+    // instance.__hydrating = true;
     instance.props = nextProps;
     instance.state = nextState;
 
@@ -409,9 +406,8 @@ function updateComponent(lastVnode, nextVnode, node, context, mountQueue) {
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
-  //   instance.__hydrating = true
-  //  clearRefsAndMounts([instance])
-    return  refreshComponent(instance, mountQueue);
+    //   instance.__hydrating = true  clearRefsAndMounts([instance])
+    return refreshComponent(instance, mountQueue);
 }
 
 export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
