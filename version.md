@@ -1,9 +1,10 @@
 ## 1.0.9
 1. disabled的元素不能触发点击事件
 2. 修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理
-3. 优化setState方法，虚拟DOM没有转换出对应的真实DOM时，不是能更新组件
-4. 简化alignVnode的逻辑，减少插入列队的生成
-5. react/lib中添加一些简用的外围模块，如ReactComponentWithPureRenderMixin，shallowCompare，sliceChildren
+3. 简化alignVnode的逻辑，减少插入列队的生成
+4. 重构setStateImpl,
+5. `_component`更名为`__component`, `_currentElement`更名为`__current`
+6. react/lib中添加一些简用的外围模块，如ReactComponentWithPureRenderMixin，shallowCompare，sliceChildren
 
 
 ## 1.0.8
