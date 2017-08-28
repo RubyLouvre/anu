@@ -1,4 +1,7 @@
-## 1.0.9
+## 1.1.1
+1. 简化createClass
+
+## 1.1.0
 1. disabled的元素不能触发点击事件
 2. 修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理
 3. 简化alignVnode的逻辑，减少插入列队的生成
