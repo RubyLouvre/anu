@@ -1744,7 +1744,15 @@ function refreshComponent(instance, mountQueue) {
 
     return dom;
 }
-options.refreshComponent = refreshComponent;
+/**
+ * ReactDOM.render
+ * 用于驱动视图第一次刷新
+ * @param {any} vnode 
+ * @param {any} container 
+ * @param {any} callback 
+ * @param {any} parentContext 
+ * @returns 
+ */
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
         throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
@@ -1814,14 +1822,14 @@ var patchAdapter = {
     14: updateStateless
 };
 
+function mountVnode(vnode, context, prevRendered, mountQueue) {
+    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+}
+
 function mountText(vnode, context, prevRendered) {
     var node = prevRendered && prevRendered.nodeName === vnode.type ? prevRendered : createDOMElement(vnode);
     vnode._hostNode = node;
     return node;
-}
-
-function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function genMountElement(vnode, type, prevRendered) {
@@ -1894,6 +1902,7 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
         parentNode.removeChild(childNodes[n]);
     }
 }
+
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     var type = vnode.type,
         ref = vnode.ref,
@@ -1981,14 +1990,13 @@ function _refreshComponent(instance, dom, mountQueue) {
     var nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
     instance.__renderInNextCycle = null;
-    if (!this.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
-        this.__forceUpdate = false;
+    if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        instance.__forceUpdate = false;
         return dom;
     }
     instance.__hydrating = true;
-    this.__forceUpdate = false;
+    instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
-        //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
     instance.props = nextProps;
@@ -2036,7 +2044,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
-    //   instance.__hydrating = true  clearRefsAndMounts([instance])
     return refreshComponent(instance, mountQueue);
 }
 

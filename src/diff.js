@@ -102,7 +102,15 @@ function refreshComponent(instance, mountQueue) {
 
     return dom;
 }
-options.refreshComponent = refreshComponent
+/**
+ * ReactDOM.render
+ * 用于驱动视图第一次刷新
+ * @param {any} vnode 
+ * @param {any} container 
+ * @param {any} callback 
+ * @param {any} parentContext 
+ * @returns 
+ */
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
         throw new Error(`${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`);
@@ -176,16 +184,18 @@ let patchAdapter = {
     14: updateStateless
 };
 
+
+
+export function mountVnode(vnode, context, prevRendered, mountQueue) {
+    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+}
+
 function mountText(vnode, context, prevRendered) {
     let node = prevRendered && prevRendered.nodeName === vnode.type
         ? prevRendered
         : createDOMElement(vnode);
     vnode._hostNode = node;
     return node;
-}
-
-export function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function genMountElement(vnode, type, prevRendered) {
@@ -257,6 +267,7 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
         parentNode.removeChild(childNodes[n]);
     }
 }
+
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     let {type, ref, props} = vnode;
 
@@ -344,14 +355,13 @@ function _refreshComponent(instance, dom, mountQueue) {
     let nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
     instance.__renderInNextCycle = null
-    if (!this.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
-         this.__forceUpdate = false;
+    if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        instance.__forceUpdate = false;
         return dom;
     }
     instance.__hydrating = true
-    this.__forceUpdate = false
+    instance.__forceUpdate = false
     if (instance.componentWillUpdate) {
-        //生命周期 componentWillUpdate(nextProps, nextState, nextContext)
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
     instance.props = nextProps;
@@ -401,7 +411,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     if (nextVnode.ref) {
         nextVnode.ref(instance);
     }
-    //   instance.__hydrating = true  clearRefsAndMounts([instance])
     return refreshComponent(instance, mountQueue);
 }
 
