@@ -1,40 +1,31 @@
-import { createElement } from "./createElement";
-import { cloneElement } from "./cloneElement";
-
-import { PureComponent } from "./PureComponent";
-import { Component } from "./Component";
-import { Children } from "./Children";
-import { win as window } from "./browser";
+import {options} from "./util";
+import {Children} from "./Children";
 import * as eventSystem from "./event";
-import { createClass } from "./createClass";
+import {PropTypes} from "./PropTypes";
+import {Component} from "./Component";
+import {win as window} from "./browser";
+import {createClass} from "./createClass";
+import {cloneElement} from "./cloneElement";
+import {PureComponent} from "./PureComponent";
+import {createElement} from "./createElement";
 
-import { options } from "./util";
-import { PropTypes } from "./PropTypes";
-
-import {
-  render,
-  findDOMNode,
-  unstable_renderSubtreeIntoContainer,
-  unmountComponentAtNode,
-  isValidElement
-} from "./diff";
+import {render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer} from "./diff";
 
 var React = {
+  version: "VERSION",
+  render,
+  options,
   PropTypes,
   Children, //为了react-redux
-  render,
+  Component,
   findDOMNode,
-  options,
-  unstable_renderSubtreeIntoContainer,
-  unmountComponentAtNode,
-  isValidElement,
   createClass,
-  version: "VERSION",
   createElement,
   cloneElement,
   PureComponent,
-  Component,
-  eventSystem,
+  isValidElement,
+  unmountComponentAtNode,
+  unstable_renderSubtreeIntoContainer,
   createFactory(type) {
     console.warn("createFactory将被废弃"); // eslint-disable-line
     var factory = createElement.bind(null, type);

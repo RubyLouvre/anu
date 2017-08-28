@@ -1,7 +1,7 @@
 let __type = Object.prototype.toString;
 export var __push = Array.prototype.push;
 
-export var HTML_KEY = "dangerouslySetInnerHTML";
+export var innerHTML = "dangerouslySetInnerHTML";
 
 /**
  * 复制一个对象的属性到另一个对象
@@ -160,27 +160,6 @@ export function typeNumber(data) {
   }
   var a = numberMap[__type.call(data)];
   return a || 8;
-}
-export var cbs = '__pendingCallbacks'
-export function devolveCallbacks(el, name, name2) {//把两个数组挪来挪去
-  var args = el[name]
-  var list = el[name2] = el[name2] || []
-  list.push.apply(list, args)
-  args.length = 0
-}
-
-export function getComponentProps(vnode) {
-  var defaultProps = vnode.type.defaultProps;
-  var props = vnode.props;
-  if (defaultProps) {
-    for (var i in defaultProps) {
-      //eslint-disable-next-line
-      if (props[i] === void 666) {
-        props[i] = defaultProps[i];
-      }
-    }
-  }
-  return props;
 }
 
 export var recyclables = {

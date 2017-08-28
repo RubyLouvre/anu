@@ -1,76 +1,67 @@
-
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script  src="./dist/React.js"></script>
-    <!-- <script src="./test/react.js"></script>
-   <script src="./test/react-dom.js"></script> -->
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script src="./dist/react.development.js"></script>
+    <script src="./dist/react-dom.development.js"></script>-->
+   <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
-    window.onload = function(){
-        var list = []
+    var s 
+window.onload = function(){
+
+
+ var arr = ['111', '222', '333']
         class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 'app render'
+
+            getChildContext() {
+                return {
+                    name: "Jonas",
+                    fruit: "Banana"
+                };
+            }
+            handleClick() {
+                
+                this.getChildContext = function () {
+                    return {
+                        name: "Jonas",
+                        fruit: arr.shift() 
+                    };
                 }
-            }
-            componentWillMount() {
-                console.log('app will mount')
-            }
-            componentDidMount() {
-                this.setState({
-                    aaa: 'app render1'
-                })
-                console.log('app did mount')
-            }
-            componentDidUpdate() {
-                console.log('app did update')
+                this.forceUpdate()
+
             }
             render() {
-                console.log(this.state.aaa)
-                return <div ><A parent={this} />{this.state.aaa}</div>
+                return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
             }
         }
-        var a = 1
+        App.childContextTypes = {
+            name: React.PropTypes.string,
+            fruit: React.PropTypes.string
+        }
+
+        class B extends React.Component {
+
+            render() {
+                return <div><C /><strong>{this.context.fruit}</strong></div>;
+            }
+        }
+        B.contextTypes = {
+            fruit: React.PropTypes.string
+        }
         class C extends React.Component {
             render() {
-                console.log('C render')
-                return <p>C</p>
+                return <strong>{this.context.fruit}</strong>;
             }
         }
-        class A extends React.Component {
 
-            componentWillReceiveProps() {
-                if (a < 2) {
-                    console.log('xxxxxxxxxxxxx')
-                    this.props.parent.setState({
-                        aaa: 'child call app render ' + (++a)
-                    }, function () {
-                        console.log('componentWillReceiveProps 1')
-                    })
-                    this.props.parent.setState({
-                        aaa: 'child call app render ' + (++a)
-                    }, function () {
-                        console.log('componentWillReceiveProps 2')
-                    })
-                }
-            }
-            componentWillUpdate() {
-                console.log('child will update')
-            }
-            render() {
-                console.log('child render')
-                return <p>A</p>
-            }
-        }
-        var div = document.getElementById('example')
-        var s = ReactDOM.render(<App />, div)
-   }
+     var div = document.getElementById('example')
+     s = ReactDOM.render(<App />, div)
+}
     </script>
 </head>
 
@@ -83,3 +74,5 @@
 </body>
 
 </html>
+
+       

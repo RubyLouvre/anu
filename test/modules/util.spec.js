@@ -7,7 +7,6 @@ import {
     camelize,
     getNodes,
     getChildContext,
-    getComponentProps,
     typeNumber
 } from 'src/util'
 import {
@@ -106,6 +105,7 @@ describe('util', function () {
         })
     })
     it('getComponentProps', () => {
+        /*
         function A() {
 
         }
@@ -135,6 +135,7 @@ describe('util', function () {
         expect(b).toEqual({
             title: 3
         })
+        */
     })
 
       it('typeNumber', () => {

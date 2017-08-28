@@ -7,8 +7,8 @@
    <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script src="./dist/react.development.js"></script>
     <script src="./dist/react-dom.development.js"></script>-->
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+   <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
@@ -19,28 +19,23 @@ window.onload = function(){
           path: "111"
         };
       }
-      componentWillMount(){
-        this.setState({
-          path: '222'
-        }, function(){
-          console.log('componentWillMount cb')
-        })
-        this.setState({
-          path: '2222'
-        }, function(){
-          console.log('componentWillMount cb2')
-        })
-      }
+    
       render() {
-        console.log('render')
-        return <div><span>{this.state.path}<Child parent={this} /></span></div>;
+        console.log('render '+this.state.path)
+        return <div><span >{this.state.path}</span></div>;
       }
       componentDidMount(){
-        this.setState({
-          path: 'eeee'
-        }, function(){
-          console.log('componentDidMount cb')
-        })
+         this.state.path = '2222'
+         this.forceUpdate(function(){
+           console.log('forceUpdate')
+         })
+         this.forceUpdate(function(){
+           console.log('forceUpdate2')
+         })
+         console.log('did mount')
+      }
+      shouldComponentUpdate(){
+        return false
       }
       componentWillUpdate(){
          console.log('will update')
@@ -49,19 +44,7 @@ window.onload = function(){
          console.log('did update')
       }
     }
-    class Child extends React.Component{
-      componentWillMount(){
-        this.props.parent.setState({
-          path: 'child'
-        }, function(){
-          console.log('child setState')
-        })
-      }
-      render(){
-        console.log('child render')
-        return <p>33333</p>
-      }
-    }
+ 
     ReactDOM.render(<App />, document.getElementById('example'), function(){
       console.log('ReactDOM cb')
     })

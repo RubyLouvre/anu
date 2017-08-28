@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script src="./test/react.js"></script>
+ <!--  <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
   
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -13,72 +13,16 @@
   var s
   window.onload = function(){
    
-    var list = []
-    class App extends React.Component {
-        constructor(props) {
-            super(props)
-            this.state = {
-                aaa: 'app render'
-            }
-        }
-        componentWillMount() {
-          //  list.push('app will mount')
-            console.log('app will mount')
-        }
-        componentDidMount() {
-            list.push('app did mount')
-            console.log('app did mount')
-        }
-
-        componentWillUpdate() {
-            list.push('app will update')
-            console.log('app will update')
-        }
-        componentDidUpdate() {
-            list.push('app did update')
-            console.log('app did update')
-        }
-        render() {
-            list.push(this.state.aaa)
-            console.log(this.state.aaa)
-            return <div ><A parent={this} />{this.state.aaa}</div>
-        }
-    }
-    class A extends React.Component {
-        componentWillMount() {
-            console.log('让父节点更新')
-            this.props.parent.setState({
-                aaa: 'app new render'
-            }, function(){
-                console.log('app new render cb')
-            })
-            this.props.parent.setState({
-                aaa: 'app new render2'
-            },function(){
-                console.log('app new render2 cb')
-            })
-        }
-        componentWillReceiveProps() {
-            console.log('child receive')
-            list.push('child receive')
-        }
-        componentDidMount() {
-            console.log('child did mount')
-        }
-        componentDidUpdate() {
-            console.log('child did update')
-        }
-        render() {
-            console.log('A render')
-            return <p>A</p>
-        }
+   function HelloComponent(
+      props
+    ) {
+      return <div >Hello {props.name}</div>;
     }
 
 
-   s = ReactDOM.render(<App />, document.getElementById('example'));
-   setTimeout(function(){
-    //   console.log(list.join('\n'))
-   })
+   
+   s = ReactDOM.render(<HelloComponent name="Sebastian" />, document.getElementById('example'));
+  
   }
   </script>
 

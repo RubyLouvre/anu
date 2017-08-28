@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -8,10 +7,12 @@
     <script type='text/javascript' src="./dist/React.js"></script>
    <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script> 
+
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
 window.onload = function(){
   
+
     var list = []
     class App extends React.Component {
         constructor(props) {
@@ -48,24 +49,24 @@ window.onload = function(){
             })
             list.push('did mount')
         }
+      componentWillUpdate(){
+          console.log('app will update')
+      }
+       componentDidUpdate(){
+          console.log('app did update')
+      }
 
-        componentWillUpdate() {
-            list.push('will update')
-        }
-        componentDidUpdate() {
-            list.push('did update')
-        }
-        render() {
-            list.push(this.state.aaa)
-            return <div>{this.state.aaa}</div>
-
-        }
+      render() {
+        return (
+          <div><A parent={this}/>{this.state.aaa}</div>
+        );
+      }
     }
-console.log(list)
-       
+   
+   
     var div = document.getElementById('example')
     var s = ReactDOM.render(<App />, div)
-  
+
    
     
 
