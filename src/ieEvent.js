@@ -51,7 +51,7 @@ function fixIESubmit(dom) {
 }
 
 if (msie < 9) {
-  propHooks[HTML_KEY] = function (dom, name, val, lastProps) {
+  propHooks[innerHTML] = function (dom, name, val, lastProps) {
     var oldhtml = lastProps[name] && lastProps[name].__html;
     var html = val && val.__html;
     if (html !== oldhtml) {

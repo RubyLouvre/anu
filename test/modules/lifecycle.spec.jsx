@@ -356,64 +356,64 @@ describe('生命周期例子', function () {
         expect(list.join('-')).toBe('333-444-555-666-777');
         expect(div.textContent || div.innerText).toBe("444");
     });
-    it('ReactDOM的回调总在最后', async ()=>{
+    it('ReactDOM的回调总在最后', async () => {
         var list = []
-       class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          path: "111"
-        };
-      }
-      componentWillMount(){
-        this.setState({
-          path: '222'
-        }, function(){
-          list.push('componentWillMount cb')
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    path: "111"
+                };
+            }
+            componentWillMount() {
+                this.setState({
+                    path: '222'
+                }, function () {
+                    list.push('componentWillMount cb')
+                })
+                this.setState({
+                    path: '2222'
+                }, function () {
+                    list.push('componentWillMount cb2')
+                })
+            }
+            render() {
+                list.push('render ' + this.state.path)
+                return <div><span>{this.state.path}<Child parent={this} /></span></div>;
+            }
+            componentDidMount() {
+                this.setState({
+                    path: 'eeee'
+                }, function () {
+                    list.push('componentDidMount cb')
+                })
+            }
+            componentWillUpdate() {
+                list.push('will update')
+            }
+            componentDidUpdate() {
+                list.push('did update')
+            }
+        }
+        class Child extends React.Component {
+            componentWillMount() {
+                this.props.parent.setState({
+                    path: 'child'
+                }, function () {
+                    list.push('child setState')
+                })
+            }
+            render() {
+                list.push('child render')
+                return <p>33333</p>
+            }
+        }
+        ReactDOM.render(<App />, div, function () {
+            list.push('ReactDOM cb')
         })
-        this.setState({
-          path: '2222'
-        }, function(){
-          list.push('componentWillMount cb2')
-        })
-      }
-      render() {
-         list.push('render '+this.state.path)
-        return <div><span>{this.state.path}<Child parent={this} /></span></div>;
-      }
-      componentDidMount(){
-        this.setState({
-          path: 'eeee'
-        }, function(){
-          list.push('componentDidMount cb')
-        })
-      }
-      componentWillUpdate(){
-         list.push('will update')
-      }
-      componentDidUpdate(){
-         list.push('did update')
-      }
-    }
-    class Child extends React.Component{
-      componentWillMount(){
-        this.props.parent.setState({
-          path: 'child'
-        }, function(){
-          list.push('child setState')
-        })
-      }
-      render(){
-        list.push('child render')
-        return <p>33333</p>
-      }
-    }
-    ReactDOM.render(<App />, div, function(){
-      list.push('ReactDOM cb')
-    })
 
-    expect(list).toEqual([
-           'render 2222',
+        expect(list).toEqual([
+            'render 2222',
             'child render',
             'will update',
             'render eeee',
@@ -428,7 +428,7 @@ describe('生命周期例子', function () {
 
     })
 
-    it('should update state when called from child cWRP', async ()=> {
+    it('should update state when called from child cWRP', async () => {
         const log = [];
         class Parent extends React.Component {
             constructor() {
@@ -476,4 +476,61 @@ describe('生命周期例子', function () {
         ]);
 
     });
+
+    it("forceUpdate在componentDidMount中使用", async () => {
+        var list = []
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa'
+                }
+            }
+            componentWillMount() {
+                this.setState({
+                    aaa: 'bbb'
+                }, function () {
+                    list.push('1111')
+                })
+            }
+            componentDidMount() {
+                this.state.aaa = 'cccc'
+                this.forceUpdate(function () {
+                    list.push('2222')
+                })
+                this.state.aaa = 'dddd'
+                this.forceUpdate(function () {
+                    list.push('3333')
+                })
+                list.push('did mount')
+            }
+            componentWillUpdate() {
+                list.push('app will update')
+            }
+            componentDidUpdate() {
+                list.push('app did update')
+            }
+
+            render() {
+                list.push('render ' + this.state.aaa)
+                return (
+                    <div>{this.state.aaa}</div>
+                );
+            }
+        }
+        ReactDOM.render(<App />, div, function () {
+            list.push('ReactDOM cb')
+        })
+        expect(list).toEqual([
+            "render bbb",
+            "did mount",
+            "app will update",
+            "render dddd",
+            "app did update",
+            "1111",
+            "2222",
+            "3333",
+            "ReactDOM cb"
+        ])
+    })
 })

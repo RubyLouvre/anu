@@ -1,12 +1,11 @@
+import { Component } from "./Component";
+import { options } from "./util";
+import { Children } from "./Children";
+import * as eventSystem from "./event";
+import { win as window } from "./browser";
 import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
-
 import { PureComponent } from "./PureComponent";
-import { Component } from "./Component";
-import { win as window } from "./browser";
-import { Children } from "./Children";
-
-import { options } from "./util";
 
 import { render, findDOMNode } from "./diff";
 import "./ieEvent";

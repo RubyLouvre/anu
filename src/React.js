@@ -18,6 +18,7 @@ var React = {
   PropTypes,
   Children, //为了react-redux
   Component,
+  eventSystem,
   findDOMNode,
   createClass,
   createElement,

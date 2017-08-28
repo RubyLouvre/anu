@@ -1,4 +1,4 @@
-import { options } from "./util";
+import { options, noop } from "./util";
 
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
@@ -46,10 +46,11 @@ function disposeComponent(vnode) {
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         let dom = instance.__current._hostNode
         if (dom) {
-            dom._component = null;
+            dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        vnode._instance = instance.__current = null;
+        instance.setState = instance.forceUpdate = noop
+        vnode._instance = instance.__current = instance.__renderInNextCycle = null
         disposeVnode(vnode._renderedVnode);
     }
 }

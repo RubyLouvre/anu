@@ -70,6 +70,8 @@ describe('ReactDOM.render返回根组件的实例', function () {
             .$apply()
 
         expect(s.state.aaa).toBe(113)
+        //确保存在eventSystem对象
+        expect(React.eventSystem).toA('object')
 
     })
 
