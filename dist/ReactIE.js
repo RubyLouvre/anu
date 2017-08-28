@@ -840,7 +840,7 @@ function Component(props, context) {
     /*
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__updating = true 表示组件处于componentWillUpdate与componentDidUpdate中
+    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
     */
 }
 
