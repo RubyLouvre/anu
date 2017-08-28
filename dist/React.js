@@ -923,7 +923,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * 为了兼容0.13之前的版本
  */
-var AUTOBIND_BLACKLIST = {
+var LiFECYCLE = {
     render: 1,
     shouldComponentUpdate: 1,
     componentWillReceiveProps: 1,
@@ -991,8 +991,8 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className) {
-    var curry = Function("ReactComponent", "list", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (let methodName in this) {\n        let method = this[methodName];\n        if (typeof method  === 'function'&& !list[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
-    return curry(Component, AUTOBIND_BLACKLIST);
+    var curry = Function("ReactComponent", "blacklist", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (let methodName in this) {\n        let method = this[methodName];\n        if (typeof method  === 'function'&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
+    return curry(Component, LiFECYCLE);
 }
 
 var warnOnce = 1;

@@ -1,9 +1,9 @@
-import {extend, isFn, inherit, typeNumber} from "./util";
+import {extend, isFn, inherit} from "./util";
 import {Component} from "./Component";
 /**
  * 为了兼容0.13之前的版本
  */
-const AUTOBIND_BLACKLIST = {
+const LiFECYCLE = {
     render: 1,
     shouldComponentUpdate: 1,
     componentWillReceiveProps: 1,
@@ -74,13 +74,13 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className) {
-    var curry = Function("ReactComponent", "list", 
+    var curry = Function("ReactComponent", "blacklist", 
     `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
 
      for (let methodName in this) {
         let method = this[methodName];
-        if (typeof method  === 'function'&& !list[methodName]) {
+        if (typeof method  === 'function'&& !blacklist[methodName]) {
           this[methodName] = method.bind(this);
         }
       }
@@ -90,7 +90,7 @@ function newCtor(className) {
       }
 
   };`);
-    return curry(Component, AUTOBIND_BLACKLIST);
+    return curry(Component, LiFECYCLE);
 }
 
 var warnOnce = 1;
