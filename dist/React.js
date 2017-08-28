@@ -2214,7 +2214,7 @@ function insertDOM(parentNode, dom, ref) {
 }
 
 var React = {
-  version: "1.0.9",
+  version: "1.1.0",
   render: render,
   options: options,
   PropTypes: PropTypes,
