@@ -74,7 +74,7 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className) {
-    var curry = Function("ReactComponent", "blacklist", 
+    let curry = Function("ReactComponent", "blacklist", 
     `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
 
