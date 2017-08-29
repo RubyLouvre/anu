@@ -3,7 +3,7 @@ import {Component} from "./Component";
 /**
  * 为了兼容0.13之前的版本
  */
-const LiFECYCLE = {
+const NOBIND = {
     render: 1,
     shouldComponentUpdate: 1,
     componentWillReceiveProps: 1,
@@ -73,13 +73,13 @@ function applyMixins(proto, mixins) {
 }
 
 //创建一个构造器
-function newCtor(className) {
-    let curry = Function("ReactComponent", "blacklist", 
+function newCtor(className, spec) {
+    let curry = Function("ReactComponent", "blacklist","spec", 
     `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
 
-     for (let methodName in this) {
-        let method = this[methodName];
+     for (var methodName in this) {
+        var method = this[methodName];
         if (typeof method  === 'function'&& !blacklist[methodName]) {
           this[methodName] = method.bind(this);
         }
@@ -90,7 +90,7 @@ function newCtor(className) {
       }
 
   };`);
-    return curry(Component, LiFECYCLE);
+    return curry(Component, NOBIND, spec);
 }
 
 var warnOnce = 1;
@@ -99,7 +99,7 @@ export function createClass(spec) {
         warnOnce = 0;
         console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
     }
-    var Constructor = newCtor(spec.displayName || "Component");
+    var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {

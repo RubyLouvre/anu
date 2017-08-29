@@ -923,7 +923,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /**
  * 为了兼容0.13之前的版本
  */
-var LiFECYCLE = {
+var NOBIND = {
     render: 1,
     shouldComponentUpdate: 1,
     componentWillReceiveProps: 1,
@@ -990,9 +990,9 @@ function applyMixins(proto, mixins) {
 }
 
 //创建一个构造器
-function newCtor(className) {
-    var curry = Function("ReactComponent", "blacklist", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (let methodName in this) {\n        let method = this[methodName];\n        if (typeof method  === 'function'&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
-    return curry(Component, LiFECYCLE);
+function newCtor(className, spec) {
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === 'function'&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
+    return curry(Component, NOBIND, spec);
 }
 
 var warnOnce = 1;
@@ -1001,7 +1001,7 @@ function createClass(spec) {
         warnOnce = 0;
         console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
     }
-    var Constructor = newCtor(spec.displayName || "Component");
+    var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
