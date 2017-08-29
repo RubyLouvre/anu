@@ -1,5 +1,14 @@
 ##注意点
 
+它没有实现如下方法：
+1. replaceState
+2. isMounted
+3. setProps
+4. replaceProps
+
+这些方法在所有迷你库都没有实现，官网上也不再出现，逐渐变边缘化与可能被废弃，不建议使用
+
+https://facebook.github.io/react/docs/react-component.html
 
 
 ### 低版本浏览器可能需要以下 语言补丁, 详见IE栏目的处理

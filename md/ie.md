@@ -13,69 +13,29 @@ anu虽然没有用太多高级，但想让它能运行IE6-8,还是需要加许�
 7. Object.assign
 8. Array.isArray
 
-这些都是整合到**dist/polyfill**中
+这些都是整合到**lib/polyfill**中
 
 
 ### React IE专用库
 
 此外，核心库应该由**dist/React.js**改成**dist/ReactIE.js**
 
-它相当于原来的库，多了Map方法补丁与IE 事件补丁。
+它相当于原来的库，只是多了一些特殊事件的兼容补丁与innerHTML的修复处理。
 
-Map补丁是es6的新数据对象Map的一个补丁，但它只用于anu内部的某个类，没有完全实现es6 Map
 
 IE事件补丁是针对一些不冒泡事件的修复（input, change, submit, focus, blur），及一些特定事件属性的处理(鼠标事件的pageX, pageY, 键盘事件的which, 滚轮事件的wheelDetla)
 
 http://www.cnblogs.com/rubylouvre/p/5080464.html
 
 
-```javascript
-//src/diff.js
-var innerMap = window.Map
-try {
-    var a = document.createComment('')
-    var map = new innerMap
-    map.set(a, noop)
-    if (map.get(a) !== noop) {
-        throw '使用自定义Map'
-    }
+如果用户用到react-transition-group这样的动画，请注意引入**requestAnimationFrame**的补丁
 
-} catch (e) {
-    var idN = 1
-    innerMap = function () {
-        this.map = {}
-    }
-    function getID(a) {
-        if (a.uniqueID) {
-            return 'Node' + a.uniqueID
-        }else{
-            a.uniqueID = "_" + (idN++)
-            return 'Node' + a.uniqueID
-        }
-    }
-    innerMap.prototype = {
-        get: function (a) {
-            var id = getID(a)
-            return this.map[id]
-        },
-        set: function (a, v) {
-            var id = getID(a)
-            this.map[id] = v
-        },
-        "delete": function () {
-            var id = getID(a)
-            delete this.map[id]
-        }
-    }
-}
-
-var instanceMap = new innerMap()
-```
+https://github.com/darius/requestAnimationFrame
 
 ###压缩
 
 如果你用到压缩，就需要处理 uglify-js产生问题，因为IE6-8 ,对于**map.delete("ddd")**, **modulex.default**这样的写法会报语法错误
-因为关键字不能做属性名与方法名
+因为关键字不能做属性名与方法名。我们可以用`es3ify-webpack-plugin`或`es3ify-loader`进行处理。
 ```javascript
 //详见 https://github.com/zuojj/fedlab/issues/5
 new webpack.optimize.UglifyJsPlugin({
