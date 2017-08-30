@@ -31,9 +31,9 @@ anu, 读作［安努］，原意为苏美尔的主神。
 相对于react-lite, anujs的事件系统更具扩展性。官方的react-dom，近2万行，有一半花在事件系统上，对mouseenter/mouseleave/focus/blur/change等不可冒泡的事件进行模拟冒泡，react-lite简单几行是实现不了那个效果的。
 anujs是作者是精通DOM操作，也费了好大劲才实现的。
 
-![](https://segmentfault.com/img/bVTQUW?w=600&h=492)
+![](http://images2017.cnblogs.com/blog/65123/201708/65123-20170830090259687-1322071010.gif)
 
-![](https://segmentfault.com/img/bVTVnz?w=876&h=536)
+![](http://images2017.cnblogs.com/blog/65123/201708/65123-20170830090332843-1121619563.png)
 
 －－－－－－－－－－
 
@@ -50,7 +50,7 @@ anujs是作者是精通DOM操作，也费了好大劲才实现的。
 8. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
 
-![image](https://segmentfault.com/img/remote/1460000009659322?w=2450&h=768)
+![image](http://images2017.cnblogs.com/blog/65123/201708/65123-20170830091200593-1052885316.png)
 
 
 
