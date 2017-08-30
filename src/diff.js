@@ -1,8 +1,8 @@
-import {diffProps} from "./diffProps";
-import {CurrentOwner} from "./createElement";
-import {createDOMElement, removeDOMElement, getNs} from "./browser";
+import { diffProps } from "./diffProps";
+import { CurrentOwner } from "./createElement";
+import { createDOMElement, removeDOMElement, getNs } from "./browser";
 
-import {processFormElement, postUpdateSelectedOptions} from "./ControlledComponent";
+import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
 
 import {
     noop,
@@ -13,10 +13,12 @@ import {
     clearArray,
     checkNull,
     toLowerCase,
-    getChildContext
+    typeNumber,
+    getChildContext,
+    EMPTY_CHILDREN
 } from "./util";
 
-import {disposeVnode} from "./dispose";
+import { disposeVnode } from "./dispose";
 
 /**
  * ReactDOM.render 方法
@@ -45,7 +47,7 @@ export function unmountComponentAtNode(dom) {
             type: "#text",
             text: "empty",
             vtype: 0
-        }, dom.firstChild, {}, []);
+        }, dom.firstChild, {}, EMPTY_CHILDREN);
     }
 }
 export function isValidElement(vnode) {
@@ -68,7 +70,7 @@ function clearRefsAndMounts(queue) {
             instance.__hydrating = false
 
             while (instance.__renderInNextCycle) {
-                _refreshComponent(instance, instance.__current._hostNode, [])
+                _refreshComponent(instance, instance.__current._hostNode, EMPTY_CHILDREN)
             }
             clearArray(instance.__pendingCallbacks)
                 .forEach(function (fn) {
@@ -204,17 +206,17 @@ function genMountElement(vnode, type, prevRendered) {
     } else {
         vnode.ns = getNs(type);
         let dom = createDOMElement(vnode);
-        if (prevRendered) 
+        if (prevRendered)
             while (prevRendered.firstChild) {
                 dom.appendChild(prevRendered.firstChild);
             }
-        
+
         return dom;
     }
 }
 
 function mountElement(vnode, context, prevRendered, mountQueue) {
-    let {type, props, _owner, ref} = vnode;
+    let { type, props, _owner, ref } = vnode;
     let dom = genMountElement(vnode, type, prevRendered);
     vnode._hostNode = dom;
     let method = prevRendered
@@ -238,7 +240,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(vnode, parentNode, context, mountQueue) {
-    var children = vnode.props.children;
+    var children = flattenChildren(vnode.props);
     for (let i = 0, n = children.length; i < n; i++) {
         let el = children[i];
         let curNode = mountVnode(el, context, null, mountQueue);
@@ -247,8 +249,8 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
     }
 }
 
-function alignChildren(vnode, parentNode, context, mountQueue) {
-    let children = vnode.props.children,
+ function alignChildren(vnode, parentNode, context, mountQueue) {
+    let children = flattenChildren(vnode.props),
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
@@ -269,14 +271,14 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
 }
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
-    let {type, ref, props} = vnode;
+    let { type, ref, props } = vnode;
 
     let instance = new type(props, context); //互相持有引用
 
-     vnode._instance = instance;
-     //防止用户没有调用super或没有传够参数
-     instance.props = instance.props || props;
-     instance.context = instance.context || context;
+    vnode._instance = instance;
+    //防止用户没有调用super或没有传够参数
+    instance.props = instance.props || props;
+    instance.context = instance.context || context;
 
     if (instance.componentWillMount) {
         instance.componentWillMount();
@@ -305,7 +307,7 @@ function Stateless(render) {
     this.__collectRefs = noop;
 }
 
-var renderComponent =  function (vnode, props, context) {
+var renderComponent = function (vnode, props, context) {
     CurrentOwner.cur = this;
     let rendered = this.__render
         ? this.__render(props, context)
@@ -324,7 +326,7 @@ var renderComponent =  function (vnode, props, context) {
 
 Stateless.prototype.render = renderComponent
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    let {type, props} = vnode
+    let { type, props } = vnode
     let instance = new Stateless(type);
     let rendered = instance.render(vnode, props, context);
     let dom = mountVnode(rendered, context, prevRendered, mountQueue);
@@ -502,7 +504,7 @@ function updateVnode(lastVnode, nextVnode, context, mountQueue) {
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     let lastChildren = lastVnode.props.children;
-    let nextChildren = nextVnode.props.children;
+    let nextChildren = flattenChildren(nextVnode.props);//nextVnode.props.children;
     let childNodes = parentNode.childNodes;
     let mountAll = mountQueue.mountAll;
     if (nextChildren.length == 0) {
@@ -573,7 +575,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 dom = mountVnode(el, context, null, queue);
             }
             ref = childNodes[index];
-            if (dom !== ref) 
+            if (dom !== ref)
                 insertDOM(parentNode, dom, ref);
             if (!mountAll && queue.length) {
                 clearRefsAndMounts(queue);
@@ -589,4 +591,56 @@ function insertDOM(parentNode, dom, ref) {
     } else {
         parentNode.insertBefore(dom, ref);
     }
+}
+
+
+export function flattenChildren(props) {
+    var stack = [].concat(props.children)
+
+    var lastText,
+        child,
+        children = [];
+
+    while (stack.length) {
+        //比较巧妙地判定是否为子数组
+        if ((child = stack.pop()) && child.pop) {
+            if (child.toJS) {
+                //兼容Immutable.js
+                child = child.toJS();
+            }
+            for (let i = 0; i < child.length; i++) {
+                stack[stack.length] = child[i];
+            }
+        } else {
+            // eslint-disable-next-line
+            var childType = typeNumber(child);
+
+            if (childType < 3 // 0, 1, 2
+            ) {
+                continue;
+            }
+
+            if (childType < 6) {
+                //!== 'object' 不是对象就是字符串或数字
+                if (lastText) {
+                    lastText.text = child + lastText.text;
+                    continue;
+                }
+                child = {
+                    type: "#text",
+                    text: child + "",
+                    vtype: 0
+                };
+                lastText = child;
+            } else {
+                lastText = null;
+            }
+
+            children.unshift(child);
+        }
+    }
+    if (!children.length) {
+        children = EMPTY_CHILDREN;
+    }
+    return props.children = children;
 }

@@ -2,7 +2,7 @@ let __type = Object.prototype.toString;
 export var __push = Array.prototype.push;
 
 export var innerHTML = "dangerouslySetInnerHTML";
-
+export var EMPTY_CHILDREN = []
 /**
  * 复制一个对象的属性到另一个对象
  *

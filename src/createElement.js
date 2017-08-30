@@ -1,6 +1,5 @@
-import {__push, typeNumber} from "./util";
-const stack = [];
-const EMPTY_CHILDREN = [];
+import { __push, typeNumber } from "./util";
+
 
 export var CurrentOwner = {
     cur: null
@@ -20,7 +19,7 @@ export function createElement(type, configs) {
         ref = null,
         vtype = 1,
         checkProps = 0;
-
+    var stack = []
     for (let i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i]);
     }
@@ -40,6 +39,7 @@ export function createElement(type, configs) {
                 case "children":
                     // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
                     // 也可能是一个虚拟DOM
+
                     if (!stack.length && val) {
                         if (Array.isArray(val)) {
                             __push.apply(stack, val);
@@ -63,70 +63,19 @@ export function createElement(type, configs) {
             }
         }
     }
-    var children = flattenChildren(stack);
 
     if (typeNumber(type) === 5) {
         //fn
         vtype = type.prototype && type.prototype.render
             ? 2
             : 4;
-        if (children.length) 
-            props.children = children;
-        }
-    else {
-        props.children = children;
     }
+    props.children = stack.length === 1 ? stack[0] : stack;
+
 
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-function flattenChildren(stack) {
-    var lastText,
-        child,
-        children = [];
-
-    while (stack.length) {
-        //比较巧妙地判定是否为子数组
-        if ((child = stack.pop()) && child.pop) {
-            if (child.toJS) {
-                //兼容Immutable.js
-                child = child.toJS();
-            }
-            for (let i = 0; i < child.length; i++) {
-                stack[stack.length] = child[i];
-            }
-        } else {
-            // eslint-disable-next-line
-            var childType = typeNumber(child);
-            if (childType < 3 // 0, 1,2
-            ) {
-                continue;
-            }
-
-            if (childType < 6) {
-                //!== 'object' 不是对象就是字符串或数字
-                if (lastText) {
-                    lastText.text = child + lastText.text;
-                    continue;
-                }
-                child = {
-                    type: "#text",
-                    text: child + "",
-                    vtype: 0
-                };
-                lastText = child;
-            } else {
-                lastText = null;
-            }
-
-            children.unshift(child);
-        }
-    }
-    if (!children.length) {
-        children = EMPTY_CHILDREN;
-    }
-    return children;
-}
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {

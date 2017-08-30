@@ -12,7 +12,7 @@ var __type = Object.prototype.toString;
 var __push = Array.prototype.push;
 
 var innerHTML = "dangerouslySetInnerHTML";
-
+var EMPTY_CHILDREN = [];
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -182,8 +182,11 @@ function toArray(children) {
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (Array.isArray(children)) throw 'only方法的参数只能是一个对象，不能为数组';
-        return children;
+        if (Array.isArray(children)) {
+            children = children[0];
+        }
+        if (children && children.vtype) return children;
+        throw new Error('expect only one child');
     },
     count: function count(children) {
         return children && children.length || 0;
@@ -655,9 +658,6 @@ var PropTypes = {
   shape: check
 };
 
-var stack = [];
-var EMPTY_CHILDREN = [];
-
 var CurrentOwner = {
     cur: null
 };
@@ -676,7 +676,7 @@ function createElement(type, configs) {
         ref = null,
         vtype = 1,
         checkProps = 0;
-
+    var stack = [];
     for (var i = 2, n = arguments.length; i < n; i++) {
         stack.push(arguments[i]);
     }
@@ -696,6 +696,7 @@ function createElement(type, configs) {
                 case "children":
                     // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
                     // 也可能是一个虚拟DOM
+
                     if (!stack.length && val) {
                         if (Array.isArray(val)) {
                             __push.apply(stack, val);
@@ -718,65 +719,14 @@ function createElement(type, configs) {
             }
         }
     }
-    var children = flattenChildren(stack);
 
     if (typeNumber(type) === 5) {
         //fn
         vtype = type.prototype && type.prototype.render ? 2 : 4;
-        if (children.length) props.children = children;
-    } else {
-        props.children = children;
     }
+    props.children = stack.length === 1 ? stack[0] : stack;
 
     return new Vnode(type, key, ref, props, vtype, checkProps);
-}
-
-function flattenChildren(stack) {
-    var lastText,
-        child,
-        children = [];
-
-    while (stack.length) {
-        //比较巧妙地判定是否为子数组
-        if ((child = stack.pop()) && child.pop) {
-            if (child.toJS) {
-                //兼容Immutable.js
-                child = child.toJS();
-            }
-            for (var i = 0; i < child.length; i++) {
-                stack[stack.length] = child[i];
-            }
-        } else {
-            // eslint-disable-next-line
-            var childType = typeNumber(child);
-            if (childType < 3 // 0, 1,2
-            ) {
-                    continue;
-                }
-
-            if (childType < 6) {
-                //!== 'object' 不是对象就是字符串或数字
-                if (lastText) {
-                    lastText.text = child + lastText.text;
-                    continue;
-                }
-                child = {
-                    type: "#text",
-                    text: child + "",
-                    vtype: 0
-                };
-                lastText = child;
-            } else {
-                lastText = null;
-            }
-
-            children.unshift(child);
-        }
-    }
-    if (!children.length) {
-        children = EMPTY_CHILDREN;
-    }
-    return children;
 }
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
@@ -1605,7 +1555,7 @@ function unmountComponentAtNode(dom) {
             type: "#text",
             text: "empty",
             vtype: 0
-        }, dom.firstChild, {}, []);
+        }, dom.firstChild, {}, EMPTY_CHILDREN);
     }
 }
 function isValidElement(vnode) {
@@ -1627,7 +1577,7 @@ function clearRefsAndMounts(queue) {
         instance.__hydrating = false;
 
         while (instance.__renderInNextCycle) {
-            _refreshComponent(instance, instance.__current._hostNode, []);
+            _refreshComponent(instance, instance.__current._hostNode, EMPTY_CHILDREN);
         }
         clearArray(instance.__pendingCallbacks).forEach(function (fn) {
             fn.call(instance);
@@ -1787,7 +1737,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(vnode, parentNode, context, mountQueue) {
-    var children = vnode.props.children;
+    var children = normalizeChildren(vnode.props);
     for (var i = 0, n = children.length; i < n; i++) {
         var el = children[i];
         var curNode = mountVnode(el, context, null, mountQueue);
@@ -1797,7 +1747,7 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
 }
 
 function alignChildren(vnode, parentNode, context, mountQueue) {
-    var children = vnode.props.children,
+    var children = normalizeChildren(vnode.props),
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
@@ -2043,7 +1993,7 @@ function updateVnode(lastVnode, nextVnode, context, mountQueue) {
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     var lastChildren = lastVnode.props.children;
-    var nextChildren = nextVnode.props.children;
+    var nextChildren = normalizeChildren(nextVnode.props); //nextVnode.props.children;
     var childNodes = parentNode.childNodes;
     var mountAll = mountQueue.mountAll;
     if (nextChildren.length == 0) {
@@ -2124,6 +2074,57 @@ function insertDOM(parentNode, dom, ref) {
     } else {
         parentNode.insertBefore(dom, ref);
     }
+}
+
+function normalizeChildren(props) {
+    var stack = [].concat(props.children);
+
+    var lastText,
+        child,
+        children = [];
+
+    while (stack.length) {
+        //比较巧妙地判定是否为子数组
+        if ((child = stack.pop()) && child.pop) {
+            if (child.toJS) {
+                //兼容Immutable.js
+                child = child.toJS();
+            }
+            for (var i = 0; i < child.length; i++) {
+                stack[stack.length] = child[i];
+            }
+        } else {
+            // eslint-disable-next-line
+            var childType = typeNumber(child);
+
+            if (childType < 3 // 0, 1, 2
+            ) {
+                    continue;
+                }
+
+            if (childType < 6) {
+                //!== 'object' 不是对象就是字符串或数字
+                if (lastText) {
+                    lastText.text = child + lastText.text;
+                    continue;
+                }
+                child = {
+                    type: "#text",
+                    text: child + "",
+                    vtype: 0
+                };
+                lastText = child;
+            } else {
+                lastText = null;
+            }
+
+            children.unshift(child);
+        }
+    }
+    if (!children.length) {
+        children = EMPTY_CHILDREN;
+    }
+    return props.children = children;
 }
 
 //Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
