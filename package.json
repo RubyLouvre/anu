@@ -14,7 +14,11 @@
     "url": "git+https://github.com/RubyLouvre/anu.git"
   },
   "keywords": [
-    "react-like"
+    "react-like",
+    "react",
+    "react-compat",
+    "performance",
+    "ie8"
   ],
   "author": "RubyLouvre",
   "license": "Apache License 2.0",
