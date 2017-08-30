@@ -1574,7 +1574,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(vnode, parentNode, context, mountQueue) {
-    var children = normalizeChildren(vnode.props);
+    var children = flattenChildren(vnode.props);
     for (var i = 0, n = children.length; i < n; i++) {
         var el = children[i];
         var curNode = mountVnode(el, context, null, mountQueue);
@@ -1584,7 +1584,7 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
 }
 
 function alignChildren(vnode, parentNode, context, mountQueue) {
-    var children = normalizeChildren(vnode.props),
+    var children = flattenChildren(vnode.props),
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
@@ -1708,7 +1708,6 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
-
     var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
     delete instance.__next;
     var childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext;
@@ -1830,7 +1829,7 @@ function updateVnode(lastVnode, nextVnode, context, mountQueue) {
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     var lastChildren = lastVnode.props.children;
-    var nextChildren = normalizeChildren(nextVnode.props); //nextVnode.props.children;
+    var nextChildren = flattenChildren(nextVnode.props); //nextVnode.props.children;
     var childNodes = parentNode.childNodes;
     var mountAll = mountQueue.mountAll;
     if (nextChildren.length == 0) {
@@ -1913,7 +1912,7 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
-function normalizeChildren(props) {
+function flattenChildren(props) {
     var stack = [].concat(props.children);
 
     var lastText,

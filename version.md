@@ -1,5 +1,7 @@
 ## 1.1.1
 1. 简化createClass
+2. 修正 flattenHooks BUG
+3. createElement里不对children进行处理，延迟到diff才进行转换，保证children的格式与官方一致
 
 ## 1.1.0
 1. disabled的元素不能触发点击事件
