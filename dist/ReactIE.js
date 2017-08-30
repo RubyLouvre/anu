@@ -175,22 +175,27 @@ var recyclables = {
   "#comment": []
 };
 
+function toArray(children) {
+    return children == null ? [] : Array.isArray(children) ? children : [children];
+}
+
 var Children = {
     only: function only(children) {
-        return children && children[0] || null;
+        //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
+        if (Array.isArray(children)) throw 'only方法的参数只能是一个对象，不能为数组';
+        return children;
     },
     count: function count(children) {
         return children && children.length || 0;
     },
     forEach: function forEach(children, callback, context) {
-        children.forEach(callback, context);
+        toArray(children).forEach(callback, context);
     },
     map: function map(children, callback, context) {
-        return children.map(callback, context);
+        return toArray(children).map(callback, context);
     },
-    toArray: function toArray(children) {
-        return children == null ? [] : Array.isArray(children) ? children.slice(0) : [children];
-    }
+
+    toArray: toArray
 };
 
 //用于后端的元素节点
