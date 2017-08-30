@@ -88,9 +88,9 @@ function getChildContext(instance, context) {
 
 
 function checkNull(vnode, type) {
-  if (Array.isArray(vnode) && vnode.length === 1) {
-    vnode = vnode[0];
-  }
+  // if (Array.isArray(vnode) && vnode.length === 1) {
+  //  vnode = vnode[0];
+  // }
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty", vtype: 0 };
   } else if (!vnode || !vnode.vtype) {

@@ -141,9 +141,9 @@ var options = {
 };
 
 function checkNull(vnode, type) {
-  if (Array.isArray(vnode) && vnode.length === 1) {
-    vnode = vnode[0];
-  }
+  // if (Array.isArray(vnode) && vnode.length === 1) {
+  //  vnode = vnode[0];
+  // }
   if (vnode === null || vnode === false) {
     return { type: "#comment", text: "empty", vtype: 0 };
   } else if (!vnode || !vnode.vtype) {
@@ -1969,28 +1969,47 @@ function fixIEInputHandle(e) {
     dispatchEvent(e, "input");
   }
 }
+
 function fixIEInput(dom) {
   addEvent(dom, "propertychange", fixIEInputHandle);
+}
+//IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
+var noCheck = false;
+function setSelectValue(e) {
+  if (e.propertyName === 'value' && !noCheck) {
+    syncValueByOptionValue(e.srcElement);
+  }
+}
+
+function syncValueByOptionValue(e) {
+  var dom = e.srcElement,
+      idx = dom.selectedIndex,
+      option,
+      attr;
+  if (idx > -1) {
+    //IE 下select.value不会改变
+    option = dom.options[idx];
+    attr = option.attributes.value;
+    dom.value = attr && attr.specified ? option.value : option.text;
+  }
 }
 
 function fixIEChangeHandle(e) {
   var dom = e.srcElement;
   if (dom.type === "select-one") {
-    var idx = dom.selectedIndex,
-        option,
-        attr;
-    if (idx > -1) {
-      //IE 下select.value不会改变
-      option = dom.options[idx];
-      attr = option.attributes.value;
-      dom.value = attr && attr.specified ? option.value : option.text;
+    if (!dom.__bindFixValueFn) {
+      addEvent(dom, "propertychange", setSelectValue);
+      dom.__bindFixValueFn = true;
     }
+    noCheck = true;
+    syncValueByOptionValue(e);
+    noCheck = false;
   }
-
   dispatchEvent(e, "change");
 }
+
 function fixIEChange(dom) {
-  //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发
+  //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
   var mask = dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
   addEvent(dom, mask, fixIEChangeHandle);
 }
@@ -2024,8 +2043,7 @@ if (msie < 9) {
         dom[mark] = true;
         var mask = name === "focus" ? "focusin" : "focusout";
         addEvent(dom, mask, function (e) {
-          //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/
-          //window
+          //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
           var tagName = e.srcElement.tagName;
           if (!tagName) {
             return;
@@ -2059,19 +2077,6 @@ if (msie < 9) {
     }
   }));
 
-  //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
-  try {
-    Object.defineProperty(HTMLSelectElement.prototype, "value", {
-      set: function set(v) {
-        this._fixIEValue = v;
-      },
-      get: function get() {
-        return this._fixIEValue;
-      }
-    });
-  } catch (e) {
-    // no catch
-  }
   eventHooks.input = fixIEInput;
   eventHooks.inputcapture = fixIEInput;
   eventHooks.change = fixIEChange;
