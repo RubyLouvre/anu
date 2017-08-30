@@ -249,7 +249,7 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
     }
 }
 
- function alignChildren(vnode, parentNode, context, mountQueue) {
+function alignChildren(vnode, parentNode, context, mountQueue) {
     let children = flattenChildren(vnode.props),
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
@@ -374,7 +374,6 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom;
     }
-
     let rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
     delete instance.__next;
     var childContext = rendered.vtype

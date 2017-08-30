@@ -1,5 +1,5 @@
-import {extend, isFn, inherit} from "./util";
-import {Component} from "./Component";
+import { extend, isFn, inherit } from "./util";
+import { Component } from "./Component";
 /**
  * 为了兼容0.13之前的版本
  */
@@ -48,16 +48,16 @@ function flattenHooks(key, hooks) {
             .apply(null, hooks);
     } else if (hookType === 'function') {
         return function () {
-            let ret;
+            let ret = {}, hasReturn = MANY_MERGED[key]
             for (let i = 0; i < hooks.length; i++) {
                 let r = hooks[i].apply(this, arguments);
-                if (r && MANY_MERGED[key]) {
-                    if (!ret) 
-                        ret = {};
+                if (hasReturn && r ) {
                     Object.assign(ret, r);
                 }
             }
-            return ret;
+            if (hasReturn)
+                return ret;
+            return r
         };
     } else {
         return hooks[0];
@@ -74,8 +74,8 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    let curry = Function("ReactComponent", "blacklist","spec", 
-    `return function ${className}(props, context) {
+    let curry = Function("ReactComponent", "blacklist", "spec",
+        `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
 
      for (var methodName in this) {
@@ -109,7 +109,7 @@ export function createClass(spec) {
     extend(proto, spec);
 
     if (spec.statics) {
-       extend(Constructor, spec.statics);
+        extend(Constructor, spec.statics);
     }
     "propTypes,contextTypes,childContextTypes,displayName"
         .replace(/\w+/g, function (name) {
