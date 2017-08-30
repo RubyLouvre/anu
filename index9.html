@@ -8,59 +8,80 @@
    <!-- <script src="./dist/react.development.js"></script>
     <script src="./dist/react-dom.development.js"></script>-->
    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+  <script src="./test/react-dom.js"></script>-->
+    <script src="https://cdn.bootcss.com/redux/3.7.2/redux.js"></script>
+    <script src="https://cdn.bootcss.com/redux-thunk/2.2.0/redux-thunk.js"></script>
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
-    var s 
+
 window.onload = function(){
+    class Counter extends React.Component {
+    constructor(props) {
+        super(props);
+        this.incrementAsync = this.incrementAsync.bind(this);
+        this.incrementIfOdd = this.incrementIfOdd.bind(this);
+    }
 
-
- var arr = ['111', '222', '333']
-        class App extends React.Component {
-
-            getChildContext() {
-                return {
-                    name: "Jonas",
-                    fruit: "Banana"
-                };
-            }
-            handleClick() {
-                
-                this.getChildContext = function () {
-                    return {
-                        name: "Jonas",
-                        fruit: arr.shift() 
-                    };
-                }
-                this.forceUpdate()
-
-            }
-            render() {
-                return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
-            }
+    incrementIfOdd() {
+        if (this.props.value % 2 !== 0) {
+            this.props.onIncrement()
         }
-        App.childContextTypes = {
-            name: React.PropTypes.string,
-            fruit: React.PropTypes.string
-        }
+    }
 
-        class B extends React.Component {
+    incrementAsync() {
+        setTimeout(this.props.onIncrement, 1000)
+    }
 
-            render() {
-                return <div><C /><strong>{this.context.fruit}</strong></div>;
-            }
-        }
-        B.contextTypes = {
-            fruit: React.PropTypes.string
-        }
-        class C extends React.Component {
-            render() {
-                return <strong>{this.context.fruit}</strong>;
-            }
-        }
+    render() {
+        const { value, onIncrement, onDecrement } = this.props
+        return (
+            <div>
+                <p>当前点击次数: {value} </p>
+                <input value="增加" type="button" onClick={onIncrement} />
 
-     var div = document.getElementById('example')
-     s = ReactDOM.render(<App />, div)
+                <input value="减少" type="button" onClick={onDecrement} />
+                <input value="只有奇数才能加" type="button" onClick={this.incrementIfOdd} />
+
+                <input value="异步增加" type="button" onClick={this.incrementAsync} />
+
+            </div>
+        )
+    }
+}
+
+function counter(state = 0, type) {
+    switch (type) {
+        case 'INCREMENT':
+            return state + 1
+        case 'DECREMENT':
+            return state - 1
+        default:
+            return state
+    }
+}
+function connect(instance, value, store, type){
+    var a = store.getState()
+    var b = counter( a, type)
+    console.log(a, b)
+    if(a !== b){
+        instance.setState({
+            [value]: b
+        })
+    }
+}
+const store = Redux.createStore(counter)
+const div = document.getElementById('example')
+const render = () => ReactDOM.render(
+    <Counter
+        value={store.getState()}
+        onIncrement={() => connect(this, 'value', store, 'INCREMENT') }
+        onDecrement={() => connect(this, 'value', store, 'DECREMENT') }
+    />,
+    div
+)
+
+render()
+//store.subscribe(render)
 }
     </script>
 </head>
