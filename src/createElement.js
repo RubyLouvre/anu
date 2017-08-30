@@ -1,4 +1,4 @@
-import { __push, typeNumber } from "./util";
+import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
 
 
 export var CurrentOwner = {
@@ -122,3 +122,55 @@ Vnode.prototype = {
 
     $$typeof: 1
 };
+
+
+export function flattenChildren(props) {
+    var stack = [].concat(props.children)
+
+    var lastText,
+        child,
+        children = [];
+
+    while (stack.length) {
+        //比较巧妙地判定是否为子数组
+        if ((child = stack.pop()) && child.pop) {
+            if (child.toJS) {
+                //兼容Immutable.js
+                child = child.toJS();
+            }
+            for (let i = 0; i < child.length; i++) {
+                stack[stack.length] = child[i];
+            }
+        } else {
+            // eslint-disable-next-line
+            var childType = typeNumber(child);
+
+            if (childType < 3 // 0, 1, 2
+            ) {
+                continue;
+            }
+
+            if (childType < 6) {
+                //!== 'object' 不是对象就是字符串或数字
+                if (lastText) {
+                    lastText.text = child + lastText.text;
+                    continue;
+                }
+                child = {
+                    type: "#text",
+                    text: child + "",
+                    vtype: 0
+                };
+                lastText = child;
+            } else {
+                lastText = null;
+            }
+
+            children.unshift(child);
+        }
+    }
+    if (!children.length) {
+        children = EMPTY_CHILDREN;
+    }
+    return props.children = children;
+}

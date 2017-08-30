@@ -46,7 +46,7 @@ function flattenHooks(key, hooks) {
         return Object
             .assign
             .apply(null, hooks);
-    } else if (hookType === 'function') {
+    } else if (hookType === 'function' && hooks.length > 1) {
         return function () {
             let ret = {}, r, hasReturn = MANY_MERGED[key]
             for (let i = 0; i < hooks.length; i++) {
