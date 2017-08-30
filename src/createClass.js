@@ -48,9 +48,9 @@ function flattenHooks(key, hooks) {
             .apply(null, hooks);
     } else if (hookType === 'function') {
         return function () {
-            let ret = {}, hasReturn = MANY_MERGED[key]
+            let ret = {}, r, hasReturn = MANY_MERGED[key]
             for (let i = 0; i < hooks.length; i++) {
-                let r = hooks[i].apply(this, arguments);
+                r = hooks[i].apply(this, arguments);
                 if (hasReturn && r ) {
                     Object.assign(ret, r);
                 }

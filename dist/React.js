@@ -922,11 +922,12 @@ function flattenHooks(key, hooks) {
     } else if (hookType === 'function') {
         return function () {
             var ret = {},
+                r = void 0,
                 hasReturn = MANY_MERGED[key];
             for (var i = 0; i < hooks.length; i++) {
-                var _r = hooks[i].apply(this, arguments);
-                if (hasReturn && _r) {
-                    Object.assign(ret, _r);
+                r = hooks[i].apply(this, arguments);
+                if (hasReturn && r) {
+                    Object.assign(ret, r);
                 }
             }
             if (hasReturn) return ret;
