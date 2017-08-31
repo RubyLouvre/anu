@@ -5212,6 +5212,7 @@ var ReactCompositeComponent = {
     }
 
     if (inst.componentWillUpdate) {
+       console.log('要调用componentWillUpdate', inst.constructor.name)
       if ("development" !== 'production') {
         measureLifeCyclePerf(function () {
           return inst.componentWillUpdate(nextProps, nextState, nextContext);
@@ -5257,8 +5258,10 @@ var ReactCompositeComponent = {
     }
 
     if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
+      console.log(prevRenderedElement ===  nextRenderedElement, this._instance.constructor.name)
       ReactReconciler.receiveComponent(prevComponentInstance, nextRenderedElement, transaction, this._processChildContext(context));
     } else {
+      console.log('不更新', this._instance.constructor.name)
       var oldHostNode = ReactReconciler.getHostNode(prevComponentInstance);
       ReactReconciler.unmountComponent(prevComponentInstance, false);
 
@@ -11656,7 +11659,7 @@ var ReactReconciler = {
       // the element. We explicitly check for the existence of an owner since
       // it's possible for an element created outside a composite to be
       // deeply mutated and reused.
-
+      console.log('返回')
       // TODO: Bailing out early is just a perf optimization right?
       // TODO: Removing the return statement should affect correctness?
       return;
