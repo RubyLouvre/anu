@@ -11,17 +11,17 @@ var fn = (DOMElement.prototype = {
 });
 String(
   "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-    ",detachEvent"
-).replace(/\w+/g, function(name) {
-  fn[name] = function() {
+  ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+  ",detachEvent"
+).replace(/\w+/g, function (name) {
+  fn[name] = function () {
     console.log("fire " + name); // eslint-disable-line
   };
 });
 
 //用于后端的document
 export var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (
   type
 ) {
   return new DOMElement(type);
@@ -106,49 +106,39 @@ export function createDOMElement(vnode) {
       return document.createElementNS(vnode.ns, type);
     }
     //eslint-disable-next-line
-  } catch (e) {}
+  } catch (e) { }
   return document.createElement(type);
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
-// http://demo.yanue.net/HTML5element/
-var mhtml = {
-  meter: 1,
-  menu: 1,
-  map: 1,
-  meta: 1,
-  mark: 1
-};
-var svgTags = oneObject(
+var namespaceMap = oneObject(
   "" +
-    // structure
-    "svg,g,defs,desc,metadata,symbol,use," +
-    // image & shape
-    "image,path,rect,circle,line,ellipse,polyline,polygon," +
-    // text
-    "text,tspan,tref,textpath," +
-    // other
-    "marker,pattern,clippath,mask,filter,cursor,view,animate," +
-    // font
-    "font,font-face,glyph,missing-glyph",
+  // structure
+  "svg,g,defs,desc,metadata,symbol,use," +
+  // image & shape
+  "image,path,rect,circle,line,ellipse,polyline,polygon," +
+  // text
+  "text,tspan,tref,textpath," +
+  // other
+  "marker,pattern,clippath,mask,filter,cursor,view,animate," +
+  // font
+  "font,font-face,glyph,missing-glyph",
   svgNs
 );
 
 var rmathTags = /^m/;
 var mathNs = "http://www.w3.org/1998/Math/MathML";
 var svgNs = "http://www.w3.org/2000/svg";
-var mathTags = {
-  semantics: mathNs
-};
+namespaceMap.semantics = mathNs
+// http://demo.yanue.net/HTML5element/
+"meter,menu,map,meta,mark".replace(/\w+/g, function(tag){
+  namespaceMap[tag] = null
+})
 
 export function getNs(type) {
-  if (svgTags[type]) {
-    return svgNs;
-  } else if (mathTags[type]) {
-    return mathNs;
+  if (namespaceMap[type] !== void 666) {
+    return namespaceMap[type]
   } else {
-    if (!mhtml[type] && rmathTags.test(type)) {
-      //eslint-disable-next-line
-      return (mathTags[type] = mathNs);
-    }
+    //eslint-disable-next-line
+    return namespaceMap[type] = rmathTags.test(type) ? mathNs : null
   }
 }

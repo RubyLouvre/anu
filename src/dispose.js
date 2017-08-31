@@ -1,4 +1,5 @@
-import { options, noop } from "./util";
+import { options, noop, innerHTML } from "./util";
+import { removeDOMElement } from "./browser";
 
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
@@ -27,10 +28,14 @@ function disposeStateless(vnode) {
 }
 
 function disposeElement(vnode) {
-    var { props } = vnode;
-    var children = props.children;
-    for (let i = 0, n = children.length; i < n; i++) {
-        disposeVnode(children[i]);
+    var { props, vchildren } = vnode;
+    //var children = props.children;
+    if (props[innerHTML]) {
+        removeDOMElement(vnode._hostNode)
+    } else {
+        for (let i = 0, n = vchildren.length; i < n; i++) {
+            disposeVnode(vchildren[i]);
+        }
     }
     //eslint-disable-next-line
     vnode.ref && vnode.ref(null);

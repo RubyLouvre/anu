@@ -13,22 +13,16 @@ export var CurrentOwner = {
  * @returns
  */
 
-export function createElement(type, configs) {
-    var props = {},
-        key = null,
-        ref = null,
-        vtype = 1,
-        checkProps = 0;
-    var stack = []
-    for (let i = 2, n = arguments.length; i < n; i++) {
-        stack.push(arguments[i]);
-    }
-
-    if (configs) {
-
-        // eslint-disable-next-line
-        for (let i in configs) {
-            var val = configs[i];
+export function createElement(type, config, children) {
+    // Reserved names are extracted
+    var props = {};
+    var checkProps = 0
+    var vtype = 1;
+    var key = null;
+    var ref = null;
+    if (config != null) {
+        for (var i in config) {
+            var val = config[i]
             switch (i) {
                 case "key":
                     key = val + "";
@@ -36,43 +30,39 @@ export function createElement(type, configs) {
                 case "ref":
                     ref = val;
                     break;
-                case "children":
-                    // 只要不是通过JSX产生的createElement调用，props内部就千奇百度， children可能是一个数组，也可能是一个字符串，数字，布尔，
-                    // 也可能是一个虚拟DOM
-
-                    if (!stack.length && val) {
-                        if (Array.isArray(val)) {
-                            __push.apply(stack, val);
-                        } else {
-                            stack.push(val);
-                        }
-                    }
-                    break;
                 default:
                     checkProps = 1;
                     props[i] = val;
             }
         }
-
     }
-    let defaultProps = type.defaultProps
+    var childrenLength = arguments.length - 2;
+    if (childrenLength === 1) {
+        props.children = children;
+    } else if (childrenLength > 1) {
+        var childArray = Array(childrenLength);
+        for (var i = 0; i < childrenLength; i++) {
+            childArray[i] = arguments[i + 2];
+        }
+        props.children = childArray;
+    }
+
+    // Resolve default props
+    var defaultProps = type.defaultProps;
     if (defaultProps) {
-        for (let propKey in defaultProps) {
-            if (props[propKey] === void 0) {
-                props[propKey] = defaultProps[propKey]
+        for (propName in defaultProps) {
+            if (props[propName] === void 666) {
+                checkProps = 1
+                props[propName] = defaultProps[propName];
             }
         }
     }
-
     if (typeNumber(type) === 5) {
         //fn
         vtype = type.prototype && type.prototype.render
             ? 2
             : 4;
     }
-    props.children = stack.length === 1 ? stack[0] : stack;
-
-
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
@@ -124,22 +114,28 @@ Vnode.prototype = {
 };
 
 
-export function flattenChildren(props) {
-    var stack = [].concat(props.children)
+export function flattenChildren(vnode) {
+    var original = vnode.props.children,
+        children = [],
+        temp,
+        lastText,
+        child
+    if (Array.isArray(original)) {
+        temp = original.slice(0)
+    } else {
+        temp = [original]
+    }
 
-    var lastText,
-        child,
-        children = [];
 
-    while (stack.length) {
+    while (temp.length) {
         //比较巧妙地判定是否为子数组
-        if ((child = stack.pop()) && child.pop) {
+        if ((child = temp.pop()) && child.pop) {
             if (child.toJS) {
                 //兼容Immutable.js
                 child = child.toJS();
             }
             for (let i = 0; i < child.length; i++) {
-                stack[stack.length] = child[i];
+                temp[temp.length] = child[i];
             }
         } else {
             // eslint-disable-next-line
@@ -169,8 +165,6 @@ export function flattenChildren(props) {
             children.unshift(child);
         }
     }
-    if (!children.length) {
-        children = EMPTY_CHILDREN;
-    }
-    return props.children = children;
+
+    return vnode.vchildren = children;
 }

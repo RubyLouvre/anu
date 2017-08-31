@@ -13,15 +13,59 @@
   var s
   window.onload = function(){
    
-   function HelloComponent(
-      props
-    ) {
-      return <div >Hello {props.name}</div>;
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          value: ["aaa", "ccc"]
+        };
+      }
+
+      onChange(e) {
+        var values = [];
+        var elems = e.target.getElementsByTagName("option");
+        for (var i = 0, el; (el = elems[i++]); ) {
+          if (el.selected) {
+            if (el.getAttribute("value") != null) {
+              values.push(el.getAttribute("value"));
+            } else {
+              values.push(el.text);
+            }
+          }
+        }
+        this.setState({
+          values: values
+        });
+      }
+      render() {
+        return (
+          <select
+            value={this.state.value}
+            multiple="true"
+            onChange={this.onChange.bind(this)}
+          >
+            <optgroup>
+              <option ref="a">aaa</option>
+              <option ref="b">bbb</option>
+            </optgroup>
+            <optgroup>
+              <option ref="c">ccc</option>
+              <option ref="d">ddd</option>
+            </optgroup>
+          </select>
+        );
+      }
     }
 
 
    
-   s = ReactDOM.render(<HelloComponent name="Sebastian" />, document.getElementById('example'));
+   s = ReactDOM.render(<App />, document.getElementById('example'));
+   setTimeout(function(){
+     for(var i in s.refs){
+       console.log(i, s.refs[i].selected)
+     }
+   //  console.log(s.refs)
+   }, 1000)
   
   }
   </script>

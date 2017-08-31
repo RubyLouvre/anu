@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-  <script type='text/javascript' src="./dist/ReactIE.js"></script>
+  <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script type='text/javascript' src="./test/react.js"></script>
    <script type='text/javascript' src="./test/react-dom.js"></script> -->
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -34,30 +34,12 @@
   var s
   window.onload = function(){
 
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 111
-        };
-      }
-      
-
-      render() {
-        return <div tabIndex={-1} className="outer" 
-                 onFocus={()=>{ console.log('1111') }} >
-              <div tabIndex={-1} className="inner" 
-                onFocus={()=>{ console.log('2222') }}>
-                <div tabIndex={-1} className="inner2" 
-                onFocus={()=>{ console.log('3333') }}
-                >{this.state.aaa}</div>
-              </div>
-          </div>
-      }
-    }
+      var el = React.createElement('p', null, null)
+      console.log(el)
+  
 
 
-   s = ReactDOM.render(<App />, document.getElementById('example'));
+   //s = ReactDOM.render(<App />, document.getElementById('example'));
   }
   </script>
 

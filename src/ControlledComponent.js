@@ -72,6 +72,7 @@ function preventUserChange(e) {
   var value = target._lastValue;
   var options = target.options;
   if (target.multiple) {
+  
     updateOptionsMore(options, options.length, value);
   } else {
     updateOptionsOne(options, options.length, value);
@@ -186,7 +187,8 @@ function getOptionValue(option, props) {
   if (!props) {
     return getDOMOptionValue(option);
   }
-  return props.value === undefined ? props.children[0].text : props.value;
+  //这里在1.1.1改动过， props.value === undefined ? props.children[0].text : props.value;
+  return props.value === undefined ? props.children : props.value;
 }
 
 function getDOMOptionValue(node) {

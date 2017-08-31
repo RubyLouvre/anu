@@ -69,7 +69,7 @@ function clearRefsAndMounts(queue) {
             instance.__hydrating = false
 
             while (instance.__renderInNextCycle) {
-                _refreshComponent(instance, instance.__current._hostNode, EMPTY_CHILDREN)
+                _refreshComponent(instance, instance.__current._hostNode, [])
             }
             clearArray(instance.__pendingCallbacks)
                 .forEach(function (fn) {
@@ -239,7 +239,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(vnode, parentNode, context, mountQueue) {
-    var children = flattenChildren(vnode.props);
+    var children = flattenChildren(vnode);
     for (let i = 0, n = children.length; i < n; i++) {
         let el = children[i];
         let curNode = mountVnode(el, context, null, mountQueue);
@@ -249,7 +249,7 @@ function mountChildren(vnode, parentNode, context, mountQueue) {
 }
 
 function alignChildren(vnode, parentNode, context, mountQueue) {
-    let children = flattenChildren(vnode.props),
+    let children = flattenChildren(vnode),
         childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
@@ -468,11 +468,11 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     let nextProps = nextVnode.props;
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
-        lastProps
-            .children
-            .forEach(function (el) {
-                disposeVnode(el);
-            });
+        var list = lastVnode
+            .vchildren || []
+        list.forEach(function (el) {
+            disposeVnode(el);
+        });
     } else {
         if (lastProps[innerHTML]) {
             while (dom.firstChild) {
@@ -501,8 +501,8 @@ function updateVnode(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
-    let lastChildren = lastVnode.props.children;
-    let nextChildren = flattenChildren(nextVnode.props);//nextVnode.props.children;
+    let lastChildren = lastVnode.vchildren;
+    let nextChildren = flattenChildren(nextVnode);//nextVnode.props.children;
     let childNodes = parentNode.childNodes;
     let mountAll = mountQueue.mountAll;
     if (nextChildren.length == 0) {

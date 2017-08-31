@@ -75,7 +75,6 @@ export function toLowerCase(s) {
 
 export function clearArray(a){
   return a.splice(0, a.length)
-  
 }
 
 /**
