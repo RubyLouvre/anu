@@ -1,6 +1,4 @@
-function toArray(children) {
-    return children == null ? [] : Array.isArray(children) ? children : [children]
-}
+import { _flattenChildren} from "./createElement";
 
 export const Children = {
     only(children) {
@@ -13,13 +11,13 @@ export const Children = {
         throw new Error('expect only one child')
     },
     count(children) {
-        return (children && children.length) || 0;
+        return  _flattenChildren(children).length
     },
     forEach(children, callback, context) {
-        toArray(children).forEach(callback, context);
+        _flattenChildren(children).forEach(callback, context);
     },
     map(children, callback, context) {
-        return toArray(children).map(callback, context);
+        return _flattenChildren(children).map(callback, context);
     },
-    toArray
+    toArray: _flattenChildren
 };

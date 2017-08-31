@@ -14,7 +14,7 @@ var __type = Object.prototype.toString;
 
 
 var innerHTML = "dangerouslySetInnerHTML";
-
+var EMPTY_CHILDREN = [];
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -286,9 +286,8 @@ Vnode.prototype = {
     $$typeof: 1
 };
 
-function flattenChildren(vnode) {
-    var original = vnode.props.children,
-        children = [],
+function _flattenChildren(original) {
+    var children = [],
         temp,
         lastText,
         child;
@@ -336,8 +335,14 @@ function flattenChildren(vnode) {
             children.unshift(child);
         }
     }
-
-    return vnode.vchildren = children;
+    return children;
+}
+function flattenChildren(vnode) {
+    var arr = _flattenChildren(vnode.props.children);
+    if (arr.length == 0) {
+        arr = EMPTY_CHILDREN;
+    }
+    return vnode.vchildren = arr;
 }
 
 //用于后端的元素节点
@@ -568,10 +573,6 @@ function setStateImpl(state, cb) {
     }
 }
 
-function toArray(children) {
-    return children == null ? [] : Array.isArray(children) ? children : [children];
-}
-
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -582,16 +583,16 @@ var Children = {
         throw new Error('expect only one child');
     },
     count: function count(children) {
-        return children && children.length || 0;
+        return _flattenChildren(children).length;
     },
     forEach: function forEach(children, callback, context) {
-        toArray(children).forEach(callback, context);
+        _flattenChildren(children).forEach(callback, context);
     },
     map: function map(children, callback, context) {
-        return toArray(children).map(callback, context);
+        return _flattenChildren(children).map(callback, context);
     },
 
-    toArray: toArray
+    toArray: _flattenChildren
 };
 
 var globalEvents = {};

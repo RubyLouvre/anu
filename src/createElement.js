@@ -113,10 +113,8 @@ Vnode.prototype = {
     $$typeof: 1
 };
 
-
-export function flattenChildren(vnode) {
-    var original = vnode.props.children,
-        children = [],
+export function _flattenChildren(original) {
+    var children = [],
         temp,
         lastText,
         child
@@ -165,6 +163,13 @@ export function flattenChildren(vnode) {
             children.unshift(child);
         }
     }
+    return children
 
-    return vnode.vchildren = children;
+}
+export function flattenChildren(vnode) {
+    var arr = _flattenChildren(vnode.props.children)
+    if (arr.length == 0) {
+        arr = EMPTY_CHILDREN
+    }
+    return vnode.vchildren = arr;
 }
