@@ -26,7 +26,7 @@ describe('createElement', function () {
         expect(el.props.children.length).toBe(2)
 
         el = React.createElement('p', null)
-        expect(el.props.children.length).toBe(0)
+        expect(el.props.children).toBe(void 666)
     })
     it('Children.only', () => {
         var el = React.createElement('p', null, 'aaa', 'bbb', 'ccc')
@@ -43,8 +43,7 @@ describe('createElement', function () {
         el = React.createElement('p', { children: ["aaa", "bbb"] })
         expect(el.props.children.length).toBe(2)
 
-        el = React.createElement('p', null)
-        expect(el.props.children.length).toBe(0)
+   
     })
 
     it('flatChildren', () => {
@@ -93,11 +92,10 @@ describe('createElement', function () {
         el = React.createElement(function () { }, {})
         expect(el.vtype).toBe(4)
         var obj = (new A()).render()
-        expect(obj.props.children).toEqual([])
+        expect(obj.props.children).toEqual(void 666)
         expect(obj.props.id).toBe('aaa')
         expect(obj.props).toEqual({
-            id: 'aaa',
-            children: []
+            id: 'aaa'
         })
         expect(obj.type).toEqual('div')
         expect(obj.key == null).toBe(true)

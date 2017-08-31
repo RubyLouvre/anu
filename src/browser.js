@@ -110,6 +110,9 @@ export function createDOMElement(vnode) {
   return document.createElement(type);
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
+var rmathTags = /^m/;
+var mathNs = "http://www.w3.org/1998/Math/MathML";
+var svgNs = "http://www.w3.org/2000/svg";
 var namespaceMap = oneObject(
   "" +
   // structure
@@ -124,10 +127,6 @@ var namespaceMap = oneObject(
   "font,font-face,glyph,missing-glyph",
   svgNs
 );
-
-var rmathTags = /^m/;
-var mathNs = "http://www.w3.org/1998/Math/MathML";
-var svgNs = "http://www.w3.org/2000/svg";
 namespaceMap.semantics = mathNs
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function(tag){

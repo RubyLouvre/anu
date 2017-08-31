@@ -17,25 +17,14 @@
   var s
   window.onload = function(){
 
-     class App extends React.Component{
-        constructor(props){
-           super(props)
-           this.state = {
-             aaa: 333
-           }
-        }
-        change(s){
-          this.setState({
-            aaa: s
-          })
-        }
-        render(){
-          return <p>xxx{this.state.aaa}yyy</p>
-        }
-     }
-     s = ReactDOM.render(<span>222</span>, document.getElementById('example'))
-     var el = document.getElementById('aaa')
-     console.log(el)
+    var rsvg = /^\[object SVG\w*Element\]$/
+   
+
+        var s = ReactDOM.render(
+            <svg><circle cx='25' cy='25' r='20' fill='green'/></svg>,
+        document.getElementById('example'))
+    // var el = document.getElementById('aaa')
+   //  console.log(el)
   }
   </script>
 
@@ -46,36 +35,7 @@
     <div>开发者工具</div>
     <div id='example'></div>
 
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>MathML in HTML5</title>
-      </head>
-      <body>
-    
-      <math id='aaa'>
-        <mrow>
-          <mrow>
-            <msup>
-              <mi>a</mi>
-              <mn>2</mn>
-            </msup>
-            <mo>+</mo>
-            <msup>
-              <mi>b</mi>
-              <mn>2</mn>
-            </msup>
-          </mrow>
-          <mo>=</mo>
-          <msup>
-            <mi>c</mi>
-            <mn>2</mn>
-          </msup>
-        </mrow>
-      </math>
-    
-      </body>
-    </html>
+  
 </body>
 
 </html>

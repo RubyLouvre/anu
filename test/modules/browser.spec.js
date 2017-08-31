@@ -32,7 +32,7 @@ describe('browser', function () {
         expect(getNs('math')).toBe('http://www.w3.org/1998/Math/MathML')
         expect(getNs('math')).toBe('http://www.w3.org/1998/Math/MathML')
         expect(getNs('mo')).toBe('http://www.w3.org/1998/Math/MathML')
-        expect(getNs('menu')).toBe(void 0)
+        expect(getNs('menu')).toBe(null)
     })
     it('DOMElement', function () {
         var el = fakeDoc.createElement('div')
