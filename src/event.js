@@ -289,6 +289,7 @@ var eventProto = (SyntheticEvent.prototype = {
             e.stopPropagation();
         }
     },
+    persist: noop,
     stopImmediatePropagation: function () {
         this.stopPropagation();
         this.stopImmediate = true;
