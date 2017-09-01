@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-08-31
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-01
  */
 
 (function (global, factory) {
@@ -1833,6 +1833,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     var rendered = renderComponent.call(instance, vnode, props, context);
     instance.__hydrating = true;
     var childContext = rendered.vtype ? getChildContext(instance, context) : context;
+    instance.__childContext = context; //用于在updateChange中比较
     var dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
     mountQueue.push(instance);
@@ -1884,7 +1885,14 @@ function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
     nextTypeVnode._hostNode = dom;
     return dom;
 }
-
+var contextHasChange = false;
+var contextStatus = [];
+function isEmpty(obj) {
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) return 1;
+    }
+    return 0;
+}
 function _refreshComponent(instance, dom, mountQueue) {
     var lastProps = instance.lastProps,
         lastContext = instance.lastContext,
@@ -1919,7 +1927,17 @@ function _refreshComponent(instance, dom, mountQueue) {
     var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
     delete instance.__next;
     var childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext;
+
+    contextStatus.push(contextHasChange);
+
+    var prevChildContext = instance.__childContext;
+    instance.__childContext = childContext;
+    //如果两个context都为空对象，就不比较引用，认为它们没有变
+    contextHasChange = isEmpty(prevChildContext) + isEmpty(childContext) && prevChildContext !== childContext;
+
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
+
+    contextHasChange = contextStatus.pop();
 
     nextElement._hostNode = dom;
 
@@ -1972,7 +1990,8 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
         if (innerMountQueue !== mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
-    } else if (lastVnode !== nextVnode) {
+    } else if (lastVnode !== nextVnode || contextHasChange) {
+
         dom = updateVnode(lastVnode, nextVnode, context, mountQueue);
     }
 
@@ -2094,7 +2113,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         if (old) {
             delete el.old;
 
-            if (el === old && old._hostNode) {
+            if (el === old && old._hostNode && !contextHasChange) {
                 //cloneElement
                 dom = old._hostNode;
             } else {

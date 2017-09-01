@@ -1317,7 +1317,6 @@ var getHistoryState = function getHistoryState() {
  * pushState, replaceState, and the popstate event.
  */
 var createBrowserHistory = function createBrowserHistory() {
-  console.log('createBrowserHistory')
   var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   (0, _invariant2.default)(DOMUtils.canUseDOM, 'Browser history needs a DOM');
@@ -2447,9 +2446,7 @@ var Router$1 = function (_React$Component) {
       })
     };
   };
-   Router.prototype.componentWillUpdate = function () {
-     console.log('Router will update')
-   }
+
   Router.prototype.computeMatch = function computeMatch(pathname) {
     return {
       path: '/',
@@ -2473,7 +2470,6 @@ var Router$1 = function (_React$Component) {
     // server rendering using a <StaticRouter>.
     this.unlisten = history.listen(function () {
       var match = _this2.computeMatch(history.location.pathname)
-      console.log(history.location.pathname, match, 'listen')
       _this2.setState({
         match: match
       });
@@ -2490,7 +2486,6 @@ var Router$1 = function (_React$Component) {
 
   Router.prototype.render = function render() {
     var children = this.props.children;
-    console.log(children, 'Router.prototype.render')
     return children ? React.Children.only(children) : null;
   };
 
@@ -2705,7 +2700,6 @@ var replaceHashPath = function replaceHashPath(path) {
 };
 
 var createHashHistory = function createHashHistory() {
-  console.log('createHashHistory')
   var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   (0, _invariant2.default)(DOMUtils.canUseDOM, 'Hash history needs a DOM');
@@ -2848,7 +2842,6 @@ var createHashHistory = function createHashHistory() {
 
         nextPaths.push(path);
         allPaths = nextPaths;
-        console.log('action location', action, location)
         setState({ action: action, location: location });
       } else {
         (0, _warning2.default)(false, 'Hash history cannot PUSH the same path; a new entry will not be added to the history stack');
@@ -3039,7 +3032,6 @@ var Link = function (_React$Component) {
               replace = _this$props.replace,
               to = _this$props.to;
 
-           console.log(to, 'click')
           if (replace) {
             history.replace(to);
           } else {
@@ -4163,7 +4155,6 @@ var Route$1 = function (_React$Component) {
 
 //    warning_1$3(!(!nextProps.location && this.props.location), '<Route> elements should not change from controlled to uncontrolled (or vice versa). You provided a "location" prop initially but omitted it on a subsequent render.');
     var match =  this.computeMatch(nextProps, nextContext.router)
-    console.log('Route match', match)
     this.setState({
       match: match
     });

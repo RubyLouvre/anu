@@ -289,6 +289,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     var childContext = rendered.vtype
         ? getChildContext(instance, context)
         : context;
+    instance.__childContext = context //用于在updateChange中比较
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
     mountQueue.push(instance);
@@ -340,7 +341,15 @@ function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
     nextTypeVnode._hostNode = dom;
     return dom;
 }
-
+var contextHasChange = false
+var contextStatus = []
+function isEmpty(obj) {
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i))
+            return 1
+    }
+    return 0
+}
 function _refreshComponent(instance, dom, mountQueue) {
     let {
         lastProps,
@@ -378,8 +387,19 @@ function _refreshComponent(instance, dom, mountQueue) {
     var childContext = rendered.vtype
         ? getChildContext(instance, nextContext)
         : nextContext;
-    dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
+  
+    
+    contextStatus.push(contextHasChange)
 
+    var prevChildContext = instance.__childContext
+    instance.__childContext = childContext
+    //如果两个context都为空对象，就不比较引用，认为它们没有变
+    contextHasChange = (isEmpty(prevChildContext) + isEmpty(childContext)) && prevChildContext !== childContext
+
+    dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
+    
+    contextHasChange = contextStatus.pop()
+    
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
@@ -435,7 +455,8 @@ export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
         if (innerMountQueue !== mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
-    } else if (lastVnode !== nextVnode) {
+    } else if (lastVnode !== nextVnode || contextHasChange) {
+
         dom = updateVnode(lastVnode, nextVnode, context, mountQueue);
     }
 
@@ -563,7 +584,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             if (old) {
                 delete el.old;
 
-                if (el === old && old._hostNode) {
+                if (el === old && old._hostNode && !contextHasChange) {
                     //cloneElement
                     dom = old._hostNode;
                 } else {
