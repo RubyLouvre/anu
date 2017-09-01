@@ -136,9 +136,10 @@ function createDevToolsBridge() {
 
   // 创建 componentAdded， componentUpdated，componentRemoved三个重要钩子
   const componentAdded = component => {
-    const instance = updateReactComponent(component._currentElement);
+    const vnode = component.__current || component._currentElement
+    const instance = updateReactComponent(vnode);
     //将_currentElement代替为ReactCompositeComponent实例
-    if (isRootVNode(component._currentElement)) {
+    if (isRootVNode(vnode)) {
       instance._rootID = nextRootKey(roots);
       roots[instance._rootID] = instance;
       Mount._renderNewRootComponent(instance);
@@ -160,8 +161,8 @@ function createDevToolsBridge() {
     visitNonCompositeChildren(instanceMap.get(component), childInst => {
       prevRenderedChildren.push(childInst);
     });
-
-    const instance = updateReactComponent(component._currentElement);
+    const vnode = component.__current || component._currentElement
+    const instance = updateReactComponent(vnode);
     queueReceiveComponent(instance);
     visitNonCompositeChildren(instance, childInst => {
       if (!childInst._inDevTools) {
@@ -183,7 +184,8 @@ function createDevToolsBridge() {
   };
 
   const componentRemoved = component => {
-    const instance = updateReactComponent(component._currentElement);
+    const vnode = component.__current || component._currentElement
+    const instance = updateReactComponent(vnode);
 
     visitNonCompositeChildren(instance, childInst => {
       instanceMap.delete(childInst.node);
@@ -224,8 +226,9 @@ function isRootVNode(vnode) {
  */
 function findRoots(node, roots) {
   Array.from(node.childNodes).forEach(child => {
-    if (child._component) {
-      roots[nextRootKey(roots)] = updateReactComponent(child._component);
+    var vnode = child.__component || child._component
+    if (vnode) {
+      roots[nextRootKey(roots)] = updateReactComponent(vnode);
     } else {
       findRoots(child, roots);
     }

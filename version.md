@@ -3,6 +3,8 @@
 2. 修正 flattenHooks BUG， 如果hooks中只有一个函数，就不用再包一层
 3. createElement里不对children进行处理，延迟到diff时才创建用于比较的vchildren
 4. 修正disposeElement，如果存在dangerouslySetInnerHTML的情况，需要清空元素内部，不走遍历子虚拟DOM的分支
+5. 修正diffProps, SVG的元素是区分大小写 如viewBox preserveAspectRation
+6. 组件更新时，要检测context是否改变
 
 ## 1.1.0
 1. disabled的元素不能触发点击事件

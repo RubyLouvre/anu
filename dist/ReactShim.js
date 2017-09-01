@@ -15,14 +15,21 @@ var __type = Object.prototype.toString;
 
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
-/**
- * 复制一个对象的属性到另一个对象
- *
- * @param {any} obj
- * @param {any} props
- * @returns
- */
-function extend(obj, props) {
+
+var limitWarn = {
+  count: 5,
+  forEach: 5,
+  map: 5,
+  createClass: 2,
+  renderSubtree: 2
+  /**
+   * 复制一个对象的属性到另一个对象
+   *
+   * @param {any} obj
+   * @param {any} props
+   * @returns
+   */
+};function extend(obj, props) {
   if (props) {
     for (var i in props) {
       if (props.hasOwnProperty(i)) obj[i] = props[i];
@@ -286,7 +293,7 @@ Vnode.prototype = {
     $$typeof: 1
 };
 
-function _flattenChildren(original) {
+function _flattenChildren(original, convert) {
     var children = [],
         temp,
         lastText,
@@ -319,17 +326,24 @@ function _flattenChildren(original) {
             if (childType < 6) {
                 //!== 'object' 不是对象就是字符串或数字
                 if (lastText) {
-                    lastText.text = child + lastText.text;
+                    if (convert) {
+                        children[0].text = child + children[0].text;
+                    } else {
+                        children[0] = child + children[0];
+                    }
                     continue;
                 }
-                child = {
-                    type: "#text",
-                    text: child + "",
-                    vtype: 0
-                };
-                lastText = child;
+                child = child + '';
+                if (convert) {
+                    child = {
+                        type: "#text",
+                        text: child,
+                        vtype: 0
+                    };
+                }
+                lastText = true;
             } else {
-                lastText = null;
+                lastText = false;
             }
 
             children.unshift(child);
@@ -338,7 +352,7 @@ function _flattenChildren(original) {
     return children;
 }
 function flattenChildren(vnode) {
-    var arr = _flattenChildren(vnode.props.children);
+    var arr = _flattenChildren(vnode.props.children, true);
     if (arr.length == 0) {
         arr = EMPTY_CHILDREN;
     }
@@ -583,16 +597,27 @@ var Children = {
         throw new Error('expect only one child');
     },
     count: function count(children) {
-        return _flattenChildren(children).length;
+        if (limitWarn.count-- > 0) {
+            console.warn('请限制使用Children.count');
+        }
+        return _flattenChildren(children, false).length;
     },
     forEach: function forEach(children, callback, context) {
-        _flattenChildren(children).forEach(callback, context);
+        if (limitWarn.forEach-- > 0) {
+            console.warn('请限制使用Children.forEach');
+        }
+        _flattenChildren(children, false).forEach(callback, context);
     },
     map: function map(children, callback, context) {
-        return _flattenChildren(children).map(callback, context);
+        if (limitWarn.map-- > 0) {
+            console.warn('请限制使用Children.map');
+        }
+        return _flattenChildren(children, false).map(callback, context);
     },
 
-    toArray: _flattenChildren
+    toArray: function toArray(children) {
+        return _flattenChildren(children, false);
+    }
 };
 
 var globalEvents = {};
@@ -1136,7 +1161,9 @@ var propHooks = {
         if (svgprops[name]) {
             dom[method + "NS"](xlink, svgprops[name], val || "");
         } else {
-            dom[method](toLowerCase(name), val || "");
+            //SVG的元素是区分大小写 如viewBox preserveAspectRation
+            // https://segmentfault.com/a/1190000003822487
+            dom[method](name, val || "");
         }
     },
     property: function property(dom, name, val) {
@@ -1436,6 +1463,11 @@ function disposeComponent(vnode) {
 function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
 }
+/**
+ * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
+ *
+ */
+
 
 
 function isValidElement(vnode) {

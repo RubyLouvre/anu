@@ -14,7 +14,8 @@ import {
     checkNull,
     toLowerCase,
     getChildContext,
-    EMPTY_CHILDREN
+    EMPTY_CHILDREN,
+    limitWarn
 } from "./util";
 
 import { disposeVnode } from "./dispose";
@@ -30,11 +31,10 @@ export function render(vnode, container, callback) {
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
  *
  */
-var warnOne = 1;
+
 export function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
-    if (warnOne) {
+    if (limitWarn.renderSubtree--> 0) {
         console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用"); // eslint-disable-line
-        warnOne = 0;
     }
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);
@@ -399,7 +399,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
     
     contextHasChange = contextStatus.pop()
-    
+
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {

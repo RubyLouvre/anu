@@ -3,6 +3,14 @@ export var __push = Array.prototype.push;
 
 export var innerHTML = "dangerouslySetInnerHTML";
 export var EMPTY_CHILDREN = []
+
+export var limitWarn = {
+  count: 5,
+  forEach: 5,
+  map: 5,
+  createClass: 2,
+  renderSubtree: 2
+}
 /**
  * 复制一个对象的属性到另一个对象
  *

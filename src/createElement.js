@@ -113,7 +113,7 @@ Vnode.prototype = {
     $$typeof: 1
 };
 
-export function _flattenChildren(original) {
+export function _flattenChildren(original, convert) {
     var children = [],
         temp,
         lastText,
@@ -123,7 +123,6 @@ export function _flattenChildren(original) {
     } else {
         temp = [original]
     }
-
 
     while (temp.length) {
         //比较巧妙地判定是否为子数组
@@ -147,17 +146,24 @@ export function _flattenChildren(original) {
             if (childType < 6) {
                 //!== 'object' 不是对象就是字符串或数字
                 if (lastText) {
-                    lastText.text = child + lastText.text;
+                    if (convert) {
+                        children[0].text = child + children[0].text;
+                    } else {
+                        children[0] = child + children[0]
+                    }
                     continue;
                 }
-                child = {
-                    type: "#text",
-                    text: child + "",
-                    vtype: 0
-                };
-                lastText = child;
+                child = child + ''
+                if (convert) {
+                    child = {
+                        type: "#text",
+                        text: child,
+                        vtype: 0
+                    };
+                }
+                lastText = true;
             } else {
-                lastText = null;
+                lastText = false;
             }
 
             children.unshift(child);
@@ -167,7 +173,7 @@ export function _flattenChildren(original) {
 
 }
 export function flattenChildren(vnode) {
-    var arr = _flattenChildren(vnode.props.children)
+    var arr = _flattenChildren(vnode.props.children,true)
     if (arr.length == 0) {
         arr = EMPTY_CHILDREN
     }

@@ -154,7 +154,9 @@ export var propHooks = {
         if (svgprops[name]) {
             dom[method + "NS"](xlink, svgprops[name], val || "");
         } else {
-            dom[method](toLowerCase(name), val || "");
+            //SVG的元素是区分大小写 如viewBox preserveAspectRation
+            // https://segmentfault.com/a/1190000003822487
+            dom[method](name, val || "");
         }
     },
     property: function (dom, name, val) {

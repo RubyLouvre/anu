@@ -9,13 +9,7 @@ var __type = Object.prototype.toString;
 
 
 
-/**
- * 复制一个对象的属性到另一个对象
- *
- * @param {any} obj
- * @param {any} props
- * @returns
- */
+
 
 /**
  * 一个空函数
