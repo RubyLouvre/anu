@@ -5,6 +5,7 @@
 4. 修正disposeElement，如果存在dangerouslySetInnerHTML的情况，需要清空元素内部，不走遍历子虚拟DOM的分支
 5. 修正diffProps, SVG的元素是区分大小写 如viewBox preserveAspectRation
 6. 组件更新时，要检测context是否改变
+7. 为事件对象实现persist方法
 
 ## 1.1.0
 1. disabled的元素不能触发点击事件
@@ -21,10 +22,10 @@
 3. 移除scheduler模块
 4. 移除instanceMap模块
 5. 修正typeNumber在iE6－8下的BUG
-6. eventSystem.addGlobalEventListener更名为eventSystem.addGlobalEvent
+6. `eventSystem.addGlobalEventListener`更名为eventSystem.addGlobalEvent
 7. 规避insertBfore在IE8下第二参数不能为 undefined的问题
-8. 修正ref延迟执行的BUG，组件所在的vnode如果有ref属性，那么它应该放到此组件的__pendingRefs数组中，而不是放在父组件的__pendingRefs数组
-   此外__pendingRefs数组里的元素由对象改成函数
+8. 修正ref延迟执行的BUG，组件所在的vnode如果有ref属性，那么它应该放到此组件的`__pendingRefs`数组中，而不是放在父组件的`__pendingRefs`数组
+   此外`__pendingRefs`数组里的元素由对象改成函数
 9.  确保组件在componentDidMount钩子执行setState后，所有回调应延迟到componentDidUpdate外执行
 10. 确保mountComponent中实例应该尽快保存到vnode中
 11. 修正updateElement方法中只执行一次dangerouslySetInnerHTML的BUG

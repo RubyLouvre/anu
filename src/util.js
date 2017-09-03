@@ -5,11 +5,11 @@ export var innerHTML = "dangerouslySetInnerHTML";
 export var EMPTY_CHILDREN = []
 
 export var limitWarn = {
-  count: 5,
-  forEach: 5,
-  map: 5,
-  createClass: 2,
-  renderSubtree: 2
+  count: 1,
+  forEach: 1,
+  map: 1,
+  createClass: 1,
+  renderSubtree: 1
 }
 /**
  * 复制一个对象的属性到另一个对象

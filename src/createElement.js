@@ -1,5 +1,4 @@
-import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
-
+import {__push, EMPTY_CHILDREN, typeNumber} from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -66,7 +65,6 @@ export function createElement(type, config, children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
@@ -74,15 +72,33 @@ function getDOMNode() {
 export function __ref(dom) {
     var instance = this._owner;
     if (dom && instance) {
-        dom.getDOMNode = getDOMNode;
         instance.refs[this.__refKey] = dom;
     }
+}
+var fakeOwn = {
+    __collectRefs: function () {}
+}
+function getRefValue(vnode){
+   if(vnode._instance)
+      return vnode._instance
+    var dom = vnode._hostNode
+    if(!dom){
+       dom = vnode._hostNode = vnode._owner.__current._hostNode
+    }
+    dom.getDOMNode = getDOMNode
+    return dom
 }
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    this._owner = CurrentOwner.cur
+    var owner = CurrentOwner.cur
+    if (owner) {
+        this._owner = owner
+    } else {
+        owner = fakeOwn
+    }
+    // this._owner.__pe  console.log(type, this._owner)
     if (key) {
         this.key = key;
     }
@@ -91,13 +107,20 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     var refType = typeNumber(ref);
+    var self = this
     if (refType === 4) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
+        owner.__collectRefs(function () {
+            owner.refs[ref] = getRefValue(self)
+        })
     } else if (refType === 5) {
         //function
         this.ref = ref;
+        owner.__collectRefs(function () {
+            ref(getRefValue(self))
+        })
     }
     /*
       this._hostNode = null
@@ -173,7 +196,7 @@ export function _flattenChildren(original, convert) {
 
 }
 export function flattenChildren(vnode) {
-    var arr = _flattenChildren(vnode.props.children,true)
+    var arr = _flattenChildren(vnode.props.children, true)
     if (arr.length == 0) {
         arr = EMPTY_CHILDREN
     }

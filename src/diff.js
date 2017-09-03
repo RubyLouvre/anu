@@ -66,6 +66,7 @@ function clearRefsAndMounts(queue) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
             }
+            instance.__collectRefs = noop
             instance.__hydrating = false
 
             while (instance.__renderInNextCycle) {
@@ -93,7 +94,7 @@ function refreshComponent(instance, mountQueue) {
     let dom = instance.__current._hostNode;
     dom = _refreshComponent(instance, dom, mountQueue);
     while (instance.__renderInNextCycle) {
-        dom = _refreshComponent(instance, dom, mountQueue);
+        dom = _refreshComponent(instance, instance.__current._hostNode, mountQueue);
     }
 
     clearArray(instance.__pendingCallbacks)
@@ -101,7 +102,7 @@ function refreshComponent(instance, mountQueue) {
             fn.call(instance);
         });
 
-    return dom;
+    return instance.__current._hostNode
 }
 /**
  * ReactDOM.render
@@ -217,7 +218,9 @@ function genMountElement(vnode, type, prevRendered) {
 function mountElement(vnode, context, prevRendered, mountQueue) {
     let { type, props, _owner, ref } = vnode;
     let dom = genMountElement(vnode, type, prevRendered);
+   
     vnode._hostNode = dom;
+    
     let method = prevRendered
         ? alignChildren
         : mountChildren;
@@ -227,9 +230,9 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
 
-    if (ref && _owner) {
-        _owner.__collectRefs(ref.bind(vnode, dom));
-    }
+  //  if (ref && _owner) {
+  //      _owner.__collectRefs(ref.bind(vnode, dom));
+  //  }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
@@ -273,7 +276,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
 
     let instance = new type(props, context); //互相持有引用
-
+    CurrentOwner.cur = null
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -292,10 +295,12 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     instance.__childContext = context //用于在updateChange中比较
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
+    rendered_hostNode = dom
     mountQueue.push(instance);
-    if (ref) {
-        instance.__collectRefs(ref.bind(vnode, instance));
-    }
+    
+  //  if (ref) {
+  //      instance.__collectRefs(ref.bind(vnode, instance));
+  //  }
     options.afterMount(instance);
     return dom;
 }
@@ -405,6 +410,8 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentDidUpdate) {
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
+   
+   
     instance.__hydrating = false;
 
     options.afterUpdate(instance);
@@ -420,6 +427,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     let nextProps = nextVnode.props
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
+
     if (instance.componentWillReceiveProps) {
         instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, context);
@@ -438,6 +446,7 @@ export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
 
     let dom = node;
     //eslint-disable-next-line
+  
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
 
         disposeVnode(lastVnode);
@@ -455,8 +464,8 @@ export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
         if (innerMountQueue !== mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
-    } else if (lastVnode !== nextVnode || contextHasChange) {
-
+    } else if (true) {
+   //lastVnode !== nextVnode || contextHasChange
         dom = updateVnode(lastVnode, nextVnode, context, mountQueue);
     }
 
@@ -584,12 +593,13 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             if (old) {
                 delete el.old;
 
-                if (el === old && old._hostNode && !contextHasChange) {
+             //   if (el === old && old._hostNode && !contextHasChange) {
                     //cloneElement
-                    dom = old._hostNode;
-                } else {
+                  //  console.log('可能有问题')
+                  //  dom = old._hostNode;
+              //  } else {
                     dom = updateVnode(old, el, context, queue);
-                }
+             //   }
             } else {
                 dom = mountVnode(el, context, null, queue);
             }
