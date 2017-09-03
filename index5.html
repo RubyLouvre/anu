@@ -5,41 +5,49 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
   <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script> -->
+  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>
+  <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
-     <style>
-       .outer{
-         border: 1px solid rebeccapurple;
-         background: red;
-         width:290px;
-         height:290px;
-       }
-       .inner{
-         border: 1px solid rebeccapurple;
-         background: green;
-         margin:40px;
-         width:200px;
-         height:200px;
-       }
-       .inner2{
-         border: 1px solid rebeccapurple;
-         background: blue;
-         margin:40px;
-         width:100px;
-         height:100px;
-       }
-     </style>
+    
   <script type='text/babel'>
   var s
   window.onload = function(){
 
-      var el = React.createElement('p', null, null)
-      console.log(el)
-  
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          tip: 'g-up-tips',
+          text: 'xxxx'
+        };
+
+      }
+     
+      render() {
+        return <div ref='parent' className='parent'>
+            <Child ref='child'>
+              <span ref="inner" className="inner">child</span>
+            </Child>
+            </div>
+      }
+    }
+     class Child extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+        };
+      }
+     
+      render() {
+        return <div className='child'>{this.props.children}</div>
+      }
+    }
+      
 
 
-   //s = ReactDOM.render(<App />, document.getElementById('example'));
+    s = React.render(<App />, document.getElementById('example'));
+ 
   }
   </script>
 
@@ -48,13 +56,8 @@
     
         <div>开发者工具</div>
         <div id='example'></div>
-        <select id="sel">
-          <option>aaa</option>
-          <option>bbb</option>
-          <option>ccc</option>
-        </select>
     
     
-    </body>
+</body>
     
-    </html>
+ </html>
