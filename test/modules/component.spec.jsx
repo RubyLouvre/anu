@@ -310,7 +310,7 @@ describe("组件相关", function() {
     expect(s.refs.c.selected).toBe(true);
   });
 
-  it("多选下拉框没有defaultValue", async () => {
+  it("多选下拉框没有defaultValue与ReactDOM.render的回调this指向问题", async () => {
     class App extends React.Component {
       constructor(props) {
         super(props);
@@ -329,7 +329,9 @@ describe("组件相关", function() {
       }
     }
 
-    var s = React.render(<App />, div);
+    var s = React.render(<App />, div, function(){
+      expect(this.constructor.name).toBe('App')
+    });
     await browser.pause(100).$apply();
     expect(s.refs.a.selected).toBe(true);
   });

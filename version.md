@@ -6,6 +6,7 @@
 5. 修正diffProps, SVG的元素是区分大小写 如viewBox preserveAspectRation
 6. 组件更新时，要检测context是否改变
 7. 为事件对象实现persist方法
+8. 修复 unstable_renderSubtreeIntoContainer的回调的this指向问题
 
 ## 1.1.0
 1. disabled的元素不能触发点击事件
