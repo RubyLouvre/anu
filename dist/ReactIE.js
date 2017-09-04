@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-01
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-04
  */
 
 (function (global, factory) {
@@ -15,11 +15,11 @@ var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
 var limitWarn = {
-  count: 5,
-  forEach: 5,
-  map: 5,
-  createClass: 2,
-  renderSubtree: 2
+  count: 1,
+  forEach: 1,
+  map: 1,
+  createClass: 1,
+  renderSubtree: 1
   /**
    * 复制一个对象的属性到另一个对象
    *
@@ -252,15 +252,32 @@ function getDOMNode() {
 function __ref(dom) {
     var instance = this._owner;
     if (dom && instance) {
-        dom.getDOMNode = getDOMNode;
         instance.refs[this.__refKey] = dom;
     }
+}
+var fakeOwn = {
+    __collectRefs: function __collectRefs() {}
+};
+function getRefValue(vnode) {
+    if (vnode._instance) return vnode._instance;
+    var dom = vnode._hostNode;
+    if (!dom) {
+        dom = vnode._hostNode = vnode._owner.__current._hostNode;
+    }
+    dom.getDOMNode = getDOMNode;
+    return dom;
 }
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    this._owner = CurrentOwner.cur;
+    var owner = CurrentOwner.cur;
+    if (owner) {
+        this._owner = owner;
+    } else {
+        owner = fakeOwn;
+    }
+    // this._owner.__pe  console.log(type, this._owner)
     if (key) {
         this.key = key;
     }
@@ -269,13 +286,20 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     var refType = typeNumber(ref);
+    var self = this;
     if (refType === 4) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
+        owner.__collectRefs(function () {
+            owner.refs[ref] = getRefValue(self);
+        });
     } else if (refType === 5) {
         //function
         this.ref = ref;
+        owner.__collectRefs(function () {
+            ref(getRefValue(self));
+        });
     }
     /*
       this._hostNode = null
@@ -1644,6 +1668,7 @@ function clearRefsAndMounts(queue) {
             instance.componentDidMount();
             instance.componentDidMount = null;
         }
+        instance.__collectRefs = noop;
         instance.__hydrating = false;
 
         while (instance.__renderInNextCycle) {
@@ -1671,7 +1696,6 @@ function refreshComponent(instance, mountQueue) {
     while (instance.__renderInNextCycle) {
         dom = _refreshComponent(instance, dom, mountQueue);
     }
-
     clearArray(instance.__pendingCallbacks).forEach(function (fn) {
         fn.call(instance);
     });
@@ -1712,12 +1736,12 @@ function renderByAnu(vnode, container, callback, parentContext) {
     var instance = vnode._instance;
     container.__component = vnode;
     clearRefsAndMounts(mountQueue);
-
+    var ret = instance || rootNode;
     if (callback) {
-        callback();
+        callback.call(ret); //坑
     }
 
-    return instance || rootNode;
+    return ret;
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
 }
 
@@ -1787,7 +1811,9 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
         ref = vnode.ref;
 
     var dom = genMountElement(vnode, type, prevRendered);
+
     vnode._hostNode = dom;
+
     var method = prevRendered ? alignChildren : mountChildren;
     method(vnode, dom, context, mountQueue);
 
@@ -1795,9 +1821,6 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
 
-    if (ref && _owner) {
-        _owner.__collectRefs(ref.bind(vnode, dom));
-    }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
@@ -1844,7 +1867,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
 
     var instance = new type(props, context); //互相持有引用
-
+    CurrentOwner.cur = null;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -1861,10 +1884,9 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     instance.__childContext = context; //用于在updateChange中比较
     var dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
+    rendered_hostNode = dom;
     mountQueue.push(instance);
-    if (ref) {
-        instance.__collectRefs(ref.bind(vnode, instance));
-    }
+
     options.afterMount(instance);
     return dom;
 }
@@ -1931,6 +1953,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     lastProps = lastProps || nextProps;
     var nextState = instance.__mergeStates(nextProps, nextContext);
     instance.props = lastProps;
+
     instance.__renderInNextCycle = null;
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__forceUpdate = false;
@@ -1969,6 +1992,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentDidUpdate) {
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
+
     instance.__hydrating = false;
 
     options.afterUpdate(instance);
@@ -1984,6 +2008,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     var nextProps = nextVnode.props;
     instance.lastProps = instance.props;
     instance.lastContext = instance.context;
+
     if (instance.componentWillReceiveProps) {
         instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, context);
@@ -2002,6 +2027,7 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
 
     var dom = node;
     //eslint-disable-next-line
+
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
 
         disposeVnode(lastVnode);
@@ -2016,7 +2042,6 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
     } else if (lastVnode !== nextVnode || contextHasChange) {
-
         dom = updateVnode(lastVnode, nextVnode, context, mountQueue);
     }
 
