@@ -1730,7 +1730,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     instance.__childContext = context; //用于在updateChange中比较
     var dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
-    rendered_hostNode = dom;
     mountQueue.push(instance);
 
     options.afterMount(instance);
@@ -1961,12 +1960,13 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             var node = el._hostNode;
             if (node) {
                 removeDOMElement(node);
+            } else {
+                console.warn('没有node', el);
             }
             disposeVnode(el);
         });
         return;
     }
-
     var hashcode = {};
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
@@ -1984,8 +1984,9 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             var old = list.shift();
             if (old) {
                 el.old = old;
-            } else {
-                delete hashcode[key];
+                if (!list.length) {
+                    delete hashcode[key];
+                }
             }
         }
     });
@@ -1996,6 +1997,8 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 var node = el._hostNode;
                 if (node) {
                     removeDOMElement(node);
+                } else {
+                    console.warn('没有node', el);
                 }
                 disposeVnode(el);
             });
@@ -2024,6 +2027,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             clearRefsAndMounts(queue);
         }
     });
+    var n = nextChildren.length;
+    while (childNodes[n]) {
+        parentNode.removeChild(childNodes[n]);
+    }
 }
 function insertDOM(parentNode, dom, ref) {
     if (!dom) {
