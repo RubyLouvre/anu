@@ -36,7 +36,8 @@ QQ交流学习群：  370262116
 
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
 
-###现在业界所有类react库与官方react的体积对比表
+
+### 现在业界所有类react库与官方react的体积对比表
 
 |framework             | version | min  | gz  |
 |:--------------------:|:-------:|------|-----|
