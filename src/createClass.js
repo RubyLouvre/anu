@@ -95,7 +95,7 @@ function newCtor(className, spec) {
 
 export function createClass(spec) {
     if (limitWarn.createClass-- > 0) {
-        console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
+        console.warn("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);

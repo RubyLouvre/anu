@@ -34,7 +34,7 @@ export function render(vnode, container, callback) {
 
 export function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
-        console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用"); // eslint-disable-line
+        console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
     }
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);

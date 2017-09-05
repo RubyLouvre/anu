@@ -5,9 +5,6 @@ export var innerHTML = "dangerouslySetInnerHTML";
 export var EMPTY_CHILDREN = []
 
 export var limitWarn = {
-  count: 1,
-  forEach: 1,
-  map: 1,
   createClass: 1,
   renderSubtree: 1
 }

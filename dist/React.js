@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-09-04
+ * by 司徒正美 Copyright 2017-09-05
  * IE9+
  */
 
@@ -16,9 +16,6 @@ var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
 var limitWarn = {
-  count: 1,
-  forEach: 1,
-  map: 1,
   createClass: 1,
   renderSubtree: 1
   /**
@@ -392,21 +389,12 @@ var Children = {
         throw new Error('expect only one child');
     },
     count: function count(children) {
-        if (limitWarn.count-- > 0) {
-            console.warn('请限制使用Children.count');
-        }
         return _flattenChildren(children, false).length;
     },
     forEach: function forEach(children, callback, context) {
-        if (limitWarn.forEach-- > 0) {
-            console.warn('请限制使用Children.forEach');
-        }
         _flattenChildren(children, false).forEach(callback, context);
     },
     map: function map(children, callback, context) {
-        if (limitWarn.map-- > 0) {
-            console.warn('请限制使用Children.map');
-        }
         return _flattenChildren(children, false).map(callback, context);
     },
 
@@ -414,6 +402,21 @@ var Children = {
         return _flattenChildren(children, false);
     }
 };
+
+var _loop = function _loop(key) {
+    var fn = Children[key];
+    limitWarn[key] = 1;
+    Children[key] = function () {
+        if (limitWarn[key]-- > 0) {
+            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+        }
+        return fn.apply(null, arguments);
+    };
+};
+
+for (var key in Children) {
+    _loop(key);
+}
 
 //用于后端的元素节点
 function DOMElement(type) {
@@ -1040,7 +1043,7 @@ function newCtor(className, spec) {
 
 function createClass(spec) {
     if (limitWarn.createClass-- > 0) {
-        console.warn("createClass已经过时，强烈建议使用es6方式定义类"); // eslint-disable-line
+        console.warn("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -1638,7 +1641,7 @@ function render(vnode, container, callback) {
 
 function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
-        console.warn("unstable_renderSubtreeIntoContainer未见于文档的内部方法，不建议使用"); // eslint-disable-line
+        console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
     }
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);

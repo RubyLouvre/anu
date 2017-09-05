@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-04
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-05
  */
 
 (function (global, factory) {
@@ -17,9 +17,6 @@ var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
 var limitWarn = {
-  count: 1,
-  forEach: 1,
-  map: 1,
   createClass: 1,
   renderSubtree: 1
   /**
@@ -621,21 +618,12 @@ var Children = {
         throw new Error('expect only one child');
     },
     count: function count(children) {
-        if (limitWarn.count-- > 0) {
-            console.warn('请限制使用Children.count');
-        }
         return _flattenChildren(children, false).length;
     },
     forEach: function forEach(children, callback, context) {
-        if (limitWarn.forEach-- > 0) {
-            console.warn('请限制使用Children.forEach');
-        }
         _flattenChildren(children, false).forEach(callback, context);
     },
     map: function map(children, callback, context) {
-        if (limitWarn.map-- > 0) {
-            console.warn('请限制使用Children.map');
-        }
         return _flattenChildren(children, false).map(callback, context);
     },
 
@@ -643,6 +631,21 @@ var Children = {
         return _flattenChildren(children, false);
     }
 };
+
+var _loop = function _loop(key) {
+    var fn = Children[key];
+    limitWarn[key] = 1;
+    Children[key] = function () {
+        if (limitWarn[key]-- > 0) {
+            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+        }
+        return fn.apply(null, arguments);
+    };
+};
+
+for (var key in Children) {
+    _loop(key);
+}
 
 var globalEvents = {};
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行

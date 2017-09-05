@@ -11,24 +11,25 @@ export const Children = {
         throw new Error('expect only one child')
     },
     count(children) {
-        if (limitWarn.count-- > 0) {
-            console.warn('请限制使用Children.count')
-        }
         return _flattenChildren(children, false).length
     },
     forEach(children, callback, context) {
-        if (limitWarn.forEach-- > 0) {
-            console.warn('请限制使用Children.forEach')
-        }
         _flattenChildren(children, false).forEach(callback, context);
     },
     map(children, callback, context) {
-        if (limitWarn.map-- > 0) {
-            console.warn('请限制使用Children.map')
-        }
         return _flattenChildren(children, false).map(callback, context);
     },
     toArray: function (children) {
         return _flattenChildren(children, false)
     }
 };
+for (let key in Children) {
+    let fn = Children[key]
+    limitWarn[key] = 1
+    Children[key] = function () {
+        if (limitWarn[key]-- > 0) {
+            console.warn('请限制使用Children.' + key+',不要窥探虚拟DOM的内部实现,会导致升级问题')
+        }
+        return fn.apply(null, arguments)
+    }
+}
