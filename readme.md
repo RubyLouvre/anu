@@ -36,18 +36,6 @@ QQ交流学习群：  370262116
 
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
 
-
-### 现在业界所有类react库与官方react的体积对比表
-
-|framework             | version | min  | gz  |
-|:--------------------:|:-------:|------|-----|
-|react+react-dom       | 15.6    |146   |44.6 |
-|anujs(qreact)         | 1.1     |24.3  |9.8  |
-|react-lite            | 0.15.38 |28.8  |10.9 |
-|preact+preact-compat  | 8.2.5   |22.1  |8.1  |
-|inferno+inferno-compat| 3.8.2   |43.2  |15.1 |
-
-
 ### dist目录下的变种说明
 1. React 支持IE9+, 拥有PropTypes, createClass, createFactory
 2. ReactIE 支持IE6+, 拥有PropTypes, createClass, createFactory (需要与lib目录下的polyfill配套使用)
@@ -77,7 +65,10 @@ Apache Licene 2.0
     resolve: {
         alias: {
             'react': 'anujs',
-            'react-dom': 'anujs'
+            'react-dom': 'anujs',
+            'prop-types': 'anujs/lib/ReactPropTypes',
+            'create-react-class': 'anujs/lib/createClass'
+
         }
     }
 ```
