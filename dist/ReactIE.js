@@ -343,7 +343,6 @@ function _flattenChildren(original, convert) {
                 }
 
             if (childType < 6) {
-                //!== 'object' 不是对象就是字符串或数字
                 if (lastText) {
                     if (convert) {
                         children[0].text = child + children[0].text;
