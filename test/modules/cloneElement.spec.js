@@ -1,6 +1,6 @@
 import { cloneElement } from "src/cloneElement";
 
-describe("cloneElement", function() {
+describe("cloneElement", function () {
   it("test", () => {
     var a = {
       type: "div",
@@ -23,5 +23,19 @@ describe("cloneElement", function() {
       }
     ];
     expect(cloneElement(a).props.v).toBe(2);
+  });
+
+  it("children", () => {
+    function A() { }
+    var b = React.cloneElement({
+      type: A,
+      vtype: 2,
+      props: {}
+    }, {
+        children: [111, 222],
+        onChange: function () { },
+        key: 'tabContent'
+      })
+    expect(b.props.children.length).toBe(2);
   });
 });
