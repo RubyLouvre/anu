@@ -7,19 +7,20 @@ export function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var obj = {};
+    var configs = {};
     if (vnode.key) {
-        obj.key = vnode.key;
+        configs.key = vnode.key;
     }
 
     if (vnode.__refKey) {
-        obj.ref = vnode.__refKey;
+        configs.ref = vnode.__refKey;
     } else if (vnode.ref) {
-        obj.ref = vnode.ref;
+        configs.ref = vnode.ref;
     }
+    Object.assign(configs, vnode.props, props)
     return createElement(
         vnode.type,
-        Object.assign(obj, vnode.props, props),
-        arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children
+        configs,
+        arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children
     );
 }

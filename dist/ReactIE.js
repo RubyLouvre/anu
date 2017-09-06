@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-05
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-06
  */
 
 (function (global, factory) {
@@ -1075,17 +1075,18 @@ function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var obj = {};
+    var configs = {};
     if (vnode.key) {
-        obj.key = vnode.key;
+        configs.key = vnode.key;
     }
 
     if (vnode.__refKey) {
-        obj.ref = vnode.__refKey;
+        configs.ref = vnode.__refKey;
     } else if (vnode.ref) {
-        obj.ref = vnode.ref;
+        configs.ref = vnode.ref;
     }
-    return createElement(vnode.type, Object.assign(obj, vnode.props, props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.props.children);
+    Object.assign(configs, vnode.props, props);
+    return createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1352,10 +1353,10 @@ var propHooks = {
     },
     __event__: function __event__(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
-
         if (val === false) {
             delete events[toLowerCase(name.slice(2))];
         } else {
+
             if (!lastProps[name]) {
                 //添加全局监听事件
                 var _name = getBrowserName(name);
