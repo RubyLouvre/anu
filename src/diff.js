@@ -31,7 +31,7 @@ export function render(vnode, container, callback) {
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
  *
  */
-
+var pendingRefs = []
 export function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
         console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
@@ -52,21 +52,22 @@ export function unmountComponentAtNode(dom) {
 export function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
-
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
+}
 function clearRefsAndMounts(queue) {
+    var refs = pendingRefs.slice(0)
+    pendingRefs.length = 0
+    refs.forEach(function (fn) {
+        fn()
+    })
     queue
         .forEach(function (instance) {
-            let refFns = instance.__pendingRefs;
-            for (var i = 0, refFn; refFn = refFns[i++];) {
-                refFn();
-            }
-            refFns.length = 0;
-
             if (instance.componentDidMount) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
             }
-            instance.__collectRefs = noop
             instance.__hydrating = false
 
             while (instance.__renderInNextCycle) {
@@ -228,7 +229,10 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
     }
-
+    if (ref) {
+        dom.getDOMNode = getDOMNode
+        pendingRefs.push(ref.bind(vnode, dom));
+    }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
@@ -292,6 +296,9 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
     mountQueue.push(instance);
+    if (ref) {
+        pendingRefs.push(ref.bind(vnode, instance));
+    }
 
     options.afterMount(instance);
     return dom;
@@ -301,7 +308,6 @@ function Stateless(render) {
     this.refs = {};
     this.__render = render;
     this.__current = {}
-    this.__collectRefs = noop;
 }
 
 var renderComponent = function (vnode, props, context) {
@@ -323,10 +329,13 @@ var renderComponent = function (vnode, props, context) {
 
 Stateless.prototype.render = renderComponent
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    let { type, props } = vnode
+    let { type, props, ref } = vnode
     let instance = new Stateless(type);
     let rendered = instance.render(vnode, props, context);
     let dom = mountVnode(rendered, context, prevRendered, mountQueue);
+    if (ref) {
+        pendingRefs.push(ref.bind(vnode, null));
+    }
     return vnode._hostNode = dom;
 }
 
@@ -430,7 +439,8 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     instance.props = nextProps;
     instance.context = context;
     if (nextVnode.ref) {
-        nextVnode.ref(instance);
+        pendingRefs.push(nextVnode.ref.bind(nextVnode, instance))
+       // nextVnode.ref(instance);
     }
     return refreshComponent(instance, mountQueue);
 }
@@ -488,6 +498,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     let dom = lastVnode._hostNode
     let lastProps = lastVnode.props;
     let nextProps = nextVnode.props;
+    let ref = nextVnode.ref;
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode
@@ -512,8 +523,8 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
-    if (nextVnode.ref) {
-        nextVnode.ref(dom);
+    if (ref) {
+        pendingRefs.push(ref.bind(nextVnode, dom));
     }
     return dom;
 }
@@ -569,7 +580,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                     let node = el._hostNode;
                     if (node) {
                         removeDOMElement(node);
-                    } 
+                    }
                     disposeVnode(el);
                 });
         }

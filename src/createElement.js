@@ -63,29 +63,14 @@ export function createElement(type, config, children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
+
 export function __ref(dom) {
     var instance = this._owner;
     if (dom && instance) {
         instance.refs[this.__refKey] = dom;
     }
 }
-var fakeOwn = {
-    __collectRefs: function () { }
-}
-function getRefValue(vnode, key) {
-    if (vnode._instance)
-        return vnode._instance
-    var dom = vnode._hostNode
-    if (!dom) {
-        dom = vnode._hostNode = vnode._owner.__current._hostNode
-    }
-    dom.getDOMNode = getDOMNode
-    return dom
-}
+
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
@@ -93,10 +78,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     var owner = CurrentOwner.cur
     if (owner) {
         this._owner = owner
-    } else {
-        owner = fakeOwn
-    }
-    // this._owner.__pe  console.log(type, this._owner)
+    } 
     if (key) {
         this.key = key;
     }
@@ -110,16 +92,9 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
-        var self = this
-        owner.__collectRefs(function () {
-            owner.refs[ref] = getRefValue(self, ref)
-        })
     } else if (refType === 5) {
         //function
         this.ref = ref;
-        owner.__collectRefs(function () {
-            ref(getRefValue(self, ref))
-        })
     }
     /*
       this._hostNode = null
@@ -166,12 +141,8 @@ export function _flattenChildren(original, convert) {
             }
 
             if (childType < 6) {
-                if (lastText) {
-                    if (convert) {
-                        children[0].text = child + children[0].text;
-                    } else {
-                        children[0] = child + children[0]
-                    }
+                if (lastText && convert) {//false模式下不进行合并与转换
+                    children[0].text = child + children[0].text;
                     continue;
                 }
                 child = child + ''

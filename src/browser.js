@@ -132,7 +132,6 @@ namespaceMap.semantics = mathNs
 "meter,menu,map,meta,mark".replace(/\w+/g, function(tag){
   namespaceMap[tag] = null
 })
-
 export function getNs(type) {
   if (namespaceMap[type] !== void 666) {
     return namespaceMap[type]

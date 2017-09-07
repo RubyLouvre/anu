@@ -5,18 +5,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
   <!--<script src="./coverage/react.development.js"></script>-->
-  <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+  <script type='text/javascript' src="./dist/React.js"></script>
   <!--  <script type='text/javascript' src="./test/react.js"></script>-->
-  <script src="./test/react.js"></script>
+<script src="./test/react.js"></script>
   <script src="./test/react-dom.js"></script>
   <script src="./node_modules/react-router-dom/umd/react-router-dom.js"></script>
    <!--<script src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
 
   <script type='text/babel'>
-   var a =  React.createElement("A", null, "")
-  // ReactDOM.render()
-   console.log(a)
+function App() {
+  return (
+      <div>StateLess</div>
+  );
+}
+ReactDOM.render(<App ref={(a) => {
+           console.log(a)
+        }} />,  document.getElementById('example'))
+ 
   </script>
 
 </head>

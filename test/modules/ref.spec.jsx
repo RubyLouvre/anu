@@ -1,13 +1,13 @@
-import {beforeHook, afterHook, browser} from 'karma-event-driver-ext/cjs/event-driver-hooks';
+import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 
 import React from 'dist/React'
 
 describe('ref', function () {
     this.timeout(200000);
-    before(async() => {
+    before(async () => {
         await beforeHook()
     })
-    after(async() => {
+    after(async () => {
         await afterHook(false)
     })
     var body = document.body,
@@ -19,7 +19,7 @@ describe('ref', function () {
     afterEach(function () {
         body.removeChild(div)
     })
-    it('patchRef', async() => {
+    it('patchRef', async () => {
         class App extends React.Component {
             constructor(props) {
                 super(props)
@@ -39,18 +39,18 @@ describe('ref', function () {
             render() {
                 return (
                     <div>
-                        <input type="text" ref={(ref) => this.myTextInput = ref}/>
+                        <input type="text" ref={(ref) => this.myTextInput = ref} />
                         <input
                             ref='a'
                             type="button"
                             value="Focus the text input"
-                            onClick={this.handleClick}/>
+                            onClick={this.handleClick} />
                     </div>
                 );
             }
         };
 
-        var s = React.render(<App/>, div)
+        var s = React.render(<App />, div)
         await browser
             .pause(100)
             .$apply()
@@ -66,11 +66,11 @@ describe('ref', function () {
 
     })
 
-    it('patchRef Component', async() => {
+    it('patchRef Component', async () => {
 
         class App extends React.Component {
             render() {
-                return <div title='1'><A ref='a'/></div>
+                return <div title='1'><A ref='a' /></div>
             }
         }
         var index = 1
@@ -86,7 +86,7 @@ describe('ref', function () {
             }
         }
 
-        var s = React.render(<App/>, div)
+        var s = React.render(<App />, div)
         await browser
             .pause(100)
             .$apply()
@@ -94,7 +94,7 @@ describe('ref', function () {
 
     })
 
-    it('没有组件的情况', async() => {
+    it('没有组件的情况', async () => {
 
         function ref(a) {
             expect(a.tagName).toBe('DIV')
@@ -106,7 +106,7 @@ describe('ref', function () {
             .$apply()
 
     })
-    it('should invoke refs in Component.render()', async() => {
+    it('should invoke refs in Component.render()', async () => {
         var i = 0
         let outer = function (a) {
             expect(a).toBe(div.firstChild);
@@ -120,19 +120,19 @@ describe('ref', function () {
             render() {
                 return (
                     <div ref={outer}>
-                        <span ref={inner}/>
+                        <span ref={inner} />
                     </div>
                 );
             }
         }
-        var s = React.render(<Foo/>, div);
+        var s = React.render(<Foo />, div);
         await browser
             .pause(100)
             .$apply()
 
         expect(i).toBe(2)
     });
-    it('rener方法在存在其他组件，那么组件以innerHTML方式引用子节点，子节点有ref', async() => {
+    it('rener方法在存在其他组件，那么组件以innerHTML方式引用子节点，子节点有ref', async () => {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -161,14 +161,14 @@ describe('ref', function () {
                 return <div className='child'>{this.props.children}</div>
             }
         }
-        var s = React.render(<App/>, div);
+        var s = React.render(<App />, div);
         await browser
             .pause(100)
             .$apply()
-        expect(Object.keys(s.refs).sort()).toEqual(['child', 'inner','parent'])
+        expect(Object.keys(s.refs).sort()).toEqual(['child', 'inner', 'parent'])
 
     })
-    it('用户在构造器里生成虚拟DOM', async() => {
+    it('用户在构造器里生成虚拟DOM', async () => {
         var a
         class App extends React.Component {
             constructor(props) {
@@ -179,7 +179,7 @@ describe('ref', function () {
             renderSlider(which = 'btnLeft') {
                 return (<span ref={dom => {
                     this[which] = dom;
-                }}/>);
+                }} />);
             }
             componentDidMount() {
                 a = !!this.btnLeft
@@ -195,7 +195,7 @@ describe('ref', function () {
                 );
             }
         }
-        var s = React.render(<App/>, div);
+        var s = React.render(<App />, div);
         await browser
             .pause(100)
             .$apply()
@@ -204,4 +204,33 @@ describe('ref', function () {
 
     })
 
+    it('Stateless组件也会被执行', async () => {
+        var b
+        function App() {
+            return (
+                <div >StateLess</div>
+            );
+        }
+        var s = React.render(<App ref={(a) => {
+            b = a
+        }} />, div);
+        await browser
+            .pause(100)
+            .$apply()
+
+        expect(b).toBe(null)
+
+    })
+    it('ReactDOM.render中的元素也会被执行', async () => {
+        var b
+        var s = React.render(<h1 ref={(a) => {
+            b = a
+        }} />, div);
+        await browser
+            .pause(100)
+            .$apply()
+
+        expect(b && b.tagName).toBe('H1')
+
+    })
 })

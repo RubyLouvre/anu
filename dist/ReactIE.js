@@ -239,28 +239,13 @@ function createElement(type, config, children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
 function __ref(dom) {
     var instance = this._owner;
     if (dom && instance) {
         instance.refs[this.__refKey] = dom;
     }
 }
-var fakeOwn = {
-    __collectRefs: function __collectRefs() {}
-};
-function getRefValue(vnode, key) {
-    if (vnode._instance) return vnode._instance;
-    var dom = vnode._hostNode;
-    if (!dom) {
-        dom = vnode._hostNode = vnode._owner.__current._hostNode;
-    }
-    dom.getDOMNode = getDOMNode;
-    return dom;
-}
+
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
@@ -268,10 +253,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     var owner = CurrentOwner.cur;
     if (owner) {
         this._owner = owner;
-    } else {
-        owner = fakeOwn;
     }
-    // this._owner.__pe  console.log(type, this._owner)
     if (key) {
         this.key = key;
     }
@@ -285,16 +267,9 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
-        var self = this;
-        owner.__collectRefs(function () {
-            owner.refs[ref] = getRefValue(self, ref);
-        });
     } else if (refType === 5) {
         //function
         this.ref = ref;
-        owner.__collectRefs(function () {
-            ref(getRefValue(self, ref));
-        });
     }
     /*
       this._hostNode = null
@@ -341,12 +316,9 @@ function _flattenChildren(original, convert) {
                 }
 
             if (childType < 6) {
-                if (lastText) {
-                    if (convert) {
-                        children[0].text = child + children[0].text;
-                    } else {
-                        children[0] = child + children[0];
-                    }
+                if (lastText && convert) {
+                    //false模式下不进行合并与转换
+                    children[0].text = child + children[0].text;
                     continue;
                 }
                 child = child + '';
@@ -537,7 +509,6 @@ namespaceMap.semantics = mathNs;
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
   namespaceMap[tag] = null;
 });
-
 function getNs(type) {
   if (namespaceMap[type] !== void 666) {
     return namespaceMap[type];
@@ -878,7 +849,6 @@ function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__pendingRefs = [];
     this.__current = {};
     /*
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
@@ -898,9 +868,6 @@ Component.prototype = {
         setStateImpl.call(this, true, cb);
     },
 
-    __collectRefs: function __collectRefs(fn) {
-        this.__pendingRefs.push(fn);
-    },
     __mergeStates: function __mergeStates(props, context) {
         var n = this.__pendingStates.length;
         if (n === 0) {
@@ -1709,7 +1676,7 @@ function render(vnode, container, callback) {
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
  *
  */
-
+var pendingRefs = [];
 function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
         console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
@@ -1730,20 +1697,21 @@ function unmountComponentAtNode(dom) {
 function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
-
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
+}
 function clearRefsAndMounts(queue) {
+    var refs = pendingRefs.slice(0);
+    pendingRefs.length = 0;
+    refs.forEach(function (fn) {
+        fn();
+    });
     queue.forEach(function (instance) {
-        var refFns = instance.__pendingRefs;
-        for (var i = 0, refFn; refFn = refFns[i++];) {
-            refFn();
-        }
-        refFns.length = 0;
-
         if (instance.componentDidMount) {
             instance.componentDidMount();
             instance.componentDidMount = null;
         }
-        instance.__collectRefs = noop;
         instance.__hydrating = false;
 
         while (instance.__renderInNextCycle) {
@@ -1895,7 +1863,10 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
     }
-
+    if (ref) {
+        dom.getDOMNode = getDOMNode;
+        pendingRefs.push(ref.bind(vnode, dom));
+    }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
@@ -1960,6 +1931,9 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     var dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
     mountQueue.push(instance);
+    if (ref) {
+        pendingRefs.push(ref.bind(vnode, instance));
+    }
 
     options.afterMount(instance);
     return dom;
@@ -1969,7 +1943,6 @@ function Stateless(render) {
     this.refs = {};
     this.__render = render;
     this.__current = {};
-    this.__collectRefs = noop;
 }
 
 var renderComponent = function renderComponent(vnode, props, context) {
@@ -1990,11 +1963,15 @@ var renderComponent = function renderComponent(vnode, props, context) {
 Stateless.prototype.render = renderComponent;
 function mountStateless(vnode, context, prevRendered, mountQueue) {
     var type = vnode.type,
-        props = vnode.props;
+        props = vnode.props,
+        ref = vnode.ref;
 
     var instance = new Stateless(type);
     var rendered = instance.render(vnode, props, context);
     var dom = mountVnode(rendered, context, prevRendered, mountQueue);
+    if (ref) {
+        pendingRefs.push(ref.bind(vnode, null));
+    }
     return vnode._hostNode = dom;
 }
 
@@ -2092,7 +2069,8 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     instance.props = nextProps;
     instance.context = context;
     if (nextVnode.ref) {
-        nextVnode.ref(instance);
+        pendingRefs.push(nextVnode.ref.bind(nextVnode, instance));
+        // nextVnode.ref(instance);
     }
     return refreshComponent(instance, mountQueue);
 }
@@ -2146,6 +2124,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     var dom = lastVnode._hostNode;
     var lastProps = lastVnode.props;
     var nextProps = nextVnode.props;
+    var ref = nextVnode.ref;
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode.vchildren || [];
@@ -2169,8 +2148,8 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
-    if (nextVnode.ref) {
-        nextVnode.ref(dom);
+    if (ref) {
+        pendingRefs.push(ref.bind(nextVnode, dom));
     }
     return dom;
 }

@@ -24,7 +24,7 @@ describe('browser', function () {
         expect(getNs('use')).toBe('http://www.w3.org/2000/svg')
         expect(getNs('path')).toBe('http://www.w3.org/2000/svg')
         expect(getNs('rect')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('clippath')).toBe('http://www.w3.org/2000/svg')
+        expect(getNs('clipPath')).toBe('http://www.w3.org/2000/svg')
         expect(getNs('circle')).toBe('http://www.w3.org/2000/svg')
         expect(getNs('polyline')).toBe('http://www.w3.org/2000/svg')
         expect(getNs('polygon')).toBe('http://www.w3.org/2000/svg')

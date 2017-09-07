@@ -17,7 +17,6 @@ export function Component(props, context) {
     this.state = null
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__pendingRefs = [];
     this.__current = {}
     /*
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
@@ -37,11 +36,6 @@ Component.prototype = {
 
     forceUpdate(cb) {
         setStateImpl.call(this, true, cb)
-    },
-    __collectRefs: function (fn) {
-        this
-            .__pendingRefs
-            .push(fn)
     },
     __mergeStates: function (props, context) {
         var n = this.__pendingStates.length;
