@@ -13,12 +13,12 @@ export function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props)
-    CurrentOwner.cur = vnode._owner
+    CurrentOwner.set(vnode._owner)
     var ret = createElement(
         vnode.type,
         configs,
         arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children
     );
-    CurrentOwner.cur = null
+    CurrentOwner.reset()
     return ret
 }

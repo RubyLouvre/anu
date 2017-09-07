@@ -182,7 +182,15 @@ var recyclables = {
 };
 
 var CurrentOwner = {
-    cur: null
+    cur: [null],
+    set: function set(a) {
+        if (this.cur[0] !== a) {
+            this.cur.unshift(a);
+        }
+    },
+    reset: function reset() {
+        this.cur.shift();
+    }
 };
 /**
  * 创建虚拟DOM
@@ -252,10 +260,10 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur;
-    if (owner) {
-        this._owner = owner;
-    }
+    var owner = CurrentOwner.cur[0];
+
+    this._owner = owner || NaN;
+
     if (key) {
         this.key = key;
     }
@@ -489,7 +497,7 @@ function getNs(type) {
  */
 
 function Component(props, context) {
-    CurrentOwner.cur = this; //防止用户在构造器生成JSX
+    CurrentOwner.set(this); // = this //防止用户在构造器生成JSX
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -906,9 +914,9 @@ function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props);
-    CurrentOwner.cur = vnode._owner;
+    CurrentOwner.set(vnode._owner);
     var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    CurrentOwner.cur = null;
+    CurrentOwner.reset();
     return ret;
 }
 
@@ -1548,6 +1556,7 @@ function clearRefsAndMounts(queue) {
     var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function (fn) {
+
         fn();
     });
     queue.forEach(function (instance) {
@@ -1756,7 +1765,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
 
     var instance = new type(props, context); //互相持有引用
-    CurrentOwner.cur = null;
+
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -1789,12 +1798,14 @@ function Stateless(render) {
 }
 
 var renderComponent = function renderComponent(vnode, props, context) {
-    CurrentOwner.cur = this;
+
+    CurrentOwner.set(this);
     var rendered = this.__render ? this.__render(props, context) : this.render();
-    CurrentOwner.cur = null;
+
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
+    CurrentOwner.reset();
     vnode._instance = this;
     var dom = this.__current._hostNode;
     this.__current = vnode;

@@ -1,7 +1,15 @@
 import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
 
 export var CurrentOwner = {
-    cur: null
+    cur: [null],
+    set: function (a) {
+        if (this.cur[0] !== a) {
+            this.cur.unshift(a)
+        }
+    },
+    reset: function () {
+        this.cur.shift()
+    }
 };
 /**
  * 创建虚拟DOM
@@ -75,10 +83,10 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur
-    if (owner) {
-        this._owner = owner
-    } 
+    var owner = CurrentOwner.cur[0]
+
+    this._owner = owner || NaN
+
     if (key) {
         this.key = key;
     }

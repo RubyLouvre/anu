@@ -60,6 +60,7 @@ function clearRefsAndMounts(queue) {
     var refs = pendingRefs.slice(0)
     pendingRefs.length = 0
     refs.forEach(function (fn) {
+        
         fn()
     })
     queue
@@ -276,7 +277,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
 
     let instance = new type(props, context); //互相持有引用
-    CurrentOwner.cur = null
+   
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -311,14 +312,16 @@ function Stateless(render) {
 }
 
 var renderComponent = function (vnode, props, context) {
-    CurrentOwner.cur = this;
+   
+      CurrentOwner.set( this);
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render()
-    CurrentOwner.cur = null
+
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
+    CurrentOwner.reset()
     vnode._instance = this;
     var dom = this.__current._hostNode
     this.__current = vnode;

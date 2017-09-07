@@ -85,7 +85,7 @@ describe('Redux', function () {
         expect(s.refs.value.innerHTML).toBe('1')
     })
     it('TreeView', async () => {
-        return
+       return
         var idArr = ['tree1','tree2','tree3','tree4','tree5','tree6','tree7']
         var combineReducers = Redux.combineReducers
         var Provider = ReactRedux.Provider
@@ -302,7 +302,7 @@ describe('Redux', function () {
         var ass = div.getElementsByTagName('a')
         expect(ass.length).toBe(5)
         var el = ass[1]
-        console.log(ass)
+       
         await browser.click(el).pause(200).$apply()
     
 
