@@ -533,8 +533,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 var node = el._hostNode;
                 if (node) {
                     removeDOMElement(node);
-                } else {
-                    console.warn('没有node',el)
                 }
                 disposeVnode(el);
             });
@@ -571,9 +569,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                     let node = el._hostNode;
                     if (node) {
                         removeDOMElement(node);
-                    } else {
-                        console.warn('没有node', el)
-                    }
+                    } 
                     disposeVnode(el);
                 });
         }

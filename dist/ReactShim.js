@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-06
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-07
  */
 
 (function (global, factory) {
@@ -203,22 +203,19 @@ function createElement(type, config, children) {
     if (config != null) {
         for (var i in config) {
             var val = config[i];
-            switch (i) {
-                case "key":
-                    key = val + "";
-                    break;
-                case "ref":
-                    ref = val;
-                    break;
-                default:
-                    checkProps = 1;
-                    props[i] = val;
+            if (i === "key") {
+                if (val !== void 0) key = val + "";
+            } else if (i === "ref") {
+                if (val !== void 0) ref = val;
+            } else {
+                checkProps = 1;
+                props[i] = val;
             }
         }
     }
     var childrenLength = arguments.length - 2;
     if (childrenLength === 1) {
-        props.children = children;
+        if (children !== void 0) props.children = children;
     } else if (childrenLength > 1) {
         var childArray = Array(childrenLength);
         for (var i = 0; i < childrenLength; i++) {
@@ -257,7 +254,7 @@ function __ref(dom) {
 var fakeOwn = {
     __collectRefs: function __collectRefs() {}
 };
-function getRefValue(vnode) {
+function getRefValue(vnode, key) {
     if (vnode._instance) return vnode._instance;
     var dom = vnode._hostNode;
     if (!dom) {
@@ -290,14 +287,15 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
+        var self = this;
         owner.__collectRefs(function () {
-            owner.refs[ref] = getRefValue(self);
+            owner.refs[ref] = getRefValue(self, ref);
         });
     } else if (refType === 5) {
         //function
         this.ref = ref;
         owner.__collectRefs(function () {
-            ref(getRefValue(self));
+            ref(getRefValue(self, ref));
         });
     }
     /*
@@ -1957,8 +1955,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             var node = el._hostNode;
             if (node) {
                 removeDOMElement(node);
-            } else {
-                console.warn('没有node', el);
             }
             disposeVnode(el);
         });
@@ -1994,8 +1990,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 var node = el._hostNode;
                 if (node) {
                     removeDOMElement(node);
-                } else {
-                    console.warn('没有node', el);
                 }
                 disposeVnode(el);
             });

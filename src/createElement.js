@@ -1,4 +1,4 @@
-import {__push, EMPTY_CHILDREN, typeNumber} from "./util";
+import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -21,23 +21,21 @@ export function createElement(type, config, children) {
     var ref = null;
     if (config != null) {
         for (var i in config) {
-            var val = config[i]
-            switch (i) {
-                case "key":
-                    key = val + "";
-                    break;
-                case "ref":
-                    ref = val;
-                    break;
-                default:
-                    checkProps = 1;
-                    props[i] = val;
+            var val = config[i];
+            if (i === "key") {
+                if (val !== void 0) key = val + "";
+            } else if (i === "ref") {
+                if (val !== void 0) ref = val;
+            } else {
+                checkProps = 1;
+                props[i] = val;
             }
         }
     }
     var childrenLength = arguments.length - 2;
     if (childrenLength === 1) {
-        props.children = children;
+        if (children !== void 0)
+            props.children = children;
     } else if (childrenLength > 1) {
         var childArray = Array(childrenLength);
         for (var i = 0; i < childrenLength; i++) {
@@ -76,14 +74,14 @@ export function __ref(dom) {
     }
 }
 var fakeOwn = {
-    __collectRefs: function () {}
+    __collectRefs: function () { }
 }
-function getRefValue(vnode){
-   if(vnode._instance)
-      return vnode._instance
+function getRefValue(vnode, key) {
+    if (vnode._instance)
+        return vnode._instance
     var dom = vnode._hostNode
-    if(!dom){
-       dom = vnode._hostNode = vnode._owner.__current._hostNode
+    if (!dom) {
+        dom = vnode._hostNode = vnode._owner.__current._hostNode
     }
     dom.getDOMNode = getDOMNode
     return dom
@@ -112,14 +110,15 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         //string
         this.__refKey = ref;
         this.ref = __ref;
+        var self = this
         owner.__collectRefs(function () {
-            owner.refs[ref] = getRefValue(self)
+            owner.refs[ref] = getRefValue(self, ref)
         })
     } else if (refType === 5) {
         //function
         this.ref = ref;
         owner.__collectRefs(function () {
-            ref(getRefValue(self))
+            ref(getRefValue(self, ref))
         })
     }
     /*

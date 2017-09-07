@@ -28,7 +28,7 @@ for (let key in Children) {
     limitWarn[key] = 1
     Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key+',不要窥探虚拟DOM的内部实现,会导致升级问题')
+            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题')
         }
         return fn.apply(null, arguments)
     }
