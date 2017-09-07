@@ -634,9 +634,9 @@ var Children = {
 var _loop = function _loop(key) {
     var fn = Children[key];
     limitWarn[key] = 1;
-    Children[key] = function (a) {
+    Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题', a);
+            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
         }
         return fn.apply(null, arguments);
     };

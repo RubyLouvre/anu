@@ -826,13 +826,9 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
-//freeze_start
-Object.freeze || (Object.freeze = function (a) {
-    return a;
-});
-//freeze_end
 
-var eventSystem = Object.freeze({
+
+var eventSystem = extend({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
