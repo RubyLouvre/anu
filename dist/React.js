@@ -826,9 +826,13 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
+//freeze_start
+Object.freeze || (Object.freeze = function (a) {
+    return a;
+});
+//freeze_end
 
-
-var eventSystem = extend({
+var eventSystem = Object.freeze({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -1082,8 +1086,9 @@ function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = vnode._owner;
     var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    ret._owner = vnode._owner;
+    CurrentOwner.cur = null;
     return ret;
 }
 

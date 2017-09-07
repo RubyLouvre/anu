@@ -634,9 +634,9 @@ var Children = {
 var _loop = function _loop(key) {
     var fn = Children[key];
     limitWarn[key] = 1;
-    Children[key] = function () {
+    Children[key] = function (a) {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题', a);
         }
         return fn.apply(null, arguments);
     };
@@ -939,8 +939,9 @@ function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = vnode._owner;
     var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    ret._owner = vnode._owner;
+    CurrentOwner.cur = null;
     return ret;
 }
 

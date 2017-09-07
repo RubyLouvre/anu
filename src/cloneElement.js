@@ -1,4 +1,4 @@
-import { createElement, __ref } from "./createElement";
+import { createElement, __ref, CurrentOwner } from "./createElement";
 
 export function cloneElement(vnode, props) {
     if (Array.isArray(vnode)) {
@@ -13,11 +13,12 @@ export function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props)
+    CurrentOwner.cur = vnode._owner
     var ret = createElement(
         vnode.type,
         configs,
         arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children
     );
-    ret._owner = vnode._owner
+    CurrentOwner.cur = null
     return ret
 }
