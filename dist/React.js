@@ -521,16 +521,18 @@ var rmathTags = /^m/;
 var mathNs = "http://www.w3.org/1998/Math/MathML";
 var svgNs = "http://www.w3.org/2000/svg";
 var namespaceMap = oneObject("" +
-// structure
-"svg,g,defs,desc,metadata,symbol,use," +
-// image & shape
-"image,path,rect,circle,line,ellipse,polyline,polygon," +
-// text
-"text,tspan,tref,textpath," +
-// other
-"marker,pattern,clippath,mask,filter,cursor,view,animate," +
-// font
-"font,font-face,glyph,missing-glyph", svgNs);
+// A
+"a,altGlyph,altGlyphDef,altGlyphItem,animate,animateColor,animateMotion,animateTransform,audio," +
+// BCDE
+"canvas,circle,clipPath,color-profile,cursor,defs,desc,discard,ellipse," +
+// F#1
+"feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feDropShadow,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur," +
+// F#2
+"feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,filter,font,font-face,font-face-format,font-face-name,font-face-src,font-face-uri,foreignObject," +
+// GHIJKLM
+"g,glyph,glyphRef,hatch,hatchpath,hkern,iframe,image,line,linearGradient,marker,mask,mesh,meshgradient,meshrow,metadata,missing-glyph,mpath," +
+// NOPQRSTUV
+"path,pattern,polygon,polyline,radialGradient,rect,script,set,solidcolor,stop,style,svg,switch,symbol,text,textPath,title,tref,tspan,unknown,use,video,view,vkern", svgNs);
 namespaceMap.semantics = mathNs;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
@@ -1719,7 +1721,7 @@ function unmountComponentAtNode(dom) {
     var prevVnode = dom.__component;
     if (prevVnode) {
         alignVnode(prevVnode, {
-            type: "#text",
+            type: "#comment",
             text: "empty",
             vtype: 0
         }, dom.firstChild, {}, EMPTY_CHILDREN);

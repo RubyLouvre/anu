@@ -7,6 +7,9 @@
 6. 组件更新时，要检测context是否改变
 7. 为事件对象实现persist方法
 8. 修复 unstable_renderSubtreeIntoContainer的回调的this指向问题
+9. 修正unmountComponentAtNode BUG， #text改为 #comment
+10. 修正cloneElement BUG 
+11. ref改为在createElement里进行处理
 
 ## 1.1.0
 1. disabled的元素不能触发点击事件

@@ -43,7 +43,7 @@ export function unmountComponentAtNode(dom) {
     var prevVnode = dom.__component;
     if (prevVnode) {
         alignVnode(prevVnode, {
-            type: "#text",
+            type: "#comment",
             text: "empty",
             vtype: 0
         }, dom.firstChild, {}, EMPTY_CHILDREN);
