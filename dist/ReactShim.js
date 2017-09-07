@@ -1052,8 +1052,6 @@ var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,cod
 "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
 
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
-var xlink = "http://www.w3.org/1999/xlink";
-
 /**
  *
  * 修改dom的属性与事件
@@ -1119,7 +1117,9 @@ var specialProps = {
 };
 
 function getHookType(name, val, type, dom) {
-    if (specialProps[name]) return name;
+    if (specialProps[name]) {
+        return name;
+    }
     if (boolAttributes[name] && booleanTag[type]) {
         return "boolean";
     }
@@ -1137,24 +1137,77 @@ function getHookTypeSVG(name, val, type, dom) {
         return "svgClass";
     }
 
-    if (specialProps[name]) return name;
+    if (specialProps[name]) {
+        return name;
+    }
 
     if (isEventName(name)) {
         return "__event__";
     }
     return "svgAttr";
 }
-
-var svgprops = {
-    xlinkActuate: "xlink:actuate",
-    xlinkArcrole: "xlink:arcrole",
-    xlinkHref: "xlink:href",
-    xlinkRole: "xlink:role",
-    xlinkShow: "xlink:show"
+/**
+ * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
+ * 1 表示驼峰命名 2 表示用 : 隔开的属性 (xlink:href, xlink:title 等)
+ * xlink:href 在 React Component 中写作 xlinkHref
+ * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
+ */
+var svgCamelCase = {
+    c: { M: 1 },
+    d: { D: 1, E: 1, F: 1, M: 1 },
+    e: { A: 1, C: 1, F: 1, M: 1, N: 1, P: 1, S: 1, T: 1, U: 1, V: 1 },
+    f: { X: 1, Y: 1 },
+    g: { C: 1 },
+    h: { A: 1, L: 1, R: 1, T: 1 },
+    k: { A: 2, C: 1, H: 2, R: 2, S: 2, T: 2, U: 1 },
+    l: { B: 2, L: 2, M: 1, R: 1, S: 2, U: 1 },
+    m: { A: 1, L: 1, O: 1 },
+    n: { C: 1, T: 1, U: 1 },
+    o: { R: 1 },
+    p: { P: 1 },
+    r: { C: 1, E: 1, H: 1, R: 1, U: 1, W: 1 },
+    s: { A: 1, X: 2 },
+    t: { C: 1, D: 1, L: 1, O: 1, S: 1, T: 1, U: 1, X: 1, Y: 1 },
+    w: { B: 1, R: 1, T: 1 },
+    x: { C: 1 },
+    y: { C: 1, P: 1, S: 1, T: 1 }
 };
+
+function getSvgAttributeType(key) {
+    var prefix = key.slice(0, 1);
+    var postfix = key.slice(1);
+    var res = {
+        camelCase: false, // 表示是否驼峰命名
+        special: false // 表示是否用 : 分隔的属性
+    };
+    var ifSpecial = false;
+
+    if (!svgCamelCase[prefix]) {
+        return res;
+    } else if (!svgCamelCase[prefix][postfix]) {
+        return res;
+    } else if (svgCamelCase[prefix][postfix] === 2) {
+        ifSpecial = true;
+    }
+
+    return {
+        camelCase: true,
+        special: ifSpecial
+    };
+}
+
+// XML 的命名空间对应的 URI
+var NAMESPACE_MAP = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xlink: "http://www.w3.org/1999/xlink",
+    xhtml: "http://www.w3.org/1999/xhtml"
+};
+
 var emptyStyle = {};
 var propHooks = {
-    boolean: function boolean(dom, name, val, lastProp) {
+    boolean: function boolean(dom, name, val) {
         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
         dom[name] = !!val;
@@ -1172,7 +1225,7 @@ var propHooks = {
             console.log("setAttribute error", name, val);
         }
     },
-    svgClass: function svgClass(dom, name, val, lastProp) {
+    svgClass: function svgClass(dom, name, val) {
         if (!val) {
             dom.removeAttribute("class");
         } else {
@@ -1181,24 +1234,45 @@ var propHooks = {
     },
     svgAttr: function svgAttr(dom, name, val) {
         var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        if (svgprops[name]) {
-            dom[method + "NS"](xlink, svgprops[name], val || "");
-        } else {
-            //SVG的元素是区分大小写 如viewBox preserveAspectRation
-            // https://segmentfault.com/a/1190000003822487
-            dom[method](name, val || "");
+        var key = name.match(/[a-z][A-Z]/);
+        if (key) {
+            var res = getSvgAttributeType(key[0]);
+            // svg 元素属性区分大小写，如 stroke-width、viewBox
+            if (!res.camelCase) {
+                name = name.replace(/[a-z][A-Z]/g, function (match) {
+                    return match.slice(0, 1) + "-" + match.slice(1).toLowerCase();
+                });
+            } else {
+                // svg 元素有几个特殊属性，如 xlink:href(deprecated)、xlink:title
+                if (res.special) {
+                    // 将xlinkHref 转换为 xlink:href
+                    name = name.replace(/[a-z][A-Z]/g, function (match) {
+                        return match.slice(0, 1) + ":" + match.slice(1).toLowerCase();
+                    });
+                    var prefix = name.split(":")[0];
+                    dom[method + "NS"](NAMESPACE_MAP[prefix], name, val || "");
+                    return;
+                }
+            }
         }
+        dom[method](name, val || "");
     },
     property: function property(dom, name, val) {
         if (name !== "value" || dom[name] !== val) {
-            dom[name] = val;
+            // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
+            // 这时如果用 setAttribute 则会静默失败
+            try {
+                dom[name] = val;
+            } catch (e) {
+                dom.setAttribute(name, val);
+            }
             if (controlled[name]) {
                 dom._lastValue = val;
             }
         }
     },
     children: noop,
-    className: function className(dom, _, val, lastProps) {
+    className: function className(dom, _, val) {
         dom.className = val;
     },
     style: function style(dom, _, val, lastProps) {
