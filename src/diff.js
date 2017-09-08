@@ -128,7 +128,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     mountQueue.mountAll = true;
 
     parentContext = parentContext || {};
-    var lastOwn = CurrentOwner.cur
+   
     let rootNode = lastVnode
         ? alignVnode(lastVnode, vnode, container.firstChild, parentContext, mountQueue)
         : genVnodes(vnode, container, parentContext, mountQueue);
@@ -144,7 +144,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     container.__component = vnode;
     clearRefsAndMounts(mountQueue);
     var ret = instance || rootNode
-    CurrentOwner.cur = lastOwn
+ 
     if (callback) {
         callback.call(ret);//坑
     }
@@ -278,9 +278,8 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
-    let lastOwn = CurrentOwner.owner
     let instance = new type(props, context); //互相持有引用
-    CurrentOwner.owner = lastOwn
+    CurrentOwner.reset() 
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -315,8 +314,8 @@ function Stateless(render) {
 }
 
 var renderComponent = function (vnode, props, context) {
-    let lastOwn = CurrentOwner.owner
-    CurrentOwner.owner = this
+  
+    CurrentOwner.set(this)
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render()
@@ -324,7 +323,7 @@ var renderComponent = function (vnode, props, context) {
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
-    CurrentOwner.owner = lastOwn
+    CurrentOwner.reset()
     vnode._instance = this;
     var dom = this.__current._hostNode
     this.__current = vnode;

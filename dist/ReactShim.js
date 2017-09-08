@@ -182,7 +182,13 @@ var recyclables = {
 };
 
 var CurrentOwner = {
-    cur: null
+    cur: [null],
+    set: function set(a) {
+        this.cur.unshift(a);
+    },
+    reset: function reset() {
+        this.cur.shift();
+    }
 };
 /**
  * 创建虚拟DOM
@@ -252,7 +258,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur;
+    var owner = CurrentOwner.cur[0];
     this._owner = owner || NaN;
 
     if (key) {
@@ -488,7 +494,7 @@ function getNs(type) {
  */
 
 function Component(props, context) {
-    CurrentOwner.cur = this; //防止用户在构造器生成JSX
+    CurrentOwner.set(this); //防止用户在构造器生成JSX
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -905,13 +911,16 @@ function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props);
-    var lastOwn = CurrentOwner.cur;
-    var own = vnode._owner || lastOwn;
+    var lastOwn = CurrentOwner.cur[0];
     //vnode._owner可能不存在
-    CurrentOwner.cur = vnode._owner || lastOwn;
+    CurrentOwner.set(lastOwn);
     //console.log(vnode._owner,"cloneElement中途插入",lastOwn)
     var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    CurrentOwner.cur = lastOwn;
+    CurrentOwner.reset();
+    if (CurrentOwner.cur[0] !== lastOwn) {
+        console.log('不一样');
+    }
+
     //console.log(CurrentOwner.cur,"cloneElement中途退出")
     return ret;
 }
@@ -1615,7 +1624,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     mountQueue.mountAll = true;
 
     parentContext = parentContext || {};
-    var lastOwn = CurrentOwner.cur;
+
     var rootNode = lastVnode ? alignVnode(lastVnode, vnode, container.firstChild, parentContext, mountQueue) : genVnodes(vnode, container, parentContext, mountQueue);
 
     // 如果存在后端渲染的对象（打包进去），那么在ReactDOM.render这个方法里，它就会判定容器的第一个孩子是否元素节点
@@ -1629,7 +1638,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
     container.__component = vnode;
     clearRefsAndMounts(mountQueue);
     var ret = instance || rootNode;
-    CurrentOwner.cur = lastOwn;
+
     if (callback) {
         callback.call(ret); //坑
     }
@@ -1761,9 +1770,8 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         ref = vnode.ref,
         props = vnode.props;
 
-    var lastOwn = CurrentOwner.owner;
     var instance = new type(props, context); //互相持有引用
-    CurrentOwner.owner = lastOwn;
+    CurrentOwner.reset();
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -1796,14 +1804,14 @@ function Stateless(render) {
 }
 
 var renderComponent = function renderComponent(vnode, props, context) {
-    var lastOwn = CurrentOwner.owner;
-    CurrentOwner.owner = this;
+
+    CurrentOwner.set(this);
     var rendered = this.__render ? this.__render(props, context) : this.render();
 
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
-    CurrentOwner.owner = lastOwn;
+    CurrentOwner.reset();
     vnode._instance = this;
     var dom = this.__current._hostNode;
     this.__current = vnode;

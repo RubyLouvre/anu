@@ -21,6 +21,8 @@ var text2 = str
 fs.writeFileSync(dir2, text2, { encoding: "utf8" });
 console.log(path.join(__dirname, "../../select/node_modules/anujs/dist/React.js"))
 fs.writeFileSync( path.join(__dirname, "../../select/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+fs.writeFileSync( path.join(__dirname, "../../yo-router/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 console.log("对React瘦身完毕");
 
