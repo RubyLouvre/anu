@@ -5212,7 +5212,6 @@ var ReactCompositeComponent = {
     }
 
     if (inst.componentWillUpdate) {
-       console.log('要调用componentWillUpdate', inst.constructor.name)
       if ("development" !== 'production') {
         measureLifeCyclePerf(function () {
           return inst.componentWillUpdate(nextProps, nextState, nextContext);

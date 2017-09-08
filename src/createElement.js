@@ -1,14 +1,8 @@
 import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
 
 export var CurrentOwner = {
-    cur: [null],
-    set:function(a){
-        this.cur.unshift(a)
-    },
-    reset:function(){
-        this.cur.shift()
-    }
-};
+   cur: null
+}    
 /**
  * 创建虚拟DOM
  *
@@ -69,20 +63,29 @@ export function createElement(type, config, children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-
-export function __ref(dom) {
-    var instance = this._owner;
-    if (dom && instance) {
-        instance.refs[this.__refKey] = dom;
-    }
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
 }
 
+function createStringRef(owner, ref) {
+    function stringRef(dom) {
+        if (dom){
+            if(dom.nodeType){
+                dom.getDOMNode = getDOMNode
+            }
+            owner.refs[ref] = dom
+        }
+    }
+    stringRef.string = ref
+    return stringRef
+}
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur[0]
-    this._owner = owner || NaN
+    var owner = CurrentOwner.cur
+    this._owner = owner
 
     if (key) {
         this.key = key;
@@ -95,11 +98,18 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     var self = this
     if (refType === 4) {
         //string
-        this.__refKey = ref;
-        this.ref = __ref;
+        this.ref = createStringRef(owner, ref)
     } else if (refType === 5) {
-        //function
-        this.ref = ref;
+        if (ref.string) {
+            var ref2 = createStringRef(owner, ref.string)
+            this.ref = function (dom) {
+                ref(dom)
+                ref2(dom)
+            }
+        } else {
+            //function
+            this.ref = ref;
+        }
     }
     /*
       this._hostNode = null

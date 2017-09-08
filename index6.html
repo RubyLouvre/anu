@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
      <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script src="./test/react.js"></script>
-     <script src="./test/react-dom.js"></script>-->
+     <script src="./test/react.js"></script>
+     <script src="./test/react-dom.js"></script>
      <script type='text/javascript' src="./lib/babel.js"></script>
      <style>
        .tip{
@@ -24,14 +24,6 @@
        }
      </style>
   <script type='text/babel'>
-  var  bb = 1
-  function aa(bb){
-    bb = 2
-    alert(bb)
-  }
-  aa(bb)
-  alert(bb)
-  var s
   window.onload = function(){
    
     
@@ -39,31 +31,14 @@
       constructor(props) {
         super(props);
         this.state = {
-          tip: 'g-up-tips',
-          text: 'xxxx'
+          value: '3333'
         };
 
       }
      
       render() {
-        return <div className={this.state.tip}
-        onMouseEnter={ ()=>{
-          console.log('enter')
-          this.setState({
-            tip:'g-up-tips hover'
-          })
-        }  }
-        onMouseLeave={ ()=>{
-          console.log('leave')
-          this.setState({
-            tip: 'g-up-tips'
-          })
-        }  }
-        
-        >
-            <span className="button"  >郑州</span>
-            <div className='tip'>{this.state.text}</div>
-          </div>
+        return <div><input onChange={(e)=>{  this.setState({value: e.target.value})}} value={this.state.value}/>
+          <p>{this.state.value}</p></div>
       }
     }
 

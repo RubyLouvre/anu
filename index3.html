@@ -11,60 +11,55 @@
     <script type='text/babel'>
     window.onload = function(){
     var a = 1;
-    class A extends React.Component {
+    class Select extends React.Component {
       constructor(props) {
         super(props);
         this.state = {
           aaa: 1
         };
       }
-      componentWillMount(){
-        console.log(this.state)
-      }
-      shouldComponentUpdate() {
-        
-        console.log('shouldComponentUpdate')
-        return true;
-      }
-      click() {
-        console.log('click')
-        this.setState(
-          function(a) {
-            a.aaa++;
-          },
-          function() {
-              console.log('cb1')
-            a++;
+      render() {
+        return React.createElement(SelectTrigger, {
+          ref: function(a){
+            console.log(this, a)
           }
-        );
-
-        this.setState(
-          function(a) {
-            a.aaa++;
-          },
-          function() {
-            console.log('cb2')
-            a++;
-          }
-        );
+        },React.createElement(
+          'div',
+          {
+            ref: function(b){
+              console.log(this, b)
+            }
+        },"xxxx"))
+      }
+    }
+    class SelectTrigger extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 2
+        };
       }
       render() {
-        return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
+        return React.createElement(Trigger, Object.assign({title: 'xxx'}, this.props), this.props.children)
+      }
+    }
+    class Trigger extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          aaa: 2
+        };
+      }
+      render() {
+        var props = this.props;
+        var children = props.children;
+        var child = React.Children.only(children);
+        return React.cloneElement(child, {className: '5555'})
       }
     }
     var div = document.body
-    var s = ReactDOM.render(<A />, div);
-    setTimeout(function(){
-        console.log(s)
-        console.log(div.firstChild.innerHTML)
-
-       div.firstChild.click()
-        setTimeout(function(){
-            console.log(div.firstChild.innerHTML, '点击之后')
-            console.log(a)
-        }, 200)
-    }, 200)
- 
+    var s = ReactDOM.render(<Select />, div);
+    console.log(s)
     }
     </script>
 </head>

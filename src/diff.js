@@ -30,7 +30,7 @@ export function render(vnode, container, callback) {
  * ReactDOM.unstable_renderSubtreeIntoContainer 方法， React.render的包装
  *
  */
-var pendingRefs = [];
+export var pendingRefs = [];
 export function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
         console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
@@ -52,15 +52,11 @@ export function unmountComponentAtNode(dom) {
 export function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
+
 function clearRefsAndMounts(queue) {
     var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function (fn) {
-
         fn();
     });
     queue
@@ -251,8 +247,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
     if (ref) {
-        dom.getDOMNode = getDOMNode;
-        pendingRefs.push(ref.bind(vnode, dom));
+        pendingRefs.push(ref.bind(0, dom));
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
@@ -295,8 +290,10 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
+    var lastOwn = CurrentOwner.cur
     let instance = new type(props, context); //互相持有引用
-    CurrentOwner.reset();
+    // CurrentOwner.reset();
+    CurrentOwner.cur = lastOwn
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -317,7 +314,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     vnode._hostNode = dom;
     mountQueue.push(instance);
     if (ref) {
-        pendingRefs.push(ref.bind(vnode, instance));
+        pendingRefs.push(ref.bind(0, instance));
     }
 
     options.afterMount(instance);
@@ -331,16 +328,15 @@ function Stateless(render) {
 }
 
 var renderComponent = function (vnode, props, context) {
-
-    CurrentOwner.set(this);
+    var lastOwn = CurrentOwner.cur
+    CurrentOwner.cur = this
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render();
-
+    CurrentOwner.cur = lastOwn
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
-    CurrentOwner.reset();
     vnode._instance = this;
     var dom = this.__current._hostNode;
     this.__current = vnode;
@@ -356,7 +352,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     let rendered = instance.render(vnode, props, context);
     let dom = mountVnode(rendered, context, prevRendered, mountQueue);
     if (ref) {
-        pendingRefs.push(ref.bind(vnode, null));
+        pendingRefs.push(ref.bind(0, null));
     }
     return vnode._hostNode = dom;
 }
@@ -432,6 +428,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
+        instance.__didUpdate = true
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
 
@@ -461,7 +458,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     instance.props = nextProps;
     instance.context = context;
     if (nextVnode.ref) {
-        pendingRefs.push(nextVnode.ref.bind(nextVnode, instance));
+        pendingRefs.push(nextVnode.ref.bind(0, instance));
     }
     return refreshComponent(instance, mountQueue);
 }
@@ -545,7 +542,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
         postUpdateSelectedOptions(nextVnode);
     }
     if (ref) {
-        pendingRefs.push(ref.bind(nextVnode, dom));
+        pendingRefs.push(ref.bind(0, dom));
     }
     return dom;
 }

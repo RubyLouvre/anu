@@ -180,24 +180,17 @@ var recyclables = {
 };
 
 var CurrentOwner = {
-    cur: [null],
-    set: function set(a) {
-        this.cur.unshift(a);
-    },
-    reset: function reset() {
-        this.cur.shift();
-    }
-};
-/**
- * 创建虚拟DOM
- *
- * @param {string} type
- * @param {object} props
- * @param {array} ...children
- * @returns
- */
+    cur: null
+    /**
+     * 创建虚拟DOM
+     *
+     * @param {string} type
+     * @param {object} props
+     * @param {array} ...children
+     * @returns
+     */
 
-function createElement(type, config, children) {
+};function createElement(type, config, children) {
     // Reserved names are extracted
     var props = {};
     var checkProps = 0;
@@ -245,19 +238,29 @@ function createElement(type, config, children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-function __ref(dom) {
-    var instance = this._owner;
-    if (dom && instance) {
-        instance.refs[this.__refKey] = dom;
-    }
+//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
+function getDOMNode() {
+    return this;
 }
 
+function createStringRef(owner, ref) {
+    function stringRef(dom) {
+        if (dom) {
+            if (dom.nodeType) {
+                dom.getDOMNode = getDOMNode;
+            }
+            owner.refs[ref] = dom;
+        }
+    }
+    stringRef.string = ref;
+    return stringRef;
+}
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur[0];
-    this._owner = owner || NaN;
+    var owner = CurrentOwner.cur;
+    this._owner = owner;
 
     if (key) {
         this.key = key;
@@ -270,11 +273,18 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     var self = this;
     if (refType === 4) {
         //string
-        this.__refKey = ref;
-        this.ref = __ref;
+        this.ref = createStringRef(owner, ref);
     } else if (refType === 5) {
-        //function
-        this.ref = ref;
+        if (ref.string) {
+            var ref2 = createStringRef(owner, ref.string);
+            this.ref = function (dom) {
+                ref(dom);
+                ref2(dom);
+            };
+        } else {
+            //function
+            this.ref = ref;
+        }
     }
     /*
       this._hostNode = null
@@ -834,7 +844,8 @@ var PropTypes = {
  */
 
 function Component(props, context) {
-    CurrentOwner.set(this); //防止用户在构造器生成JSX
+    //防止用户在构造器生成JSX
+    CurrentOwner.cur = this;
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -854,10 +865,10 @@ Component.prototype = {
         console.warn("此方法末实现"); // eslint-disable-line
     },
     setState: function setState(state, cb) {
-        setStateImpl.call(this, state, cb);
+        debounceSetState(this, state, cb);
     },
     forceUpdate: function forceUpdate(cb) {
-        setStateImpl.call(this, true, cb);
+        debounceSetState(this, true, cb);
     },
 
     __mergeStates: function __mergeStates(props, context) {
@@ -877,8 +888,18 @@ Component.prototype = {
     render: function render() {}
 };
 
+function debounceSetState(a, b, c) {
+    if (a.__didUpdate) {
+        //如果用户在componentDidUpdate中使用setState，要防止其卡死
+        setTimeout(function () {
+            a.__didUpdate = false;
+            setStateImpl.call(a, b, c);
+        }, 300);
+        return;
+    }
+    setStateImpl.call(a, b, c);
+}
 function setStateImpl(state, cb) {
-
     if (isFn(cb)) {
         this.__pendingCallbacks.push(cb);
     }
@@ -1036,21 +1057,17 @@ function cloneElement(vnode, props) {
     }
     var configs = {
         key: vnode.key,
-        ref: vnode.__refKey || vnode.ref
+        ref: vnode.ref
     };
-
-    Object.assign(configs, vnode.props, props);
-    var lastOwn = CurrentOwner.cur[0];
-    //vnode._owner可能不存在
-    CurrentOwner.set(lastOwn);
-    //console.log(vnode._owner,"cloneElement中途插入",lastOwn)
-    var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    CurrentOwner.reset();
-    if (CurrentOwner.cur[0] !== lastOwn) {
-        console.log('不一样');
+    var owner = vnode._owner;
+    var lastOwn = CurrentOwner.cur;
+    if (props && props.ref) {
+        owner = lastOwn;
     }
-
-    //console.log(CurrentOwner.cur,"cloneElement中途退出")
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+    var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
+    CurrentOwner.cur = lastOwn;
     return ret;
 }
 
@@ -1186,7 +1203,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         var val = nextProps[name];
         if (val !== lastProps[name]) {
             var hookName = getHookType(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps);
+            propHooks[hookName](dom, name, val, lastProps, nextProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -1459,9 +1476,12 @@ var propHooks = {
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
     },
-    __event__: function __event__(dom, name, val, lastProps) {
+    __event__: function __event__(dom, name, val, lastProps, nextProps) {
         var events = dom.__events || (dom.__events = {});
-
+        if (name === 'onChange' && /text|password/.test(dom.type)) {
+            nextProps.onInput = val;
+            name = 'onInput';
+        }
         if (val === false) {
             delete events[toLowerCase(name.slice(2))];
         } else {
@@ -1766,15 +1786,11 @@ function unmountComponentAtNode(dom) {
 function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
+
 function clearRefsAndMounts(queue) {
     var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function (fn) {
-
         fn();
     });
     queue.forEach(function (instance) {
@@ -1954,8 +1970,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
         diffProps(props, {}, vnode, {}, dom);
     }
     if (ref) {
-        dom.getDOMNode = getDOMNode;
-        pendingRefs.push(ref.bind(vnode, dom));
+        pendingRefs.push(ref.bind(0, dom));
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
@@ -2001,8 +2016,10 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         ref = vnode.ref,
         props = vnode.props;
 
+    var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
-    CurrentOwner.reset();
+    // CurrentOwner.reset();
+    CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
@@ -2021,7 +2038,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     vnode._hostNode = dom;
     mountQueue.push(instance);
     if (ref) {
-        pendingRefs.push(ref.bind(vnode, instance));
+        pendingRefs.push(ref.bind(0, instance));
     }
 
     options.afterMount(instance);
@@ -2035,14 +2052,13 @@ function Stateless(render) {
 }
 
 var renderComponent = function renderComponent(vnode, props, context) {
-
-    CurrentOwner.set(this);
+    var lastOwn = CurrentOwner.cur;
+    CurrentOwner.cur = this;
     var rendered = this.__render ? this.__render(props, context) : this.render();
-
+    CurrentOwner.cur = lastOwn;
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
-    CurrentOwner.reset();
     vnode._instance = this;
     var dom = this.__current._hostNode;
     this.__current = vnode;
@@ -2061,7 +2077,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     var rendered = instance.render(vnode, props, context);
     var dom = mountVnode(rendered, context, prevRendered, mountQueue);
     if (ref) {
-        pendingRefs.push(ref.bind(vnode, null));
+        pendingRefs.push(ref.bind(0, null));
     }
     return vnode._hostNode = dom;
 }
@@ -2133,6 +2149,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
+        instance.__didUpdate = true;
         instance.componentDidUpdate(lastProps, lastState, lastContext);
     }
 
@@ -2161,7 +2178,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     instance.props = nextProps;
     instance.context = context;
     if (nextVnode.ref) {
-        pendingRefs.push(nextVnode.ref.bind(nextVnode, instance));
+        pendingRefs.push(nextVnode.ref.bind(0, instance));
     }
     return refreshComponent(instance, mountQueue);
 }
@@ -2240,7 +2257,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
         postUpdateSelectedOptions(nextVnode);
     }
     if (ref) {
-        pendingRefs.push(ref.bind(nextVnode, dom));
+        pendingRefs.push(ref.bind(0, dom));
     }
     return dom;
 }

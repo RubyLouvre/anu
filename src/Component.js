@@ -10,7 +10,8 @@ import { win } from "./browser";
  */
 
 export function Component(props, context) {
-    CurrentOwner.set(this) //防止用户在构造器生成JSX
+    //防止用户在构造器生成JSX
+    CurrentOwner.cur = this
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -31,11 +32,11 @@ Component.prototype = {
     },
 
     setState(state, cb) {
-        setStateImpl.call(this, state, cb)
+        debounceSetState(this, state, cb)
     },
 
     forceUpdate(cb) {
-        setStateImpl.call(this, true, cb)
+        debounceSetState(this, true, cb)
     },
     __mergeStates: function (props, context) {
         var n = this.__pendingStates.length;
@@ -56,8 +57,17 @@ Component.prototype = {
     render() { }
 };
 
+function debounceSetState(a, b, c) {
+    if (a.__didUpdate) {//如果用户在componentDidUpdate中使用setState，要防止其卡死
+        setTimeout(function () {
+            a.__didUpdate = false
+            setStateImpl.call(a, b, c)
+        }, 300)
+        return
+    }
+    setStateImpl.call(a, b, c)
+}
 function setStateImpl(state, cb) {
-
     if (isFn(cb)) {
         this
             .__pendingCallbacks
