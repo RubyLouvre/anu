@@ -10,7 +10,7 @@ import { win } from "./browser";
  */
 
 export function Component(props, context) {
-    CurrentOwner.set(this) // = this //防止用户在构造器生成JSX
+    CurrentOwner.cur = this //防止用户在构造器生成JSX
     this.context = context;
     this.props = props;
     this.refs = {};

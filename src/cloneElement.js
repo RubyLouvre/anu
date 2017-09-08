@@ -13,12 +13,17 @@ export function cloneElement(vnode, props) {
     };
 
     Object.assign(configs, vnode.props, props)
-    CurrentOwner.set(vnode._owner)
+    var lastOwn = CurrentOwner.cur
+    var own = vnode._owner || lastOwn
+    //vnode._owner可能不存在
+    CurrentOwner.cur = vnode._owner || lastOwn
+    //console.log(vnode._owner,"cloneElement中途插入",lastOwn)
     var ret = createElement(
         vnode.type,
         configs,
         arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children
     );
-    CurrentOwner.reset()
+    CurrentOwner.cur = lastOwn
+    //console.log(CurrentOwner.cur,"cloneElement中途退出")
     return ret
 }

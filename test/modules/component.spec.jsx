@@ -533,13 +533,11 @@ describe("组件相关", function() {
       }
 
       componentDidMount() {
-        console.log(ReactDOM.findDOMNode(this),'111')
         expect(ReactDOM.findDOMNode(this)).not.toBe(null);
         assertions++;
       }
 
       componentWillUnmount() {
-        console.log(ReactDOM.findDOMNode(this),'222')
         expect(ReactDOM.findDOMNode(this)).not.toBe(null);
         assertions++;
       }
@@ -558,7 +556,6 @@ describe("组件相关", function() {
     expect(ReactDOM.findDOMNode(component)).not.toBe(null);
 
     component = React.render(<Wrapper showInner={false} />, el);
-    console.log(ReactDOM.findDOMNode(component))
     expect(ReactDOM.findDOMNode(component).tagName).toBe(undefined);
 
     component = React.render(<Wrapper showInner={true} />, el);

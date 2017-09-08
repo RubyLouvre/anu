@@ -48,7 +48,6 @@ describe('createElement', function () {
 
     it('flatChildren', () => {
         var el = React.createElement('p', null, 'aaa', false, 'ccc')
-        console.log(el)
         expect(el.props.children).toEqual(['aaa', false, 'ccc'])
 
         var el = React.createElement('p', null, 'aaa', true, 'ccc')
