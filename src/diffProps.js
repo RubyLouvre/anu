@@ -188,21 +188,22 @@ function genReplaceValue(split) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
-
+const svgCache = {}
 function getSVGAttributeName(name) {
+    if(svgCache[name]){
+        return svgCache[name]
+    }
     const key = name.match(/[a-z][A-Z]/);
     if (!key) {
-        return {
-            name: name
-        };
+        return svgCache[name] = name
     }
     const [prefix, postfix] = [...key[0].toLowerCase()];
-
+    let orig = name
     if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
         const count = svgCamelCase[prefix][postfix];
 
         if (count === -1) {
-            return {
+            return svgCache[orig] = {
                 name: name.replace(/[a-z][A-Z]/, genReplaceValue(":")),
                 ifSpecial: true
             };
@@ -218,9 +219,7 @@ function getSVGAttributeName(name) {
         name = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
     }
 
-    return {
-        name: name
-    };
+    return svgCache[orig] = name
 }
 
 // XML 的命名空间对应的 URI
@@ -267,7 +266,7 @@ export var propHooks = {
             dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
             return;
         } else {
-            dom[method](nameRes.name, val || "");
+            dom[method](nameRes, val || "");
         }
         // var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
         // var key = name.match(/[a-z][A-Z]/);
