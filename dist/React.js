@@ -1204,7 +1204,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         var val = nextProps[name];
         if (val !== lastProps[name]) {
             var hookName = getHookType(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps, nextProps);
+            propHooks[hookName](dom, name, val, lastProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -1477,12 +1477,8 @@ var propHooks = {
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
     },
-    __event__: function __event__(dom, name, val, lastProps, nextProps) {
+    __event__: function __event__(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
-        if (name === 'onChange' && /text|password/.test(dom.type)) {
-            nextProps.onInput = val;
-            name = 'onInput';
-        }
         if (val === false) {
             delete events[toLowerCase(name.slice(2))];
         } else {
@@ -2152,6 +2148,9 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentDidUpdate) {
         instance.__didUpdate = true;
         instance.componentDidUpdate(lastProps, lastState, lastContext);
+        if (!instance.__renderInNextCycle) {
+            instance.__didUpdate = false;
+        }
     }
 
     instance.__hydrating = false;

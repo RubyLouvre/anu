@@ -430,6 +430,9 @@ function _refreshComponent(instance, dom, mountQueue) {
     if (instance.componentDidUpdate) {
         instance.__didUpdate = true
         instance.componentDidUpdate(lastProps, lastState, lastContext);
+        if(!instance.__renderInNextCycle){
+            instance.__didUpdate = false
+        }
     }
 
 
