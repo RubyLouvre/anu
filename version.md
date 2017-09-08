@@ -11,8 +11,8 @@
 10. 修正cloneElement BUG， 确保children与_owner正确传入
 11. 修正ref机制，如果为字符串时，通过createStringRef方法将当前ref, owner传入，返回一个curry方法，在cloneElement时
     createStringRef创建的方法会再被整合到新ref方法的内部，确保旧的owner再次被更新
-12. 修正getNs方法的实现
-
+12. 修正getNs方法的实现（原先是使用hash表进行穷举，但svg文档也有a, script ,style元素，导致无法区分）
+13. 用户在componentDidUpdate使用setState是不当操作，导致进入死循环，改用定时器减缓调用频率，防止页面卡死（官方React也改用相似的机制）
 ## 1.1.0
 1. disabled的元素不能触发点击事件
 2. 修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理
