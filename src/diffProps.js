@@ -4,8 +4,7 @@ import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
 var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" +
     "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" +
-    "en,readOnly,selected",
-    true);
+    "en,readOnly,selected", true);
 
 var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" +
     "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" +
@@ -14,7 +13,6 @@ var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,cod
 
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" +
     "oup,label");
-var xlink = "http://www.w3.org/1999/xlink";
 
 /**
  *
@@ -83,8 +81,9 @@ var specialProps = {
 };
 
 function getHookType(name, val, type, dom) {
-    if (specialProps[name])
-    { return name; }
+    if (specialProps[name]) {
+        return name;
+    }
     if (boolAttributes[name] && booleanTag[type]) {
         return "boolean";
     }
@@ -99,13 +98,14 @@ function getHookType(name, val, type, dom) {
         : "property";
 }
 
-function getHookTypeSVG(name, val, type, dom) {
+function getHookTypeSVG(name) {
     if (name === "className") {
         return "svgClass";
     }
 
-    if (specialProps[name])
-    { return name; }
+    if (specialProps[name]) {
+        return name;
+    }
 
     if (isEventName(name)) {
         return "__event__";
@@ -114,51 +114,112 @@ function getHookTypeSVG(name, val, type, dom) {
 }
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
- * 1 表示驼峰命名 2 表示用 : 隔开的属性 (xlink:href, xlink:title 等)
- * xlink:href 在 React Component 中写作 xlinkHref
+ * 数字表示该特征在属性列表中重复的次数
+ * -1 表示用 ':' 隔开的属性 (xlink:href, xlink:title 等)
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
 var svgCamelCase = {
-    c: { M: 1 },
-    d: { D: 1, E: 1, F: 1, M: 1 },
-    e: { A: 1, C: 1, F: 1, M: 1, N: 1, P: 1, S: 1, T: 1, U: 1, V: 1 },
-    f: { X: 1, Y: 1 },
-    g: { C: 1 },
-    h: { A: 1, L: 1, R: 1, T: 1 },
-    k: { A: 2, C: 1, H: 2, R: 2, S: 2, T: 2, U: 1 },
-    l: { B: 2, L: 2, M: 1, R: 1, S: 2, U: 1 },
-    m: { A: 1, L: 1, O: 1 },
-    n: { C: 1, T: 1, U: 1 },
-    o: { R: 1 },
-    p: { P: 1 },
-    r: { C: 1, E: 1, H: 1, R: 1, U: 1, W: 1 },
-    s: { A: 1, X: 2 },
-    t: { C: 1, D: 1, L: 1, O: 1, S: 1, T: 1, U: 1, X: 1, Y: 1 },
-    w: { B: 1, R: 1, T: 1 },
-    x: { C: 1 },
-    y: { C: 1, P: 1, S: 1, T: 1 }
+    w: { r: 1, b: 1, t: 1 },
+    e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
+    o: { r: 1 },
+    c: { m: 1 },
+    p: { p: 1 },
+    t: { s: 2, t: 1, u: 1, c: 1, d: 1, o: 1, x: 1, y: 1, l: 1 },
+    l: { r: 1, m: 1, u: 1, b: -1, l: -1, s: -1 },
+    r: { r: 1, u: 2, h: 1, w: 1, c: 1, e: 1 },
+    h: { r: 1, a: 1, l: 1, t: 1 },
+    y: { p: 1, s: 1, t: 1, c: 1 },
+    g: { c: 1 },
+    k: { a: -1, h: -1, r: -1, s: -1, t: -1, c: 1, u: 1 },
+    m: { o: 1, l: 1, a: 1 },
+    n: { c: 1, t: 1, u: 1 },
+    s: { a: 3 },
+    f: { x: 1, y: 1 },
+    d: { e: 1, f: 1, m: 1, d: 1 },
+    x: { c: 1 }
 };
 
-function getSvgAttributeType(key) {
-    var prefix = key.slice(0, 1);
-    var postfix = key.slice(1);
-    var res = {
-        camelCase: false, // 表示是否驼峰命名
-        special: false // 表示是否用 : 分隔的属性
-    };
-    var ifSpecial = false;
+// SVG 属性列表中驼峰命名和短横线分隔命名特征值有重复
+// 列出了重复特征中的短横线命名的属性名
+var specialSVGPropertyName = {
+    "overline-thickness": 2,
+    "underline-thickness": 2,
+    "overline-position": 2,
+    "underline-position": 2,
+    "stroke-miterlimit": 2,
+    "baseline-shift": 2,
+    "clip-path": 2,
+    "font-size": 2,
+    "font-size-adjust": 2,
+    "font-stretch": 2,
+    "font-style": 2,
+    "text-decoration": 2,
+    "vert-origin-x": 2,
+    "vert-origin-y": 2,
+    "paint-order": 2,
+    "fill-rule": 2,
+    "color-rendering": 2,
+    "marker-end": 2,
+    "pointer-events": 2,
+    "units-per-em": 2,
+    "strikethrough-thickness": 2,
+    "lighting-color": 2
+};
 
-    if (!svgCamelCase[prefix]) {
-        return res;
-    } else if (!svgCamelCase[prefix][postfix]) {
-        return res;
-    } else if (svgCamelCase[prefix][postfix] === 2) {
-        ifSpecial = true;
+// 重复属性名的特征值列表
+var repeatedKey = [
+    "et",
+    "ep",
+    "em",
+    "es",
+    "pp",
+    "ts",
+    "td",
+    "to",
+    "lr",
+    "rr",
+    "re",
+    "ht",
+    "gc"
+];
+
+function genReplaceValue(split) {
+    return function (match) {
+        return match.slice(0, 1) + split + match.slice(1).toLowerCase();
+    };
+}
+
+function getSVGAttributeName(name) {
+    const key = name.match(/[a-z][A-Z]/);
+    if (!key) {
+        return {
+            name: name
+        };
+    }
+    const [prefix, postfix] = [...key[0].toLowerCase()];
+
+    if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
+        const count = svgCamelCase[prefix][postfix];
+
+        if (count === -1) {
+            return {
+                name: name.replace(/[a-z][A-Z]/, genReplaceValue(":")),
+                ifSpecial: true
+            };
+        }
+
+        if (~repeatedKey.indexOf(prefix + postfix)) {
+            const dashName = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
+            if (specialSVGPropertyName[dashName]) {
+                name = dashName;
+            }
+        }
+    } else {
+        name = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
     }
 
     return {
-        camelCase: true,
-        special: ifSpecial
+        name: name
     };
 }
 
@@ -188,7 +249,7 @@ export var propHooks = {
         try {
             dom.setAttribute(name, val);
         } catch (e) {
-            console.log("setAttribute error", name, val);
+            console.log("setAttribute error", name, val); // eslint-disable-line
         }
     },
     svgClass: function (dom, name, val) {
@@ -200,34 +261,50 @@ export var propHooks = {
     },
     svgAttr: function (dom, name, val) {
         var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        var key = name.match(/[a-z][A-Z]/);
-        if (key) {
-            var res = getSvgAttributeType(key[0]);
-            // svg 元素属性区分大小写，如 stroke-width、viewBox
-            if (!res.camelCase) {
-                name = name.replace(/[a-z][A-Z]/g, function (match) {
-                    return match.slice(0, 1) + "-" + match.slice(1).toLowerCase();
-                });
-            } else {
-                // svg 元素有几个特殊属性，如 xlink:href(deprecated)、xlink:title
-                if (res.special) {
-                    // 将xlinkHref 转换为 xlink:href
-                    name = name.replace(/[a-z][A-Z]/g, function (match) {
-                        return match.slice(0, 1) + ":" + match.slice(1).toLowerCase();
-                    });
-                    var prefix = name.split(":")[0];
-                    dom[method + "NS"](NAMESPACE_MAP[prefix], name, val || "");
-                    return;
-                }
-            }
+        var nameRes = getSVGAttributeName(name);
+        if (nameRes.ifSpecial) {
+            var prefix = nameRes.name.split(":")[0];
+            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
+            return;
+        } else {
+            dom[method](nameRes.name, val || "");
         }
-        dom[method](name, val || "");
+        // var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        // var key = name.match(/[a-z][A-Z]/);
+        // if (key) {
+        //     var res = getSvgAttributeType(key[0]);
+        //     // svg 元素属性区分大小写，如 stroke-width、viewBox
+        //     if (!res.camelCase) {
+        //         name = name.replace(/[a-z][A-Z]/g, function (match) {
+        //             return match.slice(0, 1) + "-" + match.slice(1).toLowerCase();
+        //         });
+        //     } else {
+        //         // svg 元素有几个特殊属性，如 xlink:href(deprecated)、xlink:title
+        //         if (res.special) {
+        //             // 将xlinkHref 转换为 xlink:href
+        //             name = name.replace(/[a-z][A-Z]/g, function (match) {
+        //                 return match.slice(0, 1) + ":" + match.slice(1).toLowerCase();
+        //             });
+        //             var prefix = name.split(":")[0];
+        //             dom[method + "NS"](NAMESPACE_MAP[prefix], name, val || "");
+        //             return;
+        //         }
+        //     }
+        // }
+        // dom[method](name, val || "");
     },
     property: function (dom, name, val) {
         if (name !== "value" || dom[name] !== val) {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
+                // svg 元素不能直接对属性赋值，因为很多 svg 元素的属性不是字符串
+                // 比如 circle 的 cx 属性就是 SVGAnimatedLength
+                if (typeof dom[name] !== "string") {
+                    dom.setAttribute(name, val);
+                } else {
+                    dom[name] = val;
+                }
                 dom[name] = val;
             } catch (e) {
                 dom.setAttribute(name, val);
