@@ -235,7 +235,6 @@ export var propAdapters = {
             var prefix = nameRes.name.split(":")[0];
             // 将xlinkHref 转换为 xlink:href
             dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
-            return;
         } else {
             dom[method](nameRes, val || "");
         }
