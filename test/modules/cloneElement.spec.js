@@ -1,4 +1,5 @@
 import { cloneElement } from "src/cloneElement";
+import { createClass } from "src/createClass";
 
 describe("cloneElement", function () {
   it("test", () => {
@@ -24,7 +25,15 @@ describe("cloneElement", function () {
     ];
     expect(cloneElement(a).props.v).toBe(2);
   });
-
+  it('should transfer the key property', ()=> {
+    var Component = createClass({
+      render: function() {
+        return null;
+      },
+    });
+    var clone = cloneElement(<Component />, {key: 'xyz'});
+    expect(clone.key).toBe('xyz');
+  });
   it("children", () => {
     function A() { }
     var b = React.cloneElement({
