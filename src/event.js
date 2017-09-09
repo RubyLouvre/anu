@@ -1,5 +1,5 @@
 import { document } from "./browser";
-import { isFn, noop,  options } from "./util";
+import { isFn, noop, options } from "./util";
 
 var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -182,7 +182,7 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
  */
 function getRelatedTarget(e) {
     if (!e.timeStamp) {
-        e.relatedTarget = e.type === 'mouseover'?  e.fromElement: e.toElement 
+        e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement
     }
     return e.relatedTarget
 }
@@ -214,6 +214,24 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+export function createHandle(name, fn){
+    return function(e){
+        if(fn && fn(e) === false)
+           return
+        dispatchEvent(e, name);
+    }
+}
+var changeHandle = createHandle('change')
+var doubleClickHandle = createHandle('doubleclick')
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? 'input' : 'change'
+    addEvent(document, mask, changeHandle);
+};
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function(){
+    addEvent(document, 'dblclick', doubleClickHandle);
+}
 
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
@@ -254,6 +272,7 @@ if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
 }
+
 
 export function SyntheticEvent(event) {
     if (event.nativeEvent) {

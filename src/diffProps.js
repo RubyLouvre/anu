@@ -10,7 +10,8 @@ var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,cod
     "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" +
     ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
     "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
-
+//布尔属性的值末必为true,false
+//https://github.com/facebook/react/issues/10589
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" +
     "oup,label");
 

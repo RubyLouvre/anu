@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
      <script type='text/javascript' src="./dist/React.js"></script>
-     <script src="./test/react.js"></script>
-     <script src="./test/react-dom.js"></script>
+     <!--<script src="./test/react.js"></script>
+     <script src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
      <style>
        .tip{
@@ -24,6 +24,7 @@
        }
      </style>
   <script type='text/babel'>
+  var s
   window.onload = function(){
    
     
@@ -37,7 +38,11 @@
       }
      
       render() {
-        return <div><input onChange={(e)=>{  this.setState({value: e.target.value})}} value={this.state.value}/>
+        return <div><input onChange={(e)=>{ 
+             this.setState({value: e.target.value})
+           }
+          } 
+          value={this.state.value}/>
           <p>{this.state.value}</p></div>
       }
     }
@@ -51,9 +56,8 @@
 
 <body>
 
-    <div>开发者工具</div>
+    <div>onChange事件</div>
     <div id='example'></div>
-    <div>1111</div>
 
 </body>
 

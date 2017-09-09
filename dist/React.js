@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-09-08
+ * by 司徒正美 Copyright 2017-09-09
  * IE9+
  */
 
@@ -715,6 +715,23 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) return;
+        dispatchEvent(e, name);
+    };
+}
+var changeHandle = createHandle('change');
+var doubleClickHandle = createHandle('doubleclick');
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? 'input' : 'change';
+    addEvent(document, mask, changeHandle);
+};
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, 'dblclick', doubleClickHandle);
+};
 
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
@@ -811,6 +828,7 @@ var eventSystem = extend({
 	addGlobalEvent: addGlobalEvent,
 	addEvent: addEvent,
 	getBrowserName: getBrowserName,
+	createHandle: createHandle,
 	SyntheticEvent: SyntheticEvent
 });
 
@@ -1182,7 +1200,8 @@ var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,check
 
 var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" + "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" + ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
 "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
-
+//布尔属性的值末必为true,false
+//https://github.com/facebook/react/issues/10589
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
 
 /**

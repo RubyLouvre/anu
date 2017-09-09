@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-08
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-09
  */
 
 (function (global, factory) {
@@ -820,6 +820,23 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) return;
+        dispatchEvent(e, name);
+    };
+}
+var changeHandle = createHandle('change');
+var doubleClickHandle = createHandle('doubleclick');
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? 'input' : 'change';
+    addEvent(document, mask, changeHandle);
+};
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, 'dblclick', doubleClickHandle);
+};
 
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
@@ -1039,7 +1056,8 @@ var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,check
 
 var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" + "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" + ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
 "value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
-
+//布尔属性的值末必为true,false
+//https://github.com/facebook/react/issues/10589
 var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
 
 /**
@@ -2199,16 +2217,6 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
-//Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
-function fixIEInputHandle(e) {
-  if (e.propertyName === "value") {
-    dispatchEvent(e, "input");
-  }
-}
-
-function fixIEInput(dom) {
-  addEvent(dom, "propertychange", fixIEInputHandle);
-}
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
 var noCheck = false;
 function setSelectValue(e) {
@@ -2230,7 +2238,7 @@ function syncValueByOptionValue(e) {
   }
 }
 
-function fixIEChangeHandle(e) {
+var fixIEChangeHandle = createHandle('change', function (e) {
   var dom = e.srcElement;
   if (dom.type === "select-one") {
     if (!dom.__bindFixValueFn) {
@@ -2241,20 +2249,30 @@ function fixIEChangeHandle(e) {
     syncValueByOptionValue(e);
     noCheck = false;
   }
-  dispatchEvent(e, "change");
-}
-
-function fixIEChange(dom) {
-  //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
-  var mask = dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
-  addEvent(dom, mask, fixIEChangeHandle);
-}
-
-function fixIESubmit(dom) {
-  if (dom.nodeName === "FORM") {
-    addEvent(dom, "submit", dispatchEvent);
+  if (e.type === 'propertychange') {
+    return e.propertyName === 'value';
   }
-}
+});
+
+var fixIEInputHandle = createHandle('input', function (e) {
+  return e.propertyName === "value";
+});
+
+var IEHandleFix = {
+  input: function input(dom) {
+    addEvent(dom, "propertychange", fixIEInputHandle);
+  },
+  change: function change(dom) {
+    //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
+    var mask = /radio|check/.test(dom.type) ? "click" : /text|password/.test(dom.type) ? 'propertychange' : "change";
+    addEvent(dom, mask, fixIEChangeHandle);
+  },
+  submit: function submit(dom) {
+    if (dom.nodeName === "FORM") {
+      addEvent(dom, "submit", dispatchEvent);
+    }
+  }
+};
 
 if (msie < 9) {
   propHooks[innerHTML] = function (dom, name, val, lastProps) {
@@ -2313,11 +2331,9 @@ if (msie < 9) {
     }
   }));
 
-  eventHooks.input = fixIEInput;
-  eventHooks.inputcapture = fixIEInput;
-  eventHooks.change = fixIEChange;
-  eventHooks.changecapture = fixIEChange;
-  eventHooks.submit = fixIESubmit;
+  for (var i in IEHandleFix) {
+    eventHooks[i] = eventHooks[i + 'capture'] = IEHandleFix[i];
+  }
 }
 
 var React = {
