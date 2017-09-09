@@ -1052,108 +1052,31 @@ function cssName(name, dom) {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" + "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" + "en,readOnly,selected", true);
+// XML 的命名空间对应的 URI
+var NAMESPACE_MAP = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xlink: "http://www.w3.org/1999/xlink",
+    xhtml: "http://www.w3.org/1999/xhtml"
+};
 
-var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" + "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" + ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
-"value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
-var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
-
-/**
- *
- * 修改dom的属性与事件
- * @export
- * @param {any} nextProps
- * @param {any} lastProps
- * @param {any} vnode
- * @param {any} lastVnode
- */
-function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    /* istanbul ignore if */
-    if (vnode.ns === "http://www.w3.org/2000/svg") {
-        return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom);
-    }
-    //eslint-disable-next-line
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var hookName = getHookType(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps);
-        }
-    }
-    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
-    for (var _name2 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name2)) {
-            var hookName2 = getHookType(_name2, false, vnode.type, dom);
-            propHooks[hookName2](dom, _name2, builtIdProperties[_name2] ? "" : false, lastProps);
-        }
-    }
-}
-
-function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    // http://www.w3school.com.cn/xlink/xlink_reference.asp
-    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
-    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType eslint-disable-next-line
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var hookName = getHookTypeSVG(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps);
-        }
-    }
-    //eslint-disable-next-line
-    for (var _name3 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name3)) {
-            var _val = nextProps[_name3];
-            var hookName2 = getHookTypeSVG(_name3, _val, vnode.type, dom);
-            propHooks[hookName2](dom, _name3, false, lastProps);
-        }
-    }
-}
 var controlled = {
     value: 1,
     defaultValue: 1
 };
 
-var specialProps = {
+var isSpecialAttr = {
     children: 1,
     style: 1,
-    className: 1,
+    innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
 
-function getHookType(name, val, type, dom) {
-    if (specialProps[name]) {
-        return name;
-    }
-    if (boolAttributes[name] && booleanTag[type]) {
-        return "boolean";
-    }
-    if (isEventName(name)) {
-        return "__event__";
-    }
-    if (typeNumber(val) < 3 && !val) {
-        return "removeAttribute";
-    }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
-}
-
-function getHookTypeSVG(name) {
-    if (name === "className") {
-        return "svgClass";
-    }
-
-    if (specialProps[name]) {
-        return name;
-    }
-
-    if (isEventName(name)) {
-        return "__event__";
-    }
-    return "svgAttr";
-}
+var emptyStyle = {};
+var svgCache = {};
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
@@ -1216,7 +1139,7 @@ function genReplaceValue(split) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
-var svgCache = {};
+
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
@@ -1254,23 +1177,115 @@ function getSVGAttributeName(name) {
     return svgCache[orig] = name;
 }
 
-// XML 的命名空间对应的 URI
-var NAMESPACE_MAP = {
-    svg: "http://www.w3.org/2000/svg",
-    xmlns: "http://www.w3.org/2000/xmlns/",
-    xml: "http://www.w3.org/XML/1998/namespace",
-    xlink: "http://www.w3.org/1999/xlink",
-    xhtml: "http://www.w3.org/1999/xhtml"
-};
+/**
+ *
+ * 修改dom的属性与事件
+ * @export
+ * @param {any} nextProps
+ * @param {any} lastProps
+ * @param {any} vnode
+ * @param {any} lastVnode
+ */
+function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
+    var isSVG = vnode.ns === "http://www.w3.org/2000/svg";
+    //eslint-disable-next-line
+    for (var name in nextProps) {
+        var val = nextProps[name];
+        if (val !== lastProps[name]) {
+            var hookName = getHookType(name, val, vnode.type, dom, isSVG);
+            propAdapters[hookName](dom, name, val, lastProps);
+        }
+    }
+    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
+    for (var _name2 in lastProps) {
+        if (!nextProps.hasOwnProperty(_name2)) {
+            var _hookName = getHookType(_name2, false, vnode.type, dom, isSVG);
+            propAdapters[_hookName](dom, _name2, false, lastProps);
+        }
+    }
+}
+var booleanAttr = {};
+function isBooleanAttr(dom, name, val) {
+    if (val === false || val === true) {
+        if (booleanAttr[name]) {
+            return true;
+        }
+        if (typeNumber(dom[name])) {
+            return booleanAttr[name] = true;
+        }
+    }
+}
+/**
+ * 取得属性的处理令牌，方便分配到各自的适配器进行加工
+ * 
+ * @param {any} name 属性名
+ * @param {any} val 属性值
+ * @param {any} type 标签名
+ * @param {any} dom 元素节点
+ * @param {any} isSVG 
+ * @returns 
+ */
+function getHookType(name, val, type, dom, isSVG) {
+    if (isSVG && name === 'className') {
+        return 'svgClass';
+    }
+    if (isSpecialAttr[name]) {
+        return name;
+    }
+    if (isEventName(name)) {
+        return "event";
+    }
+    if (isSVG) {
+        return "svgAttr";
+    }
+    if (isBooleanAttr(dom, name, val)) {
+        return "booleanAttr";
+    }
+    if (typeNumber(val) < 3 && !val) {
+        return "removeAttribute";
+    }
+    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
+}
 
-var emptyStyle = {};
-var propHooks = {
-    boolean: function boolean(dom, name, val) {
+var propAdapters = {
+    innerHTML: noop,
+    children: noop,
+    style: function style(dom, _, val, lastProps) {
+        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
+    },
+    svgClass: function svgClass(dom, name, val) {
+        if (!val) {
+            dom.removeAttribute("class");
+        } else {
+            dom.setAttribute("class", val);
+        }
+    },
+    svgAttr: function svgAttr(dom, name, val) {
+        // http://www.w3school.com.cn/xlink/xlink_reference.asp
+        // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
+        // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
+        // xlinkTitle, xlinkType eslint-disable-next-line
+        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        var nameRes = getSVGAttributeName(name);
+        if (nameRes.ifSpecial) {
+            var prefix = nameRes.name.split(":")[0];
+            // 将xlinkHref 转换为 xlink:href
+            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
+            return;
+        } else {
+            dom[method](nameRes, val || "");
+        }
+    },
+    booleanAttr: function booleanAttr(dom, name, val) {
         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
-        dom[name] = !!val;
-        if (!val) {
+        var bool = !!val;
+        dom[name] = bool;
+        if (dom[name] === false) {
             dom.removeAttribute(name);
+        } else if (dom[name] === 'false') {
+            //字符串属性会将它转换为false
+            dom[name] = '';
         }
     },
     removeAttribute: function removeAttribute(dom, name) {
@@ -1283,59 +1298,11 @@ var propHooks = {
             console.log("setAttribute error", name, val); // eslint-disable-line
         }
     },
-    svgClass: function svgClass(dom, name, val) {
-        if (!val) {
-            dom.removeAttribute("class");
-        } else {
-            dom.setAttribute("class", val);
-        }
-    },
-    svgAttr: function svgAttr(dom, name, val) {
-        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        var nameRes = getSVGAttributeName(name);
-        if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(":")[0];
-            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
-            return;
-        } else {
-            dom[method](nameRes, val || "");
-        }
-        // var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        // var key = name.match(/[a-z][A-Z]/);
-        // if (key) {
-        //     var res = getSvgAttributeType(key[0]);
-        //     // svg 元素属性区分大小写，如 stroke-width、viewBox
-        //     if (!res.camelCase) {
-        //         name = name.replace(/[a-z][A-Z]/g, function (match) {
-        //             return match.slice(0, 1) + "-" + match.slice(1).toLowerCase();
-        //         });
-        //     } else {
-        //         // svg 元素有几个特殊属性，如 xlink:href(deprecated)、xlink:title
-        //         if (res.special) {
-        //             // 将xlinkHref 转换为 xlink:href
-        //             name = name.replace(/[a-z][A-Z]/g, function (match) {
-        //                 return match.slice(0, 1) + ":" + match.slice(1).toLowerCase();
-        //             });
-        //             var prefix = name.split(":")[0];
-        //             dom[method + "NS"](NAMESPACE_MAP[prefix], name, val || "");
-        //             return;
-        //         }
-        //     }
-        // }
-        // dom[method](name, val || "");
-    },
     property: function property(dom, name, val) {
         if (name !== "value" || dom[name] !== val) {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                // svg 元素不能直接对属性赋值，因为很多 svg 元素的属性不是字符串
-                // 比如 circle 的 cx 属性就是 SVGAnimatedLength
-                if (typeof dom[name] !== "string") {
-                    dom.setAttribute(name, val);
-                } else {
-                    dom[name] = val;
-                }
                 dom[name] = val;
             } catch (e) {
                 dom.setAttribute(name, val);
@@ -1345,14 +1312,7 @@ var propHooks = {
             }
         }
     },
-    children: noop,
-    className: function className(dom, _, val) {
-        dom.className = val;
-    },
-    style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
-    },
-    __event__: function __event__(dom, name, val, lastProps) {
+    event: function event(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
         if (val === false) {
             delete events[toLowerCase(name.slice(2))];
@@ -1370,7 +1330,6 @@ var propHooks = {
             events[toLowerCase(name.slice(2))] = val;
         }
     },
-
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
@@ -2275,7 +2234,7 @@ var IEHandleFix = {
 };
 
 if (msie < 9) {
-  propHooks[innerHTML] = function (dom, name, val, lastProps) {
+  propAdapters[innerHTML] = function (dom, name, val, lastProps) {
     var oldhtml = lastProps[name] && lastProps[name].__html;
     var html = val && val.__html;
     if (html !== oldhtml) {

@@ -7,7 +7,7 @@ import {win as window} from "./browser";
 import {createClass} from "./createClass";
 import {cloneElement} from "./cloneElement";
 import {PureComponent} from "./PureComponent";
-import {createElement,CurrentOwner} from "./createElement";
+import {createElement} from "./createElement";
 
 import {render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer} from "./diff";
 
@@ -24,7 +24,6 @@ var React = {
   createElement,
   cloneElement,
   PureComponent,
-  CurrentOwner,
   isValidElement,
   unmountComponentAtNode,
   unstable_renderSubtreeIntoContainer,
