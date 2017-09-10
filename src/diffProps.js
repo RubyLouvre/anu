@@ -1,16 +1,10 @@
+import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
 
 // XML 的命名空间对应的 URI
-var NAMESPACE_MAP = {
-    svg: "http://www.w3.org/2000/svg",
-    xmlns: "http://www.w3.org/2000/xmlns/",
-    xml: "http://www.w3.org/XML/1998/namespace",
-    xlink: "http://www.w3.org/1999/xlink",
-    xhtml: "http://www.w3.org/1999/xhtml"
-};
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -155,7 +149,7 @@ function getSVGAttributeName(name) {
  * @param {any} lastVnode
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    let isSVG = vnode.ns === NAMESPACE_MAP.svg;
+    let isSVG = vnode.ns === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
@@ -241,7 +235,7 @@ export var actionStrategy = {
         if (nameRes.ifSpecial) {
             let prefix = nameRes.name.split(":")[0];
             // 将xlinkHref 转换为 xlink:href
-            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
+            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
         } else {
             dom[method](nameRes, val || "");
         }

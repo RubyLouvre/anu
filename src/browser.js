@@ -6,6 +6,15 @@ export function DOMElement(type) {
     this.style = {};
     this.children = [];
 }
+
+export var NAMESPACE = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xlink: "http://www.w3.org/1999/xlink",
+    xhtml: "http://www.w3.org/1999/xhtml"
+};
+
 var fn = (DOMElement.prototype = {
     contains: Boolean
 });
@@ -111,10 +120,9 @@ export function createDOMElement(vnode) {
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 var rmathTags = /^m/;
-var mathNs = "http://www.w3.org/1998/Math/MathML";
-var svgNs = "http://www.w3.org/2000/svg";
-var namespaceMap = oneObject("svg", svgNs);
-namespaceMap.semantics = mathNs;
+
+var namespaceMap = oneObject("svg", NAMESPACE.svg);
+namespaceMap.semantics = NAMESPACE.map;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
     namespaceMap[tag] = null;
@@ -123,6 +131,6 @@ export function getNs(type) {
     if (namespaceMap[type] !== void 666) {
         return namespaceMap[type];
     } else {
-        return namespaceMap[type] = rmathTags.test(type) ? mathNs : null;
+        return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
 }

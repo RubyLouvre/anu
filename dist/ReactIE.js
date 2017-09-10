@@ -412,6 +412,15 @@ function DOMElement(type) {
     this.style = {};
     this.children = [];
 }
+
+var NAMESPACE = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xlink: "http://www.w3.org/1999/xlink",
+    xhtml: "http://www.w3.org/1999/xhtml"
+};
+
 var fn = DOMElement.prototype = {
     contains: Boolean
 };
@@ -509,10 +518,9 @@ function createDOMElement(vnode) {
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 var rmathTags = /^m/;
-var mathNs = "http://www.w3.org/1998/Math/MathML";
-var svgNs = "http://www.w3.org/2000/svg";
-var namespaceMap = oneObject("svg", svgNs);
-namespaceMap.semantics = mathNs;
+
+var namespaceMap = oneObject("svg", NAMESPACE.svg);
+namespaceMap.semantics = NAMESPACE.map;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
     namespaceMap[tag] = null;
@@ -521,7 +529,7 @@ function getNs(type) {
     if (namespaceMap[type] !== void 666) {
         return namespaceMap[type];
     } else {
-        return namespaceMap[type] = rmathTags.test(type) ? mathNs : null;
+        return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
 }
 
@@ -1214,13 +1222,6 @@ function cssName(name, dom) {
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 // XML 的命名空间对应的 URI
-var NAMESPACE_MAP = {
-    svg: "http://www.w3.org/2000/svg",
-    xmlns: "http://www.w3.org/2000/xmlns/",
-    xml: "http://www.w3.org/XML/1998/namespace",
-    xlink: "http://www.w3.org/1999/xlink",
-    xhtml: "http://www.w3.org/1999/xhtml"
-};
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -1353,7 +1354,7 @@ function getSVGAttributeName(name) {
  * @param {any} lastVnode
  */
 function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    var isSVG = vnode.ns === NAMESPACE_MAP.svg;
+    var isSVG = vnode.ns === NAMESPACE.svg;
     var tag = vnode.type;
     //eslint-disable-next-line
     for (var name in nextProps) {
@@ -1437,7 +1438,7 @@ var actionStrategy = {
         if (nameRes.ifSpecial) {
             var prefix = nameRes.name.split(":")[0];
             // 将xlinkHref 转换为 xlink:href
-            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
+            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
         } else {
             dom[method](nameRes, val || "");
         }
