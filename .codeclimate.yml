@@ -23,3 +23,5 @@ exclude_paths:
 - dist/**/*
 - ssr/**/*
 - build/**/*
+- karma.conf.js
+- eslintrc.js
