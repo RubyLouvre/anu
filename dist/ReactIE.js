@@ -616,14 +616,13 @@ function addEvent(el, type, fn, bool) {
     }
 }
 
-var ron = /^on/;
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
     var lower = eventLowerCache[onStr];
     if (lower) {
         return lower;
     }
-    var camel = onStr.replace(ron, "").replace(rcapture, "");
+    var camel = onStr.slice(2).replace(rcapture, "");
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -654,8 +653,8 @@ var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType 
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
         var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-        var deltaY = ~~dom._ms_wheel_ + delta;
-        dom._ms_wheel_ = deltaY;
+        var deltaY = ~~dom.__wheel + delta;
+        dom.__wheel = deltaY;
         e = new SyntheticEvent(e);
         e.type = "wheel";
         e.deltaY = deltaY;
@@ -1346,11 +1345,11 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
-    for (var _name2 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name2)) {
-            var _which = tag + isSVG + _name2;
+    for (var _name in lastProps) {
+        if (!nextProps.hasOwnProperty(_name)) {
+            var _which = tag + isSVG + _name;
             var _strategy = strategyCache[_which];
-            propAdapters[_strategy](dom, _name2, false, lastProps);
+            propAdapters[_strategy](dom, _name, false, lastProps);
         }
     }
 }
@@ -1457,20 +1456,21 @@ var propAdapters = {
     },
     event: function event(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
+        var refName = toLowerCase(name.slice(2));
         if (val === false) {
-            delete events[toLowerCase(name.slice(2))];
+            delete events[refName];
         } else {
             if (!lastProps[name]) {
                 //添加全局监听事件
-                var _name = getBrowserName(name);
-                addGlobalEvent(_name);
-                var hook = eventHooks[_name];
+                var eventName = getBrowserName(name);
+                var hook = eventHooks[eventName];
+                addGlobalEvent(eventName);
                 if (hook) {
-                    hook(dom, _name);
+                    hook(dom, eventName);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture
-            events[toLowerCase(name.slice(2))] = val;
+            events[refName] = val;
         }
     },
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {

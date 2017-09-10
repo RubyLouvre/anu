@@ -178,7 +178,7 @@ function isBooleanAttr(dom, name) {
     if (booleanAttr[name]) {
         return true;
     }
-    var val = dom[name];
+    let val = dom[name];
     if (val === true || val === false) {
         return booleanAttr[name] = true;
     }
@@ -231,10 +231,10 @@ export var propAdapters = {
         // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
         // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
         // xlinkTitle, xlinkType eslint-disable-next-line
-        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        var nameRes = getSVGAttributeName(name);
+        let method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        let nameRes = getSVGAttributeName(name);
         if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(":")[0];
+            let prefix = nameRes.name.split(":")[0];
             // 将xlinkHref 转换为 xlink:href
             dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
         } else {
@@ -277,25 +277,26 @@ export var propAdapters = {
     },
     event: function (dom, name, val, lastProps) {
         let events = dom.__events || (dom.__events = {});
+        let refName = toLowerCase(name.slice(2))
         if (val === false) {
-            delete events[toLowerCase(name.slice(2))];
+            delete events[refName];
         } else {
             if (!lastProps[name]) {
                 //添加全局监听事件
-                var _name = getBrowserName(name);
-                addGlobalEvent(_name);
-                var hook = eventHooks[_name];
+                let eventName = getBrowserName(name);
+                let hook = eventHooks[eventName];
+                addGlobalEvent(eventName);
                 if (hook) {
-                    hook(dom, _name);
+                    hook(dom, eventName);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture
-            events[toLowerCase(name.slice(2))] = val;
+            events[refName] = val;
         }
     },
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
-        var oldhtml = lastProps[name] && lastProps[name].__html;
-        var html = val && val.__html;
+        let oldhtml = lastProps[name] && lastProps[name].__html;
+        let html = val && val.__html;
         if (html !== oldhtml) {
             dom.innerHTML = html;
         }

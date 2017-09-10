@@ -11,7 +11,7 @@ import {createElement} from "./createElement";
 
 import {render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer} from "./diff";
 
-import "./ieEvent";
+import "./compat";
 
 var React = {
   version: "VERSION",

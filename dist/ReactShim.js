@@ -722,14 +722,13 @@ function addEvent(el, type, fn, bool) {
     }
 }
 
-var ron = /^on/;
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
     var lower = eventLowerCache[onStr];
     if (lower) {
         return lower;
     }
-    var camel = onStr.replace(ron, "").replace(rcapture, "");
+    var camel = onStr.slice(2).replace(rcapture, "");
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -760,8 +759,8 @@ var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType 
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
         var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-        var deltaY = ~~dom._ms_wheel_ + delta;
-        dom._ms_wheel_ = deltaY;
+        var deltaY = ~~dom.__wheel + delta;
+        dom.__wheel = deltaY;
         e = new SyntheticEvent(e);
         e.type = "wheel";
         e.deltaY = deltaY;
@@ -1203,11 +1202,11 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
-    for (var _name2 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name2)) {
-            var _which = tag + isSVG + _name2;
+    for (var _name in lastProps) {
+        if (!nextProps.hasOwnProperty(_name)) {
+            var _which = tag + isSVG + _name;
             var _strategy = strategyCache[_which];
-            propAdapters[_strategy](dom, _name2, false, lastProps);
+            propAdapters[_strategy](dom, _name, false, lastProps);
         }
     }
 }
@@ -1314,20 +1313,21 @@ var propAdapters = {
     },
     event: function event(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
+        var refName = toLowerCase(name.slice(2));
         if (val === false) {
-            delete events[toLowerCase(name.slice(2))];
+            delete events[refName];
         } else {
             if (!lastProps[name]) {
                 //添加全局监听事件
-                var _name = getBrowserName(name);
-                addGlobalEvent(_name);
-                var hook = eventHooks[_name];
+                var eventName = getBrowserName(name);
+                var hook = eventHooks[eventName];
+                addGlobalEvent(eventName);
                 if (hook) {
-                    hook(dom, _name);
+                    hook(dom, eventName);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture
-            events[toLowerCase(name.slice(2))] = val;
+            events[refName] = val;
         }
     },
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
@@ -1598,7 +1598,16 @@ function render(vnode, container, callback) {
  */
 var pendingRefs = [];
 
-
+function unmountComponentAtNode(dom) {
+    var prevVnode = dom.__component;
+    if (prevVnode) {
+        alignVnode(prevVnode, {
+            type: "#comment",
+            text: "empty",
+            vtype: 0
+        }, dom.firstChild, {}, EMPTY_CHILDREN);
+    }
+}
 function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
@@ -2176,135 +2185,19 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
-//IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
-var noCheck = false;
-function setSelectValue(e) {
-  if (e.propertyName === 'value' && !noCheck) {
-    syncValueByOptionValue(e.srcElement);
-  }
-}
-
-function syncValueByOptionValue(e) {
-  var dom = e.srcElement,
-      idx = dom.selectedIndex,
-      option,
-      attr;
-  if (idx > -1) {
-    //IE 下select.value不会改变
-    option = dom.options[idx];
-    attr = option.attributes.value;
-    dom.value = attr && attr.specified ? option.value : option.text;
-  }
-}
-
-var fixIEChangeHandle = createHandle('change', function (e) {
-  var dom = e.srcElement;
-  if (dom.type === "select-one") {
-    if (!dom.__bindFixValueFn) {
-      addEvent(dom, "propertychange", setSelectValue);
-      dom.__bindFixValueFn = true;
-    }
-    noCheck = true;
-    syncValueByOptionValue(e);
-    noCheck = false;
-  }
-  if (e.type === 'propertychange') {
-    return e.propertyName === 'value';
-  }
-});
-
-var fixIEInputHandle = createHandle('input', function (e) {
-  return e.propertyName === "value";
-});
-
-var IEHandleFix = {
-  input: function input(dom) {
-    addEvent(dom, "propertychange", fixIEInputHandle);
-  },
-  change: function change(dom) {
-    //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
-    var mask = /radio|check/.test(dom.type) ? "click" : /text|password/.test(dom.type) ? 'propertychange' : "change";
-    addEvent(dom, mask, fixIEChangeHandle);
-  },
-  submit: function submit(dom) {
-    if (dom.nodeName === "FORM") {
-      addEvent(dom, "submit", dispatchEvent);
-    }
-  }
-};
-
-if (msie < 9) {
-  propAdapters[innerHTML] = function (dom, name, val, lastProps) {
-    var oldhtml = lastProps[name] && lastProps[name].__html;
-    var html = val && val.__html;
-    if (html !== oldhtml) {
-      //IE8-会吃掉最前面的空白
-      dom.innerHTML = String.fromCharCode(0xFEFF) + html;
-      var textNode = dom.firstChild;
-      if (textNode.data.length === 1) {
-        dom.removeChild(textNode);
-      } else {
-        textNode.deleteData(0, 1);
-      }
-    }
-  };
-
-  String("focus,blur").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom, name) {
-      var mark = '__' + name;
-      if (!dom[mark]) {
-        dom[mark] = true;
-        var mask = name === "focus" ? "focusin" : "focusout";
-        addEvent(dom, mask, function (e) {
-          //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
-          var tagName = e.srcElement.tagName;
-          if (!tagName) {
-            return;
-          }
-          // <body> #document
-          var tag = toLowerCase(tagName);
-          if (tag == "#document" || tag == "body") {
-            return;
-          }
-          e.target = dom; //因此focusin事件的srcElement有问题，强行修正
-          dispatchEvent(e, name, dom.parentNode);
-        });
-      }
-    };
-  });
-
-  Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
-    if (!("pageX" in event)) {
-      var doc = event.target.ownerDocument || document;
-      var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
-      event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
-      event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
-    }
-  }));
-
-  Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
-    /* istanbul ignore next  */
-    if (event.which == null && event.type.indexOf("key") === 0) {
-      /* istanbul ignore next  */
-      event.which = event.charCode != null ? event.charCode : event.keyCode;
-    }
-  }));
-
-  for (var i in IEHandleFix) {
-    eventHooks[i] = eventHooks[i + 'capture'] = IEHandleFix[i];
-  }
-}
-
 var React = {
   version: "1.1.1",
-  Children: Children, //支持react-redux
   render: render,
-  findDOMNode: findDOMNode,
   options: options,
+  Children: Children, //支持react-redux
+
+  Component: Component,
+  findDOMNode: findDOMNode,
   createElement: createElement,
   cloneElement: cloneElement,
   PureComponent: PureComponent,
-  Component: Component
+  unmountComponentAtNode: unmountComponentAtNode
+
 };
 
 win.React = win.ReactDOM = React;

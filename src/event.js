@@ -112,7 +112,7 @@ export function getBrowserName(onStr) {
     if (lower) {
         return lower;
     }
-    var camel = onStr.replace(ron, "").replace(rcapture, "");
+    var camel = onStr.slice(2).replace(rcapture, "");
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -149,8 +149,8 @@ const fixWheelDelta =
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
         var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-        var deltaY = ~~dom._ms_wheel_ + delta;
-        dom._ms_wheel_ = deltaY;
+        var deltaY = ~~dom.__wheel + delta;
+        dom.__wheel = deltaY;
         e = new SyntheticEvent(e);
         e.type = "wheel";
         e.deltaY = deltaY;
