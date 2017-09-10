@@ -11,7 +11,7 @@ function setSelectValue(e) {
     if (e.propertyName === "value" && !noCheck) {
         syncValueByOptionValue(e.srcElement);
     }
-}
+};
 
 function syncValueByOptionValue(e) {
     var dom = e.srcElement,
@@ -26,7 +26,7 @@ function syncValueByOptionValue(e) {
             ? option.value
             : option.text;
     }
-}
+};
 
 var fixIEChangeHandle = createHandle("change", function (e) {
     var dom = e.srcElement;
@@ -42,12 +42,12 @@ var fixIEChangeHandle = createHandle("change", function (e) {
     if (e.type === "propertychange") {
         return e.propertyName === "value";
     }
-})
+});
 
 
 var fixIEInputHandle = createHandle("input", function (e) {
     return e.propertyName === "value";
-})
+});
 
 var IEHandleFix = {
     input: function (dom) {
@@ -65,7 +65,7 @@ var IEHandleFix = {
             addEvent(dom, "submit", dispatchEvent);
         }
     }
-}
+};
 
 if (msie < 9) {
     propAdapters[innerHTML] = function (dom, name, val, lastProps) {
