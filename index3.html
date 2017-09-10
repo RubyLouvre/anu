@@ -20,15 +20,11 @@
       }
       render() {
         return React.createElement(SelectTrigger, {
-          ref: function(a){
-            console.log(this, a)
-          }
+          ref: 'trigger'
         },React.createElement(
           'div',
           {
-            ref: function(b){
-              console.log(this, b)
-            }
+            ref: 'root'
         },"xxxx"))
       }
     }
