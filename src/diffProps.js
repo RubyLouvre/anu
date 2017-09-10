@@ -169,11 +169,8 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
     }
 }
-var booleanAttr = {};
+
 function isBooleanAttr(dom, name) {
-    if (booleanAttr[name]) {
-        return true;
-    }
     let val = dom[name];
     if (val === true || val === false) {
         return booleanAttr[name] = true;

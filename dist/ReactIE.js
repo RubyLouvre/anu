@@ -1220,8 +1220,6 @@ function cssName(name, dom) {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-// XML 的命名空间对应的 URI
-
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
@@ -1230,8 +1228,8 @@ var controlled = {
 };
 
 var isSpecialAttr = {
-    children: 1,
     style: 1,
+    children: 1,
     innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
@@ -1376,11 +1374,8 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         }
     }
 }
-var booleanAttr = {};
+
 function isBooleanAttr(dom, name) {
-    if (booleanAttr[name]) {
-        return true;
-    }
     var val = dom[name];
     if (val === true || val === false) {
         return booleanAttr[name] = true;
