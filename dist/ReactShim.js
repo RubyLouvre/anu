@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-09
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-10
  */
 
 (function (global, factory) {
@@ -1197,7 +1197,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             var key = tag + isSVG + name;
             var hookName = typeCache[key];
             if (!hookName) {
-                hookName = typeCache[key] = getHookType(name, val, tag, dom, isSVG);
+                hookName = typeCache[key] = getHookType(dom, name, isSVG);
             }
             propAdapters[hookName](dom, name, val, lastProps);
         }
@@ -1212,27 +1212,23 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     }
 }
 var booleanAttr = {};
-function isBooleanAttr(dom, name, val) {
-    if (val === false || val === true) {
-        if (booleanAttr[name]) {
-            return true;
-        }
-        if (typeNumber(dom[name])) {
-            return booleanAttr[name] = true;
-        }
+function isBooleanAttr(dom, name) {
+    if (booleanAttr[name]) {
+        return true;
+    }
+    if (typeNumber(dom[name]) === 2) {
+        return booleanAttr[name] = true;
     }
 }
 /**
  * 取得属性的处理令牌，方便分配到各自的适配器进行加工
  * 
- * @param {any} name 属性名
- * @param {any} val 属性值
- * @param {any} type 标签名
  * @param {any} dom 元素节点
+ * @param {any} name 属性名
  * @param {any} isSVG 
  * @returns 
  */
-function getHookType(name, val, type, dom, isSVG) {
+function getHookType(dom, name, isSVG) {
     if (isSVG && name === 'className') {
         return 'svgClass';
     }
@@ -1245,7 +1241,7 @@ function getHookType(name, val, type, dom, isSVG) {
     if (isSVG) {
         return "svgAttr";
     }
-    if (isBooleanAttr(dom, name, val)) {
+    if (isBooleanAttr(dom, name)) {
         return "booleanAttr";
     }
 
