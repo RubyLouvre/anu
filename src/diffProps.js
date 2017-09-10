@@ -3,9 +3,6 @@ import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { oneObject, toLowerCase, noop, typeNumber } from "./util";
 
-
-// XML 的命名空间对应的 URI
-
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
@@ -14,8 +11,8 @@ var controlled = {
 };
 
 var isSpecialAttr = {
-    children: 1,
     style: 1,
+    children: 1,
     innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
