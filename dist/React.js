@@ -9,15 +9,12 @@
 	(global.React = factory());
 }(this, (function () {
 
-var __type = Object.prototype.toString;
-
-
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
 var limitWarn = {
-	createClass: 1,
-	renderSubtree: 1
+    createClass: 1,
+    renderSubtree: 1
 };
 /**
  * 复制一个对象的属性到另一个对象
@@ -27,13 +24,16 @@ var limitWarn = {
  * @returns
  */
 function extend(obj, props) {
-	if (props) {
-		for (var i in props) {
-			if (props.hasOwnProperty(i)) obj[i] = props[i];
-		}
-	}
-	return obj;
+    if (props) {
+        for (var i in props) {
+            if (props.hasOwnProperty(i)) obj[i] = props[i];
+        }
+    }
+    return obj;
 }
+
+var __type = Object.prototype.toString;
+
 /**
  * 一个空函数
  *
@@ -49,15 +49,15 @@ function noop() {}
  * @param {any} SupClass
  */
 function inherit(SubClass, SupClass) {
-	function Bridge() {}
-	Bridge.prototype = SupClass.prototype;
+    function Bridge() {}
+    Bridge.prototype = SupClass.prototype;
 
-	var fn = SubClass.prototype = new Bridge();
+    var fn = SubClass.prototype = new Bridge();
 
-	// 避免原型链拉长导致方法查找的性能开销
-	extend(fn, SupClass.prototype);
-	fn.constructor = SubClass;
-	return fn;
+    // 避免原型链拉长导致方法查找的性能开销
+    extend(fn, SupClass.prototype);
+    fn.constructor = SubClass;
+    return fn;
 }
 
 /**
@@ -68,29 +68,29 @@ function inherit(SubClass, SupClass) {
  * @returns
  */
 function getNodes(dom) {
-	var ret = [],
-	    c = dom.childNodes || [];
-	// eslint-disable-next-line
-	for (var i = 0, el; el = c[i++];) {
-		ret.push(el);
-	}
-	return ret;
+    var ret = [],
+        c = dom.childNodes || [];
+    // eslint-disable-next-line
+    for (var i = 0, el; el = c[i++];) {
+        ret.push(el);
+    }
+    return ret;
 }
 
 var lowerCache = {};
 /**
  * 小写化的优化
- * 
+ *
  * @export
- * @param {any} s 
- * @returns 
+ * @param {any} s
+ * @returns
  */
 function toLowerCase(s) {
-	return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
+    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
 function clearArray(a) {
-	return a.splice(0, a.length);
+    return a.splice(0, a.length);
 }
 
 /**
@@ -100,86 +100,86 @@ function clearArray(a) {
  * @returns
  */
 function isFn(obj) {
-	return typeNumber(obj) === 5;
+    return typeNumber(obj) === 5;
 }
 
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-	if (typeNumber(array) === 4) {
-		array = array.match(rword) || [];
-	}
-	var result = {},
+    if (typeNumber(array) === 4) {
+        array = array.match(rword) || [];
+    }
+    var result = {},
 
-	//eslint-disable-next-line
-	value = val !== void 666 ? val : 1;
-	for (var i = 0, n = array.length; i < n; i++) {
-		result[array[i]] = value;
-	}
-	return result;
+    //eslint-disable-next-line
+    value = val !== void 666 ? val : 1;
+    for (var i = 0, n = array.length; i < n; i++) {
+        result[array[i]] = value;
+    }
+    return result;
 }
 
 function getChildContext(instance, context) {
-	if (instance.getChildContext) {
-		return Object.assign({}, context, instance.getChildContext());
-	}
-	return context;
+    if (instance.getChildContext) {
+        return Object.assign({}, context, instance.getChildContext());
+    }
+    return context;
 }
 
 var rcamelize = /[-_][^-_]/g;
 function camelize(target) {
-	//提前判断，提高getStyle等的效率
-	if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
-		return target;
-	}
-	//转换为驼峰风格
-	return target.replace(rcamelize, function (match) {
-		return match.charAt(1).toUpperCase();
-	});
+    //提前判断，提高getStyle等的效率
+    if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
+        return target;
+    }
+    //转换为驼峰风格
+    return target.replace(rcamelize, function (match) {
+        return match.charAt(1).toUpperCase();
+    });
 }
 
 var options = {
-	beforeUnmount: noop,
-	afterMount: noop,
-	afterUpdate: noop
+    beforeUnmount: noop,
+    afterMount: noop,
+    afterUpdate: noop
 };
 
 function checkNull(vnode, type) {
-	// if (Array.isArray(vnode) && vnode.length === 1) {
-	//  vnode = vnode[0];
-	// }
-	if (vnode === null || vnode === false) {
-		return { type: "#comment", text: "empty", vtype: 0 };
-	} else if (!vnode || !vnode.vtype) {
-		throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
-	}
-	return vnode;
+    // if (Array.isArray(vnode) && vnode.length === 1) {
+    //  vnode = vnode[0];
+    // }
+    if (vnode === null || vnode === false) {
+        return { type: "#comment", text: "empty", vtype: 0 };
+    } else if (!vnode || !vnode.vtype) {
+        throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
+    }
+    return vnode;
 }
 
 var numberMap = {
-	//null undefined IE6-8这里会返回[object Object]
-	"[object Boolean]": 2,
-	"[object Number]": 3,
-	"[object String]": 4,
-	"[object Function]": 5,
-	"[object Symbol]": 6,
-	"[object Array]": 7
+    //null undefined IE6-8这里会返回[object Object]
+    "[object Boolean]": 2,
+    "[object Number]": 3,
+    "[object String]": 4,
+    "[object Function]": 5,
+    "[object Symbol]": 6,
+    "[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
 function typeNumber(data) {
-	if (data === null) {
-		return 1;
-	}
-	if (data === void 666) {
-		return 0;
-	}
-	var a = numberMap[__type.call(data)];
-	return a || 8;
+    if (data === null) {
+        return 1;
+    }
+    if (data === void 666) {
+        return 0;
+    }
+    var a = numberMap[__type.call(data)];
+    return a || 8;
 }
 
 var recyclables = {
-	"#text": [],
-	"#comment": []
+    "#text": [],
+    "#comment": []
 };
 
 var CurrentOwner = {
