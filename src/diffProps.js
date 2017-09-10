@@ -173,7 +173,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 function isBooleanAttr(dom, name) {
     let val = dom[name];
     if (val === true || val === false) {
-        return booleanAttr[name] = true;
+        return true;
     }
 }
 /**
