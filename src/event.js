@@ -21,13 +21,14 @@ export var eventLowerCache = {
 export function isEventName(name) {
     return /^on[A-Z]/.test(name);
 }
+
 export var isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
     e = new SyntheticEvent(e);
     if (type) {
-        e.type = type
+        e.type = type;
     }
     var bubble = e.type;
 
@@ -38,21 +39,21 @@ export function dispatchEvent(e, type, end) {
 
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
-    options.async = true
+    options.async = true;
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
-    options.async = false
-    options.flushBatchedUpdates()
+    options.async = false;
+    options.flushBatchedUpdates();
 }
 
 function collectPaths(from, end) {
     var paths = [];
     do {
         if (from === end) {
-            break
+            break;
         }
         var events = from.__events;
         if (events) {
@@ -105,7 +106,7 @@ export function addEvent(el, type, fn, bool) {
     }
 }
 
-var ron = /^on/;
+
 var rcapture = /Capture$/;
 export function getBrowserName(onStr) {
     var lower = eventLowerCache[onStr];
@@ -129,7 +130,7 @@ try {
     // no catch
 }
 eventPropHooks.click = function (e) {
-    return !e.target.disabled
+    return !e.target.disabled;
 }
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
@@ -160,9 +161,9 @@ eventHooks.wheel = function (dom) {
 
 var fixFocus = {}
 "blur,focus".replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
+    eventHooks[type] = function () {
         if (!fixFocus[type]) {
-            fixFocus[type] = true
+            fixFocus[type] = true;
             addEvent(
                 document,
                 type,
@@ -182,9 +183,9 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
  */
 function getRelatedTarget(e) {
     if (!e.timeStamp) {
-        e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
     }
-    return e.relatedTarget
+    return e.relatedTarget;
 }
 function contains(a, b) {
     if (b) {
@@ -199,38 +200,39 @@ function contains(a, b) {
 
 String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom, name) {
-        var mark = "__" + name
+        var mark = "__" + name;
         if (!dom[mark]) {
-            dom[mark] = true
+            dom[mark] = true;
             var mask = name === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function (e) {
-                let t = getRelatedTarget(e)
+                let t = getRelatedTarget(e);
                 if (!t || (t !== dom && !contains(dom, t))) {
-                    var common = getLowestCommonAncestor(dom, t)
+                    var common = getLowestCommonAncestor(dom, t);
                     //由于不冒泡，因此paths长度为1 
-                    dispatchEvent(e, name, common)
+                    dispatchEvent(e, name, common);
                 }
             });
         }
     };
 });
-export function createHandle(name, fn){
-    return function(e){
-        if(fn && fn(e) === false)
-           return
+export function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
         dispatchEvent(e, name);
     }
 }
-var changeHandle = createHandle('change')
-var doubleClickHandle = createHandle('doubleclick')
+var changeHandle = createHandle("change");
+var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? 'input' : 'change'
+    var mask = /text|password/.test(dom.type) ? "input" : "change"
     addEvent(document, mask, changeHandle);
 };
-eventHooks.doubleclick = eventHooks.doubleclickcapture = function(){
-    addEvent(document, 'dblclick', doubleClickHandle);
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, "dblclick", doubleClickHandle);
 }
 
 function getLowestCommonAncestor(instA, instB) {

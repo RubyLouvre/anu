@@ -539,6 +539,7 @@ function isEventName(name) {
     return (/^on[A-Z]/.test(name)
     );
 }
+
 var isTouch = "ontouchstart" in document;
 
 function dispatchEvent(e, type, end) {
@@ -662,7 +663,7 @@ eventHooks.wheel = function (dom) {
 
 var fixFocus = {};
 "blur,focus".replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
+    eventHooks[type] = function () {
         if (!fixFocus[type]) {
             fixFocus[type] = true;
             addEvent(document, type, dispatchEvent, true);
@@ -679,7 +680,7 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
  */
 function getRelatedTarget(e) {
     if (!e.timeStamp) {
-        e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
     }
     return e.relatedTarget;
 }
@@ -713,20 +714,22 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
 });
 function createHandle(name, fn) {
     return function (e) {
-        if (fn && fn(e) === false) return;
+        if (fn && fn(e) === false) {
+            return;
+        }
         dispatchEvent(e, name);
     };
 }
-var changeHandle = createHandle('change');
-var doubleClickHandle = createHandle('doubleclick');
+var changeHandle = createHandle("change");
+var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? 'input' : 'change';
+    var mask = /text|password/.test(dom.type) ? "input" : "change";
     addEvent(document, mask, changeHandle);
 };
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
-    addEvent(document, 'dblclick', doubleClickHandle);
+    addEvent(document, "dblclick", doubleClickHandle);
 };
 
 function getLowestCommonAncestor(instA, instB) {
