@@ -191,40 +191,43 @@ var CurrentOwner = {
      */
 
 };function createElement(type, config, children) {
-    // Reserved names are extracted
-    var props = {};
-    var checkProps = 0;
-    var vtype = 1;
-    var key = null;
-    var ref = null;
+    var props = {},
+        checkProps = 0,
+        vtype = 1,
+        key = null,
+        ref = null,
+        argsLen = arguments.length - 2;
     if (config != null) {
         for (var i in config) {
             var val = config[i];
             if (i === "key") {
-                if (val !== void 0) key = val + "";
+                if (val !== void 0) {
+                    key = val + "";
+                }
             } else if (i === "ref") {
-                if (val !== void 0) ref = val;
+                if (val !== void 0) {
+                    ref = val;
+                }
             } else {
                 checkProps = 1;
                 props[i] = val;
             }
         }
     }
-    var childrenLength = arguments.length - 2;
-    if (childrenLength === 1) {
+
+    if (argsLen === 1) {
         if (children !== void 0) props.children = children;
-    } else if (childrenLength > 1) {
-        var childArray = Array(childrenLength);
-        for (var i = 0; i < childrenLength; i++) {
-            childArray[i] = arguments[i + 2];
+    } else if (argsLen > 1) {
+        var childArray = Array(argsLen);
+        for (var _i = 0; _i < argsLen; _i++) {
+            childArray[_i] = arguments[_i + 2];
         }
         props.children = childArray;
     }
 
-    // Resolve default props
     var defaultProps = type.defaultProps;
     if (defaultProps) {
-        for (propName in defaultProps) {
+        for (var propName in defaultProps) {
             if (props[propName] === void 666) {
                 checkProps = 1;
                 props[propName] = defaultProps[propName];
@@ -270,7 +273,6 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     var refType = typeNumber(ref);
-    var self = this;
     if (refType === 4) {
         //string
         this.ref = createStringRef(owner, ref);
@@ -302,14 +304,9 @@ Vnode.prototype = {
 
 function _flattenChildren(original, convert) {
     var children = [],
-        temp,
-        lastText,
-        child;
-    if (Array.isArray(original)) {
-        temp = original.slice(0);
-    } else {
-        temp = [original];
-    }
+        lastText = void 0,
+        child = void 0,
+        temp = Array.isArray(original) ? original.slice(0) : [original];
 
     while (temp.length) {
         //比较巧妙地判定是否为子数组
@@ -336,7 +333,7 @@ function _flattenChildren(original, convert) {
                     children[0].text = child + children[0].text;
                     continue;
                 }
-                child = child + '';
+                child = child + "";
                 if (convert) {
                     child = {
                         type: "#text",
@@ -356,7 +353,7 @@ function _flattenChildren(original, convert) {
 }
 function flattenChildren(vnode) {
     var arr = _flattenChildren(vnode.props.children, true);
-    if (arr.length == 0) {
+    if (arr.length === 0) {
         arr = EMPTY_CHILDREN;
     }
     return vnode.vchildren = arr;
