@@ -53,8 +53,8 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.setState = instance.forceUpdate = noop;
-        vnode._instance = instance.__current = instance.__renderInNextCycle = null;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
+        vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(vnode._renderedVnode);
     }
 }

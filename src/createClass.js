@@ -1,5 +1,6 @@
-import { extend, isFn, inherit,limitWarn } from "./util";
+import { extend, isFn, inherit, limitWarn } from "./util";
 import { Component } from "./Component";
+
 /**
  * 为了兼容0.13之前的版本
  */
@@ -25,7 +26,7 @@ function collectMixins(mixins) {
         }
 
         for (let key in mixin) {
-            if (mixin.hasOwnProperty(key) && key !== 'mixins') {
+            if (mixin.hasOwnProperty(key) && key !== "mixins") {
                 (keyed[key] || (keyed[key] = [])).push(mixin[key]);
             }
         }
@@ -38,26 +39,28 @@ var MANY_MERGED = {
     getDefaultProps: 1,
     getChildContext: 1
 }
+
 function flattenHooks(key, hooks) {
     let hookType = typeof hooks[0];
-    if (hookType === 'object') {
+    if (hookType === "object") {
         // Merge objects
         hooks.unshift({});
         return Object
             .assign
             .apply(null, hooks);
-    } else if (hookType === 'function' && hooks.length > 1) {
+    } else if (hookType === "function" && hooks.length > 1) {
         return function () {
             let ret = {}, r, hasReturn = MANY_MERGED[key]
             for (let i = 0; i < hooks.length; i++) {
                 r = hooks[i].apply(this, arguments);
-                if (hasReturn && r ) {
+                if (hasReturn && r) {
                     Object.assign(ret, r);
                 }
             }
-            if (hasReturn)
+            if (hasReturn) {
                 return ret;
-            return r
+            }
+            return r;
         };
     } else {
         return hooks[0];
@@ -80,7 +83,7 @@ function newCtor(className, spec) {
 
      for (var methodName in this) {
         var method = this[methodName];
-        if (typeof method  === 'function'&& !blacklist[methodName]) {
+        if (typeof method  === "function"&& !blacklist[methodName]) {
           this[methodName] = method.bind(this);
         }
       }
@@ -121,4 +124,4 @@ export function createClass(spec) {
     }
 
     return Constructor;
-}
+};

@@ -20,7 +20,7 @@ export var eventLowerCache = {
  */
 export function isEventName(name) {
     return /^on[A-Z]/.test(name);
-};
+}
 
 export var isTouch = "ontouchstart" in document;
 
@@ -84,7 +84,7 @@ export function addGlobalEvent(name) {
         globalEvents[name] = true;
         addEvent(document, name, dispatchEvent);
     }
-};
+}
 
 export function addEvent(el, type, fn, bool) {
     if (el.addEventListener) {
@@ -104,7 +104,7 @@ export function addEvent(el, type, fn, bool) {
     } else if (el.attachEvent) {
         el.attachEvent("on" + type, fn);
     }
-};
+}
 
 
 var rcapture = /Capture$/;
@@ -188,6 +188,7 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
+
 function contains(a, b) {
     if (b) {
         while ((b = b.parentNode)) {
@@ -197,7 +198,7 @@ function contains(a, b) {
         }
     }
     return false;
-};
+}
 
 String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
     eventHooks[type] = function (dom, name) {
@@ -223,8 +224,8 @@ export function createHandle(name, fn) {
             return;
         }
         dispatchEvent(e, name);
-    }
-};
+    };
+}
 
 var changeHandle = createHandle("change");
 var doubleClickHandle = createHandle("doubleclick");

@@ -375,7 +375,7 @@ var Children = {
         if (children && children.vtype) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         return _flattenChildren(children, false).length;
@@ -397,7 +397,7 @@ var _loop = function _loop(key) {
     limitWarn[key] = 1;
     Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+            console.warn("请限制使用Children." + key + ",不要窥探虚拟DOM的内部实现,会导致升级问题");
         }
         return fn.apply(null, arguments);
     };
@@ -693,6 +693,7 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
+
 function contains(a, b) {
     if (b) {
         while (b = b.parentNode) {
@@ -1000,7 +1001,7 @@ function collectMixins(mixins) {
         }
 
         for (var key in mixin) {
-            if (mixin.hasOwnProperty(key) && key !== 'mixins') {
+            if (mixin.hasOwnProperty(key) && key !== "mixins") {
                 (keyed[key] || (keyed[key] = [])).push(mixin[key]);
             }
         }
@@ -1013,13 +1014,14 @@ var MANY_MERGED = {
     getDefaultProps: 1,
     getChildContext: 1
 };
+
 function flattenHooks(key, hooks) {
     var hookType = _typeof(hooks[0]);
-    if (hookType === 'object') {
+    if (hookType === "object") {
         // Merge objects
         hooks.unshift({});
         return Object.assign.apply(null, hooks);
-    } else if (hookType === 'function' && hooks.length > 1) {
+    } else if (hookType === "function" && hooks.length > 1) {
         return function () {
             var ret = {},
                 r = void 0,
@@ -1030,7 +1032,9 @@ function flattenHooks(key, hooks) {
                     Object.assign(ret, r);
                 }
             }
-            if (hasReturn) return ret;
+            if (hasReturn) {
+                return ret;
+            }
             return r;
         };
     } else {
@@ -1048,7 +1052,7 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === 'function'&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
     return curry(Component, NOBIND, spec);
 }
 
@@ -1088,12 +1092,12 @@ function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var configs = {
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
         key: vnode.key,
         ref: vnode.ref
     };
-    var owner = vnode._owner;
-    var lastOwn = CurrentOwner.cur;
     if (props && props.ref) {
         owner = lastOwn;
     }
@@ -1737,8 +1741,8 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.setState = instance.forceUpdate = noop;
-        vnode._instance = instance.__current = instance.__renderInNextCycle = null;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
+        vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(vnode._renderedVnode);
     }
 }

@@ -66,7 +66,7 @@ export function createElement(type, config, children) {
             : 4;
     }
     return new Vnode(type, key, ref, props, vtype, checkProps);
-};
+}
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
@@ -109,7 +109,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
             this.ref = function (dom) {
                 ref(dom);
                 ref2(dom);
-            }
+            };
         } else {
             //function
             this.ref = ref;
@@ -185,4 +185,4 @@ export function flattenChildren(vnode) {
         arr = EMPTY_CHILDREN;
     }
     return vnode.vchildren = arr;
-};
+}

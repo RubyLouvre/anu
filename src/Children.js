@@ -10,7 +10,7 @@ export const Children = {
         if (children && children.vtype) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count(children) {
         return _flattenChildren(children, false).length;
@@ -31,8 +31,8 @@ for (let key in Children) {
     limitWarn[key] = 1;
     Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+            console.warn("请限制使用Children." + key + ",不要窥探虚拟DOM的内部实现,会导致升级问题");
         }
         return fn.apply(null, arguments);
-    }
+    };
 }

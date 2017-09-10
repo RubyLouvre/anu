@@ -602,7 +602,7 @@ var Children = {
         if (children && children.vtype) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         return _flattenChildren(children, false).length;
@@ -624,7 +624,7 @@ var _loop = function _loop(key) {
     limitWarn[key] = 1;
     Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+            console.warn("请限制使用Children." + key + ",不要窥探虚拟DOM的内部实现,会导致升级问题");
         }
         return fn.apply(null, arguments);
     };
@@ -801,6 +801,7 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
+
 function contains(a, b) {
     if (b) {
         while (b = b.parentNode) {
@@ -944,12 +945,12 @@ function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var configs = {
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
         key: vnode.key,
         ref: vnode.ref
     };
-    var owner = vnode._owner;
-    var lastOwn = CurrentOwner.cur;
     if (props && props.ref) {
         owner = lastOwn;
     }
@@ -1593,8 +1594,8 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.setState = instance.forceUpdate = noop;
-        vnode._instance = instance.__current = instance.__renderInNextCycle = null;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
+        vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(vnode._renderedVnode);
     }
 }

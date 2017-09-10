@@ -7,22 +7,22 @@ export function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    var owner = vnode._owner
-    var lastOwn = CurrentOwner.cur
+    let owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
+            key: vnode.key,
+            ref: vnode.ref
+        }
     if (props && props.ref) {
-        owner = lastOwn
+        owner = lastOwn;
     }
-    Object.assign(configs, vnode.props, props)
-    CurrentOwner.cur = owner
-    var ret = createElement(
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+    let ret = createElement(
         vnode.type,
         configs,
         arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children
     );
-    CurrentOwner.cur = lastOwn
-    return ret
-}
+    CurrentOwner.cur = lastOwn;
+    return ret;
+};
