@@ -885,6 +885,9 @@ Component.prototype = {
     setState: function setState(state, cb) {
         debounceSetState(this, state, cb);
     },
+    isMounted: function isMounted() {
+        return this.__current._hostNode;
+    },
     forceUpdate: function forceUpdate(cb) {
         debounceSetState(this, true, cb);
     },

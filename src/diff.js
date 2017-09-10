@@ -328,12 +328,12 @@ function Stateless(render) {
 }
 
 var renderComponent = function (vnode, props, context) {
-    var lastOwn = CurrentOwner.cur
-    CurrentOwner.cur = this
+    var lastOwn = CurrentOwner.cur;
+    CurrentOwner.cur = this;
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render();
-    CurrentOwner.cur = lastOwn
+    CurrentOwner.cur = lastOwn;
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
@@ -428,13 +428,12 @@ function _refreshComponent(instance, dom, mountQueue) {
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
-        instance.__didUpdate = true
+        instance.__didUpdate = true;
         instance.componentDidUpdate(lastProps, lastState, lastContext);
         if(!instance.__renderInNextCycle){
-            instance.__didUpdate = false
+            instance.__didUpdate = false;
         }
     }
-
 
     instance.__hydrating = false;
 
