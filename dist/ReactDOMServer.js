@@ -58,59 +58,59 @@ var __type = Object.prototype.toString;
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-  if (typeNumber(array) === 4) {
-    array = array.match(rword) || [];
-  }
-  var result = {},
+	if (typeNumber(array) === 4) {
+		array = array.match(rword) || [];
+	}
+	var result = {},
 
-  //eslint-disable-next-line
-  value = val !== void 666 ? val : 1;
-  for (var i = 0, n = array.length; i < n; i++) {
-    result[array[i]] = value;
-  }
-  return result;
+	//eslint-disable-next-line
+	value = val !== void 666 ? val : 1;
+	for (var i = 0, n = array.length; i < n; i++) {
+		result[array[i]] = value;
+	}
+	return result;
 }
 
 function getChildContext(instance, context) {
-  if (instance.getChildContext) {
-    return Object.assign({}, context, instance.getChildContext());
-  }
-  return context;
+	if (instance.getChildContext) {
+		return Object.assign({}, context, instance.getChildContext());
+	}
+	return context;
 }
 
 
 
 
 function checkNull(vnode, type) {
-  // if (Array.isArray(vnode) && vnode.length === 1) {
-  //  vnode = vnode[0];
-  // }
-  if (vnode === null || vnode === false) {
-    return { type: "#comment", text: "empty", vtype: 0 };
-  } else if (!vnode || !vnode.vtype) {
-    throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
-  }
-  return vnode;
+	// if (Array.isArray(vnode) && vnode.length === 1) {
+	//  vnode = vnode[0];
+	// }
+	if (vnode === null || vnode === false) {
+		return { type: "#comment", text: "empty", vtype: 0 };
+	} else if (!vnode || !vnode.vtype) {
+		throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
+	}
+	return vnode;
 }
 var numberMap = {
-  //null undefined IE6-8这里会返回[object Object]
-  "[object Boolean]": 2,
-  "[object Number]": 3,
-  "[object String]": 4,
-  "[object Function]": 5,
-  "[object Symbol]": 6,
-  "[object Array]": 7
+	//null undefined IE6-8这里会返回[object Object]
+	"[object Boolean]": 2,
+	"[object Number]": 3,
+	"[object String]": 4,
+	"[object Function]": 5,
+	"[object Symbol]": 6,
+	"[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
 function typeNumber(data) {
-  if (data === null) {
-    return 1;
-  }
-  if (data === void 666) {
-    return 0;
-  }
-  var a = numberMap[__type.call(data)];
-  return a || 8;
+	if (data === null) {
+		return 1;
+	}
+	if (data === void 666) {
+		return 0;
+	}
+	var a = numberMap[__type.call(data)];
+	return a || 8;
 }
 
 var rnumber = /^-?\d+(\.\d+)?$/;

@@ -1,8 +1,7 @@
 import { document, msie } from "./browser";
 import { propAdapters } from "./diffProps";
-
-import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent } from "./event";
 import { oneObject, toLowerCase, innerHTML } from "./util";
+import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent } from "./event";
 
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
@@ -32,11 +31,11 @@ var fixIEChangeHandle = createHandle("change", function (e) {
     var dom = e.srcElement;
     if (dom.type === "select-one") {
         if (!dom.__bindFixValueFn) {
-            addEvent(dom, "propertychange", setSelectValue)
+            addEvent(dom, "propertychange", setSelectValue);
             dom.__bindFixValueFn = true;
         }
         noCheck = true;
-        syncValueByOptionValue(e)
+        syncValueByOptionValue(e);
         noCheck = false;
     }
     if (e.type === "propertychange") {
