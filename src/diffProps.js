@@ -100,17 +100,22 @@ var repeatedKey = [
     "gc"
 ];
 
-function genReplaceValue(split) {
+function createRepaceFn(split) {
     return function (match) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
 
+var rhump = /[a-z][A-Z]/;
+var toHyphen = createRepaceFn("-");
+var toColon = createRepaceFn(":");
+
+
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
     }
-    const key = name.match(/[a-z][A-Z]/);
+    const key = name.match(rhump);
     if (!key) {
         return svgCache[name] = name;
     }
@@ -121,19 +126,19 @@ function getSVGAttributeName(name) {
 
         if (count === -1) {
             return svgCache[orig] = {
-                name: name.replace(/[a-z][A-Z]/, genReplaceValue(":")),
+                name: name.replace(rhump, toColon),
                 ifSpecial: true
             };
         }
 
         if (~repeatedKey.indexOf(prefix + postfix)) {
-            const dashName = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
+            const dashName = name.replace(rhump, toHyphen);
             if (specialSVGPropertyName[dashName]) {
                 name = dashName;
             }
         }
     } else {
-        name = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
+        name = name.replace(rhump, toHyphen);
     }
 
     return svgCache[orig] = name;
@@ -150,26 +155,26 @@ function getSVGAttributeName(name) {
  * @param {any} lastVnode
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    let isSVG = vnode.ns === "http://www.w3.org/2000/svg";
+    let isSVG = vnode.ns === NAMESPACE_MAP.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name];
         if (val !== lastProps[name]) {
             let which = tag + isSVG + name;
-            let strategy = strategyCache[which];
-            if (!strategy) {
-                strategy = strategyCache[which] = getPropAction(dom, name, isSVG);
+            let action = strategyCache[which];
+            if (!action) {
+                action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[strategy](dom, name, val, lastProps);
+            actionStrategy[action](dom, name, val, lastProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
-            let strategy = strategyCache[which];
-            actionStrategy[strategy](dom, name, false, lastProps);
+            let action = strategyCache[which];
+            actionStrategy[action](dom, name, false, lastProps);
         }
     }
 }
