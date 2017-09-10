@@ -172,9 +172,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
 function isBooleanAttr(dom, name) {
     let val = dom[name];
-    if (val === true || val === false) {
-        return true;
-    }
+    return val === true || val === false;
 }
 /**
  * 根据一个属性所在的元素或元素的文档类型，就可以永久决定该使用什么策略操作它
