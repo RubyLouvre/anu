@@ -7,7 +7,7 @@ export var EMPTY_CHILDREN = [];
 export var limitWarn = {
 	createClass: 1,
 	renderSubtree: 1
-}
+};
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -22,13 +22,13 @@ export function extend(obj, props) {
 		}
 	}
 	return obj;
-}
+};
 /**
  * 一个空函数
  *
  * @export
  */
-export function noop() { }
+export function noop() { };
 
 /**
  * 类继承
@@ -38,7 +38,7 @@ export function noop() { }
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-	function Bridge() { }
+	function Bridge() { };
 	Bridge.prototype = SupClass.prototype;
 
 	var fn = (SubClass.prototype = new Bridge());
@@ -47,7 +47,7 @@ export function inherit(SubClass, SupClass) {
 	extend(fn, SupClass.prototype);
 	fn.constructor = SubClass;
 	return fn;
-}
+};
 
 /**
  * 收集一个元素的所有孩子
@@ -57,14 +57,14 @@ export function inherit(SubClass, SupClass) {
  * @returns
  */
 export function getNodes(dom) {
-	var ret = [],
+	let ret = [],
 		c = dom.childNodes || [];
 	// eslint-disable-next-line
-	for (var i = 0, el; (el = c[i++]);) {
+	for (let i = 0, el; (el = c[i++]);) {
 		ret.push(el);
 	}
 	return ret;
-}
+};
 
 var lowerCache = {};
 /**
@@ -76,11 +76,11 @@ var lowerCache = {};
  */
 export function toLowerCase(s) {
 	return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
-}
+};
 
 export function clearArray(a) {
 	return a.splice(0, a.length)
-}
+};
 
 /**
  *
@@ -90,7 +90,7 @@ export function clearArray(a) {
  */
 export function isFn(obj) {
 	return typeNumber(obj) === 5;
-}
+};
 
 var rword = /[^, ]+/g;
 
@@ -98,23 +98,23 @@ export function oneObject(array, val) {
 	if (typeNumber(array) === 4) {
 		array = array.match(rword) || [];
 	}
-	var result = {},
+	let result = {},
 		//eslint-disable-next-line
 		value = val !== void 666 ? val : 1;
-	for (var i = 0, n = array.length; i < n; i++) {
+	for (let i = 0, n = array.length; i < n; i++) {
 		result[array[i]] = value;
 	}
 	return result;
-}
+};
 
 export function getChildContext(instance, context) {
 	if (instance.getChildContext) {
 		return Object.assign({}, context, instance.getChildContext());
 	}
 	return context;
-}
-var rcamelize = /[-_][^-_]/g;
+};
 
+var rcamelize = /[-_][^-_]/g;
 export function camelize(target) {
 	//提前判断，提高getStyle等的效率
 	if (!target || (target.indexOf("-") < 0 && target.indexOf("_") < 0)) {
@@ -124,7 +124,7 @@ export function camelize(target) {
 	return target.replace(rcamelize, function (match) {
 		return match.charAt(1).toUpperCase();
 	});
-}
+};
 
 export var options = {
 	beforeUnmount: noop,
@@ -144,7 +144,8 @@ export function checkNull(vnode, type) {
 		);
 	}
 	return vnode;
-}
+};
+
 var numberMap = {
 	//null undefined IE6-8这里会返回[object Object]
 	"[object Boolean]": 2,
@@ -164,7 +165,7 @@ export function typeNumber(data) {
 	}
 	var a = numberMap[__type.call(data)];
 	return a || 8;
-}
+};
 
 export var recyclables = {
 	"#text": [],

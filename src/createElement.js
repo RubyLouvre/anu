@@ -2,7 +2,7 @@ import { EMPTY_CHILDREN, typeNumber } from "./util";
 
 export var CurrentOwner = {
     cur: null
-}
+};
 /**
  * 创建虚拟DOM
  *
@@ -23,9 +23,13 @@ export function createElement(type, config, children) {
         for (let i in config) {
             let val = config[i];
             if (i === "key") {
-                if (val !== void 0) { key = val + ""; }
+                if (val !== void 0) {
+                    key = val + "";
+                }
             } else if (i === "ref") {
-                if (val !== void 0) { ref = val; }
+                if (val !== void 0) {
+                    ref = val;
+                }
             } else {
                 checkProps = 1;
                 props[i] = val;
@@ -34,8 +38,9 @@ export function createElement(type, config, children) {
     }
 
     if (argsLen === 1) {
-        if (children !== void 0)
+        if (children !== void 0) {
             props.children = children;
+        }
     } else if (argsLen > 1) {
         let childArray = Array(argsLen);
         for (let i = 0; i < argsLen; i++) {
@@ -61,7 +66,7 @@ export function createElement(type, config, children) {
             : 4;
     }
     return new Vnode(type, key, ref, props, vtype, checkProps);
-}
+};
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
@@ -84,8 +89,8 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur
-    this._owner = owner
+    var owner = CurrentOwner.cur;
+    this._owner = owner;
 
     if (key) {
         this.key = key;
@@ -97,10 +102,10 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     let refType = typeNumber(ref);
     if (refType === 4) {
         //string
-        this.ref = createStringRef(owner, ref)
+        this.ref = createStringRef(owner, ref);
     } else if (refType === 5) {
         if (ref.string) {
-            var ref2 = createStringRef(owner, ref.string)
+            var ref2 = createStringRef(owner, ref.string);
             this.ref = function (dom) {
                 ref(dom);
                 ref2(dom);
@@ -172,12 +177,12 @@ export function _flattenChildren(original, convert) {
         }
     }
     return children;
-
 }
+
 export function flattenChildren(vnode) {
     let arr = _flattenChildren(vnode.props.children, true);
     if (arr.length === 0) {
         arr = EMPTY_CHILDREN;
     }
     return vnode.vchildren = arr;
-}
+};

@@ -29,7 +29,6 @@ function disposeStateless(vnode) {
 
 function disposeElement(vnode) {
     var { props, vchildren } = vnode;
-    //var children = props.children;
     if (props[innerHTML]) {
         removeDOMElement(vnode._hostNode);
     } else {

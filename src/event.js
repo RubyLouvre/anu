@@ -20,7 +20,7 @@ export var eventLowerCache = {
  */
 export function isEventName(name) {
     return /^on[A-Z]/.test(name);
-}
+};
 
 export var isTouch = "ontouchstart" in document;
 
@@ -84,7 +84,7 @@ export function addGlobalEvent(name) {
         globalEvents[name] = true;
         addEvent(document, name, dispatchEvent);
     }
-}
+};
 
 export function addEvent(el, type, fn, bool) {
     if (el.addEventListener) {
@@ -104,7 +104,7 @@ export function addEvent(el, type, fn, bool) {
     } else if (el.attachEvent) {
         el.attachEvent("on" + type, fn);
     }
-}
+};
 
 
 var rcapture = /Capture$/;
@@ -129,9 +129,10 @@ try {
 } catch (e) {
     // no catch
 }
+
 eventPropHooks.click = function (e) {
     return !e.target.disabled;
-}
+};
 
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
@@ -159,7 +160,7 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-var fixFocus = {}
+var fixFocus = {};
 "blur,focus".replace(/\w+/g, function (type) {
     eventHooks[type] = function () {
         if (!fixFocus[type]) {
@@ -215,6 +216,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+
 export function createHandle(name, fn) {
     return function (e) {
         if (fn && fn(e) === false) {
@@ -222,18 +224,20 @@ export function createHandle(name, fn) {
         }
         dispatchEvent(e, name);
     }
-}
+};
+
 var changeHandle = createHandle("change");
 var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change"
+    var mask = /text|password/.test(dom.type) ? "input" : "change";
     addEvent(document, mask, changeHandle);
 };
+
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
     addEvent(document, "dblclick", doubleClickHandle);
-}
+};
 
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;

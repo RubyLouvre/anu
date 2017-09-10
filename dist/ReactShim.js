@@ -19,14 +19,15 @@ var EMPTY_CHILDREN = [];
 var limitWarn = {
 	createClass: 1,
 	renderSubtree: 1
-	/**
-  * 复制一个对象的属性到另一个对象
-  *
-  * @param {any} obj
-  * @param {any} props
-  * @returns
-  */
-};function extend(obj, props) {
+};
+/**
+ * 复制一个对象的属性到另一个对象
+ *
+ * @param {any} obj
+ * @param {any} props
+ * @returns
+ */
+function extend(obj, props) {
 	if (props) {
 		for (var i in props) {
 			if (props.hasOwnProperty(i)) obj[i] = props[i];
@@ -125,8 +126,8 @@ function getChildContext(instance, context) {
 	}
 	return context;
 }
-var rcamelize = /[-_][^-_]/g;
 
+var rcamelize = /[-_][^-_]/g;
 function camelize(target) {
 	//提前判断，提高getStyle等的效率
 	if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
@@ -155,6 +156,7 @@ function checkNull(vnode, type) {
 	}
 	return vnode;
 }
+
 var numberMap = {
 	//null undefined IE6-8这里会返回[object Object]
 	"[object Boolean]": 2,
@@ -183,16 +185,17 @@ var recyclables = {
 
 var CurrentOwner = {
     cur: null
-    /**
-     * 创建虚拟DOM
-     *
-     * @param {string} type
-     * @param {object} props
-     * @param {array} ...children
-     * @returns
-     */
+};
+/**
+ * 创建虚拟DOM
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} ...children
+ * @returns
+ */
 
-};function createElement(type, config, children) {
+function createElement(type, config, children) {
     var props = {},
         checkProps = 0,
         vtype = 1,
@@ -218,7 +221,9 @@ var CurrentOwner = {
     }
 
     if (argsLen === 1) {
-        if (children !== void 0) props.children = children;
+        if (children !== void 0) {
+            props.children = children;
+        }
     } else if (argsLen > 1) {
         var childArray = Array(argsLen);
         for (var _i = 0; _i < argsLen; _i++) {
@@ -353,6 +358,7 @@ function _flattenChildren(original, convert) {
     }
     return children;
 }
+
 function flattenChildren(vnode) {
     var arr = _flattenChildren(vnode.props.children, true);
     if (arr.length === 0) {
@@ -747,6 +753,7 @@ try {
 } catch (e) {
     // no catch
 }
+
 eventPropHooks.click = function (e) {
     return !e.target.disabled;
 };
@@ -822,6 +829,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+
 function createHandle(name, fn) {
     return function (e) {
         if (fn && fn(e) === false) {
@@ -830,6 +838,7 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
+
 var changeHandle = createHandle("change");
 var doubleClickHandle = createHandle("doubleclick");
 
@@ -838,6 +847,7 @@ eventHooks.changecapture = eventHooks.change = function (dom) {
     var mask = /text|password/.test(dom.type) ? "input" : "change";
     addEvent(document, mask, changeHandle);
 };
+
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
     addEvent(document, "dblclick", doubleClickHandle);
 };
@@ -1558,7 +1568,6 @@ function disposeStateless(vnode) {
 function disposeElement(vnode) {
     var props = vnode.props,
         vchildren = vnode.vchildren;
-    //var children = props.children;
 
     if (props[innerHTML]) {
         removeDOMElement(vnode._hostNode);

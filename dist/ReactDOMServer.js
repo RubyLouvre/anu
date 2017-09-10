@@ -12,6 +12,14 @@ var __type = Object.prototype.toString;
 
 
 /**
+ * 复制一个对象的属性到另一个对象
+ *
+ * @param {any} obj
+ * @param {any} props
+ * @returns
+ */
+
+/**
  * 一个空函数
  *
  * @export
@@ -81,6 +89,7 @@ function getChildContext(instance, context) {
 
 
 
+
 function checkNull(vnode, type) {
 	// if (Array.isArray(vnode) && vnode.length === 1) {
 	//  vnode = vnode[0];
@@ -92,6 +101,7 @@ function checkNull(vnode, type) {
 	}
 	return vnode;
 }
+
 var numberMap = {
 	//null undefined IE6-8这里会返回[object Object]
 	"[object Boolean]": 2,
