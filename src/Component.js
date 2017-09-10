@@ -34,7 +34,9 @@ Component.prototype = {
     setState(state, cb) {
         debounceSetState(this, state, cb)
     },
-
+    isMounted(){
+        return this.__current._hostNode
+    },
     forceUpdate(cb) {
         debounceSetState(this, true, cb)
     },
