@@ -28,7 +28,7 @@ var isSpecialAttr = {
 
 var emptyStyle = {};
 var svgCache = {}
-var typeCache = {}
+var strategyCache = {}
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
@@ -156,20 +156,20 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
     for (let name in nextProps) {
         let val = nextProps[name];
         if (val !== lastProps[name]) {
-            let key = tag + isSVG + name;
-            let hookName = typeCache[key];
-            if (!hookName) {
-                hookName = typeCache[key] = getHookType(dom, name, isSVG);
+            let which = tag + isSVG + name;
+            let strategy = strategyCache[which];
+            if (!strategy) {
+                strategy = strategyCache[which] = getPropStrategy(dom, name, isSVG);
             }
-            propAdapters[hookName](dom, name, val, lastProps);
+            propAdapters[strategy](dom, name, val, lastProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
-            let key = tag + isSVG + name;
-            let hookName = typeCache[key];
-            propAdapters[hookName](dom, name, false, lastProps);
+            let which = tag + isSVG + name;
+            let strategy = strategyCache[which];
+            propAdapters[strategy](dom, name, false, lastProps);
         }
     }
 }
@@ -178,19 +178,20 @@ function isBooleanAttr(dom, name) {
     if (booleanAttr[name]) {
         return true;
     }
-    if (typeNumber(dom[name]) === 2) {
+    var val = dom[name];
+    if (val === true || val === false) {
         return booleanAttr[name] = true;
     }
 }
 /**
- * 取得属性的处理令牌，方便分配到各自的适配器进行加工
+ * 根据一个属性所在的元素或元素的文档类型，就可以永久决定该使用什么策略操作它
  * 
  * @param {any} dom 元素节点
  * @param {any} name 属性名
  * @param {any} isSVG 
  * @returns 
  */
-function getHookType(dom, name, isSVG) {
+function getPropStrategy(dom, name, isSVG) {
     if (isSVG && name === 'className') {
         return 'svgClass'
     }
