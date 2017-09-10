@@ -5,20 +5,15 @@ export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
-    switch (vnode.vtype) {
-        case 1:
-            disposeElement(vnode);
-            break;
-        case 2:
-            disposeComponent(vnode);
-            break;
-        case 4:
-            disposeStateless(vnode);
-            break;
-    }
+    disposeStrategy[vnode.vtype](vnode);
     vnode._disposed = true;
 }
-
+var disposeStrategy = {
+    0: noop,
+    1: disposeElement,
+    2: disposeComponent,
+    4: disposeStateless
+}
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {

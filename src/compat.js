@@ -1,5 +1,5 @@
 import { document, msie } from "./browser";
-import { propAdapters } from "./diffProps";
+import { actionStrategy } from "./diffProps";
 import { oneObject, toLowerCase, innerHTML } from "./util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent } from "./event";
 
@@ -67,7 +67,7 @@ var IEHandleFix = {
 };
 
 if (msie < 9) {
-    propAdapters[innerHTML] = function (dom, name, val, lastProps) {
+    actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
         if (html !== oldhtml) {

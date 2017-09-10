@@ -159,9 +159,9 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             let which = tag + isSVG + name;
             let strategy = strategyCache[which];
             if (!strategy) {
-                strategy = strategyCache[which] = getPropStrategy(dom, name, isSVG);
+                strategy = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            propAdapters[strategy](dom, name, val, lastProps);
+            actionStrategy[strategy](dom, name, val, lastProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -169,7 +169,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let strategy = strategyCache[which];
-            propAdapters[strategy](dom, name, false, lastProps);
+            actionStrategy[strategy](dom, name, false, lastProps);
         }
     }
 }
@@ -191,7 +191,7 @@ function isBooleanAttr(dom, name) {
  * @param {any} isSVG 
  * @returns 
  */
-function getPropStrategy(dom, name, isSVG) {
+function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
         return "svgClass";
     }
@@ -213,7 +213,7 @@ function getPropStrategy(dom, name, isSVG) {
         : "property";
 }
 
-export var propAdapters = {
+export var actionStrategy = {
     innerHTML: noop,
     children: noop,
     style: function (dom, _, val, lastProps) {

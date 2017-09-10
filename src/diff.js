@@ -174,7 +174,7 @@ let formElements = {
     input: 1
 };
 
-let patchAdapter = {
+let patchStrategy = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
@@ -188,7 +188,7 @@ let patchAdapter = {
 
 
 export function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -550,7 +550,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateVnode(lastVnode, nextVnode, context, mountQueue) {
-    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
+    return patchStrategy[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {

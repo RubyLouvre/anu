@@ -1212,9 +1212,9 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             var which = tag + isSVG + name;
             var strategy = strategyCache[which];
             if (!strategy) {
-                strategy = strategyCache[which] = getPropStrategy(dom, name, isSVG);
+                strategy = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            propAdapters[strategy](dom, name, val, lastProps);
+            actionStrategy[strategy](dom, name, val, lastProps);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -1222,7 +1222,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         if (!nextProps.hasOwnProperty(_name)) {
             var _which = tag + isSVG + _name;
             var _strategy = strategyCache[_which];
-            propAdapters[_strategy](dom, _name, false, lastProps);
+            actionStrategy[_strategy](dom, _name, false, lastProps);
         }
     }
 }
@@ -1244,7 +1244,7 @@ function isBooleanAttr(dom, name) {
  * @param {any} isSVG 
  * @returns 
  */
-function getPropStrategy(dom, name, isSVG) {
+function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
         return "svgClass";
     }
@@ -1264,7 +1264,7 @@ function getPropStrategy(dom, name, isSVG) {
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
 
-var propAdapters = {
+var actionStrategy = {
     innerHTML: noop,
     children: noop,
     style: function style(dom, _, val, lastProps) {
@@ -1544,20 +1544,15 @@ function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
-    switch (vnode.vtype) {
-        case 1:
-            disposeElement(vnode);
-            break;
-        case 2:
-            disposeComponent(vnode);
-            break;
-        case 4:
-            disposeStateless(vnode);
-            break;
-    }
+    disposeStrategy[vnode.vtype](vnode);
     vnode._disposed = true;
 }
-
+var disposeStrategy = {
+    0: noop,
+    1: disposeElement,
+    2: disposeComponent,
+    4: disposeStateless
+};
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
@@ -1740,7 +1735,7 @@ var formElements = {
     input: 1
 };
 
-var patchAdapter = {
+var patchStrategy = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
@@ -1752,7 +1747,7 @@ var patchAdapter = {
 };
 
 function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -2106,7 +2101,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateVnode(lastVnode, nextVnode, context, mountQueue) {
-    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
+    return patchStrategy[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
