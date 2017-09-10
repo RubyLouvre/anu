@@ -122,7 +122,7 @@ export function createDOMElement(vnode) {
 var rmathTags = /^m/;
 
 var namespaceMap = oneObject("svg", NAMESPACE.svg);
-namespaceMap.semantics = NAMESPACE.map;
+namespaceMap.semantics = NAMESPACE.math;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
     namespaceMap[tag] = null;
