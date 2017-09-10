@@ -833,25 +833,25 @@ var eventSystem = extend({
 
 //为了兼容yo
 var check = function check() {
-  return check;
+    return check;
 };
 check.isRequired = check;
 var PropTypes = {
-  array: check,
-  bool: check,
-  func: check,
-  number: check,
-  object: check,
-  string: check,
-  any: check,
-  arrayOf: check,
-  element: check,
-  instanceOf: check,
-  node: check,
-  objectOf: check,
-  oneOf: check,
-  oneOfType: check,
-  shape: check
+    array: check,
+    bool: check,
+    func: check,
+    number: check,
+    object: check,
+    string: check,
+    any: check,
+    arrayOf: check,
+    element: check,
+    instanceOf: check,
+    node: check,
+    objectOf: check,
+    oneOf: check,
+    oneOfType: check,
+    shape: check
 };
 
 /**
@@ -1094,27 +1094,27 @@ function cloneElement(vnode, props) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
-  if (Object.is(objA, objB)) {
-    return true;
-  }
-  //确保objA, objB都是对象
-  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-    return false;
-  }
-  var keysA = Object.keys(objA);
-  var keysB = Object.keys(objB);
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  // Test for A's keys different from B.
-  for (var i = 0; i < keysA.length; i++) {
-    if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-      return false;
+    if (Object.is(objA, objB)) {
+        return true;
     }
-  }
+    //确保objA, objB都是对象
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
 
-  return true;
+    // Test for A's keys different from B.
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function PureComponent(props, context) {
@@ -1140,34 +1140,34 @@ var rnumber = /^-?\d+(\.\d+)?$/;
      * @param {any} newStyle 
      */
 function patchStyle(dom, oldStyle, newStyle) {
-  if (oldStyle === newStyle) {
-    return;
-  }
+    if (oldStyle === newStyle) {
+        return;
+    }
 
-  for (var name in newStyle) {
-    var val = newStyle[name];
-    if (oldStyle[name] !== val) {
-      name = cssName(name, dom);
-      if (val !== 0 && !val) {
-        val = ""; //清除样式
-      } else if (rnumber.test(val) && !cssNumber[name]) {
-        val = val + "px"; //添加单位
-      }
-      try {
-        //node.style.width = NaN;node.style.width = 'xxxxxxx';
-        //node.style.width = undefine 在旧式IE下会抛异常
-        dom.style[name] = val; //应用样式
-      } catch (e) {
-        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
-      }
+    for (var name in newStyle) {
+        var val = newStyle[name];
+        if (oldStyle[name] !== val) {
+            name = cssName(name, dom);
+            if (val !== 0 && !val) {
+                val = ""; //清除样式
+            } else if (rnumber.test(val) && !cssNumber[name]) {
+                val = val + "px"; //添加单位
+            }
+            try {
+                //node.style.width = NaN;node.style.width = 'xxxxxxx';
+                //node.style.width = undefine 在旧式IE下会抛异常
+                dom.style[name] = val; //应用样式
+            } catch (e) {
+                console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
+            }
+        }
     }
-  }
-  // 如果旧样式存在，但新样式已经去掉
-  for (var _name in oldStyle) {
-    if (!(_name in newStyle)) {
-      dom.style[_name] = ""; //清除样式
+    // 如果旧样式存在，但新样式已经去掉
+    for (var _name in oldStyle) {
+        if (!(_name in newStyle)) {
+            dom.style[_name] = ""; //清除样式
+        }
     }
-  }
 }
 
 var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
@@ -1183,17 +1183,17 @@ var cssMap = oneObject("float", "cssFloat");
  * @returns 
  */
 function cssName(name, dom) {
-  if (cssMap[name]) {
-    return cssMap[name];
-  }
-  var host = dom && dom.style || {};
-  for (var i = 0, n = prefixes.length; i < n; i++) {
-    var camelCase = camelize(prefixes[i] + name);
-    if (camelCase in host) {
-      return cssMap[name] = camelCase;
+    if (cssMap[name]) {
+        return cssMap[name];
     }
-  }
-  return null;
+    var host = dom && dom.style || {};
+    for (var i = 0, n = prefixes.length; i < n; i++) {
+        var camelCase = camelize(prefixes[i] + name);
+        if (camelCase in host) {
+            return cssMap[name] = camelCase;
+        }
+    }
+    return null;
 }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -1227,7 +1227,7 @@ var strategyCache = {};
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
- * -1 表示用 ':' 隔开的属性 (xlink:href, xlink:title 等)
+ * -1 表示用 ":" 隔开的属性 (xlink:href, xlink:title 等)
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
 var svgCamelCase = {
@@ -1376,8 +1376,8 @@ function isBooleanAttr(dom, name) {
  * @returns 
  */
 function getPropStrategy(dom, name, isSVG) {
-    if (isSVG && name === 'className') {
-        return 'svgClass';
+    if (isSVG && name === "className") {
+        return "svgClass";
     }
     if (isSpecialAttr[name]) {
         return name;
@@ -1424,14 +1424,14 @@ var propAdapters = {
         }
     },
     booleanAttr: function booleanAttr(dom, name, val) {
-        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
+        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,""),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
         dom[name] = !!val;
         if (dom[name] === false) {
             dom.removeAttribute(name);
-        } else if (dom[name] === 'false') {
+        } else if (dom[name] === "false") {
             //字符串属性会将它转换为false
-            dom[name] = '';
+            dom[name] = "";
         }
     },
     attribute: function attribute(dom, name, val) {
@@ -1441,7 +1441,7 @@ var propAdapters = {
         try {
             dom.setAttribute(name, val);
         } catch (e) {
-            console.log("setAttribute error", name, val); // eslint-disable-line
+            console.warn("setAttribute error", name, val); // eslint-disable-line
         }
     },
     property: function property(dom, name, val) {
@@ -1449,7 +1449,7 @@ var propAdapters = {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                dom[name] = !val ? '' : val;
+                dom[name] = !val ? "" : val;
             } catch (e) {
                 dom.setAttribute(name, val);
             }
@@ -2339,27 +2339,27 @@ function insertDOM(parentNode, dom, ref) {
 }
 
 var React = {
-  version: "1.1.1",
-  render: render,
-  options: options,
-  PropTypes: PropTypes,
-  Children: Children, //为了react-redux
-  Component: Component,
-  eventSystem: eventSystem,
-  findDOMNode: findDOMNode,
-  createClass: createClass,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  unmountComponentAtNode: unmountComponentAtNode,
-  unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-  createFactory: function createFactory(type) {
-    console.warn("createFactory将被废弃"); // eslint-disable-line
-    var factory = createElement.bind(null, type);
-    factory.type = type;
-    return factory;
-  }
+    version: "1.1.1",
+    render: render,
+    options: options,
+    PropTypes: PropTypes,
+    Children: Children, //为了react-redux
+    Component: Component,
+    eventSystem: eventSystem,
+    findDOMNode: findDOMNode,
+    createClass: createClass,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    unmountComponentAtNode: unmountComponentAtNode,
+    unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+    createFactory: function createFactory(type) {
+        console.warn("createFactory将被废弃"); // eslint-disable-line
+        var factory = createElement.bind(null, type);
+        factory.type = type;
+        return factory;
+    }
 };
 
 win.React = win.ReactDOM = React;

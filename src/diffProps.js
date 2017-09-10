@@ -27,12 +27,12 @@ var isSpecialAttr = {
 };
 
 var emptyStyle = {};
-var svgCache = {}
-var strategyCache = {}
+var svgCache = {};
+var strategyCache = {};
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
- * -1 表示用 ':' 隔开的属性 (xlink:href, xlink:title 等)
+ * -1 表示用 ":" 隔开的属性 (xlink:href, xlink:title 等)
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
 var svgCamelCase = {
@@ -108,14 +108,14 @@ function genReplaceValue(split) {
 
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
-        return svgCache[name]
+        return svgCache[name];
     }
     const key = name.match(/[a-z][A-Z]/);
     if (!key) {
-        return svgCache[name] = name
+        return svgCache[name] = name;
     }
     const [prefix, postfix] = [...key[0].toLowerCase()];
-    let orig = name
+    let orig = name;
     if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
         const count = svgCamelCase[prefix][postfix];
 
@@ -136,7 +136,7 @@ function getSVGAttributeName(name) {
         name = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
     }
 
-    return svgCache[orig] = name
+    return svgCache[orig] = name;
 }
 
 
@@ -150,8 +150,8 @@ function getSVGAttributeName(name) {
  * @param {any} lastVnode
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    let isSVG = vnode.ns === "http://www.w3.org/2000/svg"
-    let tag = vnode.type
+    let isSVG = vnode.ns === "http://www.w3.org/2000/svg";
+    let tag = vnode.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name];
@@ -192,8 +192,8 @@ function isBooleanAttr(dom, name) {
  * @returns 
  */
 function getPropStrategy(dom, name, isSVG) {
-    if (isSVG && name === 'className') {
-        return 'svgClass'
+    if (isSVG && name === "className") {
+        return "svgClass";
     }
     if (isSpecialAttr[name]) {
         return name;
@@ -242,13 +242,13 @@ export var propAdapters = {
         }
     },
     booleanAttr: function (dom, name, val) {
-        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
+        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,""),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
-        dom[name] = !!val
+        dom[name] = !!val;
         if (dom[name] === false) {
             dom.removeAttribute(name);
-        } else if (dom[name] === 'false') { //字符串属性会将它转换为false
-            dom[name] = ''
+        } else if (dom[name] === "false") { //字符串属性会将它转换为false
+            dom[name] = "";
         }
     },
     attribute: function (dom, name, val) {
@@ -258,7 +258,7 @@ export var propAdapters = {
         try {
             dom.setAttribute(name, val);
         } catch (e) {
-            console.log("setAttribute error", name, val); // eslint-disable-line
+            console.warn("setAttribute error", name, val); // eslint-disable-line
         }
     },
     property: function (dom, name, val) {
@@ -266,7 +266,7 @@ export var propAdapters = {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                dom[name] = !val ? '' : val;
+                dom[name] = !val ? "" : val;
             } catch (e) {
                 dom.setAttribute(name, val);
             }
