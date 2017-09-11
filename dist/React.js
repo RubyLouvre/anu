@@ -2269,6 +2269,9 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     var hashcode = {};
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
+        if (el._disposed) {
+            return;
+        }
         var list = hashcode[key];
         if (list) {
             list.push(el);
