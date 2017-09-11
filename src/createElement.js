@@ -1,8 +1,8 @@
-import { __push, EMPTY_CHILDREN, typeNumber } from "./util";
+import {__push, EMPTY_CHILDREN, typeNumber} from "./util";
 
 export var CurrentOwner = {
-   cur: null
-}    
+    cur: null
+}
 /**
  * 创建虚拟DOM
  *
@@ -23,10 +23,14 @@ export function createElement(type, config, children) {
         for (var i in config) {
             var val = config[i];
             if (i === "key") {
-                if (val !== void 0) key = val + "";
-            } else if (i === "ref") {
-                if (val !== void 0) ref = val;
-            } else {
+                if (val !== void 0) 
+                    key = val + "";
+                }
+            else if (i === "ref") {
+                if (val !== void 0) 
+                    ref = val;
+                }
+            else {
                 checkProps = 1;
                 props[i] = val;
             }
@@ -34,9 +38,10 @@ export function createElement(type, config, children) {
     }
     var childrenLength = arguments.length - 2;
     if (childrenLength === 1) {
-        if (children !== void 0)
+        if (children !== void 0) 
             props.children = children;
-    } else if (childrenLength > 1) {
+        }
+    else if (childrenLength > 1) {
         var childArray = Array(childrenLength);
         for (var i = 0; i < childrenLength; i++) {
             childArray[i] = arguments[i + 2];
@@ -70,8 +75,8 @@ function getDOMNode() {
 
 function createStringRef(owner, ref) {
     function stringRef(dom) {
-        if (dom){
-            if(dom.nodeType){
+        if (dom) {
+            if (dom.nodeType) {
                 dom.getDOMNode = getDOMNode
             }
             owner.refs[ref] = dom
@@ -150,13 +155,14 @@ export function _flattenChildren(original, convert) {
             // eslint-disable-next-line
             var childType = typeNumber(child);
 
-            if (childType < 3 // 0, 1, 2
-            ) {
-                continue;
-            }
-
-            if (childType < 6) {
-                if (lastText && convert) {//false模式下不进行合并与转换
+            if (childType < 3) { // 0, 1, 2
+                if (convert) {
+                    continue;
+                } else {
+                    child = null;
+                }
+            } else if (childType < 6) {
+                if (lastText && convert) { //false模式下不进行合并与转换
                     children[0].text = child + children[0].text;
                     continue;
                 }

@@ -5,61 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+    <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
     window.onload = function(){
-    var a = 1;
-    class Select extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 1
-        };
-      }
-      render() {
-        return React.createElement(SelectTrigger, {
-          ref: function(a){
-            console.log(this, a)
-          }
-        },React.createElement(
-          'div',
-          {
-            ref: function(b){
-              console.log(this, b)
-            }
-        },"xxxx"))
-      }
-    }
-    class SelectTrigger extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 2
-        };
-      }
-      render() {
-        return React.createElement(Trigger, Object.assign({title: 'xxx'}, this.props), this.props.children)
-      }
-    }
-    class Trigger extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          aaa: 2
-        };
-      }
-      render() {
-        var props = this.props;
-        var children = props.children;
-        var child = React.Children.only(children);
-        return React.cloneElement(child, {className: '5555'})
-      }
-    }
-    var div = document.body
-    var s = ReactDOM.render(<Select />, div);
-    console.log(s)
+        React.Children.forEach([false, true,[undefined,'11']], function(a){
+             console.log(a)
+        });
     }
     </script>
 </head>
