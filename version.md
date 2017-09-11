@@ -1,18 +1,23 @@
+## 1.1.2
+1. 修正 onChange 事件
+2. 重构 diffProps 模块的实现
+3. 支持组件的isMounted方法
+
 ## 1.1.1
 1. 简化createClass
 2. 修正flattenHooks BUG， 如果hooks中只有一个函数，就不用再包一层
-3. 修改虚拟DOM树的实现，与官方React保持一致，即props.children现在是多种形态，延迟到diff时才创建用于比较的vchildren
+3. 重构虚拟DOM树的实现，与官方React保持一致，即props.children现在是多种形态，延迟到diff时才创建用于比较的vchildren
 4. 修正disposeElement，如果存在dangerouslySetInnerHTML的情况，需要清空元素内部，不走遍历子虚拟DOM的分支
 5. 修正diffProps, SVG的元素是区分大小写 如viewBox preserveAspectRation
 6. 组件更新时，要检测context是否改变
 7. 为事件对象实现persist方法
-8. 修复unstable_renderSubtreeIntoContainer的回调的this指向问题
+8. 修正unstable_renderSubtreeIntoContainer的回调的this指向问题
 9. 修正unmountComponentAtNode BUG， #text改为 #comment
 10. 修正cloneElement BUG， 确保children与_owner正确传入
 11. 修正ref机制，如果为字符串时，通过createStringRef方法将当前ref, owner传入，返回一个curry方法，在cloneElement时
     createStringRef创建的方法会再被整合到新ref方法的内部，确保旧的owner再次被更新
 12. 修正getNs方法的实现（原先是使用hash表进行穷举，但svg文档也有a, script ,style元素，导致无法区分）
-13. 用户在componentDidUpdate使用setState是不当操作，导致进入死循环，改用定时器减缓调用频率，防止页面卡死（官方React也改用相似的机制）
+13. 用户在componentDidUpdate使用setState是不当操作，导致进入死循环，改用定时器减缓调用频率，防止页面卡死（官方React也存在类似的机制）
 ## 1.1.0
 1. disabled的元素不能触发点击事件
 2. 修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理

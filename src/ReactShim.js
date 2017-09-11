@@ -7,19 +7,19 @@ import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 
-import { render, findDOMNode } from "./diff";
-import "./ieEvent";
+import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
 var React = {
-  version: "VERSION",
-  Children, //支持react-redux
-  render,
-  findDOMNode,
-  options,
-  createElement,
-  cloneElement,
-  PureComponent,
-  Component
+    version: "VERSION",
+    render,
+    options,
+    Children, //支持react-redux
+    Component,
+    findDOMNode,
+    createElement,
+    cloneElement,
+    PureComponent,
+    unmountComponentAtNode
 };
 
 window.React = window.ReactDOM = React;

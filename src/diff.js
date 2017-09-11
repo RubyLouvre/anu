@@ -1,7 +1,6 @@
 import { diffProps } from "./diffProps";
 import { CurrentOwner, flattenChildren } from "./createElement";
 import { createDOMElement, removeDOMElement, getNs } from "./browser";
-
 import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
 
 import {
@@ -174,7 +173,7 @@ let formElements = {
     input: 1
 };
 
-let patchAdapter = {
+let patchStrategy = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
@@ -188,7 +187,7 @@ let patchAdapter = {
 
 
 export function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -292,6 +291,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
     var lastOwn = CurrentOwner.cur
     let instance = new type(props, context); //互相持有引用
+
     // CurrentOwner.reset();
     CurrentOwner.cur = lastOwn
     vnode._instance = instance;
@@ -328,12 +328,12 @@ function Stateless(render) {
 }
 
 var renderComponent = function (vnode, props, context) {
-    var lastOwn = CurrentOwner.cur
-    CurrentOwner.cur = this
+    var lastOwn = CurrentOwner.cur;
+    CurrentOwner.cur = this;
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render();
-    CurrentOwner.cur = lastOwn
+    CurrentOwner.cur = lastOwn;
     rendered = checkNull(rendered, vnode.type);
     this.context = context;
     this.props = props;
@@ -428,13 +428,12 @@ function _refreshComponent(instance, dom, mountQueue) {
     nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
-        instance.__didUpdate = true
+        instance.__didUpdate = true;
         instance.componentDidUpdate(lastProps, lastState, lastContext);
         if(!instance.__renderInNextCycle){
-            instance.__didUpdate = false
+            instance.__didUpdate = false;
         }
     }
-
 
     instance.__hydrating = false;
 
@@ -467,12 +466,9 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 }
 
 export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
-
     let dom = node;
-    //eslint-disable-next-line
-
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
-
+    //eslint-disable-next-line 
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || (lastVnode.vtype > 1 && lastVnode._instance) ) {
         disposeVnode(lastVnode);
         let innerMountQueue = mountQueue.mountAll
             ? mountQueue
@@ -551,7 +547,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateVnode(lastVnode, nextVnode, context, mountQueue) {
-    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
+    return patchStrategy[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
@@ -573,6 +569,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     var hashcode = {};
     lastChildren.forEach(function (el) {
         let key = el.type + (el.key || "");
+        if(el._disposed){
+            //如果被销毁或没有实例化
+            return
+        }
         let list = hashcode[key];
         if (list) {
             list.push(el);

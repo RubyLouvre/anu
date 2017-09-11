@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-08
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-11
  */
 
 (function (global, factory) {
@@ -8,30 +8,31 @@
 	(global.React = factory());
 }(this, (function () {
 
-var __type = Object.prototype.toString;
-
-
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
 var limitWarn = {
-  createClass: 1,
-  renderSubtree: 1
-  /**
-   * 复制一个对象的属性到另一个对象
-   *
-   * @param {any} obj
-   * @param {any} props
-   * @returns
-   */
-};function extend(obj, props) {
-  if (props) {
-    for (var i in props) {
-      if (props.hasOwnProperty(i)) obj[i] = props[i];
+    createClass: 1,
+    renderSubtree: 1
+};
+/**
+ * 复制一个对象的属性到另一个对象
+ *
+ * @param {any} obj
+ * @param {any} props
+ * @returns
+ */
+function extend(obj, props) {
+    if (props) {
+        for (var i in props) {
+            if (props.hasOwnProperty(i)) obj[i] = props[i];
+        }
     }
-  }
-  return obj;
+    return obj;
 }
+
+var __type = Object.prototype.toString;
+
 /**
  * 一个空函数
  *
@@ -47,15 +48,15 @@ function noop() {}
  * @param {any} SupClass
  */
 function inherit(SubClass, SupClass) {
-  function Bridge() {}
-  Bridge.prototype = SupClass.prototype;
+    function Bridge() {}
+    Bridge.prototype = SupClass.prototype;
 
-  var fn = SubClass.prototype = new Bridge();
+    var fn = SubClass.prototype = new Bridge();
 
-  // 避免原型链拉长导致方法查找的性能开销
-  extend(fn, SupClass.prototype);
-  fn.constructor = SubClass;
-  return fn;
+    // 避免原型链拉长导致方法查找的性能开销
+    extend(fn, SupClass.prototype);
+    fn.constructor = SubClass;
+    return fn;
 }
 
 /**
@@ -66,29 +67,29 @@ function inherit(SubClass, SupClass) {
  * @returns
  */
 function getNodes(dom) {
-  var ret = [],
-      c = dom.childNodes || [];
-  // eslint-disable-next-line
-  for (var i = 0, el; el = c[i++];) {
-    ret.push(el);
-  }
-  return ret;
+    var ret = [],
+        c = dom.childNodes || [];
+    // eslint-disable-next-line
+    for (var i = 0, el; el = c[i++];) {
+        ret.push(el);
+    }
+    return ret;
 }
 
 var lowerCache = {};
 /**
  * 小写化的优化
- * 
+ *
  * @export
- * @param {any} s 
- * @returns 
+ * @param {any} s
+ * @returns
  */
 function toLowerCase(s) {
-  return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
+    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
 function clearArray(a) {
-  return a.splice(0, a.length);
+    return a.splice(0, a.length);
 }
 
 /**
@@ -98,133 +99,140 @@ function clearArray(a) {
  * @returns
  */
 function isFn(obj) {
-  return typeNumber(obj) === 5;
+    return typeNumber(obj) === 5;
 }
 
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-  if (typeNumber(array) === 4) {
-    array = array.match(rword) || [];
-  }
-  var result = {},
+    if (typeNumber(array) === 4) {
+        array = array.match(rword) || [];
+    }
+    var result = {},
 
-  //eslint-disable-next-line
-  value = val !== void 666 ? val : 1;
-  for (var i = 0, n = array.length; i < n; i++) {
-    result[array[i]] = value;
-  }
-  return result;
+    //eslint-disable-next-line
+    value = val !== void 666 ? val : 1;
+    for (var i = 0, n = array.length; i < n; i++) {
+        result[array[i]] = value;
+    }
+    return result;
 }
 
 function getChildContext(instance, context) {
-  if (instance.getChildContext) {
-    return Object.assign({}, context, instance.getChildContext());
-  }
-  return context;
+    if (instance.getChildContext) {
+        return Object.assign({}, context, instance.getChildContext());
+    }
+    return context;
 }
-var rcamelize = /[-_][^-_]/g;
 
+var rcamelize = /[-_][^-_]/g;
 function camelize(target) {
-  //提前判断，提高getStyle等的效率
-  if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
-    return target;
-  }
-  //转换为驼峰风格
-  return target.replace(rcamelize, function (match) {
-    return match.charAt(1).toUpperCase();
-  });
+    //提前判断，提高getStyle等的效率
+    if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
+        return target;
+    }
+    //转换为驼峰风格
+    return target.replace(rcamelize, function (match) {
+        return match.charAt(1).toUpperCase();
+    });
 }
 
 var options = {
-  beforeUnmount: noop,
-  afterMount: noop,
-  afterUpdate: noop
+    beforeUnmount: noop,
+    afterMount: noop,
+    afterUpdate: noop
 };
 
 function checkNull(vnode, type) {
-  // if (Array.isArray(vnode) && vnode.length === 1) {
-  //  vnode = vnode[0];
-  // }
-  if (vnode === null || vnode === false) {
-    return { type: "#comment", text: "empty", vtype: 0 };
-  } else if (!vnode || !vnode.vtype) {
-    throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
-  }
-  return vnode;
+    // if (Array.isArray(vnode) && vnode.length === 1) {
+    //  vnode = vnode[0];
+    // }
+    if (vnode === null || vnode === false) {
+        return { type: "#comment", text: "empty", vtype: 0 };
+    } else if (!vnode || !vnode.vtype) {
+        throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
+    }
+    return vnode;
 }
+
 var numberMap = {
-  //null undefined IE6-8这里会返回[object Object]
-  "[object Boolean]": 2,
-  "[object Number]": 3,
-  "[object String]": 4,
-  "[object Function]": 5,
-  "[object Symbol]": 6,
-  "[object Array]": 7
+    //null undefined IE6-8这里会返回[object Object]
+    "[object Boolean]": 2,
+    "[object Number]": 3,
+    "[object String]": 4,
+    "[object Function]": 5,
+    "[object Symbol]": 6,
+    "[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
 function typeNumber(data) {
-  if (data === null) {
-    return 1;
-  }
-  if (data === void 666) {
-    return 0;
-  }
-  var a = numberMap[__type.call(data)];
-  return a || 8;
+    if (data === null) {
+        return 1;
+    }
+    if (data === void 666) {
+        return 0;
+    }
+    var a = numberMap[__type.call(data)];
+    return a || 8;
 }
 
 var recyclables = {
-  "#text": [],
-  "#comment": []
+    "#text": [],
+    "#comment": []
 };
 
 var CurrentOwner = {
     cur: null
-    /**
-     * 创建虚拟DOM
-     *
-     * @param {string} type
-     * @param {object} props
-     * @param {array} ...children
-     * @returns
-     */
+};
+/**
+ * 创建虚拟DOM
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} ...children
+ * @returns
+ */
 
-};function createElement(type, config, children) {
-    // Reserved names are extracted
-    var props = {};
-    var checkProps = 0;
-    var vtype = 1;
-    var key = null;
-    var ref = null;
+function createElement(type, config, children) {
+    var props = {},
+        checkProps = 0,
+        vtype = 1,
+        key = null,
+        ref = null,
+        argsLen = arguments.length - 2;
     if (config != null) {
         for (var i in config) {
             var val = config[i];
             if (i === "key") {
-                if (val !== void 0) key = val + "";
+                if (val !== void 0) {
+                    key = val + "";
+                }
             } else if (i === "ref") {
-                if (val !== void 0) ref = val;
+                if (val !== void 0) {
+                    ref = val;
+                }
             } else {
                 checkProps = 1;
                 props[i] = val;
             }
         }
     }
-    var childrenLength = arguments.length - 2;
-    if (childrenLength === 1) {
-        if (children !== void 0) props.children = children;
-    } else if (childrenLength > 1) {
-        var childArray = Array(childrenLength);
-        for (var i = 0; i < childrenLength; i++) {
-            childArray[i] = arguments[i + 2];
+
+    if (argsLen === 1) {
+        if (children !== void 0) {
+            props.children = children;
+        }
+    } else if (argsLen > 1) {
+        var childArray = Array(argsLen);
+        for (var _i = 0; _i < argsLen; _i++) {
+            childArray[_i] = arguments[_i + 2];
         }
         props.children = childArray;
     }
 
-    // Resolve default props
     var defaultProps = type.defaultProps;
     if (defaultProps) {
-        for (propName in defaultProps) {
+        for (var propName in defaultProps) {
             if (props[propName] === void 666) {
                 checkProps = 1;
                 props[propName] = defaultProps[propName];
@@ -270,7 +278,6 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     var refType = typeNumber(ref);
-    var self = this;
     if (refType === 4) {
         //string
         this.ref = createStringRef(owner, ref);
@@ -302,14 +309,9 @@ Vnode.prototype = {
 
 function _flattenChildren(original, convert) {
     var children = [],
-        temp,
-        lastText,
-        child;
-    if (Array.isArray(original)) {
-        temp = original.slice(0);
-    } else {
-        temp = [original];
-    }
+        lastText = void 0,
+        child = void 0,
+        temp = Array.isArray(original) ? original.slice(0) : [original];
 
     while (temp.length) {
         //比较巧妙地判定是否为子数组
@@ -325,18 +327,20 @@ function _flattenChildren(original, convert) {
             // eslint-disable-next-line
             var childType = typeNumber(child);
 
-            if (childType < 3 // 0, 1, 2
-            ) {
+            if (childType < 3) {
+                // 0, 1, 2
+                if (convert) {
                     continue;
+                } else {
+                    child = null;
                 }
-
-            if (childType < 6) {
+            } else if (childType < 6) {
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
                     children[0].text = child + children[0].text;
                     continue;
                 }
-                child = child + '';
+                child = child + "";
                 if (convert) {
                     child = {
                         type: "#text",
@@ -354,9 +358,10 @@ function _flattenChildren(original, convert) {
     }
     return children;
 }
+
 function flattenChildren(vnode) {
     var arr = _flattenChildren(vnode.props.children, true);
-    if (arr.length == 0) {
+    if (arr.length === 0) {
         arr = EMPTY_CHILDREN;
     }
     return vnode.vchildren = arr;
@@ -368,8 +373,10 @@ var Children = {
         if (Array.isArray(children)) {
             children = children[0];
         }
-        if (children && children.vtype) return children;
-        throw new Error('expect only one child');
+        if (children && children.vtype) {
+            return children;
+        }
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         return _flattenChildren(children, false).length;
@@ -391,7 +398,7 @@ var _loop = function _loop(key) {
     limitWarn[key] = 1;
     Children[key] = function () {
         if (limitWarn[key]-- > 0) {
-            console.warn('请限制使用Children.' + key + ',不要窥探虚拟DOM的内部实现,会导致升级问题');
+            console.warn("请限制使用Children." + key + ",不要窥探虚拟DOM的内部实现,会导致升级问题");
         }
         return fn.apply(null, arguments);
     };
@@ -407,6 +414,14 @@ function DOMElement(type) {
     this.style = {};
     this.children = [];
 }
+
+var NAMESPACE = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xlink: "http://www.w3.org/1999/xlink",
+    math: "http://www.w3.org/1998/Math/MathML"
+};
+
 var fn = DOMElement.prototype = {
     contains: Boolean
 };
@@ -504,10 +519,9 @@ function createDOMElement(vnode) {
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 var rmathTags = /^m/;
-var mathNs = "http://www.w3.org/1998/Math/MathML";
-var svgNs = "http://www.w3.org/2000/svg";
-var namespaceMap = oneObject("svg", svgNs);
-namespaceMap.semantics = mathNs;
+
+var namespaceMap = oneObject("svg", NAMESPACE.svg);
+namespaceMap.semantics = NAMESPACE.math;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
     namespaceMap[tag] = null;
@@ -516,7 +530,7 @@ function getNs(type) {
     if (namespaceMap[type] !== void 666) {
         return namespaceMap[type];
     } else {
-        return namespaceMap[type] = rmathTags.test(type) ? mathNs : null;
+        return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
 }
 
@@ -541,6 +555,7 @@ function isEventName(name) {
     return (/^on[A-Z]/.test(name)
     );
 }
+
 var isTouch = "ontouchstart" in document;
 
 function dispatchEvent(e, type, end) {
@@ -616,14 +631,13 @@ function addEvent(el, type, fn, bool) {
     }
 }
 
-var ron = /^on/;
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
     var lower = eventLowerCache[onStr];
     if (lower) {
         return lower;
     }
-    var camel = onStr.replace(ron, "").replace(rcapture, "");
+    var camel = onStr.slice(2).replace(rcapture, "");
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -639,6 +653,7 @@ try {
 } catch (e) {
     // no catch
 }
+
 eventPropHooks.click = function (e) {
     return !e.target.disabled;
 };
@@ -654,8 +669,8 @@ var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType 
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
         var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-        var deltaY = ~~dom._ms_wheel_ + delta;
-        dom._ms_wheel_ = deltaY;
+        var deltaY = ~~dom.__wheel + delta;
+        dom.__wheel = deltaY;
         e = new SyntheticEvent(e);
         e.type = "wheel";
         e.deltaY = deltaY;
@@ -665,7 +680,7 @@ eventHooks.wheel = function (dom) {
 
 var fixFocus = {};
 "blur,focus".replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom) {
+    eventHooks[type] = function () {
         if (!fixFocus[type]) {
             fixFocus[type] = true;
             addEvent(document, type, dispatchEvent, true);
@@ -682,10 +697,11 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
  */
 function getRelatedTarget(e) {
     if (!e.timeStamp) {
-        e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
     }
     return e.relatedTarget;
 }
+
 function contains(a, b) {
     if (b) {
         while (b = b.parentNode) {
@@ -714,6 +730,28 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
         }
     };
 });
+
+function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
+}
+
+var changeHandle = createHandle("change");
+var doubleClickHandle = createHandle("doubleclick");
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? "input" : "change";
+    addEvent(document, mask, changeHandle);
+};
+
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, "dblclick", doubleClickHandle);
+};
 
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
@@ -810,30 +848,31 @@ var eventSystem = extend({
 	addGlobalEvent: addGlobalEvent,
 	addEvent: addEvent,
 	getBrowserName: getBrowserName,
+	createHandle: createHandle,
 	SyntheticEvent: SyntheticEvent
 });
 
 //为了兼容yo
 var check = function check() {
-  return check;
+    return check;
 };
 check.isRequired = check;
 var PropTypes = {
-  array: check,
-  bool: check,
-  func: check,
-  number: check,
-  object: check,
-  string: check,
-  any: check,
-  arrayOf: check,
-  element: check,
-  instanceOf: check,
-  node: check,
-  objectOf: check,
-  oneOf: check,
-  oneOfType: check,
-  shape: check
+    array: check,
+    bool: check,
+    func: check,
+    number: check,
+    object: check,
+    string: check,
+    any: check,
+    arrayOf: check,
+    element: check,
+    instanceOf: check,
+    node: check,
+    objectOf: check,
+    oneOf: check,
+    oneOfType: check,
+    shape: check
 };
 
 /**
@@ -866,6 +905,9 @@ Component.prototype = {
     },
     setState: function setState(state, cb) {
         debounceSetState(this, state, cb);
+    },
+    isMounted: function isMounted() {
+        return this.__current._hostNode;
     },
     forceUpdate: function forceUpdate(cb) {
         debounceSetState(this, true, cb);
@@ -967,7 +1009,7 @@ function collectMixins(mixins) {
         }
 
         for (var key in mixin) {
-            if (mixin.hasOwnProperty(key) && key !== 'mixins') {
+            if (mixin.hasOwnProperty(key) && key !== "mixins") {
                 (keyed[key] || (keyed[key] = [])).push(mixin[key]);
             }
         }
@@ -980,13 +1022,14 @@ var MANY_MERGED = {
     getDefaultProps: 1,
     getChildContext: 1
 };
+
 function flattenHooks(key, hooks) {
     var hookType = _typeof(hooks[0]);
-    if (hookType === 'object') {
+    if (hookType === "object") {
         // Merge objects
         hooks.unshift({});
         return Object.assign.apply(null, hooks);
-    } else if (hookType === 'function' && hooks.length > 1) {
+    } else if (hookType === "function" && hooks.length > 1) {
         return function () {
             var ret = {},
                 r = void 0,
@@ -997,7 +1040,9 @@ function flattenHooks(key, hooks) {
                     Object.assign(ret, r);
                 }
             }
-            if (hasReturn) return ret;
+            if (hasReturn) {
+                return ret;
+            }
             return r;
         };
     } else {
@@ -1015,7 +1060,7 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === 'function'&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
     return curry(Component, NOBIND, spec);
 }
 
@@ -1055,12 +1100,12 @@ function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
-    var configs = {
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
         key: vnode.key,
         ref: vnode.ref
     };
-    var owner = vnode._owner;
-    var lastOwn = CurrentOwner.cur;
     if (props && props.ref) {
         owner = lastOwn;
     }
@@ -1073,27 +1118,27 @@ function cloneElement(vnode, props) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
-  if (Object.is(objA, objB)) {
-    return true;
-  }
-  //确保objA, objB都是对象
-  if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-    return false;
-  }
-  var keysA = Object.keys(objA);
-  var keysB = Object.keys(objB);
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  // Test for A's keys different from B.
-  for (var i = 0; i < keysA.length; i++) {
-    if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-      return false;
+    if (Object.is(objA, objB)) {
+        return true;
     }
-  }
+    //确保objA, objB都是对象
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
 
-  return true;
+    // Test for A's keys different from B.
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function PureComponent(props, context) {
@@ -1119,34 +1164,34 @@ var rnumber = /^-?\d+(\.\d+)?$/;
      * @param {any} newStyle 
      */
 function patchStyle(dom, oldStyle, newStyle) {
-  if (oldStyle === newStyle) {
-    return;
-  }
+    if (oldStyle === newStyle) {
+        return;
+    }
 
-  for (var name in newStyle) {
-    var val = newStyle[name];
-    if (oldStyle[name] !== val) {
-      name = cssName(name, dom);
-      if (val !== 0 && !val) {
-        val = ""; //清除样式
-      } else if (rnumber.test(val) && !cssNumber[name]) {
-        val = val + "px"; //添加单位
-      }
-      try {
-        //node.style.width = NaN;node.style.width = 'xxxxxxx';
-        //node.style.width = undefine 在旧式IE下会抛异常
-        dom.style[name] = val; //应用样式
-      } catch (e) {
-        console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
-      }
+    for (var name in newStyle) {
+        var val = newStyle[name];
+        if (oldStyle[name] !== val) {
+            name = cssName(name, dom);
+            if (val !== 0 && !val) {
+                val = ""; //清除样式
+            } else if (rnumber.test(val) && !cssNumber[name]) {
+                val = val + "px"; //添加单位
+            }
+            try {
+                //node.style.width = NaN;node.style.width = 'xxxxxxx';
+                //node.style.width = undefine 在旧式IE下会抛异常
+                dom.style[name] = val; //应用样式
+            } catch (e) {
+                console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
+            }
+        }
     }
-  }
-  // 如果旧样式存在，但新样式已经去掉
-  for (var _name in oldStyle) {
-    if (!(_name in newStyle)) {
-      dom.style[_name] = ""; //清除样式
+    // 如果旧样式存在，但新样式已经去掉
+    for (var _name in oldStyle) {
+        if (!(_name in newStyle)) {
+            dom.style[_name] = ""; //清除样式
+        }
     }
-  }
 }
 
 var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
@@ -1162,126 +1207,42 @@ var cssMap = oneObject("float", "cssFloat");
  * @returns 
  */
 function cssName(name, dom) {
-  if (cssMap[name]) {
-    return cssMap[name];
-  }
-  var host = dom && dom.style || {};
-  for (var i = 0, n = prefixes.length; i < n; i++) {
-    var camelCase = camelize(prefixes[i] + name);
-    if (camelCase in host) {
-      return cssMap[name] = camelCase;
+    if (cssMap[name]) {
+        return cssMap[name];
     }
-  }
-  return null;
+    var host = dom && dom.style || {};
+    for (var i = 0, n = prefixes.length; i < n; i++) {
+        var camelCase = camelize(prefixes[i] + name);
+        if (camelCase in host) {
+            return cssMap[name] = camelCase;
+        }
+    }
+    return null;
 }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var boolAttributes = oneObject("autofocus,autoplay,async,allowTransparency,checked,controls,declare,disabled,def" + "er,defaultChecked,defaultSelected,isMap,loop,multiple,noHref,noResize,noShade,op" + "en,readOnly,selected", true);
-
-var builtIdProperties = oneObject("accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan,dateTime,def" + "aultValue,contentEditable,frameBorder,maxLength,marginWidth,marginHeight,rowSpan" + ",tabIndex,useMap,vSpace,valueType,vAlign," + //驼蜂风格
-"value,id,title,alt,htmlFor,name,type,longDesc,className", 1);
-
-var booleanTag = oneObject("script,iframe,a,map,video,bgsound,form,select,input,textarea,option,keygen,optgr" + "oup,label");
-
-/**
- *
- * 修改dom的属性与事件
- * @export
- * @param {any} nextProps
- * @param {any} lastProps
- * @param {any} vnode
- * @param {any} lastVnode
- */
-function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    /* istanbul ignore if */
-    if (vnode.ns === "http://www.w3.org/2000/svg") {
-        return diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom);
-    }
-    //eslint-disable-next-line
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var hookName = getHookType(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps);
-        }
-    }
-    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
-    for (var _name2 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name2)) {
-            var hookName2 = getHookType(_name2, false, vnode.type, dom);
-            propHooks[hookName2](dom, _name2, builtIdProperties[_name2] ? "" : false, lastProps);
-        }
-    }
-}
-
-function diffSVGProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    // http://www.w3school.com.cn/xlink/xlink_reference.asp
-    // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
-    // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
-    // xlinkTitle, xlinkType eslint-disable-next-line
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var hookName = getHookTypeSVG(name, val, vnode.type, dom);
-            propHooks[hookName](dom, name, val, lastProps);
-        }
-    }
-    //eslint-disable-next-line
-    for (var _name3 in lastProps) {
-        if (!nextProps.hasOwnProperty(_name3)) {
-            var _val = nextProps[_name3];
-            var hookName2 = getHookTypeSVG(_name3, _val, vnode.type, dom);
-            propHooks[hookName2](dom, _name3, false, lastProps);
-        }
-    }
-}
+//布尔属性的值末必为true,false
+//https://github.com/facebook/react/issues/10589
 var controlled = {
     value: 1,
     defaultValue: 1
 };
 
-var specialProps = {
-    children: 1,
+var isSpecialAttr = {
     style: 1,
-    className: 1,
+    children: 1,
+    innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
 
-function getHookType(name, val, type, dom) {
-    if (specialProps[name]) {
-        return name;
-    }
-    if (boolAttributes[name] && booleanTag[type]) {
-        return "boolean";
-    }
-    if (isEventName(name)) {
-        return "__event__";
-    }
-    if (typeNumber(val) < 3 && !val) {
-        return "removeAttribute";
-    }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "setAttribute" : "property";
-}
-
-function getHookTypeSVG(name) {
-    if (name === "className") {
-        return "svgClass";
-    }
-
-    if (specialProps[name]) {
-        return name;
-    }
-
-    if (isEventName(name)) {
-        return "__event__";
-    }
-    return "svgAttr";
-}
+var emptyStyle = {};
+var svgCache = {};
+var strategyCache = {};
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
- * -1 表示用 ':' 隔开的属性 (xlink:href, xlink:title 等)
+ * -1 表示用 ":" 隔开的属性 (xlink:href, xlink:title 等)
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
 var svgCamelCase = {
@@ -1335,17 +1296,21 @@ var specialSVGPropertyName = {
 // 重复属性名的特征值列表
 var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
 
-function genReplaceValue(split) {
+function createRepaceFn(split) {
     return function (match) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
-var svgCache = {};
+
+var rhump = /[a-z][A-Z]/;
+var toHyphen = createRepaceFn("-");
+var toColon = createRepaceFn(":");
+
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
     }
-    var key = name.match(/[a-z][A-Z]/);
+    var key = name.match(rhump);
     if (!key) {
         return svgCache[name] = name;
     }
@@ -1360,52 +1325,95 @@ function getSVGAttributeName(name) {
 
         if (count === -1) {
             return svgCache[orig] = {
-                name: name.replace(/[a-z][A-Z]/, genReplaceValue(":")),
+                name: name.replace(rhump, toColon),
                 ifSpecial: true
             };
         }
 
         if (~repeatedKey.indexOf(prefix + postfix)) {
-            var dashName = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
+            var dashName = name.replace(rhump, toHyphen);
             if (specialSVGPropertyName[dashName]) {
                 name = dashName;
             }
         }
     } else {
-        name = name.replace(/[a-z][A-Z]/, genReplaceValue("-"));
+        name = name.replace(rhump, toHyphen);
     }
 
     return svgCache[orig] = name;
 }
 
-// XML 的命名空间对应的 URI
-var NAMESPACE_MAP = {
-    svg: "http://www.w3.org/2000/svg",
-    xmlns: "http://www.w3.org/2000/xmlns/",
-    xml: "http://www.w3.org/XML/1998/namespace",
-    xlink: "http://www.w3.org/1999/xlink",
-    xhtml: "http://www.w3.org/1999/xhtml"
-};
+/**
+ *
+ * 修改dom的属性与事件
+ * @export
+ * @param {any} nextProps
+ * @param {any} lastProps
+ * @param {any} vnode
+ * @param {any} lastVnode
+ */
+function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
+    var isSVG = vnode.ns === NAMESPACE.svg;
+    var tag = vnode.type;
+    //eslint-disable-next-line
+    for (var name in nextProps) {
+        var val = nextProps[name];
+        if (val !== lastProps[name]) {
+            var which = tag + isSVG + name;
+            var action = strategyCache[which];
+            if (!action) {
+                action = strategyCache[which] = getPropAction(dom, name, isSVG);
+            }
+            actionStrategy[action](dom, name, val, lastProps);
+        }
+    }
+    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
+    for (var _name in lastProps) {
+        if (!nextProps.hasOwnProperty(_name)) {
+            var _which = tag + isSVG + _name;
+            var _action = strategyCache[_which];
+            actionStrategy[_action](dom, _name, false, lastProps);
+        }
+    }
+}
 
-var emptyStyle = {};
-var propHooks = {
-    boolean: function boolean(dom, name, val) {
-        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,''),
-        // 会影响到样式,需要进一步处理 eslint-disable-next-line
-        dom[name] = !!val;
-        if (!val) {
-            dom.removeAttribute(name);
-        }
-    },
-    removeAttribute: function removeAttribute(dom, name) {
-        dom.removeAttribute(name);
-    },
-    setAttribute: function setAttribute(dom, name, val) {
-        try {
-            dom.setAttribute(name, val);
-        } catch (e) {
-            console.log("setAttribute error", name, val); // eslint-disable-line
-        }
+function isBooleanAttr(dom, name) {
+    var val = dom[name];
+    return val === true || val === false;
+}
+/**
+ * 根据一个属性所在的元素或元素的文档类型，就可以永久决定该使用什么策略操作它
+ * 
+ * @param {any} dom 元素节点
+ * @param {any} name 属性名
+ * @param {any} isSVG 
+ * @returns 
+ */
+function getPropAction(dom, name, isSVG) {
+    if (isSVG && name === "className") {
+        return "svgClass";
+    }
+    if (isSpecialAttr[name]) {
+        return name;
+    }
+    if (isEventName(name)) {
+        return "event";
+    }
+    if (isSVG) {
+        return "svgAttr";
+    }
+    if (isBooleanAttr(dom, name)) {
+        return "booleanAttr";
+    }
+
+    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
+}
+
+var actionStrategy = {
+    innerHTML: noop,
+    children: noop,
+    style: function style(dom, _, val, lastProps) {
+        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
     },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
@@ -1415,52 +1423,47 @@ var propHooks = {
         }
     },
     svgAttr: function svgAttr(dom, name, val) {
+        // http://www.w3school.com.cn/xlink/xlink_reference.asp
+        // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
+        // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
+        // xlinkTitle, xlinkType eslint-disable-next-line
         var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
         var nameRes = getSVGAttributeName(name);
         if (nameRes.ifSpecial) {
             var prefix = nameRes.name.split(":")[0];
-            dom[method + "NS"](NAMESPACE_MAP[prefix], nameRes.name, val || "");
-            return;
+            // 将xlinkHref 转换为 xlink:href
+            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
         } else {
             dom[method](nameRes, val || "");
         }
-        // var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        // var key = name.match(/[a-z][A-Z]/);
-        // if (key) {
-        //     var res = getSvgAttributeType(key[0]);
-        //     // svg 元素属性区分大小写，如 stroke-width、viewBox
-        //     if (!res.camelCase) {
-        //         name = name.replace(/[a-z][A-Z]/g, function (match) {
-        //             return match.slice(0, 1) + "-" + match.slice(1).toLowerCase();
-        //         });
-        //     } else {
-        //         // svg 元素有几个特殊属性，如 xlink:href(deprecated)、xlink:title
-        //         if (res.special) {
-        //             // 将xlinkHref 转换为 xlink:href
-        //             name = name.replace(/[a-z][A-Z]/g, function (match) {
-        //                 return match.slice(0, 1) + ":" + match.slice(1).toLowerCase();
-        //             });
-        //             var prefix = name.split(":")[0];
-        //             dom[method + "NS"](NAMESPACE_MAP[prefix], name, val || "");
-        //             return;
-        //         }
-        //     }
-        // }
-        // dom[method](name, val || "");
+    },
+    booleanAttr: function booleanAttr(dom, name, val) {
+        // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,""),
+        // 会影响到样式,需要进一步处理 eslint-disable-next-line
+        dom[name] = !!val;
+        if (dom[name] === false) {
+            dom.removeAttribute(name);
+        } else if (dom[name] === "false") {
+            //字符串属性会将它转换为false
+            dom[name] = "";
+        }
+    },
+    attribute: function attribute(dom, name, val) {
+        if (val == null || val === false) {
+            return dom.removeAttribute(name);
+        }
+        try {
+            dom.setAttribute(name, val);
+        } catch (e) {
+            console.warn("setAttribute error", name, val); // eslint-disable-line
+        }
     },
     property: function property(dom, name, val) {
         if (name !== "value" || dom[name] !== val) {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                // svg 元素不能直接对属性赋值，因为很多 svg 元素的属性不是字符串
-                // 比如 circle 的 cx 属性就是 SVGAnimatedLength
-                if (typeof dom[name] !== "string") {
-                    dom.setAttribute(name, val);
-                } else {
-                    dom[name] = val;
-                }
-                dom[name] = val;
+                dom[name] = !val ? "" : val;
             } catch (e) {
                 dom.setAttribute(name, val);
             }
@@ -1469,32 +1472,25 @@ var propHooks = {
             }
         }
     },
-    children: noop,
-    className: function className(dom, _, val) {
-        dom.className = val;
-    },
-    style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
-    },
-    __event__: function __event__(dom, name, val, lastProps) {
+    event: function event(dom, name, val, lastProps) {
         var events = dom.__events || (dom.__events = {});
+        var refName = toLowerCase(name.slice(2));
         if (val === false) {
-            delete events[toLowerCase(name.slice(2))];
+            delete events[refName];
         } else {
             if (!lastProps[name]) {
                 //添加全局监听事件
-                var _name = getBrowserName(name);
-                addGlobalEvent(_name);
-                var hook = eventHooks[_name];
+                var eventName = getBrowserName(name);
+                var hook = eventHooks[eventName];
+                addGlobalEvent(eventName);
                 if (hook) {
-                    hook(dom, _name);
+                    hook(dom, eventName);
                 }
             }
             //onClick --> click, onClickCapture --> clickcapture
-            events[toLowerCase(name.slice(2))] = val;
+            events[refName] = val;
         }
     },
-
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
@@ -1511,106 +1507,106 @@ var propHooks = {
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
 function processFormElement(vnode, dom, props) {
-  var domType = dom.type;
-  var duplexType = duplexMap[domType];
-  if (duplexType) {
-    var data = duplexData[duplexType];
-    var duplexProp = data[0];
-    var keys = data[1];
-    var eventName = data[2];
-    if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
-      // eslint-disable-next-line
-      console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\n      \u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u6765\u63A7\u5236" + duplexProp + "\u5C5E\u6027\u7684\u53D8\u5316\n      \u90A3\u4E48\u5B83\u5373\u4E3A\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
-      dom[eventName] = data[3];
+    var domType = dom.type;
+    var duplexType = duplexMap[domType];
+    if (duplexType) {
+        var data = duplexData[duplexType];
+        var duplexProp = data[0];
+        var keys = data[1];
+        var eventName = data[2];
+        if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
+            // eslint-disable-next-line
+            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\n      \u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u6765\u63A7\u5236" + duplexProp + "\u5C5E\u6027\u7684\u53D8\u5316\n      \u90A3\u4E48\u5B83\u5373\u4E3A\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
+            dom[eventName] = data[3];
+        }
+        if (duplexType === 3) {
+            postUpdateSelectedOptions(vnode);
+        }
     }
-    if (duplexType === 3) {
-      postUpdateSelectedOptions(vnode);
-    }
-  }
 }
 
 function hasOtherControllProperty(props, keys) {
-  for (var key in props) {
-    if (keys[key]) {
-      return true;
+    for (var key in props) {
+        if (keys[key]) {
+            return true;
+        }
     }
-  }
 }
 var duplexMap = {
-  color: 1,
-  date: 1,
-  datetime: 1,
-  "datetime-local": 1,
-  email: 1,
-  month: 1,
-  number: 1,
-  password: 1,
-  range: 1,
-  search: 1,
-  tel: 1,
-  text: 1,
-  time: 1,
-  url: 1,
-  week: 1,
-  textarea: 1,
-  checkbox: 2,
-  radio: 2,
-  "select-one": 3,
-  "select-multiple": 3
+    color: 1,
+    date: 1,
+    datetime: 1,
+    "datetime-local": 1,
+    email: 1,
+    month: 1,
+    number: 1,
+    password: 1,
+    range: 1,
+    search: 1,
+    tel: 1,
+    text: 1,
+    time: 1,
+    url: 1,
+    week: 1,
+    textarea: 1,
+    checkbox: 2,
+    radio: 2,
+    "select-one": 3,
+    "select-multiple": 3
 };
 
 function preventUserInput(e) {
-  var target = e.target;
-  var name = e.type === "textarea" ? "innerHTML" : "value";
-  target[name] = target._lastValue;
+    var target = e.target;
+    var name = e.type === "textarea" ? "innerHTML" : "value";
+    target[name] = target._lastValue;
 }
 
 function preventUserClick(e) {
-  e.preventDefault();
+    e.preventDefault();
 }
 
 function preventUserChange(e) {
-  var target = e.target;
-  var value = target._lastValue;
-  var options$$1 = target.options;
-  if (target.multiple) {
+    var target = e.target;
+    var value = target._lastValue;
+    var options$$1 = target.options;
+    if (target.multiple) {
 
-    updateOptionsMore(options$$1, options$$1.length, value);
-  } else {
-    updateOptionsOne(options$$1, options$$1.length, value);
-  }
+        updateOptionsMore(options$$1, options$$1.length, value);
+    } else {
+        updateOptionsOne(options$$1, options$$1.length, value);
+    }
 }
 
 var duplexData = {
-  1: ["value", {
-    onChange: 1,
-    onInput: 1,
-    readOnly: 1,
-    disabled: 1
-  }, "oninput", preventUserInput],
-  2: ["checked", {
-    onChange: 1,
-    onClick: 1,
-    readOnly: 1,
-    disabled: 1
-  }, "onclick", preventUserClick],
-  3: ["value", {
-    onChange: 1,
-    disabled: 1
-  }, "onchange", preventUserChange]
+    1: ["value", {
+        onChange: 1,
+        onInput: 1,
+        readOnly: 1,
+        disabled: 1
+    }, "oninput", preventUserInput],
+    2: ["checked", {
+        onChange: 1,
+        onClick: 1,
+        readOnly: 1,
+        disabled: 1
+    }, "onclick", preventUserClick],
+    3: ["value", {
+        onChange: 1,
+        disabled: 1
+    }, "onchange", preventUserChange]
 };
 
 function postUpdateSelectedOptions(vnode) {
-  var props = vnode.props,
-      multiple = !!props.multiple,
-      value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
-      options$$1 = [];
-  collectOptions(vnode, props, options$$1);
-  if (multiple) {
-    updateOptionsMore(options$$1, options$$1.length, value);
-  } else {
-    updateOptionsOne(options$$1, options$$1.length, value);
-  }
+    var props = vnode.props,
+        multiple = !!props.multiple,
+        value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
+        options$$1 = [];
+    collectOptions(vnode, props, options$$1);
+    if (multiple) {
+        updateOptionsMore(options$$1, options$$1.length, value);
+    } else {
+        updateOptionsOne(options$$1, options$$1.length, value);
+    }
 }
 
 /**
@@ -1621,92 +1617,87 @@ function postUpdateSelectedOptions(vnode) {
  * @param {Array} ret
  */
 function collectOptions(vnode, props, ret) {
-  var arr = props.children;
-  for (var i = 0, n = arr.length; i < n; i++) {
-    var el = arr[i];
-    if (el.type === "option") {
-      ret.push(el);
-    } else if (el.type === "optgroup") {
-      collectOptions(el, el.props, ret);
+    var arr = props.children;
+    for (var i = 0, n = arr.length; i < n; i++) {
+        var el = arr[i];
+        if (el.type === "option") {
+            ret.push(el);
+        } else if (el.type === "optgroup") {
+            collectOptions(el, el.props, ret);
+        }
     }
-  }
 }
 
 function updateOptionsOne(options$$1, n, propValue) {
-  var selectedValue = "" + propValue;
-  for (var i = 0; i < n; i++) {
-    var option = options$$1[i];
-    var value = getOptionValue(option, option.props);
-    if (value === selectedValue) {
-      getOptionSelected(option, true);
-      return;
+    var selectedValue = "" + propValue;
+    for (var i = 0; i < n; i++) {
+        var option = options$$1[i];
+        var value = getOptionValue(option, option.props);
+        if (value === selectedValue) {
+            getOptionSelected(option, true);
+            return;
+        }
     }
-  }
-  if (n) {
-    getOptionSelected(options$$1[0], true);
-  }
+    if (n) {
+        getOptionSelected(options$$1[0], true);
+    }
 }
 
 function updateOptionsMore(options$$1, n, propValue) {
-  var selectedValue = {};
-  try {
-    for (var i = 0; i < propValue.length; i++) {
-      selectedValue["&" + propValue[i]] = true;
+    var selectedValue = {};
+    try {
+        for (var i = 0; i < propValue.length; i++) {
+            selectedValue["&" + propValue[i]] = true;
+        }
+    } catch (e) {
+        /* istanbul ignore next */
+        console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
     }
-  } catch (e) {
-    /* istanbul ignore next */
-    console.warn('<select multiple="true"> 的value应该对应一个字符串数组'); // eslint-disable-line
-  }
-  for (var _i = 0; _i < n; _i++) {
-    var option = options$$1[_i];
-    var value = getOptionValue(option, option.props);
-    var selected = selectedValue.hasOwnProperty("&" + value);
-    getOptionSelected(option, selected);
-  }
+    for (var _i = 0; _i < n; _i++) {
+        var option = options$$1[_i];
+        var value = getOptionValue(option, option.props);
+        var selected = selectedValue.hasOwnProperty("&" + value);
+        getOptionSelected(option, selected);
+    }
 }
 
 function getOptionValue(option, props) {
-  if (!props) {
-    return getDOMOptionValue(option);
-  }
-  //这里在1.1.1改动过， props.value === undefined ? props.children[0].text : props.value;
-  return props.value === undefined ? props.children : props.value;
+    if (!props) {
+        return getDOMOptionValue(option);
+    }
+    //这里在1.1.1改动过， props.value === undefined ? props.children[0].text : props.value;
+    return props.value === undefined ? props.children : props.value;
 }
 
 function getDOMOptionValue(node) {
-  if (node.hasAttribute && node.hasAttribute("value")) {
-    return node.getAttribute("value");
-  }
-  var attr = node.getAttributeNode("value");
-  if (attr && attr.specified) {
-    return attr.value;
-  }
-  return node.innerHTML.trim();
+    if (node.hasAttribute && node.hasAttribute("value")) {
+        return node.getAttribute("value");
+    }
+    var attr = node.getAttributeNode("value");
+    if (attr && attr.specified) {
+        return attr.value;
+    }
+    return node.innerHTML.trim();
 }
 
 function getOptionSelected(option, selected) {
-  var dom = option._hostNode || option;
-  dom.selected = selected;
+    var dom = option._hostNode || option;
+    dom.selected = selected;
 }
 
 function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
-    switch (vnode.vtype) {
-        case 1:
-            disposeElement(vnode);
-            break;
-        case 2:
-            disposeComponent(vnode);
-            break;
-        case 4:
-            disposeStateless(vnode);
-            break;
-    }
+    disposeStrategy[vnode.vtype](vnode);
     vnode._disposed = true;
 }
-
+var disposeStrategy = {
+    0: noop,
+    1: disposeElement,
+    2: disposeComponent,
+    4: disposeStateless
+};
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
@@ -1718,7 +1709,6 @@ function disposeStateless(vnode) {
 function disposeElement(vnode) {
     var props = vnode.props,
         vchildren = vnode.vchildren;
-    //var children = props.children;
 
     if (props[innerHTML]) {
         removeDOMElement(vnode._hostNode);
@@ -1744,8 +1734,8 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.setState = instance.forceUpdate = noop;
-        vnode._instance = instance.__current = instance.__renderInNextCycle = null;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
+        vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(vnode._renderedVnode);
     }
 }
@@ -1896,7 +1886,7 @@ var formElements = {
     input: 1
 };
 
-var patchAdapter = {
+var patchStrategy = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
@@ -1908,7 +1898,7 @@ var patchAdapter = {
 };
 
 function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchAdapter[vnode.vtype](vnode, context, prevRendered, mountQueue);
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -2014,6 +2004,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
+
     // CurrentOwner.reset();
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
@@ -2183,12 +2174,9 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
-
     var dom = node;
-    //eslint-disable-next-line
-
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
-
+    //eslint-disable-next-line 
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || lastVnode.vtype > 1 && lastVnode._instance) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
         dom = mountVnode(nextVnode, context, null, innerMountQueue);
@@ -2262,7 +2250,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateVnode(lastVnode, nextVnode, context, mountQueue) {
-    return patchAdapter[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
+    return patchStrategy[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue);
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
@@ -2283,6 +2271,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     var hashcode = {};
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
+        if (el._disposed) {
+            //如果被销毁或没有实例化
+            return;
+        }
         var list = hashcode[key];
         if (list) {
             list.push(el);
@@ -2356,150 +2348,148 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
-//Ie6-8 oninput使用propertychange进行冒充，触发一个ondatasetchanged事件
-function fixIEInputHandle(e) {
-  if (e.propertyName === "value") {
-    dispatchEvent(e, "input");
-  }
-}
-
-function fixIEInput(dom) {
-  addEvent(dom, "propertychange", fixIEInputHandle);
-}
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
 var noCheck = false;
 function setSelectValue(e) {
-  if (e.propertyName === 'value' && !noCheck) {
-    syncValueByOptionValue(e.srcElement);
-  }
+    if (e.propertyName === "value" && !noCheck) {
+        syncValueByOptionValue(e.srcElement);
+    }
 }
 
 function syncValueByOptionValue(e) {
-  var dom = e.srcElement,
-      idx = dom.selectedIndex,
-      option,
-      attr;
-  if (idx > -1) {
-    //IE 下select.value不会改变
-    option = dom.options[idx];
-    attr = option.attributes.value;
-    dom.value = attr && attr.specified ? option.value : option.text;
-  }
-}
-
-function fixIEChangeHandle(e) {
-  var dom = e.srcElement;
-  if (dom.type === "select-one") {
-    if (!dom.__bindFixValueFn) {
-      addEvent(dom, "propertychange", setSelectValue);
-      dom.__bindFixValueFn = true;
+    var dom = e.srcElement,
+        idx = dom.selectedIndex,
+        option,
+        attr;
+    if (idx > -1) {
+        //IE 下select.value不会改变
+        option = dom.options[idx];
+        attr = option.attributes.value;
+        dom.value = attr && attr.specified ? option.value : option.text;
     }
-    noCheck = true;
-    syncValueByOptionValue(e);
-    noCheck = false;
-  }
-  dispatchEvent(e, "change");
 }
 
-function fixIEChange(dom) {
-  //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
-  var mask = dom.type === "radio" || dom.type === "checkbox" ? "click" : "change";
-  addEvent(dom, mask, fixIEChangeHandle);
-}
+var fixIEChangeHandle = createHandle("change", function (e) {
+    var dom = e.srcElement;
+    if (dom.type === "select-one") {
+        if (!dom.__bindFixValueFn) {
+            addEvent(dom, "propertychange", setSelectValue);
+            dom.__bindFixValueFn = true;
+        }
+        noCheck = true;
+        syncValueByOptionValue(e);
+        noCheck = false;
+    }
+    if (e.type === "propertychange") {
+        return e.propertyName === "value";
+    }
+});
 
-function fixIESubmit(dom) {
-  if (dom.nodeName === "FORM") {
-    addEvent(dom, "submit", dispatchEvent);
-  }
-}
+var fixIEInputHandle = createHandle("input", function (e) {
+    return e.propertyName === "value";
+});
+
+var IEHandleFix = {
+    input: function input(dom) {
+        addEvent(dom, "propertychange", fixIEInputHandle);
+    },
+    change: function change(dom) {
+        //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
+        var mask = /radio|check/.test(dom.type) ? "click" : /text|password/.test(dom.type) ? "propertychange" : "change";
+        addEvent(dom, mask, fixIEChangeHandle);
+    },
+    submit: function submit(dom) {
+        if (dom.nodeName === "FORM") {
+            addEvent(dom, "submit", dispatchEvent);
+        }
+    }
+};
 
 if (msie < 9) {
-  propHooks[innerHTML] = function (dom, name, val, lastProps) {
-    var oldhtml = lastProps[name] && lastProps[name].__html;
-    var html = val && val.__html;
-    if (html !== oldhtml) {
-      //IE8-会吃掉最前面的空白
-      dom.innerHTML = String.fromCharCode(0xFEFF) + html;
-      var textNode = dom.firstChild;
-      if (textNode.data.length === 1) {
-        dom.removeChild(textNode);
-      } else {
-        textNode.deleteData(0, 1);
-      }
-    }
-  };
-
-  String("focus,blur").replace(/\w+/g, function (type) {
-    eventHooks[type] = function (dom, name) {
-      var mark = '__' + name;
-      if (!dom[mark]) {
-        dom[mark] = true;
-        var mask = name === "focus" ? "focusin" : "focusout";
-        addEvent(dom, mask, function (e) {
-          //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
-          var tagName = e.srcElement.tagName;
-          if (!tagName) {
-            return;
-          }
-          // <body> #document
-          var tag = toLowerCase(tagName);
-          if (tag == "#document" || tag == "body") {
-            return;
-          }
-          e.target = dom; //因此focusin事件的srcElement有问题，强行修正
-          dispatchEvent(e, name, dom.parentNode);
-        });
-      }
+    actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
+        var oldhtml = lastProps[name] && lastProps[name].__html;
+        var html = val && val.__html;
+        if (html !== oldhtml) {
+            //IE8-会吃掉最前面的空白
+            dom.innerHTML = String.fromCharCode(0xFEFF) + html;
+            var textNode = dom.firstChild;
+            if (textNode.data.length === 1) {
+                dom.removeChild(textNode);
+            } else {
+                textNode.deleteData(0, 1);
+            }
+        }
     };
-  });
 
-  Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
-    if (!("pageX" in event)) {
-      var doc = event.target.ownerDocument || document;
-      var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
-      event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
-      event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
+    String("focus,blur").replace(/\w+/g, function (type) {
+        eventHooks[type] = function (dom, name) {
+            var mark = "__" + name;
+            if (!dom[mark]) {
+                dom[mark] = true;
+                var mask = name === "focus" ? "focusin" : "focusout";
+                addEvent(dom, mask, function (e) {
+                    //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
+                    var tagName = e.srcElement.tagName;
+                    if (!tagName) {
+                        return;
+                    }
+                    // <body> #document
+                    var tag = toLowerCase(tagName);
+                    if (tag == "#document" || tag == "body") {
+                        return;
+                    }
+                    e.target = dom; //因此focusin事件的srcElement有问题，强行修正
+                    dispatchEvent(e, name, dom.parentNode);
+                });
+            }
+        };
+    });
+
+    Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
+        if (!("pageX" in event)) {
+            var doc = event.target.ownerDocument || document;
+            var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
+            event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
+            event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
+        }
+    }));
+
+    Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
+        /* istanbul ignore next  */
+        if (event.which == null && event.type.indexOf("key") === 0) {
+            /* istanbul ignore next  */
+            event.which = event.charCode != null ? event.charCode : event.keyCode;
+        }
+    }));
+
+    for (var i in IEHandleFix) {
+        eventHooks[i] = eventHooks[i + "capture"] = IEHandleFix[i];
     }
-  }));
-
-  Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
-    /* istanbul ignore next  */
-    if (event.which == null && event.type.indexOf("key") === 0) {
-      /* istanbul ignore next  */
-      event.which = event.charCode != null ? event.charCode : event.keyCode;
-    }
-  }));
-
-  eventHooks.input = fixIEInput;
-  eventHooks.inputcapture = fixIEInput;
-  eventHooks.change = fixIEChange;
-  eventHooks.changecapture = fixIEChange;
-  eventHooks.submit = fixIESubmit;
 }
 
 var React = {
-  version: "1.1.1",
-  render: render,
-  options: options,
-  PropTypes: PropTypes,
-  Children: Children, //为了react-redux
-  Component: Component,
-  eventSystem: eventSystem,
-  findDOMNode: findDOMNode,
-  createClass: createClass,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  unmountComponentAtNode: unmountComponentAtNode,
-  unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+    version: "1.1.1",
+    render: render,
+    options: options,
+    PropTypes: PropTypes,
+    Children: Children, //为了react-redux
+    Component: Component,
+    eventSystem: eventSystem,
+    findDOMNode: findDOMNode,
+    createClass: createClass,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    unmountComponentAtNode: unmountComponentAtNode,
+    unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
 
-  createFactory: function createFactory(type) {
-    console.warn("createFactory将被废弃"); // eslint-disable-line
-    var factory = createElement.bind(null, type);
-    factory.type = type;
-    return factory;
-  }
+    createFactory: function createFactory(type) {
+        console.warn("createFactory将被废弃"); // eslint-disable-line
+        var factory = createElement.bind(null, type);
+        factory.type = type;
+        return factory;
+    }
 };
 
 win.React = win.ReactDOM = React;

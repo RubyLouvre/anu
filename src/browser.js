@@ -6,16 +6,24 @@ export function DOMElement(type) {
     this.style = {};
     this.children = [];
 }
+
+export var NAMESPACE = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xlink: "http://www.w3.org/1999/xlink",
+    math: "http://www.w3.org/1998/Math/MathML"
+};
+
 var fn = (DOMElement.prototype = {
     contains: Boolean
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-  ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-  ",detachEvent"
+    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+    ",detachEvent"
 ).replace(/\w+/g, function (name) {
     fn[name] = function () {
-    console.log("fire " + name); // eslint-disable-line
+        console.log("fire " + name); // eslint-disable-line
     };
 });
 
@@ -65,7 +73,7 @@ export function removeDOMElement(node) {
         }
         node.__events = null;
     } else if (node.nodeType === 3) {
-    //只回收文本节点
+        //只回收文本节点
         recyclables["#text"].push(node);
     }
     fragment.appendChild(node);
@@ -80,15 +88,15 @@ var versions = {
 };
 /* istanbul ignore next  */
 export var msie =
-  document.documentMode ||
-  versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+    document.documentMode ||
+    versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createDOMElement(vnode) {
     var type = vnode.type;
     if (type === "#text") {
-    //只重复利用文本节点
+        //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
             node.nodeValue = vnode.text;
@@ -105,16 +113,15 @@ export function createDOMElement(vnode) {
         if (vnode.ns) {
             return document.createElementNS(vnode.ns, type);
         }
-    //eslint-disable-next-line
-  } catch (e) { }
+        //eslint-disable-next-line
+    } catch (e) { }
     return document.createElement(type);
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
 var rmathTags = /^m/;
-var mathNs = "http://www.w3.org/1998/Math/MathML";
-var svgNs = "http://www.w3.org/2000/svg";
-var namespaceMap = oneObject("svg", svgNs);
-namespaceMap.semantics = mathNs;
+
+var namespaceMap = oneObject("svg", NAMESPACE.svg);
+namespaceMap.semantics = NAMESPACE.math;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
     namespaceMap[tag] = null;
@@ -123,6 +130,6 @@ export function getNs(type) {
     if (namespaceMap[type] !== void 666) {
         return namespaceMap[type];
     } else {
-        return namespaceMap[type] = rmathTags.test(type) ? mathNs : null;
+        return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
 }

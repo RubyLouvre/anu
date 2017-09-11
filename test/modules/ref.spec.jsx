@@ -233,4 +233,54 @@ describe('ref', function () {
         expect(b && b.tagName).toBe('H1')
 
     })
+    it('带ref的组件被子组件cloneElement', async () => {
+        class Select extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 1
+                };
+            }
+            render() {
+                return React.createElement(SelectTrigger, {
+                    ref: 'trigger'
+                }, React.createElement(
+                    'div',
+                    {
+                        ref: 'root'
+                    }, "xxxx"))
+            }
+        }
+        class SelectTrigger extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 2
+                };
+            }
+            render() {
+                return React.createElement(Trigger, Object.assign({ title: 'xxx' }, this.props), this.props.children)
+            }
+        }
+        class Trigger extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: 2
+                };
+            }
+            render() {
+                var props = this.props;
+                var children = props.children;
+                var child = React.Children.only(children);
+                return React.cloneElement(child, { className: '5555' })
+            }
+        }
+        var s = React.render(<Select />, div);
+        await browser
+            .pause(100)
+            .$apply()
+        expect(typeof s.refs.root).toBe('object')
+        expect(typeof s.refs.trigger).toBe('object')
+    })
 })

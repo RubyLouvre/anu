@@ -31,17 +31,17 @@
 | Instance .setState     | Component API | ✔️    | ✔️  | ✔️              |
 | Instance .replaceState | Component API | ✔️    | ✖️  | ✔️              |
 | Instance .forceUpdate  | Component API | ✔️    | ✔️  | ✔️              |
-| Instance .isMounted    | Component API | ✔️    | ✖️  | ✔️              |
+| Instance .isMounted    | Component API | ✔️    | ✔️  | ✔️              |
 
 ## 组件Specs 对照表
 
 
-| 名称           | 类别        | Specs | React | anu | preact(-compat) |
-|--------------|-----------|-------|-------|-----|-----------------|
-| render       | Component | Specs | ✔️    | ✔️  | ✔️              |
-| state        | Component | Specs | ✔️    | ✔️  | ✔️              |
-| defaultProps | Component | Specs | ✔️    | ✔️  | ✔️              |
-| propTypes    | Component | Specs | ✔️    | ✔️  | ✔️              |
+| 名称           | 类别    | React | anu | preact(-compat) |
+|--------------|-------|-------|-----|-----------------|
+| render       | Specs | ✔️    | ✔️  | ✔️              |
+| state        | Specs | ✔️    | ✔️  | ✔️              |
+| defaultProps | Specs | ✔️    | ✔️  | ✔️              |
+| propTypes    | Specs | ✔️    | ✔️  | ✔️              |
 
 
 
@@ -59,17 +59,20 @@
 
 ## 特性支持对照
 
-| 名称                      | 类别  | React      | anu    | preact(-compat) |
-|-------------------------|-----|------------|--------|-----------------|
-| contextTypes            | 特性  | ✔️         | ✔️     | ✔️              |
-| getChildContext         | 特性  | ✔️         | compat | compat          |
-| ref                     | 特性  | ✔️         | ✔️     | ✔️️             |
-| getDOMNode              | 特性  | ✔️         | ✔️     | ✖️              |
-| style                   | 特性  | ✔️         | ✔️     | ✖️              |
-| onEvent                 | 特性  | ✔️         | ✔️     | ✔️              |
-| onEventCapture          | 特性  | ✔️         | ✔️     | ✖️              |
-| dangerouslySetInnerHTML | 特性  | ✔️         | ✔️     | ✖️              |
-| （非）受控组件                 | 特性  | ✔️         | ✔️     | ✖️              |
-| IE8支持                   | 特性  | ✔️（高版本不支持） | ✔️     | ✖️              |
+| 名称                                       | React      | anu    | preact(-compat) |     |
+|------------------------------------------|------------|--------|-----------------|-----|
+| contextTypes                             | ✔️         | ✔️     | ✔️              |     |
+| getChildContext                          | ✔️         | compat | compat          |     |
+| ref（两种形式）                                | ✔️         | ✔️     | ✔️️             |     |
+| cloneElement后字符串ref的正确处理                 | ✔️         | ✔️     | ✖️              |     |
+| getDOMNode                               | ✔️         | ✔️     | ✖️              |     |
+| componentDidUpdate调用setState不会卡死         | ✔️         | ✔️     | ✖️              |     |
+| style对象                                    | ✔️         | ✔️     | ✖️              |     |
+| onEvent（尤其是onChange/MouseEnter/Focus的支持） | ✔️         | ✔️     | ✖️              |     |
+| onEventCapture                           | ✔️         | ✔️     | ✖️              |     |
+| dangerouslySetInnerHTML                  | ✔️         | ✔️     | ✖️              |     |
+| （非）受控组件                                  | ✔️         | ✔️     | ✖️              |     |
+| IE8支持                                    | ✔️（高版本不支持） | ✔️     | ✖️              |     |
 
 anu提交ReactIE＋polyfill可以兼容到IE6，三方都支持React官方的Chrome DevTools
+

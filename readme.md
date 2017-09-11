@@ -24,7 +24,7 @@ QQ交流学习群：  370262116
 
 1. 支持React的无狀态组件，纯组件，高阶组件，受控组件与[非受控组件](https://github.com/RubyLouvre/anu/wiki/%E9%9D%9E%E5%8F%97%E6%8E%A7%E7%BB%84%E4%BB%B6)，
 2. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
-3. 体积足够少(1700行相对于react+react-dom的3万行)
+3. 体积足够少(2000行相对于react+react-dom的3万行, gz为其1/5大小)
 4. 性能是官方React的**两倍**以上  [测试页面](https://github.com/RubyLouvre/anu/blob/master/pref/anu.html)、 [结果统计](https://github.com/RubyLouvre/anu/issues/10#issuecomment-305694971)
 5. 生命周期函数的参数与官方保持一致
 6. 直接与[react-redux, react-router-dom, react-router-redux](https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90)混用
@@ -39,38 +39,34 @@ QQ交流学习群：  370262116
 ### dist目录下的变种说明
 1. React 支持IE9+, 拥有PropTypes, createClass, createFactory
 2. ReactIE 支持IE6+, 拥有PropTypes, createClass, createFactory (需要与lib目录下的polyfill配套使用)
-3. ReactShim 要求浏览器支持es6 Map对象，并且与react1.6靠近，删除了PropTypes, createClass, createFactory
+3. ReactShim 支持IE9＋，不再拥有废弃API，删除了PropTypes, createClass, createFactory， unstable_renderSubtreeIntoContainer(如果大家只用在移动项目，并且使用es6方式定义组件，**建议**使用这个文件！)
 
 ### 开源协议 
 Apache Licene 2.0
 
-### 低版本浏览器可能需要以下 语言补丁
+### 低版本浏览器的支持 
 
-1. [Array.isArray](https://github.com/juliangruber/isarray/)
-2. [Object.assign](https://github.com/ryanhefner/Object.assign/)
-3. [JSON.stringify](https://github.com/flowersinthesand/stringifyJSON)
-4. [console-polyfill](https://github.com/paulmillr/console-polyfill) 
-5. [Object.is](https://github.com/ljharb/object-is)
-6. [Object.keys](https://github.com/ryanhefner/Object.keys)
-7. [Array.prototype.forEach](https://github.com/polyfill/Array.prototype.forEach/)
-8. [Function.prototype.bind](https://github.com/mikol/bind)
-
-
-
-或者直接使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js
+1. 使用**polyfill.js** https://github.com/RubyLouvre/anu/blob/master/lib/polyfill.js
+2. 或使用babel polyfill功能
 
 如果想用anujs代替已经用React.js写好或正在进行的的项目，可以这样配置webpack
 ```js
-// webpack.config.js
-    resolve: {
-        alias: {
-            'react': 'anujs',
-            'react-dom': 'anujs',
-            'prop-types': 'anujs/lib/ReactPropTypes',
-            'create-react-class': 'anujs/lib/createClass'
-
-        }
-    }
+resolve: {
+   alias: {
+      'react': 'anujs',
+      'react-dom': 'anujs',
+        // 若要兼容 IE 请使用以下配置
+        // 'react': 'qreact/dist/ReactIE',
+        // 'react-dom': 'qreact/dist/ReactIE',
+    
+        // 如果引用了 prop-types 或 create-react-class
+        // 需要添加如下别名
+        'prop-types': 'qreact/lib/ReactPropTypes',
+        'create-react-class': 'qreact/lib/createClass'
+        //如果你在移动端用到了onTouchTap事件
+        'react-tap-event-plugin': 'anujs/lib/injectTapEventPlugin',  
+   }
+},
 ```
 
 详细用法与示例见  [wiki](https://github.com/RubyLouvre/anu/wiki) 
