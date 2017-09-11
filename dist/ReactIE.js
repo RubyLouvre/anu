@@ -2002,6 +2002,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
+
     // CurrentOwner.reset();
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
@@ -2172,7 +2173,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
-    //eslint-disable-next-line
+    //eslint-disable-next-line 
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || lastVnode.vtype > 1 && lastVnode._instance) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2269,6 +2270,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
         if (el._disposed) {
+            //如果被销毁或没有实例化
             return;
         }
         var list = hashcode[key];
