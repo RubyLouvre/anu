@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-10
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-11
  */
 
 (function (global, factory) {
@@ -1231,9 +1231,7 @@ function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
 
 function isBooleanAttr(dom, name) {
     var val = dom[name];
-    if (val === true || val === false) {
-        return true;
-    }
+    return val === true || val === false;
 }
 /**
  * 根据一个属性所在的元素或元素的文档类型，就可以永久决定该使用什么策略操作它
@@ -2021,12 +2019,9 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
-
     var dom = node;
     //eslint-disable-next-line
-
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
-
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || lastVnode.vtype > 1 && lastVnode._instance) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
         dom = mountVnode(nextVnode, context, null, innerMountQueue);

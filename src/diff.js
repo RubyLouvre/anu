@@ -465,12 +465,10 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 }
 
 export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
-
     let dom = node;
     //eslint-disable-next-line
-
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
-
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || 
+        (lastVnode.vtype > 1 && lastVnode._instance)) {
         disposeVnode(lastVnode);
         let innerMountQueue = mountQueue.mountAll
             ? mountQueue
