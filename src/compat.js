@@ -12,9 +12,8 @@ function setSelectValue(e) {
     }
 };
 
-function syncValueByOptionValue(e) {
-    var dom = e.srcElement,
-        idx = dom.selectedIndex,
+function syncValueByOptionValue(dom) {
+    let idx = dom.selectedIndex,
         option,
         attr;
     if (idx > -1) {
@@ -25,6 +24,7 @@ function syncValueByOptionValue(e) {
             ? option.value
             : option.text;
     }
+
 };
 
 var fixIEChangeHandle = createHandle("change", function (e) {
@@ -35,7 +35,7 @@ var fixIEChangeHandle = createHandle("change", function (e) {
             dom.__bindFixValueFn = true;
         }
         noCheck = true;
-        syncValueByOptionValue(e);
+        syncValueByOptionValue(dom);
         noCheck = false;
     }
     if (e.type === "propertychange") {
