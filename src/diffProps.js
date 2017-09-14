@@ -257,7 +257,14 @@ export var actionStrategy = {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                dom[name] = !val ? "" : val;
+                if (!val && val !== 0) {
+                    //image.width 不能赋以null
+                    if (typeof dom[name] === "string") {
+                        dom[name] = "";
+                    }
+                } else {
+                    dom[name] = val;
+                }
             } catch (e) {
                 dom.setAttribute(name, val);
             }
@@ -268,7 +275,7 @@ export var actionStrategy = {
     },
     event: function (dom, name, val, lastProps) {
         let events = dom.__events || (dom.__events = {});
-        let refName = toLowerCase(name.slice(2))
+        let refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];
         } else {
