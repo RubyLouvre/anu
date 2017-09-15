@@ -13,11 +13,11 @@ var disposeStrategy = {
     1: disposeElement,
     2: disposeComponent,
     4: disposeStateless
-}
+};
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
-        disposeVnode(instance._renderedVnode);
+        disposeVnode(instance.__rendered);
         vnode._instance = null;
     }
 }
@@ -50,6 +50,6 @@ function disposeComponent(vnode) {
         vnode.ref && vnode.ref(null);
         instance.__current = instance.setState = instance.forceUpdate = noop;
         vnode._instance = instance.__renderInNextCycle = null;
-        disposeVnode(vnode._renderedVnode);
+        disposeVnode(instance.__rendered);
     }
 }

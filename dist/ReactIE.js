@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-11
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-15
  */
 
 (function (global, factory) {
@@ -211,6 +211,8 @@ function createElement(type, config, children) {
                 if (val !== void 0) {
                     ref = val;
                 }
+            } else if (i === "children") {
+                props[i] = val;
             } else {
                 checkProps = 1;
                 props[i] = val;
@@ -219,9 +221,7 @@ function createElement(type, config, children) {
     }
 
     if (argsLen === 1) {
-        if (children !== void 0) {
-            props.children = children;
-        }
+        props.children = typeNumber(children) > 2 ? children : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         var childArray = Array(argsLen);
         for (var _i = 0; _i < argsLen; _i++) {
@@ -360,11 +360,46 @@ function _flattenChildren(original, convert) {
 }
 
 function flattenChildren(vnode) {
-    var arr = _flattenChildren(vnode.props.children, true);
-    if (arr.length === 0) {
-        arr = EMPTY_CHILDREN;
+    var arr = EMPTY_CHILDREN,
+        c = vnode.props.children;
+    if (c !== null) {
+        arr = _flattenChildren(c, true);
+        if (arr.length === 0) {
+            arr = EMPTY_CHILDREN;
+        }
     }
     return vnode.vchildren = arr;
+}
+
+function cloneElement(vnode, props) {
+    // if (Array.isArray(vnode)) {
+    //      vnode = vnode[0];
+    // }
+    if (!vnode.vtype) {
+        return Object.assign({}, vnode);
+    }
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
+        key: vnode.key,
+        ref: vnode.ref
+    };
+    if (props && props.ref) {
+        owner = lastOwn;
+    }
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+
+    var args = [].slice.call(arguments, 0),
+        argsLength = args.length;
+    args[0] = vnode.type;
+    args[1] = configs;
+    if (argsLength === 2 && configs.children) {
+        args.push(configs.children);
+    }
+    var ret = createElement.apply(null, args);
+    CurrentOwner.cur = lastOwn;
+    return ret;
 }
 
 var Children = {
@@ -386,6 +421,18 @@ var Children = {
     },
     map: function map(children, callback, context) {
         return _flattenChildren(children, false).map(callback, context);
+        /*
+        return _flattenChildren(children, false).map(function (el, index) {
+            if (el && el.type) {
+                if (el.vtype) {
+                    var key = (el.key || "") + ":" + index;
+                    el = cloneElement(el, { key });
+                } else {
+                    el = Object.assign({}, el);
+                }
+            }
+            return callback.call(context, el, index);
+        });*/
     },
 
     toArray: function toArray(children) {
@@ -891,7 +938,7 @@ function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = {};
+    this.__current = noop;
     /*
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
@@ -907,7 +954,7 @@ Component.prototype = {
         debounceSetState(this, state, cb);
     },
     isMounted: function isMounted() {
-        return this.__current._hostNode;
+        return !!this.__dom;
     },
     forceUpdate: function forceUpdate(cb) {
         debounceSetState(this, true, cb);
@@ -945,7 +992,7 @@ function setStateImpl(state, cb) {
     if (isFn(cb)) {
         this.__pendingCallbacks.push(cb);
     }
-    var hasDOM = this.__current._hostNode;
+    var hasDOM = this.__dom;
     if (state === true) {
         //forceUpdate
         this.__forceUpdate = true;
@@ -1091,29 +1138,6 @@ function createClass(spec) {
     }
 
     return Constructor;
-}
-
-function cloneElement(vnode, props) {
-    if (Array.isArray(vnode)) {
-        vnode = vnode[0];
-    }
-    if (!vnode.vtype) {
-        return Object.assign({}, vnode);
-    }
-    var owner = vnode._owner,
-        lastOwn = CurrentOwner.cur,
-        configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    if (props && props.ref) {
-        owner = lastOwn;
-    }
-    Object.assign(configs, vnode.props, props);
-    CurrentOwner.cur = owner;
-    var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
-    CurrentOwner.cur = lastOwn;
-    return ret;
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1463,7 +1487,15 @@ var actionStrategy = {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
-                dom[name] = !val ? "" : val;
+                if (!val && val !== 0) {
+                    //如果它是字符串属性，并且不等于""，清空
+                    if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                        dom[name] = "";
+                    }
+                    dom.removeAttribute(name);
+                } else {
+                    dom[name] = val;
+                }
             } catch (e) {
                 dom.setAttribute(name, val);
             }
@@ -1701,7 +1733,7 @@ var disposeStrategy = {
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
-        disposeVnode(instance._renderedVnode);
+        disposeVnode(instance.__rendered);
         vnode._instance = null;
     }
 }
@@ -1736,7 +1768,7 @@ function disposeComponent(vnode) {
         vnode.ref && vnode.ref(null);
         instance.__current = instance.setState = instance.forceUpdate = noop;
         vnode._instance = instance.__renderInNextCycle = null;
-        disposeVnode(vnode._renderedVnode);
+        disposeVnode(instance.__rendered);
     }
 }
 
@@ -1785,9 +1817,8 @@ function clearRefsAndMounts(queue) {
             instance.componentDidMount = null;
         }
         instance.__hydrating = false;
-
         while (instance.__renderInNextCycle) {
-            _refreshComponent(instance, instance.__current._hostNode, []);
+            _refreshComponent(instance, instance.__dom, []);
         }
         clearArray(instance.__pendingCallbacks).forEach(function (fn) {
             fn.call(instance);
@@ -1804,19 +1835,6 @@ options.enqueueUpdate = function (instance) {
     dirtyComponents.push(instance);
 };
 
-function refreshComponent(instance, mountQueue) {
-    // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
-    var dom = instance.__current._hostNode;
-    dom = _refreshComponent(instance, dom, mountQueue);
-    while (instance.__renderInNextCycle) {
-        dom = _refreshComponent(instance, dom, mountQueue);
-    }
-    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
-        fn.call(instance);
-    });
-
-    return dom;
-}
 /**
  * ReactDOM.render
  * 用于驱动视图第一次刷新
@@ -2005,7 +2023,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
 
-    // CurrentOwner.reset();
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
@@ -2023,34 +2040,40 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     instance.__childContext = context; //用于在updateChange中比较
     var dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
     vnode._hostNode = dom;
-    mountQueue.push(instance);
+    instance.__dom = dom;
+    instance.__current = vnode;
+
     if (ref) {
         pendingRefs.push(ref.bind(0, instance));
     }
 
     options.afterMount(instance);
+    mountQueue.push(instance);
     return dom;
 }
 
 function Stateless(render) {
     this.refs = {};
     this.__render = render;
-    this.__current = {};
+    this.__current = noop;
 }
 
 var renderComponent = function renderComponent(vnode, props, context) {
+    //调整全局的 CurrentOwner.cur
     var lastOwn = CurrentOwner.cur;
     CurrentOwner.cur = this;
+
     var rendered = this.__render ? this.__render(props, context) : this.render();
+
     CurrentOwner.cur = lastOwn;
+    //组件只能返回组件或null
     rendered = checkNull(rendered, vnode.type);
+
     this.context = context;
     this.props = props;
+
     vnode._instance = this;
-    var dom = this.__current._hostNode;
-    this.__current = vnode;
-    vnode._hostNode = dom;
-    vnode._renderedVnode = rendered;
+    this.__rendered = rendered;
     return rendered;
 };
 
@@ -2061,20 +2084,29 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
         ref = vnode.ref;
 
     var instance = new Stateless(type);
+
     var rendered = instance.render(vnode, props, context);
+
     var dom = mountVnode(rendered, context, prevRendered, mountQueue);
+    instance.__dom = dom;
     if (ref) {
         pendingRefs.push(ref.bind(0, null));
     }
+    instance.__current = vnode;
     return vnode._hostNode = dom;
 }
 
 function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
     var instance = lastTypeVnode._instance;
-    var lastVnode = lastTypeVnode._renderedVnode;
-    var nextVnode = instance.render(nextTypeVnode, nextTypeVnode.props, context);
-    var dom = alignVnode(lastVnode, nextVnode, lastVnode._hostNode, context, mountQueue);
+    var lastRendered = instance.__rendered;
+    var dom = instance.__dom;
+    var rendered = instance.render(nextTypeVnode, nextTypeVnode.props, context);
+    dom = alignVnode(lastRendered, rendered, dom, context, mountQueue);
     nextTypeVnode._hostNode = dom;
+    instance.__current = nextTypeVnode;
+    if (nextTypeVnode.ref) {
+        pendingRefs.push(nextTypeVnode.ref.bind(0, null));
+    }
     return dom;
 }
 var contextHasChange = false;
@@ -2087,12 +2119,26 @@ function isEmpty(obj) {
     }
     return 0;
 }
+function refreshComponent(instance, mountQueue) {
+    // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
+    var dom = instance.__dom;
+    dom = _refreshComponent(instance, dom, mountQueue);
+    while (instance.__renderInNextCycle) {
+        dom = _refreshComponent(instance, dom, mountQueue);
+    }
+    clearArray(instance.__pendingCallbacks).forEach(function (fn) {
+        fn.call(instance);
+    });
+
+    return dom;
+}
 function _refreshComponent(instance, dom, mountQueue) {
     var lastProps = instance.lastProps,
         lastContext = instance.lastContext,
         lastState = instance.state,
         nextContext = instance.context,
-        vnode = instance.__current,
+        lastRendered = instance.__rendered,
+        lastTypeVnode = instance.__current,
         nextProps = instance.props;
 
 
@@ -2113,12 +2159,13 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.props = nextProps;
     instance.state = nextState;
 
-    var lastRendered = vnode._renderedVnode;
-    var nextElement = instance.__next || vnode;
+    var nextTypeVnode = instance.__next || lastTypeVnode;
     if (!lastRendered._hostNode) {
+        console.log("lastRendered._hostNode为空");
         lastRendered._hostNode = dom;
     }
-    var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext);
+    var rendered = renderComponent.call(instance, nextTypeVnode, nextProps, nextContext);
+
     delete instance.__next;
     var childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext;
 
@@ -2130,10 +2177,11 @@ function _refreshComponent(instance, dom, mountQueue) {
     contextHasChange = isEmpty(prevChildContext) + isEmpty(childContext) && prevChildContext !== childContext;
 
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
+    nextTypeVnode._hostNode = dom;
+    instance.__dom = dom;
+    instance.__current = nextTypeVnode;
 
     contextHasChange = contextStatus.pop();
-
-    nextElement._hostNode = dom;
 
     if (instance.componentDidUpdate) {
         instance.__didUpdate = true;
@@ -2154,6 +2202,14 @@ function _refreshComponent(instance, dom, mountQueue) {
 
 function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
+    if (!lastVnode._hostNode) {
+        lastVnode._hostNode = instance.__dom;
+        instance.__current = lastVnode;
+    }
+    //重点！
+
+    // nextVnode._hostNode = lastVnode._hostNode;
+
     instance.__next = nextVnode;
     var nextProps = nextVnode.props;
     instance.lastProps = instance.props;
@@ -2176,7 +2232,10 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
     //eslint-disable-next-line 
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key || lastVnode.vtype > 1 && lastVnode._instance) {
+    if (lastVnode.vtype === 2 && !lastVnode._instance) {
+        console.warn(tag, "出问题了");
+    }
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
         dom = mountVnode(nextVnode, context, null, innerMountQueue);
@@ -2226,6 +2285,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
         list.forEach(function (el) {
             disposeVnode(el);
         });
+        list.length = 0;
     } else {
         if (lastProps[innerHTML]) {
             while (dom.firstChild) {
@@ -2272,8 +2332,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
         if (el._disposed) {
+            console.log("已经被销毁", el);
+            //|| (el.vtype > 1 && !el._instance)
             //如果被销毁或没有实例化
-            return;
+            //return;
         }
         var list = hashcode[key];
         if (list) {
@@ -2356,11 +2418,10 @@ function setSelectValue(e) {
     }
 }
 
-function syncValueByOptionValue(e) {
-    var dom = e.srcElement,
-        idx = dom.selectedIndex,
-        option,
-        attr;
+function syncValueByOptionValue(dom) {
+    var idx = dom.selectedIndex,
+        option = void 0,
+        attr = void 0;
     if (idx > -1) {
         //IE 下select.value不会改变
         option = dom.options[idx];
@@ -2377,7 +2438,7 @@ var fixIEChangeHandle = createHandle("change", function (e) {
             dom.__bindFixValueFn = true;
         }
         noCheck = true;
-        syncValueByOptionValue(e);
+        syncValueByOptionValue(dom);
         noCheck = false;
     }
     if (e.type === "propertychange") {

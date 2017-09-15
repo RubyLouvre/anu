@@ -1,5 +1,6 @@
 import { _flattenChildren } from "./createElement";
 import { limitWarn } from "./util";
+import { cloneElement } from "./cloneElement";
 
 export const Children = {
     only(children) {
@@ -20,6 +21,18 @@ export const Children = {
     },
     map(children, callback, context) {
         return _flattenChildren(children, false).map(callback, context);
+        /*
+        return _flattenChildren(children, false).map(function (el, index) {
+            if (el && el.type) {
+                if (el.vtype) {
+                    var key = (el.key || "") + ":" + index;
+                    el = cloneElement(el, { key });
+                } else {
+                    el = Object.assign({}, el);
+                }
+            }
+            return callback.call(context, el, index);
+        });*/
     },
     toArray: function (children) {
         return _flattenChildren(children, false);

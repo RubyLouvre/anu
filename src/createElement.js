@@ -1,4 +1,4 @@
-import {EMPTY_CHILDREN, typeNumber} from "./util";
+import { EMPTY_CHILDREN, typeNumber } from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -30,6 +30,8 @@ export function createElement(type, config, children) {
                 if (val !== void 0) {
                     ref = val;
                 }
+            } else if (i === "children") {
+                props[i] = val;
             } else {
                 checkProps = 1;
                 props[i] = val;
@@ -38,9 +40,7 @@ export function createElement(type, config, children) {
     }
 
     if (argsLen === 1) {
-        if (children !== void 0) {
-            props.children = children;
-        }
+        props.children = typeNumber(children) > 2 ? children : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         let childArray = Array(argsLen);
         for (let i = 0; i < argsLen; i++) {
@@ -181,9 +181,13 @@ export function _flattenChildren(original, convert) {
 }
 
 export function flattenChildren(vnode) {
-    let arr = _flattenChildren(vnode.props.children, true);
-    if (arr.length === 0) {
-        arr = EMPTY_CHILDREN;
+    let arr = EMPTY_CHILDREN,
+        c = vnode.props.children;
+    if (c !== null) {
+        arr = _flattenChildren(c, true);
+        if (arr.length === 0) {
+            arr = EMPTY_CHILDREN;
+        }
     }
     return vnode.vchildren = arr;
 }

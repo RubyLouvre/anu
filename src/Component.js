@@ -1,4 +1,4 @@
-import { extend, isFn, options, clearArray } from "./util";
+import { extend, isFn, options, clearArray, noop } from "./util";
 import { CurrentOwner } from "./createElement";
 import { win } from "./browser";
 
@@ -18,7 +18,7 @@ export function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = {};
+    this.__current = noop;
     /*
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
@@ -35,7 +35,7 @@ Component.prototype = {
         debounceSetState(this, state, cb);
     },
     isMounted() {
-        return this.__current._hostNode;
+        return !!this.__dom;
     },
     forceUpdate(cb) {
         debounceSetState(this, true, cb);
@@ -64,10 +64,10 @@ function debounceSetState(a, b, c) {
         setTimeout(function () {
             a.__didUpdate = false;
             setStateImpl.call(a, b, c);
-        }, 300)
+        }, 300);
         return;
     }
-    setStateImpl.call(a, b, c)
+    setStateImpl.call(a, b, c);
 }
 function setStateImpl(state, cb) {
     if (isFn(cb)) {
@@ -75,7 +75,7 @@ function setStateImpl(state, cb) {
             .__pendingCallbacks
             .push(cb);
     }
-    let hasDOM = this.__current._hostNode;
+    let hasDOM = this.__dom;
     if (state === true) {//forceUpdate
         this.__forceUpdate = true;
     } else {//setState
