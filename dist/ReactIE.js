@@ -2160,10 +2160,10 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.state = nextState;
 
     var nextTypeVnode = instance.__next || lastTypeVnode;
-    if (!lastRendered._hostNode) {
-        console.log("lastRendered._hostNode为空");
-        lastRendered._hostNode = dom;
-    }
+    //if (!lastRendered._hostNode) {
+    //    console.log("lastRendered._hostNode为空");
+    //    lastRendered._hostNode = dom;
+    // }
     var rendered = renderComponent.call(instance, nextTypeVnode, nextProps, nextContext);
 
     delete instance.__next;
@@ -2203,13 +2203,14 @@ function _refreshComponent(instance, dom, mountQueue) {
 function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     var instance = nextVnode._instance = lastVnode._instance;
     if (!lastVnode._hostNode) {
-        lastVnode._hostNode = instance.__dom;
-        instance.__current = lastVnode;
+        if (instance) {
+            lastVnode._hostNode = instance.__dom;
+            instance.__current = lastVnode;
+        } else {
+            return;
+            //console.log(lastVnode);
+        }
     }
-    //重点！
-
-    // nextVnode._hostNode = lastVnode._hostNode;
-
     instance.__next = nextVnode;
     var nextProps = nextVnode.props;
     instance.lastProps = instance.props;
@@ -2332,10 +2333,8 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
         if (el._disposed) {
-            console.log("已经被销毁", el);
-            //|| (el.vtype > 1 && !el._instance)
-            //如果被销毁或没有实例化
-            //return;
+            console.log("元素已经被销毁");
+            return;
         }
         var list = hashcode[key];
         if (list) {
@@ -2382,6 +2381,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 dom = old._hostNode;
             } else {
                 dom = updateVnode(old, el, context, queue);
+                if (!dom) {
+                    dom = createDOMElement({ vtype: "#comment", text: "placeholder" });
+                    replaceChildDeday([old, el, context, queue], dom, parentNode);
+                }
             }
         } else {
             dom = mountVnode(el, context, null, queue);
@@ -2394,15 +2397,22 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             clearRefsAndMounts(queue);
         }
     });
-    var n = nextChildren.length;
-    while (childNodes[n]) {
-        parentNode.removeChild(childNodes[n]);
-    }
+    //  var n = nextChildren.length;
+    //  while (childNodes[n]) {
+    //      parentNode.removeChild(childNodes[n]);
+    //  }
+}
+function replaceChildDeday(args, dom1, parentNode) {
+    setTimeout(function () {
+        var dom2 = updateVnode.apply(0, args);
+        parentNode.replaceChild(dom2, dom1);
+    });
 }
 function insertDOM(parentNode, dom, ref) {
     if (!dom) {
         return console.warn("元素末初始化"); // eslint-disable-line
     }
+
     if (!ref) {
         parentNode.appendChild(dom);
     } else {
