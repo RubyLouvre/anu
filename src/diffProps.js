@@ -258,10 +258,11 @@ export var actionStrategy = {
             // 这时如果用 setAttribute 则会静默失败
             try {
                 if (!val && val !== 0) {
-                    //image.width 不能赋以null
-                    if (typeof dom[name] === "string") {
+                    //如果它是字符串属性，并且不等于""，清空
+                    if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
                         dom[name] = "";
                     }
+                    dom.removeAttribute(name);
                 } else {
                     dom[name] = val;
                 }
