@@ -56,13 +56,13 @@ resolve: {
       'react': 'anujs',
       'react-dom': 'anujs',
         // 若要兼容 IE 请使用以下配置
-        // 'react': 'qreact/dist/ReactIE',
-        // 'react-dom': 'qreact/dist/ReactIE',
+        // 'react': 'anujs/dist/ReactIE',
+        // 'react-dom': 'anujs/dist/ReactIE',
     
         // 如果引用了 prop-types 或 create-react-class
         // 需要添加如下别名
-        'prop-types': 'qreact/lib/ReactPropTypes',
-        'create-react-class': 'qreact/lib/createClass'
+        'prop-types': 'anujs/lib/ReactPropTypes',
+        'create-react-class': 'anujs/lib/createClass'
         //如果你在移动端用到了onTouchTap事件
         'react-tap-event-plugin': 'anujs/lib/injectTapEventPlugin',  
    }
