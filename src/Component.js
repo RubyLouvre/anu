@@ -8,10 +8,12 @@ import { win } from "./browser";
  * @param {any} props
  * @param {any} context
  */
+var mountOrder = 1;
 
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
+    this.mountOrder = mountOrder++;
     this.context = context;
     this.props = props;
     this.refs = {};

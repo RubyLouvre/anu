@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-15
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-18
  */
 
 (function (global, factory) {
@@ -13,10 +13,7 @@
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
-var limitWarn = {
-    createClass: 1,
-    renderSubtree: 1
-};
+
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -505,10 +502,12 @@ function getNs(type) {
  * @param {any} props
  * @param {any} context
  */
+var mountOrder = 1;
 
 function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
+    this.mountOrder = mountOrder++;
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -606,37 +605,6 @@ function setStateImpl(state, cb) {
     }
 }
 
-function cloneElement(vnode, props) {
-    // if (Array.isArray(vnode)) {
-    //      vnode = vnode[0];
-    // }
-    if (!vnode.vtype) {
-        return Object.assign({}, vnode);
-    }
-    var owner = vnode._owner,
-        lastOwn = CurrentOwner.cur,
-        configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    if (props && props.ref) {
-        owner = lastOwn;
-    }
-    Object.assign(configs, vnode.props, props);
-    CurrentOwner.cur = owner;
-
-    var args = [].slice.call(arguments, 0),
-        argsLength = args.length;
-    args[0] = vnode.type;
-    args[1] = configs;
-    if (argsLength === 2 && configs.children) {
-        args.push(configs.children);
-    }
-    var ret = createElement.apply(null, args);
-    CurrentOwner.cur = lastOwn;
-    return ret;
-}
-
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -656,39 +624,12 @@ var Children = {
     },
     map: function map(children, callback, context) {
         return _flattenChildren(children, false).map(callback, context);
-        /*
-        return _flattenChildren(children, false).map(function (el, index) {
-            if (el && el.type) {
-                if (el.vtype) {
-                    var key = (el.key || "") + ":" + index;
-                    el = cloneElement(el, { key });
-                } else {
-                    el = Object.assign({}, el);
-                }
-            }
-            return callback.call(context, el, index);
-        });*/
     },
 
     toArray: function toArray(children) {
         return _flattenChildren(children, false);
     }
 };
-
-var _loop = function _loop(key) {
-    var fn = Children[key];
-    limitWarn[key] = 1;
-    Children[key] = function () {
-        if (limitWarn[key]-- > 0) {
-            console.warn("请限制使用Children." + key + ",不要窥探虚拟DOM的内部实现,会导致升级问题");
-        }
-        return fn.apply(null, arguments);
-    };
-};
-
-for (var key in Children) {
-    _loop(key);
-}
 
 var globalEvents = {};
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -779,9 +720,7 @@ function addEvent(el, type, fn, bool) {
     if (el.addEventListener) {
         // Unable to preventDefault inside passive event listener due to target being
         // treated as passive
-        el.addEventListener(type, fn, /true|false/.test(bool) ? bool : supportsPassive ? {
-            passive: false
-        } : false);
+        el.addEventListener(type, fn, bool || false);
     } else if (el.attachEvent) {
         
     }
@@ -797,17 +736,6 @@ function getBrowserName(onStr) {
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
-}
-var supportsPassive = false;
-try {
-    var opts = Object.defineProperty({}, "passive", {
-        get: function get() {
-            supportsPassive = true;
-        }
-    });
-    document.addEventListener("test", null, opts);
-} catch (e) {
-    // no catch
 }
 
 eventPropHooks.click = function (e) {
@@ -993,6 +921,37 @@ var eventProto = SyntheticEvent.prototype = {
 };
 /* istanbul ignore next  */
 
+
+function cloneElement(vnode, props) {
+    // if (Array.isArray(vnode)) {
+    //      vnode = vnode[0];
+    // }
+    if (!vnode.vtype) {
+        return Object.assign({}, vnode);
+    }
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
+        key: vnode.key,
+        ref: vnode.ref
+    };
+    if (props && props.ref) {
+        owner = lastOwn;
+    }
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+
+    var args = [].slice.call(arguments, 0),
+        argsLength = args.length;
+    args[0] = vnode.type;
+    args[1] = configs;
+    if (argsLength === 2 && configs.children) {
+        args.push(configs.children);
+    }
+    var ret = createElement.apply(null, args);
+    CurrentOwner.cur = lastOwn;
+    return ret;
+}
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
