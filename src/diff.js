@@ -79,8 +79,15 @@ function clearRefsAndMounts(queue) {
 }
 
 var dirtyComponents = [];
+function mountSorter(c1, c2) {
+    return c1.__mountOrder - c2.__mountOrder;
+}
 options.flushBatchedUpdates = function (queue) {
-    clearRefsAndMounts(queue || dirtyComponents);
+    if (!queue) {
+        dirtyComponents.sort(mountSorter);
+        queue = dirtyComponents;
+    }
+    clearRefsAndMounts(queue);
 };
 options.enqueueUpdate = function (instance) {
     dirtyComponents.push(instance);

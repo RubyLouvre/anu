@@ -93,13 +93,7 @@ export function addEvent(el, type, fn, bool) {
         el.addEventListener(
             type,
             fn,
-            /true|false/.test(bool)
-                ? bool
-                : supportsPassive
-                    ? {
-                        passive: false
-                    }
-                    : false
+            bool || false
         );
     } else if (el.attachEvent) {
         el.attachEvent("on" + type, fn);
@@ -118,17 +112,7 @@ export function getBrowserName(onStr) {
     eventLowerCache[onStr] = lower;
     return lower;
 }
-var supportsPassive = false;
-try {
-    var opts = Object.defineProperty({}, "passive", {
-        get: function () {
-            supportsPassive = true;
-        }
-    });
-    document.addEventListener("test", null, opts);
-} catch (e) {
-    // no catch
-}
+
 
 eventPropHooks.click = function (e) {
     return !e.target.disabled;
