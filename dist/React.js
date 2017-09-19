@@ -26,7 +26,9 @@ var limitWarn = {
 function extend(obj, props) {
     if (props) {
         for (var i in props) {
-            if (props.hasOwnProperty(i)) obj[i] = props[i];
+            if (props.hasOwnProperty(i)) {
+                obj[i] = props[i];
+            }
         }
     }
     return obj;
@@ -140,6 +142,7 @@ function camelize(target) {
 
 var options = {
     beforeUnmount: noop,
+    beforeRender: noop,
     afterMount: noop,
     afterUpdate: noop
 };
@@ -165,7 +168,7 @@ var numberMap = {
     "[object Symbol]": 6,
     "[object Array]": 7
 };
-// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
 function typeNumber(data) {
     if (data === null) {
         return 1;
@@ -194,13 +197,17 @@ var CurrentOwner = {
  * @returns
  */
 
-function createElement(type, config, children) {
+function createElement(type, config) {
+    for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        children[_key - 2] = arguments[_key];
+    }
+
     var props = {},
         checkProps = 0,
         vtype = 1,
         key = null,
         ref = null,
-        argsLen = arguments.length - 2;
+        argsLen = children.length;
     if (config != null) {
         for (var i in config) {
             var val = config[i];
@@ -222,13 +229,9 @@ function createElement(type, config, children) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children) > 2 ? children : EMPTY_CHILDREN;
+        props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
-        var childArray = Array(argsLen);
-        for (var _i = 0; _i < argsLen; _i++) {
-            childArray[_i] = arguments[_i + 2];
-        }
-        props.children = childArray;
+        props.children = children;
     }
 
     var defaultProps = type.defaultProps;
@@ -813,9 +816,13 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
+//freeze_start
+Object.freeze || (Object.freeze = function (a) {
+    return a;
+});
+//freeze_end
 
-
-var eventSystem = extend({
+var eventSystem = Object.freeze({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -2028,11 +2035,13 @@ var renderComponent = function renderComponent(vnode, props, context) {
     //调整全局的 CurrentOwner.cur
     var lastOwn = CurrentOwner.cur;
     CurrentOwner.cur = this;
-
+    options.beforeRender(this);
     var rendered = this.__render ? this.__render(props, context) : this.render();
 
     CurrentOwner.cur = lastOwn;
     //组件只能返回组件或null
+
+
     rendered = checkNull(rendered, vnode.type);
 
     this.context = context;

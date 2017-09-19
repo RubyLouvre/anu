@@ -17,10 +17,10 @@ var text2 = str
     .replace(/Object\.freeze/g, "extend")
     .replace(/\/\/freeze_start([\s\S]+?)freeze_end/, "");
 
-fs.writeFileSync(dir2, text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../select/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../yo-router/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync(dir2, text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../select/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../yo-router/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 console.log("对React瘦身完毕");
 

@@ -6,22 +6,34 @@
     <meta name="viewport" content="width=device-width">   
   <!--<script src="./coverage/react.development.js"></script>-->
   <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./test/react.js"></script>-->
-<script src="./test/react.js"></script>
-  <script src="./test/react-dom.js"></script>
-  <script src="./node_modules/react-router-dom/umd/react-router-dom.js"></script>
+  <script type='text/javascript' src="./lib/ReactInputSelection.js"></script>
+
    <!--<script src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
 
   <script type='text/babel'>
-function App() {
-  return (
-      <div>StateLess</div>
-  );
+class App extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      value: 111
+    }
+  }
+  change(e){
+    console.log(e.target.innerHTML)
+
+    this.setState({
+      value: e.target.innerHTML 
+   })
+  }
+  render(){
+    return (
+        <div contentEditable={true} onInput={ this.change.bind(this) } >{this.state.value}
+        </div>
+    );
+  }
 }
-ReactDOM.render(<App ref={(a) => {
-           console.log(a)
-        }} />,  document.getElementById('example'))
+ReactDOM.render(<App />,  document.getElementById('example'))
  
   </script>
 

@@ -326,14 +326,14 @@ var renderComponent = function (vnode, props, context) {
     //调整全局的 CurrentOwner.cur
     var lastOwn = CurrentOwner.cur;
     CurrentOwner.cur = this;
-
+    options.beforeRender(this);
     let rendered = this.__render
         ? this.__render(props, context)
         : this.render();
 
     CurrentOwner.cur = lastOwn;
     //组件只能返回组件或null
-    options.beforeRender(this);
+   
     
     rendered = checkNull(rendered, vnode.type);
 
