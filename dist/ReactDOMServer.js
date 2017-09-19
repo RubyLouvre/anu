@@ -143,11 +143,13 @@ var cssMap = oneObject("float", "cssFloat");
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var React = global.React;
 var skipAttributes = {
     ref: 1,
     key: 1,
     children: 1
 };
+
 function renderVNode(vnode, context) {
     var _vnode = vnode,
         vtype = _vnode.vtype,
@@ -155,49 +157,55 @@ function renderVNode(vnode, context) {
         props = _vnode.props;
 
     switch (type) {
-        case '#text':
+        case "#text":
             return encodeEntities(vnode.text);
-        case '#comment':
-            return '<!--' + vnode.text + '-->';
+        case "#comment":
+            return "<!--" + vnode.text + "-->";
         default:
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
             if (vtype === 1) {
+                //如果是元素节点
                 var attrs = [];
-                for (var i in props) {
-                    var v = props[i];
-                    if (skipAttributes[i] || /^on[A-Z]/.test(i) && (skipAttributes[i] = true)) {
+                for (var _name in props) {
+                    var v = props[_name];
+                    if (skipAttributes[_name] || /^on[A-Z]/.test(_name) && (skipAttributes[_name] = true)) {
                         continue;
                     }
 
-                    if (name === 'className' || name === 'class') {
-                        name = 'class';
-                        if (v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
+                    if (_name === "className" || _name === "class") {
+                        _name = "class";
+                        if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                             v = hashToClassName(v);
                         }
-                    } else if (name.match(rXlink)) {
-                        name = name.toLowerCase().replace(rXlink, 'xlink:$1');
-                    } else if (name === 'style' && v && (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object') {
+                    } else if (_name.match(rXlink)) {
+                        _name = _name.toLowerCase().replace(rXlink, "xlink:$1");
+                    } else if (_name === "style" && v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                         v = styleObjToCss(v);
                     }
-                    if (skipFalseAndFunction(val)) {
-                        attrs.push(i + '=' + encodeAttributes(v + ''));
+                    if (skipFalseAndFunction(v)) {
+                        attrs.push(_name + "=" + encodeAttributes(v + ""));
                     }
                 }
-                attrs = attrs.length ? ' ' + attrs.join(' ') : '';
-                var str = '<' + type + attrs;
+                attrs = attrs.length ? " " + attrs.join(" ") : "";
+                var str = "<" + type + attrs;
                 if (voidTags[type]) {
-                    return str + '/>\n';
+                    return str + "/>\n";
                 }
-                str += '>';
+                str += ">";
                 if (innerHTML$$1) {
                     str += innerHTML$$1;
                 } else {
-                    str += props.children.map(function (el) {
-                        return el ? renderVNode(el, context) : '';
-                    }).join('');
+                    //最近版本将虚拟DOM树结构调整了，children不一定为数组
+                    React.children.forEach(props.children, function (el) {
+                        if (el && el.vtype) {
+                            str += renderVNode(el, context);
+                        } else if (el) {
+                            str += el;
+                        }
+                    });
                 }
-                return str + '</' + type + '>\n';
+                return str + "</" + type + ">\n";
             } else if (vtype > 1) {
                 var data = {
                     context: context
@@ -206,19 +214,19 @@ function renderVNode(vnode, context) {
                 context = data.context;
                 return renderVNode(vnode, context);
             } else {
-                throw '数据不合法';
+                throw "数据不合法";
             }
     }
 }
 
-function hashToClassName() {
+function hashToClassName(obj) {
     var arr = [];
     for (var i in obj) {
         if (obj[i]) {
             arr.push(i);
         }
     }
-    return arr.join(' ');
+    return arr.join(" ");
 }
 var rXlink = /^xlink\:?(.+)/;
 
@@ -231,25 +239,27 @@ function styleObjToCss(obj) {
     for (var i in obj) {
         var val = obj[i];
         if (obj != null) {
-            var unit = '';
+            var unit = "";
             if (rnumber.test(val) && !cssNumber[name]) {
-                unit = 'px';
+                unit = "px";
             }
-            arr.push(cssName$$1(name) + ': ' + val + unit);
+            arr.push(cssName$$1(name) + ": " + val + unit);
         }
     }
-    return arr.join('; ');
+    return arr.join("; ");
 }
-var voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+var voidTags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
 var cssCached = {
-    styleFloat: 'float',
-    cssFloat: 'float'
+    styleFloat: "float",
+    cssFloat: "float"
 };
 
 function cssName$$1(name) {
-    if (cssCached[name]) return cssCached[name];
+    if (cssCached[name]) {
+        return cssCached[name];
+    }
 
-    return cssCached[name] = name.replace(/([A-Z])/g, '-$1').toLowerCase();
+    return cssCached[name] = name.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
 
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
@@ -266,13 +276,13 @@ function toVnode(vnode, data, parentInstance) {
         if (vnode.vtype === 4) {
             //处理无状态组件
 
-            rendered = type(props, parentContext);
+            rendered = Type(props, parentContext);
             instance = {};
         } else {
 
             //处理普通组件
             instance = new Type(props, parentContext);
-            instance.props = instance.props || propx;
+            instance.props = instance.props || props;
             instance.context = instance.context || parentContext;
             rendered = instance.render();
         }
@@ -293,7 +303,7 @@ function toVnode(vnode, data, parentInstance) {
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getChildContext(instance, context); //将context往下传
+            data.context = getChildContext(instance, parentContext); //将context往下传
         }
         return toVnode(rendered, data, instance);
     } else {
@@ -306,7 +316,7 @@ function toVnode(vnode, data, parentInstance) {
 var matchHtmlRegExp = /["'&<>]/;
 
 function escapeHtml(string) {
-    var str = '' + string;
+    var str = "" + string;
     var match = matchHtmlRegExp.exec(str);
 
     if (!match) {
@@ -314,7 +324,7 @@ function escapeHtml(string) {
     }
 
     var escape;
-    var html = '';
+    var html = "";
     var index = 0;
     var lastIndex = 0;
 
@@ -322,23 +332,23 @@ function escapeHtml(string) {
         switch (str.charCodeAt(index)) {
             case 34:
                 // "
-                escape = '&quot;';
+                escape = "&quot;";
                 break;
             case 38:
                 // &
-                escape = '&amp;';
+                escape = "&amp;";
                 break;
             case 39:
                 // '
-                escape = '&#x27;'; // modified from escape-html; used to be '&#39'
+                escape = "&#x27;"; // modified from escape-html; used to be '&#39'
                 break;
             case 60:
                 // <
-                escape = '&lt;';
+                escape = "&lt;";
                 break;
             case 62:
                 // >
-                escape = '&gt;';
+                escape = "&gt;";
                 break;
             default:
                 continue;
@@ -356,14 +366,14 @@ function escapeHtml(string) {
 }
 
 function encodeEntities(text) {
-    if (typeof text === 'boolean' || typeof text === 'number') {
-        return '' + text;
+    if (typeof text === "boolean" || typeof text === "number") {
+        return "" + text;
     }
     return escapeHtml(text);
 }
 
 function encodeAttributes(value) {
-    return '"' + encodeEntities(value) + '"';
+    return "\"" + encodeEntities(value) + "\"";
 }
 
 function renderToString(vnode, context) {
@@ -375,7 +385,7 @@ function renderToString(vnode, context) {
     if (COMMENT_START.test(markup)) {
         return markup;
     } else {
-        return markup.replace(TAG_END, ' data-reactroot="" data-react-checksum="' + checksum + '"$&');
+        return markup.replace(TAG_END, " data-reactroot=\"\" data-react-checksum=\"" + checksum + "\"$&");
     }
 }
 

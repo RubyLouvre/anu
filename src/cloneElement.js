@@ -1,9 +1,6 @@
 import { createElement, CurrentOwner } from "./createElement";
 
 export function cloneElement(vnode, props) {
-    // if (Array.isArray(vnode)) {
-    //      vnode = vnode[0];
-    // }
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
