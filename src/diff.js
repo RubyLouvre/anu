@@ -108,7 +108,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
         throw new Error(`${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`);
     }
     if (!container || container.nodeType !== 1) {
-        console.warn(`${container}必须为元素节点`); // eslint-disable-line
+        console.log(`${container}必须为元素节点`); // eslint-disable-line
         return;
     }
     let mountQueue = [];
@@ -502,7 +502,7 @@ export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     let dom = node;
     //eslint-disable-next-line 
     if ((lastVnode.vtype === 2 && !lastVnode._instance)) {
-        console.warn(tag, "出问题了");
+        console.log(tag, "出问题了");
     }
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);

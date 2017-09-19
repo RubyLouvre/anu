@@ -38,7 +38,7 @@ var MANY_MERGED = {
     getInitialState: 1,
     getDefaultProps: 1,
     getChildContext: 1
-}
+};
 
 function flattenHooks(key, hooks) {
     let hookType = typeof hooks[0];
@@ -50,7 +50,7 @@ function flattenHooks(key, hooks) {
             .apply(null, hooks);
     } else if (hookType === "function" && hooks.length > 1) {
         return function () {
-            let ret = {}, r, hasReturn = MANY_MERGED[key]
+            let ret = {}, r, hasReturn = MANY_MERGED[key];
             for (let i = 0; i < hooks.length; i++) {
                 r = hooks[i].apply(this, arguments);
                 if (hasReturn && r) {
@@ -98,7 +98,7 @@ function newCtor(className, spec) {
 
 export function createClass(spec) {
     if (limitWarn.createClass-- > 0) {
-        console.warn("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
+        console.log("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -117,11 +117,11 @@ export function createClass(spec) {
             if (spec[name]) {
                 Constructor[name] = spec[name];
             }
-        })
+        });
 
     if (isFn(spec.getDefaultProps)) {
         Constructor.defaultProps = spec.getDefaultProps();
     }
 
     return Constructor;
-};
+}
