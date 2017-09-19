@@ -89,7 +89,6 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.props = props;
     this.vtype = vtype;
     var owner = CurrentOwner.cur;
-    console.log(type.name ? type.name: type, owner, ref);
     this._owner = owner;
 
     if (key) {
