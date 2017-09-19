@@ -12,13 +12,13 @@ export var CurrentOwner = {
  * @returns
  */
 
-export function createElement(type, config, children) {
+export function createElement(type, config, ...children) {
     let props = {},
         checkProps = 0,
         vtype = 1,
         key = null,
         ref = null,
-        argsLen = arguments.length - 2;
+        argsLen = children.length;
     if (config != null) {
         for (let i in config) {
             let val = config[i];
@@ -40,13 +40,9 @@ export function createElement(type, config, children) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children) > 2 ? children : EMPTY_CHILDREN;
+        props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
-        let childArray = Array(argsLen);
-        for (let i = 0; i < argsLen; i++) {
-            childArray[i] = arguments[i + 2];
-        }
-        props.children = childArray;
+        props.children = children;
     }
 
     let defaultProps = type.defaultProps;
