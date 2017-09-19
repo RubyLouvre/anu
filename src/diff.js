@@ -333,6 +333,8 @@ var renderComponent = function (vnode, props, context) {
 
     CurrentOwner.cur = lastOwn;
     //组件只能返回组件或null
+    options.beforeRender(this);
+    
     rendered = checkNull(rendered, vnode.type);
 
     this.context = context;

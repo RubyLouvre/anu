@@ -17,11 +17,11 @@ export var limitWarn = {
 export function extend(obj, props) {
     if (props) {
         for (let i in props) {
-            if (props.hasOwnProperty(i)) obj[i] = props[i];
+            if (props.hasOwnProperty(i)) {obj[i] = props[i];}
         }
     }
     return obj;
-};
+}
 
 let __type = Object.prototype.toString;
 
@@ -30,7 +30,7 @@ let __type = Object.prototype.toString;
  *
  * @export
  */
-export function noop() { };
+export function noop() { }
 
 /**
  * 类继承
@@ -40,7 +40,7 @@ export function noop() { };
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-    function Bridge() { };
+    function Bridge() { }
     Bridge.prototype = SupClass.prototype;
 
     let fn = (SubClass.prototype = new Bridge());
@@ -49,7 +49,7 @@ export function inherit(SubClass, SupClass) {
     extend(fn, SupClass.prototype);
     fn.constructor = SubClass;
     return fn;
-};
+}
 
 /**
  * 收集一个元素的所有孩子
@@ -66,7 +66,7 @@ export function getNodes(dom) {
         ret.push(el);
     }
     return ret;
-};
+}
 
 var lowerCache = {};
 /**
@@ -78,11 +78,11 @@ var lowerCache = {};
  */
 export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
-};
+}
 
 export function clearArray(a) {
-    return a.splice(0, a.length)
-};
+    return a.splice(0, a.length);
+}
 
 /**
  *
@@ -92,7 +92,7 @@ export function clearArray(a) {
  */
 export function isFn(obj) {
     return typeNumber(obj) === 5;
-};
+}
 
 var rword = /[^, ]+/g;
 
@@ -107,14 +107,14 @@ export function oneObject(array, val) {
         result[array[i]] = value;
     }
     return result;
-};
+}
 
 export function getChildContext(instance, context) {
     if (instance.getChildContext) {
         return Object.assign({}, context, instance.getChildContext());
     }
     return context;
-};
+}
 
 var rcamelize = /[-_][^-_]/g;
 export function camelize(target) {
@@ -126,10 +126,11 @@ export function camelize(target) {
     return target.replace(rcamelize, function (match) {
         return match.charAt(1).toUpperCase();
     });
-};
+}
 
 export var options = {
     beforeUnmount: noop,
+    beforeRender: noop,
     afterMount: noop,
     afterUpdate: noop
 };
@@ -146,7 +147,7 @@ export function checkNull(vnode, type) {
         );
     }
     return vnode;
-};
+}
 
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
@@ -167,7 +168,7 @@ export function typeNumber(data) {
     }
     var a = numberMap[__type.call(data)];
     return a || 8;
-};
+}
 
 export var recyclables = {
     "#text": [],
