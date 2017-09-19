@@ -432,15 +432,88 @@
 </code></pre>
 <p>&#x5982;&#x4F55;&#x5728;&#x5DF2;&#x7ECF;&#x4F7F;&#x7528;&#x4E86;React&#x7684;&#x9879;&#x76EE;&#x4E2D;&#x4F7F;&#x7528;&#xFF0C;&#x4FEE;&#x6539;webpack.config.js</p>
 <pre><code class="lang-javascript">resolve: {
-    alias: {
-        <span class="hljs-string">&apos;react&apos;</span>: <span class="hljs-string">&apos;anujs&apos;</span>,
-        <span class="hljs-string">&apos;react-dom&apos;</span>: <span class="hljs-string">&apos;anujs&apos;</span>,
-        <span class="hljs-string">&apos;react-tap-event-plugin&apos;</span>: <span class="hljs-string">&apos;anujs/lib/injectTapEventPlugin&apos;</span> &#x3000;<span class="hljs-comment">//&#x5982;&#x679C;&#x4F60;&#x7528;&#x5230;&#x4E86;onTouchTap&#x4E8B;&#x4EF6;</span>
-    }
-}
+   alias: {
+      <span class="hljs-string">&apos;react&apos;</span>: <span class="hljs-string">&apos;anujs&apos;</span>,
+      <span class="hljs-string">&apos;react-dom&apos;</span>: <span class="hljs-string">&apos;anujs&apos;</span>,
+        <span class="hljs-comment">// &#x82E5;&#x8981;&#x517C;&#x5BB9; IE &#x8BF7;&#x4F7F;&#x7528;&#x4EE5;&#x4E0B;&#x914D;&#x7F6E;</span>
+        <span class="hljs-comment">// &apos;react&apos;: &apos;anujs/dist/ReactIE&apos;,</span>
+        <span class="hljs-comment">// &apos;react-dom&apos;: &apos;anujs/dist/ReactIE&apos;,</span>
+
+        <span class="hljs-comment">// &#x5982;&#x679C;&#x5F15;&#x7528;&#x4E86; prop-types &#x6216; create-react-class</span>
+        <span class="hljs-comment">// &#x9700;&#x8981;&#x6DFB;&#x52A0;&#x5982;&#x4E0B;&#x522B;&#x540D;</span>
+        <span class="hljs-string">&apos;prop-types&apos;</span>: <span class="hljs-string">&apos;anujs/lib/ReactPropTypes&apos;</span>,
+        <span class="hljs-string">&apos;create-react-class&apos;</span>: <span class="hljs-string">&apos;anujs/lib/createClass&apos;</span>
+        <span class="hljs-comment">//&#x5982;&#x679C;&#x4F60;&#x5728;&#x79FB;&#x52A8;&#x7AEF;&#x7528;&#x5230;&#x4E86;onTouchTap&#x4E8B;&#x4EF6;</span>
+        <span class="hljs-string">&apos;react-tap-event-plugin&apos;</span>: <span class="hljs-string">&apos;anujs/lib/injectTapEventPlugin&apos;</span>,  
+   }
+},
+</code></pre>
+<p>&#x538B;&#x7F29;&#x7684;&#x914D;&#x7F6E;</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">//npm install uglifyjs-webpack-plugin@1.0.0-beta.2  </span>
+<span class="hljs-comment">//UglifyJs3</span>
+<span class="hljs-keyword">new</span> UglifyJsPlugin({
+    parallel: {
+        cache: <span class="hljs-literal">true</span>,
+        workers: <span class="hljs-number">4</span>,
+    },
+    uglifyOptions: {
+        mangle: {
+            <span class="hljs-built_in">eval</span>: <span class="hljs-literal">true</span>,
+            toplevel: <span class="hljs-literal">true</span>,
+        },
+        parse: {
+            html5_comments: <span class="hljs-literal">false</span>,
+        },
+        output: {
+            comments: <span class="hljs-literal">false</span>,
+            ascii_only: <span class="hljs-literal">true</span>,
+            beautify: <span class="hljs-literal">false</span>,
+        },
+        ecma: <span class="hljs-number">5</span>,
+        ie8: <span class="hljs-literal">false</span>,
+        compresqs: {
+            properties: <span class="hljs-literal">true</span>,
+            unsafe: <span class="hljs-literal">true</span>,
+            unsafe_comps: <span class="hljs-literal">true</span>,
+            unsafe_math: <span class="hljs-literal">true</span>,
+            unsafe_proto: <span class="hljs-literal">true</span>,
+            unsafe_regexp: <span class="hljs-literal">true</span>,
+            unsafe_Func: <span class="hljs-literal">true</span>,
+            dead_code: <span class="hljs-literal">true</span>,
+            unused: <span class="hljs-literal">true</span>,
+            conditionals: <span class="hljs-literal">true</span>,
+            keep_fargs: <span class="hljs-literal">false</span>,
+            drop_console: <span class="hljs-literal">true</span>,
+            drop_debugger: <span class="hljs-literal">true</span>,
+            reduce_vars: <span class="hljs-literal">true</span>,
+            if_return: <span class="hljs-literal">true</span>,
+            comparisons: <span class="hljs-literal">true</span>,
+            evaluate: <span class="hljs-literal">true</span>,
+            booleans: <span class="hljs-literal">true</span>,
+            typeofs: <span class="hljs-literal">false</span>,
+            loops: <span class="hljs-literal">true</span>,
+            toplevel: <span class="hljs-literal">true</span>,
+            top_retain: <span class="hljs-literal">true</span>,
+            hoist_funs: <span class="hljs-literal">true</span>,
+            hoist_vars: <span class="hljs-literal">true</span>,
+            inline: <span class="hljs-literal">true</span>,
+            join_vars: <span class="hljs-literal">true</span>,
+            cascade: <span class="hljs-literal">true</span>,
+            collapse_vars: <span class="hljs-literal">true</span>,
+            reduce_vars: <span class="hljs-literal">true</span>,
+            negate_iife: <span class="hljs-literal">true</span>,
+            pure_getters: <span class="hljs-literal">true</span>,
+            pure_funcs: <span class="hljs-literal">true</span>,
+            <span class="hljs-comment">// arrows: true,</span>
+            passes: <span class="hljs-number">3</span>,
+            ecma: <span class="hljs-number">5</span>,
+        },
+    },
+    sourceMap: <span class="hljs-literal">false</span>,
+}),
 </code></pre>
 <footer class="page-footer"><span class="copyright">Copyright &#xA9; &#x53F8;&#x5F92;&#x6B63;&#x7F8E; 2013&#xFF0D;2016 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
-2017-08-29 13:16:09
+2017-09-19 09:39:36
 </span></footer>
                                 
                                 </section>
@@ -484,7 +557,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"安装","level":"1.2","depth":1,"next":{"title":"注意事项","level":"1.3","depth":1,"path":"warn.md","ref":"warn.md","articles":[]},"previous":{"title":"介绍","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"livereload":{},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"install.md","mtime":"2017-08-29T05:16:09.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-08-29T06:36:00.178Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"安装","level":"1.2","depth":1,"next":{"title":"注意事项","level":"1.3","depth":1,"path":"warn.md","ref":"warn.md","articles":[]},"previous":{"title":"介绍","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","search-pro","addcssjs","header","betterchinese","splitter","github","-emphasize","include-codeblock","tbfed-pagefooter","toggle-chapters","page-toc","include","style","toolbar","livereload"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy; 司徒正美 2013－2016","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"disqus":{"shortName":"NAME-FROM-DISQUS"},"github":{"url":"https://github.com/RubyLouvre/anu"},"livereload":{},"splitter":{},"include":{},"search-pro":{},"page-toc":{"position":"before-first","selector":".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4"},"addcssjs":{"css":["https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css","https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.css"],"js":["https://cdn.bootcss.com/codemirror/5.2.0/codemirror.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/htmlmixed/htmlmixed.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/css/css.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/javascript/javascript.min.js","https://cdn.bootcss.com/codemirror/5.2.0/mode/xml/xml.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closetag.min.js","https://cdn.bootcss.com/codemirror/5.2.0/addon/edit/closebrackets.min.js"]},"header":{},"style":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"toolbar":{},"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"betterchinese":{},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"cn","gitbook":"*"},"file":{"path":"install.md","mtime":"2017-09-19T01:39:36.000Z","type":"markdown"},"gitbook":{"version":"3.1.1","time":"2017-09-19T01:42:35.475Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

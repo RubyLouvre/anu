@@ -33,8 +33,9 @@ anujs是作者是精通DOM操作，也费了好大劲才实现的。
 
 ![](http://images2017.cnblogs.com/blog/65123/201708/65123-20170830090259687-1322071010.gif)
 
-![](http://images2017.cnblogs.com/blog/65123/201708/65123-20170830090332843-1121619563.png)
+![image](https://user-images.githubusercontent.com/190846/30572471-6915dbbc-9cb3-11e7-93da-f63c8498a31f.png)
 
+>需要 npm i -g jsize
 －－－－－－－－－－
 
 
@@ -42,7 +43,7 @@ anujs是作者是精通DOM操作，也费了好大劲才实现的。
 
 1. 支持React的无狀态组件，纯组件，高阶组件，受控组件与[非受控组件](https://github.com/RubyLouvre/anu/wiki/%E9%9D%9E%E5%8F%97%E6%8E%A7%E7%BB%84%E4%BB%B6)，
 2. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
-3. 体积足够少，min为60k, gz后为16中，2000多行代码（相对于react+react-dom是3MB与3万行代码)
+3. 体积足够少，min为60kb, gz后为10kb中，2000多行代码（相对于react+react-dom是3MB与3万行代码)
 4. 性能稳定在60帧，使用的是基于列队的异步机制
 5. 生命周期函数的参数与官方保持一致
 6. 直接与[react-redux, react-router-dom, react-router-redux](https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90)混用
