@@ -42,7 +42,7 @@ export function createElement(type, config, ...children) {
     if (argsLen === 1) {
         props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
-       props.children = children;
+        props.children = children;
     }
 
     let defaultProps = type.defaultProps;
