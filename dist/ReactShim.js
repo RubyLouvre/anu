@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-18
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-19
  */
 
 (function (global, factory) {
@@ -267,6 +267,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.props = props;
     this.vtype = vtype;
     var owner = CurrentOwner.cur;
+    console.log(type.name ? type.name : type, owner, ref);
     this._owner = owner;
 
     if (key) {
@@ -369,6 +370,141 @@ function flattenChildren(vnode) {
     }
     return vnode.vchildren = arr;
 }
+
+/**
+ *组件的基类
+ *
+ * @param {any} props
+ * @param {any} context
+ */
+var mountOrder = 1;
+function Component(props, context) {
+    //防止用户在构造器生成JSX
+    CurrentOwner.cur = this;
+    this.__mountOrder = mountOrder++;
+    this.context = context;
+    this.props = props;
+    this.refs = {};
+    this.state = null;
+    this.__pendingCallbacks = [];
+    this.__pendingStates = [];
+    this.__current = noop;
+    /*
+    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
+    */
+}
+
+Component.prototype = {
+    constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
+    replaceState: function replaceState() {
+        console.warn("此方法末实现"); // eslint-disable-line
+    },
+    setState: function setState(state, cb) {
+        debounceSetState(this, state, cb);
+    },
+    isMounted: function isMounted() {
+        return !!this.__dom;
+    },
+    forceUpdate: function forceUpdate(cb) {
+        debounceSetState(this, true, cb);
+    },
+
+    __mergeStates: function __mergeStates(props, context) {
+        var n = this.__pendingStates.length;
+        if (n === 0) {
+            return this.state;
+        }
+        var states = clearArray(this.__pendingStates);
+        var nextState = extend({}, this.state);
+        for (var i = 0; i < n; i++) {
+            var partial = states[i];
+            extend(nextState, isFn(partial) ? partial.call(this, nextState, props, context) : partial);
+        }
+        return nextState;
+    },
+
+    render: function render() {}
+};
+
+function debounceSetState(a, b, c) {
+    if (a.__didUpdate) {
+        //如果用户在componentDidUpdate中使用setState，要防止其卡死
+        setTimeout(function () {
+            a.__didUpdate = false;
+            setStateImpl.call(a, b, c);
+        }, 300);
+        return;
+    }
+    setStateImpl.call(a, b, c);
+}
+function setStateImpl(state, cb) {
+    if (isFn(cb)) {
+        this.__pendingCallbacks.push(cb);
+    }
+    var hasDOM = this.__dom;
+    if (state === true) {
+        //forceUpdate
+        this.__forceUpdate = true;
+    } else {
+        //setState
+        this.__pendingStates.push(state);
+    }
+    if (!hasDOM) {
+        //组件挂载期
+        //componentWillUpdate中的setState/forceUpdate应该被忽略 
+        if (this.__hydrating) {
+            //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            this.__renderInNextCycle = true;
+        }
+    } else {
+        //组件更新期
+        if (this.__receiving) {
+            //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
+            return;
+        }
+        this.__renderInNextCycle = true;
+        if (options.async) {
+            //在事件句柄中执行setState会进行合并
+            options.enqueueUpdate(this);
+            return;
+        }
+        if (this.__hydrating) {
+            // 在componentDidMount里调用自己的setState，延迟到下一周期更新
+            // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            return;
+        }
+        //  不在生命周期钩子内执行setState
+        options.flushBatchedUpdates([this]);
+    }
+}
+
+var Children = {
+    only: function only(children) {
+        //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
+        if (Array.isArray(children)) {
+            children = children[0];
+        }
+        if (children && children.vtype) {
+            return children;
+        }
+        throw new Error("expect only one child");
+    },
+    count: function count(children) {
+        return _flattenChildren(children, false).length;
+    },
+    forEach: function forEach(children, callback, context) {
+        _flattenChildren(children, false).forEach(callback, context);
+    },
+    map: function map(children, callback, context) {
+        return _flattenChildren(children, false).map(callback, context);
+    },
+
+    toArray: function toArray(children) {
+        return _flattenChildren(children, false);
+    }
+};
 
 //用于后端的元素节点
 function DOMElement(type) {
@@ -495,141 +631,6 @@ function getNs(type) {
         return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
 }
-
-/**
- *组件的基类
- *
- * @param {any} props
- * @param {any} context
- */
-var mountOrder = 1;
-
-function Component(props, context) {
-    //防止用户在构造器生成JSX
-    CurrentOwner.cur = this;
-    this.__mountOrder = mountOrder++;
-    this.context = context;
-    this.props = props;
-    this.refs = {};
-    this.state = null;
-    this.__pendingCallbacks = [];
-    this.__pendingStates = [];
-    this.__current = noop;
-    /*
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    */
-}
-
-Component.prototype = {
-    replaceState: function replaceState() {
-        console.warn("此方法末实现"); // eslint-disable-line
-    },
-    setState: function setState(state, cb) {
-        debounceSetState(this, state, cb);
-    },
-    isMounted: function isMounted() {
-        return !!this.__dom;
-    },
-    forceUpdate: function forceUpdate(cb) {
-        debounceSetState(this, true, cb);
-    },
-
-    __mergeStates: function __mergeStates(props, context) {
-        var n = this.__pendingStates.length;
-        if (n === 0) {
-            return this.state;
-        }
-        var states = clearArray(this.__pendingStates);
-        var nextState = extend({}, this.state);
-        for (var i = 0; i < n; i++) {
-            var partial = states[i];
-            extend(nextState, isFn(partial) ? partial.call(this, nextState, props, context) : partial);
-        }
-        return nextState;
-    },
-
-    render: function render() {}
-};
-
-function debounceSetState(a, b, c) {
-    if (a.__didUpdate) {
-        //如果用户在componentDidUpdate中使用setState，要防止其卡死
-        setTimeout(function () {
-            a.__didUpdate = false;
-            setStateImpl.call(a, b, c);
-        }, 300);
-        return;
-    }
-    setStateImpl.call(a, b, c);
-}
-function setStateImpl(state, cb) {
-    if (isFn(cb)) {
-        this.__pendingCallbacks.push(cb);
-    }
-    var hasDOM = this.__dom;
-    if (state === true) {
-        //forceUpdate
-        this.__forceUpdate = true;
-    } else {
-        //setState
-        this.__pendingStates.push(state);
-    }
-    if (!hasDOM) {
-        //组件挂载期
-        //componentWillUpdate中的setState/forceUpdate应该被忽略 
-        if (this.__hydrating) {
-            //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-            this.__renderInNextCycle = true;
-        }
-    } else {
-        //组件更新期
-        if (this.__receiving) {
-            //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
-            return;
-        }
-        this.__renderInNextCycle = true;
-        if (options.async) {
-            //在事件句柄中执行setState会进行合并
-            options.enqueueUpdate(this);
-            return;
-        }
-        if (this.__hydrating) {
-            // 在componentDidMount里调用自己的setState，延迟到下一周期更新
-            // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-            return;
-        }
-        //  不在生命周期钩子内执行setState
-        options.flushBatchedUpdates([this]);
-    }
-}
-
-var Children = {
-    only: function only(children) {
-        //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (Array.isArray(children)) {
-            children = children[0];
-        }
-        if (children && children.vtype) {
-            return children;
-        }
-        throw new Error("expect only one child");
-    },
-    count: function count(children) {
-        return _flattenChildren(children, false).length;
-    },
-    forEach: function forEach(children, callback, context) {
-        _flattenChildren(children, false).forEach(callback, context);
-    },
-    map: function map(children, callback, context) {
-        return _flattenChildren(children, false).map(callback, context);
-    },
-
-    toArray: function toArray(children) {
-        return _flattenChildren(children, false);
-    }
-};
 
 var globalEvents = {};
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -815,28 +816,6 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
     };
 });
 
-function createHandle(name, fn) {
-    return function (e) {
-        if (fn && fn(e) === false) {
-            return;
-        }
-        dispatchEvent(e, name);
-    };
-}
-
-var changeHandle = createHandle("change");
-var doubleClickHandle = createHandle("doubleclick");
-
-//react将text,textarea,password元素中的onChange事件当成onInput事件
-eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change";
-    addEvent(document, mask, changeHandle);
-};
-
-eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
-    addEvent(document, "dblclick", doubleClickHandle);
-};
-
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
     for (var tempA = instA; tempA; tempA = tempA.parentNode) {
@@ -875,6 +854,28 @@ if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
 }
+
+function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
+}
+
+var changeHandle = createHandle("change");
+var doubleClickHandle = createHandle("doubleclick");
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? "input" : "change";
+    addEvent(document, mask, changeHandle);
+};
+
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, "dblclick", doubleClickHandle);
+};
 
 function SyntheticEvent(event) {
     if (event.nativeEvent) {
@@ -923,9 +924,6 @@ var eventProto = SyntheticEvent.prototype = {
 
 
 function cloneElement(vnode, props) {
-    // if (Array.isArray(vnode)) {
-    //      vnode = vnode[0];
-    // }
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
@@ -1663,7 +1661,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
         throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
     }
     if (!container || container.nodeType !== 1) {
-        console.warn(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
+        console.log(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
         return;
     }
     var mountQueue = [];
@@ -1836,7 +1834,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
-
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
@@ -2048,7 +2045,7 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
     //eslint-disable-next-line 
     if (lastVnode.vtype === 2 && !lastVnode._instance) {
-        console.warn(tag, "出问题了");
+        console.log(tag, "出问题了");
     }
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);

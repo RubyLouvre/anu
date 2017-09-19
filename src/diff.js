@@ -283,9 +283,8 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
-    var lastOwn = CurrentOwner.cur;
+    let lastOwn = CurrentOwner.cur;
     let instance = new type(props, context); //互相持有引用
-
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数

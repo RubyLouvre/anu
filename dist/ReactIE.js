@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-18
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-19
  */
 
 (function (global, factory) {
@@ -268,6 +268,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.props = props;
     this.vtype = vtype;
     var owner = CurrentOwner.cur;
+    console.log(type.name ? type.name : type, owner, ref);
     this._owner = owner;
 
     if (key) {
@@ -707,28 +708,6 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
     };
 });
 
-function createHandle(name, fn) {
-    return function (e) {
-        if (fn && fn(e) === false) {
-            return;
-        }
-        dispatchEvent(e, name);
-    };
-}
-
-var changeHandle = createHandle("change");
-var doubleClickHandle = createHandle("doubleclick");
-
-//react将text,textarea,password元素中的onChange事件当成onInput事件
-eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change";
-    addEvent(document, mask, changeHandle);
-};
-
-eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
-    addEvent(document, "dblclick", doubleClickHandle);
-};
-
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
     for (var tempA = instA; tempA; tempA = tempA.parentNode) {
@@ -767,6 +746,28 @@ if (isTouch) {
     eventHooks.click = noop;
     eventHooks.clickcapture = noop;
 }
+
+function createHandle(name, fn) {
+    return function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
+}
+
+var changeHandle = createHandle("change");
+var doubleClickHandle = createHandle("doubleclick");
+
+//react将text,textarea,password元素中的onChange事件当成onInput事件
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    var mask = /text|password/.test(dom.type) ? "input" : "change";
+    addEvent(document, mask, changeHandle);
+};
+
+eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
+    addEvent(document, "dblclick", doubleClickHandle);
+};
 
 function SyntheticEvent(event) {
     if (event.nativeEvent) {
@@ -858,7 +859,6 @@ var PropTypes = {
  * @param {any} context
  */
 var mountOrder = 1;
-
 function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
@@ -878,6 +878,7 @@ function Component(props, context) {
 }
 
 Component.prototype = {
+    constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState: function replaceState() {
         console.warn("此方法末实现"); // eslint-disable-line
     },
@@ -1044,7 +1045,7 @@ function newCtor(className, spec) {
 
 function createClass(spec) {
     if (limitWarn.createClass-- > 0) {
-        console.warn("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
+        console.log("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -1072,9 +1073,6 @@ function createClass(spec) {
 }
 
 function cloneElement(vnode, props) {
-    // if (Array.isArray(vnode)) {
-    //      vnode = vnode[0];
-    // }
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
@@ -1818,7 +1816,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
         throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
     }
     if (!container || container.nodeType !== 1) {
-        console.warn(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
+        console.log(container + "\u5FC5\u987B\u4E3A\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
         return;
     }
     var mountQueue = [];
@@ -1991,7 +1989,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     var lastOwn = CurrentOwner.cur;
     var instance = new type(props, context); //互相持有引用
-
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
@@ -2203,7 +2200,7 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
     //eslint-disable-next-line 
     if (lastVnode.vtype === 2 && !lastVnode._instance) {
-        console.warn(tag, "出问题了");
+        console.log(tag, "出问题了");
     }
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);

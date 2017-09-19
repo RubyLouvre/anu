@@ -1,6 +1,5 @@
 import { extend, isFn, options, clearArray, noop } from "./util";
 import { CurrentOwner } from "./createElement";
-import { win } from "./browser";
 
 /**
  *组件的基类
@@ -9,7 +8,6 @@ import { win } from "./browser";
  * @param {any} context
  */
 var mountOrder = 1;
-
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
@@ -29,6 +27,7 @@ export function Component(props, context) {
 }
 
 Component.prototype = {
+    constructor: Component,//必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {
         console.warn("此方法末实现"); // eslint-disable-line
     },
