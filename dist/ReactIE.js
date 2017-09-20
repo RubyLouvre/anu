@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-19
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-20
  */
 
 (function (global, factory) {
@@ -142,6 +142,8 @@ function camelize(target) {
 var options = {
     beforeUnmount: noop,
     beforeRender: noop,
+    beforePatch: noop,
+    afterPatch: noop,
     afterMount: noop,
     afterUpdate: noop
 };
@@ -1748,7 +1750,7 @@ function render(vnode, container, callback) {
 var pendingRefs = [];
 function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
     if (limitWarn.renderSubtree-- > 0) {
-        console.warn("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
+        console.log("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
     }
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);
@@ -1768,11 +1770,13 @@ function isValidElement(vnode) {
 }
 
 function clearRefsAndMounts(queue) {
+    options.beforePatch();
     var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function (fn) {
         fn();
     });
+
     queue.forEach(function (instance) {
         if (instance.componentDidMount) {
             instance.componentDidMount();
@@ -1787,6 +1791,7 @@ function clearRefsAndMounts(queue) {
         });
     });
     queue.length = 0;
+    options.afterPatch();
 }
 
 var dirtyComponents = [];
@@ -2035,8 +2040,6 @@ var renderComponent = function renderComponent(vnode, props, context) {
 
     CurrentOwner.cur = lastOwn;
     //组件只能返回组件或null
-
-
     rendered = checkNull(rendered, vnode.type);
 
     this.context = context;
@@ -2130,10 +2133,6 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.state = nextState;
 
     var nextTypeVnode = instance.__next || lastTypeVnode;
-    //if (!lastRendered._hostNode) {
-    //    console.log("lastRendered._hostNode为空");
-    //    lastRendered._hostNode = dom;
-    // }
     var rendered = renderComponent.call(instance, nextTypeVnode, nextProps, nextContext);
 
     delete instance.__next;
@@ -2178,7 +2177,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
             instance.__current = lastVnode;
         } else {
             return;
-            //console.log(lastVnode);
         }
     }
     instance.__next = nextVnode;

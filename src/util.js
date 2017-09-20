@@ -17,7 +17,9 @@ export var limitWarn = {
 export function extend(obj, props) {
     if (props) {
         for (let i in props) {
-            if (props.hasOwnProperty(i)) {obj[i] = props[i];}
+            if (props.hasOwnProperty(i)) {
+obj[i] = props[i];
+}
         }
     }
     return obj;
@@ -131,6 +133,8 @@ export function camelize(target) {
 export var options = {
     beforeUnmount: noop,
     beforeRender: noop,
+    beforePatch:noop,
+    afterPatch: noop,
     afterMount: noop,
     afterUpdate: noop
 };
