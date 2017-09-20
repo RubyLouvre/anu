@@ -14,35 +14,59 @@
   var s
   window.onload = function(){
 
-    class App extends React.Component {
+    class HTMLConvertExample extends React.Component {
       constructor(props) {
-        super(props);
-        this.state = {
-          tip: 'g-up-tips',
-          text: 'xxxx'
-        };
+        super(props,{},111);
+        console.log(this.refs, 'xxx')
+      
+      }
 
-      }
-     
       render() {
-        return <div ref='parent' className='parent'>
-            <Child ref='child'>
-              <span ref="inner" className="inner">child</span>
-            </Child>
+        return (
+          <div style={styles.root}>
+            <div style={{marginBottom: 10}}>
+              Sample HTML converted into Draft content state
             </div>
+            <div style={styles.editor} onClick={this.focus}>
+              <Editor
+                editorState={this.state.editorState}
+                onChange={this.onChange}
+                ref="editor2"
+              />
+            </div>
+            <input
+              onClick={this.logState}
+              style={styles.button}
+              type="button"
+              value="Log State"
+            />
+          </div>
+        );
       }
     }
-     class Child extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-        };
-      }
-     
-      render() {
-        return <div className='child'>{this.props.children}</div>
-      }
+
+    function findLinkEntities(contentBlock, callback) {
+      contentBlock.findEntityRanges(
+        (character) => {
+          const entityKey = character.getEntity();
+          return (
+            entityKey !== null &&
+            Entity.get(entityKey).getType() === 'LINK'
+          );
+        },
+        callback
+      );
     }
+
+    const Link = (props) => {
+      const {url} = Entity.get(props.entityKey).getData();
+      return (
+        <a href={url} style={styles.link}>
+          {props.children}
+        </a>
+      );
+    };
+
       
 
 

@@ -2,6 +2,8 @@
 1. 修正 onChange 事件
 2. 重构 diffProps 模块的实现
 3. 支持组件的isMounted方法
+4. 添加beforeRender, beforePatch, afterPatch钩子
+5. 添加lib/ReactInputSelection.js
 
 ## 1.1.1
 1. 简化createClass

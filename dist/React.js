@@ -2206,9 +2206,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
     //eslint-disable-next-line 
-    if (lastVnode.vtype === 2 && !lastVnode._instance) {
-        console.log(tag, "出问题了");
-    }
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2288,10 +2285,12 @@ function updateVnode(lastVnode, nextVnode, context, mountQueue) {
 }
 
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
-    var lastChildren = lastVnode.vchildren;
-    var nextChildren = flattenChildren(nextVnode); //nextVnode.props.children;
-    var childNodes = parentNode.childNodes;
-    var mountAll = mountQueue.mountAll;
+    var lastChildren = lastVnode.vchildren,
+        nextChildren = flattenChildren(nextVnode),
+        //nextVnode.props.children;
+    childNodes = parentNode.childNodes,
+        hashcode = {},
+        mountAll = mountQueue.mountAll;
     if (nextChildren.length == 0) {
         lastChildren.forEach(function (el) {
             var node = el._hostNode;
@@ -2302,11 +2301,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         });
         return;
     }
-    var hashcode = {};
+
     lastChildren.forEach(function (el) {
         var key = el.type + (el.key || "");
         if (el._disposed) {
-            console.log("元素已经被销毁");
             return;
         }
         var list = hashcode[key];
@@ -2341,6 +2339,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             });
         }
     }
+
     nextChildren.forEach(function (el, index) {
         var old = el.old,
             ref = void 0,
@@ -2352,6 +2351,10 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             if (el === old && old._hostNode && !contextHasChange) {
                 //cloneElement
                 dom = old._hostNode;
+                if (dom !== childNodes[index]) {
+                    parentNode.replaceChild(dom, childNodes[index]);
+                    return;
+                }
             } else {
                 dom = updateVnode(old, el, context, queue);
                 if (!dom) {
@@ -2370,10 +2373,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             clearRefsAndMounts(queue);
         }
     });
-    //  var n = nextChildren.length;
-    //  while (childNodes[n]) {
-    //      parentNode.removeChild(childNodes[n]);
-    //  }
 }
 function replaceChildDeday(args, dom1, parentNode) {
     setTimeout(function () {
