@@ -125,9 +125,14 @@ export function camelize(target) {
         return target;
     }
     //转换为驼峰风格
-    return target.replace(rcamelize, function (match) {
+    var str = target.replace(rcamelize, function (match) {
         return match.charAt(1).toUpperCase();
     });
+    return firstLetterLower(str);
+}
+
+export function firstLetterLower(str){
+    return str.charAt(0).toLowerCase()+str.slice(1);
 }
 
 export var options = {
