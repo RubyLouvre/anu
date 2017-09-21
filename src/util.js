@@ -18,8 +18,8 @@ export function extend(obj, props) {
     if (props) {
         for (let i in props) {
             if (props.hasOwnProperty(i)) {
-obj[i] = props[i];
-}
+                obj[i] = props[i];
+            }
         }
     }
     return obj;
@@ -131,14 +131,14 @@ export function camelize(target) {
     return firstLetterLower(str);
 }
 
-export function firstLetterLower(str){
-    return str.charAt(0).toLowerCase()+str.slice(1);
+export function firstLetterLower(str) {
+    return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 export var options = {
     beforeUnmount: noop,
     beforeRender: noop,
-    beforePatch:noop,
+    beforePatch: noop,
     afterPatch: noop,
     afterMount: noop,
     afterUpdate: noop
