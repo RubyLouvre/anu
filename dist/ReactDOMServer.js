@@ -158,7 +158,6 @@ function renderVNode(vnode, context) {
         type = _vnode.type,
         props = _vnode.props;
 
-    console.log(type);
     switch (type) {
         case "#text":
             return encodeEntities(vnode.text);
@@ -167,7 +166,6 @@ function renderVNode(vnode, context) {
         default:
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-            console.log(vtype, "vtype", vnode);
             if (vtype === 1) {
                 //如果是元素节点
                 var attrs = [];
@@ -392,11 +390,7 @@ function renderToString(vnode, context) {
 
 var MOD = 65521;
 
-// adler32 is not cryptographically strong, and is only used to sanity check
-// that markup generated on the server matches the markup generated on the
-// client. This implementation (a modified version of the SheetJS version) has
-// been optimized for our use case, at the expense of conforming to the adler32
-// specification for non-ascii inputs.
+//  以后考虑去掉这个东西
 function adler32(data) {
     var a = 1;
     var b = 0;
