@@ -86,6 +86,8 @@ function getChildContext(instance, context) {
 
 
 
+
+
 function checkNull(vnode, type) {
     // if (Array.isArray(vnode) && vnode.length === 1) {
     //  vnode = vnode[0];
