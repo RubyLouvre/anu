@@ -1,12 +1,14 @@
 import React from "dist/React";
-var ReactDOM = window.ReactDOM || React;
 import {
   beforeHook,
   afterHook,
   browser
 } from "karma-event-driver-ext/cjs/event-driver-hooks";
-
+import getTestDocument from './getTestDocument'
 import ReactTestUtils from "lib/ReactTestUtils";
+import ReactDOMServer from "dist/ReactDOMServer";
+
+var ReactDOM = window.ReactDOM || React;
 
 describe("ReactTestUtils", function() {
   this.timeout(200000);
@@ -145,6 +147,7 @@ describe("ReactTestUtils", function() {
   });
 
   it("should support injected wrapper components as DOM components", () => {
+
     const injectedDOMComponents = [
       "button",
       "form",
@@ -164,5 +167,50 @@ describe("ReactTestUtils", function() {
       expect(testComponent.tagName).toBe(type.toUpperCase());
       expect(ReactTestUtils.isDOMComponent(testComponent)).toBe(true);
     });
+    // Full-page components (html, head, body) can't be rendered into a div
+    // directly...
+    class Root extends React.Component {
+      render() {
+        return (
+          <html ref="html">
+            <head ref="head">
+              <title>hello</title>
+            </head>
+            <body ref="body">
+              hello, world
+            </body>
+          </html>
+        );
+      }
+    }
+    const markup = ReactDOMServer.renderToString(<Root />);
+    const testDocument = getTestDocument(markup);
+    const component =  ReactDOM.render(<Root />, testDocument.body);
+    expect(component.refs.html.tagName).toBe('HTML');
+    expect(component.refs.head.tagName).toBe('HEAD');
+    expect(component.refs.body.tagName).toBe('BODY');
+    expect(ReactTestUtils.isDOMComponent(component.refs.html)).toBe(true);
+    expect(ReactTestUtils.isDOMComponent(component.refs.head)).toBe(true);
+    expect(ReactTestUtils.isDOMComponent(component.refs.body)).toBe(true);
+
   });
+  it('can scry with stateless components involved', () => {
+    const Stateless = () => <div><hr /></div>;
+
+    class SomeComponent extends React.Component {
+      render() {
+        return (
+          <div>
+            <Stateless />
+            <hr />
+          </div>
+        );
+      }
+    }
+
+    const inst = ReactTestUtils.renderIntoDocument(<SomeComponent />);
+    const hrs = ReactTestUtils.scryRenderedDOMComponentsWithTag(inst, 'hr');
+    expect(hrs.length).toBe(2);
+  });
+
 });
