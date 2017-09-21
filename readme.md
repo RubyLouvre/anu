@@ -315,7 +315,8 @@ cli
 
 
 ```bash
-npm install selenium-standalone
+npm install selenium-standalone 
+node_modules/.bin/selenium-standalone install
 selenium-standalone start
 # 另开窗口
 npm run build

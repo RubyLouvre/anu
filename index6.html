@@ -16,40 +16,33 @@
   window.onload = function(){
    
     
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          value: '3333'
-        };
-      }
-      render() {
-        return <A />
-      }
-    }
-    class A extends React.Component {
-      constructor(props) {
-        super(props);
-      }
-      render() {
-        return <B />
-      }
-    }
-    class B extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-          value: '3333'
-        };
-      }
-      componentDidMount(){
-        s2 = this
-      }
-      render() {
-        return  this.state.value ? <div>111</div> :<strong>3333</strong>
-      }
-    }
 
+    
+    const Text = ({visible}) => {
+        if (visible) {
+            return <div>Text</div>;
+        }
+    
+        return null;
+    };
+    
+    class App extends React.Component {
+        state = {
+            showText: true
+        };
+    
+        render() {
+            const {showText} = this.state;
+    
+            return (
+                <div>
+                    <Text visible={showText} />
+                    <button type="button" onClick={() => this.setState({showText: !showText})}>Click</button>
+                </div>
+            );
+        }
+    }
+    
 
    s = ReactDOM.render(<App />, document.getElementById('example'));
   }
