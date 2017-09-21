@@ -5,6 +5,7 @@ import {
     toLowerCase,
     inherit,
     camelize,
+    firstLetterLower,
     getNodes,
     getChildContext,
     typeNumber
@@ -79,7 +80,15 @@ describe('util', function () {
         expect(typeof camelize).toBe('function')
         expect(camelize('aaa-bbb-ccc')).toBe('aaaBbbCcc')
         expect(camelize('aaa_bbb_ccc')).toBe('aaaBbbCcc')
+        expect(camelize('-aaa-bbb-ccc')).toBe('aaaBbbCcc')
+        expect(camelize('_aaa_bbb_ccc')).toBe('aaaBbbCcc')
         expect(camelize('')).toBe('')
+    })
+
+    it('firstLetterLower', function(){
+        expect(typeof firstLetterLower).toBe('function')
+        expect(firstLetterLower('WebkitBorderStart')).toBe('webkitBorderStart')
+        expect(firstLetterLower('')).toBe('')
     })
 
     it('getNodes', () => {
