@@ -9,22 +9,10 @@
      <script src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
      <style>
-       .tip{
-         display: none
-       }
-     
-       .g-up-tips{
-         background: green;
-       }
-       .hover .tip{
-         display: block;
-         width:400px;
-         height: 200px;
-         background: lemonchiffon;
-       }
+
      </style>
   <script type='text/babel'>
-  var s
+  var s, s2
   window.onload = function(){
    
     
@@ -34,16 +22,31 @@
         this.state = {
           value: '3333'
         };
-
       }
-     
       render() {
-        return <div><input onChange={(e)=>{ 
-             this.setState({value: e.target.value})
-           }
-          } 
-          value={this.state.value}/>
-          <p>{this.state.value}</p></div>
+        return <A />
+      }
+    }
+    class A extends React.Component {
+      constructor(props) {
+        super(props);
+      }
+      render() {
+        return <B />
+      }
+    }
+    class B extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          value: '3333'
+        };
+      }
+      componentDidMount(){
+        s2 = this
+      }
+      render() {
+        return  this.state.value ? <div>111</div> :<strong>3333</strong>
       }
     }
 

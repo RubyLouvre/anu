@@ -283,6 +283,20 @@ function alignChildren(vnode, parentNode, context, mountQueue) {
         parentNode.removeChild(childNodes[n]);
     }
 }
+//构建实例链
+function buildInstanceChain(rendered, instance) {
+    if (rendered._instance) {
+        rendered._instance.__parentInstance = instance;
+    }
+}
+
+function updateInstanceDOM(instance, dom) {
+    instance.__dom = instance.__current._hostNode = dom;
+    var parent = instance.__parentInstance;
+    if (parent) {
+        updateInstanceDOM(parent, dom);
+    }
+}
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
     let { type, ref, props } = vnode;
@@ -306,9 +320,10 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         : context;
     instance.__childContext = context; //用于在updateChange中比较
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue);
-    vnode._hostNode = dom;
-    instance.__dom = dom;
+
     instance.__current = vnode;
+    buildInstanceChain(rendered, instance);
+    updateInstanceDOM(instance, dom);
 
     if (ref) {
         pendingRefs.push(ref.bind(0, instance));
@@ -349,27 +364,33 @@ var renderComponent = function (vnode, props, context) {
 Stateless.prototype.render = renderComponent;
 function mountStateless(vnode, context, prevRendered, mountQueue) {
     let { type, props, ref } = vnode;
-    let instance = new Stateless(type);
+    let instance = new Stateless(type),
+        rendered = instance.render(vnode, props, context),
+        dom = mountVnode(rendered, context, prevRendered, mountQueue);
 
-    let rendered = instance.render(vnode, props, context);
+    instance.__current = vnode;
+    buildInstanceChain(rendered, instance);
+    updateInstanceDOM(instance, dom);
 
-    let dom = mountVnode(rendered, context, prevRendered, mountQueue);
-    instance.__dom = dom;
     if (ref) {
         pendingRefs.push(ref.bind(0, null));
     }
-    instance.__current = vnode;
-    return vnode._hostNode = dom;
+
+    return dom;
 }
 
 function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
-    let instance = lastTypeVnode._instance;
-    let lastRendered = instance.__rendered;
-    let dom = instance.__dom;
-    let rendered = instance.render(nextTypeVnode, nextTypeVnode.props, context);
+    let instance = lastTypeVnode._instance,
+        lastRendered = instance.__rendered,
+        dom = instance.__dom,
+        rendered = instance.render(nextTypeVnode, nextTypeVnode.props, context);
+
     dom = alignVnode(lastRendered, rendered, dom, context, mountQueue);
-    nextTypeVnode._hostNode = dom;
+
     instance.__current = nextTypeVnode;
+    buildInstanceChain(rendered, instance);
+    updateInstanceDOM(instance, dom);
+
     if (nextTypeVnode.ref) {
         pendingRefs.push(nextTypeVnode.ref.bind(0, null));
     }
@@ -385,6 +406,7 @@ function isEmpty(obj) {
     }
     return 0;
 }
+
 function refreshComponent(instance, mountQueue) {
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
     let dom = instance.__dom;
@@ -429,7 +451,6 @@ function _refreshComponent(instance, dom, mountQueue) {
 
     let nextTypeVnode = instance.__next || lastTypeVnode;
     let rendered = renderComponent.call(instance, nextTypeVnode, nextProps, nextContext);
-
     delete instance.__next;
     var childContext = rendered.vtype
         ? getChildContext(instance, nextContext)
@@ -441,13 +462,12 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.__childContext = childContext;
     //如果两个context都为空对象，就不比较引用，认为它们没有变
     contextHasChange = (isEmpty(prevChildContext) + isEmpty(childContext)) && prevChildContext !== childContext;
-
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
-    nextTypeVnode._hostNode = dom;
-    instance.__dom = dom;
-    instance.__current = nextTypeVnode;
-
     contextHasChange = contextStatus.pop();
+
+    instance.__current = nextTypeVnode;
+    buildInstanceChain(rendered, instance);
+    updateInstanceDOM(instance, dom);
 
     if (instance.componentDidUpdate) {
         instance.__didUpdate = true;

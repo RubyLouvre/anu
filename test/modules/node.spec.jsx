@@ -177,7 +177,6 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-        //s.__current._hostNode
         expect(div.firstChild.children[1].selected).toBe(true)
         await browser.selectByVisibleText('#node2', '上海').pause(100).$apply()
 
@@ -1019,5 +1018,45 @@ describe('node模块', function () {
         await browser.pause(50).$apply()
         expect(div.firstChild.style.color).to.equal('');
     });
+
+    it('子组件的DOM节点改变了，会同步父节点的DOM', async () => {
+        var s, s2
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <A />
+            }
+        }
+        class A extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <B />
+            }
+        }
+        class B extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    value: '3333'
+                };
+            }
+            componentDidMount() {
+                s2 = this
+            }
+            render() {
+                return this.state.value ? <div>111</div> : <strong>3333</strong>
+            }
+        }
+        var s = React.render(<App />, div);
+        await browser.pause(200).$apply();
+        expect(s.__dom ).toBe(s2.__dom);
+        s2.setState({value: 0});
+        expect(s.__dom ).toBe(s2.__dom);
+        expect(s.__dom.nodeName).toBe('STRONG');
+    })
 
 })
