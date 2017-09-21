@@ -123,7 +123,7 @@ export function postUpdateSelectedOptions(vnode) {
                     ? props.defaultValue
                     : multiple ? [] : "",
         options = [];
-    collectOptions(vnode, props, options);
+    collectOptions(vnode, options);
     if (multiple) {
         updateOptionsMore(options, options.length, value);
     } else {
@@ -135,17 +135,16 @@ export function postUpdateSelectedOptions(vnode) {
  * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
  *
  * @param {VNode} vnode
- * @param {any} props
  * @param {Array} ret
  */
-function collectOptions(vnode, props, ret) {
-    var arr = props.children;
+function collectOptions(vnode, ret) {
+    var arr = vnode.vchildren;//option.children不一定存在
     for (var i = 0, n = arr.length; i < n; i++) {
         var el = arr[i];
         if (el.type === "option") {
             ret.push(el);
         } else if (el.type === "optgroup") {
-            collectOptions(el, el.props, ret);
+            collectOptions(el, ret);
         }
     }
 }
