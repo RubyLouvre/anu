@@ -163,7 +163,6 @@ describe("ReactTestUtils", function() {
      
       expect(testComponent.tagName).toBe(type.toUpperCase());
       expect(ReactTestUtils.isDOMComponent(testComponent)).toBe(true);
-      console.log('0000')
     });
   });
 });

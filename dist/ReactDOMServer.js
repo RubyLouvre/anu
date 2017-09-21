@@ -145,7 +145,7 @@ var cssMap = oneObject("float", "cssFloat");
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var React = global.React;
+var React = (typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" ? global.React : window.React;
 var skipAttributes = {
     ref: 1,
     key: 1,
@@ -158,6 +158,7 @@ function renderVNode(vnode, context) {
         type = _vnode.type,
         props = _vnode.props;
 
+    console.log(type);
     switch (type) {
         case "#text":
             return encodeEntities(vnode.text);
@@ -166,6 +167,7 @@ function renderVNode(vnode, context) {
         default:
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
+            console.log(vtype, "vtype", vnode);
             if (vtype === 1) {
                 //如果是元素节点
                 var attrs = [];
@@ -199,11 +201,11 @@ function renderVNode(vnode, context) {
                     str += innerHTML$$1;
                 } else {
                     //最近版本将虚拟DOM树结构调整了，children不一定为数组
-                    React.children.forEach(props.children, function (el) {
+                    React.Children.forEach(props.children, function (el) {
                         if (el && el.vtype) {
                             str += renderVNode(el, context);
-                        } else if (el) {
-                            str += el;
+                        } else {
+                            str += el || "";
                         }
                     });
                 }
@@ -277,11 +279,9 @@ function toVnode(vnode, data, parentInstance) {
         // props = getComponentProps(Type, props)
         if (vnode.vtype === 4) {
             //处理无状态组件
-
             rendered = Type(props, parentContext);
             instance = {};
         } else {
-
             //处理普通组件
             instance = new Type(props, parentContext);
             instance.props = instance.props || props;
@@ -290,12 +290,11 @@ function toVnode(vnode, data, parentInstance) {
         }
 
         rendered = checkNull(rendered);
-        vnode._renderedVnode = rendered;
 
         vnode._instance = instance;
         instance.__current = vnode;
         if (parentInstance) {
-            instance.parentInstance = parentInstance;
+            instance.__parentInstance = parentInstance;
         }
 
         if (instance.componentWillMount) {

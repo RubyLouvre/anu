@@ -1,6 +1,6 @@
 import { getChildContext, checkNull } from "../src/util";
 import { rnumber, cssNumber } from "../src/style";
-var React = global.React;
+var React = typeof global === "object" ? global.React : window.React;
 var skipAttributes = {
     ref: 1,
     key: 1,
@@ -17,11 +17,15 @@ function renderVNode(vnode, context) {
     default:
         var innerHTML = props && props.dangerouslySetInnerHTML;
         innerHTML = innerHTML && innerHTML.__html;
-        if (vtype === 1) {//如果是元素节点
+        if (vtype === 1) {
+        //如果是元素节点
             var attrs = [];
             for (let name in props) {
                 var v = props[name];
-                if (skipAttributes[name] || (/^on[A-Z]/.test(name) && (skipAttributes[name] = true))) {
+                if (
+                    skipAttributes[name] ||
+            (/^on[A-Z]/.test(name) && (skipAttributes[name] = true))
+                ) {
                     continue;
                 }
 
@@ -31,9 +35,7 @@ function renderVNode(vnode, context) {
                         v = hashToClassName(v);
                     }
                 } else if (name.match(rXlink)) {
-                    name = name
-                        .toLowerCase()
-                        .replace(rXlink, "xlink:$1");
+                    name = name.toLowerCase().replace(rXlink, "xlink:$1");
                 } else if (name === "style" && v && typeof v === "object") {
                     v = styleObjToCss(v);
                 }
@@ -41,9 +43,7 @@ function renderVNode(vnode, context) {
                     attrs.push(name + "=" + encodeAttributes(v + ""));
                 }
             }
-            attrs = attrs.length
-                ? " " + attrs.join(" ")
-                : "";
+            attrs = attrs.length ? " " + attrs.join(" ") : "";
             var str = "<" + type + attrs;
             if (voidTags[type]) {
                 return str + "/>\n";
@@ -53,11 +53,11 @@ function renderVNode(vnode, context) {
                 str += innerHTML;
             } else {
                 //最近版本将虚拟DOM树结构调整了，children不一定为数组
-                React.children.forEach(props.children, function (el) {
+                React.Children.forEach(props.children, function(el) {
                     if (el && el.vtype) {
                         str += renderVNode(el, context);
-                    } else if (el) {
-                        str += el;
+                    } else {
+                        str += el || "";
                     }
                 });
             }
@@ -87,7 +87,7 @@ function hashToClassName(obj) {
 const rXlink = /^xlink\:?(.+)/;
 
 function skipFalseAndFunction(a) {
-    return a !== false && (Object(a) !== a);
+    return a !== false && Object(a) !== a;
 }
 
 function styleObjToCss(obj) {
@@ -103,7 +103,6 @@ function styleObjToCss(obj) {
         }
     }
     return arr.join("; ");
-
 }
 const voidTags = [
     "area",
@@ -131,10 +130,7 @@ function cssName(name) {
         return cssCached[name];
     }
 
-    return cssCached[name] = name
-        .replace(/([A-Z])/g, "-$1")
-        .toLowerCase();
-
+    return (cssCached[name] = name.replace(/([A-Z])/g, "-$1").toLowerCase());
 }
 
 //===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
@@ -150,27 +146,22 @@ function toVnode(vnode, data, parentInstance) {
         // props = getComponentProps(Type, props)
         if (vnode.vtype === 4) {
             //处理无状态组件
-
             rendered = Type(props, parentContext);
             instance = {};
-
         } else {
-
             //处理普通组件
             instance = new Type(props, parentContext);
             instance.props = instance.props || props;
             instance.context = instance.context || parentContext;
             rendered = instance.render();
-
         }
 
         rendered = checkNull(rendered);
-        vnode._renderedVnode = rendered;
 
         vnode._instance = instance;
         instance.__current = vnode;
         if (parentInstance) {
-            instance.parentInstance = parentInstance;
+            instance.__parentInstance = parentInstance;
         }
 
         if (instance.componentWillMount) {
@@ -208,23 +199,23 @@ function escapeHtml(string) {
     for (index = match.index; index < str.length; index++) {
         switch (str.charCodeAt(index)) {
         case 34:
-            // "
+        // "
             escape = "&quot;";
             break;
         case 38:
-            // &
+        // &
             escape = "&amp;";
             break;
         case 39:
-            // '
+        // '
             escape = "&#x27;"; // modified from escape-html; used to be '&#39'
             break;
         case 60:
-            // <
+        // <
             escape = "&lt;";
             break;
         case 62:
-            // >
+        // >
             escape = "&gt;";
             break;
         default:
@@ -239,9 +230,7 @@ function escapeHtml(string) {
         html += escape;
     }
 
-    return lastIndex !== index
-        ? html + str.substring(lastIndex, index)
-        : html;
+    return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 }
 
 function encodeEntities(text) {
@@ -264,17 +253,16 @@ function renderToString(vnode, context) {
     if (COMMENT_START.test(markup)) {
         return markup;
     } else {
-        return markup.replace(TAG_END, " data-reactroot=\"\" data-react-checksum=\"" + checksum + "\"$&");
+        return markup.replace(
+            TAG_END,
+            " data-reactroot=\"\" data-react-checksum=\"" + checksum + "\"$&"
+        );
     }
 }
 
 var MOD = 65521;
 
-// adler32 is not cryptographically strong, and is only used to sanity check
-// that markup generated on the server matches the markup generated on the
-// client. This implementation (a modified version of the SheetJS version) has
-// been optimized for our use case, at the expense of conforming to the adler32
-// specification for non-ascii inputs.
+//  以后考虑去掉这个东西
 function adler32(data) {
     var a = 1;
     var b = 0;
@@ -284,7 +272,11 @@ function adler32(data) {
     while (i < m) {
         var n = Math.min(i + 4096, m);
         for (; i < n; i += 4) {
-            b += (a += data.charCodeAt(i)) + (a += data.charCodeAt(i + 1)) + (a += data.charCodeAt(i + 2)) + (a += data.charCodeAt(i + 3));
+            b +=
+        (a += data.charCodeAt(i)) +
+        (a += data.charCodeAt(i + 1)) +
+        (a += data.charCodeAt(i + 2)) +
+        (a += data.charCodeAt(i + 3));
         }
         a %= MOD;
         b %= MOD;
@@ -294,7 +286,7 @@ function adler32(data) {
     }
     a %= MOD;
     b %= MOD;
-    return a | b << 16;
+    return a | (b << 16);
 }
 export default {
     renderToString,
