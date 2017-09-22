@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-21
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-22
  */
 
 (function (global, factory) {
@@ -1576,6 +1576,7 @@ function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
+        instance.__current = instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
@@ -1585,7 +1586,6 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.__current = instance.setState = instance.forceUpdate = noop;
         vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(instance.__rendered);
     }
