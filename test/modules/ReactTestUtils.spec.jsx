@@ -284,7 +284,7 @@ describe("ReactTestUtils", function() {
         "a React element. Pass the DOM node you wish to simulate the event on instead. " +
         "Note that TestUtils.Simulate will not work if you are using shallow rendering."
     );
-    expect(handler).not.toHaveBeenCalled();
+    expect(handler).toNotHaveBeenCalled();
   });
 
   it('should throw when attempting to use a component instance', () => {
@@ -298,9 +298,10 @@ describe("ReactTestUtils", function() {
         }
       }
 
-      const handler = spyOn.createSpy('spy');
-      const container = document.createElement('div');
-      const instance = ReactDOM.render(
+      let handler = spyOn.createSpy('spy');
+      console.log(!!handler.spyArgs)
+      let container = document.createElement('div');
+      let instance = ReactDOM.render(
         <SomeComponent handleClick={handler} />,
         container,
       );
@@ -309,6 +310,7 @@ describe("ReactTestUtils", function() {
         'TestUtils.Simulate expected a DOM node as the first argument but received ' +
           'a component instance. Pass the DOM node you wish to simulate the event on instead.',
       );
-      expect(handler).not.toHaveBeenCalled();
+
+       expect(handler).toNotHaveBeenCalled();
     });
 });

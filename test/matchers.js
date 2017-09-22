@@ -44,8 +44,30 @@ if (typeof chai !== "undefined") {
             return a.contain.any.keys(arr);
         });
 
-        Assertion.addMethod("toHaveBeenCalled", function(expected) {
-            return this.contain.any.keys(["spyArgs"]);
+        Assertion.addMethod("toHaveBeenCalled", function() {
+            var val = this.__flags.object;
+            var a = new chai.Assertion("toHaveBeenCalled");
+            if(val.spyArgs){
+                return a.equal("toHaveBeenCalled");
+            }
+            return a.equal("ng");
+        });
+
+        Assertion.addMethod("toNotHaveBeenCalledWith", function(expected) {
+            var val = this.__flags.object;
+            val = val.spyArgs[0];
+            var a = new chai.Assertion(val);
+            var arr = Object.keys(expected);
+            return a.not.contain.any.keys(arr);
+        });
+
+        Assertion.addMethod("toNotHaveBeenCalled", function() {
+            var val = this.__flags.object;
+            var a = new chai.Assertion("toNotHaveBeenCalled");
+            if(val.spyArgs){
+                return a.equal("ng");
+            }
+            return a.equal("toNotHaveBeenCalled");
         });
 
         Assertion.addMethod("toA", function(expected) {
@@ -114,12 +136,14 @@ if (typeof chai !== "undefined") {
         });
         Assertion.addMethod("toThrowError", function(expected) {
             var val = this.__flags.object;
+            var a = new chai.Assertion(11);
             try {
                 val();
             } catch (e) {
-                return this.ok;
+                console.warn(expected);
+                return a.equal(11);
             }
-            return this.not.ok;
+            return  a.equal(0);
         });
         console.log("添加jasmine风格的断言方法");
     })();

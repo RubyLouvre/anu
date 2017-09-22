@@ -566,9 +566,7 @@ var fragment = document.createDocumentFragment();
 function emptyElement(node) {
     var child;
     while (child = node.firstChild) {
-        if (child.nodeType === 1) {
-            emptyElement(child);
-        }
+        emptyElement(child);
         node.removeChild(child);
     }
 }
@@ -2093,7 +2091,6 @@ function findDOMNode(ref) {
     if (ref == null) {
         return null;
     }
-
     if (ref.nodeType === 1) {
         return ref;
     }
