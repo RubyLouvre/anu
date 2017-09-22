@@ -1,43 +1,62 @@
-if (typeof chai !== 'undefined') {
+if (typeof chai !== "undefined") {
     // http://stackoverflow.com/questions/11942085/is-there-a-way-to-add-a-jasmine-matcher-to-the-whole-environment
     (function() {
-
-        var utils = chai.util
-        var expect = chai.expect
-
+        var utils = chai.util;
+        var expect = chai.expect;
 
         var Assertion = chai.Assertion,
-            flag = utils.flag
+            flag = utils.flag;
 
         Assertion.addMethod("toEqual", function(expected) {
             return this.to.eql(expected);
         });
 
+        window.spyOn = function(obj, method) {
+            var orig = obj[method];
+            return {
+                and: {
+                    callThrough: function() {
+                        var fn = (obj[method] = function() {
+                            fn.spyArgs = [].slice.call(arguments);
+                            fn.spyThis = obj;
+                            fn.spyReturn = orig.apply(obj, fn.spyArgs);
+                        });
+                    }
+                }
+            };
+        };
 
-        Assertion.addMethod("toA", function(expected) {
-            return this.to.be.a(expected);
+        Assertion.addMethod("toHaveBeenCalledWith", function(expected) {
+            var val = this.__flags.object;
+            val = val.spyArgs[0];
+            var a = new chai.Assertion(val);
+            var arr = Object.keys(expected);
+            return a.contain.any.keys(arr);
         });
+        
+   
         Assertion.addMethod("toBe", function(expected) {
             return this.equal(expected);
         });
 
+     
 
         Assertion.addMethod("toMatch", function(expected) {
             return this.match(new RegExp(expected));
-        })
+        });
 
-        Assertion.addMethod('toInstanceOf', function(clazz) {
+        Assertion.addMethod("toInstanceOf", function(clazz) {
             return this.to.be.an.instanceof(clazz);
-        })
+        });
 
         //拥有特定的某个属性名
-        Assertion.addMethod('toHaveProperty', function(a) {
-            return this.to.have.property(a)
-        })
+        Assertion.addMethod("toHaveProperty", function(a) {
+            return this.to.have.property(a);
+        });
 
-        Assertion.addMethod('toHaveKeys', function(arr) {
+        Assertion.addMethod("toHaveKeys", function(arr) {
             return this.to.contain.any.keys(arr);
-        })
+        });
 
         Assertion.addMethod("toBeDefined", function() {
             return this.not.undefined;
@@ -78,11 +97,7 @@ if (typeof chai !== 'undefined') {
         Assertion.addMethod("toThrow", function(expected) {
             return this.throw(expected);
         });
-      
 
-        console.log('添加jasmine风格的断言方法')
-
+        console.log("添加jasmine风格的断言方法");
     })();
-
-
 }

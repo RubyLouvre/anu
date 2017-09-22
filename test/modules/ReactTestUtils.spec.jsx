@@ -4,7 +4,7 @@ import {
   afterHook,
   browser
 } from "karma-event-driver-ext/cjs/event-driver-hooks";
-import getTestDocument from './getTestDocument'
+import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
 import ReactDOMServer from "dist/ReactDOMServer";
 
@@ -147,7 +147,6 @@ describe("ReactTestUtils", function() {
   });
 
   it("should support injected wrapper components as DOM components", () => {
-
     const injectedDOMComponents = [
       "button",
       "form",
@@ -163,7 +162,7 @@ describe("ReactTestUtils", function() {
       const testComponent = ReactTestUtils.renderIntoDocument(
         React.createElement(type)
       );
-     
+
       expect(testComponent.tagName).toBe(type.toUpperCase());
       expect(ReactTestUtils.isDOMComponent(testComponent)).toBe(true);
     });
@@ -176,26 +175,27 @@ describe("ReactTestUtils", function() {
             <head ref="head">
               <title>hello</title>
             </head>
-            <body ref="body">
-              hello, world
-            </body>
+            <body ref="body">hello, world</body>
           </html>
         );
       }
     }
     const markup = ReactDOMServer.renderToString(<Root />);
     const testDocument = getTestDocument(markup);
-    const component =  ReactDOM.render(<Root />, testDocument.body);
-    expect(component.refs.html.tagName).toBe('HTML');
-    expect(component.refs.head.tagName).toBe('HEAD');
-    expect(component.refs.body.tagName).toBe('BODY');
+    const component = ReactDOM.render(<Root />, testDocument.body);
+    expect(component.refs.html.tagName).toBe("HTML");
+    expect(component.refs.head.tagName).toBe("HEAD");
+    expect(component.refs.body.tagName).toBe("BODY");
     expect(ReactTestUtils.isDOMComponent(component.refs.html)).toBe(true);
     expect(ReactTestUtils.isDOMComponent(component.refs.head)).toBe(true);
     expect(ReactTestUtils.isDOMComponent(component.refs.body)).toBe(true);
-
   });
-  it('can scry with stateless components involved', () => {
-    const Stateless = () => <div><hr /></div>;
+  it("can scry with stateless components involved", () => {
+    const Stateless = () => (
+      <div>
+        <hr />
+      </div>
+    );
 
     class SomeComponent extends React.Component {
       render() {
@@ -209,8 +209,57 @@ describe("ReactTestUtils", function() {
     }
 
     const inst = ReactTestUtils.renderIntoDocument(<SomeComponent />);
-    const hrs = ReactTestUtils.scryRenderedDOMComponentsWithTag(inst, 'hr');
+    const hrs = ReactTestUtils.scryRenderedDOMComponentsWithTag(inst, "hr");
     expect(hrs.length).toBe(2);
   });
 
+  it("should change the value of an input field", () => {
+    const obj = {
+      handler: function(e) {
+        e.persist();
+      }
+    };
+    spyOn(obj, "handler").and.callThrough();
+    const container = document.createElement("div");
+    const instance = ReactDOM.render(
+      <input type="text" onChange={obj.handler} />,
+      container
+    );
+
+    const node = ReactDOM.findDOMNode(instance);
+    node.value = "giraffe";
+    ReactTestUtils.Simulate.change(node);
+
+    expect(obj.handler).toHaveBeenCalledWith({ target: node });
+  });
+
+  it("should change the value of an input field in a component", () => {
+    class SomeComponent extends React.Component {
+      render() {
+        return (
+          <div>
+            <input type="text" ref="input" onChange={this.props.handleChange} />
+          </div>
+        );
+      }
+    }
+
+    const obj = {
+      handler: function(e) {
+        e.persist();
+      }
+    };
+    spyOn(obj, "handler").and.callThrough();
+    const container = document.createElement("div");
+    const instance = ReactDOM.render(
+      <SomeComponent handleChange={obj.handler} />,
+      container
+    );
+
+    const node = ReactDOM.findDOMNode(instance.refs.input);
+    node.value = "zebra";
+    ReactTestUtils.Simulate.change(node);
+
+    expect(obj.handler).toHaveBeenCalledWith({ target: node });
+  });
 });
