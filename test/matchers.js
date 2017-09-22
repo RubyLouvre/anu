@@ -10,7 +10,8 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toEqual", function(expected) {
             return this.to.eql(expected);
         });
-
+        
+        //实现spyOn功能
         window.spyOn = function(obj, method) {
             var orig = obj[method];
             return {
@@ -33,6 +34,11 @@ if (typeof chai !== "undefined") {
             var arr = Object.keys(expected);
             return a.contain.any.keys(arr);
         });
+        
+        Assertion.addMethod("toHaveBeenCalled", function(expected) {
+            return this.contain.any.keys(["spyArgs"]);
+        });
+
         
    
         Assertion.addMethod("toBe", function(expected) {
