@@ -77,4 +77,73 @@ describe("ReactChildren", function() {
     expect(callback).toHaveBeenCalledWith(simpleKid, 0);
     expect(mappedChildren[0]).toEqual(<span key=".0" />);
   });
+
+  it('should treat single child in array as expected', () => {
+    var context = {};
+    var callback = spyOn.createSpy(function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    });
+
+    var simpleKid = <span key="simple" />;
+    var instance = <div>{[simpleKid]}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
+    expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    callback.calls.reset();
+    var mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
+  });
+
+  it('should be called for each child', () => {
+    var zero = <div key="keyZero" />;
+    var one = null;
+    var two = <div key="keyTwo" />;
+    var three = null;
+    var four = <div key="keyFour" />;
+    var context = {};
+
+    var callback = spyOn.createSpy(function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    });
+
+    var instance = (
+      <div>
+        {zero}
+        {one}
+        {two}
+        {three}
+        {four}
+      </div>
+    );
+
+    function assertCalls() {
+      expect(callback).toHaveBeenCalledWith(zero, 0);
+      expect(callback).toHaveBeenCalledWith(one, 1);
+      expect(callback).toHaveBeenCalledWith(two, 2);
+      expect(callback).toHaveBeenCalledWith(three, 3);
+      expect(callback).toHaveBeenCalledWith(four, 4);
+      callback.calls.reset();
+    }
+
+    React.Children.forEach(instance.props.children, callback, context);
+    assertCalls();
+
+    var mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    assertCalls();
+    expect(mappedChildren).toEqual([
+      <div key=".$keyZero" />,
+      <div key=".$keyTwo" />,
+      <div key=".$keyFour" />,
+    ]);
+  });
 })

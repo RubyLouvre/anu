@@ -24,36 +24,40 @@ if (typeof chai !== "undefined") {
         });
         spy.createSpy = function(fn) {
             function spyFn() {
-                spyFn.spyArgs = [].slice.call(arguments);
-                spyFn.spyThis = this;
-                spyFn.calls.count++;
+                spyFn.calls.stack.push([].slice.call(arguments));
                 if (fn) {
-                    return spyFn.spyReturn = fn.apply(this, arguments);
+                    return fn.apply(this, arguments);
                 }
             }
             spyFn.calls = {
+                stack: [],
                 reset: function() {
-                    spyFn.spyArgs = spyFn.spyThis = spyFn.spyReturn = void 666;
-                    this.count = 0;
+                    this.stack.length = 0;
                 },
-                count: 0
+                count: function(){
+                    return this.stack.length;
+                }
             };
             return spyFn;
         };
 
         Assertion.addMethod("toHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
-            var arr = val.spyArgs || [];
-            val = val.spyArgs[0];
-            var a = new chai.Assertion(val);
-            var arr = Object.keys(expected);
-            return a.contain.any.keys(arr);
+            var arr = val.calls.stack.shift() ;
+            val = arr[0];
+            var assertion = new chai.Assertion(val);
+            if(!expected || typeof expected !== "object"){
+                return assertion.equal(expected);
+            }
+
+            var arr2 = Object.keys(expected);
+            return assertion.contain.any.keys(arr2);
         });
 
         Assertion.addMethod("toHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toHaveBeenCalled");
-            if (val.spyArgs) {
+            if (val.calls.stack.length) {
                 return a.equal("toHaveBeenCalled");
             }
             return a.equal("ng");
@@ -61,16 +65,20 @@ if (typeof chai !== "undefined") {
 
         Assertion.addMethod("toNotHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
-            val = val.spyArgs[0];
-            var a = new chai.Assertion(val);
-            var arr = Object.keys(expected);
-            return a.not.contain.any.keys(arr);
+            var arr = val.calls.stack.shift() ;
+            val = arr[0];
+            var assertion = new chai.Assertion(val);
+            if(!expected || typeof expected !== "object"){
+                return assertion.not.equal(expected);
+            }
+            var arr2 = Object.keys(expected);
+            return assertion.not.contain.any.keys(arr2);
         });
 
         Assertion.addMethod("toNotHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toNotHaveBeenCalled");
-            if (val.spyArgs) {
+            if (val.calls.stack.length) {
                 return a.equal("ng");
             }
             return a.equal("toNotHaveBeenCalled");
