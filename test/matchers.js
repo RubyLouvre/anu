@@ -28,7 +28,7 @@ if (typeof chai !== "undefined") {
                 spyFn.spyThis = this;
                 spyFn.calls.count++;
                 if (fn) {
-                    spyFn.spyReturn = fn.apply(this, arguments);
+                    return spyFn.spyReturn = fn.apply(this, arguments);
                 }
             }
             spyFn.calls = {

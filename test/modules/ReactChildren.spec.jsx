@@ -12,7 +12,7 @@ import ReactDOMServer from "dist/ReactDOMServer";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 
-describe("ReactTestUtils", function() {
+describe("ReactChildren", function() {
   this.timeout(200000);
   before(async () => {
     await beforeHook();
@@ -54,5 +54,27 @@ describe("ReactTestUtils", function() {
     );
     expect(callback).toHaveBeenCalledWith(simpleKid, 0);
     expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
+  });
+
+  it('should treat single arrayless child as being in array', () => {
+    var context = {};
+    var callback = spyOn.createSpy(function(kid, index) {
+      expect(this).toBe(context);
+      expect(index).toBe(0);
+      return kid;
+    });
+
+    var simpleKid = <span />;
+    var instance = <div>{simpleKid}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
+    expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    callback.calls.reset();
+    var mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    expect(mappedChildren[0]).toEqual(<span key=".0" />);
   });
 })

@@ -382,6 +382,34 @@ function flattenChildren(vnode) {
     return vnode.vchildren = arr;
 }
 
+function cloneElement(vnode, props) {
+    if (!vnode.vtype) {
+        return Object.assign({}, vnode);
+    }
+    var owner = vnode._owner,
+        lastOwn = CurrentOwner.cur,
+        configs = {
+        key: vnode.key,
+        ref: vnode.ref
+    };
+    if (props && props.ref) {
+        owner = lastOwn;
+    }
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+
+    var args = [].slice.call(arguments, 0),
+        argsLength = args.length;
+    args[0] = vnode.type;
+    args[1] = configs;
+    if (argsLength === 2 && configs.children) {
+        args.push(configs.children);
+    }
+    var ret = createElement.apply(null, args);
+    CurrentOwner.cur = lastOwn;
+    return ret;
+}
+
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -396,12 +424,23 @@ var Children = {
     count: function count(children) {
         return _flattenChildren(children, false).length;
     },
+    map: function map(children, callback, context) {
+        var ret = [];
+        _flattenChildren(children, false).forEach(function (el, index) {
+            el = callback.call(context, el, index);
+            if (el && el.vtype) {
+                var key = el.key == null ? "." + index : ".$" + el.key;
+                ret.push(cloneElement(el, { key: key }));
+            } else if (el) {
+                ret.push(Object.assign({}, el));
+            }
+        });
+        return ret;
+    },
     forEach: function forEach(children, callback, context) {
         _flattenChildren(children, false).forEach(callback, context);
     },
-    map: function map(children, callback, context) {
-        return _flattenChildren(children, false).map(callback, context);
-    },
+
 
     toArray: function toArray(children) {
         return _flattenChildren(children, false);
@@ -1082,34 +1121,6 @@ function createClass(spec) {
     }
 
     return Constructor;
-}
-
-function cloneElement(vnode, props) {
-    if (!vnode.vtype) {
-        return Object.assign({}, vnode);
-    }
-    var owner = vnode._owner,
-        lastOwn = CurrentOwner.cur,
-        configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    if (props && props.ref) {
-        owner = lastOwn;
-    }
-    Object.assign(configs, vnode.props, props);
-    CurrentOwner.cur = owner;
-
-    var args = [].slice.call(arguments, 0),
-        argsLength = args.length;
-    args[0] = vnode.type;
-    args[1] = configs;
-    if (argsLength === 2 && configs.children) {
-        args.push(configs.children);
-    }
-    var ret = createElement.apply(null, args);
-    CurrentOwner.cur = lastOwn;
-    return ret;
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
