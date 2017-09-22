@@ -5257,10 +5257,8 @@ var ReactCompositeComponent = {
     }
 
     if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
-      console.log(prevRenderedElement ===  nextRenderedElement, this._instance.constructor.name)
       ReactReconciler.receiveComponent(prevComponentInstance, nextRenderedElement, transaction, this._processChildContext(context));
     } else {
-      console.log('不更新', this._instance.constructor.name)
       var oldHostNode = ReactReconciler.getHostNode(prevComponentInstance);
       ReactReconciler.unmountComponent(prevComponentInstance, false);
 

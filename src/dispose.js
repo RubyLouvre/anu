@@ -39,7 +39,7 @@ function disposeComponent(vnode) {
     let instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.__current = instance.setState = instance.forceUpdate = noop;
+        instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
@@ -49,7 +49,7 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        vnode._instance = instance.__renderInNextCycle = null;
+        instance.__current = vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(instance.__rendered);
     }
 }

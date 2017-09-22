@@ -1730,7 +1730,7 @@ function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.__current = instance.setState = instance.forceUpdate = noop;
+        instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
@@ -1740,7 +1740,7 @@ function disposeComponent(vnode) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        vnode._instance = instance.__renderInNextCycle = null;
+        instance.__current = vnode._instance = instance.__renderInNextCycle = null;
         disposeVnode(instance.__rendered);
     }
 }
@@ -2253,6 +2253,7 @@ function findDOMNode(ref) {
     if (ref == null) {
         return null;
     }
+
     if (ref.nodeType === 1) {
         return ref;
     }

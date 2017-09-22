@@ -9,7 +9,7 @@ import ReactTestUtils from "lib/ReactTestUtils";
 import ReactShallowRenderer from "lib/ReactShallowRenderer";
 
 import ReactDOMServer from "dist/ReactDOMServer";
-
+//https://github.com/facebook/react/blob/master/src/renderers/dom/test/__tests__/ReactTestUtils-test.js
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactTestUtils", function() {
@@ -272,11 +272,7 @@ describe("ReactTestUtils", function() {
       }
     }
 
-    const handler = function fn() {
-      fn.spyArgs = [].slice.call(arguments);
-      fn.spyThis = obj;
-      return fn.spyReturn = fn(obj, fn.spyArgs);
-    };
+    const handler = spyOn.createSpy();
 
     const shallowRenderer = ReactShallowRenderer();
     const result = shallowRenderer.render(
@@ -290,4 +286,29 @@ describe("ReactTestUtils", function() {
     );
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('should throw when attempting to use a component instance', () => {
+      class SomeComponent extends React.Component {
+        render() {
+          return (
+            <div onClick={this.props.handleClick}>
+              hello, world.
+            </div>
+          );
+        }
+      }
+
+      const handler = spyOn.createSpy('spy');
+      const container = document.createElement('div');
+      const instance = ReactDOM.render(
+        <SomeComponent handleClick={handler} />,
+        container,
+      );
+
+      expect(() => ReactTestUtils.Simulate.click(instance)).toThrowError(
+        'TestUtils.Simulate expected a DOM node as the first argument but received ' +
+          'a component instance. Pass the DOM node you wish to simulate the event on instead.',
+      );
+      expect(handler).not.toHaveBeenCalled();
+    });
 });

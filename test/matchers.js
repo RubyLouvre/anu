@@ -12,7 +12,7 @@ if (typeof chai !== "undefined") {
         });
 
         //实现spyOn功能
-        window.spyOn = function(obj, method) {
+        var spy =  window.spyOn = function(obj, method) {
             var orig = obj[method];
             return {
                 and: {
@@ -26,6 +26,15 @@ if (typeof chai !== "undefined") {
                 }
             };
         };
+        spy.createSpy = function(){
+            function spyFn() {
+                spyFn.spyArgs = [].slice.call(arguments);
+                spyFn.spyThis = this;
+                spyFn.spyReturn = spyFn.apply(this, spyFn.spyArgs);
+            }
+            return spyFn;
+        };
+
 
         Assertion.addMethod("toHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
@@ -39,6 +48,10 @@ if (typeof chai !== "undefined") {
             return this.contain.any.keys(["spyArgs"]);
         });
 
+        Assertion.addMethod("toA", function(expected) {
+            return this.to.be.a(expected);
+        });
+        
         Assertion.addMethod("toBe", function(expected) {
             return this.equal(expected);
         });
