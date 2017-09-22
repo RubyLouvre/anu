@@ -4,57 +4,71 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-     <script type='text/javascript' src="./dist/React.js"></script>
-     <!--<script src="./test/react.js"></script>
-     <script src="./test/react-dom.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
-     <style>
+   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
 
-     </style>
+   <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>
+     <script type='text/javascript' src="./lib/babel.js"></script>
+    
   <script type='text/babel'>
-  var s, s2
+  var s
   window.onload = function(){
    
-    
-
-    
-    const Text = ({visible}) => {
-        if (visible) {
-            return <div>Text</div>;
-        }
-    
-        return null;
-    };
-    
-    class App extends React.Component {
+    class Issue extends React.PureComponent {
         state = {
-            showText: true
+            status: 'normal'
         };
     
-        render() {
-            const {showText} = this.state;
+        componentWillUnmount() {
+            this.setState({},function(){
+              console.log('===============')
+            })
+        }
     
-            return (
-                <div>
-                    <Text visible={showText} />
-                    <button type="button" onClick={() => this.setState({showText: !showText})}>Click</button>
-                </div>
-            );
+        render() {
+            const {status} = this.state;
+    
+            if (status === 'unmount') {
+                throw new Error('Issue unmounted');
+            }
+    
+            return <span>Issue status: {status}</span>
         }
     }
     
-
-   s = ReactDOM.render(<App />, document.getElementById('example'));
+    class App extends React.PureComponent {
+        state = {
+            showIssue: true
+        };
+    
+        render() {
+            const {showIssue} = this.state;
+    
+            return (
+                <div>
+                    {showIssue && <Issue />}
+                    <button type="button" onClick={() => this.setState({showIssue: !showIssue})}>Click</button>
+                </div>
+            )
+        }
+    }
+    
+    ReactDOM.render(
+        <App />,
+        document.body.appendChild(document.createElement('div'))
+    );
+ 
   }
   </script>
 
 </head>
-
 <body>
-
-    <div>onChange事件</div>
-    <div id='example'></div>
-
+    
+        <div>开发者工具</div>
+        <div id='example'></div>
+    
+    
 </body>
+    
+ </html>
 
-</html>

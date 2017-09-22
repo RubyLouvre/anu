@@ -12819,7 +12819,6 @@ var ReactUpdateQueue = {
     }
 
     var internalInstance = getInternalInstanceReadyForUpdate(publicInstance, 'setState');
-
     if (!internalInstance) {
       return;
     }
