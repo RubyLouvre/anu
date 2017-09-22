@@ -30,7 +30,6 @@ if (typeof chai !== "undefined") {
             function spyFn() {
                 spyFn.spyArgs = [].slice.call(arguments);
                 spyFn.spyThis = this;
-                spyFn.spyReturn = spyFn.apply(this, spyFn.spyArgs);
             }
             return spyFn;
         };

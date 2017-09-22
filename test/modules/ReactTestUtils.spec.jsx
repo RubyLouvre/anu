@@ -287,30 +287,107 @@ describe("ReactTestUtils", function() {
     expect(handler).toNotHaveBeenCalled();
   });
 
-  it('should throw when attempting to use a component instance', () => {
-      class SomeComponent extends React.Component {
-        render() {
-          return (
-            <div onClick={this.props.handleClick}>
-              hello, world.
-            </div>
-          );
-        }
+  it("should throw when attempting to use a component instance", () => {
+    class SomeComponent extends React.Component {
+      render() {
+        return <div onClick={this.props.handleClick}>hello, world.</div>;
+      }
+    }
+
+    let handler = spyOn.createSpy("spy");
+    console.log(!!handler.spyArgs);
+    let container = document.createElement("div");
+    let instance = ReactDOM.render(
+      <SomeComponent handleClick={handler} />,
+      container
+    );
+
+    expect(() => ReactTestUtils.Simulate.click(instance)).toThrowError(
+      "TestUtils.Simulate expected a DOM node as the first argument but received " +
+        "a component instance. Pass the DOM node you wish to simulate the event on instead."
+    );
+
+    expect(handler).toNotHaveBeenCalled();
+  });
+
+  it("should not warn when used with extra properties", () => {
+    spyOn(console, "error");
+
+    const CLIENT_X = 100;
+
+    class Component extends React.Component {
+      handleClick(e) {
+        expect(e.clientX).toBe(CLIENT_X);
       }
 
-      let handler = spyOn.createSpy('spy');
-      console.log(!!handler.spyArgs)
-      let container = document.createElement('div');
-      let instance = ReactDOM.render(
-        <SomeComponent handleClick={handler} />,
-        container,
-      );
+      render() {
+        return <div onClick={this.handleClick} />;
+      }
+    }
 
-      expect(() => ReactTestUtils.Simulate.click(instance)).toThrowError(
-        'TestUtils.Simulate expected a DOM node as the first argument but received ' +
-          'a component instance. Pass the DOM node you wish to simulate the event on instead.',
-      );
-
-       expect(handler).toNotHaveBeenCalled();
+    const element = document.createElement("div");
+    const instance = ReactDOM.render(<Component />, element);
+    ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(instance), {
+      clientX: CLIENT_X
     });
+    console.log(!!console.error.spyArgs);
+
+    expect(console.error.spyArgs).toBe(undefined);
+  });
+  it("should set the type of the event", () => {
+    let event;
+    const stub = function(e) {
+      e.persist();
+      event = e;
+    };
+
+    const container = document.createElement("div");
+    const instance = ReactDOM.render(<div onKeyDown={stub} />, container);
+    const node = ReactDOM.findDOMNode(instance);
+
+    ReactTestUtils.Simulate.keyDown(node);
+
+    expect(event.type).toBe("keydown");
+    expect(event.nativeEvent.type).toBe("keydown");
+  });
+
+  it("should work with renderIntoDocument", () => {
+    var target;
+    var i = 0;
+    const onChange = spyOn.createSpy();
+
+    class MyComponent extends React.Component {
+      render() {
+        return (
+          <div>
+            <input type="text" onChange={onChange} />
+          </div>
+        );
+      }
+    }
+
+    const instance = ReactTestUtils.renderIntoDocument(<MyComponent />);
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(
+      instance,
+      "input"
+    );
+    input.value = "giraffe";
+    ReactTestUtils.Simulate.change(input);
+    expect(onChange).toHaveBeenCalledWith({ target: input });
+  });
+
+  it("should call setState callback with no arguments", () => {
+    let mockArgs;
+    class Component extends React.Component {
+      componentDidMount() {
+        this.setState({}, (...args) => (mockArgs = args));
+      }
+      render() {
+        return false;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Component />);
+    expect(mockArgs.length).toEqual(0);
+  });
 });
