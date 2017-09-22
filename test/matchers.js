@@ -10,7 +10,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toEqual", function(expected) {
             return this.to.eql(expected);
         });
-        
+
         //实现spyOn功能
         window.spyOn = function(obj, method) {
             var orig = obj[method];
@@ -34,18 +34,14 @@ if (typeof chai !== "undefined") {
             var arr = Object.keys(expected);
             return a.contain.any.keys(arr);
         });
-        
+
         Assertion.addMethod("toHaveBeenCalled", function(expected) {
             return this.contain.any.keys(["spyArgs"]);
         });
 
-        
-   
         Assertion.addMethod("toBe", function(expected) {
             return this.equal(expected);
         });
-
-     
 
         Assertion.addMethod("toMatch", function(expected) {
             return this.match(new RegExp(expected));
@@ -103,7 +99,15 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toThrow", function(expected) {
             return this.throw(expected);
         });
-
+        Assertion.addMethod("toThrowError", function(expected) {
+            var val = this.__flags.object;
+            try {
+                val();
+            } catch (e) {
+                return this.ok;
+            }
+            return this.not.ok;
+        });
         console.log("添加jasmine风格的断言方法");
     })();
 }

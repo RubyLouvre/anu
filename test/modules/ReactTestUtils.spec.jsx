@@ -6,6 +6,8 @@ import {
 } from "karma-event-driver-ext/cjs/event-driver-hooks";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
+import ReactShallowRenderer from "lib/ReactShallowRenderer";
+
 import ReactDOMServer from "dist/ReactDOMServer";
 
 var ReactDOM = window.ReactDOM || React;
@@ -261,5 +263,31 @@ describe("ReactTestUtils", function() {
     ReactTestUtils.Simulate.change(node);
 
     expect(obj.handler).toHaveBeenCalledWith({ target: node });
+  });
+
+  it("should throw when attempting to use a React element", () => {
+    class SomeComponent extends React.Component {
+      render() {
+        return <div onClick={this.props.handleClick}>hello, world.</div>;
+      }
+    }
+
+    const handler = function fn() {
+      fn.spyArgs = [].slice.call(arguments);
+      fn.spyThis = obj;
+      return fn.spyReturn = fn(obj, fn.spyArgs);
+    };
+
+    const shallowRenderer = ReactShallowRenderer();
+    const result = shallowRenderer.render(
+      <SomeComponent handleClick={handler} />
+    );
+
+    expect(() => ReactTestUtils.Simulate.click(result)).toThrowError(
+      "TestUtils.Simulate expected a DOM node as the first argument but received " +
+        "a React element. Pass the DOM node you wish to simulate the event on instead. " +
+        "Note that TestUtils.Simulate will not work if you are using shallow rendering."
+    );
+    expect(handler).not.toHaveBeenCalled();
   });
 });
