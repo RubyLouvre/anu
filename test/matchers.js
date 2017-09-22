@@ -12,31 +12,38 @@ if (typeof chai !== "undefined") {
         });
 
         //实现spyOn功能
-        var spy =  window.spyOn = function(obj, method) {
+        var spy = (window.spyOn = function(obj, method) {
             var orig = obj[method];
             return {
                 and: {
                     callThrough: function() {
-                        var fn = (obj[method] = function() {
-                            fn.spyArgs = [].slice.call(arguments);
-                            fn.spyThis = obj;
-                            fn.spyReturn = orig.apply(obj, fn.spyArgs);
-                        });
+                        return (obj[method] = spy.createSpy(orig));
                     }
                 }
             };
-        };
-        spy.createSpy = function(){
+        });
+        spy.createSpy = function(fn) {
             function spyFn() {
                 spyFn.spyArgs = [].slice.call(arguments);
                 spyFn.spyThis = this;
+                spyFn.calls.count++;
+                if (fn) {
+                    spyFn.spyReturn = fn.apply(this, arguments);
+                }
             }
+            spyFn.calls = {
+                reset: function() {
+                    spyFn.spyArgs = spyFn.spyThis = spyFn.spyReturn = void 666;
+                    this.count = 0;
+                },
+                count: 0
+            };
             return spyFn;
         };
 
-
         Assertion.addMethod("toHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
+            var arr = val.spyArgs || [];
             val = val.spyArgs[0];
             var a = new chai.Assertion(val);
             var arr = Object.keys(expected);
@@ -46,7 +53,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toHaveBeenCalled");
-            if(val.spyArgs){
+            if (val.spyArgs) {
                 return a.equal("toHaveBeenCalled");
             }
             return a.equal("ng");
@@ -63,7 +70,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toNotHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toNotHaveBeenCalled");
-            if(val.spyArgs){
+            if (val.spyArgs) {
                 return a.equal("ng");
             }
             return a.equal("toNotHaveBeenCalled");
@@ -72,7 +79,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toA", function(expected) {
             return this.to.be.a(expected);
         });
-        
+
         Assertion.addMethod("toBe", function(expected) {
             return this.equal(expected);
         });
@@ -142,7 +149,7 @@ if (typeof chai !== "undefined") {
                 console.warn(expected);
                 return a.equal(11);
             }
-            return  a.equal(0);
+            return a.equal(0);
         });
         console.log("添加jasmine风格的断言方法");
     })();
