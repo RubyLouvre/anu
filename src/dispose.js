@@ -39,17 +39,17 @@ function disposeComponent(vnode) {
     let instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.setState = instance.forceUpdate = noop;
+        let dom = instance.__dom;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        let dom = instance.__current._hostNode;
         if (dom) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.__current = vnode._instance = instance.__renderInNextCycle = null;
+        instance.__dom = vnode._instance = null;
         disposeVnode(instance.__rendered);
     }
 }

@@ -1,4 +1,4 @@
-import { extend, isFn, inherit, limitWarn } from "./util";
+import { extend, isFn, inherit, deprecatedWarn } from "./util";
 import { Component } from "./Component";
 
 /**
@@ -89,7 +89,10 @@ function newCtor(className, spec) {
       }
 
       if (spec.getInitialState) {
-        this.state = spec.getInitialState.call(this);
+        var test = this.state = spec.getInitialState.call(this);
+        if(!(test === null || ({}).toString.call(test) == "[object Object]")){
+          throw "getInitialState(): must return an object or null"
+        }
       }
 
   };`);
@@ -97,8 +100,9 @@ function newCtor(className, spec) {
 }
 
 export function createClass(spec) {
-    if (limitWarn.createClass-- > 0) {
-        console.log("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
+    deprecatedWarn("createClass");
+    if(!isFn(spec.render)){
+        throw "请实现render方法";
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -106,7 +110,7 @@ export function createClass(spec) {
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
     }
-
+    
     extend(proto, spec);
 
     if (spec.statics) {
@@ -115,7 +119,14 @@ export function createClass(spec) {
     "propTypes,contextTypes,childContextTypes,displayName"
         .replace(/\w+/g, function (name) {
             if (spec[name]) {
-                Constructor[name] = spec[name];
+                var props = Constructor[name] = spec[name];
+                if(name !== "displayName"){
+                    for(let i in props){
+                        if(!isFn(props[i])){
+                            console.error("必须为函数");
+                        }
+                    }
+                }
             }
         });
 

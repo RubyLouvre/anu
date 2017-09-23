@@ -1,4 +1,4 @@
-import { extend, isFn, options, clearArray, noop } from "./util";
+import { extend, isFn, options, clearArray, noop,deprecatedWarn } from "./util";
 import { CurrentOwner } from "./createElement";
 
 /**
@@ -18,8 +18,9 @@ export function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = noop;
+    this.__current = noop;//用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
     /*
+    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
@@ -29,13 +30,14 @@ export function Component(props, context) {
 Component.prototype = {
     constructor: Component,//必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {
-        console.warn("此方法末实现"); // eslint-disable-line
+        deprecatedWarn("replaceState");
     },
 
     setState(state, cb) {
         debounceSetState(this, state, cb);
     },
     isMounted() {
+        deprecatedWarn("isMounted");
         return !!this.__dom;
     },
     forceUpdate(cb) {

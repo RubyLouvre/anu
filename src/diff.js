@@ -14,7 +14,7 @@ import {
     toLowerCase,
     getChildContext,
     EMPTY_CHILDREN,
-    limitWarn
+    deprecatedWarn
 } from "./util";
 
 import { disposeVnode } from "./dispose";
@@ -32,9 +32,7 @@ export function render(vnode, container, callback) {
  */
 export var pendingRefs = [];
 export function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
-    if (limitWarn.renderSubtree-- > 0) {
-        console.log("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
-    }
+    deprecatedWarn("unstable_renderSubtreeIntoContainer");
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);
 
@@ -548,8 +546,7 @@ export function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
-    let vnode = ref.__current;
-    return vnode._hostNode || null;
+    return ref.__dom || null;
 }
 
 function updateText(lastVnode, nextVnode) {

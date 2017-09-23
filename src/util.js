@@ -3,10 +3,14 @@ export var __push = Array.prototype.push;
 export var innerHTML = "dangerouslySetInnerHTML";
 export var EMPTY_CHILDREN = [];
 
-export var limitWarn = {
-    createClass: 1,
-    renderSubtree: 1
-};
+export function deprecatedWarn(methodName){
+    if(!deprecatedWarn[methodName]){
+        //eslint-disable-next-line
+        console.error(methodName+" is deprecated");
+        deprecatedWarn[methodName] = 1;
+    }
+
+}
 /**
  * 复制一个对象的属性到另一个对象
  *

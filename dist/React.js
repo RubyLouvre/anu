@@ -12,10 +12,13 @@
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
-var limitWarn = {
-    createClass: 1,
-    renderSubtree: 1
-};
+function deprecatedWarn(methodName) {
+    if (!deprecatedWarn[methodName]) {
+        //eslint-disable-next-line
+        console.error(methodName + " is deprecated");
+        deprecatedWarn[methodName] = 1;
+    }
+}
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -1000,8 +1003,9 @@ function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = noop;
+    this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
     /*
+    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
@@ -1011,12 +1015,13 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState: function replaceState() {
-        console.warn("此方法末实现"); // eslint-disable-line
+        deprecatedWarn("replaceState");
     },
     setState: function setState(state, cb) {
         debounceSetState(this, state, cb);
     },
     isMounted: function isMounted() {
+        deprecatedWarn("isMounted");
         return !!this.__dom;
     },
     forceUpdate: function forceUpdate(cb) {
@@ -1170,13 +1175,14 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        this.state = spec.getInitialState.call(this);\n      }\n\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState(): must return an object or null\"\n        }\n      }\n\n  };");
     return curry(Component, NOBIND, spec);
 }
 
 function createClass(spec) {
-    if (limitWarn.createClass-- > 0) {
-        console.log("createClass已经废弃,请改用es6方式定义类"); // eslint-disable-line
+    deprecatedWarn("createClass");
+    if (!isFn(spec.render)) {
+        throw "请实现render方法";
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -1192,7 +1198,14 @@ function createClass(spec) {
     }
     "propTypes,contextTypes,childContextTypes,displayName".replace(/\w+/g, function (name) {
         if (spec[name]) {
-            Constructor[name] = spec[name];
+            var props = Constructor[name] = spec[name];
+            if (name !== "displayName") {
+                for (var i in props) {
+                    if (!isFn(props[i])) {
+                        console.error("必须为函数");
+                    }
+                }
+            }
         }
     });
 
@@ -1819,17 +1832,17 @@ function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.setState = instance.forceUpdate = noop;
+        var dom = instance.__dom;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        var dom = instance.__current._hostNode;
         if (dom) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.__current = vnode._instance = instance.__renderInNextCycle = null;
+        instance.__dom = vnode._instance = null;
         disposeVnode(instance.__rendered);
     }
 }
@@ -1847,9 +1860,7 @@ function render(vnode, container, callback) {
  */
 var pendingRefs = [];
 function unstable_renderSubtreeIntoContainer(component, vnode, container, callback) {
-    if (limitWarn.renderSubtree-- > 0) {
-        console.log("请限制使用unstable_renderSubtreeIntoContainer,它末见于文档,会导致升级问题"); // eslint-disable-line
-    }
+    deprecatedWarn("unstable_renderSubtreeIntoContainer");
     var parentContext = component && component.context || {};
     return renderByAnu(vnode, container, callback, parentContext);
 }
@@ -2345,8 +2356,7 @@ function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
-    var vnode = ref.__current;
-    return vnode._hostNode || null;
+    return ref.__dom || null;
 }
 
 function updateText(lastVnode, nextVnode) {

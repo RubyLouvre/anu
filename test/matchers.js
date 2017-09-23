@@ -15,6 +15,7 @@ if (typeof chai !== "undefined") {
         var spy = (window.spyOn = function(obj, method) {
             var orig = obj[method];
             if(orig.calls){
+                orig.calls.reset();
                 return orig;
             }
             obj[method] = spy.createSpy(orig);

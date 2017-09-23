@@ -13,8 +13,30 @@
   var s
   window.onload = function(){
    
-    React.Children.forEach({a: 1, b: 2}, function() {}, null);
-
+    var Outer = React.createClass({
+      childContextTypes: {
+        className: React.PropTypes.string,
+      },
+      getChildContext() {
+        return {className: 'foo'};
+      },
+      render() {
+        return <Foo />;
+      },
+    });
+    var Foo = React.createClass({
+      contextTypes: {
+        className: React.PropTypes.string,
+      },
+      getInitialState() {
+        console.log(this.context,{className: this.context.className})
+        return {className: this.context.className};
+      },
+      render() {
+        return <span className={this.state.className} />;
+      },
+    });
+    React.render(<Outer/> , document.body)
  
 
 

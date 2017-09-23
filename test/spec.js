@@ -30,4 +30,7 @@ require("./modules/redux.spec.jsx");
 
 require("./modules/ReactTestUtils.spec.jsx");
 require("./modules/ReactChildren.spec.jsx");
+require("./modules/createReactClassIntegration-test.jsx");
+
+
 

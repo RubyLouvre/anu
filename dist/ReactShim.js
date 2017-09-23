@@ -13,7 +13,13 @@
 var innerHTML = "dangerouslySetInnerHTML";
 var EMPTY_CHILDREN = [];
 
-
+function deprecatedWarn(methodName) {
+    if (!deprecatedWarn[methodName]) {
+        //eslint-disable-next-line
+        console.error(methodName + " is deprecated");
+        deprecatedWarn[methodName] = 1;
+    }
+}
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -430,8 +436,9 @@ function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = noop;
+    this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
     /*
+    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
@@ -441,12 +448,13 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState: function replaceState() {
-        console.warn("此方法末实现"); // eslint-disable-line
+        deprecatedWarn("replaceState");
     },
     setState: function setState(state, cb) {
         debounceSetState(this, state, cb);
     },
     isMounted: function isMounted() {
+        deprecatedWarn("isMounted");
         return !!this.__dom;
     },
     forceUpdate: function forceUpdate(cb) {
@@ -1665,17 +1673,17 @@ function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.setState = instance.forceUpdate = noop;
+        var dom = instance.__dom;
+        instance.__current = instance.setState = instance.forceUpdate = noop;
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        var dom = instance.__current._hostNode;
         if (dom) {
             dom.__component = null;
         }
         vnode.ref && vnode.ref(null);
-        instance.__current = vnode._instance = instance.__renderInNextCycle = null;
+        instance.__dom = vnode._instance = null;
         disposeVnode(instance.__rendered);
     }
 }
@@ -2185,8 +2193,7 @@ function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
-    var vnode = ref.__current;
-    return vnode._hostNode || null;
+    return ref.__dom || null;
 }
 
 function updateText(lastVnode, nextVnode) {
