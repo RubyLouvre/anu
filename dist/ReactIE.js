@@ -249,8 +249,7 @@ function createElement(type, config) {
             }
         }
     }
-    if (typeNumber(type) === 5) {
-        //fn
+    if (isFn(type)) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     }
     return new Vnode(type, key, ref, props, vtype, checkProps);
@@ -331,7 +330,7 @@ function flattenChildren(vnode) {
 
 function _flattenChildren(original, convert) {
     var children = [],
-        index = 0,
+        unidimensionalIndex = 0,
         lastText = void 0,
         child = void 0,
         temp = Array.isArray(original) ? original.slice(0) : [original];
@@ -343,16 +342,16 @@ function _flattenChildren(original, convert) {
                 child = fixIteractor(child);
             }
             if (!child._prefix) {
-                child._prefix = "." + index;
-                index++; //维护第一层元素的索引值
+                child._prefix = "." + unidimensionalIndex;
+                unidimensionalIndex++; //维护第一层元素的索引值
             }
 
             for (var i = 0; i < child.length; i++) {
-                temp.unshift(child[i]);
                 if (child[i]) {
                     child[i]._prefix = child._prefix + ":" + i;
                 }
             }
+            temp.unshift.apply(temp, child);
         } else {
             var childType = typeNumber(child);
             if (childType < 3) {
@@ -368,23 +367,23 @@ function _flattenChildren(original, convert) {
                     lastText.text += child;
                     continue;
                 }
-                // child = child + "";
                 if (convert) {
-                    index++;
                     child = {
                         type: "#text",
                         text: child + "",
                         vtype: 0
                     };
+                    unidimensionalIndex++;
                 }
                 lastText = child;
             } else {
                 if (!child._prefix) {
-                    child._prefix = "." + index;
-                    index++;
+                    child._prefix = "." + unidimensionalIndex;
+                    unidimensionalIndex++;
                 }
                 lastText = false;
             }
+
             children.push(child);
         }
     }
