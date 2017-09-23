@@ -1,14 +1,7 @@
 import React from "dist/React";
-import {
-  beforeHook,
-  afterHook,
-  browser
-} from "karma-event-driver-ext/cjs/event-driver-hooks";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-import ReactShallowRenderer from "lib/ReactShallowRenderer";
 
-import ReactDOMServer from "dist/ReactDOMServer";
 var createReactClass = React.createClass
 var PropTypes = React.PropTypes
 
@@ -17,22 +10,7 @@ var ReactDOM = window.ReactDOM || React;
 
 describe("create-react-class-integration", function() {
   this.timeout(200000);
-  before(async () => {
-    await beforeHook();
-  });
-  after(async () => {
-    await afterHook(false);
-  });
-
-  var body = document.body,
-    div;
-  beforeEach(function() {
-    div = document.createElement("div");
-    body.appendChild(div);
-  });
-  afterEach(function() {
-    body.removeChild(div);
-  });
+ 
   it('should throw when `render` is not specified', () => {
     expect(function() {
       createReactClass({});

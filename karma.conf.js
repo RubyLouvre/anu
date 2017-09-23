@@ -1,8 +1,8 @@
 // Karma configuration
 // Generated on Thu Mar 30 2017 18:03:26 GMT+0800 (CST)
-var path = require('path')
-var webpack = require('webpack')
-var coverage = String(process.env.COVERAGE) !== 'false'
+var path = require("path");
+var webpack = require("webpack");
+var coverage = String(process.env.COVERAGE) !== "false";
 
 module.exports = function (config) {
     var options = {
@@ -13,11 +13,11 @@ module.exports = function (config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['mocha','chai'],
+        frameworks: ["mocha","chai"],
 
 
         // list of files / patterns to load in the browser
-        files: ['./test/matchers.js',process.env.TRAVIS ? './test/spec2.js' : './test/spec.js'],
+        files: ["./test/matchers.js",process.env.TRAVIS ? "./test/spec2.js" : "./test/spec.js"],
 
 
         // list of files to exclude
@@ -30,11 +30,11 @@ module.exports = function (config) {
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['spec', 'coverage'],
+        reporters: ["spec", "coverage"],
         preprocessors: {
-            'dist/React.js': ['coverage'],
+            "dist/React.js": ["coverage"],
             //'src/**/*.js': ['coverage'],
-            'test/**/*.js': ['webpack']
+            "test/**/*.js": ["webpack"]
         },
         mochaReporter: {
             showDiff: true
@@ -46,8 +46,8 @@ module.exports = function (config) {
             terminal: true
         },
         coverageReporter: {
-            type: 'html',
-            dir: 'coverage/'
+            type: "html",
+            dir: "coverage/"
         },
         webpack: {
 
@@ -55,13 +55,14 @@ module.exports = function (config) {
                 /* Transpile source and test files */
                 preLoaders: [{
                     test: /\.jsx?$/,
-                    exclude: path.resolve(__dirname, 'node_modules'),
-                    loader: 'babel-loader',
+                    exclude: path.resolve(__dirname, "node_modules"),
+                    loader: "babel-loader",
                     query: {
-                        presets: ['env', 'react'],
-                        plugins: ['istanbul', 'syntax-async-generators',
+                        presets: ["env", "react"],
+                        plugins: ["istanbul", "syntax-async-generators",
+                            "transform-class-properties",
                             //'transform-es2015-destructuring',
-                            'transform-object-rest-spread', ["transform-runtime", {
+                            "transform-object-rest-spread", ["transform-runtime", {
                                 "helpers": true,
                                 "polyfill": true,
                                 "regenerator": true,
@@ -77,16 +78,16 @@ module.exports = function (config) {
             resolve: {
 
                 alias: {
-                    redux: path.join(__dirname, './test/redux'),
-                    react: path.join(__dirname, './dist/React'),
-                    'react-redux': path.join(__dirname, './test/react-redux')
+                    redux: path.join(__dirname, "./test/redux"),
+                    react: path.join(__dirname, "./dist/React"),
+                    "react-redux": path.join(__dirname, "./test/react-redux")
                 },
-                modulesDirectories: [__dirname, 'node_modules']
+                modulesDirectories: [__dirname, "node_modules"]
             },
             plugins: [
                 new webpack.DefinePlugin({ //添加全局变量
                     coverage: coverage,
-                    NODE_ENV: JSON.stringify(process.env.NODE_ENV || ''),
+                    NODE_ENV: JSON.stringify(process.env.NODE_ENV || ""),
                 })
             ]
         },
@@ -115,15 +116,15 @@ module.exports = function (config) {
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
         // browsers: ['Chrome', 'Firefox', 'PhantomJS'],
         customLaunchers: {
-            'Chrome': {
-                base: 'WebDriverio',
-                browserName: 'chrome',
-                name: 'Karma'
+            "Chrome": {
+                base: "WebDriverio",
+                browserName: "chrome",
+                name: "Karma"
 
             }
 
         },
-        browsers: ['Chrome'],
+        browsers: ["Chrome"],
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
@@ -132,11 +133,11 @@ module.exports = function (config) {
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity
-    }
+    };
     if (process.env.TRAVIS) {
 
-        options.browsers = ['Firefox']
+        options.browsers = ["Firefox"];
     }
 
-    config.set(options)
-}
+    config.set(options);
+};

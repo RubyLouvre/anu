@@ -29,26 +29,25 @@ if (typeof chai !== "undefined") {
         });
         spy.createSpy = function(fn) {
             function spyFn() {
-                spyFn.calls.stack.push([].slice.call(arguments));
+                spyFn.calls.push([].slice.call(arguments));
                 if (fn) {
                     return fn.apply(this, arguments);
                 }
             }
-            spyFn.calls = {
-                stack: [],
-                reset: function() {
-                    this.stack.length = 0;
-                },
-                count: function(){
-                    return this.stack.length;
-                }
+            
+            var calls = spyFn.calls = [];
+            calls.reset = function() {
+                this.length = 0;
+            };
+            calls.count = function(){
+                return this.length;
             };
             return spyFn;
         };
 
         Assertion.addMethod("toHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
-            var arr = val.calls.stack.shift() ;
+            var arr = val.calls.shift() ;
             val = arr[0];
             var assertion = new chai.Assertion(val);
             if(!expected || typeof expected !== "object"){
@@ -62,7 +61,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toHaveBeenCalled");
-            if (val.calls.stack.length) {
+            if (val.calls.length) {
                 return a.equal("toHaveBeenCalled");
             }
             return a.equal("ng");
@@ -70,7 +69,7 @@ if (typeof chai !== "undefined") {
 
         Assertion.addMethod("toNotHaveBeenCalledWith", function(expected) {
             var val = this.__flags.object;
-            var arr = val.calls.stack.shift() ;
+            var arr = val.calls.shift() ;
             val = arr[0];
             var assertion = new chai.Assertion(val);
             if(!expected || typeof expected !== "object"){
@@ -83,7 +82,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toNotHaveBeenCalled", function() {
             var val = this.__flags.object;
             var a = new chai.Assertion("toNotHaveBeenCalled");
-            if (val.calls.stack.length) {
+            if (val.calls.length) {
                 return a.equal("ng");
             }
             return a.equal("toNotHaveBeenCalled");
