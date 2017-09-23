@@ -388,6 +388,9 @@ function _flattenChildren(original, convert) {
                     child._prefix = "." + unidimensionalIndex;
                     unidimensionalIndex++;
                 }
+                if (!child.type) {
+                    throw "这不是一个虚拟DOM";
+                }
                 lastText = false;
             }
 
@@ -621,7 +624,6 @@ function computeKey(old, el, index) {
     return key.replace(/\d+\$/, "$");
 }
 function escapeKey(key) {
-    console.log(key, "===");
     return String(key).replace(/[=:]/g, escaperFn);
 }
 var escaperLookup = {

@@ -197,6 +197,9 @@ export function _flattenChildren(original, convert) {
                     child._prefix = "." + unidimensionalIndex;
                     unidimensionalIndex++;
                 }
+                if(!child.type){
+                    throw "这不是一个虚拟DOM";
+                }
                 lastText = false;
             }
 

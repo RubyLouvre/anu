@@ -867,4 +867,26 @@ describe("ReactChildren", function() {
       <div key=".$1=0=2=2=02" />,
     ]);
   });
+
+  it('should throw on object', () => {
+    expect(function() {
+      React.Children.forEach({a: 1, b: 2}, function() {}, null);
+    }).toThrowError(
+      'Objects are not valid as a React child (found: object with keys ' +
+        '{a, b}). If you meant to render a collection of children, use an ' +
+        'array instead.',
+    );
+  });
+
+  it('should throw on regex', () => {
+    // Really, we care about dates (#4840) but those have nondeterministic
+    // serialization (timezones) so let's test a regex instead:
+    expect(function() {
+      React.Children.forEach(/abc/, function() {}, null);
+    }).toThrowError(
+      'Objects are not valid as a React child (found: /abc/). If you meant ' +
+        'to render a collection of children, use an array instead.',
+    );
+  });
+
 })

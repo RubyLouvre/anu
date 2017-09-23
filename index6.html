@@ -13,14 +13,8 @@
   var s
   window.onload = function(){
    
-    var simpleKid = <span />;
-    var context = {}
-    var instance = <div>{simpleKid}</div>;
-   var flattened = React.Children.map(instance.props.children, function(a){
-      return a 
-    }, context);
+    React.Children.forEach({a: 1, b: 2}, function() {}, null);
 
-   console.log(flattened)
  
 
 
