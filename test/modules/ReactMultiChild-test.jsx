@@ -204,4 +204,166 @@ describe("reconciliation", function() {
     );
     expect(array2.length).toBe(2);
   });
+
+  it("should warn for duplicated iterable keys with component stack info", () => {
+    class WrapperComponent extends React.Component {
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    class Parent extends React.Component {
+      render() {
+        return (
+          <div>
+            <WrapperComponent>{this.props.children}</WrapperComponent>
+          </div>
+        );
+      }
+    }
+
+    function createIterable(array) {
+      return {
+        "@@iterator": function() {
+          var i = 0;
+          return {
+            next() {
+              const next = {
+                value: i < array.length ? array[i] : undefined,
+                done: i === array.length
+              };
+              i++;
+              return next;
+            }
+          };
+        }
+      };
+    }
+
+    var instance = ReactTestUtils.renderIntoDocument(
+      <Parent>{createIterable([<div className="aaa" />])}</Parent>
+    );
+    var array = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+      instance,
+      "aaa"
+    );
+    expect(array.length).toBe(1);
+    var instance = ReactTestUtils.renderIntoDocument(
+      <Parent>
+        {createIterable([<div className="aaa" />, <div className="aaa" />])}
+      </Parent>
+    );
+    var array = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+      instance,
+      "aaa"
+    );
+    expect(array.length).toBe(2);
+  });
+  it("should warn for using maps as children with owner info", () => {
+    if (typeof Map === "function") {
+      class Parent extends React.Component {
+        render() {
+          return <div>{new Map([["foo", 0], ["bar", 1]])}</div>;
+        }
+      }
+      var container = document.createElement("div");
+      ReactDOM.render(<Parent />, container);
+      expect(container.innerText || container.textContent).toBe("01");
+    }
+  });
+
+  it("should reorder bailed-out children", () => {
+    spyOn(console, "error");
+
+    class LetterInner extends React.Component {
+      render() {
+        return <div>{this.props.char}</div>;
+      }
+    }
+
+    class Letter extends React.Component {
+      render() {
+        return <LetterInner char={this.props.char} />;
+      }
+      shouldComponentUpdate() {
+        return false;
+      }
+    }
+
+    class Letters extends React.Component {
+      render() {
+        const letters = this.props.letters.split("");
+        return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
+      }
+    }
+
+    var container = document.createElement("div");
+
+    // Two random strings -- some additions, some removals, some moves
+    ReactDOM.render(<Letters letters="XKwHomsNjIkBcQWFbiZU" />, container);
+    expect(container.textContent).toBe("XKwHomsNjIkBcQWFbiZU");
+    ReactDOM.render(<Letters letters="EHCjpdTUuiybDvhRJwZt" />, container);
+    expect(container.textContent).toBe("EHCjpdTUuiybDvhRJwZt");
+  });
+
+  it("prepares new children before unmounting old", () => {
+    var log = [];
+
+    class Spy extends React.Component {
+      componentWillMount() {
+        log.push(this.props.name + " componentWillMount");
+      }
+      render() {
+        log.push(this.props.name + " render");
+        return <div />;
+      }
+      componentDidMount() {
+        log.push(this.props.name + " componentDidMount");
+      }
+      componentWillUnmount() {
+        log.push(this.props.name + " componentWillUnmount");
+      }
+    }
+
+    // These are reference-unequal so they will be swapped even if they have
+    // matching keys
+    var SpyA = props => <Spy {...props} />;
+    var SpyB = props => <Spy {...props} />;
+
+    var container = document.createElement("div");
+    ReactDOM.render(
+      <div>
+        <SpyA key="one" name="oneA" />
+        <SpyA key="two" name="twoA" />
+      </div>,
+      container
+    );
+    ReactDOM.render(
+      <div>
+        <SpyB key="one" name="oneB" />
+        <SpyB key="two" name="twoB" />
+      </div>,
+      container
+    );
+    expect(log).toEqual([
+      "oneA componentWillMount",
+      "oneA render",
+      "twoA componentWillMount",
+      "twoA render",
+      "oneA componentDidMount",
+      "twoA componentDidMount",
+
+
+      'oneA componentWillUnmount',
+      'oneB componentWillMount',
+      'oneB render',
+      'twoA componentWillUnmount',
+      'twoB componentWillMount',
+      'twoB render',
+    
+
+      "oneB componentDidMount",
+      "twoB componentDidMount"
+    ]);
+  });
 });

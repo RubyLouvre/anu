@@ -139,20 +139,20 @@ export function _flattenChildren(original, convert) {
         lastText,
         child,
         isMap = convert === "",
-        isEnumerable,
+        iteractorFn,
         temp = Array.isArray(original) ? original.slice(0) : [original];
 
     while (temp.length) {
         if (
             (child = temp.shift()) &&
-      (child.shift || (isEnumerable = hasIteractor(child)))
+      (child.shift || (iteractorFn = getIteractor(child)))
         ) {
             //比较巧妙地判定是否为子数组
 
-            if (isEnumerable) {
+            if (iteractorFn) {
                 //兼容Immutable.js, Map, Set
-                child = fixIteractor(child);
-                isEnumerable = false;
+                child = callIteractor(iteractorFn, child);
+                iteractorFn = false;
                 temp.unshift.apply(temp, child);
                 continue;
             }
@@ -197,7 +197,7 @@ export function _flattenChildren(original, convert) {
                     child._prefix = "." + unidimensionalIndex;
                     unidimensionalIndex++;
                 }
-                if(!child.type){
+                if (!child.type) {
                     throw "这不是一个虚拟DOM";
                 }
                 lastText = false;
@@ -208,16 +208,32 @@ export function _flattenChildren(original, convert) {
     }
     return children;
 }
-function hasIteractor(a) {
-    //不能为数字
-    return a && a["@@iterator"] && isFn(a["@@iterator"]) && a + 0 !== a;
+var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var FAKE_SYMBOL = "@@iterator";
+function getIteractor(a) {
+    if (typeNumber(a) > 7) {
+        var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
+        if (isFn(iteratorFn)) {
+            return iteratorFn;
+        }
+    }
 }
-function fixIteractor(a) {
-    let iterator = a["@@iterator"].call(a),
+function callIteractor(iteratorFn, children) {
+    var iterator = iteratorFn.call(children),
         step,
         ret = [];
-    while (!(step = iterator.next()).done) {
-        ret.push(step.value);
+    if (iteratorFn !== children.entries) {
+        while (!(step = iterator.next()).done) {
+            ret.push(step.value);
+        }
+    } else {
+    //Map, Set
+        while (!(step = iterator.next()).done) {
+            var entry = step.value;
+            if (entry) {
+                ret.push(entry[1]);
+            }
+        }
     }
     return ret;
 }

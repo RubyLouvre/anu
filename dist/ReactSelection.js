@@ -338,17 +338,17 @@ function _flattenChildren(original, convert) {
         lastText = void 0,
         child = void 0,
         isMap = convert === "",
-        isEnumerable = void 0,
+        iteractorFn = void 0,
         temp = Array.isArray(original) ? original.slice(0) : [original];
 
     while (temp.length) {
-        if ((child = temp.shift()) && (child.shift || (isEnumerable = hasIteractor(child)))) {
+        if ((child = temp.shift()) && (child.shift || (iteractorFn = getIteractor(child)))) {
             //比较巧妙地判定是否为子数组
 
-            if (isEnumerable) {
+            if (iteractorFn) {
                 //兼容Immutable.js, Map, Set
-                child = fixIteractor(child);
-                isEnumerable = false;
+                child = callIteractor(iteractorFn, child);
+                iteractorFn = false;
                 temp.unshift.apply(temp, child);
                 continue;
             }
@@ -404,16 +404,32 @@ function _flattenChildren(original, convert) {
     }
     return children;
 }
-function hasIteractor(a) {
-    //不能为数字
-    return a && a["@@iterator"] && isFn(a["@@iterator"]) && a + 0 !== a;
+var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var FAKE_SYMBOL = "@@iterator";
+function getIteractor(a) {
+    if (typeNumber(a) > 7) {
+        var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
+        if (isFn(iteratorFn)) {
+            return iteratorFn;
+        }
+    }
 }
-function fixIteractor(a) {
-    var iterator = a["@@iterator"].call(a),
-        step = void 0,
+function callIteractor(iteratorFn, children) {
+    var iterator = iteratorFn.call(children),
+        step,
         ret = [];
-    while (!(step = iterator.next()).done) {
-        ret.push(step.value);
+    if (iteratorFn !== children.entries) {
+        while (!(step = iterator.next()).done) {
+            ret.push(step.value);
+        }
+    } else {
+        //Map, Set
+        while (!(step = iterator.next()).done) {
+            var entry = step.value;
+            if (entry) {
+                ret.push(entry[1]);
+            }
+        }
     }
     return ret;
 }
@@ -2325,7 +2341,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
-    //eslint-disable-next-line 
+    //eslint-disable-next-line
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.mountAll ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2421,12 +2437,13 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         return;
     }
 
-    lastChildren.forEach(function (el) {
+    lastChildren.forEach(function (el, i) {
         var key = el.type + (el.key || "");
         if (el._disposed) {
             return;
         }
         var list = hashcode[key];
+        el._index = i;
         if (list) {
             list.push(el);
         } else {
@@ -2446,24 +2463,24 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             }
         }
     });
+    var removed = [];
     for (var i in hashcode) {
         var list = hashcode[i];
         if (Array.isArray(list)) {
-            list.forEach(function (el) {
-                var node = el._hostNode;
-                if (node) {
-                    removeDOMElement(node);
-                }
-                disposeVnode(el);
-            });
+            removed.push.apply(removed, list);
         }
     }
-
+    removed.sort(function (a, b) {
+        return a._index - b._index;
+    });
     nextChildren.forEach(function (el, index) {
         var old = el.old,
             ref = void 0,
             dom = void 0,
             queue = mountAll ? mountQueue : [];
+
+        removeNodes(removed, true);
+
         if (old) {
             delete el.old;
 
@@ -2484,6 +2501,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         } else {
             dom = mountVnode(el, context, null, queue);
         }
+
         ref = childNodes[index];
         if (dom !== ref) {
             insertDOM(parentNode, dom, ref);
@@ -2492,6 +2510,20 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             clearRefsAndMounts(queue);
         }
     });
+    removeNodes(removed);
+}
+function removeNodes(removed, one) {
+    while (removed.length) {
+        var removedEl = removed.shift();
+        var node = removedEl._hostNode;
+        if (node) {
+            removeDOMElement(node);
+        }
+        disposeVnode(removedEl);
+        if (one) {
+            break;
+        }
+    }
 }
 function replaceChildDeday(args, dom1, parentNode) {
     setTimeout(function () {
