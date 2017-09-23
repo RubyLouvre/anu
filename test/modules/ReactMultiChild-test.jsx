@@ -72,6 +72,71 @@ describe("reconciliation", function() {
       expect(mockMount.calls.length).toBe(1);
       expect(mockUnmount.calls.length).toBe(1);
     });
-  
+
+
+
+    it('should NOT replace children with different owners', () => {
+      var container = document.createElement('div');
+
+      var mockMount = spyOn.createSpy();
+      var mockUnmount = spyOn.createSpy();
+
+      class MockComponent extends React.Component {
+        componentDidMount = mockMount;
+        componentWillUnmount = mockUnmount;
+        render() {
+          return <span />;
+        }
+      }
+
+      class WrapperComponent extends React.Component {
+        render() {
+          return this.props.children || <MockComponent />;
+        }
+      }
+
+      expect(mockMount.calls.length).toBe(0);
+      expect(mockUnmount.calls.length).toBe(0);
+
+      ReactDOM.render(<WrapperComponent />, container);
+
+      expect(mockMount.calls.length).toBe(1);
+      expect(mockUnmount.calls.length).toBe(0);
+
+      ReactDOM.render(
+        <WrapperComponent><MockComponent /></WrapperComponent>,
+        container,
+      );
+
+      expect(mockMount.calls.length).toBe(1);
+      expect(mockUnmount.calls.length).toBe(0);
+    });
+    it('should replace children with different keys', () => {
+      var container = document.createElement('div');
+
+      var mockMount = spyOn.createSpy();
+      var mockUnmount = spyOn.createSpy();
+
+      class MockComponent extends React.Component {
+        componentDidMount = mockMount;
+        componentWillUnmount = mockUnmount;
+        render() {
+          return <span />;
+        }
+      }
+
+      expect(mockMount.calls.length).toBe(0);
+      expect(mockUnmount.calls.length).toBe(0);
+
+      ReactDOM.render(<div><MockComponent key="A" /></div>, container);
+
+      expect(mockMount.calls.length).toBe(1);
+      expect(mockUnmount.calls.length).toBe(0);
+
+      ReactDOM.render(<div><MockComponent key="B" /></div>, container);
+
+      expect(mockMount.calls.length).toBe(2);
+      expect(mockUnmount.calls.length).toBe(1);
+    });
 
 });
