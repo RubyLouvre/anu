@@ -43,14 +43,14 @@ var MANY_MERGED = {
 function flattenHooks(key, hooks) {
     let hookType = typeof hooks[0];
     if (hookType === "object") {
-        // Merge objects
+    // Merge objects
         hooks.unshift({});
-        return Object
-            .assign
-            .apply(null, hooks);
+        return Object.assign.apply(null, hooks);
     } else if (hookType === "function" && hooks.length > 1) {
-        return function () {
-            let ret = {}, r, hasReturn = MANY_MERGED[key];
+        return function() {
+            let ret = {},
+                r,
+                hasReturn = MANY_MERGED[key];
             for (let i = 0; i < hooks.length; i++) {
                 r = hooks[i].apply(this, arguments);
                 if (hasReturn && r) {
@@ -77,7 +77,10 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    let curry = Function("ReactComponent", "blacklist", "spec",
+    let curry = Function(
+        "ReactComponent",
+        "blacklist",
+        "spec",
         `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
 
@@ -95,13 +98,14 @@ function newCtor(className, spec) {
         }
       }
 
-  };`);
+  };`
+    );
     return curry(Component, NOBIND, spec);
 }
 
 export function createClass(spec) {
     deprecatedWarn("createClass");
-    if(!isFn(spec.render)){
+    if (!isFn(spec.render)) {
         throw "请实现render方法";
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
@@ -110,25 +114,27 @@ export function createClass(spec) {
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
     }
-    
+
     extend(proto, spec);
 
     if (spec.statics) {
         extend(Constructor, spec.statics);
     }
-    "propTypes,contextTypes,childContextTypes,displayName"
-        .replace(/\w+/g, function (name) {
+    "propTypes,contextTypes,childContextTypes,displayName".replace(
+        /\w+/g,
+        function(name) {
             if (spec[name]) {
-                var props = Constructor[name] = spec[name];
-                if(name !== "displayName"){
-                    for(let i in props){
-                        if(!isFn(props[i])){
-                            console.error("必须为函数");
+                var props = (Constructor[name] = spec[name]);
+                if (name !== "displayName") {
+                    for (let i in props) {
+                        if (!isFn(props[i])) {
+                            console.error(`${i} in ${name} must be a function`);
                         }
                     }
                 }
             }
-        });
+        }
+    );
 
     if (isFn(spec.getDefaultProps)) {
         Constructor.defaultProps = spec.getDefaultProps();

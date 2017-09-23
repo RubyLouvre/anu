@@ -1,51 +1,50 @@
 import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-re";
-import filesize from 'rollup-plugin-filesize';
+import filesize from "rollup-plugin-filesize";
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
-const now = new Date();
 
 export default {
-  entry: "./src/React.js",
-  format: "umd",
-  exports: "default",
-  dest: "./dist/React.js",
-  plugins: [
+    entry: "./src/React.js",
+    format: "umd",
+    exports: "default",
+    dest: "./dist/React.js",
+    plugins: [
   
-    babel({
-      //  plugins: ['external-helpers'],
-      // externalHelpers: true,
-      babelrc: false,
-      presets: [
-        [
-          "es2015",
-          {
-            modules: false
-          }
-        ]
-      ]
-    }),
+        babel({
+            //  plugins: ['external-helpers'],
+            // externalHelpers: true,
+            babelrc: false,
+            presets: [
+                [
+                    "env",
+                    {
+                        modules: false
+                    }
+                ]
+            ]
+        }),
 
-    license({
-      banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,'')}
+        license({
+            banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,"")}
       IE9+
       `
-    }),
+        }),
 
-     replace({
-      // ... do replace before commonjs
-      patterns: [
-        {
-          test: 'VERSION', 
-          // string or function to replaced with
-          replace: json.version,
-        },
+        replace({
+            // ... do replace before commonjs
+            patterns: [
+                {
+                    test: "VERSION", 
+                    // string or function to replaced with
+                    replace: json.version,
+                },
      
-      ]
-    }),
-     filesize()
-  ],
-  moduleName: "React",
-  useStrict: false
+            ]
+        }),
+        filesize()
+    ],
+    moduleName: "React",
+    useStrict: false
 };

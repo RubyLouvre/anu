@@ -1202,7 +1202,7 @@ function createClass(spec) {
             if (name !== "displayName") {
                 for (var i in props) {
                     if (!isFn(props[i])) {
-                        console.error("必须为函数");
+                        console.error(i + " in " + name + " must be a function");
                     }
                 }
             }

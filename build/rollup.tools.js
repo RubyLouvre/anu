@@ -1,11 +1,11 @@
-import babel from 'rollup-plugin-babel';
+import babel from "rollup-plugin-babel";
 
 export default {
-    entry: './build/index.js',
-    format: 'umd',
-    exports: 'default',
-    dest: './lib/devtools.js',
+    entry: "./build/index.js",
+    format: "umd",
+    exports: "default",
+    dest: "./lib/devtools.js",
     plugins: [babel() ],
-    moduleName: 'DevTools',
+    moduleName: "DevTools",
     useStrict: false
-}
+};
