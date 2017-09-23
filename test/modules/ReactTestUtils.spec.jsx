@@ -295,7 +295,6 @@ describe("ReactTestUtils", function() {
     }
 
     let handler = spyOn.createSpy("spy");
-    console.log(!!handler.spyArgs);
     let container = document.createElement("div");
     let instance = ReactDOM.render(
       <SomeComponent handleClick={handler} />,

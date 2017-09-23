@@ -333,22 +333,30 @@ function _flattenChildren(original, convert) {
         unidimensionalIndex = 0,
         lastText = void 0,
         child = void 0,
+        isMap = convert === "",
+        isEnumerable = void 0,
         temp = Array.isArray(original) ? original.slice(0) : [original];
+
     while (temp.length) {
-        if ((child = temp.shift()) && child.shift) {
+        if ((child = temp.shift()) && (child.shift || (isEnumerable = hasIteractor(child)))) {
             //比较巧妙地判定是否为子数组
-            if (hasIteractor(child)) {
+
+            if (isEnumerable) {
                 //兼容Immutable.js, Map, Set
                 child = fixIteractor(child);
+                isEnumerable = false;
+                temp.unshift.apply(temp, child);
+                continue;
             }
-            if (!child._prefix) {
-                child._prefix = "." + unidimensionalIndex;
-                unidimensionalIndex++; //维护第一层元素的索引值
-            }
-
-            for (var i = 0; i < child.length; i++) {
-                if (child[i]) {
-                    child[i]._prefix = child._prefix + ":" + i;
+            if (isMap) {
+                if (!child._prefix) {
+                    child._prefix = "." + unidimensionalIndex;
+                    unidimensionalIndex++; //维护第一层元素的索引值
+                }
+                for (var i = 0; i < child.length; i++) {
+                    if (child[i]) {
+                        child[i]._prefix = child._prefix + ":" + i;
+                    }
                 }
             }
             temp.unshift.apply(temp, child);
@@ -377,7 +385,7 @@ function _flattenChildren(original, convert) {
                 }
                 lastText = child;
             } else {
-                if (!child._prefix) {
+                if (isMap && !child._prefix) {
                     child._prefix = "." + unidimensionalIndex;
                     unidimensionalIndex++;
                 }
@@ -390,7 +398,8 @@ function _flattenChildren(original, convert) {
     return children;
 }
 function hasIteractor(a) {
-    return a && a["@@iterator"] && isFn(a["@@iterator"]);
+    //不能为数字
+    return a && a["@@iterator"] && isFn(a["@@iterator"]) && a + 0 !== a;
 }
 function fixIteractor(a) {
     var iterator = a["@@iterator"].call(a),
@@ -442,18 +451,21 @@ var Children = {
         throw new Error("expect only one child");
     },
     count: function count(children) {
+        if (children == null) {
+            return 0;
+        }
         return _flattenChildren(children, false).length;
     },
     map: function map(children, callback, context) {
         var ret = [];
-        _flattenChildren(children, false).forEach(function (el, index) {
-            el = callback.call(context, el, index);
+        _flattenChildren(children, "").forEach(function (old, index) {
+            var el = callback.call(context, old, index);
             if (el === null) {
                 return;
             }
             if (el.vtype) {
-                var key = el.key == null ? el._prefix : el._prefix.indexOf(":") === "-1" ? ".$" + el.key : (el._prefix + "$" + el.key).replace(/\d+\$/, "$");
-
+                //如果返回的el等于old,还需要使用原来的key, _prefix
+                var key = computeKey(old, el, index);
                 ret.push(cloneElement(el, { key: key }));
             } else if (el.type) {
                 ret.push(Object.assign({}, el));
@@ -469,9 +481,48 @@ var Children = {
 
 
     toArray: function toArray(children) {
-        return _flattenChildren(children, false);
+        if (children == null) {
+            return [];
+        }
+        return Children.map(children, function (el) {
+            return el;
+        });
     }
 };
+
+function computeKey(old, el, index) {
+    var curKey = el && el.key != null ? escapeKey(el.key) : null;
+    var oldKey = old && old.key != null ? escapeKey(old.key) : null;
+    var oldFix = old && old._prefix,
+        key = void 0;
+    if (oldKey && curKey) {
+        key = oldFix + "$" + oldKey;
+        if (oldKey !== curKey) {
+            key = curKey + "/" + key;
+        }
+    } else {
+        key = curKey || oldKey;
+        if (key) {
+            if (oldFix) {
+                key = oldFix + "$" + key;
+            }
+        } else {
+            key = oldFix || "." + index;
+        }
+    }
+    return key.replace(/\d+\$/, "$");
+}
+function escapeKey(key) {
+    console.log(key, "===");
+    return String(key).replace(/[=:]/g, escaperFn);
+}
+var escaperLookup = {
+    "=": "=0",
+    ":": "=2"
+};
+function escaperFn(match) {
+    return escaperLookup[match];
+}
 
 //用于后端的元素节点
 function DOMElement(type) {

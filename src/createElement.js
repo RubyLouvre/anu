@@ -1,4 +1,4 @@
-import { EMPTY_CHILDREN, typeNumber,isFn } from "./util";
+import { EMPTY_CHILDREN, typeNumber, isFn } from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -138,22 +138,33 @@ export function _flattenChildren(original, convert) {
         unidimensionalIndex = 0,
         lastText,
         child,
+        isMap = convert === "",
+        isEnumerable,
         temp = Array.isArray(original) ? original.slice(0) : [original];
+
     while (temp.length) {
-        if ((child = temp.shift()) && child.shift) {
+        if (
+            (child = temp.shift()) &&
+      (child.shift || (isEnumerable = hasIteractor(child)))
+        ) {
             //比较巧妙地判定是否为子数组
-            if (hasIteractor(child)) {
+
+            if (isEnumerable) {
                 //兼容Immutable.js, Map, Set
                 child = fixIteractor(child);
+                isEnumerable = false;
+                temp.unshift.apply(temp, child);
+                continue;
             }
-            if (!child._prefix) {
-                child._prefix = "." + unidimensionalIndex;
-                unidimensionalIndex++;//维护第一层元素的索引值
-            }
-            
-            for (let i = 0; i < child.length; i++) {
-                if (child[i]) {
-                    child[i]._prefix = child._prefix + ":" + i;
+            if (isMap) {
+                if (!child._prefix) {
+                    child._prefix = "." + unidimensionalIndex;
+                    unidimensionalIndex++; //维护第一层元素的索引值
+                }
+                for (let i = 0; i < child.length; i++) {
+                    if (child[i]) {
+                        child[i]._prefix = child._prefix + ":" + i;
+                    }
                 }
             }
             temp.unshift.apply(temp, child);
@@ -175,30 +186,33 @@ export function _flattenChildren(original, convert) {
                 if (convert) {
                     child = {
                         type: "#text",
-                        text: child+"",
+                        text: child + "",
                         vtype: 0
                     };
                     unidimensionalIndex++;
                 }
                 lastText = child;
             } else {
-                if (!child._prefix) {
+                if (isMap && !child._prefix) {
                     child._prefix = "." + unidimensionalIndex;
                     unidimensionalIndex++;
                 }
                 lastText = false;
             }
-           
+
             children.push(child);
         }
     }
     return children;
 }
-function hasIteractor(a){
-    return  a && a["@@iterator"] && isFn(a["@@iterator"]);
+function hasIteractor(a) {
+    //不能为数字
+    return a && a["@@iterator"] && isFn(a["@@iterator"]) && a + 0 !== a;
 }
-function fixIteractor(a){
-    let iterator = a["@@iterator"].call(a), step, ret = [];
+function fixIteractor(a) {
+    let iterator = a["@@iterator"].call(a),
+        step,
+        ret = [];
     while (!(step = iterator.next()).done) {
         ret.push(step.value);
     }

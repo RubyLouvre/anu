@@ -14,10 +14,14 @@ if (typeof chai !== "undefined") {
         //实现spyOn功能
         var spy = (window.spyOn = function(obj, method) {
             var orig = obj[method];
+            if(orig.calls){
+                return orig;
+            }
+            obj[method] = spy.createSpy(orig);
             return {
                 and: {
                     callThrough: function() {
-                        return (obj[method] = spy.createSpy(orig));
+                        
                     }
                 }
             };
@@ -128,7 +132,7 @@ if (typeof chai !== "undefined") {
         Assertion.addMethod("toBeTruthy", function() {
             return this.ok;
         });
-
+        //toContain
         Assertion.addMethod("toContain", function(expected) {
             return this.deep.contain(expected);
         });

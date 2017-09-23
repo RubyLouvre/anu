@@ -12,23 +12,21 @@ export const Children = {
         throw new Error("expect only one child");
     },
     count(children) {
+        if(children == null){
+            return 0;
+        }
         return _flattenChildren(children, false).length;
     },
     map(children, callback, context) {
         var ret = [];
-        _flattenChildren(children, false).forEach(function(el, index) {
-            el = callback.call(context, el, index);
+        _flattenChildren(children, "").forEach(function(old, index) {
+            let el = callback.call(context, old, index);
             if (el === null) {
                 return;
             }
             if (el.vtype) {
-                var key =
-          el.key == null
-              ? el._prefix
-              : el._prefix.indexOf(":") === "-1"
-                  ? ".$" + el.key
-                  : (el._prefix + "$" + el.key).replace(/\d+\$/, "$");
-
+                //如果返回的el等于old,还需要使用原来的key, _prefix
+                var key = computeKey(old, el, index);
                 ret.push(cloneElement(el, { key }));
             } else if (el.type) {
                 ret.push(Object.assign({}, el));
@@ -43,6 +41,44 @@ export const Children = {
     },
 
     toArray: function(children) {
-        return _flattenChildren(children, false);
+        if(children == null) {
+            return [];
+        }
+        return Children.map(children, function(el){
+            return el;
+        });
     }
 };
+
+function computeKey(old, el, index){
+    let curKey = el && el.key != null ? escapeKey(el.key) : null;
+    let oldKey = old && old.key != null ? escapeKey(old.key) : null;
+    let oldFix = old && old._prefix,
+        key;
+    if (oldKey && curKey) {
+        key = oldFix + "$" + oldKey;
+        if (oldKey !== curKey) {
+            key = curKey + "/" + key;
+        } 
+    } else {
+        key = curKey || oldKey;
+        if (key) {
+            if (oldFix) {
+                key = oldFix + "$" + key;
+            }
+        } else {
+            key = oldFix || "." + index;
+        }
+    }
+    return key.replace(/\d+\$/, "$");
+}
+function escapeKey(key){
+    return  String(key).replace(/[=:]/g, escaperFn);
+}
+var escaperLookup = {
+    "=": "=0",
+    ":": "=2"
+};
+function escaperFn(match) {
+    return escaperLookup[match]; 
+}
