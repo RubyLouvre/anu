@@ -1,5 +1,4 @@
 
-
 import "./modules/createElement.spec";
 
 import "./modules/util.spec";
@@ -28,6 +27,7 @@ require("./modules/ref.spec.jsx");
 
 
 require("./modules/redux.spec.jsx");
-/*
+
 require("./modules/ReactTestUtils.spec.jsx");
-*/
+require("./modules/ReactChildren.spec.jsx");
+

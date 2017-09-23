@@ -146,4 +146,61 @@ describe("ReactChildren", function() {
       <div key=".$keyFour" />,
     ]);
   });
+
+  it('should traverse children of different kinds', () => {
+    var div = <div key="divNode" />;
+    var span = <span key="spanNode" />;
+    var a = <a key="aNode" />;
+
+    var context = {};
+    var callback = spyOn.createSpy(function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    });
+    var instance = (
+      <div>
+        {div}
+        {[[span]]}
+        {[a]}
+        {'string'}
+        {1234}
+        {true}
+        {false}
+        {null}
+        {undefined}
+      </div>
+    );
+
+    function assertCalls() {
+      expect(callback.calls.count()).toBe(9);
+      expect(callback).toHaveBeenCalledWith(div, 0);
+      expect(callback).toHaveBeenCalledWith(span, 1);
+      expect(callback).toHaveBeenCalledWith(a, 2);
+      expect(callback).toHaveBeenCalledWith('string', 3);
+      expect(callback).toHaveBeenCalledWith(1234, 4);
+      expect(callback).toHaveBeenCalledWith(null, 5);
+      expect(callback).toHaveBeenCalledWith(null, 6);
+      expect(callback).toHaveBeenCalledWith(null, 7);
+      expect(callback).toHaveBeenCalledWith(null, 8);
+      callback.calls.reset();
+    }
+
+    React.Children.forEach(instance.props.children, callback, context);
+    assertCalls();
+
+    var mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    assertCalls();
+    expect(mappedChildren).toEqual([
+      <div key=".$divNode" />,
+      <span key=".1:0:$spanNode" />,
+      <a key=".2:$aNode" />,
+      'string',
+      1234,
+    ]);
+  });
+
 })

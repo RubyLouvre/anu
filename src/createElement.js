@@ -1,4 +1,4 @@
-import { EMPTY_CHILDREN, typeNumber } from "./util";
+import { EMPTY_CHILDREN, typeNumber,isFn } from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -55,10 +55,8 @@ export function createElement(type, config, ...children) {
         }
     }
     if (typeNumber(type) === 5) {
-        //fn
-        vtype = type.prototype && type.prototype.render
-            ? 2
-            : 4;
+    //fn
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
     }
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
@@ -96,12 +94,12 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     }
     let refType = typeNumber(ref);
     if (refType === 4) {
-        //string
+    //string
         this.ref = createStringRef(owner, ref);
     } else if (refType === 5) {
         if (ref.string) {
             var ref2 = createStringRef(owner, ref.string);
-            this.ref = function (dom) {
+            this.ref = function(dom) {
                 ref(dom);
                 ref2(dom);
             };
@@ -117,64 +115,12 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
 }
 
 Vnode.prototype = {
-    getDOMNode: function () {
+    getDOMNode: function() {
         return this._hostNode || null;
     },
 
     $$typeof: 1
 };
-
-export function _flattenChildren(original, convert) {
-    let children = [],
-        lastText,
-        child,
-        temp = Array.isArray(original)
-            ? original.slice(0)
-            : [original];
-
-    while (temp.length) {
-        //比较巧妙地判定是否为子数组
-        if ((child = temp.pop()) && child.pop) {
-            if (child.toJS) {
-                //兼容Immutable.js
-                child = child.toJS();
-            }
-            for (let i = 0; i < child.length; i++) {
-                temp[temp.length] = child[i];
-            }
-        } else {
-            // eslint-disable-next-line
-            let childType = typeNumber(child);
-
-            if (childType < 3) { // 0, 1, 2
-                if (convert) {
-                    continue;
-                } else {
-                    child = null;
-                }
-            } else if (childType < 6) {
-                if (lastText && convert) { //false模式下不进行合并与转换
-                    children[0].text = child + children[0].text;
-                    continue;
-                }
-                child = child + "";
-                if (convert) {
-                    child = {
-                        type: "#text",
-                        text: child,
-                        vtype: 0
-                    };
-                }
-                lastText = true;
-            } else {
-                lastText = false;
-            }
-
-            children.unshift(child);
-        }
-    }
-    return children;
-}
 
 export function flattenChildren(vnode) {
     let arr = EMPTY_CHILDREN,
@@ -185,5 +131,77 @@ export function flattenChildren(vnode) {
             arr = EMPTY_CHILDREN;
         }
     }
-    return vnode.vchildren = arr;
+    return (vnode.vchildren = arr);
+}
+
+export function _flattenChildren(original, convert) {
+    let children = [],
+        index = 0,
+        lastText,
+        child,
+        temp = Array.isArray(original) ? original.slice(0) : [original];
+    while (temp.length) {
+        if ((child = temp.shift()) && child.shift) {
+            //比较巧妙地判定是否为子数组
+            if (hasIteractor(child)) {
+                //兼容Immutable.js, Map, Set
+                child = fixIteractor(child);
+            }
+            if (!child._prefix) {
+                child._prefix = "." + index;
+                index++;//维护第一层元素的索引值
+            }
+            
+            for (let i = 0; i < child.length; i++) {
+                temp.unshift(child[i]);
+                if (child[i]) {
+                    child[i]._prefix = child._prefix + ":" + i;
+                }
+            }
+        } else {
+            let childType = typeNumber(child);
+            if (childType < 3) {
+                // 0, 1, 2
+                if (convert) {
+                    continue;
+                } else {
+                    child = null;
+                }
+            } else if (childType < 6) {
+                if (lastText && convert) {
+                    //false模式下不进行合并与转换
+                    lastText.text += child;
+                    continue;
+                }
+                // child = child + "";
+                if (convert) {
+                    index++;
+                    child = {
+                        type: "#text",
+                        text: child+"",
+                        vtype: 0
+                    };
+                }
+                lastText = child;
+            } else {
+                if (!child._prefix) {
+                    child._prefix = "." + index;
+                    index++;
+                }
+                lastText = false;
+            }
+            children.push(child);
+        }
+    }
+    return children;
+}
+function hasIteractor(a){
+    return  a && a["@@iterator"] && isFn(a["@@iterator"]);
+}
+function fixIteractor(a){
+    let iterator = a["@@iterator"].call(a), step, ret = [];
+    while (!(step = iterator.next()).done) {
+        ret.push(step.value);
+    }
+    return ret;
 }

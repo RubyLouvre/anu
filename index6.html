@@ -5,17 +5,39 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./dist/React.js"></script>
-
-   <script type='text/javascript' src="./test/react.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
     
   <script type='text/babel'>
   var s
   window.onload = function(){
-    var simpleKid = <span key="simple" />;
+    var div = <div key="divNode" />;
+    var div2 = <div key="xxx" />;
+    var span = <span key="spanNode" />;
+    var span2 = <span key="spanNode2" />;
 
-    var instance = <div>{simpleKid}</div>;
+    var a = <a key="aNode" />;
+    var context = {};
+
+    var instance = (
+        <div>
+         
+       
+        {div}
+        {div2}
+        {[[span,span2]]}
+        {[a]}
+        {'string'}
+        {1234}
+        {true}
+        {false}
+        {null}
+        {undefined}
+       
+
+        </div>
+      );
     var mappedChildren = React.Children.map(
       instance.props.children,
       function(a){
@@ -23,9 +45,18 @@
           return a
       }
     );
+    console.log('=====')
     console.log(mappedChildren)
  
   }
+  function traverseAllChildren(children, callback, traverseContext) {
+  if (children == null) {
+    return 0;
+  }
+
+  return traverseAllChildrenImpl(children, '', callback, traverseContext);
+}
+  
   </script>
 
 </head>

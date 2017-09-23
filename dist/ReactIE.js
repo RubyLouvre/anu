@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-22
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-23
  */
 
 (function (global, factory) {
@@ -317,58 +317,6 @@ Vnode.prototype = {
     $$typeof: 1
 };
 
-function _flattenChildren(original, convert) {
-    var children = [],
-        lastText = void 0,
-        child = void 0,
-        temp = Array.isArray(original) ? original.slice(0) : [original];
-
-    while (temp.length) {
-        //比较巧妙地判定是否为子数组
-        if ((child = temp.pop()) && child.pop) {
-            if (child.toJS) {
-                //兼容Immutable.js
-                child = child.toJS();
-            }
-            for (var i = 0; i < child.length; i++) {
-                temp[temp.length] = child[i];
-            }
-        } else {
-            // eslint-disable-next-line
-            var childType = typeNumber(child);
-
-            if (childType < 3) {
-                // 0, 1, 2
-                if (convert) {
-                    continue;
-                } else {
-                    child = null;
-                }
-            } else if (childType < 6) {
-                if (lastText && convert) {
-                    //false模式下不进行合并与转换
-                    children[0].text = child + children[0].text;
-                    continue;
-                }
-                child = child + "";
-                if (convert) {
-                    child = {
-                        type: "#text",
-                        text: child,
-                        vtype: 0
-                    };
-                }
-                lastText = true;
-            } else {
-                lastText = false;
-            }
-
-            children.unshift(child);
-        }
-    }
-    return children;
-}
-
 function flattenChildren(vnode) {
     var arr = EMPTY_CHILDREN,
         c = vnode.props.children;
@@ -379,6 +327,80 @@ function flattenChildren(vnode) {
         }
     }
     return vnode.vchildren = arr;
+}
+
+function _flattenChildren(original, convert) {
+    var children = [],
+        index = 0,
+        lastText = void 0,
+        child = void 0,
+        temp = Array.isArray(original) ? original.slice(0) : [original];
+    while (temp.length) {
+        if ((child = temp.shift()) && child.shift) {
+            //比较巧妙地判定是否为子数组
+            if (hasIteractor(child)) {
+                //兼容Immutable.js, Map, Set
+                child = fixIteractor(child);
+            }
+            if (!child._prefix) {
+                child._prefix = "." + index;
+                index++; //维护第一层元素的索引值
+            }
+
+            for (var i = 0; i < child.length; i++) {
+                temp.unshift(child[i]);
+                if (child[i]) {
+                    child[i]._prefix = child._prefix + ":" + i;
+                }
+            }
+        } else {
+            var childType = typeNumber(child);
+            if (childType < 3) {
+                // 0, 1, 2
+                if (convert) {
+                    continue;
+                } else {
+                    child = null;
+                }
+            } else if (childType < 6) {
+                if (lastText && convert) {
+                    //false模式下不进行合并与转换
+                    lastText.text += child;
+                    continue;
+                }
+                // child = child + "";
+                if (convert) {
+                    index++;
+                    child = {
+                        type: "#text",
+                        text: child + "",
+                        vtype: 0
+                    };
+                }
+                lastText = child;
+            } else {
+                if (!child._prefix) {
+                    child._prefix = "." + index;
+                    index++;
+                }
+                lastText = false;
+            }
+            children.push(child);
+        }
+    }
+    return children;
+}
+function hasIteractor(a) {
+    return a && a["@@iterator"] && isFn(a["@@iterator"]);
+}
+function fixIteractor(a) {
+    var iterator = a["@@iterator"].call(a),
+        step = void 0,
+        ret = [];
+    while (!(step = iterator.next()).done) {
+        ret.push(step.value);
+    }
+    return ret;
 }
 
 function cloneElement(vnode, props) {
@@ -427,11 +449,17 @@ var Children = {
         var ret = [];
         _flattenChildren(children, false).forEach(function (el, index) {
             el = callback.call(context, el, index);
-            if (el && el.vtype) {
-                var key = el.key == null ? "." + index : ".$" + el.key;
+            if (el === null) {
+                return;
+            }
+            if (el.vtype) {
+                var key = el.key == null ? el._prefix : el._prefix.indexOf(":") === "-1" ? ".$" + el.key : (el._prefix + "$" + el.key).replace(/\d+\$/, "$");
+
                 ret.push(cloneElement(el, { key: key }));
-            } else if (el) {
+            } else if (el.type) {
                 ret.push(Object.assign({}, el));
+            } else {
+                ret.push(el);
             }
         });
         return ret;
