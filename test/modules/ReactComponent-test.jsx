@@ -46,4 +46,162 @@ describe("ReactComponent", function() {
             ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
         ).toBe(1);
     });
+
+    it("should warn when children are mutated during update", () => {
+
+        class Wrapper extends React.Component {
+            componentDidMount() {
+                this.props.children[1] = <p key={1} />; // Mutation is illegal
+                this.forceUpdate();
+            }
+
+            render() {
+                return <div>{this.props.children}</div>;
+            }
+        }
+
+        var instance = ReactTestUtils.renderIntoDocument(
+            <Wrapper>
+                <span key={0} />
+                <span key={1} />
+                <span key={2} />
+            </Wrapper>
+        );
+        expect(
+            ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
+        ).toBe(1);
+    });
+
+    it('should support refs on owned components', () => {
+    var innerObj = {};
+    var outerObj = {};
+
+    class Wrapper extends React.Component {
+      getObject = () => {
+        return this.props.object;
+      };
+
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    class Component extends React.Component {
+      render() {
+        var inner = <Wrapper object={innerObj} ref="inner" />;
+        var outer = <Wrapper object={outerObj} ref="outer">{inner}</Wrapper>;
+        return outer;
+      }
+
+      componentDidMount() {
+        expect(this.refs.inner.getObject()).toEqual(innerObj);
+        expect(this.refs.outer.getObject()).toEqual(outerObj);
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Component />);
+  });
+
+  it('should not have refs on unmounted components', () => {
+    class Parent extends React.Component {
+      render() {
+        return <Child><div ref="test" /></Child>;
+      }
+
+      componentDidMount() {
+        expect(this.refs && this.refs.test).toEqual(undefined);
+      }
+    }
+
+    class Child extends React.Component {
+      render() {
+        return <div />;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Parent child={<span />} />);
+  });
+
+  it('should support new-style refs', () => {
+    var innerObj = {};
+    var outerObj = {};
+
+    class Wrapper extends React.Component {
+      getObject = () => {
+        return this.props.object;
+      };
+
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    var mounted = false;
+
+    class Component extends React.Component {
+      render() {
+        var inner = (
+          <Wrapper object={innerObj} ref={c => (this.innerRef = c)} />
+        );
+        var outer = (
+          <Wrapper object={outerObj} ref={c => (this.outerRef = c)}>
+            {inner}
+          </Wrapper>
+        );
+        return outer;
+      }
+
+      componentDidMount() {
+        expect(this.innerRef.getObject()).toEqual(innerObj);
+        expect(this.outerRef.getObject()).toEqual(outerObj);
+        mounted = true;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Component />);
+    expect(mounted).toBe(true);
+  });
+
+  it('should support new-style refs with mixed-up owners', () => {
+    class Wrapper extends React.Component {
+      getTitle = () => {
+        return this.props.title;
+      };
+
+      render() {
+        return this.props.getContent();
+      }
+    }
+
+    var mounted = false;
+
+    class Component extends React.Component {
+      getInner = () => {
+        // (With old-style refs, it's impossible to get a ref to this div
+        // because Wrapper is the current owner when this function is called.)
+        return <div className="inner" ref={c => (this.innerRef = c)} />;
+      };
+
+      render() {
+        return (
+          <Wrapper
+            title="wrapper"
+            ref={c => (this.wrapperRef = c)}
+            getContent={this.getInner}
+          />
+        );
+      }
+
+      componentDidMount() {
+        // Check .props.title to make sure we got the right elements back
+        expect(this.wrapperRef.getTitle()).toBe('wrapper');
+        expect(ReactDOM.findDOMNode(this.innerRef).className).toBe('inner');
+        mounted = true;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Component />);
+    expect(mounted).toBe(true);
+  });
+
 });
