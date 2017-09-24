@@ -115,13 +115,10 @@ options.enqueueUpdate = function(instance) {
  */
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
-        throw new Error(
-            `${vnode}必须为组件或元素节点, 但现在你的类型却是${Object.prototype.toString.call(vnode)}`
-        );
+        throw  `ReactDOM.render的第一个参数错误`; // eslint-disable-line
     }
     if (!(container && container.getElementsByTagName)) {
-    console.log(`${container}必须为文档或元素节点`); // eslint-disable-line
-        return;
+        throw  `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
     let mountQueue = [];
     let lastVnode = container.__component;

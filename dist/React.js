@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-09-23
+ * by 司徒正美 Copyright 2017-09-24
  * IE9+
  */
 
@@ -1945,11 +1945,10 @@ options.enqueueUpdate = function (instance) {
  */
 function renderByAnu(vnode, container, callback, parentContext) {
     if (!isValidElement(vnode)) {
-        throw new Error(vnode + "\u5FC5\u987B\u4E3A\u7EC4\u4EF6\u6216\u5143\u7D20\u8282\u70B9, \u4F46\u73B0\u5728\u4F60\u7684\u7C7B\u578B\u5374\u662F" + Object.prototype.toString.call(vnode));
+        throw "ReactDOM.render\u7684\u7B2C\u4E00\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
     }
     if (!(container && container.getElementsByTagName)) {
-        console.log(container + "\u5FC5\u987B\u4E3A\u6587\u6863\u6216\u5143\u7D20\u8282\u70B9"); // eslint-disable-line
-        return;
+        throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
     }
     var mountQueue = [];
     var lastVnode = container.__component;
