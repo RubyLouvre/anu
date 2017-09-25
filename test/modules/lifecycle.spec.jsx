@@ -398,7 +398,7 @@ describe("生命周期例子", function() {
     expect(list.join("-")).toBe("333-444-555-666-777");
     expect(div.textContent || div.innerText).toBe("444");
   });
-  
+
   it("ReactDOM的回调总在最后", async () => {
     var list = [];
     class App extends React.Component {

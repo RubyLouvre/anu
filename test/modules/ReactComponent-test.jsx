@@ -203,5 +203,102 @@ describe("ReactComponent", function() {
     ReactTestUtils.renderIntoDocument(<Component />);
     expect(mounted).toBe(true);
   });
+  it('should call refs at the correct time', () => {
+    return
+    var log = [];
 
+    class Inner extends React.Component {
+      render() {
+        log.push(`inner ${this.props.id} render`);
+        return <div />;
+      }
+
+      componentDidMount() {
+        log.push(`inner ${this.props.id} componentDidMount`);
+      }
+
+      componentDidUpdate() {
+        log.push(`inner ${this.props.id} componentDidUpdate`);
+      }
+
+      componentWillUnmount() {
+        log.push(`inner ${this.props.id} componentWillUnmount`);
+      }
+    }
+
+    class Outer extends React.Component {
+      render() {
+        return (
+          <div>
+            <Inner
+              id={1}
+              ref={c => {
+                log.push(`ref 1 got ${c ? `instance ${c.props.id}` : 'null'}`);
+              }}
+            />
+            <Inner
+              id={2}
+              ref={c => {
+                log.push(`ref 2 got ${c ? `instance ${c.props.id}` : 'null'}`);
+              }}
+            />
+          </div>
+        );
+      }
+
+      componentDidMount() {
+        log.push('outer componentDidMount');
+      }
+
+      componentDidUpdate() {
+        log.push('outer componentDidUpdate');
+      }
+
+      componentWillUnmount() {
+        log.push('outer componentWillUnmount');
+      }
+    }
+
+    // mount, update, unmount
+    var el = document.createElement('div');
+    log.push('start mount');
+    ReactDOM.render(<Outer />, el);
+    log.push('start update');
+    ReactDOM.render(<Outer />, el);
+    log.push('start unmount');
+    ReactDOM.unmountComponentAtNode(el);
+
+    /* eslint-disable indent */
+    expect(log).toEqual([
+      'start mount',
+      'inner 1 render',
+      'inner 2 render',
+      'inner 1 componentDidMount',
+      'ref 1 got instance 1',
+      'inner 2 componentDidMount',
+      'ref 2 got instance 2',
+      'outer componentDidMount',
+      'start update',
+   
+      
+            // Stack resets refs before rendering
+            'ref 1 got null',
+            'inner 1 render',
+            'ref 2 got null',
+            'inner 2 render',
+        
+      'inner 1 componentDidUpdate',
+      'ref 1 got instance 1',
+      'inner 2 componentDidUpdate',
+      'ref 2 got instance 2',
+      'outer componentDidUpdate',
+      'start unmount',
+      'outer componentWillUnmount',
+      'ref 1 got null',
+      'inner 1 componentWillUnmount',
+      'ref 2 got null',
+      'inner 2 componentWillUnmount',
+    ]);
+    /* eslint-enable indent */
+  });
 });

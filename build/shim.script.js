@@ -17,9 +17,9 @@ var text2 = str
     .replace(/Object\.freeze/g, "extend")
     .replace(/\/\/freeze_start([\s\S]+?)freeze_end/, "");
 
-//fs.writeFileSync(dir2, text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../draft/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+fs.writeFileSync(dir2, text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../draft/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 //fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 //fs.writeFileSync( path.join(__dirname, "../../yo-router/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
@@ -43,6 +43,6 @@ var text3 = str
     .replace(/\/\/freeze_start([\s\S]+?)freeze_end/, "");
 
 fs.writeFileSync(dir3, text3, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/ReactSelection.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/ReactSelection.js"), text2, { encoding: "utf8" });
 
 console.log("对ReactSelection瘦身完毕");

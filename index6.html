@@ -4,39 +4,71 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./test/react.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react-dom.js"></script>-->
+ <script type='text/javascript' src="./dist/React.js"></script>
+<!--<script type='text/javascript' src="./test/react.js"></script>
+<script type='text/javascript' src="./test/react-dom.js"></script>-->
+<!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
     
   <script type='text/babel'>
   var s
   window.onload = function(){
    
-    var Outer = React.createClass({
-      childContextTypes: {
-        className: React.PropTypes.string,
-      },
-      getChildContext() {
-        return {className: 'foo'};
-      },
-      render() {
-        return <Foo />;
-      },
+    var list = []
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                path: "111"
+            };
+        }
+
+        render() {
+            console.log('render ' + this.state.path)
+            return <div>
+                <span
+                    id="click2time"
+                    onClick={this
+                    .onClick
+                    .bind(this)}>{this.state.path}</span>
+            </div>;
+        }
+
+        onClick() {
+            this
+                .setState({
+                    path: 'click'
+                }, function () {
+                    console.log('click....')
+                })
+            this.setState({
+                path: 'click2'
+            }, function () {
+                console.log('click2....')
+            })
+        }
+        componentWillUpdate() {
+            console.log('will update')
+        }
+        componentDidUpdate() {
+            console.log('did update')
+        }
+    }
+
+
+    ReactDOM.render(<App />, document.body, function() {
+      console.log("ReactDOM cb");
     });
-    var Foo = React.createClass({
-      contextTypes: {
-        className: React.PropTypes.string,
-      },
-      getInitialState() {
-        console.log(this.context,{className: this.context.className})
-        return {className: this.context.className};
-      },
-      render() {
-        return <span className={this.state.className} />;
-      },
-    });
-    React.render(<Outer/> , document.body)
+    
+
+        setTimeout(function(){
+          //console.log(list.join("\n"))
+        },3000)
+
+
+
+
+   // React.render(<Outer/> , document.body)
  
 
 

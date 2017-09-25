@@ -3,7 +3,7 @@ import React from 'dist/React'
 import {SyntheticEvent, addEvent} from 'src/event'
 import {DOMElement} from 'src/browser'
 
-describe('ReactDOM.render返回根组件的实例', function () {
+describe('事件系统模块', function () {
     this.timeout(200000);
     before(async() => {
         await beforeHook();
