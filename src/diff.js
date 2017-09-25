@@ -236,7 +236,7 @@ function genMountElement(vnode, type, prevRendered, ns) {
         return prevRendered;
     } else {
         vnode.ns = vnode.ns || ns || getNs(type) || null;
-        if (vnode.ns) {
+        if (vnode.ns && type.toLowerCase() !== "foreignobject") {
             addNS(vnode);
         }
         let dom = createDOMElement(vnode);
@@ -724,7 +724,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                     }
                 }
             }
-            dom = mountVnode(el, context, null, queue);
+            dom = mountVnode(el, context, null, queue, ns);
         }
 
         ref = childNodes[index];
