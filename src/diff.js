@@ -191,8 +191,8 @@ let patchStrategy = {
     14: updateStateless
 };
 
-export function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
+export function mountVnode(vnode, context, prevRendered, mountQueue, ns) {
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue, ns);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -218,11 +218,11 @@ function addNS(vnode) {
     }
 }
 
-function genMountElement(vnode, type, prevRendered) {
+function genMountElement(vnode, type, prevRendered, ns) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        vnode.ns = !vnode.ns ? getNs(type) : vnode.ns;
+        vnode.ns = vnode.ns || ns || getNs(type) || null;
         if (vnode.ns) {
             addNS(vnode);
         }
@@ -237,9 +237,9 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, context, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue, ns) {
     let { type, props, ref } = vnode;
-    let dom = genMountElement(vnode, type, prevRendered);
+    let dom = genMountElement(vnode, type, prevRendered, ns);
 
     vnode._hostNode = dom;
 
@@ -701,7 +701,22 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 }
             }
         } else {
-            dom = mountVnode(el, context, null, queue);
+            let ns;
+
+            if (lastVnode._hostNode) {
+                let node = lastVnode._hostNode;
+
+                ns = node.namespaceURI;
+
+                while(!ns && (node = node.parentNode)) {
+                    ns = node.namespaceURI;
+
+                    if (ns) {
+                        break;
+                    }
+                }
+            }
+            dom = mountVnode(el, context, null, queue, ns);
         }
 
         ref = childNodes[index];
