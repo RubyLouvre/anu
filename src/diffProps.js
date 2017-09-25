@@ -146,7 +146,7 @@ function getSVGAttributeName(name) {
  * @param {any} lastVnode
  */
 export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    let isSVG = vnode.ns === NAMESPACE.svg;
+    let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
     for (let name in nextProps) {

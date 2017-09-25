@@ -4,49 +4,28 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+   <script type='text/javascript' src="./dist/React.js"></script>
 
-   <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
     
   <script type='text/babel'>
   var s
   window.onload = function(){
- var assertions = 0
-    class Inner extends React.Component {
-      render() {
-        return <span />;
-      }
+    function Test() {
+            return (
+                <svg className="icon-twitter" width="16px" height="16px">
+                    <use xlinkHref="#twitter" xlinkRole="#aaa" id='aaa'/>
+                </svg>
+            )
+        }
 
-      componentDidMount() {
-        console.log(ReactDOM.findDOMNode(this))
-        assertions++;
-      }
-
-      componentWillUnmount() {
-        console.log(ReactDOM.findDOMNode(this), 'unmount')
-        assertions++;
-      }
-    }
-
-    class Wrapper extends React.Component {
-      render() {
-        return this.props.showInner ? <Inner /> : null;
-      }
-    }
-
-    var el = document.createElement('div');
-    var component;
-
-    component = ReactDOM.render(<Wrapper showInner={true} />, el);
-    console.log(ReactDOM.findDOMNode(component), '1')
-
-    component = ReactDOM.render(<Wrapper showInner={false} />, el);
-    console.log(ReactDOM.findDOMNode(component),'2')
-
-    component = ReactDOM.render(<Wrapper showInner={true} />, el);
-    console.log(ReactDOM.findDOMNode(component), '3')
+        var div = document.body
+        ReactDOM.render(<Test/>,div)
+        var el = div.getElementsByTagName('use')
+       console.log( el.length )
+       console.log(el[0].getAttribute('xlink:href'))
  
   }
   </script>

@@ -11,7 +11,9 @@ export var NAMESPACE = {
     svg: "http://www.w3.org/2000/svg",
     xmlns: "http://www.w3.org/2000/xmlns/",
     xlink: "http://www.w3.org/1999/xlink",
-    math: "http://www.w3.org/1998/Math/MathML"
+    math: "http://www.w3.org/1998/Math/MathML",
+    xhtml: "http://www.w3.org/1999/xhtml",
+    html: "https://www.w3.org/TR/html4/"
 };
 
 var fn = (DOMElement.prototype = {
@@ -91,7 +93,7 @@ export var msie =
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
-export function createDOMElement(vnode) {
+export function createDOMElement(vnode, vparent) {
     var type = vnode.type;
     if (type === "#text") {
     //只重复利用文本节点
@@ -107,27 +109,25 @@ export function createDOMElement(vnode) {
         return document.createComment(vnode.text);
     }
 
+    var check = vparent || vnode;
+    var ns = check.namespaceURI;
+    if (type === "svg") {
+        ns = NAMESPACE.svg;
+    } else if (type === "math") {
+        ns = NAMESPACE.math;
+    } else if (
+        check.type.toLowerCase() === "foreignobject" ||
+    !ns ||
+    ns === NAMESPACE.html ||
+    ns === NAMESPACE.xhtml
+    ) {
+        return document.createElement(type);
+    }
     try {
-        if (vnode.ns) {
-            return document.createElementNS(vnode.ns, type);
-        }
+        vnode.namespaceURI = ns;
+        return document.createElementNS(ns, type);
     //eslint-disable-next-line
-  } catch (e) {}
-    return document.createElement(type);
-}
-// https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
-var rmathTags = /^m/;
-
-var namespaceMap = oneObject("svg", NAMESPACE.svg);
-namespaceMap.semantics = NAMESPACE.math;
-// http://demo.yanue.net/HTML5element/
-"meter,menu,map,meta,mark".replace(/\w+/g, function(tag) {
-    namespaceMap[tag] = null;
-});
-export function getNs(type) {
-    if (namespaceMap[type] !== void 666) {
-        return namespaceMap[type];
-    } else {
-        return (namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null);
+  } catch (e) {
+        return document.createElement(type);
     }
 }
