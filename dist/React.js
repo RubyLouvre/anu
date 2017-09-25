@@ -480,6 +480,10 @@ var Children = {
         return _flattenChildren(children, false).length;
     },
     map: function map(children, callback, context) {
+        if (children === null || children === void 0) {
+            return children;
+        }
+
         var ret = [];
         _flattenChildren(children, "").forEach(function (old, index) {
             var el = callback.call(context, old, index);
@@ -1214,7 +1218,7 @@ function createClass(spec) {
             if (name !== "displayName") {
                 for (var i in props) {
                     if (!isFn(props[i])) {
-                        console.error(i + " in " + name + " must be a function");
+                        console.error(i + " in " + name + " must be a function"); // eslint-disable-line
                     }
                 }
             }
@@ -1990,7 +1994,6 @@ function renderByAnu(vnode, container, callback, parentContext) {
 function genVnodes(vnode, container, context, mountQueue) {
     var nodes = getNodes(container);
     var prevRendered = null;
-    //eslint-disable-next-line
     for (var i = 0, el; el = nodes[i++];) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             prevRendered = el;
@@ -2022,8 +2025,8 @@ var patchStrategy = {
     14: updateComponent
 };
 
-function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
+function mountVnode(vnode, context, prevRendered, mountQueue, ns) {
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue, ns);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -2046,11 +2049,11 @@ function addNS(vnode) {
     }
 }
 
-function genMountElement(vnode, type, prevRendered) {
+function genMountElement(vnode, type, prevRendered, ns) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        vnode.ns = !vnode.ns ? getNs(type) : vnode.ns;
+        vnode.ns = vnode.ns || ns || getNs(type) || null;
         if (vnode.ns) {
             addNS(vnode);
         }
@@ -2065,12 +2068,12 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, context, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue, ns) {
     var type = vnode.type,
         props = vnode.props,
         ref = vnode.ref;
 
-    var dom = genMountElement(vnode, type, prevRendered);
+    var dom = genMountElement(vnode, type, prevRendered, ns);
 
     vnode._hostNode = dom;
 
@@ -2334,7 +2337,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
-    //eslint-disable-next-line
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.executor ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2492,6 +2494,21 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 }
             }
         } else {
+            var ns = void 0;
+
+            if (lastVnode._hostNode) {
+                var node = lastVnode._hostNode;
+
+                ns = node.namespaceURI;
+
+                while (!ns && (node = node.parentNode)) {
+                    ns = node.namespaceURI;
+
+                    if (ns) {
+                        break;
+                    }
+                }
+            }
             dom = mountVnode(el, context, null, queue);
         }
 
