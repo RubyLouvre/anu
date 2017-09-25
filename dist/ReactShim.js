@@ -592,6 +592,10 @@ var Children = {
         return _flattenChildren(children, false).length;
     },
     map: function map(children, callback, context) {
+        if (children === null || children === void 0) {
+            return children;
+        }
+
         var ret = [];
         _flattenChildren(children, "").forEach(function (old, index) {
             var el = callback.call(context, old, index);
@@ -780,6 +784,110 @@ function getNs(type) {
     } else {
         return namespaceMap[type] = rmathTags.test(type) ? NAMESPACE.math : null;
     }
+}
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+function shallowEqual(objA, objB) {
+    if (Object.is(objA, objB)) {
+        return true;
+    }
+    //确保objA, objB都是对象
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+
+    // Test for A's keys different from B.
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function PureComponent(props, context) {
+    Component.call(this, props, context);
+}
+
+var fn$1 = inherit(PureComponent, Component);
+
+fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
+    var a = shallowEqual(this.props, nextProps);
+    var b = shallowEqual(this.state, nextState);
+    return !a || !b;
+};
+fn$1.isPureComponent = true;
+
+var rnumber = /^-?\d+(\.\d+)?$/;
+/**
+     * 为元素样子设置样式
+     * 
+     * @export
+     * @param {any} dom 
+     * @param {any} oldStyle 
+     * @param {any} newStyle 
+     */
+function patchStyle(dom, oldStyle, newStyle) {
+    if (oldStyle === newStyle) {
+        return;
+    }
+
+    for (var name in newStyle) {
+        var val = newStyle[name];
+        if (oldStyle[name] !== val) {
+            name = cssName(name, dom);
+            if (val !== 0 && !val) {
+                val = ""; //清除样式
+            } else if (rnumber.test(val) && !cssNumber[name]) {
+                val = val + "px"; //添加单位
+            }
+            try {
+                //node.style.width = NaN;node.style.width = 'xxxxxxx';
+                //node.style.width = undefine 在旧式IE下会抛异常
+                dom.style[name] = val; //应用样式
+            } catch (e) {
+                console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
+            }
+        }
+    }
+    // 如果旧样式存在，但新样式已经去掉
+    for (var _name in oldStyle) {
+        if (!(_name in newStyle)) {
+            dom.style[_name] = ""; //清除样式
+        }
+    }
+}
+
+var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
+
+//var testStyle = document.documentElement.style
+var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
+var cssMap = oneObject("float", "cssFloat");
+
+/**
+ * 转换成当前浏览器可用的样式名
+ * 
+ * @param {any} name 
+ * @returns 
+ */
+function cssName(name, dom) {
+    if (cssMap[name]) {
+        return cssMap[name];
+    }
+    var host = dom && dom.style || {};
+    for (var i = 0, n = prefixes.length; i < n; i++) {
+        var camelCase = camelize(prefixes[i] + name);
+        if (camelCase in host) {
+            return cssMap[name] = camelCase;
+        }
+    }
+    return null;
 }
 
 var globalEvents = {};
@@ -1072,110 +1180,6 @@ var eventProto = SyntheticEvent.prototype = {
 };
 /* istanbul ignore next  */
 
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-function shallowEqual(objA, objB) {
-    if (Object.is(objA, objB)) {
-        return true;
-    }
-    //确保objA, objB都是对象
-    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-        return false;
-    }
-    var keysA = Object.keys(objA);
-    var keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) {
-        return false;
-    }
-
-    // Test for A's keys different from B.
-    for (var i = 0; i < keysA.length; i++) {
-        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-
-var fn$1 = inherit(PureComponent, Component);
-
-fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
-};
-fn$1.isPureComponent = true;
-
-var rnumber = /^-?\d+(\.\d+)?$/;
-/**
-     * 为元素样子设置样式
-     * 
-     * @export
-     * @param {any} dom 
-     * @param {any} oldStyle 
-     * @param {any} newStyle 
-     */
-function patchStyle(dom, oldStyle, newStyle) {
-    if (oldStyle === newStyle) {
-        return;
-    }
-
-    for (var name in newStyle) {
-        var val = newStyle[name];
-        if (oldStyle[name] !== val) {
-            name = cssName(name, dom);
-            if (val !== 0 && !val) {
-                val = ""; //清除样式
-            } else if (rnumber.test(val) && !cssNumber[name]) {
-                val = val + "px"; //添加单位
-            }
-            try {
-                //node.style.width = NaN;node.style.width = 'xxxxxxx';
-                //node.style.width = undefine 在旧式IE下会抛异常
-                dom.style[name] = val; //应用样式
-            } catch (e) {
-                console.log("dom.style[" + name + "] = " + val + "throw error"); // eslint-disable-line
-            }
-        }
-    }
-    // 如果旧样式存在，但新样式已经去掉
-    for (var _name in oldStyle) {
-        if (!(_name in newStyle)) {
-            dom.style[_name] = ""; //清除样式
-        }
-    }
-}
-
-var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-
-//var testStyle = document.documentElement.style
-var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-var cssMap = oneObject("float", "cssFloat");
-
-/**
- * 转换成当前浏览器可用的样式名
- * 
- * @param {any} name 
- * @returns 
- */
-function cssName(name, dom) {
-    if (cssMap[name]) {
-        return cssMap[name];
-    }
-    var host = dom && dom.style || {};
-    for (var i = 0, n = prefixes.length; i < n; i++) {
-        var camelCase = camelize(prefixes[i] + name);
-        if (camelCase in host) {
-            return cssMap[name] = camelCase;
-        }
-    }
-    return null;
-}
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -1831,7 +1835,6 @@ function renderByAnu(vnode, container, callback, parentContext) {
 function genVnodes(vnode, container, context, mountQueue) {
     var nodes = getNodes(container);
     var prevRendered = null;
-    //eslint-disable-next-line
     for (var i = 0, el; el = nodes[i++];) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             prevRendered = el;
@@ -1863,8 +1866,8 @@ var patchStrategy = {
     14: updateComponent
 };
 
-function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
+function mountVnode(vnode, context, prevRendered, mountQueue, ns) {
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue, ns);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -1887,11 +1890,11 @@ function addNS(vnode) {
     }
 }
 
-function genMountElement(vnode, type, prevRendered) {
+function genMountElement(vnode, type, prevRendered, ns) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        vnode.ns = !vnode.ns ? getNs(type) : vnode.ns;
+        vnode.ns = vnode.ns || ns || getNs(type) || null;
         if (vnode.ns) {
             addNS(vnode);
         }
@@ -1906,12 +1909,12 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, context, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue, ns) {
     var type = vnode.type,
         props = vnode.props,
         ref = vnode.ref;
 
-    var dom = genMountElement(vnode, type, prevRendered);
+    var dom = genMountElement(vnode, type, prevRendered, ns);
 
     vnode._hostNode = dom;
 
@@ -2175,7 +2178,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
-    //eslint-disable-next-line
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.executor ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2333,6 +2335,21 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 }
             }
         } else {
+            var ns = void 0;
+
+            if (lastVnode._hostNode) {
+                var node = lastVnode._hostNode;
+
+                ns = node.namespaceURI;
+
+                while (!ns && (node = node.parentNode)) {
+                    ns = node.namespaceURI;
+
+                    if (ns) {
+                        break;
+                    }
+                }
+            }
             dom = mountVnode(el, context, null, queue);
         }
 

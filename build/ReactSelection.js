@@ -406,7 +406,7 @@ function getSelectionInterface() {
 }
 var newOptions = {
     beforePatch: getSelectionInterface,
-    afterPatch: restoreSelectionInterface,
+    afterPatch: restoreSelectionInterface
 };
 function fixOptions(obj, name, oldFn, fn) {
     if (oldFn) {

@@ -1,7 +1,6 @@
 import { Component } from "./Component";
 import { options } from "./util";
 import { Children } from "./Children";
-import * as eventSystem from "./event";
 import { win as window } from "./browser";
 import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";

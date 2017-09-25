@@ -173,8 +173,7 @@ function renderByAnu(vnode, container, callback, parentContext) {
 function genVnodes(vnode, container, context, mountQueue) {
     let nodes = getNodes(container);
     let prevRendered = null;
-    //eslint-disable-next-line
-  for (var i = 0, el; (el = nodes[i++]); ) {
+    for (var i = 0, el; (el = nodes[i++]); ) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             prevRendered = el;
         } else {
@@ -205,8 +204,8 @@ let patchStrategy = {
     14: updateComponent
 };
 
-export function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
+export function mountVnode(vnode, context, prevRendered, mountQueue, ns) {
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue, ns);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -232,11 +231,11 @@ function addNS(vnode) {
     }
 }
 
-function genMountElement(vnode, type, prevRendered) {
+function genMountElement(vnode, type, prevRendered, ns) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        vnode.ns = !vnode.ns ? getNs(type) : vnode.ns;
+        vnode.ns = vnode.ns || ns || getNs(type) || null;
         if (vnode.ns) {
             addNS(vnode);
         }
@@ -251,9 +250,9 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, context, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue, ns) {
     let { type, props, ref } = vnode;
-    let dom = genMountElement(vnode, type, prevRendered);
+    let dom = genMountElement(vnode, type, prevRendered, ns);
 
     vnode._hostNode = dom;
 
@@ -540,8 +539,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     let dom = node;
-    //eslint-disable-next-line
-  if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         let innerMountQueue = mountQueue.executor
             ? mountQueue
@@ -711,6 +709,21 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 }
             }
         } else {
+            let ns;
+            
+            if (lastVnode._hostNode) {
+                let node = lastVnode._hostNode;
+
+                ns = node.namespaceURI;
+
+                while(!ns && (node = node.parentNode)) {
+                    ns = node.namespaceURI;
+
+                    if (ns) {
+                        break;
+                    }
+                }
+            }
             dom = mountVnode(el, context, null, queue);
         }
 

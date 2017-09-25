@@ -38,9 +38,8 @@ export default {
                 {
                     test: "VERSION", 
                     // string or function to replaced with
-                    replace: json.version,
-                },
-     
+                    replace: json.version
+                }
             ]
         }),
         filesize()

@@ -10,7 +10,7 @@ function setSelectValue(e) {
     if (e.propertyName === "value" && !noCheck) {
         syncValueByOptionValue(e.srcElement);
     }
-};
+}
 
 function syncValueByOptionValue(dom) {
     let idx = dom.selectedIndex,
@@ -25,7 +25,7 @@ function syncValueByOptionValue(dom) {
             : option.text;
     }
 
-};
+}
 
 var fixIEChangeHandle = createHandle("change", function (e) {
     var dom = e.srcElement;
@@ -80,7 +80,7 @@ if (msie < 9) {
                 textNode.deleteData(0, 1);
             }
         }
-    }
+    };
 
     String("focus,blur").replace(/\w+/g, function (type) {
         eventHooks[type] = function (dom, name) {
@@ -110,16 +110,16 @@ if (msie < 9) {
 
     Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" +
         "el, click",
-        function (event) {
-            if (!("pageX" in event)) {
-                var doc = event.target.ownerDocument || document;
-                var box = doc.compatMode === "BackCompat"
-                    ? doc.body
-                    : doc.documentElement;
-                event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
-                event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
-            }
-        }));
+    function (event) {
+        if (!("pageX" in event)) {
+            var doc = event.target.ownerDocument || document;
+            var box = doc.compatMode === "BackCompat"
+                ? doc.body
+                : doc.documentElement;
+            event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
+            event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
+        }
+    }));
 
     Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
         /* istanbul ignore next  */

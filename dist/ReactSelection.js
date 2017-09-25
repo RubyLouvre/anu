@@ -1,6 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-09-25
- * IE9+
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-09-25
  */
 
 (function (global, factory) {
@@ -480,6 +479,10 @@ var Children = {
         return _flattenChildren(children, false).length;
     },
     map: function map(children, callback, context) {
+        if (children === null || children === void 0) {
+            return children;
+        }
+
         var ret = [];
         _flattenChildren(children, "").forEach(function (old, index) {
             var el = callback.call(context, old, index);
@@ -588,7 +591,7 @@ try {
     };
 }
 
-var inBrowser = b;
+
 var win = w;
 
 var document = w.document || fakeDoc;
@@ -1214,7 +1217,7 @@ function createClass(spec) {
             if (name !== "displayName") {
                 for (var i in props) {
                     if (!isFn(props[i])) {
-                        console.error(i + " in " + name + " must be a function");
+                        console.error(i + " in " + name + " must be a function"); // eslint-disable-line
                     }
                 }
             }
@@ -1990,7 +1993,6 @@ function renderByAnu(vnode, container, callback, parentContext) {
 function genVnodes(vnode, container, context, mountQueue) {
     var nodes = getNodes(container);
     var prevRendered = null;
-    //eslint-disable-next-line
     for (var i = 0, el; el = nodes[i++];) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             prevRendered = el;
@@ -2022,8 +2024,8 @@ var patchStrategy = {
     14: updateComponent
 };
 
-function mountVnode(vnode, context, prevRendered, mountQueue) {
-    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue);
+function mountVnode(vnode, context, prevRendered, mountQueue, ns) {
+    return patchStrategy[vnode.vtype](vnode, context, prevRendered, mountQueue, ns);
 }
 
 function mountText(vnode, context, prevRendered) {
@@ -2046,11 +2048,11 @@ function addNS(vnode) {
     }
 }
 
-function genMountElement(vnode, type, prevRendered) {
+function genMountElement(vnode, type, prevRendered, ns) {
     if (prevRendered && toLowerCase(prevRendered.nodeName) === type) {
         return prevRendered;
     } else {
-        vnode.ns = !vnode.ns ? getNs(type) : vnode.ns;
+        vnode.ns = vnode.ns || ns || getNs(type) || null;
         if (vnode.ns) {
             addNS(vnode);
         }
@@ -2065,12 +2067,12 @@ function genMountElement(vnode, type, prevRendered) {
     }
 }
 
-function mountElement(vnode, context, prevRendered, mountQueue) {
+function mountElement(vnode, context, prevRendered, mountQueue, ns) {
     var type = vnode.type,
         props = vnode.props,
         ref = vnode.ref;
 
-    var dom = genMountElement(vnode, type, prevRendered);
+    var dom = genMountElement(vnode, type, prevRendered, ns);
 
     vnode._hostNode = dom;
 
@@ -2334,7 +2336,6 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node;
-    //eslint-disable-next-line
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         var innerMountQueue = mountQueue.executor ? mountQueue : nextVnode.vtype === 2 ? [] : mountQueue;
@@ -2492,6 +2493,21 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 }
             }
         } else {
+            var ns = void 0;
+
+            if (lastVnode._hostNode) {
+                var node = lastVnode._hostNode;
+
+                ns = node.namespaceURI;
+
+                while (!ns && (node = node.parentNode)) {
+                    ns = node.namespaceURI;
+
+                    if (ns) {
+                        break;
+                    }
+                }
+            }
             dom = mountVnode(el, context, null, queue);
         }
 
@@ -2537,6 +2553,124 @@ function insertDOM(parentNode, dom, ref) {
     }
 }
 
+//IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
+var noCheck = false;
+function setSelectValue(e) {
+    if (e.propertyName === "value" && !noCheck) {
+        syncValueByOptionValue(e.srcElement);
+    }
+}
+
+function syncValueByOptionValue(dom) {
+    var idx = dom.selectedIndex,
+        option = void 0,
+        attr = void 0;
+    if (idx > -1) {
+        //IE 下select.value不会改变
+        option = dom.options[idx];
+        attr = option.attributes.value;
+        dom.value = attr && attr.specified ? option.value : option.text;
+    }
+}
+
+var fixIEChangeHandle = createHandle("change", function (e) {
+    var dom = e.srcElement;
+    if (dom.type === "select-one") {
+        if (!dom.__bindFixValueFn) {
+            addEvent(dom, "propertychange", setSelectValue);
+            dom.__bindFixValueFn = true;
+        }
+        noCheck = true;
+        syncValueByOptionValue(dom);
+        noCheck = false;
+    }
+    if (e.type === "propertychange") {
+        return e.propertyName === "value";
+    }
+});
+
+var fixIEInputHandle = createHandle("input", function (e) {
+    return e.propertyName === "value";
+});
+
+var IEHandleFix = {
+    input: function input(dom) {
+        addEvent(dom, "propertychange", fixIEInputHandle);
+    },
+    change: function change(dom) {
+        //IE6-8, radio, checkbox的点击事件必须在失去焦点时才触发 select则需要做更多补丁工件
+        var mask = /radio|check/.test(dom.type) ? "click" : /text|password/.test(dom.type) ? "propertychange" : "change";
+        addEvent(dom, mask, fixIEChangeHandle);
+    },
+    submit: function submit(dom) {
+        if (dom.nodeName === "FORM") {
+            addEvent(dom, "submit", dispatchEvent);
+        }
+    }
+};
+
+if (msie < 9) {
+    actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
+        var oldhtml = lastProps[name] && lastProps[name].__html;
+        var html = val && val.__html;
+        if (html !== oldhtml) {
+            //IE8-会吃掉最前面的空白
+            dom.innerHTML = String.fromCharCode(0xFEFF) + html;
+            var textNode = dom.firstChild;
+            if (textNode.data.length === 1) {
+                dom.removeChild(textNode);
+            } else {
+                textNode.deleteData(0, 1);
+            }
+        }
+    };
+
+    String("focus,blur").replace(/\w+/g, function (type) {
+        eventHooks[type] = function (dom, name) {
+            var mark = "__" + name;
+            if (!dom[mark]) {
+                dom[mark] = true;
+                var mask = name === "focus" ? "focusin" : "focusout";
+                addEvent(dom, mask, function (e) {
+                    //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
+                    var tagName = e.srcElement.tagName;
+                    if (!tagName) {
+                        return;
+                    }
+                    // <body> #document
+                    var tag = toLowerCase(tagName);
+                    if (tag == "#document" || tag == "body") {
+                        return;
+                    }
+                    e.target = dom; //因此focusin事件的srcElement有问题，强行修正
+                    dispatchEvent(e, name, dom.parentNode);
+                });
+            }
+        };
+    });
+
+    Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
+        if (!("pageX" in event)) {
+            var doc = event.target.ownerDocument || document;
+            var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
+            event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
+            event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
+        }
+    }));
+
+    Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
+        /* istanbul ignore next  */
+        if (event.which == null && event.type.indexOf("key") === 0) {
+            /* istanbul ignore next  */
+            event.which = event.charCode != null ? event.charCode : event.keyCode;
+        }
+    }));
+
+    for (var i in IEHandleFix) {
+        eventHooks[i] = eventHooks[i + "capture"] = IEHandleFix[i];
+    }
+}
+
 var React = {
     version: "1.1.1",
     render: render,
@@ -2561,358 +2695,6 @@ var React = {
         return factory;
     }
 };
-
-function isInDocument(node) {
-    if (!inBrowser) {
-        return false;
-    }
-    return containsNode(document.documentElement, node);
-}
-function containsNode(a, b) {
-    if (b) {
-        while (b = b.parentNode) {
-            if (b === a) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-function focusNode(node) {
-    //如果此元素不可见，IE8会抛错
-    try {
-        node.focus();
-    } catch (e) {
-        // no catch
-    }
-}
-
-function getNodeTag(node) {
-    return node.nodeName ? node.nodeName.toLowerCase() : "";
-}
-
-function getActiveElement(doc) {
-    doc = doc || (inBrowser ? document : undefined);
-    if (typeof doc === "undefined") {
-        return null;
-    }
-    try {
-        return doc.activeElement || doc.body;
-    } catch (e) {
-        return doc.body;
-    }
-}
-/**
- * @ReactInputSelection: React input selection module. Based on Selection.js,
- * but modified to be suitable for react and has a couple of bug fixes (doesn"t
- * assume buttons have range selections allowed).
- * Input selection module for React.
- */
-var ReactInputSelection = {
-    hasSelectionCapabilities: function hasSelectionCapabilities(elem) {
-        var nodeName = getNodeTag(elem || {});
-        return nodeName && (nodeName === "input" && elem.type === "text" || nodeName === "textarea" || elem.contentEditable === "true");
-    },
-
-    getSelectionInformation: function getSelectionInformation() {
-        var focusedElem = getActiveElement();
-        var selectionRange = ReactInputSelection.hasSelectionCapabilities(focusedElem) ? ReactInputSelection.getSelection(focusedElem) : null;
-        return { focusedElem: focusedElem, selectionRange: selectionRange };
-    },
-    restoreSelection: function restoreSelection(lastInformation) {
-        var curFocusedElem = getActiveElement();
-        var priorFocusedElem = lastInformation.focusedElem;
-        var priorSelectionRange = lastInformation.selectionRange;
-
-        if (curFocusedElem && isInDocument(priorFocusedElem)) {
-            if (ReactInputSelection.hasSelectionCapabilities(priorFocusedElem)) {
-                ReactInputSelection.setSelection(priorFocusedElem, priorSelectionRange);
-            }
-            focusNode(priorFocusedElem);
-        }
-    },
-    getSelection: function getSelection(input) {
-        var selection;
-
-        if ("selectionStart" in input) {
-            // Modern browser with input or textarea.
-            selection = {
-                start: input.selectionStart,
-                end: input.selectionEnd
-            };
-        } else if (document.selection && getNodeTag(input) === "input") {
-            // IE8 input.
-            var range = document.selection.createRange();
-            // There can only be one selection per document in IE, so it must be in our
-            // element.
-            if (range.parentElement() === input) {
-                selection = {
-                    start: -range.moveStart("character", -input.value.length),
-                    end: -range.moveEnd("character", -input.value.length)
-                };
-            }
-        } else {
-            // Content editable or old IE textarea.
-            selection = ReactDOMSelection.getOffsets(input);
-        }
-
-        return selection || {
-            start: 0,
-            end: 0
-        };
-    },
-
-    setSelection: function setSelection(input, offsets) {
-        var start = offsets.start;
-        var end = offsets.end;
-        if (end === undefined) {
-            end = start;
-        }
-
-        if ("selectionStart" in input) {
-            input.selectionStart = start;
-            input.selectionEnd = Math.min(end, input.value.length);
-        } else if (document.selection && getNodeTag(input) === "input") {
-            var range = input.createTextRange();
-            range.collapse(true);
-            range.moveStart("character", start);
-            range.moveEnd("character", end - start);
-            range.select();
-        } else {
-            ReactDOMSelection.setOffsets(input, offsets);
-        }
-    }
-};
-
-function isCollapsed(anchorNode, anchorOffset, focusNode, focusOffset) {
-    return anchorNode === focusNode && anchorOffset === focusOffset;
-}
-
-function getIEOffsets(node) {
-    var selection = document.selection;
-    var selectedRange = selection.createRange();
-    var selectedLength = selectedRange.text.length;
-
-    // Duplicate selection so we can move range without breaking user selection.
-    var fromStart = selectedRange.duplicate();
-    fromStart.moveToElementText(node);
-    fromStart.setEndPoint("EndToStart", selectedRange);
-
-    var startOffset = fromStart.text.length;
-    var endOffset = startOffset + selectedLength;
-
-    return { start: startOffset, end: endOffset };
-}
-
-/**
- * @param {DOMElement} node
- * @return {?object}
- */
-function getModernOffsets(node) {
-    var selection = win.getSelection && win.getSelection();
-
-    if (!selection || selection.rangeCount === 0) {
-        return null;
-    }
-
-    var anchorNode = selection.anchorNode;
-    var anchorOffset = selection.anchorOffset;
-    var focusNode = selection.focusNode;
-    var focusOffset = selection.focusOffset;
-
-    var currentRange = selection.getRangeAt(0);
-
-    // In Firefox, range.startContainer and range.endContainer can be "anonymous
-    // divs", e.g. the up/down buttons on an <input type="number">. Anonymous divs
-    // do not seem to expose properties, triggering a "Permission denied error" if
-    // any of its properties are accessed. The only seemingly possible way to avoid
-    // erroring is to access a property that typically works for non-anonymous divs
-    // and catch any error that may otherwise arise. See
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=208427
-    try {
-        /* eslint-disable no-unused-expressions */
-        currentRange.startContainer.nodeType;
-        currentRange.endContainer.nodeType;
-        /* eslint-enable no-unused-expressions */
-    } catch (e) {
-        return null;
-    }
-
-    // If the node and offset values are the same, the selection is collapsed.
-    // `Selection.isCollapsed` is available natively, but IE sometimes gets this
-    // value wrong.
-    var isSelectionCollapsed = isCollapsed(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);
-
-    var rangeLength = isSelectionCollapsed ? 0 : currentRange.toString().length;
-
-    var tempRange = currentRange.cloneRange();
-    tempRange.selectNodeContents(node);
-    tempRange.setEnd(currentRange.startContainer, currentRange.startOffset);
-
-    var isTempRangeCollapsed = isCollapsed(tempRange.startContainer, tempRange.startOffset, tempRange.endContainer, tempRange.endOffset);
-
-    var start = isTempRangeCollapsed ? 0 : tempRange.toString().length;
-    var end = start + rangeLength;
-
-    // Detect whether the selection is backward.
-    var detectionRange = document.createRange();
-    detectionRange.setStart(anchorNode, anchorOffset);
-    detectionRange.setEnd(focusNode, focusOffset);
-    var isBackward = detectionRange.collapsed;
-
-    return {
-        start: isBackward ? end : start,
-        end: isBackward ? start : end
-    };
-}
-
-/**
- * @param {DOMElement|DOMTextNode} node
- * @param {object} offsets
- */
-function setIEOffsets(node, offsets) {
-    var range = document.selection.createRange().duplicate();
-    var start, end;
-
-    if (offsets.end === undefined) {
-        start = offsets.start;
-        end = start;
-    } else if (offsets.start > offsets.end) {
-        start = offsets.end;
-        end = offsets.start;
-    } else {
-        start = offsets.start;
-        end = offsets.end;
-    }
-
-    range.moveToElementText(node);
-    range.moveStart("character", start);
-    range.setEndPoint("EndToStart", range);
-    range.moveEnd("character", end - start);
-    range.select();
-}
-
-/**
- * In modern non-IE browsers, we can support both forward and backward
- * selections.
- *
- * Note: IE10+ supports the Selection object, but it does not support
- * the `extend` method, which means that even in modern IE, it"s not possible
- * to programmatically create a backward selection. Thus, for all IE
- * versions, we use the old IE API to create our selections.
- *
- * @param {DOMElement|DOMTextNode} node
- * @param {object} offsets
- */
-function setModernOffsets(node, offsets) {
-    if (!win.getSelection) {
-        return;
-    }
-
-    var selection = win.getSelection();
-    var length = node.textContent.length;
-    var start = Math.min(offsets.start, length);
-    var end = offsets.end === undefined ? start : Math.min(offsets.end, length);
-
-    // IE 11 uses modern selection, but doesn"t support the extend method. Flip
-    // backward selections, so we can set with a single range.
-    if (!selection.extend && start > end) {
-        var temp = end;
-        end = start;
-        start = temp;
-    }
-
-    var startMarker = getNodeForCharacterOffset(node, start);
-    var endMarker = getNodeForCharacterOffset(node, end);
-
-    if (startMarker && endMarker) {
-        var range = document.createRange();
-        range.setStart(startMarker.node, startMarker.offset);
-        selection.removeAllRanges();
-
-        if (start > end) {
-            selection.addRange(range);
-            selection.extend(endMarker.node, endMarker.offset);
-        } else {
-            range.setEnd(endMarker.node, endMarker.offset);
-            selection.addRange(range);
-        }
-    }
-}
-
-var useIEOffsets = inBrowser && "selection" in document && !("getSelection" in win);
-var ReactDOMSelection = {
-    getOffsets: useIEOffsets ? getIEOffsets : getModernOffsets,
-    setOffsets: useIEOffsets ? setIEOffsets : setModernOffsets
-};
-
-function getLeafNode(node) {
-    while (node && node.firstChild) {
-        node = node.firstChild;
-    }
-    return node;
-}
-
-function getSiblingNode(node) {
-    while (node) {
-        if (node.nextSibling) {
-            return node.nextSibling;
-        }
-        node = node.parentNode;
-    }
-}
-
-function getNodeForCharacterOffset(root, offset) {
-    var node = getLeafNode(root);
-    var nodeStart = 0;
-    var nodeEnd = 0;
-    while (node) {
-        if (node.nodeType === 3) {
-            nodeEnd = nodeStart + node.textContent.length;
-
-            if (nodeStart <= offset && nodeEnd >= offset) {
-                return {
-                    node: node,
-                    offset: offset - nodeStart
-                };
-            }
-            nodeStart = nodeEnd;
-        }
-        node = getLeafNode(getSiblingNode(node));
-    }
-}
-//重写options
-var priorSelectionInformation = {};
-function restoreSelectionInterface() {
-    ReactInputSelection.restoreSelection(priorSelectionInformation);
-}
-function getSelectionInterface() {
-    var a = ReactInputSelection.getSelectionInformation();
-    if (a.focusedElem && a.selectionRange) {
-        priorSelectionInformation = a;
-    } else {
-        priorSelectionInformation = {};
-    }
-}
-var newOptions = {
-    beforePatch: getSelectionInterface,
-    afterPatch: restoreSelectionInterface
-};
-function fixOptions(obj, name, oldFn, fn) {
-    if (oldFn) {
-        obj[name] = function (a) {
-            fn(a);
-            oldFn(a);
-        };
-    } else {
-        obj[name] = fn;
-    }
-}
-
-for (var i in newOptions) {
-    fixOptions(options, i, options[i], newOptions[i]);
-}
 
 win.React = win.ReactDOM = React;
 
