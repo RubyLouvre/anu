@@ -18,6 +18,10 @@ export const Children = {
         return _flattenChildren(children, false).length;
     },
     map(children, callback, context) {
+        if (children === null || children === void 0) {
+            return children;
+        }
+        
         var ret = [];
         _flattenChildren(children, "").forEach(function(old, index) {
             let el = callback.call(context, old, index);
