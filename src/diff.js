@@ -160,7 +160,7 @@ function genVnodes(vnode, container, context, mountQueue) {
     let nodes = getNodes(container);
     let prevRendered = null;
     //eslint-disable-next-line
-  for (var i = 0, el; (el = nodes[i++]); ) {
+    for (var i = 0, el; (el = nodes[i++]); ) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             prevRendered = el;
         } else {
@@ -532,8 +532,7 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
 
 export function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     let dom = node;
-    //eslint-disable-next-line
-  if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode);
         let innerMountQueue = mountQueue.mountAll
             ? mountQueue

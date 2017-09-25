@@ -128,7 +128,7 @@ export function createClass(spec) {
                 if (name !== "displayName") {
                     for (let i in props) {
                         if (!isFn(props[i])) {
-                            console.error(`${i} in ${name} must be a function`);
+                            console.error(`${i} in ${name} must be a function`); // eslint-disable-line
                         }
                     }
                 }
