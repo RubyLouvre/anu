@@ -34,6 +34,7 @@ export function patchStyle(dom, oldStyle, newStyle) {
     // 如果旧样式存在，但新样式已经去掉
     for (let name in oldStyle) {
         if (!(name in newStyle)) {
+            name = cssName(name, dom);
             dom.style[name] = ""; //清除样式
         }
     }
