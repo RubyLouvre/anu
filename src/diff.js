@@ -146,8 +146,7 @@ function renderByAnu(vnode, container, callback, context) {
     let mountQueue = [],
         rootNode,
         lastVnode = container.__component;
-    mountQueue.executor = true;
-
+   
     context = context || {};
     if (lastVnode) {
         lastVnode._hostNode = container.firstChild;
@@ -159,6 +158,7 @@ function renderByAnu(vnode, container, callback, context) {
             mountQueue
         );
     } else {
+        mountQueue.executor = true;
         rootNode = genVnodes(container, vnode, context, mountQueue);
     }
 
@@ -357,22 +357,8 @@ function mountComponent(lastNode, vnode, vparent, context, mountQueue) {
     return dom;
 }
 
-function Stateless(render) {
-    this.refs = {};
-    this.render = function() {
-        return render(this.props, this.context);
-    };
-    this.__pendingCallbacks = [];
-    this.__current = noop;
-}
-/**
- * 同时给有状态与无状态组件使用，最后一个参数可以不存在
- * @param {VNode} vnode 
- * @param {Object} props 
- * @param {Object} context 
- * @param {Object|null} state 
- */
 var renderComponent = function(vnode, props, context, state) {
+    // 同时给有状态与无状态组件使用
     this.props = props;
     this.state = state || null;
     this.context = context;
@@ -392,6 +378,15 @@ var renderComponent = function(vnode, props, context, state) {
     this.__rendered = rendered;
     return rendered;
 };
+
+function Stateless(render) {
+    this.refs = {};
+    this.render = function() {
+        return render(this.props, this.context);
+    };
+    this.__pendingCallbacks = [];
+    this.__current = noop;
+}
 
 Stateless.prototype.render = renderComponent;
 
@@ -417,17 +412,6 @@ function isEmpty(obj) {
     }
     return 0;
 }
-
-/**
- * 
- * 用于刷新组件
- * 
- * @param {any} instance 
- * @param {any} mountQueue 
- * @param {any} nextConext 
- * @param {any} nextVnode 
- * @returns 
- */
 
 function _refreshComponent(instance, mountQueue) {
     let {
@@ -542,7 +526,10 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
 export function alignVnode(lastVnode, nextVnode, vparent, context, mountQueue) {
     let node = lastVnode._hostNode,
         dom;
-    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+    if (isSameNode(lastVnode, nextVnode)) {
+        dom = updateVnode(lastVnode, nextVnode, vparent, context, mountQueue);
+    } else {
+
         disposeVnode(lastVnode);
         let innerMountQueue = mountQueue.executor
             ? mountQueue
@@ -556,10 +543,7 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, mountQueue) {
         if (innerMountQueue !== mountQueue) {
             clearRefsAndMounts(innerMountQueue);
         }
-    } else if (lastVnode !== nextVnode || contextHasChange) {
-        dom = updateVnode(lastVnode, nextVnode, vparent, context, mountQueue);
     }
-
     return dom;
 }
 
@@ -601,7 +585,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, mountQueue) {
             }
             mountChildren(dom, nextVnode, context, mountQueue);
         } else {
-            updateChildren(lastVnode, nextVnode, dom, context, mountQueue);
+            diffChildren(lastVnode, nextVnode, dom, context, mountQueue);
         }
     }
 
@@ -617,132 +601,125 @@ function updateElement(lastVnode, nextVnode, vparent, context, mountQueue) {
     return dom;
 }
 
-function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
+function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     let lastChildren = lastVnode.vchildren,
-        nextChildren = flattenChildren(nextVnode), //nextVnode.props.children;
-        childNodes = parentNode.childNodes,
-        hashcode = {},
-        hasExecutor = mountQueue.executor;
-    if (nextChildren.length == 0) {
-        lastChildren.forEach(function(el) {
+        nextChildren = flattenChildren(nextVnode),
+        nextLength = nextChildren.length,
+        lastLength = lastChildren.length;
+    //如果旧数组长度为零
+    if (nextLength && !lastLength) {
+        nextChildren.forEach(function(vnode) {
+            let curNode = mountVnode(null, vnode, lastVnode, context, mountQueue);
+            parentNode.appendChild(curNode);
+        });
+        return;
+    }
+    let maxLength = Math.max(nextLength, lastLength),
+        insertPoint = parentNode.firstChild,
+        removeHits = {},
+        fuzzyHits = {},
+        actions = [],
+        i = 0,
+        hit,
+        dom,
+        oldDom,
+        nextChild,
+        lastChild;
+    //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
+    if (nextLength) {
+        actions.length = nextLength;
+        while (i < maxLength) {
+            nextChild = nextChildren[i];
+            lastChild = lastChildren[i];
+            if (nextChild && lastChild && isSameNode(lastChild, nextChild)) {
+                //  如果能直接找到，命名90％的情况
+                actions[i] = {
+                    last: lastChild,
+                    next: nextChild,
+                    directive: "update"
+                };
+                removeHits[i] = true;
+            } else {
+                if (nextChild) {
+                    hit = nextChild.type + (nextChild.key || "");
+                    if (fuzzyHits[hit] && fuzzyHits[hit].length) {
+                        var oldChild = fuzzyHits[hit].shift();
+                        // 将旧的节点移动新节点的位置，向后移动
+                        actions[i] = {
+                            last: oldChild,
+                            next: nextChild,
+                            directive: "moveAfter"
+                        };
+                        removeHits[oldChild._i] = true;
+                    }
+                }
+                if (lastChild) {
+                    //如果不相同，储存它们的key
+                    lastChild._i = i;
+                    hit = lastChild.type + (lastChild.key || "");
+                    let hits = fuzzyHits[hit];
+                    if (hits) {
+                        hits.push(lastChild);
+                    } else {
+                        fuzzyHits[hit] = [lastChild];
+                    }
+                }
+            }
+            i++;
+        }
+    }
+    for (let j = 0, n = actions.length; j < n; j++) {
+        let action = actions[j];
+        if (!action) {
+           
+            let curChild = nextChildren[j];
+            hit = curChild.type + (curChild.key || "");
+            if (fuzzyHits[hit] && fuzzyHits[hit].length) {
+                oldChild = fuzzyHits[hit].shift();
+                oldDom = oldChild._hostNode;
+                parentNode.insertBefore(oldDom, insertPoint);
+                dom = updateVnode(oldChild, curChild, lastVnode, context, mountQueue);
+                removeHits[oldChild._i] = true;
+            } else {
+                //为了兼容 react stack reconciliation的执行顺序，添加下面三行，
+                //在插入节点前，将原位置上节点对应的组件先移除
+                var removed = lastChildren[j];
+                if(removed && !removed._disposed && !removeHits[j] ){
+                    disposeVnode(removed);
+                }
+                //如果找不到对应的旧节点，创建一个新节点放在这里
+                dom = mountVnode(null, curChild, lastVnode, context, mountQueue);
+                parentNode.insertBefore(dom, insertPoint);
+            }
+        } else {
+            oldDom = action.last._hostNode;
+            if (action.action === "moveAfter") {
+                parentNode.insertBefore(oldDom, insertPoint);
+            }
+            dom = updateVnode(
+                action.last,
+                action.next,
+                lastVnode,
+                context,
+                mountQueue
+            );
+        }
+        insertPoint = dom.nextSibling;
+    }
+    //移除
+    lastChildren.forEach(function(el, i) {
+        if (!removeHits[i]) {
             var node = el._hostNode;
             if (node) {
                 removeDOMElement(node);
             }
             disposeVnode(el);
-        });
-        return;
-    }
-
-    lastChildren.forEach(function(el, i) {
-        let key = el.type + (el.key || "");
-        if (el._disposed) {
-            return;
         }
-        let list = hashcode[key];
-        el._index = i;
-        if (list) {
-            list.push(el);
-        } else {
-            hashcode[key] = [el];
-        }
-    });
-    nextChildren.forEach(function(el) {
-        let key = el.type + (el.key || "");
-        let list = hashcode[key];
-        if (list) {
-            let old = list.shift();
-            if (old) {
-                el.old = old;
-                if (!list.length) {
-                    delete hashcode[key];
-                }
-            }
-        }
-    });
-    var removed = [];
-    for (let i in hashcode) {
-        let list = hashcode[i];
-        if (Array.isArray(list)) {
-            removed.push.apply(removed, list);
-        }
-    }
-    removed.sort(function(a, b) {
-        return a._index - b._index;
-    });
-    var queue = hasExecutor ? mountQueue : [];
-    nextChildren.forEach(function(el, index) {
-        let old = el.old,
-            ref,
-            dom;
-
-        removeNodes(removed, true);
-
-        if (old) {
-            delete el.old;
-
-            if (el === old && old._hostNode && !contextHasChange) {
-                //cloneElement
-                dom = old._hostNode;
-                if (dom !== childNodes[index]) {
-                    parentNode.replaceChild(dom, childNodes[index]);
-                    return;
-                }
-            } else {
-                dom = updateVnode(old, el, lastVnode, context, queue);
-                if (!dom) {
-                    dom = createDOMElement({ vtype: "#comment", text: "placeholder" });
-                    replaceChildDeday(
-                        [old, el, lastVnode, context, queue],
-                        dom,
-                        parentNode
-                    );
-                }
-            }
-        } else {
-            dom = mountVnode(null, el, lastVnode, context, queue);
-        }
-
-        ref = childNodes[index];
-        if (dom !== ref) {
-            insertDOM(parentNode, dom, ref);
-        }
-        if (!hasExecutor && queue.length) {
-            clearRefsAndMounts(queue);
-        }
-    });
-
-    removeNodes(removed);
-}
-function removeNodes(removed, one) {
-    while (removed.length) {
-        let removedEl = removed.shift();
-        let node = removedEl._hostNode;
-        if (node) {
-            removeDOMElement(node);
-        }
-        disposeVnode(removedEl);
-        if (one) {
-            break;
-        }
-    }
-}
-
-function replaceChildDeday(args, dom1, parentNode) {
-    setTimeout(function() {
-        var dom2 = updateVnode.apply(null, args);
-        parentNode.replaceChild(dom2, dom1);
     });
 }
 
-function insertDOM(parentNode, dom, ref) {
-    if (!dom) {
-    return console.warn("元素末初始化"); // eslint-disable-line
-    }
-
-    if (!ref) {
-        parentNode.appendChild(dom);
-    } else {
-        parentNode.insertBefore(dom, ref);
+function isSameNode(a, b) {
+    if (a.type === b.type && a.key === b.key) {
+        return true;
     }
 }

@@ -24,6 +24,10 @@ function disposeStateless(vnode) {
 
 function disposeElement(vnode) {
     var { props, vchildren } = vnode;
+    if (vnode.ref) {
+        vnode.ref(null);
+        delete vnode.ref;
+    }
     if (props[innerHTML]) {
         removeDOMElement(vnode._hostNode);
     } else {
@@ -31,8 +35,6 @@ function disposeElement(vnode) {
             disposeVnode(vchildren[i]);
         }
     }
-    //eslint-disable-next-line
-    vnode.ref && vnode.ref(null);
 }
 
 function disposeComponent(vnode) {
@@ -41,6 +43,9 @@ function disposeComponent(vnode) {
         options.beforeUnmount(instance);
         let dom = instance.__dom;
         instance.__current = instance.setState = instance.forceUpdate = noop;
+        if (vnode.ref) {
+            vnode.ref(null);
+        }
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
@@ -48,8 +53,8 @@ function disposeComponent(vnode) {
         if (dom) {
             dom.__component = null;
         }
-        vnode.ref && vnode.ref(null);
-        instance.__dom = vnode._instance = null;
+       
+        vnode.ref = instance.__dom = vnode._instance = null;
         disposeVnode(instance.__rendered);
     }
 }

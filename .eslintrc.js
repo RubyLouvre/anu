@@ -17,6 +17,9 @@ module.exports = {
     "globals": {
         "module": true,
         "define": true,
+        "expect": true,
+        "it": true,
+        "describe": true,
         "exports": true
     },
     "plugins": [

@@ -8,71 +8,70 @@ import ReactDOMServer from "dist/ReactDOMServer";
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactComponent", function() {
-    this.timeout(200000);
+  this.timeout(200000);
 
-    it("should throw on invalid render targets", () => {
-        var container = document.createElement("div");
-        // jQuery objects are basically arrays; people often pass them in by mistake
-        expect(function() {
-            ReactDOM.render(<div />, [container]);
-        }).toThrowError(/Target container is not a DOM element./);
+  it("should throw on invalid render targets", () => {
+    var container = document.createElement("div");
+    // jQuery objects are basically arrays; people often pass them in by mistake
+    expect(function() {
+      ReactDOM.render(<div />, [container]);
+    }).toThrowError(/Target container is not a DOM element./);
 
-        expect(function() {
-            ReactDOM.render(<div />, null);
-        }).toThrowError(/Target container is not a DOM element./);
-    });
+    expect(function() {
+      ReactDOM.render(<div />, null);
+    }).toThrowError(/Target container is not a DOM element./);
+  });
 
-    it("should throw when supplying a ref outside of render method", () => {
-        var instance = <div ref="badDiv" />;
+  it("should throw when supplying a ref outside of render method", () => {
+    var instance = <div ref="badDiv" />;
 
-        instance = ReactTestUtils.renderIntoDocument(instance);
-        expect(instance.nodeName.toLowerCase()).toBe("div");
-    });
+    instance = ReactTestUtils.renderIntoDocument(instance);
+    expect(instance.nodeName.toLowerCase()).toBe("div");
+  });
 
-    it("should warn when children are mutated during render", () => {
-        function Wrapper(props) {
-            props.children[1] = <p key={1} />; // Mutation is illegal
-            return <div>{props.children}</div>;
-        }
+  it("should warn when children are mutated during render", () => {
+    function Wrapper(props) {
+      props.children[1] = <p key={1} />; // Mutation is illegal
+      return <div>{props.children}</div>;
+    }
 
-        var instance = ReactTestUtils.renderIntoDocument(
-            <Wrapper>
-                <span key={0} />
-                <span key={1} />
-                <span key={2} />
-            </Wrapper>
-        );
-        expect(
-            ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
-        ).toBe(1);
-    });
+    var instance = ReactTestUtils.renderIntoDocument(
+      <Wrapper>
+        <span key={0} />
+        <span key={1} />
+        <span key={2} />
+      </Wrapper>
+    );
+    expect(
+      ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
+    ).toBe(1);
+  });
 
-    it("should warn when children are mutated during update", () => {
+  it("should warn when children are mutated during update", () => {
+    class Wrapper extends React.Component {
+      componentDidMount() {
+        this.props.children[1] = <p key={1} />; // Mutation is illegal
+        this.forceUpdate();
+      }
 
-        class Wrapper extends React.Component {
-            componentDidMount() {
-                this.props.children[1] = <p key={1} />; // Mutation is illegal
-                this.forceUpdate();
-            }
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
 
-            render() {
-                return <div>{this.props.children}</div>;
-            }
-        }
+    var instance = ReactTestUtils.renderIntoDocument(
+      <Wrapper>
+        <span key={0} />
+        <span key={1} />
+        <span key={2} />
+      </Wrapper>
+    );
+    expect(
+      ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
+    ).toBe(1);
+  });
 
-        var instance = ReactTestUtils.renderIntoDocument(
-            <Wrapper>
-                <span key={0} />
-                <span key={1} />
-                <span key={2} />
-            </Wrapper>
-        );
-        expect(
-            ReactTestUtils.scryRenderedDOMComponentsWithTag(instance, "p").length
-        ).toBe(1);
-    });
-
-    it('should support refs on owned components', () => {
+  it("should support refs on owned components", () => {
     var innerObj = {};
     var outerObj = {};
 
@@ -89,7 +88,11 @@ describe("ReactComponent", function() {
     class Component extends React.Component {
       render() {
         var inner = <Wrapper object={innerObj} ref="inner" />;
-        var outer = <Wrapper object={outerObj} ref="outer">{inner}</Wrapper>;
+        var outer = (
+          <Wrapper object={outerObj} ref="outer">
+            {inner}
+          </Wrapper>
+        );
         return outer;
       }
 
@@ -102,10 +105,14 @@ describe("ReactComponent", function() {
     ReactTestUtils.renderIntoDocument(<Component />);
   });
 
-  it('should not have refs on unmounted components', () => {
+  it("should not have refs on unmounted components", () => {
     class Parent extends React.Component {
       render() {
-        return <Child><div ref="test" /></Child>;
+        return (
+          <Child>
+            <div ref="test" />
+          </Child>
+        );
       }
 
       componentDidMount() {
@@ -122,7 +129,7 @@ describe("ReactComponent", function() {
     ReactTestUtils.renderIntoDocument(<Parent child={<span />} />);
   });
 
-  it('should support new-style refs', () => {
+  it("should support new-style refs", () => {
     var innerObj = {};
     var outerObj = {};
 
@@ -162,7 +169,7 @@ describe("ReactComponent", function() {
     expect(mounted).toBe(true);
   });
 
-  it('should support new-style refs with mixed-up owners', () => {
+  it("should support new-style refs with mixed-up owners", () => {
     class Wrapper extends React.Component {
       getTitle = () => {
         return this.props.title;
@@ -194,8 +201,8 @@ describe("ReactComponent", function() {
 
       componentDidMount() {
         // Check .props.title to make sure we got the right elements back
-        expect(this.wrapperRef.getTitle()).toBe('wrapper');
-        expect(ReactDOM.findDOMNode(this.innerRef).className).toBe('inner');
+        expect(this.wrapperRef.getTitle()).toBe("wrapper");
+        expect(ReactDOM.findDOMNode(this.innerRef).className).toBe("inner");
         mounted = true;
       }
     }
@@ -203,7 +210,7 @@ describe("ReactComponent", function() {
     ReactTestUtils.renderIntoDocument(<Component />);
     expect(mounted).toBe(true);
   });
-  it('should call refs at the correct time', () => {
+  it("should call refs at the correct time", () => {
     return
     var log = [];
 
@@ -233,13 +240,13 @@ describe("ReactComponent", function() {
             <Inner
               id={1}
               ref={c => {
-                log.push(`ref 1 got ${c ? `instance ${c.props.id}` : 'null'}`);
+                log.push(`ref 1 got ${c ? `instance ${c.props.id}` : "null"}`);
               }}
             />
             <Inner
               id={2}
               ref={c => {
-                log.push(`ref 2 got ${c ? `instance ${c.props.id}` : 'null'}`);
+                log.push(`ref 2 got ${c ? `instance ${c.props.id}` : "null"}`);
               }}
             />
           </div>
@@ -247,57 +254,56 @@ describe("ReactComponent", function() {
       }
 
       componentDidMount() {
-        log.push('outer componentDidMount');
+        log.push("outer componentDidMount");
       }
 
       componentDidUpdate() {
-        log.push('outer componentDidUpdate');
+        log.push("outer componentDidUpdate");
       }
 
       componentWillUnmount() {
-        log.push('outer componentWillUnmount');
+        log.push("outer componentWillUnmount");
       }
     }
 
     // mount, update, unmount
-    var el = document.createElement('div');
-    log.push('start mount');
+    var el = document.createElement("div");
+    log.push("start mount");
     ReactDOM.render(<Outer />, el);
-    log.push('start update');
+    log.push("start update");
     ReactDOM.render(<Outer />, el);
-    log.push('start unmount');
+    log.push("start unmount");
     ReactDOM.unmountComponentAtNode(el);
 
     /* eslint-disable indent */
     expect(log).toEqual([
-      'start mount',
-      'inner 1 render',
-      'inner 2 render',
-      'inner 1 componentDidMount',
-      'ref 1 got instance 1',
-      'inner 2 componentDidMount',
-      'ref 2 got instance 2',
-      'outer componentDidMount',
-      'start update',
-   
-      
-            // Stack resets refs before rendering
-            'ref 1 got null',
-            'inner 1 render',
-            'ref 2 got null',
-            'inner 2 render',
-        
-      'inner 1 componentDidUpdate',
-      'ref 1 got instance 1',
-      'inner 2 componentDidUpdate',
-      'ref 2 got instance 2',
-      'outer componentDidUpdate',
-      'start unmount',
-      'outer componentWillUnmount',
-      'ref 1 got null',
-      'inner 1 componentWillUnmount',
-      'ref 2 got null',
-      'inner 2 componentWillUnmount',
+      "start mount",
+      "inner 1 render",
+      "inner 2 render",
+      "inner 1 componentDidMount",
+      "ref 1 got instance 1",
+      "inner 2 componentDidMount",
+      "ref 2 got instance 2",
+      "outer componentDidMount",
+      "start update",
+
+      // Stack resets refs before rendering
+      "ref 1 got null",
+      "inner 1 render",
+      "ref 2 got null",
+      "inner 2 render",
+
+      "inner 1 componentDidUpdate",
+      "ref 1 got instance 1",
+      "inner 2 componentDidUpdate",
+      "ref 2 got instance 2",
+      "outer componentDidUpdate",
+      "start unmount",
+      "outer componentWillUnmount",
+      "ref 1 got null",
+      "inner 1 componentWillUnmount",
+      "ref 2 got null",
+      "inner 2 componentWillUnmount"
     ]);
     /* eslint-enable indent */
   });
