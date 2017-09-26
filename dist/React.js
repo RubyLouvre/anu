@@ -218,6 +218,11 @@ function createElement(type, config) {
         key = null,
         ref = null,
         argsLen = children.length;
+    if (isFn(type)) {
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
+    } else if (type + "" !== type) {
+        console.error("createElement第一个参数类型错误");
+    }
     if (config != null) {
         for (var i in config) {
             var val = config[i];
@@ -253,9 +258,7 @@ function createElement(type, config) {
             }
         }
     }
-    if (isFn(type)) {
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
-    }
+
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
@@ -263,14 +266,18 @@ function createElement(type, config) {
 function getDOMNode() {
     return this;
 }
-
+function errRef() {
+    throw "ref位置错误";
+}
 function createStringRef(owner, ref) {
-    var stringRef = owner === null ? function () {} : function (dom) {
+    var stringRef = owner === null ? errRef : function (dom) {
         if (dom) {
             if (dom.nodeType) {
                 dom.getDOMNode = getDOMNode;
             }
             owner.refs[ref] = dom;
+        } else {
+            delete owner.refs[ref];
         }
     };
     stringRef.string = ref;
@@ -394,7 +401,7 @@ function _flattenChildren(original, convert) {
                     unidimensionalIndex++;
                 }
                 if (!child.type) {
-                    throw "这不是一个虚拟DOM";
+                    throw Error("这不是一个虚拟DOM");
                 }
                 lastText = false;
             }
@@ -1940,6 +1947,7 @@ function renderByAnu(vnode, container, callback) {
     var instance = vnode._instance;
     container.__component = vnode;
     clearRefsAndMounts(mountQueue);
+    CurrentOwner.cur = null; //防止干扰
     var ret = instance || rootNode;
     if (callback) {
         callback.call(ret); //坑
@@ -2232,7 +2240,7 @@ function _refreshComponent(instance, mountQueue) {
 
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
-
+    clearRefs();
     instance.__hydrating = false;
 
     return dom;
@@ -2437,17 +2445,20 @@ function updateInstanceChain(instance, dom) {
 
 //******* 调度系统 *******
 var pendingRefs = [];
-
-function clearRefsAndMounts(queue) {
-    options.beforePatch();
+function clearRefs() {
     var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function (fn) {
         fn();
     });
+}
+function clearRefsAndMounts(queue) {
+    options.beforePatch();
 
+    clearRefs();
     queue.forEach(function (instance) {
         if (!instance.__DidMount) {
+            //  clearRefs()
             if (instance.componentDidMount) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
@@ -2456,6 +2467,7 @@ function clearRefsAndMounts(queue) {
 
             options.afterMount(instance);
         } else {
+
             if (instance.componentDidUpdate) {
                 instance.__didUpdate = true;
                 instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
@@ -2474,6 +2486,7 @@ function clearRefsAndMounts(queue) {
         instance.__hydrating = false;
         while (instance.__renderInNextCycle) {
             _refreshComponent(instance, []);
+
             if (instance.componentDidUpdate) {
                 instance.__didUpdate = true;
                 instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);

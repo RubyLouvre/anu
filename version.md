@@ -11,6 +11,9 @@
 >4 第四个参数为上下文对象
 >5 第五个参数为任务调度系系统的列队
 7. 使用全新的方式获取元素的命名空间
+8. 全新的节点排序算法(diffChildren)
+9. renderByAnu在全局渲染后应该置空CurrentOwner.cur, 防止影响其他虚拟DOM
+10. 完善createStringRef方法，应该能抛错与删除无用数据
 
 ## 1.1.1
 1. 简化createClass

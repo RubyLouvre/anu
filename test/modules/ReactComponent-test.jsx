@@ -23,10 +23,10 @@ describe("ReactComponent", function() {
   });
 
   it("should throw when supplying a ref outside of render method", () => {
-    var instance = <div ref="badDiv" />;
+    var instance = <div ref="badDiv" />
     expect(function() {
-      instance = ReactTestUtils.renderIntoDocument(instance);
-    }).toThrow();
+        instance = ReactTestUtils.renderIntoDocument(instance);
+    }).toThrow()
   });
 
   it("should warn when children are mutated during render", () => {

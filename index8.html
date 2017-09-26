@@ -10,7 +10,7 @@
     <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
     <script type='text/babel'>
-    var s 
+    var s, testRefsComponent
 window.onload = function(){
  var expect = function(a) {
     return {
@@ -112,7 +112,7 @@ var expectClickLogsLengthToBe = function(instance, length) {
   expect(Object.keys(instance.refs.myCounter.refs).length).toBe(length);
 };
 
-var testRefsComponent = renderTestRefsComponent();
+ testRefsComponent = renderTestRefsComponent();
     var clickIncrementer = ReactTestUtils.findRenderedDOMComponentWithClass(
       testRefsComponent,
       'clickIncrementer',

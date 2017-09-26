@@ -107,6 +107,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     var instance = vnode._instance;
     container.__component = vnode;
     clearRefsAndMounts(mountQueue);
+    CurrentOwner.cur = null; //防止干扰
     var ret = instance || rootNode;
     if (callback) {
         callback.call(ret); //坑
@@ -422,9 +423,8 @@ function _refreshComponent(instance, mountQueue) {
 
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
-
+   clearRefs()
     instance.__hydrating = false;
-
 
     return dom;
 }
@@ -638,18 +638,21 @@ function updateInstanceChain(instance, dom) {
 }
 
 //******* 调度系统 *******
-const pendingRefs = [];
-
-function clearRefsAndMounts(queue) {
-    options.beforePatch();
-    var refs = pendingRefs.slice(0);
+export const pendingRefs = [];
+function clearRefs(){
+   var refs = pendingRefs.slice(0);
     pendingRefs.length = 0;
     refs.forEach(function(fn) {
         fn();
     });
-
+}
+function clearRefsAndMounts(queue) {
+    options.beforePatch();
+   
+    clearRefs()
     queue.forEach(function(instance) {
         if (!instance.__DidMount) {
+          //  clearRefs()
             if (instance.componentDidMount) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
@@ -658,6 +661,7 @@ function clearRefsAndMounts(queue) {
 
             options.afterMount(instance);
         } else {
+          
             if (instance.componentDidUpdate) {
                 instance.__didUpdate = true;
                 instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
@@ -676,6 +680,7 @@ function clearRefsAndMounts(queue) {
         instance.__hydrating = false;
         while (instance.__renderInNextCycle) {
             _refreshComponent(instance, []);
+          
             if (instance.componentDidUpdate) {
                 instance.__didUpdate = true;
                 instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);

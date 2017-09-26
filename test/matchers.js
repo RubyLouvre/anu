@@ -150,7 +150,7 @@ if (typeof chai !== "undefined") {
         });
 
         Assertion.addMethod("toThrow", function(expected) {
-            return this.throw(expected);
+            return this.to.throw( expected );
         });
         Assertion.addMethod("toThrowError", function(expected) {
             var val = this.__flags.object;

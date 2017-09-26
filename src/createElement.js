@@ -72,7 +72,7 @@ function getDOMNode() {
     return this;
 }
 function errRef() {
-    throw "ReactDOM.render不能直接渲染带ref的虚拟DOM"
+    throw "ref位置错误";
 }
 function createStringRef(owner, ref) {
     var stringRef = owner === null
@@ -83,6 +83,8 @@ function createStringRef(owner, ref) {
                     dom.getDOMNode = getDOMNode;
                 }
                 owner.refs[ref] = dom;
+            }else{
+                delete owner.refs[ref]
             }
         };
     stringRef.string = ref;
@@ -212,7 +214,7 @@ export function _flattenChildren(original, convert) {
                     unidimensionalIndex++;
                 }
                 if (!child.type) {
-                    throw "这不是一个虚拟DOM";
+                    throw Error("这不是一个虚拟DOM");
                 }
                 lastText = false;
             }
