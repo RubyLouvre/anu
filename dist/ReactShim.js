@@ -1714,21 +1714,23 @@ function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
 //[Top API] ReactDOM.render
-function render(vnode, parentNode, callback) {
-    return renderByAnu(vnode, parentNode, callback);
+function render(vnode, container, callback) {
+    return renderByAnu(vnode, container, callback);
 }
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 
 //[Top API] ReactDOM.unmountComponentAtNode
-function unmountComponentAtNode(dom) {
-    var prevVnode = dom.__component;
-    if (prevVnode) {
-        prevVnode._hostNode = dom.firstChild;
-        alignVnode(prevVnode, {
+function unmountComponentAtNode(container) {
+    var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var lastVnode = container.__component;
+    if (lastVnode) {
+        var nextVnode = {
             type: "#comment",
             text: "empty",
             vtype: 0
-        }, {}, getVParent(dom), []);
+        };
+        alignVnode(lastVnode, nextVnode, context, getVParent(container), []);
     }
 }
 //[Top API] ReactDOM.findDOMNode
@@ -1743,15 +1745,17 @@ function findDOMNode(ref) {
 }
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-function getVParent(parentNode) {
+function getVParent(container) {
     return {
-        type: parentNode.nodeName,
-        namespaceURI: parentNode.namespaceURI
+        type: container.nodeName,
+        namespaceURI: container.namespaceURI
     };
 }
 
 // ReactDOM.render的内部实现
-function renderByAnu(vnode, container, callback, context) {
+function renderByAnu(vnode, container, callback) {
+    var context = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
     if (!isValidElement(vnode)) {
         throw "ReactDOM.render\u7684\u7B2C\u4E00\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
     }
@@ -1761,10 +1765,8 @@ function renderByAnu(vnode, container, callback, context) {
     var mountQueue = [],
         rootNode = void 0,
         lastVnode = container.__component;
-
-    context = context || {};
     if (lastVnode) {
-        lastVnode._hostNode = container.firstChild;
+        // lastVnode._hostNode = container.firstChild;???
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, mountQueue);
     } else {
         mountQueue.executor = true;
@@ -1787,17 +1789,17 @@ function renderByAnu(vnode, container, callback, context) {
     return ret;
 }
 
-function genVnodes(parentNode, vnode, context, mountQueue) {
-    var nodes = getNodes(parentNode);
+function genVnodes(container, vnode, context, mountQueue) {
+    var nodes = getNodes(container);
     var lastNode = null;
     for (var i = 0, el; el = nodes[i++];) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             lastNode = el;
         } else {
-            el.parentNode.removeChild(el);
+            container.removeChild(el);
         }
     }
-    return parentNode.appendChild(mountVnode(lastNode, vnode, getVParent(parentNode), context, mountQueue));
+    return container.appendChild(mountVnode(lastNode, vnode, getVParent(container), context, mountQueue));
 }
 
 var patchStrategy = {
@@ -1811,7 +1813,7 @@ var patchStrategy = {
     14: updateComponent
 };
 
-function mountVnode(dom, vnode) {
+function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
 
@@ -1819,10 +1821,12 @@ function updateVnode(lastVnode) {
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
-function mountText(dom, vnode) {
-    var node = dom && dom.nodeName === vnode.type ? dom : createDOMElement(vnode);
-    vnode._hostNode = node;
-    return node;
+function mountText(lastNode, vnode) {
+    if (!lastNode || lastNode.nodeName !== vnode.type) {
+        lastNode = createDOMElement(vnode);
+    }
+    vnode._hostNode = lastNode;
+    return lastNode;
 }
 
 function updateText(lastVnode, nextVnode) {

@@ -23,34 +23,34 @@ export function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
 //[Top API] ReactDOM.render
-export function render(vnode, parentNode, callback) {
-    return renderByAnu(vnode, parentNode, callback);
+export function render(vnode, container, callback) {
+    return renderByAnu(vnode, container, callback);
 }
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 export function unstable_renderSubtreeIntoContainer(
-    component,
-    vnode,
+    lastVnode,
+    nextVnode,
     container,
     callback
 ) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
-    var parentContext = (component && component.context) || {};
-    return renderByAnu(vnode, container, callback, parentContext);
+    var parentContext = (lastVnode && lastVnode.context) || {};
+    return renderByAnu(nextVnode, container, callback, parentContext);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
-export function unmountComponentAtNode(dom) {
-    var prevVnode = dom.__component;
-    if (prevVnode) {
-        prevVnode._hostNode = dom.firstChild;
+export function unmountComponentAtNode(container, context= {}) {
+    var lastVnode = container.__component;
+    if (lastVnode) {
+        let nextVnode = {
+            type: "#comment",
+            text: "empty",
+            vtype: 0
+        };
         alignVnode(
-            prevVnode,
-            {
-                type: "#comment",
-                text: "empty",
-                vtype: 0
-            },
-            {},
-            getVParent(dom),
+            lastVnode,
+            nextVnode,
+            context,
+            getVParent(container),
             []
         );
     }
@@ -67,15 +67,15 @@ export function findDOMNode(ref) {
 }
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-function getVParent(parentNode) {
+function getVParent(container) {
     return {
-        type: parentNode.nodeName,
-        namespaceURI: parentNode.namespaceURI
+        type: container.nodeName,
+        namespaceURI: container.namespaceURI
     };
 }
 
 // ReactDOM.render的内部实现
-function renderByAnu(vnode, container, callback, context) {
+function renderByAnu(vnode, container, callback, context = {}) {
     if (!isValidElement(vnode)) {
     throw `ReactDOM.render的第一个参数错误`; // eslint-disable-line
     }
@@ -85,10 +85,8 @@ function renderByAnu(vnode, container, callback, context) {
     let mountQueue = [],
         rootNode,
         lastVnode = container.__component;
-
-    context = context || {};
     if (lastVnode) {
-        lastVnode._hostNode = container.firstChild;
+        // lastVnode._hostNode = container.firstChild;???
         rootNode = alignVnode(
             lastVnode,
             vnode,
@@ -117,18 +115,18 @@ function renderByAnu(vnode, container, callback, context) {
     return ret;
 }
 
-function genVnodes(parentNode, vnode, context, mountQueue) {
-    let nodes = getNodes(parentNode);
+function genVnodes(container, vnode, context, mountQueue) {
+    let nodes = getNodes(container);
     let lastNode = null;
     for (var i = 0, el; (el = nodes[i++]); ) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
             lastNode = el;
         } else {
-            el.parentNode.removeChild(el);
+            container.removeChild(el);
         }
     }
-    return parentNode.appendChild(
-        mountVnode(lastNode, vnode, getVParent(parentNode), context, mountQueue)
+    return container.appendChild(
+        mountVnode(lastNode, vnode, getVParent(container), context, mountQueue)
     );
 }
 
@@ -143,7 +141,7 @@ const patchStrategy = {
     14: updateComponent
 };
 
-function mountVnode(dom, vnode) {
+function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
 
@@ -151,10 +149,12 @@ function updateVnode(lastVnode) {
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
-function mountText(dom, vnode) {
-    let node = dom && dom.nodeName === vnode.type ? dom : createDOMElement(vnode);
-    vnode._hostNode = node;
-    return node;
+function mountText(lastNode, vnode) {
+    if(!lastNode || lastNode.nodeName !== vnode.type){
+        lastNode = createDOMElement(vnode);
+    }
+    vnode._hostNode = lastNode;
+    return lastNode;
 }
 
 function updateText(lastVnode, nextVnode) {
