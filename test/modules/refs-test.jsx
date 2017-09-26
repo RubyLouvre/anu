@@ -1,20 +1,33 @@
-<!DOCTYPE html>
-<html>
+import React from "dist/React";
+import {
+  beforeHook,
+  afterHook,
+  browser
+} from "karma-event-driver-ext/cjs/event-driver-hooks";
+import getTestDocument from "./getTestDocument";
+import ReactTestUtils from "lib/ReactTestUtils";
+import ReactShallowRenderer from "lib/ReactShallowRenderer";
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-         <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+import ReactDOMServer from "dist/ReactDOMServer";
+//https://github.com/facebook/react/blob/master/src/renderers/dom/test/__tests__/ReactTestUtils-test.js
+var ReactDOM = window.ReactDOM || React;
 
-     <script type='text/javascript' src="./lib/babel.js"></script>
-  <script type='text/babel'>
-  var s
-  window.onload = function(){
-   
-   class ClickCounter extends React.Component {
+
+
+describe("reactiverefs", function() {
+  this.timeout(200000);
+  before(async () => {
+    await beforeHook();
+  });
+  after(async () => {
+    await afterHook(false);
+  });
+
+  /**
+ * Counts clicks and has a renders an item for each click. Each item rendered
+ * has a ref of the form "clickLogN".
+ */
+class ClickCounter extends React.Component {
   state = {count: this.props.initialCount};
 
   triggerReset = () => {
@@ -28,7 +41,6 @@
   render() {
     var children = [];
     var i;
-    console.log(this.state.count)
     for (i = 0; i < this.state.count; i++) {
       children.push(
         <div
@@ -85,28 +97,29 @@ class TestRefsComponent extends React.Component {
  */
 var renderTestRefsComponent = function() {
   var testRefsComponent = ReactTestUtils.renderIntoDocument(
-    <TestRefsComponent />, document.body
+    <TestRefsComponent />,
   );
-  console.log(testRefsComponent instanceof TestRefsComponent);
+  expect(testRefsComponent instanceof TestRefsComponent).toBe(true);
 
   var generalContainer = testRefsComponent.refs.myContainer;
-  console.log(generalContainer instanceof GeneralContainerComponent)
+  expect(generalContainer instanceof GeneralContainerComponent).toBe(true);
 
   var counter = testRefsComponent.refs.myCounter;
-  console.log(counter instanceof ClickCounter)
+  expect(counter instanceof ClickCounter).toBe(true);
 
   return testRefsComponent;
 };
+
 var expectClickLogsLengthToBe = function(instance, length) {
   var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(
     instance,
     'clickLogDiv',
   );
-  console.log(clickLogs.length === length, length);
-  console.log(Object.keys(instance.refs.myCounter.refs).length === length, length, '!!!',
-  instance.refs.myCounter.refs
-  );
+  expect(clickLogs.length).toBe(length);
+  expect(Object.keys(instance.refs.myCounter.refs).length).toBe(length);
 };
+
+it('Should increase refs with an increase in divs', () => {
     var testRefsComponent = renderTestRefsComponent();
     var clickIncrementer = ReactTestUtils.findRenderedDOMComponentWithClass(
       testRefsComponent,
@@ -119,22 +132,16 @@ var expectClickLogsLengthToBe = function(instance, length) {
     ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
     expectClickLogsLengthToBe(testRefsComponent, 1);
 
-     ReactTestUtils.Simulate.click(clickIncrementer);
+    // Begin incrementing clicks (and therefore refs).
+    ReactTestUtils.Simulate.click(clickIncrementer);
     expectClickLogsLengthToBe(testRefsComponent, 2);
-  }
-  </script>
 
-</head>
+    ReactTestUtils.Simulate.click(clickIncrementer);
+    expectClickLogsLengthToBe(testRefsComponent, 3);
 
-<body>
+    // Now reset again
+    ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
+    expectClickLogsLengthToBe(testRefsComponent, 1);
+  });
 
-    <div>开发者工具</div>
-    <pre>
-    
-    </pre>
-    <div id='example'></div>
-
-
-</body>
-
-</html>
+})

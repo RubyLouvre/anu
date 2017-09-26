@@ -1,4 +1,4 @@
-import { EMPTY_CHILDREN, typeNumber, isFn } from "./util";
+import {EMPTY_CHILDREN, typeNumber, isFn} from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -19,6 +19,13 @@ export function createElement(type, config, ...children) {
         key = null,
         ref = null,
         argsLen = children.length;
+    if (isFn(type)) {
+        vtype = type.prototype && type.prototype.render
+            ? 2
+            : 4;
+    } else if (type + "" !== type) {
+        console.error("createElement第一个参数类型错误")
+    }
     if (config != null) {
         for (let i in config) {
             let val = config[i];
@@ -40,7 +47,9 @@ export function createElement(type, config, ...children) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
+        props.children = typeNumber(children[0]) > 2
+            ? children[0]
+            : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         props.children = children;
     }
@@ -54,9 +63,7 @@ export function createElement(type, config, ...children) {
             }
         }
     }
-    if (isFn(type)) {
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
-    }
+
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
@@ -64,12 +71,13 @@ export function createElement(type, config, ...children) {
 function getDOMNode() {
     return this;
 }
-
+function errRef() {
+    throw "ReactDOM.render不能直接渲染带ref的虚拟DOM"
+}
 function createStringRef(owner, ref) {
-    var stringRef =
-    owner === null
-        ? function() {}
-        : function(dom) {
+    var stringRef = owner === null
+        ? errRef
+        : function (dom) {
             if (dom) {
                 if (dom.nodeType) {
                     dom.getDOMNode = getDOMNode;
@@ -96,12 +104,12 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     }
     let refType = typeNumber(ref);
     if (refType === 4) {
-    //string
+        //string
         this.ref = createStringRef(owner, ref);
     } else if (refType === 5) {
         if (ref.string) {
             var ref2 = createStringRef(owner, ref.string);
-            this.ref = function(dom) {
+            this.ref = function (dom) {
                 ref(dom);
                 ref2(dom);
             };
@@ -117,7 +125,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
 }
 
 Vnode.prototype = {
-    getDOMNode: function() {
+    getDOMNode: function () {
         return this._hostNode || null;
     },
 
@@ -143,20 +151,21 @@ export function _flattenChildren(original, convert) {
         child,
         isMap = convert === "",
         iteractorFn,
-        temp = Array.isArray(original) ? original.slice(0) : [original];
+        temp = Array.isArray(original)
+            ? original.slice(0)
+            : [original];
 
     while (temp.length) {
-        if (
-            (child = temp.shift()) &&
-      (child.shift || (iteractorFn = getIteractor(child)))
-        ) {
+        if ((child = temp.shift()) && (child.shift || (iteractorFn = getIteractor(child)))) {
             //比较巧妙地判定是否为子数组
 
             if (iteractorFn) {
                 //兼容Immutable.js, Map, Set
                 child = callIteractor(iteractorFn, child);
                 iteractorFn = false;
-                temp.unshift.apply(temp, child);
+                temp
+                    .unshift
+                    .apply(temp, child);
                 continue;
             }
             if (isMap) {
@@ -170,7 +179,9 @@ export function _flattenChildren(original, convert) {
                     }
                 }
             }
-            temp.unshift.apply(temp, child);
+            temp
+                .unshift
+                .apply(temp, child);
         } else {
             let childType = typeNumber(child);
             if (childType < 3) {
@@ -230,7 +241,7 @@ function callIteractor(iteratorFn, children) {
             ret.push(step.value);
         }
     } else {
-    //Map, Set
+        //Map, Set
         while (!(step = iterator.next()).done) {
             var entry = step.value;
             if (entry) {

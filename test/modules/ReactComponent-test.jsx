@@ -24,9 +24,9 @@ describe("ReactComponent", function() {
 
   it("should throw when supplying a ref outside of render method", () => {
     var instance = <div ref="badDiv" />;
-
-    instance = ReactTestUtils.renderIntoDocument(instance);
-    expect(instance.nodeName.toLowerCase()).toBe("div");
+    expect(function() {
+      instance = ReactTestUtils.renderIntoDocument(instance);
+    }).toThrow();
   });
 
   it("should warn when children are mutated during render", () => {
@@ -306,5 +306,134 @@ describe("ReactComponent", function() {
       "inner 2 componentWillUnmount"
     ]);
     /* eslint-enable indent */
+  });
+
+   it('throws usefully when rendering badly-typed elements', () => {
+    spyOn(console, 'error');
+
+    var X = undefined;
+    expect(() => ReactTestUtils.renderIntoDocument(<X />)).toThrowError(
+      'Element type is invalid: expected a string (for built-in components) ' +
+        'or a class/function (for composite components) but got: undefined. ' +
+        "You likely forgot to export your component from the file it's " +
+        'defined in.',
+    );
+
+    var Y = null;
+    expect(() => ReactTestUtils.renderIntoDocument(<Y />)).toThrowError(
+      'Element type is invalid: expected a string (for built-in components) ' +
+        'or a class/function (for composite components) but got: null.',
+    );
+
+    // One warning for each element creation
+    expect(console.error.calls.count()).toBe(2);
+  });
+
+  it('includes owner name in the error about badly-typed elements', () => {
+    spyOn(console, 'error');
+
+    var X = undefined;
+
+    function Indirection(props) {
+      return <div>{props.children}</div>;
+    }
+
+    function Bar() {
+      return <Indirection><X /></Indirection>;
+    }
+
+    function Foo() {
+      return <Bar />;
+    }
+
+    expect(() => ReactTestUtils.renderIntoDocument(<Foo />)).toThrowError(
+      'Element type is invalid: expected a string (for built-in components) ' +
+        'or a class/function (for composite components) but got: undefined. ' +
+        "You likely forgot to export your component from the file it's " +
+        'defined in.\n\nCheck the render method of `Bar`.',
+    );
+
+    // One warning for each element creation
+    expect(console.error.calls.count()).toBe(1);
+  });
+
+
+  it('throws if a plain object is used as a child', () => {
+    var children = {
+      x: <span />,
+      y: <span />,
+      z: <span />,
+    };
+    var element = <div>{[children]}</div>;
+    var container = document.createElement('div');
+    var ex;
+    try {
+      ReactDOM.render(element, container);
+    } catch (e) {
+      ex = e;
+    }
+    expect(ex).toBeDefined();
+  
+  });
+it('throws if a plain object even if it is in an owner', () => {
+    class Foo extends React.Component {
+      render() {
+        var children = {
+          a: <span />,
+          b: <span />,
+          c: <span />,
+        };
+        return <div>{[children]}</div>;
+      }
+    }
+    var container = document.createElement('div');
+    var ex;
+    try {
+      ReactDOM.render(<Foo />, container);
+    } catch (e) {
+      ex = e;
+    }
+    expect(ex).toBeDefined();
+
+  });
+
+  it('throws if a plain object is used as a child when using SSR', async () => {
+    var children = {
+      x: <span />,
+      y: <span />,
+      z: <span />,
+    };
+    var element = <div>{[children]}</div>;
+    var ex;
+    try {
+      ReactDOMServer.renderToString(element);
+    } catch (e) {
+      ex = e;
+      console.warn(e)
+    }
+    expect(ex).toBeDefined();
+  });
+
+  it('throws if a plain object even if it is in an owner when using SSR', async () => {
+    class Foo extends React.Component {
+      render() {
+        var children = {
+          a: <span />,
+          b: <span />,
+          c: <span />,
+        };
+        return <div>{[children]}</div>;
+      }
+    }
+    var container = document.createElement('div');
+    var ex;
+    try {
+      ReactDOMServer.renderToString(<Foo />, container);
+    } catch (e) {
+      ex = e;
+      console.warn(e)
+    }
+    expect(ex).toBeDefined();
+
   });
 });
