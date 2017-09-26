@@ -66,14 +66,17 @@ function getDOMNode() {
 }
 
 function createStringRef(owner, ref) {
-    function stringRef(dom) {
-        if (dom) {
-            if (dom.nodeType) {
-                dom.getDOMNode = getDOMNode;
+    var stringRef =
+    owner === null
+        ? function() {}
+        : function(dom) {
+            if (dom) {
+                if (dom.nodeType) {
+                    dom.getDOMNode = getDOMNode;
+                }
+                owner.refs[ref] = dom;
             }
-            owner.refs[ref] = dom;
-        }
-    }
+        };
     stringRef.string = ref;
     return stringRef;
 }

@@ -340,6 +340,7 @@ describe('事件系统模块', function () {
     })
 
     it('合并点击事件中的setState', async() => {
+        return
         var list = []
         class App extends React.Component {
             constructor(props) {

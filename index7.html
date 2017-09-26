@@ -12,71 +12,10 @@
   var s
   window.onload = function(){
    
-   
-    var log = [];
+    var instance = <div ref="badDiv" />;
     
-        class Inner extends React.Component {
-          render() {
-            log.push(`inner ${this.props.id} render`);
-            return <div />;
-          }
-    
-          componentDidMount() {
-            log.push(`inner ${this.props.id} componentDidMount`);
-          }
-    
-          componentDidUpdate() {
-            log.push(`inner ${this.props.id} componentDidUpdate`);
-          }
-    
-          componentWillUnmount() {
-            log.push(`inner ${this.props.id} componentWillUnmount`);
-          }
-        }
-    
-        class Outer extends React.Component {
-          render() {
-            return (
-              <div>
-                <Inner
-                  id={1}
-                  ref={c => {
-                    log.push(`ref 1 got ${c ? `instance ${c.props.id}` : 'null'}`);
-                  }}
-                />
-                <Inner
-                  id={2}
-                  ref={c => {
-                    log.push(`ref 2 got ${c ? `instance ${c.props.id}` : 'null'}`);
-                  }}
-                />
-              </div>
-            );
-          }
-    
-          componentDidMount() {
-            log.push('outer componentDidMount');
-          }
-    
-          componentDidUpdate() {
-            log.push('outer componentDidUpdate');
-          }
-    
-          componentWillUnmount() {
-            log.push('outer componentWillUnmount');
-          }
-        }
-    
-        // mount, update, unmount
-        var el = document.createElement('div');
-        log.push('start mount');
-        ReactDOM.render(<Outer />, el);
-        log.push('start update');
-        ReactDOM.render(<Outer />, el);
-        log.push('start unmount');
-        ReactDOM.unmountComponentAtNode(el);
-        
-        console.log(log.join("\n"))
+        instance = React.render(instance, document.body);
+       // console.log(log.join("\n"))
  
       
 // keyB 与  p比较， 不一样， 记录它们的key与tag

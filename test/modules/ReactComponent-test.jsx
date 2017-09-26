@@ -211,7 +211,7 @@ describe("ReactComponent", function() {
     expect(mounted).toBe(true);
   });
   it("should call refs at the correct time", () => {
-    return
+  
     var log = [];
 
     class Inner extends React.Component {

@@ -24,7 +24,7 @@ require("./modules/node.spec.jsx");
 
 
 require("./modules/ref.spec.jsx");
-
+/*
 require("./modules/redux.spec.jsx");
 
 require("./modules/ReactTestUtils-test.jsx");
@@ -32,6 +32,7 @@ require("./modules/ReactChildren-test.jsx");
 
 require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactMultiChild-test.jsx");
+*/
 require("./modules/ReactComponent-test.jsx");
 
 
