@@ -1750,13 +1750,9 @@ function findDOMNode(ref) {
     }
     return ref.__dom || null;
 }
-// 用于辅助XML元素的生成（svg, math),
-// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
+// 用于辅助XML元素的生成（svg, math), 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 function getVParent(container) {
-    return {
-        type: container.nodeName,
-        namespaceURI: container.namespaceURI
-    };
+    return { type: container.nodeName, namespaceURI: container.namespaceURI };
 }
 
 // ReactDOM.render的内部实现
@@ -2025,10 +2021,8 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
     _refreshComponent(instance, []);
 
     mountQueue.push(instance);
-    //   if (mountQueue.executor) {
-    //       clearRefsAndMounts(mountQueue);
-    //      delete mountQueue.executor;
-    //  }
+    //   if (mountQueue.executor) {       clearRefsAndMounts(mountQueue);
+    // delete mountQueue.executor;  }
 
     return instance.__dom;
 }
@@ -2083,7 +2077,7 @@ function _refreshComponent(instance, mountQueue) {
     updateInstanceChain(instance, dom);
     clearRefs();
     instance.__hydrating = false;
-
+    instance.__hasUpdate = true;
     return dom;
 }
 
@@ -2127,12 +2121,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, mountQueue) {
             }
             mountChildren(dom, nextVnode, context, mountQueue);
         } else {
-            try {
-                diffChildren(lastVnode, nextVnode, dom, context, mountQueue);
-            } catch (e) {
-                console.log(lastVnode, nextVnode);
-                throw e;
-            }
+            diffChildren(lastVnode, nextVnode, dom, context, mountQueue);
         }
     }
 
@@ -2228,8 +2217,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
                 dom = updateVnode(oldChild, curChild, lastVnode, context, mountQueue);
                 removeHits[oldChild._i] = true;
             } else {
-                //为了兼容 react stack reconciliation的执行顺序，添加下面三行，
-                //在插入节点前，将原位置上节点对应的组件先移除
+                //为了兼容 react stack reconciliation的执行顺序，添加下面三行， 在插入节点前，将原位置上节点对应的组件先移除
                 var removed = lastChildren[j];
                 if (removed && !removed._disposed && !removeHits[j]) {
                     disposeVnode(removed);
@@ -2267,8 +2255,7 @@ function isSameNode(a, b) {
         return true;
     }
 }
-//=================================
-//******* 构建实例链 *******
+//================================= ******* 构建实例链 *******
 function createInstanceChain(instance, vnode, rendered) {
     instance.__current = vnode;
     if (rendered._instance) {
@@ -2293,6 +2280,19 @@ function clearRefs() {
         fn();
     });
 }
+function callUpdate(instance) {
+    if (instance.__hasUpdate) {
+        if (instance.componentDidUpdate) {
+            instance.__didUpdate = true;
+            instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
+            if (!instance.__renderInNextCycle) {
+                instance.__didUpdate = false;
+            }
+        }
+        options.afterUpdate(instance);
+        instance.__hasUpdate = 0;
+    }
+}
 function clearRefsAndMounts(queue) {
     options.beforePatch();
 
@@ -2308,15 +2308,7 @@ function clearRefsAndMounts(queue) {
 
             options.afterMount(instance);
         } else {
-
-            if (instance.componentDidUpdate) {
-                instance.__didUpdate = true;
-                instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
-                if (!instance.__renderInNextCycle) {
-                    instance.__didUpdate = false;
-                }
-            }
-            options.afterUpdate(instance);
+            callUpdate(instance);
             //  _refreshComponent(instance, []);
         }
 
@@ -2328,14 +2320,7 @@ function clearRefsAndMounts(queue) {
         while (instance.__renderInNextCycle) {
             _refreshComponent(instance, []);
 
-            if (instance.componentDidUpdate) {
-                instance.__didUpdate = true;
-                instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
-                if (!instance.__renderInNextCycle) {
-                    instance.__didUpdate = false;
-                }
-            }
-            options.afterUpdate(instance);
+            callUpdate(instance);
         }
         clearArray(instance.__pendingCallbacks).forEach(function (fn) {
             fn.call(instance);

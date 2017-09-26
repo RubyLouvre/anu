@@ -144,4 +144,16 @@ it('Should increase refs with an increase in divs', () => {
     expectClickLogsLengthToBe(testRefsComponent, 1);
   });
 
+  describe('factory components', () => {
+  it('Should correctly get the ref', () => {
+    function Comp() {
+      return  <div ref="elemRef" />;
+    }
+
+    const inst = ReactTestUtils.renderIntoDocument(<Comp />);
+    expect(inst.refs.elemRef.tagName).toBe('DIV');
+  });
+});
+
+
 })
