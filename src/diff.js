@@ -90,7 +90,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
             mountQueue
         );
     } else {
-        mountQueue.executor = true;
+        mountQueue.isMainProcess = true;
         //如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
         rootNode = genVnodes(container, vnode, context, mountQueue);
     }
@@ -290,7 +290,7 @@ function mountStateless(lastNode, vnode, vparent, parentContext, mountQueue) {
 
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
-    mountQueue.push(instance);
+    mountQueue.unshift(instance);
 
     return dom;
 }
@@ -362,11 +362,17 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
     nextVnode.context = nextContext;
     nextVnode.parentContext = context;
     nextVnode.vparent = vparent;
-
-    var queue = [];
+    var queue; 
+    if( mountQueue.isChildProcess ){
+        queue = mountQueue;
+    }else {
+        queue = [];
+        queue.isChildProcess = true;
+    }
     _refreshComponent(instance, queue);
-    mountQueue.push(instance);
-    clearRefsAndMounts(queue);
+    //子组件先执行
+    mountQueue.unshift(instance);
+  
     return instance.__dom;
 }
 
@@ -379,14 +385,12 @@ function _refreshComponent(instance, mountQueue) {
         state: lastState,
         context: lastContext,
         __rendered: lastRendered,
-        //  __current: lastVnode,
         __dom: dom
     } = instance;
     instance.__renderInNextCycle = null;
-
     let nextVnode = instance.nextVnode;
     let nextContext = nextVnode.context;
-    //
+   
 
     let parentContext = nextVnode.parentContext;
     let nextProps = nextVnode.props;
@@ -435,9 +439,12 @@ function _refreshComponent(instance, mountQueue) {
     }
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
-    clearRefs();
-    instance.__hydrating = false;
+   
     instance.__lifeStage = 2;
+    if(mountQueue.isChildProcess) {
+        clearRefsAndMounts(mountQueue);
+    }
+    instance.__hydrating = false;
 
     return dom;
 }
@@ -449,18 +456,18 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, mountQueue) {
         dom = updateVnode(lastVnode, nextVnode, vparent, context, mountQueue);
     } else {
         disposeVnode(lastVnode);
-        let innerMountQueue = mountQueue.executor
-            ? mountQueue
-            : nextVnode.vtype === 2 ? [] : mountQueue;
-        dom = mountVnode(null, nextVnode, vparent, context, innerMountQueue);
+        //   let innerMountQueue = mountQueue.executor
+        //       ? mountQueue
+        //       : nextVnode.vtype === 2 ? [] : mountQueue;
+        dom = mountVnode(null, nextVnode, vparent, context, mountQueue);
         let p = node.parentNode;
         if (p) {
             p.replaceChild(dom, node);
             removeDOMElement(node);
         }
-        if (innerMountQueue !== mountQueue) {
-            clearRefsAndMounts(innerMountQueue);
-        }
+        // if (innerMountQueue !== mountQueue) {
+        //     clearRefsAndMounts(innerMountQueue);
+        // }
     }
     return dom;
 }
@@ -522,7 +529,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         hit,
         dom,
         oldDom,
-        hasExecutor = mountQueue.executor,
+        //   hasExecutor = mountQueue.executor,
         nextChild,
         lastChild;
     //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
@@ -616,9 +623,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             disposeVnode(el);
         }
     });
-    if (!hasExecutor && mountQueue.executor) {
-        clearRefsAndMounts(mountQueue);
-    }
+    //   if (!hasExecutor && mountQueue.executor) {
+    //       clearRefsAndMounts(mountQueue);
+    //   }
 }
 
 function isSameNode(a, b) {
@@ -672,8 +679,9 @@ function callUpdate(instance) {
 
 function clearRefsAndMounts(queue) {
     options.beforePatch();
-
+    //先执行所有refs方法（从上到下）
     clearRefs();
+    //再执行所有mount/update钩子（从下到上）
     queue.forEach(function(instance) {
         if (!instance.__lifeStage) {
             if (instance.componentDidMount) {
@@ -681,21 +689,22 @@ function clearRefsAndMounts(queue) {
                 instance.componentDidMount = null;
             }
             instance.__lifeStage = 1;
-
             options.afterMount(instance);
         } else {
             callUpdate(instance);
         }
-
         var ref = instance.__current.ref;
         if (ref) {
             ref(instance.__mergeStates ? instance : null);
         }
         instance.__hydrating = false;
         while (instance.__renderInNextCycle) {
-            _refreshComponent(instance, []);
+            _refreshComponent(instance, queue);
             callUpdate(instance);
         }
+    });
+    //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
+    queue.sort(mountSorter).forEach(function(instance){
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {
             fn.call(instance);
         });
@@ -704,13 +713,15 @@ function clearRefsAndMounts(queue) {
     options.afterPatch();
 }
 
+//有一个列队， 先放进A组件与A组件回调
 var dirtyComponents = [];
-function mountSorter(c1, c2) {
-    return c1.__mountOrder - c2.__mountOrder;
+dirtyComponents.isChildProcess = true;
+
+function mountSorter(c1, c2) {//让子节点先于父节点执行
+    return c2.__mountOrder - c1.__mountOrder;
 }
 options.flushBatchedUpdates = function(queue) {
     if (!queue) {
-        dirtyComponents.sort(mountSorter);
         queue = dirtyComponents;
     }
     clearRefsAndMounts(queue);
