@@ -13,19 +13,15 @@
   <script type='text/babel'>
   var s
   window.onload = function(){
-    function Test() {
-            return (
-                <svg className="icon-twitter" width="16px" height="16px">
-                    <use xlinkHref="#twitter" xlinkRole="#aaa" id='aaa'/>
-                </svg>
-            )
-        }
-
-        var div = document.body
-        ReactDOM.render(<Test/>,div)
-        var el = div.getElementsByTagName('use')
-       console.log( el.length )
-       console.log(el[0].getAttribute('xlink:href'))
+    function HelloComponent(
+        props
+        /* context */
+      ) {
+        return <div onClick={() => (props.name = 11)}>Hello {props.name}</div>;
+      }
+     
+  
+      var s = React.render(<HelloComponent name="Sebastian" />,  document.body);
  
   }
   </script>

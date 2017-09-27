@@ -143,6 +143,7 @@ export var options = {
     beforeUnmount: noop,
     beforeRender: noop,
     beforePatch: noop,
+    afterRender:noop,
     afterPatch: noop,
     afterMount: noop,
     afterUpdate: noop
