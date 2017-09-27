@@ -2300,7 +2300,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, mountQueue) {
         });
         list.length = 0;
     } else {
-        if (lastProps[innerHTML]) {
+        if (lastProps[innerHTML] || lastProps.children.length) {
             while (dom.firstChild) {
                 dom.removeChild(dom.firstChild);
             }
