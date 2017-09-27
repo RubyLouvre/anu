@@ -1,7 +1,6 @@
 import React from "dist/React";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-import ReactShallowRenderer from "lib/ReactShallowRenderer";
 
 import ReactDOMServer from "dist/ReactDOMServer";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js

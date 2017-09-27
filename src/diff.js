@@ -380,7 +380,7 @@ function _refreshComponent(instance, mountQueue) {
         context: lastContext,
         __rendered: lastRendered,
         //  __current: lastVnode,
-        __dom: lastDOM
+        __dom: dom
     } = instance;
     instance.__renderInNextCycle = null;
 
@@ -404,7 +404,7 @@ function _refreshComponent(instance, mountQueue) {
     instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false
     ) {
         instance.__forceUpdate = false;
-        return lastDOM;
+        return dom;
     }
 
     instance.__hydrating = true;
@@ -424,15 +424,15 @@ function _refreshComponent(instance, mountQueue) {
         nextState
     );
 
-
-    let dom = alignVnode(
-        lastRendered,
-        nextRendered,
-        vparent,
-        getChildContext(instance, parentContext),
-        mountQueue
-    );
-
+    if(lastRendered!== nextRendered && parentContext){
+        dom = alignVnode(
+            lastRendered,
+            nextRendered,
+            vparent,
+            getChildContext(instance, parentContext),
+            mountQueue
+        );
+    }
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
     clearRefs();
@@ -531,6 +531,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         while (i < maxLength) {
             nextChild = nextChildren[i];
             lastChild = lastChildren[i];
+         
             if (nextChild && lastChild && isSameNode(lastChild, nextChild)) {
                 //  如果能直接找到，命名90％的情况
                 actions[i] = {

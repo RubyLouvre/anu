@@ -263,7 +263,6 @@ function createElement(type, config) {
             }
         }
     }
-
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
@@ -303,9 +302,9 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     var refType = typeNumber(ref);
-    if (refType === 4) {
-        //string
-        this.ref = createStringRef(owner, ref);
+    if (refType === 4 || refType === 3) {
+        //string, number
+        this.ref = createStringRef(owner, ref + "");
     } else if (refType === 5) {
         if (ref.string) {
             var ref2 = createStringRef(owner, ref.string);
@@ -2224,7 +2223,7 @@ function _refreshComponent(instance, mountQueue) {
         lastState = instance.state,
         lastContext = instance.context,
         lastRendered = instance.__rendered,
-        lastDOM = instance.__dom;
+        dom = instance.__dom;
 
     instance.__renderInNextCycle = null;
 
@@ -2242,7 +2241,7 @@ function _refreshComponent(instance, mountQueue) {
 
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__forceUpdate = false;
-        return lastDOM;
+        return dom;
     }
 
     instance.__hydrating = true;
@@ -2256,8 +2255,9 @@ function _refreshComponent(instance, mountQueue) {
     //这里会更新instance的props, context, state
     var nextRendered = renderComponent.call(instance, nextVnode, nextProps, nextContext, nextState);
 
-    var dom = alignVnode(lastRendered, nextRendered, vparent, getChildContext(instance, parentContext), mountQueue);
-
+    if (lastRendered !== nextRendered && parentContext) {
+        dom = alignVnode(lastRendered, nextRendered, vparent, getChildContext(instance, parentContext), mountQueue);
+    }
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
     clearRefs();
@@ -2354,6 +2354,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         while (i < maxLength) {
             nextChild = nextChildren[i];
             lastChild = lastChildren[i];
+
             if (nextChild && lastChild && isSameNode(lastChild, nextChild)) {
                 //  如果能直接找到，命名90％的情况
                 actions[i] = {

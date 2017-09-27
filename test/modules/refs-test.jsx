@@ -6,9 +6,7 @@ import {
 } from "karma-event-driver-ext/cjs/event-driver-hooks";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-import ReactShallowRenderer from "lib/ReactShallowRenderer";
 
-import ReactDOMServer from "dist/ReactDOMServer";
 //https://github.com/facebook/react/blob/master/src/renderers/dom/test/__tests__/ReactTestUtils-test.js
 var ReactDOM = window.ReactDOM || React;
 
@@ -155,5 +153,13 @@ it('Should increase refs with an increase in divs', () => {
   });
 });
 
-
+it('coerces numbers to strings', () => {
+    class A extends React.Component {
+      render() {
+        return <div ref={1} />;
+      }
+    }
+    const a = ReactTestUtils.renderIntoDocument(<A />);
+    expect(a.refs[1].nodeName).toBe('DIV');
+  });
 })

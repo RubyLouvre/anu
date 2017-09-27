@@ -24,7 +24,7 @@ export function createElement(type, config, ...children) {
             ? 2
             : 4;
     } else if (type + "" !== type) {
-        console.error("createElement第一个参数类型错误")
+        console.error("createElement第一个参数类型错误");
     }
     if (config != null) {
         for (let i in config) {
@@ -63,7 +63,6 @@ export function createElement(type, config, ...children) {
             }
         }
     }
-
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
@@ -84,7 +83,7 @@ function createStringRef(owner, ref) {
                 }
                 owner.refs[ref] = dom;
             }else{
-                delete owner.refs[ref]
+                delete owner.refs[ref];
             }
         };
     stringRef.string = ref;
@@ -105,9 +104,9 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
         this.checkProps = checkProps;
     }
     let refType = typeNumber(ref);
-    if (refType === 4) {
-        //string
-        this.ref = createStringRef(owner, ref);
+    if (refType === 4 || refType === 3) {
+        //string, number
+        this.ref = createStringRef(owner, ref+"");
     } else if (refType === 5) {
         if (ref.string) {
             var ref2 = createStringRef(owner, ref.string);
