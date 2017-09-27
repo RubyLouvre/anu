@@ -1,4 +1,4 @@
-import { getChildContext, checkNull } from "../src/util";
+import { getChildContext, getContextByTypes } from "../src/util";
 import { rnumber, cssNumber } from "../src/style";
 var React = typeof global === "object" ? global.React : window.React;
 var skipAttributes = {
@@ -144,20 +144,29 @@ function toVnode(vnode, data, parentInstance) {
     if (vnode.vtype > 1) {
         var props = vnode.props;
         // props = getComponentProps(Type, props)
+        var instanceContext = getContextByTypes(parentContext, Type.contextTypes);
         if (vnode.vtype === 4) {
             //处理无状态组件
-            rendered = Type(props, parentContext);
+            rendered = Type(props, instanceContext);
+            if(rendered && rendered.render){
+                rendered = rendered.render();
+            }
             instance = {};
         } else {
             //处理普通组件
-            instance = new Type(props, parentContext);
+            instance = new Type(props, instanceContext);
             instance.props = instance.props || props;
-            instance.context = instance.context || parentContext;
+            instance.context = instance.context || instanceContext;
             rendered = instance.render();
         }
-
-        rendered = checkNull(rendered);
-
+        if(rendered === null || rendered === false){
+            rendered = {
+                vtype: 0,
+                type: "#comment",
+                text: "empty"
+            };
+        }
+       
         vnode._instance = instance;
         instance.__current = vnode;
         if (parentInstance) {

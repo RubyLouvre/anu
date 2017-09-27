@@ -123,9 +123,25 @@ function oneObject(array, val) {
     return result;
 }
 
-function getChildContext(instance, context) {
+function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
-        return Object.assign({}, context, instance.getChildContext());
+        var context = instance.getChildContext();
+        if (context) {
+            parentContext = Object.assign({}, parentContext, context);
+        }
+    }
+    return parentContext;
+}
+
+function getContextByTypes(curContext, contextTypes) {
+    var context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
     }
     return context;
 }
@@ -156,18 +172,6 @@ var options = {
     afterMount: noop,
     afterUpdate: noop
 };
-
-function checkNull(vnode, type) {
-    // if (Array.isArray(vnode) && vnode.length === 1) {
-    //  vnode = vnode[0];
-    // }
-    if (vnode === null || vnode === false) {
-        return { type: "#comment", text: "empty", vtype: 0 };
-    } else if (!vnode || !vnode.vtype) {
-        throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
-    }
-    return vnode;
-}
 
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
@@ -2080,35 +2084,61 @@ function alignChildren(parentNode, vparent, context, mountQueue) {
     }
 }
 
-function mountComponent(lastNode, vnode, vparent, context, mountQueue) {
+function mountComponent(lastNode, vnode, vparent, parentContext, mountQueue) {
     var type = vnode.type,
         props = vnode.props;
 
     var lastOwn = CurrentOwner.cur;
-    var instance = new type(props, context); //互相持有引用
+    var componentContext = getContextByTypes(parentContext, type.contextTypes);
+    var instance = new type(props, componentContext); //互相持有引用
     CurrentOwner.cur = lastOwn;
     vnode._instance = instance;
     //防止用户没有调用super或没有传够参数
     instance.props = instance.props || props;
-    instance.context = instance.context || context;
-    instance.vparent = vparent;
+    instance.context = instance.context || componentContext;
+    //用于refreshComponent
+    instance.nextVnode = vnode;
+
+    vnode.context = componentContext;
+    vnode.parentContext = parentContext;
+    vnode.vparent = vparent;
+
     var state = instance.state;
 
     if (instance.componentWillMount) {
         instance.componentWillMount();
-        state = instance.__mergeStates(props, context);
+        state = instance.__mergeStates(props, componentContext);
     }
 
-    var rendered = renderComponent.call(instance, vnode, props, context, state);
+    var rendered = renderComponent.call(instance, vnode, props, componentContext, state);
     instance.__hydrating = true;
 
-    var childContext = rendered.vtype ? getChildContext(instance, context) : context;
+    var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
 
     var dom = mountVnode(lastNode, rendered, vparent, childContext, mountQueue);
 
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
 
+    mountQueue.push(instance);
+
+    return dom;
+}
+function mountStateless(lastNode, vnode, vparent, parentContext, mountQueue) {
+
+    var componentContext = getContextByTypes(parentContext, vnode.type.contextTypes);
+    var instance = new Stateless(vnode.type);
+    var rendered = renderComponent.call(instance, vnode, vnode.props, componentContext);
+
+    var dom = mountVnode(lastNode, rendered, vparent, parentContext, mountQueue);
+
+    //用于refreshComponent
+    instance.nextVnode = vnode;
+    vnode.context = parentContext;
+    vnode.vparent = vparent;
+
+    createInstanceChain(instance, vnode, rendered);
+    updateInstanceChain(instance, dom);
     mountQueue.push(instance);
 
     return dom;
@@ -2123,13 +2153,22 @@ function renderComponent(vnode, props, context, state) {
     //调整全局的 CurrentOwner.cur
     var lastOwn = CurrentOwner.cur;
     CurrentOwner.cur = this;
-    options.beforeRender(this);
 
     var rendered = this.render();
+    //比较罕见的用法，返回一个带render的普通对象
+    if (rendered && rendered.render) {
+        rendered = rendered.render();
+    }
 
     CurrentOwner.cur = lastOwn;
     //组件只能返回组件或null
-    rendered = checkNull(rendered, vnode.type);
+
+    if (rendered === null || rendered === false) {
+        rendered = { type: "#comment", text: "empty", vtype: 0 };
+    } else if (!rendered || !rendered.vtype) {
+        //true, undefined, array, {}
+        throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
+    }
 
     vnode._instance = this;
     this.__rendered = rendered;
@@ -2145,19 +2184,7 @@ function Stateless(render) {
     this.__current = noop;
 }
 
-Stateless.prototype.render = renderComponent;
-
-function mountStateless(lastNode, vnode, vparent, context, mountQueue) {
-    var instance = new Stateless(vnode.type);
-    var rendered = renderComponent.call(instance, vnode, vnode.props, context);
-    var dom = mountVnode(lastNode, rendered, vparent, context, mountQueue);
-
-    createInstanceChain(instance, vnode, rendered);
-    updateInstanceChain(instance, dom);
-    mountQueue.push(instance);
-
-    return dom;
-}
+//Stateless.prototype.render = renderComponent;
 
 function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
     var instance = lastVnode._instance;
@@ -2165,7 +2192,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
     if (ref && lastVnode.vtype === 2) {
         lastVnode.ref(null);
     }
-    var nextContext = context;
+    var nextContext = getContextByTypes(context, nextVnode.type.contextTypes);
     var nextProps = nextVnode.props;
 
     if (instance.componentWillReceiveProps) {
@@ -2177,9 +2204,13 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
         mountQueue.executor = true;
     }
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
-    instance.nextContext = nextContext;
+
+    //用于refreshComponent
     instance.nextVnode = nextVnode;
-    instance.vparent = vparent;
+    nextVnode.context = nextContext;
+    nextVnode.parentContext = context;
+    nextVnode.vparent = vparent;
+
     var queue = [];
     _refreshComponent(instance, queue);
     mountQueue.push(instance);
@@ -2192,17 +2223,17 @@ function _refreshComponent(instance, mountQueue) {
         lastState = instance.state,
         lastContext = instance.context,
         lastRendered = instance.__rendered,
-        lastVnode = instance.__current,
         lastDOM = instance.__dom;
 
     instance.__renderInNextCycle = null;
 
-    var nextContext = instance.nextContext || lastContext;
-    var nextVnode = instance.nextVnode || lastVnode;
-    var nextProps = nextVnode.props;
+    var nextVnode = instance.nextVnode;
+    var nextContext = nextVnode.context;
+    //
 
-    delete instance.nextContext;
-    delete instance.nextVnode;
+    var parentContext = nextVnode.parentContext;
+    var nextProps = nextVnode.props;
+    var vparent = nextVnode.vparent;
 
     nextVnode._instance = instance; //important
 
@@ -2224,9 +2255,7 @@ function _refreshComponent(instance, mountQueue) {
     //这里会更新instance的props, context, state
     var nextRendered = renderComponent.call(instance, nextVnode, nextProps, nextContext, nextState);
 
-    var childContext = nextRendered.vtype ? getChildContext(instance, nextContext) : nextContext;
-
-    var dom = alignVnode(lastRendered, nextRendered, instance.vparent, childContext, mountQueue);
+    var dom = alignVnode(lastRendered, nextRendered, vparent, getChildContext(instance, parentContext), mountQueue);
 
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);

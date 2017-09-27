@@ -6,22 +6,78 @@
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
 
-  <!-- <script type='text/javascript' src="./test/react.js"></script>
+ <!--<script type='text/javascript' src="./test/react.js"></script>
    <script type='text/javascript' src="./test/react-dom.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
     
   <script type='text/babel'>
   var s
   window.onload = function(){
-    function HelloComponent(
-        props
-        /* context */
-      ) {
-        return <div onClick={() => (props.name = 11)}>Hello {props.name}</div>;
-      }
-     
-  
-      var s = React.render(<HelloComponent name="Sebastian" />,  document.body);
+    var arr = ['111', '222', '333']
+    var div = document.body
+    class App extends React.Component {
+
+        getChildContext() {
+            return {
+                name: "Jonas",
+                fruit: "Banana"
+            };
+        }
+        handleClick() {
+            this.getChildContext = function () {
+                return {
+                    name: "Jonas",
+                    fruit: arr.shift() 
+                };
+            }
+            this.forceUpdate()
+
+        }
+        render() {
+            return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
+        }
+    }
+    App.childContextTypes = {
+        name: React.PropTypes.string,
+        fruit: React.PropTypes.string
+    }
+
+    class B extends React.Component {
+
+        render() {
+            console.log("B", this.context.fruit)
+            return <div><C /><strong>{this.context.fruit}</strong></div>;
+        }
+    }
+    B.contextTypes = {
+        fruit: React.PropTypes.string
+    }
+    class C extends React.Component {
+        render() {
+            console.log("C", this.context.fruit)
+            return <em>{this.context.fruit}</em>;
+        }
+    }
+
+   s = ReactDOM.render(<App />, div)
+    /*
+    await browser
+        .pause(100)
+        .$apply()
+    var strongs = div.getElementsByTagName('strong')
+    expect(strongs[0].innerHTML).toBe('Banana')
+    expect(strongs[1].innerHTML).toBe('Banana')
+    await browser.click(s.refs.a).pause(100)
+        .$apply()
+    strongs = div.getElementsByTagName('strong')
+    expect(strongs[0].innerHTML).toBe('111')
+    expect(strongs[1].innerHTML).toBe('111')
+    await browser.click(s.refs.a).pause(100)
+        .$apply()
+    strongs = div.getElementsByTagName('strong')
+    expect(strongs[0].innerHTML).toBe('222')
+    expect(strongs[1].innerHTML).toBe('222')
+    */
  
   }
   </script>

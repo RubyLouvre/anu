@@ -3,13 +3,12 @@ export var __push = Array.prototype.push;
 export var innerHTML = "dangerouslySetInnerHTML";
 export var EMPTY_CHILDREN = [];
 
-export function deprecatedWarn(methodName){
-    if(!deprecatedWarn[methodName]){
-        //eslint-disable-next-line
-        console.error(methodName+" is deprecated");
+export function deprecatedWarn(methodName) {
+    if (!deprecatedWarn[methodName]) {
+    //eslint-disable-next-line
+    console.error(methodName + " is deprecated");
         deprecatedWarn[methodName] = 1;
     }
-
 }
 /**
  * 复制一个对象的属性到另一个对象
@@ -36,7 +35,7 @@ let __type = Object.prototype.toString;
  *
  * @export
  */
-export function noop() { }
+export function noop() {}
 
 /**
  * 类继承
@@ -46,7 +45,7 @@ export function noop() { }
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-    function Bridge() { }
+    function Bridge() {}
     Bridge.prototype = SupClass.prototype;
 
     let fn = (SubClass.prototype = new Bridge());
@@ -68,7 +67,7 @@ export function getNodes(dom) {
     let ret = [],
         c = dom.childNodes || [];
     // eslint-disable-next-line
-    for (let i = 0, el; (el = c[i++]);) {
+  for (let i = 0, el; (el = c[i++]); ) {
         ret.push(el);
     }
     return ret;
@@ -108,16 +107,32 @@ export function oneObject(array, val) {
     }
     let result = {},
         //eslint-disable-next-line
-        value = val !== void 666 ? val : 1;
+    value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
     return result;
 }
 
-export function getChildContext(instance, context) {
+export function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
-        return Object.assign({}, context, instance.getChildContext());
+        let context = instance.getChildContext();
+        if (context) {
+            parentContext = Object.assign({}, parentContext, context);
+        }
+    }
+    return parentContext;
+}
+
+export function getContextByTypes(curContext, contextTypes) {
+    let context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (let key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
     }
     return context;
 }
@@ -129,7 +144,7 @@ export function camelize(target) {
         return target;
     }
     //转换为驼峰风格
-    var str = target.replace(rcamelize, function (match) {
+    var str = target.replace(rcamelize, function(match) {
         return match.charAt(1).toUpperCase();
     });
     return firstLetterLower(str);
@@ -143,25 +158,12 @@ export var options = {
     beforeUnmount: noop,
     beforeRender: noop,
     beforePatch: noop,
-    afterRender:noop,
+    afterRender: noop,
     afterPatch: noop,
     afterMount: noop,
     afterUpdate: noop
 };
 
-export function checkNull(vnode, type) {
-    // if (Array.isArray(vnode) && vnode.length === 1) {
-    //  vnode = vnode[0];
-    // }
-    if (vnode === null || vnode === false) {
-        return { type: "#comment", text: "empty", vtype: 0 };
-    } else if (!vnode || !vnode.vtype) {
-        throw new Error(
-            `@${type.name}#render:You may have returned undefined, an array or some other invalid object`
-        );
-    }
-    return vnode;
-}
 
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]

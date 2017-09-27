@@ -75,9 +75,25 @@ function oneObject(array, val) {
     return result;
 }
 
-function getChildContext(instance, context) {
+function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
-        return Object.assign({}, context, instance.getChildContext());
+        var context = instance.getChildContext();
+        if (context) {
+            parentContext = Object.assign({}, parentContext, context);
+        }
+    }
+    return parentContext;
+}
+
+function getContextByTypes(curContext, contextTypes) {
+    var context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
     }
     return context;
 }
@@ -87,18 +103,6 @@ function getChildContext(instance, context) {
 
 
 
-
-function checkNull(vnode, type) {
-    // if (Array.isArray(vnode) && vnode.length === 1) {
-    //  vnode = vnode[0];
-    // }
-    if (vnode === null || vnode === false) {
-        return { type: "#comment", text: "empty", vtype: 0 };
-    } else if (!vnode || !vnode.vtype) {
-        throw new Error("@" + type.name + "#render:You may have returned undefined, an array or some other invalid object");
-    }
-    return vnode;
-}
 
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
@@ -275,19 +279,28 @@ function toVnode(vnode, data, parentInstance) {
     if (vnode.vtype > 1) {
         var props = vnode.props;
         // props = getComponentProps(Type, props)
+        var instanceContext = getContextByTypes(parentContext, Type.contextTypes);
         if (vnode.vtype === 4) {
             //处理无状态组件
-            rendered = Type(props, parentContext);
+            rendered = Type(props, instanceContext);
+            if (rendered && rendered.render) {
+                rendered = rendered.render();
+            }
             instance = {};
         } else {
             //处理普通组件
-            instance = new Type(props, parentContext);
+            instance = new Type(props, instanceContext);
             instance.props = instance.props || props;
-            instance.context = instance.context || parentContext;
+            instance.context = instance.context || instanceContext;
             rendered = instance.render();
         }
-
-        rendered = checkNull(rendered);
+        if (rendered === null || rendered === false) {
+            rendered = {
+                vtype: 0,
+                type: "#comment",
+                text: "empty"
+            };
+        }
 
         vnode._instance = instance;
         instance.__current = vnode;
