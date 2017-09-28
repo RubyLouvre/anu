@@ -53,7 +53,7 @@ export function drainQueue(queue) {
         }
         var ref = instance.__current.ref;
         if (ref) {
-            ref(instance.__mergeStates ? instance : null);
+            ref(instance.__isStateless ? null: instance);
         }
         instance.__hydrating = false; //子树已经构建完毕
         while (instance.__renderInNextCycle) {
