@@ -13,6 +13,9 @@ function clearRefs() {
 }
 function callUpdate(instance) {
     if (instance.__lifeStage === 2) {
+        if(pendingRefs.length){                
+            clearRefs();
+        }
         if (instance.componentDidUpdate) {
             instance.__didUpdate = true;
             instance.componentDidUpdate(

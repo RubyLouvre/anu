@@ -1094,7 +1094,9 @@ function setStateImpl(state, cb) {
         //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略 
         if (this.__hydrating) {
-            //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况， 
+            //1. 组件直接调用自己的setState
+            //2. 子组件调用父组件的setState，
             this.__renderInNextCycle = true;
         }
     } else {
@@ -1881,6 +1883,9 @@ function clearRefs() {
 }
 function callUpdate(instance) {
     if (instance.__lifeStage === 2) {
+        if (pendingRefs.length) {
+            clearRefs();
+        }
         if (instance.componentDidUpdate) {
             instance.__didUpdate = true;
             instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
@@ -2189,6 +2194,7 @@ function instantiateComponent(type, vtype, props, context) {
         CurrentOwner.cur = instance;
         var mixin = type(props, context);
         if (mixin && isFn(mixin.render)) {
+            //支持module pattern component
             delete instance.__isStateless;
             Object.assign(instance, mixin);
         } else {
@@ -2220,18 +2226,17 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance.componentWillMount();
         state = instance.__mergeStates(props, instanceContext);
     }
-    var rendered = renderComponent(instance, vnode, props, instanceContext, state, instance.__rendered);
-
     instance.__hydrating = true;
+
+    var rendered = renderComponent(instance, vnode, props, instanceContext, state, instance.__rendered);
 
     var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
 
     var dom = mountVnode(lastNode, rendered, vparent, childContext, updateQueue);
-
+    updateQueue.push(instance);
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
 
-    updateQueue.push(instance);
     return dom;
 }
 
@@ -2294,7 +2299,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
     }
     _refreshComponent(instance, queue);
     //子组件先执行
-    updateQueue.unshift(instance);
+    updateQueue.push(instance);
 
     return instance.__dom;
 }

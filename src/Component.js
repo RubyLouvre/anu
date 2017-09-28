@@ -90,10 +90,11 @@ function setStateImpl(state, cb) {
     if (!hasDOM) { //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略 
         if (this.__hydrating) {
-            //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况， 
+            //1. 组件直接调用自己的setState
+            //2. 子组件调用父组件的setState，
             this.__renderInNextCycle = true;
         }
-
     } else { //组件更新期
         if (this.__receiving) {
             //componentWillReceiveProps中的setState/forceUpdate应该被忽略 

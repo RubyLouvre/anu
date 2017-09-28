@@ -259,7 +259,7 @@ function instantiateComponent(type, vtype, props, context) {
         };
         CurrentOwner.cur = instance;
         var mixin = type(props, context);
-        if (mixin && isFn(mixin.render)) {
+        if (mixin && isFn(mixin.render)) {//支持module pattern component
             delete instance.__isStateless;
             Object.assign(instance, mixin);
         } else {
@@ -288,6 +288,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance.componentWillMount();
         state = instance.__mergeStates(props, instanceContext);
     }
+    instance.__hydrating = true;
+
     let rendered = renderComponent(
         instance,
         vnode,
@@ -297,18 +299,17 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance.__rendered
     );
 
-    instance.__hydrating = true;
 
     var childContext = rendered.vtype
         ? getChildContext(instance, parentContext)
         : parentContext;
 
     let dom = mountVnode(lastNode, rendered, vparent, childContext, updateQueue);
-
+    updateQueue.push(instance);
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
 
-    updateQueue.push(instance);
+   
     return dom;
 }
 
@@ -374,7 +375,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
     }
     _refreshComponent(instance, queue);
     //子组件先执行
-    updateQueue.unshift(instance);
+    updateQueue.push(instance);
 
     return instance.__dom;
 }

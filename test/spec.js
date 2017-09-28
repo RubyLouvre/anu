@@ -34,7 +34,6 @@ require("./modules/ReactChildren-test.jsx");
 require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactMultiChild-test.jsx");
 
-
 require("./modules/refs-test.jsx");
 require("./modules/refs-destruction-test.jsx");
 require("./modules/ReactUpdates-test.jsx");
@@ -47,6 +46,7 @@ require("./modules/ReactCompositeComponentNestedState-test.jsx");
 
 require("./modules/ReactComponentLifeCycle-test.jsx");
 
+require("./modules/ReactCompositeComponent-test.jsx");
 
 
 

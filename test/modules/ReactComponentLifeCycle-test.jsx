@@ -512,7 +512,6 @@ function getLifeCycleState(instance) {
     const div = document.createElement('div');
     ReactDOM.render(<Parent ref={c => c && log.push('ref')} />, div);
     ReactDOM.render(<Parent ref={c => c && log.push('ref')} />, div);
-console.log(log.join("\n"))
     expect(log).toEqual([
       'will mount',
       'render',
