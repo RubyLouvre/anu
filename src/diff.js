@@ -403,7 +403,7 @@ function _refreshComponent(instance, updateQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
- 
+    // clearRefs();
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
@@ -682,6 +682,9 @@ function clearScheduler(queue) {
         var instance = queue[i];
         i++;
         if (!instance.__lifeStage) {
+            if(pendingRefs.length){                
+                clearRefs();
+            }
             if (instance.componentDidMount) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;

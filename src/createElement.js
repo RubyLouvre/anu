@@ -24,7 +24,7 @@ export function createElement(type, config, ...children) {
             ? 2
             : 4;
     } else if (type + "" !== type) {
-        console.error("createElement第一个参数类型错误");
+        console.error("createElement第一个参数类型错误"); // eslint-disable-line
     }
     if (config != null) {
         for (let i in config) {

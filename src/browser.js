@@ -1,4 +1,4 @@
-import { oneObject, recyclables, typeNumber } from "./util";
+import { recyclables, typeNumber } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {

@@ -227,7 +227,7 @@ function createElement(type, config) {
     if (isFn(type)) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("createElement第一个参数类型错误");
+        console.error("createElement第一个参数类型错误"); // eslint-disable-line
     }
     if (config != null) {
         for (var i in config) {
@@ -2078,7 +2078,7 @@ function _refreshComponent(instance, updateQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
-
+    // clearRefs();
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
@@ -2337,6 +2337,9 @@ function clearScheduler(queue) {
         var instance = queue[i];
         i++;
         if (!instance.__lifeStage) {
+            if (pendingRefs.length) {
+                clearRefs();
+            }
             if (instance.componentDidMount) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
