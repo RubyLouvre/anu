@@ -19,6 +19,7 @@ export function Component(props, context) {
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
     this.__current = noop;//用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
+    this.__lifestage = 0; //判断生命周期
     /*
     * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM

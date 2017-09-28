@@ -56,7 +56,7 @@ export var win = w;
 export var document = w.document || fakeDoc;
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
-function emptyElement(node) {
+export function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
         emptyElement(child);

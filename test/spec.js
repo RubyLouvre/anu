@@ -45,6 +45,7 @@ require("./modules/ReactIdentity-test.jsx");
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
 
 
+require("./modules/ReactComponentLifeCycle-test.jsx");
 
 
 

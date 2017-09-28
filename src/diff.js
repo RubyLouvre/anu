@@ -11,7 +11,7 @@ import {
 } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
-import { createDOMElement, removeDOMElement } from "./browser";
+import { createDOMElement, emptyElement, removeDOMElement } from "./browser";
 import { CurrentOwner, flattenChildren } from "./createElement";
 import {
     processFormElement,
@@ -38,16 +38,12 @@ export function unstable_renderSubtreeIntoContainer(
     return renderByAnu(nextVnode, container, callback, parentContext);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
-export function unmountComponentAtNode(container, context = {}) {
+export function unmountComponentAtNode(container) {
     var lastVnode = container.__component;
     if (lastVnode) {
-    // lastVnode._hostNode = container.firstChild;
-        let nextVnode = {
-            type: "#comment",
-            text: "empty",
-            vtype: 0
-        };
-        alignVnode(lastVnode, nextVnode, context, getVParent(container), []);
+        disposeVnode(lastVnode);
+        emptyElement(container);
+        container.__component = null;
     }
 }
 //[Top API] ReactDOM.findDOMNode
@@ -265,14 +261,14 @@ function mountComponent(lastNode, vnode, vparent, parentContext, mountQueue) {
     var childContext = rendered.vtype
         ? getChildContext(instance, parentContext)
         : parentContext;
-
+ 
+  
     let dom = mountVnode(lastNode, rendered, vparent, childContext, mountQueue);
-
+    
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
-
+  
     mountQueue.push(instance);
-
     return dom;
 }
 function mountStateless(lastNode, vnode, vparent, parentContext, mountQueue) {
@@ -376,9 +372,6 @@ function updateComponent(lastVnode, nextVnode, vparent, context, mountQueue) {
     return instance.__dom;
 }
 
-
-
-
 function _refreshComponent(instance, mountQueue) {
     let {
         props: lastProps,
@@ -410,7 +403,7 @@ function _refreshComponent(instance, mountQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
-
+ 
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
@@ -426,8 +419,7 @@ function _refreshComponent(instance, mountQueue) {
         nextProps,
         nextContext,
         nextState
-    );
-
+    );    
     if(lastRendered!== nextRendered && parentContext){
         dom = alignVnode(
             lastRendered,
@@ -441,10 +433,10 @@ function _refreshComponent(instance, mountQueue) {
     updateInstanceChain(instance, dom);
    
     instance.__lifeStage = 2;
+    instance.__hydrating = false;
     if(mountQueue.isChildProcess) {
         clearRefsAndMounts(mountQueue);
     }
-    instance.__hydrating = false;
 
     return dom;
 }
@@ -456,18 +448,18 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, mountQueue) {
         dom = updateVnode(lastVnode, nextVnode, vparent, context, mountQueue);
     } else {
         disposeVnode(lastVnode);
-        //   let innerMountQueue = mountQueue.executor
-        //       ? mountQueue
-        //       : nextVnode.vtype === 2 ? [] : mountQueue;
+        //   let innerMountQueue = mountQueue.isChildProcess
+        //        ? mountQueue
+        //        : nextVnode.vtype === 2 ? [] : mountQueue;
         dom = mountVnode(null, nextVnode, vparent, context, mountQueue);
         let p = node.parentNode;
         if (p) {
             p.replaceChild(dom, node);
             removeDOMElement(node);
         }
-        // if (innerMountQueue !== mountQueue) {
-        //     clearRefsAndMounts(innerMountQueue);
-        // }
+        //   if (innerMountQueue !== mountQueue) {
+        //       clearRefsAndMounts(innerMountQueue);
+        //   }
     }
     return dom;
 }
@@ -512,13 +504,16 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length;
+  
     //如果旧数组长度为零
     if (nextLength && !lastLength) {
-        nextChildren.forEach(function(vnode) {
+        return nextChildren.forEach(function(vnode) {
             let curNode = mountVnode(null, vnode, lastVnode, context, mountQueue);
             parentNode.appendChild(curNode);
         });
-        return;
+    }
+    if(nextLength === lastLength && lastLength ===1){
+        return  alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, mountQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,
@@ -682,7 +677,10 @@ function clearRefsAndMounts(queue) {
     //先执行所有refs方法（从上到下）
     clearRefs();
     //再执行所有mount/update钩子（从下到上）
-    queue.forEach(function(instance) {
+    let i = 0;
+    while(i < queue.length){//queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
+        var instance = queue[i];
+        i++;
         if (!instance.__lifeStage) {
             if (instance.componentDidMount) {
                 instance.componentDidMount();
@@ -697,12 +695,12 @@ function clearRefsAndMounts(queue) {
         if (ref) {
             ref(instance.__mergeStates ? instance : null);
         }
-        instance.__hydrating = false;
+        instance.__hydrating = false; //子树已经构建完毕
         while (instance.__renderInNextCycle) {
             _refreshComponent(instance, queue);
             callUpdate(instance);
         }
-    });
+    }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
     queue.sort(mountSorter).forEach(function(instance){
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {

@@ -15,36 +15,50 @@
   window.onload = function(){
    
     var div = document.body
-    class App extends React.Component {
-        state = {aaa: 1}
-        componentDidMount(){
-            this.setState({aaa: 1}, function(){
-                console.log('App setState  cb')
-            })
-            console.log('App did mount')
+    var _testJournal = [];
+    
+        class Child extends React.Component {
+          componentDidMount() {
+            _testJournal.push('Child:onDOMReady');
+          }
+    
+          render() {
+            return <div>Child</div>;
+          }
         }
-        componentDidUpdate(){
-            console.log('App did update')
+    
+        class SwitcherParent extends React.Component {
+          constructor(props) {
+            super(props);
+            _testJournal.push('SwitcherParent:getInitialState');
+            this.state = {showHasOnDOMReadyComponent: false};
+          }
+    
+          componentDidMount() {
+            _testJournal.push('SwitcherParent:onDOMReady');
+            this.switchIt();
+          }
+    
+          switchIt = () => {
+            this.setState({showHasOnDOMReadyComponent: true});
+          };
+    
+          render() {
+            console.log('render完了',this.state.showHasOnDOMReadyComponent)
+            return (
+              <div>
+                {this.state.showHasOnDOMReadyComponent ? <Child /> : <div>first</div>}
+              </div>
+            );
+          }
         }
-        render() {
-            return <div><A /></div>;
-        }
-    }
-    class A extends React.Component {
-        state = {aaa: 1}
-        componentDidMount(){
-          
-            console.log('A did mount')
-        }
-        componentDidUpdate(){
-            console.log('A did update')
-        }
-        render() {
-            return <div>{this.state.aaa}</div>;
-        }
-    }
+
+     
+    
  
-    s = ReactDOM.render(<App />, div)
+    s = ReactDOM.render(<SwitcherParent />, div)
+
+    console.log(_testJournal)
 
  
   }
