@@ -477,7 +477,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         });
         list.length = 0;
     } else {
-        if (lastProps[innerHTML] || lastProps.children.length) {
+        if (lastProps[innerHTML]) {
             while (dom.firstChild) {
                 dom.removeChild(dom.firstChild);
             }
