@@ -307,6 +307,91 @@ describe("ReactCompositeComponent", function() {
  
   });
 
+  it('should call componentWillUnmount before unmounting', () => {
+    var container = document.createElement('div');
+    var innerUnmounted = false;
 
+    class Component extends React.Component {
+      render() {
+        return (
+          <div>
+            <Inner />
+            Text
+          </div>
+        );
+      }
+    }
+
+    class Inner extends React.Component {
+      componentWillUnmount() {
+        innerUnmounted = true;
+      }
+
+      render() {
+        return <div />;
+      }
+    }
+
+    ReactDOM.render(<Component />, container);
+    ReactDOM.unmountComponentAtNode(container);
+    expect(innerUnmounted).toBe(true);
+  });
+
+  it('should warn when shouldComponentUpdate() returns undefined', () => {
+    var container = document.createElement('div');
+    class Component extends React.Component {
+      state = {bogus: false};
+
+      shouldComponentUpdate() {
+        return undefined;
+      }
+
+      render() {
+        return <div>{this.state.bogus}</div>;
+      }
+    }
+
+    var instance = ReactDOM.render(<Component />, container);
+    instance.setState({bogus: true});
+    expect(container.textContent).toBe("");//布尔会转换为空字符串
+   
+  });
+//https://github.com/facebook/react/blob/master/src/renderers/__tests__/ReactCompositeComponent-test.js#L526
+  it('should pass context to children when not owner', () => {
+    class Parent extends React.Component {
+      render() {
+        return <Child><Grandchild /></Child>;
+      }
+    }
+
+    class Child extends React.Component {
+      static childContextTypes = {
+        foo: React.PropTypes.string,
+      };
+
+      getChildContext() {
+        return {
+          foo: 'bar',
+        };
+      }
+
+      render() {
+        return React.Children.only(this.props.children);
+      }
+    }
+
+    class Grandchild extends React.Component {
+      static contextTypes = {
+        foo: React.PropTypes.string,
+      };
+
+      render() {
+        return <div>{this.context.foo}</div>;
+      }
+    }
+
+    var component = ReactTestUtils.renderIntoDocument(<Parent />);
+    expect(ReactDOM.findDOMNode(component).innerHTML).toBe('bar');
+  });
 
 });

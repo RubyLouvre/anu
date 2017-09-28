@@ -272,21 +272,21 @@ function instantiateComponent(type, vtype, props, context) {
 function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     let { type, vtype, props } = vnode;
 
-    let instanceContext = getContextByTypes(parentContext, type.contextTypes);
-    let instance = instantiateComponent(type, vtype, props, instanceContext); //互相持有引用
+    let context = getContextByTypes(parentContext, type.contextTypes);
+    let instance = instantiateComponent(type, vtype, props, context); //互相持有引用
 
     vnode._instance = instance;
 
     //用于refreshComponent
     instance.nextVnode = vnode;
-    vnode.context = instanceContext;
+    vnode.context = context;
     vnode.parentContext = parentContext;
     vnode.vparent = vparent;
 
     let state = instance.state;
     if (instance.componentWillMount) {
         instance.componentWillMount();
-        state = instance.__mergeStates(props, instanceContext);
+        state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
 
@@ -294,7 +294,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance,
         vnode,
         props,
-        instanceContext,
+        context,
         state,
         instance.__rendered
     );
@@ -321,10 +321,15 @@ function renderComponent(instance, vnode, props, context, state, rendered) {
 
     //调整全局的 CurrentOwner.cur
     if (!rendered) {
-        var lastOwn = CurrentOwner.cur;
-        CurrentOwner.cur = instance;
-        rendered = instance.render();
-        CurrentOwner.cur = lastOwn;
+        try{
+            var lastOwn = CurrentOwner.cur;
+            CurrentOwner.cur = instance;
+            rendered = instance.render();
+        }finally{
+            CurrentOwner.cur = lastOwn;
+        }
+      
+       
     }
 
     //组件只能返回组件或null
@@ -356,9 +361,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
         instance.componentWillReceiveProps(nextProps, nextContext);
         instance.__receiving = false;
     }
-    if (!updateQueue.executor) {
-        updateQueue.executor = true;
-    }
+
     // shouldComponentUpdate为false时不能阻止setState/forceUpdate cb的触发
 
     //用于refreshComponent
@@ -399,7 +402,6 @@ function _refreshComponent(instance, updateQueue) {
     nextVnode._instance = instance; //important
 
     let nextState = instance.__mergeStates(nextProps, nextContext);
-
     if (
         !instance.__forceUpdate &&
     instance.shouldComponentUpdate &&
@@ -408,7 +410,7 @@ function _refreshComponent(instance, updateQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
-    // clearRefs();
+
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
