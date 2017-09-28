@@ -4,11 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-  <script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
-  <!-- <script src="./test/react-lite.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <!-- <script src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 
 
@@ -18,125 +18,33 @@
 
     <div>开发者工具</div>
     <div id='example'></div>
-<pre>
-  ['parent-render', 'blue'],
-  ['getInitialState', 'blue'],
-  ['render', 'dark blue', 'blue'],
-  ['handleHue', 'dark blue', 'blue'],
-  ['parent-handleColor', 'blue'],
-  ['parent-render', 'green'],
-  ['setState-this', 'dark blue', 'blue'],
-  ['setState-args', 'dark blue', 'green'],
-  ['render', 'light green', 'green'],
-  ['after-setState', 'light green', 'green'],
-  ['parent-after-setState', 'green'],
-</pre>
+
     <script type='text/babel'>
-    var list = []
-    function logger(){
-      list.push([].slice.call(arguments, 0))
-    }
-     class ParentComponent extends React.Component {
-          state = {color: 'blue'};
-    
-          handleColor = color => {
-            this.props.logger('parent-handleColor', this.state.color);
-            //父方法暂时不处理
-            this.setState({color: color}, function() {
-              this.props.logger('parent-after-setState', this.state.color);
-            });
-          };
-          componentDidUpdate(){
-            console.log('parent did update')
-          }
-          componentDidMount(){
-            console.log('parent did mount')
-          }
-          render() {
-            console.log('父组件 render')
-            this.props.logger('parent-render', this.state.color);
-            return (
-              <ChildComponent
-                logger={this.props.logger}
-                color={this.state.color}
-                onSelectColor={this.handleColor}
-              />
-            );
-          }
-        }
-
-    class ChildComponent extends React.Component {
-      constructor(props) {
-        super(props);
-        props.logger('getInitialState', props.color);
-        this.state = {hue: 'dark ' + props.color};
-      }
-      componentDidUpdate(){
-        console.log('child did update')
-      }
-      componentDidMount(){
-         console.log('child did mount')
-      }
-      handleHue = (shade, color) => {
-        console.log('发生了点击事件')
-        this.props.logger('handleHue', this.state.hue, this.props.color);
-        //子组件调用父组件的setState
-        this.props.onSelectColor(color);
-        console.log('子组件setState')
-        this.setState(
-          function(state, props) {
-            this.props.logger(
-              'setState-this',
-              this.state.hue,
-              this.props.color,
-            );
-            this.props.logger('setState-args', state.hue, props.color);
-            return {hue: shade + ' ' + props.color};
-          },
-          function() {
-            this.props.logger(
-              'after-setState',
-              this.state.hue,
-              this.props.color,
-            );
-          },
-        );
-      };
-
-      render() {
-        console.log('子组件 render')
-        this.props.logger('render', this.state.hue, this.props.color);
-        return (
-          <div>
-            <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
-              Dark Blue
-            </button>
-            <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
-              Light Blue
-            </button>
-            <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
-              Dark Green
-            </button>
-            <button onClick={this.handleHue.bind(this, 'light', 'green')}>
-              Light Green
-            </button>
-          </div>
-        );
-      }
-    }
-
-    var container = document.createElement('div');
-    document.body.appendChild(container);
-    void ReactDOM.render(<ParentComponent logger={logger} />, container);
 
   if(!window.ReactDOM){
     window.ReactDOM = window.React
   }
-  console.log(container)
-  console.log(container.childNodes[0].childNodes[3])
-container.childNodes[0].childNodes[3].click()
-console.log(list)
-    //var s = ReactDOM.render(<App />,  document.getElementById('example'))
+
+  var container = document.createElement('div');
+  document.body.appendChild(container);
+  class Component extends React.Component {
+      state = {isMounted: false};
+      componentDidMount() {
+        this.setState({isMounted: true});
+      }
+      render() {
+        if (this.state.isMounted) {
+          console.log(ReactDOM.findDOMNode(this).tagName)
+        }
+        return <div />;
+      }
+  }
+
+
+
+   void ReactDOM.render(<Component />, container);
+
+
       
        </script>
 </body>

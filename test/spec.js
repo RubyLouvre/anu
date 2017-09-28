@@ -1,4 +1,4 @@
-
+/*
 import "./modules/createElement.spec";
 
 import "./modules/util.spec";
@@ -33,7 +33,7 @@ require("./modules/ReactChildren-test.jsx");
 
 require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactMultiChild-test.jsx");
-
+*/
 
 require("./modules/refs-test.jsx");
 require("./modules/refs-destruction-test.jsx");
