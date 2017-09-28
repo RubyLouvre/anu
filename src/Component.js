@@ -102,7 +102,7 @@ function setStateImpl(state, cb) {
         this.__renderInNextCycle = true;
         if (options.async) {
             //在事件句柄中执行setState会进行合并
-            options.enqueueUpdate(this);
+            options.addTask(this);
             return;
         }
         if (this.__hydrating) {
