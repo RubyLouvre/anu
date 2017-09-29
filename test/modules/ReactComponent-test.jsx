@@ -5,7 +5,6 @@ import ReactTestUtils from "lib/ReactTestUtils";
 import ReactDOMServer from "dist/ReactDOMServer";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
-
 describe("ReactComponent", function() {
   this.timeout(200000);
 

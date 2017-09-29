@@ -2116,6 +2116,9 @@ function mountVnode(lastNode, vnode) {
 }
 
 function updateByContext(vnode) {
+    if (vnode.type && vnode.type.contextTypes) {
+        return true;
+    }
     var vchildren = vnode.vchildren;
     if (vchildren) {
         for (var i = 0; i < vchildren.length; i++) {
@@ -2127,6 +2130,11 @@ function updateByContext(vnode) {
             } else if (el.vtype && el.type.contextTypes) {
                 return true;
             }
+        }
+    } else if (vnode._instance) {
+        var ret = vnode._instance.__rendered;
+        if (updateByContext(ret)) {
+            return true;
         }
     }
 }
@@ -2252,7 +2260,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
-
     var dom = renderComponent(instance, vnode, props, context, state, function (nextRendered, childContext) {
         return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue);
     }, instance.__rendered);
@@ -2291,7 +2298,6 @@ function renderComponent(instance, vnode, props, context, state, cb, rendered) {
 
     var parentContext = vnode.parentContext;
     var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-
     var dom = cb(rendered, childContext);
 
     createInstanceChain(instance, vnode, rendered);

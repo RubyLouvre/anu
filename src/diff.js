@@ -138,6 +138,9 @@ function mountVnode(lastNode, vnode) {
 }
 
 function updateByContext(vnode) {
+    if (vnode.type && vnode.type.contextTypes) {
+        return true;
+    }
     let vchildren = vnode.vchildren;
     if (vchildren) {
         for (let i = 0; i < vchildren.length; i++) {
@@ -149,6 +152,11 @@ function updateByContext(vnode) {
             } else if (el.vtype && el.type.contextTypes) {
                 return true;
             }
+        }
+    } else if (vnode._instance) {
+        var ret = vnode._instance.__rendered;
+        if (updateByContext(ret)) {
+            return true;
         }
     }
 }
@@ -270,7 +278,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
-
     let dom = renderComponent(
         instance,
         vnode,
@@ -328,7 +335,6 @@ function renderComponent(instance, vnode, props, context, state, cb, rendered) {
     let childContext = rendered.vtype
         ? getChildContext(instance, parentContext)
         : parentContext;
-
     let dom = cb(rendered, childContext);
 
     createInstanceChain(instance, vnode, rendered);
@@ -614,7 +620,6 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             disposeVnode(el);
         }
     });
-
 }
 
 function isSameNode(a, b) {
