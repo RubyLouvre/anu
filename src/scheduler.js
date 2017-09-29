@@ -60,7 +60,7 @@ export function drainQueue(queue) {
         }
         instance.__hydrating = false; //子树已经构建完毕
         while (instance.__renderInNextCycle) {
-            options._refreshComponent(instance, queue);
+            options.refreshComponent(instance, queue);
             callUpdate(instance);
         }
     }

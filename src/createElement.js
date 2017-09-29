@@ -1,4 +1,4 @@
-import {EMPTY_CHILDREN, typeNumber, isFn} from "./util";
+import {EMPTY_CHILDREN, typeNumber} from "./util";
 
 export var CurrentOwner = {
     cur: null
@@ -19,7 +19,7 @@ export function createElement(type, config, ...children) {
         key = null,
         ref = null,
         argsLen = children.length;
-    if (isFn(type)) {
+    if (type && type.call) {
         vtype = type.prototype && type.prototype.render
             ? 2
             : 4;
@@ -228,7 +228,7 @@ var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
     if (typeNumber(a) > 7) {
         var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
-        if (isFn(iteratorFn)) {
+        if (iteratorFn && iteratorFn.call) {
             return iteratorFn;
         }
     }
