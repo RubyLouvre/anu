@@ -138,7 +138,26 @@ function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
 
-function updateVnode(lastVnode) {
+function updateByContext(vnode) {
+    let vchildren = vnode.vchildren;
+    if (vchildren) {
+        for (let i = 0; i < vchildren.length; i++) {
+            let el = vchildren[i];
+            if (el.vtype === 1) {
+                if (updateByContext(el)) {
+                    return true;
+                }
+            } else if (el.vtype && el.type.contextTypes) {
+                return true;
+            }
+        }
+    }
+}
+
+function updateVnode(lastVnode, nextVnode) {
+    if (lastVnode === nextVnode && !updateByContext(lastVnode)) {
+        return lastVnode._hostNode;
+    }
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
@@ -259,7 +278,8 @@ function instantiateComponent(type, vtype, props, context) {
         };
         CurrentOwner.cur = instance;
         var mixin = type(props, context);
-        if (mixin && isFn(mixin.render)) {//支持module pattern component
+        if (mixin && isFn(mixin.render)) {
+            //支持module pattern component
             delete instance.__isStateless;
             Object.assign(instance, mixin);
         } else {
@@ -299,7 +319,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance.__rendered
     );
 
-
     var childContext = rendered.vtype
         ? getChildContext(instance, parentContext)
         : parentContext;
@@ -309,7 +328,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     createInstanceChain(instance, vnode, rendered);
     updateInstanceChain(instance, dom);
 
-   
     return dom;
 }
 
@@ -321,15 +339,13 @@ function renderComponent(instance, vnode, props, context, state, rendered) {
 
     //调整全局的 CurrentOwner.cur
     if (!rendered) {
-        try{
+        try {
             var lastOwn = CurrentOwner.cur;
             CurrentOwner.cur = instance;
             rendered = instance.render();
-        }finally{
+        } finally {
             CurrentOwner.cur = lastOwn;
         }
-      
-       
     }
 
     //组件只能返回组件或null
@@ -427,15 +443,15 @@ function _refreshComponent(instance, updateQueue) {
         nextContext,
         nextState
     );
-    if (lastRendered !== nextRendered && parentContext) {
-        dom = alignVnode(
-            lastRendered,
-            nextRendered,
-            vparent,
-            getChildContext(instance, parentContext),
-            updateQueue
-        );
-    }
+    
+    dom = alignVnode(
+        lastRendered,
+        nextRendered,
+        vparent,
+        getChildContext(instance, parentContext),
+        updateQueue
+    );
+
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
 

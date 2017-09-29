@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-09-28
+ * QQ 370262116 by 司徒正美 Copyright 2017-09-29
  */
 
 (function (global, factory) {
@@ -1913,7 +1913,26 @@ function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
 
-function updateVnode(lastVnode) {
+function updateByContext(vnode) {
+    var vchildren = vnode.vchildren;
+    if (vchildren) {
+        for (var i = 0; i < vchildren.length; i++) {
+            var el = vchildren[i];
+            if (el.vtype === 1) {
+                if (updateByContext(el)) {
+                    return true;
+                }
+            } else if (el.vtype && el.type.contextTypes) {
+                return true;
+            }
+        }
+    }
+}
+
+function updateVnode(lastVnode, nextVnode) {
+    if (lastVnode === nextVnode && !updateByContext(lastVnode)) {
+        return lastVnode._hostNode;
+    }
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
@@ -2165,12 +2184,11 @@ function _refreshComponent(instance, updateQueue) {
     nextVnode._instance = instance; //important
 
     var nextState = instance.__mergeStates(nextProps, nextContext);
-
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         instance.__forceUpdate = false;
         return dom;
     }
-    // clearRefs();
+
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
@@ -2181,9 +2199,9 @@ function _refreshComponent(instance, updateQueue) {
     instance.lastContext = lastContext;
     //这里会更新instance的props, context, state
     var nextRendered = renderComponent(instance, nextVnode, nextProps, nextContext, nextState);
-    if (lastRendered !== nextRendered && parentContext) {
-        dom = alignVnode(lastRendered, nextRendered, vparent, getChildContext(instance, parentContext), updateQueue);
-    }
+
+    dom = alignVnode(lastRendered, nextRendered, vparent, getChildContext(instance, parentContext), updateQueue);
+
     createInstanceChain(instance, nextVnode, nextRendered);
     updateInstanceChain(instance, dom);
 

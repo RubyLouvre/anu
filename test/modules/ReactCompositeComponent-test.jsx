@@ -394,4 +394,29 @@ describe("ReactCompositeComponent", function() {
     expect(ReactDOM.findDOMNode(component).innerHTML).toBe('bar');
   });
 
+
+  it('should skip update when rerendering element in container', () => {
+    class Parent extends React.Component {
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    var childRenders = 0;
+
+    class Child extends React.Component {
+      render() {
+        childRenders++;
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    var child = <Child />;
+
+    ReactDOM.render(<Parent>{child}</Parent>, container);
+    ReactDOM.render(<Parent>{child}</Parent>, container);
+    expect(childRenders).toBe(1);
+  });
+
 });
