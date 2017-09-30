@@ -8,7 +8,7 @@
     
    <script type='text/javascript' src="./dist/React.js"></script>
  
-  <!--<script type='text/javascript' src="./test/react.js"></script>
+ <!-- <script type='text/javascript' src="./test/react.js"></script>
  <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -46,9 +46,7 @@
       state = initialSettings;
 
       shouldComponentUpdate(nextProps, nextState) {
-        var b = shallowCompare(this, nextProps, nextState);
-        console.log("b", b)
-        return b
+        return shallowCompare(this, nextProps, nextState);
       }
 
       render() {
@@ -66,11 +64,10 @@
       foo: initialSettings.foo,
       bar: initialSettings.bar,
     };
-    console.log("开始更新")
+    
     initialSettings.foo.xx = 1
     instance.setState(settings);
     expect(renderCalls).toBe(1);
-    console.log(instance.state === settings, instance.state.foo === settings.foo )//官方false true
    
     // Re-render because one field changed
     initialSettings.foo = [1, 2, 3, 4];
@@ -78,12 +75,11 @@
 
 
     expect(renderCalls).toBe(2);
- /*
+
     // Re-render because the object changed
     instance.setState(getInitialState());
     expect(renderCalls).toBe(3);
-    */
-      
+
 
  
 

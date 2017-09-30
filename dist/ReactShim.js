@@ -1908,7 +1908,6 @@ function renderByAnu(vnode, container, callback) {
         rootNode = void 0,
         lastVnode = container.__component;
     if (lastVnode) {
-        // lastVnode._hostNode = container.firstChild;??
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, updateQueue);
     } else {
         updateQueue.isMainProcess = true;
@@ -2098,10 +2097,11 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     vnode.vparent = vparent;
 
     if (instance.componentWillMount) {
-        instance.componentWillMount();
+        instance.componentWillMount(); //这里可能执行了setState
+        instance.state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
-    var dom = renderComponent(instance, vnode, props, context, instance.__mergeStates(props, context), function (nextRendered, childContext) {
+    var dom = renderComponent(instance, vnode, props, context, function (nextRendered, childContext) {
         return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue);
     }, instance.__rendered);
 
@@ -2110,9 +2110,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     return dom;
 }
 
-function renderComponent(instance, vnode, props, context, state, cb, rendered) {
+function renderComponent(instance, vnode, props, context, cb, rendered) {
     //更新新属性
-    instance.state = state;
     instance.props = props;
     instance.context = context;
     //调整全局的 CurrentOwner.cur
@@ -2208,12 +2207,17 @@ function refreshComponent(instance, updateQueue) {
     nextVnode._instance = instance; //important
 
     var nextState = instance.__mergeStates(nextProps, nextContext);
+    var noUpdate = false;
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && !instance.shouldComponentUpdate(nextProps, nextState, nextContext)) {
-        instance.__forceUpdate = false;
+        noUpdate = true;
+    }
+    instance.__forceUpdate = false;
+    instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+    if (noUpdate) {
         return dom;
     }
+
     instance.__hydrating = true;
-    instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
@@ -2221,7 +2225,7 @@ function refreshComponent(instance, updateQueue) {
     instance.lastState = lastState;
     instance.lastContext = lastContext;
     //这里会更新instance的props, context, state
-    dom = renderComponent(instance, nextVnode, nextProps, nextContext, nextState, function (nextRendered, childContext) {
+    dom = renderComponent(instance, nextVnode, nextProps, nextContext, function (nextRendered, childContext) {
         return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue);
     });
 

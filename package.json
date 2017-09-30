@@ -42,6 +42,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-runtime": "^5.8.38",
     "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
     "es3ify-webpack-plugin": "0.0.1",
     "eslint": "^4.2.0",
     "eslint-plugin-react": "^7.1.0",
