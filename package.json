@@ -89,5 +89,7 @@
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
   },
-  "dependencies": {}
+  "dependencies": {
+    "chai-spies": "^0.7.1"
+  }
 }

@@ -48,6 +48,8 @@ require("./modules/ReactComponentLifeCycle-test.jsx");
 
 require("./modules/ReactCompositeComponent-test.jsx");
 
+require("./modules/ReactContextValidator-test.js");
+
 
 
 
