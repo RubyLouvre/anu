@@ -33,6 +33,7 @@ require("./modules/ReactChildren-test.jsx");
 require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactMultiChild-test.jsx");
 require("./modules/ReactComponent-test.jsx");
+require("./modules/ReactContextValidator-test.js");
 
 
 
