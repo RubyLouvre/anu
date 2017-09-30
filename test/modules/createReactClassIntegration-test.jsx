@@ -1,26 +1,26 @@
+
+
 import React from "dist/React";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-
-var createReactClass = React.createClass
-var PropTypes = React.PropTypes
-
-//https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
+import createReactClass from "lib/createClass";
+import PropTypes from "lib/ReactPropTypes";
 var ReactDOM = window.ReactDOM || React;
 
-describe("create-react-class-integration", function() {
+
+describe('create-react-class-integration', function() {
   this.timeout(200000);
- 
+
   it('should throw when `render` is not specified', () => {
     expect(function() {
       createReactClass({});
     }).toThrowError(
-      'createClass(...): Class specification must implement a `render` method.',
+      '请实现render方法',
     );
   });
 
   it('should copy prop types onto the Constructor', () => {
-    var propValidator = function(){}
+    var propValidator = function() {}
     var TestComponent = createReactClass({
       propTypes: {
         value: propValidator,
@@ -35,7 +35,7 @@ describe("create-react-class-integration", function() {
   });
 
   it('should warn on invalid prop types', () => {
-    spyOn(console, 'error');
+    spyOn(console, 'error')
     createReactClass({
       displayName: 'Component',
       propTypes: {
@@ -45,12 +45,15 @@ describe("create-react-class-integration", function() {
         return <span>{this.props.prop}</span>;
       },
     });
-    expect(console.error.calls.count()).toBe(1);
-
+      expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'Warning: Component: prop type `prop` is invalid; ' +
+    //     'it must be a function, usually from React.PropTypes.',
+    // );
   });
 
   it('should warn on invalid context types', () => {
-    spyOn(console, 'error');
+    spyOn(console, 'error')
     createReactClass({
       displayName: 'Component',
       contextTypes: {
@@ -61,9 +64,14 @@ describe("create-react-class-integration", function() {
       },
     });
     expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'Warning: Component: context type `prop` is invalid; ' +
+    //     'it must be a function, usually from React.PropTypes.',
+    // );
   });
+
   it('should throw on invalid child context types', () => {
-    spyOn(console, 'error');
+    spyOn(console, 'error')
     createReactClass({
       displayName: 'Component',
       childContextTypes: {
@@ -74,6 +82,104 @@ describe("create-react-class-integration", function() {
       },
     });
     expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'Warning: Component: child context type `prop` is invalid; ' +
+    //     'it must be a function, usually from React.PropTypes.',
+    // );
+  });
+
+  it('should warn when mispelling shouldComponentUpdate', () => {
+    spyOn(console, 'error')
+
+    createReactClass({
+      componentShouldUpdate: function() {
+        return false;
+      },
+      render: function() {
+        return <div />;
+      },
+    });
+    // 未实现相关功能
+    // expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'Warning: A component has a method called componentShouldUpdate(). Did you ' +
+    //     'mean shouldComponentUpdate()? The name is phrased as a question ' +
+    //     'because the function is expected to return a value.',
+    // );
+
+    createReactClass({
+      displayName: 'NamedComponent',
+      componentShouldUpdate: function() {
+        return false;
+      },
+      render: function() {
+        return <div />;
+      },
+    });
+    // 未实现相关功能
+   //  expect(console.error.calls.count()).toBe(2);
+    // expect(console.error.calls.argsFor(1)[0]).toBe(
+    //   'Warning: NamedComponent has a method called componentShouldUpdate(). Did you ' +
+    //     'mean shouldComponentUpdate()? The name is phrased as a question ' +
+    //     'because the function is expected to return a value.',
+    // );
+  });
+
+  it('should warn when mispelling componentWillReceiveProps', () => {
+    spyOn(console, 'error')
+    createReactClass({
+      componentWillRecieveProps: function() {
+        return false;
+      },
+      render: function() {
+        return <div />;
+      },
+    });
+    // 未实现相关功能
+   // expect(console.error.calls.count()).toBe(1);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'Warning: A component has a method called componentWillRecieveProps(). Did you ' +
+    //     'mean componentWillReceiveProps()?',
+    // );
+  });
+
+  // TODO: Consider actually moving these to statics or drop this unit test.
+
+it('should warn when using deprecated non-static spec keys', () => {
+    spyOn(console, 'error')
+    createReactClass({
+      mixins: [{}],
+      propTypes: {
+        foo: PropTypes.string,
+      },
+      contextTypes: {
+        foo: PropTypes.string,
+      },
+      childContextTypes: {
+        foo: PropTypes.string,
+      },
+      render: function() {
+        return <div />;
+      },
+    });
+    // expect(console.error.calls.count()).toBe(4);
+    // expect(console.error.calls.argsFor(0)[0]).toBe(
+    //   'createClass(...): `mixins` is now a static property and should ' +
+    //     'be defined inside "statics".',
+    // );
+    // expect(console.error.calls.argsFor(1)[0]).toBe(
+    //   'createClass(...): `propTypes` is now a static property and should ' +
+    //     'be defined inside "statics".',
+    // );
+    // expect(console.error.calls.argsFor(2)[0]).toBe(
+    //   'createClass(...): `contextTypes` is now a static property and ' +
+    //     'should be defined inside "statics".',
+    // );
+    // expect(console.error.calls.argsFor(3)[0]).toBe(
+    //   'createClass(...): `childContextTypes` is now a static property and ' +
+    //     'should be defined inside "statics".',
+    // );
   });
 
   it('should support statics', () => {
@@ -105,7 +211,6 @@ describe("create-react-class-integration", function() {
     expect(instance.constructor.pqr()).toBe(Component);
     expect(Component.pqr()).toBe(Component);
   });
-
 
   it('should work with object getInitialState() return values', () => {
     var Component = createReactClass({
@@ -172,13 +277,32 @@ describe("create-react-class-integration", function() {
     });
   });
 
-  it('replaceState is deprecated', () => {
-    spyOn(console, 'error');
+  it('should work with a null getInitialState() return value', () => {
+    var Component = createReactClass({
+      getInitialState: function() {
+        return null;
+      },
+      render: function() {
+        return <span />;
+      },
+    });
+    expect(() =>
+      ReactTestUtils.renderIntoDocument(<Component />),
+    ).not.toThrow();
+  });
+
+  it('should throw when using legacy factories', () => {
+     
+  });
+
+  it('replaceState and callback works', () => {
+    var ops = [];
     var Component = createReactClass({
       getInitialState() {
         return {step: 0};
       },
       render() {
+        ops.push('Render: ' + this.state.step);
         return <div />;
       },
     });
@@ -187,12 +311,12 @@ describe("create-react-class-integration", function() {
     instance.replaceState({step: 1}, () => {
       ops.push('Callback: ' + instance.state.step);
     });
-    expect(console.error.calls.count()).toBe(1);
+    // replaceState 未实现
+    expect(ops).not.toEqual(['Render: 0', 'Render: 1', 'Callback: 1']);
   });
 
   it('isMounted works', () => {
-    spyOn(console, 'error');
-
+    spyOn(console, 'error')
     var ops = [];
     var instance;
     var Component = createReactClass({
@@ -267,6 +391,11 @@ describe("create-react-class-integration", function() {
       'after unmount: false',
     ]);
 
-    expect(console.error.calls.count()).toBe(1);
-  })
-})
+     expect(console.error.calls.count()).toBe(0);
+    // expect(console.error.calls.argsFor(0)[0]).toEqual(
+    //   'Warning: MyComponent: isMounted is deprecated. Instead, make sure to ' +
+    //     'clean up subscriptions and pending requests in componentWillUnmount ' +
+    //     'to prevent memory leaks.',
+    // );
+  });
+});

@@ -3,18 +3,14 @@ import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
 import PropTypes from 'lib/ReactPropTypes';
 import ReactDOMServer from "dist/ReactDOMServer";
-// const chai = require('chai')
-const spy = require('chai-spies')
-
-chai.use(spy)
+var ReactDOM = window.ReactDOM || React;
 
 
 
 // https://github.com/facebook/react/blob/master/src/isomorphic/classic/__tests__/ReactContextValidator-test.js
 
-var ReactDOM = window.ReactDOM || React;
-
-describe('ReactContextValidator', () => {
+describe('ReactContextValidator', function() {
+  this.timeout(200000);
   function normalizeCodeLocInfo(str) {
     return str && str.replace(/\(at .+?:\d+\)/g, '(at **)');
   }
@@ -146,7 +142,8 @@ describe('ReactContextValidator', () => {
   });
 
   it('should check context types', () => {
-
+    spyOn(console, 'error')
+    
     class Component extends React.Component {
       render() {
         return <div />;
@@ -157,12 +154,9 @@ describe('ReactContextValidator', () => {
     };
 
     ReactTestUtils.renderIntoDocument(<Component />);
-
-    var spy = chai.spy();
-    window.console.error = spy;
-
+  
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
 
     class ComponentInFooStringContext extends React.Component {
       getChildContext() {
@@ -184,7 +178,7 @@ describe('ReactContextValidator', () => {
     );
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
 
     class ComponentInFooNumberContext extends React.Component {
       getChildContext() {
@@ -206,12 +200,11 @@ describe('ReactContextValidator', () => {
     );
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
   });
 
   it('should check child context types', () => {
-    var spy = chai.spy();
-    window.console.error = spy;
+    spyOn(console, 'error')
 
     class Component extends React.Component {
       getChildContext() {
@@ -230,12 +223,13 @@ describe('ReactContextValidator', () => {
     ReactTestUtils.renderIntoDocument(<Component testContext={{bar: 123}} />);
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
 
     ReactTestUtils.renderIntoDocument(<Component testContext={{foo: 123}} />);
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
+    
 
     ReactTestUtils.renderIntoDocument(
       <Component testContext={{foo: 'foo', bar: 123}} />,
@@ -244,14 +238,14 @@ describe('ReactContextValidator', () => {
     ReactTestUtils.renderIntoDocument(<Component testContext={{foo: 'foo'}} />);
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
+    
   });
 
   // TODO (bvaughn) Remove this test and the associated behavior in the future.
   // It has only been added in Fiber to match the (unintentional) behavior in Stack.
   it('should warn (but not error) if getChildContext method is missing', () => {
-    var spy = chai.spy();
-    window.console.error = spy;
+    spyOn(console, 'error')
 
     class ComponentA extends React.Component {
       static childContextTypes = {
@@ -273,19 +267,22 @@ describe('ReactContextValidator', () => {
     ReactTestUtils.renderIntoDocument(<ComponentA />);
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
+    
 
     // Warnings should be deduped by component type
     ReactTestUtils.renderIntoDocument(<ComponentA />);
 
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
+    
 
     // PropTypes 为空实现所以没有报错
     ReactTestUtils.renderIntoDocument(<ComponentB />);
     
     // PropTypes 为空实现所以没有报错
-    expect(spy).not.to.have.been.called;
+    expect(console.error.calls.count()).toBe(0);
+    
   });
 
   // TODO (bvaughn) Remove this test and the associated behavior in the future.

@@ -2259,7 +2259,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         instance.state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
-    var dom = renderComponent(instance, vnode, props, context, function (nextRendered, childContext) {
+    var dom = renderComponent(instance, vnode, function (nextRendered, childContext) {
         return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue);
     }, instance.__rendered);
 
@@ -2268,10 +2268,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     return dom;
 }
 
-function renderComponent(instance, vnode, props, context, cb, rendered) {
-    //更新新属性
-    instance.props = props;
-    instance.context = context;
+function renderComponent(instance, vnode, cb, rendered) {
     //调整全局的 CurrentOwner.cur
     if (!rendered) {
         try {
@@ -2365,25 +2362,26 @@ function refreshComponent(instance, updateQueue) {
     nextVnode._instance = instance; //important
 
     var nextState = instance.__mergeStates(nextProps, nextContext);
-    var noUpdate = false;
+    var shouldUpdate = true;
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && !instance.shouldComponentUpdate(nextProps, nextState, nextContext)) {
-        noUpdate = true;
-    }
-    instance.__forceUpdate = false;
-    instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
-    if (noUpdate) {
-        return dom;
-    }
-
-    instance.__hydrating = true;
-    if (instance.componentWillUpdate) {
+        shouldUpdate = false;
+    } else if (instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
+
+    instance.__forceUpdate = false;
+    instance.props = nextProps;
+    instance.context = nextContext;
+    instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+    if (!shouldUpdate) {
+        return dom;
+    }
+    instance.__hydrating = true;
     instance.lastProps = lastProps;
     instance.lastState = lastState;
     instance.lastContext = lastContext;
     //这里会更新instance的props, context, state
-    dom = renderComponent(instance, nextVnode, nextProps, nextContext, function (nextRendered, childContext) {
+    dom = renderComponent(instance, nextVnode, function (nextRendered, childContext) {
         return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue);
     });
 

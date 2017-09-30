@@ -277,8 +277,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     let dom = renderComponent(
         instance,
         vnode,
-        props,
-        context,
         function(nextRendered, childContext) {
             return mountVnode(
                 lastNode,
@@ -296,10 +294,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     return dom;
 }
 
-function renderComponent(instance, vnode, props, context, cb, rendered) {
-    //更新新属性
-    instance.props = props;
-    instance.context = context;
+function renderComponent(instance, vnode, cb, rendered) {
     //调整全局的 CurrentOwner.cur
     if (!rendered) {
         try {
@@ -392,24 +387,26 @@ function refreshComponent(instance, updateQueue) {
     nextVnode._instance = instance; //important
 
     let nextState = instance.__mergeStates(nextProps, nextContext);
-    let noUpdate = false;
+    let shouldUpdate = true;
     if (
         !instance.__forceUpdate &&
     instance.shouldComponentUpdate &&
     !instance.shouldComponentUpdate(nextProps, nextState, nextContext) 
     ) {
-        noUpdate = true;
-    }
-    instance.__forceUpdate = false;
-    instance.state = nextState;//既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
-    if(noUpdate){
-        return dom;
-    }
-
-    instance.__hydrating = true;
-    if (instance.componentWillUpdate) {
+        shouldUpdate = false;
+    }else if(instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
+
+   
+    instance.__forceUpdate = false;
+    instance.props = nextProps;
+    instance.context = nextContext;
+    instance.state = nextState;//既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+    if(!shouldUpdate){
+        return dom;
+    }
+    instance.__hydrating = true;
     instance.lastProps = lastProps;
     instance.lastState = lastState;
     instance.lastContext = lastContext;
@@ -417,8 +414,6 @@ function refreshComponent(instance, updateQueue) {
     dom = renderComponent(
         instance,
         nextVnode,
-        nextProps,
-        nextContext,
         function(nextRendered, childContext) {
             return alignVnode(
                 lastRendered,

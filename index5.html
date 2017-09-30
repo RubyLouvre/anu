@@ -8,7 +8,7 @@
     
    <script type='text/javascript' src="./dist/React.js"></script>
  
- <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <!--<script type='text/javascript' src="./test/react.js"></script>
  <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -30,56 +30,27 @@
             }
         }
     }
-   
-    
-    function getInitialState() {
-      return {
-        foo: [1, 2, 3],
-        bar: {a: 4, b: 5, c: 6},
-      };
-    }
+    const log = [];
+        class Test extends React.Component {
+            state = { a: 0 };
+            render() {
+                return null;
+            }
+            shouldComponentUpdate(nextProps, nextState) {
+                log.push("scu from " + Object.keys(this.state) + " to " + Object.keys(nextState));
+                return false;
+            }
+        }
 
-    var renderCalls = 0;
-    var initialSettings = getInitialState();
-
-    class Component extends React.Component {
-      state = initialSettings;
-
-      shouldComponentUpdate(nextProps, nextState) {
-        return shallowCompare(this, nextProps, nextState);
-      }
-
-      render() {
-        renderCalls++;
-        return <div />;
-      }
-    }
-
-   // var container = document.createElement('div');
-    var instance = ReactDOM.render(<Component />, container);
-    expect(renderCalls).toBe(1);
-
-    // Do not re-render if state is equal
-    var settings = {
-      foo: initialSettings.foo,
-      bar: initialSettings.bar,
-    };
-    
-    initialSettings.foo.xx = 1
-    instance.setState(settings);
-    expect(renderCalls).toBe(1);
-   
-    // Re-render because one field changed
-    initialSettings.foo = [1, 2, 3, 4];
-    instance.setState(initialSettings);
+        const test = ReactDOM.render(<Test />, container);
+        test.setState({ b: 0 });
+        expect(log.length).toBe(1);
+        test.setState({ c: 0 });
+        expect(log.length).toBe(2);
+     //   expect(log).toEqual(["scu from a to a,b", "scu from a,b to a,b,c"]);
 
 
-    expect(renderCalls).toBe(2);
-
-    // Re-render because the object changed
-    instance.setState(getInitialState());
-    expect(renderCalls).toBe(3);
-
+    console.log(JSON.stringify(log))
 
  
 
@@ -92,13 +63,7 @@
     
         <div>开发者工具</div>
         <pre>
-          A componentWillMount
-          A render
-          A componentDidMount
-          A componentWillUnmount
-          B componentWillMount
-          B render
-          B componentDidMount
+         
         </pre>
         <div id='example'></div>
     

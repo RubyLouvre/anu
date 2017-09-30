@@ -1,10 +1,12 @@
+
+
 import React from "dist/React";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
+import createReactClass from "lib/createClass";
+import PropTypes from "lib/ReactPropTypes";
+import ReactDOM from "dist/React";
 
-import ReactDOMServer from "dist/ReactDOMServer";
-//https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
-var ReactDOM = window.ReactDOM || React;
 
 describe("ReactComponentLifeCycle-test", function() {
     this.timeout(200000);
@@ -476,7 +478,6 @@ function getLifeCycleState(instance) {
 
   it('calls effects on module-pattern component', function() {
     const log = [];
-    var PropTypes = React.PropTypes
     function Parent() {
       return {
         render() {

@@ -10,7 +10,7 @@ describe("ReactComponent", function() {
     this.timeout(200000);
 
 
-    it("should not produce child DOM nodes for null and false", () => {
+    it("should not produce child DOM nodes for null and false", function() {
         class Component1 extends React.Component {
             render() {
                 return null;

@@ -12,13 +12,13 @@ if (typeof chai !== "undefined") {
         });
 
         //实现spyOn功能
-        var spy = (window.spyOn = function(obj, method) {
+        var spy2 = (window.spyOn = function(obj, method) {
             var orig = obj[method];
             if(orig.calls){
                 orig.calls.reset();
                 return orig;
             }
-            obj[method] = spy.createSpy(orig);
+            obj[method] = spy2.createSpy(orig);
             return {
                 and: {
                     callThrough: function() {
@@ -27,7 +27,7 @@ if (typeof chai !== "undefined") {
                 }
             };
         });
-        spy.createSpy = function(fn) {
+        spy2.createSpy = function(fn) {
             function spyFn() {
                 spyFn.calls.push([].slice.call(arguments));
                 if (fn) {
