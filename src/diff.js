@@ -132,7 +132,7 @@ const patchStrategy = {
     12: updateComponent,
     14: updateComponent
 };
-
+//mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
 function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
@@ -210,9 +210,9 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     let dom = genMountElement(lastNode, vnode, vparent, type);
 
     vnode._hostNode = dom;
-
+    var children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
-    method(dom, vnode, context, updateQueue);
+    method(dom, children, vnode, context, updateQueue);
 
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
@@ -228,8 +228,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
 }
 
 //将虚拟DOM转换为真实DOM并插入父元素
-function mountChildren(parentNode, vparent, context, updateQueue) {
-    var children = flattenChildren(vparent);
+function mountChildren(parentNode, children, vparent, context, updateQueue) {
     for (let i = 0, n = children.length; i < n; i++) {
         parentNode.appendChild(
             mountVnode(null, children[i], vparent, context, updateQueue)
@@ -237,9 +236,8 @@ function mountChildren(parentNode, vparent, context, updateQueue) {
     }
 }
 
-function alignChildren(parentNode, vparent, context, updateQueue) {
-    let children = flattenChildren(vparent),
-        childNodes = parentNode.childNodes,
+function alignChildren(parentNode, children, vparent, context, updateQueue) {
+    let childNodes = parentNode.childNodes,
         insertPoint = childNodes[0] || null,
         j = 0,
         n = children.length;
@@ -344,25 +342,31 @@ function renderComponent(instance, vnode, props, context, state, cb, rendered) {
 }
 
 function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
-    var instance = lastVnode._instance;
-    var ref = lastVnode.ref;
-    if (ref && lastVnode.vtype === 2) {
-        lastVnode.ref(null);
-    }
-    let nextContext = getContextByTypes(context, nextVnode.type.contextTypes);
-    let nextProps = nextVnode.props;
+    let { type, ref, _instance: instance, vtype } = lastVnode;
 
+    let nextContext, nextProps = nextVnode.props, queue;
+    if (type.contextTypes) {
+        nextContext = getContextByTypes(context, type.contextTypes);
+    } else {
+        nextContext = instance.context;//没有定义contextTypes就沿用旧的
+    }
+  
     if (instance.componentWillReceiveProps) {
         instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
         instance.__receiving = false;
     }
     //用于refreshComponent
+    if (ref && vtype === 2) {
+        ref(null);
+        if(nextVnode.ref){//更新ref
+            lastVnode.ref = nextVnode.ref;
+        }
+    }
     instance.nextVnode = nextVnode;
     nextVnode.context = nextContext;
     nextVnode.parentContext = context;
     nextVnode.vparent = vparent;
-    var queue;
     if (updateQueue.isChildProcess) {
         queue = updateQueue;
     } else {
@@ -396,7 +400,7 @@ function refreshComponent(instance, updateQueue) {
     if (
         !instance.__forceUpdate &&
     instance.shouldComponentUpdate &&
-    instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false
+    !instance.shouldComponentUpdate(nextProps, nextState, nextContext) 
     ) {
         instance.__forceUpdate = false;
         return dom;
@@ -474,11 +478,12 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         });
         list.length = 0;
     } else {
+        var vchildren = flattenChildren(nextVnode);
         if (lastProps[innerHTML]) {
             while (dom.firstChild) {
                 dom.removeChild(dom.firstChild);
             }
-            mountChildren(dom, nextVnode, context, updateQueue);
+            mountChildren(dom, vchildren, nextVnode, context, updateQueue);
         } else {
             diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
         }
@@ -500,14 +505,22 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     let lastChildren = lastVnode.vchildren,
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
-        lastLength = lastChildren.length;
-
+        lastLength = lastChildren.length,
+        childNodes = parentNode.childNodes;
+    lastChildren.forEach(function(el, i) {
+        if (childNodes[i] !== el._hostNode) {
+            parentNode.replaceChild(el._hostNode, childNodes[i]);
+        }
+    });
     //如果旧数组长度为零
     if (nextLength && !lastLength) {
-        return nextChildren.forEach(function(vnode) {
-            let curNode = mountVnode(null, vnode, lastVnode, context, updateQueue);
-            parentNode.appendChild(curNode);
-        });
+        return mountChildren(
+            parentNode,
+            nextChildren,
+            lastVnode,
+            context,
+            updateQueue
+        );
     }
     if (nextLength === lastLength && lastLength === 1) {
         return alignVnode(

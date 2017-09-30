@@ -5,75 +5,74 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
  <script type='text/javascript' src="./dist/React.js"></script>
-<!--<script type='text/javascript' src="./test/react.js"></script>
-<script type='text/javascript' src="./test/react-dom.js"></script>-->
-<!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+
+ <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
+   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+   
      <script type='text/javascript' src="./lib/babel.js"></script>
     
   <script type='text/babel'>
   var s
   window.onload = function(){
    
-    var list = []
-    class App extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                path: "111"
-            };
-        }
-
-        render() {
-            console.log('render ' + this.state.path)
-            return <div>
-                <span
-                    id="click2time"
-                    onClick={this
-                    .onClick
-                    .bind(this)}>{this.state.path}</span>
-            </div>;
-        }
-
-        onClick() {
-            this
-                .setState({
-                    path: 'click'
-                }, function () {
-                    console.log('click....')
-                })
-            this.setState({
-                path: 'click2'
-            }, function () {
-                console.log('click2....')
-            })
-        }
-        componentWillUpdate() {
-            console.log('will update')
-        }
-        componentDidUpdate() {
-            console.log('did update')
+    var container = document.getElementById("example")
+    var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+      window.ReactDOM = React
+    }
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
         }
     }
-
-
-    ReactDOM.render(<App />, document.body, function() {
-      console.log("ReactDOM cb");
-    });
+    var _testJournal = [];
     
-
-        setTimeout(function(){
-          //console.log(list.join("\n"))
-        },3000)
-
-
-
-
-   // React.render(<Outer/> , document.body)
+        class Child extends React.Component {
+          componentDidMount() {
+            _testJournal.push('Child:onDOMReady');
+          }
+    
+          render() {
+            return <div className="Child" />;
+          }
+        }
+    
+        class SwitcherParent extends React.Component {
+          constructor(props) {
+            super(props);
+            _testJournal.push('SwitcherParent:getInitialState');
+            this.state = {showHasOnDOMReadyComponent: false};
+          }
+    
+          componentDidMount() {
+            _testJournal.push('SwitcherParent:onDOMReady');
+            this.switchIt();
+          }
+    
+          switchIt = () => {
+            this.setState({showHasOnDOMReadyComponent: true});
+          };
+    
+          render() {
+            return (
+              <div className="SwitcherParent">
+                {this.state.showHasOnDOMReadyComponent ? <Child /> : <div className="switchDiv" />}
+              </div>
+            );
+          }
+        }
+        var div = container || document.createElement('div');
+        ReactDOM.render(<SwitcherParent />, div);
+        expect(_testJournal).toBe([
+          'SwitcherParent:getInitialState',
+          'SwitcherParent:onDOMReady',
+          'Child:onDOMReady',
+        ]);
  
-
-
-}
-  
+  }
   </script>
 
 </head>
@@ -86,4 +85,3 @@
 </body>
     
  </html>
-

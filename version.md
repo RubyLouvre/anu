@@ -18,6 +18,8 @@
 12. 重构unmountComponentAtNode方法
 13. 添加对两个虚拟DOM的引用都相同的情况下，检测子组件的contextType决定是否更新的策略
 14. 无状态组件支持模块模式（返回一个带生命周期钩子的纯对象，这些方法会像有状态组件那样被调用）
+15. 放松shouldComponentUpdate的限制，返回任何假值都阻止子孙更新
+16. 修正ref的更新方式
 
 ## 1.1.1
 1. 简化createClass

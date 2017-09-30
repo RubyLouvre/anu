@@ -4,137 +4,90 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-         <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+ <script type='text/javascript' src="./dist/React.js"></script>
 
+   <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>
+  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
+   
      <script type='text/javascript' src="./lib/babel.js"></script>
+    
   <script type='text/babel'>
   var s
   window.onload = function(){
    
-   class ClickCounter extends React.Component {
-  state = {count: this.props.initialCount};
-
-  triggerReset = () => {
-    this.setState({count: this.props.initialCount});
-  };
-
-  handleClick = () => {
-    this.setState({count: this.state.count + 1});
-  };
-
-  render() {
-    var children = [];
-    var i;
-    console.log(this.state.count)
-    for (i = 0; i < this.state.count; i++) {
-      children.push(
-        <div
-          className="clickLogDiv"
-          key={'clickLog' + i}
-          ref={'clickLog' + i}
-        />,
-      );
+    var container = document.getElementById("example")
+    var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+      window.ReactDOM = React
     }
-    return (
-      <span className="clickIncrementer" onClick={this.handleClick}>
-        {children}
-      </span>
-    );
-  }
-}
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+    var k = 0
+    class Static extends React.Component {
+     shouldComponentUpdate() {
+       // return false;
+       return true
+      }
+      componentDidUpdate() {
+        console.log('更新')
+      }
+      render() {
+        console.log(this.props.children, '孩子')
+        return <div className={k++}>{this.props.children}</div>;
+      }
+    }
 
-/**
- * Only purpose is to test that refs are tracked even when applied to a
- * component that is injected down several layers. Ref systems are difficult to
- * build in such a way that ownership is maintained in an airtight manner.
- */
-class GeneralContainerComponent extends React.Component {
-  render() {
-    return <div>{this.props.children}</div>;
-  }
-}
+    class Component extends React.Component {
+      render() {
+        if (this.props.flipped) {
+          console.log('第二次')
+          return (
+            <div>
+              <Static ref="static0" key="B">BB</Static>
+              <Static ref="static1" key="A">AA</Static>
+            </div>
+          );
+        } else {
+          console.log('第一次')
+          return (
+            <div>
+              <Static ref="static0" key="A">A</Static>
+              <Static ref="static1" key="B">B</Static>
+            </div>
+          );
+        }
+      }
+    }
 
-/**
- * Notice how refs ownership is maintained even when injecting a component
- * into a different parent.
- */
-class TestRefsComponent extends React.Component {
-  doReset = () => {
-    this.refs.myCounter.triggerReset();
-  };
+   // var container = document.createElement('div');
+    var comp = ReactDOM.render(<Component flipped={false} />, container);
+    console.log(Object.assign({},comp.refs))
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('A');
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('B');
 
-  render() {
-    return (
-      <div>
-        <div ref="resetDiv" onClick={this.doReset}>
-          Reset Me By Clicking This.
-        </div>
-        <GeneralContainerComponent ref="myContainer">
-          <ClickCounter ref="myCounter" initialCount={1} />
-        </GeneralContainerComponent>
-      </div>
-    );
-  }
-}
-
-/**
- * Render a TestRefsComponent and ensure that the main refs are wired up.
- */
-var renderTestRefsComponent = function() {
-  var testRefsComponent = ReactTestUtils.renderIntoDocument(
-    <TestRefsComponent />, document.body
-  );
-  console.log(testRefsComponent instanceof TestRefsComponent);
-
-  var generalContainer = testRefsComponent.refs.myContainer;
-  console.log(generalContainer instanceof GeneralContainerComponent)
-
-  var counter = testRefsComponent.refs.myCounter;
-  console.log(counter instanceof ClickCounter)
-
-  return testRefsComponent;
-};
-var expectClickLogsLengthToBe = function(instance, length) {
-  var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-    instance,
-    'clickLogDiv',
-  );
-  console.log(clickLogs.length === length, length);
-  console.log(Object.keys(instance.refs.myCounter.refs).length === length, length, '!!!',
-  instance.refs.myCounter.refs
-  );
-};
-    var testRefsComponent = renderTestRefsComponent();
-    var clickIncrementer = ReactTestUtils.findRenderedDOMComponentWithClass(
-      testRefsComponent,
-      'clickIncrementer',
-    );
-
-    expectClickLogsLengthToBe(testRefsComponent, 1);
-
-    // After clicking the reset, there should still only be one click log ref.
-    ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
-    expectClickLogsLengthToBe(testRefsComponent, 1);
-
-     ReactTestUtils.Simulate.click(clickIncrementer);
-    expectClickLogsLengthToBe(testRefsComponent, 2);
+    ReactDOM.render(<Component flipped={true} />, container);
+    console.log(comp.refs)
+    console.log(comp.refs.static0)
+    console.log(comp.refs.static1)
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('B');
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('A');
+  
   }
   </script>
 
 </head>
-
 <body>
-
-    <div>开发者工具</div>
-    <pre>
     
-    </pre>
-    <div id='example'></div>
-
-
+        <div>开发者工具</div>
+        <div id='example'></div>
+    
+    
 </body>
-
-</html>
+    
+ </html>

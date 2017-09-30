@@ -47,7 +47,7 @@ describe("组件相关", function() {
         };
       }
       shouldComponentUpdate() {
-        //  console.log('shouldComponentUpdate')
+        //这里相当于返回false
       }
       click() {
         this.setState(
@@ -77,7 +77,7 @@ describe("组件相关", function() {
     await browser.pause(200).$apply();
     expect(s.__current._hostNode.innerHTML).toBe("1");
     await browser.click(s.__current._hostNode).pause(200).$apply();
-    expect(s.__current._hostNode.innerHTML).toBe("3");
+    expect(s.__current._hostNode.innerHTML).toBe("1");
 
     expect(a).toBe(3);
   });

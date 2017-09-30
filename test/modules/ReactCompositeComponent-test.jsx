@@ -420,7 +420,7 @@ describe("ReactCompositeComponent", function() {
     expect(childRenders).toBe(1);
   });
 
-
+//context穿透更新
   it('should pass context when re-rendered for static child', () => {
     var parentInstance = null;
     var childInstance = null;
@@ -476,7 +476,7 @@ describe("ReactCompositeComponent", function() {
     expect(parentInstance.state.flag).toBe(true);
     expect(childInstance.context).toEqual({foo: 'bar', flag: true});
   });
-
+//context穿透更新
   it('should pass context when re-rendered for static child within a composite component', () => {
     class Parent extends React.Component {
       static childContextTypes = {
@@ -531,4 +531,402 @@ describe("ReactCompositeComponent", function() {
   });
 
 
+  it('should pass context transitively', () => {
+    var childInstance = null;
+    var grandchildInstance = null;
+
+    class Parent extends React.Component {
+      static childContextTypes = {
+        foo: PropTypes.string,
+        depth: PropTypes.number,
+      };
+
+      getChildContext() {
+        return {
+          foo: 'bar',
+          depth: 0,
+        };
+      }
+
+      render() {
+        return <Child />;
+      }
+    }
+
+    class Child extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string,
+        depth: PropTypes.number,
+      };
+
+      static childContextTypes = {
+        depth: PropTypes.number,
+      };
+
+      getChildContext() {
+        return {
+          depth: this.context.depth + 1,
+        };
+      }
+
+      render() {
+        childInstance = this;
+        return <Grandchild />;
+      }
+    }
+
+    class Grandchild extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string,
+        depth: PropTypes.number,
+      };
+
+      render() {
+        grandchildInstance = this;
+        return <div />;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Parent />);
+    expect(childInstance.context).toEqual({foo: 'bar', depth: 0});
+    expect(grandchildInstance.context).toEqual({foo: 'bar', depth: 1});
+  });
+
+  it('should pass context when re-rendered', () => {
+    var parentInstance = null;
+    var childInstance = null;
+
+    class Parent extends React.Component {
+      static childContextTypes = {
+        foo: PropTypes.string,
+        depth: PropTypes.number,
+      };
+
+      state = {
+        flag: false,
+      };
+
+      getChildContext() {
+        return {
+          foo: 'bar',
+          depth: 0,
+        };
+      }
+
+      render() {
+        var output = <Child />;
+        if (!this.state.flag) {
+          output = <span>Child</span>;
+        }
+        return output;
+      }
+    }
+
+    class Child extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string,
+        depth: PropTypes.number,
+      };
+
+      render() {
+        childInstance = this;
+        return <span>Child</span>;
+      }
+    }
+
+    parentInstance = ReactTestUtils.renderIntoDocument(<Parent />);
+    expect(childInstance).toBeNull();
+
+    expect(parentInstance.state.flag).toBe(false);
+    /*
+    ReactDOM.unstable_batchedUpdates(function() {
+      parentInstance.setState({flag: true});
+    });
+    expect(parentInstance.state.flag).toBe(true);
+
+    expect(childInstance.context).toEqual({foo: 'bar', depth: 0});
+    */
+  });
+
+  it('unmasked context propagates through updates', () => {
+    class Leaf extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string.isRequired,
+      };
+
+      componentWillReceiveProps(nextProps, nextContext) {
+        expect('foo' in nextContext).toBe(true);
+      }
+
+      shouldComponentUpdate(nextProps, nextState, nextContext) {
+        expect('foo' in nextContext).toBe(true);
+        return true;
+      }
+
+      render() {
+        return <span>{this.context.foo}</span>;
+      }
+    }
+
+    class Intermediary extends React.Component {
+      componentWillReceiveProps(nextProps, nextContext) {
+        expect('foo' in nextContext).toBe(false);
+      }
+
+      shouldComponentUpdate(nextProps, nextState, nextContext) {
+        expect('foo' in nextContext).toBe(false);
+        return true;
+      }
+
+      render() {
+        return <Leaf />;
+      }
+    }
+
+    class Parent extends React.Component {
+      static childContextTypes = {
+        foo: PropTypes.string,
+      };
+
+      getChildContext() {
+        return {
+          foo: this.props.cntxt,
+        };
+      }
+
+      render() {
+        return <Intermediary />;
+      }
+    }
+
+    var div = document.createElement('div');
+    ReactDOM.render(<Parent cntxt="noise" />, div);
+    expect(div.children[0].innerHTML).toBe('noise');
+    div.children[0].innerHTML = 'aliens';
+    div.children[0].id = 'aliens';
+    expect(div.children[0].innerHTML).toBe('aliens');
+    expect(div.children[0].id).toBe('aliens');
+    ReactDOM.render(<Parent cntxt="bar" />, div);
+    expect(div.children[0].innerHTML).toBe('bar');
+    expect(div.children[0].id).toBe('aliens');
+  });
+
+  it('should trigger componentWillReceiveProps for context changes', () => {
+    var contextChanges = 0;
+    var propChanges = 0;
+
+    class GrandChild extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string.isRequired,
+      };
+
+      componentWillReceiveProps(nextProps, nextContext) {
+        expect('foo' in nextContext).toBe(true);
+
+        if (nextProps !== this.props) {
+          propChanges++;
+        }
+
+        if (nextContext !== this.context) {
+          contextChanges++;
+        }
+      }
+
+      render() {
+        return <span className="grand-child">{this.props.children}</span>;
+      }
+    }
+
+    class ChildWithContext extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string.isRequired,
+      };
+
+      componentWillReceiveProps(nextProps, nextContext) {
+        expect('foo' in nextContext).toBe(true);
+
+        if (nextProps !== this.props) {
+          propChanges++;
+        }
+
+        if (nextContext !== this.context) {
+          contextChanges++;
+        }
+      }
+
+      render() {
+        return <div className="child-with">{this.props.children}</div>;
+      }
+    }
+
+    class ChildWithoutContext extends React.Component {
+      componentWillReceiveProps(nextProps, nextContext) {
+        expect('foo' in nextContext).toBe(false);
+
+        if (nextProps !== this.props) {
+          propChanges++;
+        }
+
+        if (nextContext !== this.context) {
+          contextChanges++;
+        }
+      }
+
+      render() {
+        return <div className="child-without">{this.props.children}</div>;
+      }
+    }
+
+    class Parent extends React.Component {
+      static childContextTypes = {
+        foo: PropTypes.string,
+      };
+
+      state = {
+        foo: 'abc',
+      };
+
+      getChildContext() {
+        return {
+          foo: this.state.foo,
+        };
+      }
+
+      render() {
+        return <div className="parent">{this.props.children}</div>;
+      }
+    }
+
+    var div = document.createElement('div');
+
+    var parentInstance = null;
+    ReactDOM.render(
+      <Parent ref={inst => (parentInstance = inst)}>
+        <ChildWithoutContext>
+          A1
+          <GrandChild>A2</GrandChild>
+        </ChildWithoutContext>
+
+        <ChildWithContext>
+          B1
+          <GrandChild>B2</GrandChild>
+        </ChildWithContext>
+      </Parent>,
+      div,
+    );
+
+    parentInstance.setState({
+      foo: 'def',
+    });
+
+    expect(propChanges).toBe(0);
+    expect(contextChanges).toBe(3); // ChildWithContext, GrandChild x 2
+  });
+
+
+  it('only renders once if updated in componentWillReceiveProps', () => {
+    var renders = 0;
+
+    class Component extends React.Component {
+      state = {updated: false};
+
+      componentWillReceiveProps(props) {
+        expect(props.update).toBe(1);
+        expect(renders).toBe(1);
+        this.setState({updated: true});
+        expect(renders).toBe(1);
+      }
+
+      render() {
+        renders++;
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    var instance = ReactDOM.render(<Component update={0} />, container);
+    expect(renders).toBe(1);
+    expect(instance.state.updated).toBe(false);
+    ReactDOM.render(<Component update={1} />, container);
+    expect(renders).toBe(2);
+    expect(instance.state.updated).toBe(true);
+  });
+
+  it('only renders once if updated in componentWillReceiveProps when batching', () => {
+    var renders = 0;
+
+    class Component extends React.Component {
+      state = {updated: false};
+
+      componentWillReceiveProps(props) {
+        expect(props.update).toBe(1);
+        expect(renders).toBe(1);
+        this.setState({updated: true});
+        expect(renders).toBe(1);
+      }
+
+      render() {
+        renders++;
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    var instance = ReactDOM.render(<Component update={0} />, container);
+    expect(renders).toBe(1);
+    expect(instance.state.updated).toBe(false);
+    /*
+    ReactDOM.unstable_batchedUpdates(() => {
+      ReactDOM.render(<Component update={1} />, container);
+    });
+    expect(renders).toBe(2);
+    expect(instance.state.updated).toBe(true);
+    */
+  });
+
+  it('should update refs if shouldComponentUpdate gives false', () => {
+    class Static extends React.Component {
+      shouldComponentUpdate() {
+        return false;
+      }
+
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    class Component extends React.Component {
+      render() {
+        if (this.props.flipped) {
+          return (
+            <div>
+               <Static ref="static0" key="B">B (ignored)</Static>
+               <Static ref="static1" key="A">A (ignored)</Static>
+            </div>
+          );
+        } else {
+          return (
+            <div>
+              <Static ref="static0" key="A">A</Static>
+              <Static ref="static1" key="B">B</Static>
+            </div>
+          );
+        }
+      }
+    }
+
+    var container = document.createElement('div');
+    var comp = ReactDOM.render(<Component flipped={false} />, container);
+    //keyA <> instance0  <> static0 <> contentA
+    //keyB <> instance1  <> static1 <> contentB
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('A');
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('B');
+    //keyA <> instance0  <> static1 <> contentA
+    //keyB <> instance1  <> static1 <> contentB
+    // When flipping the order, the refs should update even though the actual
+    // contents do not
+    ReactDOM.render(<Component flipped={true} />, container);
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('B');
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('A');
+  });
 });
