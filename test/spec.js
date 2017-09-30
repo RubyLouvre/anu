@@ -50,9 +50,9 @@
 
 // require("./modules/ReactContextValidator-test.js");
 require("./modules/createReactClassIntegration-test.js");
-
-
-
+require("./modules/EventPluginHub-test.jsx");  // wang
+require("./modules/ReactChildReconciler-test.jsx"); // wang
+require("./modules/ReactCompositeComponentDOMMinimalism-test.jsx"); // wang
 
 
 
