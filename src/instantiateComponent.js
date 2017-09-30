@@ -8,9 +8,9 @@ export function instantiateComponent(type, vtype, props, context) {
     var instance;
     if (vtype === 2) {
         instance = new type(props, context);
-        //防止用户没有调用super或没有传够参数
-        instance.props = instance.props || props;
-        instance.context = instance.context || context;
+        //props, context是不可变的
+        instance.props = props;
+        instance.context = context;
     } else {
         instance = {
             refs: {},

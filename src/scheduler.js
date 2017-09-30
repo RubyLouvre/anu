@@ -1,6 +1,6 @@
 import {
     options,
-    clearArray,
+    clearArray
 } from "./util";
 
 export const pendingRefs = [];

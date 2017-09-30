@@ -3,6 +3,11 @@ import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
 
 import ReactDOMServer from "dist/ReactDOMServer";
+var  shallowCompare = require( "../../lib/shallowCompare");
+//shallowCompare = shallowCompare.shallowCompare
+
+
+
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 var PropTypes = React.PropTypes
@@ -928,5 +933,310 @@ describe("ReactCompositeComponent", function() {
     ReactDOM.render(<Component flipped={true} />, container);
     expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('B');
     expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('A');
+  });
+
+  it('should allow access to findDOMNode in componentWillUnmount', () => {
+    var a = null;
+    var b = null;
+
+    class Component extends React.Component {
+      componentDidMount() {
+        a = ReactDOM.findDOMNode(this);
+        expect(a).not.toBe(null);
+      }
+
+      componentWillUnmount() {
+        b = ReactDOM.findDOMNode(this);
+        expect(b).not.toBe(null);
+      }
+
+      render() {
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    expect(a).toBe(container.firstChild);
+    ReactDOM.render(<Component />, container);
+    ReactDOM.unmountComponentAtNode(container);
+    expect(a).toBe(b);
+  });
+
+  it('context should be passed down from the parent', () => {
+    class Parent extends React.Component {
+      static childContextTypes = {
+        foo: PropTypes.string,
+      };
+
+      getChildContext() {
+        return {
+          foo: 'bar',
+        };
+      }
+
+      render() {
+        return <div>{this.props.children}</div>;
+      }
+    }
+
+    class Component extends React.Component {
+      static contextTypes = {
+        foo: PropTypes.string.isRequired,
+      };
+
+      render() {
+        return <div />;
+      }
+    }
+
+    var div = document.createElement('div');
+    ReactDOM.render(<Parent><Component /></Parent>, div);
+  });
+
+  it('should replace state', () => {
+    class Moo extends React.Component {
+      state = {x: 1};
+      render() {
+        return <div />;
+      }
+    }
+
+    var moo = ReactTestUtils.renderIntoDocument(<Moo />);
+    // No longer a public API, but we can test that it works internally by
+    // reaching into the updater.
+   // moo.updater.enqueueReplaceState(moo, {y: 2});
+  //  expect('x' in moo.state).toBe(false);
+    expect(moo.state.y).toBe(void 666);
+  });
+
+  it('should support objects with prototypes as state', () => {
+    var NotActuallyImmutable = function(str) {
+      this.str = str;
+    };
+    NotActuallyImmutable.prototype.amIImmutable = function() {
+      return true;
+    };
+    class Moo extends React.Component {
+      state = new NotActuallyImmutable('first');
+      // No longer a public API, but we can test that it works internally by
+      // reaching into the updater.
+      _replaceState = function (a){
+        this.state = a
+        this.forceUpdate()
+      } 
+      render() {
+        return <div />;
+      }
+    }
+
+    var moo = ReactTestUtils.renderIntoDocument(<Moo />);
+    expect(moo.state.str).toBe('first');
+    expect(moo.state.amIImmutable()).toBe(true);
+
+    var secondState = new NotActuallyImmutable('second');
+    moo._replaceState(secondState);
+    expect(moo.state.str).toBe('second');
+    expect(moo.state.amIImmutable()).toBe(true);
+    expect(moo.state).toBe(secondState);
+
+    moo.setState({str: 'third'});
+    expect(moo.state.str).toBe('third');
+    // Here we lose the prototype.
+    expect(moo.state.amIImmutable).toBe(undefined);
+
+
+
+ 
+  });
+  it('props对象不能在构造器里被重写', () => {
+    var container = document.createElement('div');
+    class Foo extends React.Component {
+      constructor(props) {
+        super(props);
+        this.props = {idx: "xxx"}
+      }
+
+      render() {
+        return <span>{this.props.idx}</span>;
+      }
+    }
+
+    
+
+    ReactDOM.render(<Foo idx="aaa" />, container);
+
+    expect(container.textContent).toBe("aaa");
+  });
+
+  it('should warn when mutated props are passed', () => {
+
+    var container = document.createElement('div');
+
+    class Foo extends React.Component {
+      constructor(props) {
+        var _props = {idx: props.idx + '!'};
+        super(_props);
+      }
+
+      render() {
+        return <span>{this.props.idx}</span>;
+      }
+    }
+
+
+    ReactDOM.render(<Foo idx="qwe" />, container);
+
+    expect(container.textContent).toBe("qwe");
+  });
+
+  it('should only call componentWillUnmount once', () => {
+    var app;
+    var count = 0;
+
+    class App extends React.Component {
+      render() {
+        if (this.props.stage === 1) {
+          return <UnunmountableComponent />;
+        } else {
+          return null;
+        }
+      }
+    }
+
+    class UnunmountableComponent extends React.Component {
+      componentWillUnmount() {
+        app.setState({});
+        count++;
+        throw Error('always fails');
+      }
+
+      render() {
+        return <div>Hello {this.props.name}</div>;
+      }
+    }
+
+    var container = document.createElement('div');
+
+    var setRef = ref => {
+      if (ref) {
+        app = ref;
+      }
+    };
+
+    expect(function() {
+      ReactDOM.render(<App ref={setRef} stage={1} />, container);
+      ReactDOM.render(<App ref={setRef} stage={2} />, container);
+    }).toThrow();
+    expect(count).toBe(1);
+  });
+  it('prepares new child before unmounting old', () => {
+    var log = [];
+
+    class Spy extends React.Component {
+      componentWillMount() {
+        log.push(this.props.name + ' componentWillMount');
+      }
+      render() {
+        log.push(this.props.name + ' render');
+        return <div />;
+      }
+      componentDidMount() {
+        log.push(this.props.name + ' componentDidMount');
+      }
+      componentWillUnmount() {
+        log.push(this.props.name + ' componentWillUnmount');
+      }
+    }
+
+    class Wrapper extends React.Component {
+      render() {
+        return <Spy key={this.props.name} name={this.props.name} />;
+      }
+    }
+
+    var container = document.createElement('div');
+    ReactDOM.render(<Wrapper name="A" />, container);
+    ReactDOM.render(<Wrapper name="B" />, container);
+
+    expect(log).toEqual([
+      'A componentWillMount',
+      'A render',
+      'A componentDidMount',
+      'A componentWillUnmount',
+      'B componentWillMount',
+      'B render',
+      
+      'B componentDidMount'
+    ]);
+  });
+
+
+  it('respects a shallow shouldComponentUpdate implementation', () => {
+    var renderCalls = 0;
+    class PlasticWrap extends React.Component {
+      constructor(props, context) {
+        super(props, context);
+        this.state = {
+          color: 'green',
+        };
+      }
+
+      render() {
+        return <Apple color={this.state.color} ref="apple" />;
+      }
+    }
+
+    class Apple extends React.Component {
+      state = {
+        cut: false,
+        slices: 1,
+      };
+
+      shouldComponentUpdate(nextProps, nextState) {
+        return shallowCompare(this, nextProps, nextState);
+      }
+
+      cut() {
+        this.setState({
+          cut: true,
+          slices: 10,
+        });
+      }
+
+      eatSlice() {
+        this.setState({
+          slices: this.state.slices - 1,
+        });
+      }
+
+      render() {
+        renderCalls++;
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    var instance = ReactDOM.render(<PlasticWrap />, container);
+    expect(renderCalls).toBe(1);
+
+    // Do not re-render based on props
+    instance.setState({color: 'green'});
+    expect(renderCalls).toBe(1);
+
+    // Re-render based on props
+    instance.setState({color: 'red'});
+    expect(renderCalls).toBe(2);
+
+    // Re-render base on state
+    instance.refs.apple.cut();
+    expect(renderCalls).toBe(3);
+
+    // No re-render based on state
+    instance.refs.apple.cut();
+    expect(renderCalls).toBe(3);
+
+    // Re-render based on state again
+    instance.refs.apple.eatSlice();
+    expect(renderCalls).toBe(4);
   });
 });
