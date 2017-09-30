@@ -1239,4 +1239,53 @@ describe("ReactCompositeComponent", function() {
     instance.refs.apple.eatSlice();
     expect(renderCalls).toBe(4);
   });
+
+  it('does not do a deep comparison for a shallow shouldComponentUpdate implementation', () => {
+    function getInitialState() {
+      return {
+        foo: [1, 2, 3],
+        bar: {a: 4, b: 5, c: 6},
+      };
+    }
+
+    var renderCalls = 0;
+    var initialSettings = getInitialState();
+
+    class Component extends React.Component {
+      state = initialSettings;
+
+      shouldComponentUpdate(nextProps, nextState) {
+        var a = shallowCompare(this, nextProps, nextState);
+        console.log(a, '!!!')
+        return a
+      }
+
+      render() {
+        renderCalls++;
+        return <div />;
+      }
+    }
+
+    var container = document.createElement('div');
+    var instance = ReactDOM.render(<Component />, container);
+    expect(renderCalls).toBe(1);
+
+    // Do not re-render if state is equal
+    var settings = {
+      foo: initialSettings.foo,
+      bar: initialSettings.bar,
+    };
+    instance.setState(settings);
+    expect(renderCalls).toBe(1);
+
+    // Re-render because one field changed
+    initialSettings.foo = [1, 2, 3];
+    instance.setState(initialSettings);
+    expect(renderCalls).toBe(2);
+
+    // Re-render because the object changed
+    instance.setState(getInitialState());
+    expect(renderCalls).toBe(3);
+  });
+
 });

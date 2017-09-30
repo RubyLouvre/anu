@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./test/react.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <!-- <script src="./test/react-lite.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -28,12 +28,26 @@
   var container = document.createElement('div');
   document.body.appendChild(container);
       const log = [];
-      function StatelessComponent(props) {
-    return <div>{props.name}</div>;
-  }
-      var el = document.createElement('div');
-      ReactDOM.render(<StatelessComponent name="A" />, container);
-
+      class Component extends React.Component {
+        constructor(props){
+           super(props)
+           this.state = {
+             a: 1
+           }
+        }
+        render() {
+          return <div />;
+        }
+      }
+      
+      var a = new Component()
+      var oldState =  a.state
+      var newState = {
+        a: 2
+      }
+      a.setState(newState)
+      console.log(oldState == a.state)
+      console.log(newState == a.state)
 
 
       

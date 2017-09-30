@@ -1,4 +1,4 @@
-import { extend, isFn, options, clearArray, noop,deprecatedWarn } from "./util";
+import { extend, isFn, options, noop, deprecatedWarn } from "./util";
 import { CurrentOwner } from "./createElement";
 
 /**
@@ -18,7 +18,7 @@ export function Component(props, context) {
     this.state = null;
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
-    this.__current = noop;//用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
+    this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
     this.__lifestage = 0; //判断生命周期
     /*
     * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
@@ -29,7 +29,7 @@ export function Component(props, context) {
 }
 
 Component.prototype = {
-    constructor: Component,//必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
+    constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {
         deprecatedWarn("replaceState");
     },
@@ -44,28 +44,31 @@ Component.prototype = {
     forceUpdate(cb) {
         debounceSetState(this, true, cb);
     },
-    __mergeStates: function (props, context) {
-        var n = this.__pendingStates.length;
+    __mergeStates: function(props, context) {
+        let pendings = this.__pendingStates,
+            n = pendings.length;
         if (n === 0) {
             return this.state;
         }
-        var states = clearArray(this.__pendingStates);
-        var nextState = extend({}, this.state);
-        for (var i = 0; i < n; i++) {
-            var partial = states[i];
-            extend(nextState, isFn(partial)
-                ? partial.call(this, nextState, props, context)
-                : partial);
+        let state = extend({}, this.state);//每次都返回新的state
+        for (let i = 0; i < n; i++) {
+            let pending = pendings[i];
+            if (isFn(pending)) {
+                pending = pending.call(this, state, props, context);
+            }
+            extend(state, pending);
         }
-        return nextState;
+        pendings.length = 0;
+        return state;
     },
 
-    render() { }
+    render() {}
 };
 
 function debounceSetState(a, b, c) {
-    if (a.__didUpdate) {//如果用户在componentDidUpdate中使用setState，要防止其卡死
-        setTimeout(function () {
+    if (a.__didUpdate) {
+        //如果用户在componentDidUpdate中使用setState，要防止其卡死
+        setTimeout(function() {
             a.__didUpdate = false;
             setStateImpl.call(a, b, c);
         }, 300);
@@ -75,29 +78,29 @@ function debounceSetState(a, b, c) {
 }
 function setStateImpl(state, cb) {
     if (isFn(cb)) {
-        this
-            .__pendingCallbacks
-            .push(cb);
+        this.__pendingCallbacks.push(cb);
     }
     let hasDOM = this.__dom;
-    if (state === true) {//forceUpdate
+    if (state === true) {
+        //forceUpdate
         this.__forceUpdate = true;
-    } else {//setState
-        this
-            .__pendingStates
-            .push(state);
+    } else {
+        //setState
+        this.__pendingStates.push(state);
     }
-    if (!hasDOM) { //组件挂载期
-        //componentWillUpdate中的setState/forceUpdate应该被忽略 
+    if (!hasDOM) {
+        //组件挂载期
+        //componentWillUpdate中的setState/forceUpdate应该被忽略
         if (this.__hydrating) {
-            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况， 
+            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState
             //2. 子组件调用父组件的setState，
             this.__renderInNextCycle = true;
         }
-    } else { //组件更新期
+    } else {
+        //组件更新期
         if (this.__receiving) {
-            //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
+            //componentWillReceiveProps中的setState/forceUpdate应该被忽略
             return;
         }
         this.__renderInNextCycle = true;

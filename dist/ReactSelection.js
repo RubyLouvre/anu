@@ -1051,17 +1051,21 @@ Component.prototype = {
     },
 
     __mergeStates: function __mergeStates(props, context) {
-        var n = this.__pendingStates.length;
+        var pendings = this.__pendingStates,
+            n = pendings.length;
         if (n === 0) {
             return this.state;
         }
-        var states = clearArray(this.__pendingStates);
-        var nextState = extend({}, this.state);
+        var state = extend({}, this.state); //每次都返回新的state
         for (var i = 0; i < n; i++) {
-            var partial = states[i];
-            extend(nextState, isFn(partial) ? partial.call(this, nextState, props, context) : partial);
+            var pending = pendings[i];
+            if (isFn(pending)) {
+                pending = pending.call(this, state, props, context);
+            }
+            extend(state, pending);
         }
-        return nextState;
+        pendings.length = 0;
+        return state;
     },
 
     render: function render() {}
@@ -1092,9 +1096,9 @@ function setStateImpl(state, cb) {
     }
     if (!hasDOM) {
         //组件挂载期
-        //componentWillUpdate中的setState/forceUpdate应该被忽略 
+        //componentWillUpdate中的setState/forceUpdate应该被忽略
         if (this.__hydrating) {
-            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况， 
+            //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState
             //2. 子组件调用父组件的setState，
             this.__renderInNextCycle = true;
@@ -1102,7 +1106,7 @@ function setStateImpl(state, cb) {
     } else {
         //组件更新期
         if (this.__receiving) {
-            //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
+            //componentWillReceiveProps中的setState/forceUpdate应该被忽略
             return;
         }
         this.__renderInNextCycle = true;
@@ -2251,13 +2255,11 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     vnode.parentContext = parentContext;
     vnode.vparent = vparent;
 
-    var state = instance.state;
     if (instance.componentWillMount) {
         instance.componentWillMount();
-        state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
-    var dom = renderComponent(instance, vnode, props, context, state, function (nextRendered, childContext) {
+    var dom = renderComponent(instance, vnode, props, context, instance.__mergeStates(props, context), function (nextRendered, childContext) {
         return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue);
     }, instance.__rendered);
 
@@ -2318,7 +2320,6 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
     } else {
         nextContext = instance.context; //没有定义contextTypes就沿用旧的
     }
-
     if (instance.componentWillReceiveProps) {
         instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
@@ -2369,7 +2370,6 @@ function refreshComponent(instance, updateQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
-
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {

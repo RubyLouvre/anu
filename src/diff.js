@@ -270,10 +270,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
     vnode.parentContext = parentContext;
     vnode.vparent = vparent;
 
-    let state = instance.state;
     if (instance.componentWillMount) {
         instance.componentWillMount();
-        state = instance.__mergeStates(props, context);
     }
     instance.__hydrating = true;
     let dom = renderComponent(
@@ -281,7 +279,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
         vnode,
         props,
         context,
-        state,
+        instance.__mergeStates(props, context),
         function(nextRendered, childContext) {
             return mountVnode(
                 lastNode,
@@ -350,7 +348,6 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
     } else {
         nextContext = instance.context;//没有定义contextTypes就沿用旧的
     }
-  
     if (instance.componentWillReceiveProps) {
         instance.__receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
@@ -405,7 +402,6 @@ function refreshComponent(instance, updateQueue) {
         instance.__forceUpdate = false;
         return dom;
     }
-
     instance.__hydrating = true;
     instance.__forceUpdate = false;
     if (instance.componentWillUpdate) {
