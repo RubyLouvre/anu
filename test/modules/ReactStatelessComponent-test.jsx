@@ -103,7 +103,7 @@ describe("ReactStatelessComponent", function() {
 
 
     var s = ReactTestUtils.renderIntoDocument(<Child />);
-    expect(s.__current._hostNode.textContent).toBe("3")
+    expect(s.updater._hostNode.textContent).toBe("3")
 
   });
   it('should support default props and prop types', () => {
@@ -115,7 +115,7 @@ describe("ReactStatelessComponent", function() {
 
     spyOn(console, 'error');
     var s = ReactTestUtils.renderIntoDocument(<Child />);
-    expect(s.__current._hostNode.textContent).toBe("2")
+    expect(s.updater._hostNode.textContent).toBe("2")
 
   });
   it('should receive context', () => {

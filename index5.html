@@ -8,56 +8,12 @@
     
    <script type='text/javascript' src="./dist/React.js"></script>
  
-  <script type='text/javascript' src="./test/react.js"></script>
- <script type='text/javascript' src="./test/react-dom.js"></script>
+  <!--<script type='text/javascript' src="./test/react.js"></script>
+ <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
-    
-  <script type='text/babel'>
-  var s
-  window.onload = function(){
-   
-    var container = document.getElementById("example")
-   // var PropTypes = React.PropTypes
-    if(!window.ReactDOM){
-      window.ReactDOM = window.React
-    }
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, b, a === b)
-            }
-        }
-    }
-    const log = [];
-        class Test extends React.Component {
-            state = { a: 0 };
-            render() {
-                return null;
-            }
-            shouldComponentUpdate(nextProps, nextState) {
-                log.push("scu from " + Object.keys(this.state) + " to " + Object.keys(nextState));
-                return false;
-            }
-        }
-
-        const s = ReactDOM.render(<Test />, container);
-        s.setState({ b: 0 });
-        expect(log.length).toBe(1);
-        s.setState({ c: 0 });
-        expect(log.length).toBe(2);
-     //   expect(log).toEqual(["scu from a to a,b", "scu from a,b to a,b,c"]);
-
-
-    console.log(s)
-
- 
-
- 
-  }
-  </script>
-
+  
 </head>
 <body>
     
@@ -67,7 +23,58 @@
         </pre>
         <div id='example'></div>
     
-    
+      
+  <script type='text/babel'>
+   
+     
+      var container = document.getElementById("example")
+     // var PropTypes = React.PropTypes
+      if(!window.ReactDOM){
+        window.ReactDOM = window.React
+      }
+      var expect = function(a) {
+          return {
+              toBe: function(b) {
+                  console.log(a, b, a === b)
+              }
+          }
+      }
+      class App extends React.Component {
+          constructor(props) {
+              super(props);
+  
+              // 设置 initial state
+              this.state = {
+                  text: 'xxx'
+              };
+          }
+  
+          shouldComponentUpdate() {
+              return false
+          }
+  
+          render() {
+              return (
+                  <div>
+                      Type something:
+                      <input ref="input" value={new Date - 0} />
+                  </div>
+              );
+          }
+      }
+  
+      App.defaultProps = {
+          initialValue: '请输入内容'
+      };
+      container.innerHTML = '<span>remove</span>'
+  
+  
+  
+      var s = React.render(<App />, container)
+  
+
+    </script>
+  
 </body>
     
  </html>

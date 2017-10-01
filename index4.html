@@ -35,78 +35,94 @@
         }
     }
   var container = document.createElement('div');
-  var s
+  
   document.body.appendChild(container);
-      const log = [];
-      var renderCalls = 0;
-      class PlasticWrap extends React.Component {
-          constructor(props, context) {
-              super(props, context);
-              this.state = {
-                  color: "green"
-              };
-          }
+  class ParentComponent extends React.Component {
+    state = {color: 'blue'};
 
-          render() {
-              return <Apple color={this.state.color} ref="apple" />;
-          }
-      }
+    handleColor = color => {
+      this.props.logger('parent-handleColor', this.state.color);
+      this.setState({color: color}, function() {
+        this.props.logger('parent-after-setState', this.state.color);
+      });
+    };
 
-      class Apple extends React.Component {
-          state = {
-              cut: false,
-              slices: 1
-          };
+    render() {
+      this.props.logger('parent-render', this.state.color);
+      return (
+        <ChildComponent
+          logger={this.props.logger}
+          color={this.state.color}
+          onSelectColor={this.handleColor}
+        />
+      );
+    }
+  }
 
-          shouldComponentUpdate(nextProps, nextState) {
-              return shallowCompare(this, nextProps, nextState);
-          }
+  class ChildComponent extends React.Component {
+    constructor(props) {
+      super(props);
+      props.logger('getInitialState', props.color);
+      this.state = {hue: 'dark ' + props.color};
+    }
 
-          cut() {
-              this.setState({
-                  cut: true,
-                  slices: 10
-              });
-          }
+    handleHue = (shade, color) => {
+        console.log(this.state, '方法')
+      this.props.logger('handleHue', this.state.hue, this.props.color);
+      this.props.onSelectColor(color);
+      this.setState(
+        function(state, props) {
+          this.props.logger(
+            'setState-this',
+            this.state.hue,
+            this.props.color,
+          );
+          this.props.logger('setState-args', state.hue, props.color);
+          return {hue: shade + ' ' + props.color};
+        },
+        function() {
+          this.props.logger(
+            'after-setState',
+            this.state.hue,
+            this.props.color,
+          );
+        },
+      );
+    };
 
-          eatSlice() {
-              this.setState({
-                  slices: this.state.slices - 1
-              });
-          }
+    render() {
+        console.log(this.state, 'render')
+      this.props.logger('render', this.state.hue, this.props.color);
+      return (
+        <div>
+          <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
+            Dark Blue
+          </button>
+          <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
+            Light Blue
+          </button>
+          <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
+            Dark Green
+          </button>
+          <button onClick={this.handleHue.bind(this, 'light', 'green')}>
+            Light Green
+          </button>
+        </div>
+      );
+    }
+  }
 
-          render() {
-              renderCalls++;
-              return <div />;
-          }
-      }
+  var container = document.createElement('div');
+  document.body.appendChild(container);
+  var list = []
+  function logger(){
+    list.push([].slice.call(arguments, 0))
+  }
 
-      var container = document.createElement("div");
-      var instance = ReactDOM.render(<PlasticWrap />, container);
-      expect(renderCalls).toBe(1);
+  void ReactDOM.render(<ParentComponent logger={logger} />, container);
 
-      // Do not re-render based on props
-      instance.setState({ color: "green" });
-      expect(renderCalls).toBe(1);
-
-      // Re-render based on props
-      instance.setState({ color: "red" });
-      expect(renderCalls).toBe(2);
-
-      // Re-render base on state
-      instance.refs.apple.cut();
-      expect(renderCalls).toBe(3);
-
-      // No re-render based on state
-      instance.refs.apple.cut();
-      expect(renderCalls).toBe(3);
-
-      // Re-render based on state again
-      instance.refs.apple.eatSlice();
-      expect(renderCalls).toBe(4);
-     
-
-
+  // click "light green"
+ //container.childNodes[0].childNodes[3].click()
 
       
        </script>

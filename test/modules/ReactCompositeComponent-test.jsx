@@ -1305,8 +1305,8 @@ describe("ReactCompositeComponent", function() {
         var b = <Component />;
         var container = document.createElement("div")
         var s = ReactDOM.render(b, container);
-        expect(!!s.__rendered._hostNode).toBe(true)
+        expect(!!s.updater._hostNode).toBe(true)
         s.setState({a:2})
-        expect(!!s.__rendered._hostNode).toBe(true)
+        expect(!!s.updater._hostNode).toBe(true)
     });
 });

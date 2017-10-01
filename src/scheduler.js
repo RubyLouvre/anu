@@ -11,24 +11,24 @@ function clearRefs() {
         fn();
     });
 }
-function callUpdate(instance) {
-    if (instance.__lifeStage === 2) {
+function callUpdate(updater, instance) {
+    if (updater._lifeStage === 2) {
         if(pendingRefs.length){                
             clearRefs();
         }
         if (instance.componentDidUpdate) {
-            instance.__didUpdate = true;
+            updater._didUpdate = true;
             instance.componentDidUpdate(
-                instance.lastProps,
-                instance.lastState,
-                instance.lastContext
+                updater.lastProps,
+                updater.lastState,
+                updater.lastContext
             );
-            if (!instance.__renderInNextCycle) {
-                instance.__didUpdate = false;
+            if (!updater._renderInNextCycle) {
+                updater._didUpdate = false;
             }
         }
         options.afterUpdate(instance);
-        instance.__lifeStage = 1;
+        updater._lifeStage = 1;
     }
 }
 
@@ -39,9 +39,9 @@ export function drainQueue(queue) {
     //再执行所有mount/update钩子（从下到上）
     let i = 0;
     while(i < queue.length){//queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var instance = queue[i];
+        var updater = queue[i], instance = updater._instance;
         i++;
-        if (!instance.__lifeStage) {
+        if (!updater._lifeStage) {
             if(pendingRefs.length){                
                 clearRefs();
             }
@@ -49,25 +49,25 @@ export function drainQueue(queue) {
                 instance.componentDidMount();
                 instance.componentDidMount = null;
             }
-            instance.__lifeStage = 1;
+            updater._lifeStage = 1;
             options.afterMount(instance);
         } else {
-            callUpdate(instance);
+            callUpdate(updater, instance);
         }
-        var ref = instance.__current.ref;
+        var ref = updater.nextVnode.ref;
         if (ref) {
             ref(instance.__isStateless ? null: instance);
         }
-        instance.__hydrating = false; //子树已经构建完毕
-        while (instance.__renderInNextCycle) {
-            options.refreshComponent(instance, queue);
-            callUpdate(instance);
+        updater._hydrating = false; //子树已经构建完毕
+        while (updater._renderInNextCycle) {
+            options.refreshComponent(updater, queue);
+            callUpdate(updater, instance);
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
-    queue.sort(mountSorter).forEach(function(instance){
-        clearArray(instance.__pendingCallbacks).forEach(function(fn) {
-            fn.call(instance);
+    queue.sort(mountSorter).forEach(function(updater){
+        clearArray(updater._pendingCallbacks).forEach(function(fn) {
+            fn.call(updater._instance);
         });
     });
     queue.length = 0;
@@ -78,19 +78,19 @@ export function drainQueue(queue) {
 var dirtyComponents = [];
 dirtyComponents.isChildProcess = true;
 
-function mountSorter(c1, c2) {//让子节点先于父节点执行
-    return c2.__mountOrder - c1.__mountOrder;
+function mountSorter(u1, u2) {//让子节点先于父节点执行
+    return u2._mountOrder - u1._mountOrder;
 }
 
-options.flushBatchedUpdates = function(queue) {
+options.flushUpdaters = function(queue) {
     if (!queue) {
         queue = dirtyComponents;
     }
     drainQueue(queue);
 };
 
-options.addTask = function(instance) {
-    if (dirtyComponents.indexOf(instance) == -1) {
-        dirtyComponents.push(instance);
+options.enqueueUpdater = function(updater) {
+    if (dirtyComponents.indexOf(updater) == -1) {
+        dirtyComponents.push(updater);
     }
 };

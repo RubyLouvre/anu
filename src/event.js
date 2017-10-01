@@ -46,7 +46,7 @@ export function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    options.flushBatchedUpdates();
+    options.flushUpdaters();
 }
 
 function collectPaths(from, end) {

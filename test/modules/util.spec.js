@@ -6,10 +6,11 @@ import {
     inherit,
     camelize,
     firstLetterLower,
-    getNodes,
     getChildContext,
+    getNodes,
     typeNumber
 } from "src/util";
+
 import {
     isEventName
 } from "src/event";

@@ -17,7 +17,7 @@ var disposeStrategy = {
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
-        disposeVnode(instance.__rendered);
+        disposeVnode(instance.updater.rendered);
         vnode._instance = null;
     }
 }
@@ -42,7 +42,7 @@ function disposeComponent(vnode) {
     let instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.__current = instance.setState = instance.forceUpdate = noop;
+        instance.setState = instance.forceUpdate = noop;
         if (vnode.ref) {
             vnode.ref(null);
         }
@@ -50,7 +50,7 @@ function disposeComponent(vnode) {
             instance.componentWillUnmount();
         }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        vnode.ref = instance.__dom = vnode._instance = null;
-        disposeVnode(instance.__rendered);
+        disposeVnode(instance.updater.rendered);
+        vnode.ref = vnode._instance =  instance.updater = null;
     }
 }
