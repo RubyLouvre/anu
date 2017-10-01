@@ -1610,6 +1610,122 @@ var actionStrategy = {
     }
 };
 
+var mountOrder = 1;
+function alwaysNull() {
+    return null;
+}
+var updateChains = {};
+function Updater(instance, vnode) {
+    vnode._instance = instance;
+    instance.updater = this;
+    this._mountOrder = mountOrder++;
+    this._mountIndex = this._mountOrder;
+    this._instance = instance;
+    this._pendingCallbacks = [];
+    this._pendingStates = [];
+    this._lifeStage = 0; //判断生命周期
+    //update总是保存最新的数据，如state, props, context, parentContext, vparent
+    this.vnode = vnode;
+    //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
+    if (instance.__isStateless) {
+        this.mergeStates = alwaysNull;
+    }
+}
+
+Updater.prototype = {
+    mergeStates: function mergeStates() {
+        var instance = this._instance,
+            pendings = this._pendingStates,
+            state = instance.state,
+            n = pendings.length;
+        if (n === 0) {
+            return state;
+        }
+        var nextState = Object.assign({}, state); //每次都返回新的state
+        for (var i = 0; i < n; i++) {
+            var pending = pendings[i];
+            if (pending && pending.call) {
+                pending = pending.call(instance, nextState, this.props);
+            }
+            Object.assign(nextState, pending);
+        }
+        pendings.length = 0;
+        return nextState;
+    },
+
+    renderComponent: function renderComponent(cb, rendered) {
+        var vnode = this.vnode,
+            parentContext = this.parentContext,
+            instance = this._instance;
+        //调整全局的 CurrentOwner.cur
+
+        if (!rendered) {
+            try {
+                var lastOwn = CurrentOwner.cur;
+                CurrentOwner.cur = instance;
+                rendered = instance.render();
+            } finally {
+                CurrentOwner.cur = lastOwn;
+            }
+        }
+
+        //组件只能返回组件或null
+        if (rendered === null || rendered === false) {
+            rendered = { type: "#comment", text: "empty", vtype: 0 };
+        } else if (!rendered || !rendered.vtype) {
+            //true, undefined, array, {}
+            throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
+        }
+        this.lastRendered = this.rendered;
+        this.rendered = rendered;
+        var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
+        var dom = cb(rendered, this.vparent, childContext);
+
+        updateChains[this._mountOrder].forEach(function (el) {
+            el.vnode._hostNode = el._hostNode = dom;
+        });
+
+        return dom;
+    }
+};
+
+function instantiateComponent(type, vnode, props, context) {
+    var isStateless = vnode.vtype === 4;
+    var instance = isStateless ? {
+        refs: {},
+        render: function render() {
+            return type(this.props, this.context);
+        }
+    } : new type(props, context);
+    var updater = new Updater(instance, vnode, props, context);
+    //props, context是不可变的
+    instance.props = updater.props = props;
+    instance.context = updater.context = context;
+    instance.constructor = type;
+    updater.displayName = type.displayName || type.name;
+
+    if (isStateless) {
+        var lastOwn = CurrentOwner.cur;
+        CurrentOwner.cur = instance;
+        try {
+            var mixin = instance.render();
+        } finally {
+            CurrentOwner.cur = lastOwn;
+        }
+        if (mixin && mixin.render) {
+            //支持module pattern component
+            Object.assign(instance, mixin);
+        } else {
+            instance.__isStateless = true;
+            updater.rendered = mixin;
+        }
+    }
+
+    return instance;
+}
+
 function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
@@ -1660,8 +1776,15 @@ function disposeComponent(vnode) {
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
+        var updater = instance.updater,
+            order = updater._mountOrder,
+            updaters = updateChains[order];
+        updaters.splice(updaters.indexOf(updater), 1);
+        if (!updaters.length) {
+            delete updateChains[order];
+        }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        disposeVnode(instance.updater.rendered);
+        disposeVnode(updater.rendered);
         vnode.ref = vnode._instance = instance.updater = null;
     }
 }
@@ -1850,134 +1973,6 @@ function getOptionSelected(option, selected) {
     dom.selected = selected;
 }
 
-var mountOrder = 1;
-function alwaysNull() {
-    return null;
-}
-function Updater(instance, vnode, props, context) {
-    //防止用户在构造器生成JSX
-    vnode._instance = instance;
-    instance.updater = this;
-    this._mountOrder = mountOrder++;
-    this._instance = instance;
-    this._pendingCallbacks = [];
-    this._pendingStates = [];
-    this._lifeStage = 0; //判断生命周期
-    //update总是保存最新的数据，如state, props, context, parentContext, vparent
-    this.nextVnode = vnode;
-    this.props = props;
-    this.context = context;
-    //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
-    //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    if (instance.__isStateless) {
-        this.mergeStates = alwaysNull;
-    }
-}
-
-Updater.prototype = {
-    mergeStates: function mergeStates() {
-        var instance = this._instance,
-            pendings = this._pendingStates,
-            state = instance.state,
-            n = pendings.length;
-        if (n === 0) {
-            return state;
-        }
-        var nextState = Object.assign({}, state); //每次都返回新的state
-        for (var i = 0; i < n; i++) {
-            var pending = pendings[i];
-            if (pending && pending.call) {
-                pending = pending.call(instance, nextState, this.props);
-            }
-            Object.assign(nextState, pending);
-        }
-        pendings.length = 0;
-        return nextState;
-    },
-
-    renderComponent: function renderComponent(cb, rendered, parentInstance) {
-        var vnode = this.nextVnode;
-        var instance = this._instance;
-        var parentContext = this.parentContext;
-        //调整全局的 CurrentOwner.cur
-        if (!rendered) {
-            try {
-                var lastOwn = CurrentOwner.cur;
-                CurrentOwner.cur = instance;
-                rendered = instance.render();
-            } finally {
-                CurrentOwner.cur = lastOwn;
-            }
-        }
-
-        //组件只能返回组件或null
-        if (rendered === null || rendered === false) {
-            rendered = { type: "#comment", text: "empty", vtype: 0 };
-        } else if (!rendered || !rendered.vtype) {
-            //true, undefined, array, {}
-            throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
-        }
-        this.lastRendered = this.rendered;
-        this.rendered = rendered;
-        var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-        var dom = cb(rendered, this.vparent, childContext);
-        if (parentInstance) {
-            this._parentInstance = parentInstance;
-        }
-
-        updateInstanceChain(this, dom);
-
-        return dom;
-    }
-};
-
-function updateInstanceChain(updater, dom) {
-    updater.nextVnode._hostNode = updater._hostNode = dom; //同步到生成组件的那个虚拟DOM中
-    var parent = updater._parentInstance;
-    if (parent) {
-        updateInstanceChain(parent.updater, dom);
-    }
-}
-
-function instantiateComponent(type, vnode, props, context) {
-    var instance;
-    if (vnode.vtype === 2) {
-        instance = new type(props, context);
-        //props, context是不可变的
-        instance.props = props;
-        instance.context = context;
-        new Updater(instance, vnode, props, context);
-    } else {
-        instance = {
-            refs: {},
-            render: function render() {
-                return type(this.props, this.context);
-            },
-            __isStateless: 1,
-            props: props,
-            context: context
-        };
-        var updater = new Updater(instance, vnode, props, context);
-        var lastOwn = CurrentOwner.cur;
-        CurrentOwner.cur = instance;
-        try {
-            var mixin = type(props, context);
-        } finally {
-            CurrentOwner.cur = lastOwn;
-        }
-        if (mixin && mixin.render) {
-            //支持module pattern component
-            delete instance.__isStateless;
-            Object.assign(instance, mixin);
-        } else {
-            updater.rendered = mixin;
-        }
-    }
-
-    return instance;
-}
-
 var pendingRefs = [];
 function clearRefs() {
     var refs = pendingRefs.slice(0);
@@ -2027,7 +2022,7 @@ function drainQueue(queue) {
         } else {
             callUpdate(updater, instance);
         }
-        var ref = updater.nextVnode.ref;
+        var ref = updater.vnode.ref;
         if (ref) {
             ref(instance.__isStateless ? null : instance);
         }
@@ -2053,7 +2048,7 @@ dirtyComponents.isChildProcess = true;
 
 function mountSorter(u1, u2) {
     //让子节点先于父节点执行
-    return u2._mountOrder - u1._mountOrder;
+    return u2._mountIndex - u1._mountIndex;
 }
 
 options.flushUpdaters = function (queue) {
@@ -2295,17 +2290,22 @@ function alignChildren(parentNode, children, vparent, context, updateQueue) {
     }
 }
 
-function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, parentInstance) {
+function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, parentUpdater) {
     var type = vnode.type,
         props = vnode.props;
+
 
     var context = getContextByTypes(parentContext, type.contextTypes);
     var instance = instantiateComponent(type, vnode, props, context); //互相持有引用
     var updater = instance.updater;
-
+    if (parentUpdater) {
+        updater._mountOrder = parentUpdater._mountOrder;
+    } else {
+        updateChains[updater._mountOrder] = [];
+    }
+    updateChains[updater._mountOrder].push(updater);
     updater.vparent = vparent;
     updater.parentContext = parentContext;
-
     if (instance.componentWillMount) {
         instance.componentWillMount(); //这里可能执行了setState
         instance.state = updater.mergeStates();
@@ -2314,9 +2314,9 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
     updater._hydrating = true;
 
     var dom = updater.renderComponent(function (nextRendered, vparent, childContext) {
-        return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue, instance //作为parentInstance往下传
+        return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue, updater //作为parentUpater往下传
         );
-    }, updater.rendered, parentInstance);
+    }, updater.rendered);
 
     updateQueue.push(updater);
 
@@ -2348,18 +2348,17 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     if (ref && vtype === 2) {
         ref(null);
         if (nextVnode.ref) {
-            //更新ref
             lastVnode.ref = nextVnode.ref;
         }
     }
     //updater上总是保持新的数据
     updater.lastVnode = lastVnode;
-    updater.nextVnode = nextVnode;
-
+    updater.vnode = nextVnode;
     updater.context = nextContext;
     updater.props = nextProps;
     updater.vparent = vparent;
     updater.parentContext = parentContext;
+    // nextVnode._instance = instance; //不能放这里
 
     if (updateQueue.isChildProcess) {
         queue = updateQueue;
@@ -2370,7 +2369,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     refreshComponent(updater, queue);
     //子组件先执行
     updateQueue.push(updater);
-
     return updater._hostNode;
 }
 
@@ -2379,11 +2377,11 @@ function refreshComponent(updater, updateQueue) {
         dom = updater._hostNode,
         nextContext = updater.context,
         nextProps = updater.props,
-        nextVnode = updater.nextVnode,
+        vnode = updater.vnode,
         lastVnode = updater.lastVnode;
 
 
-    nextVnode._instance = instance; //important
+    vnode._instance = instance; //放这里
 
     updater._renderInNextCycle = null;
 
@@ -2400,19 +2398,17 @@ function refreshComponent(updater, updateQueue) {
 
 
     updater._forceUpdate = false;
-
     instance.props = nextProps;
     instance.context = nextContext;
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
 
     if (!shouldUpdate) {
-        for (var i in lastVnode) {
-            if (!nextVnode.hasOwnProperty(i)) {
-                nextVnode[i] = lastVnode[i];
-            }
+        if (lastVnode && lastVnode !== vnode) {
+            updater.vnode = lastVnode;
         }
         return dom;
     }
+
     updater._hydrating = true;
     updater.lastProps = lastProps;
     updater.lastState = lastState;
@@ -2421,7 +2417,7 @@ function refreshComponent(updater, updateQueue) {
     var lastRendered = updater.rendered;
     //这里会更新instance的props, context, state
     dom = updater.renderComponent(function (nextRendered, vparent, childContext) {
-        return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue, instance);
+        return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue, updater);
     });
     updater._lifeStage = 2;
     updater._hydrating = false;
@@ -2433,14 +2429,14 @@ function refreshComponent(updater, updateQueue) {
 }
 options.refreshComponent = refreshComponent;
 
-function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentInstance) {
+function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
     var node = lastVnode._hostNode,
         dom = void 0;
     if (isSameNode(lastVnode, nextVnode)) {
         dom = updateVnode(lastVnode, nextVnode, vparent, context, updateQueue);
     } else {
         disposeVnode(lastVnode);
-        dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentInstance);
+        dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
         var p = node.parentNode;
         if (p) {
             p.replaceChild(dom, node);
@@ -2494,7 +2490,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         childNodes = parentNode.childNodes;
     lastChildren.forEach(function (el, i) {
         if (childNodes[i] !== el._hostNode) {
-
+            if (!el._hostNode) {
+                console.log(el, "没有hostNode");
+            }
             parentNode.replaceChild(el._hostNode, childNodes[i]);
         }
     });

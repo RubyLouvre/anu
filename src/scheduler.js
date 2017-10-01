@@ -54,7 +54,7 @@ export function drainQueue(queue) {
         } else {
             callUpdate(updater, instance);
         }
-        var ref = updater.nextVnode.ref;
+        var ref = updater.vnode.ref;
         if (ref) {
             ref(instance.__isStateless ? null: instance);
         }
@@ -79,7 +79,7 @@ var dirtyComponents = [];
 dirtyComponents.isChildProcess = true;
 
 function mountSorter(u1, u2) {//让子节点先于父节点执行
-    return u2._mountOrder - u1._mountOrder;
+    return u2._mountIndex - u1._mountIndex;
 }
 
 options.flushUpdaters = function(queue) {

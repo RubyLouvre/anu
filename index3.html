@@ -4,57 +4,128 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <script src="./lib/ReactTestUtils.js"></script>
-
+    <script src="./lib/shallowCompare.js"></script>
+    <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>
     <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-      
-      class Component extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                a: 1
-            };
-        }
-        render() {
-            return <Child />;
-        }
-    }
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, b, a === b)
-            }
-        }
-    }
-    class Child extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                a: 1
-            };
-        }
-        shouldComponentUpdate() {
-            return false;
-        }
-        render() {
-            return <div>{new Date() - 0}</div>;
-        }
-    }
-    var b = <Component />;
-    var container = document.createElement("div")
-    var s = ReactDOM.render(b, container);
-    expect(!!s.__rendered._hostNode).toBe(true)
-        s.setState({a:2})
-        expect(!!s.__rendered._hostNode).toBe(true)
-    
-    </script>
+   
 
 </head>
 <body>
 
     <div>开发者工具</div>
+    <pre>
+        ['parent-render', 'blue'],
+        ['getInitialState', 'blue'],
+        ['render', 'dark blue', 'blue'],
+        ['handleHue', 'dark blue', 'blue'],
+        ['parent-handleColor', 'blue'],
+        ['parent-render', 'green'],
+        ['setState-this', 'dark blue', 'blue'],
+        ['setState-args', 'dark blue', 'green'],
+        ['render', 'light green', 'green'],
+        ['after-setState', 'light green', 'green'],
+        ['parent-after-setState', 'green'],
+    </pre>
     <div id='example'></div>
+    <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
+                }
+            }
+        }
+        class ParentComponent extends React.Component {
+            state = {color: 'blue'};
+      
+            handleColor = color => {
+              this.props.logger('parent-handleColor', this.state.color);
+              this.setState({color: color}, function() {
+                console.log("父组件cb")
+                this.props.logger('parent-after-setState', this.state.color);
+              });
+            };
+      
+            render() {
+              this.props.logger('parent-render', this.state.color);
+              return (
+                <ChildComponent
+                  logger={this.props.logger}
+                  color={this.state.color}
+                  onSelectColor={this.handleColor}
+                />
+              );
+            }
+          }
+      
+          class ChildComponent extends React.Component {
+            constructor(props) {
+              super(props);
+              props.logger('getInitialState', props.color);
+              this.state = {hue: 'dark ' + props.color};
+            }
+      
+            handleHue = (shade, color) => {
+              this.props.logger('handleHue', this.state.hue, this.props.color);
+              this.props.onSelectColor(color);
+              this.setState(
+                function(state, props) {
+                  this.props.logger(
+                    'setState-this',
+                    this.state.hue,
+                    this.props.color,
+                  );
+                  this.props.logger('setState-args', state.hue, props.color);
+                  return {hue: shade + ' ' + props.color};
+                },
+                function() {
+                    console.log("子组件cb")
+                  this.props.logger(
+                    'after-setState',
+                    this.state.hue,
+                    this.props.color,
+                  );
+                },
+              );
+            };
+      
+            render() {
+              this.props.logger('render', this.state.hue, this.props.color);
+              return (
+                <div>
+                  <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
+                    Dark Blue
+                  </button>
+                  <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
+                    Light Blue
+                  </button>
+                  <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
+                    Dark Green
+                  </button>
+                  <button onClick={this.handleHue.bind(this, 'light', 'green')}>
+                    Light Green
+                  </button>
+                </div>
+              );
+            }
+          }
+      
+          var container = document.createElement('div');
+          document.body.appendChild(container);
+          var list = []
+          function logger(){
+            list.push([].slice.call(arguments, 0))
+          }
+      
+          void ReactDOM.render(<ParentComponent logger={logger} />, container);
+      
+          // click "light green"
+         container.childNodes[0].childNodes[3].click()
+
+         console.log(list.join("\n"))
+
+        </script>
 </body>
 
 </html>
