@@ -5,11 +5,13 @@
 4. 添加beforePatch , afterPatch钩子
 5. 添加lib/ReactInputSelection.js
 6.  统一所有操作虚拟DOM的方法的参数(mountXXX, updateXXX, alignXXX系列)
+
 >1 第一个参数为旧真实DOM或旧虚拟DOM
 >2 第二个参数为新虚拟DOM
 >3 第三个参数为父虚拟DOM(可能不存在，那么后面直接跟第四，第五)
 >4 第四个参数为上下文对象
 >5 第五个参数为任务调度系系统的列队
+
 7. 使用全新的方式获取元素的命名空间
 8. 上线全新的节点排序算法(diffChildren)
 9. renderByAnu在全局渲染后应该置空CurrentOwner.cur, 防止影响其他虚拟DOM
@@ -20,6 +22,7 @@
 14. 无状态组件支持模块模式（返回一个带生命周期钩子的纯对象，这些方法会像有状态组件那样被调用）
 15. 放松shouldComponentUpdate的限制，返回任何假值都阻止子孙更新
 16. 修正ref的更新方式
+17. shouldComponentUpdate返回假值时，当前的虚拟DOM应该吸纳旧虚拟DOM的有用信息
 
 ## 1.1.1
 1. 简化createClass
