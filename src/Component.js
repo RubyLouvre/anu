@@ -7,25 +7,13 @@ import { CurrentOwner } from "./createElement";
  * @param {any} props
  * @param {any} context
  */
-//var mountOrder = 1;
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
-    //  this.__mountOrder = mountOrder++;
     this.context = context;
     this.props = props;
     this.refs = {};
     this.state = null;
-    //  this.__pendingCallbacks = [];
-    //  this.__pendingStates = [];
-    //  this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
-    //  this.__lifeStage = 0; //判断生命周期
-    /*
-    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    */
 }
 
 Component.prototype = {

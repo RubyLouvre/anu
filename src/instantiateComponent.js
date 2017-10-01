@@ -1,5 +1,5 @@
 var mountOrder = 1;
-import { getChildContext,options } from "../src/util";
+import { getChildContext } from "../src/util";
 import { CurrentOwner } from "./createElement";
 function alwaysNull() {
     return null;
@@ -17,6 +17,9 @@ function Updater(instance, vnode, props, context) {
     this.nextVnode = vnode;
     this.props =  props;
     this.context = context;
+    //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
     if(instance.__isStateless){
         this.mergeStates = alwaysNull;
     }
