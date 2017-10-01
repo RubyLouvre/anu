@@ -2598,7 +2598,7 @@ function updateInstanceChain(instance, dom) {
 }
 
 var React = {
-    version: "1.1.1",
+    version: "1.1.2",
     render: render,
     options: options,
     PropTypes: PropTypes,
