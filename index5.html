@@ -8,8 +8,8 @@
     
    <script type='text/javascript' src="./dist/React.js"></script>
  
-  <!--<script type='text/javascript' src="./test/react.js"></script>
- <script type='text/javascript' src="./test/react-dom.js"></script>-->
+  <script type='text/javascript' src="./test/react.js"></script>
+ <script type='text/javascript' src="./test/react-dom.js"></script>
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -42,15 +42,15 @@
             }
         }
 
-        const test = ReactDOM.render(<Test />, container);
-        test.setState({ b: 0 });
+        const s = ReactDOM.render(<Test />, container);
+        s.setState({ b: 0 });
         expect(log.length).toBe(1);
-        test.setState({ c: 0 });
+        s.setState({ c: 0 });
         expect(log.length).toBe(2);
      //   expect(log).toEqual(["scu from a to a,b", "scu from a,b to a,b,c"]);
 
 
-    console.log(JSON.stringify(log))
+    console.log(s)
 
  
 

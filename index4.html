@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
+    <script type='text/javascript' src="./lib/shallowCompare.js"></script>
+    
     <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
@@ -25,29 +27,85 @@
     window.ReactDOM = window.React
   }
 
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
   var container = document.createElement('div');
+  var s
   document.body.appendChild(container);
       const log = [];
-      class Component extends React.Component {
-        constructor(props){
-           super(props)
-           this.state = {
-             a: 1
-           }
-        }
-        render() {
-          return <div />;
-        }
+      var renderCalls = 0;
+      class PlasticWrap extends React.Component {
+          constructor(props, context) {
+              super(props, context);
+              this.state = {
+                  color: "green"
+              };
+          }
+
+          render() {
+              return <Apple color={this.state.color} ref="apple" />;
+          }
       }
-      
-      var a = new Component()
-      var oldState =  a.state
-      var newState = {
-        a: 2
+
+      class Apple extends React.Component {
+          state = {
+              cut: false,
+              slices: 1
+          };
+
+          shouldComponentUpdate(nextProps, nextState) {
+              return shallowCompare(this, nextProps, nextState);
+          }
+
+          cut() {
+              this.setState({
+                  cut: true,
+                  slices: 10
+              });
+          }
+
+          eatSlice() {
+              this.setState({
+                  slices: this.state.slices - 1
+              });
+          }
+
+          render() {
+              renderCalls++;
+              return <div />;
+          }
       }
-      a.setState(newState)
-      console.log(oldState == a.state)
-      console.log(newState == a.state)
+
+      var container = document.createElement("div");
+      var instance = ReactDOM.render(<PlasticWrap />, container);
+      expect(renderCalls).toBe(1);
+
+      // Do not re-render based on props
+      instance.setState({ color: "green" });
+      expect(renderCalls).toBe(1);
+
+      // Re-render based on props
+      instance.setState({ color: "red" });
+      expect(renderCalls).toBe(2);
+
+      // Re-render base on state
+      instance.refs.apple.cut();
+      expect(renderCalls).toBe(3);
+
+      // No re-render based on state
+      instance.refs.apple.cut();
+      expect(renderCalls).toBe(3);
+
+      // Re-render based on state again
+      instance.refs.apple.eatSlice();
+      expect(renderCalls).toBe(4);
+     
+
 
 
       

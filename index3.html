@@ -9,12 +9,44 @@
     <script src="./test/babel.js"></script>
     <script type='text/babel'>
       
- var instance = <div ref="badDiv" />;
-   try{
-      instance = ReactTestUtils.renderIntoDocument(instance);
-      }catch(e){
-          console.log(e)
-      }
+      class Component extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                a: 1
+            };
+        }
+        render() {
+            return <Child />;
+        }
+    }
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                a: 1
+            };
+        }
+        shouldComponentUpdate() {
+            return false;
+        }
+        render() {
+            return <div>{new Date() - 0}</div>;
+        }
+    }
+    var b = <Component />;
+    var container = document.createElement("div")
+    var s = ReactDOM.render(b, container);
+    expect(!!s.__rendered._hostNode).toBe(true)
+        s.setState({a:2})
+        expect(!!s.__rendered._hostNode).toBe(true)
     
     </script>
 

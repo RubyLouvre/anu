@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-09-30
+ * by 司徒正美 Copyright 2017-10-01
  * IE9+
  */
 
@@ -1026,7 +1026,7 @@ function Component(props, context) {
     this.__pendingCallbacks = [];
     this.__pendingStates = [];
     this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
-    this.__lifestage = 0; //判断生命周期
+    this.__lifeStage = 0; //判断生命周期
     /*
     * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
     * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
@@ -2290,8 +2290,8 @@ function renderComponent(instance, vnode, cb, rendered) {
     }
 
     vnode._instance = instance;
+    instance.lastRendered = instance.__rendered;
     instance.__rendered = rendered;
-
     var parentContext = vnode.parentContext;
     var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
     var dom = cb(rendered, childContext);
@@ -2330,6 +2330,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
             lastVnode.ref = nextVnode.ref;
         }
     }
+    instance.lastVnode = lastVnode;
     instance.nextVnode = nextVnode;
     nextVnode.context = nextContext;
     nextVnode.parentContext = context;
@@ -2362,6 +2363,7 @@ function refreshComponent(instance, updateQueue) {
 
     nextVnode._instance = instance; //important
 
+
     var nextState = instance.__mergeStates(nextProps, nextContext);
     var shouldUpdate = true;
     if (!instance.__forceUpdate && instance.shouldComponentUpdate && !instance.shouldComponentUpdate(nextProps, nextState, nextContext)) {
@@ -2374,7 +2376,15 @@ function refreshComponent(instance, updateQueue) {
     instance.props = nextProps;
     instance.context = nextContext;
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+
     if (!shouldUpdate) {
+        var lastVnode = instance.lastVnode;
+        for (var i in lastVnode) {
+            if (!nextVnode.hasOwnProperty(i)) {
+                nextVnode[i] = lastVnode[i];
+            }
+        }
+        instance.__current = nextVnode;
         return dom;
     }
     instance.__hydrating = true;
@@ -2457,6 +2467,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         childNodes = parentNode.childNodes;
     lastChildren.forEach(function (el, i) {
         if (childNodes[i] !== el._hostNode) {
+
             parentNode.replaceChild(el._hostNode, childNodes[i]);
         }
     });

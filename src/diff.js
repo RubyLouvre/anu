@@ -318,8 +318,8 @@ function renderComponent(instance, vnode, cb, rendered) {
     }
 
     vnode._instance = instance;
+    instance.lastRendered = instance.__rendered;
     instance.__rendered = rendered;
-
     let parentContext = vnode.parentContext;
     let childContext = rendered.vtype
         ? getChildContext(instance, parentContext)
@@ -353,6 +353,7 @@ function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
             lastVnode.ref = nextVnode.ref;
         }
     }
+    instance.lastVnode = lastVnode;
     instance.nextVnode = nextVnode;
     nextVnode.context = nextContext;
     nextVnode.parentContext = context;
@@ -385,7 +386,8 @@ function refreshComponent(instance, updateQueue) {
     let vparent = nextVnode.vparent;
 
     nextVnode._instance = instance; //important
-
+  
+  
     let nextState = instance.__mergeStates(nextProps, nextContext);
     let shouldUpdate = true;
     if (
@@ -403,8 +405,16 @@ function refreshComponent(instance, updateQueue) {
     instance.props = nextProps;
     instance.context = nextContext;
     instance.state = nextState;//既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+  
     if(!shouldUpdate){
-        return dom;
+        var lastVnode = instance.lastVnode;
+        for(var i in lastVnode){
+            if(!nextVnode.hasOwnProperty(i)){
+                nextVnode[i] = lastVnode[i];
+            }
+        }
+        instance.__current = nextVnode;
+        return  dom;
     }
     instance.__hydrating = true;
     instance.lastProps = lastProps;
@@ -502,7 +512,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         childNodes = parentNode.childNodes;
     lastChildren.forEach(function(el, i) {
         if (childNodes[i] !== el._hostNode) {
+           
             parentNode.replaceChild(el._hostNode, childNodes[i]);
+
         }
     });
     //如果旧数组长度为零
