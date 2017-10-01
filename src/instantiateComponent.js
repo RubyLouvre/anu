@@ -5,7 +5,6 @@ function alwaysNull() {
     return null;
 }
 function Updater(instance, vnode, props, context) {
-    //防止用户在构造器生成JSX
     vnode._instance = instance;
     instance.updater = this;
     this._mountOrder = mountOrder++;
