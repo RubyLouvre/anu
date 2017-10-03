@@ -300,6 +300,31 @@ describe("ReactElementClone", function() {
    // expect(Object.isFrozen(element.props)).toBe(true);
     expect(clone.props).toEqual({foo: 'ef'});
   });
-
-
+  it("子元素被克隆", function(){
+    function Bar(props) {
+        return React.cloneElement(props.children, {className: props.className})
+      }
+    var container = document.createElement('div');
+  
+    var myNodeA = ReactDOM.render(<Bar className="a"><span /></Bar>, container);
+    expect(myNodeA.updater._hostNode.className).toBe("a")
+  
+     myNodeA = ReactDOM.render(<Bar className="kk"><span /></Bar>, container);
+    expect(myNodeA.updater._hostNode.className).toBe("kk")
+  })
+  it("子元素被克隆2", function(){
+    function Bar(props) {
+      return React.cloneElement(props.children, {className: props.className})
+    }
+    function Foo(props) {
+      return props.className === "a" ?  <span {...props} />:<p {...props} />
+    }
+    var container = document.createElement('div');
+  
+    var myNodeA = ReactDOM.render(<Bar className="a"><Foo /></Bar>, container);
+    expect(myNodeA.updater._hostNode.className).toBe("a")
+  
+     myNodeA = ReactDOM.render(<Bar className="kk"><Foo /></Bar>, container);
+    expect(myNodeA.updater._hostNode.className).toBe("kk")
+  })
 });
