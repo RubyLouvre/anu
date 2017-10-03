@@ -62,6 +62,7 @@ require("./modules/ReactDOM-test.jsx");
 
 require("./modules/findDOMNode-test.jsx");
 
+require("./modules/ReactES6Class-test.jsx");
 
 
 

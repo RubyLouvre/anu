@@ -2052,7 +2052,6 @@ function drainQueue(queue) {
 
 //有一个列队， 先放进A组件与A组件回调
 var dirtyComponents = [];
-dirtyComponents.isChildProcess = true;
 
 function mountSorter(u1, u2) {
     //让子节点先于父节点执行
@@ -2103,6 +2102,7 @@ function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
+
     return ref.updater ? ref.updater._hostNode : ref._hostNode || null;
 }
 // 用于辅助XML元素的生成（svg, math),
@@ -2113,6 +2113,7 @@ function getVParent(container) {
         namespaceURI: container.namespaceURI
     };
 }
+
 // ReactDOM.render的内部实现
 function renderByAnu(vnode, container, callback) {
     var context = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -2370,13 +2371,14 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     updater.parentContext = parentContext;
     // nextVnode._instance = instance; //不能放这里
 
-    if (updateQueue.isChildProcess) {
+    /* if (updateQueue.isMainProcess) {
         queue = updateQueue;
-    } else {
         queue = [];
-        queue.isChildProcess = true;
-    }
-    refreshComponent(updater, queue);
+        console.log("转换为子");
+    }else{
+        queue = updateQueue;
+    }*/
+    refreshComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
     return updater._hostNode;
@@ -2438,7 +2440,7 @@ function refreshComponent(updater, updateQueue) {
     });
     updater._lifeStage = 2;
     updater._hydrating = false;
-    if (updateQueue.isChildProcess) {
+    if (!updateQueue.isMainProcess) {
         drainQueue(updateQueue);
     }
 
@@ -2602,8 +2604,8 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             }
             oldChild = action.last;
             if (oldChild.vtype > 1 && !oldChild._instance) {
-                dom = mountVnode(null, action.next, lastVnode, context, updateQueue);
-                parentNode.insertBefore(dom, insertPoint);
+                //正处于动画过程中
+                nextChildren[j] = oldChild;
             } else {
                 dom = updateVnode(action.last, action.next, lastVnode, context, updateQueue);
             }

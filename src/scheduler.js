@@ -76,7 +76,6 @@ export function drainQueue(queue) {
 
 //有一个列队， 先放进A组件与A组件回调
 var dirtyComponents = [];
-dirtyComponents.isChildProcess = true;
 
 function mountSorter(u1, u2) {//让子节点先于父节点执行
     return u2._mountIndex - u1._mountIndex;

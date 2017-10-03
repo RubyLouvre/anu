@@ -39,40 +39,24 @@
               }
           }
       }
-      class App extends React.Component {
-          constructor(props) {
-              super(props);
-  
-              // 设置 initial state
-              this.state = {
-                  text: 'xxx'
-              };
-          }
-  
-          shouldComponentUpdate() {
-              return false
-          }
-  
-          render() {
-              return (
-                  <div>
-                      Type something:
-                      <input ref="input" value={new Date - 0} />
-                  </div>
-              );
-          }
+
+      function Bar(props) {
+        return React.cloneElement(props.children, {className: props.className})
+      }
+      function Foo(props) {
+        return props.className === "a" ?  <span {...props} />:<p {...props} />
       }
   
-      App.defaultProps = {
-          initialValue: '请输入内容'
-      };
-      container.innerHTML = '<span>remove</span>'
   
-  
-  
-      var s = React.render(<App />, container)
-  
+      var myNodeA = ReactDOM.render(<Bar className="a"><Foo /></Bar>, container);
+      console.log(myNodeA.updater._hostNode)
+   
+      var myNodeA = ReactDOM.render(<Bar className="kk"><Foo /></Bar>, container);
+      console.log(myNodeA.updater._hostNode)
+    //  console.log(myNodeB)
+      //  expect(myNodeA === myNodeB).toBe(true);
 
+     //   var b = ReactDOM.findDOMNode(myNodeB);
     </script>
   
 </body>
