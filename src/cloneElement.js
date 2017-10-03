@@ -6,14 +6,20 @@ export function cloneElement(vnode, props) {
     }
     let owner = vnode._owner,
         lastOwn = CurrentOwner.cur,
-        configs = {
-            key: vnode.key,
-            ref: vnode.ref
-        };
-    if (props && props.ref) {
-        owner = lastOwn;
+        old = vnode.props,
+        configs = {  };
+    if (props) {
+        Object.assign(configs, old, props);
+        configs.key = props.key !== void 666 ? props.key :vnode.key;
+        if(props.ref !== void 666){
+            configs.ref = props.ref;
+            owner = lastOwn;
+        }else{
+            configs.ref = vnode.ref;
+        }
+    }else{
+        configs = old;
     }
-    Object.assign(configs, vnode.props, props);
     CurrentOwner.cur = owner;
 
     let args = [].slice.call(arguments, 0),

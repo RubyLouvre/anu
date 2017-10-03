@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-10-01
+ * by 司徒正美 Copyright 2017-10-03
  * IE9+
  */
 
@@ -249,7 +249,8 @@ function createElement(type, config) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
+        props.children = children[0];
+        // : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         props.children = children;
     }
@@ -312,6 +313,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
                 ref(dom);
                 ref2(dom);
             };
+            this.ref.string = ref.string;
         } else {
             //function
             this.ref = ref;
@@ -451,14 +453,20 @@ function cloneElement(vnode, props) {
     }
     var owner = vnode._owner,
         lastOwn = CurrentOwner.cur,
-        configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    if (props && props.ref) {
-        owner = lastOwn;
+        old = vnode.props,
+        configs = {};
+    if (props) {
+        Object.assign(configs, old, props);
+        configs.key = props.key !== void 666 ? props.key : vnode.key;
+        if (props.ref !== void 666) {
+            configs.ref = props.ref;
+            owner = lastOwn;
+        } else {
+            configs.ref = vnode.ref;
+        }
+    } else {
+        configs = old;
     }
-    Object.assign(configs, vnode.props, props);
     CurrentOwner.cur = owner;
 
     var args = [].slice.call(arguments, 0),
@@ -2105,7 +2113,6 @@ function getVParent(container) {
         namespaceURI: container.namespaceURI
     };
 }
-
 // ReactDOM.render的内部实现
 function renderByAnu(vnode, container, callback) {
     var context = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -2324,15 +2331,18 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
 }
 
 function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
+    if (!lastVnode._instance) {
+        console.log(lastVnode);
+    }
     var type = lastVnode.type,
         ref = lastVnode.ref,
         instance = lastVnode._instance,
         vtype = lastVnode.vtype;
 
     var nextContext = void 0,
+        queue = void 0,
         nextProps = nextVnode.props,
-        queue = void 0;
-    var updater = instance.updater;
+        updater = instance.updater;
     if (type.contextTypes) {
         nextContext = getContextByTypes(parentContext, type.contextTypes);
     } else {
@@ -2382,7 +2392,6 @@ function refreshComponent(updater, updateQueue) {
 
 
     vnode._instance = instance; //放这里
-
     updater._renderInNextCycle = null;
 
     var nextState = updater.mergeStates();
@@ -2398,17 +2407,25 @@ function refreshComponent(updater, updateQueue) {
 
 
     updater._forceUpdate = false;
-    instance.props = nextProps;
-    instance.context = nextContext;
+
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
 
     if (!shouldUpdate) {
         if (lastVnode && lastVnode !== vnode) {
-            updater.vnode = lastVnode;
+            for (var i in lastVnode) {
+                if (!vnode[i]) {
+                    vnode[i] = lastVnode[i];
+                }
+            }
+            lastVnode._instance = instance;
+            if (lastVnode.props.children) {
+                vnode.props.children = lastVnode.props.children;
+            }
         }
         return dom;
     }
-
+    instance.props = nextProps;
+    instance.context = nextContext;
     updater._hydrating = true;
     updater.lastProps = lastProps;
     updater.lastState = lastState;
@@ -2430,18 +2447,17 @@ function refreshComponent(updater, updateQueue) {
 options.refreshComponent = refreshComponent;
 
 function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
-    var node = lastVnode._hostNode,
-        dom = void 0;
+    var dom = void 0;
     if (isSameNode(lastVnode, nextVnode)) {
         dom = updateVnode(lastVnode, nextVnode, vparent, context, updateQueue);
     } else {
         disposeVnode(lastVnode);
+        var node = lastVnode._hostNode,
+            parent = node.parentNode,
+            next = node.nextSibling;
+        removeDOMElement(node);
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
-        var p = node.parentNode;
-        if (p) {
-            p.replaceChild(dom, node);
-            removeDOMElement(node);
-        }
+        parent.insertBefore(dom, next);
     }
     return dom;
 }
@@ -2487,21 +2503,17 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
-        childNodes = parentNode.childNodes;
-    lastChildren.forEach(function (el, i) {
-        if (childNodes[i] !== el._hostNode) {
-            if (!el._hostNode) {
-                console.log(el, "没有hostNode");
-            }
-            parentNode.replaceChild(el._hostNode, childNodes[i]);
-        }
-    });
-    //如果旧数组长度为零
+        dom = void 0;
+
+    //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
+        emptyElement(parentNode);
         return mountChildren(parentNode, nextChildren, lastVnode, context, updateQueue);
     }
     if (nextLength === lastLength && lastLength === 1) {
-        return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
+        lastChildren[0]._hostNode = parentNode.firstChild;
+        dom = alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
+        return;
     }
     var maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,
@@ -2510,7 +2522,6 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         actions = [],
         i = 0,
         hit = void 0,
-        dom = void 0,
         oldDom = void 0,
         nextChild = void 0,
         lastChild = void 0;
@@ -2567,6 +2578,10 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
                 oldChild = fuzzyHits[hit].shift();
                 oldDom = oldChild._hostNode;
                 parentNode.insertBefore(oldDom, insertPoint);
+
+                if (oldChild.vtype > 1 && !oldChild._instance) {
+                    console.log("有问题");
+                }
                 dom = updateVnode(oldChild, curChild, lastVnode, context, updateQueue);
                 removeHits[oldChild._i] = true;
             } else {
@@ -2585,10 +2600,17 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             if (action.action === "moveAfter") {
                 parentNode.insertBefore(oldDom, insertPoint);
             }
-            dom = updateVnode(action.last, action.next, lastVnode, context, updateQueue);
+            oldChild = action.last;
+            if (oldChild.vtype > 1 && !oldChild._instance) {
+                dom = mountVnode(null, action.next, lastVnode, context, updateQueue);
+                parentNode.insertBefore(dom, insertPoint);
+            } else {
+                dom = updateVnode(action.last, action.next, lastVnode, context, updateQueue);
+            }
         }
         insertPoint = dom.nextSibling;
     }
+
     //移除
     lastChildren.forEach(function (el, i) {
         if (!removeHits[i]) {

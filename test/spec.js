@@ -54,10 +54,13 @@ require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactCompositeComponentDOMMinimalism-test.jsx");
 
 require("./modules/ReactCompositeComponentState-test.jsx");
+require("./modules/ReactElementClone-test.jsx");
 
 
+require("./modules/ReactDOM-test.jsx");
 
 
+require("./modules/findDOMNode-test.jsx");
 
 
 
