@@ -41,7 +41,9 @@ export const Children = {
         return ret;
     },
     forEach(children, callback, context) {
-        _flattenChildren(children, false).forEach(callback, context);
+        if(children != null){
+            _flattenChildren(children, false).forEach(callback, context);
+        }
     },
 
     toArray: function(children) {
