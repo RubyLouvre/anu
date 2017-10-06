@@ -12,10 +12,10 @@ function clearRefs() {
     });
 }
 function callUpdate(updater, instance) {
+    if(pendingRefs.length){                
+        clearRefs();
+    }
     if (updater._lifeStage === 2) {
-        if(pendingRefs.length){                
-            clearRefs();
-        }
         if (instance.componentDidUpdate) {
             updater._didUpdate = true;
             instance.componentDidUpdate(
@@ -28,6 +28,7 @@ function callUpdate(updater, instance) {
             }
         }
         options.afterUpdate(instance);
+        updater._hydrating = false;
         updater._lifeStage = 1;
     }
 }
@@ -51,6 +52,7 @@ export function drainQueue(queue) {
             }
             updater._lifeStage = 1;
             options.afterMount(instance);
+            updater._hydrating = false;
         } else {
             callUpdate(updater, instance);
         }
@@ -58,8 +60,9 @@ export function drainQueue(queue) {
         if (ref) {
             ref(instance.__isStateless ? null: instance);
         }
-        updater._hydrating = false; //子树已经构建完毕
+        // updater._hydrating = false; //子树已经构建完毕
         while (updater._renderInNextCycle) {
+        
             options.refreshComponent(updater, queue);
             callUpdate(updater, instance);
         }

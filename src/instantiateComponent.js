@@ -23,7 +23,6 @@ function Updater(instance, vnode) {
         this.mergeStates = alwaysNull;
     }
 }
-
 Updater.prototype = {
     mergeStates: function() {
         let instance = this._instance,
@@ -73,11 +72,16 @@ Updater.prototype = {
         this.rendered = rendered;
         let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
         let dom = cb(rendered, this.vparent, childContext);
-
-        updateChains[this._mountOrder].forEach(function(el) {
+        if(!dom){
+            throw ["必须返回节点",rendered];
+        }
+        let list = updateChains[this._mountOrder];
+        if(!list){
+            list = updateChains[this._mountOrder] = [this];
+        }
+        list.forEach(function(el) {
             el.vnode._hostNode = el._hostNode = dom;
         });
-
         return dom;
     }
 };

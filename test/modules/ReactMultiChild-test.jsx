@@ -10,7 +10,7 @@ var PropTypes = React.PropTypes;
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 
-describe("reconciliation", function() {
+describe("ReactMultiChild", function() {
   this.timeout(200000);
   it("should update children when possible", () => {
     var container = document.createElement("div");
