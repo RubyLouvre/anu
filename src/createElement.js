@@ -79,7 +79,7 @@ function createStringRef(owner, ref) {
             if (dom) {
                 if (dom.nodeType) {
                     dom.getDOMNode = getDOMNode;
-                }
+                }        
                 owner.refs[ref] = dom;
             }else{
                 delete owner.refs[ref];

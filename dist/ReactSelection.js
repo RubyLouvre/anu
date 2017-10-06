@@ -2364,10 +2364,9 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     }
     //用于refreshComponent
     if (ref && vtype === 2) {
-        ref(null);
-        if (nextVnode.ref) {
-            lastVnode.ref = nextVnode.ref;
-        }
+        var nextRef = nextVnode.ref;
+        detachRef(ref, nextRef);
+        lastVnode.ref = nextRef;
     }
     //updater上总是保持新的数据
     updater.lastVnode = lastVnode;
@@ -2464,14 +2463,19 @@ function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentU
 }
 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
-    var dom = lastVnode._hostNode;
+    var lastProps = lastVnode.props,
+        dom = lastVnode._hostNode,
+        ref = lastVnode.ref,
+        checkProps = lastVnode.checkProps;
+
     if (dom === null) {
         console.log("此节点已经被移除", vparent);
         return null;
     }
-    var lastProps = lastVnode.props;
-    var nextProps = nextVnode.props;
-    var ref = nextVnode.ref;
+
+    var nextProps = nextVnode.props,
+        nextRef = nextVnode.ref;
+
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode.vchildren || [];
@@ -2486,18 +2490,27 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
     }
 
-    if (lastVnode.checkProps || nextVnode.checkProps) {
+    if (checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
-    if (ref) {
-        pendingRefs.push(ref.bind(0, dom));
-    }
+    detachRef(ref, nextRef, dom);
+
     return dom;
 }
-
+function detachRef(ref, nextRef, dom) {
+    if (nextRef) {
+        var refsChanged = !ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string;
+        if (refsChanged) {
+            ref(null);
+        }
+        dom && nextRef(dom);
+    } else if (ref) {
+        ref(null);
+    }
+}
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     var lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
