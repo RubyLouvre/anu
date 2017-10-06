@@ -2481,15 +2481,10 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         });
         list.length = 0;
     } else {
-        var vchildren = flattenChildren(nextVnode);
         if (lastProps[innerHTML]) {
-            while (dom.firstChild) {
-                dom.removeChild(dom.firstChild);
-            }
-            mountChildren(dom, vchildren, nextVnode, context, updateQueue);
-        } else {
-            diffChildren(lastVnode, nextVnode, dom, context, updateQueue, vparent);
+            dom.vchildren = [];
         }
+        diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
     }
 
     if (lastVnode.checkProps || nextVnode.checkProps) {
@@ -2505,8 +2500,8 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
 }
 
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
-    var lastChildren = parentNode.vchildren; // lastVnode.vchildren;
-    var nextChildren = flattenChildren(nextVnode),
+    var lastChildren = parentNode.vchildren,
+        nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         dom = void 0;
