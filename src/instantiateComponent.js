@@ -55,7 +55,12 @@ Updater.prototype = {
             try {
                 var lastOwn = CurrentOwner.cur;
                 CurrentOwner.cur = instance;
-                rendered = instance.render();
+                if(this.willReceive === false){
+                    rendered = this.rendered;
+                    delete this.willReceive;
+                }else{
+                    rendered =  instance.render();
+                }
             } finally {
                 CurrentOwner.cur = lastOwn;
             }
@@ -64,7 +69,7 @@ Updater.prototype = {
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0 };
-        } else if (!rendered || !rendered.vtype) {
+        } else if (!rendered || !rendered.type) {
             //true, undefined, array, {}
             throw new Error(`@${vnode.type.name}#render:You may have returned undefined, an array or some other invalid object`);
         }

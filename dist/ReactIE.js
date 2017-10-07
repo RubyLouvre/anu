@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-06
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-07
  */
 
 (function (global, factory) {
@@ -926,8 +926,9 @@ var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change";
-    addEvent(document, mask, changeHandle);
+    if (/text|password/.test(dom.type)) {
+        addEvent(document, "input", changeHandle);
+    }
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
@@ -1673,7 +1674,12 @@ Updater.prototype = {
             try {
                 var lastOwn = CurrentOwner.cur;
                 CurrentOwner.cur = instance;
-                rendered = instance.render();
+                if (this.willReceive === false) {
+                    rendered = this.rendered;
+                    delete this.willReceive;
+                } else {
+                    rendered = instance.render();
+                }
             } finally {
                 CurrentOwner.cur = lastOwn;
             }
@@ -1682,7 +1688,7 @@ Updater.prototype = {
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0 };
-        } else if (!rendered || !rendered.vtype) {
+        } else if (!rendered || !rendered.type) {
             //true, undefined, array, {}
             throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
         }
@@ -2186,34 +2192,8 @@ var patchStrategy = {
 function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
-function updateByContext(vnode) {
-    if (vnode.type && vnode.type.contextTypes) {
-        return true;
-    }
-    var vchildren = vnode.vchildren;
-    if (vchildren) {
-        for (var i = 0; i < vchildren.length; i++) {
-            var el = vchildren[i];
-            if (el.vtype === 1) {
-                if (updateByContext(el)) {
-                    return true;
-                }
-            } else if (el.vtype && el.type.contextTypes) {
-                return true;
-            }
-        }
-    } else if (vnode._instance) {
-        var ret = vnode._instance.updater.rendered;
-        if (updateByContext(ret)) {
-            return true;
-        }
-    }
-}
 
-function updateVnode(lastVnode, nextVnode) {
-    if (lastVnode === nextVnode && !updateByContext(lastVnode)) {
-        return lastVnode._hostNode;
-    }
+function updateVnode(lastVnode) {
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
@@ -2356,8 +2336,11 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     } else {
         nextContext = instance.context; //没有定义contextTypes就沿用旧的
     }
-
-    if (instance.componentWillReceiveProps) {
+    var willReceive = lastVnode !== nextVnode || updater.context !== nextContext;
+    updater.willReceive = willReceive;
+    //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
+    //但还会继续向下比较
+    if (willReceive && instance.componentWillReceiveProps) {
         updater._receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
         updater._receiving = false;
@@ -2376,6 +2359,11 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     updater.vparent = vparent;
     updater.parentContext = parentContext;
     // nextVnode._instance = instance; //不能放这里
+    if (!willReceive) {
+        return updater.renderComponent(function (nextRendered, vparent, childContext) {
+            return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
+        });
+    }
     if (updateQueue.isMainProcess) {
         queue = updateQueue;
         queue = [];
@@ -2385,9 +2373,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     refreshComponent(updater, queue);
     //子组件先执行
     updateQueue.push(updater);
-    if (!updater._hostNode) {
-        console.log("出问题了", updater, lastVnode);
-    }
     return updater._hostNode;
 }
 
@@ -2501,13 +2486,13 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     return dom;
 }
 function detachRef(ref, nextRef, dom) {
+    ref = ref || noop;
     if (nextRef) {
-        var refsChanged = !ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string;
-        if (refsChanged) {
+        if (!ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string) {
             ref(null);
         }
         dom && nextRef(dom);
-    } else if (ref) {
+    } else {
         ref(null);
     }
 }

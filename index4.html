@@ -4,11 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./lib/shallowCompare.js"></script>
     
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   
+  <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
+   
+
     <!-- <script src="./test/react-lite.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -35,95 +38,41 @@
         }
     }
   var container = document.createElement('div');
-  
+var div = container
   document.body.appendChild(container);
-  class ParentComponent extends React.Component {
-    state = {color: 'blue'};
+  var PropTypes = React.PropTypes
+ 
 
-    handleColor = color => {
-      this.props.logger('parent-handleColor', this.state.color);
-      this.setState({color: color}, function() {
-        this.props.logger('parent-after-setState', this.state.color);
-      });
-    };
+  var numMiddleRenders = 0;
+  var numBottomRenders = 0;
+
+  class Top extends React.Component {
+    render() {
+      return <Middle><Bottom /></Middle>;
+    }
+  }
+
+  class Middle extends React.Component {
+    componentDidMount() {
+      this.forceUpdate();
+    }
 
     render() {
-      this.props.logger('parent-render', this.state.color);
-      return (
-        <ChildComponent
-          logger={this.props.logger}
-          color={this.state.color}
-          onSelectColor={this.handleColor}
-        />
-      );
+      numMiddleRenders++;
+      return React.Children.only(this.props.children);
     }
   }
 
-  class ChildComponent extends React.Component {
-    constructor(props) {
-      super(props);
-      props.logger('getInitialState', props.color);
-      this.state = {hue: 'dark ' + props.color};
-    }
-
-    handleHue = (shade, color) => {
-        console.log(this.state, '方法')
-      this.props.logger('handleHue', this.state.hue, this.props.color);
-      this.props.onSelectColor(color);
-      this.setState(
-        function(state, props) {
-          this.props.logger(
-            'setState-this',
-            this.state.hue,
-            this.props.color,
-          );
-          this.props.logger('setState-args', state.hue, props.color);
-          return {hue: shade + ' ' + props.color};
-        },
-        function() {
-          this.props.logger(
-            'after-setState',
-            this.state.hue,
-            this.props.color,
-          );
-        },
-      );
-    };
-
+  class Bottom extends React.Component {
     render() {
-        console.log(this.state, 'render')
-      this.props.logger('render', this.state.hue, this.props.color);
-      return (
-        <div>
-          <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
-            Dark Blue
-          </button>
-          <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
-            Light Blue
-          </button>
-          <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
-            Dark Green
-          </button>
-          <button onClick={this.handleHue.bind(this, 'light', 'green')}>
-            Light Green
-          </button>
-        </div>
-      );
+      numBottomRenders++;
+      return null;
     }
   }
 
-  var container = document.createElement('div');
-  document.body.appendChild(container);
-  var list = []
-  function logger(){
-    list.push([].slice.call(arguments, 0))
-  }
-
-  void ReactDOM.render(<ParentComponent logger={logger} />, container);
-
-  // click "light green"
- //container.childNodes[0].childNodes[3].click()
-
+  ReactTestUtils.renderIntoDocument(<Top />);
+  expect(numMiddleRenders).toBe(2);
+  expect(numBottomRenders).toBe(1);
       
        </script>
 </body>

@@ -256,8 +256,9 @@ var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change";
-    addEvent(document, mask, changeHandle);
+    if(/text|password/.test(dom.type)){
+        addEvent(document, "input", changeHandle);
+    }
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {

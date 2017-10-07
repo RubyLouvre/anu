@@ -1,4 +1,4 @@
-import { options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
+import { noop, options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createDOMElement, emptyElement, removeDOMElement } from "./browser";
@@ -112,34 +112,8 @@ const patchStrategy = {
 function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
-function updateByContext(vnode) {
-    if (vnode.type && vnode.type.contextTypes) {
-        return true;
-    }
-    let vchildren = vnode.vchildren;
-    if (vchildren) {
-        for (let i = 0; i < vchildren.length; i++) {
-            let el = vchildren[i];
-            if (el.vtype === 1) {
-                if (updateByContext(el)) {
-                    return true;
-                }
-            } else if (el.vtype && el.type.contextTypes) {
-                return true;
-            }
-        }
-    } else if (vnode._instance) {
-        var ret = vnode._instance.updater.rendered;
-        if (updateByContext(ret)) {
-            return true;
-        }
-    }
-}
 
-function updateVnode(lastVnode, nextVnode) {
-    if (lastVnode === nextVnode && !updateByContext(lastVnode)) {
-        return lastVnode._hostNode;
-    }
+function updateVnode(lastVnode) {
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
@@ -279,8 +253,11 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     } else {
         nextContext = instance.context; //没有定义contextTypes就沿用旧的
     }
-
-    if (instance.componentWillReceiveProps) {
+    var willReceive = lastVnode !== nextVnode || updater.context !== nextContext;
+    updater.willReceive = willReceive;
+    //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
+    //但还会继续向下比较
+    if (willReceive && instance.componentWillReceiveProps) {
         updater._receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
         updater._receiving = false;
@@ -299,6 +276,11 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     updater.vparent = vparent;
     updater.parentContext = parentContext;
     // nextVnode._instance = instance; //不能放这里
+    if (!willReceive) {
+        return updater.renderComponent(function(nextRendered, vparent, childContext) {
+            return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
+        });
+    }
     if (updateQueue.isMainProcess) {
         queue = updateQueue;
         queue = [];
@@ -308,9 +290,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     refreshComponent(updater, queue);
     //子组件先执行
     updateQueue.push(updater);
-    if (!updater._hostNode) {
-        console.log("出问题了", updater, lastVnode);
-    }
     return updater._hostNode;
 }
 
@@ -408,14 +387,14 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
 
     return dom;
 }
-function detachRef(ref, nextRef, dom){
+function detachRef(ref, nextRef, dom) {
+    ref = ref || noop;
     if (nextRef) {
-        var refsChanged = !ref.string && !nextRef.string ? ref !== nextRef:ref.string !== nextRef.string;
-        if(refsChanged){ 
+        if (!ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string) {
             ref(null);
         }
         dom && nextRef(dom);
-    } else if(ref){
+    }else{
         ref(null);
     }
 }

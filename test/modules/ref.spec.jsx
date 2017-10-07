@@ -296,7 +296,22 @@ describe("ref", function () {
         expect(s.refs.aaa).toBe(void 666);
         expect(typeof a).toBe("object");
     });
-
+    it("为元素添加ref", function() {
+       
+        class Foo extends React.Component {
+            render() {
+                return (
+                    <div>
+                        {this.props.a ? <span  className="aaa"/>: <span ref="aaa" className="bbb" />}
+                    </div>
+                );
+            }
+        }
+        var s = ReactDOM.render(<Foo a={1}/>,  div);
+        expect(s.refs).toEqual({});
+        ReactDOM.render(<Foo a={0}/>, div);
+        expect(typeof s.refs.aaa).toBe("object");
+    });
     it("相同位置上的元素节点的ref函数不一样", function() {
         var log = [];
         class Foo extends React.Component {

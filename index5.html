@@ -40,23 +40,63 @@
           }
       }
 
-      function Bar(props) {
-        return React.cloneElement(props.children, {className: props.className})
+    
+      class A extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            a: 100
+          }
+        }
+        render(){
+          console.log(this.state.a)
+         return <p><span>随便</span><B a={this.state.a}><span>{this.state.a}</span></B></p>
+        }
       }
-      function Foo(props) {
-        return props.className === "a" ?  <span {...props} />:<p {...props} />
-      }
-  
-  
-      var myNodeA = ReactDOM.render(<Bar className="a"><Foo /></Bar>, container);
-      console.log(myNodeA.updater._hostNode)
-   
-      var myNodeA = ReactDOM.render(<Bar className="kk"><Foo /></Bar>, container);
-      console.log(myNodeA.updater._hostNode)
-    //  console.log(myNodeB)
-      //  expect(myNodeA === myNodeB).toBe(true);
+      class B extends React.Component{
+        constructor(props){
+            super(props)
+            this.state = {
+              b: props.a
+            }
+        }
+        componentWillReceiveProps(props){
+         console.log("B", props.a)
+         this.state.b = props.a
+       
 
-     //   var b = ReactDOM.findDOMNode(myNodeB);
+        }
+        shouldComponentUpdate(){
+          console.log("=====",!!this.state.b)
+          return this.state.b
+        }
+        render(){
+          console.log("B render", this.state.b)
+           return <strong>{this.props.children}</strong>
+        }
+      }
+      
+      class C extends React.Component{
+        constructor(props){
+            super(props)
+            this.state = {
+              c: 111
+            }
+        }
+      
+        render(){
+          window.c = this
+           return <em>{this.state.c}</em>
+        }
+      }
+  
+      var instance = ReactDOM.render(<A/>, container);
+      console.log(instance.updater._hostNode)
+     instance.setState({a: 0})
+    
+      console.log(instance.updater._hostNode)
+    //  console.log(myNodeB)
+     
     </script>
   
 </body>
