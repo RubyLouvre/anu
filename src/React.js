@@ -8,6 +8,7 @@ import { createClass } from "./createClass";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 import { createElement } from "./createElement";
+import { pendingRefs } from "./scheduler";
 
 import { render,findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
@@ -17,6 +18,7 @@ var React = {
     options,
     PropTypes,
     Children, //为了react-redux
+    pendingRefs,
     Component,
     eventSystem,
     findDOMNode,

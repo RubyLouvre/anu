@@ -47,9 +47,8 @@ export function createElement(type, config, ...children) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children[0]) > 2
-            ? children[0]
-            : EMPTY_CHILDREN;
+        props.children = children[0];
+        // : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         props.children = children;
     }
@@ -80,7 +79,7 @@ function createStringRef(owner, ref) {
             if (dom) {
                 if (dom.nodeType) {
                     dom.getDOMNode = getDOMNode;
-                }
+                }        
                 owner.refs[ref] = dom;
             }else{
                 delete owner.refs[ref];
@@ -114,6 +113,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
                 ref(dom);
                 ref2(dom);
             };
+            this.ref.string = ref.string;
         } else {
             //function
             this.ref = ref;

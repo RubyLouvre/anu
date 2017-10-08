@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-09-30
+ * by 司徒正美 Copyright 2017-10-07
  * IE9+
  */
 
@@ -249,7 +249,8 @@ function createElement(type, config) {
     }
 
     if (argsLen === 1) {
-        props.children = typeNumber(children[0]) > 2 ? children[0] : EMPTY_CHILDREN;
+        props.children = children[0];
+        // : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         props.children = children;
     }
@@ -312,6 +313,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
                 ref(dom);
                 ref2(dom);
             };
+            this.ref.string = ref.string;
         } else {
             //function
             this.ref = ref;
@@ -451,14 +453,20 @@ function cloneElement(vnode, props) {
     }
     var owner = vnode._owner,
         lastOwn = CurrentOwner.cur,
-        configs = {
-        key: vnode.key,
-        ref: vnode.ref
-    };
-    if (props && props.ref) {
-        owner = lastOwn;
+        old = vnode.props,
+        configs = {};
+    if (props) {
+        Object.assign(configs, old, props);
+        configs.key = props.key !== void 666 ? props.key : vnode.key;
+        if (props.ref !== void 666) {
+            configs.ref = props.ref;
+            owner = lastOwn;
+        } else {
+            configs.ref = vnode.ref;
+        }
+    } else {
+        configs = old;
     }
-    Object.assign(configs, vnode.props, props);
     CurrentOwner.cur = owner;
 
     var args = [].slice.call(arguments, 0),
@@ -514,7 +522,9 @@ var Children = {
         return ret;
     },
     forEach: function forEach(children, callback, context) {
-        _flattenChildren(children, false).forEach(callback, context);
+        if (children != null) {
+            _flattenChildren(children, false).forEach(callback, context);
+        }
     },
 
 
@@ -726,7 +736,7 @@ function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    options.flushBatchedUpdates();
+    options.flushUpdaters();
 }
 
 function collectPaths(from, end) {
@@ -917,8 +927,9 @@ var doubleClickHandle = createHandle("doubleclick");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
-    var mask = /text|password/.test(dom.type) ? "input" : "change";
-    addEvent(document, mask, changeHandle);
+    if (/text|password/.test(dom.type)) {
+        addEvent(document, "input", changeHandle);
+    }
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
@@ -1014,25 +1025,13 @@ var PropTypes = {
  * @param {any} props
  * @param {any} context
  */
-var mountOrder = 1;
 function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
-    this.__mountOrder = mountOrder++;
     this.context = context;
     this.props = props;
     this.refs = {};
     this.state = null;
-    this.__pendingCallbacks = [];
-    this.__pendingStates = [];
-    this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
-    this.__lifestage = 0; //判断生命周期
-    /*
-    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    */
 }
 
 Component.prototype = {
@@ -1041,88 +1040,72 @@ Component.prototype = {
         deprecatedWarn("replaceState");
     },
     setState: function setState(state, cb) {
-        debounceSetState(this, state, cb);
+        debounceSetState(this.updater, state, cb);
     },
     isMounted: function isMounted() {
         deprecatedWarn("isMounted");
-        return !!this.__dom;
+        return !!(this.updater || {})._hostNode;
     },
     forceUpdate: function forceUpdate(cb) {
-        debounceSetState(this, true, cb);
+        debounceSetState(this.updater, true, cb);
     },
-
-    __mergeStates: function __mergeStates(props, context) {
-        var pendings = this.__pendingStates,
-            n = pendings.length;
-        if (n === 0) {
-            return this.state;
-        }
-        var state = extend({}, this.state); //每次都返回新的state
-        for (var i = 0; i < n; i++) {
-            var pending = pendings[i];
-            if (isFn(pending)) {
-                pending = pending.call(this, state, props, context);
-            }
-            extend(state, pending);
-        }
-        pendings.length = 0;
-        return state;
-    },
-
     render: function render() {}
 };
 
-function debounceSetState(a, b, c) {
-    if (a.__didUpdate) {
+function debounceSetState(updater, state, cb) {
+    if (!updater) {
+        return;
+    }
+    if (updater._didUpdate) {
         //如果用户在componentDidUpdate中使用setState，要防止其卡死
         setTimeout(function () {
-            a.__didUpdate = false;
-            setStateImpl.call(a, b, c);
+            updater._didUpdate = false;
+            setStateImpl(updater, state, cb);
         }, 300);
         return;
     }
-    setStateImpl.call(a, b, c);
+    setStateImpl(updater, state, cb);
 }
-function setStateImpl(state, cb) {
+function setStateImpl(updater, state, cb) {
     if (isFn(cb)) {
-        this.__pendingCallbacks.push(cb);
+        updater._pendingCallbacks.push(cb);
     }
-    var hasDOM = this.__dom;
+    var hasDOM = updater._hostNode;
     if (state === true) {
         //forceUpdate
-        this.__forceUpdate = true;
+        updater._forceUpdate = true;
     } else {
         //setState
-        this.__pendingStates.push(state);
+        updater._pendingStates.push(state);
     }
     if (!hasDOM) {
         //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略
-        if (this.__hydrating) {
+        if (updater._hydrating) {
             //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState
             //2. 子组件调用父组件的setState，
-            this.__renderInNextCycle = true;
+            updater._renderInNextCycle = true;
         }
     } else {
         //组件更新期
-        if (this.__receiving) {
+        if (updater._receiving) {
             //componentWillReceiveProps中的setState/forceUpdate应该被忽略
             return;
         }
-        this.__renderInNextCycle = true;
+        updater._renderInNextCycle = true;
         if (options.async) {
             //在事件句柄中执行setState会进行合并
-            options.addTask(this);
+            options.enqueueUpdater(updater);
             return;
         }
-        if (this.__hydrating) {
+        if (updater._hydrating) {
             // 在componentDidMount里调用自己的setState，延迟到下一周期更新
             // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             return;
         }
         //  不在生命周期钩子内执行setState
-        options.flushBatchedUpdates([this]);
+        options.flushUpdaters([updater]);
     }
 }
 
@@ -1282,6 +1265,99 @@ fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     return !a || !b;
 };
 fn$1.isPureComponent = true;
+
+var pendingRefs = [];
+function clearRefs() {
+    var refs = pendingRefs.slice(0);
+    pendingRefs.length = 0;
+    refs.forEach(function (fn) {
+        fn();
+    });
+}
+function callUpdate(updater, instance) {
+    if (pendingRefs.length) {
+        clearRefs();
+    }
+    if (updater._lifeStage === 2) {
+        if (instance.componentDidUpdate) {
+            updater._didUpdate = true;
+            instance.componentDidUpdate(updater.lastProps, updater.lastState, updater.lastContext);
+            if (!updater._renderInNextCycle) {
+                updater._didUpdate = false;
+            }
+        }
+        options.afterUpdate(instance);
+        updater._hydrating = false;
+        updater._lifeStage = 1;
+    }
+}
+
+function drainQueue(queue) {
+    options.beforePatch();
+    //先执行所有refs方法（从上到下）
+    clearRefs();
+    //再执行所有mount/update钩子（从下到上）
+    var i = 0;
+    while (i < queue.length) {
+        //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
+        var updater = queue[i],
+            instance = updater._instance;
+        i++;
+        if (!updater._lifeStage) {
+            if (pendingRefs.length) {
+                clearRefs();
+            }
+            if (instance.componentDidMount) {
+                instance.componentDidMount();
+                instance.componentDidMount = null;
+            }
+            updater._lifeStage = 1;
+            options.afterMount(instance);
+            updater._hydrating = false;
+        } else {
+            callUpdate(updater, instance);
+        }
+        var ref = updater.vnode.ref;
+        if (ref) {
+            ref(instance.__isStateless ? null : instance);
+        }
+        // updater._hydrating = false; //子树已经构建完毕
+        while (updater._renderInNextCycle) {
+
+            options.refreshComponent(updater, queue);
+            callUpdate(updater, instance);
+        }
+    }
+    //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
+    queue.sort(mountSorter).forEach(function (updater) {
+        clearArray(updater._pendingCallbacks).forEach(function (fn) {
+            fn.call(updater._instance);
+        });
+    });
+    queue.length = 0;
+    options.afterPatch();
+}
+
+//有一个列队， 先放进A组件与A组件回调
+var dirtyComponents = [];
+
+function mountSorter(u1, u2) {
+    //让子节点先于父节点执行
+    return u2._mountIndex - u1._mountIndex;
+}
+
+options.flushUpdaters = function (queue) {
+    if (!queue) {
+        queue = dirtyComponents;
+    }
+    drainQueue(queue);
+};
+
+options.enqueueUpdater = function (updater) {
+    if (dirtyComponents.indexOf(updater) == -1) {
+        dirtyComponents.push(updater);
+    }
+};
 
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**
@@ -1638,6 +1714,131 @@ var actionStrategy = {
     }
 };
 
+var mountOrder = 1;
+function alwaysNull() {
+    return null;
+}
+var updateChains = {};
+function Updater(instance, vnode) {
+    vnode._instance = instance;
+    instance.updater = this;
+    this._mountOrder = mountOrder++;
+    this._mountIndex = this._mountOrder;
+    this._instance = instance;
+    this._pendingCallbacks = [];
+    this._pendingStates = [];
+    this._lifeStage = 0; //判断生命周期
+    //update总是保存最新的数据，如state, props, context, parentContext, vparent
+    this.vnode = vnode;
+    //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
+    if (instance.__isStateless) {
+        this.mergeStates = alwaysNull;
+    }
+}
+Updater.prototype = {
+    mergeStates: function mergeStates() {
+        var instance = this._instance,
+            pendings = this._pendingStates,
+            state = instance.state,
+            n = pendings.length;
+        if (n === 0) {
+            return state;
+        }
+        var nextState = Object.assign({}, state); //每次都返回新的state
+        for (var i = 0; i < n; i++) {
+            var pending = pendings[i];
+            if (pending && pending.call) {
+                pending = pending.call(instance, nextState, this.props);
+            }
+            Object.assign(nextState, pending);
+        }
+        pendings.length = 0;
+        return nextState;
+    },
+
+    renderComponent: function renderComponent(cb, rendered) {
+        var vnode = this.vnode,
+            parentContext = this.parentContext,
+            instance = this._instance;
+        //调整全局的 CurrentOwner.cur
+
+        if (!rendered) {
+            try {
+                var lastOwn = CurrentOwner.cur;
+                CurrentOwner.cur = instance;
+                if (this.willReceive === false) {
+                    rendered = this.rendered;
+                    delete this.willReceive;
+                } else {
+                    rendered = instance.render();
+                }
+            } finally {
+                CurrentOwner.cur = lastOwn;
+            }
+        }
+
+        //组件只能返回组件或null
+        if (rendered === null || rendered === false) {
+            rendered = { type: "#comment", text: "empty", vtype: 0 };
+        } else if (!rendered || !rendered.type) {
+            //true, undefined, array, {}
+            throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
+        }
+        this.lastRendered = this.rendered;
+        this.rendered = rendered;
+        var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
+        var dom = cb(rendered, this.vparent, childContext);
+        if (!dom) {
+            throw ["必须返回节点", rendered];
+        }
+        var list = updateChains[this._mountOrder];
+        if (!list) {
+            list = updateChains[this._mountOrder] = [this];
+        }
+        list.forEach(function (el) {
+            el.vnode._hostNode = el._hostNode = dom;
+        });
+        return dom;
+    }
+};
+
+function instantiateComponent(type, vnode, props, context) {
+    var isStateless = vnode.vtype === 4;
+    var instance = isStateless ? {
+        refs: {},
+        render: function render() {
+            return type(this.props, this.context);
+        }
+    } : new type(props, context);
+    var updater = new Updater(instance, vnode, props, context);
+    //props, context是不可变的
+    instance.props = updater.props = props;
+    instance.context = updater.context = context;
+    instance.constructor = type;
+    updater.displayName = type.displayName || type.name;
+
+    if (isStateless) {
+        var lastOwn = CurrentOwner.cur;
+        CurrentOwner.cur = instance;
+        try {
+            var mixin = instance.render();
+        } finally {
+            CurrentOwner.cur = lastOwn;
+        }
+        if (mixin && mixin.render) {
+            //支持module pattern component
+            Object.assign(instance, mixin);
+        } else {
+            instance.__isStateless = true;
+            updater.rendered = mixin;
+        }
+    }
+
+    return instance;
+}
+
 function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
@@ -1654,7 +1855,7 @@ var disposeStrategy = {
 function disposeStateless(vnode) {
     var instance = vnode._instance;
     if (instance) {
-        disposeVnode(instance.__rendered);
+        disposeVnode(instance.updater.rendered);
         vnode._instance = null;
     }
 }
@@ -1681,16 +1882,23 @@ function disposeComponent(vnode) {
     var instance = vnode._instance;
     if (instance) {
         options.beforeUnmount(instance);
-        instance.__current = instance.setState = instance.forceUpdate = noop;
+        instance.setState = instance.forceUpdate = noop;
         if (vnode.ref) {
             vnode.ref(null);
         }
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
+        var updater = instance.updater,
+            order = updater._mountOrder,
+            updaters = updateChains[order];
+        updaters.splice(updaters.indexOf(updater), 1);
+        if (!updaters.length) {
+            delete updateChains[order];
+        }
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        vnode.ref = instance.__dom = vnode._instance = null;
-        disposeVnode(instance.__rendered);
+        disposeVnode(updater.rendered);
+        vnode.ref = vnode._instance = instance.updater = null;
     }
 }
 
@@ -1878,139 +2086,6 @@ function getOptionSelected(option, selected) {
     dom.selected = selected;
 }
 
-function alwaysNull() {
-    return null;
-}
-function instantiateComponent(type, vtype, props, context) {
-    var instance;
-    if (vtype === 2) {
-        instance = new type(props, context);
-        //props, context是不可变的
-        instance.props = props;
-        instance.context = context;
-    } else {
-        instance = {
-            refs: {},
-            render: function render() {
-                return type(this.props, this.context);
-            },
-            __isStateless: 1,
-            state: null,
-            props: props,
-            context: context,
-            __pendingCallbacks: [],
-            __current: noop,
-            __mergeStates: alwaysNull
-        };
-        var lastOwn = CurrentOwner.cur;
-        CurrentOwner.cur = instance;
-        try {
-            var mixin = type(props, context);
-        } finally {
-            CurrentOwner.cur = lastOwn;
-        }
-        if (mixin && mixin.render) {
-            //支持module pattern component
-            delete instance.__isStateless;
-            Object.assign(instance, mixin);
-        } else {
-            instance.__rendered = mixin;
-        }
-    }
-
-    return instance;
-}
-
-var pendingRefs = [];
-function clearRefs() {
-    var refs = pendingRefs.slice(0);
-    pendingRefs.length = 0;
-    refs.forEach(function (fn) {
-        fn();
-    });
-}
-function callUpdate(instance) {
-    if (instance.__lifeStage === 2) {
-        if (pendingRefs.length) {
-            clearRefs();
-        }
-        if (instance.componentDidUpdate) {
-            instance.__didUpdate = true;
-            instance.componentDidUpdate(instance.lastProps, instance.lastState, instance.lastContext);
-            if (!instance.__renderInNextCycle) {
-                instance.__didUpdate = false;
-            }
-        }
-        options.afterUpdate(instance);
-        instance.__lifeStage = 1;
-    }
-}
-
-function drainQueue(queue) {
-    options.beforePatch();
-    //先执行所有refs方法（从上到下）
-    clearRefs();
-    //再执行所有mount/update钩子（从下到上）
-    var i = 0;
-    while (i < queue.length) {
-        //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var instance = queue[i];
-        i++;
-        if (!instance.__lifeStage) {
-            if (pendingRefs.length) {
-                clearRefs();
-            }
-            if (instance.componentDidMount) {
-                instance.componentDidMount();
-                instance.componentDidMount = null;
-            }
-            instance.__lifeStage = 1;
-            options.afterMount(instance);
-        } else {
-            callUpdate(instance);
-        }
-        var ref = instance.__current.ref;
-        if (ref) {
-            ref(instance.__isStateless ? null : instance);
-        }
-        instance.__hydrating = false; //子树已经构建完毕
-        while (instance.__renderInNextCycle) {
-            options.refreshComponent(instance, queue);
-            callUpdate(instance);
-        }
-    }
-    //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
-    queue.sort(mountSorter).forEach(function (instance) {
-        clearArray(instance.__pendingCallbacks).forEach(function (fn) {
-            fn.call(instance);
-        });
-    });
-    queue.length = 0;
-    options.afterPatch();
-}
-
-//有一个列队， 先放进A组件与A组件回调
-var dirtyComponents = [];
-dirtyComponents.isChildProcess = true;
-
-function mountSorter(c1, c2) {
-    //让子节点先于父节点执行
-    return c2.__mountOrder - c1.__mountOrder;
-}
-
-options.flushBatchedUpdates = function (queue) {
-    if (!queue) {
-        queue = dirtyComponents;
-    }
-    drainQueue(queue);
-};
-
-options.addTask = function (instance) {
-    if (dirtyComponents.indexOf(instance) == -1) {
-        dirtyComponents.push(instance);
-    }
-};
-
 //[Top API] React.isValidElement
 function isValidElement(vnode) {
     return vnode && vnode.vtype;
@@ -2042,7 +2117,8 @@ function findDOMNode(ref) {
     if (ref.nodeType === 1) {
         return ref;
     }
-    return ref.__dom || null;
+
+    return ref.updater ? ref.updater._hostNode : ref._hostNode || null;
 }
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
@@ -2118,34 +2194,7 @@ function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
 
-function updateByContext(vnode) {
-    if (vnode.type && vnode.type.contextTypes) {
-        return true;
-    }
-    var vchildren = vnode.vchildren;
-    if (vchildren) {
-        for (var i = 0; i < vchildren.length; i++) {
-            var el = vchildren[i];
-            if (el.vtype === 1) {
-                if (updateByContext(el)) {
-                    return true;
-                }
-            } else if (el.vtype && el.type.contextTypes) {
-                return true;
-            }
-        }
-    } else if (vnode._instance) {
-        var ret = vnode._instance.__rendered;
-        if (updateByContext(ret)) {
-            return true;
-        }
-    }
-}
-
-function updateVnode(lastVnode, nextVnode) {
-    if (lastVnode === nextVnode && !updateByContext(lastVnode)) {
-        return lastVnode._hostNode;
-    }
+function updateVnode(lastVnode) {
     return patchStrategy[lastVnode.vtype + 10].apply(null, arguments);
 }
 
@@ -2171,6 +2220,7 @@ function genMountElement(lastNode, vnode, vparent, type) {
         return lastNode;
     } else {
         var dom = createDOMElement(vnode, vparent);
+
         if (lastNode) {
             while (lastNode.firstChild) {
                 dom.appendChild(lastNode.firstChild);
@@ -2194,10 +2244,10 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     var dom = genMountElement(lastNode, vnode, vparent, type);
 
     vnode._hostNode = dom;
+
     var children = flattenChildren(vnode);
     var method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
-
     if (vnode.checkProps) {
         diffProps(props, {}, vnode, {}, dom);
     }
@@ -2213,8 +2263,10 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(parentNode, children, vparent, context, updateQueue) {
+    parentNode.vchildren = children;
     for (var i = 0, n = children.length; i < n; i++) {
-        parentNode.appendChild(mountVnode(null, children[i], vparent, context, updateQueue));
+        var vnode = children[i];
+        parentNode.appendChild(mountVnode(null, vnode, vparent, context, updateQueue));
     }
 }
 
@@ -2223,6 +2275,7 @@ function alignChildren(parentNode, children, vparent, context, updateQueue) {
         insertPoint = childNodes[0] || null,
         j = 0,
         n = children.length;
+    parentNode.vchildren = children;
     for (var i = 0; i < n; i++) {
         var vnode = children[i];
         var lastNode = childNodes[j];
@@ -2238,188 +2291,177 @@ function alignChildren(parentNode, children, vparent, context, updateQueue) {
     }
 }
 
-function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue) {
+function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, parentUpdater) {
     var type = vnode.type,
-        vtype = vnode.vtype,
         props = vnode.props;
 
-
     var context = getContextByTypes(parentContext, type.contextTypes);
-    var instance = instantiateComponent(type, vtype, props, context); //互相持有引用
-
-    vnode._instance = instance;
-
-    //用于refreshComponent
-    instance.nextVnode = vnode;
-    vnode.context = context;
-    vnode.parentContext = parentContext;
-    vnode.vparent = vparent;
-
+    var instance = instantiateComponent(type, vnode, props, context); //互相持有引用
+    var updater = instance.updater;
+    if (parentUpdater) {
+        updater._mountOrder = parentUpdater._mountOrder;
+    } else {
+        updateChains[updater._mountOrder] = [];
+    }
+    updateChains[updater._mountOrder].push(updater);
+    updater.vparent = vparent;
+    updater.parentContext = parentContext;
     if (instance.componentWillMount) {
         instance.componentWillMount(); //这里可能执行了setState
-        instance.state = instance.__mergeStates(props, context);
+        instance.state = updater.mergeStates();
     }
-    instance.__hydrating = true;
-    var dom = renderComponent(instance, vnode, props, context, function (nextRendered, childContext) {
-        return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue);
-    }, instance.__rendered);
 
-    updateQueue.push(instance);
+    updater._hydrating = true;
+    var dom = updater.renderComponent(function (nextRendered, vparent, childContext) {
+        return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue, updater //作为parentUpater往下传
+        );
+    }, updater.rendered);
+
+    updateQueue.push(updater);
 
     return dom;
 }
 
-function renderComponent(instance, vnode, props, context, cb, rendered) {
-    //更新新属性
-    instance.props = props;
-    instance.context = context;
-    //调整全局的 CurrentOwner.cur
-    if (!rendered) {
-        try {
-            var lastOwn = CurrentOwner.cur;
-            CurrentOwner.cur = instance;
-            rendered = instance.render();
-        } finally {
-            CurrentOwner.cur = lastOwn;
-        }
-    }
-
-    //组件只能返回组件或null
-    if (rendered === null || rendered === false) {
-        rendered = { type: "#comment", text: "empty", vtype: 0 };
-    } else if (!rendered || !rendered.vtype) {
-        //true, undefined, array, {}
-        throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
-    }
-
-    vnode._instance = instance;
-    instance.__rendered = rendered;
-
-    var parentContext = vnode.parentContext;
-    var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-    var dom = cb(rendered, childContext);
-
-    createInstanceChain(instance, vnode, rendered);
-    updateInstanceChain(instance, dom);
-
-    return dom;
-}
-
-function updateComponent(lastVnode, nextVnode, vparent, context, updateQueue) {
+function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
     var type = lastVnode.type,
         ref = lastVnode.ref,
         instance = lastVnode._instance,
         vtype = lastVnode.vtype;
 
-
     var nextContext = void 0,
+        queue = void 0,
         nextProps = nextVnode.props,
-        queue = void 0;
+        updater = instance.updater;
     if (type.contextTypes) {
-        nextContext = getContextByTypes(context, type.contextTypes);
+        nextContext = getContextByTypes(parentContext, type.contextTypes);
     } else {
         nextContext = instance.context; //没有定义contextTypes就沿用旧的
     }
-    if (instance.componentWillReceiveProps) {
-        instance.__receiving = true;
+    var willReceive = lastVnode !== nextVnode || updater.context !== nextContext;
+    updater.willReceive = willReceive;
+    //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
+    //但还会继续向下比较
+    if (willReceive && instance.componentWillReceiveProps) {
+        updater._receiving = true;
         instance.componentWillReceiveProps(nextProps, nextContext);
-        instance.__receiving = false;
+        updater._receiving = false;
     }
     //用于refreshComponent
     if (ref && vtype === 2) {
-        ref(null);
-        if (nextVnode.ref) {
-            //更新ref
-            lastVnode.ref = nextVnode.ref;
-        }
+        var nextRef = nextVnode.ref;
+        detachRef(ref, nextRef);
+        lastVnode.ref = nextRef;
     }
-    instance.nextVnode = nextVnode;
-    nextVnode.context = nextContext;
-    nextVnode.parentContext = context;
-    nextVnode.vparent = vparent;
-    if (updateQueue.isChildProcess) {
+    //updater上总是保持新的数据
+    updater.lastVnode = lastVnode;
+    updater.vnode = nextVnode;
+    updater.context = nextContext;
+    updater.props = nextProps;
+    updater.vparent = vparent;
+    updater.parentContext = parentContext;
+    // nextVnode._instance = instance; //不能放这里
+    if (!willReceive) {
+        return updater.renderComponent(function (nextRendered, vparent, childContext) {
+            return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
+        });
+    }
+    if (updateQueue.isMainProcess) {
         queue = updateQueue;
-    } else {
         queue = [];
-        queue.isChildProcess = true;
+    } else {
+        queue = updateQueue;
     }
-    refreshComponent(instance, queue);
+    refreshComponent(updater, queue);
     //子组件先执行
-    updateQueue.push(instance);
-
-    return instance.__dom;
+    updateQueue.push(updater);
+    return updater._hostNode;
 }
 
-function refreshComponent(instance, updateQueue) {
-    var lastProps = instance.props,
-        lastState = instance.state,
-        lastContext = instance.context,
-        lastRendered = instance.__rendered,
-        dom = instance.__dom;
+function refreshComponent(updater, updateQueue) {
+    var instance = updater._instance,
+        dom = updater._hostNode,
+        nextContext = updater.context,
+        nextProps = updater.props,
+        vnode = updater.vnode,
+        lastVnode = updater.lastVnode;
 
-    instance.__renderInNextCycle = null;
-    var nextVnode = instance.nextVnode;
-    var nextContext = nextVnode.context;
-    var nextProps = nextVnode.props;
-    var vparent = nextVnode.vparent;
 
-    nextVnode._instance = instance; //important
+    vnode._instance = instance; //放这里
+    updater._renderInNextCycle = null;
 
-    var nextState = instance.__mergeStates(nextProps, nextContext);
-    var noUpdate = false;
-    if (!instance.__forceUpdate && instance.shouldComponentUpdate && !instance.shouldComponentUpdate(nextProps, nextState, nextContext)) {
-        noUpdate = true;
-    }
-    instance.__forceUpdate = false;
-    instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
-    if (noUpdate) {
-        return dom;
-    }
-
-    instance.__hydrating = true;
-    if (instance.componentWillUpdate) {
+    var nextState = updater.mergeStates();
+    var shouldUpdate = true;
+    if (!updater._forceUpdate && instance.shouldComponentUpdate && !instance.shouldComponentUpdate(nextProps, nextState, nextContext)) {
+        shouldUpdate = false;
+    } else if (instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext);
     }
-    instance.lastProps = lastProps;
-    instance.lastState = lastState;
-    instance.lastContext = lastContext;
-    //这里会更新instance的props, context, state
-    dom = renderComponent(instance, nextVnode, nextProps, nextContext, function (nextRendered, childContext) {
-        return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue);
+    var lastProps = instance.props,
+        lastContext = instance.context,
+        lastState = instance.state;
+
+
+    updater._forceUpdate = false;
+    instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
+    instance.context = nextContext;
+    if (!shouldUpdate) {
+        return dom;
+    }
+    instance.props = nextProps;
+    updater._hydrating = true;
+    updater.lastProps = lastProps;
+    updater.lastState = lastState;
+    updater.lastContext = lastContext;
+
+    var lastRendered = updater.rendered;
+
+    dom = updater.renderComponent(function (nextRendered, vparent, childContext) {
+        return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue, updater);
     });
 
-    instance.__lifeStage = 2;
-    instance.__hydrating = false;
-    if (updateQueue.isChildProcess) {
+    updater.lastVnode = vnode;
+    updater._lifeStage = 2;
+    // updater._hydrating = false;
+    if (!updateQueue.isMainProcess) {
         drainQueue(updateQueue);
+    } else {
+        updater._hydrating = false;
     }
 
     return dom;
 }
 options.refreshComponent = refreshComponent;
 
-function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue) {
-    var node = lastVnode._hostNode,
-        dom = void 0;
+function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
+    var dom = void 0;
     if (isSameNode(lastVnode, nextVnode)) {
         dom = updateVnode(lastVnode, nextVnode, vparent, context, updateQueue);
     } else {
         disposeVnode(lastVnode);
-        dom = mountVnode(null, nextVnode, vparent, context, updateQueue);
-        var p = node.parentNode;
-        if (p) {
-            p.replaceChild(dom, node);
-            removeDOMElement(node);
-        }
+        var node = lastVnode._hostNode,
+            parent = node.parentNode,
+            next = node.nextSibling;
+        removeDOMElement(node);
+        dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
+        parent.insertBefore(dom, next);
     }
     return dom;
 }
 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
-    var dom = lastVnode._hostNode;
-    var lastProps = lastVnode.props;
-    var nextProps = nextVnode.props;
-    var ref = nextVnode.ref;
+    var lastProps = lastVnode.props,
+        dom = lastVnode._hostNode,
+        ref = lastVnode.ref,
+        checkProps = lastVnode.checkProps;
+
+    if (dom === null) {
+        console.log("此节点已经被移除", vparent);
+        return null;
+    }
+
+    var nextProps = nextVnode.props,
+        nextRef = nextVnode.ref;
+
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode.vchildren || [];
@@ -2428,46 +2470,49 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         });
         list.length = 0;
     } else {
-        var vchildren = flattenChildren(nextVnode);
         if (lastProps[innerHTML]) {
-            while (dom.firstChild) {
-                dom.removeChild(dom.firstChild);
-            }
-            mountChildren(dom, vchildren, nextVnode, context, updateQueue);
-        } else {
-            diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
+            dom.vchildren = [];
         }
+        diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
     }
 
-    if (lastVnode.checkProps || nextVnode.checkProps) {
+    if (checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
-    if (ref) {
-        pendingRefs.push(ref.bind(0, dom));
-    }
+    detachRef(ref, nextRef, dom);
+
     return dom;
 }
-
+function detachRef(ref, nextRef, dom) {
+    ref = ref || noop;
+    if (nextRef) {
+        if (!ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string) {
+            ref(null);
+        }
+        dom && nextRef(dom);
+    } else {
+        ref(null);
+    }
+}
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
-    var lastChildren = lastVnode.vchildren,
+    var lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
-        childNodes = parentNode.childNodes;
-    lastChildren.forEach(function (el, i) {
-        if (childNodes[i] !== el._hostNode) {
-            parentNode.replaceChild(el._hostNode, childNodes[i]);
-        }
-    });
-    //如果旧数组长度为零
+        dom = void 0;
+
+    //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
+        emptyElement(parentNode);
         return mountChildren(parentNode, nextChildren, lastVnode, context, updateQueue);
     }
     if (nextLength === lastLength && lastLength === 1) {
-        return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
+        lastChildren[0]._hostNode = parentNode.firstChild;
+        dom = alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
+        return;
     }
     var maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,
@@ -2476,24 +2521,18 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         actions = [],
         i = 0,
         hit = void 0,
-        dom = void 0,
-        oldDom = void 0,
         nextChild = void 0,
         lastChild = void 0;
     //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
+
     if (nextLength) {
         actions.length = nextLength;
         while (i < maxLength) {
             nextChild = nextChildren[i];
             lastChild = lastChildren[i];
-
             if (nextChild && lastChild && isSameNode(lastChild, nextChild)) {
                 //  如果能直接找到，命名90％的情况
-                actions[i] = {
-                    last: lastChild,
-                    next: nextChild,
-                    directive: "update"
-                };
+                actions[i] = [lastChild, nextChild];
                 removeHits[i] = true;
             } else {
                 if (nextChild) {
@@ -2501,11 +2540,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
                     if (fuzzyHits[hit] && fuzzyHits[hit].length) {
                         var oldChild = fuzzyHits[hit].shift();
                         // 如果命中旧的节点，将旧的节点移动新节点的位置，向后移动
-                        actions[i] = {
-                            last: oldChild,
-                            next: nextChild,
-                            directive: "moveAfter"
-                        };
+                        actions[i] = [oldChild, nextChild, "moveAfter"];
                         removeHits[oldChild._i] = true;
                     }
                 }
@@ -2527,34 +2562,42 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     for (var j = 0, n = actions.length; j < n; j++) {
         var action = actions[j];
         if (!action) {
-            var curChild = nextChildren[j];
-            hit = curChild.type + (curChild.key || "");
+            nextChild = nextChildren[j];
+            hit = nextChild.type + (nextChild.key || "");
             if (fuzzyHits[hit] && fuzzyHits[hit].length) {
-                oldChild = fuzzyHits[hit].shift();
-                oldDom = oldChild._hostNode;
-                parentNode.insertBefore(oldDom, insertPoint);
-                dom = updateVnode(oldChild, curChild, lastVnode, context, updateQueue);
-                removeHits[oldChild._i] = true;
-            } else {
-                //为了兼容 react stack reconciliation的执行顺序，添加下面三行，
-                //在插入节点前，将原位置上节点对应的组件先移除
-                var removed = lastChildren[j];
-                if (removed && !removed._disposed && !removeHits[j]) {
-                    disposeVnode(removed);
-                }
-                //如果找不到对应的旧节点，创建一个新节点放在这里
-                dom = mountVnode(null, curChild, lastVnode, context, updateQueue);
+                lastChild = fuzzyHits[hit].shift();
+                action = [lastChild, nextChild, "moveAfter"];
+            }
+        }
+        if (action) {
+            lastChild = action[0];
+            nextChild = action[1];
+            dom = lastChild._hostNode;
+            if (action[2]) {
                 parentNode.insertBefore(dom, insertPoint);
             }
-        } else {
-            oldDom = action.last._hostNode;
-            if (action.action === "moveAfter") {
-                parentNode.insertBefore(oldDom, insertPoint);
+            insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
+            if (!nextChild._hostNode) {
+                nextChildren[j] = lastChild;
             }
-            dom = updateVnode(action.last, action.next, lastVnode, context, updateQueue);
+            removeHits[lastChild._i] = true;
+        } else {
+            //为了兼容 react stack reconciliation的执行顺序，添加下面三行，
+            //在插入节点前，将原位置上节点对应的组件先移除
+            var removed = lastChildren[j];
+            if (removed && !removed._disposed && !removeHits[j]) {
+                disposeVnode(removed);
+            }
+            //如果找不到对应的旧节点，创建一个新节点放在这里
+            dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
+            parentNode.insertBefore(dom, insertPoint);
+            insertPoint = dom;
         }
-        insertPoint = dom.nextSibling;
+        insertPoint = insertPoint.nextSibling;
     }
+
+    parentNode.vchildren = nextChildren;
+
     //移除
     lastChildren.forEach(function (el, i) {
         if (!removeHits[i]) {
@@ -2573,27 +2616,13 @@ function isSameNode(a, b) {
     }
 }
 
-function createInstanceChain(instance, vnode, rendered) {
-    instance.__current = vnode;
-    if (rendered._instance) {
-        rendered._instance.__parentInstance = instance;
-    }
-}
-
-function updateInstanceChain(instance, dom) {
-    instance.__dom = instance.__current._hostNode = dom;
-    var parent = instance.__parentInstance;
-    if (parent) {
-        updateInstanceChain(parent, dom);
-    }
-}
-
 var React = {
-    version: "1.1.1",
+    version: "1.1.2",
     render: render,
     options: options,
     PropTypes: PropTypes,
     Children: Children, //为了react-redux
+    pendingRefs: pendingRefs,
     Component: Component,
     eventSystem: eventSystem,
     findDOMNode: findDOMNode,

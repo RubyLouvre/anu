@@ -126,7 +126,16 @@ describe("ReactChildren", function() {
       <div key=".$keyFour" />,
     ]);
   });
-
+  it('React.Children.forEach不处理null void 0', () => {
+    var i = 0
+    React.Children.forEach(null, function(){
+      i++
+    })
+    React.Children.forEach(void 0, function(){
+      i++
+    })
+    expect(i).toBe(0)
+  })
   it('should traverse children of different kinds', () => {
     var div = <div key="divNode" />;
     var span = <span key="spanNode" />;

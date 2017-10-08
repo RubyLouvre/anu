@@ -7,25 +7,13 @@ import { CurrentOwner } from "./createElement";
  * @param {any} props
  * @param {any} context
  */
-var mountOrder = 1;
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     CurrentOwner.cur = this;
-    this.__mountOrder = mountOrder++;
     this.context = context;
     this.props = props;
     this.refs = {};
     this.state = null;
-    this.__pendingCallbacks = [];
-    this.__pendingStates = [];
-    this.__current = noop; //用于DevTools工具中，通过实例找到生成它的那个虚拟DOM
-    this.__lifestage = 0; //判断生命周期
-    /*
-    * this.__dom = dom 用于isMounted或ReactDOM.findDOMNode方法
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
-    * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    */
 }
 
 Component.prototype = {
@@ -35,86 +23,71 @@ Component.prototype = {
     },
 
     setState(state, cb) {
-        debounceSetState(this, state, cb);
+        debounceSetState(this.updater, state, cb);
     },
     isMounted() {
         deprecatedWarn("isMounted");
-        return !!this.__dom;
+        return !!(this.updater || {})._hostNode;
     },
     forceUpdate(cb) {
-        debounceSetState(this, true, cb);
+        debounceSetState(this.updater, true, cb);
     },
-    __mergeStates: function(props, context) {
-        let pendings = this.__pendingStates,
-            n = pendings.length;
-        if (n === 0) {
-            return this.state;
-        }
-        let state = extend({}, this.state);//每次都返回新的state
-        for (let i = 0; i < n; i++) {
-            let pending = pendings[i];
-            if (isFn(pending)) {
-                pending = pending.call(this, state, props, context);
-            }
-            extend(state, pending);
-        }
-        pendings.length = 0;
-        return state;
-    },
-
     render() {}
 };
 
-function debounceSetState(a, b, c) {
-    if (a.__didUpdate) {
+function debounceSetState(updater, state, cb) {
+    if(!updater){
+        return;
+    }
+    if (updater._didUpdate) {
         //如果用户在componentDidUpdate中使用setState，要防止其卡死
         setTimeout(function() {
-            a.__didUpdate = false;
-            setStateImpl.call(a, b, c);
+            updater._didUpdate = false;
+            setStateImpl(updater, state, cb);
         }, 300);
         return;
     }
-    setStateImpl.call(a, b, c);
+    setStateImpl(updater, state, cb);
 }
-function setStateImpl(state, cb) {
+function setStateImpl(updater, state, cb) {
     if (isFn(cb)) {
-        this.__pendingCallbacks.push(cb);
+        updater._pendingCallbacks.push(cb);
     }
-    let hasDOM = this.__dom;
+    let hasDOM = updater._hostNode;
     if (state === true) {
         //forceUpdate
-        this.__forceUpdate = true;
+        updater._forceUpdate = true;
     } else {
         //setState
-        this.__pendingStates.push(state);
+        updater._pendingStates.push(state);
     }
     if (!hasDOM) {
         //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略
-        if (this.__hydrating) {
+        if (updater._hydrating) {
             //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState
             //2. 子组件调用父组件的setState，
-            this.__renderInNextCycle = true;
+            updater._renderInNextCycle = true;
         }
     } else {
         //组件更新期
-        if (this.__receiving) {
+        if (updater._receiving) {
             //componentWillReceiveProps中的setState/forceUpdate应该被忽略
             return;
         }
-        this.__renderInNextCycle = true;
+        updater._renderInNextCycle = true;
         if (options.async) {
             //在事件句柄中执行setState会进行合并
-            options.addTask(this);
+            options.enqueueUpdater(updater);
             return;
         }
-        if (this.__hydrating) {
+        if (updater._hydrating) {
             // 在componentDidMount里调用自己的setState，延迟到下一周期更新
             // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             return;
         }
         //  不在生命周期钩子内执行setState
-        options.flushBatchedUpdates([this]);
+        options.flushUpdaters([updater]);
     }
 }

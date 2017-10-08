@@ -4,9 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>
+    
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   
+  <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
+   
+
     <!-- <script src="./test/react-lite.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -25,31 +30,49 @@
     window.ReactDOM = window.React
   }
 
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
   var container = document.createElement('div');
+var div = container
   document.body.appendChild(container);
-      const log = [];
-      class Component extends React.Component {
-        constructor(props){
-           super(props)
-           this.state = {
-             a: 1
-           }
-        }
-        render() {
-          return <div />;
-        }
-      }
-      
-      var a = new Component()
-      var oldState =  a.state
-      var newState = {
-        a: 2
-      }
-      a.setState(newState)
-      console.log(oldState == a.state)
-      console.log(newState == a.state)
+  var PropTypes = React.PropTypes
+ 
 
+  var numMiddleRenders = 0;
+  var numBottomRenders = 0;
 
+  class Top extends React.Component {
+    render() {
+      return <Middle><Bottom /></Middle>;
+    }
+  }
+
+  class Middle extends React.Component {
+    componentDidMount() {
+      this.forceUpdate();
+    }
+
+    render() {
+      numMiddleRenders++;
+      return React.Children.only(this.props.children);
+    }
+  }
+
+  class Bottom extends React.Component {
+    render() {
+      numBottomRenders++;
+      return null;
+    }
+  }
+
+  ReactTestUtils.renderIntoDocument(<Top />);
+  expect(numMiddleRenders).toBe(2);
+  expect(numBottomRenders).toBe(1);
       
        </script>
 </body>

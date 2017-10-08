@@ -13,7 +13,7 @@ describe("createElement", function() {
         expect(el.props.children).toEqual(["aaa", "bbb", "ccc"]);
 
         el = React.createElement("p", null, null);
-        expect(el.props.children).toEqual([]);
+        expect(el.props.children).toEqual(null);
         el = React.createElement("div", { key: "xxx" });
 
         expect(el.key).toBe("xxx");
@@ -34,7 +34,7 @@ describe("createElement", function() {
         expect(a.props.children).toEqual(["aaa", "bbb", "ccc"]);
 
         el = React.createElement("p", null, null);
-        expect(el.props.children).toEqual([]);
+        expect(el.props.children).toEqual(null);
 
         el = React.createElement("p", null, []);
         expect(el.props.children.length).toBe(0);

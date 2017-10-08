@@ -7,22 +7,51 @@
     <script src="./lib/ReactTestUtils.js"></script>
 
     <script src="./test/babel.js"></script>
-    <script type='text/babel'>
-      
- var instance = <div ref="badDiv" />;
-   try{
-      instance = ReactTestUtils.renderIntoDocument(instance);
-      }catch(e){
-          console.log(e)
-      }
-    
-    </script>
+   
 
 </head>
 <body>
 
     <div>开发者工具</div>
     <div id='example'></div>
+    <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
+                }
+            }
+        }
+        var container = document.getElementById("example")
+        var index = 1
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.handleClick = this.handleClick.bind(this)
+            }
+            handleClick() {
+                index = 0
+                this.forceUpdate()
+            }
+            render() {
+                return index ?
+                    <div ref='a' onClick={this.handleClick.bind(this)}>
+                       <span>111</span>
+                    </div> : <div><a>222</a><span>444</span><a>999</a></div>
+
+            }
+        };
+
+        var s = React.render(<App />, container)
+
+      s.refs.a.click()
+      setTimeout(function(){
+        expect(container.getElementsByTagName('p').length).toBe(1)
+      },1000)
+       
+          
+       
+        </script>
 </body>
 
 </html>

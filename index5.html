@@ -8,101 +8,97 @@
     
    <script type='text/javascript' src="./dist/React.js"></script>
  
- <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <!--<script type='text/javascript' src="./test/react.js"></script>
  <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
-    
-  <script type='text/babel'>
-  var s
-  window.onload = function(){
-   
-    var container = document.getElementById("example")
-   // var PropTypes = React.PropTypes
-    if(!window.ReactDOM){
-      window.ReactDOM = window.React
-    }
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, b, a === b)
-            }
-        }
-    }
-   
-    
-    function getInitialState() {
-      return {
-        foo: [1, 2, 3],
-        bar: {a: 4, b: 5, c: 6},
-      };
-    }
-
-    var renderCalls = 0;
-    var initialSettings = getInitialState();
-
-    class Component extends React.Component {
-      state = initialSettings;
-
-      shouldComponentUpdate(nextProps, nextState) {
-        return shallowCompare(this, nextProps, nextState);
-      }
-
-      render() {
-        renderCalls++;
-        return <div />;
-      }
-    }
-
-   // var container = document.createElement('div');
-    var instance = ReactDOM.render(<Component />, container);
-    expect(renderCalls).toBe(1);
-
-    // Do not re-render if state is equal
-    var settings = {
-      foo: initialSettings.foo,
-      bar: initialSettings.bar,
-    };
-    
-    initialSettings.foo.xx = 1
-    instance.setState(settings);
-    expect(renderCalls).toBe(1);
-   
-    // Re-render because one field changed
-    initialSettings.foo = [1, 2, 3, 4];
-    instance.setState(initialSettings);
-
-
-    expect(renderCalls).toBe(2);
-
-    // Re-render because the object changed
-    instance.setState(getInitialState());
-    expect(renderCalls).toBe(3);
-
-
- 
-
- 
-  }
-  </script>
-
+  
 </head>
 <body>
     
         <div>开发者工具</div>
         <pre>
-          A componentWillMount
-          A render
-          A componentDidMount
-          A componentWillUnmount
-          B componentWillMount
-          B render
-          B componentDidMount
+         
         </pre>
         <div id='example'></div>
     
+      
+  <script type='text/babel'>
+   
+     
+      var container = document.getElementById("example")
+     // var PropTypes = React.PropTypes
+      if(!window.ReactDOM){
+        window.ReactDOM = window.React
+      }
+      var expect = function(a) {
+          return {
+              toBe: function(b) {
+                  console.log(a, b, a === b)
+              }
+          }
+      }
+
     
+      class A extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            a: 100
+          }
+        }
+        render(){
+          console.log(this.state.a)
+         return <p><span>随便</span><B a={this.state.a}><span>{this.state.a}</span></B></p>
+        }
+      }
+      class B extends React.Component{
+        constructor(props){
+            super(props)
+            this.state = {
+              b: props.a
+            }
+        }
+        componentWillReceiveProps(props){
+         console.log("B", props.a)
+         this.state.b = props.a
+       
+
+        }
+        shouldComponentUpdate(){
+          console.log("=====",!!this.state.b)
+          return this.state.b
+        }
+        render(){
+          console.log("B render", this.state.b)
+           return <strong>{this.props.children}</strong>
+        }
+      }
+      
+      class C extends React.Component{
+        constructor(props){
+            super(props)
+            this.state = {
+              c: 111
+            }
+        }
+      
+        render(){
+          window.c = this
+           return <em>{this.state.c}</em>
+        }
+      }
+  
+      var instance = ReactDOM.render(<A/>, container);
+      console.log(instance.updater._hostNode)
+     instance.setState({a: 0})
+    
+      console.log(instance.updater._hostNode)
+    //  console.log(myNodeB)
+     
+    </script>
+  
 </body>
     
  </html>

@@ -1,15 +1,11 @@
-import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'dist/React'
 import PureComponent from 'src/PureComponent'
+import ReactTestUtils from "lib/ReactTestUtils";
+import PropTypes from "lib/ReactPropTypes";
 
 describe('context', function () {
     this.timeout(200000);
-    before(async () => {
-        await beforeHook();
-    });
-    after(async () => {
-        await afterHook(false);
-    })
+  
     var body = document.body, div
     beforeEach(function () {
         div = document.createElement('div')
@@ -18,7 +14,6 @@ describe('context', function () {
     afterEach(function () {
         body.removeChild(div)
     })
-      React.PropTypes =  (React.PropTypes || {})
 
 
     it('getChildContext', async () => {
@@ -47,8 +42,8 @@ describe('context', function () {
             }
         }
         App.childContextTypes = {
-            name: React.PropTypes.string,
-            fruit: React.PropTypes.string
+            name: PropTypes.string,
+            fruit: PropTypes.string
         }
 
         class B extends React.Component {
@@ -58,7 +53,7 @@ describe('context', function () {
             }
         }
         B.contextTypes = {
-            fruit: React.PropTypes.string
+            fruit: PropTypes.string
         }
         class C extends React.Component {
             render() {
@@ -67,19 +62,16 @@ describe('context', function () {
         }
 
         var s = React.render(<App />, div)
-        await browser
-            .pause(100)
-            .$apply()
+       
         var strongs = div.getElementsByTagName('strong')
         expect(strongs[0].innerHTML).toBe('')
         expect(strongs[1].innerHTML).toBe('Banana')
-        await browser.click(s.refs.a).pause(100)
-            .$apply()
+        ReactTestUtils.Simulate.click(s.refs.a)
+      
         strongs = div.getElementsByTagName('strong')
         expect(strongs[0].innerHTML).toBe('')
         expect(strongs[1].innerHTML).toBe('111')
-        await browser.click(s.refs.a).pause(100)
-            .$apply()
+        ReactTestUtils.Simulate.click(s.refs.a)
         strongs = div.getElementsByTagName('strong')
         expect(strongs[0].innerHTML).toBe('')
         expect(strongs[1].innerHTML).toBe('222')

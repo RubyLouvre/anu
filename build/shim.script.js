@@ -19,7 +19,7 @@ var text2 = str2
 
 fs.writeFileSync(dir2, text2, { encoding: "utf8" });
 //fs.writeFileSync( path.join(__dirname, "../../draft/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-//fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 //fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 //fs.writeFileSync( path.join(__dirname, "../../yo-router/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
