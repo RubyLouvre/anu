@@ -13,6 +13,7 @@ export function Updater(instance, vnode) {
     this._instance = instance;
     this._pendingCallbacks = [];
     this._ref = noop;
+    this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
     //update总是保存最新的数据，如state, props, context, parentContext, vparent

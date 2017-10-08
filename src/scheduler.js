@@ -6,21 +6,20 @@ import {
     Refs
 } from "./Refs";
 
-
+/*
 function callUpdate(updater, instance) {
     Refs.clearRefs();
     if (updater._lifeStage === 2) {  
         updater._didUpdate = true;
-        instance.componentDidUpdate();
+        instance._didUpdate();
+        updater._lifeStage = 1;
+        updater._hydrating = false;
         if (!updater._renderInNextCycle) {
             updater._didUpdate = false;
         }
-        updater._lifeStage = 1;
-        updater._hydrating = false;
-        options.afterUpdate(instance);
     }
     updater._ref();
-}
+}*/
 
 export function drainQueue(queue) {
     options.beforePatch();
@@ -29,27 +28,33 @@ export function drainQueue(queue) {
     //再执行所有mount/update钩子（从下到上）
     let i = 0;
     while(i < queue.length){//queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var updater = queue[i], instance = updater._instance;
+        var updater = queue[i];//, instance = updater._instance;
         i++;
+        Refs.clearRefs();
+        updater._didUpdate = updater._lifeStage === 2;
+        updater._didHook();
+        updater._lifeStage = 1;
+        updater._hydrating = false;
+        if (!updater._renderInNextCycle) {
+            updater._didUpdate = false;
+        }
+        updater._ref();
+        /*
         if (!updater._lifeStage) {
             Refs.clearRefs();
-            instance.newStageAddedRefs = instance.newStageAddedRefs || {};
-            if (instance.componentDidMount) {
-                instance.componentDidMount();
-                instance.componentDidMount = null;
-            }
+            updater._didHook();
             updater._lifeStage = 1;
             updater._hydrating = false;
             updater._ref();
-            options.afterMount(instance);
         } else {
             callUpdate(updater, instance);
-        }
+        }*/
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
             options.refreshComponent(updater, queue);
             // callUpdate(updater, instance);
         }
+       
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
     queue.sort(mountSorter).forEach(function(updater){

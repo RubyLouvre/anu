@@ -1,4 +1,4 @@
-import { options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
+import { noop, options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createDOMElement, emptyElement, removeDOMElement } from "./browser";
@@ -237,6 +237,12 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
         );
     }, updater.rendered);
     Refs.createInstanceRef(updater, ref);
+    let userHook = instance.componentDidMount;
+    updater._didHook = function() {
+        userHook && userHook.call(instance);
+        updater._didHook = noop;
+        options.afterMount(instance);
+    };
     updateQueue.push(updater);
 
     return dom;
@@ -325,20 +331,14 @@ function refreshComponent(updater, updateQueue) {
 
     updater.lastVnode = vnode;
     updater._lifeStage = 2;
-    let hookName = "componentDidUpdate";
-    let didUpdateHook = instance[hookName];
-    if (didUpdateHook) {
-        instance[hookName] = function() {
-            didUpdateHook.call(this, lastProps, lastState, lastContext);
-            this[hookName] = didUpdateHook;
-        };
-    } else {
-        //临时添加一个一次性的空钩子
-        instance[hookName] = function() {
-            delete instance[hookName];
-        };
-    }
-
+    let userHook = instance.componentDidUpdate;
+    
+    updater._didHook = function() {
+        userHook && userHook.call(instance, lastProps, lastState, lastContext);
+        updater._didHook = noop;
+        options.afterUpdate(instance);
+    };
+    
     // updater._hydrating = false;
     updateQueue.push(updater);
     return dom;

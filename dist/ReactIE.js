@@ -1668,6 +1668,7 @@ function Updater(instance, vnode) {
     this._instance = instance;
     this._pendingCallbacks = [];
     this._ref = noop;
+    this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
     //update总是保存最新的数据，如state, props, context, parentContext, vparent
@@ -2028,20 +2029,20 @@ function getOptionSelected(option, selected) {
     dom.selected = selected;
 }
 
+/*
 function callUpdate(updater, instance) {
     Refs.clearRefs();
-    if (updater._lifeStage === 2) {
+    if (updater._lifeStage === 2) {  
         updater._didUpdate = true;
-        instance.componentDidUpdate();
+        instance._didUpdate();
+        updater._lifeStage = 1;
+        updater._hydrating = false;
         if (!updater._renderInNextCycle) {
             updater._didUpdate = false;
         }
-        updater._lifeStage = 1;
-        updater._hydrating = false;
-        options.afterUpdate(instance);
     }
     updater._ref();
-}
+}*/
 
 function drainQueue(queue) {
     options.beforePatch();
@@ -2051,23 +2052,27 @@ function drainQueue(queue) {
     var i = 0;
     while (i < queue.length) {
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var updater = queue[i],
-            instance = updater._instance;
+        var updater = queue[i]; //, instance = updater._instance;
         i++;
+        Refs.clearRefs();
+        updater._didUpdate = updater._lifeStage === 2;
+        updater._didHook();
+        updater._lifeStage = 1;
+        updater._hydrating = false;
+        if (!updater._renderInNextCycle) {
+            updater._didUpdate = false;
+        }
+        updater._ref();
+        /*
         if (!updater._lifeStage) {
             Refs.clearRefs();
-            instance.newStageAddedRefs = instance.newStageAddedRefs || {};
-            if (instance.componentDidMount) {
-                instance.componentDidMount();
-                instance.componentDidMount = null;
-            }
+            updater._didHook();
             updater._lifeStage = 1;
             updater._hydrating = false;
             updater._ref();
-            options.afterMount(instance);
         } else {
             callUpdate(updater, instance);
-        }
+        }*/
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
             options.refreshComponent(updater, queue);
@@ -2337,6 +2342,12 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
         );
     }, updater.rendered);
     Refs.createInstanceRef(updater, ref);
+    var userHook = instance.componentDidMount;
+    updater._didHook = function () {
+        userHook && userHook.call(instance);
+        updater._didHook = noop;
+        options.afterMount(instance);
+    };
     updateQueue.push(updater);
 
     return dom;
@@ -2437,19 +2448,13 @@ function refreshComponent(updater, updateQueue) {
 
     updater.lastVnode = vnode;
     updater._lifeStage = 2;
-    var hookName = "componentDidUpdate";
-    var didUpdateHook = instance[hookName];
-    if (didUpdateHook) {
-        instance[hookName] = function () {
-            didUpdateHook.call(this, lastProps, lastState, lastContext);
-            this[hookName] = didUpdateHook;
-        };
-    } else {
-        //临时添加一个一次性的空钩子
-        instance[hookName] = function () {
-            delete instance[hookName];
-        };
-    }
+    var userHook = instance.componentDidUpdate;
+
+    updater._didHook = function () {
+        userHook && userHook.call(instance, lastProps, lastState, lastContext);
+        updater._didHook = noop;
+        options.afterUpdate(instance);
+    };
 
     // updater._hydrating = false;
     updateQueue.push(updater);
