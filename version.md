@@ -5,6 +5,7 @@
 4. 修正checkbox点一下会触发两次onChange的BUG
 5. 添加ReceiveComponent检测机制，如果context,props一样，那么就不会执行receive, render, update等钩子
 6. 修改检测空对象的逻辑
+7. 简化任务调度系统的逻辑
 
 ## 1.1.2
 1. 修正 onChange 事件
