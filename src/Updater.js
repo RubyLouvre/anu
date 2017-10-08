@@ -51,9 +51,9 @@ Updater.prototype = {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
         if (!rendered) {
+            let lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
             try {
-                var lastOwn = Refs.currentOwner;
-                Refs.currentOwner = instance;
                 if (this.willReceive === false) {
                     rendered = this.rendered;
                     delete this.willReceive;

@@ -158,10 +158,8 @@ const formElements = {
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     let { type, props, ref } = vnode;
     let dom = genMountElement(lastNode, vnode, vparent, type);
-
     vnode._hostNode = dom;
-
-    var children = flattenChildren(vnode);
+    let children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
     if (vnode.checkProps) {
@@ -287,13 +285,13 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
             return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
         });
     }
-    if (updateQueue.isMainProcess) {
+    /* if (updateQueue.isMainProcess) {
         queue = updateQueue;
         queue = [];
     } else {
         queue = updateQueue;
-    }
-    refreshComponent(updater, queue);
+    }*/
+    refreshComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
     return updater._hostNode;
@@ -339,7 +337,6 @@ function refreshComponent(updater, updateQueue) {
         options.afterUpdate(instance);
     };
     
-    // updater._hydrating = false;
     updateQueue.push(updater);
     return dom;
 }
@@ -363,10 +360,6 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     let { props: lastProps, _hostNode: dom, ref, checkProps } = lastVnode;
-    if (dom === null) {
-        console.log("此节点已经被移除", vparent);
-        return null;
-    }
     let { props: nextProps, ref: nextRef } = nextVnode;
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
@@ -406,8 +399,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     }
     if (nextLength === lastLength && lastLength === 1) {
         lastChildren[0]._hostNode = parentNode.firstChild;
-        dom = alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
-        return;
+        return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,

@@ -24,12 +24,10 @@ export var Refs = {
         if(ref){
             if (ref.string && nextRef.string ? ref.string !== nextRef.string: ref !== getDOMNode ) {
                 ref(null);
-                // pendingRefs.push(ref.bind(0,null));
             }
         }
         if(dom && nextRef !== getDOMNode){
             nextRef(dom);
-            // pendingRefs.push(nextRef.bind(0,dom));
         }
     },
     createInstanceRef: function(updater, ref){

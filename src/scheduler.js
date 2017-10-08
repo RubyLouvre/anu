@@ -6,53 +6,27 @@ import {
     Refs
 } from "./Refs";
 
-/*
-function callUpdate(updater, instance) {
-    Refs.clearRefs();
-    if (updater._lifeStage === 2) {  
-        updater._didUpdate = true;
-        instance._didUpdate();
-        updater._lifeStage = 1;
-        updater._hydrating = false;
-        if (!updater._renderInNextCycle) {
-            updater._didUpdate = false;
-        }
-    }
-    updater._ref();
-}*/
-
 export function drainQueue(queue) {
     options.beforePatch();
     //先执行所有refs方法（从上到下）
-    Refs.clearRefs();
-    //再执行所有mount/update钩子（从下到上）
+    Refs.clearRefs();//假如一个组件实例也没有，也要把所有元素虚拟DOM的ref执行
+   
     let i = 0;
     while(i < queue.length){//queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var updater = queue[i];//, instance = updater._instance;
+        let updater = queue[i];
         i++;
         Refs.clearRefs();
         updater._didUpdate = updater._lifeStage === 2;
-        updater._didHook();
+        updater._didHook(); //执行所有mount/update钩子（从下到上）
         updater._lifeStage = 1;
         updater._hydrating = false;
         if (!updater._renderInNextCycle) {
             updater._didUpdate = false;
         }
-        updater._ref();
-        /*
-        if (!updater._lifeStage) {
-            Refs.clearRefs();
-            updater._didHook();
-            updater._lifeStage = 1;
-            updater._hydrating = false;
-            updater._ref();
-        } else {
-            callUpdate(updater, instance);
-        }*/
+        updater._ref();//执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
             options.refreshComponent(updater, queue);
-            // callUpdate(updater, instance);
         }
        
     }
