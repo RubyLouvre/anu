@@ -40,61 +40,58 @@
           }
       }
 
-    
-      class A extends React.Component{
-        constructor(props){
-          super(props)
-          this.state = {
-            a: 100
-          }
+      class Static extends React.Component {
+        shouldComponentUpdate() {
+            return false;
         }
-        render(){
-          console.log(this.state.a)
-         return <p><span>随便</span><B a={this.state.a}><span>{this.state.a}</span></B></p>
-        }
-      }
-      class B extends React.Component{
-        constructor(props){
-            super(props)
-            this.state = {
-              b: props.a
-            }
-        }
-        componentWillReceiveProps(props){
-         console.log("B", props.a)
-         this.state.b = props.a
-       
 
+        render() {
+            return <div>{this.props.children}</div>;
         }
-        shouldComponentUpdate(){
-          console.log("=====",!!this.state.b)
-          return this.state.b
-        }
-        render(){
-          console.log("B render", this.state.b)
-           return <strong>{this.props.children}</strong>
-        }
-      }
-      
-      class C extends React.Component{
-        constructor(props){
-            super(props)
-            this.state = {
-              c: 111
+    }
+
+    class Component extends React.Component {
+        render() {
+            if (this.props.flipped) {
+                return (
+                    <div>
+                        <Static ref="static0" key="B">
+                            B (ignored)
+                        </Static>
+                        <Static ref="static1" key="A">
+                            A (ignored)
+                        </Static>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                        <Static ref="static0" key="A">
+                            A
+                        </Static>
+                        <Static ref="static1" key="B">
+                            B
+                        </Static>
+                    </div>
+                );
             }
         }
-      
-        render(){
-          window.c = this
-           return <em>{this.state.c}</em>
-        }
-      }
-  
-      var instance = ReactDOM.render(<A/>, container);
-      console.log(instance.updater._hostNode)
-     instance.setState({a: 0})
-    
-      console.log(instance.updater._hostNode)
+    }
+
+    var container = document.createElement("div");
+    var comp = ReactDOM.render(<Component flipped={false} />, container);
+    //keyA <> instance0  <> static0 <> contentA
+    //keyB <> instance1  <> static1 <> contentB
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("A");
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("B");
+    //keyA <> instance0  <> static1 <> contentA
+    //keyB <> instance1  <> static1 <> contentB
+    // When flipping the order, the refs should update even though the actual
+    // contents do not
+    ReactDOM.render(<Component flipped={true} />, container);
+    console.log(comp.refs)
+    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("B");
+    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("A");
     //  console.log(myNodeB)
      
     </script>

@@ -1,6 +1,6 @@
 import { options, noop, innerHTML } from "./util";
 import { removeDOMElement } from "./browser";
-import {  updateChains } from "./instantiateComponent";
+import {  updateChains } from "./Updater";
 
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {

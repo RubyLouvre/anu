@@ -88,8 +88,6 @@ export function addGlobalEvent(name) {
 
 export function addEvent(el, type, fn, bool) {
     if (el.addEventListener) {
-        // Unable to preventDefault inside passive event listener due to target being
-        // treated as passive
         el.addEventListener(
             type,
             fn,

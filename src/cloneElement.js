@@ -1,11 +1,12 @@
-import { createElement, CurrentOwner } from "./createElement";
+import { createElement } from "./createElement";
+import { Refs} from "./Refs";
 
 export function cloneElement(vnode, props) {
     if (!vnode.vtype) {
         return Object.assign({}, vnode);
     }
     let owner = vnode._owner,
-        lastOwn = CurrentOwner.cur,
+        lastOwn =   Refs.currentOwner,
         old = vnode.props,
         configs = {  };
     if (props) {
@@ -20,7 +21,7 @@ export function cloneElement(vnode, props) {
     }else{
         configs = old;
     }
-    CurrentOwner.cur = owner;
+    Refs.currentOwner = owner;
 
     let args = [].slice.call(arguments, 0),
         argsLength = args.length;
@@ -30,6 +31,6 @@ export function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     let ret = createElement.apply(null, args);
-    CurrentOwner.cur = lastOwn;
+    Refs.currentOwner = lastOwn;
     return ret;
 }

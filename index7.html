@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width">   
  <script type='text/javascript' src="./dist/React.js"></script>
 
-   <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -28,55 +28,26 @@
             }
         }
     }
-    var k = 0
-    class Static extends React.Component {
-     shouldComponentUpdate() {
-       // return false;
-       return true
-      }
-      componentDidUpdate() {
-        console.log('更新')
-      }
+ class A extends React.Component {
       render() {
-        console.log(this.props.children, '孩子')
-        return <div className={k++}>{this.props.children}</div>;
+          return <div id="aaa" />;
       }
-    }
+  }
 
-    class Component extends React.Component {
-      render() {
-        if (this.props.flipped) {
-          console.log('第二次')
-          return (
-            <div>
-              <Static ref="static0" key="B">BB</Static>
-              <Static ref="static1" key="A">AA</Static>
-            </div>
-          );
-        } else {
-          console.log('第一次')
-          return (
-            <div>
-              <Static ref="static0" key="A">A</Static>
-              <Static ref="static1" key="B">B</Static>
-            </div>
-          );
-        }
-      }
-    }
-
-   // var container = document.createElement('div');
-    var comp = ReactDOM.render(<Component flipped={false} />, container);
-    console.log(Object.assign({},comp.refs))
-    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('A');
-    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('B');
-
-    ReactDOM.render(<Component flipped={true} />, container);
-    console.log(comp.refs)
-    console.log(comp.refs.static0)
-    console.log(comp.refs.static1)
-    expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe('B');
-    expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe('A');
+  var el = React.createElement(A, {});
+  expect(el.vtype).toBe(2);
+  console.log(el)
+  el = React.createElement(function() {}, {});
+  expect(el.vtype).toBe(4);
+  var obj = new A().render();
+  expect(obj.props.children).toBe(void 666);
+  expect(obj.props.id).toBe("aaa");
+  expect(obj.props).toBe({
+      id: "aaa"
+  });
+  expect(obj.type).toBe("div");
+  expect(obj.key == null).toBe(true);
+  expect(typeof obj._owner).toBe("object");
   
   }
   </script>

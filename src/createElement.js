@@ -1,4 +1,5 @@
 import {EMPTY_CHILDREN, typeNumber} from "./util";
+import {Refs} from "./Refs";
 
 export var CurrentOwner = {
     cur: null
@@ -65,34 +66,11 @@ export function createElement(type, config, ...children) {
     return new Vnode(type, key, ref, props, vtype, checkProps);
 }
 
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
-function getDOMNode() {
-    return this;
-}
-function errRef() {
-    throw "ref位置错误";
-}
-function createStringRef(owner, ref) {
-    var stringRef = owner === null
-        ? errRef
-        : function (dom) {
-            if (dom) {
-                if (dom.nodeType) {
-                    dom.getDOMNode = getDOMNode;
-                }        
-                owner.refs[ref] = dom;
-            }else{
-                delete owner.refs[ref];
-            }
-        };
-    stringRef.string = ref;
-    return stringRef;
-}
 function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = CurrentOwner.cur;
+    var owner =  Refs.currentOwner;
     this._owner = owner;
 
     if (key) {
@@ -105,10 +83,10 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     let refType = typeNumber(ref);
     if (refType === 4 || refType === 3) {
         //string, number
-        this.ref = createStringRef(owner, ref+"");
+        this.ref = Refs.createStringRef(owner, ref+"");
     } else if (refType === 5) {
         if (ref.string) {
-            var ref2 = createStringRef(owner, ref.string);
+            var ref2 = Refs.createStringRef(owner, ref.string);
             this.ref = function (dom) {
                 ref(dom);
                 ref2(dom);

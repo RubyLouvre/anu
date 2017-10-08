@@ -4,77 +4,112 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
+    <script type='text/javascript' src="./lib/shallowCompare.js"></script>
     
    <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-   
-  <!--<script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-   
-
-    <!-- <script src="./test/react-lite.js"></script>-->
-    <script type='text/javascript' src="./lib/babel.js"></script>
-
-
-
-</head>
-
-<body>
-
-    <div>开发者工具</div>
-    <div id='example'></div>
-
-    <script type='text/babel'>
-
-  if(!window.ReactDOM){
-    window.ReactDOM = window.React
-  }
-
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, b, a === b)
-            }
-        }
-    }
-  var container = document.createElement('div');
-var div = container
-  document.body.appendChild(container);
-  var PropTypes = React.PropTypes
  
-
-  var numMiddleRenders = 0;
-  var numBottomRenders = 0;
-
-  class Top extends React.Component {
-    render() {
-      return <Middle><Bottom /></Middle>;
-    }
-  }
-
-  class Middle extends React.Component {
-    componentDidMount() {
-      this.forceUpdate();
-    }
-
-    render() {
-      numMiddleRenders++;
-      return React.Children.only(this.props.children);
-    }
-  }
-
-  class Bottom extends React.Component {
-    render() {
-      numBottomRenders++;
-      return null;
-    }
-  }
-
-  ReactTestUtils.renderIntoDocument(<Top />);
-  expect(numMiddleRenders).toBe(2);
-  expect(numBottomRenders).toBe(1);
+   <script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>
+   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
+     <script type='text/javascript' src="./lib/babel.js"></script>
+  
+</head>
+<body>
+    
+        <div>开发者工具</div>
+        <pre>
+                "static render",
+                "static did mount",
+                "instance 111",
+                "static will update",
+                "static render",
+                "null 111",
+                "static did update",
+                "instance 222",
+        </pre>
+        <div id='example'></div>
+    
       
-       </script>
-</body>
+  <script type='text/babel'>
+   
+     
+      var container = document.getElementById("example")
+     // var PropTypes = React.PropTypes
+      if(!window.ReactDOM){
+        window.ReactDOM = window.React
+      }
+      var expect = function(a) {
+          return {
+              toBe: function(b) {
+                  console.log(a, b, a === b)
+              }
+          }
+      }
 
-</html>
+      var list = [];
+      class Static extends React.Component {
+          componentDidMount(){
+              list.push("static did mount");
+          }
+          componentWillUpdate(){
+              list.push("static will update");
+          }
+          componentDidUpdate(){
+              list.push("static did update");
+          }
+          render() {
+              list.push("static render");
+              return <div>{this.props.children}</div>;
+          }
+      }
+
+      class Component extends React.Component {
+          render() {
+              if (this.props.flipped) {
+                  return (
+                      <div>
+                          <Static ref={function(b){
+                              list.push(b === null ? "null 222":"instance 222");
+                          }}>
+                         B
+                          </Static>
+                    
+                      </div>
+                  );
+              } else {
+                  return (
+                      <div>
+                          <Static ref={function(a){
+                              list.push(a === null ? "null 111":"instance 111");
+                          }} >
+                          A
+                          </Static>
+                      </div>
+                  );
+              }
+          }
+      }
+
+      var container = document.createElement("div");
+      ReactDOM.render(<Component flipped={false} />, container);
+ 
+      ReactDOM.render(<Component flipped={true} />, container);
+     /* expect(list).toEqual([
+          "static render",
+          "static did mount",
+          "instance 111",
+          "static will update",
+          "static render",
+          "null 111",
+          "static did update",
+          "instance 222",
+      ]);*/
+      console.log(list.join("\n"))
+
+
+    </script>
+  
+</body>
+    
+ </html>
