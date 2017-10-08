@@ -2598,7 +2598,7 @@ function isSameNode(a, b) {
 }
 
 var React = {
-    version: "1.1.2",
+    version: "1.1.3",
     render: render,
     options: options,
     PropTypes: PropTypes,
