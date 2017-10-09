@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-08
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-09
  */
 
 (function (global, factory) {
@@ -2241,7 +2241,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     var children = flattenChildren(vnode);
     var method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
-    if (vnode.checkProps) {
+    if (vnode.checkProps && dom) {
         diffProps(props, {}, vnode, {}, dom);
     }
     if (ref) {
@@ -2465,10 +2465,15 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
+        if (!dom) {
+            console.log('dom', dom);
+        }
+        if (dom) {
+            diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
+        }
     }
 
-    if (checkProps || nextVnode.checkProps) {
+    if ((checkProps || nextVnode.checkProps) && dom) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
