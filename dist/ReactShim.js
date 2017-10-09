@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-10-08
+ * QQ 370262116 by 司徒正美 Copyright 2017-10-09
  */
 
 (function (global, factory) {
@@ -2333,7 +2333,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         return mountChildren(parentNode, nextChildren, lastVnode, context, updateQueue);
     }
     if (nextLength === lastLength && lastLength === 1) {
-        lastChildren[0]._hostNode = parentNode.firstChild;
+        if (parentNode.firstChild) {
+            lastChildren[0]._hostNode = parentNode.firstChild;
+        }
         return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     var maxLength = Math.max(nextLength, lastLength),
