@@ -2,10 +2,11 @@ import { noop, options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getCon
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createDOMElement, emptyElement, removeDOMElement } from "./browser";
-import { CurrentOwner, flattenChildren } from "./createElement";
+import { flattenChildren } from "./createElement";
 import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
-import { instantiateComponent, updateChains } from "./instantiateComponent";
-import { pendingRefs, drainQueue } from "./scheduler";
+import { instantiateComponent, updateChains } from "./Updater";
+import { drainQueue } from "./scheduler";
+import { Refs, pendingRefs } from "./Refs";
 
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
@@ -76,7 +77,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     var instance = vnode._instance;
     container.__component = vnode;
     drainQueue(updateQueue);
-    CurrentOwner.cur = null; //防止干扰
+    Refs.currentOwner = null; //防止干扰
     var ret = instance || rootNode;
     if (callback) {
         callback.call(ret); //坑
@@ -139,7 +140,6 @@ function genMountElement(lastNode, vnode, vparent, type) {
         return lastNode;
     } else {
         let dom = createDOMElement(vnode, vparent);
-
         if (lastNode) {
             while (lastNode.firstChild) {
                 dom.appendChild(lastNode.firstChild);
@@ -158,10 +158,8 @@ const formElements = {
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     let { type, props, ref } = vnode;
     let dom = genMountElement(lastNode, vnode, vparent, type);
-
     vnode._hostNode = dom;
-
-    var children = flattenChildren(vnode);
+    let children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
     if (vnode.checkProps) {
@@ -208,7 +206,7 @@ function alignChildren(parentNode, children, vparent, context, updateQueue) {
 }
 
 function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, parentUpdater) {
-    let { type, props } = vnode;
+    let { type, props, ref } = vnode;
     let context = getContextByTypes(parentContext, type.contextTypes);
     let instance = instantiateComponent(type, vnode, props, context); //互相持有引用
     let updater = instance.updater;
@@ -236,14 +234,20 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
             updater //作为parentUpater往下传
         );
     }, updater.rendered);
-
+    Refs.createInstanceRef(updater, ref);
+    let userHook = instance.componentDidMount;
+    updater._didHook = function() {
+        userHook && userHook.call(instance);
+        updater._didHook = noop;
+        options.afterMount(instance);
+    };
     updateQueue.push(updater);
 
     return dom;
 }
 
 function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
-    let { type, ref, _instance: instance, vtype } = lastVnode;
+    let { type, ref, _instance: instance } = lastVnode;
     let nextContext,
         queue,
         nextProps = nextVnode.props,
@@ -262,12 +266,12 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         instance.componentWillReceiveProps(nextProps, nextContext);
         updater._receiving = false;
     }
-    //用于refreshComponent
-    if (ref && vtype === 2) {
+    if (!instance.__isStateless) {
         var nextRef = nextVnode.ref;
-        detachRef(ref, nextRef);
-        lastVnode.ref = nextRef;
+        ref && Refs.detachRef(ref, nextRef);
+        Refs.createInstanceRef(updater, nextRef);
     }
+
     //updater上总是保持新的数据
     updater.lastVnode = lastVnode;
     updater.vnode = nextVnode;
@@ -281,13 +285,13 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
             return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
         });
     }
-    if (updateQueue.isMainProcess) {
+    /* if (updateQueue.isMainProcess) {
         queue = updateQueue;
         queue = [];
     } else {
         queue = updateQueue;
-    }
-    refreshComponent(updater, queue);
+    }*/
+    refreshComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
     return updater._hostNode;
@@ -312,14 +316,11 @@ function refreshComponent(updater, updateQueue) {
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
     instance.context = nextContext;
     if (!shouldUpdate) {
+        updateQueue.push(updater);
         return dom;
     }
     instance.props = nextProps;
     updater._hydrating = true;
-    updater.lastProps = lastProps;
-    updater.lastState = lastState;
-    updater.lastContext = lastContext;
-
     let lastRendered = updater.rendered;
 
     dom = updater.renderComponent(function(nextRendered, vparent, childContext) {
@@ -328,13 +329,15 @@ function refreshComponent(updater, updateQueue) {
 
     updater.lastVnode = vnode;
     updater._lifeStage = 2;
-    // updater._hydrating = false;
-    if (!updateQueue.isMainProcess) {
-        drainQueue(updateQueue);
-    } else {
-        updater._hydrating = false;
-    }
-
+    let userHook = instance.componentDidUpdate;
+    
+    updater._didHook = function() {
+        userHook && userHook.call(instance, lastProps, lastState, lastContext);
+        updater._didHook = noop;
+        options.afterUpdate(instance);
+    };
+    
+    updateQueue.push(updater);
     return dom;
 }
 options.refreshComponent = refreshComponent;
@@ -357,11 +360,6 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     let { props: lastProps, _hostNode: dom, ref, checkProps } = lastVnode;
-    if (dom === null) {
-        console.log("此节点已经被移除", vparent);
-        return null;
-    }
-
     let { props: nextProps, ref: nextRef } = nextVnode;
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
@@ -383,21 +381,10 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
     }
-    detachRef(ref, nextRef, dom);
-
+    Refs.detachRef(ref, nextRef, dom);
     return dom;
 }
-function detachRef(ref, nextRef, dom) {
-    ref = ref || noop;
-    if (nextRef) {
-        if (!ref.string && !nextRef.string ? ref !== nextRef : ref.string !== nextRef.string) {
-            ref(null);
-        }
-        dom && nextRef(dom);
-    }else{
-        ref(null);
-    }
-}
+
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     let lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
@@ -412,8 +399,7 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     }
     if (nextLength === lastLength && lastLength === 1) {
         lastChildren[0]._hostNode = parentNode.firstChild;
-        dom = alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
-        return;
+        return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,

@@ -359,6 +359,67 @@ describe("ref", function () {
         expect(log[0].nodeName).toBe("SPAN");
         expect(log[2].nodeName).toBe("B");
     });
+    it("组件虚拟DOM的ref总在componentDidMount/Update后才执行", function() {
+        var list = [];
+        class Static extends React.Component {
+            componentDidMount(){
+                list.push("static did mount");
+            }
+            componentWillUpdate(){
+                list.push("static will update");
+            }
+            componentDidUpdate(){
+                list.push("static did update");
+            }
+            render() {
+                list.push("static render");
+                return <div>{this.props.children}</div>;
+            }
+        }
+
+        class Component extends React.Component {
+            render() {
+                if (this.props.flipped) {
+                    return (
+                        <div>
+                            <Static ref={function(b){
+                                list.push(b === null ? "null 222":"instance 222");
+                            }}>
+                           B
+                            </Static>
+                      
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div>
+                            <Static ref={function(a){
+                                list.push(a === null ? "null 111":"instance 111");
+                            }} >
+                            A
+                            </Static>
+                        </div>
+                    );
+                }
+            }
+        }
+
+        var container = document.createElement("div");
+        ReactDOM.render(<Component flipped={false} />, container);
+   
+        ReactDOM.render(<Component flipped={true} />, container);
+        expect(list).toEqual([
+            "static render",
+            "static did mount",
+            "instance 111",
+            "null 111",
+            "static will update",
+            "static render",
+            "static did update",
+            "instance 222",
+        ]);
+
+    });
 
 
 });

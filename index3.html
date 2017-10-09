@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script src="./lib/ReactTestUtils.js"></script>
 
     <script src="./test/babel.js"></script>
@@ -12,7 +14,16 @@
 </head>
 <body>
 
-    <div>开发者工具</div>
+    <pre>
+            'will mount',
+            'render',
+            'did mount',
+            'ref',
+      
+            'render',
+            'did update',
+            'ref',
+    </pre>
     <div id='example'></div>
     <script type='text/babel'>
         var expect = function(a) {
@@ -22,34 +33,48 @@
                 }
             }
         }
+        var PropTypes = React.PropTypes
+
         var container = document.getElementById("example")
-        var index = 1
-        class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.handleClick = this.handleClick.bind(this)
-            }
-            handleClick() {
-                index = 0
-                this.forceUpdate()
-            }
+      
+        const log = [];
+        function Parent() {
+          return {
             render() {
-                return index ?
-                    <div ref='a' onClick={this.handleClick.bind(this)}>
-                       <span>111</span>
-                    </div> : <div><a>222</a><span>444</span><a>999</a></div>
-
-            }
+              expect(typeof this.props).toBe('object');
+              log.push('render');
+              return <Child />;
+            },
+            componentWillMount() {
+              log.push('will mount');
+            },
+            componentDidMount() {
+              log.push('did mount');
+            },
+            componentDidUpdate() {
+              log.push('did update');
+            },
+            getChildContext() {
+              return {x: 2};
+            },
+          };
+        }
+        Parent.childContextTypes = {
+          x: PropTypes.number,
         };
-
-        var s = React.render(<App />, container)
-
-      s.refs.a.click()
-      setTimeout(function(){
-        expect(container.getElementsByTagName('p').length).toBe(1)
-      },1000)
-       
-          
+        function Child(props, context) {
+          expect(context.x).toBe(2);
+          return <div />;
+        }
+        Child.contextTypes = {
+          x: PropTypes.number,
+        };
+    
+        const div = document.createElement('div');
+        ReactDOM.render(<Parent ref={c => c && log.push('ref')} />, div);
+        ReactDOM.render(<Parent ref={c => c && log.push('ref')} />, div);
+        console.log(log.join('\n'))
+        
        
         </script>
 </body>

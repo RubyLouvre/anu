@@ -1,17 +1,19 @@
 var mountOrder = 1;
-import { getChildContext } from "../src/util";
-import { CurrentOwner } from "./createElement";
+import { getChildContext, noop } from "../src/util";
+import { Refs } from "./Refs";
 function alwaysNull() {
     return null;
 }
 export var updateChains = {};
-function Updater(instance, vnode) {
+export function Updater(instance, vnode) {
     vnode._instance = instance;
     instance.updater = this;
     this._mountOrder = mountOrder++;
-    this._mountIndex =  this._mountOrder;
+    this._mountIndex = this._mountOrder;
     this._instance = instance;
     this._pendingCallbacks = [];
+    this._ref = noop;
+    this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
     //update总是保存最新的数据，如state, props, context, parentContext, vparent
@@ -23,8 +25,9 @@ function Updater(instance, vnode) {
         this.mergeStates = alwaysNull;
     }
 }
+
 Updater.prototype = {
-    mergeStates: function() {
+    mergeStates() {
         let instance = this._instance,
             pendings = this._pendingStates,
             state = instance.state,
@@ -44,25 +47,21 @@ Updater.prototype = {
         return nextState;
     },
 
-    renderComponent: function(cb, rendered) {
-        let {
-            vnode,
-            parentContext,
-            _instance: instance
-        } = this;
+    renderComponent(cb, rendered) {
+        let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
         if (!rendered) {
+            let lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
             try {
-                var lastOwn = CurrentOwner.cur;
-                CurrentOwner.cur = instance;
-                if(this.willReceive === false){
+                if (this.willReceive === false) {
                     rendered = this.rendered;
                     delete this.willReceive;
-                }else{
-                    rendered =  instance.render();
+                } else {
+                    rendered = instance.render();
                 }
             } finally {
-                CurrentOwner.cur = lastOwn;
+                Refs.currentOwner = lastOwn;
             }
         }
 
@@ -77,11 +76,11 @@ Updater.prototype = {
         this.rendered = rendered;
         let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
         let dom = cb(rendered, this.vparent, childContext);
-        if(!dom){
-            throw ["必须返回节点",rendered];
+        if (!dom) {
+            throw ["必须返回节点", rendered];
         }
         let list = updateChains[this._mountOrder];
-        if(!list){
+        if (!list) {
             list = updateChains[this._mountOrder] = [this];
         }
         list.forEach(function(el) {
@@ -109,12 +108,12 @@ export function instantiateComponent(type, vnode, props, context) {
     updater.displayName = type.displayName || type.name;
 
     if (isStateless) {
-        let lastOwn = CurrentOwner.cur;
-        CurrentOwner.cur = instance;
+        let lastOwn = Refs.currentOwner;
+        Refs.currentOwner = instance;
         try {
             var mixin = instance.render();
         } finally {
-            CurrentOwner.cur = lastOwn;
+            Refs.currentOwner = lastOwn;
         }
         if (mixin && mixin.render) {
             //支持module pattern component
