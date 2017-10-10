@@ -6,7 +6,7 @@ import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 
-import { render, findDOMNode, unmountComponentAtNode } from "./diff";
+import { render,createPortal, findDOMNode, unmountComponentAtNode } from "./diff";
 
 var React = {
     version: "VERSION",
@@ -15,6 +15,7 @@ var React = {
     Children, //支持react-redux
     Component,
     findDOMNode,
+    createPortal,
     createElement,
     cloneElement,
     PureComponent,

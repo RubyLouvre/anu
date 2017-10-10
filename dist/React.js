@@ -2117,6 +2117,10 @@ function findDOMNode(ref) {
 
     return ref.updater ? ref.updater._hostNode : ref._hostNode || null;
 }
+//[Top API] ReactDOM.createPortal
+function createPortal(children, container) {
+    return renderByAnu(children, container);
+}
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 function getVParent(container) {
@@ -2513,7 +2517,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         return mountChildren(parentNode, nextChildren, lastVnode, context, updateQueue);
     }
     if (nextLength === lastLength && lastLength === 1) {
-        lastChildren[0]._hostNode = parentNode.firstChild;
+        if (parentNode.firstChild) {
+            lastChildren[0]._hostNode = parentNode.firstChild;
+        }
         return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     var maxLength = Math.max(nextLength, lastLength),
@@ -2653,7 +2659,7 @@ var React = {
     options: options,
     PropTypes: PropTypes,
     Children: Children, //为了react-redux
-    pendingRefs: pendingRefs,
+    createPortal: createPortal,
     Component: Component,
     eventSystem: eventSystem,
     findDOMNode: findDOMNode,

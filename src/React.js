@@ -8,9 +8,8 @@ import { createClass } from "./createClass";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 import { createElement } from "./createElement";
-import { pendingRefs } from "./Refs";
 
-import { render,findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
+import { render,createPortal, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
 var React = {
     version: "VERSION",
@@ -18,7 +17,7 @@ var React = {
     options,
     PropTypes,
     Children, //为了react-redux
-    pendingRefs,
+    createPortal,
     Component,
     eventSystem,
     findDOMNode,

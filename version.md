@@ -1,11 +1,10 @@
 ## 1.1.3
 1. 抽象出一个Update类，用于封装组件实例上的所有私有数据
 2. 抽象出一个instantiateComponente用于同时实例化有状态与无状态组件，从此再没有mountStateless, updateStateless方法
-3. 使用detachRef安全清空无用的ref数据
-4. 修正checkbox点一下会触发两次onChange的BUG
-5. 添加ReceiveComponent检测机制，如果context,props一样，那么就不会执行receive, render, update等钩子
-6. 修改检测空对象的逻辑
-7. 简化任务调度系统的逻辑
+3. 修正checkbox点一下会触发两次onChange的BUG
+4. 添加ReceiveComponent检测机制，如果context,props一样，那么就不会执行receive, render, update等钩子
+5. 修改检测空对象的逻辑
+6. 简化任务调度系统的逻辑
 
 ## 1.1.2
 1. 修正 onChange 事件
