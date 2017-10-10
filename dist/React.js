@@ -2337,7 +2337,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         instance = lastVnode._instance;
 
     var nextContext = void 0,
-        queue = void 0,
         nextProps = nextVnode.props,
         updater = instance.updater;
     if (type.contextTypes) {
@@ -2361,7 +2360,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     }
 
     //updater上总是保持新的数据
-    updater.lastVnode = lastVnode;
     updater.vnode = nextVnode;
     updater.context = nextContext;
     updater.props = nextProps;
@@ -2373,12 +2371,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
             return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
         });
     }
-    /* if (updateQueue.isMainProcess) {
-        queue = updateQueue;
-        queue = [];
-    } else {
-        queue = updateQueue;
-    }*/
     refreshComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
@@ -2390,8 +2382,7 @@ function refreshComponent(updater, updateQueue) {
         dom = updater._hostNode,
         nextContext = updater.context,
         nextProps = updater.props,
-        vnode = updater.vnode,
-        lastVnode = updater.lastVnode;
+        vnode = updater.vnode;
 
 
     vnode._instance = instance; //放这里
@@ -2424,7 +2415,6 @@ function refreshComponent(updater, updateQueue) {
         return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue, updater);
     });
 
-    updater.lastVnode = vnode;
     updater._lifeStage = 2;
     var userHook = instance.componentDidUpdate;
 

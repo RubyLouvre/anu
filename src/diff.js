@@ -257,7 +257,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
 function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
     let { type, ref, _instance: instance } = lastVnode;
     let nextContext,
-        queue,
         nextProps = nextVnode.props,
         updater = instance.updater;
     if (type.contextTypes) {
@@ -281,7 +280,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     }
 
     //updater上总是保持新的数据
-    updater.lastVnode = lastVnode;
     updater.vnode = nextVnode;
     updater.context = nextContext;
     updater.props = nextProps;
@@ -293,12 +291,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
             return alignVnode(updater.rendered, nextRendered, vparent, childContext, updateQueue, updater);
         });
     }
-    /* if (updateQueue.isMainProcess) {
-        queue = updateQueue;
-        queue = [];
-    } else {
-        queue = updateQueue;
-    }*/
     refreshComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
@@ -306,7 +298,7 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
 }
 
 function refreshComponent(updater, updateQueue) {
-    let { _instance: instance, _hostNode: dom, context: nextContext, props: nextProps, vnode, lastVnode } = updater;
+    let { _instance: instance, _hostNode: dom, context: nextContext, props: nextProps, vnode } = updater;
 
     vnode._instance = instance; //放这里
     updater._renderInNextCycle = null;
@@ -335,7 +327,6 @@ function refreshComponent(updater, updateQueue) {
         return alignVnode(lastRendered, nextRendered, vparent, childContext, updateQueue, updater);
     });
 
-    updater.lastVnode = vnode;
     updater._lifeStage = 2;
     let userHook = instance.componentDidUpdate;
     
