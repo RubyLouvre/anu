@@ -2486,9 +2486,10 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
 }
 
 function diffDomText(pastDom, dom, insertPoint) {
-    var isTrue = false;
     var dText = dom.innerText.trim();
     var iText = insertPoint.innerText.trim();
+    var isTrue = false;
+
     pastDom.forEach(function (v) {
         if (v.innerText === dText || dText === iText) {
             isTrue = !isTrue;
@@ -2499,17 +2500,16 @@ function diffDomText(pastDom, dom, insertPoint) {
 }
 
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
+    var insertDom = function insertDom(dom) {
+        return parentNode.insertBefore(dom, insertPoint);
+    };
     var lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
-        dom = void 0,
         isTrue = false,
-        pastDom = [];
-
-    var insertDom = function insertDom(dom) {
-        return parentNode.insertBefore(dom, insertPoint);
-    };
+        pastDom = [],
+        dom = void 0;
 
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
@@ -2532,7 +2532,6 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         nextChild = void 0,
         lastChild = void 0;
     //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
-
     if (nextLength) {
         actions.length = nextLength;
         while (i < maxLength) {
@@ -2583,33 +2582,17 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             dom = lastChild._hostNode;
 
             if (action[2]) {
-                // let abc = false;
                 // 如果有旧DOM记录
                 if (pastDom.length && insertPoint.innerText && dom.innerText) {
                     isTrue = diffDomText(pastDom, dom, insertPoint);
-                    // console.log('pastDom', pastDom)
-                    // if (isTrue) {
-                    //     insertDom(dom);
-                    // }
-                    // pastDom.forEach(v => {
-                    //     if (v.innerText.trim() === insertPoint.innerText.trim()) {
-                    //         abc = true;
-                    //     }
-                    //     if (dom.innerText.trim() === insertPoint.innerText.trim()) {
-                    //         abc = true;
-                    //     }
-                    // });
                     if (!isTrue) {
                         insertDom(dom);
-                        // parentNode.insertBefore(dom, insertPoint);
                         isTrue = false;
                     }
                     // 没有旧DOM记录 (这里代码不能合并)
                 } else {
                     insertDom(dom);
-                    // parentNode.insertBefore(dom, insertPoint);
                 }
-                // pastDom.push(dom)
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
             if (!nextChild._hostNode) {
