@@ -1960,7 +1960,11 @@ function findDOMNode(ref) {
 }
 //[Top API] ReactDOM.createPortal
 function createPortal(children, container) {
-    return renderByAnu(children, container);
+    if (!container.vchildren) {
+        container.vchildren = [];
+    }
+    diffChildren(getVParent(container), children, container, {}, []);
+    return null;
 }
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
@@ -2312,7 +2316,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
             dom.vchildren = [];
         }
         if (dom) {
-            diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
+            diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
         }
     }
 
@@ -2340,12 +2344,11 @@ function diffDomText(pastDom, dom, insertPoint) {
     return isTrue;
 }
 
-function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
+function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue) {
     var insertDom = function insertDom(dom) {
         return parentNode.insertBefore(dom, insertPoint);
     };
     var lastChildren = parentNode.vchildren,
-        nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         isTrue = false,
