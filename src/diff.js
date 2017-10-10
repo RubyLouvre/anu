@@ -402,7 +402,9 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         return mountChildren(parentNode, nextChildren, lastVnode, context, updateQueue);
     }
     if (nextLength === lastLength && lastLength === 1) {
-        lastChildren[0]._hostNode = parentNode.firstChild;
+        if (parentNode.firstChild) {
+            lastChildren[0]._hostNode = parentNode.firstChild;
+        }
         return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
