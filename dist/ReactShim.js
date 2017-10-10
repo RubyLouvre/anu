@@ -2091,7 +2091,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     var children = flattenChildren(vnode);
     var method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
-    if (vnode.checkProps) {
+    if (vnode.checkProps && dom) {
         diffProps(props, {}, vnode, {}, dom);
     }
     if (ref) {
@@ -2305,10 +2305,12 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
+        if (dom) {
+            diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
+        }
     }
 
-    if (checkProps || nextVnode.checkProps) {
+    if ((checkProps || nextVnode.checkProps) && dom) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
@@ -2318,10 +2320,29 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     return dom;
 }
 
+function diffDomText(pastDom, dom, insertPoint) {
+    var dText = dom.innerText.trim();
+    var iText = insertPoint.innerText.trim();
+    var isTrue = false;
+
+    pastDom.forEach(function (v) {
+        if (v.innerText === dText || dText === iText) {
+            isTrue = !isTrue;
+            return false;
+        }
+    });
+    return isTrue;
+}
+
 function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue) {
+    var insertDom = function insertDom(dom) {
+        return parentNode.insertBefore(dom, insertPoint);
+    };
     var lastChildren = parentNode.vchildren,
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
+        isTrue = false,
+        pastDom = [],
         dom = void 0;
 
     //如果旧数组长度为零, 直接添加
@@ -2345,7 +2366,6 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         nextChild = void 0,
         lastChild = void 0;
     //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
-
     if (nextLength) {
         actions.length = nextLength;
         while (i < maxLength) {
@@ -2394,8 +2414,19 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
+
             if (action[2]) {
-                parentNode.insertBefore(dom, insertPoint);
+                // 如果有旧DOM记录
+                if (pastDom.length && insertPoint.innerText && dom.innerText) {
+                    isTrue = diffDomText(pastDom, dom, insertPoint);
+                    if (!isTrue) {
+                        insertDom(dom);
+                        isTrue = false;
+                    }
+                    // 没有旧DOM记录 (这里代码不能合并)
+                } else {
+                    insertDom(dom);
+                }
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
             if (!nextChild._hostNode) {
@@ -2409,8 +2440,10 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             if (removed && !removed._disposed && !removeHits[j]) {
                 disposeVnode(removed);
             }
+
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
+            pastDom.push(dom);
             parentNode.insertBefore(dom, insertPoint);
             insertPoint = dom;
         }
