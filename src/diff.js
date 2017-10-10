@@ -42,6 +42,10 @@ export function findDOMNode(ref) {
 
     return ref.updater ? ref.updater._hostNode : ref._hostNode || null;
 }
+//[Top API] ReactDOM.createPortal
+export function createPortal(children, container) {
+    return renderByAnu(children, container);
+}
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 function getVParent(container) {
