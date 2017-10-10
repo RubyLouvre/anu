@@ -6,7 +6,6 @@ import PropTypes from "lib/ReactPropTypes";
 var ReactDOM = window.ReactDOM || React;
 
 
-
 describe("ReactCompositeComponentDOMMinimalism",function() {
     this.timeout(200000);
 
