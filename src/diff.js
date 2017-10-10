@@ -361,7 +361,9 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
             next = node.nextSibling;
         removeDOMElement(node);
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
-        parent.insertBefore(dom, next);
+        if (parent) {
+            parent.insertBefore(dom, next);
+        }
     }
     return dom;
 }
