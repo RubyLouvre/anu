@@ -372,9 +372,6 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        if (!dom) {
-            console.log('dom', dom)
-        }
         if (dom) {
             diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
         }
@@ -390,11 +387,28 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     return dom;
 }
 
+function diffDomText(pastDom, dom, insertPoint) {
+    const dText = dom.innerText.trim();
+    const iText = insertPoint.innerText.trim();
+    let isTrue = false;
+
+    pastDom.forEach(v => {
+        if ((v.innerText === dText) || (dText === iText)) {
+            isTrue = !isTrue;
+            return false;
+        }
+    });
+    return isTrue;
+}
+
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
+    const insertDom = dom => parentNode.insertBefore(dom, insertPoint);
     let lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
+        isTrue = false,
+        pastDom = [],
         dom;
 
     //如果旧数组长度为零, 直接添加
@@ -416,7 +430,6 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
         nextChild,
         lastChild;
     //第一次循环，构建移动指令（actions）与移除名单(removeHits)与命中名单（fuzzyHits）
-
     if (nextLength) {
         actions.length = nextLength;
         while (i < maxLength) {
@@ -465,8 +478,19 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
+
             if (action[2]) {
-                parentNode.insertBefore(dom, insertPoint);
+                // 如果有旧DOM记录
+                if (pastDom.length && insertPoint.innerText && dom.innerText) {
+                    isTrue = diffDomText(pastDom, dom, insertPoint);
+                    if (!isTrue) {
+                        insertDom(dom)
+                        isTrue = false;
+                    }
+                // 没有旧DOM记录 (这里代码不能合并)
+                } else {
+                    insertDom(dom);
+                }
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
             if (!nextChild._hostNode) {
@@ -480,8 +504,10 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             if (removed && !removed._disposed && !removeHits[j]) {
                 disposeVnode(removed);
             }
+
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
+            pastDom.push(dom)
             parentNode.insertBefore(dom, insertPoint);
             insertPoint = dom;
         }

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-09
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-10-10
  */
 
 (function (global, factory) {
@@ -2465,9 +2465,6 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        if (!dom) {
-            console.log('dom', dom);
-        }
         if (dom) {
             diffChildren(lastVnode, nextVnode, dom, context, updateQueue);
         }
@@ -2483,12 +2480,31 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     return dom;
 }
 
+function diffDomText(pastDom, dom, insertPoint) {
+    var isTrue = false;
+    var dText = dom.innerText.trim();
+    var iText = insertPoint.innerText.trim();
+    pastDom.forEach(function (v) {
+        if (v.innerText === dText || dText === iText) {
+            isTrue = !isTrue;
+            return false;
+        }
+    });
+    return isTrue;
+}
+
 function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
     var lastChildren = parentNode.vchildren,
         nextChildren = flattenChildren(nextVnode),
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
-        dom = void 0;
+        dom = void 0,
+        isTrue = false,
+        pastDom = [];
+
+    var insertDom = function insertDom(dom) {
+        return parentNode.insertBefore(dom, insertPoint);
+    };
 
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
@@ -2558,8 +2574,35 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
+
             if (action[2]) {
-                parentNode.insertBefore(dom, insertPoint);
+                // let abc = false;
+                // 如果有旧DOM记录
+                if (pastDom.length && insertPoint.innerText && dom.innerText) {
+                    isTrue = diffDomText(pastDom, dom, insertPoint);
+                    // console.log('pastDom', pastDom)
+                    // if (isTrue) {
+                    //     insertDom(dom);
+                    // }
+                    // pastDom.forEach(v => {
+                    //     if (v.innerText.trim() === insertPoint.innerText.trim()) {
+                    //         abc = true;
+                    //     }
+                    //     if (dom.innerText.trim() === insertPoint.innerText.trim()) {
+                    //         abc = true;
+                    //     }
+                    // });
+                    if (!isTrue) {
+                        insertDom(dom);
+                        // parentNode.insertBefore(dom, insertPoint);
+                        isTrue = false;
+                    }
+                    // 没有旧DOM记录 (这里代码不能合并)
+                } else {
+                    insertDom(dom);
+                    // parentNode.insertBefore(dom, insertPoint);
+                }
+                // pastDom.push(dom)
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
             if (!nextChild._hostNode) {
@@ -2573,8 +2616,10 @@ function diffChildren(lastVnode, nextVnode, parentNode, context, updateQueue) {
             if (removed && !removed._disposed && !removeHits[j]) {
                 disposeVnode(removed);
             }
+
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
+            pastDom.push(dom);
             parentNode.insertBefore(dom, insertPoint);
             insertPoint = dom;
         }
