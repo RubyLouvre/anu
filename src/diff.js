@@ -494,7 +494,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
                 if (pastDom.length && insertPoint.innerText && dom.innerText) {
                     isTrue = diffDomText(pastDom, dom, insertPoint);
                     if (!isTrue) {
-                        insertDom(dom)
+                        insertDom(dom);
                         isTrue = false;
                     }
                 // 没有旧DOM记录 (这里代码不能合并)
@@ -517,7 +517,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
 
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
-            pastDom.push(dom)
+            pastDom.push(dom);
             parentNode.insertBefore(dom, insertPoint);
             insertPoint = dom;
         }
