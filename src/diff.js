@@ -360,6 +360,9 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     let { props: lastProps, _hostNode: dom, ref, checkProps } = lastVnode;
     let { props: nextProps, ref: nextRef } = nextVnode;
+    if (!dom) {
+        return false;
+    }
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode.vchildren || [];
@@ -371,13 +374,10 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        if (dom) {
-            diffChildren(lastVnode,  flattenChildren(nextVnode), dom, context, updateQueue);
-        }
-        
+        diffChildren(lastVnode,  flattenChildren(nextVnode), dom, context, updateQueue);
     }
 
-    if ((checkProps || nextVnode.checkProps) && dom) {
+    if (checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
