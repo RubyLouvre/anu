@@ -390,11 +390,12 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
 function diffDomText(nextChild, insertPoint) {
     const body = document.body;
     let isTrue = false,
-        nextTest = insertTest = '';
-    if ('innerText' in body) {
+        nextTest = "",
+        insertTest = "";
+    if ("innerText" in body) {
         nextTest = nextChild._hostNode.innerText;
         insertTest = insertPoint.innerText;
-    } else if ('textContent' in documebnt) {
+    } else if ("textContent" in body) {
         nextTest = nextChild._hostNode.textContent;
         insertTest = insertPoint.textContent;
     }
