@@ -420,6 +420,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         if (parentNode.firstChild) {
             lastChildren[0]._hostNode = parentNode.firstChild;
         }
+        parentNode.vchildren = nextChildren;
         return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
