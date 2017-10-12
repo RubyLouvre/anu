@@ -169,6 +169,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     vnode._hostNode = dom;
     let children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
+    dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
     if (vnode.checkProps && dom) {
         diffProps(props, {}, vnode, {}, dom);
@@ -185,7 +186,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(parentNode, children, vparent, context, updateQueue) {
-    parentNode.vchildren = children;
+    //parentNode.vchildren = children;
     for (let i = 0, n = children.length; i < n; i++) {
         var vnode = children[i];
         parentNode.appendChild(mountVnode(null, vnode, vparent, context, updateQueue));
@@ -197,7 +198,7 @@ function alignChildren(parentNode, children, vparent, context, updateQueue) {
         insertPoint = childNodes[0] || null,
         j = 0,
         n = children.length;
-    parentNode.vchildren = children;
+    //parentNode.vchildren = children;
     for (let i = 0; i < n; i++) {
         let vnode = children[i];
         let lastNode = childNodes[j];
@@ -410,7 +411,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         dom;
-
+    parentNode.vchildren = nextChildren;
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
         emptyElement(parentNode);
@@ -420,7 +421,6 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         if (parentNode.firstChild) {
             lastChildren[0]._hostNode = parentNode.firstChild;
         }
-        parentNode.vchildren = nextChildren;
         return alignVnode(lastChildren[0], nextChildren[0], lastVnode, context, updateQueue);
     }
     let maxLength = Math.max(nextLength, lastLength),
@@ -509,9 +509,6 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         }
         insertPoint = insertPoint.nextSibling;
     }
-
-    parentNode.vchildren = nextChildren;
-
     //移除
     lastChildren.forEach(function(el, i) {
         if (!removeHits[i]) {
