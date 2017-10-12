@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-10-10
+ * by 司徒正美 Copyright 2017-10-12
  * IE9+
  */
 
@@ -653,9 +653,9 @@ try {
 
 var win = w;
 
-var document = w.document || fakeDoc;
-var isStandard = "textContent" in document;
-var fragment = document.createDocumentFragment();
+var document$1 = w.document || fakeDoc;
+var isStandard = "textContent" in document$1;
+var fragment = document$1.createDocumentFragment();
 function emptyElement(node) {
     var child;
     while (child = node.firstChild) {
@@ -687,7 +687,7 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+var msie = document$1.documentMode || versions[typeNumber(document$1.all) + "" + typeNumber(XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -700,11 +700,11 @@ function createDOMElement(vnode, vparent) {
             node.nodeValue = vnode.text;
             return node;
         }
-        return document.createTextNode(vnode.text);
+        return document$1.createTextNode(vnode.text);
     }
 
     if (type === "#comment") {
-        return document.createComment(vnode.text);
+        return document$1.createComment(vnode.text);
     }
 
     var check = vparent || vnode;
@@ -714,14 +714,14 @@ function createDOMElement(vnode, vparent) {
     } else if (type === "math") {
         ns = NAMESPACE.math;
     } else if (check.type.toLowerCase() === "foreignobject" || !ns || ns === NAMESPACE.html || ns === NAMESPACE.xhtml) {
-        return document.createElement(type);
+        return document$1.createElement(type);
     }
     try {
         vnode.namespaceURI = ns;
-        return document.createElementNS(ns, type);
+        return document$1.createElementNS(ns, type);
         //eslint-disable-next-line
     } catch (e) {
-        return document.createElement(type);
+        return document$1.createElement(type);
     }
 }
 
@@ -747,7 +747,7 @@ function isEventName(name) {
     );
 }
 
-var isTouch = "ontouchstart" in document;
+var isTouch = "ontouchstart" in document$1;
 
 function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
@@ -762,7 +762,7 @@ function dispatchEvent(e, type, end) {
         return;
     }
 
-    var paths = collectPaths(e.target, end || document);
+    var paths = collectPaths(e.target, end || document$1);
     var captured = bubble + "capture";
     options.async = true;
     triggerEventFlow(paths, captured, e);
@@ -806,7 +806,7 @@ function triggerEventFlow(paths, prop, e) {
 function addGlobalEvent(name) {
     if (!globalEvents[name]) {
         globalEvents[name] = true;
-        addEvent(document, name, dispatchEvent);
+        addEvent(document$1, name, dispatchEvent);
     }
 }
 
@@ -840,7 +840,7 @@ eventPropHooks.click = function (e) {
             IE9-11 wheel deltaY 下40 上-40
             chrome wheel deltaY 下100 上-100 */
 /* istanbul ignore next  */
-var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
+var fixWheelType = "onmousewheel" in document$1 ? "mousewheel" : document$1.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
 var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
@@ -859,7 +859,7 @@ var fixFocus = {};
     eventHooks[type] = function () {
         if (!fixFocus[type]) {
             fixFocus[type] = true;
-            addEvent(document, type, dispatchEvent, true);
+            addEvent(document$1, type, dispatchEvent, true);
         }
     };
 });
@@ -961,12 +961,12 @@ var doubleClickHandle = createHandle("doubleclick");
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password/.test(dom.type)) {
-        addEvent(document, "input", changeHandle);
+        addEvent(document$1, "input", changeHandle);
     }
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
-    addEvent(document, "dblclick", doubleClickHandle);
+    addEvent(document$1, "dblclick", doubleClickHandle);
 };
 
 function SyntheticEvent(event) {
@@ -1670,6 +1670,7 @@ function Updater(instance, vnode) {
     this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
+    this._uuid = Math.random();
     //update总是保存最新的数据，如state, props, context, parentContext, vparent
     this.vnode = vnode;
     //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
@@ -1834,6 +1835,7 @@ function disposeComponent(vnode) {
             order = updater._mountOrder,
             updaters = updateChains[order];
         updaters.splice(updaters.indexOf(updater), 1);
+        updater._disposed = true;
         if (!updaters.length) {
             delete updateChains[order];
         }
@@ -2032,11 +2034,19 @@ function drainQueue(queue) {
     //先执行所有refs方法（从上到下）
     Refs.clearRefs(); //假如一个组件实例也没有，也要把所有元素虚拟DOM的ref执行
 
-    var i = 0;
-    while (i < queue.length) {
+    var needSort = [],
+        unique = {},
+        updater = void 0;
+    while (updater = queue.shift()) {
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        var updater = queue[i];
-        i++;
+        if (updater._disposed) {
+            continue;
+        }
+
+        if (!unique[updater._uuid]) {
+            unique[updater._uuid] = 1;
+            needSort.push(updater);
+        }
         Refs.clearRefs();
         updater._didUpdate = updater._lifeStage === 2;
         updater._didHook(); //执行所有mount/update钩子（从下到上）
@@ -2052,12 +2062,11 @@ function drainQueue(queue) {
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
-    queue.sort(mountSorter).forEach(function (updater) {
+    needSort.sort(mountSorter).forEach(function (updater) {
         clearArray(updater._pendingCallbacks).forEach(function (fn) {
             fn.call(updater._instance);
         });
     });
-    queue.length = 0;
     options.afterPatch();
 }
 
@@ -2453,6 +2462,9 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     var nextProps = nextVnode.props,
         nextRef = nextVnode.ref;
 
+    if (!dom) {
+        return false;
+    }
     nextVnode._hostNode = dom;
     if (nextProps[innerHTML]) {
         var list = lastVnode.vchildren || [];
@@ -2464,12 +2476,10 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
         }
-        if (dom) {
-            diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
-        }
+        diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
     }
 
-    if ((checkProps || nextVnode.checkProps) && dom) {
+    if (checkProps || nextVnode.checkProps) {
         diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
     }
     if (nextVnode.type === "select") {
@@ -2479,29 +2489,28 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     return dom;
 }
 
-function diffDomText(pastDom, dom, insertPoint) {
-    var dText = dom.innerText.trim();
-    var iText = insertPoint.innerText.trim();
-    var isTrue = false;
-
-    pastDom.forEach(function (v) {
-        if (v.innerText === dText || dText === iText) {
-            isTrue = !isTrue;
-            return false;
-        }
-    });
+function diffDomText(nextChild, insertPoint) {
+    var body = document.body;
+    var isTrue = false,
+        nextTest = "",
+        insertTest = "";
+    if ("innerText" in body) {
+        nextTest = nextChild._hostNode.innerText;
+        insertTest = insertPoint.innerText;
+    } else if ("textContent" in body) {
+        nextTest = nextChild._hostNode.textContent;
+        insertTest = insertPoint.textContent;
+    }
+    if (nextTest === insertTest) {
+        isTrue = !isTrue;
+    }
     return isTrue;
 }
 
 function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue) {
-    var insertDom = function insertDom(dom) {
-        return parentNode.insertBefore(dom, insertPoint);
-    };
     var lastChildren = parentNode.vchildren,
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
-        isTrue = false,
-        pastDom = [],
         dom = void 0;
 
     //如果旧数组长度为零, 直接添加
@@ -2573,19 +2582,8 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
-
             if (action[2]) {
-                // 如果有旧DOM记录
-                if (pastDom.length && insertPoint.innerText && dom.innerText) {
-                    isTrue = diffDomText(pastDom, dom, insertPoint);
-                    if (!isTrue) {
-                        insertDom(dom);
-                        isTrue = false;
-                    }
-                    // 没有旧DOM记录 (这里代码不能合并)
-                } else {
-                    insertDom(dom);
-                }
+                parentNode.insertBefore(dom, insertPoint);
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
             if (!nextChild._hostNode) {
@@ -2599,11 +2597,15 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             if (removed && !removed._disposed && !removeHits[j]) {
                 disposeVnode(removed);
             }
-
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
-            pastDom.push(dom);
-            parentNode.insertBefore(dom, insertPoint);
+            if (insertPoint && nextChild._hostNode) {
+                if (!diffDomText(nextChild, insertPoint)) {
+                    parentNode.insertBefore(dom, insertPoint);
+                }
+            } else {
+                parentNode.insertBefore(dom, insertPoint);
+            }
             insertPoint = dom;
         }
         insertPoint = insertPoint.nextSibling;

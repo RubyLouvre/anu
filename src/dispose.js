@@ -53,6 +53,7 @@ function disposeComponent(vnode) {
             order = updater._mountOrder,
             updaters = updateChains[order];
         updaters.splice(updaters.indexOf(updater), 1);
+        updater._disposed = true;
         if(!updaters.length){
             delete updateChains[order];
         }
