@@ -371,6 +371,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
             disposeVnode(el);
         });
         list.length = 0;
+        dom.vchildren = [];
     } else {
         if (lastProps[innerHTML]) {
             dom.vchildren = [];
