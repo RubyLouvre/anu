@@ -17,6 +17,9 @@
   "keywords": [
     "react-like",
     "react",
+    "jsx",
+    "vdom",
+    "virtual-dom",
     "react-compat",
     "performance",
     "ie8"
