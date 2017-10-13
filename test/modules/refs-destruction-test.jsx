@@ -58,18 +58,18 @@ describe("refs-destruction", function() {
   it('should remove refs when destroying the child', () => {
     var container = document.createElement('div');
     var testInstance = ReactDOM.render(<TestComponent />, container);
-    expect(ReactTestUtils.isDOMComponent(testInstance.refs.theInnerDiv)).toBe(
-      true,
+    expect(testInstance.refs.theInnerDiv.tagName).toBe(
+      "DIV",
     );
     expect(
       Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
         .length,
-    ).toEqual(1);
+    ).toBe(1);
     ReactDOM.render(<TestComponent destroy={true} />, container);
     expect(
       Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
         .length,
-    ).toEqual(0);
+    ).toBe(0);
   });
 
   it('should not error when destroying child with ref asynchronously', () => {

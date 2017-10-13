@@ -388,7 +388,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     Refs.detachRef(ref, nextRef, dom);
     return dom;
 }
-
+/*
 function diffDomText(nextChild, insertPoint) {
     const body = document.body;
     let isTrue = false,
@@ -405,7 +405,7 @@ function diffDomText(nextChild, insertPoint) {
         isTrue = !isTrue;
     }
     return isTrue;
-}
+}*/
 
 function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue) {
     let lastChildren = parentNode.vchildren,
@@ -426,9 +426,9 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
     }
     let maxLength = Math.max(nextLength, lastLength),
         insertPoint = parentNode.firstChild,
-        removeHits = {},
         fuzzyHits = {},
         actions = [],
+        removeHits = {},
         i = 0,
         hit,
         nextChild,
@@ -439,10 +439,14 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         while (i < maxLength) {
             nextChild = nextChildren[i];
             lastChild = lastChildren[i];
+            if(lastChild){
+                removeHits[i] = lastChild;
+            }
             if (nextChild && lastChild && isSameNode(lastChild, nextChild)) {
                 //  如果能直接找到，命名90％的情况
                 actions[i] = [lastChild, nextChild];
-                removeHits[i] = true;
+                lastChild._i = i;
+                delete removeHits[i];
             } else {
                 if (nextChild) {
                     hit = nextChild.type + (nextChild.key || "");
@@ -450,7 +454,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
                         var oldChild = fuzzyHits[hit].shift();
                         // 如果命中旧的节点，将旧的节点移动新节点的位置，向后移动
                         actions[i] = [oldChild, nextChild, "moveAfter"];
-                        removeHits[oldChild._i] = true;
+                        delete removeHits[oldChild._i];
                     }
                 }
                 if (lastChild) {
@@ -467,6 +471,11 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             }
             i++;
         }
+    }else{
+        return lastChildren.forEach(function(el){
+            removeDOMElement(el._hostNode);
+            disposeVnode(el);
+        });
     }
     for (let j = 0, n = actions.length; j < n; j++) {
         let action = actions[j];
@@ -476,50 +485,55 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             if (fuzzyHits[hit] && fuzzyHits[hit].length) {
                 lastChild = fuzzyHits[hit].shift();
                 action = [lastChild, nextChild, "moveAfter"];
+                delete removeHits[lastChild._i];
             }
+        }
+        var removed = removeHits[j];
+        if (removed) {
+            // react stack reconciliation 先移除后执行
+            delete removeHits[j];
+            dom = removed._hostNode;
+            insertPoint = dom.nextSibling;
+            removeDOMElement(dom);
+            disposeVnode(removed);
         }
         if (action) {
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
             if (action[2]) {
-                parentNode.insertBefore(dom, insertPoint);
-            }
-            insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
-            if (!nextChild._hostNode) {
-                nextChildren[j] = lastChild;
-            }
-            removeHits[lastChild._i] = true;
-        } else {
-            //为了兼容 react stack reconciliation的执行顺序，添加下面三行，
-            //在插入节点前，将原位置上节点对应的组件先移除
-            var removed = lastChildren[j];
-            if (removed && !removed._disposed && !removeHits[j]) {
-                disposeVnode(removed);
-            }
-            //如果找不到对应的旧节点，创建一个新节点放在这里
-            dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
-            if (insertPoint && nextChild._hostNode) {
-                if (!diffDomText(nextChild, insertPoint)) {
+                if(insertPoint == null){
+                    parentNode.appendChild(dom);
+                }else{
                     parentNode.insertBefore(dom, insertPoint);
                 }
-            } else {
+            }
+            insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
+        } else {           
+            //如果找不到对应的旧节点，创建一个新节点放在这里
+            dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
+          
+            if(insertPoint == null){
+                parentNode.appendChild(dom);
+            }else{
                 parentNode.insertBefore(dom, insertPoint);
             }
             insertPoint = dom;
         }
         insertPoint = insertPoint.nextSibling;
     }
-    //移除
-    lastChildren.forEach(function(el, i) {
-        if (!removeHits[i]) {
-            var node = el._hostNode;
-            if (node) {
+    for(let i in removeHits){
+        if(isFinite(i)){
+            let el = removeHits[i];
+            let node = el._hostNode;
+            if (node) { 
                 removeDOMElement(node);
             }
-            disposeVnode(el);
+            if(!el._disposed) {
+                disposeVnode(el);
+            }
         }
-    });
+    }
 }
 
 function isSameNode(a, b) {
