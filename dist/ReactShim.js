@@ -757,7 +757,7 @@ function emptyElement(node) {
     }
 }
 
-function removeDOMElement(node) {
+function removeElement(node) {
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -783,8 +783,14 @@ var versions = {
 var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
-
-function createDOMElement(vnode, vparent) {
+function insertElement(container, target, insertPoint) {
+    if (insertPoint) {
+        container.insertBefore(target, insertPoint);
+    } else {
+        container.appendChild(target);
+    }
+}
+function createElement$1(vnode, vparent) {
     var type = vnode.type;
     if (type === "#text") {
         //只重复利用文本节点
@@ -1659,7 +1665,7 @@ function disposeElement(vnode) {
         delete vnode.ref;
     }
     if (props[innerHTML]) {
-        removeDOMElement(vnode._hostNode);
+        removeElement(vnode._hostNode);
     } else {
         for (var i = 0, n = vchildren.length; i < n; i++) {
             disposeVnode(vchildren[i]);
@@ -2057,7 +2063,7 @@ function updateVnode(lastVnode) {
 
 function mountText(lastNode, vnode) {
     if (!lastNode || lastNode.nodeName !== vnode.type) {
-        lastNode = createDOMElement(vnode);
+        lastNode = createElement$1(vnode);
     }
     vnode._hostNode = lastNode;
     return lastNode;
@@ -2076,7 +2082,7 @@ function genMountElement(lastNode, vnode, vparent, type) {
     if (lastNode && toLowerCase(lastNode.nodeName) === type) {
         return lastNode;
     } else {
-        var dom = createDOMElement(vnode, vparent);
+        var dom = createElement$1(vnode, vparent);
         if (lastNode) {
             while (lastNode.firstChild) {
                 dom.appendChild(lastNode.firstChild);
@@ -2289,11 +2295,11 @@ function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentU
     } else {
         disposeVnode(lastVnode);
         var node = lastVnode._hostNode,
-            parent = node.parentNode,
-            next = node.nextSibling;
-        removeDOMElement(node);
+            parentNode = node.parentNode,
+            insertPoint = node.nextSibling;
+        removeElement(node);
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
-        parent.insertBefore(dom, next);
+        insertElement(parentNode, dom, insertPoint);
     }
     return dom;
 }
@@ -2418,7 +2424,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         }
     } else {
         return lastChildren.forEach(function (el) {
-            removeDOMElement(el._hostNode);
+            removeElement(el._hostNode);
             disposeVnode(el);
         });
     }
@@ -2439,30 +2445,25 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             delete removeHits[j];
             dom = removed._hostNode;
             insertPoint = dom.nextSibling;
-            removeDOMElement(dom);
+            removeElement(dom);
             disposeVnode(removed);
         }
         if (action) {
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
-            if (action[2]) {
-                if (insertPoint == null) {
-                    parentNode.appendChild(dom);
-                } else {
-                    parentNode.insertBefore(dom, insertPoint);
-                }
+            if (dom && action[2]) {
+                insertElement(parentNode, dom, insertPoint);
+            }
+            if (lastChild.vtype > 1 && !lastChild._instance) {
+                console.log("lastChild还没有实例化，立即实例化并更新");
+                mountVnode(null, lastChild, lastVnode, context, updateQueue);
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
         } else {
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
-
-            if (insertPoint == null) {
-                parentNode.appendChild(dom);
-            } else {
-                parentNode.insertBefore(dom, insertPoint);
-            }
+            insertElement(parentNode, dom, insertPoint);
             insertPoint = dom;
         }
         insertPoint = insertPoint.nextSibling;
@@ -2472,7 +2473,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             var el = removeHits[_i];
             var node = el._hostNode;
             if (node) {
-                removeDOMElement(node);
+                removeElement(node);
             }
             if (!el._disposed) {
                 disposeVnode(el);

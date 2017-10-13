@@ -64,7 +64,7 @@ export function emptyElement(node) {
     }
 }
 
-export function removeDOMElement(node) {
+export function removeElement(node) {
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -92,8 +92,14 @@ export var msie =
   versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
-
-export function createDOMElement(vnode, vparent) {
+export function insertElement(container, target, insertPoint){
+    if(insertPoint){
+        container.insertBefore(target, insertPoint);
+    }else{
+        container.appendChild(target);
+    }
+}
+export function createElement(vnode, vparent) {
     var type = vnode.type;
     if (type === "#text") {
     //只重复利用文本节点

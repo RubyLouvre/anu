@@ -80,6 +80,7 @@ module.exports = function (config) {
                 alias: {
                     redux: path.join(__dirname, "./test/redux"),
                     react: path.join(__dirname, "./dist/React"),
+                    "react-dom": path.join(__dirname, "./dist/React"),
                     "react-redux": path.join(__dirname, "./test/react-redux")
                 },
                 modulesDirectories: [__dirname, "node_modules"]

@@ -1,5 +1,5 @@
 import { options, noop, innerHTML } from "./util";
-import { removeDOMElement } from "./browser";
+import { removeElement } from "./browser";
 import {  updateChains } from "./Updater";
 
 export function disposeVnode(vnode) {
@@ -30,7 +30,7 @@ function disposeElement(vnode) {
         delete vnode.ref;
     }
     if (props[innerHTML]) {
-        removeDOMElement(vnode._hostNode);
+        removeElement(vnode._hostNode);
     } else {
         for (let i = 0, n = vchildren.length; i < n; i++) {
             disposeVnode(vchildren[i]);

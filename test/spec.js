@@ -71,5 +71,3 @@ require("./modules/ReactES6Class-test.jsx");
 
 
 
-
-

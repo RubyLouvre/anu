@@ -1,7 +1,7 @@
 import { noop, options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
-import { createDOMElement, emptyElement, removeDOMElement } from "./browser";
+import { createElement, insertElement, removeElement, emptyElement } from "./browser";
 import { flattenChildren } from "./createElement";
 import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
 import { instantiateComponent, updateChains } from "./Updater";
@@ -128,7 +128,7 @@ function updateVnode(lastVnode) {
 
 function mountText(lastNode, vnode) {
     if (!lastNode || lastNode.nodeName !== vnode.type) {
-        lastNode = createDOMElement(vnode);
+        lastNode = createElement(vnode);
     }
     vnode._hostNode = lastNode;
     return lastNode;
@@ -147,7 +147,7 @@ function genMountElement(lastNode, vnode, vparent, type) {
     if (lastNode && toLowerCase(lastNode.nodeName) === type) {
         return lastNode;
     } else {
-        let dom = createDOMElement(vnode, vparent);
+        let dom = createElement(vnode, vparent);
         if (lastNode) {
             while (lastNode.firstChild) {
                 dom.appendChild(lastNode.firstChild);
@@ -349,11 +349,11 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
     } else {
         disposeVnode(lastVnode);
         var node = lastVnode._hostNode,
-            parent = node.parentNode,
-            next = node.nextSibling;
-        removeDOMElement(node);
+            parentNode = node.parentNode,
+            insertPoint = node.nextSibling;
+        removeElement(node);
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
-        parent.insertBefore(dom, next);
+        insertElement(parentNode, dom,insertPoint);
     }
     return dom;
 }
@@ -473,7 +473,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         }
     }else{
         return lastChildren.forEach(function(el){
-            removeDOMElement(el._hostNode);
+            removeElement(el._hostNode);
             disposeVnode(el);
         });
     }
@@ -494,30 +494,25 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             delete removeHits[j];
             dom = removed._hostNode;
             insertPoint = dom.nextSibling;
-            removeDOMElement(dom);
+            removeElement(dom);
             disposeVnode(removed);
         }
         if (action) {
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
-            if (action[2]) {
-                if(insertPoint == null){
-                    parentNode.appendChild(dom);
-                }else{
-                    parentNode.insertBefore(dom, insertPoint);
-                }
+            if (dom && action[2]) {
+                insertElement(parentNode, dom,insertPoint);
+            }
+            if(lastChild.vtype > 1 && !lastChild._instance){
+                console.log("lastChild还没有实例化，立即实例化并更新");
+                mountVnode(null, lastChild, lastVnode, context, updateQueue);
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
         } else {           
             //如果找不到对应的旧节点，创建一个新节点放在这里
             dom = mountVnode(null, nextChild, lastVnode, context, updateQueue);
-          
-            if(insertPoint == null){
-                parentNode.appendChild(dom);
-            }else{
-                parentNode.insertBefore(dom, insertPoint);
-            }
+            insertElement(parentNode, dom,insertPoint);
             insertPoint = dom;
         }
         insertPoint = insertPoint.nextSibling;
@@ -527,7 +522,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             let el = removeHits[i];
             let node = el._hostNode;
             if (node) { 
-                removeDOMElement(node);
+                removeElement(node);
             }
             if(!el._disposed) {
                 disposeVnode(el);

@@ -1,4 +1,4 @@
-import {createDOMElement, win, fakeDoc,  DOMElement} from "src/browser";
+import {createElement, win, fakeDoc,  DOMElement} from "src/browser";
 function getNs(){
     console.log("不再使用");
 }
@@ -15,10 +15,10 @@ describe("browser", function () {
         expect(fakeDoc.createComment()).toA("boolean");
         expect(fakeDoc.textContent).toA("string");
     });
-    it("createDOMElement", function () {
-        var a = createDOMElement({type: "div"});
+    it("createElement", function () {
+        var a = createElement({type: "div"});
         expect(typeof a).toBe("object");
-        expect(createDOMElement({type: "span", ns: "xxx"}).nodeName.toLowerCase()).toBe("span");
+        expect(createElement({type: "span", ns: "xxx"}).nodeName.toLowerCase()).toBe("span");
 
     });
     it("getNs", function () {
