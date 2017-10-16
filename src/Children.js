@@ -3,9 +3,6 @@ import { cloneElement } from "./cloneElement";
 export const Children = {
     only(children) {
     //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (Array.isArray(children)) {
-            children = children[0];
-        }
         if (children && children.vtype) {
             return children;
         }
@@ -18,11 +15,10 @@ export const Children = {
         return _flattenChildren(children, false).length;
     },
     map(children, callback, context) {
-        if (children === null || children === void 0) {
+        if (children == null) {
             return children;
         }
-        
-        var ret = [];
+        let ret = [];
         _flattenChildren(children, "").forEach(function(old, index) {
             let el = callback.call(context, old, index);
             if (el === null) {

@@ -502,9 +502,10 @@ function cloneElement(vnode, props) {
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (Array.isArray(children)) {
+        /*  if (Array.isArray(children)) {
             children = children[0];
         }
+        */
         if (children && children.vtype) {
             return children;
         }
@@ -517,10 +518,9 @@ var Children = {
         return _flattenChildren(children, false).length;
     },
     map: function map(children, callback, context) {
-        if (children === null || children === void 0) {
+        if (children == null) {
             return children;
         }
-
         var ret = [];
         _flattenChildren(children, "").forEach(function (old, index) {
             var el = callback.call(context, old, index);
@@ -1637,7 +1637,6 @@ function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
-
     var instance = vnode._instance;
     if (instance) {
         disposeComponent(vnode, instance);
@@ -2118,7 +2117,6 @@ function renderByAnu(vnode, container, callback) {
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, updateQueue);
     } else {
-        updateQueue.isMainProcess = true;
         //如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
         rootNode = genVnodes(container, vnode, context, updateQueue);
     }
@@ -2175,8 +2173,7 @@ function mountText(lastNode, vnode) {
     if (!lastNode || lastNode.nodeName !== vnode.type) {
         lastNode = createElement$1(vnode);
     }
-    vnode._hostNode = lastNode;
-    return lastNode;
+    return vnode._hostNode = lastNode;
 }
 
 function updateText(lastVnode, nextVnode) {
