@@ -3,7 +3,7 @@ import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createElement, insertElement, removeElement, emptyElement } from "./browser";
 import { flattenChildren } from "./createElement";
-import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
+import { processFormElement } from "./ControlledComponent";
 import { instantiateComponent } from "./Updater";
 import { drainQueue } from "./scheduler";
 import { Refs, pendingRefs } from "./Refs";
