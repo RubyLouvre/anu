@@ -73,7 +73,6 @@ function renderByAnu(vnode, container, callback, context = {}) {
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, updateQueue);
     } else {
-        updateQueue.isMainProcess = true;
         //如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
         rootNode = genVnodes(container, vnode, context, updateQueue);
     }
@@ -130,8 +129,7 @@ function mountText(lastNode, vnode) {
     if (!lastNode || lastNode.nodeName !== vnode.type) {
         lastNode = createElement(vnode);
     }
-    vnode._hostNode = lastNode;
-    return lastNode;
+    return vnode._hostNode = lastNode;
 }
 
 function updateText(lastVnode, nextVnode) {
