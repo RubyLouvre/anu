@@ -1483,21 +1483,14 @@ function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
-    disposeStrategy[vnode.vtype](vnode);
-    vnode._disposed = true;
-}
-var disposeStrategy = {
-    0: noop,
-    1: disposeElement,
-    2: disposeComponent,
-    4: disposeStateless
-};
-function disposeStateless(vnode) {
+
     var instance = vnode._instance;
     if (instance) {
-        disposeVnode(instance.updater.rendered);
-        vnode._instance = null;
+        disposeComponent(vnode, instance);
+    } else if (vnode.vtype === 1) {
+        disposeElement(vnode);
     }
+    vnode._disposed = true;
 }
 
 function disposeElement(vnode) {
@@ -1517,22 +1510,19 @@ function disposeElement(vnode) {
     }
 }
 
-function disposeComponent(vnode) {
-    var instance = vnode._instance;
-    if (instance) {
-        options.beforeUnmount(instance);
-        instance.setState = instance.forceUpdate = noop;
-        if (vnode.ref) {
-            vnode.ref(null);
-        }
-        if (instance.componentWillUnmount) {
-            instance.componentWillUnmount();
-        }
-        var updater = instance.updater;
-        //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-        disposeVnode(updater.rendered);
-        updater._renderInNextCycle = vnode._instance = instance.updater = null;
+function disposeComponent(vnode, instance) {
+    options.beforeUnmount(instance);
+    instance.setState = instance.forceUpdate = noop;
+    if (vnode.ref) {
+        vnode.ref(null);
     }
+    if (instance.componentWillUnmount) {
+        instance.componentWillUnmount();
+    }
+    var updater = instance.updater;
+    //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
+    disposeVnode(updater.rendered);
+    updater._renderInNextCycle = vnode._instance = instance.updater = null;
 }
 
 /**
