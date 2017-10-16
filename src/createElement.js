@@ -1,4 +1,4 @@
-import {EMPTY_CHILDREN, typeNumber} from "./util";
+import {emptyArray, typeNumber} from "./util";
 import {Refs} from "./Refs";
 
 export var CurrentOwner = {
@@ -103,12 +103,12 @@ Vnode.prototype = {
 };
 
 export function flattenChildren(vnode) {
-    let arr = EMPTY_CHILDREN,
+    let arr = emptyArray,
         c = vnode.props.children;
     if (c !== null) {
         arr = _flattenChildren(c, true);
         if (arr.length === 0) {
-            arr = EMPTY_CHILDREN;
+            arr = emptyArray;
         }
     }
     return (vnode.vchildren = arr);

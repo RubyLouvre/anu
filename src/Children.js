@@ -55,7 +55,7 @@ export const Children = {
         });
     }
 };
-
+var rthimNumer = /\d+\$/;
 function computeKey(old, el, index){
     let curKey = el && el.key != null ? escapeKey(el.key) : null;
     let oldKey = old && old.key != null ? escapeKey(old.key) : null;
@@ -76,7 +76,7 @@ function computeKey(old, el, index){
             key = oldFix || "." + index;
         }
     }
-    return key.replace(/\d+\$/, "$");
+    return key.replace(rthimNumer, "$");
 }
 function escapeKey(key){
     return  String(key).replace(/[=:]/g, escaperFn);

@@ -1,4 +1,4 @@
-import { isFn, options, deprecatedWarn } from "./util";
+import { isFn, options, deprecatedWarn,emptyObject } from "./util";
 import { CurrentOwner } from "./createElement";
 
 /**
@@ -27,7 +27,7 @@ Component.prototype = {
     },
     isMounted() {
         deprecatedWarn("isMounted");
-        return !!(this.updater || {})._hostNode;
+        return !!(this.updater || emptyObject)._hostNode;
     },
     forceUpdate(cb) {
         debounceSetState(this.updater, true, cb);
@@ -53,7 +53,6 @@ function setStateImpl(updater, state, cb) {
     if (isFn(cb)) {
         updater._pendingCallbacks.push(cb);
     }
-    // let hasDOM = updater._hostNode;
     if (state === true) {
         //forceUpdate
         updater._forceUpdate = true;

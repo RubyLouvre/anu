@@ -11,8 +11,8 @@
 }(this, (function () {
 
 var innerHTML = "dangerouslySetInnerHTML";
-var EMPTY_CHILDREN = [];
-
+var emptyArray = [];
+var emptyObject = {};
 function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         //eslint-disable-next-line
@@ -357,12 +357,12 @@ Vnode.prototype = {
 };
 
 function flattenChildren(vnode) {
-    var arr = EMPTY_CHILDREN,
+    var arr = emptyArray,
         c = vnode.props.children;
     if (c !== null) {
         arr = _flattenChildren(c, true);
         if (arr.length === 0) {
-            arr = EMPTY_CHILDREN;
+            arr = emptyArray;
         }
     }
     return vnode.vchildren = arr;
@@ -495,7 +495,7 @@ Component.prototype = {
     },
     isMounted: function isMounted() {
         deprecatedWarn("isMounted");
-        return !!(this.updater || {})._hostNode;
+        return !!(this.updater || emptyObject)._hostNode;
     },
     forceUpdate: function forceUpdate(cb) {
         debounceSetState(this.updater, true, cb);
@@ -521,7 +521,6 @@ function setStateImpl(updater, state, cb) {
     if (isFn(cb)) {
         updater._pendingCallbacks.push(cb);
     }
-    // let hasDOM = updater._hostNode;
     if (state === true) {
         //forceUpdate
         updater._forceUpdate = true;
@@ -651,7 +650,7 @@ var Children = {
         });
     }
 };
-
+var rthimNumer = /\d+\$/;
 function computeKey(old, el, index) {
     var curKey = el && el.key != null ? escapeKey(el.key) : null;
     var oldKey = old && old.key != null ? escapeKey(old.key) : null;
@@ -672,7 +671,7 @@ function computeKey(old, el, index) {
             key = oldFix || "." + index;
         }
     }
-    return key.replace(/\d+\$/, "$");
+    return key.replace(rthimNumer, "$");
 }
 function escapeKey(key) {
     return String(key).replace(/[=:]/g, escaperFn);
@@ -1221,7 +1220,6 @@ var isSpecialAttr = {
     dangerouslySetInnerHTML: 1
 };
 
-var emptyStyle = {};
 var svgCache = {};
 var strategyCache = {};
 /**
@@ -1398,7 +1396,7 @@ var actionStrategy = {
     innerHTML: noop,
     children: noop,
     style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
+        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
@@ -2298,10 +2296,8 @@ function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentU
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     var lastProps = lastVnode.props,
         dom = lastVnode._hostNode,
-        ref = lastVnode.ref,
         checkProps = lastVnode.checkProps;
-    var nextProps = nextVnode.props,
-        nextRef = nextVnode.ref;
+    var nextProps = nextVnode.props;
 
     if (!dom) {
         console.log("updateElement没有实例化");
@@ -2338,14 +2334,6 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         dom = void 0;
-    var a = lastChildren.every(function (el) {
-        return el._hostNode;
-    });
-    if (!a) {
-        console.log(lastChildren.map(function (el) {
-            return el._hostNode || el._instance || el;
-        }), "有元素没有实例化");
-    }
     parentNode.vchildren = nextChildren;
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {

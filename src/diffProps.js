@@ -1,7 +1,7 @@
 import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { toLowerCase, noop, typeNumber } from "./util";
+import { toLowerCase, noop, typeNumber,emptyObject } from "./util";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -17,7 +17,6 @@ var isSpecialAttr = {
     dangerouslySetInnerHTML: 1
 };
 
-var emptyStyle = {};
 var svgCache = {};
 var strategyCache = {};
 /**
@@ -208,7 +207,7 @@ export var actionStrategy = {
     innerHTML: noop,
     children: noop,
     style: function (dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
+        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     svgClass: function (dom, name, val) {
         if (!val) {

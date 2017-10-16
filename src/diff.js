@@ -363,8 +363,8 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
 }
 
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
-    let { props: lastProps, _hostNode: dom, ref, checkProps } = lastVnode;
-    let { props: nextProps, ref: nextRef } = nextVnode;
+    let { props: lastProps, _hostNode: dom, checkProps } = lastVnode;
+    let { props: nextProps } = nextVnode;
     if (!dom) {
         console.log("updateElement没有实例化");
         return false;
@@ -400,15 +400,6 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         dom;
-    var a = lastChildren.every(function(el){
-        return el._hostNode;
-    });
-    if(!a){
-        console.log(lastChildren.map(function(el){
-            return el._hostNode || el._instance || el
-            ;
-        }),"有元素没有实例化");
-    }
     parentNode.vchildren = nextChildren;
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
