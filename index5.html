@@ -29,6 +29,7 @@
    
      
       var container = document.getElementById("example")
+      var div = container
      // var PropTypes = React.PropTypes
       if(!window.ReactDOM){
         window.ReactDOM = window.React
@@ -40,34 +41,63 @@
               }
           }
       }
-      class B extends React.Component {
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            value: ["aaa", "ccc"]
+          };
+        }
+  
+        onChange(e) {
+          var values = [];
+          var elems = e.target.getElementsByTagName("option");
+          for (var i = 0, el; (el = elems[i++]); ) {
+            if (el.selected) {
+              if (el.getAttribute("value") != null) {
+                values.push(el.getAttribute("value"));
+              } else {
+                values.push(el.text);
+              }
+            }
+          }
+          this.setState({
+            values: values
+          });
+        }
         render() {
-          return <a href="#">XXX</a>
+          return (
+            <select
+              value={this.state.value}
+              multiple="true"
+              onChange={this.onChange.bind(this)}
+            >
+              <optgroup>
+                <option ref="a">aaa</option>
+                <option ref="b">bbb</option>
+              </optgroup>
+              <optgroup>
+                <option ref="c">ccc</option>
+                <option ref="d">ddd</option>
+              </optgroup>
+            </select>
+          );
         }
       }
   
-      class C extends React.Component {
-        render() {
-          return <strong>YYY</strong>
-        }
-      }
-
-      class A extends React.Component {
-        constructor(props){
-          super(props)
-          this.state = {
-            a: 1
-          }
-        }
-        render() {
-          return this.state.a ? <B / >  : <C />
-        }
-      }
-      var s = ReactDOM.render(<A/>, container);
-      setTimeout(function(){
-       s.setState({a: 0})
-      },3000)
-     
+      var s = React.render(<App />, div);
+    expect(s.refs.a.selected).toBe(true);
+    expect(s.refs.b.selected).toBe(false);
+    expect(s.refs.c.selected).toBe(true);
+    expect(s.refs.d.selected).toBe(false);
+    s.setState({
+      value: ["bbb", "ddd"]
+    });
+   
+    expect(s.refs.a.selected).toBe(false);
+    expect(s.refs.b.selected).toBe(true);
+    expect(s.refs.c.selected).toBe(false);
+    expect(s.refs.d.selected).toBe(true);
     </script>
   
 </body>

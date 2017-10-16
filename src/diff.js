@@ -158,7 +158,8 @@ function genMountElement(lastNode, vnode, vparent, type) {
 const formElements = {
     select: 1,
     textarea: 1,
-    input: 1
+    input: 1,
+    option: 1
 };
 
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
@@ -169,18 +170,48 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     let method = lastNode ? alignChildren : mountChildren;
     dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
-    if (vnode.checkProps && dom) {
+    if (vnode.checkProps) {
         diffProps(dom, emptyObject, props, vnode);
-    }
-    if (ref) {
-        pendingRefs.push(ref.bind(true, dom));
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
-
+    if (ref) {
+        pendingRefs.push(ref.bind(true, dom));
+    }
     return dom;
 }
+
+function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
+    let { props: lastProps, _hostNode: dom, checkProps, type } = lastVnode;
+    let { props: nextProps, checkProps: nextCheckProps } = nextVnode;
+    if (!dom) {
+        console.error("updateElement没有实例化");
+        return false;
+    }
+    nextVnode._hostNode = dom;
+    if (nextProps[innerHTML]) {
+        var list = lastVnode.vchildren || [];
+        list.forEach(function(el) {
+            disposeVnode(el);
+        });
+        list.length = 0;
+    } else {
+        if (lastProps[innerHTML]) {
+            dom.vchildren = [];
+        }
+        diffChildren(lastVnode,  flattenChildren(nextVnode), dom, context, updateQueue);
+    }
+    if (checkProps || nextCheckProps) {
+        diffProps(dom, lastProps, nextProps, nextVnode);
+    }
+    if (formElements[type]) {
+        processFormElement(nextVnode, dom, nextProps);
+    }
+    Refs.detachRef(lastVnode, nextVnode, dom);
+    return dom;
+}
+
 
 //将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(parentNode, children, vparent, context, updateQueue) {
@@ -357,37 +388,6 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
     return dom;
 }
 
-function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
-    let { props: lastProps, _hostNode: dom, checkProps } = lastVnode;
-    let { props: nextProps } = nextVnode;
-    if (!dom) {
-        console.log("updateElement没有实例化");
-        return false;
-    }
-    nextVnode._hostNode = dom;
-    if (nextProps[innerHTML]) {
-        var list = lastVnode.vchildren || [];
-        list.forEach(function(el) {
-            disposeVnode(el);
-        });
-        list.length = 0;
-        dom.vchildren = [];
-    } else {
-        if (lastProps[innerHTML]) {
-            dom.vchildren = [];
-        }
-        diffChildren(lastVnode,  flattenChildren(nextVnode), dom, context, updateQueue);
-    }
-
-    if (checkProps || nextVnode.checkProps) {
-        diffProps(dom, lastProps, nextProps, nextVnode);
-    }
-    if (nextVnode.type === "select") {
-        postUpdateSelectedOptions(nextVnode);
-    }
-    Refs.detachRef(lastVnode, nextVnode, dom);
-    return dom;
-}
 
 function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue) {
 

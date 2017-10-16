@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
 
-  <!--<script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>-->
+  <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -38,35 +38,11 @@
                     }
                 }
             }
-
+var a = React.Children.only(<span />)
+console.log(a)
         
-            var TestComponent = class extends React.Component {
-              render() {
-                return (
-                  <div>
-                    {this.props.destroy
-                      ? null
-                      : <div ref="theInnerDiv">
-                          Lets try to destroy this.
-                        </div>}
-                  </div>
-                );
-              }
-            };
-            var container = document.createElement('div');
-    var testInstance = ReactDOM.render(<TestComponent />, container);
-    expect(testInstance.refs.theInnerDiv.tagName).toBe(
-      "div",
-    );
-    expect(
-      Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
-        .length,
-    ).toBe(1);
-    ReactDOM.render(<TestComponent destroy={true} />, container);
-    expect(
-      Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
-        .length,
-    ).toBe(0);
+            
+
           </script>
     
 </body>

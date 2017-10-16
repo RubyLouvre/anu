@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width">   
    <!-- <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
     
-   <script type='text/javascript' src="./dist/React.js"></script>
+   <!---<script type='text/javascript' src="./dist/React.js"></script>-->
   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
    
  
-   <!--<script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
+  <script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>
 
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -43,38 +43,25 @@
               }
           }
       }
-      class App extends React.Component {
+
+    class Option extends React.Component {
         constructor(props) {
             super(props);
-            this.state = {
-            };
-
-        }
-
-        render() {
-            return <div ref='parent' className='parent'>
-                {this.props.a ?  <Child ref={ (a)=>{ console.log(a)} } />: <span>333</span> }
-            </div>;
-        }
-    }
-    class Child extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {};
-        }
-        componentWillUnmount(){
-            console.log("child 移除")
         }
         render() {
-            return <div className='child'>Child</div>;
+            return <option value={this.props.value || this.props.text}>{this.props.text}</option>;
         }
     }
      
       
-        ReactDOM.render(<App a={1} />,container)
-        setTimeout(function(){
-            ReactDOM.render(  <App a={0} />, container);
-        }, 3000)
+        ReactDOM.render(<select value={222}>
+            <option value={111}>aaa</option>
+            <option value={"222"}>xxx</option>
+            <option value={222}>bbb</option>
+            <option value={333}>ccc</option>
+            </select>
+            ,container)
+      
     </script>
   
 </body>

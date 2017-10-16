@@ -14,6 +14,7 @@ export function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
+        
         if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
             console.warn(`你为${vnode.type}[type=${domType}]元素指定了${duplexProp}属性，
@@ -22,8 +23,12 @@ export function processFormElement(vnode, dom, props) {
             dom[eventName] = data[3];
         }
         if (duplexType === 3) {
-            postUpdateSelectedOptions(vnode);
+            postUpdateSelectedOptions(vnode, dom);
         }
+    }else {
+        dom.duplexValue = props.value === undefined ? 
+            typeNumber( props.children ) > 4 ? dom.text:  props.children
+            : props.value;
     }
 }
 
@@ -35,6 +40,7 @@ function hasOtherControllProperty(props, keys) {
     }
 }
 var duplexMap = {
+    option: 0,
     color: 1,
     date: 1,
     datetime: 1,
@@ -72,7 +78,6 @@ function preventUserChange(e) {
     var value = target._lastValue;
     var options = target.options;
     if (target.multiple) {
-
         updateOptionsMore(options, options.length, value);
     } else {
         updateOptionsOne(options, options.length, value);
@@ -113,17 +118,16 @@ var duplexData = {
     ]
 };
 
-export function postUpdateSelectedOptions(vnode) {
+export function postUpdateSelectedOptions(vnode, selectElement) {
     var props = vnode.props,
         multiple = !!props.multiple,
+        options = selectElement.options,
         value =
             typeNumber(props.value) > 1
                 ? props.value
                 : typeNumber(props.defaultValue) > 1
                     ? props.defaultValue
-                    : multiple ? [] : "",
-        options = [];
-    collectOptions(vnode, options);
+                    : multiple ? [] : "";
     if (multiple) {
         updateOptionsMore(options, options.length, value);
     } else {
@@ -131,36 +135,24 @@ export function postUpdateSelectedOptions(vnode) {
     }
 }
 
-/**
- * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
- *
- * @param {VNode} vnode
- * @param {Array} ret
- */
-function collectOptions(vnode, ret) {
-    var arr = vnode.vchildren;//option.children不一定存在
-    for (var i = 0, n = arr.length; i < n; i++) {
-        var el = arr[i];
-        if (el.type === "option") {
-            ret.push(el);
-        } else if (el.type === "optgroup") {
-            collectOptions(el, ret);
-        }
-    }
-}
+
 
 function updateOptionsOne(options, n, propValue) {
-    var selectedValue = "" + propValue;
+    var stringValues = {};
     for (let i = 0; i < n; i++) {
         let option = options[i];
-        let value = getOptionValue(option, option.props);
-        if (value === selectedValue) {
-            getOptionSelected(option, true);
-            return;
+        let value = option.duplexValue;
+        if (value === propValue) { //精确匹配
+            return setOptionSelected(option, true);
         }
+        stringValues[value] = option;
     }
-    if (n) {
-        getOptionSelected(options[0], true);
+    var match = stringValues[propValue];
+    if(match){//字符串模糊匹配
+        return setOptionSelected(match, true);
+    }
+    if (n) {//选中第一个
+        setOptionSelected(options[0], true);
     }
 }
 
@@ -176,32 +168,12 @@ function updateOptionsMore(options, n, propValue) {
     }
     for (let i = 0; i < n; i++) {
         let option = options[i];
-        let value = getOptionValue(option, option.props);
+        let value = option.duplexValue;
         let selected = selectedValue.hasOwnProperty("&" + value);
-        getOptionSelected(option, selected);
+        setOptionSelected(option, selected);
     }
 }
 
-function getOptionValue(option, props) {
-    if (!props) {
-        return getDOMOptionValue(option);
-    }
-    //这里在1.1.1改动过， props.value === undefined ? props.children[0].text : props.value;
-    return props.value === undefined ? props.children : props.value;
-}
-
-function getDOMOptionValue(node) {
-    if (node.hasAttribute && node.hasAttribute("value")) {
-        return node.getAttribute("value");
-    }
-    var attr = node.getAttributeNode("value");
-    if (attr && attr.specified) {
-        return attr.value;
-    }
-    return node.innerHTML.trim();
-}
-
-function getOptionSelected(option, selected) {
-    var dom = option._hostNode || option;
+function setOptionSelected(dom, selected) {
     dom.selected = selected;
 }

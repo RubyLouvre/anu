@@ -594,10 +594,6 @@ function cloneElement(vnode, props) {
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        /*  if (Array.isArray(children)) {
-            children = children[0];
-        }
-        */
         if (children && children.vtype) {
             return children;
         }
@@ -1538,14 +1534,17 @@ function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
+
         if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
             console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\n      \u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u6765\u63A7\u5236" + duplexProp + "\u5C5E\u6027\u7684\u53D8\u5316\n      \u90A3\u4E48\u5B83\u5373\u4E3A\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
             dom[eventName] = data[3];
         }
         if (duplexType === 3) {
-            postUpdateSelectedOptions(vnode);
+            postUpdateSelectedOptions(vnode, dom);
         }
+    } else {
+        dom.duplexValue = props.value === undefined ? typeNumber(props.children) > 4 ? dom.text : props.children : props.value;
     }
 }
 
@@ -1557,6 +1556,7 @@ function hasOtherControllProperty(props, keys) {
     }
 }
 var duplexMap = {
+    option: 0,
     color: 1,
     date: 1,
     datetime: 1,
@@ -1594,7 +1594,6 @@ function preventUserChange(e) {
     var value = target._lastValue;
     var options$$1 = target.options;
     if (target.multiple) {
-
         updateOptionsMore(options$$1, options$$1.length, value);
     } else {
         updateOptionsOne(options$$1, options$$1.length, value);
@@ -1620,12 +1619,11 @@ var duplexData = {
     }, "onchange", preventUserChange]
 };
 
-function postUpdateSelectedOptions(vnode) {
+function postUpdateSelectedOptions(vnode, selectElement) {
     var props = vnode.props,
         multiple = !!props.multiple,
-        value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "",
-        options$$1 = [];
-    collectOptions(vnode, options$$1);
+        options$$1 = selectElement.options,
+        value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "";
     if (multiple) {
         updateOptionsMore(options$$1, options$$1.length, value);
     } else {
@@ -1633,36 +1631,25 @@ function postUpdateSelectedOptions(vnode) {
     }
 }
 
-/**
- * 收集虚拟DOM select下面的options元素，如果是真实DOM直接用select.options
- *
- * @param {VNode} vnode
- * @param {Array} ret
- */
-function collectOptions(vnode, ret) {
-    var arr = vnode.vchildren; //option.children不一定存在
-    for (var i = 0, n = arr.length; i < n; i++) {
-        var el = arr[i];
-        if (el.type === "option") {
-            ret.push(el);
-        } else if (el.type === "optgroup") {
-            collectOptions(el, ret);
-        }
-    }
-}
-
 function updateOptionsOne(options$$1, n, propValue) {
-    var selectedValue = "" + propValue;
+    var stringValues = {};
     for (var i = 0; i < n; i++) {
         var option = options$$1[i];
-        var value = getOptionValue(option, option.props);
-        if (value === selectedValue) {
-            getOptionSelected(option, true);
-            return;
+        var value = option.duplexValue;
+        if (value === propValue) {
+            //精确匹配
+            return setOptionSelected(option, true);
         }
+        stringValues[value] = option;
+    }
+    var match = stringValues[propValue];
+    if (match) {
+        //字符串模糊匹配
+        return setOptionSelected(match, true);
     }
     if (n) {
-        getOptionSelected(options$$1[0], true);
+        //选中第一个
+        setOptionSelected(options$$1[0], true);
     }
 }
 
@@ -1678,33 +1665,13 @@ function updateOptionsMore(options$$1, n, propValue) {
     }
     for (var _i = 0; _i < n; _i++) {
         var option = options$$1[_i];
-        var value = getOptionValue(option, option.props);
+        var value = option.duplexValue;
         var selected = selectedValue.hasOwnProperty("&" + value);
-        getOptionSelected(option, selected);
+        setOptionSelected(option, selected);
     }
 }
 
-function getOptionValue(option, props) {
-    if (!props) {
-        return getDOMOptionValue(option);
-    }
-    //这里在1.1.1改动过， props.value === undefined ? props.children[0].text : props.value;
-    return props.value === undefined ? props.children : props.value;
-}
-
-function getDOMOptionValue(node) {
-    if (node.hasAttribute && node.hasAttribute("value")) {
-        return node.getAttribute("value");
-    }
-    var attr = node.getAttributeNode("value");
-    if (attr && attr.specified) {
-        return attr.value;
-    }
-    return node.innerHTML.trim();
-}
-
-function getOptionSelected(option, selected) {
-    var dom = option._hostNode || option;
+function setOptionSelected(dom, selected) {
     dom.selected = selected;
 }
 
@@ -2044,7 +2011,8 @@ function genMountElement(lastNode, vnode, vparent, type) {
 var formElements = {
     select: 1,
     textarea: 1,
-    input: 1
+    input: 1,
+    option: 1
 };
 
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
@@ -2058,16 +2026,50 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     var method = lastNode ? alignChildren : mountChildren;
     dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
-    if (vnode.checkProps && dom) {
+    if (vnode.checkProps) {
         diffProps(dom, emptyObject, props, vnode);
-    }
-    if (ref) {
-        pendingRefs.push(ref.bind(true, dom));
     }
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
+    if (ref) {
+        pendingRefs.push(ref.bind(true, dom));
+    }
+    return dom;
+}
 
+function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
+    var lastProps = lastVnode.props,
+        dom = lastVnode._hostNode,
+        checkProps = lastVnode.checkProps,
+        type = lastVnode.type;
+    var nextProps = nextVnode.props,
+        nextCheckProps = nextVnode.checkProps;
+
+    if (!dom) {
+        console.error("updateElement没有实例化");
+        return false;
+    }
+    nextVnode._hostNode = dom;
+    if (nextProps[innerHTML]) {
+        var list = lastVnode.vchildren || [];
+        list.forEach(function (el) {
+            disposeVnode(el);
+        });
+        list.length = 0;
+    } else {
+        if (lastProps[innerHTML]) {
+            dom.vchildren = [];
+        }
+        diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
+    }
+    if (checkProps || nextCheckProps) {
+        diffProps(dom, lastProps, nextProps, nextVnode);
+    }
+    if (formElements[type]) {
+        processFormElement(nextVnode, dom, nextProps);
+    }
+    Refs.detachRef(lastVnode, nextVnode, dom);
     return dom;
 }
 
@@ -2252,41 +2254,6 @@ function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentU
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
         insertElement(parentNode, dom, insertPoint);
     }
-    return dom;
-}
-
-function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
-    var lastProps = lastVnode.props,
-        dom = lastVnode._hostNode,
-        checkProps = lastVnode.checkProps;
-    var nextProps = nextVnode.props;
-
-    if (!dom) {
-        console.log("updateElement没有实例化");
-        return false;
-    }
-    nextVnode._hostNode = dom;
-    if (nextProps[innerHTML]) {
-        var list = lastVnode.vchildren || [];
-        list.forEach(function (el) {
-            disposeVnode(el);
-        });
-        list.length = 0;
-        dom.vchildren = [];
-    } else {
-        if (lastProps[innerHTML]) {
-            dom.vchildren = [];
-        }
-        diffChildren(lastVnode, flattenChildren(nextVnode), dom, context, updateQueue);
-    }
-
-    if (checkProps || nextVnode.checkProps) {
-        diffProps(dom, lastProps, nextProps, nextVnode);
-    }
-    if (nextVnode.type === "select") {
-        postUpdateSelectedOptions(nextVnode);
-    }
-    Refs.detachRef(lastVnode, nextVnode, dom);
     return dom;
 }
 
