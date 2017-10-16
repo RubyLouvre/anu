@@ -40,36 +40,33 @@
               }
           }
       }
+      class B extends React.Component {
+        render() {
+          return <a href="#">XXX</a>
+        }
+      }
+  
+      class C extends React.Component {
+        render() {
+          return <strong>YYY</strong>
+        }
+      }
 
-      class LetterInner extends React.Component {
+      class A extends React.Component {
+        constructor(props){
+          super(props)
+          this.state = {
+            a: 1
+          }
+        }
         render() {
-          return <div className={this.props.char}>{this.props.char}</div>;
+          return this.state.a ? <B / >  : <C />
         }
       }
-  
-      class Letter extends React.Component {
-        render() {
-          return <LetterInner char={this.props.char} />;
-        }
-        shouldComponentUpdate() {
-          return false;
-        }
-      }
-  
-      class Letters extends React.Component {
-        render() {
-          const letters = this.props.letters.split("");
-          return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
-        }
-      }
-  
-      //var container = document.createElement("div");
-  
-      // Two random strings -- some additions, some removals, some moves
-      ReactDOM.render(<Letters letters="8ABC4D5EFGH" />, container);
-      expect(container.textContent).toBe("8ABC4D5EFGH");
-      ReactDOM.render(<Letters letters="GFE9DBACH" />, container);
-      expect(container.textContent).toBe("GFE9DBACH");
+      var s = ReactDOM.render(<A/>, container);
+      setTimeout(function(){
+       s.setState({a: 0})
+      },3000)
      
     </script>
   

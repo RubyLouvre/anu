@@ -658,7 +658,7 @@ function removeElement(node) {
         } else {
             emptyElement(node);
         }
-        node.__events = null;
+        node.vchildren = node.__events = null;
     } else if (node.nodeType === 3) {
         //只回收文本节点
         recyclables["#text"].push(node);
