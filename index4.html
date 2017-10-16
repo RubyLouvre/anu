@@ -4,14 +4,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./lib/shallowCompare.js"></script>
+   <!-- <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
     
    <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   
  
-   <script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>
+   <!--<script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>-->
+
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
   
 </head>
@@ -19,14 +21,7 @@
     
         <div>开发者工具</div>
         <pre>
-                "static render",
-                "static did mount",
-                "instance 111",
-                "static will update",
-                "static render",
-                "null 111",
-                "static did update",
-                "instance 222",
+            
         </pre>
         <div id='example'></div>
     
@@ -38,7 +33,9 @@
      // var PropTypes = React.PropTypes
       if(!window.ReactDOM){
         window.ReactDOM = window.React
+       
       }
+      var PropTypes = React.PropTypes
       var expect = function(a) {
           return {
               toBe: function(b) {
@@ -46,68 +43,38 @@
               }
           }
       }
+      class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+            };
 
-      var list = [];
-      class Static extends React.Component {
-          componentDidMount(){
-              list.push("static did mount");
-          }
-          componentWillUpdate(){
-              list.push("static will update");
-          }
-          componentDidUpdate(){
-              list.push("static did update");
-          }
-          render() {
-              list.push("static render");
-              return <div>{this.props.children}</div>;
-          }
-      }
+        }
 
-      class Component extends React.Component {
-          render() {
-              if (this.props.flipped) {
-                  return (
-                      <div>
-                          <Static ref={function(b){
-                              list.push(b === null ? "null 222":"instance 222");
-                          }}>
-                         B
-                          </Static>
-                    
-                      </div>
-                  );
-              } else {
-                  return (
-                      <div>
-                          <Static ref={function(a){
-                              list.push(a === null ? "null 111":"instance 111");
-                          }} >
-                          A
-                          </Static>
-                      </div>
-                  );
-              }
-          }
-      }
-
-      var container = document.createElement("div");
-      ReactDOM.render(<Component flipped={false} />, container);
- 
-      ReactDOM.render(<Component flipped={true} />, container);
-     /* expect(list).toEqual([
-          "static render",
-          "static did mount",
-          "instance 111",
-          "static will update",
-          "static render",
-          "null 111",
-          "static did update",
-          "instance 222",
-      ]);*/
-      console.log(list.join("\n"))
-
-
+        render() {
+            return <div ref='parent' className='parent'>
+                {this.props.a ?  <Child ref={ (a)=>{ console.log(a)} } />: <span>333</span> }
+            </div>;
+        }
+    }
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {};
+        }
+        componentWillUnmount(){
+            console.log("child 移除")
+        }
+        render() {
+            return <div className='child'>Child</div>;
+        }
+    }
+     
+      
+        ReactDOM.render(<App a={1} />,container)
+        setTimeout(function(){
+            ReactDOM.render(  <App a={0} />, container);
+        }, 3000)
     </script>
   
 </body>

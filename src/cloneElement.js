@@ -16,7 +16,7 @@ export function cloneElement(vnode, props) {
             configs.ref = props.ref;
             owner = lastOwn;
         }else{
-            configs.ref = vnode.ref;
+            configs.ref = vnode.userRef;
         }
     }else{
         configs = old;

@@ -49,7 +49,7 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function(queue) {
     if (!queue) {
-        queue = dirtyComponents;
+        queue = clearArray(dirtyComponents);
         if (queue.length) {
             queue.sort(mountSorter);
         }

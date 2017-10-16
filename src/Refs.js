@@ -15,19 +15,15 @@ export var Refs = {
             fn();
         });
     },
-    detachRef:function(ref, nextRef, dom) {
-        ref = ref || getDOMNode;
-        nextRef = nextRef || getDOMNode;   
-        if(ref === nextRef) {
+    detachRef:function(lastVnode, nextVnode, dom) {
+        if(lastVnode.userRef === nextVnode.userRef) {
             return;
         }    
-        if(ref){
-            if (ref.string && nextRef.string ? ref.string !== nextRef.string: ref !== getDOMNode ) {
-                ref(null);
-            }
+        if(lastVnode.ref){
+            lastVnode.ref(null);
         }
-        if(dom && nextRef !== getDOMNode){
-            nextRef(dom);
+        if(dom && nextVnode.ref){
+            nextVnode.ref(dom);
         }
     },
     createInstanceRef: function(updater, ref){

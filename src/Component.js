@@ -1,4 +1,4 @@
-import { extend, isFn, options, noop, deprecatedWarn } from "./util";
+import { isFn, options, deprecatedWarn } from "./util";
 import { CurrentOwner } from "./createElement";
 
 /**
@@ -43,9 +43,7 @@ function debounceSetState(updater, state, cb) {
         //如果用户在componentDidUpdate中使用setState，要防止其卡死
         setTimeout(function() {
             updater._didUpdate = false;
-            if(!updater._disposed) {
-                setStateImpl(updater, state, cb);
-            }
+            setStateImpl(updater, state, cb);
         }, 300);
         return;
     }
@@ -55,7 +53,7 @@ function setStateImpl(updater, state, cb) {
     if (isFn(cb)) {
         updater._pendingCallbacks.push(cb);
     }
-    let hasDOM = updater._hostNode;
+    // let hasDOM = updater._hostNode;
     if (state === true) {
         //forceUpdate
         updater._forceUpdate = true;
@@ -63,9 +61,10 @@ function setStateImpl(updater, state, cb) {
         //setState
         updater._pendingStates.push(state);
     }
-    if (!hasDOM) {
+    if (updater._lifeStage == 0) {
         //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略
+       
         if (updater._hydrating) {
             //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState

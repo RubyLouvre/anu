@@ -83,19 +83,10 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     let refType = typeNumber(ref);
     if (refType === 4 || refType === 3) {
         //string, number
+        this.userRef = ref;
         this.ref = Refs.createStringRef(owner, ref+"");
     } else if (refType === 5) {
-        if (ref.string) {
-            var ref2 = Refs.createStringRef(owner, ref.string);
-            this.ref = function (dom) {
-                ref(dom);
-                ref2(dom);
-            };
-            this.ref.string = ref.string;
-        } else {
-            //function
-            this.ref = ref;
-        }
+        this.ref = this.userRef = ref;
     }
     /*
       this._hostNode = null
