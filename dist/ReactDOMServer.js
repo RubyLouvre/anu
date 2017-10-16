@@ -131,8 +131,8 @@ var rnumber = /^-?\d+(\.\d+)?$/;
      * 
      * @export
      * @param {any} dom 
-     * @param {any} oldStyle 
-     * @param {any} newStyle 
+     * @param {any} lastStyle 
+     * @param {any} nextStyle 
      */
 
 

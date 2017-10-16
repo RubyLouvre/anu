@@ -5,17 +5,17 @@ export var rnumber = /^-?\d+(\.\d+)?$/;
      * 
      * @export
      * @param {any} dom 
-     * @param {any} oldStyle 
-     * @param {any} newStyle 
+     * @param {any} lastStyle 
+     * @param {any} nextStyle 
      */
-export function patchStyle(dom, oldStyle, newStyle) {
-    if (oldStyle === newStyle) {
+export function patchStyle(dom, lastStyle, nextStyle) {
+    if (lastStyle === nextStyle) {
         return;
     }
 
-    for (let name in newStyle) {
-        let val = newStyle[name];
-        if (oldStyle[name] !== val) {
+    for (let name in nextStyle) {
+        let val = nextStyle[name];
+        if (lastStyle[name] !== val) {
             name = cssName(name, dom);
             if (val !== 0 && !val) {
                 val = ""; //清除样式
@@ -32,8 +32,8 @@ export function patchStyle(dom, oldStyle, newStyle) {
         }
     }
     // 如果旧样式存在，但新样式已经去掉
-    for (let name in oldStyle) {
-        if (!(name in newStyle)) {
+    for (let name in lastStyle) {
+        if (!(name in nextStyle)) {
             name = cssName(name, dom);
             dom.style[name] = ""; //清除样式
         }

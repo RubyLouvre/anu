@@ -1,5 +1,5 @@
 var mountOrder = 1;
-import { getChildContext, noop } from "../src/util";
+import { getChildContext, noop, extend } from "../src/util";
 import { Refs } from "./Refs";
 function alwaysNull() {
     return null;
@@ -36,13 +36,13 @@ Updater.prototype = {
         if (n === 0) {
             return state;
         }
-        let nextState = Object.assign({}, state); //每次都返回新的state
+        let nextState = extend({}, state); //每次都返回新的state
         for (let i = 0; i < n; i++) {
             let pending = pendings[i];
             if (pending && pending.call) {
                 pending = pending.call(instance, nextState, this.props);
             }
-            Object.assign(nextState, pending);
+            extend(nextState, pending);
         }
         pendings.length = 0;
         return nextState;
@@ -118,7 +118,7 @@ export function instantiateComponent(type, vnode, props, context) {
         }
         if (mixin && mixin.render) {
             //支持module pattern component
-            Object.assign(instance, mixin);
+            extend(instance, mixin);
         } else {
             instance.__isStateless = true;
             updater.rendered = mixin;

@@ -135,16 +135,7 @@ function getSVGAttributeName(name) {
 }
 
 
-/**
- *
- * 修改dom的属性与事件
- * @export
- * @param {any} nextProps
- * @param {any} lastProps
- * @param {any} vnode
- * @param {any} lastVnode
- */
-export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
+export function diffProps(dom, lastProps, nextProps, vnode) {
     let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line

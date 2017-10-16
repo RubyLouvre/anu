@@ -1,4 +1,4 @@
-import { noop, options, getNodes, innerHTML, toLowerCase, deprecatedWarn, getContextByTypes } from "./util";
+import { noop, options, getNodes, innerHTML, toLowerCase,emptyObject, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createElement, insertElement, removeElement, emptyElement } from "./browser";
@@ -172,7 +172,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
     if (vnode.checkProps && dom) {
-        diffProps(props, {}, vnode, {}, dom);
+        diffProps(dom, emptyObject, props, vnode);
     }
     if (ref) {
         pendingRefs.push(ref.bind(true, dom));
@@ -385,7 +385,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     }
 
     if (checkProps || nextVnode.checkProps) {
-        diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
+        diffProps(dom, lastProps, nextProps, nextVnode);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);

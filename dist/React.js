@@ -1298,17 +1298,17 @@ var rnumber = /^-?\d+(\.\d+)?$/;
      * 
      * @export
      * @param {any} dom 
-     * @param {any} oldStyle 
-     * @param {any} newStyle 
+     * @param {any} lastStyle 
+     * @param {any} nextStyle 
      */
-function patchStyle(dom, oldStyle, newStyle) {
-    if (oldStyle === newStyle) {
+function patchStyle(dom, lastStyle, nextStyle) {
+    if (lastStyle === nextStyle) {
         return;
     }
 
-    for (var name in newStyle) {
-        var val = newStyle[name];
-        if (oldStyle[name] !== val) {
+    for (var name in nextStyle) {
+        var val = nextStyle[name];
+        if (lastStyle[name] !== val) {
             name = cssName(name, dom);
             if (val !== 0 && !val) {
                 val = ""; //清除样式
@@ -1325,8 +1325,8 @@ function patchStyle(dom, oldStyle, newStyle) {
         }
     }
     // 如果旧样式存在，但新样式已经去掉
-    for (var _name in oldStyle) {
-        if (!(_name in newStyle)) {
+    for (var _name in lastStyle) {
+        if (!(_name in nextStyle)) {
             _name = cssName(_name, dom);
             dom.style[_name] = ""; //清除样式
         }
@@ -1481,16 +1481,7 @@ function getSVGAttributeName(name) {
     return svgCache[orig] = name;
 }
 
-/**
- *
- * 修改dom的属性与事件
- * @export
- * @param {any} nextProps
- * @param {any} lastProps
- * @param {any} vnode
- * @param {any} lastVnode
- */
-function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
+function diffProps(dom, lastProps, nextProps, vnode) {
     var isSVG = vnode.namespaceURI === NAMESPACE.svg;
     var tag = vnode.type;
     //eslint-disable-next-line
@@ -1682,13 +1673,13 @@ Updater.prototype = {
         if (n === 0) {
             return state;
         }
-        var nextState = Object.assign({}, state); //每次都返回新的state
+        var nextState = extend({}, state); //每次都返回新的state
         for (var i = 0; i < n; i++) {
             var pending = pendings[i];
             if (pending && pending.call) {
                 pending = pending.call(instance, nextState, this.props);
             }
-            Object.assign(nextState, pending);
+            extend(nextState, pending);
         }
         pendings.length = 0;
         return nextState;
@@ -1764,7 +1755,7 @@ function instantiateComponent(type, vnode, props, context) {
         }
         if (mixin && mixin.render) {
             //支持module pattern component
-            Object.assign(instance, mixin);
+            extend(instance, mixin);
         } else {
             instance.__isStateless = true;
             updater.rendered = mixin;
@@ -2253,7 +2244,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
     if (vnode.checkProps && dom) {
-        diffProps(props, {}, vnode, {}, dom);
+        diffProps(dom, emptyObject, props, vnode);
     }
     if (ref) {
         pendingRefs.push(ref.bind(true, dom));
@@ -2478,7 +2469,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     }
 
     if (checkProps || nextVnode.checkProps) {
-        diffProps(nextProps, lastProps, nextVnode, lastVnode, dom);
+        diffProps(dom, lastProps, nextProps, nextVnode);
     }
     if (nextVnode.type === "select") {
         postUpdateSelectedOptions(nextVnode);
