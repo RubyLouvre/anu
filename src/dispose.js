@@ -1,6 +1,5 @@
 import { options, noop, innerHTML } from "./util";
 import { removeElement } from "./browser";
-import {  updateChains } from "./Updater";
 
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
@@ -49,14 +48,7 @@ function disposeComponent(vnode) {
         if (instance.componentWillUnmount) {
             instance.componentWillUnmount();
         }
-        let updater = instance.updater,
-            order = updater._mountOrder,
-            updaters = updateChains[order];
-        updaters.splice(updaters.indexOf(updater), 1);
-        updater._disposed = true;
-        if(!updaters.length){
-            delete updateChains[order];
-        }
+        let updater = instance.updater;
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         disposeVnode(updater.rendered);
         updater._renderInNextCycle = vnode._instance = instance.updater = null;

@@ -1,5 +1,5 @@
 import { isFn, options, deprecatedWarn,emptyObject } from "./util";
-import { CurrentOwner } from "./createElement";
+import { Refs } from "./Refs";
 
 /**
  *组件的基类
@@ -9,7 +9,7 @@ import { CurrentOwner } from "./createElement";
  */
 export function Component(props, context) {
     //防止用户在构造器生成JSX
-    CurrentOwner.cur = this;
+    Refs.currentOwner = this;
     this.context = context;
     this.props = props;
     this.refs = {};

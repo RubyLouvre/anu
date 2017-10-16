@@ -32,7 +32,7 @@ var React = {
     unstable_renderSubtreeIntoContainer,
 
     createFactory(type) {
-        console.warn("createFactory将被废弃"); // eslint-disable-line
+        console.error("createFactory is deprecated"); // eslint-disable-line
         var factory = createElement.bind(null, type);
         factory.type = type;
         return factory;

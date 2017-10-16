@@ -4,7 +4,7 @@ import { disposeVnode } from "./dispose";
 import { createElement, insertElement, removeElement, emptyElement } from "./browser";
 import { flattenChildren } from "./createElement";
 import { processFormElement, postUpdateSelectedOptions } from "./ControlledComponent";
-import { instantiateComponent, updateChains } from "./Updater";
+import { instantiateComponent } from "./Updater";
 import { drainQueue } from "./scheduler";
 import { Refs, pendingRefs } from "./Refs";
 
@@ -220,11 +220,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
     let instance = instantiateComponent(type, vnode, props, context); //互相持有引用
     let updater = instance.updater;
     if (parentUpdater) {
-        updater._mountOrder = parentUpdater._mountOrder;
-    } else {
-        updateChains[updater._mountOrder] = [];
+        updater.parentUpdater = parentUpdater;
     }
-    updateChains[updater._mountOrder].push(updater);
     updater.vparent = vparent;
     updater.parentContext = parentContext;
     if (instance.componentWillMount) {

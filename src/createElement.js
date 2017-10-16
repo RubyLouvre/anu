@@ -1,9 +1,5 @@
 import {emptyArray, typeNumber} from "./util";
 import {Refs} from "./Refs";
-
-export var CurrentOwner = {
-    cur: null
-};
 /**
  * 创建虚拟DOM
  *

@@ -4,7 +4,6 @@ import { Refs } from "./Refs";
 function alwaysNull() {
     return null;
 }
-export var updateChains = {};
 export function Updater(instance, vnode) {
     vnode._instance = instance;
     instance.updater = this;
@@ -80,13 +79,11 @@ Updater.prototype = {
         if (!dom) {
             throw ["必须返回节点", rendered];
         }
-        let list = updateChains[this._mountOrder];
-        if (!list) {
-            list = updateChains[this._mountOrder] = [this];
-        }
-        list.forEach(function(el) {
-            el.vnode._hostNode = el._hostNode = dom;
-        });
+        let u = this;
+        do{
+            u.vnode._hostNode = u._hostNode = dom;
+        }while(u = u.parentUpdater);
+
         return dom;
     }
 };
