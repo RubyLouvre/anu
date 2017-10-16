@@ -1,6 +1,7 @@
 ## 1.1.4
 1. 添加userRef来优化ref在cloneElement中的创建及detachRef的比较，修正flushUpdaters中updater对象的泄露问题（需要clearArray一下）
 2. 优化diffChildren的逻辑，防止出现parentNode等于null的情况（比如为文本节点取firstChild）
+3. 简化ControlledComponent与dispose模块
 
 ## 1.1.3
 1. 抽象出一个Update类，用于封装组件实例上的所有私有数据
