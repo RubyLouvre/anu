@@ -63,7 +63,6 @@ function setStateImpl(updater, state, cb) {
     if (updater._lifeStage == 0) {
         //组件挂载期
         //componentWillUpdate中的setState/forceUpdate应该被忽略
-       
         if (updater._hydrating) {
             //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
             //1. 组件直接调用自己的setState

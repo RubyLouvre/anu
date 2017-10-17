@@ -40,7 +40,6 @@ function hasOtherControllProperty(props, keys) {
     }
 }
 var duplexMap = {
-    option: 0,
     color: 1,
     date: 1,
     datetime: 1,
