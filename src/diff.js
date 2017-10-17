@@ -48,6 +48,7 @@ export function createPortal(children, container) {
         container.vchildren = [];
     }
     diffChildren(getVParent(container), children, container, {}, [] );
+    container.vchildren = children;
     return null;
 }
 // 用于辅助XML元素的生成（svg, math),
@@ -168,8 +169,8 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     vnode._hostNode = dom;
     let children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
-    dom.vchildren = children;
     method(dom, children, vnode, context, updateQueue);
+    dom.vchildren = children;
     if (vnode.checkProps) {
         diffProps(dom, emptyObject, props, vnode);
     }
@@ -190,17 +191,19 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         return false;
     }
     nextVnode._hostNode = dom;
+    var oldChildren = dom.vchildren || [];
     if (nextProps[innerHTML]) {
-        var list = lastVnode.vchildren || [];
-        list.forEach(function(el) {
+        oldChildren.forEach(function(el) {
             disposeVnode(el);
         });
-        list.length = 0;
+        oldChildren.length = 0;
     } else {
         if (lastProps[innerHTML]) {
-            dom.vchildren = [];
+            oldChildren.length = 0;
         }
-        diffChildren(lastVnode,  flattenChildren(nextVnode), dom, context, updateQueue);
+        var c = flattenChildren(nextVnode); 
+        diffChildren(lastVnode,  c, dom, context, updateQueue);
+        dom.vchildren = c;
     }
     if (checkProps || nextCheckProps) {
         diffProps(dom, lastProps, nextProps, nextVnode);
@@ -395,7 +398,7 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
         nextLength = nextChildren.length,
         lastLength = lastChildren.length,
         dom;
-    parentNode.vchildren = nextChildren;
+    // parentNode.vchildren = nextChildren;
     //如果旧数组长度为零, 直接添加
     if (nextLength && !lastLength) {
         emptyElement(parentNode);
@@ -484,16 +487,22 @@ function diffChildren(lastVnode, nextChildren, parentNode, context, updateQueue)
             lastChild = action[0];
             nextChild = action[1];
             dom = lastChild._hostNode;
-            if (dom && action[2]) {
-                insertElement(parentNode, dom,insertPoint);
-            }
-            if(lastChild.vtype > 1 && !lastChild._instance){
-                console.log("lastChild还没有实例化，立即实例化并更新");
-            
-                dom = mountVnode(null, lastChild, lastVnode, context, updateQueue);
-                insertElement(parentNode, dom, insertPoint);
+            if(dom){
+                if (action[2]) {
+                    insertElement(parentNode, dom,insertPoint);
+                }
+            }else{//处理没有真实DOM的情况
+                //  if(lastChild.vtype > 1 && !lastChild._instance){
+                //  处理没有实例的情况 
+                //console.log("lastChild还没有实例化，立即实例化并更新");
+                // dom = mountVnode(null, lastChild, lastVnode, context, updateQueue);
+                // insertElement(parentNode, dom, insertPoint);
+                // }else{
+                //     dom = lastChild._hostNode = insertPoint;
+                // }
             }
             insertPoint = updateVnode(lastChild, nextChild, lastVnode, context, updateQueue);
+            
             
         } else {           
             //如果找不到对应的旧节点，创建一个新节点放在这里
