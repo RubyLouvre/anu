@@ -12,45 +12,7 @@
    
      <script type='text/javascript' src="./lib/babel.js"></script>
     
-  <script type='text/babel'>
-  var s
-  window.onload = function(){
-   
-    var container = document.getElementById("example")
-    var PropTypes = React.PropTypes
-    if(!window.ReactDOM){
-      window.ReactDOM = React
-    }
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, b, a === b)
-            }
-        }
-    }
- class A extends React.Component {
-      render() {
-          return <div id="aaa" />;
-      }
-  }
-
-  var el = React.createElement(A, {});
-  expect(el.vtype).toBe(2);
-  console.log(el)
-  el = React.createElement(function() {}, {});
-  expect(el.vtype).toBe(4);
-  var obj = new A().render();
-  expect(obj.props.children).toBe(void 666);
-  expect(obj.props.id).toBe("aaa");
-  expect(obj.props).toBe({
-      id: "aaa"
-  });
-  expect(obj.type).toBe("div");
-  expect(obj.key == null).toBe(true);
-  expect(typeof obj._owner).toBe("object");
   
-  }
-  </script>
 
 </head>
 <body>
@@ -58,7 +20,71 @@
         <div>开发者工具</div>
         <div id='example'></div>
     
-    
+        <script type='text/babel'>
+
+              var container = document.getElementById("example")
+              var PropTypes = React.PropTypes
+              var div = container
+              if(!window.ReactDOM){
+                window.ReactDOM = React
+              }
+              var expect = function(a) {
+                  return {
+                      toBe: function(b) {
+                          console.log(a, "vs", b, a === b)
+                      }
+                  }
+              }
+              var index = 0
+              var map = [
+                  <div>1111<p>ddd</p><span>333</span><Link /></div>,
+                  <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
+                  <div><span>33</span></div>
+              ]
+              function Link() {
+                  return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
+              }
+              class App extends React.Component {
+                  constructor(props) {
+                      super(props)
+                      this.state = {
+                          aaa: 'aaa'
+                      }
+                  }
+                  change(a) {
+                      this.setState({
+                          aaa: a
+                      })
+                  }
+                  componentDidMount() {
+                      console.log('App componentDidMount')
+                  }
+                  componentWillUpdate() {
+                      console.log('App componentWillUpdate')
+                  }
+                  render() {
+                      return map[index++]
+          
+                  }
+              }
+              var s = React.render(<App />, div)
+          
+            
+              function getString(nodes) {
+                  var str = []
+                  for (var i = 0, node; node = nodes[i++];) {
+                      str.push(node.nodeName.toLowerCase())
+                  }
+                  return str.join(' ')
+              }
+              expect(getString(div.firstChild.childNodes)).toBe('#text p span strong')
+             s.change(100)
+             expect(getString(div.firstChild.childNodes)).toBe('em span #text span b i')
+           //   s.change(100)
+           //   expect(getString(div.firstChild.childNodes)).toBe('span')
+            
+            
+            </script>
 </body>
     
  </html>
