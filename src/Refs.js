@@ -24,7 +24,6 @@ export var Refs = {
         }
         if(dom && nextVnode.ref){
             pendingRefs.push( nextVnode.ref.bind(0, dom));
-            // nextVnode.ref(dom);
         }
     },
     createInstanceRef: function(updater, ref){

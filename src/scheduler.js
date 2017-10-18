@@ -29,7 +29,7 @@ export function drainQueue(queue) {
         updater._ref(); //执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
-            options.refreshComponent(updater, queue);
+            options.patchComponent(updater, queue);
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行

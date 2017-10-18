@@ -321,13 +321,13 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         });
     }
     updater.vnode = nextVnode;
-    refreshComponent(updater, updateQueue);
+    patchComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
     return updater._hostNode;
 }
 
-function refreshComponent(updater, updateQueue) {
+function patchComponent(updater, updateQueue) {
     let { _instance: instance, _hostNode: dom, context: nextContext, props: nextProps, vnode } = updater;
 
     vnode._instance = instance; //放这里
@@ -369,7 +369,7 @@ function refreshComponent(updater, updateQueue) {
     updateQueue.push(updater);
     return dom;
 }
-options.refreshComponent = refreshComponent;
+options.patchComponent = patchComponent;
 
 export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
     let dom;
@@ -387,12 +387,12 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
     return dom;
 }
 
-function genkey(vnode){
-    return vnode.key ? "@"+ vnode.key: (vnode.type.name || vnode.type); 
+function genkey(vnode) {
+    return vnode.key ? "@" + vnode.key : vnode.type.name || vnode.type;
 }
 
 function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueue) {
-    let lastChildren =  parentNode.vchildren,
+    let lastChildren = parentNode.vchildren,
         nextLength = nextChildren.length,
         childNodes = parentNode.childNodes,
         lastLength = lastChildren.length;
@@ -425,7 +425,7 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
         dom,
         nextChild;
 
-    lastChildren.forEach(function(lastChild){
+    lastChildren.forEach(function(lastChild) {
         hit = genkey(lastChild);
         mergeChildren.push(lastChild);
         let hits = fuzzyHits[hit];
@@ -436,7 +436,6 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
         }
     });
 
-
     while (i < nextLength) {
         nextChild = nextChildren[i];
         nextChild._new = true;
@@ -445,12 +444,12 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
             var oldChild = fuzzyHits[hit].shift();
             // 如果命中旧节点，置空旧节点，并在新位置放入旧节点（向后移动）
             var lastIndex = mergeChildren.indexOf(oldChild);
-            if(lastIndex !== -1){
+            if (lastIndex !== -1) {
                 mergeChildren.splice(lastIndex, 1);
             }
             nextChild._new = oldChild;
         }
-        mergeChildren.splice(i,0, nextChild);
+        mergeChildren.splice(i, 0, nextChild);
         i++;
     }
 
@@ -459,24 +458,21 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
         if (nextChild._new) {
             var lastChild = nextChild._new;
             delete nextChild._new;
-            if(lastChild=== true){
+            if (lastChild === true) {
                 //新节点有两种情况，命中位置更后方的旧节点或就地创建实例化
                 dom = mountVnode(null, nextChild, parentVnode, context, updateQueue);
                 insertElement(parentNode, dom, childNodes[k]);
-            }else{
+            } else {
                 oldDom = lastChild._hostNode;
                 if (oldDom !== childNodes[k]) {
-                    console.log(parentNode, oldDom, childNodes[k]);
                     insertElement(parentNode, oldDom, childNodes[k]);
                 }
                 alignVnode(lastChild, nextChild, parentVnode, context, updateQueue);
             }
             k++;
         } else {
-          
             removeElement(nextChild._hostNode);
             disposeVnode(nextChild);
-            
         }
     }
 }

@@ -224,7 +224,6 @@ var Refs = {
         }
         if (dom && nextVnode.ref) {
             pendingRefs.push(nextVnode.ref.bind(0, dom));
-            // nextVnode.ref(dom);
         }
     },
     createInstanceRef: function createInstanceRef(updater, ref) {
@@ -1982,7 +1981,7 @@ function drainQueue(queue) {
         updater._ref(); //执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
-            options.refreshComponent(updater, queue);
+            options.patchComponent(updater, queue);
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
@@ -2340,13 +2339,13 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         });
     }
     updater.vnode = nextVnode;
-    refreshComponent(updater, updateQueue);
+    patchComponent(updater, updateQueue);
     //子组件先执行
     updateQueue.push(updater);
     return updater._hostNode;
 }
 
-function refreshComponent(updater, updateQueue) {
+function patchComponent(updater, updateQueue) {
     var instance = updater._instance,
         dom = updater._hostNode,
         nextContext = updater.context,
@@ -2396,7 +2395,7 @@ function refreshComponent(updater, updateQueue) {
     updateQueue.push(updater);
     return dom;
 }
-options.refreshComponent = refreshComponent;
+options.patchComponent = patchComponent;
 
 function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
     var dom = void 0;
@@ -2493,14 +2492,12 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
             } else {
                 oldDom = lastChild._hostNode;
                 if (oldDom !== childNodes[k]) {
-                    console.log(parentNode, oldDom, childNodes[k]);
                     insertElement(parentNode, oldDom, childNodes[k]);
                 }
                 alignVnode(lastChild, _nextChild, parentVnode, context, updateQueue);
             }
             k++;
         } else {
-
             removeElement(_nextChild._hostNode);
             disposeVnode(_nextChild);
         }
