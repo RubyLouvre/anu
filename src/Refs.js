@@ -23,7 +23,8 @@ export var Refs = {
             lastVnode.ref(null);
         }
         if(dom && nextVnode.ref){
-            nextVnode.ref(dom);
+            pendingRefs.push( nextVnode.ref.bind(0, dom));
+            // nextVnode.ref(dom);
         }
     },
     createInstanceRef: function(updater, ref){

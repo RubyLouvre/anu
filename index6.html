@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-  <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script> 
 
-  <!--<script type='text/javascript' src="./test/react.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
    <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
@@ -18,22 +18,23 @@
 <body>
     
         <pre>应该等于
-            "oneA componentWillMount",
-            "oneA render",
-            "twoA componentWillMount",
-            "twoA render",
-            "oneA componentDidMount",
-            "twoA componentDidMount",
-
-            "oneA componentWillUnmount",
-            "oneB componentWillMount",
-            "oneB render",
-            "twoA componentWillUnmount",
-            "twoB componentWillMount",
-            "twoB render",
-
-            "oneB componentDidMount",
-            "twoB componentDidMount"
+            a componentWillMount
+            b componentWillMount
+            a componentDidMount
+            a true
+            b componentDidMount
+            b true
+            update...
+            a false
+            a componentWillUnmount
+            c componentWillMount
+            b false
+            b componentWillUnmount
+            d componentWillMount
+            c componentDidMount
+            c true
+            d componentDidMount
+            d true
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -53,45 +54,115 @@
                     }
                 }
             }
-            var list = [];
-            
-                    class Spy extends React.Component {
-                        componentWillMount() {
-                            list.push(this.props.name + " componentWillMount");
-                        }
-                        render() {
-                            list.push(this.props.name + " render");
-                            return <div />;
-                        }
-                        componentDidMount() {
-                            list.push(this.props.name + " componentDidMount");
-                        }
-                        componentWillUnmount() {
-                            list.push(this.props.name + " componentWillUnmount");
-                        }
+            var contextChanges = 0;
+            var propChanges = 0;
+    
+            class GrandChild extends React.Component {
+                static contextTypes = {
+                    foo: PropTypes.string.isRequired
+                };
+    
+                componentWillReceiveProps(nextProps, nextContext) {
+                    expect("foo" in nextContext).toBe(true);
+    
+                    if (nextProps !== this.props) {
+                        propChanges++;
                     }
-            
-                    // These are reference-unequal so they will be swapped even if they have
-                    // matching keys
-                    var SpyA = props => <Spy {...props} />;
-                    var SpyB = props => <Spy {...props} />;
-            
-                    var container = document.createElement("div");
-                    ReactDOM.render(
-                        <div>
-                            <SpyA key="one" name="oneA" />
-                            <SpyA key="two" name="twoA" />
-                        </div>,
-                        container
-                    );
-                    ReactDOM.render(
-                        <div>
-                            <SpyB key="one" name="oneB" />
-                            <SpyB key="two" name="twoB" />
-                        </div>,
-                        container
-                    );
-        console.log(list.join("\n"))
+    
+                    if (nextContext !== this.context) {
+                        contextChanges++;
+                    }
+                }
+    
+                render() {
+                    return <span className="grand-child">{this.props.children}</span>;
+                }
+            }
+    
+            class ChildWithContext extends React.Component {
+                static contextTypes = {
+                    foo: PropTypes.string.isRequired
+                };
+    
+                componentWillReceiveProps(nextProps, nextContext) {
+                    expect("foo" in nextContext).toBe(true);
+    
+                    if (nextProps !== this.props) {
+                        propChanges++;
+                    }
+    
+                    if (nextContext !== this.context) {
+                        contextChanges++;
+                    }
+                }
+    
+                render() {
+                    return <div className="child-with">{this.props.children}</div>;
+                }
+            }
+    
+            class ChildWithoutContext extends React.Component {
+                componentWillReceiveProps(nextProps, nextContext) {
+                    expect("foo" in nextContext).toBe(false);
+    
+                    if (nextProps !== this.props) {
+                        propChanges++;
+                    }
+    
+                    if (nextContext !== this.context) {
+                        contextChanges++;
+                    }
+                }
+    
+                render() {
+                    return <div className="child-without">{this.props.children}</div>;
+                }
+            }
+    
+            class Parent extends React.Component {
+                static childContextTypes = {
+                    foo: PropTypes.string
+                };
+    
+                state = {
+                    foo: "abc"
+                };
+    
+                getChildContext() {
+                    return {
+                        foo: this.state.foo
+                    };
+                }
+    
+                render() {
+                    return <div className="parent">{this.props.children}</div>;
+                }
+            }
+    
+            var div = document.createElement("div");
+    
+            var parentInstance = null;
+            ReactDOM.render(
+                <Parent ref={inst => (parentInstance = inst)}>
+                    <ChildWithoutContext>
+                        A1
+                        <GrandChild>A2</GrandChild>
+                    </ChildWithoutContext>
+    
+                    <ChildWithContext>
+                        B1
+                        <GrandChild>B2</GrandChild>
+                    </ChildWithContext>
+                </Parent>,
+                div
+            );
+    
+            parentInstance.setState({
+                foo: "def"
+            });
+    
+            expect(propChanges).toBe(0);
+            expect(contextChanges).toBe(3); // ChildWithContext, GrandChild x 2
             
 
           </script>

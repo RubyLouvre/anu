@@ -420,6 +420,289 @@ describe("ref", function () {
         ]);
 
     });
-
-
+    it("先执行匹配元素的detach ref，然后卸载组件，最后attach ref",function(){
+        var list = [];
+        class A extends React.Component{
+            componentWillUnmount(){
+                list.push("remove");
+            }
+            render(){
+                return <span>A</span>;
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    a: 1
+                };
+            }
+            render() {
+                return <div>
+                    {
+                        this.state.a ? 
+                            [<A />,<A />,<A />,<span key="a" ref={(a)=>{
+                                list.push(111+  (a ? "instance": "null"));
+                            }}>a</span>,<span key="b" ref={(a)=>{
+                                list.push(222 + (a ? "instance": "null"));
+                                
+                            }}>b</span>]:
+                            [<span key="b" ref={(a)=>{
+                                list.push(333 + (a ? "instance": "null"));
+                                
+                            }}>b</span>,<span key="a" ref={(a)=>{
+                                list.push(444 + (a ? "instance": "null"));
+                            }}>a</span>]
+                    }
+                </div>;
+            }
+        }
+        var s = ReactDOM.render(<App />, div);
+        s.setState({a: 0});
+        expect(list).toEqual([
+            "111instance",
+            "222instance",
+            "222null",
+            "111null",
+            "remove",
+            "remove",
+            "remove",
+            "333instance",
+            "444instance"
+        ]);
+    
+    });
+    it("先执行匹配元素的detach ref，然后更新卸载组件，最后attach ref",function(){
+        var list = [];
+        class A extends React.Component{
+            componentWillUnmount(){
+                list.push("A remove");
+            }
+            componentWillUpdate(){
+                list.push("A update");
+            }
+            render(){
+                return <span>A</span>;
+            }
+        }
+        class B extends React.Component{
+            componentDidMount(){
+                list.push("B mount");
+            }
+            render(){
+                return <span>B</span>;
+            }
+        }
+        var list = [];
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    a: 1
+                };
+            }
+            render() {
+                return <div>
+                    {
+                        this.state.a ? 
+                            [<A />,<A />,<A />,
+                                <span key="a" ref={(a)=>{
+                                    list.push(111+(a?"instance":"null"));
+                                }}>a</span>,
+                                <span key="b" ref={(a)=>{
+                                    list.push(222+(a?"instance":"null"));    
+                                }}>b</span>,
+                                <span key="c" ref={(a)=>{
+                                    list.push(333+(a?"instance":"null"));
+                                }}>c</span>,
+                            ]:
+                            [
+                                <span key="b" ref={(a)=>{
+                                    list.push(444+(a?"instance":"null"));
+                                }}>b</span>,
+                                <span key="a" ref={(a)=>{
+                                    list.push(555+(a?"instance":"null"));
+                                }}>a</span>,<A />, <B />]
+                    }
+                </div>;
+            }
+        }
+        var s = ReactDOM.render(<App />, div);
+        s.setState({a: 0});
+        expect(list).toEqual([
+            "111instance",
+            "222instance",
+            "333instance",
+            "222null",
+            "111null",
+            "A update",
+            "A remove",
+            "A remove",
+            "333null",
+            "444instance",
+            "555instance",
+            "B mount"
+        ]);
+    
+    });
+    it("ref与生命周期的执行顺序，更新后没有key",function(){
+        var list = [];
+            
+        var A = class extends React.Component {
+            componentWillMount() {
+                list.push(this.props.name + " componentWillMount");
+            }
+            render() {
+                return <div />;
+            }
+            componentDidMount() {
+                list.push(this.props.name + " componentDidMount");
+            }
+            componentDidUpdate() {
+                list.push(this.props.name + " componentDidUpdate");
+            }
+            componentWillUnmount() {
+                list.push(this.props.name + " componentWillUnmount");
+            }
+        };
+        var B = class extends React.Component {
+            componentWillMount() {
+                list.push(this.props.name + " componentWillMount");
+            }
+            render() {
+                return <strong />;
+            }
+            componentDidMount() {
+                list.push(this.props.name + " componentDidMount");
+            }
+            componentWillUnmount() {
+                list.push(this.props.name + " componentWillUnmount");
+            }
+        };
+        ReactDOM.render(
+            <div>
+                <A key="aa" name="a" ref={(a)=>{
+                    list.push("a "+!!a)
+                    ;
+                }}></A>
+                <A key="bb" name="b" ref={(a)=>{
+                    list.push("b "+!!a)
+                    ;
+                }}></A>
+            </div>,
+            div
+        );
+        list.push("update...");
+        ReactDOM.render(
+            <div>
+                <B  name="c" ref={(a)=>{
+                    list.push("c "+!!a);
+                }}></B>
+                <B  name="d" ref={(a)=>{
+                    list.push("d "+!!a)
+                    ;
+                }}></B>
+            </div>,
+            div
+        );
+        expect(list).toEqual([
+            "a componentWillMount",
+            "b componentWillMount",
+            "a componentDidMount",
+            "a true",
+            "b componentDidMount",
+            "b true",
+            "update...",
+            "c componentWillMount",
+            "d componentWillMount",
+            "a false",
+            "a componentWillUnmount",
+            "b false",
+            "b componentWillUnmount",
+            "c componentDidMount",
+            "c true",
+            "d componentDidMount",
+            "d true"
+        ]);
+    });
+    it("ref与生命周期的执行顺序，更新后有key",function(){
+        var list = [];
+            
+        var A = class extends React.Component {
+            componentWillMount() {
+                list.push(this.props.name + " componentWillMount");
+            }
+            render() {
+                return <div />;
+            }
+            componentDidMount() {
+                list.push(this.props.name + " componentDidMount");
+            }
+            componentDidUpdate() {
+                list.push(this.props.name + " componentDidUpdate");
+            }
+            componentWillUnmount() {
+                list.push(this.props.name + " componentWillUnmount");
+            }
+        };
+        var B = class extends React.Component {
+            componentWillMount() {
+                list.push(this.props.name + " componentWillMount");
+            }
+            render() {
+                return <strong />;
+            }
+            componentDidMount() {
+                list.push(this.props.name + " componentDidMount");
+            }
+            componentWillUnmount() {
+                list.push(this.props.name + " componentWillUnmount");
+            }
+        };
+        ReactDOM.render(
+            <div>
+                <A key="aa" name="a" ref={(a)=>{
+                    list.push("a "+!!a)
+                    ;
+                }}></A>
+                <A key="bb" name="b" ref={(a)=>{
+                    list.push("b "+!!a)
+                    ;
+                }}></A>
+            </div>,
+            div
+        );
+        list.push("update...");
+        ReactDOM.render(
+            <div>
+                <B key="aa" name="c" ref={(a)=>{
+                    list.push("c "+!!a);
+                }}></B>
+                <B key="bb" name="d" ref={(a)=>{
+                    list.push("d "+!!a)
+                    ;
+                }}></B>
+            </div>,
+            div
+        );
+        expect(list).toEqual([
+            "a componentWillMount",
+            "b componentWillMount",
+            "a componentDidMount",
+            "a true",
+            "b componentDidMount",
+            "b true",
+            "update...",
+            "a false",
+            "a componentWillUnmount",
+            "c componentWillMount",
+            "b false",
+            "b componentWillUnmount",
+            "d componentWillMount",
+            "c componentDidMount",
+            "c true",
+            "d componentDidMount",
+            "d true"
+        ]);
+    });
 });

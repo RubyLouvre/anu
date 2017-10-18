@@ -42,12 +42,24 @@
       }
       class A extends React.Component{
         componentWillUnmount(){
-          console.log("remove")
+          list.push("A remove")
+        }
+        componentWillUpdate(){
+          list.push("A update")
         }
         render(){
           return <span>A</span>
         }
       }
+      class B extends React.Component{
+        componentDidMount(){
+          list.push("B mount")
+        }
+        render(){
+          return <span>B</span>
+        }
+      }
+      var list = []
       class App extends React.Component {
         constructor(props) {
           super(props);
@@ -59,18 +71,22 @@
           return <div>
               {
                 this.state.a ? 
-                [<A />,<A />,<A />,<span key="a" ref={(a)=>{console.log(111,a)}}>a</span>,
-                <span key="b" ref={(a)=>{console.log(222,a)}}>b</span>,
-                <span key="c" ref={(a)=>{console.log(333,a)}}>c</span>,
+                [<A />,<A />,<A />,
+                <span key="a" ref={(a)=>{list.push(111+(a?"instance":"null"))}}>a</span>,
+                <span key="b" ref={(a)=>{list.push(222+(a?"instance":"null"))}}>b</span>,
+                <span key="c" ref={(a)=>{list.push(333+(a?"instance":"null"))}}>c</span>,
               ]:
-                [<span key="b" ref={(a)=>{console.log(333,a)}}>b</span>,
-                <span key="a" ref={(a)=>{console.log(444,a)}}>a</span>,<b>xxx</b>]
+                [<span key="b" ref={(a)=>{list.push(444+(a?"instance":"null"))}}>b</span>,
+                <span key="a" ref={(a)=>{list.push(555+(a?"instance":"null"))}}>a</span>,<A />, <B />]
             }
             </div>
         }
       }
+      //对复杂孩子的更新策略，如果命中，那么插入mergeChildren位置，没有匹配的全部删掉，新的appendChild
   
       var s = ReactDOM.render(<App />, div);
+      s.setState({a:0})
+      console.log(list.join("\n"))
 
     </script>
   

@@ -66,16 +66,16 @@
                   {
                       this.state.a ? 
                           [<A />,<A />,<A />,<span key="a" ref={(a)=>{
-                              list.push(111, a ? "instance": "null");
+                              list.push(111+  (a ? "instance": "null"));
                           }}>a</span>,<span key="b" ref={(a)=>{
-                              list.push(222, a ? "instance": "null");
+                              list.push(222 + (a ? "instance": "null"));
                               ;
                           }}>b</span>]:
                           [<span key="b" ref={(a)=>{
-                              list.push(333, a ? "instance": "null");
+                              list.push(333 + (a ? "instance": "null"));
                               ;
                           }}>b</span>,<span key="a" ref={(a)=>{
-                              list.push(444, a ? "instance": "null");
+                              list.push(444 + (a ? "instance": "null"));
                           }}>a</span>]
                   }
               </div>;

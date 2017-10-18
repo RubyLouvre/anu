@@ -292,21 +292,21 @@ describe("ReactMultiChild", function() {
     });
 
     it("prepares new children before unmounting old", () => {
-        var log = [];
+        var list = [];
 
         class Spy extends React.Component {
             componentWillMount() {
-                log.push(this.props.name + " componentWillMount");
+                list.push(this.props.name + " componentWillMount");
             }
             render() {
-                log.push(this.props.name + " render");
+                list.push(this.props.name + " render");
                 return <div />;
             }
             componentDidMount() {
-                log.push(this.props.name + " componentDidMount");
+                list.push(this.props.name + " componentDidMount");
             }
             componentWillUnmount() {
-                log.push(this.props.name + " componentWillUnmount");
+                list.push(this.props.name + " componentWillUnmount");
             }
         }
 
@@ -330,7 +330,7 @@ describe("ReactMultiChild", function() {
             </div>,
             container
         );
-        expect(log).toEqual([
+        expect(list).toEqual([
             "oneA componentWillMount",
             "oneA render",
             "twoA componentWillMount",
