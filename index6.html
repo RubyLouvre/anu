@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+  <script type='text/javascript' src="./dist/React.js"></script>
 
-  <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>
+  <!--<script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -17,8 +17,23 @@
 </head>
 <body>
     
-        <pre>
-           
+        <pre>应该等于
+            "oneA componentWillMount",
+            "oneA render",
+            "twoA componentWillMount",
+            "twoA render",
+            "oneA componentDidMount",
+            "twoA componentDidMount",
+
+            "oneA componentWillUnmount",
+            "oneB componentWillMount",
+            "oneB render",
+            "twoA componentWillUnmount",
+            "twoB componentWillMount",
+            "twoB render",
+
+            "oneB componentDidMount",
+            "twoB componentDidMount"
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -38,9 +53,45 @@
                     }
                 }
             }
-var a = React.Children.only(<span />)
-console.log(a)
-        
+            var list = [];
+            
+                    class Spy extends React.Component {
+                        componentWillMount() {
+                            list.push(this.props.name + " componentWillMount");
+                        }
+                        render() {
+                            list.push(this.props.name + " render");
+                            return <div />;
+                        }
+                        componentDidMount() {
+                            list.push(this.props.name + " componentDidMount");
+                        }
+                        componentWillUnmount() {
+                            list.push(this.props.name + " componentWillUnmount");
+                        }
+                    }
+            
+                    // These are reference-unequal so they will be swapped even if they have
+                    // matching keys
+                    var SpyA = props => <Spy {...props} />;
+                    var SpyB = props => <Spy {...props} />;
+            
+                    var container = document.createElement("div");
+                    ReactDOM.render(
+                        <div>
+                            <SpyA key="one" name="oneA" />
+                            <SpyA key="two" name="twoA" />
+                        </div>,
+                        container
+                    );
+                    ReactDOM.render(
+                        <div>
+                            <SpyB key="one" name="oneB" />
+                            <SpyB key="two" name="twoB" />
+                        </div>,
+                        container
+                    );
+        console.log(list.join("\n"))
             
 
           </script>

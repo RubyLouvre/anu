@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./lib/shallowCompare.js"></script>
     
-   <script type='text/javascript' src="./dist/React.js"></script>
+  <script type='text/javascript' src="./dist/React.js"></script>
  
-  <!--<script type='text/javascript' src="./test/react.js"></script>
- <script type='text/javascript' src="./test/react-dom.js"></script>-->
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -19,8 +19,7 @@
     
         <div>开发者工具</div>
         <pre>
-            8ABC4D5EFG
-            GFEDBAC
+            
         </pre>
         <div id='example'></div>
     
@@ -41,63 +40,38 @@
               }
           }
       }
+      class A extends React.Component{
+        componentWillUnmount(){
+          console.log("remove")
+        }
+        render(){
+          return <span>A</span>
+        }
+      }
       class App extends React.Component {
         constructor(props) {
           super(props);
           this.state = {
-            value: ["aaa", "ccc"]
+            a: 1
           };
         }
-  
-        onChange(e) {
-          var values = [];
-          var elems = e.target.getElementsByTagName("option");
-          for (var i = 0, el; (el = elems[i++]); ) {
-            if (el.selected) {
-              if (el.getAttribute("value") != null) {
-                values.push(el.getAttribute("value"));
-              } else {
-                values.push(el.text);
-              }
-            }
-          }
-          this.setState({
-            values: values
-          });
-        }
         render() {
-          return (
-            <select
-              value={this.state.value}
-              multiple="true"
-              onChange={this.onChange.bind(this)}
-            >
-              <optgroup>
-                <option ref="a">aaa</option>
-                <option ref="b">bbb</option>
-              </optgroup>
-              <optgroup>
-                <option ref="c">ccc</option>
-                <option ref="d">ddd</option>
-              </optgroup>
-            </select>
-          );
+          return <div>
+              {
+                this.state.a ? 
+                [<A />,<A />,<A />,<span key="a" ref={(a)=>{console.log(111,a)}}>a</span>,
+                <span key="b" ref={(a)=>{console.log(222,a)}}>b</span>,
+                <span key="c" ref={(a)=>{console.log(333,a)}}>c</span>,
+              ]:
+                [<span key="b" ref={(a)=>{console.log(333,a)}}>b</span>,
+                <span key="a" ref={(a)=>{console.log(444,a)}}>a</span>,<b>xxx</b>]
+            }
+            </div>
         }
       }
   
-      var s = React.render(<App />, div);
-    expect(s.refs.a.selected).toBe(true);
-    expect(s.refs.b.selected).toBe(false);
-    expect(s.refs.c.selected).toBe(true);
-    expect(s.refs.d.selected).toBe(false);
-    s.setState({
-      value: ["bbb", "ddd"]
-    });
-   
-    expect(s.refs.a.selected).toBe(false);
-    expect(s.refs.b.selected).toBe(true);
-    expect(s.refs.c.selected).toBe(false);
-    expect(s.refs.d.selected).toBe(true);
+      var s = ReactDOM.render(<App />, div);
+
     </script>
   
 </body>
