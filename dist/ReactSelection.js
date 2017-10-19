@@ -183,42 +183,46 @@ var recyclables = {
 function getDOMNode() {
     return this;
 }
-function errRef() {
-    throw "ref位置错误";
-}
 var pendingRefs = [];
 var Refs = {
     currentOwner: null,
     clearRefs: function clearRefs() {
+        var callback = this.fireRef;
         var refs = pendingRefs.splice(0, pendingRefs.length);
-        refs.forEach(function (fn) {
-            fn();
-        });
+        for (var i = 0, n = refs.length; i < n; i += 2) {
+            var vnode = refs[i];
+            var data = refs[i + 1];
+            callback(vnode, data);
+        }
     },
     detachRef: function detachRef(lastVnode, nextVnode, dom) {
-        if (lastVnode.userRef === nextVnode.userRef) {
+        if (lastVnode.ref === nextVnode.ref) {
             return;
         }
-        if (lastVnode.ref) {
-            lastVnode.ref(null);
+        if (lastVnode._hasRef) {
+            this.fireRef(lastVnode, null);
         }
-        if (dom && nextVnode.ref) {
-            pendingRefs.push(nextVnode.ref.bind(0, dom));
+        if (nextVnode._hasRef && dom) {
+            pendingRefs.push(nextVnode, dom);
         }
     },
-    createStringRef: function createStringRef(owner, ref) {
-        var stringRef = owner === null ? errRef : function (dom) {
-            if (dom) {
-                if (dom.nodeType) {
-                    dom.getDOMNode = getDOMNode;
-                }
-                owner.refs[ref] = dom;
-            } else {
-                delete owner.refs[ref];
+    fireRef: function fireRef(vnode, dom) {
+        var ref = vnode.ref;
+        if (typeof ref === "function") {
+            return ref(dom);
+        }
+        var owner = vnode._owner;
+        if (!owner) {
+            throw "ref位置错误";
+        }
+        if (dom) {
+            if (dom.nodeType) {
+                dom.getDOMNode = getDOMNode;
             }
-        };
-        stringRef.string = ref;
-        return stringRef;
+            owner.refs[ref] = dom;
+        } else {
+            delete owner.refs[ref];
+        }
     }
 };
 
@@ -290,8 +294,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner = Refs.currentOwner;
-    this._owner = owner;
+    this._owner = Refs.currentOwner;
 
     if (key) {
         this.key = key;
@@ -300,13 +303,12 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     if (vtype === 1) {
         this.checkProps = checkProps;
     }
+
     var refType = typeNumber(ref);
-    if (refType === 4 || refType === 3) {
-        //string, number
-        this.userRef = ref;
-        this.ref = Refs.createStringRef(owner, ref + "");
-    } else if (refType === 5) {
-        this.ref = this.userRef = ref;
+    if (refType === 3 || refType === 4 || refType === 5) {
+        //number, string, function
+        this._hasRef = true;
+        this.ref = ref;
     }
     /*
       this._hostNode = null
@@ -450,8 +452,8 @@ function cloneElement(vnode, props) {
         if (props.ref !== void 666) {
             configs.ref = props.ref;
             owner = lastOwn;
-        } else {
-            configs.ref = vnode.userRef;
+        } else if (vnode._hasRef) {
+            configs.ref = vnode.ref;
         }
     } else {
         configs = old;
@@ -1606,6 +1608,10 @@ function disposeVnode(vnode) {
         return;
     }
     var instance = vnode._instance;
+    if (vnode._hasRef) {
+        vnode._hasRef = false;
+        Refs.fireRef(vnode, null);
+    }
     if (instance) {
         disposeComponent(vnode, instance);
     } else if (vnode.vtype === 1) {
@@ -1618,10 +1624,6 @@ function disposeElement(vnode) {
     var props = vnode.props,
         vchildren = vnode.vchildren;
 
-    if (vnode.ref) {
-        vnode.ref(null);
-        delete vnode.ref;
-    }
     if (props[innerHTML]) {
         removeElement(vnode._hostNode);
     } else {
@@ -1635,9 +1637,6 @@ function disposeElement(vnode) {
 function disposeComponent(vnode, instance) {
     options.beforeUnmount(instance);
     instance.setState = instance.forceUpdate = noop;
-    if (vnode.ref) {
-        vnode.ref(null);
-    }
     if (instance.componentWillUnmount) {
         instance.componentWillUnmount();
     }
@@ -1850,7 +1849,7 @@ Updater.prototype = {
         var vnode = this.vnode;
         if (vnode.ref && this._openRef) {
             var inst = this._instance;
-            vnode.ref(inst.__isStateless ? null : inst);
+            Refs.fireRef(vnode, inst.__isStateless ? null : inst);
             this._openRef = false;
         }
     },
@@ -2161,7 +2160,7 @@ var formElements = {
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     var type = vnode.type,
         props = vnode.props,
-        ref = vnode.ref;
+        _hasRef = vnode._hasRef;
 
     var dom = genMountElement(lastNode, vnode, vparent, type);
     vnode._hostNode = dom;
@@ -2175,8 +2174,8 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
-    if (ref) {
-        pendingRefs.push(ref.bind(true, dom));
+    if (_hasRef) {
+        pendingRefs.push(vnode, dom);
     }
     return dom;
 }
@@ -2292,7 +2291,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
 
 function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
     var type = lastVnode.type,
-        ref = lastVnode.ref,
+        _hasRef = lastVnode._hasRef,
         instance = lastVnode._instance,
         _hostNode = lastVnode._hostNode;
 
@@ -2317,7 +2316,7 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         updater._receiving = false;
     }
 
-    ref && Refs.detachRef(lastVnode, nextVnode);
+    _hasRef && Refs.detachRef(lastVnode, nextVnode);
     updater._openRef = nextVnode.ref;
     //updater上总是保持新的数据
 

@@ -48,7 +48,7 @@ Updater.prototype = {
         var vnode = this.vnode;
         if(vnode.ref && this._openRef){
             var inst = this._instance;
-            vnode.ref(inst.__isStateless ? null: inst);
+            Refs.fireRef(vnode, inst.__isStateless ? null: inst);
             this._openRef = false;
         }
     },

@@ -1,11 +1,16 @@
 import { options, noop, innerHTML } from "./util";
 import { removeElement } from "./browser";
+import { Refs } from "./Refs";
 
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
     }
     var instance = vnode._instance;
+    if (vnode._hasRef) {
+        vnode._hasRef = false;
+        Refs.fireRef(vnode, null);
+    }
     if (instance) {
         disposeComponent(vnode, instance);
     } else if (vnode.vtype === 1) {
@@ -16,10 +21,6 @@ export function disposeVnode(vnode) {
 
 function disposeElement(vnode) {
     var { props, vchildren } = vnode;
-    if (vnode.ref) {
-        vnode.ref(null);
-        delete vnode.ref;
-    }
     if (props[innerHTML]) {
         removeElement(vnode._hostNode);
     } else {
@@ -33,9 +34,6 @@ function disposeElement(vnode) {
 function disposeComponent(vnode, instance) {
     options.beforeUnmount(instance);
     instance.setState = instance.forceUpdate = noop;
-    if (vnode.ref) {
-        vnode.ref(null);
-    }
     if (instance.componentWillUnmount) {
         instance.componentWillUnmount();
     }

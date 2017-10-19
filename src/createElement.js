@@ -66,8 +66,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
-    var owner =  Refs.currentOwner;
-    this._owner = owner;
+    this._owner = Refs.currentOwner;
 
     if (key) {
         this.key = key;
@@ -76,19 +75,20 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     if (vtype === 1) {
         this.checkProps = checkProps;
     }
+
     let refType = typeNumber(ref);
-    if (refType === 4 || refType === 3) {
-        //string, number
-        this.userRef = ref;
-        this.ref = Refs.createStringRef(owner, ref+"");
-    } else if (refType === 5) {
-        this.ref = this.userRef = ref;
+    if (refType === 3 || refType === 4 || refType === 5) {
+        //number, string, function
+        this._hasRef = true;
+        this.ref = ref;
     }
     /*
       this._hostNode = null
       this._instance = null
     */
 }
+
+
 
 Vnode.prototype = {
     getDOMNode: function () {

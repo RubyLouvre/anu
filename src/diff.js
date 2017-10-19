@@ -169,7 +169,7 @@ const formElements = {
 };
 
 function mountElement(lastNode, vnode, vparent, context, updateQueue) {
-    let { type, props, ref } = vnode;
+    let { type, props, _hasRef } = vnode;
     let dom = genMountElement(lastNode, vnode, vparent, type);
     vnode._hostNode = dom;
     let children = flattenChildren(vnode);
@@ -182,8 +182,8 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     if (formElements[type]) {
         processFormElement(vnode, dom, props);
     }
-    if (ref) {
-        pendingRefs.push(ref.bind(true, dom));
+    if (_hasRef) {
+        pendingRefs.push(vnode,dom);
     }
     return dom;
 }
@@ -296,7 +296,7 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
 }
 
 function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQueue) {
-    let { type, ref, _instance: instance, _hostNode } = lastVnode;
+    let { type, _hasRef, _instance: instance, _hostNode } = lastVnode;
     let nextContext,
         nextProps = nextVnode.props,
         updater = instance.updater;
@@ -318,7 +318,7 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         updater._receiving = false;
     }
     
-    ref && Refs.detachRef(lastVnode, nextVnode);
+    _hasRef && Refs.detachRef(lastVnode, nextVnode);
     updater._openRef = nextVnode.ref;
     //updater上总是保持新的数据
 

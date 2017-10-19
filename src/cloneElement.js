@@ -7,7 +7,7 @@ export function cloneElement(vnode, props) {
         return extend({}, vnode);
     }
     let owner = vnode._owner,
-        lastOwn =   Refs.currentOwner,
+        lastOwn = Refs.currentOwner,
         old = vnode.props,
         configs = {  };
     if (props) {
@@ -16,8 +16,8 @@ export function cloneElement(vnode, props) {
         if(props.ref !== void 666){
             configs.ref = props.ref;
             owner = lastOwn;
-        }else{
-            configs.ref = vnode.userRef;
+        }else if(vnode._hasRef){
+            configs.ref = vnode.ref;
         }
     }else{
         configs = old;

@@ -275,7 +275,7 @@ describe("ReactElementClone", function() {
     var clone = React.cloneElement(element, props);
     expect(clone.type).toBe(ComponentClass);
     expect(clone.key).toBe('12');
-    expect(clone.ref.string).toBe('34');
+    expect(clone.ref).toBe('34');
   //  expect(Object.isFrozen(element)).toBe(true);
   //  expect(Object.isFrozen(element.props)).toBe(true);
     expect(clone.props).toEqual({foo: 'ef'});
