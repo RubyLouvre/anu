@@ -18,23 +18,11 @@
 <body>
     
         <pre>应该等于
-            a componentWillMount
-            b componentWillMount
-            a componentDidMount
-            a true
-            b componentDidMount
-            b true
-            update...
-            a false
-            a componentWillUnmount
-            c componentWillMount
-            b false
-            b componentWillUnmount
-            d componentWillMount
-            c componentDidMount
-            c true
-            d componentDidMount
-            d true
+            GrandChild componentDidMount
+            ChildWithoutContext componentDidMount
+            GrandChild componentDidMount
+            ChildWithContext componentDidMount
+            Parent componentDidMount
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -56,6 +44,32 @@
             }
             var contextChanges = 0;
             var propChanges = 0;
+
+
+            class Parent extends React.Component {
+                static childContextTypes = {
+                    foo: PropTypes.string
+                };
+    
+                state = {
+                    foo: "abc"
+                };
+    
+                getChildContext() {
+                    return {
+                        foo: this.state.foo
+                    };
+                }
+                componentDidMount(){
+                    console.log("Parent componentDidMount")
+                }
+                componentWillUpdate(){
+                    console.log("Parent componentWillUpdate")
+                }
+                render() {
+                    return <div className="parent">{this.props.children}</div>;
+                }
+            }
     
             class GrandChild extends React.Component {
                 static contextTypes = {
@@ -73,7 +87,12 @@
                         contextChanges++;
                     }
                 }
-    
+                componentDidMount(){
+                    console.log("GrandChild componentDidMount")
+                }
+                componentWillUpdate(){
+                    console.log("GrandChild componentWillUpdate")
+                }
                 render() {
                     return <span className="grand-child">{this.props.children}</span>;
                 }
@@ -95,7 +114,12 @@
                         contextChanges++;
                     }
                 }
-    
+                componentDidMount(){
+                    console.log("ChildWithContext componentDidMount")
+                }
+                componentWillUpdate(){
+                    console.log("ChildWithContext componentWillUpdate")
+                }
                 render() {
                     return <div className="child-with">{this.props.children}</div>;
                 }
@@ -113,36 +137,22 @@
                         contextChanges++;
                     }
                 }
-    
+                componentDidMount(){
+                    console.log("ChildWithoutContext componentDidMount")
+                }
+                componentWillUpdate(){
+                    console.log("ChildWithoutContext componentWillUpdate")
+                }
                 render() {
                     return <div className="child-without">{this.props.children}</div>;
                 }
             }
     
-            class Parent extends React.Component {
-                static childContextTypes = {
-                    foo: PropTypes.string
-                };
     
-                state = {
-                    foo: "abc"
-                };
-    
-                getChildContext() {
-                    return {
-                        foo: this.state.foo
-                    };
-                }
-    
-                render() {
-                    return <div className="parent">{this.props.children}</div>;
-                }
-            }
-    
-            var div = document.createElement("div");
+         
     
             var parentInstance = null;
-            ReactDOM.render(
+            var s = ReactDOM.render(
                 <Parent ref={inst => (parentInstance = inst)}>
                     <ChildWithoutContext>
                         A1
@@ -154,16 +164,17 @@
                         <GrandChild>B2</GrandChild>
                     </ChildWithContext>
                 </Parent>,
-                div
+                container
             );
-    
+            console.log('=========')
+   
             parentInstance.setState({
                 foo: "def"
             });
     
             expect(propChanges).toBe(0);
             expect(contextChanges).toBe(3); // ChildWithContext, GrandChild x 2
-            
+          
 
           </script>
     

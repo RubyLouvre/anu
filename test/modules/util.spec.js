@@ -7,13 +7,15 @@ import {
     camelize,
     firstLetterLower,
     getChildContext,
-    getNodes,
     typeNumber
 } from "src/util";
 
 import {
     isEventName
 } from "src/event";
+import {
+    toArray
+} from "src/diff";
 describe("util", function () {
 
     it("oneObject", function () {
@@ -92,11 +94,11 @@ describe("util", function () {
         expect(firstLetterLower("")).toBe("");
     });
 
-    it("getNodes", () => {
+    it("toArray", () => {
         var dom = {
             childNodes: [{}, {}, {}]
         };
-        expect(getNodes(dom).length).toBe(3);
+        expect(toArray(dom.childNodes).length).toBe(3);
     });
     it("getChildContext", () => {
         var instance = {

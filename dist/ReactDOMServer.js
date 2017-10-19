@@ -32,15 +32,6 @@ var __type = Object.prototype.toString;
 
 
 /**
- * 收集一个元素的所有孩子
- *
- * @export
- * @param {any} dom
- * @returns
- */
-
-
-/**
  * 小写化的优化
  *
  * @export

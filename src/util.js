@@ -56,22 +56,6 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-/**
- * 收集一个元素的所有孩子
- *
- * @export
- * @param {any} dom
- * @returns
- */
-export function getNodes(dom) {
-    let ret = [],
-        c = dom.childNodes || [];
-    // eslint-disable-next-line
-  for (let i = 0, el; (el = c[i++]); ) {
-        ret.push(el);
-    }
-    return ret;
-}
 
 var lowerCache = {};
 /**

@@ -1,4 +1,4 @@
-import { noop, options, getNodes, innerHTML, toLowerCase, emptyObject, deprecatedWarn, getContextByTypes } from "./util";
+import { noop, options, innerHTML, toLowerCase, emptyObject,emptyArray, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createElement, insertElement, removeElement, emptyElement } from "./browser";
@@ -43,12 +43,11 @@ export function findDOMNode(ref) {
     return ref.updater ? ref.updater._hostNode : ref._hostNode || null;
 }
 //[Top API] ReactDOM.createPortal
-export function createPortal(children, container) {
-    if (!container.vchildren) {
-        container.vchildren = [];
-    }
-    diffChildren(getVParent(container), children, container, {}, []);
-    container.vchildren = children;
+export function createPortal(vchildren, container) {
+    var parentVnode = getVParent(container);
+    parentVnode.vchildren = container.vchildren || emptyArray;
+    diffChildren(getVParent(container), vchildren, container, {}, []);
+    parentVnode.vchildren = vchildren;
     return null;
 }
 // 用于辅助XML元素的生成（svg, math),
@@ -93,9 +92,15 @@ function renderByAnu(vnode, container, callback, context = {}) {
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
     return ret;
 }
-
+export var toArray = Array.from || function(a){
+    var ret = [];
+    for(var i = 0,n = a.length; i < n; i++){
+        ret[i] = a[i];
+    }
+    return ret;
+};
 function genVnodes(container, vnode, context, updateQueue) {
-    let nodes = getNodes(container);
+    let nodes = toArray(container.childNodes||emptyArray);
     let lastNode = null;
     for (var i = 0, el; (el = nodes[i++]); ) {
         if (el.getAttribute && el.getAttribute("data-reactroot") !== null) {
@@ -170,7 +175,7 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
     let children = flattenChildren(vnode);
     let method = lastNode ? alignChildren : mountChildren;
     method(dom, children, vnode, context, updateQueue);
-    dom.vchildren = children;
+    // dom.vchildren = children;/** fatal 不再访问真实DOM */
     if (vnode.checkProps) {
         diffProps(dom, emptyObject, props, vnode);
     }
@@ -187,23 +192,31 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     let { props: lastProps, _hostNode: dom, checkProps, type } = lastVnode;
     let { props: nextProps, checkProps: nextCheckProps } = nextVnode;
     if (!dom) {
+        //eslint-disable-next-line
         console.error("updateElement没有实例化");
         return false;
     }
     nextVnode._hostNode = dom;
-    var oldChildren = dom.vchildren || [];
+    let vchildren = lastVnode.vchildren, newChildren;
+    //   var oldChildren = dom.vchildren || [];/** fatal 不再访问真实DOM */
     if (nextProps[innerHTML]) {
-        oldChildren.forEach(function(el) {
+        vchildren.forEach(function(el) {
             disposeVnode(el);
         });
-        oldChildren.length = 0;
+        vchildren.length = 0;
     } else {
-        if (lastProps[innerHTML]) {
-            oldChildren.length = 0;
+        if(nextVnode === lastVnode){
+            //如果新旧节点一样，为了防止旧vchildren被重写，需要restore一下
+            newChildren = vchildren.concat();
+        }else{
+            newChildren = flattenChildren(nextVnode);
         }
-        var c = flattenChildren(nextVnode);
-        diffChildren(lastVnode, c, dom, context, updateQueue);
-        dom.vchildren = c;
+        if (lastProps[innerHTML]) {
+            vchildren.length = 0;
+        }
+        diffChildren(lastVnode, newChildren, dom, context, updateQueue);
+        nextVnode.vchildren = newChildren;
+
     }
     if (checkProps || nextCheckProps) {
         diffProps(dom, lastProps, nextProps, nextVnode);
@@ -392,7 +405,7 @@ function genkey(vnode) {
 }
 
 function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueue) {
-    let lastChildren = parentNode.vchildren,
+    let lastChildren =  parentVnode.vchildren,      //parentNode.vchildren,
         nextLength = nextChildren.length,
         childNodes = parentNode.childNodes,
         lastLength = lastChildren.length;
