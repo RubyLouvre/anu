@@ -14,8 +14,8 @@ export function drainQueue(queue) {
             continue;
         }
 
-        if (!unique[updater._uuid]) {
-            unique[updater._uuid] = 1;
+        if (!unique[updater._mountOrder]) {
+            unique[updater._mountOrder] = 1;
             needSort.push(updater);
         }
         Refs.clearRefs();
@@ -44,7 +44,7 @@ export function drainQueue(queue) {
 var dirtyComponents = [];
 function mountSorter(u1, u2) {
     //按文档顺序执行
-    return u1._mountIndex - u2._mountIndex;
+    return u1._mountOrder - u2._mountOrder;
 }
 
 options.flushUpdaters = function(queue) {
