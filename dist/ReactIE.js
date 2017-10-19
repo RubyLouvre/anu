@@ -26,11 +26,9 @@ function deprecatedWarn(methodName) {
  * @returns
  */
 function extend(obj, props) {
-    if (props) {
-        for (var i in props) {
-            if (props.hasOwnProperty(i)) {
-                obj[i] = props[i];
-            }
+    for (var i in props) {
+        if (props.hasOwnProperty(i)) {
+            obj[i] = props[i];
         }
     }
     return obj;
@@ -449,7 +447,7 @@ function callIteractor(iteratorFn, children) {
 
 function cloneElement(vnode, props) {
     if (!vnode.vtype) {
-        return Object.assign({}, vnode);
+        return extend({}, vnode);
     }
     var owner = vnode._owner,
         lastOwn = Refs.currentOwner,
@@ -510,7 +508,7 @@ var Children = {
                 var key = computeKey(old, el, index);
                 ret.push(cloneElement(el, { key: key }));
             } else if (el.type) {
-                ret.push(Object.assign({}, el));
+                ret.push(extend({}, el));
             } else {
                 ret.push(el);
             }

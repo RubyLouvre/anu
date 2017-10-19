@@ -1,9 +1,10 @@
 import { createElement } from "./createElement";
 import { Refs} from "./Refs";
+import { extend } from "./util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.vtype) {
-        return Object.assign({}, vnode);
+        return extend({}, vnode);
     }
     let owner = vnode._owner,
         lastOwn =   Refs.currentOwner,

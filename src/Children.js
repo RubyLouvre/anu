@@ -1,5 +1,7 @@
 import { _flattenChildren } from "./createElement";
 import { cloneElement } from "./cloneElement";
+import { extend } from "./util";
+
 export const Children = {
     only(children) {
     //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -29,7 +31,7 @@ export const Children = {
                 var key = computeKey(old, el, index);
                 ret.push(cloneElement(el, { key }));
             } else if (el.type) {
-                ret.push(Object.assign({}, el));
+                ret.push(extend({}, el));
             } else {
                 ret.push(el);
             }
