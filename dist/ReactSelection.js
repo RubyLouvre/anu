@@ -1652,6 +1652,48 @@ function disposeComponent(vnode, instance) {
  变动的属性
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
+var duplexData = {
+    1: ["value", {
+        onChange: 1,
+        onInput: 1,
+        readOnly: 1,
+        disabled: 1
+    }, "oninput", preventUserInput],
+    2: ["checked", {
+        onChange: 1,
+        onClick: 1,
+        readOnly: 1,
+        disabled: 1
+    }, "onclick", preventUserClick],
+    3: ["value", {
+        onChange: 1,
+        disabled: 1
+    }, "onchange", preventUserChange]
+};
+
+var duplexMap = {
+    color: 1,
+    date: 1,
+    datetime: 1,
+    "datetime-local": 1,
+    email: 1,
+    month: 1,
+    number: 1,
+    password: 1,
+    range: 1,
+    search: 1,
+    tel: 1,
+    text: 1,
+    time: 1,
+    url: 1,
+    week: 1,
+    textarea: 1,
+    checkbox: 2,
+    radio: 2,
+    "select-one": 3,
+    "select-multiple": 3
+};
+
 function processFormElement(vnode, dom, props) {
     var domType = dom.type;
     var duplexType = duplexMap[domType];
@@ -1681,28 +1723,6 @@ function hasOtherControllProperty(props, keys) {
         }
     }
 }
-var duplexMap = {
-    color: 1,
-    date: 1,
-    datetime: 1,
-    "datetime-local": 1,
-    email: 1,
-    month: 1,
-    number: 1,
-    password: 1,
-    range: 1,
-    search: 1,
-    tel: 1,
-    text: 1,
-    time: 1,
-    url: 1,
-    week: 1,
-    textarea: 1,
-    checkbox: 2,
-    radio: 2,
-    "select-one": 3,
-    "select-multiple": 3
-};
 
 function preventUserInput(e) {
     var target = e.target;
@@ -1715,9 +1735,9 @@ function preventUserClick(e) {
 }
 
 function preventUserChange(e) {
-    var target = e.target;
-    var value = target._lastValue;
-    var options$$1 = target.options;
+    var target = e.target,
+        value = target._lastValue,
+        options$$1 = target.options;
     if (target.multiple) {
         updateOptionsMore(options$$1, options$$1.length, value);
     } else {
@@ -1725,35 +1745,13 @@ function preventUserChange(e) {
     }
 }
 
-var duplexData = {
-    1: ["value", {
-        onChange: 1,
-        onInput: 1,
-        readOnly: 1,
-        disabled: 1
-    }, "oninput", preventUserInput],
-    2: ["checked", {
-        onChange: 1,
-        onClick: 1,
-        readOnly: 1,
-        disabled: 1
-    }, "onclick", preventUserClick],
-    3: ["value", {
-        onChange: 1,
-        disabled: 1
-    }, "onchange", preventUserChange]
-};
-
-function postUpdateSelectedOptions(vnode, selectElement) {
+function postUpdateSelectedOptions(vnode, target) {
     var props = vnode.props,
-        multiple = !!props.multiple,
-        options$$1 = selectElement.options,
-        value = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "";
-    if (multiple) {
-        updateOptionsMore(options$$1, options$$1.length, value);
-    } else {
-        updateOptionsOne(options$$1, options$$1.length, value);
-    }
+        multiple = !!props.multiple;
+    target._lastValue = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "";
+    preventUserChange({
+        target: target
+    });
 }
 
 function updateOptionsOne(options$$1, n, propValue) {
