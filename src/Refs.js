@@ -2,15 +2,15 @@
 function getDOMNode() {
     return this;
 }
-export var pendingRefs = [];
+export const pendingRefs = [];
 export var Refs = {
     currentOwner: null,
     clearRefs: function() {
-        var callback = this.fireRef;
-        var refs = pendingRefs.splice(0, pendingRefs.length);
-        for (var i = 0, n = refs.length; i < n; i += 2) {
-            var vnode = refs[i];
-            var data = refs[i + 1];
+        let callback = this.fireRef;
+        let refs = pendingRefs.splice(0, pendingRefs.length);
+        for (let i = 0, n = refs.length; i < n; i += 2) {
+            let vnode = refs[i];
+            let data = refs[i + 1];
             callback(vnode, data);
         }
     },
