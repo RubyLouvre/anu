@@ -171,6 +171,5 @@ export function typeNumber(data) {
 }
 
 export var recyclables = {
-    "#text": [],
-    "#comment": []
+    "#text": []
 };

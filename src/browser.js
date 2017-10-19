@@ -74,7 +74,9 @@ export function removeElement(node) {
         node.__events = null;
     } else if (node.nodeType === 3) {
     //只回收文本节点
-        recyclables["#text"].push(node);
+        if(recyclables["#text"].length < 100) {
+            recyclables["#text"].push(node);
+        }
     }
     fragment.appendChild(node);
     fragment.removeChild(node);

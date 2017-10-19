@@ -383,7 +383,9 @@ function patchComponent(updater, updateQueue) {
     return dom;
 }
 options.patchComponent = patchComponent;
-
+var fakeLastNode = {
+    _disposed: true
+};
 export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, parentUpdater) {
     let dom;
     if (isSameNode(lastVnode, nextVnode)) {
@@ -391,11 +393,9 @@ export function alignVnode(lastVnode, nextVnode, vparent, context, updateQueue, 
     } else {
         disposeVnode(lastVnode);
         var node = lastVnode._hostNode,
-            parentNode = node.parentNode,
-            insertPoint = node.nextSibling;
-        removeElement(node);
+            parentNode = node.parentNode;
         dom = mountVnode(null, nextVnode, vparent, context, updateQueue, parentUpdater);
-        insertElement(parentNode, dom, insertPoint);
+        parentNode.replaceChild(dom, node);
     }
     return dom;
 }
@@ -405,9 +405,10 @@ function genkey(vnode) {
 }
 
 function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueue) {
-    let lastChildren =  parentVnode.vchildren,      //parentNode.vchildren,
+    let lastChildren =  parentVnode.vchildren || emptyArray,      //parentNode.vchildren,
         nextLength = nextChildren.length,
-        childNodes = parentNode.childNodes,
+        //   childNodes = parentNode.childNodes,
+        insertPoint = parentNode.firstChild,
         lastLength = lastChildren.length;
 
     //optimize 1： 如果旧数组长度为零, 只进行添加
@@ -424,15 +425,15 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
     }
     //optimize 3： 如果1vs1, 不用进入下面复杂的循环
     if (nextLength === lastLength && lastLength === 1) {
-        if (parentNode.firstChild) {
-            lastChildren[0]._hostNode = parentNode.firstChild;
+        if (insertPoint) {
+            lastChildren[0]._hostNode = insertPoint;
         }
         return alignVnode(lastChildren[0], nextChildren[0], parentVnode, context, updateQueue);
     }
     let mergeChildren = [], //确保新旧数组都按原顺数排列
         fuzzyHits = {},
         i = 0,
-        k = 0,
+        // k = 0,
         hit,
         oldDom,
         dom,
@@ -458,7 +459,8 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
             // 如果命中旧节点，置空旧节点，并在新位置放入旧节点（向后移动）
             var lastIndex = mergeChildren.indexOf(oldChild);
             if (lastIndex !== -1) {
-                mergeChildren.splice(lastIndex, 1);
+                mergeChildren[lastIndex] = fakeLastNode;
+                //  mergeChildren.splice(lastIndex, 1);
             }
             nextChild._new = oldChild;
         }
@@ -471,21 +473,26 @@ function diffChildren(parentVnode, nextChildren, parentNode, context, updateQueu
         if (nextChild._new) {
             var lastChild = nextChild._new;
             delete nextChild._new;
+            if(dom){
+                insertPoint = dom.nextSibling;
+            }
             if (lastChild === true) {
                 //新节点有两种情况，命中位置更后方的旧节点或就地创建实例化
                 dom = mountVnode(null, nextChild, parentVnode, context, updateQueue);
-                insertElement(parentNode, dom, childNodes[k]);
+                insertElement(parentNode, dom, insertPoint);
             } else {
                 oldDom = lastChild._hostNode;
-                if (oldDom !== childNodes[k]) {
-                    insertElement(parentNode, oldDom, childNodes[k]);
+                if (oldDom !== insertPoint) {
+                    insertElement(parentNode, oldDom, insertPoint);
                 }
-                alignVnode(lastChild, nextChild, parentVnode, context, updateQueue);
+                dom = alignVnode(lastChild, nextChild, parentVnode, context, updateQueue);
             }
-            k++;
+            //  k++;
         } else {
-            removeElement(nextChild._hostNode);
-            disposeVnode(nextChild);
+            if(nextChild._hostNode){
+                removeElement(nextChild._hostNode);
+                disposeVnode(nextChild);
+            }
         }
     }
 }

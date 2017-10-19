@@ -26,6 +26,7 @@ function disposeElement(vnode) {
         for (let i = 0, n = vchildren.length; i < n; i++) {
             disposeVnode(vchildren[i]);
         }
+        vchildren.length = 0;
     }
 }
 
