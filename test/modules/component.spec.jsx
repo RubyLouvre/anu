@@ -1,6 +1,7 @@
 import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
 import React from "dist/React";
 import PureComponent from "src/PureComponent";
+import ReactTestUtils from "lib/ReactTestUtils";
 
 describe("组件相关", function() {
     this.timeout(200000);
@@ -19,7 +20,7 @@ describe("组件相关", function() {
     afterEach(function() {
         body.removeChild(div);
     });
-    it("stateless", async () => {
+    it("stateless", function() {
         function HelloComponent(
             props
             /* context */
@@ -29,13 +30,12 @@ describe("组件相关", function() {
 
         var s = React.render(<HelloComponent name="Sebastian" />, div);
 
-        await browser.pause(200).$apply();
         expect(s.updater._hostNode.innerHTML).toBe("Hello Sebastian");
     });
-
-    it("setState", async () => {
+   
+    it("shouldComponentUpdate什么也不返回", function() {
         var a = 1;
-        class A extends React.Component {
+        class App extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
@@ -68,21 +68,17 @@ describe("组件相关", function() {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
             }
         }
-
-        var s = React.render(<A />, div);
-        await browser.pause(200).$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("1");
-        await browser
-            .click(s.updater._hostNode)
-            .pause(200)
-            .$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("1");
+        var vnode = <App />
+        ReactDOM.render(vnode, div);
+        expect(vnode._hostNode.innerHTML).toBe("1");
+        ReactTestUtils.Simulate.click(vnode._hostNode)
+        expect(vnode._hostNode.innerHTML).toBe("1");
 
         expect(a).toBe(3);
     });
-    it("setState2", async () => {
+    it("shouldComponentUpdate返回false", function() {
         var a = 1;
-        class A extends React.Component {
+        class App extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
@@ -116,18 +112,14 @@ describe("组件相关", function() {
             }
         }
 
-        var s = React.render(<A />, div);
-        await browser.pause(200).$apply();
-
-        expect(s.updater._hostNode.innerHTML).toBe("1");
-        await browser
-            .click(s.updater._hostNode)
-            .pause(200)
-            .$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("1");
+        var vnode = <App />
+        ReactDOM.render(vnode, div);
+        expect(vnode._hostNode.innerHTML).toBe("1");
+        ReactTestUtils.Simulate.click(vnode._hostNode)
+        expect(vnode._hostNode.innerHTML).toBe("1");
         expect(a).toBe(3);
     });
-    it("PureComponent", async () => {
+    it("PureComponent", function() {
         var a = 1;
         class App extends React.PureComponent {
             constructor(props) {
@@ -149,18 +141,15 @@ describe("组件相关", function() {
             }
         }
 
-        var s = React.render(<App />, div);
-        await browser.pause(200).$apply();
-
-        expect(s.updater._hostNode.innerHTML).toBe("7");
-        await browser
-            .click(s.updater._hostNode)
-            .pause(200)
-            .$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("7");
+        var vnode = <App />
+        ReactDOM.render(vnode, div);
+        expect(vnode._hostNode.innerHTML).toBe("7");
+        ReactTestUtils.Simulate.click(vnode._hostNode)
+        expect(vnode._hostNode.innerHTML).toBe("7");
     });
-    it("PureComponent2", async () => {
-        class A extends React.PureComponent {
+
+    it("PureComponent2", function() {
+        class App extends React.PureComponent {
             constructor(props) {
                 super(props);
                 this.state = {
@@ -183,15 +172,12 @@ describe("组件相关", function() {
             }
         }
 
-        var s = React.render(<A />, div);
-        await browser.pause(100).$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("7");
+        var vnode = <App />
+        ReactDOM.render(vnode, div);
+        expect(vnode._hostNode.innerHTML).toBe("7");
+        ReactTestUtils.Simulate.click(vnode._hostNode)
+        expect(vnode._hostNode.innerHTML).toBe("9");
 
-        await browser
-            .click(s.updater._hostNode)
-            .pause(200)
-            .$apply();
-        expect(s.updater._hostNode.innerHTML).toBe("9");
     });
     it("子组件是无状态组件", async () => {
         function Select(props) {
@@ -287,7 +273,7 @@ describe("组件相关", function() {
         expect(s.refs.d.selected).toBe(true);
     });
 
-    it("多选下拉框defaultValue", async () => {
+    it("多选下拉框defaultValue", function() {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -309,7 +295,7 @@ describe("组件相关", function() {
         }
 
         var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
+      
         expect(s.refs.c.selected).toBe(true);
     });
 
@@ -339,7 +325,7 @@ describe("组件相关", function() {
         expect(s.refs.a.selected).toBe(true);
     });
 
-    it("一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount", async () => {
+    it("一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount", function() {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -392,21 +378,21 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
+      
         expect(updateCount).toBe(0);
         expect(receiveCount).toBe(0);
         s.change("111");
-        await browser.pause(100).$apply();
+       
         expect(updateCount).toBe(1);
         expect(receiveCount).toBe(1);
         s.change("111x");
-        await browser.pause(100).$apply();
+      
         expect(updateCount).toBe(2);
         expect(receiveCount).toBe(2);
         expect(div.firstChild.childNodes[1].nodeType).toBe(8);
         expect(destroyCount).toBe(0);
         s.change("111");
-        await browser.pause(100).$apply();
+      
         expect(updateCount).toBe(3);
         expect(receiveCount).toBe(3);
         expect(div.firstChild.childNodes[1].nodeType).toBe(1);
@@ -551,7 +537,33 @@ describe("组件相关", function() {
         expect(span.innerHTML).toBe("默认值");
     });
 
-    it("checkNull 中如果组件返回字符串应该报错", () => {});
+    it("新旧两种无状态组件的ref传参", function(){
+        var list = []
+        function Old (props){
+           return  <span>{props.aaa}</span>
+        }
+        ReactDOM.render(<Old ref={(a)=>{ list.push(!!a)}} aaa={111} />, div);
+        ReactDOM.render(<Old ref={(a)=>{ list.push(!!a)}} aaa={222} />, div);
+        expect(list).toEqual([false, false, false])
+        var list2 = []
+        function New (props){
+           return {
+                componentWillMount(){
+                    list2.push("mount")
+                },
+                componentWillUpdate(){
+                    list2.push("update")
+                },
+               render(){
+                   return <span>{props.aaa}</span>
+               }
+           } 
+        }
+        ReactDOM.render(<New ref={(a)=>{ list2.push(!!a)}} aaa={111} />, div);
+        ReactDOM.render(<New ref={(a)=>{ list2.push(!!a)}} aaa={222} />, div);
+        expect(list2).toEqual(["mount", true, false, "update",true])
+
+    })
 
     it("componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素", () => {
         var assertions = 0;

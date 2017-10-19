@@ -207,15 +207,6 @@ var Refs = {
             pendingRefs.push(nextVnode.ref.bind(0, dom));
         }
     },
-    createInstanceRef: function createInstanceRef(updater, ref) {
-        updater._ref = function () {
-            if (ref) {
-                var inst = updater._instance;
-                ref(inst.__isStateless ? null : inst);
-            }
-            updater._ref = getDOMNode;
-        };
-    },
     createStringRef: function createStringRef(owner, ref) {
         var stringRef = owner === null ? errRef : function (dom) {
             if (dom) {
@@ -1821,7 +1812,7 @@ function Updater(instance, vnode) {
     this._mountOrder = mountOrder++;
     this._instance = instance;
     this._pendingCallbacks = [];
-    this._ref = noop;
+    // this._openRef = false;
     this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
@@ -1854,6 +1845,15 @@ Updater.prototype = {
         }
         pendings.length = 0;
         return nextState;
+    },
+
+    _ref: function _ref() {
+        var vnode = this.vnode;
+        if (vnode.ref && this._openRef) {
+            var inst = this._instance;
+            vnode.ref(inst.__isStateless ? null : inst);
+            this._openRef = false;
+        }
     },
     renderComponent: function renderComponent(cb, rendered) {
         var vnode = this.vnode,
@@ -2278,7 +2278,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
         return mountVnode(lastNode, nextRendered, vparent, childContext, updateQueue, updater //作为parentUpater往下传
         );
     }, updater.rendered);
-    Refs.createInstanceRef(updater, ref);
+    updater._openRef = !!ref;
+    // Refs.createInstanceRef(updater, ref);
     var userHook = instance.componentDidMount;
     updater._didHook = function () {
         userHook && userHook.call(instance);
@@ -2316,11 +2317,9 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         instance.componentWillReceiveProps(nextProps, nextContext);
         updater._receiving = false;
     }
-    if (!instance.__isStateless) {
-        ref && Refs.detachRef(lastVnode, nextVnode);
-        Refs.createInstanceRef(updater, nextVnode.ref);
-    }
 
+    ref && Refs.detachRef(lastVnode, nextVnode);
+    updater._openRef = nextVnode.ref;
     //updater上总是保持新的数据
 
     updater.context = nextContext;

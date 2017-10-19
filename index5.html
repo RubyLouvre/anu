@@ -8,7 +8,7 @@
     
   <script type='text/javascript' src="./dist/React.js"></script>
  
-  <!--<script type='text/javascript' src="./test/react.js"></script>
+ <!-- <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -40,53 +40,31 @@
               }
           }
       }
-      class A extends React.Component{
-        componentWillUnmount(){
-          list.push("A remove")
-        }
-        componentWillUpdate(){
-          list.push("A update")
-        }
-        render(){
-          return <span>A</span>
+     
+     /*
+      function App (props){
+        return  <span>{props.aaa}</span>
+      }
+     */
+       //new
+     
+      function App (props){
+        return {
+          componentWillMount(){
+            console.log("mount")
+          },
+          componentWillUpdate(){
+            console.log("update")
+          },
+          render(){
+            return <span>{props.aaa}</span>
+          }
         }
       }
-      class B extends React.Component{
-        componentDidMount(){
-          list.push("B mount")
-        }
-        render(){
-          return <span>B</span>
-        }
-      }
-      var list = []
-      class App extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = {
-            a: 1
-          };
-        }
-        render() {
-          return <div>
-              {
-                this.state.a ? 
-                [<A />,<A />,<A />,
-                <span key="a" ref={(a)=>{list.push(111+(a?"instance":"null"))}}>a</span>,
-                <span key="b" ref={(a)=>{list.push(222+(a?"instance":"null"))}}>b</span>,
-                <span key="c" ref={(a)=>{list.push(333+(a?"instance":"null"))}}>c</span>,
-              ]:
-                [<span key="b" ref={(a)=>{list.push(444+(a?"instance":"null"))}}>b</span>,
-                <span key="a" ref={(a)=>{list.push(555+(a?"instance":"null"))}}>a</span>,<A />, <B />]
-            }
-            </div>
-        }
-      }
-      //对复杂孩子的更新策略，如果命中，那么插入mergeChildren位置，没有匹配的全部删掉，新的appendChild
+   
   
-      var s = ReactDOM.render(<App />, div);
-      s.setState({a:0})
-      console.log(list.join("\n"))
+     ReactDOM.render(<App ref={(a)=>{ console.log(a)}} aaa={111} />, div);
+     ReactDOM.render(<App ref={(a)=>{ console.log(a)}} aaa={222} />, div);
 
     </script>
   

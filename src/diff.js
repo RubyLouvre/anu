@@ -282,7 +282,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
             updater //作为parentUpater往下传
         );
     }, updater.rendered);
-    Refs.createInstanceRef(updater, ref);
+    updater._openRef = !!ref;
+    // Refs.createInstanceRef(updater, ref);
     let userHook = instance.componentDidMount;
     updater._didHook = function() {
         userHook && userHook.call(instance);
@@ -316,11 +317,9 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
         instance.componentWillReceiveProps(nextProps, nextContext);
         updater._receiving = false;
     }
-    if (!instance.__isStateless) {
-        ref && Refs.detachRef(lastVnode, nextVnode);
-        Refs.createInstanceRef(updater, nextVnode.ref);
-    }
-
+    
+    ref && Refs.detachRef(lastVnode, nextVnode);
+    updater._openRef = nextVnode.ref;
     //updater上总是保持新的数据
 
     updater.context = nextContext;

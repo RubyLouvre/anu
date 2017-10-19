@@ -26,15 +26,6 @@ export var Refs = {
             pendingRefs.push( nextVnode.ref.bind(0, dom));
         }
     },
-    createInstanceRef: function(updater, ref){
-        updater._ref = function(){
-            if(ref){
-                var inst = updater._instance;
-                ref(inst.__isStateless ? null: inst);
-            }
-            updater._ref = getDOMNode;
-        };
-    },
     createStringRef: function (owner, ref) {
         var stringRef = owner === null
             ? errRef

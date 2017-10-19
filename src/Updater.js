@@ -10,7 +10,7 @@ export function Updater(instance, vnode) {
     this._mountOrder = mountOrder++;
     this._instance = instance;
     this._pendingCallbacks = [];
-    this._ref = noop;
+    // this._openRef = false;
     this._didHook = noop;
     this._pendingStates = [];
     this._lifeStage = 0; //判断生命周期
@@ -44,7 +44,14 @@ Updater.prototype = {
         pendings.length = 0;
         return nextState;
     },
-
+    _ref: function(){
+        var vnode = this.vnode;
+        if(vnode.ref && this._openRef){
+            var inst = this._instance;
+            vnode.ref(inst.__isStateless ? null: inst);
+            this._openRef = false;
+        }
+    },
     renderComponent(cb, rendered) {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
@@ -80,7 +87,7 @@ Updater.prototype = {
         let u = this;
         do{
             u.vnode._hostNode = u._hostNode = dom;
-        }while(u = u.parentUpdater);
+        }while((u = u.parentUpdater));
 
         return dom;
     }
