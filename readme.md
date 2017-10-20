@@ -17,7 +17,7 @@
 npm install anujs
 ```
 
-读作 安努 ，苏美尔的主神，开天辟地。一个无痛替换线上React的迷你React框架
+读作 安努 ，苏美尔的主神，开天辟地。一个高级兼容官方React的迷你React框架，用于上线时无痛替换React，压缩整个项目的体积。
 QQ交流学习群：  370262116
 
 特点：
@@ -58,7 +58,7 @@ resolve: {
         // 若要兼容 IE 请使用以下配置
         // 'react': 'anujs/dist/ReactIE',
         // 'react-dom': 'anujs/dist/ReactIE',
-    
+        // 'redux': 'anujs/lib/ReduxIE',//这主要用于IE6－8，因为官方源码中的isPlainObject方法性能超差
         // 如果引用了 prop-types 或 create-react-class
         // 需要添加如下别名
         'prop-types': 'anujs/lib/ReactPropTypes',

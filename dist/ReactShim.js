@@ -2374,7 +2374,7 @@ function isSameNode(a, b) {
 }
 
 var React = {
-    version: "1.1.3",
+    version: "1.1.4",
     render: render,
     options: options,
     Children: Children, //支持react-redux

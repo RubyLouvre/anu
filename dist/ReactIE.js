@@ -2670,7 +2670,7 @@ keysPolyfill();
 setTimeout(keysPolyfill, 0);
 setTimeout(keysPolyfill, 100);
 var React = {
-    version: "1.1.3",
+    version: "1.1.4",
     render: render,
     options: options,
     PropTypes: PropTypes,
