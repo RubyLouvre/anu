@@ -29,7 +29,7 @@ export function drainQueue(queue) {
         updater._ref(); //执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
-            options.patchComponent(updater, queue);
+            options.patchComponent(updater);
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
@@ -49,7 +49,6 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function(queue) {
     if (!queue) {
-       
         queue = dirtyComponents.last ;
         if(!queue){
             return;
@@ -58,7 +57,6 @@ options.flushUpdaters = function(queue) {
         dirtyComponents.last = null;
         dirtyComponents.length = 0;
         options.queue = queue;
-        //  queue = clearArray(dirtyComponents);
         if (queue.length) {
             queue.sort(mountSorter);
         }

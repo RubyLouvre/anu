@@ -1109,7 +1109,6 @@ function setStateImpl(updater, state, cb) {
         var cur = options.queue = [updater];
         cur.last = last;
         options.flushUpdaters(cur);
-
         options.queue = cur.last || [];
     }
 }
@@ -1983,7 +1982,7 @@ function drainQueue(queue) {
         updater._ref(); //执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
         if (updater._renderInNextCycle) {
-            options.patchComponent(updater, queue);
+            options.patchComponent(updater);
         }
     }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
@@ -2003,7 +2002,6 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function (queue) {
     if (!queue) {
-
         queue = dirtyComponents.last;
         if (!queue) {
             return;
@@ -2012,7 +2010,6 @@ options.flushUpdaters = function (queue) {
         dirtyComponents.last = null;
         dirtyComponents.length = 0;
         options.queue = queue;
-        //  queue = clearArray(dirtyComponents);
         if (queue.length) {
             queue.sort(mountSorter);
         }
@@ -2064,7 +2061,7 @@ function findDOMNode(ref) {
 function createPortal(vchildren, container) {
     var parentVnode = getVParent(container);
     parentVnode.vchildren = container.vchildren || emptyArray;
-    diffChildren(getVParent(container), vchildren, container, {}, []);
+    diffChildren(getVParent(container), vchildren, container, {});
     parentVnode.vchildren = vchildren;
     return null;
 }
@@ -2087,10 +2084,11 @@ function renderByAnu(vnode, container, callback) {
     if (!(container && container.getElementsByTagName)) {
         throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
     }
-    //let updateQueue = [],
     var rootNode = void 0,
         lastVnode = container.__component;
-    options.queue = [];
+    if (!options.queue) {
+        options.queue = [];
+    }
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context);
     } else {
@@ -2304,7 +2302,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, parentUpdater) 
         );
     }, updater.rendered);
     updater._openRef = !!ref;
-    // Refs.createInstanceRef(updater, ref);
     var userHook = instance.componentDidMount;
     updater._didHook = function () {
         userHook && userHook.call(instance);
@@ -2312,7 +2309,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, parentUpdater) 
         options.afterMount(instance);
     };
     options.queue.push(updater);
-    // updateQueue.push(updater);
 
     return dom;
 }
@@ -2362,7 +2358,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext) {
     patchComponent(updater);
     //子组件先执行
     options.queue.push(updater);
-    //updateQueue.push(updater);
     return updater._hostNode;
 }
 
@@ -2394,7 +2389,6 @@ function patchComponent(updater) {
     instance.context = nextContext;
     if (!shouldUpdate) {
         options.queue.push(updater);
-        //  updateQueue.push(updater);
         return dom;
     }
     instance.props = nextProps;
@@ -2414,7 +2408,6 @@ function patchComponent(updater) {
         options.afterUpdate(instance);
     };
     options.queue.push(updater);
-    //updateQueue.push(updater);
     return dom;
 }
 options.patchComponent = patchComponent;
@@ -2443,9 +2436,7 @@ function diffChildren(parentVnode, nextChildren, parentNode, context) {
     var lastChildren = parentVnode.vchildren || emptyArray,
         //parentNode.vchildren,
     nextLength = nextChildren.length,
-
-    //   childNodes = parentNode.childNodes,
-    insertPoint = parentNode.firstChild,
+        insertPoint = parentNode.firstChild,
         lastLength = lastChildren.length;
 
     //optimize 1： 如果旧数组长度为零, 只进行添加
@@ -2471,9 +2462,7 @@ function diffChildren(parentVnode, nextChildren, parentNode, context) {
         //确保新旧数组都按原顺数排列
     fuzzyHits = {},
         i = 0,
-
-    // k = 0,
-    hit = void 0,
+        hit = void 0,
         oldDom = void 0,
         dom = void 0,
         nextChild = void 0;
@@ -2526,7 +2515,6 @@ function diffChildren(parentVnode, nextChildren, parentNode, context) {
                 }
                 dom = alignVnode(lastChild, _nextChild, parentVnode, context);
             }
-            //  k++;
         } else {
             if (_nextChild._hostNode) {
                 removeElement(_nextChild._hostNode);

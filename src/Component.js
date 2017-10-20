@@ -91,7 +91,6 @@ function setStateImpl(updater, state, cb) {
         var cur =  options.queue = [updater];
         cur.last = last;
         options.flushUpdaters(cur);
-      
         options.queue =  cur.last || [];
     }
 }

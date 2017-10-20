@@ -46,7 +46,7 @@ export function findDOMNode(ref) {
 export function createPortal(vchildren, container) {
     var parentVnode = getVParent(container);
     parentVnode.vchildren = container.vchildren || emptyArray;
-    diffChildren(getVParent(container), vchildren, container, {}, []);
+    diffChildren(getVParent(container), vchildren, container, {});
     parentVnode.vchildren = vchildren;
     return null;
 }
@@ -67,10 +67,11 @@ function renderByAnu(vnode, container, callback, context = {}) {
     if (!(container && container.getElementsByTagName)) {
         throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
-    //let updateQueue = [],
     let  rootNode,
         lastVnode = container.__component;
-    options.queue = [];
+    if(!options.queue){
+        options.queue = [];
+    }
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context);
     } else {
@@ -280,7 +281,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, parentUpdater) 
         );
     }, updater.rendered);
     updater._openRef = !!ref;
-    // Refs.createInstanceRef(updater, ref);
     let userHook = instance.componentDidMount;
     updater._didHook = function() {
         userHook && userHook.call(instance);
@@ -288,7 +288,6 @@ function mountComponent(lastNode, vnode, vparent, parentContext, parentUpdater) 
         options.afterMount(instance);
     };
     options.queue.push(updater);
-    // updateQueue.push(updater);
 
     return dom;
 }
@@ -334,7 +333,6 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext) {
     patchComponent(updater);
     //子组件先执行
     options.queue.push(updater);
-    //updateQueue.push(updater);
     return updater._hostNode;
 }
 
@@ -358,7 +356,6 @@ function patchComponent(updater) {
     instance.context = nextContext;
     if (!shouldUpdate) {
         options.queue.push(updater);
-        //  updateQueue.push(updater);
         return dom;
     }
     instance.props = nextProps;
@@ -378,7 +375,6 @@ function patchComponent(updater) {
         options.afterUpdate(instance);
     };
     options.queue.push(updater);
-    //updateQueue.push(updater);
     return dom;
 }
 options.patchComponent = patchComponent;
@@ -406,7 +402,6 @@ function genkey(vnode) {
 function diffChildren(parentVnode, nextChildren, parentNode, context) {
     let lastChildren =  parentVnode.vchildren || emptyArray,      //parentNode.vchildren,
         nextLength = nextChildren.length,
-        //   childNodes = parentNode.childNodes,
         insertPoint = parentNode.firstChild,
         lastLength = lastChildren.length;
 
@@ -432,7 +427,6 @@ function diffChildren(parentVnode, nextChildren, parentNode, context) {
     let mergeChildren = [], //确保新旧数组都按原顺数排列
         fuzzyHits = {},
         i = 0,
-        // k = 0,
         hit,
         oldDom,
         dom,
@@ -486,7 +480,6 @@ function diffChildren(parentVnode, nextChildren, parentNode, context) {
                 }
                 dom = alignVnode(lastChild, nextChild, parentVnode, context);
             }
-            //  k++;
         } else {
             if(nextChild._hostNode){
                 removeElement(nextChild._hostNode);
