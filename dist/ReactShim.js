@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-10-19
+ * QQ 370262116 by 司徒正美 Copyright 2017-10-20
  */
 
 (function (global, factory) {
@@ -1349,7 +1349,13 @@ function getPropAction(dom, name, isSVG) {
 
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
-
+var builtinStringProps = {
+    className: 1,
+    title: 1,
+    name: 1,
+    alt: 1,
+    lang: 1
+};
 var actionStrategy = {
     innerHTML: noop,
     children: noop,
@@ -1406,9 +1412,11 @@ var actionStrategy = {
             try {
                 if (!val && val !== 0) {
                     //如果它是字符串属性，并且不等于""，清空
-                    if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    // if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    if (builtinStringProps[name]) {
                         dom[name] = "";
                     }
+                    // }
                     dom.removeAttribute(name);
                 } else {
                     dom[name] = val;
@@ -1725,10 +1733,12 @@ Updater.prototype = {
             //true, undefined, array, {}
             throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
         }
-        this.lastRendered = this.rendered;
-        this.rendered = rendered;
+
         var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
         var dom = cb(rendered, this.vparent, childContext);
+        if (rendered._hostNode) {
+            this.rendered = rendered;
+        }
         if (!dom) {
             throw ["必须返回节点", rendered];
         }
@@ -2036,7 +2046,6 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     nextVnode._hostNode = dom;
     var vchildren = lastVnode.vchildren,
         newChildren = void 0;
-    //   var oldChildren = dom.vchildren || [];/** fatal 不再访问真实DOM */
     if (nextProps[innerHTML]) {
         vchildren.forEach(function (el) {
             disposeVnode(el);

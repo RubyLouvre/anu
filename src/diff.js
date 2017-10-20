@@ -112,6 +112,7 @@ function genVnodes(container, vnode, context, updateQueue) {
     return container.appendChild(mountVnode(lastNode, vnode, getVParent(container), context, updateQueue));
 }
 
+
 const patchStrategy = {
     0: mountText,
     1: mountElement,
@@ -198,7 +199,6 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     }
     nextVnode._hostNode = dom;
     let vchildren = lastVnode.vchildren, newChildren;
-    //   var oldChildren = dom.vchildren || [];/** fatal 不再访问真实DOM */
     if (nextProps[innerHTML]) {
         vchildren.forEach(function(el) {
             disposeVnode(el);

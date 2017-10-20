@@ -193,7 +193,13 @@ function getPropAction(dom, name, isSVG) {
         ? "attribute"
         : "property";
 }
-
+var builtinStringProps = {
+    className: 1,
+    title: 1,
+    name: 1,
+    alt:1,
+    lang:1
+};
 export var actionStrategy = {
     innerHTML: noop,
     children: noop,
@@ -249,9 +255,11 @@ export var actionStrategy = {
             try {
                 if (!val && val !== 0) {
                     //如果它是字符串属性，并且不等于""，清空
-                    if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    // if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    if(builtinStringProps[name]) {
                         dom[name] = "";
                     }
+                    // }
                     dom.removeAttribute(name);
                 } else {
                     dom[name] = val;

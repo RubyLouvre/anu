@@ -77,10 +77,12 @@ Updater.prototype = {
             //true, undefined, array, {}
             throw new Error(`@${vnode.type.name}#render:You may have returned undefined, an array or some other invalid object`);
         }
-        this.lastRendered = this.rendered;
-        this.rendered = rendered;
+      
         let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
         let dom = cb(rendered, this.vparent, childContext);
+        if(rendered._hostNode){
+            this.rendered = rendered;
+        }
         if (!dom) {
             throw ["必须返回节点", rendered];
         }

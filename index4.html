@@ -47,11 +47,34 @@
 
       var list = [];
       class A extends React.Component{
-          componentWillUnmount(){
-              list.push("remove");
+        componentDidMount(){
+              list.push("a mount");
           }
           render(){
               return <span>A</span>;
+          }
+      }
+      function genArr(n, c) {
+          var ret = []
+          for(var i = 0; i < n; i++){
+               ret.push(c)
+          }
+          return ret
+      }
+      class B extends React.Component{
+        componentDidMount(){
+            list.push("b mount");
+          }
+          render(){
+              return <p>{genArr(400,<C />)}</p>;
+          }
+      }
+      class C extends React.Component{
+        componentDidMount(){
+            list.push("c mount");
+          }
+          render(){
+              return <strong>C</strong>;
           }
       }
       class App extends React.Component {
@@ -62,32 +85,15 @@
               };
           }
           render() {
-              return <div>
-                  {
-                      this.state.a ? 
-                          [<A />,<A />,<A />,<span key="a" ref={(a)=>{
-                              list.push(111+  (a ? "instance": "null"));
-                          }}>a</span>,<span key="b" ref={(a)=>{
-                              list.push(222 + (a ? "instance": "null"));
-                              ;
-                          }}>b</span>]:
-                          [<span key="b" ref={(a)=>{
-                              list.push(333 + (a ? "instance": "null"));
-                              ;
-                          }}>b</span>,<span key="a" ref={(a)=>{
-                              list.push(444 + (a ? "instance": "null"));
-                          }}>a</span>]
-                  }
-              </div>;
+              return <div>{genArr(500, <A/>)}<div><B /></div><A /></div>;
           }
       }
-
+      var now = new Date - 0
       var s = ReactDOM.render(<App />, div);
       s.setState({a: 0});
+      console.log(new Date - now)
       console.log(list.join("\n"))
-     // expect(list).toEqual([
-      //    111,222,222,111,"remove","remove","remove",333,444
-     // ]);
+    
     </script>
   
 </body>

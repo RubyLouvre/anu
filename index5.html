@@ -57,14 +57,13 @@
             console.log("update")
           },
           render(){
-            return <span>{props.aaa}</span>
+            return <div><span>{props.aaa}</span></div>
           }
         }
       }
    
   
-     ReactDOM.render(<App ref={(a)=>{ console.log(a)}} aaa={111} />, div);
-     ReactDOM.render(<App ref={(a)=>{ console.log(a)}} aaa={222} />, div);
+     ReactDOM.render(<App  aaa={111} />, div);
 
     </script>
   
