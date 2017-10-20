@@ -13,8 +13,6 @@
  */
 
 
-var __type = Object.prototype.toString;
-
 /**
  * 一个空函数
  *
@@ -53,7 +51,8 @@ var __type = Object.prototype.toString;
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-    if (typeNumber(array) === 4) {
+    if (array + "" === array) {
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     var result = {},
@@ -95,26 +94,7 @@ function getContextByTypes(curContext, contextTypes) {
 
 
 
-var numberMap = {
-    //null undefined IE6-8这里会返回[object Object]
-    "[object Boolean]": 2,
-    "[object Number]": 3,
-    "[object String]": 4,
-    "[object Function]": 5,
-    "[object Symbol]": 6,
-    "[object Array]": 7
-};
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
-function typeNumber(data) {
-    if (data === null) {
-        return 1;
-    }
-    if (data === void 666) {
-        return 0;
-    }
-    var a = numberMap[__type.call(data)];
-    return a || 8;
-}
 
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**

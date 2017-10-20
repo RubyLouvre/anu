@@ -86,13 +86,14 @@ function clearArray(a) {
  * @returns
  */
 function isFn(obj) {
-    return typeNumber(obj) === 5;
+    return __type.call(obj) === "[object Function]";
 }
 
 var rword = /[^, ]+/g;
 
 function oneObject(array, val) {
-    if (typeNumber(array) === 4) {
+    if (array + "" === array) {
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     var result = {},
