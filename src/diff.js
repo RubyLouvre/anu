@@ -70,6 +70,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     let updateQueue = [],
         rootNode,
         lastVnode = container.__component;
+    options.queue = [];
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, updateQueue);
     } else {
@@ -83,7 +84,8 @@ function renderByAnu(vnode, container, callback, context = {}) {
 
     var instance = vnode._instance;
     container.__component = vnode;
-    drainQueue(updateQueue);
+    drainQueue(options.queue);
+    //   drainQueue(updateQueue);
     Refs.currentOwner = null; //防止干扰
     var ret = instance || rootNode;
     if (callback) {
@@ -139,6 +141,24 @@ function mountText(lastNode, vnode) {
     return (vnode._hostNode = lastNode);
 }
 
+/*
+function appendVnode(lastNode, vnode, vparent, context, updateQueue){
+    var parentNode = vparent._hostNode, dom;
+    if (lastNode && toLowerCase(lastNode.nodeName) === vnode.type) {
+        dom = lastNode;
+    }else {
+        dom = createDOM(vnode, vparent);
+    }
+    if(IE){
+        parentNode.appendChild(dom);
+    }
+    clearUp(vnode, vparent, context, updateQueue);
+    if(!IE){
+        parentNode.appendChild(dom);
+    }
+    return dom
+}
+*/
 function updateText(lastVnode, nextVnode) {
     let dom = lastVnode._hostNode;
     nextVnode._hostNode = dom;
@@ -192,11 +212,6 @@ function mountElement(lastNode, vnode, vparent, context, updateQueue) {
 function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     let { props: lastProps, _hostNode: dom, checkProps, type } = lastVnode;
     let { props: nextProps, checkProps: nextCheckProps } = nextVnode;
-    if (!dom) {
-        //eslint-disable-next-line
-        console.error("updateElement没有实例化");
-        return false;
-    }
     nextVnode._hostNode = dom;
     let vchildren = lastVnode.vchildren || emptyArray, newChildren;
     if (nextProps[innerHTML]) {
@@ -290,7 +305,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
         updater._didHook = noop;
         options.afterMount(instance);
     };
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    // updateQueue.push(updater);
 
     return dom;
 }
@@ -335,7 +351,8 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     updater.vnode = nextVnode;
     patchComponent(updater, updateQueue);
     //子组件先执行
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    //updateQueue.push(updater);
     return updater._hostNode;
 }
 
@@ -358,7 +375,8 @@ function patchComponent(updater, updateQueue) {
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
     instance.context = nextContext;
     if (!shouldUpdate) {
-        updateQueue.push(updater);
+        options.queue.push(updater);
+        //  updateQueue.push(updater);
         return dom;
     }
     instance.props = nextProps;
@@ -377,8 +395,8 @@ function patchComponent(updater, updateQueue) {
         updater._didHook = noop;
         options.afterUpdate(instance);
     };
-
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    //updateQueue.push(updater);
     return dom;
 }
 options.patchComponent = patchComponent;

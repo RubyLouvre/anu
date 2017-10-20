@@ -41,7 +41,7 @@ export function drainQueue(queue) {
     options.afterPatch();
 }
 
-var dirtyComponents = [];
+var dirtyComponents = options.dirtyComponents = [];
 function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1._mountOrder - u2._mountOrder;
@@ -49,7 +49,16 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function(queue) {
     if (!queue) {
-        queue = clearArray(dirtyComponents);
+       
+        queue = dirtyComponents.last ;
+        if(!queue){
+            return;
+        }
+        queue.push.apply(queue, dirtyComponents);
+        dirtyComponents.last = null;
+        dirtyComponents.length = 0;
+        options.queue = queue;
+        //  queue = clearArray(dirtyComponents);
         if (queue.length) {
             queue.sort(mountSorter);
         }
@@ -62,3 +71,6 @@ options.enqueueUpdater = function(updater) {
         dirtyComponents.push(updater);
     }
 };
+
+
+

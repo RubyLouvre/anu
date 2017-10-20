@@ -87,6 +87,11 @@ function setStateImpl(updater, state, cb) {
             return;
         }
         //  不在生命周期钩子内执行setState
-        options.flushUpdaters([updater]);
+        var last = options.queue;
+        var cur =  options.queue = [updater];
+        cur.last = last;
+        options.flushUpdaters(cur);
+      
+        options.queue =  cur.last || [];
     }
 }

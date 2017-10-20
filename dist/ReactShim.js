@@ -314,7 +314,12 @@ function setStateImpl(updater, state, cb) {
             return;
         }
         //  不在生命周期钩子内执行setState
-        options.flushUpdaters([updater]);
+        var last = options.queue;
+        var cur = options.queue = [updater];
+        cur.last = last;
+        options.flushUpdaters(cur);
+
+        options.queue = cur.last || [];
     }
 }
 
@@ -922,6 +927,13 @@ function dispatchEvent(e, type, end) {
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     options.async = true;
+    if (options.async) {
+        var cur = options.queue;
+        if (cur !== options.dirtyComponents) {
+            options.queue = options.dirtyComponents;
+            options.queue.last = cur;
+        }
+    }
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
@@ -1056,7 +1068,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (type) {
                 var t = getRelatedTarget(e);
                 if (!t || t !== dom && !contains(dom, t)) {
                     var common = getLowestCommonAncestor(dom, t);
-                    //由于不冒泡，因此paths长度为1 
+                    //由于不冒泡，因此paths长度为1
                     dispatchEvent(e, name, common);
                 }
             });
@@ -1355,7 +1367,8 @@ var builtinStringProps = {
     title: 1,
     name: 1,
     alt: 1,
-    lang: 1
+    lang: 1,
+    value: 1
 };
 var actionStrategy = {
     innerHTML: noop,
@@ -1828,7 +1841,7 @@ function drainQueue(queue) {
     options.afterPatch();
 }
 
-var dirtyComponents = [];
+var dirtyComponents = options.dirtyComponents = [];
 function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1._mountOrder - u2._mountOrder;
@@ -1836,7 +1849,16 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function (queue) {
     if (!queue) {
-        queue = clearArray(dirtyComponents);
+
+        queue = dirtyComponents.last;
+        if (!queue) {
+            return;
+        }
+        queue.push.apply(queue, dirtyComponents);
+        dirtyComponents.last = null;
+        dirtyComponents.length = 0;
+        options.queue = queue;
+        //  queue = clearArray(dirtyComponents);
         if (queue.length) {
             queue.sort(mountSorter);
         }
@@ -1910,6 +1932,7 @@ function renderByAnu(vnode, container, callback) {
     var updateQueue = [],
         rootNode = void 0,
         lastVnode = container.__component;
+    options.queue = [];
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context, updateQueue);
     } else {
@@ -1923,7 +1946,8 @@ function renderByAnu(vnode, container, callback) {
 
     var instance = vnode._instance;
     container.__component = vnode;
-    drainQueue(updateQueue);
+    drainQueue(options.queue);
+    //   drainQueue(updateQueue);
     Refs.currentOwner = null; //防止干扰
     var ret = instance || rootNode;
     if (callback) {
@@ -1978,6 +2002,24 @@ function mountText(lastNode, vnode) {
     return vnode._hostNode = lastNode;
 }
 
+/*
+function appendVnode(lastNode, vnode, vparent, context, updateQueue){
+    var parentNode = vparent._hostNode, dom;
+    if (lastNode && toLowerCase(lastNode.nodeName) === vnode.type) {
+        dom = lastNode;
+    }else {
+        dom = createDOM(vnode, vparent);
+    }
+    if(IE){
+        parentNode.appendChild(dom);
+    }
+    clearUp(vnode, vparent, context, updateQueue);
+    if(!IE){
+        parentNode.appendChild(dom);
+    }
+    return dom
+}
+*/
 function updateText(lastVnode, nextVnode) {
     var dom = lastVnode._hostNode;
     nextVnode._hostNode = dom;
@@ -2039,11 +2081,6 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
     var nextProps = nextVnode.props,
         nextCheckProps = nextVnode.checkProps;
 
-    if (!dom) {
-        //eslint-disable-next-line
-        console.error("updateElement没有实例化");
-        return false;
-    }
     nextVnode._hostNode = dom;
     var vchildren = lastVnode.vchildren || emptyArray,
         newChildren = void 0;
@@ -2134,7 +2171,8 @@ function mountComponent(lastNode, vnode, vparent, parentContext, updateQueue, pa
         updater._didHook = noop;
         options.afterMount(instance);
     };
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    // updateQueue.push(updater);
 
     return dom;
 }
@@ -2183,7 +2221,8 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext, updateQue
     updater.vnode = nextVnode;
     patchComponent(updater, updateQueue);
     //子组件先执行
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    //updateQueue.push(updater);
     return updater._hostNode;
 }
 
@@ -2214,7 +2253,8 @@ function patchComponent(updater, updateQueue) {
     instance.state = nextState; //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
     instance.context = nextContext;
     if (!shouldUpdate) {
-        updateQueue.push(updater);
+        options.queue.push(updater);
+        //  updateQueue.push(updater);
         return dom;
     }
     instance.props = nextProps;
@@ -2233,8 +2273,8 @@ function patchComponent(updater, updateQueue) {
         updater._didHook = noop;
         options.afterUpdate(instance);
     };
-
-    updateQueue.push(updater);
+    options.queue.push(updater);
+    //updateQueue.push(updater);
     return dom;
 }
 options.patchComponent = patchComponent;

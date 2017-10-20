@@ -197,8 +197,9 @@ var builtinStringProps = {
     className: 1,
     title: 1,
     name: 1,
-    alt:1,
-    lang:1
+    alt: 1,
+    lang: 1,
+    value: 1
 };
 export var actionStrategy = {
     innerHTML: noop,
