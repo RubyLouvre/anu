@@ -93,7 +93,6 @@ function getContextByTypes(curContext, contextTypes) {
 
 
 
-
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
 
 var rnumber = /^-?\d+(\.\d+)?$/;

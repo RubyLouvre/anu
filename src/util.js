@@ -135,8 +135,9 @@ export function camelize(target) {
 export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-
 export var options = {
+    mainQueue: [],
+    queue: [],
     beforeUnmount: noop,
     beforeRender: noop,
     beforePatch: noop,

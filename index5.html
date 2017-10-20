@@ -7,7 +7,7 @@
     <script type='text/javascript' src="./lib/shallowCompare.js"></script>
     
   <script type='text/javascript' src="./dist/React.js"></script>
- 
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
  <!-- <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -33,6 +33,7 @@
       if(!window.ReactDOM){
         window.ReactDOM = window.React
       }
+      var PropTypes = React.PropTypes
       var expect = function(a) {
           return {
               toBe: function(b) {
@@ -41,29 +42,63 @@
           }
       }
      
-     /*
-      function App (props){
-        return  <span>{props.aaa}</span>
-      }
-     */
-       //new
-     
-      function App (props){
-        return {
-          componentWillMount(){
-            console.log("mount")
-          },
-          componentWillUpdate(){
-            console.log("update")
-          },
-          render(){
-            return <div><span>{props.aaa}</span></div>
+      var arr = ['111', '222', '333']
+      class App extends React.Component {
+
+          getChildContext() {
+              return {
+                  name: "Jonas",
+                  fruit: "Banana"
+              };
           }
-        }
+          handleClick() {
+              this.getChildContext = function () {
+                  return {
+                      name: "Jonas",
+                      fruit: arr.shift() 
+                  };
+              }
+              this.forceUpdate()
+
+          }
+          render() {
+              return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
+          }
       }
-   
-  
-     ReactDOM.render(<App  aaa={111} />, div);
+      App.childContextTypes = {
+          name: PropTypes.string,
+          fruit: PropTypes.string
+      }
+
+      class B extends React.Component {
+
+          render() {
+              return <div><C /><strong>{this.context.fruit}</strong></div>;
+          }
+      }
+      B.contextTypes = {
+          fruit: PropTypes.string
+      }
+      class C extends React.Component {
+          render() {
+              return <strong>{this.context.fruit}</strong>;
+          }
+      }
+
+      var s = React.render(<App />, div)
+     
+      var strongs = div.getElementsByTagName('strong')
+      expect(strongs[0].innerHTML).toBe('')
+      expect(strongs[1].innerHTML).toBe('Banana')
+      ReactTestUtils.Simulate.click(s.refs.a)
+    
+      strongs = div.getElementsByTagName('strong')
+      expect(strongs[0].innerHTML).toBe('')
+      expect(strongs[1].innerHTML).toBe('111')
+      ReactTestUtils.Simulate.click(s.refs.a)
+      strongs = div.getElementsByTagName('strong')
+      expect(strongs[0].innerHTML).toBe('')
+      expect(strongs[1].innerHTML).toBe('222')
 
     </script>
   

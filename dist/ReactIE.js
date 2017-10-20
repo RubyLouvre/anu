@@ -144,8 +144,9 @@ function camelize(target) {
 function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-
 var options = {
+    mainQueue: [],
+    queue: [],
     beforeUnmount: noop,
     beforeRender: noop,
     beforePatch: noop,
@@ -2002,16 +2003,18 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function (queue) {
     if (!queue) {
-        queue = dirtyComponents.last;
-        if (!queue) {
+        var last = dirtyComponents.last;
+        if (!last) {
             return;
         }
-        queue.push.apply(queue, dirtyComponents);
+        queue = clearArray(dirtyComponents);
         dirtyComponents.last = null;
-        dirtyComponents.length = 0;
-        options.queue = queue;
         if (queue.length) {
+            options.queue = queue;
+            queue.last = last;
             queue.sort(mountSorter);
+        } else {
+            options.queue = last;
         }
     }
     drainQueue(queue);
@@ -2086,9 +2089,7 @@ function renderByAnu(vnode, container, callback) {
     }
     var rootNode = void 0,
         lastVnode = container.__component;
-    if (!options.queue) {
-        options.queue = [];
-    }
+
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context);
     } else {
@@ -2222,6 +2223,7 @@ function updateElement(lastVnode, nextVnode, vparent, context) {
     nextVnode._hostNode = dom;
     var vchildren = lastVnode.vchildren || emptyArray,
         newChildren = void 0;
+
     if (nextProps[innerHTML]) {
         vchildren.forEach(function (el) {
             disposeVnode(el);

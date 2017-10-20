@@ -49,19 +49,23 @@ function mountSorter(u1, u2) {
 
 options.flushUpdaters = function(queue) {
     if (!queue) {
-        queue = dirtyComponents.last ;
-        if(!queue){
+        var last = dirtyComponents.last ;
+        if(!last){
             return;
         }
-        queue.push.apply(queue, dirtyComponents);
+        queue = clearArray(dirtyComponents);
         dirtyComponents.last = null;
-        dirtyComponents.length = 0;
-        options.queue = queue;
         if (queue.length) {
+            options.queue = queue;
+            queue.last = last;
             queue.sort(mountSorter);
+        }else{
+            options.queue = last;
         }
+
     }
     drainQueue(queue);
+
 };
 
 options.enqueueUpdater = function(updater) {

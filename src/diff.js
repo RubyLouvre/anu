@@ -69,9 +69,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     }
     let  rootNode,
         lastVnode = container.__component;
-    if(!options.queue){
-        options.queue = [];
-    }
+    
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, getVParent(container), context);
     } else {
@@ -198,6 +196,7 @@ function updateElement(lastVnode, nextVnode, vparent, context) {
     let { props: nextProps, checkProps: nextCheckProps } = nextVnode;
     nextVnode._hostNode = dom;
     let vchildren = lastVnode.vchildren || emptyArray, newChildren;
+    
     if (nextProps[innerHTML]) {
         vchildren.forEach(function(el) {
             disposeVnode(el);
@@ -231,7 +230,7 @@ function updateElement(lastVnode, nextVnode, vparent, context) {
 function mountChildren(parentNode, children, vparent, context) {
     for (let i = 0, n = children.length; i < n; i++) {
         var vnode = children[i];
-        parentNode.appendChild(mountVnode(null, vnode, vparent, context));
+        parentNode.appendChild(  mountVnode(null, vnode, vparent, context)   );
     }
 }
 
