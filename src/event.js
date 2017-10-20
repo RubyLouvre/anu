@@ -36,7 +36,6 @@ export function dispatchEvent(e, type, end) {
     if (hook && false === hook(e)) {
         return;
     }
-
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     options.async = true;

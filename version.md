@@ -5,6 +5,7 @@
 4. 处理updateElement方法中两个虚拟DOM的引用一样时，调用flattenChildren时，旧的vchildren丢失的情况
 5. 移除Refs中的createStringRef，createInsanceRef，添加fireRef,
    重构detachRef,clearRefs,cloneElement,createElement有关ref的部分，尽量减少闭包的应用
+6. 将updateQueue数组移出所有diff方法，合并到调度器中
 
 ## 1.1.3
 1. 抽象出一个Update类，用于封装组件实例上的所有私有数据

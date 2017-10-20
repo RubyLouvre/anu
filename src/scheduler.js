@@ -41,7 +41,7 @@ export function drainQueue(queue) {
     options.afterPatch();
 }
 
-var dirtyComponents = options.dirtyComponents = [];
+var dirtyComponents = options.dirtyComponents;
 function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1._mountOrder - u2._mountOrder;

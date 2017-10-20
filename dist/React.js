@@ -146,7 +146,7 @@ function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
 var options = {
-    mainQueue: [],
+    dirtyComponents: [],
     queue: [],
     beforeUnmount: noop,
     beforeRender: noop,
@@ -724,7 +724,6 @@ function dispatchEvent(e, type, end) {
     if (hook && false === hook(e)) {
         return;
     }
-
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     options.async = true;
@@ -1996,7 +1995,7 @@ function drainQueue(queue) {
     options.afterPatch();
 }
 
-var dirtyComponents = options.dirtyComponents = [];
+var dirtyComponents = options.dirtyComponents;
 function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1._mountOrder - u2._mountOrder;

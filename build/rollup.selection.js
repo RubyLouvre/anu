@@ -4,7 +4,6 @@ import filesize from "rollup-plugin-filesize";
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
-
 export default {
     entry: "./build/ReactSelection.js",
     format: "umd",
