@@ -12,7 +12,25 @@ import { createElement } from "./createElement";
 import { render, createPortal, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
 import "./compat";
-
+function needFix(fn) {
+    return !/native code/.test(fn);
+}
+function keysPolyfill() {//解决IE下Object.keys的性能问题
+    if (needFix(Object.keys)) {
+        Object.keys = function keys(obj) {
+            var a = [];
+            for(var k in obj) {
+                if (obj.hasOwnProperty(k)) {
+                    a.push(k);
+                }
+            }
+            return a;
+        };
+    }
+}
+keysPolyfill();
+setTimeout(keysPolyfill, 0);
+setTimeout(keysPolyfill, 100);
 var React = {
     version: "VERSION",
     render,
