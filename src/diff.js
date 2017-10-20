@@ -198,7 +198,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         return false;
     }
     nextVnode._hostNode = dom;
-    let vchildren = lastVnode.vchildren, newChildren;
+    let vchildren = lastVnode.vchildren || emptyArray, newChildren;
     if (nextProps[innerHTML]) {
         vchildren.forEach(function(el) {
             disposeVnode(el);

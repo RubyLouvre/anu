@@ -2044,7 +2044,7 @@ function updateElement(lastVnode, nextVnode, vparent, context, updateQueue) {
         return false;
     }
     nextVnode._hostNode = dom;
-    var vchildren = lastVnode.vchildren,
+    var vchildren = lastVnode.vchildren || emptyArray,
         newChildren = void 0;
     if (nextProps[innerHTML]) {
         vchildren.forEach(function (el) {
