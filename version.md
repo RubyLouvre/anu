@@ -8,7 +8,7 @@
    重构detachRef,clearRefs,cloneElement,createElement有关ref的部分，尽量减少闭包的应用
 6. 将updateQueue数组移出所有diff方法，合并到调度器中
 
-## 1.1.3
+## 1.1.3（2017.10.08）
 
 1. 抽象出一个Update类，用于封装组件实例上的所有私有数据
 2. 抽象出一个instantiateComponente用于同时实例化有状态与无状态组件，从此再没有mountStateless, updateStateless方法
@@ -17,7 +17,7 @@
 5. 修改检测空对象的逻辑
 6. 简化任务调度系统的逻辑
 
-## 1.1.2
+## 1.1.2（2017.10.01）
 
 1. 修正 onChange 事件
 2. 重构 diffProps 模块的实现
@@ -44,7 +44,7 @@
 16. 修正ref的更新方式
 17. shouldComponentUpdate返回假值时，当前的虚拟DOM应该吸纳旧虚拟DOM的有用信息
 
-## 1.1.1
+## 1.1.1（2017.9.9）
 
 1. 简化createClass
 2. 修正flattenHooks BUG， 如果hooks中只有一个函数，就不用再包一层
@@ -61,7 +61,7 @@
 12. 修正getNs方法的实现（原先是使用hash表进行穷举，但svg文档也有a, script ,style元素，导致无法区分）
 13. 用户在componentDidUpdate使用setState是不当操作，导致进入死循环，改用定时器减缓调用频率，防止页面卡死（官方React也存在类似的机制）
 
-## 1.1.0
+## 1.1.0（2017.08.28）
 
 1. disabled的元素不能触发点击事件
 2. 修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理
@@ -71,7 +71,7 @@
 6. react/lib中添加一些简用的外围模块，如ReactComponentWithPureRenderMixin，shallowCompare，sliceChildren
 
 
-## 1.0.8
+## 1.0.8（2017.08.18）
 
 1. event.originalEvent更名为 event.nativeEvent
 2. 修正polyfill中forEach的BUG
@@ -88,7 +88,7 @@
 12. 处理mouseenter/mouseleave的兼容问题
 13. 处理focus/blur的兼容问题
 
-## 1.0.7
+## 1.0.7（2017.07.29）
 
 1. 处理用户在render方法 return this.props.children 的情况，需要将数组转换为单个虚拟DOM
 2. 处理两个组件虚拟DOM都没有实例化的情况
@@ -96,14 +96,14 @@
 4. 支持mouseenter/mouseleave及重构事件系统
 
 
-## 1.0.6
+## 1.0.6（2017.07.24）
 
 1. 重新支持chrome DevTools
 2. 添加对Immutable.js的支持
 3. 修复用户在componentWillUpdate/shouldComponentUpdate/componentDidUpdate钩子中执行setState引发死循环的BUG
 
 
-## 1.0.5
+## 1.0.5（2017.07.14）
 
 1. 优化scheduler机制
 2. 实现对createFactory的支持
@@ -111,7 +111,7 @@
 4. 使用typeNumber代替typeof关键字，减少打包后的体积
 
 
-## 1.0.4
+## 1.0.4 （2017.07.07）
 
 1. 修正 unable to preventdefault inside passive event listener due to target 的错误处理，
    这是chrome51+, 为了提高性能，默认对touchmove/mousemove/mousewheel事件禁用preventDefault方法引发的问题
@@ -121,7 +121,7 @@
 5. 实现对createClass的支持
 6. 实现对mixin的支持
 
-## 1.0.3
+## 1.0.3 （2017.07.25）
 
 1. 实现unstable_renderSubtreeIntoContainer, findDOMNode, isValidElement方法
 2. 实现对Children的完整支持 (only, count, forEach,map, toArray)
@@ -133,18 +133,18 @@
 8. cloneElement应该能处理数组并取出其第一个元素进制复制 
 9. 取消事务机制，改成调度任务
 
-## 1.0.2
+## 1.0.2 （2017.06.20）
 
 1. 兼容IE，实现对应的polyfill文件
 2. 实现对IE6－8的change, input, submit事件
 3. 添加对select.value的处理
 
 
-## 1.0.1
+## 1.0.1 （2017.06.09）
 
 1. 支持cloneElement
 
 
-## 1.0.0
+## 1.0.0 （2017.06.05）
 1. 发布anu
 
