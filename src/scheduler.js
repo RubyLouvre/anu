@@ -3,8 +3,8 @@ import { Refs } from "./Refs";
 
 export function drainQueue(queue) {
     options.beforePatch();
-    //先执行所有refs方法（从上到下）
-    Refs.clearRefs(); //假如一个组件实例也没有，也要把所有元素虚拟DOM的ref执行
+    //先执行所有元素虚拟DOMrefs方法（从上到下）
+    Refs.clearElementRefs(); 
 
     let needSort = [],
         unique = {}, updater;
@@ -13,16 +13,15 @@ export function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
         }
-        Refs.clearRefs();
+        Refs.clearElementRefs();
         updater._didUpdate = updater._lifeStage === 2;
-        updater._didHook(); //执行所有mount/update钩子（从下到上）
-        updater._lifeStage = 1;
-        updater._hydrating = false;
+        updater.componentDidCallback(); //执行所有mount/update钩子（从下到上）
+        // updater._lifeStage = 1;
+        // updater._hydrating = false;
         if (!updater._renderInNextCycle) {
             updater._didUpdate = false;
         }
@@ -73,6 +72,3 @@ options.enqueueUpdater = function(updater) {
         dirtyComponents.push(updater);
     }
 };
-
-
-

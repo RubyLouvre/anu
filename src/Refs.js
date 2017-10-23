@@ -3,9 +3,10 @@ function getDOMNode() {
     return this;
 }
 export const pendingRefs = [];
+window.pendingRefs = pendingRefs;
 export var Refs = {
     currentOwner: null,
-    clearRefs: function() {
+    clearElementRefs: function() {
         let callback = this.fireRef;
         let refs = pendingRefs.splice(0, pendingRefs.length);
         for (let i = 0, n = refs.length; i < n; i += 2) {

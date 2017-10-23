@@ -1,5 +1,5 @@
 var mountOrder = 1;
-import { getChildContext, noop, extend } from "../src/util";
+import { getChildContext, noop, extend, options, emptyArray } from "../src/util";
 import { Refs } from "./Refs";
 function alwaysNull() {
     return null;
@@ -23,7 +23,10 @@ export function Updater(instance, vnode) {
         this.mergeStates = alwaysNull;
     }
 }
-
+var cbMap = {
+    1: "componentDidMount",
+    2: "componentDidUpdate"
+};
 Updater.prototype = {
     mergeStates() {
         let instance = this._instance,
@@ -52,23 +55,37 @@ Updater.prototype = {
             this._openRef = false;
         }
     },
-    renderComponent(cb, rendered) {
+    componentDidCallback: function() {
+        if (this._lifeStage > 0) {
+            var instance = this._instance;
+            var userHook = instance[cbMap[this._lifeStage]];
+            this._lifeStage = -1;
+            userHook && userHook.apply(instance, this.oldDatas);
+            this.oldDatas = emptyArray;
+            if (this._lifeStage == 1) {
+                options.afterMount(instance);
+            } else {
+                options.afterUpdate(instance);
+            }
+            this._hydrating = false;// 见setStateImpl
+        }
+    },
+    renderComponent(cb) {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
-        if (!rendered) {
-            let lastOwn = Refs.currentOwner;
-            Refs.currentOwner = instance;
-            try {
-                if (this.willReceive === false) {
-                    rendered = this.rendered;
-                    delete this.willReceive;
-                } else {
-                    rendered = instance.render();
-                }
-            } finally {
-                Refs.currentOwner = lastOwn;
+        let lastOwn = Refs.currentOwner, rendered;
+        Refs.currentOwner = instance;
+        try {
+            if (this.willReceive === false) {
+                rendered = this.rendered;
+                delete this.willReceive;
+            } else {
+                rendered = instance.render();
             }
+        } finally {
+            Refs.currentOwner = lastOwn;
         }
+        
 
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {
@@ -95,39 +112,3 @@ Updater.prototype = {
     }
 };
 
-export function instantiateComponent(type, vnode, props, context) {
-    let isStateless = vnode.vtype === 4;
-    let instance = isStateless
-        ? {
-            refs: {},
-            render: function() {
-                return type(this.props, this.context);
-            }
-        }
-        : new type(props, context);
-    let updater = new Updater(instance, vnode, props, context);
-    //props, context是不可变的
-    instance.props = updater.props = props;
-    instance.context = updater.context = context;
-    instance.constructor = type;
-    updater.displayName = type.displayName || type.name;
-
-    if (isStateless) {
-        let lastOwn = Refs.currentOwner;
-        Refs.currentOwner = instance;
-        try {
-            var mixin = instance.render();
-        } finally {
-            Refs.currentOwner = lastOwn;
-        }
-        if (mixin && mixin.render) {
-            //支持module pattern component
-            extend(instance, mixin);
-        } else {
-            instance.__isStateless = true;
-            updater.rendered = mixin;
-        }
-    }
-
-    return instance;
-}

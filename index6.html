@@ -42,138 +42,44 @@
                     }
                 }
             }
-            var contextChanges = 0;
-            var propChanges = 0;
+           
+            var assertions = 0;
 
+        class Inner extends React.Component {
+            render() {
+                return <span />;
+            }
 
-            class Parent extends React.Component {
-                static childContextTypes = {
-                    foo: PropTypes.string
-                };
-    
-                state = {
-                    foo: "abc"
-                };
-    
-                getChildContext() {
-                    return {
-                        foo: this.state.foo
-                    };
-                }
-                componentDidMount(){
-                    console.log("Parent componentDidMount")
-                }
-                componentWillUpdate(){
-                    console.log("Parent componentWillUpdate")
-                }
-                render() {
-                    return <div className="parent">{this.props.children}</div>;
-                }
+            componentDidMount() {
+                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                assertions++;
             }
-    
-            class GrandChild extends React.Component {
-                static contextTypes = {
-                    foo: PropTypes.string.isRequired
-                };
-    
-                componentWillReceiveProps(nextProps, nextContext) {
-                    expect("foo" in nextContext).toBe(true);
-    
-                    if (nextProps !== this.props) {
-                        propChanges++;
-                    }
-    
-                    if (nextContext !== this.context) {
-                        contextChanges++;
-                    }
-                }
-                componentDidMount(){
-                    console.log("GrandChild componentDidMount")
-                }
-                componentWillUpdate(){
-                    console.log("GrandChild componentWillUpdate")
-                }
-                render() {
-                    return <span className="grand-child">{this.props.children}</span>;
-                }
+
+            componentWillUnmount() {
+                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                assertions++;
             }
-    
-            class ChildWithContext extends React.Component {
-                static contextTypes = {
-                    foo: PropTypes.string.isRequired
-                };
-    
-                componentWillReceiveProps(nextProps, nextContext) {
-                    expect("foo" in nextContext).toBe(true);
-    
-                    if (nextProps !== this.props) {
-                        propChanges++;
-                    }
-    
-                    if (nextContext !== this.context) {
-                        contextChanges++;
-                    }
-                }
-                componentDidMount(){
-                    console.log("ChildWithContext componentDidMount")
-                }
-                componentWillUpdate(){
-                    console.log("ChildWithContext componentWillUpdate")
-                }
-                render() {
-                    return <div className="child-with">{this.props.children}</div>;
-                }
+        }
+
+        class Wrapper extends React.Component {
+            render() {
+                return this.props.showInner ? <Inner /> : null;
             }
-    
-            class ChildWithoutContext extends React.Component {
-                componentWillReceiveProps(nextProps, nextContext) {
-                    expect("foo" in nextContext).toBe(false);
-    
-                    if (nextProps !== this.props) {
-                        propChanges++;
-                    }
-    
-                    if (nextContext !== this.context) {
-                        contextChanges++;
-                    }
-                }
-                componentDidMount(){
-                    console.log("ChildWithoutContext componentDidMount")
-                }
-                componentWillUpdate(){
-                    console.log("ChildWithoutContext componentWillUpdate")
-                }
-                render() {
-                    return <div className="child-without">{this.props.children}</div>;
-                }
-            }
-    
-    
-         
-    
-            var parentInstance = null;
-            var s = ReactDOM.render(
-                <Parent ref={inst => (parentInstance = inst)}>
-                    <ChildWithoutContext>
-                        A1
-                        <GrandChild>A2</GrandChild>
-                    </ChildWithoutContext>
-    
-                    <ChildWithContext>
-                        B1
-                        <GrandChild>B2</GrandChild>
-                    </ChildWithContext>
-                </Parent>,
-                container
-            );
-            console.log('=========')
-   
-            parentInstance.setState({
-                foo: "def"
-            });
-    
-            expect(propChanges).toBe(0);
-            expect(contextChanges).toBe(3); // ChildWithContext, GrandChild x 2
+        }
+
+        var el = document.createElement("div");
+        var component;
+
+        component = React.render(<Wrapper showInner={true} />, el);
+        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+
+        component = React.render(<Wrapper showInner={false} />, el);
+        expect(ReactDOM.findDOMNode(component).tagName).toBe(undefined);
+
+        component = React.render(<Wrapper showInner={true} />, el);
+        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+
+        expect(assertions).toBe(3);
           
 
           </script>

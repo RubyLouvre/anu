@@ -5,10 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./lib/shallowCompare.js"></script>
-    
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
- <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+ <!--  <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -19,16 +18,26 @@
     
         <div>开发者工具</div>
         <pre>
-            
+            bbb
+            did mount
+            will update
+            dddd-did update
+            1111
+            2222
+            3333
         </pre>
         <div id='example'></div>
     
       
   <script type='text/babel'>
    
+
      
       var container = document.getElementById("example")
       var div = container
+      if(window.preact){
+          window.React = window.preact
+      }
      // var PropTypes = React.PropTypes
       if(!window.ReactDOM){
         window.ReactDOM = window.React
@@ -41,65 +50,61 @@
               }
           }
       }
-     
-      var arr = ['111', '222', '333']
+      var list = [];
       class App extends React.Component {
-
-          getChildContext() {
-              return {
-                  name: "Jonas",
-                  fruit: "Banana"
+          constructor(props) {
+              super(props);
+              this.state = {
+                  aaa: "aaa"
               };
           }
-          handleClick() {
-              this.getChildContext = function () {
-                  return {
-                      name: "Jonas",
-                      fruit: arr.shift() 
-                  };
-              }
-              this.forceUpdate()
+          componentWillMount() {
+              this.setState(
+                  {
+                      aaa: "bbb"
+                  },
+                  function() {
+                      list.push("1111");
+                  }
+              );
+          }
+          componentDidMount() {
+              console.log("=====")
+              this.setState(
+                  {
+                      aaa: "cccc"
+                  },
+                  function() {
+                      list.push("2222");
+                  }
+              );
+              this.setState(
+                  {
+                      aaa: "dddd"
+                  },
+                  function() {
+                      list.push("3333");
+                  }
+              );
+              list.push("did mount");
+          }
 
+          componentWillUpdate() {
+              list.push("will update");
+          }
+          componentDidUpdate() {
+              list.push("did update");
           }
           render() {
-              return <div ref='a' onClick={this.handleClick.bind(this)}><h4>{new Date - 0}</h4><B /></div>;
-          }
-      }
-      App.childContextTypes = {
-          name: PropTypes.string,
-          fruit: PropTypes.string
-      }
-
-      class B extends React.Component {
-
-          render() {
-              return <div><C /><strong>{this.context.fruit}</strong></div>;
-          }
-      }
-      B.contextTypes = {
-          fruit: PropTypes.string
-      }
-      class C extends React.Component {
-          render() {
-              return <strong>{this.context.fruit}</strong>;
+              list.push(this.state.aaa);
+              return <div>{this.state.aaa}</div>;
           }
       }
 
-      var s = React.render(<App />, div)
+      var s = ReactDOM.render(<App />, div);
+      console.log(list.join("\n"))
+
      
-      var strongs = div.getElementsByTagName('strong')
-      expect(strongs[0].innerHTML).toBe('')
-      expect(strongs[1].innerHTML).toBe('Banana')
-      ReactTestUtils.Simulate.click(s.refs.a)
-    
-      strongs = div.getElementsByTagName('strong')
-      expect(strongs[0].innerHTML).toBe('')
-      expect(strongs[1].innerHTML).toBe('111')
-      ReactTestUtils.Simulate.click(s.refs.a)
-      strongs = div.getElementsByTagName('strong')
-      expect(strongs[0].innerHTML).toBe('')
-      expect(strongs[1].innerHTML).toBe('222')
-
     </script>
   
 </body>

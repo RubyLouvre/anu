@@ -1,10 +1,10 @@
-import { noop, options, innerHTML, toLowerCase, emptyObject,emptyArray, deprecatedWarn, getContextByTypes } from "./util";
+import { options, innerHTML, toLowerCase, emptyObject,emptyArray, deprecatedWarn, getContextByTypes } from "./util";
 import { diffProps } from "./diffProps";
 import { disposeVnode } from "./dispose";
 import { createElement, insertElement, removeElement, emptyElement } from "./browser";
 import { flattenChildren } from "./createElement";
 import { processFormElement } from "./ControlledComponent";
-import { instantiateComponent } from "./Updater";
+import { instantiateComponent } from "./instantiateComponent";
 import { drainQueue } from "./scheduler";
 import { Refs, pendingRefs } from "./Refs";
 
@@ -278,14 +278,10 @@ function mountComponent(lastNode, vnode, vparent, parentContext, parentUpdater) 
             childContext,
             updater //作为parentUpater往下传
         );
-    }, updater.rendered);
+    });
     updater._openRef = !!ref;
-    let userHook = instance.componentDidMount;
-    updater._didHook = function() {
-        userHook && userHook.call(instance);
-        updater._didHook = noop;
-        options.afterMount(instance);
-    };
+    updater._lifeStage = 1;
+    updater.oldDatas = emptyArray;
     options.queue.push(updater);
 
     return dom;
@@ -336,8 +332,11 @@ function updateComponent(lastVnode, nextVnode, vparent, parentContext) {
 }
 
 function patchComponent(updater) {
+   
     let { _instance: instance, _hostNode: dom, context: nextContext, props: nextProps, vnode } = updater;
-
+    if(updater._lifeStage === 1){
+        return dom;
+    }
     vnode._instance = instance; //放这里
     updater._renderInNextCycle = null;
 
@@ -366,13 +365,7 @@ function patchComponent(updater) {
     });
 
     updater._lifeStage = 2;
-    let userHook = instance.componentDidUpdate;
-
-    updater._didHook = function() {
-        userHook && userHook.call(instance, lastProps, lastState, lastContext);
-        updater._didHook = noop;
-        options.afterUpdate(instance);
-    };
+    updater.oldDatas = [ lastProps, lastState, lastContext];
     options.queue.push(updater);
     return dom;
 }
