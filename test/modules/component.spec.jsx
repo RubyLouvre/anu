@@ -27,10 +27,10 @@ describe("组件相关", function() {
         ) {
             return <div onClick={() => (props.name = 11)}>Hello {props.name}</div>;
         }
+        var vnode = <HelloComponent name="Sebastian" />
+        React.render(vnode, div);
 
-        var s = React.render(<HelloComponent name="Sebastian" />, div);
-
-        expect(s.updater._hostNode.innerHTML).toBe("Hello Sebastian");
+        expect(vnode._hostNode.innerHTML).toBe("Hello Sebastian");
     });
    
     it("shouldComponentUpdate什么也不返回", function() {
@@ -207,7 +207,6 @@ describe("组件相关", function() {
         }
 
         var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
         expect(s.refs.a.value).toBe("南京");
         await browser
             .setValue(s.refs.a, "南京22")
@@ -299,7 +298,7 @@ describe("组件相关", function() {
         expect(s.refs.c.selected).toBe(true);
     });
 
-    it("多选下拉框没有defaultValue与ReactDOM.render的回调this指向问题", async () => {
+    it("多选下拉框没有defaultValue与ReactDOM.render的回调this指向问题", function() {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -321,7 +320,6 @@ describe("组件相关", function() {
         var s = React.render(<App />, div, function() {
             expect(this.constructor.name).toBe("App");
         });
-        await browser.pause(100).$apply();
         expect(s.refs.a.selected).toBe(true);
     });
 
@@ -411,7 +409,7 @@ describe("组件相关", function() {
         );
         expect(dom.options[2].selected).toBe(true);
     });
-    it("确保ref执行在componentDidMount之前", async () => {
+    it("确保ref执行在componentDidMount之前", function() {
         var str = "";
         class Test extends React.Component {
             componentDidMount() {
@@ -436,11 +434,11 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<Test />, div);
-        await browser.pause(100).$apply();
+       
         expect(str).toBe("222111");
         expect(React.findDOMNode(s.refs.wrapper)).toBe(div.querySelector("#aaa"));
     });
-    it("确保componentDidUpdate的第一个参数是prevProps", async () => {
+    it("确保componentDidUpdate的第一个参数是prevProps", function() {
         class HasChild extends React.Component {
             constructor(props) {
                 super(props);
@@ -454,7 +452,7 @@ describe("组件相关", function() {
             }
             render() {
                 return (
-                    <div onClick={this.onClick} id="componentDidUpdate">
+                    <div onClick={this.onClick} ref="componentDidUpdate">
                         {this.a == 0 ? <A title="xxx" ref="a" /> : <A ddd="ddd" ref="a" />}
                     </div>
                 );
@@ -478,18 +476,16 @@ describe("组件相关", function() {
         };
 
         var s = React.render(<HasChild />, div);
-        await browser.pause(100).$apply();
+       
         expect(s.refs.a.props.title).toBe("xxx");
-        await browser
-            .click("#componentDidUpdate")
-            .pause(100)
-            .$apply();
+        eactTestUtils.Simulate.click(s.refs.componentDidUpdate)
+       
         expect(s.refs.a.props.title).toBe("默认值");
         expect(s.refs.a.props.ddd).toBe("ddd");
         expect(title).toBe(1);
     });
 
-    it("defaultProps的处理", async () => {
+    it("defaultProps的处理", function() {
         class HasChild extends React.Component {
             constructor(props) {
                 super(props);
@@ -503,7 +499,7 @@ describe("组件相关", function() {
             }
             render() {
                 return (
-                    <div onClick={this.onClick} id="componentDidUpdate2">
+                    <div onClick={this.onClick} ref="componentDidUpdate2">
                         {this.a == 0 ? <A title="xxx" ref="a" /> : <A ddd="ddd" ref="a" />}
                     </div>
                 );
@@ -517,23 +513,13 @@ describe("组件相关", function() {
             title: "默认值"
         };
 
-        window.onload = function() {
-            window.s = ReactDOM.render(
-                <div>
-                    <HasChild />
-                </div>,
-                document.getElementById("example")
-            );
-        };
 
         var s = React.render(<HasChild />, div);
-        await browser.pause(100).$apply();
+       
         var span = div.getElementsByTagName("span")[0];
         expect(span.innerHTML).toBe("xxx");
-        await browser
-            .click("#componentDidUpdate2")
-            .pause(100)
-            .$apply();
+        eactTestUtils.Simulate.click(s.refs.componentDidUpdate2)
+      
         expect(span.innerHTML).toBe("默认值");
     });
 
@@ -574,12 +560,12 @@ describe("组件相关", function() {
             }
 
             componentDidMount() {
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                expect(!!ReactDOM.findDOMNode(this)).toBe(true);
                 assertions++;
             }
 
             componentWillUnmount() {
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                expect(!!ReactDOM.findDOMNode(this)).toBe(true);
                 assertions++;
             }
         }
@@ -594,18 +580,18 @@ describe("组件相关", function() {
         var component;
 
         component = React.render(<Wrapper showInner={true} />, el);
-        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
 
         component = React.render(<Wrapper showInner={false} />, el);
         expect(ReactDOM.findDOMNode(component).tagName).toBe(undefined);
 
         component = React.render(<Wrapper showInner={true} />, el);
-        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
 
         expect(assertions).toBe(3);
     });
 
-    it("虚拟DOM的_owner必须在render中加上", async () => {
+    it("虚拟DOM的_owner必须在render中加上", function() {
         class B extends React.Component {
             render() {
                 return <div className="xxx">{this.props.children}</div>;
@@ -641,8 +627,7 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
-        // console.log( s._rendered.props.children[0]._instance._rendered.props.children[0].props.children[0] )
+        
         expect(b._owner.constructor).toBe(App);
         expect(c._owner.constructor).toBe(App);
     });
