@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <script type='text/javascript' src="./lib/shallowCompare.js"></script>
-    <script type='text/javascript' src="./dist/React.js"></script>
+  <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
+   <script type='text/javascript' src="./dist/React.js"></script>
   <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
- <!--  <script type='text/javascript' src="./test/react.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -18,13 +18,15 @@
     
         <div>开发者工具</div>
         <pre>
-            bbb
-            did mount
-            will update
-            dddd-did update
-            1111
-            2222
-            3333
+            "a will update",
+            "b will update",
+            "c will update",
+            "a did update",
+            "b did update",
+            "c did update",
+            "a的回调",
+            "b的回调",
+            "c的回调"
         </pre>
         <div id='example'></div>
     
@@ -46,7 +48,7 @@
       var expect = function(a) {
           return {
               toBe: function(b) {
-                  console.log(a, b, a === b)
+                  list.push(a, b, a === b)
               }
           }
       }
@@ -54,56 +56,66 @@
       class App extends React.Component {
           constructor(props) {
               super(props);
-              this.state = {
-                  aaa: "aaa"
-              };
+              this.handleClick = this.handleClick.bind(this);
           }
-          componentWillMount() {
-              this.setState(
-                  {
-                      aaa: "bbb"
-                  },
-                  function() {
-                      list.push("1111");
-                  }
-              );
-          }
-          componentDidMount() {
-              console.log("=====")
-              this.setState(
-                  {
-                      aaa: "cccc"
-                  },
-                  function() {
-                      list.push("2222");
-                  }
-              );
-              this.setState(
-                  {
-                      aaa: "dddd"
-                  },
-                  function() {
-                      list.push("3333");
-                  }
-              );
-              list.push("did mount");
-          }
-
-          componentWillUpdate() {
-              list.push("will update");
-          }
-          componentDidUpdate() {
-              list.push("did update");
+          handleClick() {
+              console.log('=====')
+              this.refs.c.setState({
+                  text:"第1"
+              },function(){
+                  list.push("c的回调");
+              });
+              this.refs.a.setState({
+                  text:"第2"
+              }, function(){
+                  list.push("a的回调");
+              });
+              this.refs.b.setState({
+                  text:"第3"
+              },function(){
+                  list.push("b的回调");
+              });
           }
           render() {
-              list.push(this.state.aaa);
-              return <div>{this.state.aaa}</div>;
+              return <div ref="kk" onClick={this.handleClick.bind(this)}>
+                  <Child name="a" ref="a" >aaa</Child> 
+                  <Child name="b" ref="b" >bbb</Child> 
+                  <Child name="c" ref="c" >ccc</Child> 
+              </div>;
           }
       }
-
+      class Child extends React.Component {
+          constructor(props) {
+              super(props);
+              this.state = {
+                  text: props.children
+              };
+          }
+          componentWillUpdate(){
+              list.push(this.props.name+" will update");
+          }
+          componentDidUpdate(){
+              list.push(this.props.name+" did update");
+          }
+          render(){
+              return <span className={this.props.name}>{this.state.text}</span>;
+          }
+      }
       var s = ReactDOM.render(<App />, div);
+      s.refs.kk.click()
       console.log(list.join("\n"))
-
+    /*  expect(list).toBe([
+          "a will update",
+          "b will update",
+          "c will update",
+          "a did update",
+          "b did update",
+          "c did update",
+          "a的回调",
+          "b的回调",
+          "c的回调"
+      ]);*/
+   
      
     </script>
   
