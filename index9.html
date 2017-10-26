@@ -4,96 +4,157 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script src="./dist/react.development.js"></script>
-    <script src="./dist/react-dom.development.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
    <!--<script src="./test/react.js"></script>
-  <script src="./test/react-dom.js"></script>-->
-    <script src="https://cdn.bootcss.com/redux/3.7.2/redux.js"></script>
-    <script src="https://cdn.bootcss.com/redux-thunk/2.2.0/redux-thunk.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
-    <script type='text/babel'>
-
-window.onload = function(){
-    class Counter extends React.Component {
-    constructor(props) {
-        super(props);
-        this.incrementAsync = this.incrementAsync.bind(this);
-        this.incrementIfOdd = this.incrementIfOdd.bind(this);
-    }
-
-    incrementIfOdd() {
-        if (this.props.value % 2 !== 0) {
-            this.props.onIncrement()
-        }
-    }
-
-    incrementAsync() {
-        setTimeout(this.props.onIncrement, 1000)
-    }
-
-    render() {
-        const { value, onIncrement, onDecrement } = this.props
-        return (
-            <div>
-                <p>当前点击次数: {value} </p>
-                <input value="增加" type="button" onClick={onIncrement} />
-
-                <input value="减少" type="button" onClick={onDecrement} />
-                <input value="只有奇数才能加" type="button" onClick={this.incrementIfOdd} />
-
-                <input value="异步增加" type="button" onClick={this.incrementAsync} />
-
-            </div>
-        )
-    }
-}
-
-function counter(state = 0, type) {
-    switch (type) {
-        case 'INCREMENT':
-            return state + 1
-        case 'DECREMENT':
-            return state - 1
-        default:
-            return state
-    }
-}
-function connect(instance, value, store, type){
-    var a = store.getState()
-    var b = counter( a, type)
-    console.log(a, b)
-    if(a !== b){
-        instance.setState({
-            [value]: b
-        })
-    }
-}
-const store = Redux.createStore(counter)
-const div = document.getElementById('example')
-const render = () => ReactDOM.render(
-    <Counter
-        value={store.getState()}
-        onIncrement={() => connect(this, 'value', store, 'INCREMENT') }
-        onDecrement={() => connect(this, 'value', store, 'DECREMENT') }
-    />,
-    div
-)
-
-render()
-//store.subscribe(render)
-}
-    </script>
+  
 </head>
 
 <body>
 
     <div>这个默认会被清掉</div>
     <div id='example'></div>
+    <pre>
+        parent-render,blue
+        getInitialState,blue
+        render,dark blue,blue
+        handleHue,dark blue,blue
+        parent-handleColor,blue
+        parent-render,green
+        setState-this,dark blue,blue
+        setState-args,dark blue,blue
+        render,light blue,blue
+        render,light blue,green
+        parent-after-setState,green
+        after-setState,light blue,green 
+        vs
+         parent-render,blue
+        getInitialState,blue
+        render,dark blue,blue
+        handleHue,dark blue,blue
+        parent-handleColor,blue
+        parent-render,green
+        setState-this,dark blue,blue
+        setState-args,dark blue,green
+        render,light green,green
+        parent-after-setState,green
+        after-setState,light green,green false
+    </pre>
 
+    <script type='text/babel'>
+    var container = document.getElementById("example")
+    var div = container
+   var expect = function(a) {
+      return {
+          toBe: function(b) {
+              console.log(a,"\nvs\n", b, a === b)
+          }
+      }
+  }
+ 
+  class ParentComponent extends React.Component {
+    state = {color: 'blue'};
 
+    handleColor = color => {
+      this.props.logger('parent-handleColor', this.state.color);
+      this.setState({color: color}, function() {
+        this.props.logger('parent-after-setState', this.state.color);
+      });
+    };
+
+    render() {
+      this.props.logger('parent-render', this.state.color);
+      return (
+        <ChildComponent
+          logger={this.props.logger}
+          color={this.state.color}
+          onSelectColor={this.handleColor}
+        />
+      );
+    }
+  }
+
+  class ChildComponent extends React.Component {
+    constructor(props) {
+      super(props);
+      props.logger('getInitialState', props.color);
+      this.state = {hue: 'dark ' + props.color};
+    }
+
+    handleHue = (shade, color) => {
+      this.props.logger('handleHue', this.state.hue, this.props.color);
+      this.props.onSelectColor(color);
+      this.setState(
+        function(state, props) {
+          this.props.logger(
+            'setState-this',
+            this.state.hue,
+            this.props.color,
+          );
+          this.props.logger('setState-args', state.hue, props.color);
+          return {hue: shade + ' ' + props.color};
+        },
+        function() {
+          this.props.logger(
+            'after-setState',
+            this.state.hue,
+            this.props.color,
+          );
+        },
+      );
+    };
+
+    render() {
+      this.props.logger('render', this.state.hue, this.props.color);
+      return (
+        <div>
+          <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
+            Dark Blue
+          </button>
+          <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
+            Light Blue
+          </button>
+          <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
+            Dark Green
+          </button>
+          <button onClick={this.handleHue.bind(this, 'light', 'green')}>
+            Light Green
+          </button>
+        </div>
+      );
+    }
+  }
+
+  var container = document.createElement('div');
+  document.body.appendChild(container);
+  var list = []
+  function logger(){
+    list.push([].slice.call(arguments, 0))
+  }
+
+  void ReactDOM.render(<ParentComponent logger={logger} />, container);
+
+  // click "light green"
+ container.childNodes[0].childNodes[3].click()
+  //console.log(JSON.stringify(logger.calls))
+  expect(list.join("\n")).toBe([
+    ['parent-render', 'blue'],
+    ['getInitialState', 'blue'],
+    ['render', 'dark blue', 'blue'],
+    ['handleHue', 'dark blue', 'blue'],
+    ['parent-handleColor', 'blue'],
+    ['parent-render', 'green'],
+    ['setState-this', 'dark blue', 'blue'],
+    ['setState-args', 'dark blue', 'green'],
+    ['render', 'light green', 'green'],
+    ['parent-after-setState', 'green'],
+    ['after-setState', 'light green', 'green']
+   
+  ].join("\n"));
+      
+
+      </script>
 </body>
 
 </html>
-
-       

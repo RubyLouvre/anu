@@ -3,88 +3,60 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
- <script type='text/javascript' src="./dist/React.js"></script>
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
 
-  <!-- <script type='text/javascript' src="./test/react.js"></script>
+     <!--<script type='text/javascript' src="./test/react.js"></script>
    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
-   
-     <script type='text/javascript' src="./lib/babel.js"></script>
-    
-  
+
+    <script type='text/javascript' src="./lib/babel.js"></script>
+
+
 
 </head>
-<body>
-    
-        <div>开发者工具</div>
-        <div id='example'></div>
-    
-        <script type='text/babel'>
 
-              var container = document.getElementById("example")
-              var PropTypes = React.PropTypes
-              var div = container
-              if(!window.ReactDOM){
-                window.ReactDOM = React
-              }
-              var expect = function(a) {
-                  return {
-                      toBe: function(b) {
-                          console.log(a, "vs", b, a === b)
-                      }
-                  }
-              }
-              var index = 0
-              var map = [
-                  <div>1111<p>ddd</p><span>333</span><Link /></div>,
-                  <div><em>新的</em><span>111</span>222<span>333</span><b>444</b><Link /></div>,
-                  <div><span>33</span></div>
-              ]
-              function Link() {
-                  return index == 1 ? <strong>ddd</strong> : <i>ddd</i>
-              }
-              class App extends React.Component {
-                  constructor(props) {
-                      super(props)
-                      this.state = {
-                          aaa: 'aaa'
-                      }
-                  }
-                  change(a) {
-                      this.setState({
-                          aaa: a
-                      })
-                  }
-                  componentDidMount() {
-                      console.log('App componentDidMount')
-                  }
-                  componentWillUpdate() {
-                      console.log('App componentWillUpdate')
-                  }
-                  render() {
-                      return map[index++]
-          
-                  }
-              }
-              var s = React.render(<App />, div)
-          
-            
-              function getString(nodes) {
-                  var str = []
-                  for (var i = 0, node; node = nodes[i++];) {
-                      str.push(node.nodeName.toLowerCase())
-                  }
-                  return str.join(' ')
-              }
-              expect(getString(div.firstChild.childNodes)).toBe('#text p span strong')
-             s.change(100)
-             expect(getString(div.firstChild.childNodes)).toBe('em span #text span b i')
-           //   s.change(100)
-           //   expect(getString(div.firstChild.childNodes)).toBe('span')
-            
-            
-            </script>
+<body>
+
+    <div>开发者工具</div>
+    <div id='example'></div>
+    <pre>
+        "render 2222",
+      
+    </pre>
+
+    <script type='text/babel'>
+
+    var container = document.getElementById("example")
+    var PropTypes = React.PropTypes
+    var div = container
+    if(!window.ReactDOM){
+    window.ReactDOM = React
+    }
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, "vs", b, a === b)
+            }
+        }
+    }
+    class StatefulComponent extends React.Component {
+      constructor(props, context) {
+        super(props, context);
+       
+        this.state = {stateField: 'somethingelse'};
+        this.setState({stateField: 'something'});
+
+      }
+
+      render() {
+        return <div>{this.state.stateField}</div>;
+      }
+    }
+    var container = document.createElement('div');
+    ReactDOM.render(<StatefulComponent />, container);
+    expect(container.textContent).toBe("somethingelse");
+           
+   </script>
 </body>
-    
- </html>
+
+</html>

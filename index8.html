@@ -4,142 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
-   <script src="./lib/ReactTestUtils.js"></script>
-   <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+  <!--<script type='text/javascript' src="./dist/React.js"></script>
+   <script src="./lib/ReactTestUtils.js"></script>-->
+   <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>
     <script src="./lib/babel.js"></script>
-    <script type='text/babel'>
-    var s, testRefsComponent
-window.onload = function(){
- var expect = function(a) {
-    return {
-        toBe: function(b) {
-            console.log(a, b, a === b)
-        }
-    }
-}
-  class ClickCounter extends React.Component {
-  state = {count: this.props.initialCount};
-
-  triggerReset = () => {
-    this.setState({count: this.props.initialCount});
-  };
-
-  handleClick = () => {
-    this.setState({count: this.state.count + 1});
-  };
-
-  render() {
-    var children = [];
-    var i;
-    for (i = 0; i < this.state.count; i++) {
-      children.push(
-        <div
-          className="clickLogDiv"
-          key={'clickLog' + i}
-          ref={'clickLog' + i}
-        />,
-      );
-    }
-    return (
-      <span className="clickIncrementer" onClick={this.handleClick}>
-        {children}
-      </span>
-    );
-  }
-}
-
-/**
- * Only purpose is to test that refs are tracked even when applied to a
- * component that is injected down several layers. Ref systems are difficult to
- * build in such a way that ownership is maintained in an airtight manner.
- */
-class GeneralContainerComponent extends React.Component {
-  render() {
-    return <div>{this.props.children}</div>;
-  }
-}
-
-/**
- * Notice how refs ownership is maintained even when injecting a component
- * into a different parent.
- */
-class TestRefsComponent extends React.Component {
-  doReset = () => {
-    console.log("triggerReset")
-    this.refs.myCounter.triggerReset();
-  };
-
-  render() {
-    return (
-      <div>
-        <div ref="resetDiv" onClick={this.doReset}>
-          Reset Me By Clicking This.
-        </div>
-        <GeneralContainerComponent ref="myContainer">
-          <ClickCounter ref="myCounter" initialCount={1} />
-        </GeneralContainerComponent>
-      </div>
-    );
-  }
-}
-
-/**
- * Render a TestRefsComponent and ensure that the main refs are wired up.
- */
-var renderTestRefsComponent = function() {
-  var testRefsComponent = ReactTestUtils.renderIntoDocument(
-    <TestRefsComponent />,
-  );
-  expect(testRefsComponent instanceof TestRefsComponent).toBe(true);
-
-  var generalContainer = testRefsComponent.refs.myContainer;
-  expect(generalContainer instanceof GeneralContainerComponent).toBe(true);
-
-  var counter = testRefsComponent.refs.myCounter;
-  expect(counter instanceof ClickCounter).toBe(true);
-
-  return testRefsComponent;
-};
-
-var expectClickLogsLengthToBe = function(instance, length) {
-  var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(
-    instance,
-    'clickLogDiv',
-  );
-  expect(clickLogs.length).toBe(length);
-  expect(Object.keys(instance.refs.myCounter.refs).length).toBe(length);
-};
-
- testRefsComponent = renderTestRefsComponent();
-    var clickIncrementer = ReactTestUtils.findRenderedDOMComponentWithClass(
-      testRefsComponent,
-      'clickIncrementer',
-    );
-
-    expectClickLogsLengthToBe(testRefsComponent, 1);
-
-    // After clicking the reset, there should still only be one click log ref.
-    ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
-    expectClickLogsLengthToBe(testRefsComponent, 1);
-
-    // Begin incrementing clicks (and therefore refs).
-    ReactTestUtils.Simulate.click(clickIncrementer);
-    expectClickLogsLengthToBe(testRefsComponent, 2);
-
-    ReactTestUtils.Simulate.click(clickIncrementer);
-    expectClickLogsLengthToBe(testRefsComponent, 3);
-
-    // Now reset again
-    ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
-    expectClickLogsLengthToBe(testRefsComponent, 1);
-
-
-
-
-}
-    </script>
+  
 </head>
 
 <body>
@@ -147,7 +17,71 @@ var expectClickLogsLengthToBe = function(instance, length) {
     <div>这个默认会被清掉</div>
     <div id='example'></div>
 
+    <script type='text/babel'>
+    var container = document.getElementById("example")
+    var div = container
+   var expect = function(a) {
+      return {
+          toBe: function(b) {
+              console.log(a, b, a === b)
+          }
+      }
+  }
+ 
+  class Static extends React.Component {
+    shouldComponentUpdate() {
+        return false;
+    }
 
+    render() {
+        return <div>{this.props.children}</div>;
+    }
+}
+
+class Component extends React.Component {
+    render() {
+        if (this.props.flipped) {
+            return (
+                <div>
+                    <Static ref="static0" a="1" key="B">
+                        B (ignored)
+                    </Static>
+                    <Static ref="static1" a="2" key="A">
+                        A (ignored)
+                    </Static>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <Static ref="static0" key="A">
+                        A
+                    </Static>
+                    <Static ref="static1" key="B">
+                        B
+                    </Static>
+                </div>
+            );
+        }
+    }
+}
+
+//var container = document.createElement("div");
+var comp = ReactDOM.render(<Component flipped={false} />, container);
+//keyA <> instance0  <> static0 <> contentA
+//keyB <> instance1  <> static1 <> contentB
+expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("A");
+expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("B");
+//keyA <> instance0  <> static1 <> contentA
+//keyB <> instance1  <> static1 <> contentB
+// When flipping the order, the refs should update even though the actual
+// contents do not
+var s = ReactDOM.render(<Component flipped={true} />, container);
+expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("B");
+expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("A");
+  
+
+      </script>
 </body>
 
 </html>

@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
 
-    <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -21,19 +21,21 @@
             Inline Babel script:22 A a1 mount
             Inline Babel script:22 A a2 mount
             Inline Babel script:22 A a3 mount
-            Inline Babel script:53 111instance
-            Inline Babel script:56 222instance
-            Inline Babel script:59 333instance
-            Inline Babel script:81 setState
-            Inline Babel script:56 222null
-            Inline Babel script:53 111null
+            Inline Babel script:59 111instance
+            Inline Babel script:62 222instance
+            Inline Babel script:65 333instance
+            Inline Babel script:80 setState
+            Inline Babel script:48 App componentWillUpdate
+            Inline Babel script:62 222null
+            Inline Babel script:59 111null
             Inline Babel script:25 A a3 update
             Inline Babel script:19 A a1 remove
             Inline Babel script:19 A a2 remove
-            Inline Babel script:59 333null
-            Inline Babel script:64 444instance
-            Inline Babel script:67 555instance
+            Inline Babel script:65 333null
+            Inline Babel script:70 444instance
+            Inline Babel script:73 555instance
             Inline Babel script:33 B mount
+            Inline Babel script:51 App componentDidUpdate
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -46,11 +48,10 @@
             var expect = function(a) {
                 return {
                     toBe: function(b) {
-                        console.log(a, "\nvs\n",b, a === b)
+                        console.log(a, "\n\rvs\n\r",b, a === b)
                     }
                 }
             }
-    
             var list = [];
             class A extends React.Component{
                 componentWillUnmount(){
@@ -74,15 +75,7 @@
                     return <span>B</span>;
                 }
             }
-            class C extends React.Component{
-                componentDidMount(){
-                    console.log("C mount");
-                }
-                render(){
-                    return <span>C</span>;
-                }
-            }
-            var list = [];
+    
             class App extends React.Component {
                 constructor(props) {
                     super(props);
@@ -112,51 +105,20 @@
                                     }}>c</span>,
                                 ]:
                                 [
-                                <A name="a1"/>,  <span key="b" ref={(a)=>{
+                                   <span key="b" ref={(a)=>{
                                         console.log(444+(a?"instance":"null"));
-                                    }}><C /></span>,
+                                    }}>111</span>,
                                     <span key="a" ref={(a)=>{
                                         console.log(555+(a?"instance":"null"));
-                                    }}><C /></span>, <B />]
+                                    }}>222</span>,<A name="a6"/>, <B />]
                         }
                     </div>; // span.b, span.a
                 }
             }
-            //每个组件只处理自己的元素节点ref。
-            // 对旧数组构建一个hash,
-            // 先处理能命中的旧虚拟DOM，针对元素虚拟DOM，判定是否有ref, 立即执行它们的ref,传入null作为参数，如span[key=b],span[key=a]
-            // 如果是组件虚拟，将为代入newChild变量，设置其_new为旧的虚拟DOM， 如新A[name=a1]命中A[name=a3], A[name=a3]应该加一个标记
-            // 然后将旧vchildren的没有命中，放到mergeChildren中，A[name=a1]移除，A[name=a2]移除，span[key=c]移除，
-            // 然后将新vchildren放入mergeChildren, span[key=b], span[key=a], B
-            // 然后执行mergeChildren
-            /**
-             * 
-             * 
-             * 跟踪源码， 是receive span[key=b], receive span[key=a], receive A[name=a3],
-             *  mount B, remove A[name=a1], remove A[name=a2], remove span[key=c]
-             * 
-             * 
-             */
             var s = ReactDOM.render(<App />, div);
             console.log("setState")
             s.setState({a: 0});
-            /*
-            expect(list.join("\n")).toBe([
-                "111instance",
-                "222instance",
-                "333instance",
-                "setState",
-                "222null",
-                "111null",
-                "A a3 update",
-                "A a1 remove",
-                "A a2 remove",
-                "333null",
-                "444instance",
-                "555instance",
-                "B mount"
-            ].join("\n"));
-            */
+            
           </script>
     
 </body>

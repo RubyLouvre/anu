@@ -7,7 +7,7 @@
   <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
    <script type='text/javascript' src="./dist/React.js"></script>
   <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <!--<script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
@@ -18,15 +18,23 @@
     
         <div>开发者工具</div>
         <pre>
-            "a will update",
-            "b will update",
-            "c will update",
-            "a did update",
-            "b did update",
-            "c did update",
-            "a的回调",
-            "b的回调",
-            "c的回调"
+            "a componentWillMount",
+            "b componentWillMount",
+            "a componentDidMount",
+            "a true",
+            "b componentDidMount",
+            "b true",
+            "update...",
+            "c componentWillMount",
+            "d componentWillMount",
+            "a false",
+            "a componentWillUnmount",
+            "b false",
+            "b componentWillUnmount",
+            "c componentDidMount",
+            "c true",
+            "d componentDidMount",
+            "d true"
         </pre>
         <div id='example'></div>
     
@@ -48,75 +56,93 @@
       var expect = function(a) {
           return {
               toBe: function(b) {
-                  list.push(a, b, a === b)
+                  console.log(a, "\n\rvs\n\r",b, a === b)
               }
           }
       }
       var list = [];
-      class App extends React.Component {
-          constructor(props) {
-              super(props);
-              this.handleClick = this.handleClick.bind(this);
-          }
-          handleClick() {
-              console.log('=====')
-              this.refs.c.setState({
-                  text:"第1"
-              },function(){
-                  list.push("c的回调");
-              });
-              this.refs.a.setState({
-                  text:"第2"
-              }, function(){
-                  list.push("a的回调");
-              });
-              this.refs.b.setState({
-                  text:"第3"
-              },function(){
-                  list.push("b的回调");
-              });
-          }
-          render() {
-              return <div ref="kk" onClick={this.handleClick.bind(this)}>
-                  <Child name="a" ref="a" >aaa</Child> 
-                  <Child name="b" ref="b" >bbb</Child> 
-                  <Child name="c" ref="c" >ccc</Child> 
-              </div>;
-          }
+      
+  var A = class extends React.Component {
+      componentWillMount() {
+          list.push(this.props.name + " componentWillMount");
       }
-      class Child extends React.Component {
-          constructor(props) {
-              super(props);
-              this.state = {
-                  text: props.children
-              };
-          }
-          componentWillUpdate(){
-              list.push(this.props.name+" will update");
-          }
-          componentDidUpdate(){
-              list.push(this.props.name+" did update");
-          }
-          render(){
-              return <span className={this.props.name}>{this.state.text}</span>;
-          }
+      render() {
+          return <div />;
       }
-      var s = ReactDOM.render(<App />, div);
-      s.refs.kk.click()
-      console.log(list.join("\n"))
-    /*  expect(list).toBe([
-          "a will update",
-          "b will update",
-          "c will update",
-          "a did update",
-          "b did update",
-          "c did update",
-          "a的回调",
-          "b的回调",
-          "c的回调"
-      ]);*/
-   
-     
+      componentDidMount() {
+          list.push(this.props.name + " componentDidMount");
+      }
+      componentDidUpdate() {
+          list.push(this.props.name + " componentDidUpdate");
+      }
+      componentWillUnmount() {
+          list.push(this.props.name + " componentWillUnmount");
+      }
+  };
+  var B = class extends React.Component {
+      componentWillMount() {
+          list.push(this.props.name + " componentWillMount");
+      }
+      render() {
+          return <strong />;
+      }
+      componentDidMount() {
+          list.push(this.props.name + " componentDidMount");
+      }
+      componentWillUnmount() {
+          list.push(this.props.name + " componentWillUnmount");
+      }
+  };
+  ReactDOM.render(
+      <div>
+          <A key="aa" name="a" ref={(a)=>{
+              list.push("a "+!!a)
+              ;
+          }}></A>
+          <A key="bb" name="b" ref={(a)=>{
+              list.push("b "+!!a)
+              ;
+          }}></A>
+      </div>,
+      div
+  );
+  list.push("update...");
+  ReactDOM.render(
+      <div>
+          <B  name="c" ref={(a)=>{
+              list.push("c "+!!a);
+          }}></B>
+          <B  name="d" ref={(a)=>{
+              list.push("d "+!!a)
+              ;
+          }}></B>
+      </div>,
+      div
+  );
+  expect(list.join("\n")).toBe([
+      "a componentWillMount",
+      "b componentWillMount",
+      "a componentDidMount",
+      "a true",
+      "b componentDidMount",
+      "b true",
+      "update...",
+      "c componentWillMount",
+      "d componentWillMount",
+      "a false",
+      "a componentWillUnmount",
+      "b false",
+      "b componentWillUnmount",
+      "c componentDidMount",
+      "c true",
+      "d componentDidMount",
+      "d true"
+  ].join("\n"));
+      
+        /*
+        await browser.setValue(s.refs.a, '北京').pause(100)
+            .$apply()
+        expect(s.refs.a.value).toBe('北京')*/
     </script>
   
 </body>
