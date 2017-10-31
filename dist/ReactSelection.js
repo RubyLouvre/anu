@@ -748,7 +748,6 @@ function drainQueue() {
         // console.log(updater.name, command,updater._hookName );
 
         job.exec.call(updater);
-        showError();
     }
 
     if (mainQueue.length > 1) {
@@ -762,6 +761,7 @@ function drainQueue() {
         });
     });
     options.afterPatch();
+    showError();
 }
 //mainQueue就是传送带，currentQueue或其他queue就是托运箱，job就是要加工的材料，exec是决定如何加工。
 //在diffChildren有需要立即解决的任务，先进先出
@@ -1679,17 +1679,16 @@ Updater.prototype = {
             instance = this._instance;
         //调整全局的 CurrentOwner.cur
 
-        var lastOwn = Refs.currentOwner,
-            rendered = void 0;
-        Refs.currentOwner = instance;
-        try {
-            if (this.willReceive === false) {
-                rendered = this.rendered;
-                delete this.willReceive;
-            } else {
-                rendered = instance.render();
-            }
-        } finally {
+        var rendered = void 0;
+
+        if (this.willReceive === false) {
+            rendered = this.rendered;
+            delete this.willReceive;
+        } else {
+            var lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
+            rendered = captureError(instance, "render", []);
+            //  rendered = instance.render();
             Refs.currentOwner = lastOwn;
         }
 

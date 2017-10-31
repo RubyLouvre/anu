@@ -192,19 +192,20 @@ Updater.prototype = {
     renderComponent(cb) {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
-        let lastOwn = Refs.currentOwner,
-            rendered;
-        Refs.currentOwner = instance;
-        try {
-            if (this.willReceive === false) {
-                rendered = this.rendered;
-                delete this.willReceive;
-            } else {
-                rendered = instance.render();
-            }
-        } finally {
+       
+        let rendered;
+       
+        if (this.willReceive === false) {
+            rendered = this.rendered;
+            delete this.willReceive;
+        } else {
+            var lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
+            rendered = captureError(instance, "render",[]);
             Refs.currentOwner = lastOwn;
         }
+       
+        
 
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {

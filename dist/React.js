@@ -1683,17 +1683,15 @@ Updater.prototype = {
             instance = this._instance;
         //调整全局的 CurrentOwner.cur
 
-        var lastOwn = Refs.currentOwner,
-            rendered = void 0;
-        Refs.currentOwner = instance;
-        try {
-            if (this.willReceive === false) {
-                rendered = this.rendered;
-                delete this.willReceive;
-            } else {
-                rendered = instance.render();
-            }
-        } finally {
+        var rendered = void 0;
+
+        if (this.willReceive === false) {
+            rendered = this.rendered;
+            delete this.willReceive;
+        } else {
+            var lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
+            rendered = captureError(instance, "render", []);
             Refs.currentOwner = lastOwn;
         }
 
