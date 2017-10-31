@@ -1,6 +1,8 @@
 import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
 import React from "dist/React";
 import { SyntheticEvent, addEvent } from "src/event";
+import ReactTestUtils from "lib/ReactTestUtils";
+
 import { DOMElement } from "src/browser";
 
 describe("事件系统模块", function() {
@@ -20,7 +22,7 @@ describe("事件系统模块", function() {
     afterEach(function() {
         body.removeChild(div);
     });
-    it("事件与样式", async () => {
+    it("事件与样式", function() {
         class App extends React.Component {
             constructor() {
                 super();
@@ -38,7 +40,6 @@ describe("事件系统模块", function() {
             render() {
                 return (
                     <div
-                        id="aaa3"
                         style={{
                             height: this.state.aaa
                         }}
@@ -49,27 +50,21 @@ describe("事件系统模块", function() {
                 );
             }
         }
+        var vnode = <App />;
+        var s = ReactDOM.render(vnode, div);
 
-        var s = ReactDOM.render(<App />, div);
-        await browser.pause(100).$apply();
         expect(s.state.aaa).toBe(111);
-        await browser
-            .click(s.updater._hostNode)
-            .pause(100)
-            .$apply();
+        ReactTestUtils.Simulate.click(vnode._hostNode);
 
         expect(s.state.aaa).toBe(112);
-        await browser
-            .click(s.updater._hostNode)
-            .pause(100)
-            .$apply();
+        ReactTestUtils.Simulate.click(vnode._hostNode);
 
         expect(s.state.aaa).toBe(113);
         //确保存在eventSystem对象
         expect(React.eventSystem).toA("object");
     });
 
-    it("冒泡", async () => {
+    it("冒泡", function() {
         var aaa = "";
         class App extends React.PureComponent {
             constructor(props) {
@@ -97,7 +92,50 @@ describe("事件系统模块", function() {
                         <p>=========</p>
                         <div onClick={this.click2}>
                             <p>=====</p>
-                            <div id="bubble" onClick={this.click3}>
+                            <div ref="bubble" onClick={this.click3}>
+                                {this.state.aaa.a}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        var s = ReactDOM.render(<App />, div);
+        ReactTestUtils.Simulate.click(s.refs.bubble);
+
+        expect(aaa.trim()).toBe("ccc bbb");
+    });
+    it("捕获", function() {
+        var aaa = "";
+        class App extends React.PureComponent {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    aaa: {
+                        a: 7
+                    }
+                };
+            }
+
+            click() {
+                aaa += "aaa ";
+            }
+            click2(e) {
+                aaa += "bbb ";
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            click3(e) {
+                aaa += "ccc ";
+            }
+            render() {
+                return (
+                    <div onClickCapture={this.click}>
+                        <p>=========</p>
+                        <div onClickCapture={this.click2}>
+                            <p>=====</p>
+                            <div ref="capture" onClickCapture={this.click3}>
                                 {this.state.aaa.a}
                             </div>
                         </div>
@@ -108,15 +146,23 @@ describe("事件系统模块", function() {
 
         var s = ReactDOM.render(<App />, div);
 
+        ReactTestUtils.Simulate.click(s.refs.capture);
+        expect(aaa.trim()).toBe("aaa bbb");
+    });
+    it("1.1.2checkbox绑定onChange事件会触发两次", async () => {
+        var logIndex = 0;
+        function refFn(e) {
+            logIndex++;
+        }
+
+        var dom = ReactDOM.render(<input type="checkbox" onChange={refFn} />, div);
         await browser
-            .pause(100)
-            .click("#bubble")
+            .click(dom)
             .pause(100)
             .$apply();
 
-        expect(aaa.trim()).toBe("ccc bbb");
+        expect(logIndex).toBe(1);
     });
-
     it("模拟mouseover,mouseout", async () => {
         var aaa = "";
         class App extends React.Component {
@@ -164,20 +210,7 @@ describe("事件系统模块", function() {
 
         expect(aaa.trim()).toBe("aaa bbb");
     });
-    it("1.1.2checkbox绑定onChange事件会触发两次", async () => {
-        var logIndex = 0;
-        function refFn(e) {
-            logIndex++;
-        }
 
-        var el = ReactDOM.render(<input type="checkbox" onChange={refFn} />, div);
-        await browser
-            .click(el)
-            .pause(100)
-            .$apply();
-
-        expect(logIndex).toBe(1);
-    });
     it("模拟mouseenter,mouseleave", async () => {
         var aaa = "";
         class App extends React.Component {
@@ -225,54 +258,7 @@ describe("事件系统模块", function() {
 
         expect(aaa.trim()).toBe("aaa bbb");
     });
-    it("捕获", async () => {
-        var aaa = "";
-        class App extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    aaa: {
-                        a: 7
-                    }
-                };
-            }
 
-            click() {
-                aaa += "aaa ";
-            }
-            click2(e) {
-                aaa += "bbb ";
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            click3(e) {
-                aaa += "ccc ";
-            }
-            render() {
-                return (
-                    <div onClickCapture={this.click}>
-                        <p>=========</p>
-                        <div onClickCapture={this.click2}>
-                            <p>=====</p>
-                            <div id="capture" onClickCapture={this.click3}>
-                                {this.state.aaa.a}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-        }
-
-        var s = ReactDOM.render(<App />, div);
-
-        await browser
-            .pause(100)
-            .click("#capture")
-            .pause(100)
-            .$apply();
-
-        expect(aaa.trim()).toBe("aaa bbb");
-    });
     it("让focus能冒泡", async () => {
         var aaa = "";
         class App extends React.Component {
@@ -361,7 +347,7 @@ describe("事件系统模块", function() {
                 list.push("render " + this.state.path);
                 return (
                     <div>
-                        <span id="click2time" onClick={this.onClick.bind(this)}>
+                        <span ref="click2time" onClick={this.onClick.bind(this)}>
                             {this.state.path}
                         </span>
                     </div>
@@ -394,15 +380,12 @@ describe("事件系统模块", function() {
             }
         }
 
-        ReactDOM.render(<App />, div, function() {
+        var s = ReactDOM.render(<App />, div, function() {
             list.push("ReactDOM cb");
         });
-        await browser
-            .pause(100)
-            .click("#click2time")
-            .pause(100)
-            .$apply();
+        var list2 = ["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."];
+        ReactTestUtils.Simulate.click(s.refs.click2time);
 
-        expect(list).toEqual(["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."]);
+        expect(list).toEqual(list2);
     });
 });

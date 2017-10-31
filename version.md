@@ -1,3 +1,8 @@
+## 1.1.5
+
+1. ReactDOM.findDOMNode遇到注释节点应该返回null
+
+
 ## 1.1.4（2017.10.20）
 
 1. 修正flushUpdaters中updater对象的泄露问题（需要clearArray一下）

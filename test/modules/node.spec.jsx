@@ -924,7 +924,17 @@ describe('node模块', function () {
         //expect(div.getElementsByTagName('p').length).toBe(1)
     })
 
-    it('复杂的孩子转换', async () => {
+    it('复杂的孩子转换', function() {
+        function getString(nodes) {
+            var str = []
+            for (var i = 0, node; node = nodes[i++];) {
+                if(node.nodeType=== 8 && node.nodeValue.indexOf("react-text") !== 0){
+                    continue
+                }
+                str.push(node.nodeName.toLowerCase())
+            }
+            return str.join(' ')
+        }
         var index = 0
         var map = [
             <div >1111<p>ddd</p><span>333</span><Link /></div>,
@@ -957,22 +967,13 @@ describe('node模块', function () {
 
             }
         }
-        var s = React.render(<App />, div)
+        var s = ReactDOM.render(<App />, div)
 
-        await browser.pause(100).$apply()
-        function getString(nodes) {
-            var str = []
-            for (var i = 0, node; node = nodes[i++];) {
-                str.push(node.nodeName.toLowerCase())
-            }
-            return str.join(' ')
-        }
+      
         expect(getString(div.firstChild.childNodes)).toBe('#text p span strong')
         s.change(100)
-        await browser.pause(100).$apply()
         expect(getString(div.firstChild.childNodes)).toBe('em span #text span b i')
         s.change(100)
-        await browser.pause(100).$apply()
         expect(getString(div.firstChild.childNodes)).toBe('span')
     })
 

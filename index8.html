@@ -4,16 +4,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-  <!--<script type='text/javascript' src="./dist/React.js"></script>
-   <script src="./lib/ReactTestUtils.js"></script>-->
-   <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--<script src="./lib/ReactTestUtils.js"></script>-->
+    <!--<script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
   
 </head>
 
 <body>
-
+//如果一片孩子要更新，那么它们都会更新过程拆成两块will receive,  should update, will update算一块，did update算一块
     <div>这个默认会被清掉</div>
     <div id='example'></div>
 
@@ -29,10 +29,19 @@
   }
  
   class Static extends React.Component {
-    shouldComponentUpdate() {
-        return false;
+    componentWillReceiveProps() {
+        console.log(this.props.a, "will receive")
     }
-
+    componentWillUpdate() {
+       console.log(this.props.a, "will update")
+    }
+    shouldComponentUpdate(){
+        console.log(this.props.a, "should update")
+        return false
+    }
+    componentDidUpdate() {
+       console.log(this.props.a, "did update")
+    }
     render() {
         return <div>{this.props.children}</div>;
     }
@@ -43,10 +52,10 @@ class Component extends React.Component {
         if (this.props.flipped) {
             return (
                 <div>
-                    <Static ref="static0" a="1" key="B">
+                    <Static ref="static0" a="B" key="B">
                         B (ignored)
                     </Static>
-                    <Static ref="static1" a="2" key="A">
+                    <Static ref="static1" a="A" key="A">
                         A (ignored)
                     </Static>
                 </div>
@@ -54,10 +63,10 @@ class Component extends React.Component {
         } else {
             return (
                 <div>
-                    <Static ref="static0" key="A">
+                    <Static ref="static0" a="A" key="A">
                         A
                     </Static>
-                    <Static ref="static1" key="B">
+                    <Static ref="static1" a="B" key="B">
                         B
                     </Static>
                 </div>

@@ -3,148 +3,95 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-  <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+    <meta name="viewport" content="width=device-width">
+    <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
    <!--<script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
-   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
-  
-</head>
-<body>
-    
-        <div>开发者工具</div>
-        <pre>
-            "a componentWillMount",
-            "b componentWillMount",
-            "a componentDidMount",
-            "a true",
-            "b componentDidMount",
-            "b true",
-            "update...",
-            "c componentWillMount",
-            "d componentWillMount",
-            "a false",
-            "a componentWillUnmount",
-            "b false",
-            "b componentWillUnmount",
-            "c componentDidMount",
-            "c true",
-            "d componentDidMount",
-            "d true"
-        </pre>
-        <div id='example'></div>
-    
-      
-  <script type='text/babel'>
-   
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
-     
-      var container = document.getElementById("example")
-      var div = container
-      if(window.preact){
-          window.React = window.preact
-      }
-     // var PropTypes = React.PropTypes
-      if(!window.ReactDOM){
-        window.ReactDOM = window.React
-      }
-      var PropTypes = React.PropTypes
-      var expect = function(a) {
-          return {
-              toBe: function(b) {
-                  console.log(a, "\n\rvs\n\r",b, a === b)
-              }
-          }
-      }
-      var list = [];
-      
-  var A = class extends React.Component {
-      componentWillMount() {
-          list.push(this.props.name + " componentWillMount");
-      }
-      render() {
-          return <div />;
-      }
-      componentDidMount() {
-          list.push(this.props.name + " componentDidMount");
-      }
-      componentDidUpdate() {
-          list.push(this.props.name + " componentDidUpdate");
-      }
-      componentWillUnmount() {
-          list.push(this.props.name + " componentWillUnmount");
-      }
-  };
-  var B = class extends React.Component {
-      componentWillMount() {
-          list.push(this.props.name + " componentWillMount");
-      }
-      render() {
-          return <strong />;
-      }
-      componentDidMount() {
-          list.push(this.props.name + " componentDidMount");
-      }
-      componentWillUnmount() {
-          list.push(this.props.name + " componentWillUnmount");
-      }
-  };
-  ReactDOM.render(
-      <div>
-          <A key="aa" name="a" ref={(a)=>{
-              list.push("a "+!!a)
-              ;
-          }}></A>
-          <A key="bb" name="b" ref={(a)=>{
-              list.push("b "+!!a)
-              ;
-          }}></A>
-      </div>,
-      div
-  );
-  list.push("update...");
-  ReactDOM.render(
-      <div>
-          <B  name="c" ref={(a)=>{
-              list.push("c "+!!a);
-          }}></B>
-          <B  name="d" ref={(a)=>{
-              list.push("d "+!!a)
-              ;
-          }}></B>
-      </div>,
-      div
-  );
-  expect(list.join("\n")).toBe([
-      "a componentWillMount",
-      "b componentWillMount",
-      "a componentDidMount",
-      "a true",
-      "b componentDidMount",
-      "b true",
-      "update...",
-      "c componentWillMount",
-      "d componentWillMount",
-      "a false",
-      "a componentWillUnmount",
-      "b false",
-      "b componentWillUnmount",
-      "c componentDidMount",
-      "c true",
-      "d componentDidMount",
-      "d true"
-  ].join("\n"));
-      
-        /*
-        await browser.setValue(s.refs.a, '北京').pause(100)
-            .$apply()
-        expect(s.refs.a.value).toBe('北京')*/
-    </script>
-  
-</body>
+</head>
+
+<body>
+
+    <div>开发者工具</div>
+    <pre>
+          
+    </pre>
+    <div id='example'></div>
+    <script type='text/babel'> 
+    var container = document.getElementById("example")
+    var div = container
+    // var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+       window.ReactDOM = window.React
+       var PropTypes = React.PropTypes
+    }
+
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+   
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                flag: 1
+            };
+        }
+        componentDidMount(props){
+            console.log("App did mount")
+        }
+        componentWillUpdate(props){
+            console.log("App will update")
+        }
+        componentDidUpdate(props){
+            console.log("App did update")
+        }
+        render() {
+            return (<div>{this.props.children}</div>);
+        }
+    }
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                text: props.text 
+            };
+        }
+        render(){
+            return <span className={this.state.text}>{this.state.text}</span>
+        }
+        componentDidMount(props){
+            console.log("Child did mount")
+        }
+        componentWillReceiveProps(props){
+            console.log("Child ",this.props.text, "will receive")
+             this.setState({
+                 text: props.text
+             })
+        }
+        componentWillUpdate(props){
+            console.log("Child ",this.props.text, "will update")
+        }
+        componentDidUpdate(props){
+            console.log("Child ",this.props.text, "did update")
+        }
+    }
+
+    var s = ReactDOM.render(<App><Child key="a" text="111" /><Child key="b" text="222" /></App>, div);
     
- </html>
+    ReactDOM.render(<App><Child key="a" text="333" /><Child key="b" text="444" /></App>, div);
+
+    
+    </script>
+
+</body>
+
+</html>

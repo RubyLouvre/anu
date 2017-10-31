@@ -5054,6 +5054,7 @@ var ReactCompositeComponent = {
       nextContext = this._processContext(nextUnmaskedContext);
       willReceive = true;
     }
+   
 
     var prevProps = prevParentElement.props;
     var nextProps = nextParentElement.props;
@@ -5062,7 +5063,8 @@ var ReactCompositeComponent = {
     if (prevParentElement !== nextParentElement) {
       willReceive = true;
     }
-
+ 
+   
     // An update here will schedule an update but immediately set
     // _pendingStateQueue which will ensure that any state updates gets
     // immediately reconciled instead of waiting for the next batch.

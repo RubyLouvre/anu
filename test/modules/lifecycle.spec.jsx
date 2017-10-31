@@ -14,6 +14,102 @@ describe("生命周期例子", function() {
     afterEach(function() {
         body.removeChild(div);
     });
+    it("只更新了一个子组件时，被该子组件要求全局重新渲染",function(){
+        var list = [];
+       var flag = 1
+        function logger(e){
+            list.push(e);
+        }
+        class A extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    text: "aaa"
+                };
+            }
+  
+            componentDidMount() {
+                logger("A did mount");
+                ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
+            
+            }
+            componentWillReceiveProps(){
+                logger("A will receive");
+            }
+            componentDidUpdate() {
+                logger("A did update");
+                if(flag){
+                    flag = 0;
+                    ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
+                }
+  
+            }
+            render() {
+                return <div>{this.state.text}</div>;
+            }
+        }
+        class B extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    text: "bbb"
+                };
+            }
+  
+            componentDidMount() {
+          
+                logger("B did mount");
+            }
+            componentWillReceiveProps(){
+                logger("B will receive");
+            }
+            componentDidUpdate() {
+                logger("B did update");
+            }
+            render() {
+                return <div>{this.state.text}</div>;
+            }
+        }
+        class C extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    text: "ccc"
+                };
+            }
+            componentWillReceiveProps(){
+                logger("C will receive");
+            }
+            componentDidMount() {
+                logger("C did mount");
+            }
+            componentDidUpdate() {
+                logger("C did update");
+            }
+            render() {
+                return <div>{this.state.text}</div>;
+            }
+        }
+        var s = ReactDOM.render(<div><A/><B/><C/></div>, div);
+        expect(list).toEqual([
+            "A did mount",
+            "B did mount",
+            "C did mount",
+            "A will receive",
+            "B will receive",
+            "C will receive",
+            "A did update",
+            "B did update",
+            "C did update",
+            "A will receive",
+            "B will receive",
+            "C will receive",
+            "A did update",
+            "B did update",
+            "C did update"
+        ]);
+  
+    });
     it("如果在componentDidMount中调用setState方法\n那么setState的所有回调，\n都会延迟到componentDidUpdate中执行", function() {
         var list = [];
         class App extends React.Component {
@@ -44,7 +140,7 @@ describe("生命周期例子", function() {
                 );
                 this.setState(
                     {
-                        aaa: "dddd"
+                        aaa: "xxx"
                     },
                     function() {
                         list.push("3333");
@@ -67,7 +163,7 @@ describe("生命周期例子", function() {
 
         var s = ReactDOM.render(<App />, div);
         expect(list.join("-")).toBe(
-            "bbb-did mount-will update-dddd-did update-1111-2222-3333"
+            ["bbb","did mount","will update","xxx","did update","1111","2222","3333"].join("-")
         );
     });
     it("父组件没有DidMount之时被子组件在willMount钩子里调用其setState", function() {
@@ -104,6 +200,7 @@ describe("生命周期例子", function() {
         }
         class A extends React.Component {
             componentWillMount() {
+                list.push("child will mount");
                 this.props.parent.setState({
                     aaa: "app new render"
                 });
@@ -114,14 +211,29 @@ describe("生命周期例子", function() {
             componentWillReceiveProps() {
                 list.push("child receive");
             }
+            componentDidMount() {
+                list.push("child did mount");
+            }
+            componentDidUpdate() {
+                list.push("child did update");
+            }
             render() {
                 return <p>A</p>;
             }
         }
         var s = ReactDOM.render(<App />, div);
-        expect(list.join("-")).toBe(
-            "app will mount-app render-app did mount-app will update-app new render2-child receive-app did update"
-        );
+        expect(list).toEqual([
+            "app will mount",
+            "app render",
+            "child will mount",
+            "child did mount",
+            "app did mount",
+            "app will update",
+            "app new render2",
+            "child receive",
+            "child did update",
+            "app did update"
+        ] );
     });
 
     it("父组件DidMount之时被子组件在componentWillReceiveProps钩子里调用其setState\n父组件的再次render会待到这次render完才调起", function() {
@@ -213,7 +325,7 @@ describe("生命周期例子", function() {
             "componentWillReceiveProps 1",
             "componentWillReceiveProps 2"
         ];
-        expect(list.join("-")).toBe(list2.join("-"));
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
     it("第一次渲染时不会触发componentWillUpdate", function() {
@@ -290,48 +402,12 @@ describe("生命周期例子", function() {
             }
         }
 
-        var s = React.render(<App />, div);
+        React.render(<App />, div);
    
         expect(list.join("-")).toBe("333-555-666");
         expect(div.textContent || div.innerText).toBe("333");
     });
-    it("在componentWillMount中使用setState", function() {
-        var list = [];
-        class App extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    aaa: 111
-                };
-            }
-            componentWillMount() {
-                this.setState(
-                    {
-                        aaa: 222
-                    },
-                    function() {
-                        list.push("555");
-                    }
-                );
-                this.setState(
-                    {
-                        aaa: 333
-                    },
-                    function() {
-                        list.push("666");
-                    }
-                );
-            }
-            render() {
-                list.push(this.state.aaa);
-                return <p>{this.state.aaa}</p>;
-            }
-        }
 
-        var s = React.render(<App />, div);
-        expect(list.join("-")).toBe("333-555-666");
-        expect(div.textContent || div.innerText).toBe("333");
-    });
     it("在componentDidMount中使用setState，会导致willMount, DidMout中的回调都延后",function() {
         var list = [];
         class App extends React.Component {
@@ -511,21 +587,15 @@ describe("生命周期例子", function() {
                 return (
                     <div>
                         {showIssue && <Issue />}
-                        <button
-                            type="button"
-                            ref="button"
-                            onClick={() => this.setState({ showIssue: !showIssue })}
-                        >
-              Click
-                        </button>
+                        <b>测试错误</b>
                     </div>
                 );
             }
         }
-        var s = React.render(<App />, div);
+        var s = ReactDOM.render(<App />, div);
    
         expect(div.getElementsByTagName("span").length).toBe(1);
-        ReactTestUtils.Simulate.click(s.refs.button);
+        s.setState({showIssue: false});
      
         expect(div.getElementsByTagName("span").length).toBe(0);
     });
@@ -638,7 +708,7 @@ describe("生命周期例子", function() {
         }
         var s = ReactDOM.render(<App />, div);
         ReactTestUtils.Simulate.click(s.refs.kk);
-        expect(list).toEqual([
+        expect(list.join("\n")).toBe([
             "a will update",
             "b will update",
             "c will update",
@@ -648,6 +718,6 @@ describe("生命周期例子", function() {
             "a的回调",
             "b的回调",
             "c的回调"
-        ]);
+        ].join("\n"));
     });
 });

@@ -12,6 +12,7 @@ import "./modules/cloneElement.spec";
 require("./modules/context.spec.jsx");
 
 require("./modules/component.spec.jsx");
+
 require("./modules/lifecycle.spec.jsx");
 
 require("./modules/svg.spec.jsx");
@@ -36,18 +37,20 @@ require("./modules/ReactMultiChild-test.jsx");
 
 require("./modules/refs-test.jsx");
 require("./modules/refs-destruction-test.jsx");
+
 require("./modules/ReactUpdates-test.jsx");
+
 require("./modules/ReactStatelessComponent-test.jsx");
 
 require("./modules/ReactEmptyComponent-test.jsx");
 require("./modules/ReactIdentity-test.jsx");
+
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
 
 
 require("./modules/ReactComponentLifeCycle-test.jsx");
 
 require("./modules/ReactCompositeComponent-test.jsx");
-
 require("./modules/ReactContextValidator-test.jsx"); 
 
 require("./modules/createReactClassIntegration-test.jsx");
@@ -64,10 +67,6 @@ require("./modules/ReactDOM-test.jsx");
 require("./modules/findDOMNode-test.jsx");
 
 require("./modules/ReactES6Class-test.jsx");
-
-
-
-
-
-
-
+/*
+require("./modules/aaa.spec.jsx");
+*/

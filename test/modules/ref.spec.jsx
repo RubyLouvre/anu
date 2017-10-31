@@ -4,7 +4,7 @@ import ReactTestUtils from "lib/ReactTestUtils";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 
-describe("ref", function () {
+describe("ref模块", function () {
     this.timeout(200000);
   
     var body = document.body,
@@ -472,7 +472,7 @@ describe("ref", function () {
         ]);
     
     });
-    it("先执行匹配元素的detach ref，然后更新卸载组件，最后attach ref",function(){
+    it("先执行匹配元素的detach ref，然后更新卸载组件，最后attach ref 2",function(){
         var list = [];
         class A extends React.Component{
             componentWillUnmount(){

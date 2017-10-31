@@ -1,7 +1,7 @@
 import { options, noop, innerHTML } from "./util";
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
-
+import { captureError } from "./scheduler";
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
@@ -34,11 +34,10 @@ function disposeElement(vnode) {
 function disposeComponent(vnode, instance) {
     options.beforeUnmount(instance);
     instance.setState = instance.forceUpdate = noop;
-    if (instance.componentWillUnmount) {
-        instance.componentWillUnmount();
-    }
+    captureError(instance, "componentWillUnmount", []);
     let updater = instance.updater;
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
     disposeVnode(updater.rendered);
+    updater._disposed = true;
     updater._renderInNextCycle = vnode._instance = instance.updater = null;
 }

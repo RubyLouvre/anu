@@ -6,7 +6,6 @@ import {
     inherit,
     camelize,
     firstLetterLower,
-    getChildContext,
     typeNumber
 } from "src/util";
 
@@ -16,6 +15,10 @@ import {
 import {
     toArray
 } from "src/diff";
+import {
+    getChildContext
+} from "src/updater";
+
 describe("util", function () {
 
     it("oneObject", function () {

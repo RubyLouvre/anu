@@ -1,4 +1,4 @@
-import {emptyArray, typeNumber} from "./util";
+import {emptyArray, typeNumber, REACT_ELEMENT_TYPE} from "./util";
 import {Refs} from "./Refs";
 /**
  * 创建虚拟DOM
@@ -80,6 +80,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     if (refType === 3 || refType === 4 || refType === 5) {
         //number, string, function
         this._hasRef = true;
+        
         this.ref = ref;
     }
     /*
@@ -95,7 +96,7 @@ Vnode.prototype = {
         return this._hostNode || null;
     },
 
-    $$typeof: 1
+    $$typeof: REACT_ELEMENT_TYPE
 };
 
 export function flattenChildren(vnode) {
@@ -167,6 +168,7 @@ export function _flattenChildren(original, convert) {
                     child = {
                         type: "#text",
                         text: child + "",
+                        $$typeof: REACT_ELEMENT_TYPE,
                         vtype: 0
                     };
                     unidimensionalIndex++;

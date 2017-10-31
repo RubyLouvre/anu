@@ -1,12 +1,12 @@
 export var __push = Array.prototype.push;
-
+export var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
 export var innerHTML = "dangerouslySetInnerHTML";
 export var emptyArray = [];
 export var emptyObject = {};
 export function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
-    //eslint-disable-next-line
-    console.error(methodName + " is deprecated");
+        //eslint-disable-next-line
+        console.error(methodName + " is deprecated");
         deprecatedWarn[methodName] = 1;
     }
 }
@@ -56,13 +56,6 @@ export function inherit(SubClass, SupClass) {
 
 
 var lowerCache = {};
-/**
- * 小写化的优化
- *
- * @export
- * @param {any} s
- * @returns
- */
 export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
@@ -71,12 +64,6 @@ export function clearArray(a) {
     return a.splice(0, a.length);
 }
 
-/**
- *
- *
- * @param {any} obj
- * @returns
- */
 export function isFn(obj) {
     return __type.call(obj) === "[object Function]";
 }
@@ -94,29 +81,6 @@ export function oneObject(array, val) {
         result[array[i]] = value;
     }
     return result;
-}
-
-export function getChildContext(instance, parentContext) {
-    if (instance.getChildContext) {
-        let context = instance.getChildContext();
-        if (context) {
-            parentContext = Object.assign({}, parentContext, context);
-        }
-    }
-    return parentContext;
-}
-
-export function getContextByTypes(curContext, contextTypes) {
-    let context = {};
-    if (!contextTypes || !curContext) {
-        return context;
-    }
-    for (let key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = curContext[key];
-        }
-    }
-    return context;
 }
 
 var rcamelize = /[-_][^-_]/g;
@@ -169,6 +133,4 @@ export function typeNumber(data) {
     return a || 8;
 }
 
-export var recyclables = {
-    "#text": []
-};
+

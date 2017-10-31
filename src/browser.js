@@ -1,4 +1,4 @@
-import { recyclables, typeNumber } from "./util";
+import { typeNumber } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -63,6 +63,10 @@ export function emptyElement(node) {
         node.removeChild(child);
     }
 }
+
+var recyclables = {
+    "#text": []
+};
 
 export function removeElement(node) {
     if (node.nodeType === 1) {

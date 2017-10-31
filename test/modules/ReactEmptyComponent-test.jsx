@@ -6,7 +6,7 @@ import ReactDOMServer from "dist/ReactDOMServer";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 
-describe("ReactComponent", function() {
+describe("ReactEmptyComponent", function() {
     this.timeout(200000);
 
 
@@ -34,47 +34,47 @@ describe("ReactComponent", function() {
 
     it("works when switching components", () => {
         var assertions = 0;
-
+        var div = document.createElement("div");
         class Inner extends React.Component {
             render() {
                 return <span />;
             }
-
+    
             componentDidMount() {
                 // Make sure the DOM node resolves properly even if we're replacing a
                 // `null` component
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+            
+                expect(ReactDOM.findDOMNode(this).nodeName).toBe("SPAN")
                 assertions++;
             }
-
+    
             componentWillUnmount() {
                 // Even though we're getting replaced by `null`, we haven't been
                 // replaced yet!
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                expect(ReactDOM.findDOMNode(this).nodeName).toBe("SPAN");
                 assertions++;
             }
         }
-
+    
         class Wrapper extends React.Component {
             render() {
                 return this.props.showInner ? <Inner /> : null;
             }
         }
-
-        var el = document.createElement("div");
+    
         var component;
-
+    
         // Render the <Inner /> component...
-        component = ReactDOM.render(<Wrapper showInner={true} />, el);
-        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
-
+        component = ReactDOM.render(<Wrapper showInner={true} />, div);
+        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
+    
         // Switch to null...
-        component = ReactDOM.render(<Wrapper showInner={false} />, el);
-        expect(ReactDOM.findDOMNode(component).nodeName).toBe("#comment");
+        component = ReactDOM.render(<Wrapper showInner={false} />, div);
+        expect(ReactDOM.findDOMNode(component)).toBe(null);
         // ...then switch back.
-        component = ReactDOM.render(<Wrapper showInner={true} />, el);
-        expect(ReactDOM.findDOMNode(component)).not.toBe(null);
-
+        component = ReactDOM.render(<Wrapper showInner={true} />, div);
+        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
+    
         expect(assertions).toBe(3);
        
     });

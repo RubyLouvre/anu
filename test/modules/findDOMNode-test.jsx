@@ -41,7 +41,7 @@ describe("findDOMNode", function() {
 
         var myNodeA = ReactDOM.render(<MyNode />, container);
         var a = ReactDOM.findDOMNode(myNodeA);
-        expect(a && a.nodeType).toBe(8);
+        expect(a).toBe(null);
 
         var myNodeB = ReactDOM.render(<MyNode flag={true} />, container);
         expect(myNodeA === myNodeB).toBe(true);

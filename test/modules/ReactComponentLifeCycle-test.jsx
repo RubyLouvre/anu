@@ -448,16 +448,16 @@ function getLifeCycleState(instance) {
     var container = document.createElement('div');
     log = [];
     ReactDOM.render(<Outer x={17} />, container);
-    expect(log).toEqual([
+    expect(log.join("\n")).toBe([
       'outer componentWillMount',
       'inner componentWillMount',
       'inner componentDidMount',
       'outer componentDidMount',
-    ]);
+    ].join("\n"));
 
     log = [];
     ReactDOM.render(<Outer x={42} />, container);
-    expect(log).toEqual([
+    expect(log.join("\n")).toBe([
       'outer componentWillReceiveProps',
       'outer shouldComponentUpdate',
       'outer componentWillUpdate',
@@ -466,14 +466,14 @@ function getLifeCycleState(instance) {
       'inner componentWillUpdate',
       'inner componentDidUpdate',
       'outer componentDidUpdate',
-    ]);
+    ].join("\n"));
 
     log = [];
     ReactDOM.unmountComponentAtNode(container);
-    expect(log).toEqual([
+    expect(log.join("\n")).toBe([
       'outer componentWillUnmount',
       'inner componentWillUnmount',
-    ]);
+    ].join("\n"));
   });
 
   it('calls effects on module-pattern component', function() {

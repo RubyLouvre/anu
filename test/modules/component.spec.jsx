@@ -27,12 +27,12 @@ describe("组件相关", function() {
         ) {
             return <div onClick={() => (props.name = 11)}>Hello {props.name}</div>;
         }
-        var vnode = <HelloComponent name="Sebastian" />
+        var vnode = <HelloComponent name="Sebastian" />;
         React.render(vnode, div);
 
         expect(vnode._hostNode.innerHTML).toBe("Hello Sebastian");
     });
-   
+
     it("shouldComponentUpdate什么也不返回", function() {
         var a = 1;
         class App extends React.Component {
@@ -68,10 +68,10 @@ describe("组件相关", function() {
                 return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
             }
         }
-        var vnode = <App />
+        var vnode = <App />;
         ReactDOM.render(vnode, div);
         expect(vnode._hostNode.innerHTML).toBe("1");
-        ReactTestUtils.Simulate.click(vnode._hostNode)
+        ReactTestUtils.Simulate.click(vnode._hostNode);
         expect(vnode._hostNode.innerHTML).toBe("1");
 
         expect(a).toBe(3);
@@ -112,10 +112,10 @@ describe("组件相关", function() {
             }
         }
 
-        var vnode = <App />
+        var vnode = <App />;
         ReactDOM.render(vnode, div);
         expect(vnode._hostNode.innerHTML).toBe("1");
-        ReactTestUtils.Simulate.click(vnode._hostNode)
+        ReactTestUtils.Simulate.click(vnode._hostNode);
         expect(vnode._hostNode.innerHTML).toBe("1");
         expect(a).toBe(3);
     });
@@ -141,10 +141,10 @@ describe("组件相关", function() {
             }
         }
 
-        var vnode = <App />
+        var vnode = <App />;
         ReactDOM.render(vnode, div);
         expect(vnode._hostNode.innerHTML).toBe("7");
-        ReactTestUtils.Simulate.click(vnode._hostNode)
+        ReactTestUtils.Simulate.click(vnode._hostNode);
         expect(vnode._hostNode.innerHTML).toBe("7");
     });
 
@@ -172,15 +172,14 @@ describe("组件相关", function() {
             }
         }
 
-        var vnode = <App />
+        var vnode = <App />;
         ReactDOM.render(vnode, div);
         expect(vnode._hostNode.innerHTML).toBe("7");
-        ReactTestUtils.Simulate.click(vnode._hostNode)
+        ReactTestUtils.Simulate.click(vnode._hostNode);
         expect(vnode._hostNode.innerHTML).toBe("9");
-
     });
     it("子组件是无状态组件", async () => {
-        function Select(props) {
+        function Output(props) {
             return <strong>{props.value}</strong>;
         }
         class App extends React.Component {
@@ -199,7 +198,7 @@ describe("组件相关", function() {
             render() {
                 return (
                     <div>
-                        <Select value={this.state.value} />
+                        <Output value={this.state.value} />
                         <input ref="a" value={this.state.value} onInput={this.onChange.bind(this)} />
                     </div>
                 );
@@ -294,7 +293,7 @@ describe("组件相关", function() {
         }
 
         var s = React.render(<App />, div);
-      
+
         expect(s.refs.c.selected).toBe(true);
     });
 
@@ -376,21 +375,21 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<App />, div);
-      
+
         expect(updateCount).toBe(0);
         expect(receiveCount).toBe(0);
         s.change("111");
-       
+
         expect(updateCount).toBe(1);
         expect(receiveCount).toBe(1);
         s.change("111x");
-      
+
         expect(updateCount).toBe(2);
         expect(receiveCount).toBe(2);
         expect(div.firstChild.childNodes[1].nodeType).toBe(8);
         expect(destroyCount).toBe(0);
         s.change("111");
-      
+
         expect(updateCount).toBe(3);
         expect(receiveCount).toBe(3);
         expect(div.firstChild.childNodes[1].nodeType).toBe(1);
@@ -434,7 +433,7 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<Test />, div);
-       
+
         expect(str).toBe("222111");
         expect(React.findDOMNode(s.refs.wrapper)).toBe(div.querySelector("#aaa"));
     });
@@ -476,10 +475,10 @@ describe("组件相关", function() {
         };
 
         var s = React.render(<HasChild />, div);
-       
+
         expect(s.refs.a.props.title).toBe("xxx");
-        eactTestUtils.Simulate.click(s.refs.componentDidUpdate)
-       
+        ReactTestUtils.Simulate.click(s.refs.componentDidUpdate);
+
         expect(s.refs.a.props.title).toBe("默认值");
         expect(s.refs.a.props.ddd).toBe("ddd");
         expect(title).toBe(1);
@@ -513,43 +512,73 @@ describe("组件相关", function() {
             title: "默认值"
         };
 
-
         var s = React.render(<HasChild />, div);
-       
+
         var span = div.getElementsByTagName("span")[0];
         expect(span.innerHTML).toBe("xxx");
-        eactTestUtils.Simulate.click(s.refs.componentDidUpdate2)
-      
+        ReactTestUtils.Simulate.click(s.refs.componentDidUpdate2);
+
         expect(span.innerHTML).toBe("默认值");
     });
 
-    it("新旧两种无状态组件的ref传参", function(){
-        var list = []
-        function Old (props){
-           return  <span>{props.aaa}</span>
+    it("新旧两种无状态组件的ref传参", function() {
+        var list = [];
+        function Old(props) {
+            return <span>{props.aaa}</span>;
         }
-        ReactDOM.render(<Old ref={(a)=>{ list.push(!!a)}} aaa={111} />, div);
-        ReactDOM.render(<Old ref={(a)=>{ list.push(!!a)}} aaa={222} />, div);
-        expect(list).toEqual([false, false, false])
-        var list2 = []
-        function New (props){
-           return {
-                componentWillMount(){
-                    list2.push("mount")
+        ReactDOM.render(
+            <Old
+                ref={a => {
+                    list.push(!!a);
+                }}
+                aaa={111}
+            />,
+            div
+        );
+        ReactDOM.render(
+            <Old
+                ref={a => {
+                    list.push(!!a);
+                }}
+                aaa={222}
+            />,
+            div
+        );
+        expect(list).toEqual([false, false, false]);
+        var list2 = [];
+        function New(props) {
+            return {
+                componentWillMount() {
+                    list2.push("mount");
                 },
-                componentWillUpdate(){
-                    list2.push("update")
+                componentWillUpdate() {
+                    list2.push("update");
                 },
-               render(){
-                   return <span>{props.aaa}</span>
-               }
-           } 
+                render() {
+                    return <span>{props.aaa}</span>;
+                }
+            };
         }
-        ReactDOM.render(<New ref={(a)=>{ list2.push(!!a)}} aaa={111} />, div);
-        ReactDOM.render(<New ref={(a)=>{ list2.push(!!a)}} aaa={222} />, div);
-        expect(list2).toEqual(["mount", true, false, "update",true])
-
-    })
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={111}
+            />,
+            div
+        );
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={222}
+            />,
+            div
+        );
+        expect(list2).toEqual(["mount", true, false, "update", true]);
+    });
 
     it("componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素", () => {
         var assertions = 0;
@@ -560,12 +589,12 @@ describe("组件相关", function() {
             }
 
             componentDidMount() {
-                expect(!!ReactDOM.findDOMNode(this)).toBe(true);
+                expect("mount " + !!ReactDOM.findDOMNode(this)).toBe("mount true");
                 assertions++;
             }
 
             componentWillUnmount() {
-                expect(!!ReactDOM.findDOMNode(this)).toBe(true);
+                expect("umount " + !!ReactDOM.findDOMNode(this)).toBe("umount true");
                 assertions++;
             }
         }
@@ -576,17 +605,16 @@ describe("组件相关", function() {
             }
         }
 
-        var el = document.createElement("div");
         var component;
 
-        component = React.render(<Wrapper showInner={true} />, el);
-        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
+        component = ReactDOM.render(<Wrapper showInner={true} />, div);
+        expect(ReactDOM.findDOMNode(component) ? "1ok" : "1ng").toBe("1ok");
 
-        component = React.render(<Wrapper showInner={false} />, el);
-        expect(ReactDOM.findDOMNode(component).tagName).toBe(undefined);
+        component = ReactDOM.render(<Wrapper showInner={false} />, div);
+        expect(ReactDOM.findDOMNode(component)).toBe(null);
 
-        component = React.render(<Wrapper showInner={true} />, el);
-        expect(!!ReactDOM.findDOMNode(component)).toBe(true);
+        component = ReactDOM.render(<Wrapper showInner={true} />, div);
+        expect(ReactDOM.findDOMNode(component) ? "2ok" : "2ng").toBe("2ok");
 
         expect(assertions).toBe(3);
     });
@@ -627,7 +655,7 @@ describe("组件相关", function() {
             }
         }
         var s = React.render(<App />, div);
-        
+
         expect(b._owner.constructor).toBe(App);
         expect(c._owner.constructor).toBe(App);
     });

@@ -1,5 +1,6 @@
 import { document } from "./browser";
 import { isFn, noop, options } from "./util";
+import {switchUpdaters, flushUpdaters } from "./scheduler";
 
 var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -39,20 +40,16 @@ export function dispatchEvent(e, type, end) {
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     options.async = true;
-    if (options.async) {
-        var cur = options.queue;
-        if (cur !== options.dirtyComponents) {
-            options.queue = options.dirtyComponents;
-            options.queue.last = cur;
-        }
-    }
+   
+    switchUpdaters();
+
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    options.flushUpdaters();
+    flushUpdaters();
 }
 
 function collectPaths(from, end) {

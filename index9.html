@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script src="./test/react.js"></script>
+   <!-- <script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
   
@@ -16,30 +16,36 @@
     <div>这个默认会被清掉</div>
     <div id='example'></div>
     <pre>
-        parent-render,blue
-        getInitialState,blue
-        render,dark blue,blue
-        handleHue,dark blue,blue
-        parent-handleColor,blue
-        parent-render,green
-        setState-this,dark blue,blue
-        setState-args,dark blue,blue
-        render,light blue,blue
-        render,light blue,green
-        parent-after-setState,green
-        after-setState,light blue,green 
-        vs
-         parent-render,blue
-        getInitialState,blue
-        render,dark blue,blue
-        handleHue,dark blue,blue
-        parent-handleColor,blue
-        parent-render,green
-        setState-this,dark blue,blue
-        setState-args,dark blue,green
-        render,light green,green
-        parent-after-setState,green
-        after-setState,light green,green false
+        start mount
+        inner 1 render
+        inner 2 render
+        inner 1 componentDidMount
+        ref 1 got instance 1
+        inner 2 componentDidMount
+        ref 2 got instance 2
+        outer componentDidMount
+        start update
+
+        ref 1 got null
+        inner 1 componentWillUpdate
+        inner 1 render
+
+        ref 2 got null
+        inner 2 componentWillUpdate
+        inner 2 render
+
+        inner 1 componentDidUpdate
+        ref 1 got instance 1
+        inner 2 componentDidUpdate
+        ref 2 got instance 2
+        outer componentDidUpdate
+
+        start unmount
+        outer componentWillUnmount
+        ref 1 got null
+        inner 1 componentWillUnmount
+        ref 2 got null
+        inner 2 componentWillUnmount 
     </pre>
 
     <script type='text/babel'>
@@ -53,108 +59,112 @@
       }
   }
  
-  class ParentComponent extends React.Component {
-    state = {color: 'blue'};
-
-    handleColor = color => {
-      this.props.logger('parent-handleColor', this.state.color);
-      this.setState({color: color}, function() {
-        this.props.logger('parent-after-setState', this.state.color);
-      });
-    };
-
-    render() {
-      this.props.logger('parent-render', this.state.color);
-      return (
-        <ChildComponent
-          logger={this.props.logger}
-          color={this.state.color}
-          onSelectColor={this.handleColor}
-        />
-      );
-    }
-  }
-
-  class ChildComponent extends React.Component {
-    constructor(props) {
-      super(props);
-      props.logger('getInitialState', props.color);
-      this.state = {hue: 'dark ' + props.color};
-    }
-
-    handleHue = (shade, color) => {
-      this.props.logger('handleHue', this.state.hue, this.props.color);
-      this.props.onSelectColor(color);
-      this.setState(
-        function(state, props) {
-          this.props.logger(
-            'setState-this',
-            this.state.hue,
-            this.props.color,
-          );
-          this.props.logger('setState-args', state.hue, props.color);
-          return {hue: shade + ' ' + props.color};
-        },
-        function() {
-          this.props.logger(
-            'after-setState',
-            this.state.hue,
-            this.props.color,
-          );
-        },
-      );
-    };
-
-    render() {
-      this.props.logger('render', this.state.hue, this.props.color);
-      return (
-        <div>
-          <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
-            Dark Blue
-          </button>
-          <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
-            Light Blue
-          </button>
-          <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
-            Dark Green
-          </button>
-          <button onClick={this.handleHue.bind(this, 'light', 'green')}>
-            Light Green
-          </button>
-        </div>
-      );
-    }
-  }
-
-  var container = document.createElement('div');
-  document.body.appendChild(container);
-  var list = []
-  function logger(){
-    list.push([].slice.call(arguments, 0))
-  }
-
-  void ReactDOM.render(<ParentComponent logger={logger} />, container);
-
-  // click "light green"
- container.childNodes[0].childNodes[3].click()
-  //console.log(JSON.stringify(logger.calls))
-  expect(list.join("\n")).toBe([
-    ['parent-render', 'blue'],
-    ['getInitialState', 'blue'],
-    ['render', 'dark blue', 'blue'],
-    ['handleHue', 'dark blue', 'blue'],
-    ['parent-handleColor', 'blue'],
-    ['parent-render', 'green'],
-    ['setState-this', 'dark blue', 'blue'],
-    ['setState-args', 'dark blue', 'green'],
-    ['render', 'light green', 'green'],
-    ['parent-after-setState', 'green'],
-    ['after-setState', 'light green', 'green']
-   
-  ].join("\n"));
-      
-
+         var list = [];
+         function logger(a){
+             list.push(a)
+         }
+  
+          class Inner extends React.Component {
+              render() {
+                  logger(`inner ${this.props.id} render`);
+                  return <div />;
+              }
+  
+              componentDidMount() {
+                  logger(`inner ${this.props.id} componentDidMount`);
+              }
+              componentWillUpdate() {
+                  logger(`inner ${this.props.id} componentWillUpdate`);
+              }
+             
+              componentDidUpdate() {
+                  logger(`inner ${this.props.id} componentDidUpdate`);
+              }
+  
+              componentWillUnmount() {
+                  logger(`inner ${this.props.id} componentWillUnmount`);
+              }
+          }
+  
+          class Outer extends React.Component {
+              render() {
+                  return (
+                      <div>
+                          <Inner
+                              id={1}
+                              ref={c => {
+                                  logger(`ref 1 got ${c ? `instance ${c.props.id}` : "null"}`);
+                              }}
+                          />
+                          <Inner
+                              id={2}
+                              ref={c => {
+                                  logger(`ref 2 got ${c ? `instance ${c.props.id}` : "null"}`);
+                              }}
+                          />
+                      </div>
+                  );
+              }
+  
+              componentDidMount() {
+                  logger("outer componentDidMount");
+              }
+  
+              componentDidUpdate() {
+                  logger("outer componentDidUpdate");
+              }
+  
+              componentWillUnmount() {
+                  logger("outer componentWillUnmount");
+              }
+          }
+  
+          // mount, update, unmount
+          var container = document.createElement("div");
+          logger("start mount");
+          ReactDOM.render(<Outer />, container);
+          logger("start update");
+          ReactDOM.render(<Outer />, container);
+        /*  logger("start unmount");
+          ReactDOM.unmountComponentAtNode(container);*/
+  
+          /* eslint-disable indent */
+         
+          var list2 = [
+              "start mount",
+              "inner 1 render",
+              "inner 2 render",
+              "inner 1 componentDidMount",
+              "ref 1 got instance 1",
+              "inner 2 componentDidMount",
+              "ref 2 got instance 2",
+              "outer componentDidMount",
+              "start update",
+  
+              // Stack resets refs before rendering
+              "ref 1 got null",
+              "inner 1 componentWillUpdate",
+              "inner 1 render",
+              "ref 2 got null",
+              "inner 2 componentWillUpdate",
+              "inner 2 render",
+  
+              "inner 1 componentDidUpdate",
+              "ref 1 got instance 1",
+              "inner 2 componentDidUpdate",
+              "ref 2 got instance 2",
+              "outer componentDidUpdate",
+             /* "start unmount",
+              "outer componentWillUnmount",
+              "ref 1 got null",
+              "inner 1 componentWillUnmount",
+              "ref 2 got null",
+              "inner 2 componentWillUnmount"*/
+          ]
+          console.log(list.length, list2.length)
+          expect(list.join("\n")).toBe(list2.join("\n"));
       </script>
 </body>
 
 </html>
+

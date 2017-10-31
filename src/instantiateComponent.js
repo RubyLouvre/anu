@@ -1,7 +1,8 @@
 import { extend } from "../src/util";
 import { Refs } from "./Refs";
-import { Updater } from "./updater";
-export function instantiateComponent(type, vnode, props, context) {
+import { Updater, getContextByTypes } from "./updater";
+export function instantiateComponent(type, vnode, props, parentContext) {
+    let context = getContextByTypes(parentContext, type.contextTypes);
     let isStateless = vnode.vtype === 4;
     let instance = isStateless
         ? {
@@ -16,7 +17,7 @@ export function instantiateComponent(type, vnode, props, context) {
     instance.props = updater.props = props;
     instance.context = updater.context = context;
     instance.constructor = type;
-    updater.displayName = type.displayName || type.name;
+    updater.name = type.displayName || type.name;
 
     if (isStateless) {
         let lastOwn = Refs.currentOwner;

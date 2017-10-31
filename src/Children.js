@@ -43,7 +43,7 @@ export const Children = {
             _flattenChildren(children, false).forEach(callback, context);
         }
     },
-
+    aa: _flattenChildren,
     toArray: function(children) {
         if(children == null) {
             return [];

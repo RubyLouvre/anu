@@ -630,7 +630,7 @@ describe("ReactCompositeComponent", function() {
 
     expect(childInstance.context).toEqual({foo: 'bar', depth: 0});
     */
-    });
+   });
 
     it("unmasked context propagates through updates", () => {
         class Leaf extends React.Component {
@@ -1112,6 +1112,7 @@ describe("ReactCompositeComponent", function() {
         }).toThrow();
         expect(count).toBe(1);
     });
+    
     it("prepares new child before unmounting old", () => {
         var log = [];
 
@@ -1141,7 +1142,7 @@ describe("ReactCompositeComponent", function() {
         ReactDOM.render(<Wrapper name="A" />, container);
         ReactDOM.render(<Wrapper name="B" />, container);
 
-        expect(log).toEqual(["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"]);
+        expect(log.join("\n")).toBe(["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"].join("\n"));
     });
 
     it("respects a shallow shouldComponentUpdate implementation", () => {
@@ -1228,9 +1229,7 @@ describe("ReactCompositeComponent", function() {
             state = initialSettings;
 
             shouldComponentUpdate(nextProps, nextState) {
-                var a = shallowCompare(this, nextProps, nextState);
-                console.log(a, "!!!");
-                return a;
+                return shallowCompare(this, nextProps, nextState);
             }
 
             render() {
@@ -1303,10 +1302,11 @@ describe("ReactCompositeComponent", function() {
             }
         }
         var b = <Component />;
-        var container = document.createElement("div")
+        var container = document.createElement("div");
         var s = ReactDOM.render(b, container);
-        expect(!!s.updater._hostNode).toBe(true)
-        s.setState({a:2})
-        expect(!!s.updater._hostNode).toBe(true)
+        expect(!!s.updater._hostNode).toBe(true);
+        s.setState({ a: 2 });
+        expect(!!s.updater._hostNode).toBe(true);
     });
+    
 });

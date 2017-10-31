@@ -1,4 +1,4 @@
-import { getChildContext, getContextByTypes } from "../src/util";
+import { getChildContext, getContextByTypes } from "../src/updater";
 import { rnumber, cssNumber } from "../src/style";
 var React = typeof global === "object" ? global.React : window.React;
 var skipAttributes = {

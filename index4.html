@@ -3,99 +3,111 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-  <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
-    
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-   
- 
-  <!--<script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <meta name="viewport" content="width=device-width">
+    <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
-   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
-  
+    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
+
 <body>
-    
-        <div>开发者工具</div>
-        <pre>
-            
+
+    <div>开发者工具</div>
+    <pre>
+          
         </pre>
-        <div id='example'></div>
-    
-      
-  <script type='text/babel'>
+    <div id='example'></div>
+
+
+    <script type='text/babel'>
    
      
-      var container = document.getElementById("example")
-      var div = container
-     // var PropTypes = React.PropTypes
-      if(!window.ReactDOM){
-        window.ReactDOM = window.React
-       
-      }
-      var PropTypes = React.PropTypes
-      var expect = function(a) {
-          return {
-              toBe: function(b) {
-                  console.log(a, b, a === b)
-              }
-          }
-      }
+    var container = document.getElementById("example")
+    var div = container
+    // var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+       window.ReactDOM = window.React
+       var PropTypes = React.PropTypes
+    }
 
-      var list = [];
-      class A extends React.Component{
-        componentDidMount(){
-              list.push("a mount");
-          }
-          render(){
-              return <span>A</span>;
-          }
-      }
-      function genArr(n, c) {
-          var ret = []
-          for(var i = 0; i < n; i++){
-               ret.push(c)
-          }
-          return ret
-      }
-      class B extends React.Component{
-        componentDidMount(){
-            list.push("b mount");
-          }
-          render(){
-              return <p>{genArr(400,<C />)}</p>;
-          }
-      }
-      class C extends React.Component{
-        componentDidMount(){
-            list.push("c mount");
-          }
-          render(){
-              return <strong>C</strong>;
-          }
-      }
-      class App extends React.Component {
-          constructor(props) {
-              super(props);
-              this.state = {
-                  a: 1
-              };
-          }
-          render() {
-              return <div>{genArr(500, <A/>)}<div><B /></div><A /></div>;
-          }
-      }
-      var now = new Date - 0
-      var s = ReactDOM.render(<App />, div);
-      s.setState({a: 0});
-      console.log(new Date - now)
-      console.log(list.join("\n"))
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+   
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                flag: 1
+            };
+        }
+        componentDidMount(props){
+            console.log("App did mount")
+        }
+        componentWillUpdate(props){
+            console.log("App will update")
+        }
+        componentDidUpdate(props){
+            console.log("App did update")
+        }
+        render() {
+            return (<div>{
+                this.state.flag ?
+                [<Child key="a" parent={this} text="111" />,
+                <Child key="b" parent={this}  text="222" />]:
+                [<Child key="a" text="333" />,
+                <Child key="b" text="444" />]
+                 }</div>
+            );
+        }
+    }
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                text: props.text 
+            };
+        }
+        render(){
+            return <span className={this.state.text}>{this.state.text}</span>
+        }
+        componentDidMount(props){
+            console.log("Child did mount")
+            if(this.props.text==="111"){
+               console.log("XXXX")
+               this.props.parent.setState({flag: 0})
+            }
+           
+        }
+        componentWillReceiveProps(props){
+            console.log("Child ",this.props.text, "will receive")
+             this.setState({
+                 text: props.text
+             })
+        }
+        componentWillUpdate(props){
+            console.log("Child ",this.props.text, "will update")
+        }
+        componentDidUpdate(props){
+            console.log("Child ",this.props.text, "did update")
+        }
+    }
+
+    var s = ReactDOM.render(<App />, div);
+    
+ 
     
     </script>
-  
+
 </body>
-    
- </html>
+
+</html>

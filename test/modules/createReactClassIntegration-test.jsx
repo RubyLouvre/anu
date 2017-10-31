@@ -316,7 +316,6 @@ it('should warn when using deprecated non-static spec keys', () => {
   });
 
   it('isMounted works', () => {
-    spyOn(console, 'error')
     var ops = [];
     var instance;
     var Component = createReactClass({
@@ -391,7 +390,6 @@ it('should warn when using deprecated non-static spec keys', () => {
       'after unmount: false',
     ]);
 
-     expect(console.error.calls.count()).toBe(0);
     // expect(console.error.calls.argsFor(0)[0]).toEqual(
     //   'Warning: MyComponent: isMounted is deprecated. Instead, make sure to ' +
     //     'clean up subscriptions and pending requests in componentWillUnmount ' +

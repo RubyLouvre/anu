@@ -4,6 +4,11 @@
 	(global.ReactDOMServer = factory());
 }(this, (function () {
 
+var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
+
+
+
+
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -29,23 +34,10 @@
  */
 
 
-/**
- * 小写化的优化
- *
- * @export
- * @param {any} s
- * @returns
- */
 
 
 
 
-/**
- *
- *
- * @param {any} obj
- * @returns
- */
 
 
 var rword = /[^, ]+/g;
@@ -64,6 +56,25 @@ function oneObject(array, val) {
     }
     return result;
 }
+
+
+
+
+
+
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
+
+var pendingRefs = [];
+window.pendingRefs = pendingRefs;
+
+/**
+ * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
+ * 
+ * @export
+ * @param {any} instance 
+ * @param {any} vnode 
+ */
+
 
 function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
@@ -87,13 +98,6 @@ function getContextByTypes(curContext, contextTypes) {
     }
     return context;
 }
-
-
-
-
-
-
-// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
 
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**
@@ -138,8 +142,8 @@ function renderVNode(vnode, context) {
         case "#comment":
             return "<!--" + vnode.text + "-->";
         default:
-            var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
-            innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
+            var innerHTML = props && props.dangerouslySetInnerHTML;
+            innerHTML = innerHTML && innerHTML.__html;
             if (vtype === 1) {
                 //如果是元素节点
                 var attrs = [];
@@ -169,8 +173,8 @@ function renderVNode(vnode, context) {
                     return str + "/>\n";
                 }
                 str += ">";
-                if (innerHTML$$1) {
-                    str += innerHTML$$1;
+                if (innerHTML) {
+                    str += innerHTML;
                 } else {
                     //最近版本将虚拟DOM树结构调整了，children不一定为数组
                     React.Children.forEach(props.children, function (el) {

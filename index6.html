@@ -7,7 +7,7 @@
     <script type='text/javascript' src="./dist/React.js"></script>
 
    <!-- <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>-->
+   <script type='text/javascript' src="./test/react-dom.js"></script>
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -18,24 +18,18 @@
 <body>
     
         <pre>应该等于
-            Inline Babel script:22 A a1 mount
-            Inline Babel script:22 A a2 mount
-            Inline Babel script:22 A a3 mount
-            Inline Babel script:59 111instance
-            Inline Babel script:62 222instance
-            Inline Babel script:65 333instance
-            Inline Babel script:80 setState
-            Inline Babel script:48 App componentWillUpdate
-            Inline Babel script:62 222null
-            Inline Babel script:59 111null
-            Inline Babel script:25 A a3 update
-            Inline Babel script:19 A a1 remove
-            Inline Babel script:19 A a2 remove
-            Inline Babel script:65 333null
-            Inline Babel script:70 444instance
-            Inline Babel script:73 555instance
-            Inline Babel script:33 B mount
-            Inline Babel script:51 App componentDidUpdate
+            "111instance",
+            "222instance",
+            "333instance",
+            "222null",
+            "111null",
+            "A update",
+            "A remove",
+            "A remove",
+            "333null",
+            "444instance",
+            "555instance",
+            "B mount"
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -52,30 +46,32 @@
                     }
                 }
             }
+           
+          
             var list = [];
             class A extends React.Component{
                 componentWillUnmount(){
-                    console.log("A "+this.props.name+" remove");
-                }
-                componentWillMount(){
-                    console.log("A "+this.props.name+" mount");
+                    logger("A remove");
                 }
                 componentWillUpdate(){
-                    console.log("A "+this.props.name+" update");
+                    logger("A update");
                 }
                 render(){
-                    return <span>{this.props.name}</span>;
+                    return <span>A</span>;
                 }
             }
             class B extends React.Component{
                 componentDidMount(){
-                    console.log("B mount");
+                    logger("B mount");
                 }
                 render(){
                     return <span>B</span>;
                 }
             }
-    
+            var list = [];
+            function logger (a){
+                console.log(a)
+            }
             class App extends React.Component {
                 constructor(props) {
                     super(props);
@@ -83,42 +79,49 @@
                         a: 1
                     };
                 }
-                componentWillUpdate(){
-                    console.log("App componentWillUpdate")
-                }
-                componentDidUpdate(){
-                    console.log("App componentDidUpdate")
-                }
                 render() {
                     return <div>
                         {
                             this.state.a ? 
-                                [<A name="a1"/>,<A name="a2" />,<A name="a3"/>,
+                                [<A />,<A />,<A />,
                                     <span key="a" ref={(a)=>{
-                                        console.log(111+(a?"instance":"null"));
+                                        logger(111+(a?"instance":"null"));
                                     }}>a</span>,
                                     <span key="b" ref={(a)=>{
-                                        console.log(222+(a?"instance":"null"));    
+                                        logger(222+(a?"instance":"null"));    
                                     }}>b</span>,
                                     <span key="c" ref={(a)=>{
-                                        console.log(333+(a?"instance":"null"));
+                                        logger(333+(a?"instance":"null"));
                                     }}>c</span>,
                                 ]:
                                 [
-                                   <span key="b" ref={(a)=>{
-                                        console.log(444+(a?"instance":"null"));
-                                    }}>111</span>,
+                                    <span key="b" ref={(a)=>{
+                                        logger(444+(a?"instance":"null"));
+                                    }}>b</span>,
                                     <span key="a" ref={(a)=>{
-                                        console.log(555+(a?"instance":"null"));
-                                    }}>222</span>,<A name="a6"/>, <B />]
+                                        logger(555+(a?"instance":"null"));
+                                    }}>a</span>,<A />, <B />]
                         }
-                    </div>; // span.b, span.a
+                    </div>;
                 }
             }
             var s = ReactDOM.render(<App />, div);
-            console.log("setState")
             s.setState({a: 0});
-            
+            /*
+            expect(list.join("\n")).toBe([
+                "111instance",
+                "222instance",
+                "333instance",
+                "222null",
+                "111null",
+                "A update",
+                "A remove",
+                "A remove",
+                "333null",
+                "444instance",
+                "555instance",
+                "B mount"
+            ].join("\n"));*/
           </script>
     
 </body>
