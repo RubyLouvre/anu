@@ -292,7 +292,7 @@ function mountComponent(lastNode, vnode, parentVnode, parentContext, parentUpdat
 }
 
 function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
-    let { type, _instance, _hostNode } = lastVnode;
+    let { type, _instance } = lastVnode;
     let updater = _instance.updater,
         nextContext;
 
@@ -312,19 +312,15 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     updater.parentVnode = parentVnode;
     updater.willReceive = willReceive;
 
-    updater.inReceiveStage = [nextVnode, nextContext, _hostNode, _instance];
+   
     if (!updater._dirty) {//如果在事件中使用了setState
-        enqueueQueue({
-            host: updater,
-            exec: updater.onReceive
-        });
-
+        updater.inReceiveStage = [lastVnode, nextVnode, nextContext];
         enqueueQueue({
             host: updater,
             exec: updater.onUpdate
         });
     }
-    return _hostNode;
+    return updater._hostNode;
 }
 
 function isSameNode(a, b) {

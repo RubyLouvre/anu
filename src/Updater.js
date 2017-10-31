@@ -101,22 +101,23 @@ Updater.prototype = {
         pendings.length = 0;
         return nextState;
     },
-    onReceive() {
-        let updater = this;
-        let lastVnode = this.vnode;
-        let [nextVnode, nextContext, dom, instance] = this.inReceiveStage;
-        nextVnode._hostNode = dom;
-        nextVnode._instance = instance;
-        //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
-        //但还会继续向下比较
-        updater._receiving = true;
-        captureError(instance, "componentWillReceiveProps",[this.props, nextContext]);
-        updater._receiving = false;
-        Refs.detachRef(lastVnode, nextVnode);
-        return dom;
-    },
+
     onUpdate() {
         let { _instance: instance, _hostNode: dom, context, props, vnode } = this;
+        if(this.inReceiveStage){
+            let [lastVnode,nextVnode, nextContext] = this.inReceiveStage;
+            delete this.inReceiveStage;
+            nextVnode._hostNode = dom;
+            nextVnode._instance = instance;
+            //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
+            //但还会继续向下比较
+            this._receiving = true;
+            captureError(instance, "componentWillReceiveProps",[this.props, nextContext]);
+            this._receiving = false;
+            Refs.detachRef(lastVnode, nextVnode);
+        }
+
+
         let state = this.mergeStates();
         let shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate",[props, state, context])

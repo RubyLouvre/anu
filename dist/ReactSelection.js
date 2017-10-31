@@ -1575,32 +1575,29 @@ Updater.prototype = {
         pendings.length = 0;
         return nextState;
     },
-    onReceive: function onReceive() {
-        var updater = this;
-        var lastVnode = this.vnode;
-
-        var _inReceiveStage = _slicedToArray(this.inReceiveStage, 4),
-            nextVnode = _inReceiveStage[0],
-            nextContext = _inReceiveStage[1],
-            dom = _inReceiveStage[2],
-            instance = _inReceiveStage[3];
-
-        nextVnode._hostNode = dom;
-        nextVnode._instance = instance;
-        //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
-        //但还会继续向下比较
-        updater._receiving = true;
-        captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
-        updater._receiving = false;
-        Refs.detachRef(lastVnode, nextVnode);
-        return dom;
-    },
     onUpdate: function onUpdate() {
         var instance = this._instance,
             dom = this._hostNode,
             context = this.context,
             props = this.props,
             vnode = this.vnode;
+
+        if (this.inReceiveStage) {
+            var _inReceiveStage = _slicedToArray(this.inReceiveStage, 3),
+                lastVnode = _inReceiveStage[0],
+                nextVnode = _inReceiveStage[1],
+                nextContext = _inReceiveStage[2];
+
+            delete this.inReceiveStage;
+            nextVnode._hostNode = dom;
+            nextVnode._instance = instance;
+            //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
+            //但还会继续向下比较
+            this._receiving = true;
+            captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
+            this._receiving = false;
+            Refs.detachRef(lastVnode, nextVnode);
+        }
 
         var state = this.mergeStates();
         var shouldUpdate = true;
@@ -2463,8 +2460,7 @@ function mountComponent(lastNode, vnode, parentVnode, parentContext, parentUpdat
 
 function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     var type = lastVnode.type,
-        _instance = lastVnode._instance,
-        _hostNode = lastVnode._hostNode;
+        _instance = lastVnode._instance;
 
     var updater = _instance.updater,
         nextContext = void 0;
@@ -2485,20 +2481,15 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     updater.parentVnode = parentVnode;
     updater.willReceive = willReceive;
 
-    updater.inReceiveStage = [nextVnode, nextContext, _hostNode, _instance];
     if (!updater._dirty) {
         //如果在事件中使用了setState
-        enqueueQueue({
-            host: updater,
-            exec: updater.onReceive
-        });
-
+        updater.inReceiveStage = [lastVnode, nextVnode, nextContext];
         enqueueQueue({
             host: updater,
             exec: updater.onUpdate
         });
     }
-    return _hostNode;
+    return updater._hostNode;
 }
 
 function isSameNode(a, b) {
