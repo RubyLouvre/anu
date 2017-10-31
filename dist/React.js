@@ -748,7 +748,6 @@ function drainQueue() {
         // console.log(updater.name, command,updater._hookName );
 
         job.exec.call(updater);
-        showError();
     }
 
     if (mainQueue.length > 1) {
@@ -762,6 +761,7 @@ function drainQueue() {
         });
     });
     options.afterPatch();
+    showError();
 }
 //mainQueue就是传送带，currentQueue或其他queue就是托运箱，job就是要加工的材料，exec是决定如何加工。
 //在diffChildren有需要立即解决的任务，先进先出
@@ -1092,9 +1092,13 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
+//freeze_start
+Object.freeze || (Object.freeze = function (a) {
+    return a;
+});
+//freeze_end
 
-
-var eventSystem = extend({
+var eventSystem = Object.freeze({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,

@@ -91,7 +91,7 @@ export function drainQueue() {
         // console.log(updater.name, command,updater._hookName );
        
         job.exec.call(updater);
-        showError();
+       
     }
 
     if (mainQueue.length > 1) {
@@ -105,7 +105,7 @@ export function drainQueue() {
         });
     });
     options.afterPatch();
-   
+    showError();
   
 }
 //mainQueue就是传送带，currentQueue或其他queue就是托运箱，job就是要加工的材料，exec是决定如何加工。
