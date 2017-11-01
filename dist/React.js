@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-10-31
+ * by 司徒正美 Copyright 2017-11-01
  * IE9+
  */
 
@@ -542,7 +542,21 @@ var NAMESPACE = {
     xhtml: "http://www.w3.org/1999/xhtml",
     html: "https://www.w3.org/TR/html4/"
 };
-
+// 用于辅助XML元素的生成（svg, math),
+// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
+function createVnode(container) {
+    var ns = container.namespaceURI;
+    var type = container.nodeName;
+    if (!ns || NAMESPACE.xhtml) {
+        ns = NAMESPACE.xhtml;
+        type = type.toLowerCase();
+    }
+    return {
+        _hostNode: container,
+        type: type,
+        namespaceURI: ns
+    };
+}
 var fn = DOMElement.prototype = {
     contains: Boolean
 };
@@ -1092,13 +1106,9 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
-//freeze_start
-Object.freeze || (Object.freeze = function (a) {
-    return a;
-});
-//freeze_end
 
-var eventSystem = Object.freeze({
+
+var eventSystem = extend({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -2213,19 +2223,11 @@ function findDOMNode(ref) {
 }
 //[Top API] ReactDOM.createPortal
 function createPortal(vchildren, container) {
-    var parentVnode = getVParent(container);
+    var parentVnode = createVnode(container);
     parentVnode.vchildren = container.vchildren || emptyArray;
-    diffChildren(getVParent(container), vchildren, container, {});
+    diffChildren(parentVnode, vchildren, container, {});
     parentVnode.vchildren = vchildren;
     return null;
-}
-// 用于辅助XML元素的生成（svg, math),
-// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-function getVParent(container) {
-    return {
-        type: container.nodeName,
-        namespaceURI: container.namespaceURI
-    };
 }
 
 // ReactDOM.render的内部实现
@@ -2242,7 +2244,7 @@ function renderByAnu(vnode, container, callback) {
         lastVnode = container.__component;
 
     if (lastVnode) {
-        rootNode = alignVnode(lastVnode, vnode, getVParent(container), context);
+        rootNode = alignVnode(lastVnode, vnode, createVnode(container), context);
     } else {
         //如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
         rootNode = genVnodes(container, vnode, context);
@@ -2282,7 +2284,7 @@ function genVnodes(container, vnode, context) {
             container.removeChild(el);
         }
     }
-    return container.appendChild(mountVnode(lastNode, vnode, getVParent(container), context));
+    return container.appendChild(mountVnode(lastNode, vnode, createVnode(container), context));
 }
 
 var patchStrategy = {

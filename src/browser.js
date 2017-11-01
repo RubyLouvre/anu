@@ -15,7 +15,21 @@ export var NAMESPACE = {
     xhtml: "http://www.w3.org/1999/xhtml",
     html: "https://www.w3.org/TR/html4/"
 };
-
+// 用于辅助XML元素的生成（svg, math),
+// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
+export function createVnode(container) {
+    var ns = container.namespaceURI;
+    var type = container.nodeName;
+    if(!ns || NAMESPACE.xhtml){
+        ns = NAMESPACE.xhtml;
+        type = type.toLowerCase();
+    }
+    return {
+        _hostNode: container,
+        type: type,
+        namespaceURI: ns
+    };
+}
 var fn = (DOMElement.prototype = {
     contains: Boolean
 });
