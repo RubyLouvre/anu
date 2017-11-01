@@ -210,7 +210,6 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         if (lastProps[innerHTML]) {
             vchildren.length = 0;
         }
-
         diffChildren(nextVnode, newChildren, dom, context);
       
         nextVnode.vchildren = newChildren;

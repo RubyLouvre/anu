@@ -104,6 +104,7 @@ Updater.prototype = {
 
     onUpdate() {
         let { _instance: instance, _hostNode: dom, context, props, vnode } = this;
+      
         if(this.inReceiveStage){
             let [lastVnode,nextVnode, nextContext] = this.inReceiveStage;
             delete this.inReceiveStage;
@@ -116,8 +117,8 @@ Updater.prototype = {
             this._receiving = false;
             Refs.detachRef(lastVnode, nextVnode);
         }
-
-
+       
+        Refs.clearElementRefs();
         let state = this.mergeStates();
         let shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate",[props, state, context])
@@ -205,8 +206,7 @@ Updater.prototype = {
             Refs.currentOwner = lastOwn;
         }
        
-        
-
+    
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0, $$typeof: REACT_ELEMENT_TYPE };

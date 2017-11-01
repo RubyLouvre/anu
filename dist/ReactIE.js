@@ -164,7 +164,7 @@ var Refs = {
             return;
         }
         if (lastVnode._hasRef) {
-            this.fireRef(lastVnode, null);
+            pendingRefs.push(lastVnode, null);
             delete lastVnode._hasRef;
         }
 
@@ -1595,6 +1595,7 @@ Updater.prototype = {
             props = this.props,
             vnode = this.vnode;
 
+
         if (this.inReceiveStage) {
             var _inReceiveStage = _slicedToArray(this.inReceiveStage, 3),
                 lastVnode = _inReceiveStage[0],
@@ -1612,6 +1613,7 @@ Updater.prototype = {
             Refs.detachRef(lastVnode, nextVnode);
         }
 
+        Refs.clearElementRefs();
         var state = this.mergeStates();
         var shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
@@ -2393,7 +2395,6 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         if (lastProps[innerHTML]) {
             vchildren.length = 0;
         }
-
         diffChildren(nextVnode, newChildren, dom, context);
 
         nextVnode.vchildren = newChildren;

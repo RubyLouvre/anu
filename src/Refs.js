@@ -22,7 +22,7 @@ export var Refs = {
             return;
         }
         if (lastVnode._hasRef) {
-            this.fireRef(lastVnode, null);
+            pendingRefs.push(lastVnode, null);
             delete lastVnode._hasRef;
         }
         
