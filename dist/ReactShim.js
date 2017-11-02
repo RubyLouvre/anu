@@ -984,9 +984,6 @@ function drainQueue() {
             unique[updater._mountOrder] = 1;
             needSort.push(job);
         }
-        // currentQueue = queue;    
-        // var command = job.exec === updater.onUpdate ? "update" : job.exec === updater.onEnd ? "end" : "receive";
-        // console.log(updater.name, command,updater._hookName );
 
         job.exec.call(updater);
     }
@@ -1063,7 +1060,6 @@ function Updater(instance, vnode) {
     this._mountOrder = mountOrder++;
     this._instance = instance;
     this._pendingCallbacks = [];
-    this._didHook = noop;
     this._pendingStates = [];
     this._hookName = "componentDidMount";
     //update总是保存最新的数据，如state, props, context, parentContext, parentVnode

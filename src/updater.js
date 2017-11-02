@@ -20,7 +20,6 @@ export function Updater(instance, vnode) {
     this._mountOrder = mountOrder++;
     this._instance = instance;
     this._pendingCallbacks = [];
-    this._didHook = noop;
     this._pendingStates = [];
     this._hookName = "componentDidMount";
     //update总是保存最新的数据，如state, props, context, parentContext, parentVnode
@@ -149,7 +148,6 @@ Updater.prototype = {
             updater._hookName = "componentDidUpdate";
             spwanChildQueue(function() {
                 dom = updater.renderComponent(updater.rendered);
-               
             });
         }
  

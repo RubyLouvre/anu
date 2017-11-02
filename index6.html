@@ -83,7 +83,7 @@
                     return <div>
                         {
                             this.state.a ? 
-                                [<A />,<A />,<A />,
+                                [<A />,<A />,<A />,<A/>,
                                     <span key="a" ref={(a)=>{
                                         logger(111+(a?"instance":"null"));
                                     }}>a</span>,
@@ -100,7 +100,7 @@
                                     }}>b</span>,
                                     <span key="a" ref={(a)=>{
                                         logger(555+(a?"instance":"null"));
-                                    }}>a</span>,<A />, <B />]
+                                    }}>a</span>,<A />,<A />, <B />]
                         }
                     </div>;
                 }
