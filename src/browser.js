@@ -25,6 +25,7 @@ export function createVnode(container) {
         type = type.toLowerCase();
     }
     return {
+        vtype: container.nodeType === 1 ? 1: 0,
         _hostNode: container,
         type: type,
         namespaceURI: ns

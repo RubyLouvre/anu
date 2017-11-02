@@ -145,13 +145,11 @@ Updater.prototype = {
         });
         if (shouldUpdate) {
             this._hydrating = true;
-            let lastRendered = this.rendered;
+            updater.oldDatas = [lastProps, lastState, lastContext];
+            updater._hookName = "componentDidUpdate";
             spwanChildQueue(function() {
-                dom = updater.renderComponent(function(nextRendered, parentVnode, childContext) {
-                    return options.alignVnode(lastRendered, nextRendered, parentVnode, childContext, updater);
-                });
-                updater.oldDatas = [lastProps, lastState, lastContext];
-                updater._hookName = "componentDidUpdate";
+                dom = updater.renderComponent(updater.rendered);
+               
             });
         }
  
@@ -190,7 +188,7 @@ Updater.prototype = {
             });
         }
     },
-    renderComponent(cb) {
+    renderComponent(node) {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
        
@@ -216,7 +214,7 @@ Updater.prototype = {
         }
 
         let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-        let dom = cb(rendered, this.parentVnode, childContext);
+        let dom = options.alignVnode(node, rendered, this.parentVnode, childContext, this);
         if (rendered._hostNode) {
             this.rendered = rendered;
         }

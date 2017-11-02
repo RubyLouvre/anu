@@ -271,9 +271,7 @@ function mountComponent(lastNode, vnode, parentVnode, parentContext, parentUpdat
     }
 
     updater._hydrating = true;
-    let dom = updater.renderComponent(function(nextRendered, parentVnode, childContext) {
-        return mountVnode(lastNode, nextRendered, parentVnode, childContext, updater);
-    });
+    let dom = updater.renderComponent(lastNode);
     updater.oldDatas = emptyArray;
     enqueueQueue({
         host: updater,
@@ -322,6 +320,9 @@ function isSameNode(a, b) {
 }
 
 function alignVnode(lastVnode, nextVnode, parentVnode, context, parentUpdater) {
+    if(!lastVnode || lastVnode.nodeType){
+        return  mountVnode(null, nextVnode, parentVnode, context, parentUpdater);
+    }
     let dom;
     if (isSameNode(lastVnode, nextVnode)) {
         dom = updateVnode(lastVnode, nextVnode, parentVnode, context);

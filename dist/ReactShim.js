@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-11-01
+ * QQ 370262116 by 司徒正美 Copyright 2017-11-02
  */
 
 (function (global, factory) {
@@ -588,6 +588,7 @@ function createVnode(container) {
         type = type.toLowerCase();
     }
     return {
+        vtype: container.nodeType === 1 ? 1 : 0,
         _hostNode: container,
         type: type,
         namespaceURI: ns
@@ -1197,13 +1198,10 @@ Updater.prototype = {
         });
         if (shouldUpdate) {
             this._hydrating = true;
-            var lastRendered = this.rendered;
+            updater.oldDatas = [lastProps, lastState, lastContext];
+            updater._hookName = "componentDidUpdate";
             spwanChildQueue(function () {
-                dom = updater.renderComponent(function (nextRendered, parentVnode, childContext) {
-                    return options.alignVnode(lastRendered, nextRendered, parentVnode, childContext, updater);
-                });
-                updater.oldDatas = [lastProps, lastState, lastContext];
-                updater._hookName = "componentDidUpdate";
+                dom = updater.renderComponent(updater.rendered);
             });
         }
 
@@ -1243,7 +1241,7 @@ Updater.prototype = {
             });
         }
     },
-    renderComponent: function renderComponent(cb) {
+    renderComponent: function renderComponent(node) {
         var vnode = this.vnode,
             parentContext = this.parentContext,
             instance = this._instance;
@@ -1270,7 +1268,7 @@ Updater.prototype = {
         }
 
         var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-        var dom = cb(rendered, this.parentVnode, childContext);
+        var dom = options.alignVnode(node, rendered, this.parentVnode, childContext, this);
         if (rendered._hostNode) {
             this.rendered = rendered;
         }
@@ -2299,9 +2297,7 @@ function mountComponent(lastNode, vnode, parentVnode, parentContext, parentUpdat
     }
 
     updater._hydrating = true;
-    var dom = updater.renderComponent(function (nextRendered, parentVnode, childContext) {
-        return mountVnode(lastNode, nextRendered, parentVnode, childContext, updater);
-    });
+    var dom = updater.renderComponent(lastNode);
     updater.oldDatas = emptyArray;
     enqueueQueue({
         host: updater,
@@ -2352,6 +2348,9 @@ function isSameNode(a, b) {
 }
 
 function alignVnode(lastVnode, nextVnode, parentVnode, context, parentUpdater) {
+    if (!lastVnode || lastVnode.nodeType) {
+        return mountVnode(null, nextVnode, parentVnode, context, parentUpdater);
+    }
     var dom = void 0;
     if (isSameNode(lastVnode, nextVnode)) {
         dom = updateVnode(lastVnode, nextVnode, parentVnode, context);
