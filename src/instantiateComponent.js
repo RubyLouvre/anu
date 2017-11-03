@@ -16,7 +16,7 @@ export function instantiateComponent(type, vnode, props, parentContext) {
     //props, context是不可变的
     instance.props = updater.props = props;
     instance.context = updater.context = context;
-    instance.constructor = type;
+    instance.__proto__ = type.prototype;
     updater.name = type.displayName || type.name;
 
     if (isStateless) {
