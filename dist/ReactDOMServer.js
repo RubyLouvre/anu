@@ -67,6 +67,9 @@ function oneObject(array, val) {
 var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 
+var cacheTree = {};
+window.cacheTree = cacheTree;
+
 /**
  * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
  * 

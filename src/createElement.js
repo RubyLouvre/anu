@@ -11,7 +11,7 @@ import {Refs} from "./Refs";
 
 export function createElement(type, config, ...children) {
     let props = {},
-        checkProps = 0,
+        _hasProps = 0,
         vtype = 1,
         key = null,
         ref = null,
@@ -37,7 +37,7 @@ export function createElement(type, config, ...children) {
             } else if (i === "children") {
                 props[i] = val;
             } else {
-                checkProps = 1;
+                _hasProps = 1;
                 props[i] = val;
             }
         }
@@ -54,15 +54,15 @@ export function createElement(type, config, ...children) {
     if (defaultProps) {
         for (let propName in defaultProps) {
             if (props[propName] === void 666) {
-                checkProps = 1;
+                _hasProps = 1;
                 props[propName] = defaultProps[propName];
             }
         }
     }
-    return new Vnode(type, key, ref, props, vtype, checkProps);
+    return new Vnode(type, key, ref, props, vtype, _hasProps);
 }
 
-function Vnode(type, key, ref, props, vtype, checkProps) {
+function Vnode(type, key, ref, props, vtype, _hasProps) {
     this.type = type;
     this.props = props;
     this.vtype = vtype;
@@ -73,7 +73,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     }
 
     if (vtype === 1) {
-        this.checkProps = checkProps;
+        this._hasProps = _hasProps;
     }
 
     let refType = typeNumber(ref);
@@ -108,7 +108,7 @@ export function flattenChildren(vnode) {
             arr = emptyArray;
         }
     }
-    return (vnode.vchildren = arr);
+    return arr;
 }
 
 export function _flattenChildren(original, convert) {

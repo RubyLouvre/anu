@@ -2,6 +2,9 @@ import { options, noop, innerHTML } from "./util";
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 import { captureError } from "./scheduler";
+import { removeCache,restoreChildren } from "./cacheTree";
+
+
 export function disposeVnode(vnode) {
     if (!vnode || vnode._disposed) {
         return;
@@ -16,18 +19,19 @@ export function disposeVnode(vnode) {
     } else if (vnode.vtype === 1) {
         disposeElement(vnode);
     }
+    removeCache(vnode);
     vnode._disposed = true;
 }
 
 function disposeElement(vnode) {
-    var { props, vchildren } = vnode;
+    var { props } = vnode;
     if (props[innerHTML]) {
         removeElement(vnode._hostNode);
     } else {
+        var vchildren = restoreChildren(vnode);
         for (let i = 0, n = vchildren.length; i < n; i++) {
             disposeVnode(vchildren[i]);
         }
-        vchildren.length = 0;
     }
 }
 

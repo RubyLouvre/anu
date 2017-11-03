@@ -6,11 +6,10 @@
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./lib/shallowCompare.js"></script>
 
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+  <script type='text/javascript' src="./dist/React.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <!--<script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
-
   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
   <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -39,77 +38,123 @@
               }
           }
       }
-      var renderCalls = 0;
-      class PlasticWrap extends React.Component {
-          constructor(props, context) {
-              super(props, context);
-              this.state = {
-                  color: "green"
-              };
-          }
+class ClickCounter extends React.Component {
+  state = {count: this.props.initialCount};
 
-          render() {
-              return <Apple color={this.state.color} ref="apple" />;
-          }
-      }
+  triggerReset = () => {
+    this.setState({count: this.props.initialCount});
+  };
 
-      class Apple extends React.Component {
-          state = {
-              cut: false,
-              slices: 1
-          };
+  handleClick = () => {
+    this.setState({count: this.state.count + 1});
+  };
 
-          shouldComponentUpdate(nextProps, nextState) {
-            console.log(Object.assign({},this.state), nextState, Object.assign({},this.props), nextProps)
-              return shallowCompare(this, nextProps, nextState);
-          }
+  render() {
+      console.log(this.state.count, "this.state.count")
+    var children = [];
+    var i;
+    for (i = 0; i < this.state.count; i++) {
+      children.push(
+        <div
+          className="clickLogDiv"
+          key={'clickLog' + i}
+          ref={'clickLog' + i}
+        >{i}</div>,
+      );
+    }
+    return (
+      <span className="clickIncrementer" onClick={this.handleClick}>
+        {children}
+      </span>
+    );
+  }
+}
 
-          cut() {
-            console.log("11111111")
-              this.setState({
-                  cut: true,
-                  slices: 10
-              });
-          }
+/**
+ * Only purpose is to test that refs are tracked even when applied to a
+ * component that is injected down several layers. Ref systems are difficult to
+ * build in such a way that ownership is maintained in an airtight manner.
+ */
+class GeneralContainerComponent extends React.Component {
+  render() {
+    return <div>{this.props.children}</div>;
+  }
+}
 
-          eatSlice() {
-              this.setState({
-                  slices: this.state.slices - 1
-              });
-          }
+/**
+ * Notice how refs ownership is maintained even when injecting a component
+ * into a different parent.
+ */
+class TestRefsComponent extends React.Component {
+  doReset = () => {
+    this.refs.myCounter.triggerReset();
+  };
 
-          render() {
-              renderCalls++;
-              return <div />;
-          }
-      }
+  render() {
+    return (
+      <div>
+        <div ref="resetDiv" onClick={this.doReset}>
+          Reset Me By Clicking This.
+        </div>
+        <GeneralContainerComponent ref="myContainer">
+          <ClickCounter ref="myCounter" initialCount={1} />
+        </GeneralContainerComponent>
+      </div>
+    );
+  }
+}
 
-      var container = document.createElement("div");
-      var instance = ReactDOM.render(<PlasticWrap />, container);
-      expect(renderCalls).toBe(1); // { cut: false,  slices: 1}
+/**
+ * Render a TestRefsComponent and ensure that the main refs are wired up.
+ */
+var renderTestRefsComponent = function() {
+  var testRefsComponent = ReactDOM.render(
+    <TestRefsComponent />,div
+  );
+  expect(testRefsComponent instanceof TestRefsComponent).toBe(true);
 
-      // Do not re-render based on props
-      instance.setState({ color: "green" });// { cut: false, slices: 1, color: green}
-      expect(renderCalls).toBe(1);
+  var generalContainer = testRefsComponent.refs.myContainer;
+  expect(generalContainer instanceof GeneralContainerComponent).toBe(true);
 
-      // Re-render based on props
-      instance.setState({ color: "red" });// { cut: false, slices: 1, color: red}
-      expect(renderCalls).toBe(2);
+  var counter = testRefsComponent.refs.myCounter;
+  expect(counter instanceof ClickCounter).toBe(true);
 
-      // Re-render base on state
-      instance.refs.apple.cut();// { cut: true, slices: 10, color: green}
-      console.log( instance.refs.apple)
-      expect(renderCalls).toBe(3);
+  return testRefsComponent;
+};
 
-      // No re-render based on state
-      instance.refs.apple.cut();// { cut: true, slices: 10, color: green}
-      expect(renderCalls).toBe(3);
+var expectClickLogsLengthToBe = function(instance, length) {
+  var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+    instance,
+    'clickLogDiv',
+  );
+  expect(clickLogs.length).toBe(length);
+  console.log(instance.refs.myCounter.refs)
+  expect(Object.keys(instance.refs.myCounter.refs).length).toBe(length);
+};
 
-      // Re-render based on state again
-    //  instance.refs.apple.eatSlice();
-    //  expect(renderCalls).toBe(4);
-   
-     
+var testRefsComponent = renderTestRefsComponent();
+      
+      var clickIncrementer = ReactTestUtils.findRenderedDOMComponentWithClass(
+        testRefsComponent,
+        'clickIncrementer',
+      );
+       //查找div.clickLogDiv的个数与refs的键数
+      expectClickLogsLengthToBe(testRefsComponent, 1);
+  
+      // 还原
+      ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
+      expectClickLogsLengthToBe(testRefsComponent, 1);
+  
+      // Begin incrementing clicks (and therefore refs).
+      ReactTestUtils.Simulate.click(clickIncrementer);
+      expectClickLogsLengthToBe(testRefsComponent, 2);
+  
+      ReactTestUtils.Simulate.click(clickIncrementer);
+      expectClickLogsLengthToBe(testRefsComponent, 3);
+  
+      // Now reset again
+      ReactTestUtils.Simulate.click(testRefsComponent.refs.resetDiv);
+      expectClickLogsLengthToBe(testRefsComponent, 1);
     </script>
 
 </body>

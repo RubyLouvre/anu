@@ -1,7 +1,7 @@
-import { REACT_ELEMENT_TYPE, noop, extend, options, isFn, emptyArray } from "../src/util";
+import { REACT_ELEMENT_TYPE, extend, options, isFn, emptyArray } from "../src/util";
 import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError } from "./scheduler";
 import { Refs } from "./Refs";
-
+import { precacheNode } from "./cacheTree";
 function alwaysNull() {
     return null;
 }
@@ -103,25 +103,24 @@ Updater.prototype = {
 
     onUpdate() {
         let { _instance: instance, _hostNode: dom, context, props, vnode } = this;
-      
-        if(this.inReceiveStage){
-            let [lastVnode,nextVnode, nextContext] = this.inReceiveStage;
+
+        if (this.inReceiveStage) {
+            let [lastVnode, nextVnode, nextContext] = this.inReceiveStage;
             delete this.inReceiveStage;
             nextVnode._hostNode = dom;
             nextVnode._instance = instance;
             //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
             //但还会继续向下比较
             this._receiving = true;
-            captureError(instance, "componentWillReceiveProps",[this.props, nextContext]);
+            captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
             this._receiving = false;
             Refs.detachRef(lastVnode, nextVnode);
         }
-       
+
         Refs.clearElementRefs();
         let state = this.mergeStates();
         let shouldUpdate = true;
-        if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate",[props, state, context])
-        ) {
+        if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
             if (this.nextVnode) {
                 this.vnode = this.nextVnode;
@@ -129,7 +128,7 @@ Updater.prototype = {
             }
         } else {
             var { props: lastProps, context: lastContext, state: lastState } = instance;
-            captureError(instance, "componentWillUpdate",[props, state, context]);
+            captureError(instance, "componentWillUpdate", [props, state, context]);
         }
         vnode._instance = instance;
         this._forceUpdate = false;
@@ -150,7 +149,7 @@ Updater.prototype = {
                 dom = updater.renderComponent(updater.rendered);
             });
         }
- 
+
         return dom;
     },
 
@@ -189,20 +188,19 @@ Updater.prototype = {
     renderComponent(node) {
         let { vnode, parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
-       
+
         let rendered;
-       
+
         if (this.willReceive === false) {
             rendered = this.rendered;
             delete this.willReceive;
         } else {
             var lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
-            rendered = captureError(instance, "render",[]);
+            rendered = captureError(instance, "render", []);
             Refs.currentOwner = lastOwn;
         }
-       
-    
+
         //组件只能返回组件或null
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0, $$typeof: REACT_ELEMENT_TYPE };
@@ -223,6 +221,7 @@ Updater.prototype = {
                 delete u.nextVnode;
             }
             u.vnode._hostNode = u._hostNode = dom;
+            precacheNode(u.vnode);
         } while ((u = u.parentUpdater));
 
         return dom;
@@ -251,5 +250,3 @@ export function getContextByTypes(curContext, contextTypes) {
     }
     return context;
 }
-
-
