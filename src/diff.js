@@ -52,8 +52,9 @@ export function createPortal(vchildren, container) {
     parentVnode.vchildren = vchildren;
     return null;
 }
-
 // ReactDOM.render的内部实现
+
+
 function renderByAnu(vnode, container, callback, context = {}) {
     if (!isValidElement(vnode)) {
         throw `ReactDOM.render的第一个参数错误`; // eslint-disable-line
@@ -63,6 +64,13 @@ function renderByAnu(vnode, container, callback, context = {}) {
     }
     let rootNode,
         lastVnode = container.__component;
+    if(Refs.childrenIsUpdating){
+        console.log("如果在更新过程");
+        enqueueQueue({
+            exec: renderByAnu.bind(0, vnode, container, callback, context)
+        });
+        return;
+    }
 
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, createVnode(container), context);
@@ -77,6 +85,8 @@ function renderByAnu(vnode, container, callback, context = {}) {
 
     var instance = vnode._instance;
     container.__component = vnode;
+  
+  
     drainQueue();
     instance = vnode._instance;
     container.__component = vnode;
@@ -195,6 +205,10 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
     let { props: lastProps, _hostNode: dom, _hasProps, type } = lastVnode;
     let { props: nextProps, _hasProps: nextCheckProps } = nextVnode;
     nextVnode._hostNode = dom;
+    if(lastVnode.updating){
+        console.log("1111");
+    }
+
     let lastChildren = restoreChildren(lastVnode);
     if (nextProps[innerHTML]) {
         lastChildren.forEach(function(el) {
@@ -205,9 +219,11 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         if (lastProps[innerHTML]) {
             lastChildren.length = 0;
         }
-
+        dom.updating = true;
+        lastVnode.updating = true;
         diffChildren(lastChildren, nextVnode, lastVnode, dom, context);
-
+        dom.updating = false;
+        lastVnode.updating = false;
         // nextVnode.vchildren = newChildren;
     }
     if (_hasProps || nextCheckProps) {
@@ -283,6 +299,7 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     let { type, _instance } = lastVnode;
     let updater = _instance.updater,
         nextContext;
+
 
     //如果正在更新过程中接受新属性，那么去掉update,加上receive
     var willReceive = lastVnode !== nextVnode;
@@ -443,7 +460,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
     
     drainQueue();
     //step3: 移除没有命中的虚拟DOM，执行它们的钩子与ref
-    switchUpdaters();
+    //  switchUpdaters();
     if (hitIt) {
         for (let i = 0; i < lastLength; i++) {
             let lastChild = lastChildren[i];
@@ -494,5 +511,5 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
         }
     }
     //执行新组件的componentDidMount
-    flushUpdaters();
+    //   flushUpdaters();
 }

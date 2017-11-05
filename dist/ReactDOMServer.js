@@ -18,6 +18,8 @@ var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol
  */
 
 
+
+
 /**
  * 一个空函数
  *
@@ -66,6 +68,10 @@ function oneObject(array, val) {
 
 var pendingRefs = [];
 window.pendingRefs = pendingRefs;
+
+var currentQueue = [];
+var mainQueue = [currentQueue];
+window.mainQueue = mainQueue;
 
 var cacheTree = {};
 window.cacheTree = cacheTree;

@@ -16,7 +16,7 @@ describe("生命周期例子", function() {
     });
     it("只更新了一个子组件时，被该子组件要求全局重新渲染",function(){
         var list = [];
-       var flag = 1
+        var flag = 1;
         function logger(e){
             list.push(e);
         }
@@ -91,7 +91,7 @@ describe("生命周期例子", function() {
             }
         }
         var s = ReactDOM.render(<div><A/><B/><C/></div>, div);
-        expect(list).toEqual([
+        expect(list.join("\n")).toBe([
             "A did mount",
             "B did mount",
             "C did mount",
@@ -107,7 +107,7 @@ describe("生命周期例子", function() {
             "A did update",
             "B did update",
             "C did update"
-        ]);
+        ].join("\n"));
   
     });
     it("如果在componentDidMount中调用setState方法\n那么setState的所有回调，\n都会延迟到componentDidUpdate中执行", function() {

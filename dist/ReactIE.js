@@ -679,7 +679,7 @@ function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1.host._mountOrder - u2.host._mountOrder;
 }
-
+window.mainQueue = mainQueue;
 function flushUpdaters() {
     var first = mainQueue.shift(); //dirtyComponent必须移除
     if (first && first.length) {
@@ -747,16 +747,17 @@ function drainQueue() {
 
     while (job = queue.shift()) {
         updater = job.host;
-        //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        if (updater._disposed) {
-            continue;
-        }
+        if (updater) {
+            //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
+            if (updater._disposed) {
+                continue;
+            }
 
-        if (!unique[updater._mountOrder]) {
-            unique[updater._mountOrder] = 1;
-            needSort.push(job);
+            if (!unique[updater._mountOrder]) {
+                unique[updater._mountOrder] = 1;
+                needSort.push(job);
+            }
         }
-
         job.exec.call(updater);
     }
 
@@ -789,6 +790,7 @@ function captureError(instance, hook, args) {
         return true;
     } catch (e) {
         if (!errIntance) {
+            options.e = e;
             errIntance = instance;
             errMethod = hook;
             errObject = e;
@@ -799,6 +801,7 @@ function showError() {
     if (errIntance) {
         var instance = errIntance;
         errIntance = null;
+        options.e = null;
         var names = [errMethod + " in "];
         do {
             names.push(instance.updater.name);
@@ -1490,6 +1493,9 @@ var UUID = 1;
 function precacheNode(vnode) {
     var uid = vnode._uid || (vnode._uid = UUID++);
     if (!cacheTree[uid]) {
+        if (vnode.vtype > 1 && !vnode._instance) {
+            throw ["error", vnode];
+        }
         cacheTree[uid] = {
             dom: vnode._hostNode,
             instance: vnode._instance,
@@ -1497,8 +1503,9 @@ function precacheNode(vnode) {
         };
     } else {
         var a = cacheTree[uid];
-        if (vnode._hostNode) {
-            a.dom = vnode._hostNode;
+        var put = vnode.vtype > 1 ? vnode._instance : vnode._hostNode;
+        if (put) {
+            a.instance = vnode._instance, a.dom = vnode._hostNode;
             a.vdom = vnode;
         }
     }
@@ -1509,9 +1516,17 @@ function removeCache(vnode) {
     delete cacheTree[vnode._uid];
 }
 function restoreChildren(vnode) {
-    return vnode._uids.map(function (uid) {
-        return cacheTree[uid].vdom;
-    });
+    var ret = [];
+    for (var i = 0, n = vnode._uids.length; i < n; i++) {
+        var c = cacheTree[vnode._uids[i]];
+        if (c) {
+            //  if(c.instance){
+            //      c.vdom._instance = c.instance;
+            //  }
+            ret.push(c.vdom);
+        }
+    }
+    return ret;
 }
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -1684,11 +1699,12 @@ Updater.prototype = {
         var instance = this._instance;
         var vnode = this.vnode;
         //执行componentDidMount/Update钩子
+        Refs.childrenIsUpdating = true;
         captureError(instance, this._hookName, this.oldDatas);
         if (this._dirty) {
             delete this._dirty;
         }
-
+        Refs.childrenIsUpdating = false;
         this.oldDatas = emptyArray;
         //执行React Chrome DevTools的钩子
         if (this._hookName === "componentDidMount") {
@@ -1730,11 +1746,14 @@ Updater.prototype = {
         }
 
         //组件只能返回组件或null
+
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0, $$typeof: REACT_ELEMENT_TYPE };
         } else if (!rendered || !rendered.type) {
-            //true, undefined, array, {}
-            throw new Error("@" + vnode.type.name + "#render:You may have returned undefined, an array or some other invalid object");
+            if (options.e) {
+                throw options.e;
+            }
+            throw new Error("@" + this.name + "#render() " + __type.call(rendered) + " invalid");
         }
 
         var childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
@@ -1784,6 +1803,7 @@ function instantiateComponent(type, vnode, props, parentContext) {
     var isStateless = vnode.vtype === 4;
     var instance = isStateless ? {
         refs: {},
+        __proto__: type.prototype,
         render: function render() {
             return type(this.props, this.context);
         }
@@ -1792,7 +1812,7 @@ function instantiateComponent(type, vnode, props, parentContext) {
     //props, context是不可变的
     instance.props = updater.props = props;
     instance.context = updater.context = context;
-    instance.__proto__ = type.prototype;
+    instance.constructor = type;
     updater.name = type.displayName || type.name;
 
     if (isStateless) {
@@ -2254,8 +2274,9 @@ function createPortal(vchildren, container) {
     parentVnode.vchildren = vchildren;
     return null;
 }
-
 // ReactDOM.render的内部实现
+
+
 function renderByAnu(vnode, container, callback) {
     var context = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
@@ -2267,6 +2288,13 @@ function renderByAnu(vnode, container, callback) {
     }
     var rootNode = void 0,
         lastVnode = container.__component;
+    if (Refs.childrenIsUpdating) {
+        console.log("如果在更新过程");
+        enqueueQueue({
+            exec: renderByAnu.bind(0, vnode, container, callback, context)
+        });
+        return;
+    }
 
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, createVnode(container), context);
@@ -2281,6 +2309,7 @@ function renderByAnu(vnode, container, callback) {
 
     var instance = vnode._instance;
     container.__component = vnode;
+
     drainQueue();
     instance = vnode._instance;
     container.__component = vnode;
@@ -2405,6 +2434,10 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         nextCheckProps = nextVnode._hasProps;
 
     nextVnode._hostNode = dom;
+    if (lastVnode.updating) {
+        console.log("1111");
+    }
+
     var lastChildren = restoreChildren(lastVnode);
     if (nextProps[innerHTML]) {
         lastChildren.forEach(function (el) {
@@ -2415,9 +2448,11 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         if (lastProps[innerHTML]) {
             lastChildren.length = 0;
         }
-
+        dom.updating = true;
+        lastVnode.updating = true;
         diffChildren(lastChildren, nextVnode, lastVnode, dom, context);
-
+        dom.updating = false;
+        lastVnode.updating = false;
         // nextVnode.vchildren = newChildren;
     }
     if (_hasProps || nextCheckProps) {
@@ -2656,7 +2691,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
 
     drainQueue();
     //step3: 移除没有命中的虚拟DOM，执行它们的钩子与ref
-    switchUpdaters();
+    //  switchUpdaters();
     if (hitIt) {
         for (var _i = 0; _i < lastLength; _i++) {
             var _lastChild = lastChildren[_i];
@@ -2707,15 +2742,8 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
         }
     }
     //执行新组件的componentDidMount
-    flushUpdaters();
+    //   flushUpdaters();
 }
-
-// init  end(mounted)
-
-// (receive  -> update) -> end
-// update -> end
-
-// receive A update A recive B upate B updted A updated B
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
 var noCheck = false;
@@ -2856,7 +2884,7 @@ keysPolyfill();
 setTimeout(keysPolyfill, 0);
 setTimeout(keysPolyfill, 100);
 var React = {
-    version: "1.1.5-pre",
+    version: "1.1.5-pre2",
     render: render,
     options: options,
     PropTypes: PropTypes,

@@ -26,7 +26,7 @@ export function extend(obj, props) {
     return obj;
 }
 
-let __type = Object.prototype.toString;
+export let __type = Object.prototype.toString;
 
 /**
  * 一个空函数

@@ -1,5 +1,5 @@
-import { REACT_ELEMENT_TYPE, extend, options, isFn, emptyArray } from "../src/util";
-import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError } from "./scheduler";
+import { REACT_ELEMENT_TYPE, __type, extend, options, isFn, emptyArray } from "../src/util";
+import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError,showError } from "./scheduler";
 import { Refs } from "./Refs";
 import { precacheNode } from "./cacheTree";
 function alwaysNull() {
@@ -158,11 +158,12 @@ Updater.prototype = {
         let instance = this._instance;
         let vnode = this.vnode;
         //执行componentDidMount/Update钩子
+        Refs.childrenIsUpdating = true;
         captureError(instance, this._hookName, this.oldDatas);
         if (this._dirty) {
             delete this._dirty;
         }
-
+        Refs.childrenIsUpdating = false;
         this.oldDatas = emptyArray;
         //执行React Chrome DevTools的钩子
         if (this._hookName === "componentDidMount") {
@@ -202,11 +203,14 @@ Updater.prototype = {
         }
 
         //组件只能返回组件或null
+      
         if (rendered === null || rendered === false) {
             rendered = { type: "#comment", text: "empty", vtype: 0, $$typeof: REACT_ELEMENT_TYPE };
         } else if (!rendered || !rendered.type) {
-            //true, undefined, array, {}
-            throw new Error(`@${vnode.type.name}#render:You may have returned undefined, an array or some other invalid object`);
+            if( options.e){
+                throw options.e;
+            }
+            throw new Error(`@${this.name}#render() ${__type.call(rendered)} invalid`);
         }
 
         let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
@@ -223,6 +227,7 @@ Updater.prototype = {
             u.vnode._hostNode = u._hostNode = dom;
             precacheNode(u.vnode);
         } while ((u = u.parentUpdater));
+       
 
         return dom;
     }

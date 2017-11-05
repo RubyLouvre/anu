@@ -8,7 +8,7 @@ function mountSorter(u1, u2) {
     //按文档顺序执行
     return u1.host._mountOrder - u2.host._mountOrder;
 }
-
+window.mainQueue = mainQueue;
 export function flushUpdaters() {
     var first = mainQueue.shift();//dirtyComponent必须移除
     if (first && first.length) {
@@ -77,16 +77,17 @@ export function drainQueue() {
 
     while( job = queue.shift() ){
         updater = job.host;
+        if(updater){
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
-        if (updater._disposed) {
-            continue;
-        }
+            if (updater._disposed) {
+                continue;
+            }
 
-        if (!unique[updater._mountOrder]) {
-            unique[updater._mountOrder] = 1;
-            needSort.push(job);
+            if (!unique[updater._mountOrder]) {
+                unique[updater._mountOrder] = 1;
+                needSort.push(job);
+            }
         }
-
         job.exec.call(updater);
        
     }
@@ -119,6 +120,7 @@ export function captureError(instance, hook, args) {
         return true;
     } catch (e) {
         if(!errIntance){
+            options.e = e;
             errIntance = instance;
             errMethod = hook;
             errObject = e;
@@ -129,6 +131,7 @@ export function showError() {
     if(errIntance){
         var instance = errIntance;
         errIntance = null;
+        options.e = null;
         var names = [errMethod + " in "];
         do {
             names.push(instance.updater.name);

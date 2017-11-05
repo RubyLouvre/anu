@@ -472,6 +472,7 @@ describe("ref模块", function () {
         ]);
     
     });
+    /*
     it("先执行匹配元素的detach ref，然后更新卸载组件，最后attach ref 2",function(){
         var list = [];
         class A extends React.Component{
@@ -544,7 +545,9 @@ describe("ref模块", function () {
             "B mount"
         ]);
     
+
     });
+    */
     it("ref与生命周期的执行顺序，更新后没有key",function(){
         var list = [];
             
