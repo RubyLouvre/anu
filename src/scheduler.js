@@ -75,7 +75,7 @@ export function drainQueue() {
         unique = {},
         job, updater;
 
-    while( job = queue.shift() ){
+    while( job = queue.shift() ){ // eslint-disable-line
         updater = job.host;
         if(updater){
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)

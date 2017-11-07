@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-11-03
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-11-07
  */
 
 (function (global, factory) {
@@ -746,6 +746,7 @@ function drainQueue() {
         updater = void 0;
 
     while (job = queue.shift()) {
+        // eslint-disable-line
         updater = job.host;
         if (updater) {
             //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
@@ -1728,8 +1729,7 @@ Updater.prototype = {
         }
     },
     renderComponent: function renderComponent(node) {
-        var vnode = this.vnode,
-            parentContext = this.parentContext,
+        var parentContext = this.parentContext,
             instance = this._instance;
         //调整全局的 CurrentOwner.cur
 
@@ -1905,8 +1905,8 @@ function cssName(name, dom) {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-//布尔属性的值末必为true,false
-//https://github.com/facebook/react/issues/10589
+// 布尔属性的值末必为true,false
+// https://github.com/facebook/react/issues/10589
 var controlled = {
     value: 1,
     defaultValue: 1
@@ -2028,7 +2028,6 @@ function getSVGAttributeName(name) {
 function diffProps(dom, lastProps, nextProps, vnode) {
     var isSVG = vnode.namespaceURI === NAMESPACE.svg;
     var tag = vnode.type;
-    //eslint-disable-next-line
     for (var name in nextProps) {
         var val = nextProps[name];
         if (val !== lastProps[name]) {
@@ -2040,7 +2039,7 @@ function diffProps(dom, lastProps, nextProps, vnode) {
             actionStrategy[action](dom, name, val, lastProps);
         }
     }
-    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
+    // 如果旧属性在新属性对象不存在，那么移除 DOM
     for (var _name in lastProps) {
         if (!nextProps.hasOwnProperty(_name)) {
             var _which = tag + isSVG + _name;
@@ -2169,7 +2168,7 @@ var actionStrategy = {
             delete events[refName];
         } else {
             if (!lastProps[name]) {
-                //添加全局监听事件
+                // 添加全局监听事件
                 var eventName = getBrowserName(name);
                 var hook = eventHooks[eventName];
                 addGlobalEvent(eventName);
@@ -2177,7 +2176,7 @@ var actionStrategy = {
                     hook(dom, eventName);
                 }
             }
-            //onClick --> click, onClickCapture --> clickcapture
+            // onClick --> click, onClickCapture --> clickcapture
             events[refName] = val;
         }
     },
@@ -2232,21 +2231,24 @@ function disposeComponent(vnode, instance) {
     updater._renderInNextCycle = vnode._instance = instance.updater = null;
 }
 
-//[Top API] React.isValidElement
+// [Top API] React.isValidElement
 function isValidElement(vnode) {
     return vnode && vnode.vtype;
 }
-//[Top API] ReactDOM.render
+
+// [Top API] ReactDOM.render
 function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
 }
-//[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
+
+// [Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 function unstable_renderSubtreeIntoContainer(lastVnode, nextVnode, container, callback) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
     var parentContext = lastVnode && lastVnode.context || {};
     return renderByAnu(nextVnode, container, callback, parentContext);
 }
-//[Top API] ReactDOM.unmountComponentAtNode
+
+// [Top API] ReactDOM.unmountComponentAtNode
 function unmountComponentAtNode(container) {
     var lastVnode = container.__component;
     if (lastVnode) {
@@ -2255,7 +2257,8 @@ function unmountComponentAtNode(container) {
         container.__component = null;
     }
 }
-//[Top API] ReactDOM.findDOMNode
+
+// [Top API] ReactDOM.findDOMNode
 function findDOMNode(ref) {
     if (ref == null) {
         return null;
@@ -2266,7 +2269,8 @@ function findDOMNode(ref) {
     var dom = (ref.updater || ref)._hostNode;
     return dom.nodeType === 8 ? null : dom;
 }
-//[Top API] ReactDOM.createPortal
+
+// [Top API] ReactDOM.createPortal
 function createPortal(vchildren, container) {
     var parentVnode = createVnode(container);
     parentVnode.vchildren = container.vchildren || emptyArray;
@@ -2274,22 +2278,21 @@ function createPortal(vchildren, container) {
     parentVnode.vchildren = vchildren;
     return null;
 }
+
 // ReactDOM.render的内部实现
-
-
 function renderByAnu(vnode, container, callback) {
     var context = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     if (!isValidElement(vnode)) {
-        throw "ReactDOM.render\u7684\u7B2C\u4E00\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
+        throw "ReactDOM.render的第一个参数错误";
     }
     if (!(container && container.getElementsByTagName)) {
-        throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF"; // eslint-disable-line
+        throw "ReactDOM.render的第二个参数错误";
     }
     var rootNode = void 0,
         lastVnode = container.__component;
+
     if (Refs.childrenIsUpdating) {
-        console.log("如果在更新过程");
         enqueueQueue({
             exec: renderByAnu.bind(0, vnode, container, callback, context)
         });
@@ -2299,7 +2302,7 @@ function renderByAnu(vnode, container, callback) {
     if (lastVnode) {
         rootNode = alignVnode(lastVnode, vnode, createVnode(container), context);
     } else {
-        //如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
+        // 如果是后端渲染生成，它的孩子中存在一个拥有data-reactroot属性的元素节点
         rootNode = genVnodes(container, vnode, context);
     }
 
@@ -2318,7 +2321,7 @@ function renderByAnu(vnode, container, callback) {
     if (callback) {
         callback.call(ret); //坑
     }
-    //组件返回组件实例，而普通虚拟DOM 返回元素节点
+    // 组件返回组件实例，而普通虚拟DOM 返回元素节点
     return ret;
 }
 var toArray = Array.from || function (a) {
@@ -2328,6 +2331,7 @@ var toArray = Array.from || function (a) {
     }
     return ret;
 };
+
 function genVnodes(container, vnode, context) {
     var nodes = toArray(container.childNodes || emptyArray);
     var lastNode = null;
@@ -2351,7 +2355,8 @@ var patchStrategy = {
     12: receiveComponent,
     14: receiveComponent
 };
-//mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
+
+// mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
 function mountVnode(lastNode, vnode) {
     return patchStrategy[vnode.vtype].apply(null, arguments);
 }
@@ -2410,8 +2415,8 @@ function mountElement(lastNode, vnode, parentVnode, context) {
     vnode._hostNode = dom;
     var children = flattenChildren(vnode);
     var method = lastNode ? alignChildren : mountChildren;
+
     method(dom, children, vnode, context);
-    // dom.vchildren = children;/** fatal 不再访问真实DOM */
     if (vnode._hasProps) {
         diffProps(dom, emptyObject, props, vnode);
     }
@@ -2434,9 +2439,6 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         nextCheckProps = nextVnode._hasProps;
 
     nextVnode._hostNode = dom;
-    if (lastVnode.updating) {
-        console.log("1111");
-    }
 
     var lastChildren = restoreChildren(lastVnode);
     if (nextProps[innerHTML]) {
@@ -2462,11 +2464,12 @@ function updateElement(lastVnode, nextVnode, parentVnode, context) {
         processFormElement(nextVnode, dom, nextProps);
     }
     Refs.detachRef(lastVnode, nextVnode, dom);
+    precacheNode(nextVnode);
 
     return dom;
 }
 
-//将虚拟DOM转换为真实DOM并插入父元素
+// 将虚拟DOM转换为真实DOM并插入父元素
 function mountChildren(parentNode, children, parentVnode, context) {
     var uuids = parentVnode._uids = [];
     for (var i = 0, n = children.length; i < n; i++) {
@@ -2533,7 +2536,7 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     var updater = _instance.updater,
         nextContext = void 0;
 
-    //如果正在更新过程中接受新属性，那么去掉update,加上receive
+    // 如果正在更新过程中接受新属性，那么去掉update,加上receive
     var willReceive = lastVnode !== nextVnode;
     if (!type.contextTypes) {
         nextContext = _instance.context;
@@ -2542,7 +2545,7 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
         willReceive = true;
     }
     updater.context = nextContext;
-    //parentContext在官方中被称之不nextUnmaskedContext， parentVnode称之为nextParentElement
+    // parentContext在官方中被称之不nextUnmaskedContext， parentVnode称之为nextParentElement
     updater.props = nextVnode.props;
     updater.parentContext = parentContext;
     nextVnode._uid = lastVnode._uid;
@@ -2551,7 +2554,7 @@ function receiveComponent(lastVnode, nextVnode, parentVnode, parentContext) {
     updater.willReceive = willReceive;
 
     if (!updater._dirty) {
-        //如果在事件中使用了setState
+        // 如果在事件中使用了setState
         updater.inReceiveStage = [lastVnode, nextVnode, nextContext];
         enqueueQueue({
             host: updater,
@@ -2595,6 +2598,7 @@ function getNearestNode(vnodes, ii, newVnode) {
         hit = null,
         vnode,
         i = 0;
+
     while (vnode = vnodes[i]) {
         var delta = vnode._i - ii;
         if (delta === 0) {
@@ -2619,19 +2623,19 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
         insertPoint = parentNode.firstChild,
         lastLength = lastChildren.length,
         uuids = nextVparent._uids || (nextVparent._uids = []);
-    //optimize 1： 如果旧数组长度为零, 只进行添加
+    // optimize 1： 如果旧数组长度为零, 只进行添加
     if (!lastLength) {
         emptyElement(parentNode);
         return mountChildren(parentNode, nextChildren, nextVparent, context);
     }
-    //optimize 2： 如果新数组长度为零, 只进行删除
+    // optimize 2： 如果新数组长度为零, 只进行删除
     if (!nextLength) {
         return lastChildren.forEach(function (el) {
             removeElement(el._hostNode);
             disposeVnode(el);
         });
     }
-    //optimize 3： 如果1vs1, 不用进入下面复杂的循环
+    // optimize 3： 如果1vs1, 不用进入下面复杂的循环
     if (nextLength === lastLength && lastLength === 1) {
         var lastChild = lastChildren[0],
             nextChild = nextChildren[0];
@@ -2644,8 +2648,9 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
             uuids[0] = nextChild._uid;
         }
     }
-    //从这里开始非常复杂的节点排序算法
-    //step1: 构建模糊匹配对象fuzzyHits，以虚拟DOM的key/type为键名，并记录它的旧位置
+
+    // 从这里开始非常复杂的节点排序算法
+    // step1: 构建模糊匹配对象fuzzyHits，以虚拟DOM的key/type为键名，并记录它的旧位置
     var fuzzyHits = {},
         hit = void 0,
         i = 0;
@@ -2660,7 +2665,8 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
             fuzzyHits[hit] = [lastChild];
         }
     });
-    //step2: 碰撞检测，并筛选离新节点最新的节点，执行nul ref与updateComponent
+
+    // step2: 碰撞检测，并筛选离新节点最新的节点，执行nul ref与updateComponent
     var hitIt = false;
     var survivors = {};
     while (i < nextLength) {
@@ -2690,8 +2696,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
     }
 
     drainQueue();
-    //step3: 移除没有命中的虚拟DOM，执行它们的钩子与ref
-    //  switchUpdaters();
+    // step3: 移除没有命中的虚拟DOM，执行它们的钩子与ref
     if (hitIt) {
         for (var _i = 0; _i < lastLength; _i++) {
             var _lastChild = lastChildren[_i];
@@ -2701,7 +2706,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
             }
         }
     }
-    //step4: 更新元素，调整位置或插入新元素
+    // step4: 更新元素，调整位置或插入新元素
     insertPoint = parentNode.firstChild;
 
     for (var _i2 = 0, dom, oldDom; _i2 < nextLength; _i2++) {
@@ -2711,7 +2716,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
         }
         if (nextChild._new && nextChild.vtype < 2) {
 
-            //需要防止旧的组件虚拟DOM的真实DOM又加回去
+            // 需要防止旧的组件虚拟DOM的真实DOM又加回去
             lastChild = nextChild._new;
             delete nextChild._new;
             oldDom = lastChild._hostNode;
@@ -2728,10 +2733,12 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
         } else if (!nextChild._new) {
             dom = mountVnode(null, nextChild, nextVparent, context);
             insertElement(parentNode, dom, insertPoint);
+        } else {
+            dom = nextChild._new._hostNode;
         }
         uuids[_i2] = nextChild._uid;
     }
-    //React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
+    // React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
     if (!hitIt) {
         for (var _i3 = 0; _i3 < lastLength; _i3++) {
             var _lastChild2 = lastChildren[_i3];
@@ -2741,8 +2748,7 @@ function diffChildren(lastChildren, nextVparent, lastVparent, parentNode, contex
             }
         }
     }
-    //执行新组件的componentDidMount
-    //   flushUpdaters();
+    // 执行新组件的componentDidMount
 }
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变

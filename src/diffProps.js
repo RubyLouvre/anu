@@ -3,8 +3,8 @@ import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber,emptyObject } from "./util";
 
-//布尔属性的值末必为true,false
-//https://github.com/facebook/react/issues/10589
+// 布尔属性的值末必为true,false
+// https://github.com/facebook/react/issues/10589
 var controlled = {
     value: 1,
     defaultValue: 1
@@ -100,7 +100,6 @@ var rhump = /[a-z][A-Z]/;
 var toHyphen = createRepaceFn("-");
 var toColon = createRepaceFn(":");
 
-
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
@@ -138,7 +137,6 @@ function getSVGAttributeName(name) {
 export function diffProps(dom, lastProps, nextProps, vnode) {
     let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
-    //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name];
         if (val !== lastProps[name]) {
@@ -150,7 +148,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             actionStrategy[action](dom, name, val, lastProps);
         }
     }
-    //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
+    // 如果旧属性在新属性对象不存在，那么移除 DOM
     for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
@@ -280,7 +278,7 @@ export var actionStrategy = {
             delete events[refName];
         } else {
             if (!lastProps[name]) {
-                //添加全局监听事件
+                // 添加全局监听事件
                 let eventName = getBrowserName(name);
                 let hook = eventHooks[eventName];
                 addGlobalEvent(eventName);
@@ -288,7 +286,7 @@ export var actionStrategy = {
                     hook(dom, eventName);
                 }
             }
-            //onClick --> click, onClickCapture --> clickcapture
+            // onClick --> click, onClickCapture --> clickcapture
             events[refName] = val;
         }
     },
