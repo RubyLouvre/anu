@@ -1,5 +1,5 @@
 import { REACT_ELEMENT_TYPE, __type, extend, options, isFn, emptyArray } from "../src/util";
-import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError,showError } from "./scheduler";
+import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError } from "./scheduler";
 import { Refs } from "./Refs";
 import { precacheNode } from "./cacheTree";
 function alwaysNull() {
@@ -187,7 +187,7 @@ Updater.prototype = {
         }
     },
     renderComponent(node) {
-        let { vnode, parentContext, _instance: instance } = this;
+        let { parentContext, _instance: instance } = this;
         //调整全局的 CurrentOwner.cur
 
         let rendered;
