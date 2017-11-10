@@ -1,6 +1,23 @@
 ## 1.1.5
 
-1. ReactDOM.findDOMNode遇到注释节点应该返回null
+1. fix ReactDOM.findDOMNode遇到注释节点应该返回null
+2. 支持React组件返回任何数据类型，如数组，字符串，数字，布尔
+3. 支持componentDidCatch钩子
+4. 支持createPortal
+5. 分离出Vndoe模块，并且附带其节点关系属性（return, sibling, child），
+   * return相当于之前的_hostParent,
+   * sibling相当于nextSibling, 
+   * child相当于firstChild，
+   * childNodes用于收纳其下方所有DOM节点（用于批处理DOM）
+   * lazyMount提交自己的DOM到其最近的元素虚拟DOM的childNodes数组
+   * batchMpunt 批量添加DOM节点
+   * batchUpdate 批量更新DOM节点
+   
+6. vnode添加了`uuid属性`，options中添加了beforeInsert, beforeDelete, beforeUpdate，beforeProps等钩子，方便其他平台使用。
+7. 模仿React16，使用`stateNode属性`代替旧有的_hostNode与_instance。 
+8. React.Children与flattenChilden底层依赖的方法由_flattenChildren改为operateChildren，让其更具通用性，
+   flattenChilden更名为fiberizeChildren，产出一个`带链表结构的数组`。
+    
 
 
 ## 1.1.4（2017.10.20）
