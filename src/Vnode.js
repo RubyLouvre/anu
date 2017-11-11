@@ -36,38 +36,33 @@ Vnode.prototype = {
     getDOMNode() {
         return this.stateNode || null;
     },
-    lazyMount() {
-        var partial = this.collectNode();
-        for (var p = this.return; !p.childNodes; p = p.return) {}
-        var childNodes = p.childNodes;
-        childNodes.push.apply(childNodes, partial);
-    },
-    collectNode(ret) {
+    
+    collectNodes(isChild, ret) {
         ret = ret || [];
-        if (this.vtype < 2) {
+        if (isChild && this.vtype < 2) {
             ret.push(this.stateNode);
         } else {
             for (var a = this.child; a; a = a.sibling) {
-                a.collectNode(ret);
+                a.collectNodes(true, ret);
             }
         }
         return ret;
     },
     batchMount() {
-        var parentNode = this.stateNode;
-        this.childNodes.forEach(function(dom) {
+        var parentNode = this.stateNode, childNodes = this.collectNodes();
+        childNodes.forEach(function(dom){
             parentNode.appendChild(dom);
         });
     },
-    batchUpdate(updateMeta, timestamp) {
+    batchUpdate(updateMeta, nextChildren) {
         var parentVnode = updateMeta.parentVElement,
             parentNode = parentVnode.stateNode,
-            nextChildren = parentVnode.childNodes,
             lastChildren = updateMeta.lastChilds,
             insertPoint = updateMeta.insertPoint,
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
             inserted = [];
+        //  console.log(nextChildren, lastChildren, "开始比较");
         for (let i = 0; i < newLength; i++) {
             let child = nextChildren[i];
             let last = lastChildren[i];
@@ -89,8 +84,11 @@ Vnode.prototype = {
             }
         }
 
-        parentVnode.childNodes = toArray(parentNode.childNodes);
+        if(parentNode.nodeType === 1){
+            parentVnode.childNodes = toArray(parentNode.childNodes);
+        }
     },
 
     $$typeof: REACT_ELEMENT_TYPE
 };
+

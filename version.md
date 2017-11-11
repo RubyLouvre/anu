@@ -8,8 +8,6 @@
    * return相当于之前的_hostParent,
    * sibling相当于nextSibling, 
    * child相当于firstChild，
-   * childNodes用于收纳其下方所有DOM节点（用于批处理DOM）
-   * lazyMount提交自己的DOM到其最近的元素虚拟DOM的childNodes数组
    * batchMpunt 批量添加DOM节点
    * batchUpdate 批量更新DOM节点
    

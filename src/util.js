@@ -1,5 +1,5 @@
 export var __push = Array.prototype.push;
-export var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
+export var REACT_ELEMENT_TYPE = (typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element")) || 0xeac7;
 export var innerHTML = "dangerouslySetInnerHTML";
 export var emptyArray = [];
 export var emptyObject = {};
@@ -54,7 +54,6 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-
 var lowerCache = {};
 export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
@@ -71,12 +70,13 @@ export function isFn(obj) {
 var rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
-    if (array+"" === array) {//利用字符串的特征进行优化，字符串加上一个空字符串等于自身
+    if (array + "" === array) {
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     let result = {},
         //eslint-disable-next-line
-    value = val !== void 666 ? val : 1;
+        value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
@@ -99,18 +99,7 @@ export function camelize(target) {
 export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-export var options = {
-    dirtyComponents: [],
-    queue: [],
-    beforeUnmount: noop,
-    beforeRender: noop,
-    beforePatch: noop,
-    afterRender: noop,
-    afterPatch: noop,
-    afterMount: noop,
-    afterUpdate: noop
-};
-
+export var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
@@ -133,4 +122,17 @@ export function typeNumber(data) {
     return a || 8;
 }
 
+export function showQueue(queue){
+    console.log(queue.map(function(el){
+        return el.name;
+    }).join(" --> "));
+}
 
+export var toArray =   Array.from ||
+    function(a) {
+        var ret = [];
+        for (var i = 0, n = a.length; i < n; i++) {
+            ret[i] = a[i];
+        }
+        return ret;
+    };
