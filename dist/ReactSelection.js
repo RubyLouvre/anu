@@ -396,10 +396,6 @@ Vnode.prototype = {
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
-        // if(fullNodes.length === 1 && oldLength && startIndex === -1 ){
-
-        // }
-
         for (var i = 0; i < newLength; i++) {
             var child = nextChildren[i];
             var last = lastChildren[i];
@@ -422,8 +418,7 @@ Vnode.prototype = {
                 }
             }
         }
-        //   parentNode.childNodes.length = 0;
-        //delete parentVnode.childNodes.updateMeta;
+
         delete parentVnode.updateMeta;
     },
 
@@ -866,14 +861,10 @@ function drainQueue(queue) {
     var needSort = [],
         unique = {},
         updater = void 0;
-    var max = 99999;
     while (updater = queue.shift()) {
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
-        }
-        if (--max < 100) {
-            break;
         }
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
@@ -1179,13 +1170,9 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
-//freeze_start
-Object.freeze || (Object.freeze = function (a) {
-    return a;
-});
-//freeze_end
 
-var eventSystem = Object.freeze({
+
+var eventSystem = extend({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,

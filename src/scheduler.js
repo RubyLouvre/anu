@@ -33,14 +33,10 @@ export function drainQueue(queue) {
     let needSort = [],
         unique = {},
         updater;
-    var max = 99999;
     while ((updater = queue.shift())) {
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
-        }
-        if(--max < 100){
-            break;
         }
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;

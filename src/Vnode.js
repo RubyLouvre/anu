@@ -66,10 +66,6 @@ Vnode.prototype = {
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
-        // if(fullNodes.length === 1 && oldLength && startIndex === -1 ){
-
-        // }
-
         for (let i = 0; i < newLength; i++) {
             let child = nextChildren[i];
             let last = lastChildren[i];
@@ -92,8 +88,7 @@ Vnode.prototype = {
                 }
             }
         }
-        //   parentNode.childNodes.length = 0;
-        //delete parentVnode.childNodes.updateMeta;
+
         delete parentVnode.updateMeta;
     },
 
