@@ -1,12 +1,21 @@
-import { REACT_ELEMENT_TYPE, __type, extend, options, isFn, emptyArray } from "../src/util";
-import { enqueueUpdater, enqueueQueue, spwanChildQueue, captureError,showError } from "./scheduler";
+import { fiberizeChildren, restoreChildren, createVText } from "./createElement";
+import { extend, options, typeNumber, isFn, returnFalse, returnTrue } from "../src/util";
+import { drainQueue, enqueueUpdater } from "./scheduler";
+import { pushError, captureError } from "./error";
 import { Refs } from "./Refs";
-import { precacheNode } from "./cacheTree";
+
 function alwaysNull() {
     return null;
 }
 let mountOrder = 1;
-
+const support16 = true;
+const errorType = {
+    0: "undefined",
+    2: "boolean",
+    3: "number",
+    4: "string",
+    7: "array"
+};
 /**
  * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
  * 
@@ -15,15 +24,15 @@ let mountOrder = 1;
  * @param {any} vnode 
  */
 export function Updater(instance, vnode) {
-    vnode._instance = instance;
+    vnode.stateNode = instance;
     instance.updater = this;
-    this._mountOrder = mountOrder++;
-    this._instance = instance;
+    this.instance = instance;
+    this.vnode = vnode;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._hookName = "componentDidMount";
-    //update总是保存最新的数据，如state, props, context, parentContext, parentVnode
-    this.vnode = vnode;
+    this._jobs = ["resolve"];
+    this._mountOrder = mountOrder++;
+    // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
     //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
@@ -33,6 +42,12 @@ export function Updater(instance, vnode) {
 }
 
 Updater.prototype = {
+    addJob: function(newJob) {
+        var jobs = this._jobs;
+        if (jobs[jobs.length - 1] !== newJob) {
+            jobs.push(newJob);
+        }
+    },
     enqueueSetState(state, cb) {
         if (isFn(cb)) {
             this._pendingCallbacks.push(cb);
@@ -50,7 +65,7 @@ Updater.prototype = {
             return;
         }
 
-        if (this._hookName === "componentDidMount") {
+        if (this.isMounted === returnFalse) {
             //组件挂载期
             //componentWillUpdate中的setState/forceUpdate应该被忽略
             if (this._hydrating) {
@@ -72,20 +87,15 @@ Updater.prototype = {
                 // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return;
             }
-            var u = this;
-            spwanChildQueue(function(queue) {
-                queue.push({
-                    host: u,
-                    exec: u.onUpdate
-                });
-            });
+            this.addJob("patch");
+            drainQueue([this]);
         }
     },
     mergeStates() {
-        let instance = this._instance,
+        let instance = this.instance,
             pendings = this._pendingStates,
-            state = instance.state,
-            n = pendings.length;
+            n = pendings.length,
+            state = instance.state;
         if (n === 0) {
             return state;
         }
@@ -101,19 +111,22 @@ Updater.prototype = {
         return nextState;
     },
 
-    onUpdate() {
-        let { _instance: instance, _hostNode: dom, context, props, vnode } = this;
-
-        if (this.inReceiveStage) {
-            let [lastVnode, nextVnode, nextContext] = this.inReceiveStage;
-            delete this.inReceiveStage;
-            nextVnode._hostNode = dom;
-            nextVnode._instance = instance;
+    exec(updateQueue) {
+        var job = this._jobs.shift();
+        if (job) {
+            this[job](updateQueue);
+        }
+    },
+    isMounted: returnFalse,
+    patch(updateQueue) {
+        let { instance, context, props, vnode } = this;
+        if (this._receiving) {
+            let [lastVnode, nextVnode, nextContext] = this._receiving;
+            nextVnode.stateNode = instance;
             //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
             //但还会继续向下比较
-            this._receiving = true;
             captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
-            this._receiving = false;
+            delete this._receiving;
             Refs.detachRef(lastVnode, nextVnode);
         }
 
@@ -122,56 +135,49 @@ Updater.prototype = {
         let shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
-            if (this.nextVnode) {
-                this.vnode = this.nextVnode;
-                delete this.nextVnode;
+            if (this.pendingVnode) {
+                this.vnode = this.pendingVnode;
+                delete this.pendingVnode;
             }
         } else {
             var { props: lastProps, context: lastContext, state: lastState } = instance;
             captureError(instance, "componentWillUpdate", [props, state, context]);
         }
-        vnode._instance = instance;
-        this._forceUpdate = false;
+        vnode.stateNode = instance;
+        delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
         instance.props = props;
         instance.state = state;
         instance.context = context;
-        let updater = this;
-        enqueueQueue({
-            host: this,
-            exec: this.onEnd
-        });
+        this.addJob("resolve");
         if (shouldUpdate) {
             this._hydrating = true;
-            updater.oldDatas = [lastProps, lastState, lastContext];
-            updater._hookName = "componentDidUpdate";
-            spwanChildQueue(function() {
-                dom = updater.renderComponent(updater.rendered);
-            });
+            this._hookArgs = [lastProps, lastState, lastContext];
+            this.render(updateQueue);
         }
-
-        return dom;
+        updateQueue.push(this);
     },
 
-    onEnd: function() {
+    resolve: function(updateQueue) {
         Refs.clearElementRefs();
-        let instance = this._instance;
+        let instance = this.instance;
         let vnode = this.vnode;
-        //执行componentDidMount/Update钩子
-        Refs.childrenIsUpdating = true;
-        captureError(instance, this._hookName, this.oldDatas);
-        if (this._dirty) {
-            delete this._dirty;
+
+        // 执行componentDidMount/Update钩子
+        var hasMounted = this.isMounted();
+        var hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
+        if (!hasMounted) {
+            this.isMounted = returnTrue;
         }
-        Refs.childrenIsUpdating = false;
-        this.oldDatas = emptyArray;
+        captureError(instance, hookName, this._hookArgs || []);
+        delete this._hookArgs;
         //执行React Chrome DevTools的钩子
-        if (this._hookName === "componentDidMount") {
-            options.afterMount(instance);
-        } else {
+        if (hasMounted) {
             options.afterUpdate(instance);
+        } else {
+            options.afterMount(instance);
         }
-        delete this._hookName;
+
         this._hydrating = false;
         //执行组件虚拟DOM的ref回调
         if (vnode._hasRef) {
@@ -180,56 +186,73 @@ Updater.prototype = {
         //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
         if (this._renderInNextCycle) {
             delete this._renderInNextCycle;
-            enqueueQueue({
-                host: this,
-                exec: this.onUpdate
-            });
+            this.addJob("patch");
+            updateQueue.push(this);
         }
     },
-    renderComponent(node) {
-        let { vnode, parentContext, _instance: instance } = this;
-        //调整全局的 CurrentOwner.cur
-
-        let rendered;
-
+    render(updateQueue) {
+        //vnode为组件虚拟DOM，也只能是组件虚拟DOM
+        let { vnode, pendingVnode, instance, parentContext } = this,
+            nextChildren,
+            rendered,
+            lastChildren;
+        let target = pendingVnode || vnode;
         if (this.willReceive === false) {
-            rendered = this.rendered;
+            rendered = vnode.child;
             delete this.willReceive;
         } else {
-            var lastOwn = Refs.currentOwner;
+            let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
             rendered = captureError(instance, "render", []);
             Refs.currentOwner = lastOwn;
         }
+        if (this.isMounted()) {
+            lastChildren = restoreChildren(this.vnode);
+        } else {
+            lastChildren = [];
+        }
 
-        //组件只能返回组件或null
-      
-        if (rendered === null || rendered === false) {
-            rendered = { type: "#comment", text: "empty", vtype: 0, $$typeof: REACT_ELEMENT_TYPE };
-        } else if (!rendered || !rendered.type) {
-            if( options.e){
-                throw options.e;
+        var oldProps = target.props;
+        target.props = { children: rendered };
+        nextChildren = fiberizeChildren(target);
+        target.props = oldProps;
+        if (!nextChildren.length) {
+            var placeHolder = createVText("#comment", "empty");
+            placeHolder.index = 0;
+            placeHolder.return = target;
+            nextChildren.push(placeHolder);
+        }
+
+        let childContext = parentContext,
+            number = typeNumber(rendered);
+        if (number === 7) {
+            if (!support16) {
+                pushError(instance, "render", new Error("React15 fail to render array"));
             }
-            throw new Error(`@${this.name}#render() ${__type.call(rendered)} invalid`);
+        } else {
+            if (number < 5) {
+                var noSupport = !support16 && errorType[number];
+                if (noSupport) {
+                    pushError(instance, "render", new Error("React15 fail to render " + noSupport));
+                }
+            } else {
+                childContext = getChildContext(instance, parentContext);
+            }
         }
-
-        let childContext = rendered.vtype ? getChildContext(instance, parentContext) : parentContext;
-        let dom = options.alignVnode(node, rendered, this.parentVnode, childContext, this);
-        if (rendered._hostNode) {
-            this.rendered = rendered;
-        }
+        //child在React16总是表示它是父节点的第一个节点
+        var child = nextChildren[0];
+       
+        options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue);
+        //  console.log("child",child,lastChildren, nextChildren);
+        vnode.child = child;
+        // this.rendered = child; //现在还用于devtools中
         let u = this;
         do {
-            if (u.nextVnode) {
-                u.vnode = u.nextVnode;
-                delete u.nextVnode;
+            if (u.pendingVnode) {
+                u.vnode = u.pendingVnode;
+                delete u.pendingVnode;
             }
-            u.vnode._hostNode = u._hostNode = dom;
-            precacheNode(u.vnode);
         } while ((u = u.parentUpdater));
-       
-
-        return dom;
     }
 };
 

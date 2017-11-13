@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script src="./test/react.js"></script>
+    <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
-  
+
 </head>
 
 <body>
@@ -16,36 +16,7 @@
     <div>这个默认会被清掉</div>
     <div id='example'></div>
     <pre>
-        start mount
-        inner 1 render
-        inner 2 render
-        inner 1 componentDidMount
-        ref 1 got instance 1
-        inner 2 componentDidMount
-        ref 2 got instance 2
-        outer componentDidMount
-        start update
-
-        ref 1 got null
-        inner 1 componentWillUpdate
-        inner 1 render
-
-        ref 2 got null
-        inner 2 componentWillUpdate
-        inner 2 render
-
-        inner 1 componentDidUpdate
-        ref 1 got instance 1
-        inner 2 componentDidUpdate
-        ref 2 got instance 2
-        outer componentDidUpdate
-
-        start unmount
-        outer componentWillUnmount
-        ref 1 got null
-        inner 1 componentWillUnmount
-        ref 2 got null
-        inner 2 componentWillUnmount 
+      
     </pre>
 
     <script type='text/babel'>
@@ -59,112 +30,133 @@
       }
   }
  
-         var list = [];
-         function logger(a){
-             list.push(a)
-         }
-  
-          class Inner extends React.Component {
-              render() {
-                  logger(`inner ${this.props.id} render`);
-                  return <div />;
-              }
-  
-              componentDidMount() {
-                  logger(`inner ${this.props.id} componentDidMount`);
-              }
-              componentWillUpdate() {
-                  logger(`inner ${this.props.id} componentWillUpdate`);
-              }
-             
-              componentDidUpdate() {
-                  logger(`inner ${this.props.id} componentDidUpdate`);
-              }
-  
-              componentWillUnmount() {
-                  logger(`inner ${this.props.id} componentWillUnmount`);
-              }
-          }
-  
-          class Outer extends React.Component {
-              render() {
-                  return (
-                      <div>
-                          <Inner
-                              id={1}
-                              ref={c => {
-                                  logger(`ref 1 got ${c ? `instance ${c.props.id}` : "null"}`);
-                              }}
-                          />
-                          <Inner
-                              id={2}
-                              ref={c => {
-                                  logger(`ref 2 got ${c ? `instance ${c.props.id}` : "null"}`);
-                              }}
-                          />
-                      </div>
-                  );
-              }
-  
-              componentDidMount() {
-                  logger("outer componentDidMount");
-              }
-  
-              componentDidUpdate() {
-                  logger("outer componentDidUpdate");
-              }
-  
-              componentWillUnmount() {
-                  logger("outer componentWillUnmount");
-              }
-          }
-  
-          // mount, update, unmount
-          var container = document.createElement("div");
-          logger("start mount");
-          ReactDOM.render(<Outer />, container);
-          logger("start update");
-          ReactDOM.render(<Outer />, container);
-        /*  logger("start unmount");
-          ReactDOM.unmountComponentAtNode(container);*/
-  
-          /* eslint-disable indent */
+
+var list = [];
+var flag = 1
+ function logger(e){
+   console.log(e)
+ }
+
+ class App extends React.Component{
+     render(){
+        var array = this.props.data || [111,222,333]
+        return <div className="root">
+              <A text={array[0]} />
+              <B text={array[1]} />
+              <C text={array[2]} />
+              </div>
+     }
+ }
+
+ class A extends React.Component{
+     constructor(props) {
+         super(props);
+         this.state = {
+             text: "aaa"
+         };
+     }
+
+     componentDidMount() {
+         logger("A did mount");
+         console.log("第2次调用")
+         ReactDOM.render(<div className="root"><A text="111"/><B text="222"/><C text="333"/></div>, div);
          
-          var list2 = [
-              "start mount",
-              "inner 1 render",
-              "inner 2 render",
-              "inner 1 componentDidMount",
-              "ref 1 got instance 1",
-              "inner 2 componentDidMount",
-              "ref 2 got instance 2",
-              "outer componentDidMount",
-              "start update",
-  
-              // Stack resets refs before rendering
-              "ref 1 got null",
-              "inner 1 componentWillUpdate",
-              "inner 1 render",
-              "ref 2 got null",
-              "inner 2 componentWillUpdate",
-              "inner 2 render",
-  
-              "inner 1 componentDidUpdate",
-              "ref 1 got instance 1",
-              "inner 2 componentDidUpdate",
-              "ref 2 got instance 2",
-              "outer componentDidUpdate",
-             /* "start unmount",
-              "outer componentWillUnmount",
-              "ref 1 got null",
-              "inner 1 componentWillUnmount",
-              "ref 2 got null",
-              "inner 2 componentWillUnmount"*/
-          ]
-          console.log(list.length, list2.length)
-          expect(list.join("\n")).toBe(list2.join("\n"));
+        // ReactDOM.render(<App data={[444,555,666]} />, div);
+     }
+     componentWillReceiveProps(props){
+         logger("A will receive");
+         console.log(props.text,props)
+         this.setState({
+             text: props.text
+         })
+     }
+     componentDidUpdate() {
+         logger("A did update");
+         if(flag){
+             flag = 0;
+             console.log("第3次调用")
+             ReactDOM.render(<div className="root"><A text="444"/><B text="555"/><C text="666"/></div>, div);
+
+            // ReactDOM.render(<App data={[777,888,999]} />, div);
+         }
+     }
+     render() {
+         return <div>{this.state.text}</div>;
+     }
+ }
+
+ class B extends React.Component {
+     constructor(props) {
+         super(props);
+         this.state = {
+             text: "bbb"
+         };
+     }
+     componentDidMount() {
+         logger("B did mount");
+     }
+     componentWillReceiveProps(props){
+         logger("B will receive");
+         this.setState({
+             text: props.text
+         })
+     }
+     componentDidUpdate() {
+         logger("B did update");
+     }
+     render() {
+         return <div>{this.state.text}</div>;
+     }
+ }
+
+ class C extends React.Component {
+     constructor(props) {
+         super(props);
+         this.state = {
+             text: "ccc"
+         };
+     }
+     componentWillReceiveProps(props){
+         logger("C will receive");
+         this.setState({
+             text: props.text
+         })
+     }
+     componentDidMount() {
+         logger("C did mount");
+     }
+     componentDidUpdate() {
+         logger("C did update");
+     }
+     render() {
+         return <div>{this.state.text}</div>;
+     }
+ }
+ var s = ReactDOM.render(<div><A /><B /><C /></div>, div, function(){
+     console.log("done!",this)
+ });
+ /*
+ expect(list.join("\n")).toBe([
+            "A did mount",
+            "B did mount",
+            "C did mount",
+            "A will receive",
+            "B will receive",
+            "C will receive",
+            "A did update",
+            "B did update",
+            "C did update",
+            "A will receive",
+            "B will receive",
+            "C will receive",
+            "A did update",
+            "B did update",
+            "C did update"
+             //         ReactDOM.render(<div className="root"><A text="111"/><B text="222"/><C text="333"/></div>, div);
+
+        ].join("\n"));
+        */
       </script>
 </body>
 
 </html>
-

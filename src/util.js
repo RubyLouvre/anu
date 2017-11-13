@@ -25,7 +25,12 @@ export function extend(obj, props) {
     }
     return obj;
 }
-
+export function returnFalse(){
+    return false;
+}
+export function returnTrue(){
+    return true;
+}
 export let __type = Object.prototype.toString;
 
 /**
@@ -100,7 +105,7 @@ export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
 export var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
-
+options.uuid = true;
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -122,12 +127,6 @@ export function typeNumber(data) {
     return a || 8;
 }
 
-export function showQueue(queue){
-    console.log(queue.map(function(el){
-        return el.name;
-    }).join(" --> "));
-}
-
 export var toArray =   Array.from ||
     function(a) {
         var ret = [];
@@ -136,3 +135,17 @@ export var toArray =   Array.from ||
         }
         return ret;
     };
+export function createUnique(){
+    return typeof Set === "function" ? new Set: new InnerSet();
+}
+function InnerSet(){
+    this.elems = [];
+}
+InnerSet.prototype = {
+    add: function(el){
+        this.elems.push(el);
+    },
+    has: function(el){
+        return this.elems.indexOf(el) !== -1;
+    }
+};

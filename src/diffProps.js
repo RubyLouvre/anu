@@ -1,7 +1,7 @@
 import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { toLowerCase, noop, typeNumber,emptyObject } from "./util";
+import { toLowerCase, noop, typeNumber,emptyObject,options } from "./util";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -136,6 +136,7 @@ function getSVGAttributeName(name) {
 
 
 export function diffProps(dom, lastProps, nextProps, vnode) {
+    options.beforeProps(vnode);
     let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line

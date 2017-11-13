@@ -1,4 +1,4 @@
-import { deprecatedWarn, noop } from "./util";
+import { deprecatedWarn, returnFalse } from "./util";
 import { Refs } from "./Refs";
 /**
  *组件的基类
@@ -15,8 +15,11 @@ export function Component(props, context) {
     this.state = null;
 }
 var fakeObject = {
-    enqueueSetState: noop
+    enqueueSetState: returnFalse,
+    isMounted: returnFalse
 };
+
+
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {
@@ -24,7 +27,7 @@ Component.prototype = {
     },
     isMounted() {
         deprecatedWarn("isMounted");
-        return !!(this.updater || fakeObject)._hostNode;
+        return (this.updater || fakeObject).isMounted();
     },
     setState(state, cb) {
         (this.updater || fakeObject).enqueueSetState(state, cb);

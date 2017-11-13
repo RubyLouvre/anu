@@ -5,17 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script src="./lib/ReactTestUtils.js"></script>-->
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
+    <!-- <script src="./test/react.js"></script>
+    <script src="./test/react-dom.js"></script> -->
     <script src="./lib/babel.js"></script>
   
 </head>
 
 <body>
-//如果一片孩子要更新，那么它们都会更新过程拆成两块will receive,  should update, will update算一块，did update算一块
+
     <div>这个默认会被清掉</div>
     <div id='example'></div>
+    <pre>
+      
+    </pre>
 
     <script type='text/babel'>
     var container = document.getElementById("example")
@@ -23,74 +25,73 @@
    var expect = function(a) {
       return {
           toBe: function(b) {
-              console.log(a, b, a === b)
+              console.log(a,"\nvs\n", b, a === b)
           }
       }
   }
  
-  class Static extends React.Component {
-    componentWillReceiveProps() {
-        console.log(this.props.a, "will receive")
-    }
-    componentWillUpdate() {
-       console.log(this.props.a, "will update")
-    }
-    shouldComponentUpdate(){
-        console.log(this.props.a, "should update")
-        return false
-    }
-    componentDidUpdate() {
-       console.log(this.props.a, "did update")
-    }
-    render() {
-        return <div>{this.props.children}</div>;
-    }
-}
 
-class Component extends React.Component {
-    render() {
-        if (this.props.flipped) {
-            return (
-                <div>
-                    <Static ref="static0" a="B" key="B">
-                        B (ignored)
-                    </Static>
-                    <Static ref="static1" a="A" key="A">
-                        A (ignored)
-                    </Static>
-                </div>
-            );
-        } else {
-            return (
-                <div>
-                    <Static ref="static0" a="A" key="A">
-                        A
-                    </Static>
-                    <Static ref="static1" a="B" key="B">
-                        B
-                    </Static>
-                </div>
-            );
+var list = [];
+var flag = 1
+ function logger(e){
+   console.log(e)
+ }
+ var parentIntance 
+ class Page extends React.Component{
+     constructor(props){
+        super(props)
+        this.state = {
+            a: 111,
+            b: 222,
+            c: 333
         }
-    }
-}
+        parentIntance = this
+     }
+     render(){
+         console.log("Page.render()")
+         return <div>
+            <A  name="a" text={this.state.a} />
+            <A  name="b" text={this.state.b} />
+            <A  name="c" text={this.state.c} />
+            </div>
+     }
+ }
+ class A extends React.Component {
+     constructor(props) {
+         super(props);
+         this.state = {
+             text: props.text
+         };
+     }
 
-//var container = document.createElement("div");
-var comp = ReactDOM.render(<Component flipped={false} />, container);
-//keyA <> instance0  <> static0 <> contentA
-//keyB <> instance1  <> static1 <> contentB
-expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("A");
-expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("B");
-//keyA <> instance0  <> static1 <> contentA
-//keyB <> instance1  <> static1 <> contentB
-// When flipping the order, the refs should update even though the actual
-// contents do not
-var s = ReactDOM.render(<Component flipped={true} />, container);
-expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("B");
-expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("A");
-  
+     componentDidMount() {
+         logger(this.props.name + " did mount");
+         if(this.props.name === "a"){
+             console.log("父组件更新")
+            parentIntance.setState({
+                a: 444
+            })
+         }
+      //   ReactDOM.render(<div>{this.state.text}</div>, div);
+     
+     }
+     componentWillReceiveProps(nextProps){
+        logger(this.props.name + " will receive "+nextProps.text +" "+ this.props.text);
+        if(nextProps.text !== this.props.text){
+            this.setState({
+                text: nextProps.text
+            })
+        }
 
-      </script>
-</body>
-
-</html>
+     }
+     componentDidUpdate() {
+        logger(this.props.name + " did update");
+     }
+     render() {
+         return <div className={this.props.name}>{this.state.text}</div>;
+     }
+ }
+ 
+ var s = ReactDOM.render(<Page />, div, function(){
+     console.log(this)
+ });

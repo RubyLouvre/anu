@@ -1,9 +1,11 @@
 import { extend } from "../src/util";
 import { Refs } from "./Refs";
 import { Updater, getContextByTypes } from "./updater";
+import { captureError } from "./error";
+
 export function instantiateComponent(type, vnode, props, parentContext) {
     let context = getContextByTypes(parentContext, type.contextTypes);
-    let isStateless = vnode.vtype === 4;
+    let isStateless = vnode.vtype === 4, mixin;
     let instance = isStateless
         ? {
             refs: {},
@@ -21,19 +23,16 @@ export function instantiateComponent(type, vnode, props, parentContext) {
     updater.name = type.displayName || type.name;
 
     if (isStateless) {
-        let lastOwn = Refs.currentOwner;
+        var lastOwn = Refs.currentOwner;
         Refs.currentOwner = instance;
-        try {
-            var mixin = instance.render();
-        } finally {
-            Refs.currentOwner = lastOwn;
-        }
+        mixin = captureError(instance, "render", []);
+        Refs.currentOwner = lastOwn;
         if (mixin && mixin.render) {
             //支持module pattern component
             extend(instance, mixin);
         } else {
             instance.__isStateless = true;
-            updater.rendered = mixin;
+            vnode.child = mixin;
             updater.willReceive = false;
         }
     }

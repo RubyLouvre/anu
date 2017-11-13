@@ -7,10 +7,11 @@ import ReactDOMServer from "dist/ReactDOMServer";
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactEmptyComponent", function() {
-    this.timeout(200000);
+    this.timeout(20000);
 
-
+    
     it("should not produce child DOM nodes for null and false", function() {
+       
         class Component1 extends React.Component {
             render() {
                 return null;
@@ -30,9 +31,10 @@ describe("ReactEmptyComponent", function() {
         var container2 = document.createElement("div");
         ReactDOM.render(<Component2 />, container2);
         expect(container2.children.length).toBe(0);
+        
     });
 
-    it("works when switching components", () => {
+    it("works when switching components", function() {
         var assertions = 0;
         var div = document.createElement("div");
         class Inner extends React.Component {
@@ -44,7 +46,7 @@ describe("ReactEmptyComponent", function() {
                 // Make sure the DOM node resolves properly even if we're replacing a
                 // `null` component
             
-                expect(ReactDOM.findDOMNode(this).nodeName).toBe("SPAN")
+                expect(ReactDOM.findDOMNode(this).nodeName).toBe("SPAN");
                 assertions++;
             }
     
@@ -78,7 +80,7 @@ describe("ReactEmptyComponent", function() {
         expect(assertions).toBe(3);
        
     });
-    it("preserves the dom node during updates", () => {
+    it("preserves the dom node during updates",function() {
         class Empty extends React.Component {
             render() {
                 return null;

@@ -50,6 +50,7 @@
                 flag: 1
             };
         }
+        
         componentDidMount(props){
             console.log("App did mount")
         }
@@ -64,8 +65,8 @@
                 this.state.flag ?
                 [<Child key="a" parent={this} text="111" />,
                 <Child key="b" parent={this}  text="222" />]:
-                [<Child key="a" text="333" />,
-                <Child key="b" text="444" />]
+                [<Child key="a" text="aaa" />,
+                <Child key="b" text="bbb" />,'555']
                  }</div>
             );
         }
@@ -80,11 +81,21 @@
         render(){
             return <span className={this.state.text}>{this.state.text}</span>
         }
+        componentWillMount(props){
+            console.log("Child will mount")
+        }
+        componentWillUnmount(){
+            console.log("Child will unmount",this.props.text)
+        }
         componentDidMount(props){
             console.log("Child did mount")
             if(this.props.text==="111"){
-               console.log("XXXX")
-               this.props.parent.setState({flag: 0})
+                var parent = this.props.parent
+                    console.log("开始setState",parent.updater.vnode.child.childNodes.slice())
+                    parent.setState({flag: 0})
+             
+
+              // this.props.parent.setState({flag: 0})
             }
            
         }

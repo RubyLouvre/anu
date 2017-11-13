@@ -28,10 +28,11 @@ require("./modules/ref.spec.jsx");
 require("./modules/redux.spec.jsx");
 
 require("./modules/ReactTestUtils-test.jsx");
+require("./modules/ReactChildren-test.jsx");
+
 
 require("./modules/ReactComponent-test.jsx");
 
-require("./modules/ReactChildren-test.jsx");
 
 require("./modules/ReactMultiChild-test.jsx");
 
@@ -41,6 +42,7 @@ require("./modules/refs-destruction-test.jsx");
 require("./modules/ReactUpdates-test.jsx");
 
 require("./modules/ReactStatelessComponent-test.jsx");
+
 
 require("./modules/ReactEmptyComponent-test.jsx");
 require("./modules/ReactIdentity-test.jsx");
@@ -67,6 +69,4 @@ require("./modules/ReactDOM-test.jsx");
 require("./modules/findDOMNode-test.jsx");
 
 require("./modules/ReactES6Class-test.jsx");
-/*
-require("./modules/aaa.spec.jsx");
-*/
+

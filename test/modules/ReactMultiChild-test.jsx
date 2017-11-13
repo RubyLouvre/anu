@@ -15,7 +15,7 @@ describe("ReactMultiChild", function() {
     it("should update children when possible", () => {
         var container = document.createElement("div");
 
-        var mockMount = spyOn.createSpy();
+        var mockMount = spyOn.createSpy()
         var mockUpdate = spyOn.createSpy();
         var mockUnmount = spyOn.createSpy();
 

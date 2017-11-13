@@ -1,12 +1,13 @@
-import { typeNumber, toArray, REACT_ELEMENT_TYPE } from "./util";
+import { typeNumber, options, toArray, createUnique, REACT_ELEMENT_TYPE } from "./util";
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 
 export function Vnode(type, vtype, props, key, ref, _hasProps) {
     this.type = type;
     this.vtype = vtype;
-    this.uuid = Math.random();
-
+    if (!options.uuid) {
+        this.uuid = Math.random() + Math.random();
+    }
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -16,8 +17,8 @@ export function Vnode(type, vtype, props, key, ref, _hasProps) {
         }
 
         if (vtype === 1) {
-            this._hasProps = _hasProps;
             this.childNodes = [];
+            this._hasProps = _hasProps;
         }
 
         let refType = typeNumber(ref);
@@ -36,7 +37,7 @@ Vnode.prototype = {
     getDOMNode() {
         return this.stateNode || null;
     },
-    
+
     collectNodes(isChild, ret) {
         ret = ret || [];
         if (isChild && this.vtype < 2) {
@@ -49,8 +50,9 @@ Vnode.prototype = {
         return ret;
     },
     batchMount() {
-        var parentNode = this.stateNode, childNodes = this.collectNodes();
-        childNodes.forEach(function(dom){
+        var parentNode = this.stateNode,
+            childNodes = this.collectNodes();
+        childNodes.forEach(function(dom) {
             parentNode.appendChild(dom);
         });
     },
@@ -58,37 +60,42 @@ Vnode.prototype = {
         var parentVnode = updateMeta.parentVElement,
             parentNode = parentVnode.stateNode,
             lastChildren = updateMeta.lastChilds,
-            insertPoint = updateMeta.insertPoint,
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
-            inserted = [];
-        //  console.log(nextChildren, lastChildren, "开始比较");
+            unique = createUnique();
+        var fullNodes = toArray(parentNode.childNodes);
+        var startIndex = fullNodes.indexOf(lastChildren[0]);
+        var insertPoint = fullNodes[startIndex] || null;
+        // if(fullNodes.length === 1 && oldLength && startIndex === -1 ){
+
+        // }
+
         for (let i = 0; i < newLength; i++) {
             let child = nextChildren[i];
             let last = lastChildren[i];
             if (last === child) {
                 //如果相同
-            } else if (last && inserted.indexOf(last) == -1 ) {
-                parentNode.replaceChild(child, last);//如果这个位置有DOM，并且它不在新的nextChildren之中
+            } else if (last && !unique.has(last)) {
+                parentNode.replaceChild(child, last); //如果这个位置有DOM，并且它不在新的nextChildren之中
             } else if (insertPoint) {
                 parentNode.insertBefore(child, insertPoint.nextSibling);
             } else {
                 parentNode.appendChild(child);
             }
             insertPoint = child;
-            inserted.push(child);
+            unique.add(child);
         }
         if (newLength < oldLength) {
             for (let i = newLength; i < oldLength; i++) {
-                removeElement(lastChildren[i]);
+                if (!unique.has(lastChildren[i])) {
+                    removeElement(lastChildren[i]);
+                }
             }
         }
-
-        if(parentNode.nodeType === 1){
-            parentVnode.childNodes = toArray(parentNode.childNodes);
-        }
+        //   parentNode.childNodes.length = 0;
+        //delete parentVnode.childNodes.updateMeta;
+        delete parentVnode.updateMeta;
     },
 
     $$typeof: REACT_ELEMENT_TYPE
 };
-

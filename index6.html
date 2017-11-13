@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./dist/React.js"></script>
 
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>
+   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+   <!--<script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./test/react-dom.js"></script>-->
    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
    
      <script type='text/javascript' src="./lib/babel.js"></script>
@@ -18,18 +20,21 @@
 <body>
     
         <pre>应该等于
-            "111instance",
-            "222instance",
-            "333instance",
-            "222null",
-            "111null",
-            "A update",
-            "A remove",
-            "A remove",
-            "333null",
-            "444instance",
-            "555instance",
-            "B mount"
+            111instance
+            222instance
+            333instance
+            A remove
+            A remove
+            222null
+            111null
+            A remove
+            A remove
+            333null
+            444instance
+            555instance
+            B mount
+           
+          
           </pre>
         <div id='example'></div>
         <script type='text/babel'>
@@ -57,7 +62,7 @@
                     logger("A update");
                 }
                 render(){
-                    return <span>A</span>;
+                    return <i>A</i>;
                 }
             }
             class B extends React.Component{
@@ -65,7 +70,7 @@
                     logger("B mount");
                 }
                 render(){
-                    return <span>B</span>;
+                    return <strong className="B">B</strong>;
                 }
             }
             var list = [];
@@ -80,10 +85,10 @@
                     };
                 }
                 render() {
-                    return <div>
+                    return <div className="App">
                         {
                             this.state.a ? 
-                                [<A />,<A />,<A />,<A/>,
+                                [<A />,<A />,<A />,<A />,
                                     <span key="a" ref={(a)=>{
                                         logger(111+(a?"instance":"null"));
                                     }}>a</span>,
@@ -95,12 +100,14 @@
                                     }}>c</span>,
                                 ]:
                                 [
+                                    <s>111</s>,
+                                    <s>22</s>,
                                     <span key="b" ref={(a)=>{
                                         logger(444+(a?"instance":"null"));
                                     }}>b</span>,
                                     <span key="a" ref={(a)=>{
                                         logger(555+(a?"instance":"null"));
-                                    }}>a</span>,<A />,<A />, <B />]
+                                    }}>a</span>,<A />, <B />]
                         }
                     </div>;
                 }

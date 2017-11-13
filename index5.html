@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
-    <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./dist/React.js"></script>
     <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
@@ -45,6 +45,9 @@
                 flag: 1
             };
         }
+        componentWillMount(props){
+            console.log("App will mount")
+        }
         componentDidMount(props){
             console.log("App did mount")
         }
@@ -55,9 +58,10 @@
             console.log("App did update")
         }
         render() {
-            return (<div>{this.props.children}</div>);
+            return (<div className="root">{this.props.children}</div>);
         }
     }
+    
     class Child extends React.Component {
         constructor(props) {
             super(props);
@@ -70,6 +74,9 @@
         }
         componentDidMount(props){
             console.log("Child did mount")
+        }
+        componentWillMount(props){
+            console.log("Child will mount")
         }
         componentWillReceiveProps(props){
             console.log("Child ",this.props.text, "will receive")
@@ -85,9 +92,11 @@
         }
     }
 
-    var s = ReactDOM.render(<App><Child key="a" text="111" /><Child key="b" text="222" /></App>, div);
-    
-    ReactDOM.render(<App><Child key="a" text="333" /><Child key="b" text="444" /></App>, div);
+
+  var s = ReactDOM.render(<App><Child key="a" text="111" /><Child key="b" text="222" /></App>, div);
+  //var s = ReactDOM.render(<App><div>111</div><div>2222</div></App>, div);
+  //ReactDOM.render(<App><div>333</div><div>4444</div></App>, div);
+    ReactDOM.render(<App><Child key="b" text="前面的" /><Child key="a" text="后面的" /></App>, div);
 
     
     </script>

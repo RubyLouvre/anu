@@ -2,22 +2,23 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
   <title>树组件</title>
 
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!--<script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
+   <script type='text/javascript' src="./dist/React.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
   <script type='text/javascript' src="./lib/babel.js"></script>
-    
+
 </head>
 
 <body>
 
-    <div>测试</div>
-    <blockquote id='example'></blockquote>
-    <script type='text/babel'>
+  <div>测试</div>
+  <div id='example'></div>
+  <script type='text/babel'>
       var container = document.getElementById("example")
       var div = container
      // var PropTypes = React.PropTypes
@@ -33,51 +34,58 @@
               }
           }
       }
-      var a = 1;
-      class App extends React.Component {
-          constructor(props) {
-              super(props);
-              this.state = {
-                  aaa: 1
-              };
-          }
-          shouldComponentUpdate() {
-              //这里相当于返回false
-              console.log("shouldComponentUpdate")
-          }
-          click() {
-              this.setState(
-                  function(a) {
-                      a.aaa++;
-                  },
-                  function() {
-                      a++;
-                  }
-              );
 
-              this.setState(
-                  function(a) {
-                      a.aaa++;
-                  },
-                  function() {
-                      a++;
-                  }
-              );
-          }
-          render() {
-              return <div onClick={this.click.bind(this)}>{this.state.aaa}</div>;
-          }
-      }
-      var vnode = <App />;
-      ReactDOM.render(vnode, div);
-      expect(vnode._hostNode.innerHTML).toBe("1");
-      vnode._hostNode.click()
-      expect(vnode._hostNode.innerHTML).toBe("1");
+     
+      var spyOn = {}
+      spyOn.createSpy = function(fn) {
+            function spyFn() {
+                spyFn.calls.push([].slice.call(arguments));
+                if (fn) {
+                    return fn.apply(this, arguments);
+                }
+            }
+            
+            var calls = spyFn.calls = [];
+            calls.reset = function() {
+                this.length = 0;
+            };
+            calls.count = function(){
+                return this.length;
+            };
+            return spyFn;
+        };
 
-      expect(a).toBe(3);
-    
+        var X = undefined;
+
+        function Indirection(props) {
+            return <div>{props.children}</div>;
+        }
+
+        function Bar() {
+            return (
+                <Indirection>
+                    <X />
+                </Indirection>
+            );
+        }
+
+        function Foo() {
+            return <Bar />;
+        }
+
+       ReactDOM.render(<Foo />,div)
+     
+
     </script>
-    
+  <pre>
+    A componentWillMount
+    A render
+    A componentDidMount
+    B componentWillMount
+    B render
+    A componentWillUnmount
+    B componentDidMount 
+    </pre>
 </body>
 
 </html>

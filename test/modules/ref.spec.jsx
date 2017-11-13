@@ -422,9 +422,12 @@ describe("ref模块", function () {
     });
     it("先执行匹配元素的detach ref，然后卸载组件，最后attach ref",function(){
         var list = [];
+        function logger(e){
+            list.push(e);
+        }
         class A extends React.Component{
             componentWillUnmount(){
-                list.push("remove");
+                logger("remove");
             }
             render(){
                 return <span>A</span>;
@@ -442,16 +445,16 @@ describe("ref模块", function () {
                     {
                         this.state.a ? 
                             [<A />,<A />,<A />,<span key="a" ref={(a)=>{
-                                list.push(111+  (a ? "instance": "null"));
+                                logger(111+  (a ? "instance": "null"));
                             }}>a</span>,<span key="b" ref={(a)=>{
-                                list.push(222 + (a ? "instance": "null"));
+                                logger(222 + (a ? "instance": "null"));
                                 
                             }}>b</span>]:
                             [<span key="b" ref={(a)=>{
-                                list.push(333 + (a ? "instance": "null"));
+                                logger(333 + (a ? "instance": "null"));
                                 
                             }}>b</span>,<span key="a" ref={(a)=>{
-                                list.push(444 + (a ? "instance": "null"));
+                                logger(444 + (a ? "instance": "null"));
                             }}>a</span>]
                     }
                 </div>;
@@ -459,7 +462,15 @@ describe("ref模块", function () {
         }
         var s = ReactDOM.render(<App />, div);
         s.setState({a: 0});
-        expect(list).toEqual([
+        var list2 = ReactDOM.createPortal ? [ "111instance",
+            "222instance",
+            "remove",
+            "remove",
+            "remove",
+            "222null",
+            "111null",
+            "333instance",
+            "444instance"]: [
             "111instance",
             "222instance",
             "222null",
@@ -469,146 +480,74 @@ describe("ref模块", function () {
             "remove",
             "333instance",
             "444instance"
-        ]);
+        ];
+        expect(list.join("\n")).toBe( list2.join("\n"));
     
     });
-    /*
-    it("先执行匹配元素的detach ref，然后更新卸载组件，最后attach ref 2",function(){
-        var list = [];
-        class A extends React.Component{
-            componentWillUnmount(){
-                list.push("A remove");
-            }
-            componentWillUpdate(){
-                list.push("A update");
-            }
-            render(){
-                return <span>A</span>;
-            }
-        }
-        class B extends React.Component{
-            componentDidMount(){
-                list.push("B mount");
-            }
-            render(){
-                return <span>B</span>;
-            }
-        }
-        var list = [];
-        class App extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    a: 1
-                };
-            }
-            render() {
-                return <div>
-                    {
-                        this.state.a ? 
-                            [<A />,<A />,<A />,
-                                <span key="a" ref={(a)=>{
-                                    list.push(111+(a?"instance":"null"));
-                                }}>a</span>,
-                                <span key="b" ref={(a)=>{
-                                    list.push(222+(a?"instance":"null"));    
-                                }}>b</span>,
-                                <span key="c" ref={(a)=>{
-                                    list.push(333+(a?"instance":"null"));
-                                }}>c</span>,
-                            ]:
-                            [
-                                <span key="b" ref={(a)=>{
-                                    list.push(444+(a?"instance":"null"));
-                                }}>b</span>,
-                                <span key="a" ref={(a)=>{
-                                    list.push(555+(a?"instance":"null"));
-                                }}>a</span>,<A />, <B />]
-                    }
-                </div>;
-            }
-        }
-        var s = ReactDOM.render(<App />, div);
-        s.setState({a: 0});
-        expect(list).toEqual([
-            "111instance",
-            "222instance",
-            "333instance",
-            "222null",
-            "111null",
-            "A update",
-            "A remove",
-            "A remove",
-            "333null",
-            "444instance",
-            "555instance",
-            "B mount"
-        ]);
     
-
-    });
-    */
     it("ref与生命周期的执行顺序，更新后没有key",function(){
         var list = [];
-            
+        function logger(e){
+            list.push(e);
+        }
         var A = class extends React.Component {
             componentWillMount() {
-                list.push(this.props.name + " componentWillMount");
+                logger(this.props.name + " componentWillMount");
             }
             render() {
                 return <div />;
             }
             componentDidMount() {
-                list.push(this.props.name + " componentDidMount");
+                logger(this.props.name + " componentDidMount");
             }
             componentDidUpdate() {
-                list.push(this.props.name + " componentDidUpdate");
+                logger(this.props.name + " componentDidUpdate");
             }
             componentWillUnmount() {
-                list.push(this.props.name + " componentWillUnmount");
+                logger(this.props.name + " componentWillUnmount");
             }
         };
         var B = class extends React.Component {
             componentWillMount() {
-                list.push(this.props.name + " componentWillMount");
+                logger(this.props.name + " componentWillMount");
             }
             render() {
                 return <strong />;
             }
             componentDidMount() {
-                list.push(this.props.name + " componentDidMount");
+                logger(this.props.name + " componentDidMount");
             }
             componentWillUnmount() {
-                list.push(this.props.name + " componentWillUnmount");
+                logger(this.props.name + " componentWillUnmount");
             }
         };
         ReactDOM.render(
             <div>
                 <A key="aa" name="a" ref={(a)=>{
-                    list.push("a "+!!a)
+                    logger("a "+!!a)
                     ;
                 }}></A>
                 <A key="bb" name="b" ref={(a)=>{
-                    list.push("b "+!!a)
+                    logger("b "+!!a)
                     ;
                 }}></A>
             </div>,
             div
         );
-        list.push("update...");
+        logger("update...");
         ReactDOM.render(
             <div>
                 <B  name="c" ref={(a)=>{
-                    list.push("c "+!!a);
+                    logger("c "+!!a);
                 }}></B>
                 <B  name="d" ref={(a)=>{
-                    list.push("d "+!!a)
+                    logger("d "+!!a)
                     ;
                 }}></B>
             </div>,
             div
         );
-        expect(list).toEqual([
+        expect(list.join("\n")).toBe([
             "a componentWillMount",
             "b componentWillMount",
             "a componentDidMount",
@@ -626,69 +565,72 @@ describe("ref模块", function () {
             "c true",
             "d componentDidMount",
             "d true"
-        ]);
+        ].join("\n"));
     });
     it("ref与生命周期的执行顺序，更新后有key",function(){
+        
         var list = [];
-            
+        function logger(e){
+            list.push(e);
+        }   
         var A = class extends React.Component {
             componentWillMount() {
-                list.push(this.props.name + " componentWillMount");
+                logger(this.props.name + " componentWillMount");
             }
             render() {
-                return <div />;
+                return <div>{this.props.name}</div>;
             }
             componentDidMount() {
-                list.push(this.props.name + " componentDidMount");
+                logger(this.props.name + " componentDidMount");
             }
             componentDidUpdate() {
-                list.push(this.props.name + " componentDidUpdate");
+                logger(this.props.name + " componentDidUpdate");
             }
             componentWillUnmount() {
-                list.push(this.props.name + " componentWillUnmount");
+                logger(this.props.name + " componentWillUnmount");
             }
         };
         var B = class extends React.Component {
             componentWillMount() {
-                list.push(this.props.name + " componentWillMount");
+                logger(this.props.name + " componentWillMount");
             }
             render() {
-                return <strong />;
+                return <strong>{this.props.name}</strong>;
             }
             componentDidMount() {
-                list.push(this.props.name + " componentDidMount");
+                logger(this.props.name + " componentDidMount");
             }
             componentWillUnmount() {
-                list.push(this.props.name + " componentWillUnmount");
+                logger(this.props.name + " componentWillUnmount");
             }
         };
         ReactDOM.render(
             <div>
                 <A key="aa" name="a" ref={(a)=>{
-                    list.push("a "+!!a)
+                    logger("a "+!!a)
                     ;
                 }}></A>
                 <A key="bb" name="b" ref={(a)=>{
-                    list.push("b "+!!a)
+                    logger("b "+!!a)
                     ;
                 }}></A>
             </div>,
             div
         );
-        list.push("update...");
+        logger("update...");
         ReactDOM.render(
             <div>
                 <B key="aa" name="c" ref={(a)=>{
-                    list.push("c "+!!a);
+                    logger("c "+!!a);
                 }}></B>
                 <B key="bb" name="d" ref={(a)=>{
-                    list.push("d "+!!a)
+                    logger("d "+!!a)
                     ;
                 }}></B>
             </div>,
             div
         );
-        expect(list).toEqual([
+        expect(list.join("\n")).toBe([
             "a componentWillMount",
             "b componentWillMount",
             "a componentDidMount",
@@ -706,6 +648,6 @@ describe("ref模块", function () {
             "c true",
             "d componentDidMount",
             "d true"
-        ]);
+        ].join("\n"));
     });
 });

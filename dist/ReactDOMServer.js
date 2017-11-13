@@ -19,13 +19,14 @@ var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol
 
 
 
+var __type = Object.prototype.toString;
 
 /**
  * 一个空函数
  *
  * @export
  */
-
+function noop() {}
 
 /**
  * 类继承
@@ -62,19 +63,153 @@ function oneObject(array, val) {
 
 
 
-
-
+var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+options.uuid = true;
+var numberMap = {
+    //null undefined IE6-8这里会返回[object Object]
+    "[object Boolean]": 2,
+    "[object Number]": 3,
+    "[object String]": 4,
+    "[object Function]": 5,
+    "[object Symbol]": 6,
+    "[object Array]": 7
+};
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
+function typeNumber(data) {
+    if (data === null) {
+        return 1;
+    }
+    if (data === void 666) {
+        return 0;
+    }
+    var a = numberMap[__type.call(data)];
+    return a || 8;
+}
+
+var toArray = Array.from || function (a) {
+    var ret = [];
+    for (var i = 0, n = a.length; i < n; i++) {
+        ret[i] = a[i];
+    }
+    return ret;
+};
+function createUnique() {
+    return typeof Set === "function" ? new Set() : new InnerSet();
+}
+function InnerSet() {
+    this.elems = [];
+}
+InnerSet.prototype = {
+    add: function add(el) {
+        this.elems.push(el);
+    },
+    has: function has(el) {
+        return this.elems.indexOf(el) !== -1;
+    }
+};
+
+//用于后端的元素节点
+function DOMElement(type) {
+    this.nodeName = type;
+    this.style = {};
+    this.children = [];
+}
+
+
+
+var fn = DOMElement.prototype = {
+    contains: Boolean
+};
+String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
+    fn[name] = function () {
+        console.log("fire " + name); // eslint-disable-line
+    };
+});
+
+//用于后端的document
+var fakeDoc = new DOMElement();
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
+    return new DOMElement(type);
+};
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
+fakeDoc.documentElement = new DOMElement("html");
+fakeDoc.nodeName = "#document";
+fakeDoc.textContent = "";
+try {
+    var w = window;
+    var b = !!w.alert;
+} catch (e) {
+    b = false;
+    w = {
+        document: fakeDoc
+    };
+}
+
+
+
+
+var document = w.document || fakeDoc;
+var isStandard = "textContent" in document;
+var fragment = document.createDocumentFragment();
+function emptyElement(node) {
+    var child;
+    while (child = node.firstChild) {
+        emptyElement(child);
+        node.removeChild(child);
+    }
+}
+
+var recyclables = {
+    "#text": []
+};
+
+function removeElement(node) {
+    if (node.nodeType === 1) {
+        if (isStandard) {
+            node.textContent = "";
+        } else {
+            emptyElement(node);
+        }
+        node.__events = null;
+    } else if (node.nodeType === 3) {
+        //只回收文本节点
+        if (recyclables["#text"].length < 100) {
+            recyclables["#text"].push(node);
+        }
+    }
+    fragment.appendChild(node);
+    fragment.removeChild(node);
+}
+
+var versions = {
+    88: 7, //IE7-8 objectobject
+    80: 6, //IE6 objectundefined
+    "00": NaN, // other modern browsers
+    "08": NaN
+};
+/* istanbul ignore next  */
+var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+
+var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 
-var currentQueue = [];
-var mainQueue = [currentQueue];
-window.mainQueue = mainQueue;
+/**
+ * 创建虚拟DOM
+ *
+ * @param {string} type
+ * @param {object} props
+ * @param {array} ...children
+ * @returns
+ */
 
-var cacheTree = {};
-window.cacheTree = cacheTree;
+
+
+
+
+// 用于辅助XML元素的生成（svg, math),
+// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 
 /**
  * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中

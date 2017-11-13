@@ -1,5 +1,5 @@
-import {emptyArray, typeNumber, REACT_ELEMENT_TYPE} from "./util";
-import {Refs} from "./Refs";
+import { typeNumber } from "./util";
+import { Vnode } from "./Vnode";
 /**
  * 创建虚拟DOM
  *
@@ -17,11 +17,11 @@ export function createElement(type, config, ...children) {
         ref = null,
         argsLen = children.length;
     if (type && type.call) {
-        vtype = type.prototype && type.prototype.render
-            ? 2
-            : 4;
+        vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("createElement第一个参数类型错误"); // eslint-disable-line
+        console.error("React.createElement: type is invalid");
+        type ="#comment";
+        vtype = 0;
     }
     if (config != null) {
         for (let i in config) {
@@ -45,7 +45,6 @@ export function createElement(type, config, ...children) {
 
     if (argsLen === 1) {
         props.children = children[0];
-        // : EMPTY_CHILDREN;
     } else if (argsLen > 1) {
         props.children = children;
     }
@@ -59,86 +58,103 @@ export function createElement(type, config, ...children) {
             }
         }
     }
-    return new Vnode(type, key, ref, props, vtype, _hasProps);
+    return new Vnode(type, vtype, props, key, ref, _hasProps);
 }
 
-function Vnode(type, key, ref, props, vtype, _hasProps) {
-    this.type = type;
-    this.props = props;
-    this.vtype = vtype;
-    this._owner = Refs.currentOwner;
-
-    if (key) {
-        this.key = key;
-    }
-
-    if (vtype === 1) {
-        this._hasProps = _hasProps;
-    }
-
-    let refType = typeNumber(ref);
-    if (refType === 3 || refType === 4 || refType === 5) {
-        //number, string, function
-        this._hasRef = true;
-        
-        this.ref = ref;
-    }
-    /*
-      this._hostNode = null
-      this._instance = null
-    */
+export function createVText(type, text) {
+    var vnode = new Vnode(type, 0);
+    vnode.text = text;
+    return vnode;
 }
 
-
-
-Vnode.prototype = {
-    getDOMNode: function () {
-        return this._hostNode || null;
-    },
-
-    $$typeof: REACT_ELEMENT_TYPE
-};
-
-export function flattenChildren(vnode) {
-    let arr = emptyArray,
-        c = vnode.props.children;
-    if (c !== null) {
-        arr = _flattenChildren(c, true);
-        if (arr.length === 0) {
-            arr = emptyArray;
+// 用于辅助XML元素的生成（svg, math),
+// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
+export function createVnode(node) {
+    var type = node.nodeName, vnode;
+    if (node.nodeType === 1) {
+        vnode = new Vnode(type, 1);
+        var ns = node.namespaceURI;
+        if (!ns || ns.indexOf("html") >= 22) {
+            vnode.type = type.toLowerCase(); //HTML的虚拟DOM的type需要小写化
+        } else {
+            //非HTML需要加上命名空间
+            vnode.namespaceURI = ns;
         }
+    } else {
+        vnode = createVText(type, node.nodeValue);
     }
-    return arr;
+    vnode.stateNode = node;
+    return vnode;
 }
 
-export function _flattenChildren(original, convert) {
-    let children = [],
-        unidimensionalIndex = 0,
-        lastText,
-        child,
-        isMap = convert === "",
-        iteractorFn,
-        temp = Array.isArray(original)
-            ? original.slice(0)
-            : [original];
+export function restoreChildren(parent) {
+    var ret = [];
+    for (var el = parent.child; el; el = el.sibling) {
+        ret.push(el);
+    }
+    return ret;
+}
 
+export function fiberizeChildren(vnode) {
+    let c = vnode.props.children,
+        ret = [],
+        prev;
+    if (c !== void 666) {
+        var lastText; 
+        ret = operateChildren(c, false, function(ret, child) {
+            let childType = typeNumber(child);
+            if (childType < 3) {
+                //undefined, null, boolean
+                child = createVText("#comment","empty");
+                lastText = null;
+            } else if (childType < 5) {
+                //number string
+                if(lastText){ //合并相邻的文本节点
+                    lastText.text += child;
+                    return;
+                }
+                lastText = child =  createVText("#text", child+"");
+            }else{
+                lastText = null;
+            }
+            child.index = ret.length;
+            child.return = vnode;
+            if (prev) {
+                prev.sibling = child;
+            }
+            prev = child;
+            ret.push(child);
+        });
+    }
+    var child = ret[0];
+    if (child) {
+        vnode.child = child;
+    }
+    return ret;
+}
+
+export function operateChildren(children, isMap, callback) {
+    let ret = [],
+        keeper = {
+            unidimensionalIndex: 0
+        },
+        child,
+        iteractorFn,
+        temp = Array.isArray(children) ? children.slice(0) : [children];
     while (temp.length) {
         if ((child = temp.shift()) && (child.shift || (iteractorFn = getIteractor(child)))) {
             //比较巧妙地判定是否为子数组
-
             if (iteractorFn) {
                 //兼容Immutable.js, Map, Set
                 child = callIteractor(iteractorFn, child);
                 iteractorFn = false;
-                temp
-                    .unshift
-                    .apply(temp, child);
+                temp.unshift.apply(temp, child);
                 continue;
             }
             if (isMap) {
                 if (!child._prefix) {
-                    child._prefix = "." + unidimensionalIndex;
-                    unidimensionalIndex++; //维护第一层元素的索引值
+                    child._prefix = "." + keeper.unidimensionalIndex;
+                    keeper.unidimensionalIndex++; //维护第一层元素的索引值
                 }
                 for (let i = 0; i < child.length; i++) {
                     if (child[i]) {
@@ -146,50 +162,17 @@ export function _flattenChildren(original, convert) {
                     }
                 }
             }
-            temp
-                .unshift
-                .apply(temp, child);
+            temp.unshift.apply(temp, child);
         } else {
-            let childType = typeNumber(child);
-            if (childType < 3) {
-                // 0, 1, 2
-                if (convert) {
-                    continue;
-                } else {
-                    child = null;
-                }
-            } else if (childType < 6) {
-                if (lastText && convert) {
-                    //false模式下不进行合并与转换
-                    lastText.text += child;
-                    continue;
-                }
-                if (convert) {
-                    child = {
-                        type: "#text",
-                        text: child + "",
-                        $$typeof: REACT_ELEMENT_TYPE,
-                        vtype: 0
-                    };
-                    unidimensionalIndex++;
-                }
-                lastText = child;
-            } else {
-                if (isMap && !child._prefix) {
-                    child._prefix = "." + unidimensionalIndex;
-                    unidimensionalIndex++;
-                }
-                if (!child.type) {
-                    throw Error("这不是一个虚拟DOM");
-                }
-                lastText = false;
+            if (typeNumber(child) === 8  && !child.type) {
+                throw Error("invalid type");
             }
-
-            children.push(child);
+            callback(ret, child, keeper);
         }
     }
-    return children;
+    return ret;
 }
+
 var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
@@ -219,3 +202,4 @@ function callIteractor(iteratorFn, children) {
     }
     return ret;
 }
+

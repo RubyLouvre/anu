@@ -11,44 +11,25 @@ export var NAMESPACE = {
     svg: "http://www.w3.org/2000/svg",
     xmlns: "http://www.w3.org/2000/xmlns/",
     xlink: "http://www.w3.org/1999/xlink",
-    math: "http://www.w3.org/1998/Math/MathML",
-    xhtml: "http://www.w3.org/1999/xhtml",
-    html: "https://www.w3.org/TR/html4/"
+    math: "http://www.w3.org/1998/Math/MathML"
 };
-// 用于辅助XML元素的生成（svg, math),
-// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-export function createVnode(container) {
-    var ns = container.namespaceURI;
-    var type = container.nodeName;
-    if(!ns || NAMESPACE.xhtml){
-        ns = NAMESPACE.xhtml;
-        type = type.toLowerCase();
-    }
-    return {
-        vtype: container.nodeType === 1 ? 1: 0,
-        _hostNode: container,
-        type: type,
-        namespaceURI: ns
-    };
-}
+
 var fn = (DOMElement.prototype = {
     contains: Boolean
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-    ",detachEvent"
+        ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+        ",detachEvent"
 ).replace(/\w+/g, function(name) {
     fn[name] = function() {
-    console.log("fire " + name); // eslint-disable-line
+        console.log("fire " + name); // eslint-disable-line
     };
 });
 
 //用于后端的document
 export var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(
-    type
-) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(type) {
     return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
@@ -92,8 +73,8 @@ export function removeElement(node) {
         }
         node.__events = null;
     } else if (node.nodeType === 3) {
-    //只回收文本节点
-        if(recyclables["#text"].length < 100) {
+        //只回收文本节点
+        if (recyclables["#text"].length < 100) {
             recyclables["#text"].push(node);
         }
     }
@@ -108,22 +89,14 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-export var msie =
-  document.documentMode ||
-  versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+export var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
-export function insertElement(container, target, insertPoint){
-    if(insertPoint){
-        container.insertBefore(target, insertPoint);
-    }else{
-        container.appendChild(target);
-    }
-}
+
 export function createElement(vnode, vparent) {
     var type = vnode.type;
     if (type === "#text") {
-    //只重复利用文本节点
+        //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
             node.nodeValue = vnode.text;
@@ -142,19 +115,14 @@ export function createElement(vnode, vparent) {
         ns = NAMESPACE.svg;
     } else if (type === "math") {
         ns = NAMESPACE.math;
-    } else if (
-        check.type.toLowerCase() === "foreignobject" ||
-    !ns ||
-    ns === NAMESPACE.html ||
-    ns === NAMESPACE.xhtml
-    ) {
+    } else if (!ns || check.type.toLowerCase() === "foreignobject") {
         return document.createElement(type);
     }
     try {
         vnode.namespaceURI = ns;
         return document.createElementNS(ns, type);
-    //eslint-disable-next-line
-  } catch (e) {
+        //eslint-disable-next-line
+    } catch (e) {
         return document.createElement(type);
     }
 }

@@ -1,6 +1,6 @@
 import { document } from "./browser";
 import { isFn, noop, options } from "./util";
-import {switchUpdaters, flushUpdaters } from "./scheduler";
+import { flushUpdaters } from "./scheduler";
 
 var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -41,8 +41,6 @@ export function dispatchEvent(e, type, end) {
     var captured = bubble + "capture";
     options.async = true;
    
-    switchUpdaters();
-
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
@@ -220,8 +218,7 @@ function getLowestCommonAncestor(instA, instB) {
 }
 
 if (isTouch) {
-    eventHooks.click = noop;
-    eventHooks.clickcapture = noop;
+    eventHooks.click = eventHooks.clickcapture = noop;
 }
 
 export function createHandle(name, fn) {
@@ -265,7 +262,7 @@ export function SyntheticEvent(event) {
 }
 
 var eventProto = (SyntheticEvent.prototype = {
-    fixEvent: function() {}, //留给以后扩展用
+    fixEvent: noop, //留给以后扩展用
     preventDefault: function() {
         var e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
@@ -273,7 +270,7 @@ var eventProto = (SyntheticEvent.prototype = {
             e.preventDefault();
         }
     },
-    fixHooks: function() {},
+    fixHooks: noop,
     stopPropagation: function() {
         var e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;

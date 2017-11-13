@@ -6,15 +6,14 @@ import {
     inherit,
     camelize,
     firstLetterLower,
-    typeNumber
+    typeNumber,
+    toArray
 } from "src/util";
 
 import {
     isEventName
 } from "src/event";
-import {
-    toArray
-} from "src/diff";
+
 import {
     getChildContext
 } from "src/updater";

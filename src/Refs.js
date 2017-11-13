@@ -37,7 +37,7 @@ export var Refs = {
         }
         var owner = vnode._owner;
         if (!owner) {
-            throw "ref位置错误";
+            throw  `Element ref was specified as a string (${ref}) but no owner was set`;
         }
         if (dom) {
             if (dom.nodeType) {

@@ -27,7 +27,18 @@ describe("ReactCompositeComponent", function() {
 
         expect(el.textContent).toBe("test");
     });
+    var MorphingComponent = class extends React.Component {
+        state = { activated: false };
 
+        _toggleActivatedState = () => {
+            this.setState({ activated: !this.state.activated });
+        };
+
+        render() {
+            var toggleActivatedState = this._toggleActivatedState;
+            return !this.state.activated ? <a ref="x" onClick={toggleActivatedState} /> : <b ref="x" onClick={toggleActivatedState} />;
+        }
+    };
     it("should support rendering to different child types over time", () => {
         var instance = ReactTestUtils.renderIntoDocument(<MorphingComponent />);
         var el = ReactDOM.findDOMNode(instance);
@@ -41,18 +52,7 @@ describe("ReactCompositeComponent", function() {
         el = ReactDOM.findDOMNode(instance);
         expect(el.tagName).toBe("A");
     });
-    var MorphingComponent = class extends React.Component {
-        state = { activated: false };
-
-        _toggleActivatedState = () => {
-            this.setState({ activated: !this.state.activated });
-        };
-
-        render() {
-            var toggleActivatedState = this._toggleActivatedState;
-            return !this.state.activated ? <a ref="x" onClick={toggleActivatedState} /> : <b ref="x" onClick={toggleActivatedState} />;
-        }
-    };
+   
     it("should react to state changes from callbacks", () => {
         var instance = ReactTestUtils.renderIntoDocument(<MorphingComponent />);
         var el = ReactDOM.findDOMNode(instance);
@@ -462,6 +462,7 @@ describe("ReactCompositeComponent", function() {
         expect(childInstance.context).toEqual({ foo: "bar", flag: true });
     });
     //context穿透更新
+    
     it("should pass context when re-rendered for static child within a composite component", () => {
         class Parent extends React.Component {
             static childContextTypes = {
@@ -622,14 +623,7 @@ describe("ReactCompositeComponent", function() {
         expect(childInstance).toBeNull();
 
         expect(parentInstance.state.flag).toBe(false);
-        /*
-    ReactDOM.unstable_batchedUpdates(function() {
-      parentInstance.setState({flag: true});
-    });
-    expect(parentInstance.state.flag).toBe(true);
 
-    expect(childInstance.context).toEqual({foo: 'bar', depth: 0});
-    */
    });
 
     it("unmasked context propagates through updates", () => {
@@ -858,13 +852,7 @@ describe("ReactCompositeComponent", function() {
         var instance = ReactDOM.render(<Component update={0} />, container);
         expect(renders).toBe(1);
         expect(instance.state.updated).toBe(false);
-        /*
-    ReactDOM.unstable_batchedUpdates(() => {
-      ReactDOM.render(<Component update={1} />, container);
-    });
-    expect(renders).toBe(2);
-    expect(instance.state.updated).toBe(true);
-    */
+ 
     });
 
     it("should update refs if shouldComponentUpdate gives false", () => {
@@ -1035,6 +1023,7 @@ describe("ReactCompositeComponent", function() {
         // Here we lose the prototype.
         expect(moo.state.amIImmutable).toBe(undefined);
     });
+    
     it("props对象不能在构造器里被重写", () => {
         var container = document.createElement("div");
         class Foo extends React.Component {
@@ -1105,30 +1094,37 @@ describe("ReactCompositeComponent", function() {
                 app = ref;
             }
         };
-
-        expect(function() {
+        var err = false
+        try{
             ReactDOM.render(<App ref={setRef} stage={1} />, container);
             ReactDOM.render(<App ref={setRef} stage={2} />, container);
-        }).toThrow();
+        }catch(e){
+            console.log(e)
+            err = true
+        }
+        expect(err).toBe(true);
         expect(count).toBe(1);
     });
     
     it("prepares new child before unmounting old", () => {
-        var log = [];
+        var list = []
+        function logger(e){
+          list.push(e)
+        }
 
         class Spy extends React.Component {
             componentWillMount() {
-                log.push(this.props.name + " componentWillMount");
+                logger(this.props.name + " componentWillMount");
             }
             render() {
-                log.push(this.props.name + " render");
+                logger(this.props.name + " render");
                 return <div />;
             }
             componentDidMount() {
-                log.push(this.props.name + " componentDidMount");
+                logger(this.props.name + " componentDidMount");
             }
             componentWillUnmount() {
-                log.push(this.props.name + " componentWillUnmount");
+                logger(this.props.name + " componentWillUnmount");
             }
         }
 
@@ -1141,8 +1137,10 @@ describe("ReactCompositeComponent", function() {
         var container = document.createElement("div");
         ReactDOM.render(<Wrapper name="A" />, container);
         ReactDOM.render(<Wrapper name="B" />, container);
-
-        expect(log.join("\n")).toBe(["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"].join("\n"));
+        var list2 = ReactDOM.createPortal ?
+        ["A componentWillMount", "A render", "A componentDidMount", "B componentWillMount", "B render", "A componentWillUnmount", "B componentDidMount"]:
+        ["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"]
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
     it("respects a shallow shouldComponentUpdate implementation", () => {
@@ -1304,9 +1302,9 @@ describe("ReactCompositeComponent", function() {
         var b = <Component />;
         var container = document.createElement("div");
         var s = ReactDOM.render(b, container);
-        expect(!!s.updater._hostNode).toBe(true);
+        expect(!!React.findDOMNode(s) ).toBe(true);
         s.setState({ a: 2 });
-        expect(!!s.updater._hostNode).toBe(true);
+        expect(!!React.findDOMNode(s) ).toBe(true);
     });
     
 });

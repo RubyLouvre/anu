@@ -307,10 +307,10 @@ describe("ReactElementClone", function() {
     var container = document.createElement('div');
   
     var myNodeA = ReactDOM.render(<Bar className="a"><span /></Bar>, container);
-    expect(myNodeA.updater._hostNode.className).toBe("a")
+    expect(ReactDOM.findDOMNode(myNodeA).className).toBe("a")
   
      myNodeA = ReactDOM.render(<Bar className="kk"><span /></Bar>, container);
-    expect(myNodeA.updater._hostNode.className).toBe("kk")
+    expect(ReactDOM.findDOMNode(myNodeA).className).toBe("kk")
   })
   it("子元素被克隆2", function(){
     function Bar(props) {
@@ -322,9 +322,9 @@ describe("ReactElementClone", function() {
     var container = document.createElement('div');
   
     var myNodeA = ReactDOM.render(<Bar className="a"><Foo /></Bar>, container);
-    expect(myNodeA.updater._hostNode.className).toBe("a")
+    expect(ReactDOM.findDOMNode(myNodeA).className).toBe("a")
   
      myNodeA = ReactDOM.render(<Bar className="kk"><Foo /></Bar>, container);
-    expect(myNodeA.updater._hostNode.className).toBe("kk")
+    expect(ReactDOM.findDOMNode(myNodeA).className).toBe("kk")
   })
 });

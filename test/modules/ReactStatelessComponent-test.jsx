@@ -103,7 +103,7 @@ describe("ReactStatelessComponent", function() {
 
 
     var s = ReactTestUtils.renderIntoDocument(<Child />);
-    expect(s.updater._hostNode.textContent).toBe("3")
+    expect(ReactDOM.findDOMNode(s).textContent).toBe("3")
 
   });
   it('should support default props and prop types', () => {
@@ -115,7 +115,7 @@ describe("ReactStatelessComponent", function() {
 
     spyOn(console, 'error');
     var s = ReactTestUtils.renderIntoDocument(<Child />);
-    expect(s.updater._hostNode.textContent).toBe("2")
+    expect(ReactDOM.findDOMNode(s).textContent).toBe("2")
 
   });
   it('should receive context', () => {
@@ -149,22 +149,39 @@ describe("ReactStatelessComponent", function() {
     // Will create a new bound function without a prototype, much like a native
     // arrow function.
     Child = Child.bind(this);
-
-    expect(() => ReactTestUtils.renderIntoDocument(<Child />)).not.toThrow();
+    var ok = true
+    try{
+      ReactTestUtils.renderIntoDocument(<Child />)
+    }catch(e){
+      ok = false
+    }
+    expect(ok).toBe(true)
   });
 
   it('should allow simple functions to return null', () => {
     var Child = function() {
       return null;
     };
-    expect(() => ReactTestUtils.renderIntoDocument(<Child />)).not.toThrow();
+    var ok = true
+    try{
+      ReactTestUtils.renderIntoDocument(<Child />)
+    }catch(e){
+      ok = false
+    }
+    expect(ok).toBe(true)
   });
 
   it('should allow simple functions to return false', () => {
     function Child() {
       return false;
     }
-    expect(() => ReactTestUtils.renderIntoDocument(<Child />)).not.toThrow();
+    var ok = true
+    try{
+      ReactTestUtils.renderIntoDocument(<Child />)
+    }catch(e){
+      ok = false
+    }
+    expect(ok).toBe(true)
   });
 
 })

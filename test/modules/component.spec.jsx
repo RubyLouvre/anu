@@ -30,7 +30,7 @@ describe("组件相关", function() {
         var vnode = <HelloComponent name="Sebastian" />;
         React.render(vnode, div);
 
-        expect(vnode._hostNode.innerHTML).toBe("Hello Sebastian");
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("Hello Sebastian");
     });
 
     it("shouldComponentUpdate什么也不返回", function() {
@@ -70,9 +70,9 @@ describe("组件相关", function() {
         }
         var vnode = <App />;
         ReactDOM.render(vnode, div);
-        expect(vnode._hostNode.innerHTML).toBe("1");
-        ReactTestUtils.Simulate.click(vnode._hostNode);
-        expect(vnode._hostNode.innerHTML).toBe("1");
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("1");
+        ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(vnode));
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("1");
 
         expect(a).toBe(3);
     });
@@ -114,9 +114,9 @@ describe("组件相关", function() {
 
         var vnode = <App />;
         ReactDOM.render(vnode, div);
-        expect(vnode._hostNode.innerHTML).toBe("1");
-        ReactTestUtils.Simulate.click(vnode._hostNode);
-        expect(vnode._hostNode.innerHTML).toBe("1");
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("1");
+        ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(vnode));
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("1");
         expect(a).toBe(3);
     });
     it("PureComponent", function() {
@@ -143,9 +143,9 @@ describe("组件相关", function() {
 
         var vnode = <App />;
         ReactDOM.render(vnode, div);
-        expect(vnode._hostNode.innerHTML).toBe("7");
-        ReactTestUtils.Simulate.click(vnode._hostNode);
-        expect(vnode._hostNode.innerHTML).toBe("7");
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("7");
+        ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(vnode));
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("7");
     });
 
     it("PureComponent2", function() {
@@ -174,9 +174,9 @@ describe("组件相关", function() {
 
         var vnode = <App />;
         ReactDOM.render(vnode, div);
-        expect(vnode._hostNode.innerHTML).toBe("7");
-        ReactTestUtils.Simulate.click(vnode._hostNode);
-        expect(vnode._hostNode.innerHTML).toBe("9");
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("7");
+        ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(vnode));
+        expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("9");
     });
     it("子组件是无状态组件", async () => {
         function Output(props) {
