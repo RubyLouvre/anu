@@ -1,9 +1,9 @@
 import { typeNumber } from "./util";
 import { Vnode } from "./Vnode";
 /**
- * 创建虚拟DOM
+ * 虚拟DOM工厂
  *
- * @param {string} type
+ * @param {string|function|Component} type
  * @param {object} props
  * @param {array} ...children
  * @returns

@@ -116,8 +116,7 @@ function camelize(target) {
 function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
-options.uuid = true;
+var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -374,9 +373,6 @@ function createElement$1(vnode, vparent) {
 function Vnode(type, vtype, props, key, ref, _hasProps) {
     this.type = type;
     this.vtype = vtype;
-    if (!options.uuid) {
-        this.uuid = Math.random() + Math.random();
-    }
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -400,6 +396,7 @@ function Vnode(type, vtype, props, key, ref, _hasProps) {
     /*
       this.stateNode = null
     */
+    options.afterCreate(this);
 }
 
 Vnode.prototype = {
@@ -465,9 +462,9 @@ Vnode.prototype = {
 };
 
 /**
- * 创建虚拟DOM
+ * 虚拟DOM工厂
  *
- * @param {string} type
+ * @param {string|function|Component} type
  * @param {object} props
  * @param {array} ...children
  * @returns
@@ -2304,13 +2301,7 @@ function mountVnode(vnode, context, updateQueue, single) {
 
     var sibling = vnode.sibling;
     if (sibling && !single) {
-        /*  var lastSibling = sibling._hit;
-        if (lastSibling) {
-            delete  sibling._hit;
-            alignVnode(lastSibling, sibling, context, updateQueue);
-        } else { */
         mountVnode(sibling, context, updateQueue);
-        /*  }  */
     }
     return dom;
 }
@@ -2354,12 +2345,6 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
     options.beforeUpdate(nextVnode);
 
     if (lastVnode.vtype === 0) {
-        if (dom.nodeValue !== lastVnode.text) {
-            console.log("=================");
-            var collect = nextVnode.stateNode = createElement$1(lastVnode);
-            dom.parentNode.replaceChild(collect, dom);
-            dom = collect;
-        }
         if (nextVnode.text !== lastVnode.text) {
             dom.nodeValue = nextVnode.text;
         }
@@ -2451,7 +2436,7 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
     return nextVnode.stateNode;
 }
 
-function getNearestNode(vnodes, ii, newVnode) {
+function getNearestNode(vnodes, ii) {
     var distance = Infinity,
         hit = null,
         vnode,
@@ -2459,7 +2444,6 @@ function getNearestNode(vnodes, ii, newVnode) {
     while (vnode = vnodes[i]) {
         var delta = vnode.index - ii;
         if (delta === 0) {
-            newVnode._hit = vnode;
             vnodes.splice(i, 1);
             return vnode;
         } else {
@@ -2471,7 +2455,6 @@ function getNearestNode(vnodes, ii, newVnode) {
         }
         i++;
     }
-    newVnode._hit = hit;
     return hit;
 }
 
@@ -2523,7 +2506,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             var fnodes = fuzzyHits[hit];
             React15 = true;
             if (fLength > 1) {
-                hitVnode = getNearestNode(fnodes, i, nextChild);
+                hitVnode = getNearestNode(fnodes, i);
             } else {
                 hitVnode = fnodes[0];
                 delete fuzzyHits[hit];

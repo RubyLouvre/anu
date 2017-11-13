@@ -63,8 +63,7 @@ function oneObject(array, val) {
 
 
 
-var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
-options.uuid = true;
+var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -196,9 +195,9 @@ var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 
 /**
- * 创建虚拟DOM
+ * 虚拟DOM工厂
  *
- * @param {string} type
+ * @param {string|function|Component} type
  * @param {object} props
  * @param {array} ...children
  * @returns

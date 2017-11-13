@@ -169,13 +169,7 @@ function mountVnode(vnode, context, updateQueue, single) {
 
     var sibling = vnode.sibling;
     if (sibling && !single) {
-        /*  var lastSibling = sibling._hit;
-        if (lastSibling) {
-            delete  sibling._hit;
-            alignVnode(lastSibling, sibling, context, updateQueue);
-        } else { */
         mountVnode(sibling, context, updateQueue);
-        /*  }  */
     }
     return dom;
 }
@@ -217,12 +211,6 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
     options.beforeUpdate(nextVnode);
 
     if (lastVnode.vtype === 0) {
-        if(dom.nodeValue !== lastVnode.text){
-            console.log("=================");
-            var collect =  nextVnode.stateNode = createDOMElement(lastVnode);
-            dom.parentNode.replaceChild(collect, dom);
-            dom = collect;
-        }
         if (nextVnode.text !== lastVnode.text) {
             dom.nodeValue = nextVnode.text;
         }
@@ -307,7 +295,7 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
     return nextVnode.stateNode;
 }
 
-function getNearestNode(vnodes, ii, newVnode) {
+function getNearestNode(vnodes, ii) {
     var distance = Infinity,
         hit = null,
         vnode,
@@ -315,7 +303,6 @@ function getNearestNode(vnodes, ii, newVnode) {
     while ((vnode = vnodes[i])) {
         var delta = vnode.index - ii;
         if (delta === 0) {
-            newVnode._hit = vnode;
             vnodes.splice(i, 1);
             return vnode;
         } else {
@@ -327,7 +314,6 @@ function getNearestNode(vnodes, ii, newVnode) {
         }
         i++;
     }
-    newVnode._hit = hit;
     return hit;
 }
 
@@ -381,7 +367,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             let fnodes = fuzzyHits[hit];
             React15 = true;
             if (fLength > 1) {
-                hitVnode = getNearestNode(fnodes, i, nextChild);
+                hitVnode = getNearestNode(fnodes, i);
             } else {
                 hitVnode = fnodes[0];
                 delete fuzzyHits[hit];
@@ -423,7 +409,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
     //React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
     disposeChildren(lastChildren);
-
    
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
         parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren));

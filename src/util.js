@@ -25,10 +25,10 @@ export function extend(obj, props) {
     }
     return obj;
 }
-export function returnFalse(){
+export function returnFalse() {
     return false;
 }
-export function returnTrue(){
+export function returnTrue() {
     return true;
 }
 export let __type = Object.prototype.toString;
@@ -104,8 +104,7 @@ export function camelize(target) {
 export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-export var options = oneObject(["beforeProps", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
-options.uuid = true;
+export var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -127,7 +126,8 @@ export function typeNumber(data) {
     return a || 8;
 }
 
-export var toArray =   Array.from ||
+export var toArray =
+    Array.from ||
     function(a) {
         var ret = [];
         for (var i = 0, n = a.length; i < n; i++) {
@@ -135,17 +135,17 @@ export var toArray =   Array.from ||
         }
         return ret;
     };
-export function createUnique(){
-    return typeof Set === "function" ? new Set: new InnerSet();
+export function createUnique() {
+    return typeof Set === "function" ? new Set() : new InnerSet();
 }
-function InnerSet(){
+function InnerSet() {
     this.elems = [];
 }
 InnerSet.prototype = {
-    add: function(el){
+    add: function(el) {
         this.elems.push(el);
     },
-    has: function(el){
+    has: function(el) {
         return this.elems.indexOf(el) !== -1;
     }
 };

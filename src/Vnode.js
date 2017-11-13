@@ -5,9 +5,6 @@ import { Refs } from "./Refs";
 export function Vnode(type, vtype, props, key, ref, _hasProps) {
     this.type = type;
     this.vtype = vtype;
-    if (!options.uuid) {
-        this.uuid = Math.random() + Math.random();
-    }
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -31,6 +28,7 @@ export function Vnode(type, vtype, props, key, ref, _hasProps) {
     /*
       this.stateNode = null
     */
+    options.afterCreate(this);
 }
 
 Vnode.prototype = {
