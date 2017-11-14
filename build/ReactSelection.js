@@ -8,6 +8,7 @@ import { createClass } from "../src/createClass";
 import { cloneElement } from "../src/cloneElement";
 import { PureComponent } from "../src/PureComponent";
 import { createElement } from "../src/createElement";
+import { createPortal } from "../src/createPortal";
 
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "../src/diff";
 
@@ -17,6 +18,7 @@ var React = {
     render,
     options,
     PropTypes,
+    createPortal,
     Children, //为了react-redux
     Component,
     eventSystem,
@@ -30,7 +32,7 @@ var React = {
     unstable_renderSubtreeIntoContainer,
 
     createFactory(type) {
-        console.error("createFactory is deprecated"); // eslint-disable-line
+        console.warn("createFactory is deprecated"); // eslint-disable-line
         var factory = createElement.bind(null, type);
         factory.type = type;
         return factory;

@@ -932,16 +932,29 @@ function dispatchEvent(e, type, end) {
 
 function collectPaths(from, end) {
     var paths = [];
+    var node = from;
+    while (node && !node.__events) {
+        node = node.parentNode;
+        if (end === from) {
+            return paths;
+        }
+    }
+    if (!node || node.nodeType > 1) {
+        //如果跑到document上
+        return paths;
+    }
+    var vnode = node.__events.vnode;
     do {
-        if (from === end) {
-            break;
+        if (vnode.vtype === 1) {
+            var dom = vnode.stateNode;
+            if (dom === end) {
+                break;
+            }
+            if (dom.__events) {
+                paths.push({ dom: dom, events: dom.__events });
+            }
         }
-        var events = from.__events;
-        if (events) {
-            paths.push({ dom: from, events: events });
-        }
-    } while ((from = from.parentNode) && from.nodeType === 1);
-    // target --> parentNode --> body --> html
+    } while (vnode = vnode.return); // eslint-disable-line
     return paths;
 }
 
@@ -1399,6 +1412,39 @@ fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     return !a || !b;
 };
 fn$1.isPureComponent = true;
+
+function Portal(props) {
+    this.container = props.container;
+}
+Portal.prototype = {
+    constructor: Portal,
+    componentWillUnmount: function componentWillUnmount() {
+        var parentVnode = this.container;
+        var lastChildren = restoreChildren(parentVnode);
+        options.diffChildren(lastChildren, [], parentVnode, {}, []);
+    },
+    componentWillMount: function componentWillMount() {
+        var parentVnode = this.container;
+        var nextChildren = fiberizeChildren(parentVnode);
+        options.diffChildren([], nextChildren, parentVnode, {}, []);
+        parentVnode.batchMount();
+    },
+    render: function render() {
+        return null;
+    }
+};
+//[Top API] ReactDOM.createPortal
+function createPortal(children, node) {
+    var container = createVnode(node);
+    container.props = container.props || {};
+    var props = container.props;
+    props.children = children;
+    var portal = createElement(Portal, {
+        container: container
+    });
+    container.return = portal;
+    return portal;
+}
 
 var topVnodes = [];
 var topNodes = [];
@@ -2144,7 +2190,7 @@ function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[action](dom, name, val, lastProps);
+            actionStrategy[action](dom, name, val, lastProps, vnode);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -2152,7 +2198,7 @@ function diffProps(dom, lastProps, nextProps, vnode) {
         if (!nextProps.hasOwnProperty(_name)) {
             var _which = tag + isSVG + _name;
             var _action = strategyCache[_which];
-            actionStrategy[_action](dom, _name, false, lastProps);
+            actionStrategy[_action](dom, _name, false, lastProps, vnode);
         }
     }
 }
@@ -2269,8 +2315,9 @@ var actionStrategy = {
             }
         }
     },
-    event: function event(dom, name, val, lastProps) {
+    event: function event(dom, name, val, lastProps, vnode) {
         var events = dom.__events || (dom.__events = {});
+        events.vnode = vnode;
         var refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];
@@ -2343,8 +2390,6 @@ function findDOMNode(ref) {
         return findDOMNode(ref.child);
     }
 }
-//[Top API] ReactDOM.createPortal
-
 
 var AnuWrapper = function AnuWrapper() {};
 AnuWrapper.prototype.render = function () {
@@ -2482,10 +2527,10 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 }
 
 function mountChildren(vnode, children, context, updateQueue) {
-    if (children[0]) {
-        //  vnode.child = children[0]; 
-        //  console.log(vnode.child, children[0] );
-        mountVnode(children[0], context, updateQueue);
+    var child = children[0];
+    if (child) {
+        vnode.child = child;
+        mountVnode(child, context, updateQueue);
     }
 }
 
@@ -2740,6 +2785,7 @@ var React = {
     render: render,
     options: options,
     PropTypes: PropTypes,
+    createPortal: createPortal,
     Children: Children, //为了react-redux
     Component: Component,
     eventSystem: eventSystem,
@@ -2753,7 +2799,7 @@ var React = {
     unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
 
     createFactory: function createFactory(type) {
-        console.error("createFactory is deprecated"); // eslint-disable-line
+        console.warn("createFactory is deprecated"); // eslint-disable-line
         var factory = createElement.bind(null, type);
         factory.type = type;
         return factory;

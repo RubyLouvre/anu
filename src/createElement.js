@@ -1,5 +1,5 @@
 import { typeNumber } from "./util";
-import { Vnode } from "./Vnode";
+import { Vnode } from "./vnode";
 /**
  * 虚拟DOM工厂
  *
