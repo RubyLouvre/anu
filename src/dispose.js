@@ -2,7 +2,7 @@ import { options, noop, returnFalse, innerHTML } from "./util";
 import { removeElement } from "./browser";
 import { restoreChildren } from "./createElement";
 import { Refs } from "./Refs";
-import { captureError } from "./error";
+import { captureError, showError } from "./error";
 
 export const topVnodes = [];
 export const topNodes = [];
@@ -47,6 +47,7 @@ function disposeComponent(vnode, instance, updater) {
     instance.setState = instance.forceUpdate = noop;
     captureError(instance, "componentWillUnmount", []);
     disposeChildren(restoreChildren(vnode));
+    showError();
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
     updater._disposed = true;
     updater.isMounted = returnFalse;

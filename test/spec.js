@@ -70,3 +70,4 @@ require("./modules/findDOMNode-test.jsx");
 
 require("./modules/ReactES6Class-test.jsx");
 
+require("./modules/ReactErrorBoundaries-test.jsx");

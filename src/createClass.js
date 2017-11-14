@@ -94,7 +94,7 @@ function newCtor(className, spec) {
       if (spec.getInitialState) {
         var test = this.state = spec.getInitialState.call(this);
         if(!(test === null || ({}).toString.call(test) == "[object Object]")){
-          throw "getInitialState(): must return an object or null"
+          throw "getInitialState只能返回纯JS对象或者null"
         }
       }
 

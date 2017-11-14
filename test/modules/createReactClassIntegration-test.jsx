@@ -272,7 +272,7 @@ it('should warn when using deprecated non-static spec keys', () => {
       expect(function() {
         instance = ReactTestUtils.renderIntoDocument(instance);
       }).toThrowError(
-        'Component.getInitialState(): must return an object or null',
+        'getInitialState只能返回纯JS对象或者null',
       );
     });
   });

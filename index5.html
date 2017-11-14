@@ -37,7 +37,10 @@
             }
         }
     }
-   
+    var list = []
+    function logger(e){
+        list.push(e)
+    }
     class App extends React.Component {
         constructor(props) {
             super(props);
@@ -45,20 +48,8 @@
                 flag: 1
             };
         }
-        componentWillMount(props){
-            console.log("App will mount")
-        }
-        componentDidMount(props){
-            console.log("App did mount")
-        }
-        componentWillUpdate(props){
-            console.log("App will update")
-        }
-        componentDidUpdate(props){
-            console.log("App did update")
-        }
         render() {
-            return (<div className="root">{this.props.children}</div>);
+            return (<div className="root" onClick={ ()=>{ logger("App.div") } }><Child /></div>);
         }
     }
     
@@ -70,33 +61,18 @@
             };
         }
         render(){
-            return <span className={this.state.text}>{this.state.text}</span>
-        }
-        componentDidMount(props){
-            console.log("Child did mount")
-        }
-        componentWillMount(props){
-            console.log("Child will mount")
-        }
-        componentWillReceiveProps(props){
-            console.log("Child ",this.props.text, "will receive")
-             this.setState({
-                 text: props.text
-             })
-        }
-        componentWillUpdate(props){
-            console.log("Child ",this.props.text, "will update")
-        }
-        componentDidUpdate(props){
-            console.log("Child ",this.props.text, "did update")
+            return <div onClick={ ()=>{ logger("Child.div") } }>
+                <p onClick={ ()=> { logger("Child.p") } }>
+                    <button type="button">按钮</button>
+                 </p>
+                </div>
         }
     }
 
 
-  var s = ReactDOM.render(<App><Child key="a" text="111" /><Child key="b" text="222" /></App>, div);
-  //var s = ReactDOM.render(<App><div>111</div><div>2222</div></App>, div);
-  //ReactDOM.render(<App><div>333</div><div>4444</div></App>, div);
-    ReactDOM.render(<App><Child key="b" text="前面的" /><Child key="a" text="后面的" /></App>, div);
+  var s = ReactDOM.render(<App />, div);
+  console.log(list)
+
 
     
     </script>

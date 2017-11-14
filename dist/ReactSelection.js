@@ -446,7 +446,7 @@ function createElement(type, config) {
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("React.createElement: type is invalid");
+        console.error("React.createElement的第一个参数有问题");
         type = "#comment";
         vtype = 0;
     }
@@ -594,7 +594,7 @@ function operateChildren(children, isMap, callback) {
             temp.unshift.apply(temp, child);
         } else {
             if (typeNumber(child) === 8 && !child.type) {
-                throw Error("invalid type");
+                throw Error("children中存在非法的对象");
             }
             callback(ret, child, keeper);
         }
@@ -1334,7 +1334,7 @@ function applyMixins(proto, mixins) {
 
 //创建一个构造器
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState(): must return an object or null\"\n        }\n      }\n\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n\n  };");
     return curry(Component, NOBIND, spec);
 }
 
@@ -1425,7 +1425,6 @@ Portal.prototype = {
     },
     componentWillReceiveProps: function componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
-        console.log(parentVnode, nextProps.container);
         options.alignVnode(parentVnode, nextProps.container, context, []);
     },
     componentWillMount: function componentWillMount() {
@@ -1495,6 +1494,7 @@ function disposeComponent(vnode, instance, updater) {
     instance.setState = instance.forceUpdate = noop;
     captureError(instance, "componentWillUnmount", []);
     disposeChildren(restoreChildren(vnode));
+    showError();
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
     updater._disposed = true;
     updater.isMounted = returnFalse;

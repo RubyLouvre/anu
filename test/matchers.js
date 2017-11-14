@@ -149,19 +149,11 @@ if (typeof chai !== "undefined") {
             return this.closeTo(expected, precision);
         });
 
-        Assertion.addMethod("toThrow", function(expected) {
-            return this.to.throw( expected );
+        Assertion.addMethod("toThrow", function() {
+            return this.to.throw();
         });
         Assertion.addMethod("toThrowError", function(expected) {
-            var val = this.__flags.object;
-            var a = new chai.Assertion(11);
-            try {
-                val();
-            } catch (e) {
-                console.warn(expected);
-                return a.equal(11);
-            }
-            return a.equal(0);
+            return this.to.throw( expected );
         });
         console.log("添加jasmine风格的断言方法");
     })();

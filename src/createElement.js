@@ -19,7 +19,7 @@ export function createElement(type, config, ...children) {
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("React.createElement: type is invalid");
+        console.error("React.createElement的第一个参数有问题");
         type ="#comment";
         vtype = 0;
     }
@@ -165,7 +165,7 @@ export function operateChildren(children, isMap, callback) {
             temp.unshift.apply(temp, child);
         } else {
             if (typeNumber(child) === 8  && !child.type) {
-                throw Error("invalid type");
+                throw Error("children中存在非法的对象");
             }
             callback(ret, child, keeper);
         }

@@ -484,7 +484,7 @@ function createElement(type, config) {
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("React.createElement: type is invalid");
+        console.error("React.createElement的第一个参数有问题");
         type = "#comment";
         vtype = 0;
     }
@@ -632,7 +632,7 @@ function operateChildren(children, isMap, callback) {
             temp.unshift.apply(temp, child);
         } else {
             if (typeNumber(child) === 8 && !child.type) {
-                throw Error("invalid type");
+                throw Error("children中存在非法的对象");
             }
             callback(ret, child, keeper);
         }
@@ -855,7 +855,6 @@ Portal.prototype = {
     },
     componentWillReceiveProps: function componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
-        console.log(parentVnode, nextProps.container);
         options.alignVnode(parentVnode, nextProps.container, context, []);
     },
     componentWillMount: function componentWillMount() {
@@ -985,6 +984,7 @@ function disposeComponent(vnode, instance, updater) {
     instance.setState = instance.forceUpdate = noop;
     captureError(instance, "componentWillUnmount", []);
     disposeChildren(restoreChildren(vnode));
+    showError();
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
     updater._disposed = true;
     updater.isMounted = returnFalse;

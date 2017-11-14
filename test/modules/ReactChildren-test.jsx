@@ -858,12 +858,13 @@ describe("ReactChildren", function() {
   });
 
   it('should throw on object', () => {
+   // 'Objects are not valid as a React child (found: object with keys ' +
+   // '{a, b}). If you meant to render a collection of children, use an ' +
+   // 'array instead.',
     expect(function() {
       React.Children.forEach({a: 1, b: 2}, function() {}, null);
     }).toThrowError(
-      'Objects are not valid as a React child (found: object with keys ' +
-        '{a, b}). If you meant to render a collection of children, use an ' +
-        'array instead.',
+      "children中存在非法的对象"
     );
   });
 
@@ -873,8 +874,7 @@ describe("ReactChildren", function() {
     expect(function() {
       React.Children.forEach(/abc/, function() {}, null);
     }).toThrowError(
-      'Objects are not valid as a React child (found: /abc/). If you meant ' +
-        'to render a collection of children, use an array instead.',
+      "children中存在非法的对象"
     );
   });
 

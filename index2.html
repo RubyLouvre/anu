@@ -1,91 +1,100 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>树组件</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+   <script src="./dist/React.js"></script>
+   <!--<script src="./test/react.development.js"></script>
+    <script src="./test/react-dom.development.js"></script>-->
 
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-  <!--<script type='text/javascript' src="./test/react.development.js"></script>
-  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
-  <script type='text/javascript' src="./lib/babel.js"></script>
+    <script src="./test/babel.js"></script>
+   
 
 </head>
-
 <body>
 
-  <div>测试</div>
-  <div id='example'></div>
-  <script type='text/babel'>
-      var container = document.getElementById("example")
-      var div = container
-     // var PropTypes = React.PropTypes
-      if(!window.ReactDOM){
-        window.ReactDOM = window.React
-       
-      }
-      var PropTypes = React.PropTypes
-      var expect = function(a) {
-          return {
-              toBe: function(b) {
-                  console.log(a, "\nvs\n",b, a === b)
-              }
-          }
-      }
-
-     
-      var spyOn = {}
-      spyOn.createSpy = function(fn) {
-            function spyFn() {
-                spyFn.calls.push([].slice.call(arguments));
-                if (fn) {
-                    return fn.apply(this, arguments);
+    <pre>
+            
+    </pre>
+    <div id='example'></div>
+    <div id='console'></div>
+    <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
                 }
             }
-            
-            var calls = spyFn.calls = [];
-            calls.reset = function() {
-                this.length = 0;
-            };
-            calls.count = function(){
-                return this.length;
-            };
-            return spyFn;
-        };
-
-        var X = undefined;
-
-        function Indirection(props) {
-            return <div>{props.children}</div>;
         }
+        var PropTypes = React.PropTypes
 
-        function Bar() {
-            return (
-                <Indirection>
-                    <X />
-                </Indirection>
-            );
+        var container = document.getElementById("example")
+        var div = container;
+        var list = [];
+        function logger(e){
+            list.push(e);
         }
-
-        function Foo() {
-            return <Bar />;
+        class A extends React.Component{
+            componentWillUnmount(){
+                logger("remove");
+            }
+            render(){
+                return <span>A</span>;
+            }
         }
-
-       ReactDOM.render(<Foo />,div)
-     
-
-    </script>
-  <pre>
-    A componentWillMount
-    A render
-    A componentDidMount
-    B componentWillMount
-    B render
-    A componentWillUnmount
-    B componentDidMount 
-    </pre>
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    a: 1
+                };
+            }
+            render() {
+                return <div>
+                    {
+                        this.state.a ? 
+                            [<A />,<A />,<A />,<span key="a" ref={(a)=>{
+                                logger(111+  (a ? "instance": "null"));
+                            }}>a</span>,<span key="b" ref={(a)=>{
+                                logger(222 + (a ? "instance": "null"));
+                                
+                            }}>b</span>]:
+                            [<span key="b" ref={(a)=>{
+                                logger(333 + (a ? "instance": "null"));
+                                
+                            }}>b</span>,<span key="a" ref={(a)=>{
+                                logger(444 + (a ? "instance": "null"));
+                            }}>a</span>]
+                    }
+                </div>;
+            }
+        }
+        var s = ReactDOM.render(<App />, div);
+        s.setState({a: 0});
+        var list2 = ReactDOM.createPortal ? [ "111instance",
+            "222instance",
+            "remove",
+            "remove",
+            "remove",
+            "222null",
+            "111null",
+            "333instance",
+            "444instance"]: [
+            "111instance",
+            "222instance",
+            "222null",
+            "111null",
+            "remove",
+            "remove",
+            "remove",
+            "333instance",
+            "444instance"
+        ];
+        expect(list.join("\n")).toBe( list2.join("\n"));
+       
+        
+        
+               </script>
 </body>
 
 </html>

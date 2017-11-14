@@ -278,11 +278,11 @@ describe("ReactTestUtils", function() {
     const result = shallowRenderer.render(
       <SomeComponent handleClick={handler} />
     );
-
+   // "TestUtils.Simulate expected a DOM node as the first argument but received " +
+   // "a React element. Pass the DOM node you wish to simulate the event on instead. " +
+   // "Note that TestUtils.Simulate will not work if you are using shallow rendering."
     expect(() => ReactTestUtils.Simulate.click(result)).toThrowError(
-      "TestUtils.Simulate expected a DOM node as the first argument but received " +
-        "a React element. Pass the DOM node you wish to simulate the event on instead. " +
-        "Note that TestUtils.Simulate will not work if you are using shallow rendering."
+    "第一个参数必须为元素节点"
     );
     expect(handler).toNotHaveBeenCalled();
   });
@@ -300,10 +300,10 @@ describe("ReactTestUtils", function() {
       <SomeComponent handleClick={handler} />,
       container
     );
-
+//  "TestUtils.Simulate expected a DOM node as the first argument but received " +
+// "a component instance. Pass the DOM node you wish to simulate the event on instead."
     expect(() => ReactTestUtils.Simulate.click(instance)).toThrowError(
-      "TestUtils.Simulate expected a DOM node as the first argument but received " +
-        "a component instance. Pass the DOM node you wish to simulate the event on instead."
+      "第一个参数必须为元素节点"
     );
 
     expect(handler).toNotHaveBeenCalled();

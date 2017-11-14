@@ -13,11 +13,11 @@ describe("ReactComponent", function() {
         // jQuery objects are basically arrays; people often pass them in by mistake
         expect(function() {
             ReactDOM.render(<div />, [container]);
-        }).toThrowError(/Target container is not a DOM element./);
+        }).toThrowError('ReactDOM.render的第二个参数错误');
 
         expect(function() {
             ReactDOM.render(<div />, null);
-        }).toThrowError(/Target container is not a DOM element./);
+        }).toThrowError('ReactDOM.render的第二个参数错误');
     });
 
     it("should throw when supplying a ref outside of render method", () => {
@@ -299,18 +299,17 @@ describe("ReactComponent", function() {
 
     it("throws usefully when rendering badly-typed elements", () => {
         spyOn(console, "error");
-
+      //  "Element type is invalid: expected a string (for built-in components) " +
+      //  "or a class/function (for composite components) but got: undefined. " +
+      //  "You likely forgot to export your component from the file it's defined in."
         var X = undefined;
         expect(() => ReactTestUtils.renderIntoDocument(<X />)).toThrowError(
-            "Element type is invalid: expected a string (for built-in components) " +
-                "or a class/function (for composite components) but got: undefined. " +
-                "You likely forgot to export your component from the file it's " +
-                "defined in."
+            "ReactDOM.render的第一个参数错误"
         );
 
         var Y = null;
         expect(() => ReactTestUtils.renderIntoDocument(<Y />)).toThrowError(
-            "Element type is invalid: expected a string (for built-in components) " + "or a class/function (for composite components) but got: null."
+            "ReactDOM.render的第一个参数错误"
         );
 
         // One warning for each element creation
