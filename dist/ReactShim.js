@@ -17,7 +17,7 @@ var emptyObject = {};
 function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         //eslint-disable-next-line
-        console.error(methodName + " is deprecated");
+        console.warn(methodName + " is deprecated");
         deprecatedWarn[methodName] = 1;
     }
 }
@@ -897,8 +897,8 @@ function showError() {
             } else if (target.vtype === 1) {
                 names.push(type);
             }
-        } while (target = target.return);
-        console.warn(describeError(names));
+        } while (target = target.return); // eslint-disable-line
+        console.warn(describeError(names)); // eslint-disable-line
         throw errObject;
     }
 }
@@ -994,6 +994,7 @@ function drainQueue(queue) {
         unique = {},
         updater = void 0;
     while (updater = queue.shift()) {
+        // eslint-disable-line
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
@@ -1189,8 +1190,6 @@ Updater.prototype = {
     resolve: function resolve(updateQueue) {
         Refs.clearElementRefs();
         var instance = this.instance;
-        var vnode = this.vnode;
-
         // 执行componentDidMount/Update钩子
         var hasMounted = this.isMounted();
 
@@ -1200,17 +1199,16 @@ Updater.prototype = {
         if (this._hydrating) {
             var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
+            //执行React Chrome DevTools的钩子
+            if (hasMounted) {
+                options.afterUpdate(instance);
+            } else {
+                options.afterMount(instance);
+            }
             delete this._hookArgs;
+            delete this._hydrating;
         }
-
-        //执行React Chrome DevTools的钩子
-        if (hasMounted) {
-            options.afterUpdate(instance);
-        } else {
-            options.afterMount(instance);
-        }
-
-        this._hydrating = false;
+        var vnode = this.vnode;
         //执行组件虚拟DOM的ref回调
         if (vnode._hasRef) {
             Refs.fireRef(vnode, instance.__isStateless ? null : instance);
@@ -1286,7 +1284,7 @@ Updater.prototype = {
                 u.vnode = u.pendingVnode;
                 delete u.pendingVnode;
             }
-        } while (u = u.parentUpdater);
+        } while (u = u.parentUpdater); // eslint-disable-line
     }
 };
 
@@ -2187,14 +2185,34 @@ function findDOMNode(ref) {
         return findDOMNode(ref.child);
     }
 }
-
+function Portal(props) {
+    this.container = props.container;
+}
+Portal.prototype = {
+    componentWillUnmount: function componentWillUnmount() {
+        var parentVnode = this.container;
+        var lastChildren = restoreChildren(parentVnode);
+        diffChildren(lastChildren, [], parentVnode, {}, []);
+    },
+    componentWillMount: function componentWillMount() {
+        var parentVnode = this.container;
+        var nextChildren = fiberizeChildren(parentVnode);
+        diffChildren([], nextChildren, parentVnode, {}, []);
+        parentVnode.batchMount();
+    },
+    render: function render() {
+        return null;
+    }
+};
 //[Top API] ReactDOM.createPortal
-function createPortal(vchildren, container) {
-    var parentVnode = createVnode(container);
-    var lastChildren = parentVnode.child ? restoreChildren(parentVnode) : [];
-    var nextChildren = fiberizeChildren(parentVnode);
-    diffChildren(lastChildren, nextChildren, parentVnode, {}, []);
-    return null;
+function createPortal(children, node) {
+    var container = createVnode(node);
+    container.props = container.props || {};
+    var props = container.props;
+    props.children = children;
+    return createElement(Portal, {
+        container: container
+    });
 }
 
 var AnuWrapper = function AnuWrapper() {};
@@ -2334,7 +2352,9 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 
 function mountChildren(vnode, children, context, updateQueue) {
     if (children[0]) {
-        mountVnode(vnode.child, context, updateQueue);
+        //  vnode.child = children[0]; 
+        //  console.log(vnode.child, children[0] );
+        mountVnode(children[0], context, updateQueue);
     }
 }
 
@@ -2530,7 +2550,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 lastChildren[hitVnode.index] = null;
                 if (hitVnode.vtype > 1) {
                     if (hitVnode.type === nextChild.type) {
-                        receiveComponent(hitVnode, nextChild, parentContext, priorityQueue); //原来updateQueue为priorityQueue
+                        receiveComponent(hitVnode, nextChild, parentContext, priorityQueue);
                     } else {
                         alignVnode(hitVnode, nextChild, parentContext, priorityQueue, true);
                     }

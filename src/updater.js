@@ -165,28 +165,25 @@ Updater.prototype = {
     resolve: function(updateQueue) {
         Refs.clearElementRefs();
         let instance = this.instance;
-        let vnode = this.vnode;
-
         // 执行componentDidMount/Update钩子
-        var hasMounted = this.isMounted();
+        let hasMounted = this.isMounted();
    
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
         if(this._hydrating){
-            var hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
+            let hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
+            //执行React Chrome DevTools的钩子
+            if (hasMounted) {
+                options.afterUpdate(instance);
+            } else {
+                options.afterMount(instance);
+            }
             delete this._hookArgs;
+            delete this._hydrating;
         }
-       
-        //执行React Chrome DevTools的钩子
-        if (hasMounted) {
-            options.afterUpdate(instance);
-        } else {
-            options.afterMount(instance);
-        }
-
-        this._hydrating = false;
+        let vnode = this.vnode;
         //执行组件虚拟DOM的ref回调
         if (vnode._hasRef) {
             Refs.fireRef(vnode, instance.__isStateless ? null : instance);
@@ -258,7 +255,7 @@ Updater.prototype = {
                 u.vnode = u.pendingVnode;
                 delete u.pendingVnode;
             }
-        } while ((u = u.parentUpdater));
+        } while ((u = u.parentUpdater)); // eslint-disable-line
     }
 };
 

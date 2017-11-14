@@ -33,7 +33,7 @@ export function drainQueue(queue) {
     let needSort = [],
         unique = {},
         updater;
-    while ((updater = queue.shift())) {
+    while ((updater = queue.shift())) { // eslint-disable-line
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;

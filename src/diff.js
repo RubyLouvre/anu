@@ -56,14 +56,34 @@ export function findDOMNode(ref) {
         return findDOMNode(ref.child);
     }
 }
-
+function Portal(props){
+    this.container = props.container;
+}
+Portal.prototype = {
+    componentWillUnmount(){
+        var parentVnode = this.container;
+        var lastChildren = restoreChildren(parentVnode);
+        diffChildren(lastChildren, [], parentVnode, {}, []);
+    },
+    componentWillMount(){
+        var parentVnode = this.container;
+        var nextChildren = fiberizeChildren(parentVnode);
+        diffChildren([], nextChildren, parentVnode, {}, []);
+        parentVnode.batchMount();
+    },
+    render(){
+        return null;
+    }
+};
 //[Top API] ReactDOM.createPortal
-export function createPortal(vchildren, container) {
-    var parentVnode = createVnode(container);
-    var lastChildren = parentVnode.child ? restoreChildren(parentVnode) : [];
-    var nextChildren = fiberizeChildren(parentVnode);
-    diffChildren(lastChildren, nextChildren, parentVnode, {}, []);
-    return null;
+export function createPortal(children, node) {
+    var container = createVnode(node);
+    container.props = container.props || {};
+    var props = container.props;
+    props.children = children;
+    return createElement(Portal, {
+        container
+    });
 }
 
 var AnuWrapper = function() {};
@@ -195,7 +215,9 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 
 function mountChildren(vnode, children, context, updateQueue) {
     if (children[0]) {
-        mountVnode(vnode.child, context, updateQueue);
+        //  vnode.child = children[0]; 
+        //  console.log(vnode.child, children[0] );
+        mountVnode(children[0], context, updateQueue);
     }
 }
 
@@ -386,7 +408,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 lastChildren[hitVnode.index] = null;
                 if (hitVnode.vtype > 1) {
                     if (hitVnode.type === nextChild.type) {
-                        receiveComponent(hitVnode, nextChild, parentContext, priorityQueue); //原来updateQueue为priorityQueue
+                        receiveComponent(hitVnode, nextChild, parentContext, priorityQueue); 
                     } else {
                         alignVnode(hitVnode, nextChild, parentContext, priorityQueue, true);
                     }

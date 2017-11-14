@@ -55,8 +55,8 @@ export function showError() {
             } else if (target.vtype === 1) {
                 names.push(type);
             }
-        } while ((target = target.return));
-        console.warn(describeError(names));
+        } while (target = target.return); // eslint-disable-line
+        console.warn(describeError(names)); // eslint-disable-line
         throw errObject;
     }
 }

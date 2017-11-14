@@ -6,7 +6,7 @@ export var emptyObject = {};
 export function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         //eslint-disable-next-line
-        console.error(methodName + " is deprecated");
+        console.warn(methodName + " is deprecated");
         deprecatedWarn[methodName] = 1;
     }
 }
