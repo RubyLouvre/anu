@@ -33,7 +33,7 @@ export function Updater(instance, vnode) {
     this._jobs = ["resolve"];
     this._mountOrder = mountOrder++;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
-    //  this._hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
     //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
     if (instance.__isStateless) {
@@ -135,6 +135,7 @@ Updater.prototype = {
         Refs.clearElementRefs();
         let state = this.mergeStates();
         let shouldUpdate = true;
+       
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
             if (this.pendingVnode) {
@@ -142,9 +143,11 @@ Updater.prototype = {
                 delete this.pendingVnode;
             }
         } else {
-            var { props: lastProps, context: lastContext, state: lastState } = instance;
             captureError(instance, "componentWillUpdate", [props, state, context]);
+            var { props: lastProps, context: lastContext, state: lastState } = instance;
+            this._hookArgs = [lastProps, lastState, lastContext];
         }
+      
         vnode.stateNode = instance;
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
@@ -154,7 +157,6 @@ Updater.prototype = {
         this.addJob("resolve");
         if (shouldUpdate) {
             this._hydrating = true;
-            this._hookArgs = [lastProps, lastState, lastContext];
             this.render(updateQueue);
         }
         updateQueue.push(this);
@@ -167,12 +169,16 @@ Updater.prototype = {
 
         // 执行componentDidMount/Update钩子
         var hasMounted = this.isMounted();
-        var hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
+   
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
-        captureError(instance, hookName, this._hookArgs || []);
-        delete this._hookArgs;
+        if(this._hydrating){
+            var hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
+            captureError(instance, hookName, this._hookArgs || []);
+            delete this._hookArgs;
+        }
+       
         //执行React Chrome DevTools的钩子
         if (hasMounted) {
             options.afterUpdate(instance);
@@ -245,9 +251,7 @@ Updater.prototype = {
         var child = nextChildren[0];
        
         options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue);
-        //  console.log("child",child,lastChildren, nextChildren);
         vnode.child = child;
-        // this.rendered = child; //现在还用于devtools中
         let u = this;
         do {
             if (u.pendingVnode) {
