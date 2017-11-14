@@ -1422,6 +1422,11 @@ Portal.prototype = {
         var lastChildren = restoreChildren(parentVnode);
         options.diffChildren(lastChildren, [], parentVnode, {}, []);
     },
+    componentWillReceiveProps: function componentWillReceiveProps(nextProps, context) {
+        var parentVnode = this.container;
+        console.log(parentVnode, nextProps.container);
+        options.alignVnode(parentVnode, nextProps.container, context, []);
+    },
     componentWillMount: function componentWillMount() {
         var parentVnode = this.container;
         var nextChildren = fiberizeChildren(parentVnode);
@@ -2623,11 +2628,6 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
     if (isSameNode(lastVnode, nextVnode)) {
         //组件虚拟DOM已经在diffChildren生成并插入DOM树
         updateVnode(lastVnode, nextVnode, context, updateQueue);
-        /*  var sibling = nextVnode.sibling;
-        if (sibling) {
-            alignVnode(sibling._hit, sibling, context, updateQueue);
-        }
-        */
     } else {
         disposeVnode(lastVnode);
         mountVnode(nextVnode, context, updateQueue, single);
@@ -2636,6 +2636,7 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
     return nextVnode.stateNode;
 }
 
+options.alignVnode = alignVnode;
 function getNearestNode(vnodes, ii) {
     var distance = Infinity,
         hit = null,
