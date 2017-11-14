@@ -148,7 +148,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[action](dom, name, val, lastProps);
+            actionStrategy[action](dom, name, val, lastProps, vnode);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -156,7 +156,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
-            actionStrategy[action](dom, name, false, lastProps);
+            actionStrategy[action](dom, name, false, lastProps, vnode);
         }
     }
 }
@@ -274,8 +274,10 @@ export var actionStrategy = {
             }
         }
     },
-    event: function (dom, name, val, lastProps) {
-        let events = dom.__events || (dom.__events = {});
+    event: function (dom, name, val, lastProps, vnode) {
+        let events = dom.__events || (dom.__events = {
+        });
+        events.vnode = vnode;
         let refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];

@@ -40,7 +40,7 @@ export function dispatchEvent(e, type, end) {
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
     options.async = true;
-   
+
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
@@ -52,16 +52,28 @@ export function dispatchEvent(e, type, end) {
 
 function collectPaths(from, end) {
     var paths = [];
+    var node = from;
+    while (node && !node.__events) {
+        node = node.parentNode;
+        if (end === from) {
+            return paths;
+        }
+    }
+    if(!node || node.nodeType >1 ){//如果跑到document上
+        return paths;
+    }
+    var vnode = node.__events.vnode;
     do {
-        if (from === end) {
-            break;
+        if (vnode.vtype === 1) {
+            var dom = vnode.stateNode;
+            if (dom === end) {
+                break;
+            }
+            if (dom.__events) {
+                paths.push({ dom: dom, events: dom.__events });
+            }
         }
-        var events = from.__events;
-        if (events) {
-            paths.push({ dom: from, events: events });
-        }
-    } while ((from = from.parentNode) && from.nodeType === 1);
-    // target --> parentNode --> body --> html
+    } while ((vnode = vnode.return));// eslint-disable-line
     return paths;
 }
 

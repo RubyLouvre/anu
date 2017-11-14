@@ -5,8 +5,9 @@ import { win as window } from "./browser";
 import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
+import { createPortal } from "./createPortal";
 
-import { render,createPortal, findDOMNode, unmountComponentAtNode } from "./diff";
+import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
 var React = {
     version: "VERSION",

@@ -56,35 +56,6 @@ export function findDOMNode(ref) {
         return findDOMNode(ref.child);
     }
 }
-function Portal(props){
-    this.container = props.container;
-}
-Portal.prototype = {
-    componentWillUnmount(){
-        var parentVnode = this.container;
-        var lastChildren = restoreChildren(parentVnode);
-        diffChildren(lastChildren, [], parentVnode, {}, []);
-    },
-    componentWillMount(){
-        var parentVnode = this.container;
-        var nextChildren = fiberizeChildren(parentVnode);
-        diffChildren([], nextChildren, parentVnode, {}, []);
-        parentVnode.batchMount();
-    },
-    render(){
-        return null;
-    }
-};
-//[Top API] ReactDOM.createPortal
-export function createPortal(children, node) {
-    var container = createVnode(node);
-    container.props = container.props || {};
-    var props = container.props;
-    props.children = children;
-    return createElement(Portal, {
-        container
-    });
-}
 
 var AnuWrapper = function() {};
 AnuWrapper.prototype.render = function() {
@@ -214,10 +185,10 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 }
 
 function mountChildren(vnode, children, context, updateQueue) {
-    if (children[0]) {
-        //  vnode.child = children[0]; 
-        //  console.log(vnode.child, children[0] );
-        mountVnode(children[0], context, updateQueue);
+    var child = children[0];
+    if (child) {
+        vnode.child = child; 
+        mountVnode(child, context, updateQueue);
     }
 }
 
