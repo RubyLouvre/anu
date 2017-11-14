@@ -261,7 +261,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
     if (!updater._dirty) {
         //如果在事件中使用了setState
         updater._receiving = [lastVnode, nextVnode, nextContext];
-        updater.addJob("patch");
+        updater.addJob("hydrate");
         updateQueue.push(updater);
     }
 
@@ -329,6 +329,16 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         lastChild,
         nextChild,
         i = 0;
+    if(parentVnode.vtype === 1 ){
+        var firstChild = parentVnode.stateNode.firstChild;
+        var child = lastChildren[0];
+        if(firstChild && child){
+            while(child.vtype > 1){
+                child = child.child;
+            }
+            child.stateNode = firstChild;
+        }
+    }
     do {
         if (parentVElement.vtype === 1) {
             break;

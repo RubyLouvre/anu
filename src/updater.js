@@ -47,6 +47,13 @@ Updater.prototype = {
         if (jobs[jobs.length - 1] !== newJob) {
             jobs.push(newJob);
         }
+       
+    },
+    exec(updateQueue) {
+        var job = this._jobs.shift();
+        if (job) {
+            this[job](updateQueue);
+        }
     },
     enqueueSetState(state, cb) {
         if (isFn(cb)) {
@@ -87,7 +94,7 @@ Updater.prototype = {
                 // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return;
             }
-            this.addJob("patch");
+            this.addJob("hydrate");
             drainQueue([this]);
         }
     },
@@ -111,14 +118,9 @@ Updater.prototype = {
         return nextState;
     },
 
-    exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
-        }
-    },
+
     isMounted: returnFalse,
-    patch(updateQueue) {
+    hydrate(updateQueue) {
         let { instance, context, props, vnode } = this;
         if (this._receiving) {
             let [lastVnode, nextVnode, nextContext] = this._receiving;
@@ -186,7 +188,7 @@ Updater.prototype = {
         //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
         if (this._renderInNextCycle) {
             delete this._renderInNextCycle;
-            this.addJob("patch");
+            this.addJob("hydrate");
             updateQueue.push(this);
         }
     },

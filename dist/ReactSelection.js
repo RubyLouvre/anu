@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-11-13
+ * 此版本带有selection by 司徒正美 Copyright 2017-11-14
  * IE9+
  */
 
@@ -845,7 +845,7 @@ function flushUpdaters() {
 
 function enqueueUpdater(updater) {
     if (!updater._dirty) {
-        updater.addJob("patch");
+        updater.addJob("hydrate");
         updater._dirty = true;
         dirtyComponents.push(updater);
     }
@@ -1504,6 +1504,12 @@ Updater.prototype = {
             jobs.push(newJob);
         }
     },
+    exec: function exec(updateQueue) {
+        var job = this._jobs.shift();
+        if (job) {
+            this[job](updateQueue);
+        }
+    },
     enqueueSetState: function enqueueSetState(state, cb) {
         if (isFn(cb)) {
             this._pendingCallbacks.push(cb);
@@ -1543,7 +1549,7 @@ Updater.prototype = {
                 // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return;
             }
-            this.addJob("patch");
+            this.addJob("hydrate");
             drainQueue([this]);
         }
     },
@@ -1566,15 +1572,10 @@ Updater.prototype = {
         pendings.length = 0;
         return nextState;
     },
-    exec: function exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
-        }
-    },
+
 
     isMounted: returnFalse,
-    patch: function patch(updateQueue) {
+    hydrate: function hydrate(updateQueue) {
         var instance = this.instance,
             context = this.context,
             props = this.props,
@@ -1654,7 +1655,7 @@ Updater.prototype = {
         //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
         if (this._renderInNextCycle) {
             delete this._renderInNextCycle;
-            this.addJob("patch");
+            this.addJob("hydrate");
             updateQueue.push(this);
         }
     },
@@ -2554,7 +2555,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
     if (!updater._dirty) {
         //如果在事件中使用了setState
         updater._receiving = [lastVnode, nextVnode, nextContext];
-        updater.addJob("patch");
+        updater.addJob("hydrate");
         updateQueue.push(updater);
     }
 
@@ -2620,6 +2621,16 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         lastChild,
         nextChild,
         i = 0;
+    if (parentVnode.vtype === 1) {
+        var firstChild = parentVnode.stateNode.firstChild;
+        var child = lastChildren[0];
+        if (firstChild && child) {
+            while (child.vtype > 1) {
+                child = child.child;
+            }
+            child.stateNode = firstChild;
+        }
+    }
     do {
         if (parentVElement.vtype === 1) {
             break;

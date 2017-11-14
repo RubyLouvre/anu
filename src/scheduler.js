@@ -20,7 +20,7 @@ export function flushUpdaters() {
 
 export function enqueueUpdater(updater) {
     if (!updater._dirty) {
-        updater.addJob("patch");
+        updater.addJob("hydrate");
         updater._dirty = true;
         dirtyComponents.push(updater);
     }
