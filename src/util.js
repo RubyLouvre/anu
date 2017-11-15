@@ -1,12 +1,15 @@
 export var __push = Array.prototype.push;
-
+export var REACT_ELEMENT_TYPE = (typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element")) || 0xeac7;
 export var innerHTML = "dangerouslySetInnerHTML";
-export var EMPTY_CHILDREN = [];
-
-export var limitWarn = {
-    createClass: 1,
-    renderSubtree: 1
-};
+export var emptyArray = [];
+export var emptyObject = {};
+export function deprecatedWarn(methodName) {
+    if (!deprecatedWarn[methodName]) {
+        //eslint-disable-next-line
+        console.warn(methodName + " is deprecated");
+        deprecatedWarn[methodName] = 1;
+    }
+}
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -15,24 +18,27 @@ export var limitWarn = {
  * @returns
  */
 export function extend(obj, props) {
-    if (props) {
-        for (let i in props) {
-            if (props.hasOwnProperty(i)) {
-obj[i] = props[i];
-}
+    for (let i in props) {
+        if (props.hasOwnProperty(i)) {
+            obj[i] = props[i];
         }
     }
     return obj;
 }
-
-let __type = Object.prototype.toString;
+export function returnFalse() {
+    return false;
+}
+export function returnTrue() {
+    return true;
+}
+export let __type = Object.prototype.toString;
 
 /**
  * 一个空函数
  *
  * @export
  */
-export function noop() { }
+export function noop() {}
 
 /**
  * 类继承
@@ -42,7 +48,7 @@ export function noop() { }
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-    function Bridge() { }
+    function Bridge() {}
     Bridge.prototype = SupClass.prototype;
 
     let fn = (SubClass.prototype = new Bridge());
@@ -53,31 +59,7 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-/**
- * 收集一个元素的所有孩子
- *
- * @export
- * @param {any} dom
- * @returns
- */
-export function getNodes(dom) {
-    let ret = [],
-        c = dom.childNodes || [];
-    // eslint-disable-next-line
-    for (let i = 0, el; (el = c[i++]);) {
-        ret.push(el);
-    }
-    return ret;
-}
-
 var lowerCache = {};
-/**
- * 小写化的优化
- *
- * @export
- * @param {any} s
- * @returns
- */
 export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
@@ -86,20 +68,15 @@ export function clearArray(a) {
     return a.splice(0, a.length);
 }
 
-/**
- *
- *
- * @param {any} obj
- * @returns
- */
 export function isFn(obj) {
-    return typeNumber(obj) === 5;
+    return __type.call(obj) === "[object Function]";
 }
 
 var rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
-    if (typeNumber(array) === 4) {
+    if (array + "" === array) {
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     let result = {},
@@ -111,13 +88,6 @@ export function oneObject(array, val) {
     return result;
 }
 
-export function getChildContext(instance, context) {
-    if (instance.getChildContext) {
-        return Object.assign({}, context, instance.getChildContext());
-    }
-    return context;
-}
-
 var rcamelize = /[-_][^-_]/g;
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
@@ -125,34 +95,16 @@ export function camelize(target) {
         return target;
     }
     //转换为驼峰风格
-    return target.replace(rcamelize, function (match) {
+    var str = target.replace(rcamelize, function(match) {
         return match.charAt(1).toUpperCase();
     });
+    return firstLetterLower(str);
 }
 
-export var options = {
-    beforeUnmount: noop,
-    beforeRender: noop,
-    beforePatch:noop,
-    afterPatch: noop,
-    afterMount: noop,
-    afterUpdate: noop
-};
-
-export function checkNull(vnode, type) {
-    // if (Array.isArray(vnode) && vnode.length === 1) {
-    //  vnode = vnode[0];
-    // }
-    if (vnode === null || vnode === false) {
-        return { type: "#comment", text: "empty", vtype: 0 };
-    } else if (!vnode || !vnode.vtype) {
-        throw new Error(
-            `@${type.name}#render:You may have returned undefined, an array or some other invalid object`
-        );
-    }
-    return vnode;
+export function firstLetterLower(str) {
+    return str.charAt(0).toLowerCase() + str.slice(1);
 }
-
+export var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -174,7 +126,26 @@ export function typeNumber(data) {
     return a || 8;
 }
 
-export var recyclables = {
-    "#text": [],
-    "#comment": []
+export var toArray =
+    Array.from ||
+    function(a) {
+        var ret = [];
+        for (var i = 0, n = a.length; i < n; i++) {
+            ret[i] = a[i];
+        }
+        return ret;
+    };
+export function createUnique() {
+    return typeof Set === "function" ? new Set() : new InnerSet();
+}
+function InnerSet() {
+    this.elems = [];
+}
+InnerSet.prototype = {
+    add: function(el) {
+        this.elems.push(el);
+    },
+    has: function(el) {
+        return this.elems.indexOf(el) !== -1;
+    }
 };

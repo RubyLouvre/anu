@@ -131,7 +131,7 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
         var index = 0
-        expect(s.__current.getDOMNode().nodeName).toBe('DIV')
+        expect(ReactDOM.findDOMNode(s).nodeName).toBe('DIV')
         s.forceUpdate(function () {
             index++
         })
@@ -177,7 +177,6 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-        //s.__current._hostNode
         expect(div.firstChild.children[1].selected).toBe(true)
         await browser.selectByVisibleText('#node2', '上海').pause(100).$apply()
 
@@ -252,15 +251,15 @@ describe('node模块', function () {
         var s = React.render(<Select />, div)
         await browser.pause(100).$apply()
 
-        expect(s.__current._hostNode.children[0].text).toBe('北京')
-        expect(s.__current._hostNode.children[1].text).toBe('杭州')
-        expect(s.__current._hostNode.children[2].text).toBe('南京')
+        expect(ReactDOM.findDOMNode(s).children[0].text).toBe('北京')
+        expect(ReactDOM.findDOMNode(s).children[1].text).toBe('杭州')
+        expect(ReactDOM.findDOMNode(s).children[2].text).toBe('南京')
         s.change()
         await browser.pause(100).$apply()
 
-        expect(s.__current._hostNode.children[0].text).toBe('杭州')
-        expect(s.__current._hostNode.children[1].text).toBe('南京')
-        expect(s.__current._hostNode.children[2].text).toBe('北京')
+        expect(ReactDOM.findDOMNode(s).children[0].text).toBe('杭州')
+        expect(ReactDOM.findDOMNode(s).children[1].text).toBe('南京')
+        expect(ReactDOM.findDOMNode(s).children[2].text).toBe('北京')
 
 
     })
@@ -315,14 +314,14 @@ describe('node模块', function () {
         var s = React.render(<Radio />, div)
         await browser.pause(100).$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(false)
-        expect(s.__current._hostNode.children[1].checked).toBe(true)
-        expect(s.__current._hostNode.children[2].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[1].checked).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[2].checked).toBe(false)
         await browser.click('#radio3').pause(100).$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(false)
-        expect(s.__current._hostNode.children[1].checked).toBe(false)
-        expect(s.__current._hostNode.children[2].checked).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[1].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[2].checked).toBe(true)
 
 
     })
@@ -347,7 +346,7 @@ describe('node模块', function () {
 
             componentDidUpdate() {
 
-                expect(s.__current._hostNode.children[0].value).toBe(el)
+                expect(ReactDOM.findDOMNode(s).children[0].value).toBe(el)
 
             }
             render() {
@@ -369,7 +368,7 @@ describe('node模块', function () {
 
         await browser.pause(100).$apply()
 
-        expect(s.__current._hostNode.children[0].value).toBe('2')
+        expect(ReactDOM.findDOMNode(s).children[0].value).toBe('2')
 
         await browser
             .setValue('#node4', 'xxxx').pause(300).$apply()
@@ -394,7 +393,7 @@ describe('node模块', function () {
             }
 
             componentDidUpdate() {
-                expect(s.__current._hostNode.children[0].value).toBe(el)
+                expect(ReactDOM.findDOMNode(s).children[0].value).toBe(el)
             }
             render() {
                 return <div>
@@ -414,7 +413,7 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].value).toBe('4')
+        expect(ReactDOM.findDOMNode(s).children[0].value).toBe('4')
 
         await browser
             .setValue('#node5', 'yyyy').pause(300).$apply()
@@ -444,14 +443,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].value).toBe('5')
+        expect(ReactDOM.findDOMNode(s).children[0].value).toBe('5')
 
         await browser
             .setValue('#node6', 'xxxx')
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].value).toBe('5')
+        expect(ReactDOM.findDOMNode(s).children[0].value).toBe('5')
 
 
     })
@@ -478,14 +477,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(true)
 
         await browser
             .click('#node7')
             .pause(300)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(true)
 
 
     })
@@ -512,14 +511,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(false)
 
         await browser
             .click('#radio7')
             .pause(300)
             .$apply()
 
-        expect(s.__current._hostNode.children[0].checked).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[0].checked).toBe(false)
 
 
     })
@@ -574,14 +573,14 @@ describe('node模块', function () {
             .pause(100)
             .$apply()
 
-        expect(s.__current._hostNode.children[1].selected).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[1].selected).toBe(true)
         await browser
             .selectByVisibleText('#node8', 'ccc')
             .pause(200)
             .$apply()
 
-        expect(s.__current._hostNode.children[2].selected).toBe(false)
-        expect(s.__current._hostNode.children[1].selected).toBe(true)
+        expect(ReactDOM.findDOMNode(s).children[2].selected).toBe(false)
+        expect(ReactDOM.findDOMNode(s).children[1].selected).toBe(true)
 
 
     })
@@ -925,7 +924,17 @@ describe('node模块', function () {
         //expect(div.getElementsByTagName('p').length).toBe(1)
     })
 
-    it('复杂的孩子转换', async () => {
+    it('复杂的孩子转换', function() {
+        function getString(nodes) {
+            var str = []
+            for (var i = 0, node; node = nodes[i++];) {
+                if(node.nodeType=== 8 && node.nodeValue.indexOf("react-text") !== 0){
+                    continue
+                }
+                str.push(node.nodeName.toLowerCase())
+            }
+            return str.join(' ')
+        }
         var index = 0
         var map = [
             <div >1111<p>ddd</p><span>333</span><Link /></div>,
@@ -958,22 +967,13 @@ describe('node模块', function () {
 
             }
         }
-        var s = React.render(<App />, div)
+        var s = ReactDOM.render(<App />, div)
 
-        await browser.pause(100).$apply()
-        function getString(nodes) {
-            var str = []
-            for (var i = 0, node; node = nodes[i++];) {
-                str.push(node.nodeName.toLowerCase())
-            }
-            return str.join(' ')
-        }
+      
         expect(getString(div.firstChild.childNodes)).toBe('#text p span strong')
         s.change(100)
-        await browser.pause(100).$apply()
         expect(getString(div.firstChild.childNodes)).toBe('em span #text span b i')
         s.change(100)
-        await browser.pause(100).$apply()
         expect(getString(div.firstChild.childNodes)).toBe('span')
     })
 
@@ -1019,5 +1019,45 @@ describe('node模块', function () {
         await browser.pause(50).$apply()
         expect(div.firstChild.style.color).to.equal('');
     });
+
+    it('子组件的DOM节点改变了，会同步父节点的DOM', async () => {
+        var s, s2
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <A />
+            }
+        }
+        class A extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <B />
+            }
+        }
+        class B extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    value: '3333'
+                };
+            }
+            componentDidMount() {
+                s2 = this
+            }
+            render() {
+                return this.state.value ? <div>111</div> : <strong>3333</strong>
+            }
+        }
+        var s = React.render(<App />, div);
+        await browser.pause(200).$apply();
+        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
+        s2.setState({value: 0});
+        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
+        expect(ReactDOM.findDOMNode(s).nodeName).toBe('STRONG');
+    })
 
 })

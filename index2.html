@@ -1,250 +1,100 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-  <title>树组件</title>
-  <script type='text/javascript' src="./dist/React.js"></script> 
- 
-    <style>
-        .aaa {
-            width: 200px;
-            height: 200px;
-            background: red;
-        }
-    </style>
+   <script src="./dist/React.js"></script>
+   <!--<script src="./test/react.development.js"></script>
+    <script src="./test/react-dom.development.js"></script>-->
 
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-   <script src="./test/redux.js"></script>
-    <script src="./test/react-redux.js"></script>
-    <script src="./lib/babel.js"></script>
-    <script type='text/babel'>
-      var s
-     window.onload = function(){
-        var combineReducers = Redux.combineReducers
-        var Provider = ReactRedux.Provider
-        var connect = ReactRedux.connect
-        var createStore = Redux.createStore
-        function generateTree() {
-            let tree = {
-                0: {
-                    id: 0,
-                    counter: 0,
-                    childIds: []
-                }
-            }
+    <script src="./test/babel.js"></script>
+   
 
-            for (let i = 1; i < 3; i++) {
-                let parentId = 0 //Math.floor(Math.pow(Math.random(), 2) * i)
-                tree[i] = {
-                    id: i,
-                    counter: 0,
-                    childIds: []
-                }
-                tree[parentId].childIds.push(i)
-            }
-
-            return tree
-        }
-        const INCREMENT = 'INCREMENT'
-        const CREATE_NODE = 'CREATE_NODE'
-        const DELETE_NODE = 'DELETE_NODE'
-        const ADD_CHILD = 'ADD_CHILD'
-        const REMOVE_CHILD = 'REMOVE_CHILD'
-
-        const increment = (nodeId) => ({
-            type: INCREMENT,
-            nodeId
-        })
-
-        let nextId = 0
-        const createNode = () => ({
-            type: CREATE_NODE,
-            nodeId: `new_${nextId++}`
-        })
-
-        const deleteNode = (nodeId) => ({
-            type: DELETE_NODE,
-            nodeId
-        })
-
-        const addChild = (nodeId, childId) => ({
-            type: ADD_CHILD,
-            nodeId,
-            childId
-        })
-
-        const removeChild = (nodeId, childId) => ({
-            type: REMOVE_CHILD,
-            nodeId,
-            childId
-        })
-        var actions = {
-            increment,
-            createNode,
-            deleteNode,
-            addChild,
-            removeChild
-        }
-        class Node extends React.Component {
-            constructor(props){
-                super(props)
-                this.handleIncrementClick = this.handleIncrementClick.bind(this)
-                this.handleAddChildClick = this.handleAddChildClick.bind(this)
-                this.handleRemoveClick = this.handleRemoveClick.bind(this)
-                this.renderChild = this.renderChild.bind(this)
-            }
-            handleIncrementClick(){
-                const { increment, id } = this.props
-                increment(id)
-            }
-
-            handleAddChildClick(e){
-                e.preventDefault()
-
-                const { addChild, createNode, id } = this.props
-                const childId = createNode().nodeId
-                addChild(id, childId)
-            }
-
-            handleRemoveClick(e){
-                e.preventDefault()
-
-                const { removeChild, deleteNode, parentId, id } = this.props
-                removeChild(parentId, id)
-                deleteNode(id)
-            }
-
-            renderChild(childId) {
-                const { id } = this.props
-                return (
-                    <li key={childId}>
-                        <ConnectedNode id={childId} parentId={id} />
-                    </li>
-                )
-            }
-
-            render() {
-                const { counter, parentId, childIds } = this.props
-                return (
-                    <div>
-                        Counter: {counter}
-                        {' '}
-                        <button onClick={this.handleIncrementClick}>
-                            +
-                    </button>
-                        {' '}
-                        {typeof parentId !== 'undefined' &&
-                            <a href="#" onClick={this.handleRemoveClick} className='remove'
-                                style={{ color: 'lightgray', textDecoration: 'none' }}>
-                        ×
-                    </a>
-                    }
-                    <ul>
-                    {childIds.map(this.renderChild)}
-                    <li key="add">
-                        <a href="#" onClick={this.handleAddChildClick} className='add'>
-                        Add child
-                        </a>
-                    </li>
-                    </ul>
-                </div>
-                )
-              }
-            }
-
-        function mapStateToProps(state, ownProps) {
-           return state[ownProps.id]
-        }
-
-        const ConnectedNode = connect(mapStateToProps, actions)(Node)
-
-
-//import { INCREMENT, ADD_CHILD, REMOVE_CHILD, CREATE_NODE, DELETE_NODE } from '../actions'
-
-        const childIds = (state, action) => {
-            switch (action.type) {
-                case ADD_CHILD:
-                return [ ...state, action.childId ]
-                case REMOVE_CHILD:
-                return state.filter(id => id !== action.childId)
-                default:
-                return state
-            }
-        }
-
-        const node = (state, action) => {
-            switch (action.type) {
-                case CREATE_NODE:
-                return {
-                    id: action.nodeId,
-                    counter: 0,
-                    childIds: []
-                }
-                case INCREMENT:
-                return {
-                    ...state,
-                    counter: state.counter + 1
-                }
-                case ADD_CHILD:
-                case REMOVE_CHILD:
-                return {
-                    ...state,
-                    childIds: childIds(state.childIds, action)
-                }
-                default:
-                return state
-            }
-        }
-
-        const getAllDescendantIds = (state, nodeId) => (
-            state[nodeId].childIds.reduce((acc, childId) => (
-                [ ...acc, childId, ...getAllDescendantIds(state, childId) ]
-            ), [])
-        )
-
-        const deleteMany = (state, ids) => {
-            state = { ...state }
-            ids.forEach(id => delete state[id])
-            return state
-        }
-
-        function reducers(state = {}, action) {
-            const { nodeId } = action
-            if (typeof nodeId === 'undefined') {
-                return state
-            }
-
-            if (action.type === DELETE_NODE) {
-                const descendantIds = getAllDescendantIds(state, nodeId)
-                return deleteMany(state, [ nodeId, ...descendantIds ])
-            }
-
-            return {
-                ...state,
-                [nodeId]: node(state[nodeId], action)
-            }
-        }
-
-        const tree = generateTree()
-       var div =  document.getElementById('root')
-        const store = createStore(reducers, tree)
-         s = ReactDOM.render(<Provider store={store}>
-                <ConnectedNode id={0} />
-            </Provider>, div)
-        
-    }
-    </script>
 </head>
-
 <body>
 
-    <div>测试</div>
-    <blockquote id='root'></blockquote>
+    <pre>
+            
+    </pre>
+    <div id='example'></div>
+    <div id='console'></div>
+    <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
+                }
+            }
+        }
+        var PropTypes = React.PropTypes
 
-
+        var container = document.getElementById("example")
+        var div = container;
+        var list = [];
+        function logger(e){
+            list.push(e);
+        }
+        class A extends React.Component{
+            componentWillUnmount(){
+                logger("remove");
+            }
+            render(){
+                return <span>A</span>;
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    a: 1
+                };
+            }
+            render() {
+                return <div>
+                    {
+                        this.state.a ? 
+                            [<A />,<A />,<A />,<span key="a" ref={(a)=>{
+                                logger(111+  (a ? "instance": "null"));
+                            }}>a</span>,<span key="b" ref={(a)=>{
+                                logger(222 + (a ? "instance": "null"));
+                                
+                            }}>b</span>]:
+                            [<span key="b" ref={(a)=>{
+                                logger(333 + (a ? "instance": "null"));
+                                
+                            }}>b</span>,<span key="a" ref={(a)=>{
+                                logger(444 + (a ? "instance": "null"));
+                            }}>a</span>]
+                    }
+                </div>;
+            }
+        }
+        var s = ReactDOM.render(<App />, div);
+        s.setState({a: 0});
+        var list2 = ReactDOM.createPortal ? [ "111instance",
+            "222instance",
+            "remove",
+            "remove",
+            "remove",
+            "222null",
+            "111null",
+            "333instance",
+            "444instance"]: [
+            "111instance",
+            "222instance",
+            "222null",
+            "111null",
+            "remove",
+            "remove",
+            "remove",
+            "333instance",
+            "444instance"
+        ];
+        expect(list.join("\n")).toBe( list2.join("\n"));
+       
+        
+        
+               </script>
 </body>
 
 </html>

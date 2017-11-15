@@ -1,11 +1,11 @@
 import { Component } from "./Component";
 import { options } from "./util";
 import { Children } from "./Children";
-import * as eventSystem from "./event";
 import { win as window } from "./browser";
 import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
+import { createPortal } from "./createPortal";
 
 import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
@@ -16,6 +16,7 @@ var React = {
     Children, //支持react-redux
     Component,
     findDOMNode,
+    createPortal,
     createElement,
     cloneElement,
     PureComponent,

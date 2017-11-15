@@ -1,4 +1,4 @@
-import { oneObject, recyclables, typeNumber } from "./util";
+import { typeNumber } from "./util";
 
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -19,19 +19,17 @@ const fn = (DOMElement.prototype = {
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-    ",detachEvent"
-).replace(/\w+/g, function (name) {
-    fn[name] = function () {
+        ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+        ",detachEvent"
+).replace(/\w+/g, function(name) {
+    fn[name] = function() {
         console.log("fire " + name); // eslint-disable-line
     };
 });
 
 //用于后端的document
 export const fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (
-    type
-) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(type) {
     return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
@@ -54,17 +52,19 @@ export const win = w;
 export const document = w.document || fakeDoc;
 const isStandard = "textContent" in document;
 const fragment = document.createDocumentFragment();
-function emptyElement(node) {
+export function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
-        if (child.nodeType === 1) {
-            emptyElement(child);
-        }
+        emptyElement(child);
         node.removeChild(child);
     }
 }
 
-export function removeDOMElement(node) {
+var recyclables = {
+    "#text": []
+};
+
+export function removeElement(node) {
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -74,7 +74,9 @@ export function removeDOMElement(node) {
         node.__events = null;
     } else if (node.nodeType === 3) {
         //只回收文本节点
-        recyclables["#text"].push(node);
+        if (recyclables["#text"].length < 100) {
+            recyclables["#text"].push(node);
+        }
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
@@ -87,13 +89,12 @@ const versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-export const msie =
-    document.documentMode ||
-    versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+
+export const msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
 export const modern = /NaN|undefined/.test(msie) || msie > 8;
 
-export function createDOMElement(vnode) {
+export function createElement(vnode, vparent) {
     var type = vnode.type;
     if (type === "#text") {
         //只重复利用文本节点
@@ -109,10 +110,18 @@ export function createDOMElement(vnode) {
         return document.createComment(vnode.text);
     }
 
+    var check = vparent || vnode;
+    var ns = check.namespaceURI;
+    if (type === "svg") {
+        ns = NAMESPACE.svg;
+    } else if (type === "math") {
+        ns = NAMESPACE.math;
+    } else if (!ns || check.type.toLowerCase() === "foreignobject") {
+        return document.createElement(type);
+    }
     try {
-        if (vnode.ns) {
-            return document.createElementNS(vnode.ns, type);
-        }
+        vnode.namespaceURI = ns;
+        return document.createElementNS(ns, type);
         //eslint-disable-next-line
     } catch (e) { }
     return document.createElement(type);

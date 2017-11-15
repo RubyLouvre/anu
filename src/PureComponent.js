@@ -14,3 +14,5 @@ fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     return !a || !b;
 };
 fn.isPureComponent = true;
+
+

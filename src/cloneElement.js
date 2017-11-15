@@ -1,20 +1,28 @@
-import { createElement, CurrentOwner } from "./createElement";
+import { createElement } from "./createElement";
+import { Refs} from "./Refs";
+import { extend } from "./util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.vtype) {
-        return Object.assign({}, vnode);
+        return extend({}, vnode);
     }
     let owner = vnode._owner,
-        lastOwn = CurrentOwner.cur,
-        configs = {
-            key: vnode.key,
-            ref: vnode.ref
-        };
-    if (props && props.ref) {
-        owner = lastOwn;
+        lastOwn = Refs.currentOwner,
+        old = vnode.props,
+        configs = {  };
+    if (props) {
+        Object.assign(configs, old, props);
+        configs.key = props.key !== void 666 ? props.key :vnode.key;
+        if(props.ref !== void 666){
+            configs.ref = props.ref;
+            owner = lastOwn;
+        }else if(vnode._hasRef){
+            configs.ref = vnode.ref;
+        }
+    }else{
+        configs = old;
     }
-    Object.assign(configs, vnode.props, props);
-    CurrentOwner.cur = owner;
+    Refs.currentOwner = owner;
 
     let args = [].slice.call(arguments, 0),
         argsLength = args.length;
@@ -24,6 +32,6 @@ export function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     let ret = createElement.apply(null, args);
-    CurrentOwner.cur = lastOwn;
+    Refs.currentOwner = lastOwn;
     return ret;
 }

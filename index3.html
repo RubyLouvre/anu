@@ -2,27 +2,128 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>
-    <script src="./lib/babel.js"></script>
-    <script type='text/babel'>
-    window.onload = function(){
-        React.Children.forEach([false, true,[undefined,'11']], function(a){
-             console.log(a)
-        });
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./lib/shallowCompare.js"></script>
 
-    }
-    </script>
+  <script type='text/javascript' src="./dist/React.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <!--<script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>-->
+  <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+  
+  <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+  <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
 
 <body>
-
-    <div>这个默认会被清掉</div>
-    <div id='example'></div>
-
+  <div>开发者工具</div>
+  <pre>
+  </pre>
+  <div id='example'></div>
+  <script type='text/babel'>
+   
+     
+      var container = document.getElementById("example")
+      var div = container
+     // var PropTypes = React.PropTypes
+      if(!window.ReactDOM){
+        window.ReactDOM = window.React
+       
+      }
+      var PropTypes = React.PropTypes
+      var expect = function(a) {
+          return {
+              toBe: function(b) {
+                  console.log(a, "\nvs\n",b, a === b)
+              }
+          }
+      }
+      class Child extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            aaa: 111
+          }
+        }
+        componentWillMount(){
+          console.log("child will mount")
+        }
+        componentWillUpdate(){
+          console.log("child will update")
+        }
+        componentDidUpdate(){
+          console.log("child did update")
+        }
+        componentDidMount(){
+          console.log("child did mount")
+        }
+        componentWillUnmount(){
+          console.log("child will unmount")
+        }
+        render(){
+            return <strong>Child</strong>
+        }
+      }
+      class Radio extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            aaa: 111
+          }
+        }
+        componentWillMount(){
+          console.log("radio will mount")
+        }
+        componentWillUpdate(){
+          console.log("radio will update")
+        }
+        componentDidUpdate(){
+          console.log("radio did update")
+        }
+        componentDidMount(){
+          console.log("radio did mount")
+        }
+        render(){
+            return <input type="radio" />
+        }
+      }
+      class App extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            aaa: 111
+          }
+        }
+        componentWillMount(){
+          console.log("app will mount")
+        }
+        componentWillUpdate(){
+          console.log("app will update")
+        }
+        componentDidUpdate(){
+          console.log("app did update")
+        }
+        componentDidMount(){
+          console.log("app did mount, setState")
+          this.setState({
+            aaa: 333
+          })
+        }
+        render(){
+            return this.state.aaa === 333? [<Radio/>,<Radio/>,<Radio/>] :[<Child />, <Radio/>,<Child/>,<Child />,<Child/>,<Child />,<Child/>]
+         /*<div className="root">
+                <span>111</span>
+                <span>222</span>
+                <span>333</span>
+                <span>444</span>
+        </div>*/
+        }
+      }
+      var s = ReactDOM.render(<App /> ,div)
+    </script>
 
 </body>
 

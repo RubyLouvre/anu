@@ -1,7 +1,7 @@
 import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { oneObject, toLowerCase, noop, typeNumber } from "./util";
+import { toLowerCase, noop, typeNumber,emptyObject,options } from "./util";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -17,7 +17,6 @@ var isSpecialAttr = {
     dangerouslySetInnerHTML: 1
 };
 
-var emptyStyle = {};
 var svgCache = {};
 var strategyCache = {};
 /**
@@ -136,17 +135,9 @@ function getSVGAttributeName(name) {
 }
 
 
-/**
- *
- * 修改dom的属性与事件
- * @export
- * @param {any} nextProps
- * @param {any} lastProps
- * @param {any} vnode
- * @param {any} lastVnode
- */
-export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
-    let isSVG = vnode.ns === NAMESPACE.svg;
+export function diffProps(dom, lastProps, nextProps, vnode) {
+    options.beforeProps(vnode);
+    let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
@@ -157,7 +148,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[action](dom, name, val, lastProps);
+            actionStrategy[action](dom, name, val, lastProps, vnode);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -165,7 +156,7 @@ export function diffProps(nextProps, lastProps, vnode, lastVnode, dom) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
-            actionStrategy[action](dom, name, false, lastProps);
+            actionStrategy[action](dom, name, false, lastProps, vnode);
         }
     }
 }
@@ -203,12 +194,19 @@ function getPropAction(dom, name, isSVG) {
         ? "attribute"
         : "property";
 }
-
+var builtinStringProps = {
+    className: 1,
+    title: 1,
+    name: 1,
+    alt: 1,
+    lang: 1,
+    value: 1
+};
 export var actionStrategy = {
     innerHTML: noop,
     children: noop,
     style: function (dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyStyle, val || emptyStyle);
+        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     svgClass: function (dom, name, val) {
         if (!val) {
@@ -259,9 +257,11 @@ export var actionStrategy = {
             try {
                 if (!val && val !== 0) {
                     //如果它是字符串属性，并且不等于""，清空
-                    if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    // if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
+                    if(builtinStringProps[name]) {
                         dom[name] = "";
                     }
+                    // }
                     dom.removeAttribute(name);
                 } else {
                     dom[name] = val;
@@ -274,8 +274,10 @@ export var actionStrategy = {
             }
         }
     },
-    event: function (dom, name, val, lastProps) {
-        let events = dom.__events || (dom.__events = {});
+    event: function (dom, name, val, lastProps, vnode) {
+        let events = dom.__events || (dom.__events = {
+        });
+        events.vnode = vnode;
         let refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];

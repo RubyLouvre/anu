@@ -3,85 +3,80 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./test/react-lite.js"></script>
-  <script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
-    
-  <script type='text/babel'>
-  var s
-  window.onload = function(){
-
-    class HTMLConvertExample extends React.Component {
-      constructor(props) {
-        super(props,{},111);
-        console.log(this.refs, 'xxx')
-      
-      }
-
-      render() {
-        return (
-          <div style={styles.root}>
-            <div style={{marginBottom: 10}}>
-              Sample HTML converted into Draft content state
-            </div>
-            <div style={styles.editor} onClick={this.focus}>
-              <Editor
-                editorState={this.state.editorState}
-                onChange={this.onChange}
-                ref="editor2"
-              />
-            </div>
-            <input
-              onClick={this.logState}
-              style={styles.button}
-              type="button"
-              value="Log State"
-            />
-          </div>
-        );
-      }
-    }
-
-    function findLinkEntities(contentBlock, callback) {
-      contentBlock.findEntityRanges(
-        (character) => {
-          const entityKey = character.getEntity();
-          return (
-            entityKey !== null &&
-            Entity.get(entityKey).getType() === 'LINK'
-          );
-        },
-        callback
-      );
-    }
-
-    const Link = (props) => {
-      const {url} = Entity.get(props.entityKey).getData();
-      return (
-        <a href={url} style={styles.link}>
-          {props.children}
-        </a>
-      );
-    };
-
-      
-
-
-    s = React.render(<App />, document.getElementById('example'));
- 
-  }
-  </script>
+    <meta name="viewport" content="width=device-width">
+    <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
+     <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
+
 <body>
+
+    <div>开发者工具</div>
+    <pre>
+          
+    </pre>
+    <div id='example'></div>
+    <script type='text/babel'> 
+    var container = document.getElementById("example")
+    var div = container
+    // var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+       window.ReactDOM = window.React
+       var PropTypes = React.PropTypes
+    }
+
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+    var list = []
+    function logger(e){
+        list.push(e)
+    }
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                flag: 1
+            };
+        }
+        render() {
+            return (<div className="root" onClick={ ()=>{ logger("App.div") } }><Child /></div>);
+        }
+    }
     
-        <div>开发者工具</div>
-        <div id='example'></div>
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                text: props.text 
+            };
+        }
+        render(){
+            return <div onClick={ ()=>{ logger("Child.div") } }>
+                <p onClick={ ()=> { logger("Child.p") } }>
+                    <button type="button">按钮</button>
+                 </p>
+                </div>
+        }
+    }
+
+
+  var s = ReactDOM.render(<App />, div);
+  console.log(list)
+
+
     
-    
+    </script>
+
 </body>
-    
- </html>
+
+</html>

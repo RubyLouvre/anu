@@ -1,13 +1,14 @@
 {
   "name": "anujs",
-  "version": "1.1.1",
+  "version": "1.1.5-pre3",
   "description": "a mini React-like framework",
   "main": "dist/React.js",
   "scripts": {
     "build": "rollup -c build/rollup.js && rollup -c build/rollup.ie.js && rollup -c build/rollup.selection.js && rollup -c build/rollup.shim.js && rollup -c build/rollup.ssr.js && node build/shim.script.js ",
     "test": "node node_modules/karma-event-driver-ext",
     "devtools": "rollup -c build/rollup.tools.js",
-    "webpack": "^1.14.0"
+    "webpack": "^1.14.0",
+    "sync": "node ./build/sync.js"
   },
   "repository": {
     "type": "git",
@@ -16,12 +17,15 @@
   "keywords": [
     "react-like",
     "react",
+    "jsx",
+    "vdom",
+    "virtual-dom",
     "react-compat",
     "performance",
     "ie8"
   ],
   "author": "RubyLouvre",
-  "license": "Apache License 2.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/RubyLouvre/anu/issues"
   },
@@ -32,18 +36,19 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-istanbul": "^4.1.1",
     "babel-plugin-syntax-async-generators": "^6.13.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-es2015-classes": "^6.24.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
-    "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-runtime": "^5.8.38",
     "chai": "^3.5.0",
     "es3ify-webpack-plugin": "0.0.1",
     "eslint": "^4.2.0",
     "eslint-plugin-react": "^7.1.0",
+    "fs-extra": "^4.0.2",
     "husky": "^0.14.3",
     "karma": "^1.5",
     "karma-chai": "^0.1.0",
@@ -55,6 +60,7 @@
     "karma-spec-reporter": "0.0.30",
     "karma-webpack": "^2.0.3",
     "mocha": "^3.2.0",
+    "ora": "^1.3.0",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-filesize": "^1.4.2",
@@ -63,8 +69,6 @@
     "rollup-plugin-re": "^1.0.6",
     "selenium-standalone": "^6.4.1",
     "semicolon-less": "^0.7.0",
-    "sinon": "^2.3.4",
-    "sinon-chai": "^2.11.0",
     "webpack": "^1.14.0"
   },
   "ghooks": {
@@ -86,5 +90,7 @@
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
   },
-  "dependencies": {}
+  "dependencies": {
+    "chai-spies": "^0.7.1"
+  }
 }

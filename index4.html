@@ -3,47 +3,122 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-  <!--<script src="./coverage/react.development.js"></script>-->
-  <script type='text/javascript' src="./dist/ReactSelection.js"></script>
+    <meta name="viewport" content="width=device-width">
+    <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
-   <!--<script src="./test/react-lite.js"></script>-->
-     <script type='text/javascript' src="./lib/babel.js"></script>
-
-  <script type='text/babel'>
-class App extends React.Component {
-  constructor(props){
-    super(props)
-    this.state = {
-      value: 111
-    }
-  }
-  change(e){
-    console.log(e.target.innerHTML)
-
-    this.setState({
-      value: e.target.innerHTML 
-   })
-  }
-  render(){
-    return (
-        <div contentEditable={true} onInput={ this.change.bind(this) } >{this.state.value}
-        </div>
-    );
-  }
-}
-ReactDOM.render(<App />,  document.getElementById('example'))
- 
-  </script>
+    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
     <div>开发者工具</div>
+    <pre>
+          
+        </pre>
     <div id='example'></div>
 
-  
+
+    <script type='text/babel'>
+   
+     
+    var container = document.getElementById("example")
+    var div = container
+    // var PropTypes = React.PropTypes
+    if(!window.ReactDOM){
+       window.ReactDOM = window.React
+       var PropTypes = React.PropTypes
+    }
+
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a, b, a === b)
+            }
+        }
+    }
+   
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                flag: 1
+            };
+        }
+        
+        componentDidMount(props){
+            console.log("App did mount")
+        }
+        componentWillUpdate(props){
+            console.log("App will update")
+        }
+        componentDidUpdate(props){
+            console.log("App did update")
+        }
+        render() {
+            return (<div>{
+                this.state.flag ?
+                [<Child key="a" parent={this} text="111" />,
+                <Child key="b" parent={this}  text="222" />]:
+                [<Child key="a" text="aaa" />,
+                <Child key="b" text="bbb" />,'555']
+                 }</div>
+            );
+        }
+    }
+    class Child extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                text: props.text 
+            };
+        }
+        render(){
+            return <span className={this.state.text}>{this.state.text}</span>
+        }
+        componentWillMount(props){
+            console.log("Child will mount")
+        }
+        componentWillUnmount(){
+            console.log("Child will unmount",this.props.text)
+        }
+        componentDidMount(props){
+            console.log("Child did mount")
+            if(this.props.text==="111"){
+                var parent = this.props.parent
+                    console.log("开始setState",parent.updater.vnode.child.childNodes.slice())
+                    parent.setState({flag: 0})
+             
+
+              // this.props.parent.setState({flag: 0})
+            }
+           
+        }
+        componentWillReceiveProps(props){
+            console.log("Child ",this.props.text, "will receive")
+             this.setState({
+                 text: props.text
+             })
+        }
+        componentWillUpdate(props){
+            console.log("Child ",this.props.text, "will update")
+        }
+        componentDidUpdate(props){
+            console.log("Child ",this.props.text, "did update")
+        }
+    }
+
+    var s = ReactDOM.render(<App />, div);
+    
+ 
+    
+    </script>
+
 </body>
 
 </html>

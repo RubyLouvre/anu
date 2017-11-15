@@ -1,4 +1,4 @@
-//为了兼容yo
+
 var check = function () {
     return check;
 };

@@ -4,8 +4,6 @@ import filesize from "rollup-plugin-filesize";
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
-const now = new Date();
-
 export default {
     entry: "./build/ReactSelection.js",
     format: "umd",
@@ -19,7 +17,7 @@ export default {
             babelrc: false,
             presets: [
                 [
-                    "es2015",
+                    "env",
                     {
                         modules: false
                     }
@@ -39,9 +37,8 @@ export default {
                 {
                     test: "VERSION", 
                     // string or function to replaced with
-                    replace: json.version,
-                },
-     
+                    replace: json.version
+                }
             ]
         }),
         filesize()

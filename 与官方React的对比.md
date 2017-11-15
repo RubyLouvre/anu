@@ -67,6 +67,8 @@
 | cloneElement后字符串ref的正确处理                 | ✔️         | ✔️     | ✖️              |     |
 | getDOMNode                               | ✔️         | ✔️     | ✖️              |     |
 | componentDidUpdate调用setState不会卡死         | ✔️         | ✔️     | ✖️              |     |
+| 无状态组件的模块模式组件         | ✔️         | ✔️     | ✖️              |     |
+| 相同虚拟DOM的context穿透更新策略         | ✔️         | ✔️     | ✖️              |     |
 | style对象                                    | ✔️         | ✔️     | ✖️              |     |
 | onEvent（尤其是onChange/MouseEnter/Focus的支持） | ✔️         | ✔️     | ✖️              |     |
 | onEventCapture                           | ✔️         | ✔️     | ✖️              |     |
