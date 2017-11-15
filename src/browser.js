@@ -7,14 +7,14 @@ export function DOMElement(type) {
     this.children = [];
 }
 
-export var NAMESPACE = {
+export const NAMESPACE = {
     svg: "http://www.w3.org/2000/svg",
     xmlns: "http://www.w3.org/2000/xmlns/",
     xlink: "http://www.w3.org/1999/xlink",
     math: "http://www.w3.org/1998/Math/MathML"
 };
 
-var fn = (DOMElement.prototype = {
+const fn = (DOMElement.prototype = {
     contains: Boolean
 });
 String(
@@ -28,7 +28,7 @@ String(
 });
 
 //用于后端的document
-export var fakeDoc = new DOMElement();
+export const fakeDoc = new DOMElement();
 fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (
     type
 ) {
@@ -48,12 +48,12 @@ try {
     };
 }
 
-export var inBrowser = b;
-export var win = w;
+export const inBrowser = b;
+export const win = w;
 
-export var document = w.document || fakeDoc;
-var isStandard = "textContent" in document;
-var fragment = document.createDocumentFragment();
+export const document = w.document || fakeDoc;
+const isStandard = "textContent" in document;
+const fragment = document.createDocumentFragment();
 function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
@@ -80,18 +80,18 @@ export function removeDOMElement(node) {
     fragment.removeChild(node);
 }
 
-var versions = {
+const versions = {
     88: 7, //IE7-8 objectobject
     80: 6, //IE6 objectundefined
     "00": NaN, // other modern browsers
     "08": NaN
 };
 /* istanbul ignore next  */
-export var msie =
+export const msie =
     document.documentMode ||
     versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
 
-export var modern = /NaN|undefined/.test(msie) || msie > 8;
+export const modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createDOMElement(vnode) {
     var type = vnode.type;
@@ -118,9 +118,9 @@ export function createDOMElement(vnode) {
     return document.createElement(type);
 }
 // https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math
-var rmathTags = /^m/;
+const rmathTags = /^m/;
 
-var namespaceMap = oneObject("svg", NAMESPACE.svg);
+const namespaceMap = oneObject("svg", NAMESPACE.svg);
 namespaceMap.semantics = NAMESPACE.math;
 // http://demo.yanue.net/HTML5element/
 "meter,menu,map,meta,mark".replace(/\w+/g, function (tag) {
