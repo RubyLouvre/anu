@@ -90,7 +90,9 @@ export function createVnode(node) {
 export function restoreChildren(parent) {
     var ret = [];
     for (var el = parent.child; el; el = el.sibling) {
-        ret.push(el);
+        if(!el._disposed) {
+            ret.push(el);
+        }
     }
     return ret;
 }
@@ -105,7 +107,7 @@ export function fiberizeChildren(vnode) {
             let childType = typeNumber(child);
             if (childType < 3) {
                 //undefined, null, boolean
-                child = createVText("#comment","empty");
+                child = createVText("#comment","empty2");
                 lastText = null;
             } else if (childType < 5) {
                 //number string
@@ -125,11 +127,12 @@ export function fiberizeChildren(vnode) {
             prev = child;
             ret.push(child);
         });
+        var child = ret[0];
+        if (child) {
+            vnode.child = child;
+        }
     }
-    var child = ret[0];
-    if (child) {
-        vnode.child = child;
-    }
+    
     return ret;
 }
 

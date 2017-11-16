@@ -1,5 +1,5 @@
 import { options, innerHTML, emptyObject, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement } from "./browser";
+import { createElement as createDOMElement, emptyElement, removeElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { instantiateComponent } from "./instantiateComponent";
 import { processFormElement } from "./ControlledComponent";
@@ -84,7 +84,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-
+   
     Refs.currentOwner = null; //防止干扰
     var child = vnode;
     vnode = createElement(AnuWrapper, {
@@ -92,12 +92,13 @@ function renderByAnu(vnode, container, callback, context = {}) {
     });
     vnode.isTop = true;
     topVnodes[nodeIndex] = vnode;
+   
     if (lastVnode) {
-        vnode.return = lastVnode.return;
-        vnode.child = lastVnode.child;
+        vnode.return = lastVnode.return;       
         alignVnode(lastVnode, vnode, context, updateQueue);
     } else {
         var parent = (vnode.return = createVnode(container));
+        vnode.child = child;
         parent.child = vnode;
         genVnodes(vnode, context, updateQueue);
     }
@@ -128,22 +129,23 @@ function genVnodes(vnode, context, updateQueue) {
         alignVnode(lastVnode, vnode, context, updateQueue);
     } else {
         mountVnode(vnode, context, updateQueue);
-        vnode.return.batchMount();
+        vnode.return.batchMount("genVnodes");
     }
 }
 
 //mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
-function mountVnode(vnode, context, updateQueue, single) {
+function mountVnode(vnode, context, updateQueue) {
     options.beforeInsert(vnode);
     if (vnode.vtype === 0 || vnode.vtype === 1) {
-      
         var dom = createDOMElement(vnode, vnode.return);
         vnode.stateNode = dom;
         if (vnode.vtype === 1) {
             let { _hasRef, _hasProps, type, props } = vnode;
             let children = fiberizeChildren(vnode);
+            vnode.selfMount = true;
             mountChildren(vnode, children, context, updateQueue);
-            vnode.batchMount(); //批量插入 dom节点
+            vnode.selfMount = false;
+            vnode.batchMount("元素"); //批量插入 dom节点
             if (_hasProps) {
                 diffProps(dom, emptyObject, props, vnode);
             }
@@ -156,11 +158,6 @@ function mountVnode(vnode, context, updateQueue, single) {
         }
     } else {
         mountComponent(vnode, context, updateQueue);
-    }
-
-    var sibling = vnode.sibling;
-    if (sibling && !single) {
-        mountVnode(sibling, context, updateQueue);
     }
     return dom;
 }
@@ -176,6 +173,7 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
     updater.parentContext = parentContext;
 
     if (instance.componentWillMount) {
+        instance.updateQueue = updateQueue;
         captureError(instance, "componentWillMount", []);
         instance.state = updater.mergeStates();
     }
@@ -188,7 +186,9 @@ function mountChildren(vnode, children, context, updateQueue) {
     var child = children[0];
     if (child) {
         vnode.child = child; 
-        mountVnode(child, context, updateQueue);
+        children.forEach(function(c){
+            mountVnode(c, context, updateQueue);
+        });
     }
 }
 
@@ -248,9 +248,8 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
     updater.props = nextVnode.props;
     updater.parentContext = parentContext;
     updater.pendingVnode = nextVnode;
-    nextVnode.child = lastVnode.child;
     updater.willReceive = willReceive;
-
+    nextVnode.child =  nextVnode.child || lastVnode.child;
     if (!updater._dirty) {
         //如果在事件中使用了setState
         updater._receiving = [lastVnode, nextVnode, nextContext];
@@ -272,12 +271,14 @@ function genkey(vnode) {
 }
 
 function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
+  
     if (isSameNode(lastVnode, nextVnode)) {
         //组件虚拟DOM已经在diffChildren生成并插入DOM树
         updateVnode(lastVnode, nextVnode, context, updateQueue);
     } else {
         disposeVnode(lastVnode);
         mountVnode(nextVnode, context, updateQueue, single);
+
     }
 
     return nextVnode.stateNode;
@@ -308,16 +309,17 @@ function getNearestNode(vnodes, ii) {
 
 
 
-function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
+function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue, xxx) {
     var parentVElement = parentVnode,
         priorityQueue = [],
-        nextLength = nextChildren.length,
         lastLength = lastChildren.length,
+        nextLength = nextChildren.length,
         fuzzyHits = {},
         hit,
         lastChild,
         nextChild,
         i = 0;
+    
     if(parentVnode.vtype === 1 ){
         var firstChild = parentVnode.stateNode.firstChild;
         var child = lastChildren[0];
@@ -333,9 +335,17 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             break;
         }
     } while ((parentVElement = parentVElement.return));
-    if (!lastLength) {
-        return mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
+    if(nextChildren){
+        parentVnode.child = nextChildren[0];
     }
+    if (!lastLength && nextLength) {
+        mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
+        if(!parentVElement.selfMount) {
+            parentVElement.batchMount("只添加"+xxx);
+        }
+        return; 
+    }
+  
     var React15 = false;
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
@@ -372,7 +382,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 delete fuzzyHits[hit];
             }
             if (hitVnode) {
-                lastChildren[hitVnode.index] = null;
+                lastChildren[hitVnode.index] = NaN;
                 if (hitVnode.vtype > 1) {
                     if (hitVnode.type === nextChild.type) {
                         receiveComponent(hitVnode, nextChild, parentContext, priorityQueue); 
@@ -393,9 +403,9 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (React15) {
         disposeChildren(lastChildren);
     }
+   
 
     drainQueue(priorityQueue); //原来updateQueue为priorityQueue
-    parentVnode.child = nextChildren[0];
     //step4: 更新元素，调整位置或插入新元素
     for (let i = 0, n = mainQueue.length; i < n; i += 2) {
         lastChild = mainQueue[i];
@@ -410,7 +420,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     disposeChildren(lastChildren);
    
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
-        parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren));
+        parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren), nextChildren);
     }
 }
 

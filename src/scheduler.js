@@ -33,7 +33,8 @@ export function drainQueue(queue) {
     let needSort = [],
         unique = {},
         updater;
-    while ((updater = queue.shift())) { // eslint-disable-line
+    while ((updater = queue.shift())) {
+        
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
@@ -44,7 +45,7 @@ export function drainQueue(queue) {
         }
         updater.exec(queue);
     }
-   
+
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
     needSort.sort(mountSorter).forEach(function(updater) {
         clearArray(updater._pendingCallbacks).forEach(function(fn) {

@@ -20,78 +20,55 @@
     </pre>
 
     <script type='text/babel'>
-    var container = document.getElementById("example")
-    var div = container
-   var expect = function(a) {
-      return {
-          toBe: function(b) {
-              console.log(a,"\nvs\n", b, a === b)
-          }
-      }
-  }
- 
-
 var list = [];
-var flag = 1
- function logger(e){
-   console.log(e)
- }
- var parentIntance 
- class Page extends React.Component{
-     constructor(props){
-        super(props)
-        this.state = {
-            a: 111,
-            b: 222,
-            c: 333
-        }
-        parentIntance = this
-     }
-     render(){
-         console.log("Page.render()")
-         return <div>
-            <A  name="a" text={this.state.a} />
-            <A  name="b" text={this.state.b} />
-            <A  name="c" text={this.state.c} />
-            </div>
-     }
- }
- class A extends React.Component {
-     constructor(props) {
-         super(props);
-         this.state = {
-             text: props.text
-         };
-     }
+var flag = 1;
+function logger(e){
+    list.push(e);
+}
+var container = document.getElementById("example");
+   var div = container;
+var expect = function(a) {
+       return {
+           toBe: function(b) {
+               console.log(a, "\nvs\n", b, a === b);
+           }
+       };
+   };
 
-     componentDidMount() {
-         logger(this.props.name + " did mount");
-         if(this.props.name === "a"){
-             console.log("父组件更新")
-            parentIntance.setState({
-                a: 444
-            })
-         }
-      //   ReactDOM.render(<div>{this.state.text}</div>, div);
-     
-     }
-     componentWillReceiveProps(nextProps){
-        logger(this.props.name + " will receive "+nextProps.text +" "+ this.props.text);
-        if(nextProps.text !== this.props.text){
-            this.setState({
-                text: nextProps.text
-            })
-        }
 
-     }
-     componentDidUpdate() {
-        logger(this.props.name + " did update");
-     }
-     render() {
-         return <div className={this.props.name}>{this.state.text}</div>;
-     }
- }
- 
- var s = ReactDOM.render(<Page />, div, function(){
-     console.log(this)
- });
+   var LetterInner = class extends React.Component {
+    render() {
+        return <div>{this.props.char}</div>;
+    }
+};
+
+var Letter = class extends React.Component {
+    render() {
+        return <LetterInner char={this.props.char} />;
+    }
+    shouldComponentUpdate() {
+        return false;
+    }
+};
+
+    var Letters = class extends React.Component {
+        render() {
+            const letters = this.props.letters.split("");
+            return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
+        }
+    };
+    var container = document.getElementById("example");
+   var div = container;
+   
+           // Two random strings -- some additions, some removals, some moves
+         var s =  ReactDOM.render(<Letters letters="8ABC4D5EFGH" />, container);
+           expect(container.textContent).toBe("8ABC4D5EFGH");
+           console.log("开始更新")
+         var s =  ReactDOM.render(<Letters letters="GFE9DBACH" />, container);
+           expect(container.textContent).toBe("GFE9DBACH");
+           
+</script>
+
+</body>
+
+</html>

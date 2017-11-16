@@ -49,10 +49,10 @@ require("./modules/ReactIdentity-test.jsx");
 
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
 
-
 require("./modules/ReactComponentLifeCycle-test.jsx");
 
 require("./modules/ReactCompositeComponent-test.jsx");
+
 require("./modules/ReactContextValidator-test.jsx"); 
 
 require("./modules/createReactClassIntegration-test.jsx");

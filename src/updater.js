@@ -1,4 +1,4 @@
-import { fiberizeChildren, restoreChildren, createVText } from "./createElement";
+import { fiberizeChildren, restoreChildren } from "./createElement";
 import { extend, options, typeNumber, isFn, returnFalse, returnTrue } from "../src/util";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./error";
@@ -47,7 +47,6 @@ Updater.prototype = {
         if (jobs[jobs.length - 1] !== newJob) {
             jobs.push(newJob);
         }
-       
     },
     exec(updateQueue) {
         var job = this._jobs.shift();
@@ -118,28 +117,30 @@ Updater.prototype = {
         return nextState;
     },
 
-
     isMounted: returnFalse,
     hydrate(updateQueue) {
-        let { instance, context, props, vnode } = this;
+        let { instance, context, props, vnode, pendingVnode } = this;
+        instance.updateQueue = updateQueue;
+        
         if (this._receiving) {
             let [lastVnode, nextVnode, nextContext] = this._receiving;
             nextVnode.stateNode = instance;
+            // instance._hasError = false;
             //如果context与props都没有改变，那么就不会触发组件的receive，render，update等一系列钩子
             //但还会继续向下比较
             captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
             delete this._receiving;
             Refs.detachRef(lastVnode, nextVnode);
+            
         }
-
         Refs.clearElementRefs();
         let state = this.mergeStates();
         let shouldUpdate = true;
-       
+
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
-            if (this.pendingVnode) {
-                this.vnode = this.pendingVnode;
+            if (pendingVnode) {
+                this.vnode = pendingVnode;
                 delete this.pendingVnode;
             }
         } else {
@@ -147,7 +148,7 @@ Updater.prototype = {
             var { props: lastProps, context: lastContext, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState, lastContext];
         }
-      
+
         vnode.stateNode = instance;
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
@@ -163,16 +164,19 @@ Updater.prototype = {
     },
 
     resolve: function(updateQueue) {
+      
         Refs.clearElementRefs();
         let instance = this.instance;
+        instance.updateQueue = updateQueue;
         // 执行componentDidMount/Update钩子
         let hasMounted = this.isMounted();
-   
+
         if (!hasMounted) {
+           
             this.isMounted = returnTrue;
         }
-        if(this._hydrating){
-            let hookName = hasMounted ?  "componentDidUpdate": "componentDidMount";
+        if (this._hydrating) {
+            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -180,14 +184,26 @@ Updater.prototype = {
             } else {
                 options.afterMount(instance);
             }
+           
             delete this._hookArgs;
             delete this._hydrating;
         }
         let vnode = this.vnode;
+
         //执行组件虚拟DOM的ref回调
         if (vnode._hasRef) {
             Refs.fireRef(vnode, instance.__isStateless ? null : instance);
         }
+        var hasCatch = this._hasCatch;
+        if(hasCatch){
+            delete this._hasCatch;
+            this._hydrating = true;
+            instance._hasTry = true;
+
+            instance.componentDidCatch.apply(instance, hasCatch);
+            this._hydrating = false;
+        }
+
         //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
         if (this._renderInNextCycle) {
             delete this._renderInNextCycle;
@@ -196,12 +212,12 @@ Updater.prototype = {
         }
     },
     render(updateQueue) {
-        //vnode为组件虚拟DOM，也只能是组件虚拟DOM
+       
         let { vnode, pendingVnode, instance, parentContext } = this,
-            nextChildren,
+            nextChildren = [],
             rendered,
-            lastChildren;
-        let target = pendingVnode || vnode;
+            lastChildren,
+            target = pendingVnode || vnode;
         if (this.willReceive === false) {
             rendered = vnode.child;
             delete this.willReceive;
@@ -209,25 +225,27 @@ Updater.prototype = {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
             rendered = captureError(instance, "render", []);
+            if(instance._hasError){
+                rendered = void 666;
+            }
             Refs.currentOwner = lastOwn;
         }
+        
         if (this.isMounted()) {
             lastChildren = restoreChildren(this.vnode);
         } else {
             lastChildren = [];
         }
-
-        var oldProps = target.props;
-        target.props = { children: rendered };
-        nextChildren = fiberizeChildren(target);
-        target.props = oldProps;
-        if (!nextChildren.length) {
-            var placeHolder = createVText("#comment", "empty");
-            placeHolder.index = 0;
-            placeHolder.return = target;
-            nextChildren.push(placeHolder);
+        if(pendingVnode) {
+            delete pendingVnode.child;
         }
-
+       
+        if (rendered !== void 66) {
+            var oldProps = target.props;
+            target.props = { children: rendered };
+            nextChildren = fiberizeChildren(target);
+            target.props = oldProps;
+        }
         let childContext = parentContext,
             number = typeNumber(rendered);
         if (number === 7) {
@@ -245,10 +263,7 @@ Updater.prototype = {
             }
         }
         //child在React16总是表示它是父节点的第一个节点
-        var child = nextChildren[0];
-       
-        options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue);
-        vnode.child = child;
+        options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue,this.name);
         let u = this;
         do {
             if (u.pendingVnode) {

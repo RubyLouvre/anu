@@ -7,12 +7,12 @@ import { captureError, showError } from "./error";
 export const topVnodes = [];
 export const topNodes = [];
 
-export function disposeVnode(vnode) {
+export function disposeVnode(vnode, silent) {
     if (vnode && !vnode._disposed) {
         options.beforeDelete(vnode);
         var instance = vnode.stateNode;
         var updater = instance.updater;
-        if (vnode._hasRef) {
+        if (vnode._hasRef && !silent) {
             vnode._hasRef = false;
             Refs.fireRef(vnode, null);
         }
@@ -25,27 +25,32 @@ export function disposeVnode(vnode) {
         }
         vnode._disposed = true;
         if (updater) {
-            disposeComponent(vnode, instance, updater);
+            disposeComponent(vnode, instance, updater, silent);
         } else if (vnode.vtype === 1) {
             disposeElement(vnode);
+            delete vnode.stateNode;
+        }else {
+            delete vnode.stateNode;
         }
     }
 }
 
-function disposeElement(vnode) {
+function disposeElement(vnode, silent) {
     var { props } = vnode;
     if (props[innerHTML]) {
         removeElement(vnode.stateNode);
     } else {
-        disposeChildren(restoreChildren(vnode));
+        disposeChildren(restoreChildren(vnode), silent);
         vnode.childNodes.length = 0;
     }
 }
 
-function disposeComponent(vnode, instance, updater) {
+function disposeComponent(vnode, instance, updater, silent) {
     options.beforeUnmount(instance);
     instance.setState = instance.forceUpdate = noop;
-    captureError(instance, "componentWillUnmount", []);
+    if(!silent){
+        captureError(instance, "componentWillUnmount", []);
+    }
     disposeChildren(restoreChildren(vnode));
     showError();
     //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
@@ -54,11 +59,11 @@ function disposeComponent(vnode, instance, updater) {
     updater._renderInNextCycle = null;
 }
 
-export function disposeChildren(children) {
+export function disposeChildren(children, silent) {
     for(var i = 0, n = children.length; i < n; i++){
         var vnode = children[i];
         if(vnode){
-            disposeVnode(vnode);
+            disposeVnode(vnode, silent);
         }
     }
 }

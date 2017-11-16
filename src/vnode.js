@@ -38,7 +38,11 @@ Vnode.prototype = {
 
     collectNodes(isChild, ret) {
         ret = ret || [];
+
         if (isChild && this.vtype < 2) {
+            if(!this.stateNode) {
+                ret.isError = true;
+            }
             ret.push(this.stateNode);
         } else {
             for (var a = this.child; a; a = a.sibling) {
@@ -48,11 +52,17 @@ Vnode.prototype = {
         return ret;
     },
     batchMount() {
-        var parentNode = this.stateNode,
-            childNodes = this.collectNodes();
-        childNodes.forEach(function(dom) {
-            parentNode.appendChild(dom);
-        });
+        let parentNode = this.stateNode;
+        if(!parentNode.childNodes.length){
+            //父节点必须没有孩子
+            let childNodes = this.collectNodes();
+            if(childNodes.isError) {
+                return;
+            }
+            childNodes.forEach(function(dom) {
+                parentNode.appendChild(dom);
+            });
+        }
     },
     batchUpdate(updateMeta, nextChildren) {
         var parentVnode = updateMeta.parentVElement,
