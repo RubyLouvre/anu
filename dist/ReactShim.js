@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-11-16
+ * QQ 370262116 by 司徒正美 Copyright 2017-11-17
  */
 
 (function (global, factory) {
@@ -168,6 +168,9 @@ var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 var Refs = {
     currentOwner: null,
+    eraseElementRefs: function eraseElementRefs() {
+        pendingRefs.length = 0;
+    },
     clearElementRefs: function clearElementRefs() {
         var callback = Refs.fireRef;
         var refs = clearArray(pendingRefs);
@@ -897,16 +900,19 @@ var catchHook = "componentDidCatch";
 function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
+    Refs.eraseElementRefs();
     var catchUpdater = findCatchComponent(instance, names);
     if (catchUpdater) {
-        //console.log("发生错误 catch by", catchUpdater.name);// eslint-disable-line    
+        //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-        catchUpdater.vnode.collectNodes().forEach(removeElement);
-        delete catchUpdater.vnode.child;
-        if (!catchUpdater._jobs.length) {
-            catchUpdater.addJob("resolve");
-            instance.updateQueue.unshift(catchUpdater);
-        }
+        // todo!
+        // var vnode = catchUpdater.vnode;
+        // 清空医生节点的所有子孙节点（但不包括自己）
+        // vnode.collectNodes().forEach(removeElement);
+        // discontinue(vnode.child);
+        // delete instance.updater.vnode.return.child;
+        delete catchUpdater.pendingVnode;
+        Refs.catchError = catchUpdater;
     } else {
         //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
@@ -939,6 +945,7 @@ function describeError(names, hook) {
         return "<" + componentName + " />";
     }).join(" created By ");
 }
+
 function findCatchComponent(instance, names) {
     var target = instance.updater.vnode;
     do {
@@ -1003,7 +1010,6 @@ function disposeElement(vnode, silent) {
         removeElement(vnode.stateNode);
     } else {
         disposeChildren(restoreChildren(vnode), silent);
-        vnode.childNodes.length = 0;
     }
 }
 
@@ -1062,16 +1068,24 @@ function drainQueue(queue) {
         unique = {},
         updater = void 0;
     while (updater = queue.shift()) {
-
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
         }
+
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
         }
         updater.exec(queue);
+        var catchError = Refs.catchError;
+        if (catchError) {
+            delete Refs.catchError;
+            // queue.length = needSort.length = 0;
+            // unique = {};
+            catchError.addJob("resolve");
+            queue.push(catchError);
+        }
     }
 
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
@@ -1081,7 +1095,7 @@ function drainQueue(queue) {
         });
     });
     options.afterPatch();
-    showError();
+    //  showError();
 }
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -1114,6 +1128,8 @@ function Updater(instance, vnode) {
     this._pendingStates = [];
     this._jobs = ["resolve"];
     this._mountOrder = mountOrder++;
+    var type = vnode.type;
+    this.name = type.displayName || type.name;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
     //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
@@ -1208,7 +1224,6 @@ Updater.prototype = {
             vnode = this.vnode,
             pendingVnode = this.pendingVnode;
 
-        instance.updateQueue = updateQueue;
 
         if (this._receiving) {
             var _receiving = _slicedToArray(this._receiving, 3),
@@ -1242,7 +1257,6 @@ Updater.prototype = {
 
             this._hookArgs = [lastProps, lastState, lastContext];
         }
-
         vnode.stateNode = instance;
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
@@ -1255,56 +1269,6 @@ Updater.prototype = {
             this.render(updateQueue);
         }
         updateQueue.push(this);
-    },
-
-
-    resolve: function resolve(updateQueue) {
-
-        Refs.clearElementRefs();
-        var instance = this.instance;
-        instance.updateQueue = updateQueue;
-        // 执行componentDidMount/Update钩子
-        var hasMounted = this.isMounted();
-
-        if (!hasMounted) {
-
-            this.isMounted = returnTrue;
-        }
-        if (this._hydrating) {
-            var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
-            captureError(instance, hookName, this._hookArgs || []);
-            //执行React Chrome DevTools的钩子
-            if (hasMounted) {
-                options.afterUpdate(instance);
-            } else {
-                options.afterMount(instance);
-            }
-
-            delete this._hookArgs;
-            delete this._hydrating;
-        }
-        var vnode = this.vnode;
-
-        //执行组件虚拟DOM的ref回调
-        if (vnode._hasRef) {
-            Refs.fireRef(vnode, instance.__isStateless ? null : instance);
-        }
-        var hasCatch = this._hasCatch;
-        if (hasCatch) {
-            delete this._hasCatch;
-            this._hydrating = true;
-            instance._hasTry = true;
-
-            instance.componentDidCatch.apply(instance, hasCatch);
-            this._hydrating = false;
-        }
-
-        //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
-        if (this._renderInNextCycle) {
-            delete this._renderInNextCycle;
-            this.addJob("hydrate");
-            updateQueue.push(this);
-        }
     },
     render: function render(updateQueue) {
         var vnode = this.vnode,
@@ -1337,7 +1301,6 @@ Updater.prototype = {
         if (pendingVnode) {
             delete pendingVnode.child;
         }
-
         if (rendered !== void 66) {
             var oldProps = target.props;
             target.props = { children: rendered };
@@ -1369,6 +1332,53 @@ Updater.prototype = {
                 delete u.pendingVnode;
             }
         } while (u = u.parentUpdater); // eslint-disable-line
+    },
+
+    //此方法用于处理元素ref, ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
+    resolve: function resolve(updateQueue) {
+
+        var instance = this.instance;
+        var hasMounted = this.isMounted();
+        var hasCatch = this._hasCatch;
+        if (!hasMounted) {
+            this.isMounted = returnTrue;
+        }
+        //如果发生错误，之前收集的元素ref也不会执行，因为结构都不对，没有意义
+        Refs.clearElementRefs();
+        if (this._hydrating) {
+            var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
+            captureError(instance, hookName, this._hookArgs || []);
+            //执行React Chrome DevTools的钩子
+            if (hasMounted) {
+                options.afterUpdate(instance);
+            } else {
+                options.afterMount(instance);
+            }
+
+            delete this._hookArgs;
+            delete this._hydrating;
+        }
+        var vnode = this.vnode;
+
+        if (hasCatch) {
+            delete this._hasCatch;
+            this._hydrating = true;
+            instance._hasTry = true;
+            instance.componentDidCatch.apply(instance, hasCatch);
+            this._hydrating = false;
+        } else {
+            //执行组件ref（发生错误时不执行）
+            if (vnode._hasRef) {
+                Refs.fireRef(vnode, instance.__isStateless ? null : instance);
+            }
+        }
+
+        //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
+        if (this._renderInNextCycle) {
+            delete this._renderInNextCycle;
+            this.addJob("hydrate");
+            updateQueue.push(this);
+        }
     }
 };
 
@@ -1411,7 +1421,6 @@ function instantiateComponent(type, vnode, props, parentContext) {
     instance.props = updater.props = props;
     instance.context = updater.context = context;
     instance.constructor = type;
-    updater.name = type.displayName || type.name;
 
     if (isStateless) {
         var lastOwn = Refs.currentOwner;
@@ -1717,6 +1726,10 @@ function collectPaths(from, end) {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;
             if (dom === end) {
+                break;
+            }
+            if (!dom) {
+                // console.log(vnode,"没有实例化");
                 break;
             }
             if (dom.__events) {
@@ -2398,9 +2411,18 @@ function mountVnode(vnode, context, updateQueue) {
 //通过组件虚拟DOM产生组件实例与内部操作实例updater
 function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
     var type = vnode.type,
-        props = vnode.props;
+        props = vnode.props,
+        instance = void 0;
 
-    var instance = instantiateComponent(type, vnode, props, parentContext); //互相持有引用
+    try {
+        instance = instantiateComponent(type, vnode, props, parentContext); //互相持有引用
+    } catch (e) {
+        instance = {
+            updateQueue: updateQueue
+        };
+        new Updater(instance, vnode);
+        pushError(instance, "constructor", e);
+    }
     var updater = instance.updater;
     if (parentUpdater) {
         updater.parentUpdater = parentUpdater;
@@ -2419,11 +2441,11 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 
 function mountChildren(vnode, children, context, updateQueue) {
     var child = children[0];
-    if (child) {
-        vnode.child = child;
-        children.forEach(function (c) {
-            mountVnode(c, context, updateQueue);
-        });
+    for (vnode.child = child; child; child = child.sibling) {
+        mountVnode(child, context, updateQueue);
+        if (Refs.catchError) {
+            break;
+        }
     }
 }
 
@@ -2465,6 +2487,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         }
         Refs.detachRef(lastVnode, nextVnode, _dom);
     } else {
+
         dom = receiveComponent(lastVnode, nextVnode, context, updateQueue);
     }
     return dom;
@@ -2498,7 +2521,6 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
         updater.addJob("hydrate");
         updateQueue.push(updater);
     }
-
     return updater.stateNode;
 }
 
@@ -2585,7 +2607,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         return;
     }
 
-    var React15 = false;
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
         parentVElement.childNodes.length = 0; //清空数组，以方便收集节点
@@ -2605,6 +2626,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         }
     });
     //step2: 碰撞检测，并筛选离新节点最新的节点，执行null ref与updateComponent
+    var React15 = false;
     var mainQueue = [];
     while (i < nextLength) {
         nextChild = nextChildren[i];
@@ -2624,6 +2646,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 lastChildren[hitVnode.index] = NaN;
                 if (hitVnode.vtype > 1) {
                     if (hitVnode.type === nextChild.type) {
+
                         receiveComponent(hitVnode, nextChild, parentContext, priorityQueue);
                     } else {
                         alignVnode(hitVnode, nextChild, parentContext, priorityQueue, true);
@@ -2642,7 +2665,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (React15) {
         disposeChildren(lastChildren);
     }
-
     drainQueue(priorityQueue); //原来updateQueue为priorityQueue
     //step4: 更新元素，调整位置或插入新元素
     for (var _i = 0, n = mainQueue.length; _i < n; _i += 2) {
@@ -2653,7 +2675,12 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         } else {
             mountVnode(nextChild, parentContext, updateQueue, true);
         }
+        if (Refs.catchError) {
+            parentVElement.updateMeta = null;
+            return;
+        }
     }
+
     //React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
     disposeChildren(lastChildren);
 
@@ -2678,7 +2705,7 @@ function mergeNodes(children) {
 }
 
 var React = {
-    version: "1.1.5-pre3",
+    version: "1.1.5-pre4",
     render: render,
     options: options,
     Children: Children, //支持react-redux

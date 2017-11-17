@@ -20,7 +20,7 @@ export function instantiateComponent(type, vnode, props, parentContext) {
     instance.props = updater.props = props;
     instance.context = updater.context = context;
     instance.constructor = type;
-    updater.name = type.displayName || type.name;
+    
 
     if (isStateless) {
         var lastOwn = Refs.currentOwner;

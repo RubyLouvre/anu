@@ -1,12 +1,12 @@
 import { options, innerHTML, emptyObject, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, removeElement } from "./browser";
+import { createElement as createDOMElement, emptyElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { instantiateComponent } from "./instantiateComponent";
 import { processFormElement } from "./ControlledComponent";
 import { createVnode, restoreChildren, fiberizeChildren, createElement } from "./createElement";
-import { getContextByTypes } from "./updater";
+import { Updater, getContextByTypes } from "./updater";
 import { drainQueue } from "./scheduler";
-import { captureError } from "./error";
+import { captureError, pushError } from "./error";
 import { Refs, pendingRefs } from "./Refs";
 import { diffProps } from "./diffProps";
 
@@ -94,7 +94,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     topVnodes[nodeIndex] = vnode;
    
     if (lastVnode) {
-        vnode.return = lastVnode.return;       
+        vnode.return = lastVnode.return;   
         alignVnode(lastVnode, vnode, context, updateQueue);
     } else {
         var parent = (vnode.return = createVnode(container));
@@ -164,8 +164,16 @@ function mountVnode(vnode, context, updateQueue) {
 
 //通过组件虚拟DOM产生组件实例与内部操作实例updater
 function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
-    let { type, props } = vnode;
-    let instance = instantiateComponent(type, vnode, props, parentContext); //互相持有引用
+    let { type, props } = vnode, instance;
+    try{
+        instance = instantiateComponent(type, vnode, props, parentContext); //互相持有引用
+    }catch(e){
+        instance = {
+            updateQueue
+        };
+        new Updater(instance, vnode);
+        pushError(instance, "constructor", e);
+    }
     let updater = instance.updater;
     if (parentUpdater) {
         updater.parentUpdater = parentUpdater;
@@ -184,11 +192,11 @@ function mountComponent(vnode, parentContext, updateQueue, parentUpdater) {
 
 function mountChildren(vnode, children, context, updateQueue) {
     var child = children[0];
-    if (child) {
-        vnode.child = child; 
-        children.forEach(function(c){
-            mountVnode(c, context, updateQueue);
-        });
+    for(vnode.child = child; child; child = child.sibling ){
+        mountVnode(child, context, updateQueue);
+        if(Refs.catchError){
+            break;
+        }
     }
 }
 
@@ -225,6 +233,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         }
         Refs.detachRef(lastVnode, nextVnode, dom);
     } else {
+       
         dom = receiveComponent(lastVnode, nextVnode, context, updateQueue);
     }
     return dom;
@@ -256,7 +265,6 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
         updater.addJob("hydrate");
         updateQueue.push(updater);
     }
-
     return updater.stateNode;
 }
 
@@ -346,7 +354,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         return; 
     }
   
-    var React15 = false;
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
         parentVElement.childNodes.length = 0; //清空数组，以方便收集节点
@@ -366,6 +373,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         }
     });
     //step2: 碰撞检测，并筛选离新节点最新的节点，执行null ref与updateComponent
+    var React15 = false;
     var mainQueue = [];
     while (i < nextLength) {
         nextChild = nextChildren[i];
@@ -385,6 +393,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 lastChildren[hitVnode.index] = NaN;
                 if (hitVnode.vtype > 1) {
                     if (hitVnode.type === nextChild.type) {
+                        
                         receiveComponent(hitVnode, nextChild, parentContext, priorityQueue); 
                     } else {
                         alignVnode(hitVnode, nextChild, parentContext, priorityQueue, true);
@@ -403,8 +412,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (React15) {
         disposeChildren(lastChildren);
     }
-   
-
     drainQueue(priorityQueue); //原来updateQueue为priorityQueue
     //step4: 更新元素，调整位置或插入新元素
     for (let i = 0, n = mainQueue.length; i < n; i += 2) {
@@ -415,10 +422,15 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         } else {
             mountVnode(nextChild, parentContext, updateQueue, true);
         }
+        if(Refs.catchError){
+            parentVElement.updateMeta = null;
+            return;
+        }
     }
+  
     //React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
     disposeChildren(lastChildren);
-   
+    
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
         parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren), nextChildren);
     }

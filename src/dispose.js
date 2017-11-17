@@ -41,7 +41,6 @@ function disposeElement(vnode, silent) {
         removeElement(vnode.stateNode);
     } else {
         disposeChildren(restoreChildren(vnode), silent);
-        vnode.childNodes.length = 0;
     }
 }
 

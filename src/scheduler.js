@@ -1,6 +1,5 @@
 import { options, clearArray } from "./util";
 import { Refs } from "./Refs";
-import { showError } from "./error";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -34,16 +33,25 @@ export function drainQueue(queue) {
         unique = {},
         updater;
     while ((updater = queue.shift())) {
-        
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
         }
+       
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
         }
         updater.exec(queue);
+        var catchError = Refs.catchError;
+        if(catchError){
+            delete Refs.catchError;
+            // queue.length = needSort.length = 0;
+            // unique = {};
+            catchError.addJob("resolve");
+            queue.push(catchError);
+           
+        }
     }
 
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
@@ -53,5 +61,5 @@ export function drainQueue(queue) {
         });
     });
     options.afterPatch();
-    showError();
+    //  showError();
 }

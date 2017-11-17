@@ -69,6 +69,10 @@ function collectPaths(from, end) {
             if (dom === end) {
                 break;
             }
+            if(!dom){
+                // console.log(vnode,"没有实例化");
+                break;
+            }
             if (dom.__events) {
                 paths.push({ dom: dom, events: dom.__events });
             }

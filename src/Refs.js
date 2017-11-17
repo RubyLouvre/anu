@@ -8,7 +8,10 @@ export const pendingRefs = [];
 window.pendingRefs = pendingRefs;
 export var Refs = {
     currentOwner: null,
-    clearElementRefs: function() {
+    eraseElementRefs() {
+        pendingRefs.length = 0;
+    },
+    clearElementRefs() {
         let callback = Refs.fireRef;
         let refs = clearArray(pendingRefs);
         for (let i = 0, n = refs.length; i < n; i += 2) {
@@ -17,7 +20,7 @@ export var Refs = {
             callback(vnode, data);
         }
     },
-    detachRef: function(lastVnode, nextVnode, dom) {
+    detachRef(lastVnode, nextVnode, dom) {
         if (lastVnode.ref === nextVnode.ref) {
             return;
         }
@@ -25,19 +28,19 @@ export var Refs = {
             pendingRefs.push(lastVnode, null);
             delete lastVnode._hasRef;
         }
-        
+
         if (nextVnode._hasRef && dom) {
             pendingRefs.push(nextVnode, dom);
         }
     },
-    fireRef: function(vnode, dom) {
+    fireRef(vnode, dom) {
         var ref = vnode.ref;
         if (typeof ref === "function") {
             return ref(dom);
         }
         var owner = vnode._owner;
         if (!owner) {
-            throw  `Element ref was specified as a string (${ref}) but no owner was set`;
+            throw `Element ref was specified as a string (${ref}) but no owner was set`;
         }
         if (dom) {
             if (dom.nodeType) {
@@ -47,5 +50,5 @@ export var Refs = {
         } else {
             delete owner.refs[ref];
         }
-    },
+    }
 };

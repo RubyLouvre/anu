@@ -1,20 +1,23 @@
 import { disposeVnode } from "./dispose";
 import { removeElement } from "./browser";
-
+import { Refs } from "./Refs";
 var catchHook = "componentDidCatch";
 export function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
+    Refs.eraseElementRefs();
     var catchUpdater = findCatchComponent(instance, names);
     if( catchUpdater){        
-        //console.log("发生错误 catch by", catchUpdater.name);// eslint-disable-line    
+        //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-        catchUpdater.vnode.collectNodes().forEach(removeElement);
-        delete catchUpdater.vnode.child;
-        if( !catchUpdater._jobs.length ){
-            catchUpdater.addJob("resolve");
-            instance.updateQueue.unshift(catchUpdater);
-        }
+        // todo!
+        // var vnode = catchUpdater.vnode;
+        // 清空医生节点的所有子孙节点（但不包括自己）
+        // vnode.collectNodes().forEach(removeElement);
+        // discontinue(vnode.child);
+        // delete instance.updater.vnode.return.child;
+        delete catchUpdater.pendingVnode;
+        Refs.catchError = catchUpdater ;
     }else{
         //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook));// eslint-disable-line
@@ -52,6 +55,19 @@ function describeError(names, hook) {
             .join(" created By ")
     );
 }
+
+function discontinue(vnode){
+    if(!vnode){
+        return; 
+    }
+    if(vnode.vtype > 1){
+        captureError(vnode.stateNode, "componentWillUnmount",[]);
+        vnode.stateNode._hasError = true;
+    }
+    discontinue(vnode.child);
+    discontinue(vnode.sibling);
+}
+
 function findCatchComponent(instance, names){
     var target = instance.updater.vnode;
     do {
