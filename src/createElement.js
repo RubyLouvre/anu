@@ -154,6 +154,9 @@ export function operateChildren(children, isMap, callback) {
                 temp.unshift.apply(temp, child);
                 continue;
             }
+            if (child.toJS) {
+                child = child.toJS();
+            }
             if (isMap) {
                 if (!child._prefix) {
                     child._prefix = "." + keeper.unidimensionalIndex;
