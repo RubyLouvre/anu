@@ -142,33 +142,24 @@ export function operateChildren(children, isMap, callback) {
             unidimensionalIndex: 0
         },
         child,
-        iteractorFn,
         temp = Array.isArray(children) ? children.slice(0) : [children];
     while (temp.length) {
-        if ((child = temp.shift()) && (child.shift || (iteractorFn = getIteractor(child)))) {
-            //比较巧妙地判定是否为子数组
-            if (iteractorFn) {
-                //兼容Immutable.js, Map, Set
-                child = callIteractor(iteractorFn, child);
-                iteractorFn = false;
-                temp.unshift.apply(temp, child);
-                continue;
-            }
-            if (child.toJS) {
-                child = child.toJS();
-            }
+        if ((child = temp.shift()) && child.forEach ) {
             if (isMap) {
                 if (!child._prefix) {
                     child._prefix = "." + keeper.unidimensionalIndex;
                     keeper.unidimensionalIndex++; //维护第一层元素的索引值
                 }
-                for (let i = 0; i < child.length; i++) {
-                    if (child[i]) {
-                        child[i]._prefix = child._prefix + ":" + i;
-                    }
-                }
             }
-            temp.unshift.apply(temp, child);
+            //Immutable, es6 Map, Set都有forEach方法
+            var arr = [];
+            child.forEach(function(el, i ){
+                if(isMap && el){
+                    el._prefix = child._prefix + ":" + i;
+                }
+                arr.push(el);
+            });
+            temp.unshift.apply(temp, arr);
         } else {
             if (typeNumber(child) === 8  && !child.type) {
                 throw Error("children中存在非法的对象");
@@ -178,34 +169,3 @@ export function operateChildren(children, isMap, callback) {
     }
     return ret;
 }
-
-var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
-var FAKE_SYMBOL = "@@iterator";
-function getIteractor(a) {
-    if (typeNumber(a) > 7) {
-        var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
-        if (iteratorFn && iteratorFn.call) {
-            return iteratorFn;
-        }
-    }
-}
-function callIteractor(iteratorFn, children) {
-    var iterator = iteratorFn.call(children),
-        step,
-        ret = [];
-    if (iteratorFn !== children.entries) {
-        while (!(step = iterator.next()).done) {
-            ret.push(step.value);
-        }
-    } else {
-        //Map, Set
-        while (!(step = iterator.next()).done) {
-            var entry = step.value;
-            if (entry) {
-                ret.push(entry[1]);
-            }
-        }
-    }
-    return ret;
-}
-
