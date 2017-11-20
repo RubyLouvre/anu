@@ -30,7 +30,7 @@ export function Updater(instance, vnode) {
     this.vnode = vnode;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = ["resolve"];
+    this._jobs = ["resolve"]; 
     this._mountOrder = mountOrder++;
     var type = vnode.type;
     this.name = type.displayName || type.name;

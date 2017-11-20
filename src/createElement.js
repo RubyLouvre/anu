@@ -107,7 +107,7 @@ export function fiberizeChildren(vnode) {
             let childType = typeNumber(child);
             if (childType < 3) {
                 //undefined, null, boolean
-                child = createVText("#comment","empty2");
+                child = createVText("#comment","empty");
                 lastText = null;
             } else if (childType < 5) {
                 //number string

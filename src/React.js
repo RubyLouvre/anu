@@ -39,3 +39,4 @@ var React = {
 window.React = window.ReactDOM = React;
 
 export default React;
+

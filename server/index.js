@@ -254,49 +254,10 @@ function encodeAttributes(value) {
 }
 
 function renderToString(vnode, context) {
-    var TAG_END = /\/?>/;
-    var COMMENT_START = /^<\!\-\-/;
-    var markup = renderVNode(vnode, context || {});
-    var checksum = adler32(markup);
-    // Add checksum (handle both parent tags, comments and self-closing tags)
-    if (COMMENT_START.test(markup)) {
-        return markup;
-    } else {
-        return markup.replace(
-            TAG_END,
-            " data-reactroot=\"\" data-react-checksum=\"" + checksum + "\"$&"
-        );
-    }
+    return renderVNode(vnode, context || {});
 }
 
-var MOD = 65521;
 
-//  以后考虑去掉这个东西
-function adler32(data) {
-    var a = 1;
-    var b = 0;
-    var i = 0;
-    var l = data.length;
-    var m = l & ~0x3;
-    while (i < m) {
-        var n = Math.min(i + 4096, m);
-        for (; i < n; i += 4) {
-            b +=
-        (a += data.charCodeAt(i)) +
-        (a += data.charCodeAt(i + 1)) +
-        (a += data.charCodeAt(i + 2)) +
-        (a += data.charCodeAt(i + 3));
-        }
-        a %= MOD;
-        b %= MOD;
-    }
-    for (; i < l; i++) {
-        b += a += data.charCodeAt(i);
-    }
-    a %= MOD;
-    b %= MOD;
-    return a | (b << 16);
-}
 export default {
     renderToString,
     renderToStaticMarkup: renderToString

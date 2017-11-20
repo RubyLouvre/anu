@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-11-17
+ * QQ 370262116 by 司徒正美 Copyright 2017-11-20
  */
 
 (function (global, factory) {
@@ -586,7 +586,7 @@ function fiberizeChildren(vnode) {
             var childType = typeNumber(child);
             if (childType < 3) {
                 //undefined, null, boolean
-                child = createVText("#comment", "empty2");
+                child = createVText("#comment", "empty");
                 lastText = null;
             } else if (childType < 5) {
                 //number string

@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-11-17
+ * 此版本带有selection by 司徒正美 Copyright 2017-11-20
  * IE9+
  */
 
@@ -548,7 +548,7 @@ function fiberizeChildren(vnode) {
             var childType = typeNumber(child);
             if (childType < 3) {
                 //undefined, null, boolean
-                child = createVText("#comment", "empty2");
+                child = createVText("#comment", "empty");
                 lastText = null;
             } else if (childType < 5) {
                 //number string
