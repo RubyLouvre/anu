@@ -217,6 +217,9 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         }
     } else if (lastVnode.vtype === 1) {
         nextVnode.childNodes = lastVnode.childNodes;
+        if(lastVnode.namespaceURI){
+            nextVnode.namespaceURI = lastVnode.namespaceURI;
+        }
         let { props: lastProps, stateNode: dom, _hasProps, type } = lastVnode;
         let { props: nextProps, _hasProps: nextCheckProps } = nextVnode;
         let lastChildren = restoreChildren(lastVnode);
