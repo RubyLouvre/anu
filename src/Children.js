@@ -15,7 +15,7 @@ export const Children = {
             return 0;
         }
         var index = 0;
-        operateChildren(children, false, function() {
+        operateChildren(children, "", function() {
             index++;
         });
         return index;
@@ -24,22 +24,21 @@ export const Children = {
         if (children == null) {
             return children;
         }
-        var index = 0;
-        return operateChildren(children, true, function(ret, old, keeper) {
+        var index = 0,
+            ret = [];
+        operateChildren(children, "", function(old, prefix) {
             if (old == null || old === false || old === true) {
                 old = null;
-            } else if (!old._prefix) {
-                old._prefix = "." + keeper.unidimensionalIndex;
-                keeper.unidimensionalIndex++;
             }
             let outerIndex = index;
-            let el = callback.call(context, old, index++);
+            let el = callback.call(context, old, index);
+            index++;
             if (el == null) {
                 return;
             }
             if (el.vtype) {
                 //如果返回的el等于old,还需要使用原来的key, _prefix
-                var key = computeKey(old, el, outerIndex);
+                var key = computeKey(old, el, prefix, outerIndex);
                 ret.push(cloneElement(el, { key }));
             } else if (el.type) {
                 ret.push(extend({}, el));
@@ -47,14 +46,15 @@ export const Children = {
                 ret.push(el);
             }
         });
+        return ret;
     },
     forEach(children, callback, context) {
         if (children != null) {
             var index = 0;
-            operateChildren(children, false, function(array, el) {
+            operateChildren(children, "", function(el) {
                 if (el == null || el === false || el === true) {
                     el = null;
-                }
+                }       
                 callback.call(context, el, index++);
             });
         }
@@ -69,24 +69,21 @@ export const Children = {
     }
 };
 var rthimNumer = /\d+\$/;
-function computeKey(old, el, index) {
+function computeKey(old, el, prefix, index) {
     let curKey = el && el.key != null ? escapeKey(el.key) : null;
     let oldKey = old && old.key != null ? escapeKey(old.key) : null;
-    let oldFix = old && old._prefix,
-        key;
+    let key;
     if (oldKey && curKey) {
-        key = oldFix + "$" + oldKey;
+        key = prefix + "$" + oldKey;
         if (oldKey !== curKey) {
             key = curKey + "/" + key;
         }
     } else {
         key = curKey || oldKey;
         if (key) {
-            if (oldFix) {
-                key = oldFix + "$" + key;
-            }
+            key = prefix + "$" + key;
         } else {
-            key = oldFix || "." + index;
+            key = prefix ==="." ? prefix + index: prefix;
         }
     }
     return key.replace(rthimNumer, "$");

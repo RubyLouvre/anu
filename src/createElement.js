@@ -20,7 +20,7 @@ export function createElement(type, config, ...children) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
         console.error("React.createElement的第一个参数有问题");
-        type ="#comment";
+        type = "#comment";
         vtype = 0;
     }
     if (config != null) {
@@ -70,7 +70,8 @@ export function createVText(type, text) {
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 export function createVnode(node) {
-    var type = node.nodeName, vnode;
+    var type = node.nodeName,
+        vnode;
     if (node.nodeType === 1) {
         vnode = new Vnode(type, 1);
         var ns = node.namespaceURI;
@@ -90,7 +91,7 @@ export function createVnode(node) {
 export function restoreChildren(parent) {
     var ret = [];
     for (var el = parent.child; el; el = el.sibling) {
-        if(!el._disposed) {
+        if (!el._disposed) {
             ret.push(el);
         }
     }
@@ -102,22 +103,33 @@ export function fiberizeChildren(vnode) {
         ret = [],
         prev;
     if (c !== void 666) {
-        var lastText; 
-        ret = operateChildren(c, false, function(ret, child) {
+        var lastText,
+            compareObj = {};
+        operateChildren(c, "", function(child, index) {
             let childType = typeNumber(child);
             if (childType < 3) {
                 //undefined, null, boolean
-                child = createVText("#comment","empty");
+                child = createVText("#comment", "empty");
                 lastText = null;
             } else if (childType < 5) {
                 //number string
-                if(lastText){ //合并相邻的文本节点
+                if (lastText) {
+                    //合并相邻的文本节点
                     lastText.text += child;
                     return;
                 }
-                lastText = child =  createVText("#text", child+"");
-            }else{
+                lastText = child = createVText("#text", child + "");
+            } else {
                 lastText = null;
+                if (!child.type) {
+                    throw "这不是虚拟DOM";
+                }
+            }
+            var key = child.key;
+            if (!compareObj[key]) {
+                compareObj[key] = child;
+            } else {
+                compareObj[index] = child;
             }
             child.index = ret.length;
             child.return = vnode;
@@ -130,42 +142,43 @@ export function fiberizeChildren(vnode) {
         var child = ret[0];
         if (child) {
             vnode.child = child;
+            child.compareObj = compareObj;
         }
     }
-    
+
     return ret;
 }
 
-export function operateChildren(children, isMap, callback) {
-    let ret = [],
-        keeper = {
-            unidimensionalIndex: 0
-        },
-        child,
-        temp = Array.isArray(children) ? children.slice(0) : [children];
-    while (temp.length) {
-        if ((child = temp.shift()) && child.forEach ) {
-            if (isMap) {
-                if (!child._prefix) {
-                    child._prefix = "." + keeper.unidimensionalIndex;
-                    keeper.unidimensionalIndex++; //维护第一层元素的索引值
-                }
-            }
-            //Immutable, es6 Map, Set都有forEach方法
-            var arr = [];
-            child.forEach(function(el, i ){
-                if(isMap && el){
-                    el._prefix = child._prefix + ":" + i;
-                }
-                arr.push(el);
+export function operateChildren(children, prefix, callback) {
+    var iteratorFn;
+    if (children) {
+        if (children.forEach) {
+            children.forEach(function(el, i) {
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
             });
-            temp.unshift.apply(temp, arr);
-        } else {
-            if (typeNumber(child) === 8  && !child.type) {
-                throw Error("children中存在非法的对象");
+            return;
+        } else if ((iteratorFn = getIteractor(children))) {
+            var iterator = iteratorFn.call(children), ii = 0, step;
+            while (!(step = iterator.next()).done) {
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
+                ii++;
             }
-            callback(ret, child, keeper);
+            return;
+        }
+    } 
+    if(Object(children) === children && !children.type){
+        throw "children中存在非法的对象";
+    }
+    callback(children, prefix || ".");
+    
+}
+var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var FAKE_SYMBOL = "@@iterator";
+function getIteractor(a) {
+    if (typeNumber(a) > 7) {
+        var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
+        if (iteratorFn && iteratorFn.call) {
+            return iteratorFn;
         }
     }
-    return ret;
 }
