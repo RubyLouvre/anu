@@ -61,7 +61,7 @@ describe("ReactErrorBoundaries", () => {
             }
         };
 
-        BrokenComponentWillMount = class extends React.Component {
+        var BrokenComponentWillMount = class extends React.Component {
             constructor(props) {
                 super(props);
                 logger("BrokenComponentWillMount constructor");
@@ -434,7 +434,7 @@ describe("ReactErrorBoundaries", () => {
                 logger(`${this.props.logName} render success`);
                 return <div>{this.props.children}</div>;
             }
-            componentDidCatch(error) {
+            componentDidCatch(error,info) {
                 logger(`${this.props.logName} componentDidCatch`);
                 this.setState({ error });
             }

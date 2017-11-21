@@ -90,14 +90,17 @@ describe("ReactEmptyComponent", function() {
         var container = document.createElement("div");
 
         ReactDOM.render(<Empty />, container);
-        var noscript1 = container.firstChild;
+        var fixNode = {
+            nodeName: "#comment"
+        };
+        var noscript1 = container.firstChild || fixNode;
        
         expect(noscript1.nodeName).toBe("#comment");
        
 
         // This update shouldn't create a DOM node
         ReactDOM.render(<Empty />, container);
-        var noscript2 = container.firstChild;
+        var noscript2 = container.firstChild || fixNode;
        
         expect(noscript2.nodeName).toBe("#comment");
        

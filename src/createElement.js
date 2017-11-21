@@ -108,9 +108,9 @@ export function fiberizeChildren(vnode) {
         operateChildren(c, "", function(child, index) {
             let childType = typeNumber(child);
             if (childType < 3) {
-                //undefined, null, boolean
-                child = createVText("#comment", "empty");
+                //在React16中undefined, null, boolean不会产生节点 
                 lastText = null;
+                return;
             } else if (childType < 5) {
                 //number string
                 if (lastText) {
@@ -121,9 +121,6 @@ export function fiberizeChildren(vnode) {
                 lastText = child = createVText("#text", child + "");
             } else {
                 lastText = null;
-                if (!child.type) {
-                    throw "这不是虚拟DOM";
-                }
             }
             var key = child.key;
             if (!compareObj[key]) {

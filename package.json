@@ -67,7 +67,7 @@
     "rollup-plugin-istanbul": "^1.1.0",
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",
-    "selenium-standalone": "^6.4.1",
+    "selenium-standalone": "^6.11.0",
     "semicolon-less": "^0.7.0",
     "webpack": "^1.14.0"
   },
@@ -89,8 +89,5 @@
     "subjectPattern": ".+",
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
-  },
-  "dependencies": {
-    "chai-spies": "^0.7.1"
   }
 }

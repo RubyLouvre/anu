@@ -351,8 +351,7 @@ function hashToClassName(obj) {
     }
     return arr.join(" ");
 }
-var rXlink = /^xlink\:?(.+)/;
-
+var rXlink = /^xlink:?(.+)/;
 function skipFalseAndFunction(a) {
     return a !== false && Object(a) !== a;
 }
@@ -420,7 +419,6 @@ function toVnode(vnode, data, parentInstance) {
         }
 
         vnode._instance = instance;
-        instance.__current = vnode;
         if (parentInstance) {
             instance.__parentInstance = parentInstance;
         }
@@ -500,9 +498,12 @@ function encodeEntities(text) {
     }
     return escapeHtml(text);
 }
-
+var attrCached = {};
 function encodeAttributes(value) {
-    return "\"" + encodeEntities(value) + "\"";
+    if (attrCached[value]) {
+        return attrCached[value];
+    }
+    return attrCached[value] = "\"" + encodeEntities(value) + "\"";
 }
 
 function renderToString(vnode, context) {

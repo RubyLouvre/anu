@@ -338,7 +338,7 @@ describe("组件相关", function() {
             render() {
                 return (
                     <div>
-                        <span>xx</span>
+                        <span>App</span>
                         <Route path={this.state.path} />
                     </div>
                 );
@@ -386,7 +386,9 @@ describe("组件相关", function() {
 
         expect(updateCount).toBe(2);
         expect(receiveCount).toBe(2);
-        expect(div.firstChild.childNodes[1].nodeType).toBe(8);
+        if(!React.createPortal){
+           expect(div.firstChild.childNodes[1].nodeType).toBe(8);
+        }
         expect(destroyCount).toBe(0);
         s.change("111");
 

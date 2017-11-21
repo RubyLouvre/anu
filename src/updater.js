@@ -166,7 +166,9 @@ Updater.prototype = {
         
         let { vnode, pendingVnode, instance, parentContext } = this,
             nextChildren = [],
+            childContext = parentContext,
             rendered,
+            number,
             lastChildren,
             target = pendingVnode || vnode;
         if (this.willReceive === false) {
@@ -176,12 +178,13 @@ Updater.prototype = {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
             rendered = captureError(instance, "render", []);
-            if(instance._hasError){
-                rendered = void 666;
+            if(instance._hasError ){
+                rendered = true;
             }
             Refs.currentOwner = lastOwn;
         }
-         
+        number = typeNumber(rendered);
+
         if (this.isMounted()) {
             lastChildren = restoreChildren(this.vnode);
         } else {
@@ -190,14 +193,12 @@ Updater.prototype = {
         if(pendingVnode) {
             delete pendingVnode.child;
         }
-        if (rendered !== void 66) {
+        if (number > 2 ) {
             var oldProps = target.props;
             target.props = { children: rendered };
             nextChildren = fiberizeChildren(target);
             target.props = oldProps;
         }
-        let childContext = parentContext,
-            number = typeNumber(rendered);
         if (number === 7) {
             if (!support16) {
                 pushError(instance, "render", new Error("React15 fail to render array"));

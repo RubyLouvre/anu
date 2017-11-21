@@ -326,14 +326,13 @@ describe("ReactChildren", function() {
     );
     assertCalls();
     expect(console.error.calls.count()).toBe(0);
-    expect(mappedChildren).toEqual([
+    var compareChildren = [
       <div key=".0" />,
       <div key=".1" />,
       <div key=".2" />,
-    ]);
+    ]
+    expect(mappedChildren).toEqual(compareChildren);
   });
-
-
 
   it('should be called for each child in an iterable with keys', () => {
     var threeDivIterable = {

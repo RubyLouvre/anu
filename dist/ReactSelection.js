@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-11-20
+ * 此版本带有selection by 司徒正美 Copyright 2017-11-21
  * IE9+
  */
 
@@ -361,6 +361,7 @@ function Vnode(type, vtype, props, key, ref, _hasProps) {
     /*
       this.stateNode = null
     */
+
     options.afterCreate(this);
 }
 
@@ -383,7 +384,7 @@ Vnode.prototype = {
         }
         return ret;
     },
-    batchMount: function batchMount() {
+    batchMount: function batchMount(tag) {
         var parentNode = this.stateNode;
         if (!parentNode.childNodes.length) {
             //父节点必须没有孩子
@@ -391,9 +392,12 @@ Vnode.prototype = {
             if (childNodes.isError) {
                 return;
             }
+            //console.log(tag, "!!!!",childNodes,parentNode);
             childNodes.forEach(function (dom) {
                 parentNode.appendChild(dom);
             });
+        } else {
+            //console.log(tag, "已经有节点",this.collectNodes(),parentNode);
         }
     },
     batchUpdate: function batchUpdate(updateMeta, nextChildren) {
@@ -543,13 +547,14 @@ function fiberizeChildren(vnode) {
         ret = [],
         prev = void 0;
     if (c !== void 666) {
-        var lastText;
-        ret = operateChildren(c, false, function (ret, child) {
+        var lastText,
+            compareObj = {};
+        operateChildren(c, "", function (child, index) {
             var childType = typeNumber(child);
             if (childType < 3) {
-                //undefined, null, boolean
-                child = createVText("#comment", "empty");
+                //在React16中undefined, null, boolean不会产生节点 
                 lastText = null;
+                return;
             } else if (childType < 5) {
                 //number string
                 if (lastText) {
@@ -560,6 +565,12 @@ function fiberizeChildren(vnode) {
                 lastText = child = createVText("#text", child + "");
             } else {
                 lastText = null;
+            }
+            var key = child.key;
+            if (!compareObj[key]) {
+                compareObj[key] = child;
+            } else {
+                compareObj[index] = child;
             }
             child.index = ret.length;
             child.return = vnode;
@@ -572,52 +583,37 @@ function fiberizeChildren(vnode) {
         var child = ret[0];
         if (child) {
             vnode.child = child;
+            child.compareObj = compareObj;
         }
     }
 
     return ret;
 }
 
-function operateChildren(children, isMap, callback) {
-    var ret = [],
-        keeper = {
-        unidimensionalIndex: 0
-    },
-        child = void 0,
-        iteractorFn = void 0,
-        temp = Array.isArray(children) ? children.slice(0) : [children];
-    while (temp.length) {
-        if ((child = temp.shift()) && (child.shift || (iteractorFn = getIteractor(child)))) {
-            //比较巧妙地判定是否为子数组
-            if (iteractorFn) {
-                //兼容Immutable.js, Map, Set
-                child = callIteractor(iteractorFn, child);
-                iteractorFn = false;
-                temp.unshift.apply(temp, child);
-                continue;
+function operateChildren(children, prefix, callback) {
+    var iteratorFn;
+    if (children) {
+        if (children.forEach) {
+            children.forEach(function (el, i) {
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
+            });
+            return;
+        } else if (iteratorFn = getIteractor(children)) {
+            var iterator = iteratorFn.call(children),
+                ii = 0,
+                step;
+            while (!(step = iterator.next()).done) {
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
+                ii++;
             }
-            if (isMap) {
-                if (!child._prefix) {
-                    child._prefix = "." + keeper.unidimensionalIndex;
-                    keeper.unidimensionalIndex++; //维护第一层元素的索引值
-                }
-                for (var i = 0; i < child.length; i++) {
-                    if (child[i]) {
-                        child[i]._prefix = child._prefix + ":" + i;
-                    }
-                }
-            }
-            temp.unshift.apply(temp, child);
-        } else {
-            if (typeNumber(child) === 8 && !child.type) {
-                throw Error("children中存在非法的对象");
-            }
-            callback(ret, child, keeper);
+            return;
         }
     }
-    return ret;
+    if (Object(children) === children && !children.type) {
+        throw "children中存在非法的对象";
+    }
+    callback(children, prefix || ".");
 }
-
 var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
@@ -627,25 +623,6 @@ function getIteractor(a) {
             return iteratorFn;
         }
     }
-}
-function callIteractor(iteratorFn, children) {
-    var iterator = iteratorFn.call(children),
-        step,
-        ret = [];
-    if (iteratorFn !== children.entries) {
-        while (!(step = iterator.next()).done) {
-            ret.push(step.value);
-        }
-    } else {
-        //Map, Set
-        while (!(step = iterator.next()).done) {
-            var entry = step.value;
-            if (entry) {
-                ret.push(entry[1]);
-            }
-        }
-    }
-    return ret;
 }
 
 function cloneElement(vnode, props) {
@@ -695,7 +672,7 @@ var Children = {
             return 0;
         }
         var index = 0;
-        operateChildren(children, false, function () {
+        operateChildren(children, "", function () {
             index++;
         });
         return index;
@@ -704,22 +681,21 @@ var Children = {
         if (children == null) {
             return children;
         }
-        var index = 0;
-        return operateChildren(children, true, function (ret, old, keeper) {
+        var index = 0,
+            ret = [];
+        operateChildren(children, "", function (old, prefix) {
             if (old == null || old === false || old === true) {
                 old = null;
-            } else if (!old._prefix) {
-                old._prefix = "." + keeper.unidimensionalIndex;
-                keeper.unidimensionalIndex++;
             }
             var outerIndex = index;
-            var el = callback.call(context, old, index++);
+            var el = callback.call(context, old, index);
+            index++;
             if (el == null) {
                 return;
             }
             if (el.vtype) {
                 //如果返回的el等于old,还需要使用原来的key, _prefix
-                var key = computeKey(old, el, outerIndex);
+                var key = computeKey(old, el, prefix, outerIndex);
                 ret.push(cloneElement(el, { key: key }));
             } else if (el.type) {
                 ret.push(extend({}, el));
@@ -727,11 +703,12 @@ var Children = {
                 ret.push(el);
             }
         });
+        return ret;
     },
     forEach: function forEach(children, callback, context) {
         if (children != null) {
             var index = 0;
-            operateChildren(children, false, function (array, el) {
+            operateChildren(children, "", function (el) {
                 if (el == null || el === false || el === true) {
                     el = null;
                 }
@@ -750,24 +727,21 @@ var Children = {
     }
 };
 var rthimNumer = /\d+\$/;
-function computeKey(old, el, index) {
+function computeKey(old, el, prefix, index) {
     var curKey = el && el.key != null ? escapeKey(el.key) : null;
     var oldKey = old && old.key != null ? escapeKey(old.key) : null;
-    var oldFix = old && old._prefix,
-        key = void 0;
+    var key = void 0;
     if (oldKey && curKey) {
-        key = oldFix + "$" + oldKey;
+        key = prefix + "$" + oldKey;
         if (oldKey !== curKey) {
             key = curKey + "/" + key;
         }
     } else {
         key = curKey || oldKey;
         if (key) {
-            if (oldFix) {
-                key = oldFix + "$" + key;
-            }
+            key = prefix + "$" + key;
         } else {
-            key = oldFix || "." + index;
+            key = prefix === "." ? prefix + index : prefix;
         }
     }
     return key.replace(rthimNumer, "$");
@@ -1736,7 +1710,9 @@ Updater.prototype = {
             instance = this.instance,
             parentContext = this.parentContext,
             nextChildren = [],
+            childContext = parentContext,
             rendered = void 0,
+            number = void 0,
             lastChildren = void 0,
             target = pendingVnode || vnode;
 
@@ -1748,10 +1724,11 @@ Updater.prototype = {
             Refs.currentOwner = instance;
             rendered = captureError(instance, "render", []);
             if (instance._hasError) {
-                rendered = void 666;
+                rendered = true;
             }
             Refs.currentOwner = lastOwn;
         }
+        number = typeNumber(rendered);
 
         if (this.isMounted()) {
             lastChildren = restoreChildren(this.vnode);
@@ -1761,14 +1738,12 @@ Updater.prototype = {
         if (pendingVnode) {
             delete pendingVnode.child;
         }
-        if (rendered !== void 66) {
+        if (number > 2) {
             var oldProps = target.props;
             target.props = { children: rendered };
             nextChildren = fiberizeChildren(target);
             target.props = oldProps;
         }
-        var childContext = parentContext,
-            number = typeNumber(rendered);
         if (number === 7) {
             if (!support16) {
                 pushError(instance, "render", new Error("React15 fail to render array"));
@@ -2624,6 +2599,9 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         }
     } else if (lastVnode.vtype === 1) {
         nextVnode.childNodes = lastVnode.childNodes;
+        if (lastVnode.namespaceURI) {
+            nextVnode.namespaceURI = lastVnode.namespaceURI;
+        }
         var lastProps = lastVnode.props,
             _dom = lastVnode.stateNode,
             _hasProps = lastVnode._hasProps,
@@ -2743,10 +2721,14 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         var firstChild = parentVnode.stateNode.firstChild;
         var child = lastChildren[0];
         if (firstChild && child) {
-            while (child.vtype > 1) {
-                child = child.child;
+            do {
+                if (child.vtype < 2) {
+                    break;
+                }
+            } while (child = child.child);
+            if (child) {
+                child.stateNode = firstChild;
             }
-            child.stateNode = firstChild;
         }
     }
     do {
