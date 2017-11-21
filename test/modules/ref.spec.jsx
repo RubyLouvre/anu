@@ -630,7 +630,25 @@ describe("ref模块", function () {
             </div>,
             div
         );
-        expect(list.join("\n")).toBe([
+        var list2 = ReactDOM.createPortal ? [
+            "a componentWillMount",
+            "b componentWillMount",
+            "a componentDidMount",
+            "a true",
+            "b componentDidMount",
+            "b true",
+            "update...",
+            "componentWillMount",
+            "d componentWillMount",
+            "a false",
+            "a componentWillUnmount",
+            "b false",
+            "b componentWillUnmount",
+            "c componentDidMount",
+            "c true",
+            "d componentDidMount",
+            "d true"
+        ]:[
             "a componentWillMount",
             "b componentWillMount",
             "a componentDidMount",
@@ -648,6 +666,7 @@ describe("ref模块", function () {
             "c true",
             "d componentDidMount",
             "d true"
-        ].join("\n"));
+        ];
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
 });

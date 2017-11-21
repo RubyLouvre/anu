@@ -19,10 +19,10 @@ var text2 = str2
 
 fs.writeFileSync(dir2, text2, { encoding: "utf8" });
 // fs.writeFileSync( path.join(__dirname, "../../animate/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
-fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
-fs.writeFileSync( path.join(__dirname, "../../aaa/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../yo-demo/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+//fs.writeFileSync( path.join(__dirname, "../../aaa/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 console.log("对React瘦身完毕"); // eslint-disable-line
 

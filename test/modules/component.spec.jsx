@@ -546,7 +546,7 @@ describe("组件相关", function() {
             />,
             div
         );
-        expect(list).toEqual([false, false, false]);
+        expect(list.join("\n")).toBe([false, false, false].join("\n"));
         var list2 = [];
         function New(props) {
             return {
@@ -579,7 +579,7 @@ describe("组件相关", function() {
             />,
             div
         );
-        expect(list2).toEqual(["mount", true, false, "update", true]);
+        expect(list2.join("\n")).toBe(["mount", true, false, "update", true].join("\n"));
     });
 
     it("componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素", () => {
