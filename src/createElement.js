@@ -104,8 +104,8 @@ export function fiberizeChildren(vnode) {
         prev;
     if (c !== void 666) {
         var lastText,
-            compareObj = {};
-        var lastIndex = 0;
+            compareMap = {},
+            lastIndex = 0;
         operateChildren(c, "", function(child, index) {
             let childType = typeNumber(child);
             if (childType < 3) {
@@ -125,13 +125,13 @@ export function fiberizeChildren(vnode) {
             }
             var key = child.key;
            
-            if (key && !compareObj[".$"+key]) {
-                compareObj[".$"+key] = child;
+            if (key && !compareMap[".$"+key]) {
+                compareMap[".$"+key] = child;
             } else {
                 if(index === "."){
                     index = "." + lastIndex; 
                 }
-                compareObj[index] = child;
+                compareMap[index] = child;
             }
             child.index = ret.length;
             child.return = vnode;
@@ -145,7 +145,7 @@ export function fiberizeChildren(vnode) {
         var child = ret[0];
         if (child) {
             vnode.child = child;
-            child.compareObj = compareObj;
+            child.compareMap = compareMap;
         }
     }
 
