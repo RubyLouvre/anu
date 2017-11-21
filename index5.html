@@ -5,11 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
-     <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
     <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-<!--<script type='text/javascript' src="./test/react.development.js"></script>
-  <script type='text/javascript' src="./test/react-dom.development.js"></script> -->
-     <script type='text/javascript' src="./lib/babel.js"></script>
+    <script type='text/javascript' src="./test/react.development.js"></script>
+    <script type='text/javascript' src="./test/react-dom.development.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
@@ -30,29 +30,110 @@
     var expect = function(a) {
         return {
             toBe: function(b) {
-                console.log(a, b, a === b)
+                console.log(a,"vs", b, a === b)
             }
         }
     }
-    var list = []
+    var list = [];
     function logger(e){
-        list.push(e)
-    }
-    class App extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                path: "111"
-            };
+        list.push(e);
+    }   
+    var A = class extends React.Component {
+        componentWillMount() {
+            logger(this.props.name + " componentWillMount");
         }
-       
         render() {
-            return <div>{[<span>aaa</span>,<span key="aaa">bbb</span>,
-                [<span>ccc</span>,<span>ddd</span>],<span key="aaa">eee</span>]}</div>
+            return <div>{this.props.name}</div>;
         }
-    }
-    var s = ReactDOM.render(<App/>, container)
-    
+        componentDidMount() {
+            logger(this.props.name + " componentDidMount");
+        }
+        componentDidUpdate() {
+            logger(this.props.name + " componentDidUpdate");
+        }
+        componentWillUnmount() {
+            logger(this.props.name + " componentWillUnmount");
+        }
+    };
+    var B = class extends React.Component {
+        componentWillMount() {
+            logger(this.props.name + " componentWillMount");
+        }
+        render() {
+            return <strong>{this.props.name}</strong>;
+        }
+        componentDidMount() {
+            logger(this.props.name + " componentDidMount");
+        }
+        componentWillUnmount() {
+            logger(this.props.name + " componentWillUnmount");
+        }
+    };
+    ReactDOM.render(
+        <div>
+            <A key="aa" name="a" ref={(a)=>{
+                logger("a "+!!a)
+                ;
+            }}></A>
+            <A key="bb" name="b" ref={(a)=>{
+                logger("b "+!!a)
+                ;
+            }}></A>
+        </div>,
+        div
+    );
+    logger("update...");
+    ReactDOM.render(
+        <div>
+            <B key="aa" name="c" ref={(a)=>{
+                logger("c "+!!a);
+            }}></B>
+            <B key="bb" name="d" ref={(a)=>{
+                logger("d "+!!a)
+                ;
+            }}></B>
+        </div>,
+        div
+    );
+    var list2 = ReactDOM.createPortal ? [
+    "a componentWillMount",
+    "b componentWillMount",
+    "a componentDidMount",
+    "a true",
+    "b componentDidMount",
+    "b true",
+    "update...",
+    "componentWillMount",
+    "d componentWillMount",
+    "a false",
+    "a componentWillUnmount",
+    "b false",
+    "b componentWillUnmount",
+    "c componentDidMount",
+    "c true",
+    "d componentDidMount",
+    "d true"
+    ]:[
+        "a componentWillMount",
+        "b componentWillMount",
+        "a componentDidMount",
+        "a true",
+        "b componentDidMount",
+        "b true",
+        "update...",
+        "a false",
+        "a componentWillUnmount",
+        "c componentWillMount",
+        "b false",
+        "b componentWillUnmount",
+        "d componentWillMount",
+        "c componentDidMount",
+        "c true",
+        "d componentDidMount",
+        "d true"
+    ]
+    expect(list.join("\n")).toBe(list2.join("\n"));
+
     </script>
 
 </body>
