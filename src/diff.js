@@ -330,7 +330,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         lastChild,
         nextChild,
         i = 0;
-    
     if(parentVnode.vtype === 1 ){
         var firstChild = parentVnode.stateNode.firstChild;
         var child = lastChildren[0];

@@ -7,19 +7,16 @@
     <!--  <script type='text/javascript' src="./lib/shallowCompare.js"></script>-->
      <script type='text/javascript' src="./dist/React.js"></script>
     <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-   <!--<script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-    <script type='text/javascript' src="./lib/babel.js"></script>
+<!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./test/react-dom.development.js"></script> -->
+     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
     <div>开发者工具</div>
-    <pre>
-          
-    </pre>
+
     <div id='example'></div>
     <script type='text/babel'> 
     var container = document.getElementById("example")
@@ -45,35 +42,16 @@
         constructor(props) {
             super(props);
             this.state = {
-                flag: 1
+                path: "111"
             };
         }
+       
         render() {
-            return (<div className="root" onClick={ ()=>{ logger("App.div") } }><Child /></div>);
+            return <div>{[<span>aaa</span>,<span key="aaa">bbb</span>,
+                [<span>ccc</span>,<span>ddd</span>],<span key="aaa">eee</span>]}</div>
         }
     }
-    
-    class Child extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                text: props.text 
-            };
-        }
-        render(){
-            return <div onClick={ ()=>{ logger("Child.div") } }>
-                <p onClick={ ()=> { logger("Child.p") } }>
-                    <button type="button">按钮</button>
-                 </p>
-                </div>
-        }
-    }
-
-
-  var s = ReactDOM.render(<App />, div);
-  console.log(list)
-
-
+    ReactDOM.render(<App/>, container)
     
     </script>
 

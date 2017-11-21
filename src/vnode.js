@@ -60,7 +60,6 @@ Vnode.prototype = {
             if(childNodes.isError) {
                 return;
             }
-            //console.log(tag, "!!!!",childNodes,parentNode);
             childNodes.forEach(function(dom) {
                 parentNode.appendChild(dom);
             });

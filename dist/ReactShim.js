@@ -587,6 +587,7 @@ function fiberizeChildren(vnode) {
     if (c !== void 666) {
         var lastText,
             compareObj = {};
+        var lastIndex = 0;
         operateChildren(c, "", function (child, index) {
             var childType = typeNumber(child);
             if (childType < 3) {
@@ -605,9 +606,13 @@ function fiberizeChildren(vnode) {
                 lastText = null;
             }
             var key = child.key;
-            if (!compareObj[key]) {
-                compareObj[key] = child;
+
+            if (key && !compareObj[".$" + key]) {
+                compareObj[".$" + key] = child;
             } else {
+                if (index === ".") {
+                    index = "." + lastIndex;
+                }
                 compareObj[index] = child;
             }
             child.index = ret.length;
@@ -615,6 +620,7 @@ function fiberizeChildren(vnode) {
             if (prev) {
                 prev.sibling = child;
             }
+            lastIndex++;
             prev = child;
             ret.push(child);
         });
@@ -2558,7 +2564,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         lastChild,
         nextChild,
         i = 0;
-
+    console.log(lastChildren[0], nextChildren[0]);
     if (parentVnode.vtype === 1) {
         var firstChild = parentVnode.stateNode.firstChild;
         var child = lastChildren[0];

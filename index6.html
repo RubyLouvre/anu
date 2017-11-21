@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width">   
     <script type='text/javascript' src="./dist/React.js"></script>
 
-   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
    <!--<script type='text/javascript' src="./test/react.js"></script>
    <script type='text/javascript' src="./test/react-dom.js"></script>-->
@@ -36,7 +36,9 @@
            
           
           </pre>
-        <div id='example'></div>
+        <div id='example'>
+
+        </div>
         <script type='text/babel'>
             var container = document.getElementById("example")
             var div = container
@@ -54,6 +56,8 @@
            
           
             var list = [];
+
+
             class A extends React.Component{
                 componentWillUnmount(){
                     logger("A remove");
@@ -65,6 +69,8 @@
                     return <i>A</i>;
                 }
             }
+
+
             class B extends React.Component{
                 componentDidMount(){
                     logger("B mount");
@@ -113,7 +119,11 @@
                 }
             }
             var s = ReactDOM.render(<App />, div);
+         //   var s = ReactDOM.render(React.createElement(App, null), div)
             s.setState({a: 0});
+
+
+        
             /*
             expect(list.join("\n")).toBe([
                 "111instance",
@@ -129,8 +139,14 @@
                 "555instance",
                 "B mount"
             ].join("\n"));*/
+         
+
           </script>
+
     
+  <div>
+    <div>{{xxx}}</div>
+ </div>
 </body>
     
  </html>
