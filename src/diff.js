@@ -87,9 +87,8 @@ function renderByAnu(vnode, container, callback, context = {}) {
 
     Refs.currentOwner = null; //防止干扰
     var child = vnode;
-    vnode = createElement(AnuWrapper, {
-        child: child
-    });
+    vnode = createElement(AnuWrapper, {child});
+   
     vnode.isTop = true;
     topVnodes[nodeIndex] = vnode;
 
@@ -243,12 +242,11 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
 }
 
 function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
-    let { type, stateNode } = lastVnode;
-    let updater = stateNode.updater,
+    let { type, stateNode } = lastVnode,
+        updater = stateNode.updater,
+        //如果正在更新过程中接受新属性，那么去掉update,加上receive
+        willReceive = lastVnode !== nextVnode,
         nextContext;
-
-    //如果正在更新过程中接受新属性，那么去掉update,加上receive
-    var willReceive = lastVnode !== nextVnode;
     if (!type.contextTypes) {
         nextContext = stateNode.context;
     } else {
@@ -289,14 +287,12 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue, single) {
     return nextVnode.stateNode;
 }
 
-options.alignVnode = alignVnode;
-
-function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
-    var parentVElement = parentVnode,
+function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue,xxx) {
+    let lastMap = lastChildren.childMap || emptyObject,
+        nextMap = nextChildren.childMap || emptyObject,
+        parentVElement = parentVnode,
         priorityQueue = [],
-        mainQueue = [],
         lastLength = lastChildren.length,
-        nextLength = nextChildren.length,
         lastChild,
         nextChild;
     if (parentVnode.vtype === 1) {
@@ -313,7 +309,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 child.stateNode = firstChild;
             }
         }
-    }else{
+    } else {
         //向上找到其第一个元素节点祖先
         do {
             if (parentVElement.vtype === 1) {
@@ -321,18 +317,14 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             }
         } while ((parentVElement = parentVElement.return));
     }
-    if (nextChildren) {
-        parentVnode.child = nextChildren[0];
-    }
-    
-    if (!lastLength && nextLength) {
+    //优化： 只添加
+    if (!lastLength) {
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
         if (!parentVElement.selfMount) {
             parentVElement.batchMount("只添加");
         }
         return;
     }
-
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
         parentVElement.childNodes.length = 0; //清空数组，以方便收集节点
@@ -342,29 +334,54 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             lastChilds
         };
     }
-    var lastMap = lastChildren[0].compareMap;
-    var nextMap = nextChildren[0].compareMap;
-    for (let i in nextMap) {
+   
+    //step1: 匹配组件，移除旧节点，收集ref
+    var matchNodes = {},
+        nullRefs = [],
+        nullNodes = [],
+        hasMatch = false;
+    for (let i in lastMap) {
         nextChild = nextMap[i];
         lastChild = lastMap[i];
-        mainQueue.push(lastChild, nextChild);
-        if (lastChild) {
-            if (lastChild.vtype > 1 && lastChild.type === nextChild.type) {
+        if (nextChild && isSameNode(nextChild, lastChild)) {
+            matchNodes[i] = lastChild;
+            hasMatch = true;
+            if (lastChild.vtype > 1) {
+                matchNodes[i] = true;
                 receiveComponent(lastChild, nextChild, parentContext, priorityQueue);
+            } else {
+                nullRefs.push(nextChild);
+                nextChild.hit = lastChild;
             }
-            Refs.detachRef(lastChild, nextChild);
-            delete lastMap[i];
+        } else {
+            nullNodes.push(lastChild);
         }
     }
-
-    drainQueue(priorityQueue); //原来updateQueue为priorityQueue
-    //step4: 更新元素，调整位置或插入新元素
-    for (let i = 0, n = mainQueue.length; i < n; i += 2) {
-        lastChild = mainQueue[i];
-        nextChild = mainQueue[i + 1];
-        if (lastChild) {
+    if (hasMatch) {//兼容React15的怪异行为，如果有匹配则先移除后更新，否则先更新后移除
+        disposeChildren(nullNodes);
+    }
+    //step2:更新组件
+    drainQueue(priorityQueue);
+    //step3:将旧节点的ref进行移除操作
+    nullRefs
+        .sort(function(a, b) {
+            return a.index - b.index;
+        })
+        .forEach(function(a) {
+            Refs.detachRef(a.hit, a);
+            delete a.hit;
+        });
+    //step4:添加或更新剩余节点
+    for (let i in nextMap) {
+        nextChild = nextMap[i];
+        if (matchNodes[i]) {
+            lastChild = matchNodes[i];
+            if (lastChild === true) {
+                continue;
+            }
             alignVnode(lastChild, nextChild, parentContext, updateQueue, true);
         } else {
+            lastChild = null;
             mountVnode(nextChild, parentContext, updateQueue, true);
         }
         if (Refs.catchError) {
@@ -372,20 +389,15 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             return;
         }
     }
-    var arr = [];
-    for (let i in lastMap) {
-        arr.push(lastMap[i]);
+    if (!hasMatch) {
+        disposeChildren(nullNodes);
     }
-
-    //React的怪异行为，如果没有组件发生更新，那么先执行添加，再执行移除
-    disposeChildren(arr);
-
+    //step5:更新真实DOM
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
         parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren), nextChildren);
     }
 }
 
-options.diffChildren = diffChildren;
 function mergeNodes(children) {
     var nodes = [];
     for (var i = 0, el; (el = children[i++]); ) {
@@ -399,3 +411,6 @@ function mergeNodes(children) {
     }
     return nodes;
 }
+
+options.alignVnode = alignVnode;
+options.diffChildren = diffChildren;

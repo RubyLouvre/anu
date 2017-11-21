@@ -1,4 +1,4 @@
-import { typeNumber } from "./util";
+import { typeNumber,emptyObject } from "./util";
 import { Vnode } from "./vnode";
 /**
  * 虚拟DOM工厂
@@ -90,6 +90,7 @@ export function createVnode(node) {
 
 export function restoreChildren(parent) {
     var ret = [];
+    ret.childMap = parent.childMap; 
     for (var el = parent.child; el; el = el.sibling) {
         if (!el._disposed) {
             ret.push(el);
@@ -100,11 +101,10 @@ export function restoreChildren(parent) {
 
 export function fiberizeChildren(vnode) {
     let c = vnode.props.children,
-        ret = [],
+        ret = [],  compareMap = {},
         prev;
     if (c !== void 666) {
         var lastText,
-            compareMap = {},
             lastIndex = 0;
         operateChildren(c, "", function(child, index) {
             let childType = typeNumber(child);
@@ -145,10 +145,9 @@ export function fiberizeChildren(vnode) {
         var child = ret[0];
         if (child) {
             vnode.child = child;
-            child.compareMap = compareMap;
         }
     }
-
+    ret.childMap = vnode.childMap = compareMap;
     return ret;
 }
 

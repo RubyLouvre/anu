@@ -30,7 +30,7 @@ export function Updater(instance, vnode) {
     this.vnode = vnode;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = ["resolve"]; 
+    this._jobs = ["resolve"];
     this._mountOrder = mountOrder++;
     var type = vnode.type;
     this.name = type.displayName || type.name;
@@ -122,7 +122,7 @@ Updater.prototype = {
     isMounted: returnFalse,
     hydrate(updateQueue) {
         let { instance, context, props, vnode, pendingVnode } = this;
-        
+
         if (this._receiving) {
             let [lastVnode, nextVnode, nextContext] = this._receiving;
             nextVnode.stateNode = instance;
@@ -132,7 +132,6 @@ Updater.prototype = {
             captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
             delete this._receiving;
             Refs.detachRef(lastVnode, nextVnode);
-            
         }
         Refs.clearElementRefs();
         let state = this.mergeStates();
@@ -163,7 +162,6 @@ Updater.prototype = {
         updateQueue.push(this);
     },
     render(updateQueue) {
-        
         let { vnode, pendingVnode, instance, parentContext } = this,
             nextChildren = [],
             childContext = parentContext,
@@ -178,22 +176,27 @@ Updater.prototype = {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
             rendered = captureError(instance, "render", []);
-            if(instance._hasError ){
+            if (instance._hasError) {
                 rendered = true;
             }
             Refs.currentOwner = lastOwn;
         }
         number = typeNumber(rendered);
-
-        if (this.isMounted()) {
-            lastChildren = restoreChildren(this.vnode);
+        var hasMounted = this.isMounted();
+        if (hasMounted) {
+            var top = this.vnode;
+            if (top.isTop) {
+                //因为child是临时设置的
+                top.childMap = { ".0": top.child };
+            }
+            lastChildren = restoreChildren(top);
         } else {
             lastChildren = [];
         }
-        if(pendingVnode) {
+        if (pendingVnode) {
             delete pendingVnode.child;
         }
-        if (number > 2 ) {
+        if (number > 2) {
             var oldProps = target.props;
             target.props = { children: rendered };
             nextChildren = fiberizeChildren(target);
@@ -214,22 +217,21 @@ Updater.prototype = {
             }
         }
         //child在React16总是表示它是父节点的第一个节点
-        options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue,this.name);
+        options.diffChildren(lastChildren, nextChildren, target, childContext, updateQueue, this.name);
         let u = this;
         do {
             if (u.pendingVnode) {
                 u.vnode = u.pendingVnode;
                 delete u.pendingVnode;
             }
-         } while ((u = u.parentUpdater)); // eslint-disable-line
+        } while ((u = u.parentUpdater)); // eslint-disable-line
     },
     //此方法用于处理元素ref, ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
-        
         let instance = this.instance;
         let hasMounted = this.isMounted();
         let hasCatch = this._hasCatch;
-        if (!hasMounted) {     
+        if (!hasMounted) {
             this.isMounted = returnTrue;
         }
         //如果发生错误，之前收集的元素ref也不会执行，因为结构都不对，没有意义
@@ -243,19 +245,19 @@ Updater.prototype = {
             } else {
                 options.afterMount(instance);
             }
-           
+
             delete this._hookArgs;
             delete this._hydrating;
         }
         let vnode = this.vnode;
-       
-        if(hasCatch){
+
+        if (hasCatch) {
             delete this._hasCatch;
             this._hydrating = true;
             instance._hasTry = true;
             instance.componentDidCatch.apply(instance, hasCatch);
             this._hydrating = false;
-        }else{
+        } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
                 Refs.fireRef(vnode, instance.__isStateless ? null : instance);
@@ -268,8 +270,7 @@ Updater.prototype = {
             this.addJob("hydrate");
             updateQueue.push(this);
         }
-    },
-   
+    }
 };
 
 export function getChildContext(instance, parentContext) {
