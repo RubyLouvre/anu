@@ -338,13 +338,13 @@ describe("ReactMultiChild", function() {
             "oneA componentDidMount",
             "twoA componentDidMount",
 
-            "oneA componentWillUnmount",
             "oneB componentWillMount",
             "oneB render",
-            "twoA componentWillUnmount",
+          
             "twoB componentWillMount",
             "twoB render",
-
+            "oneA componentWillUnmount",
+            "twoA componentWillUnmount",
             "oneB componentDidMount",
             "twoB componentDidMount"
         ]);

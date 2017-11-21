@@ -630,7 +630,7 @@ describe("ref模块", function () {
             </div>,
             div
         );
-        var list2 = ReactDOM.createPortal ? [
+        var list2 =  [
             "a componentWillMount",
             "b componentWillMount",
             "a componentDidMount",
@@ -644,24 +644,6 @@ describe("ref模块", function () {
             "a componentWillUnmount",
             "b false",
             "b componentWillUnmount",
-            "c componentDidMount",
-            "c true",
-            "d componentDidMount",
-            "d true"
-        ]:[
-            "a componentWillMount",
-            "b componentWillMount",
-            "a componentDidMount",
-            "a true",
-            "b componentDidMount",
-            "b true",
-            "update...",
-            "a false",
-            "a componentWillUnmount",
-            "c componentWillMount",
-            "b false",
-            "b componentWillUnmount",
-            "d componentWillMount",
             "c componentDidMount",
             "c true",
             "d componentDidMount",
