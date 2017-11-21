@@ -104,33 +104,9 @@ export function camelize(target) {
 export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-function extractLocation(urlLike) {
-    if (urlLike.indexOf(":") === -1) {
-      return [urlLike];
-    }
-  
-    const regExp = /(.+?)(?::(\d+))?(?::(\d+))?$/;
-    const parts = regExp.exec(urlLike.replace(/[()]/g, ""));
-    const maybeUrl = /http.*/.exec(parts[1]);
-  
-    parts[1] = Array.isArray(maybeUrl) ? maybeUrl[0] : undefined;
-  
-    return [parts[1], parts[2] || undefined, parts[3] || undefined];
-}
-  
-const CHROME_IE_STACK_REGEXP = /^\s*at .*(\S+:\d+|\(native\))/m;
 
-export function parseError(error) {
-    const filtered = error.stack.split("\n").filter(function(line) {
-        return !!line.match(CHROME_IE_STACK_REGEXP);
-    });
-    const originError = filtered.pop();
-    const e = extractLocation(originError);
-
-    return [error.message, ...e, error];
-}
-  
 export var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,

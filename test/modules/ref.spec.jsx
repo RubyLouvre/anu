@@ -638,7 +638,7 @@ describe("ref模块", function () {
             "b componentDidMount",
             "b true",
             "update...",
-            "componentWillMount",
+            "c componentWillMount",  
             "d componentWillMount",
             "a false",
             "a componentWillUnmount",

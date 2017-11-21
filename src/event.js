@@ -1,5 +1,5 @@
 import { document } from "./browser";
-import { isFn, noop, options, parseError } from "./util";
+import { isFn, noop, options } from "./util";
 import { flushUpdaters } from "./scheduler";
 
 var globalEvents = {};
@@ -87,19 +87,7 @@ function triggerEventFlow(paths, prop, e) {
         var fn = path.events[prop];
         if (isFn(fn)) {
             e.currentTarget = path.dom;
-            try {
-                fn.call(path.dom, e);
-              } catch (e) {
-                setTimeout(function() {
-                        const errorParsed = parseError(e);
-                    
-                        if (window.onerror) {
-                            window.onerror(...errorParsed);
-                            } else {
-                        throw errorParsed;
-                    }
-                }, 0);
-              }
+            fn.call(path.dom, e);
             if (e._stopPropagation) {
                 break;
             }

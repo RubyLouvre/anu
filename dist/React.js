@@ -115,7 +115,9 @@ function camelize(target) {
 function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
+
 var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -2246,6 +2248,7 @@ function diffProps(dom, lastProps, nextProps, vnode) {
         if (!nextProps.hasOwnProperty(_name)) {
             var _which = tag + isSVG + _name;
             var _action = strategyCache[_which];
+            if (!_action) continue;
             actionStrategy[_action](dom, _name, false, lastProps, vnode);
         }
     }
