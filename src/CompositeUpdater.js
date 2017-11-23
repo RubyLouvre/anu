@@ -1,8 +1,7 @@
 import { fiberizeChildren } from "./createElement";
 import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue } from "../src/util";
 import { drainQueue, enqueueUpdater } from "./scheduler";
-import { pushError, captureError } from "./error";
-import { disposeChildren } from "./dispose";
+import { pushError, captureError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
 function alwaysNull() {
     return null;

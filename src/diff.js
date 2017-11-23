@@ -1,4 +1,5 @@
-import { options, innerHTML, emptyObject, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
+import { options, innerHTML, emptyObject, toLowerCase, emptyArray, toArray, 
+    deprecatedWarn, mergeNodes } from "./util";
 import { createElement as createDOMElement, emptyElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { instantiateComponent } from "./instantiateComponent";
@@ -7,7 +8,7 @@ import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
 import { DOMUpdater } from "./DOMUpdater";
 import { drainQueue } from "./scheduler";
-import { captureError, pushError } from "./error";
+import { captureError, pushError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 
@@ -382,20 +383,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
 }
 
-function mergeNodes(children) {
-    var nodes = [];
-    for (var i in children) {
-        var el = children[i];
-        if (!el._disposed) {
-            if (el.stateNode && el.stateNode.nodeType) {
-                nodes.push(el.stateNode);
-            } else {
-                nodes.push.apply(nodes, el.collectNodes());
-            }
-        }
-    }
-    return nodes;
-}
+
 
 options.alignVnode = alignVnode;
 options.diffChildren = diffChildren;

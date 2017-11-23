@@ -1,21 +1,26 @@
 import { disposeVnode } from "./dispose";
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
+import { mergeNodes } from "./util";
+
 var catchHook = "componentDidCatch";
 export function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
-    // Refs.eraseElementRefs();
     var catchUpdater = findCatchComponent(instance, names);
     if( catchUpdater){        
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-        // todo!
-        // var vnode = catchUpdater.vnode;
-        // 清空医生节点的所有子孙节点（但不包括自己）
-        // vnode.collectNodes().forEach(removeElement);
-        // discontinue(vnode.child);
-        // delete instance.updater.vnode.return.child;
+
+        var nodes = mergeNodes(catchUpdater.children);
+        nodes.forEach(function(el){
+            removeElement(el);
+        });
+      
+        var vnode = catchUpdater.vnode; 
+        //  console.log(nodes, vnode, catchUpdater.children);
+        delete catchUpdater.children;
+        delete vnode.child;
         delete catchUpdater.pendingVnode;
         Refs.catchError = catchUpdater ;
     }else{
@@ -56,17 +61,6 @@ function describeError(names, hook) {
     );
 }
 
-function discontinue(vnode){
-    if(!vnode){
-        return; 
-    }
-    if(vnode.vtype > 1){
-        captureError(vnode.stateNode, "componentWillUnmount",[]);
-        vnode.stateNode._hasError = true;
-    }
-    discontinue(vnode.child);
-    discontinue(vnode.sibling);
-}
 
 function findCatchComponent(instance, names){
     var target = instance.updater.vnode;

@@ -156,6 +156,11 @@ function toVnode(vnode, data, parentInstance) {
             instance = new Type(props, instanceContext);
             instance.props = instance.props || props;
             instance.context = instance.context || instanceContext;
+            if(instance.componentWillMount){
+                try{
+                    instance.componentWillMount();
+                }catch(e){}
+            }
             rendered = instance.render();
         }
         if(rendered === null || rendered === false){

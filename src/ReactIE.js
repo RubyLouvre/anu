@@ -35,9 +35,10 @@ setTimeout(keysPolyfill, 100);
 var React = {
     version: "VERSION",
     render,
+    hydrate: render,
     options,
     PropTypes,
-    Children, //为了react-redux
+    Children, 
     Component,
     eventSystem,
     findDOMNode,

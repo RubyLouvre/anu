@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width">
 
    <script type='text/javascript' src="./dist/React.js"></script>
- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+ <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
     <!-- <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
-  <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
 
-    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -32,7 +31,7 @@
    
    var container = document.getElementById("example");
    var div = container;
-   var PropTypes = React.PropTypes
+   var PropTypes = React.PropTypes 
    if (!window.ReactDOM) {
        window.ReactDOM = window.React;
    }
@@ -44,58 +43,7 @@
             }
         }
     }
-    class Parent extends React.Component {
-        static childContextTypes = {
-            flag: PropTypes.bool
-        };
-
-        state = {
-            flag: true
-        };
-
-        getChildContext() {
-            return {
-                flag: this.state.flag
-            };
-        }
-
-        render() {
-            return <div>{this.props.children}</div>;
-        }
-    }
-
-    class Child extends React.Component {
-        static contextTypes = {
-            flag: PropTypes.bool
-        };
-
-        render() {
-            return <div />;
-        }
-    }
-
-    class Wrapper extends React.Component {
-        render() {
-            return (
-                <Parent ref="parent">
-                    <Child ref="child" />
-                </Parent>
-            );
-        }
-    }
-
-    var wrapper = ReactTestUtils.renderIntoDocument(<Wrapper />);
-
-    expect(wrapper.refs.parent.state.flag).toBe(true);
-    console.log(!!wrapper.refs.child.context)
-   // expect(wrapper.refs.child.context).toEqual({ flag: true });
-
-    // We update <Parent /> while <Child /> is still a static prop relative to this update
-    wrapper.refs.parent.setState({ flag: false });
-
-    expect(wrapper.refs.parent.state.flag).toBe(false);
-    console.log(!!wrapper.refs.child)
-    //expect(wrapper.refs.child.context).toEqual({ flag: false });
+    ReactDOM.render(<div><span key="a" /><span key="b" />{[<span />,<span />,[<span />]]}<span /><span /></div>,div)
         
     </script>
 

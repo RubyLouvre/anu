@@ -1,6 +1,4 @@
 import { options } from "./util";
-//import { Refs } from "./Refs";
-
 export const topVnodes = [];
 export const topNodes = [];
 

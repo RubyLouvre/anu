@@ -151,3 +151,19 @@ InnerSet.prototype = {
         return this.elems.indexOf(el) !== -1;
     }
 };
+
+
+export function mergeNodes(children) {
+    var nodes = [];
+    for (var i in children) {
+        var el = children[i];
+        if (!el._disposed) {
+            if (el.stateNode && el.stateNode.nodeType) {
+                nodes.push(el.stateNode);
+            } else {
+                nodes.push.apply(nodes, el.collectNodes());
+            }
+        }
+    }
+    return nodes;
+}

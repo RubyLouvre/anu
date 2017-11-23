@@ -10,13 +10,13 @@
    * child相当于firstChild，
    * batchMpunt 批量添加DOM节点
    * batchUpdate 批量更新DOM节点
-   
 6. 模仿React16，使用`stateNode属性`代替旧有的_hostNode与_instance。 
 7. React.Children与flattenChilden底层依赖的方法由_flattenChildren改为operateChildren，让其更具通用性，
    flattenChilden更名为fiberizeChildren，产出一个`带链表结构的数组`。
-
 8. 新的架构：元素虚拟DOM与组件虚拟DOM都有自己的更新对象，简化匹配算法
 9. 简化Refs模块
+10. 修复更新虚拟DOM时，namespaceURI丢失的BUG
+11. componentDidUpdate现在只有两个参数，lastProps与lastState
     
 
 

@@ -162,6 +162,21 @@ InnerSet.prototype = {
     }
 };
 
+function mergeNodes(children) {
+    var nodes = [];
+    for (var i in children) {
+        var el = children[i];
+        if (!el._disposed) {
+            if (el.stateNode && el.stateNode.nodeType) {
+                nodes.push(el.stateNode);
+            } else {
+                nodes.push.apply(nodes, el.collectNodes());
+            }
+        }
+    }
+    return nodes;
+}
+
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
@@ -851,8 +866,6 @@ function createPortal(children, node) {
     return portal;
 }
 
-//import { Refs } from "./Refs";
-
 var topVnodes = [];
 var topNodes = [];
 
@@ -968,30 +981,33 @@ var catchHook = "componentDidCatch";
 function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
-    // Refs.eraseElementRefs();
     var catchUpdater = findCatchComponent(instance, names);
     if (catchUpdater) {
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-        // todo!
-        // var vnode = catchUpdater.vnode;
-        // 清空医生节点的所有子孙节点（但不包括自己）
-        // vnode.collectNodes().forEach(removeElement);
-        // discontinue(vnode.child);
-        // delete instance.updater.vnode.return.child;
+
+        var nodes = mergeNodes(catchUpdater.children);
+        nodes.forEach(function (el) {
+            removeElement(el);
+        });
+
+        var vnode = catchUpdater.vnode;
+        //  console.log(nodes, vnode, catchUpdater.children);
+        delete catchUpdater.children;
+        delete vnode.child;
         delete catchUpdater.pendingVnode;
         Refs.catchError = catchUpdater;
     } else {
         //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
-        var vnode = instance.updater.vnode,
+        var _vnode = instance.updater.vnode,
             top = void 0;
         do {
-            top = vnode;
-            if (vnode.isTop) {
+            top = _vnode;
+            if (_vnode.isTop) {
                 break;
             }
-        } while (vnode = vnode.return);
+        } while (_vnode = _vnode.return);
         disposeVnode(top, [], true);
 
         throw error;
@@ -2624,29 +2640,15 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
 }
 
-function mergeNodes(children) {
-    var nodes = [];
-    for (var i in children) {
-        var el = children[i];
-        if (!el._disposed) {
-            if (el.stateNode && el.stateNode.nodeType) {
-                nodes.push(el.stateNode);
-            } else {
-                nodes.push.apply(nodes, el.collectNodes());
-            }
-        }
-    }
-    return nodes;
-}
-
 options.alignVnode = alignVnode;
 options.diffChildren = diffChildren;
 
 var React = {
-    version: "1.1.5-pre5",
+    version: "1.1.5-pre6",
     render: render,
+    hydrate: render,
     options: options,
-    Children: Children, //支持react-redux
+    Children: Children,
     Component: Component,
     findDOMNode: findDOMNode,
     createPortal: createPortal,

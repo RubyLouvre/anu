@@ -1,6 +1,6 @@
 import { extend } from "../src/util";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
-import { captureError } from "./error";
+import { captureError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
 export function instantiateComponent(type, vnode, props, parentContext) {
     let context = getContextByTypes(parentContext, type.contextTypes);
