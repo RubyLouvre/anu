@@ -89,7 +89,7 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-export var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+export var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -104,11 +104,9 @@ export function createElement(vnode, vparent) {
         }
         return document.createTextNode(vnode.text);
     }
-
     if (type === "#comment") {
         return document.createComment(vnode.text);
     }
-
     var check = vparent || vnode;
     var ns = check.namespaceURI;
     if (type === "svg") {

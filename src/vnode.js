@@ -39,14 +39,12 @@ Vnode.prototype = {
 
     collectNodes(isChild, ret) {
         ret = ret || [];
-
         if (isChild && this.vtype < 2) {
-            if(!this.stateNode) {
-                ret.isError = true;
+            if(!this._disposed && this.stateNode) {
+                ret.push(this.stateNode);
             }
-            ret.push(this.stateNode);
         } else {
-            for (var a = this.child; a; a = a.sibling) {
+            for (var a = this.child; a; a = a.sibling){
                 a.collectNodes(true, ret);
             }
         }
@@ -74,9 +72,13 @@ Vnode.prototype = {
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
             unique = createUnique();
+        if(!parentNode){
+            return;
+        }
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
+        //  console.log(lastChildren, nextChildren);
         for (let i = 0; i < newLength; i++) {
             let child = nextChildren[i];
             let last = lastChildren[i];

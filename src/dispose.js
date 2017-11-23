@@ -1,21 +1,12 @@
-import { options, noop, returnFalse, innerHTML } from "./util";
-import { removeElement } from "./browser";
-import { restoreChildren } from "./createElement";
-import { Refs } from "./Refs";
-import { captureError, showError } from "./error";
+import { options } from "./util";
+//import { Refs } from "./Refs";
 
 export const topVnodes = [];
 export const topNodes = [];
 
-export function disposeVnode(vnode, silent) {
+export function disposeVnode(vnode, updateQueue, silent) {
     if (vnode && !vnode._disposed) {
         options.beforeDelete(vnode);
-        var instance = vnode.stateNode;
-        var updater = instance.updater;
-        if (vnode._hasRef && !silent) {
-            vnode._hasRef = false;
-            Refs.fireRef(vnode, null);
-        }
         if (vnode.isTop) {
             var i = topVnodes.indexOf(vnode);
             if (i !== -1) {
@@ -24,47 +15,36 @@ export function disposeVnode(vnode, silent) {
             }
         }
         vnode._disposed = true;
-        if (updater) {
-            disposeComponent(vnode, instance, updater, silent);
-        } else if (vnode.vtype === 1) {
-            disposeElement(vnode);
-            delete vnode.stateNode;
-        }else {
-            delete vnode.stateNode;
+        if (vnode.vtype > 1) {
+            disposeComponent(vnode, updateQueue, silent);
+        } else {
+            if (vnode.vtype === 1) {
+                disposeElement(vnode, updateQueue, silent);
+            } else {
+                delete vnode.stateNode;
+            }
         }
     }
 }
 
-function disposeElement(vnode, silent) {
-    var { props } = vnode;
-    if (props[innerHTML]) {
-        removeElement(vnode.stateNode);
-    } else {
-        disposeChildren(restoreChildren(vnode), silent);
-    }
+function disposeElement(vnode, updateQueue, silent) {
+    var { updater } = vnode;
+    updater._silent = silent;
+    updateQueue.push(updater);
 }
 
-function disposeComponent(vnode, instance, updater, silent) {
-    options.beforeUnmount(instance);
-    instance.setState = instance.forceUpdate = noop;
-    if(!silent){
-        captureError(instance, "componentWillUnmount", []);
-    }
-    disposeChildren(restoreChildren(vnode));
-    showError();
-    //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
-    updater._disposed = true;
-    updater.isMounted = returnFalse;
-    updater._renderInNextCycle = null;
+function disposeComponent(vnode, updateQueue, silent) {
+    var instance = vnode.stateNode;
+    var updater = instance.updater;
+    updater._silent = silent;
+    updater.addJob("dispose");
+    updateQueue.push(updater);
+    disposeChildren(updater.children, updateQueue, silent);
+    
 }
 
-export function disposeChildren(children, silent) {
-    for(var i = 0, n = children.length; i < n; i++){
-        var vnode = children[i];
-        if(vnode){
-            disposeVnode(vnode, silent);
-        }
+export function disposeChildren(children, updateQueue, silent) {
+    for (var i in children) {
+        disposeVnode(children[i], updateQueue, silent);
     }
 }
-
-

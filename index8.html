@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script> -->
+   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+   <script src="./test/react.development.js"></script>
+    <script src="./test/react-dom.development.js"></script> 
     <script src="./lib/babel.js"></script>
   
 </head>
@@ -35,7 +35,7 @@ var expect = function(a) {
            }
        };
    };
-   var ErrorBoundary = class extends React.Component {
+   var App = class extends React.Component {
        constructor(props) {
 
            super(props);
@@ -43,107 +43,18 @@ var expect = function(a) {
            logger(`${this.props.logName} constructor`);
        }
        render() {
-        　  console.log(this.state,"ErrorBoundary",this.props.forceRetry)
-           if (this.state.error && !this.props.forceRetry) {
-               logger(`${this.props.logName} render error`);
-   
-               return this.props.renderError(this.state.error, this.props);
-           }
-           
-           logger(`${this.props.logName} render success`);
-           return <div>{this.props.children}</div>;
-       }
-       componentDidCatch(error) {
-           logger(`${this.props.logName} componentDidCatch`);
-           this.setState({ error });
-       }
-       componentWillMount() {
-           logger(`${this.props.logName} componentWillMount`);
-       }
-       componentDidMount() {
-           logger(`${this.props.logName} componentDidMount`);
-       }
-       componentWillReceiveProps() {
-           logger(`${this.props.logName} componentWillReceiveProps`);
-       }
-       componentWillUpdate() {
-           logger(`${this.props.logName} componentWillUpdate`);
-       }
-       componentDidUpdate() {
-           logger(`${this.props.logName} componentDidUpdate`);
-       }
-       componentWillUnmount() {
-           logger(`${this.props.logName} componentWillUnmount`);
-       }
-   };
-   ErrorBoundary.defaultProps = {
-       logName: "ErrorBoundary",
-       renderError(error, props) {
-           return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
-       }
-   };
-   
-   
-   var BrokenRender = class extends React.Component {
-       constructor(props) {
-           super(props);
-           logger("BrokenRender constructor");
-       }
-       render() {
-           logger("BrokenRender render [!]");
-           throw new Error("Hello");
-       }
-       componentWillMount() {
-           logger("BrokenRender componentWillMount");
-       }
-       componentDidMount() {
-           logger("BrokenRender componentDidMount");
-       }
-       componentWillReceiveProps() {
-           logger("BrokenRender componentWillReceiveProps");
-       }
-       componentWillUpdate() {
-           logger("BrokenRender componentWillUpdate");
-       }
-       componentDidUpdate() {
-           logger("BrokenRender componentDidUpdate");
-       }
-       componentWillUnmount() {
-           logger("BrokenRender componentWillUnmount");
-       }
-   };
+           return <p>xxx</p>
+        }
 
-   var container1 = document.createElement("div");
-   var container2 = document.createElement("div");
-   var container3 = document.createElement("div");
-   document.body.appendChild(container1)
-   document.body.appendChild(container2)
-   document.body.appendChild(container3)
+    }
 
-  /* ReactDOM.render(<span>Before 1</span>, container1);
-   try{
-       ReactDOM.render(<BrokenRender />, container2);
-   }catch(e){
-       console.log(e)
-   }
-   */
-   ReactDOM.render(
-       <ErrorBoundary>
-           <BrokenRender />
-       </ErrorBoundary>,
-       container3
-   );
- //  expect(container1.firstChild.textContent).toBe("Before 1");
- //  expect(container2.firstChild).toBe(null);
-   expect(container3.firstChild.textContent).toBe("Caught an error: Hello.");
-
+ 
+ 
   // ReactDOM.render(<span>After 1</span>, container1);
   // ReactDOM.render(<span>After 2</span>, container2);
-  console.log("=====")
-   ReactDOM.render(<ErrorBoundary forceRetry={true}>After 3</ErrorBoundary>, container3);
+  var s = ReactDOM.render(<App/>, container);
   // expect(container1.firstChild.textContent).toBe("After 1");
   // expect(container2.firstChild.textContent).toBe("After 2");
-   expect(container3.firstChild.textContent).toBe("After 3");
 
   /* ReactDOM.unmountComponentAtNode(container1);
    ReactDOM.unmountComponentAtNode(container2);

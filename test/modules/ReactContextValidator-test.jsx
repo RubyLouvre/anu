@@ -134,7 +134,7 @@ describe("ReactContextValidator", function() {
         var container = document.createElement("div");
         ReactDOM.render(<Parent foo="abc" />, container);
         ReactDOM.render(<Parent foo="def" />, container);
-        expect(actualComponentDidUpdate.length).toBe(3);
+        expect(actualComponentDidUpdate.length).toBe(2);
     });
 
     it("should check context types", () => {

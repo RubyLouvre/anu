@@ -5,7 +5,7 @@ var catchHook = "componentDidCatch";
 export function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
-    Refs.eraseElementRefs();
+    // Refs.eraseElementRefs();
     var catchUpdater = findCatchComponent(instance, names);
     if( catchUpdater){        
         //移除医生节点下方的所有真实节点
@@ -28,7 +28,7 @@ export function pushError(instance, hook, error) {
                 break;
             }
         }while((vnode = vnode.return));
-        disposeVnode(top, true);  
+        disposeVnode(top, [],true);  
         
         throw error;
     }
@@ -80,7 +80,7 @@ function findCatchComponent(instance, names){
             if(dist[catchHook] ){
                 if(dist._hasTry){//治不好的医生要自杀
                     dist._hasError = false;
-                    disposeVnode(dist.updater.vnode);
+                    disposeVnode(dist.updater.vnode, []);
                 }else if(dist !== instance ){//自已不能治愈自己
                     return dist.updater;//移交更上级的医师处理
                 }
@@ -91,4 +91,3 @@ function findCatchComponent(instance, names){
     }while((target = target.return));
 
 }
-export function showError() {}

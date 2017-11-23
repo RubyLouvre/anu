@@ -28,7 +28,7 @@ export function enqueueUpdater(updater) {
 export function drainQueue(queue) {
     options.beforePatch();
     //先执行所有元素虚拟DOMrefs方法（从上到下）
-    Refs.clearElementRefs();
+    //   Refs.clearElementRefs();
     let needSort = [],
         unique = {},
         updater;
@@ -37,7 +37,7 @@ export function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-       
+      
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
@@ -56,10 +56,11 @@ export function drainQueue(queue) {
 
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
     needSort.sort(mountSorter).forEach(function(updater) {
-        clearArray(updater._pendingCallbacks).forEach(function(fn) {
-            fn.call(updater.instance);
-        });
+        if(updater._pendingCallbacks) {
+            clearArray(updater._pendingCallbacks).forEach(function(fn) {
+                fn.call(updater.instance);
+            });
+        }
     });
     options.afterPatch();
-    //  showError();
 }

@@ -1,4 +1,3 @@
-import { clearArray } from "./util";
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
@@ -7,33 +6,18 @@ function getDOMNode() {
 export const pendingRefs = [];
 window.pendingRefs = pendingRefs;
 export var Refs = {
+    mountOrder: 1,
     currentOwner: null,
-    eraseElementRefs() {
-        pendingRefs.length = 0;
-    },
-    clearElementRefs() {
-        let callback = Refs.fireRef;
-        let refs = clearArray(pendingRefs);
-        for (let i = 0, n = refs.length; i < n; i += 2) {
-            let vnode = refs[i];
-            let data = refs[i + 1];
-            callback(vnode, data);
-        }
-    },
-    detachRef(lastVnode, nextVnode, dom) {
-        if (lastVnode.ref === nextVnode.ref) {
-            return;
-        }
-        if (lastVnode._hasRef) {
-            pendingRefs.push(lastVnode, null);
-            delete lastVnode._hasRef;
-        }
-
-        if (nextVnode._hasRef && dom) {
-            pendingRefs.push(nextVnode, dom);
+    detachRef(vnode) {
+        if(vnode._hasRef){
+            Refs.fireRef(vnode, null); 
+            delete vnode._hasRef;          
         }
     },
     fireRef(vnode, dom) {
+        if(!vnode._hasRef){
+            return;
+        }
         var ref = vnode.ref;
         if (typeof ref === "function") {
             return ref(dom);

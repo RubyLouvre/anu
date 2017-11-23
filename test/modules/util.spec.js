@@ -16,7 +16,7 @@ import {
 
 import {
     getChildContext
-} from "src/updater";
+} from "src/CompositeUpdater";
 
 describe("util", function () {
 

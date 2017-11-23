@@ -1,4 +1,4 @@
-import { typeNumber,emptyObject } from "./util";
+import { typeNumber } from "./util";
 import { Vnode } from "./vnode";
 /**
  * 虚拟DOM工厂
@@ -88,21 +88,9 @@ export function createVnode(node) {
     return vnode;
 }
 
-export function restoreChildren(parent) {
-    var ret = [];
-    ret.childMap = parent.childMap; 
-    for (var el = parent.child; el; el = el.sibling) {
-        if (!el._disposed) {
-            ret.push(el);
-        }
-    }
-    return ret;
-}
-
-export function fiberizeChildren(vnode) {
-    let c = vnode.props.children,
-        ret = [],  compareMap = {},
-        prev;
+export function fiberizeChildren(c, updater) {
+    let flattenChildren = {}, vnode = updater.vnode,
+        ret = [], prev;
     if (c !== void 666) {
         var lastText,
             lastIndex = 0;
@@ -125,13 +113,13 @@ export function fiberizeChildren(vnode) {
             }
             var key = child.key;
            
-            if (key && !compareMap[".$"+key]) {
-                compareMap[".$"+key] = child;
+            if (key && !flattenChildren[".$"+key]) {
+                flattenChildren[".$"+key] = child;
             } else {
                 if(index === "."){
                     index = "." + lastIndex; 
                 }
-                compareMap[index] = child;
+                flattenChildren[index] = child;
             }
             child.index = ret.length;
             child.return = vnode;
@@ -140,6 +128,7 @@ export function fiberizeChildren(vnode) {
             }
             lastIndex++;
             prev = child;
+
             ret.push(child);
         });
         var child = ret[0];
@@ -147,8 +136,7 @@ export function fiberizeChildren(vnode) {
             vnode.child = child;
         }
     }
-    ret.childMap = vnode.childMap = compareMap;
-    return ret;
+    return updater.children = flattenChildren;
 }
 
 export function operateChildren(children, prefix, callback) {

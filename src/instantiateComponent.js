@@ -1,8 +1,7 @@
 import { extend } from "../src/util";
-import { Refs } from "./Refs";
-import { Updater, getContextByTypes } from "./updater";
+import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
 import { captureError } from "./error";
-
+import { Refs } from "./Refs";
 export function instantiateComponent(type, vnode, props, parentContext) {
     let context = getContextByTypes(parentContext, type.contextTypes);
     let isStateless = vnode.vtype === 4, mixin;
@@ -15,7 +14,7 @@ export function instantiateComponent(type, vnode, props, parentContext) {
             }
         }
         : new type(props, context);
-    let updater = new Updater(instance, vnode, props, context);
+    let updater = new CompositeUpdater(instance, vnode, props, context);
     //props, context是不可变的
     instance.props = updater.props = props;
     instance.context = updater.context = context;

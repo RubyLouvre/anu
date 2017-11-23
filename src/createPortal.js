@@ -1,4 +1,4 @@
-import { createVnode, restoreChildren, fiberizeChildren, createElement } from "./createElement";
+import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { options } from "./util";
 
 function Portal(props) {
@@ -8,8 +8,7 @@ Portal.prototype = {
     constructor: Portal,
     componentWillUnmount() {
         var parentVnode = this.container;
-        var lastChildren = restoreChildren(parentVnode);
-        options.diffChildren(lastChildren, [], parentVnode, {}, []);
+        options.diffChildren(this.updater.children, {}, parentVnode, {}, []);
     },
     componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
@@ -17,8 +16,9 @@ Portal.prototype = {
     },
     componentWillMount() {
         var parentVnode = this.container;
-        var nextChildren = fiberizeChildren(parentVnode);
-        options.diffChildren([], nextChildren, parentVnode, {}, []);
+        var updater = this.updater;
+        var nextChildren = fiberizeChildren(parentVnode.props.children, updater);
+        options.diffChildren({}, nextChildren, parentVnode, {}, []);
         parentVnode.batchMount();
     },
     render() {

@@ -31,9 +31,7 @@ require("./modules/ReactTestUtils-test.jsx");
 
 require("./modules/ReactChildren-test.jsx");
 
-
 require("./modules/ReactComponent-test.jsx");
-
 
 require("./modules/ReactMultiChild-test.jsx");
 

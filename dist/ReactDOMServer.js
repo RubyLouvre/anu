@@ -147,7 +147,7 @@ try {
 }
 
 
-
+var win = w;
 
 var document = w.document || fakeDoc;
 var isStandard = "textContent" in document;
@@ -189,7 +189,7 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(XMLHttpRequest)];
+var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -211,6 +211,8 @@ window.pendingRefs = pendingRefs;
 
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
+
+//import { Refs } from "./Refs";
 
 /**
  * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中

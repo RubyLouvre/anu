@@ -2,231 +2,101 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./lib/shallowCompare.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
 
-  <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
- <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./dist/React.js"></script>
+ <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <!-- <script type='text/javascript' src="./test/react.js"></script>
   <script type='text/javascript' src="./test/react-dom.js"></script>-->
- <!-- <script type='text/javascript' src="./test/react.development.js"></script>
+  <!--<script type='text/javascript' src="./test/react.development.js"></script>
   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
-  
-  <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-  <script type='text/javascript' src="./lib/babel.js"></script>
+
+    <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
-  <div>开发者工具</div>
-  <pre>
+    <div>开发者工具</div>
+    <pre>
+            "a true"
+            "b true"
+            "a false"
+            "b false"
+            "c true"
+            "d true"
   </pre>
-  <div id='example'></div>
-  <script type='text/babel'>
+    <div id='example'></div>
+    <script type='text/babel'>
    
    var container = document.getElementById("example");
    var div = container;
-   // var PropTypes = React.PropTypes
+   var PropTypes = React.PropTypes
    if (!window.ReactDOM) {
        window.ReactDOM = window.React;
    }
-   var log = [];
-   function logger(e) {
-      // console.log(e);
-      log.push(e)
-   }
-   var PropTypes = React.PropTypes;
+
    var expect = function(a) {
-       return {
-           toBe: function(b) {
-               console.log(a, "\nvs\n", b, a === b);
-           }
-       };
-   };
-   var BrokenConstructor = class extends React.Component {
-            constructor(props) {
-                super(props);
-                logger("BrokenConstructor constructor [!]");
-                throw new Error("Hello");
+        return {
+            toBe: function(b) {
+                console.log(a,"vs", b, a === b)
             }
-            render() {
-                logger("BrokenConstructor render");
-                return <div>{this.props.children}</div>;
-            }
-            componentWillMount() {
-                logger("BrokenConstructor componentWillMount");
-            }
-            componentDidMount() {
-                logger("BrokenConstructor componentDidMount");
-            }
-            componentWillReceiveProps() {
-                logger("BrokenConstructor componentWillReceiveProps");
-            }
-            componentWillUpdate() {
-                logger("BrokenConstructor componentWillUpdate");
-            }
-            componentDidUpdate() {
-                logger("BrokenConstructor componentDidUpdate");
-            }
-            componentWillUnmount() {
-                logger("BrokenConstructor componentWillUnmount");
-            }
-   };
-   var Normal = class extends React.Component {
-            static defaultProps = {
-                logName: "Normal"
-            };
-            constructor(props) {
-                super(props);
-                logger(`${this.props.logName} constructor`);
-            }
-            render() {
-                logger(`${this.props.logName} render`);
-                return <div>{this.props.children}</div>;
-            }
-            componentWillMount() {
-                logger(`${this.props.logName} componentWillMount`);
-            }
-            componentDidMount() {
-                logger(`${this.props.logName} componentDidMount`);
-            }
-            componentWillReceiveProps() {
-                logger(`${this.props.logName} componentWillReceiveProps`);
-            }
-            componentWillUpdate() {
-                logger(`${this.props.logName} componentWillUpdate`);
-            }
-            componentDidUpdate() {
-                logger(`${this.props.logName} componentDidUpdate`);
-            }
-            componentWillUnmount() {
-                logger(`${this.props.logName} componentWillUnmount`);
-            }
+        }
+    }
+    class Parent extends React.Component {
+        static childContextTypes = {
+            flag: PropTypes.bool
         };
-   var ErrorBoundary = class extends React.Component {
-       constructor(props) {
 
-           super(props);
-           this.state = { error: null };
-           logger(`${this.props.logName} constructor`);
-       }
-       render() {
-        　 //  console.log(this.state,"ErrorBoundary")
-           if (this.state.error && !this.props.forceRetry) {
-               logger(`${this.props.logName} render error`);
-   
-               return this.props.renderError(this.state.error, this.props);
-           }
-           logger(`${this.props.logName} render success`);
-           return <div>{this.props.children}</div>;
-       }
-       componentDidCatch(error) {
-           logger(`${this.props.logName} componentDidCatch`);
-           this.setState({ error });
-       }
-       componentWillMount() {
-           logger(`${this.props.logName} componentWillMount`);
-       }
-       componentDidMount() {
-           logger(`${this.props.logName} componentDidMount`);
-       }
-       componentWillReceiveProps() {
-           logger(`${this.props.logName} componentWillReceiveProps`);
-       }
-       componentWillUpdate() {
-           logger(`${this.props.logName} componentWillUpdate`);
-       }
-       componentDidUpdate() {
-           logger(`${this.props.logName} componentDidUpdate`);
-       }
-       componentWillUnmount() {
-           logger(`${this.props.logName} componentWillUnmount`);
-       }
-   };
-   ErrorBoundary.defaultProps = {
-       logName: "ErrorBoundary",
-       renderError(error, props) {
-           return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
-       }
-   };
-   
-   
-   var BrokenRender = class extends React.Component {
-       constructor(props) {
-           super(props);
-           logger("BrokenRender constructor");
-       }
-       render() {
-           logger("BrokenRender render [!]");
-           throw new Error("Hello");
-       }
-       componentWillMount() {
-           logger("BrokenRender componentWillMount");
-       }
-       componentDidMount() {
-           logger("BrokenRender componentDidMount");
-       }
-       componentWillReceiveProps() {
-           logger("BrokenRender componentWillReceiveProps");
-       }
-       componentWillUpdate() {
-           logger("BrokenRender componentWillUpdate");
-       }
-       componentDidUpdate() {
-           logger("BrokenRender componentDidUpdate");
-       }
-       componentWillUnmount() {
-           logger("BrokenRender componentWillUnmount");
-       }
-   };
-   
-   var container = document.createElement("div");
-   ReactDOM.render(
-       <ErrorBoundary>
-           <Normal />
-       </ErrorBoundary>,
-       container
-   );
+        state = {
+            flag: true
+        };
 
-   log.length = 0;
-   ReactDOM.render(
-       <ErrorBoundary aaa="xxx">
-           <Normal />
-           <Normal logName="Normal2" />
-           <BrokenConstructor />
-       </ErrorBoundary>,
-       container
-   );
-   expect(container.textContent).toBe("Caught an error: Hello.");
-   expect(log.join("\n")).toBe([
-       "ErrorBoundary componentWillReceiveProps",
-       "ErrorBoundary componentWillUpdate",
-       "ErrorBoundary render success",
-       "Normal componentWillReceiveProps",
-       "Normal componentWillUpdate",
-       "Normal render",
-       // Normal2 will attempt to mount:
-       "Normal2 constructor",
-       "Normal2 componentWillMount",
-       "Normal2 render",
-       // BrokenConstructor will abort rendering:
-       "BrokenConstructor constructor [!]",
-       // Finish updating with null children
-       "Normal componentWillUnmount",
-       "ErrorBoundary componentDidUpdate",
-       // Handle the error
-       "ErrorBoundary componentDidCatch",
-       // Render the error message
-       "ErrorBoundary componentWillUpdate",
-       "ErrorBoundary render error",
-       "ErrorBoundary componentDidUpdate"
-   ].join("\n"));
+        getChildContext() {
+            return {
+                flag: this.state.flag
+            };
+        }
 
-   log.length = 0;
-    ReactDOM.unmountComponentAtNode(container);
-    expect(log.join("\n")).toBe(["ErrorBoundary componentWillUnmount"].join("\n"));
+        render() {
+            return <div>{this.props.children}</div>;
+        }
+    }
 
+    class Child extends React.Component {
+        static contextTypes = {
+            flag: PropTypes.bool
+        };
+
+        render() {
+            return <div />;
+        }
+    }
+
+    class Wrapper extends React.Component {
+        render() {
+            return (
+                <Parent ref="parent">
+                    <Child ref="child" />
+                </Parent>
+            );
+        }
+    }
+
+    var wrapper = ReactTestUtils.renderIntoDocument(<Wrapper />);
+
+    expect(wrapper.refs.parent.state.flag).toBe(true);
+    console.log(!!wrapper.refs.child.context)
+   // expect(wrapper.refs.child.context).toEqual({ flag: true });
+
+    // We update <Parent /> while <Child /> is still a static prop relative to this update
+    wrapper.refs.parent.setState({ flag: false });
+
+    expect(wrapper.refs.parent.state.flag).toBe(false);
+    console.log(!!wrapper.refs.child)
+    //expect(wrapper.refs.child.context).toEqual({ flag: false });
+        
     </script>
 
 </body>
