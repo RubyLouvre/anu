@@ -120,7 +120,6 @@ CompositeUpdater.prototype = {
     isMounted: returnFalse,
     hydrate(updateQueue) {
         let { instance, context, props, vnode, pendingVnode } = this;
-
         if (this._receiving) {
             let [lastVnode, nextVnode, nextContext] = this._receiving;
             nextVnode.stateNode = instance;
@@ -230,7 +229,6 @@ CompositeUpdater.prototype = {
             } else {
                 options.afterMount(instance);
             }
-
             delete this._hookArgs;
             delete this._hydrating;
         }
@@ -238,8 +236,17 @@ CompositeUpdater.prototype = {
 
         if (hasCatch) {
             delete this._hasCatch;
-            this._hydrating = true;
             instance._hasTry = true;
+            //收集它上方的updater,强行结束它们
+            var p = vnode.return;
+            do{
+                if(p.vtype > 1){
+                    var u = p.stateNode.updater;
+                    u.addJob("resolve");
+                    updateQueue.push(u);
+                }
+            }while((p = p.return));
+            this._hydrating = true;//让它不要立即执行，先执行其他的
             instance.componentDidCatch.apply(instance, hasCatch);
             this._hydrating = false;
         } else {
@@ -261,12 +268,10 @@ CompositeUpdater.prototype = {
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
-        if (!this._silent) {
-            if (vnode._hasRef) {
-                Refs.fireRef(vnode, null);
-            }
-            captureError(instance, "componentWillUnmount", []);
+        if (vnode._hasRef) {
+            Refs.fireRef(vnode, null);
         }
+        captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this._renderInNextCycle = this.isMounted = returnFalse;
         this._disposed = true;

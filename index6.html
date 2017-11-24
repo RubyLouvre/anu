@@ -4,15 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
-   <!--<script type='text/javascript' src="./dist/React.js"></script> -->
-
+   <script type='text/javascript' src="./dist/React.js"></script>
+<!--
    <script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>
-   <!--<script type='text/javascript' src="./test/react.js"></script>
-   <script type='text/javascript' src="./test/react-dom.js"></script>-->
-   <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
-   
-     <script type='text/javascript' src="./lib/babel.js"></script>
+-->   
+    <script type='text/javascript' src="./lib/babel.js"></script>
     
   
 
@@ -20,23 +17,15 @@
 <body>
     
         <pre>应该等于
-            111instance
-            222instance
-            333instance
-            C mount
-            A removea1
-            A removea2
-            A removea3
-            A removea4
-            333null
-            C remove
-            222null
-            111null
-            444instance
-            555instance
-            888add
-            B mount
-           
+                "111instance",
+                "222instance",
+                "remove", 
+                "remove",
+                "remove",
+                "222null",
+                "111null",
+                "333instance",
+                "444instance"
           
           </pre>
         <div id='example'>
@@ -57,110 +46,78 @@
                 }
             }
            
-          
             var list = [];
-
-
-            class A extends React.Component{
-                componentWillUnmount(){
-                    logger("A remove"+this.props.name);
-                }
-                componentWillUpdate(){
-                    logger("A update");
-                }
-                render(){
-                    return <i>A</i>;
-                }
+        function logger(e) {
+            list.push(e);
+        }
+        class A extends React.Component {
+            componentWillUnmount() {
+                logger("remove");
             }
-
-
-            class B extends React.Component{
-                componentDidMount(){
-                    logger("B mount");
-                }
-                render(){
-                    return <strong className="B">B</strong>;
-                }
+            render() {
+                return <span>A</span>;
             }
-            class C extends React.Component{
-                componentDidMount(){
-                    logger("C mount");
-                }
-                componentWillUnmount(){
-                    logger("C remove");
-                }
-                render(){
-                    return <strong className="C">C</strong>;
-                }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    a: 1
+                };
             }
-            var list = [];
-            function logger (a){
-                console.log(a)
+            render() {
+                return (
+                    <div>
+                        {this.state.a
+                            ? [
+                                <A />,
+                                <A />,
+                                <A />,
+                                <span
+                                    key="a"
+                                    ref={a => {
+                                        logger(111 + (a ? "instance" : "null"));
+                                    }}
+                                >
+                                      a
+                                </span>,
+                                <span
+                                    key="b"
+                                    ref={a => {
+                                        logger(222 + (a ? "instance" : "null"));
+                                    }}
+                                >
+                                      b
+                                </span>
+                            ]
+                            : [
+                                <span
+                                    key="b"
+                                    ref={a => {
+                                        logger(333 + (a ? "instance" : "null"));
+                                    }}
+                                >
+                                      b
+                                </span>,
+                                <span
+                                    key="a"
+                                    ref={a => {
+                                        logger(444 + (a ? "instance" : "null"));
+                                    }}
+                                >
+                                      a
+                                </span>
+                            ]}
+                    </div>
+                );
             }
-            class App extends React.Component {
-                constructor(props) {
-                    super(props);
-                    this.state = {
-                        a: 1
-                    };
-                }
-                render() {
-                    return <div className="App">
-                        {
-                            this.state.a ? 
-                                [<A name="a1" />,
-                                 <A name="a2"/>,
-                                 <A name="a3"/>,
-                                 <A name="a4" />,
-                                    <span key="a" ref={(a)=>{
-                                        logger(111+(a?"instance":"null"));
-                                    }}>a</span>,
-                                    <span key="b" ref={(a)=>{
-                                        logger(222+(a?"instance":"null"));    
-                                    }}>b</span>,
-                                    <span key="c" ref={(a)=>{
-                                        logger(333+(a?"instance":"null"));
-                                    }}>c</span>,
-                                    <C />
-                                ]:
-                                [
-                                    <s>111</s>,
-                                    <s>22</s>,
-                                    <span key="b" ref={(a)=>{
-                                        logger(444+(a?"instance":"null"));
-                                    }}>b</span>,
-                                    <span key="a" ref={(a)=>{
-                                        logger(555+(a?"instance":"null"));
-                                    }}>a</span>,<A ref={(a)=>{
-                                        logger(888+(a?"add":"null"));
-                                    }} />, <B />]
-                        }
-                    </div>;
-                }
-            }
-            var s = ReactDOM.render(<App />, div);
-            console.log('======')
-         //   var s = ReactDOM.render(React.createElement(App, null), div)
-            s.setState({a: 0});
-
-
-        
-            /*
-            expect(list.join("\n")).toBe([
-                "111instance",
-                "222instance",
-                "333instance",
-                "222null",
-                "111null",
-                "A update",
-                "A remove",
-                "A remove",
-                "333null",
-                "444instance",
-                "555instance",
-                "B mount"
-            ].join("\n"));*/
-         
+        }
+        var s = ReactDOM.render(<App />, div);
+        s.setState({ a: 0 });
+        var list2 = ReactDOM.createPortal
+            ? ["111instance", "222instance", "remove", "remove", "remove", "222null", "111null", "333instance", "444instance"]
+            : ["111instance", "222instance", "222null", "111null", "remove", "remove", "remove", "333instance", "444instance"];
+        expect(list.join("\n")).toBe(list2.join("\n")); 
 
           </script>
 

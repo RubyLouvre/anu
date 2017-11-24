@@ -50,10 +50,9 @@ Vnode.prototype = {
         }
         return ret;
     },
-    batchMount(tag) {
+    batchMount() {
         let parentNode = this.stateNode;
         if(!parentNode.childNodes.length){
-            //父节点必须没有孩子
             let childNodes = this.collectNodes();
             if(childNodes.isError) {
                 return;
@@ -61,8 +60,6 @@ Vnode.prototype = {
             childNodes.forEach(function(dom) {
                 parentNode.appendChild(dom);
             });
-        }else{
-            //console.log(tag, "已经有节点",this.collectNodes(),parentNode);
         }
     },
     batchUpdate(updateMeta, nextChildren) {

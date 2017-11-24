@@ -148,6 +148,7 @@ function mountVnode(vnode, context, updateQueue) {
             let updater = new DOMUpdater(vnode);
             let children = fiberizeChildren(props.children, updater);
             vnode.selfMount = true;
+          
             mountChildren(vnode, children, context, updateQueue);
             vnode.selfMount = false;
             vnode.batchMount("元素"); //批量插入 dom节点
@@ -253,7 +254,6 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue) {
     // todo:减少数据的接收次数
     let { type, stateNode } = lastVnode,
         updater = stateNode.updater,
-        //如果正在更新过程中接受新属性，那么去掉update,加上receive
         willReceive = lastVnode !== nextVnode,
         nextContext;
     if (!type.contextTypes) {
@@ -297,11 +297,11 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue) {
 }
 
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
+    //这里都是走新的任务列队
     let parentVElement = parentVnode,
-        priorityQueue = [],
         lastChild,
-        nextChild;
-    var isEmpty = true,
+        nextChild,
+        isEmpty = true,
         child;
     for (var i in lastChildren) {
         isEmpty = false;
@@ -311,7 +311,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (parentVnode.vtype === 1) {
         //向下找到其第一个元素节点子孙
         var firstChild = parentVnode.stateNode.firstChild;
-
         if (firstChild && child) {
             do {
                 if (child.vtype < 2) {
@@ -333,12 +332,18 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
+        var maybeExecute = !updateQueue.length;
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
         if (!parentVElement.selfMount) {
+            var mustExecute = maybeExecute && updateQueue.length;
             parentVElement.batchMount("只添加");
+            if(mustExecute){
+                drainQueue(updateQueue);
+            }
         }
         return;
     }
+    updateQueue = [];
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
         parentVElement.childNodes.length = 0; //清空数组，以方便收集节点
@@ -351,7 +356,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
    
     //step1: 匹配节点，移除节点
     var matchNodes = {};
-
     for (let i in lastChildren) {
         nextChild = nextChildren[i];
         lastChild = lastChildren[i];
@@ -359,24 +363,23 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             matchNodes[i] = lastChild;
             continue;
         }
-        disposeVnode(lastChild, priorityQueue);
+        disposeVnode(lastChild, updateQueue);
     }
     //step2: 更新或新增节点
     for (let i in nextChildren) {
         nextChild = nextChildren[i];
-
-        if (!matchNodes[i]) {
-            mountVnode(nextChild, parentContext, priorityQueue);
+        lastChild = matchNodes[i];
+        if (lastChild) {
+            alignVnode(lastChild, nextChild, parentContext, updateQueue);
         }else{
-
-            alignVnode(matchNodes[i], nextChild, parentContext, priorityQueue);
+            mountVnode(nextChild, parentContext, updateQueue);
         }
         if (Refs.catchError) {
             parentVElement.updateMeta = null;
             return;
         }
     }
-    drainQueue(priorityQueue);
+    drainQueue(updateQueue);
     //step3: 更新真实DOM
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
         parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren));

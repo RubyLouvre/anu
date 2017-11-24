@@ -8,7 +8,7 @@ Portal.prototype = {
     constructor: Portal,
     componentWillUnmount() {
         var parentVnode = this.container;
-        options.diffChildren(this.updater.children, {}, parentVnode, {}, []);
+        options.diffChildren(this.updater.children, {}, parentVnode, {},[]);
     },
     componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
@@ -18,7 +18,7 @@ Portal.prototype = {
         var parentVnode = this.container;
         var updater = this.updater;
         var nextChildren = fiberizeChildren(parentVnode.props.children, updater);
-        options.diffChildren({}, nextChildren, parentVnode, {}, []);
+        options.diffChildren({}, nextChildren, parentVnode, {},[]);
         parentVnode.batchMount();
     },
     render() {

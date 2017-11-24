@@ -37,7 +37,6 @@ export function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-      
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
@@ -45,12 +44,15 @@ export function drainQueue(queue) {
         updater.exec(queue);
         var catchError = Refs.catchError;
         if(catchError){
-            delete Refs.catchError;
-            // queue.length = needSort.length = 0;
-            // unique = {};
-            catchError.addJob("resolve");
-            queue.push(catchError);
-           
+            delete  Refs.catchError;
+            //执行错误边界的didMount/Update钩子
+            /* queue.forEach(function(el){
+                if(!el.isMounted()){
+                    el._disposed = true;
+                }
+            });
+            */
+            catchError.resolve(queue);
         }
     }
 

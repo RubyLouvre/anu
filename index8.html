@@ -63,6 +63,25 @@ var expect = function(a) {
                 logger("BrokenRender componentWillUnmount");
             }
         };
+        class ErrorMessage extends React.Component {
+            constructor(props) {
+                super(props);
+                logger("ErrorMessage constructor");
+            }
+            componentWillMount() {
+                logger("ErrorMessage componentWillMount");
+            }
+            componentDidMount() {
+                logger("ErrorMessage componentDidMount");
+            }
+            componentWillUnmount() {
+                logger("ErrorMessage componentWillUnmount");
+            }
+            render() {
+                logger("ErrorMessage render");
+                return <div>Caught an error: {this.props.message}.</div>;
+            }
+        };
        class ErrorBoundary extends React.Component {
             constructor(props) {
                 super(props);
@@ -106,40 +125,38 @@ var expect = function(a) {
                 return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
             }
         };
-
-   var container1 = document.createElement("div");
-        var container2 = document.createElement("div");
-        var container3 = document.createElement("div");
-
-        ReactDOM.render(<span>Before 1</span>, container1);
-       try{
-            ReactDOM.render(<BrokenRender />, container2);
-        }catch(e){
-            console.log(e)
+        function renderError(error) {
+            return <ErrorMessage message={error.message} />;
         }
+
+        var container = document.createElement("div");
         ReactDOM.render(
-            <ErrorBoundary>
+            <ErrorBoundary renderError={renderError}>
                 <BrokenRender />
             </ErrorBoundary>,
-            container3
+            container
         );
-        expect(container1.firstChild.textContent).toBe("Before 1");
-        expect(container2.firstChild).toBe(null);
-        expect(container3.firstChild.textContent).toBe("Caught an error: Hello.");
+        expect(list.join("\n")).toBe([
+            "ErrorBoundary constructor",
+            "ErrorBoundary componentWillMount",
+            "ErrorBoundary render success",
+            "BrokenRender constructor",
+            "BrokenRender componentWillMount",
+            "BrokenRender render [!]",
+            "ErrorBoundary componentDidMount",
+            "ErrorBoundary componentDidCatch",
+            "ErrorBoundary componentWillUpdate",
+            "ErrorBoundary render error",
+            "ErrorMessage constructor",
+            "ErrorMessage componentWillMount",
+            "ErrorMessage render",
+            "ErrorMessage componentDidMount",
+            "ErrorBoundary componentDidUpdate"
+        ].join("\n"));
 
-        ReactDOM.render(<span>After 1</span>, container1);
-        ReactDOM.render(<span>After 2</span>, container2);
-        ReactDOM.render(<ErrorBoundary forceRetry={true}>After 3</ErrorBoundary>, container3);
-        expect(container1.firstChild.textContent).toBe("After 1");
-        expect(container2.firstChild.textContent).toBe("After 2");
-        expect(container3.firstChild.textContent).toBe("After 3");
-
-        ReactDOM.unmountComponentAtNode(container1);
-        ReactDOM.unmountComponentAtNode(container2);
-        ReactDOM.unmountComponentAtNode(container3);
-        expect(container1.firstChild).toBe(null);
-        expect(container2.firstChild).toBe(null);
-        expect(container3.firstChild).toBe(null);
+        list.length = 0;
+        ReactDOM.unmountComponentAtNode(container);
+        expect(list.join("\n")).toBe(["ErrorBoundary componentWillUnmount", "ErrorMessage componentWillUnmount"].join("\n"));
 </script>
 
 </body>

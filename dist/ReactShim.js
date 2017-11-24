@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-11-23
+ * QQ 370262116 by 司徒正美 Copyright 2017-11-24
  */
 
 (function (global, factory) {
@@ -420,10 +420,9 @@ Vnode.prototype = {
         }
         return ret;
     },
-    batchMount: function batchMount(tag) {
+    batchMount: function batchMount() {
         var parentNode = this.stateNode;
         if (!parentNode.childNodes.length) {
-            //父节点必须没有孩子
             var childNodes = this.collectNodes();
             if (childNodes.isError) {
                 return;
@@ -431,8 +430,6 @@ Vnode.prototype = {
             childNodes.forEach(function (dom) {
                 parentNode.appendChild(dom);
             });
-        } else {
-            //console.log(tag, "已经有节点",this.collectNodes(),parentNode);
         }
     },
     batchUpdate: function batchUpdate(updateMeta, nextChildren) {
@@ -950,7 +947,6 @@ function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-
         if (!unique[updater._mountOrder]) {
             unique[updater._mountOrder] = 1;
             needSort.push(updater);
@@ -959,10 +955,14 @@ function drainQueue(queue) {
         var catchError = Refs.catchError;
         if (catchError) {
             delete Refs.catchError;
-            // queue.length = needSort.length = 0;
-            // unique = {};
-            catchError.addJob("resolve");
-            queue.push(catchError);
+            //执行错误边界的didMount/Update钩子
+            /* queue.forEach(function(el){
+                if(!el.isMounted()){
+                    el._disposed = true;
+                }
+            });
+            */
+            catchError.resolve(queue);
         }
     }
 
@@ -992,8 +992,8 @@ function pushError(instance, hook, error) {
         });
 
         var vnode = catchUpdater.vnode;
-        //  console.log(nodes, vnode, catchUpdater.children);
-        delete catchUpdater.children;
+        //delete vnode.props.children;
+        catchUpdater.children = {};
         delete vnode.child;
         delete catchUpdater.pendingVnode;
         Refs.catchError = catchUpdater;
@@ -1043,9 +1043,10 @@ function findCatchComponent(instance, names) {
                 if (dist._hasTry) {
                     //治不好的医生要自杀
                     dist._hasError = false;
-                    disposeVnode(dist.updater.vnode, []);
+                    dist.updater.dispose();
                 } else if (dist !== instance) {
                     //自已不能治愈自己
+
                     return dist.updater; //移交更上级的医师处理
                 }
             }
@@ -1180,7 +1181,6 @@ CompositeUpdater.prototype = {
             vnode = this.vnode,
             pendingVnode = this.pendingVnode;
 
-
         if (this._receiving) {
             var _receiving = _slicedToArray(this._receiving, 3),
                 lastVnode = _receiving[0],
@@ -1301,7 +1301,6 @@ CompositeUpdater.prototype = {
             } else {
                 options.afterMount(instance);
             }
-
             delete this._hookArgs;
             delete this._hydrating;
         }
@@ -1309,8 +1308,17 @@ CompositeUpdater.prototype = {
 
         if (hasCatch) {
             delete this._hasCatch;
-            this._hydrating = true;
             instance._hasTry = true;
+            //收集它上方的updater,强行结束它们
+            var p = vnode.return;
+            do {
+                if (p.vtype > 1) {
+                    var u = p.stateNode.updater;
+                    u.addJob("resolve");
+                    updateQueue.push(u);
+                }
+            } while (p = p.return);
+            this._hydrating = true; //让它不要立即执行，先执行其他的
             instance.componentDidCatch.apply(instance, hasCatch);
             this._hydrating = false;
         } else {
@@ -1332,12 +1340,10 @@ CompositeUpdater.prototype = {
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
-        if (!this._silent) {
-            if (vnode._hasRef) {
-                Refs.fireRef(vnode, null);
-            }
-            captureError(instance, "componentWillUnmount", []);
+        if (vnode._hasRef) {
+            Refs.fireRef(vnode, null);
         }
+        captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this._renderInNextCycle = this.isMounted = returnFalse;
         this._disposed = true;
@@ -1585,6 +1591,8 @@ DOMUpdater.prototype = {
             }
         }
     },
+
+    isMounted: returnFalse,
     update: function update(nextVnode) {
         var lastVnode = this.vnode;
         if (lastVnode._hasRef && lastVnode.ref !== nextVnode.ref) {
@@ -2397,6 +2405,7 @@ function mountVnode(vnode, context, updateQueue) {
             var updater = new DOMUpdater(vnode);
             var children = fiberizeChildren(props.children, updater);
             vnode.selfMount = true;
+
             mountChildren(vnode, children, context, updateQueue);
             vnode.selfMount = false;
             vnode.batchMount("元素"); //批量插入 dom节点
@@ -2554,12 +2563,12 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue) {
 }
 
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
+    //这里都是走新的任务列队
     var parentVElement = parentVnode,
-        priorityQueue = [],
         lastChild = void 0,
-        nextChild = void 0;
-    var isEmpty = true,
-        child;
+        nextChild = void 0,
+        isEmpty = true,
+        child = void 0;
     for (var i in lastChildren) {
         isEmpty = false;
         child = lastChildren[i];
@@ -2568,7 +2577,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (parentVnode.vtype === 1) {
         //向下找到其第一个元素节点子孙
         var firstChild = parentVnode.stateNode.firstChild;
-
         if (firstChild && child) {
             do {
                 if (child.vtype < 2) {
@@ -2590,12 +2598,18 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
+        var maybeExecute = !updateQueue.length;
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
         if (!parentVElement.selfMount) {
+            var mustExecute = maybeExecute && updateQueue.length;
             parentVElement.batchMount("只添加");
+            if (mustExecute) {
+                drainQueue(updateQueue);
+            }
         }
         return;
     }
+    updateQueue = [];
     if (!parentVElement.updateMeta) {
         var lastChilds = mergeNodes(lastChildren);
         parentVElement.childNodes.length = 0; //清空数组，以方便收集节点
@@ -2608,7 +2622,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 
     //step1: 匹配节点，移除节点
     var matchNodes = {};
-
     for (var _i in lastChildren) {
         nextChild = nextChildren[_i];
         lastChild = lastChildren[_i];
@@ -2616,24 +2629,23 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             matchNodes[_i] = lastChild;
             continue;
         }
-        disposeVnode(lastChild, priorityQueue);
+        disposeVnode(lastChild, updateQueue);
     }
     //step2: 更新或新增节点
     for (var _i2 in nextChildren) {
         nextChild = nextChildren[_i2];
-
-        if (!matchNodes[_i2]) {
-            mountVnode(nextChild, parentContext, priorityQueue);
+        lastChild = matchNodes[_i2];
+        if (lastChild) {
+            alignVnode(lastChild, nextChild, parentContext, updateQueue);
         } else {
-
-            alignVnode(matchNodes[_i2], nextChild, parentContext, priorityQueue);
+            mountVnode(nextChild, parentContext, updateQueue);
         }
         if (Refs.catchError) {
             parentVElement.updateMeta = null;
             return;
         }
     }
-    drainQueue(priorityQueue);
+    drainQueue(updateQueue);
     //step3: 更新真实DOM
     if (parentVElement.updateMeta && parentVElement.updateMeta.parentVnode == parentVnode) {
         parentVnode.batchUpdate(parentVElement.updateMeta, mergeNodes(nextChildren));

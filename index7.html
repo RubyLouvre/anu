@@ -132,16 +132,20 @@
   
       var container = document.createElement('div');
       document.body.appendChild(container);
+      container.innerHTML = "xxx"
+      container.onclick = function(e){
+        console.log(e)
+      }
       var list = []
       function logger(){
         list.push([].slice.call(arguments, 0).join(" "))
       }
   
       ReactDOM.render(<ParentComponent logger={logger} />, container);
-  
-      // click "light green"
-      container.childNodes[0].childNodes[3].click()
-      console.log(list)
+
+
+ 
+
       
     
   //  expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");

@@ -8,33 +8,34 @@ export function pushError(instance, hook, error) {
     var names = [];
     instance._hasError = true;
     var catchUpdater = findCatchComponent(instance, names);
-    if( catchUpdater){        
+    if (catchUpdater) {
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
 
         var nodes = mergeNodes(catchUpdater.children);
-        nodes.forEach(function(el){
+        nodes.forEach(function(el) {
             removeElement(el);
         });
-      
-        var vnode = catchUpdater.vnode; 
-        //  console.log(nodes, vnode, catchUpdater.children);
-        delete catchUpdater.children;
+
+        var vnode = catchUpdater.vnode;
+        //delete vnode.props.children;
+        catchUpdater.children = {};
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        Refs.catchError = catchUpdater ;
-    }else{
+        Refs.catchError = catchUpdater;
+    } else {
         //不做任何处理，遵循React15的逻辑
-        console.warn(describeError(names, hook));// eslint-disable-line
-        let vnode = instance.updater.vnode,top;
-        do{
+        console.warn(describeError(names, hook)); // eslint-disable-line
+        let vnode = instance.updater.vnode,
+            top;
+        do {
             top = vnode;
-            if(vnode.isTop){
+            if (vnode.isTop) {
                 break;
             }
-        }while((vnode = vnode.return));
-        disposeVnode(top, [],true);  
-        
+        } while ((vnode = vnode.return));
+        disposeVnode(top, [], true);
+
         throw error;
     }
 }
@@ -61,8 +62,7 @@ function describeError(names, hook) {
     );
 }
 
-
-function findCatchComponent(instance, names){
+function findCatchComponent(instance, names) {
     var target = instance.updater.vnode;
     do {
         var type = target.type;
@@ -71,17 +71,19 @@ function findCatchComponent(instance, names){
         } else if (target.vtype > 1) {
             names.push(type.displayName || type.name);
             var dist = target.stateNode;
-            if(dist[catchHook] ){
-                if(dist._hasTry){//治不好的医生要自杀
+            if (dist[catchHook]) {
+                if (dist._hasTry) {
+                    //治不好的医生要自杀
                     dist._hasError = false;
-                    disposeVnode(dist.updater.vnode, []);
-                }else if(dist !== instance ){//自已不能治愈自己
-                    return dist.updater;//移交更上级的医师处理
+                    dist.updater.dispose();
+                } else if (dist !== instance) {
+                    //自已不能治愈自己
+
+                    return dist.updater; //移交更上级的医师处理
                 }
             }
         } else if (target.vtype === 1) {
             names.push(type);
         }
-    }while((target = target.return));
-
+    } while ((target = target.return));
 }

@@ -16,10 +16,11 @@ import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_r
 var React = {
     version: "VERSION",
     render,
+    hydrate: render,
     options,
     PropTypes,
     createPortal,
-    Children, //为了react-redux
+    Children, 
     Component,
     eventSystem,
     findDOMNode,

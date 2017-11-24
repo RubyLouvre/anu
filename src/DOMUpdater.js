@@ -1,7 +1,7 @@
 
 import { removeElement } from "./browser";
 import { disposeChildren } from "./dispose";
-import { innerHTML } from "./util";
+import { innerHTML ,returnFalse} from "./util";
 import { Refs } from "./Refs";
 
 export function DOMUpdater(vnode) {
@@ -34,7 +34,7 @@ DOMUpdater.prototype = {
            
         }
     },
-
+    isMounted:returnFalse,
     update(nextVnode) {
         var lastVnode = this.vnode;
         if (lastVnode._hasRef && lastVnode.ref !== nextVnode.ref) {
