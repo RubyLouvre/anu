@@ -89,7 +89,6 @@ function renderByAnu(vnode, container, callback, context = {}) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-
     Refs.currentOwner = null; //防止干扰
     var child = vnode;
     vnode = createElement(AnuWrapper, { child });
@@ -102,7 +101,6 @@ function renderByAnu(vnode, container, callback, context = {}) {
         alignVnode(lastVnode, vnode, context, updateQueue);
     } else {
         var parent = (vnode.return = createVnode(container));
-
         vnode.child = child;
         parent.child = vnode;
         genVnodes(vnode, context, updateQueue);
@@ -148,7 +146,6 @@ function mountVnode(vnode, context, updateQueue) {
             let updater = new DOMUpdater(vnode);
             let children = fiberizeChildren(props.children, updater);
             vnode.selfMount = true;
-          
             mountChildren(vnode, children, context, updateQueue);
             vnode.selfMount = false;
             vnode.batchMount("元素"); //批量插入 dom节点
@@ -233,7 +230,8 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         if (nextProps[innerHTML]) {
             disposeChildren(lastChildren, updateQueue);
         } else {
-            diffChildren(lastChildren, fiberizeChildren(nextProps.children, updater), nextVnode, context, updateQueue);
+            var nextChildren = fiberizeChildren(nextProps.children, updater);
+            diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue);
         }
         if (_hasProps || nextCheckProps) {
             diffProps(dom, lastProps, nextProps, nextVnode);

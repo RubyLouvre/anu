@@ -27,22 +27,29 @@ export function disposeVnode(vnode, updateQueue, silent) {
 
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
-    updater._silent = silent;
-    updateQueue.push(updater);
+    if (!silent) {
+        updateQueue.push(updater);
+    }
+    disposeChildren(updater.children, updateQueue, silent);
 }
 
 function disposeComponent(vnode, updateQueue, silent) {
     var instance = vnode.stateNode;
+    if (!instance) {//没有实例化
+        return;
+    }
     var updater = instance.updater;
-    updater._silent = silent;
-    updater.addJob("dispose");
-    updateQueue.push(updater);
+    if (!silent) {
+        updater.addJob("dispose");
+        updateQueue.push(updater);
+    }
     disposeChildren(updater.children, updateQueue, silent);
-    
 }
 
 export function disposeChildren(children, updateQueue, silent) {
     for (var i in children) {
-        disposeVnode(children[i], updateQueue, silent);
+        if (children[i]) {
+            disposeVnode(children[i], updateQueue, silent);
+        } 
     }
 }

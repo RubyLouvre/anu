@@ -1,7 +1,7 @@
 import { disposeVnode } from "./dispose";
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
-import { mergeNodes } from "./util";
+import { noop } from "./util";
 
 var catchHook = "componentDidCatch";
 export function pushError(instance, hook, error) {
@@ -11,14 +11,7 @@ export function pushError(instance, hook, error) {
     if (catchUpdater) {
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-
-        var nodes = mergeNodes(catchUpdater.children);
-        nodes.forEach(function(el) {
-            removeElement(el);
-        });
-
         var vnode = catchUpdater.vnode;
-        //delete vnode.props.children;
         catchUpdater.children = {};
         delete vnode.child;
         delete catchUpdater.pendingVnode;
@@ -26,16 +19,6 @@ export function pushError(instance, hook, error) {
     } else {
         //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
-        let vnode = instance.updater.vnode,
-            top;
-        do {
-            top = vnode;
-            if (vnode.isTop) {
-                break;
-            }
-        } while ((vnode = vnode.return));
-        disposeVnode(top, [], true);
-
         throw error;
     }
 }
@@ -61,15 +44,32 @@ function describeError(names, hook) {
             .join(" created By ")
     );
 }
-
+function disconnectChildren(children) {
+    for (var i in children) {
+        var c = children[i];
+        var node = c && c.stateNode;
+        if(node){
+            if(node.nodeType){
+                removeElement(node);
+            }else{
+                node.updater.exec = noop;
+            }
+        }
+    }
+}
+/**
+ * 此方法遍历医生节点中所有updater,将它们的exec方法禁用，并收集沿途的标签名与组件名
+ */
 function findCatchComponent(instance, names) {
     var target = instance.updater.vnode;
     do {
         var type = target.type;
         if (target.isTop) {
-            break;
+            disposeVnode(target, [], true);
+            return; 
         } else if (target.vtype > 1) {
-            names.push(type.displayName || type.name);
+            var name = type.displayName || type.name;
+            names.push(name);
             var dist = target.stateNode;
             if (dist[catchHook]) {
                 if (dist._hasTry) {
@@ -78,11 +78,14 @@ function findCatchComponent(instance, names) {
                     dist.updater.dispose();
                 } else if (dist !== instance) {
                     //自已不能治愈自己
-
+                    disconnectChildren(dist.updater.children);
                     return dist.updater; //移交更上级的医师处理
                 }
+            }else{
+                disconnectChildren(dist.updater.children);
             }
         } else if (target.vtype === 1) {
+            disconnectChildren(target.updater.children);
             names.push(type);
         }
     } while ((target = target.return));

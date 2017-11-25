@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-11-24
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-11-25
  */
 
 (function (global, factory) {
@@ -794,12 +794,6 @@ function drainQueue(queue) {
         if (catchError) {
             delete Refs.catchError;
             //执行错误边界的didMount/Update钩子
-            /* queue.forEach(function(el){
-                if(!el.isMounted()){
-                    el._disposed = true;
-                }
-            });
-            */
             catchError.resolve(queue);
         }
     }
@@ -1119,9 +1113,13 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
+//freeze_start
+Object.freeze || (Object.freeze = function (a) {
+    return a;
+});
+//freeze_end
 
-
-var eventSystem = extend({
+var eventSystem = Object.freeze({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -1417,22 +1415,31 @@ function disposeVnode(vnode, updateQueue, silent) {
 function disposeElement(vnode, updateQueue, silent) {
     var updater = vnode.updater;
 
-    updater._silent = silent;
-    updateQueue.push(updater);
+    if (!silent) {
+        updateQueue.push(updater);
+    }
+    disposeChildren(updater.children, updateQueue, silent);
 }
 
 function disposeComponent(vnode, updateQueue, silent) {
     var instance = vnode.stateNode;
+    if (!instance) {
+        //没有实例化
+        return;
+    }
     var updater = instance.updater;
-    updater._silent = silent;
-    updater.addJob("dispose");
-    updateQueue.push(updater);
+    if (!silent) {
+        updater.addJob("dispose");
+        updateQueue.push(updater);
+    }
     disposeChildren(updater.children, updateQueue, silent);
 }
 
 function disposeChildren(children, updateQueue, silent) {
     for (var i in children) {
-        disposeVnode(children[i], updateQueue, silent);
+        if (children[i]) {
+            disposeVnode(children[i], updateQueue, silent);
+        }
     }
 }
 
@@ -1444,14 +1451,7 @@ function pushError(instance, hook, error) {
     if (catchUpdater) {
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-
-        var nodes = mergeNodes(catchUpdater.children);
-        nodes.forEach(function (el) {
-            removeElement(el);
-        });
-
         var vnode = catchUpdater.vnode;
-        //delete vnode.props.children;
         catchUpdater.children = {};
         delete vnode.child;
         delete catchUpdater.pendingVnode;
@@ -1459,16 +1459,6 @@ function pushError(instance, hook, error) {
     } else {
         //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
-        var _vnode = instance.updater.vnode,
-            top = void 0;
-        do {
-            top = _vnode;
-            if (_vnode.isTop) {
-                break;
-            }
-        } while (_vnode = _vnode.return);
-        disposeVnode(top, [], true);
-
         throw error;
     }
 }
@@ -1488,15 +1478,32 @@ function describeError(names, hook) {
         return "<" + componentName + " />";
     }).join(" created By ");
 }
-
+function disconnectChildren(children) {
+    for (var i in children) {
+        var c = children[i];
+        var node = c && c.stateNode;
+        if (node) {
+            if (node.nodeType) {
+                removeElement(node);
+            } else {
+                node.updater.exec = noop;
+            }
+        }
+    }
+}
+/**
+ * 此方法遍历医生节点中所有updater,将它们的exec方法禁用，并收集沿途的标签名与组件名
+ */
 function findCatchComponent(instance, names) {
     var target = instance.updater.vnode;
     do {
         var type = target.type;
         if (target.isTop) {
-            break;
+            disposeVnode(target, [], true);
+            return;
         } else if (target.vtype > 1) {
-            names.push(type.displayName || type.name);
+            var name = type.displayName || type.name;
+            names.push(name);
             var dist = target.stateNode;
             if (dist[catchHook]) {
                 if (dist._hasTry) {
@@ -1505,11 +1512,14 @@ function findCatchComponent(instance, names) {
                     dist.updater.dispose();
                 } else if (dist !== instance) {
                     //自已不能治愈自己
-
+                    disconnectChildren(dist.updater.children);
                     return dist.updater; //移交更上级的医师处理
                 }
+            } else {
+                disconnectChildren(dist.updater.children);
             }
         } else if (target.vtype === 1) {
+            disconnectChildren(target.updater.children);
             names.push(type);
         }
     } while (target = target.return);
@@ -1708,6 +1718,7 @@ CompositeUpdater.prototype = {
         } else {
             var lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
+
             rendered = captureError(instance, "render", []);
             if (instance._hasError) {
                 rendered = true;
@@ -1719,11 +1730,6 @@ CompositeUpdater.prototype = {
         if (hasMounted) {
             lastChildren = this.children;
         }
-        if (pendingVnode) {
-            this.vnode = pendingVnode;
-            delete this.pendingVnode;
-        }
-
         if (number > 2) {
             if (number > 5) {
                 //array, object
@@ -2035,8 +2041,6 @@ DOMUpdater.prototype = {
             if (vnode.props[innerHTML]) {
                 //这里可能要重构
                 removeElement(vnode.stateNode);
-            } else {
-                disposeChildren(this.children, updateQueue, this.silent);
             }
             delete vnode.stateNode;
         } else {
@@ -2050,8 +2054,6 @@ DOMUpdater.prototype = {
             }
         }
     },
-
-    isMounted: returnFalse,
     update: function update(nextVnode) {
         var lastVnode = this.vnode;
         if (lastVnode._hasRef && lastVnode.ref !== nextVnode.ref) {
@@ -2500,7 +2502,6 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-
     Refs.currentOwner = null; //防止干扰
     var child = vnode;
     vnode = createElement(AnuWrapper, { child: child });
@@ -2513,7 +2514,6 @@ function renderByAnu(vnode, container, callback) {
         alignVnode(lastVnode, vnode, context, updateQueue);
     } else {
         var parent = vnode.return = createVnode(container);
-
         vnode.child = child;
         parent.child = vnode;
         genVnodes(vnode, context, updateQueue);
@@ -2562,7 +2562,6 @@ function mountVnode(vnode, context, updateQueue) {
             var updater = new DOMUpdater(vnode);
             var children = fiberizeChildren(props.children, updater);
             vnode.selfMount = true;
-
             mountChildren(vnode, children, context, updateQueue);
             vnode.selfMount = false;
             vnode.batchMount("元素"); //批量插入 dom节点
@@ -2654,7 +2653,8 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         if (nextProps[innerHTML]) {
             disposeChildren(lastChildren, updateQueue);
         } else {
-            diffChildren(lastChildren, fiberizeChildren(nextProps.children, updater), nextVnode, context, updateQueue);
+            var nextChildren = fiberizeChildren(nextProps.children, updater);
+            diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue);
         }
         if (_hasProps || nextCheckProps) {
             diffProps(_dom, lastProps, nextProps, nextVnode);

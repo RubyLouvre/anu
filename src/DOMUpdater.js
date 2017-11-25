@@ -18,8 +18,6 @@ DOMUpdater.prototype = {
             Refs.detachRef(vnode);
             if (vnode.props[innerHTML]) {//这里可能要重构
                 removeElement(vnode.stateNode);
-            } else {
-                disposeChildren(this.children, updateQueue, this.silent);
             }
             delete vnode.stateNode;
         } else {
@@ -34,7 +32,6 @@ DOMUpdater.prototype = {
            
         }
     },
-    isMounted:returnFalse,
     update(nextVnode) {
         var lastVnode = this.vnode;
         if (lastVnode._hasRef && lastVnode.ref !== nextVnode.ref) {

@@ -618,7 +618,7 @@ describe("ReactErrorBoundaries", () => {
 
         log.length = 0;
         ReactDOM.unmountComponentAtNode(container);
-        expect(log).toEqual(["ErrorBoundary componentWillUnmount"]);
+        expect(log+"").toBe("ErrorBoundary componentWillUnmount");
     });
 
     it("renders an error state if child throws in componentWillMount", () => {
@@ -780,7 +780,7 @@ describe("ReactErrorBoundaries", () => {
         ReactDOM.unmountComponentAtNode(container);
         expect(log).toEqual(["ErrorBoundary componentWillUnmount"]);
     });
-/*
+
     it("propagates errors inside boundary during componentWillMount", () => {
         var container = document.createElement("div");
         ReactDOM.render(
@@ -891,7 +891,7 @@ describe("ReactErrorBoundaries", () => {
         ReactDOM.unmountComponentAtNode(container);
         expect(log).toEqual(["ErrorBoundary componentWillUnmount"]);
     });
-
+/*
     it("resets refs if mounting aborts", () => {
         function childRef(x) {
             logger("Child ref is set to " + x);

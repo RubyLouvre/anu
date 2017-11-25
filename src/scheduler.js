@@ -44,14 +44,8 @@ export function drainQueue(queue) {
         updater.exec(queue);
         var catchError = Refs.catchError;
         if(catchError){
-            delete  Refs.catchError;
+            delete Refs.catchError;
             //执行错误边界的didMount/Update钩子
-            /* queue.forEach(function(el){
-                if(!el.isMounted()){
-                    el._disposed = true;
-                }
-            });
-            */
             catchError.resolve(queue);
         }
     }

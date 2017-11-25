@@ -178,6 +178,7 @@ CompositeUpdater.prototype = {
         } else {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
+          
             rendered = captureError(instance, "render", []);
             if (instance._hasError) {
                 rendered = true;
@@ -189,11 +190,6 @@ CompositeUpdater.prototype = {
         if (hasMounted) {
             lastChildren = this.children;
         }
-        if (pendingVnode) {
-            this.vnode = pendingVnode;
-            delete this.pendingVnode;
-        }
-
         if (number > 2) {
             if (number > 5) {
                 //array, object
