@@ -239,6 +239,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         if (formElements[type]) {
             processFormElement(nextVnode, dom, nextProps);
         }
+      
         updateQueue.push(updater);
         //  disposeVnode(lastVnode, updateQueue);
         //  Refs.detachRef(lastVnode, nextVnode, dom);
@@ -295,6 +296,7 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue) {
 }
 
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
+    //(lastChildren, nextChildren);
     //这里都是走新的任务列队
     let parentVElement = parentVnode,
         lastChild,
@@ -365,6 +367,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
     //step2: 更新或新增节点
     for (let i in nextChildren) {
+       
         nextChild = nextChildren[i];
         lastChild = matchNodes[i];
         if (lastChild) {

@@ -47,6 +47,7 @@ function describeError(names, hook) {
 function disconnectChildren(children) {
     for (var i in children) {
         var c = children[i];
+        c && (c._hasRef = false);
         var node = c && c.stateNode;
         if(node){
             if(node.nodeType){

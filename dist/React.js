@@ -1114,13 +1114,9 @@ var eventProto = SyntheticEvent.prototype = {
     }
 };
 /* istanbul ignore next  */
-//freeze_start
-Object.freeze || (Object.freeze = function (a) {
-    return a;
-});
-//freeze_end
 
-var eventSystem = Object.freeze({
+
+var eventSystem = extend({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
 	eventLowerCache: eventLowerCache,
@@ -1482,6 +1478,7 @@ function describeError(names, hook) {
 function disconnectChildren(children) {
     for (var i in children) {
         var c = children[i];
+        c && (c._hasRef = false);
         var node = c && c.stateNode;
         if (node) {
             if (node.nodeType) {
@@ -2663,6 +2660,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         if (formElements[type]) {
             processFormElement(nextVnode, _dom, nextProps);
         }
+
         updateQueue.push(updater);
         //  disposeVnode(lastVnode, updateQueue);
         //  Refs.detachRef(lastVnode, nextVnode, dom);
@@ -2721,6 +2719,7 @@ function alignVnode(lastVnode, nextVnode, context, updateQueue) {
 }
 
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue) {
+    //(lastChildren, nextChildren);
     //这里都是走新的任务列队
     var parentVElement = parentVnode,
         lastChild = void 0,
@@ -2791,6 +2790,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
     //step2: 更新或新增节点
     for (var _i2 in nextChildren) {
+
         nextChild = nextChildren[_i2];
         lastChild = matchNodes[_i2];
         if (lastChild) {
