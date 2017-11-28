@@ -161,10 +161,15 @@ describe("生命周期例子", function() {
             }
         }
 
-        var s = ReactDOM.render(<App />, div);
+        ReactDOM.render(<App />, div);
+        var list2 = ReactDOM.createPortal ? ["bbb","did mount",1111,
+            "will update","xxx","did update", 2222,3333]:
+            ["bbb","did mount","will update","xxx","did update",1111,2222,3333];
+        
         expect(list.join("-")).toBe(
-            ["bbb","did mount","will update","xxx","did update","1111","2222","3333"].join("-")
+            list2.join("-")
         );
+       
     });
     it("父组件没有DidMount之时被子组件在willMount钩子里调用其setState", function() {
         var list = [];
@@ -410,6 +415,9 @@ describe("生命周期例子", function() {
 
     it("在componentDidMount中使用setState，会导致willMount, DidMout中的回调都延后",function() {
         var list = [];
+        function logger(e) {
+            list.push(e);
+        }
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -424,7 +432,7 @@ describe("生命周期例子", function() {
                         aaa: 222
                     },
                     function() {
-                        list.push("555");
+                        logger("555");
                     }
                 );
                 this.setState(
@@ -432,7 +440,7 @@ describe("生命周期例子", function() {
                         aaa: 333
                     },
                     function() {
-                        list.push("666");
+                        logger("666");
                     }
                 );
             }
@@ -442,24 +450,29 @@ describe("生命周期例子", function() {
                         aaa: 444
                     },
                     function() {
-                        list.push("777");
+                        logger("777");
                     }
                 );
             }
 
             render() {
-                list.push(this.state.aaa);
+                logger(this.state.aaa);
                 return <p>{this.state.aaa}</p>;
             }
         }
 
-        var s = React.render(<App />, div);
-        expect(list.join("-")).toBe("333-444-555-666-777");
+        ReactDOM.render(<App />, div);
+        var list2 = ReactDOM.createPortal ?[333,555,666,444,777]:[333,444,555,666,777];
+        expect(list.join("-")).toBe(list2.join("-"));
         expect(div.textContent || div.innerText).toBe("444");
     });
 
     it("ReactDOM的回调总在最后",function() {
         var list = [];
+        function logger(e) {
+            list.push(e);
+        }
+
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -473,7 +486,7 @@ describe("生命周期例子", function() {
                         path: "222"
                     },
                     function() {
-                        list.push("componentWillMount cb");
+                        logger("componentWillMount cb");
                     }
                 );
                 this.setState(
@@ -481,12 +494,12 @@ describe("生命周期例子", function() {
                         path: "2222"
                     },
                     function() {
-                        list.push("componentWillMount cb2");
+                        logger("componentWillMount cb2");
                     }
                 );
             }
             render() {
-                list.push("render " + this.state.path);
+                logger("render " + this.state.path);
                 return (
                     <div>
                         <span>
@@ -502,15 +515,15 @@ describe("生命周期例子", function() {
                         path: "eeee"
                     },
                     function() {
-                        list.push("componentDidMount cb");
+                        logger("componentDidMount cb");
                     }
                 );
             }
             componentWillUpdate() {
-                list.push("will update");
+                logger("will update");
             }
             componentDidUpdate() {
-                list.push("did update");
+                logger("did update");
             }
         }
         class Child extends React.Component {
@@ -520,20 +533,33 @@ describe("生命周期例子", function() {
                         path: "child"
                     },
                     function() {
-                        list.push("child setState");
+                        logger("child setState");
                     }
                 );
             }
             render() {
-                list.push("child render");
+                logger("child render");
                 return <p>33333</p>;
             }
         }
         ReactDOM.render(<App />, div, function() {
-            list.push("ReactDOM cb");
+            logger("ReactDOM cb");
         });
+     
 
-        expect(list).toEqual([
+        var list2 = React.createPortal ? [
+            "render 2222",
+            "child render",
+            "componentWillMount cb",
+            "componentWillMount cb2",
+            "ReactDOM cb",
+            "will update",
+            "render eeee",
+            "child render",
+            "did update",
+            "child setState",
+            "componentDidMount cb",
+        ]:[
             "render 2222",
             "child render",
             "will update",
@@ -545,7 +571,10 @@ describe("生命周期例子", function() {
             "child setState",
             "componentDidMount cb",
             "ReactDOM cb"
-        ]);
+        ];
+
+        
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
 
@@ -602,6 +631,9 @@ describe("生命周期例子", function() {
 
     it("forceUpdate在componentDidMount中使用",function(){
         var list = [];
+        function logger(e) {
+            list.push(e);
+        }
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -615,37 +647,48 @@ describe("生命周期例子", function() {
                         aaa: "bbb"
                     },
                     function() {
-                        list.push("1111");
+                        logger("1111");
                     }
                 );
             }
             componentDidMount() {
                 this.state.aaa = "cccc";
                 this.forceUpdate(function() {
-                    list.push("2222");
+                    logger("2222");
                 });
                 this.state.aaa = "dddd";
                 this.forceUpdate(function() {
-                    list.push("3333");
+                    logger("3333");
                 });
-                list.push("did mount");
+                logger("did mount");
             }
             componentWillUpdate() {
-                list.push("app will update");
+                logger("app will update");
             }
             componentDidUpdate() {
-                list.push("app did update");
+                logger("app did update");
             }
-
+     
             render() {
-                list.push("render " + this.state.aaa);
+                logger("render " + this.state.aaa);
                 return <div>{this.state.aaa}</div>;
             }
         }
         ReactDOM.render(<App />, div, function() {
-            list.push("ReactDOM cb");
+            logger("ReactDOM cb");
         });
-        expect(list).toEqual([
+     
+        var list2 = ReactDOM.createPortal ? [
+            "render bbb",
+            "did mount",
+            "1111",
+            "ReactDOM cb",
+            "app will update",
+            "render dddd",
+            "app did update",
+            "2222",
+            "3333"
+        ]:[
             "render bbb",
             "did mount",
             "app will update",
@@ -655,7 +698,8 @@ describe("生命周期例子", function() {
             "2222",
             "3333",
             "ReactDOM cb"
-        ]);
+        ];
+        expect(list+"").toBe(list2+"");
     });
     it("事件回调里执行多个组件的setState，不会按触发时的顺序执行，而是按文档顺序执行",function(){
         var list = [];
@@ -708,7 +752,17 @@ describe("生命周期例子", function() {
         }
         var s = ReactDOM.render(<App />, div);
         ReactTestUtils.Simulate.click(s.refs.kk);
-        expect(list.join("\n")).toBe([
+        var list2 = ReactDOM.createPortal ? [
+            "a will update",
+            "b will update",
+            "c will update",
+            "a did update",
+            "a的回调",
+            "b did update",
+            "b的回调",
+            "c did update",
+            "c的回调"
+        ]:[
             "a will update",
             "b will update",
             "c will update",
@@ -718,6 +772,7 @@ describe("生命周期例子", function() {
             "a的回调",
             "b的回调",
             "c的回调"
-        ].join("\n"));
+        ];
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
 });

@@ -152,18 +152,32 @@ InnerSet.prototype = {
     }
 };
 
-
-export function mergeNodes(children) {
-    var nodes = [];
-    for (var i in children) {
-        var el = children[i];
-        if (!el._disposed) {
-            if (el.stateNode && el.stateNode.nodeType) {
-                nodes.push(el.stateNode);
-            } else {
-                nodes.push.apply(nodes, el.collectNodes());
+export function collectNodesAndUpdaters(start, nodes, updaters){
+    for(var child = start; child; child = child.sibling){
+        var inner = child.stateNode;
+        if(child._disposed){
+            continue;
+        }
+        if(child.vtype < 2){
+            nodes.push(inner);
+        }else{
+            //  var updater = inner.updater;          
+            if(child.child){
+                collectNodesAndUpdaters(child.child, nodes, updaters);
             }
+            /*  if(updaters){
+                updaters.push(updater); 
+            }
+            */
         }
     }
-    return nodes;
+}
+
+export function collectNodes(children){
+    var ret = [];
+    for(var i in children){
+        collectNodesAndUpdaters(children[i], ret);
+        break;
+    }
+    return ret;
 }

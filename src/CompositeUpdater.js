@@ -1,5 +1,5 @@
 import { fiberizeChildren } from "./createElement";
-import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue } from "../src/util";
+import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue, clearArray } from "../src/util";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
@@ -16,29 +16,33 @@ const errorType = {
 };
 /**
  * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
- * 
+ *
  * @export
- * @param {any} instance 
- * @param {any} vnode 
+ * @param {any} instance
+ * @param {any} vnode
  */
-export function CompositeUpdater(instance, vnode) {
-    vnode.stateNode = instance;
-    instance.updater = this;
-    this.instance = instance;
+export function CompositeUpdater(vnode, parentContext) {
+    var { type, props } = vnode;
+    if (!type) {
+        throw vnode;
+    }
+    this.parentContext = parentContext;
+    this.context = getContextByTypes(parentContext, type.contextTypes);
+    this.props = props;
     this.vnode = vnode;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = ["resolve"];
+    this._jobs = [];
     this._mountOrder = Refs.mountOrder++;
-    var type = vnode.type;
+
     this.name = type.displayName || type.name;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
-    //  this._renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    //  this._nextCallbacks = [] 表示组件需要在下一周期重新渲染
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    if (instance.__isStateless) {
-        this.mergeStates = alwaysNull;
-    }
+    //  if (instance.__isStateless) {
+    //      this.mergeStates = alwaysNull;
+    //  }
 }
 
 CompositeUpdater.prototype = {
@@ -55,9 +59,6 @@ CompositeUpdater.prototype = {
         }
     },
     enqueueSetState(state, cb) {
-        if (isFn(cb)) {
-            this._pendingCallbacks.push(cb);
-        }
         if (state === true) {
             //forceUpdate
             this._forceUpdate = true;
@@ -65,32 +66,30 @@ CompositeUpdater.prototype = {
             //setState
             this._pendingStates.push(state);
         }
+
+        if (this._hydrating) {
+            //组件在更新过程（_hydrating = true），其setState/forceUpdate被调用
+            //那么会延期到下一个渲染过程调用
+            if (!this._nextCallbacks) {
+                this._nextCallbacks = [cb];
+            } else {
+                this._nextCallbacks.push(cb);
+            }
+            return;
+        } else {
+            if (isFn(cb)) {
+                this._pendingCallbacks.push(cb);
+            }
+        }
         if (options.async) {
             //在事件句柄中执行setState会进行合并
             enqueueUpdater(this);
             return;
         }
-
-        if (this.isMounted === returnFalse) {
-            //组件挂载期
-            //componentWillUpdate中的setState/forceUpdate应该被忽略
-            if (this._hydrating) {
-                //在render方法中调用setState也会被延迟到下一周期更新.这存在两种情况，
-                //1. 组件直接调用自己的setState
-                //2. 子组件调用父组件的setState，
-                this._renderInNextCycle = returnTrue;
-            }
-        } else {
+        if (this.isMounted === returnTrue) {
             //组件更新期
             if (this._receiving) {
                 //componentWillReceiveProps中的setState/forceUpdate应该被忽略
-                return;
-            }
-            if (this._hydrating) {
-                //在componentDidMount方法里面可能执行多次setState方法，来引发update，但我们只需要一次update
-                this._renderInNextCycle = returnTrue;
-                // 在componentDidMount里调用自己的setState，延迟到下一周期更新
-                // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
                 return;
             }
             this.addJob("hydrate");
@@ -118,6 +117,64 @@ CompositeUpdater.prototype = {
     },
 
     isMounted: returnFalse,
+    init(updateQueue) {
+        let { props, context, vnode } = this;
+        let type = vnode.type,
+            instance;
+        let isStateless = vnode.vtype === 4,
+            mixin;
+        try {
+            var lastOwn = Refs.currentOwner;
+            instance = isStateless ? type(props, context) : new type(props, context);
+            Refs.currentOwner = instance;
+        } catch (e) {
+            return pushError(
+                {
+                    update: this
+                },
+                "constructor",
+                e
+            );
+        } finally {
+            Refs.currentOwner = lastOwn;
+        }
+        if (isStateless) {
+            mixin = instance;
+            instance = {
+                refs: {},
+                __proto__: type.prototype,
+                render: function() {
+                    return type(this.props, this.context);
+                }
+            };
+            if (mixin && mixin.render) {
+                //支持module pattern component
+                extend(instance, mixin);
+            } else {
+                instance.__isStateless = true;
+                vnode.child = mixin;
+                this.mergeStates = alwaysNull;
+                this.willReceive = false;
+            }
+            instance.constructor = type;
+        }
+
+        vnode.stateNode = this.instance = instance;
+        instance.props = props;
+        instance.context = context;
+        instance.updater = this;
+
+        if (instance.componentWillMount) {
+            captureError(instance, "componentWillMount", []);
+            instance.state = this.mergeStates();
+        }
+
+        vnode.mounting = true;
+        this.render(updateQueue);
+        this.addJob("resolve");
+        updateQueue.push(this);
+    },
+
     hydrate(updateQueue) {
         let { instance, context, props, vnode, pendingVnode } = this;
         if (this._receiving) {
@@ -128,11 +185,11 @@ CompositeUpdater.prototype = {
             //但还会继续向下比较
             captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
             delete this._receiving;
-            if(lastVnode.ref !== nextVnode.ref) {
+
+            if (lastVnode.ref !== nextVnode.ref) {
                 Refs.detachRef(lastVnode);
             }
         }
-        // Refs.clearElementRefs();
         let state = this.mergeStates();
         let shouldUpdate = true;
 
@@ -153,11 +210,10 @@ CompositeUpdater.prototype = {
         instance.props = props;
         instance.state = state;
         instance.context = context;
-        this.addJob("resolve");
         if (shouldUpdate) {
-            this._hydrating = true;
             this.render(updateQueue);
         }
+        this.addJob("resolve");
         updateQueue.push(this);
     },
     render(updateQueue) {
@@ -172,13 +228,15 @@ CompositeUpdater.prototype = {
             vnode = this.vnode = pendingVnode;
             delete this.pendingVnode;
         }
+        this._hydrating = true;
+
         if (this.willReceive === false) {
             rendered = vnode.child;
             delete this.willReceive;
         } else {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
-          
+
             rendered = captureError(instance, "render", []);
             if (instance._hasError) {
                 rendered = true;
@@ -204,21 +262,20 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
+
         options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue);
     },
     //此方法用于处理元素ref, ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
-        let instance = this.instance;
+        let {instance, _hasCatch, vnode} = this;
         let hasMounted = this.isMounted();
-        let hasCatch = this._hasCatch;
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
-        //如果发生错误，之前收集的元素ref也不会执行，因为结构都不对，没有意义
-        // Refs.clearElementRefs();
         if (this._hydrating) {
             let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
+           
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
                 options.afterUpdate(instance);
@@ -228,33 +285,43 @@ CompositeUpdater.prototype = {
             delete this._hookArgs;
             delete this._hydrating;
         }
-        let vnode = this.vnode;
 
-        if (hasCatch) {
+        if (_hasCatch) {
             delete this._hasCatch;
             instance._hasTry = true;
             //收集它上方的updater,强行结束它们
             var p = vnode.return;
-            do{
-                if(p.vtype > 1){
+            do {
+                if (p.vtype > 1) {
                     var u = p.stateNode.updater;
                     u.addJob("resolve");
                     updateQueue.push(u);
                 }
-            }while((p = p.return));
-            this._hydrating = true;//让它不要立即执行，先执行其他的
-            instance.componentDidCatch.apply(instance, hasCatch);
+            } while ((p = p.return));
+            this._hydrating = true; //让它不要立即执行，先执行其他的
+            instance.componentDidCatch.apply(instance, _hasCatch);
             this._hydrating = false;
         } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
                 Refs.fireRef(vnode, instance.__isStateless ? null : instance);
+                vnode._hasRef = false;
             }
+            clearArray(this._pendingCallbacks).forEach(function(fn) {
+                fn.call(instance);
+            });
         }
-
-        //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
-        if (this._renderInNextCycle === returnTrue) {
-            this._renderInNextCycle = returnFalse;
+        var cbs = this._nextCallbacks,
+            cb;
+        if (cbs && cbs.length) {
+            //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
+            do {
+                cb = cbs.shift();
+                if (isFn(cb)) {
+                    this._pendingCallbacks.push(cb);
+                }
+            } while (cbs.length);
+            delete this._nextCallbacks;
             this.addJob("hydrate");
             updateQueue.push(this);
         }

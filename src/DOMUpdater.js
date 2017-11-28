@@ -1,45 +1,102 @@
 
 import { removeElement } from "./browser";
-import { disposeChildren } from "./dispose";
-import { innerHTML ,returnFalse} from "./util";
+import { innerHTML, toArray, createUnique, collectNodesAndUpdaters} from "./util";
 import { Refs } from "./Refs";
+import { diffProps } from "./diffProps";
+import { processFormElement, formElements } from "./ControlledComponent";
 
 export function DOMUpdater(vnode) {
     this.vnode = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
     this.name = vnode.type;
+    this._jobs = ["init"];
 }
 
 DOMUpdater.prototype = {
-    exec(updateQueue) {
-        var vnode = this.vnode;
-        if (vnode._disposed) { 
-            Refs.detachRef(vnode);
-            if (vnode.props[innerHTML]) {//这里可能要重构
-                removeElement(vnode.stateNode);
-            }
-            delete vnode.stateNode;
-        } else {
-            var lastVnode = this.lastVnode;
-            if (lastVnode) {
-                Refs.detachRef(lastVnode);
-                delete this.lastVnode;
-                updateQueue.push(this);
-            }else{
-                Refs.fireRef(vnode, vnode.stateNode);
-            }
-           
+    addJob: function(newJob) {
+        var jobs = this._jobs;
+        if (jobs[jobs.length - 1] !== newJob) {
+            jobs.push(newJob);
         }
     },
-    update(nextVnode) {
-        var lastVnode = this.vnode;
-        if (lastVnode._hasRef && lastVnode.ref !== nextVnode.ref) {
-            this.lastVnode = lastVnode;
+    exec(updateQueue) {
+        var job = this._jobs.shift();
+        if (job) {
+            this[job](updateQueue);
         }
-        this.vnode = nextVnode;
-        if (lastVnode.namespaceURI) {
-            nextVnode.namespaceURI = lastVnode.namespaceURI;
+    },
+    init(updateQueue){
+        this._jobs = ["batchMount"];
+        updateQueue.push(this);
+    },
+    batchMount(updateQueue){//父节点主动添加它的孩子
+        //批量添加DOM，与执行组件的resolve
+        var vnode = this.vnode, nodes = [], updaters = [];
+        var dom = vnode.stateNode;
+        if(vnode.child) {
+            collectNodesAndUpdaters(vnode.child, nodes, updaters);
         }
+        nodes.forEach(function(c){
+            dom.appendChild(c);
+        });
+        this.addJob("resolve");
+        updateQueue.push(this);
+    },
+    resolve(){
+        var vnode = this.vnode;
+        var dom = vnode.stateNode;
+        var { type, props} = vnode;
+        diffProps(dom, this.oldProps || {}, props, vnode);
+        if (formElements[type]) {
+            processFormElement(vnode, dom, props);
+        }
+        Refs.fireRef(vnode, dom);
+        delete this.monting;
+    },
+    batchUpdate(lastChildren, nextChildren) {//子节点主动让父节点来更新其孩子
+        var vnode = this.vnode;
+        var parentNode = vnode.stateNode,
+            newLength = nextChildren.length,
+            oldLength = lastChildren.length,
+            unique = createUnique();
+
+        if(this.mounting){
+            return;
+        }
+        var fullNodes = toArray(parentNode.childNodes);
+        var startIndex = fullNodes.indexOf(lastChildren[0]);
+        var insertPoint = fullNodes[startIndex] || null;
+        for (let i = 0; i < newLength; i++) {
+            let child = nextChildren[i];
+            let last = lastChildren[i];
+            if (last === child) {
+                //如果相同
+            } else if (last && !unique.has(last)) {
+                parentNode.replaceChild(child, last); //如果这个位置有DOM，并且它不在新的nextChildren之中
+            } else if (insertPoint) {
+                parentNode.insertBefore(child, insertPoint.nextSibling);
+            } else {
+                parentNode.appendChild(child);
+            }
+            insertPoint = child;
+            unique.add(child);
+        }
+        if (newLength < oldLength) {
+            for (let i = newLength; i < oldLength; i++) {
+                if (!unique.has(lastChildren[i])) {
+                    removeElement(lastChildren[i]);
+                }
+            }
+        }
+    },
+    dispose(){
+        var vnode = this.vnode;
+        Refs.detachRef(vnode);
+        if (vnode.props[innerHTML]) {//这里可能要重构
+            removeElement(vnode.stateNode);
+        }
+        delete vnode.stateNode;
     }
+   
 };

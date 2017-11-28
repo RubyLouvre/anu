@@ -5,7 +5,12 @@
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
 import { typeNumber } from "./util";
-
+export const formElements = {
+    select: 1,
+    textarea: 1,
+    input: 1,
+    option: 1
+};
 var duplexData = {
     1: [
         "value",

@@ -28,6 +28,7 @@ export function disposeVnode(vnode, updateQueue, silent) {
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
+        updater.addJob("dispose");
         updateQueue.push(updater);
     }
     disposeChildren(updater.children, updateQueue, silent);

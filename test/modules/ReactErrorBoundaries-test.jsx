@@ -891,7 +891,7 @@ describe("ReactErrorBoundaries", () => {
         ReactDOM.unmountComponentAtNode(container);
         expect(log).toEqual(["ErrorBoundary componentWillUnmount"]);
     });
-/*
+
     it("resets refs if mounting aborts", () => {
         function childRef(x) {
             logger("Child ref is set to " + x);
@@ -1899,7 +1899,7 @@ describe("ReactErrorBoundaries", () => {
         // Error should be the first thrown
         expect(caughtError.message).toBe("child sad");
     });
-    */
+    
 });
 
 

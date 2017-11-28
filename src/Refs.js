@@ -9,20 +9,17 @@ export var Refs = {
     mountOrder: 1,
     currentOwner: null,
     detachRef(vnode) {
-        if(vnode._hasRef){
-            Refs.fireRef(vnode, null); 
-            delete vnode._hasRef;          
-        }
+        Refs.fireRef(vnode, null); 
     },
     fireRef(vnode, dom) {
-        if(!vnode._hasRef){
-            return;
-        }
         var ref = vnode.ref;
         if (typeof ref === "function") {
             return ref(dom);
         }
         var owner = vnode._owner;
+        if(!ref) {
+            return;
+        }
         if (!owner) {
             throw `Element ref was specified as a string (${ref}) but no owner was set`;
         }
