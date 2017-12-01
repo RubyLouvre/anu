@@ -81,6 +81,18 @@ export function createVnode(node) {
             //非HTML需要加上命名空间
             vnode.namespaceURI = ns;
         }
+        var props = {};
+        var attrs = node.attributes;
+        for(var i = 0, attr; attr = attrs[i++];){
+            if(attr.specified){
+                var name = attr.name;
+                if(name === "class") {
+                    name = "className";
+                }
+                props[name] = attr.value;
+            }
+        }
+        vnode.props = props;
     } else {
         vnode = createVText(type, node.nodeValue);
     }

@@ -1,9 +1,11 @@
-import { options, innerHTML, collectNodes, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
+import { options, innerHTML,inherit, collectNodes, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
 import { createElement as createDOMElement, emptyElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { processFormElement, formElements } from "./ControlledComponent";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
+import { Component } from "./Component";
+
 import { DOMUpdater } from "./DOMUpdater";
 import { drainQueue } from "./scheduler";
 import { Refs } from "./Refs";
@@ -58,16 +60,13 @@ export function findDOMNode(ref) {
         return findDOMNode(ref.child);
     }
 }
-var AnuWrapper = function() {},
-    fn = AnuWrapper.prototype, 
-    AnuInstance,AnuCb;
+
+var AnuWrapper = function() {
+    Component.call(this);
+};
+var fn = inherit(AnuWrapper, Component);
 fn.render = function() {
     return this.props.child;
-};
-fn.componentDidMount = function() {
-    if (AnuCb) {
-        AnuCb.call(AnuInstance);
-    }
 };
 
 // ReactDOM.render的内部实现
@@ -84,39 +83,39 @@ function renderByAnu(vnode, container, callback, context = {}) {
     //topNode来寻找它们。
 
     let nodeIndex = topNodes.indexOf(container),
-        lastVnode,
+        lastWrapper,
         updateQueue = [];
     if (nodeIndex !== -1) {
-        lastVnode = topVnodes[nodeIndex];
+        lastWrapper = topVnodes[nodeIndex];
     } else {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
     Refs.currentOwner = null; //防止干扰
-    var child = vnode;
-    vnode = createElement(AnuWrapper, { child });
-
-    vnode.isTop = true;
-    topVnodes[nodeIndex] = vnode;
-
-    if (lastVnode) {
-        vnode.return = lastVnode.return;
-        alignVnode(lastVnode, vnode, context, updateQueue);
+    // contaner > nextWrapper > vnode
+    var nextWrapper = createElement(AnuWrapper, { child: vnode });
+    nextWrapper.isTop = true;
+    topVnodes[nodeIndex] = nextWrapper;
+    if (lastWrapper) {
+        nextWrapper.return = lastWrapper.return;
+        alignVnode(lastWrapper, nextWrapper, context, updateQueue);
     } else {
-        var parent = (vnode.return = createVnode(container));
-        var updater = new DOMUpdater(parent);
-        vnode.child = child;
-        parent.child = vnode;
-        genVnodes(vnode, context, updateQueue);
-        updateQueue.push(updater);
+        var top = (nextWrapper.return = createVnode(container));
+        var updater = new DOMUpdater(top);
+        nextWrapper.child = vnode;
+        top.child = nextWrapper;
+        genVnodes(nextWrapper, context, updateQueue);// 这里会从下到上添加updater
+        updater.init(updateQueue); // 添加最顶层的updater
     }
 
-    container.__component = vnode; //兼容旧的
-    AnuCb = callback;
+    container.__component = nextWrapper; //兼容旧的
+    var wrapper = nextWrapper.stateNode.updater;
+    if (callback) {
+        wrapper._pendingCallbacks.push(callback.bind( vnode.stateNode));
+    }
     drainQueue(updateQueue);
-    AnuInstance = vnode.child.stateNode;
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    return AnuInstance;
+    return vnode.stateNode;
 }
 
 function genVnodes(vnode, context, updateQueue) {
@@ -146,7 +145,7 @@ function mountVnode(vnode, context, updateQueue) {
         if (vnode.vtype === 1) {
             let updater = new DOMUpdater(vnode);
             let children = fiberizeChildren(vnode.props.children, updater);
-            updater.mouting = true;
+            //updater.mouting = true;
             mountChildren(vnode, children, context, updateQueue);
             updater.init(updateQueue);
         }
@@ -283,6 +282,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     //优化： 只添加
     if (isEmpty) {
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
+        return;
     } else {
         var matchNodes = {};
         for (let i in lastChildren) {
@@ -308,9 +308,12 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             }
         }
     }
-
-    var nextNodes = collectNodes(nextChildren);
-    p.updater.batchUpdate(lastNodes, nextNodes);
+    if (p.updater.mouting) {
+        return;
+    }
+    var updaters = [];
+    var nextNodes = collectNodes(nextChildren, updaters);
+    p.updater.batchUpdate(lastNodes, nextNodes, updaters, updateQueue);
 }
 
 options.alignVnode = alignVnode;

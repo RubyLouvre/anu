@@ -40,9 +40,6 @@ export function CompositeUpdater(vnode, parentContext) {
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
     //  this._nextCallbacks = [] 表示组件需要在下一周期重新渲染
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
-    //  if (instance.__isStateless) {
-    //      this.mergeStates = alwaysNull;
-    //  }
 }
 
 CompositeUpdater.prototype = {
@@ -128,10 +125,13 @@ CompositeUpdater.prototype = {
             instance = isStateless ? type(props, context) : new type(props, context);
             Refs.currentOwner = instance;
         } catch (e) {
+            instance = {
+                updater: this
+            };
+            vnode.stateNode = instance;
+            this.instance = instance;
             return pushError(
-                {
-                    update: this
-                },
+                instance,
                 "constructor",
                 e
             );
@@ -169,10 +169,10 @@ CompositeUpdater.prototype = {
             instance.state = this.mergeStates();
         }
 
-        vnode.mounting = true;
+        //  this.mounting = true;
         this.render(updateQueue);
-        this.addJob("resolve");
-        updateQueue.push(this);
+        //  this.addJob("resolve");
+        //  updateQueue.push(this);
     },
 
     hydrate(updateQueue) {
@@ -185,7 +185,6 @@ CompositeUpdater.prototype = {
             //但还会继续向下比较
             captureError(instance, "componentWillReceiveProps", [this.props, nextContext]);
             delete this._receiving;
-
             if (lastVnode.ref !== nextVnode.ref) {
                 Refs.detachRef(lastVnode);
             }
@@ -217,6 +216,7 @@ CompositeUpdater.prototype = {
         updateQueue.push(this);
     },
     render(updateQueue) {
+
         let { vnode, pendingVnode, instance, parentContext } = this,
             nextChildren = emptyObject,
             lastChildren = emptyObject,
@@ -262,8 +262,13 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-
-        options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue);
+        var isNew =  hasMounted; 
+     
+        var queue = isNew? []: updateQueue;
+        options.diffChildren(lastChildren, nextChildren, vnode, childContext, queue);
+        if(isNew){
+            drainQueue(queue);
+        }
     },
     //此方法用于处理元素ref, ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
@@ -364,3 +369,15 @@ export function getContextByTypes(curContext, contextTypes) {
     }
     return context;
 }
+
+/**
+ *   元素： 元素虚拟DOM产生updater, 放入列队
+ *         插入其孩子的所有DOM， 收集孩子中的组件updater， resolve
+ *   组件： 元素虚拟DOM产生instance与updater, 执行 willMount,
+ *         立即调用render，目的是能让子级组件立即 willMount
+ *   <App /> ==> <p ref={refFn}>{this.state.xxx}</p>
+ *  container
+ * 
+ * 
+ * 
+ */

@@ -34,7 +34,6 @@ export function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-        console.log(updater.name, updater._jobs+"");
         updater.exec(queue);
         var catchError = Refs.catchError;
         if(catchError){

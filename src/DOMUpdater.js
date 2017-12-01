@@ -10,6 +10,7 @@ export function DOMUpdater(vnode) {
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
     this.name = vnode.type;
+    this.mounting = true;
     this._jobs = ["init"];
 }
 
@@ -40,8 +41,14 @@ DOMUpdater.prototype = {
         nodes.forEach(function(c){
             dom.appendChild(c);
         });
+        //先放自己再放孩子
         this.addJob("resolve");
         updateQueue.push(this);
+        for(var i = updaters.length-1; i >= 0; i--){
+            var el = updaters[i];
+            el.addJob("resolve");
+            updateQueue.push(el);
+        }
     },
     resolve(){
         var vnode = this.vnode;
@@ -52,18 +59,14 @@ DOMUpdater.prototype = {
             processFormElement(vnode, dom, props);
         }
         Refs.fireRef(vnode, dom);
-        delete this.monting;
+        delete this.mounting;
     },
-    batchUpdate(lastChildren, nextChildren) {//子节点主动让父节点来更新其孩子
+    batchUpdate(lastChildren, nextChildren, updaters, updateQueue) {//子节点主动让父节点来更新其孩子
         var vnode = this.vnode;
         var parentNode = vnode.stateNode,
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
             unique = createUnique();
-
-        if(this.mounting){
-            return;
-        }
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
@@ -89,6 +92,10 @@ DOMUpdater.prototype = {
                 }
             }
         }
+        /*  updaters.forEach(function(el){
+            el.addJob("resolve");
+            updateQueue.push(el);
+        });*/
     },
     dispose(){
         var vnode = this.vnode;

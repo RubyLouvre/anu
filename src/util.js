@@ -161,22 +161,22 @@ export function collectNodesAndUpdaters(start, nodes, updaters){
         if(child.vtype < 2){
             nodes.push(inner);
         }else{
-            //  var updater = inner.updater;          
+            var updater = inner.updater;          
             if(child.child){
                 collectNodesAndUpdaters(child.child, nodes, updaters);
             }
-            /*  if(updaters){
-                updaters.push(updater); 
+            if(updaters){
+                updaters.unshift(updater); 
             }
-            */
+            
         }
     }
 }
 
-export function collectNodes(children){
+export function collectNodes(children, updaters){
     var ret = [];
     for(var i in children){
-        collectNodesAndUpdaters(children[i], ret);
+        collectNodesAndUpdaters(children[i], ret, updaters);
         break;
     }
     return ret;
