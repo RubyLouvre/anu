@@ -115,14 +115,26 @@ CompositeUpdater.prototype = {
     init(updateQueue) {
         let { props, context, vnode } = this;
         let type = vnode.type,
-            instance;
-        let isStateless = vnode.vtype === 4,
+            isStateless = vnode.vtype === 4,
+            instance,
             mixin;
         //实例化组件
         try {
             var lastOwn = Refs.currentOwner;
-            instance = isStateless ? type(props, context) : new type(props, context);
-            Refs.currentOwner = instance;
+            if(isStateless){
+                instance = {
+                    refs: {},
+                    __proto__: type.prototype,
+                    render: function() {
+                        return type(this.props, this.context);
+                    }
+                };
+                Refs.currentOwner = instance;
+                mixin = type(props, context);
+            }else{
+                instance =  new type(props, context);
+                Refs.currentOwner = instance;
+            }
         } catch (e) {
             //失败时，则创建一个假的instance
             instance = {
@@ -139,14 +151,6 @@ CompositeUpdater.prototype = {
             Refs.currentOwner = lastOwn;
         }
         if (isStateless) {
-            mixin = instance;
-            instance = {
-                refs: {},
-                __proto__: type.prototype,
-                render: function() {
-                    return type(this.props, this.context);
-                }
-            };
             if (mixin && mixin.render) {
                 //支持module pattern component
                 extend(instance, mixin);
@@ -156,7 +160,6 @@ CompositeUpdater.prototype = {
                 this.mergeStates = alwaysNull;
                 this.willReceive = false;
             }
-            instance.constructor = type;
         }
 
         vnode.stateNode = this.instance = instance;
@@ -261,13 +264,11 @@ CompositeUpdater.prototype = {
         let hasMounted = this.isMounted();
         if(!hasMounted){
             this.isMounted = returnTrue;
-        }
-       
+        }       
         vnode.hasMounted = true;
         if (this._hydrating) {
             let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
-           
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
                 options.afterUpdate(instance);

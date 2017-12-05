@@ -82,10 +82,16 @@ function renderByAnu(vnode, container, callback, context = {}) {
     //topNode来寻找它们。
 
     let nodeIndex = topNodes.indexOf(container),
-        lastWrapper, top, 
-        updateQueue = [];
+        lastWrapper, top, wrapper,
+        updateQueue =  Refs.updateQueue || [];
     if (nodeIndex !== -1) {
         lastWrapper = topVnodes[nodeIndex];
+        wrapper = lastWrapper.stateNode.updater;
+        if(wrapper._hydrating){
+            //如果是在componentDidMount/Update中使用了ReactDOM.render，那么将延迟到此组件的resolve阶段执行
+            wrapper._pendingCallbacks.push(renderByAnu.bind(null, vnode, container, callback, context));
+            return lastWrapper.child.stateNode;
+        }
     } else {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
@@ -96,7 +102,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
     nextWrapper.isTop = true;
     topVnodes[nodeIndex] = nextWrapper;
     if (lastWrapper) {
-        top =  nextWrapper.return = lastWrapper.return;
+        top = nextWrapper.return = lastWrapper.return;
         top.child = nextWrapper;        
         alignVnode(lastWrapper, nextWrapper, context, updateQueue);
     } else {
@@ -109,7 +115,8 @@ function renderByAnu(vnode, container, callback, context = {}) {
     top.updater.init(updateQueue); // 添加最顶层的updater
     
     container.__component = nextWrapper; //兼容旧的
-    var wrapper = nextWrapper.stateNode.updater;
+    wrapper = nextWrapper.stateNode.updater;
+
     if (callback) {
         wrapper._pendingCallbacks.push(callback.bind( vnode.stateNode));
     }
@@ -274,7 +281,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
         }
     } while ((p = p.return));
     var lastNodes = collectAndResolve(lastChildren, false, "收集旧节点");
-  
     //优化： 只添加
     if (isEmpty) {
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue);
