@@ -1,17 +1,16 @@
 
 import { removeElement } from "./browser";
-import { innerHTML, toArray, createUnique, collectNodesAndUpdaters} from "./util";
+import { innerHTML, toArray, createUnique, collectAndResolveImpl} from "./util";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { processFormElement, formElements } from "./ControlledComponent";
 
 export function DOMUpdater(vnode) {
+    this.name = vnode.type;
+    this._jobs = ["init"];
     this.vnode = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
-    this.name = vnode.type;
-    this.mounting = true;
-    this._jobs = ["init"];
 }
 
 DOMUpdater.prototype = {
@@ -31,24 +30,27 @@ DOMUpdater.prototype = {
         this._jobs = ["batchMount"];
         updateQueue.push(this);
     },
-    batchMount(updateQueue){//父节点主动添加它的孩子
-        //批量添加DOM，与执行组件的resolve
+    batchMount(updateQueue){
+        //父节点主动添加它的孩子
         var vnode = this.vnode, nodes = [], updaters = [];
         var dom = vnode.stateNode;
         if(vnode.child) {
-            collectNodesAndUpdaters(vnode.child, nodes, updaters);
+            collectAndResolveImpl(vnode.child, nodes, updateQueue);
         }
         nodes.forEach(function(c){
             dom.appendChild(c);
         });
-        //先放自己再放孩子
+        //先放自己再放孩子， ref是从里到外执行
+        //  updaters.forEach(function(el){
+        //      updateQueue.push(el);
+        //  });
+        
+        /* for(var i = updaters.length-1; i >= 0; i--){
+            var el = updaters[i];
+            updateQueue.push(el);
+        }*/
         this.addJob("resolve");
         updateQueue.push(this);
-        for(var i = updaters.length-1; i >= 0; i--){
-            var el = updaters[i];
-            el.addJob("resolve");
-            updateQueue.push(el);
-        }
     },
     resolve(){
         var vnode = this.vnode;
@@ -58,10 +60,11 @@ DOMUpdater.prototype = {
         if (formElements[type]) {
             processFormElement(vnode, dom, props);
         }
+        vnode.hasMounted = true;
         Refs.fireRef(vnode, dom);
-        delete this.mounting;
+       
     },
-    batchUpdate(lastChildren, nextChildren, updaters, updateQueue) {//子节点主动让父节点来更新其孩子
+    batchUpdate(lastChildren, nextChildren) {//子节点主动让父节点来更新其孩子
         var vnode = this.vnode;
         var parentNode = vnode.stateNode,
             newLength = nextChildren.length,
@@ -92,10 +95,6 @@ DOMUpdater.prototype = {
                 }
             }
         }
-        /*  updaters.forEach(function(el){
-            el.addJob("resolve");
-            updateQueue.push(el);
-        });*/
     },
     dispose(){
         var vnode = this.vnode;

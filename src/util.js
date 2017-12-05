@@ -152,31 +152,32 @@ InnerSet.prototype = {
     }
 };
 
-export function collectNodesAndUpdaters(start, nodes, updaters){
-    for(var child = start; child; child = child.sibling){
+export function collectAndResolveImpl(start, nodes, resolve, debug) {
+    for (var child = start; child; child = child.sibling) {
         var inner = child.stateNode;
-        if(child._disposed){
+        if (child._disposed) {
             continue;
         }
-        if(child.vtype < 2){
+        if (child.vtype < 2) {
             nodes.push(inner);
-        }else{
-            var updater = inner.updater;          
-            if(child.child){
-                collectNodesAndUpdaters(child.child, nodes, updaters);
+        } else {
+            var updater = inner.updater;
+
+            if (child.child) {
+                collectAndResolveImpl(child.child, nodes, resolve, debug);
             }
-            if(updaters){
-                updaters.unshift(updater); 
+            if(resolve){
+                updater.addJob("resolve");
+                resolve.push(updater);//先执行内围的，再执行外围的
             }
-            
         }
     }
 }
 
-export function collectNodes(children, updaters){
+export function collectAndResolve(children, resolve, debug) {
     var ret = [];
-    for(var i in children){
-        collectNodesAndUpdaters(children[i], ret, updaters);
+    for (var i in children) {
+        collectAndResolveImpl(children[i], ret, resolve, debug);
         break;
     }
     return ret;

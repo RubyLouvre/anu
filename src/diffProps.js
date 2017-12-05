@@ -156,7 +156,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
-            if (!action) continue;
+            if (!action) {continue;}
             actionStrategy[action](dom, name, false, lastProps, vnode);
         }
     }

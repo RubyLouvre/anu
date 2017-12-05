@@ -35,6 +35,7 @@ export function drainQueue(queue) {
             continue;
         }
         updater.exec(queue);
+      
         var catchError = Refs.catchError;
         if(catchError){
             delete Refs.catchError;

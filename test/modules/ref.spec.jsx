@@ -350,7 +350,7 @@ describe("ref模块", function() {
                 );
             }
         }
-        var s = ReactTestUtils.renderIntoDocument(<App />);
+        ReactDOM.render(<App />,div);
 
         expect(a).toBe(true);
     });
@@ -594,10 +594,18 @@ describe("ref模块", function() {
         }
         class A extends React.Component {
             componentWillUnmount() {
-                logger("remove");
+                logger(this.props.name+" remove");
             }
             render() {
                 return <span>A</span>;
+            }
+        }
+        class B extends React.Component {
+            componentWillMount() {
+                logger("b mount");
+            }
+            render() {
+                return <span ref={a => logger("b ref") }>B</span>;
             }
         }
         class App extends React.Component {
@@ -612,9 +620,9 @@ describe("ref模块", function() {
                     <div>
                         {this.state.a
                             ? [
-                                <A />,
-                                <A />,
-                                <A />,
+                                <A name="a1" />,
+                                <A name="a2"/>,
+                                <A name="a3"/>,
                                 <span
                                     key="a"
                                     ref={a => {
@@ -648,7 +656,8 @@ describe("ref模块", function() {
                                     }}
                                 >
                                       a
-                                </span>
+                                </span>,
+                                <B />
                             ]}
                     </div>
                 );
@@ -656,9 +665,10 @@ describe("ref模块", function() {
         }
         var s = ReactDOM.render(<App />, div);
         s.setState({ a: 0 });
-        var list2 = ReactDOM.createPortal
-            ? ["111instance", "222instance", "remove", "remove", "remove", "222null", "111null", "333instance", "444instance"]
-            : ["111instance", "222instance", "222null", "111null", "remove", "remove", "remove", "333instance", "444instance"];
+        var list2 =  ["111instance", "222instance","b mount",
+            "a1 remove", "a2 remove", "a3 remove", 
+            "222null", "111null", 
+            "333instance", "444instance", "b ref"];
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 

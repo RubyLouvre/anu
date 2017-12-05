@@ -3,153 +3,136 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>-->
-    <!-- <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-     <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+    <meta name="viewport" content="width=device-width">   
+   <script type='text/javascript' src="./dist/React.js"></script>
+
+   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+   
     <script type='text/javascript' src="./lib/babel.js"></script>
 
-
-
 </head>
-
 <body>
-
-    <div>开发者工具</div>
-    <div id='example'></div>
-    <pre>
-        ['parent-render', 'blue'],
-        ['getInitialState', 'blue'],
-        ['render', 'dark blue', 'blue'],
-        ['handleHue', 'dark blue', 'blue'],
-        ['parent-handleColor', 'blue'],
-        ['parent-render', 'green'],
-        ['setState-this', 'dark blue', 'blue'],
-        ['setState-args', 'dark blue', 'green'],
-        ['render', 'light green', 'green'],
-        ['parent-after-setState', 'green'],
-        ['after-setState', 'light green', 'green']
-      
-    </pre>
-
-    <script type='text/babel'>
-
-
-    var container = document.getElementById("example")
-    var PropTypes = React.PropTypes
-    var div = container
-    if(!window.ReactDOM){
-     
-       window.ReactDOM = React
-    }
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a, "vs", b, a === b)
-            }
-        }
-    }
-    class ParentComponent extends React.Component {
-        state = {color: 'blue'};
-  
-        parentHandleColor = color => {
-          this.props.logger('parent-handleColor', this.state.color);//4 'parent-handleColor', 'blue'
-          this.setState({color: color}, function() {
-            this.props.logger('parent-after-setState', this.state.color);// 5  after
-          });
-        };
-  
-        render() {
-          // 0 'parent-render', 'blue'
-          // 6 'parent-render', 'green'
-          this.props.logger('parent-render', this.state.color);
-          return (
-            <ChildComponent
-              logger={this.props.logger}
-              color={this.state.color}
-              callParentHandleColor={this.parentHandleColor}
-            />
-          );
-        }
-      }
-  
-      class ChildComponent extends React.Component {
-        constructor(props) {
-          super(props);
-          props.logger('getInitialState', props.color);//1 'getInitialState', 'blue'
-          this.state = {hue: 'dark ' + props.color};
-        }
-  
-        handleHue = (shade, color) => {//light, green
-          this.props.logger('handleHue', this.state.hue, this.props.color);//3 handleHue', 'dark blue', 'blue
-          this.props.callParentHandleColor(color); //green
-          this.setState(
-            function(state, props) {
-              // 7 'setState-this', 'dark blue', 'blue'],
-              this.props.logger(
-                'setState-this',
-                this.state.hue,
-                this.props.color,
-              );
-              // 8 'setState-this', 'dark blue', 'blue'],
-              this.props.logger('setState-args', state.hue, props.color);
-              return {hue: shade + ' ' + props.color};
-            },
-            function() {
-              this.props.logger(
-                'after-setState',
-                this.state.hue,
-                this.props.color,
-              );
-            },
-          );
-        };
-  
-        render() {
-          //2 'render', 'dark blue', 'blue']
-          //9 'render', 'light green', 'green'
-          this.props.logger('render', this.state.hue, this.props.color);
-          return (
-            <div>
-              <button onClick={this.handleHue.bind(this, 'dark', 'blue')}>
-                Dark Blue
-              </button>
-              <button onClick={this.handleHue.bind(this, 'light', 'blue')}>
-                Light Blue
-              </button>
-              <button onClick={this.handleHue.bind(this, 'dark', 'green')}>
-                Dark Green
-              </button>
-              <button onClick={this.handleHue.bind(this, 'light', 'green')}>
-                Light Green
-              </button>
-            </div>
-          );
-        }
-      }
-  
-      var container = document.createElement('div');
-      document.body.appendChild(container);
-      container.innerHTML = "xxx"
-      container.onclick = function(e){
-        console.log(e)
-      }
-      var list = []
-      function logger(){
-        list.push([].slice.call(arguments, 0).join(" "))
-      }
-  
-      ReactDOM.render(<ParentComponent logger={logger} />, container);
-
-
- 
-
-      
     
-  //  expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");
-   </script>
-</body>
+        <pre>应该等于
+            111instance
+            222instance
+            b mount
+            a1 remove
+            a2 remove
+            a3 remove
+            222null
+            111null
+            333instance
+            444instance
+            B ref      
+          
+        </pre>
+        <h1 id='example' class="root">
 
-</html>
+        </h1>
+        <script type='text/babel'>
+            var container = document.getElementById("example")
+            var div = container
+            var PropTypes = React.PropTypes
+            if(!window.ReactDOM){
+              window.ReactDOM = React
+            }
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a, "\n\rvs\n\r",b, a === b)
+                    }
+                }
+            }
+           
+            var list = [];
+            function logger(e) {
+                list.push(e);
+            }
+            class A extends React.Component {
+                componentWillUnmount() {
+                    logger(this.props.name+" remove");
+                }
+                render() {
+                    return <span>A</span>;
+                }
+            }
+            class B extends React.Component {
+                componentWillMount() {
+                    logger("b mount");
+                }
+                render() {
+                    return <span ref={a => logger("b ref") }>B</span>;
+                }
+            }
+            class App extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        a: 1
+                    };
+                }
+                render() {
+                    // unmount hook > null ref > ref
+                    return (
+                        <div>
+                            {this.state.a
+                                ? [
+                                    <A name="a1" />,
+                                    <A name="a2"/>,
+                                    <A name="a3"/>,
+                                    <span
+                                        key="a"
+                                        ref={a => {
+                                            logger(111 + (a ? "instance" : "null"));
+                                        }}
+                                    >
+                                          a
+                                    </span>,
+                                    <span
+                                        key="b"
+                                        ref={a => {
+                                            logger(222 + (a ? "instance" : "null"));
+                                        }}
+                                    >
+                                          b
+                                    </span>
+                                ]
+                                : [
+                                    <span
+                                        key="b"
+                                        ref={a => {
+                                            logger(333 + (a ? "instance" : "null"));
+                                        }}
+                                    >
+                                          b
+                                    </span>,
+                                    <span
+                                        key="a"
+                                        ref={a => {
+                                            logger(444 + (a ? "instance" : "null"));
+                                        }}
+                                    >
+                                          a
+                                    </span>,
+                                    <B />
+
+                                ]}
+                        </div>
+                    );
+                }
+            }
+            var s = ReactDOM.render(<App />, div);
+            s.setState({ a: 0 });
+            var list2 =  ["111instance", "222instance","b mount",
+            "a1 remove", "a2 remove", "a3 remove", 
+            "222null", "111null", 
+            "333instance", "444instance", "b ref"]
+            expect(list.join("\n")).toBe(list2.join("\n"));
+          </script>
+
+
+</body>
+    
+ </html>

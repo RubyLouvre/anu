@@ -558,42 +558,7 @@
         var container = document.getElementById("example")
         var div = container;
         var container = document.createElement("div");
-        ReactDOM.render(
-            <ErrorBoundary>
-                <RetryErrorBoundary>
-                    <BrokenRender />
-                </RetryErrorBoundary>
-            </ErrorBoundary>,
-            container
-        );
-        expect(container.firstChild.textContent).toBe("Caught an error: Hello.");
-        expect(log.join("\n")).toBe([
-            "ErrorBoundary constructor",
-            "ErrorBoundary componentWillMount",
-            "ErrorBoundary render success",
-            "RetryErrorBoundary constructor",
-            "RetryErrorBoundary componentWillMount",
-            "RetryErrorBoundary render",
-            "BrokenRender constructor",
-            "BrokenRender componentWillMount",
-            "BrokenRender render [!]",
-            // In Fiber, failed error boundaries render null before attempting to recover
-            "RetryErrorBoundary componentDidMount",
-            "RetryErrorBoundary componentDidCatch [!]",
-            "ErrorBoundary componentDidMount",
-            // Retry
-            "RetryErrorBoundary render",
-            "BrokenRender constructor",
-            "BrokenRender componentWillMount",
-            "BrokenRender render [!]",
-            // This time, the error propagates to the higher boundary
-            "RetryErrorBoundary componentWillUnmount",
-            "ErrorBoundary componentDidCatch",
-            // Render the error
-            "ErrorBoundary componentWillUpdate",
-            "ErrorBoundary render error",
-            "ErrorBoundary componentDidUpdate"
-        ].join("\n"));
+        
 
                </script>
 </body>

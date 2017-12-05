@@ -14,149 +14,89 @@
 <body>
 
     <div>这个默认会被清掉</div>
-    <div id='example'></div>
+    <blockquote id='example'></blockquote>
     <pre>
-      
+        app will mount
+        app render
+        child will mount
+        child did mount
+        app did mount
+        app will update
+        app new render2
+        child receive
+        child did update
+        app did update
+        
     </pre>
 
     <script type='text/babel'>
-var list = [];
-var flag = 1;
-function logger(e){
-    list.push(e);
- // console.log(e)
-}
-var container = document.getElementById("example");
+
+    var container = document.getElementById("example");
    var div = container;
-var expect = function(a) {
+   var expect = function(a) {
        return {
            toBe: function(b) {
                console.log(a, "\nvs\n", b, a === b);
            }
        };
    };
-    class BrokenRender extends React.Component {
-            constructor(props) {
-                super(props);
-                logger("BrokenRender constructor");
-            }
-            render() {
-                logger("BrokenRender render [!]");
-                throw new Error("Hello");
-            }
-            componentWillMount() {
-                logger("BrokenRender componentWillMount");
-            }
-            componentDidMount() {
-                logger("BrokenRender componentDidMount");
-            }
-            componentWillReceiveProps() {
-                logger("BrokenRender componentWillReceiveProps");
-            }
-            componentWillUpdate() {
-                logger("BrokenRender componentWillUpdate");
-            }
-            componentDidUpdate() {
-                logger("BrokenRender componentDidUpdate");
-            }
-            componentWillUnmount() {
-                logger("BrokenRender componentWillUnmount");
-            }
-        };
-        class ErrorMessage extends React.Component {
-            constructor(props) {
-                super(props);
-                logger("ErrorMessage constructor");
-            }
-            componentWillMount() {
-                logger("ErrorMessage componentWillMount");
-            }
-            componentDidMount() {
-                logger("ErrorMessage componentDidMount");
-            }
-            componentWillUnmount() {
-                logger("ErrorMessage componentWillUnmount");
-            }
-            render() {
-                logger("ErrorMessage render");
-                return <div>Caught an error: {this.props.message}.</div>;
-            }
-        };
-       class ErrorBoundary extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = { error: null };
-                logger(`${this.props.logName} constructor`);
-            }
-            render() {
-                if (this.state.error && !this.props.forceRetry) {
-                    logger(`${this.props.logName} render error`);
-                    return this.props.renderError(this.state.error, this.props);
-                }
-                logger(`${this.props.logName} render success`);
-                return <div>{this.props.children}</div>;
-            }
-            componentDidCatch(error,info) {
-                logger(`${this.props.logName} componentDidCatch`);
-                this.setState({ error });
-            }
-            componentWillMount() {
-                logger(`${this.props.logName} componentWillMount`);
-            }
-            componentDidMount() {
-                logger(`${this.props.logName} componentDidMount`);
-            }
-            componentWillReceiveProps() {
-                logger(`${this.props.logName} componentWillReceiveProps`);
-            }
-            componentWillUpdate() {
-                logger(`${this.props.logName} componentWillUpdate`);
-            }
-            componentDidUpdate() {
-                logger(`${this.props.logName} componentDidUpdate`);
-            }
-            componentWillUnmount() {
-                logger(`${this.props.logName} componentWillUnmount`);
-            }
-        };
-        ErrorBoundary.defaultProps = {
-            logName: "ErrorBoundary",
-            renderError(error, props) {
-                return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
-            }
-        };
-        function renderError(error) {
-            return <ErrorMessage message={error.message} />;
+   var list = [];
+        function Old(props) {
+            return <span>{props.aaa}</span>;
         }
-
-        var container = document.createElement("div");
         ReactDOM.render(
-            <ErrorBoundary renderError={renderError}>
-                <BrokenRender />
-            </ErrorBoundary>,
-            container
+            <Old
+                ref={a => {
+                    list.push(!!a);
+                }}
+                aaa={111}
+            />,
+            div
         );
-        expect(list.join("\n")).toBe([
-            "ErrorBoundary constructor",
-            "ErrorBoundary componentWillMount",
-            "ErrorBoundary render success",
-            "BrokenRender constructor",
-            "BrokenRender componentWillMount",
-            "BrokenRender render [!]",
-            "ErrorBoundary componentDidMount",
-            "ErrorBoundary componentDidCatch",
-            "ErrorBoundary componentWillUpdate",
-            "ErrorBoundary render error",
-            "ErrorMessage constructor",
-            "ErrorMessage componentWillMount",
-            "ErrorMessage render",
-            "ErrorMessage componentDidMount",
-            "ErrorBoundary componentDidUpdate"
-        ].join("\n"));
-
-        list.length = 0;
-        ReactDOM.unmountComponentAtNode(container);
-        expect(list.join("\n")).toBe(["ErrorBoundary componentWillUnmount", "ErrorMessage componentWillUnmount"].join("\n"));
+        ReactDOM.render(
+            <Old
+                ref={a => {
+                    list.push(!!a);
+                }}
+                aaa={222}
+            />,
+            div
+        );
+        expect(list.join("\n")).toBe([false, false, false].join("\n"));
+        console.log("============")
+        var list2 = [];
+        function New(props) {
+            return {
+                componentWillMount() {
+                    list2.push("mount");
+                },
+                componentWillUpdate() {
+                    list2.push("update");
+                },
+                render() {
+                    return <span>{props.aaa}</span>;
+                }
+            };
+        }
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={111}
+            />,
+            div
+        );
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={222}
+            />,
+            div
+        );
+        expect(list2.join("\n")).toBe(["mount", true, false, "update", true].join("\n"));
 </script>
 
 </body>

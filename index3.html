@@ -540,9 +540,9 @@
     var container = document.createElement("div");
     ReactDOM.render(
         <ErrorBoundary>
-            <Normal />
+            <Normal name="n1"/>
             <BrokenRender />
-            <Normal />
+            <Normal name="n2"/>
         </ErrorBoundary>,
         container
     );
