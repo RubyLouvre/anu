@@ -12,7 +12,7 @@ Portal.prototype = {
     },
     componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
-        options.alignVnode(parentVnode, nextProps.container, context, []);
+        options.receiveVnode(parentVnode, nextProps.container, context, []);
     },
     componentWillMount() {
         var parentVnode = this.container;

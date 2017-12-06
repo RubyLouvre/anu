@@ -152,33 +152,34 @@ InnerSet.prototype = {
     }
 };
 
-export function collectAndResolveImpl(start, nodes, resolve, debug) {
-    for (var child = start; child; child = child.sibling) {
-        var inner = child.stateNode;
-        if (child._disposed) {
-            continue;
-        }
-        if (child.vtype < 2) {
-            nodes.push(inner);
-        } else {
-            var updater = inner.updater;
+function collectImpl(child, ret, resolve, debug) {
+    var inner = child.stateNode;
+    if (child._disposed) {
+        return;
+    }
+    if (child.vtype < 2) {
+        ret.push(inner);
+    } else {
+        var updater = inner.updater;
 
-            if (child.child) {
-                collectAndResolveImpl(child.child, nodes, resolve, debug);
-            }
-            if(resolve){
-                updater.addJob("resolve");
-                resolve.push(updater);//先执行内围的，再执行外围的
-            }
+        if (child.child) {
+            ret = ret.concat(collectAndResolve(updater.children, resolve, debug));
+        }
+        if (resolve) {
+            updater.addJob("resolve");
+            resolve.push(updater); //先执行内围的，再执行外围的
         }
     }
 }
 
 export function collectAndResolve(children, resolve, debug) {
     var ret = [];
-    for (var i in children) {
-        collectAndResolveImpl(children[i], ret, resolve, debug);
-        break;
+    if (children.type) {
+        collectImpl(children, ret, resolve, debug);
+    } else {
+        for (var i in children) {
+            collectImpl(children[i], ret, resolve, debug);
+        }
     }
     return ret;
 }

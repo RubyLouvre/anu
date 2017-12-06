@@ -221,7 +221,7 @@ CompositeUpdater.prototype = {
         }
         this._hydrating = true;
 
-        if (this.willReceive === false) {
+        if (this.willReceive === false) { 
             rendered = vnode.child;
             delete this.willReceive;
         } else {
@@ -239,6 +239,7 @@ CompositeUpdater.prototype = {
         if (hasMounted) {
             lastChildren = this.children;
         }
+      
         if (number > 2) {
             if (number > 5) {
                 //array, object
@@ -246,7 +247,6 @@ CompositeUpdater.prototype = {
             }
             nextChildren = fiberizeChildren(rendered, this);
         } else {
-            console.log(rendered, this.name);
             //undefinded, null, boolean
             this.children = nextChildren; //emptyObject
             delete this.child;
@@ -260,7 +260,7 @@ CompositeUpdater.prototype = {
         options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue);
       
     },
-    //此方法用于处理元素ref, ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
+    // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
         let {instance, _hasCatch, vnode} = this;
         let hasMounted = this.isMounted();
@@ -331,7 +331,7 @@ CompositeUpdater.prototype = {
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
-        delete vnode.child;
+        //  delete vnode.child;
     }
 };
 

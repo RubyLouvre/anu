@@ -1,6 +1,6 @@
 
-import { removeElement, emptyElement } from "./browser";
-import { innerHTML, toArray, createUnique, collectAndResolveImpl} from "./util";
+import { removeElement } from "./browser";
+import { innerHTML, toArray, createUnique, collectAndResolve} from "./util";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { processFormElement, formElements } from "./ControlledComponent";
@@ -35,15 +35,13 @@ DOMUpdater.prototype = {
         var vnode = this.vnode, nodes = [],
             dom = vnode.stateNode;
         if(vnode.child) {
-            collectAndResolveImpl(vnode.child, nodes, updateQueue);
+            nodes =  collectAndResolve(vnode.child, updateQueue);
         }
-        if(nodes.length){
-            nodes.forEach(function(c){
-                dom.appendChild(c);
-            });
-        }else{
-            emptyElement(dom);
-        }
+       
+        nodes.forEach(function(c){
+            dom.appendChild(c);
+        });
+        
         
         this.addJob("resolve");
         updateQueue.push(this);
@@ -60,16 +58,17 @@ DOMUpdater.prototype = {
         Refs.fireRef(vnode, dom);
        
     },
-    batchUpdate(lastChildren, nextChildren) {//子节点主动让父节点来更新其孩子
+    batchUpdate(lastChildren, nextChildren, debug) {//子节点主动让父节点来更新其孩子 Fragment []
         var vnode = this.vnode;
         var parentNode = vnode.stateNode,
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
             unique = createUnique();
+         
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
-        for (let i = 0; i < newLength; i++) {
+        for (let i = 0; i < newLength; i++) {//Set
             let child = nextChildren[i];
             let last = lastChildren[i];
             if (last === child) {
@@ -102,3 +101,4 @@ DOMUpdater.prototype = {
     }
    
 };
+// willMount 列队
