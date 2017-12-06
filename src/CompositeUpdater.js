@@ -184,7 +184,9 @@ CompositeUpdater.prototype = {
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
             if (pendingVnode) {
+                var child = this.vnode.child;
                 this.vnode = pendingVnode;
+                this.vnode.child = child;
                 delete this.pendingVnode;
             }
         } else {
@@ -227,7 +229,6 @@ CompositeUpdater.prototype = {
             Refs.currentOwner = instance;
 
             rendered = captureError(instance, "render", []);
-    
             if (instance._hasError) {
                 rendered = true;
             }
@@ -245,6 +246,7 @@ CompositeUpdater.prototype = {
             }
             nextChildren = fiberizeChildren(rendered, this);
         } else {
+            console.log(rendered, this.name);
             //undefinded, null, boolean
             this.children = nextChildren; //emptyObject
             delete this.child;
@@ -355,64 +357,3 @@ export function getContextByTypes(curContext, contextTypes) {
     }
     return context;
 }
-
-/**
- *   元素： 元素虚拟DOM产生updater, 放入列队
- *         插入其孩子的所有DOM， 收集孩子中的组件updater， resolve
- *   组件： 元素虚拟DOM产生instance与updater, 执行 willMount,
- *         立即调用render，目的是能让子级组件立即 willMount
- *   <App /> ==> <p ref={refFn}>{this.state.xxx}</p>
- *  container
- * 
- * 
- *  元素的render，用于添加子节点，收集它们的updater
- *  元素的resolve, 用于设置属性与可控属性，执行它们的ref
- * 
- *  组件的render， 用于执行它们的render, diffChildren 
- *  元素的resolve, 执行生命周期钩子与ref与处理异常
- * 
- *  <App><A /><A /><span>xxx</span></App>
- * 
- *   children.forEach(function(){ el.render() })
- *   children.
- * 
- *   VNode.prototype.render = function(p, queue){
- *      var el = this
- *      if(el.vtype < 1){
- *          el.stateNode = toDOM(el, p)
- *       }else if(el.vtype === 1){
- *          el.stateNode = toDOM(el, p)
- *          for(var i in children){
- *            var a = children[i]
- *            a.render(el, queue)
- *          }
- *          queue.push(el)
- *       } else {
- *          var c = el.stateNode = toComponent(el, p, queue)
- *          el.render() //组件
- *          queue.push(el.updater)
- *       }
- *   }
- *   Vnode.prototype.append = function(parentNode){
- *      var p = this.stateNode, children = this.children
- *      if(this.vtype === 1){
- *          for(var i in children){
- *              var el = children[i]
- *              if(el.vtype < 1){
- *                 p.appendChild(el.stateNode)
- *                
- *              }else if(el.vtype === 1){
- * 
- *                  el.append(p)
- *                  el.resolve()
- *              }else if(el.vtype > 1){
- *                 el.append(p)
- *                 el.resolve()
- *              }
- *          }
- *      }
- *    }
- *    
- *   
- * 
- */

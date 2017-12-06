@@ -1,5 +1,5 @@
 
-import { removeElement } from "./browser";
+import { removeElement, emptyElement } from "./browser";
 import { innerHTML, toArray, createUnique, collectAndResolveImpl} from "./util";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
@@ -32,23 +32,19 @@ DOMUpdater.prototype = {
     },
     batchMount(updateQueue){
         //父节点主动添加它的孩子
-        var vnode = this.vnode, nodes = [], updaters = [];
-        var dom = vnode.stateNode;
+        var vnode = this.vnode, nodes = [],
+            dom = vnode.stateNode;
         if(vnode.child) {
             collectAndResolveImpl(vnode.child, nodes, updateQueue);
         }
-        nodes.forEach(function(c){
-            dom.appendChild(c);
-        });
-        //先放自己再放孩子， ref是从里到外执行
-        //  updaters.forEach(function(el){
-        //      updateQueue.push(el);
-        //  });
+        if(nodes.length){
+            nodes.forEach(function(c){
+                dom.appendChild(c);
+            });
+        }else{
+            emptyElement(dom);
+        }
         
-        /* for(var i = updaters.length-1; i >= 0; i--){
-            var el = updaters[i];
-            updateQueue.push(el);
-        }*/
         this.addJob("resolve");
         updateQueue.push(this);
     },

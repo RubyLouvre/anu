@@ -1,7 +1,5 @@
 import React from "dist/React";
-import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-import ReactDOMServer from "dist/ReactDOMServer";
 // https://github.com/facebook/react/blob/master/src/renderers/__tests__/EventPluginHub-test.js
 var ReactDOM = window.ReactDOM || React;
 React.uuid = false;

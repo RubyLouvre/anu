@@ -97,8 +97,8 @@ function renderByAnu(vnode, container, callback, context = {}) {
         nodeIndex = topNodes.length - 1;
     }
     Refs.currentOwner = null; //防止干扰
-    // contaner > nextWrapper > vnode
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
+    // top(contaner) > nextWrapper > vnode
     nextWrapper.isTop = true;
     topVnodes[nodeIndex] = nextWrapper;
     if (lastWrapper) {
@@ -106,7 +106,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
         top.child = nextWrapper;        
         alignVnode(lastWrapper, nextWrapper, context, updateQueue);
     } else {
-        top = (nextWrapper.return = createVnode(container));
+        top = nextWrapper.return = createVnode(container);
         new DOMUpdater(top);
         nextWrapper.child = vnode;
         top.child = nextWrapper;
@@ -190,6 +190,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue) {
         if (props[innerHTML]) {
             disposeChildren(lastChildren, updateQueue);
         } else {
+            
             var nextChildren = fiberizeChildren(props.children, updater);
             diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue);
         }
