@@ -161,9 +161,9 @@ function collectImpl(child, ret, resolve, debug) {
         ret.push(inner);
     } else {
         var updater = inner.updater;
-
         if (child.child) {
-            ret = ret.concat(collectAndResolve(updater.children, resolve, debug));
+            var args = collectAndResolve(updater.children, resolve, debug);
+            ret.push.apply(ret, args);
         }
         if (resolve) {
             updater.addJob("resolve");

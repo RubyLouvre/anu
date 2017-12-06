@@ -65,7 +65,7 @@ var AnuWrapper = function() {
 };
 var fn = inherit(AnuWrapper, Component);
 fn.componentWillReceiveProps = function() {
-    console.log("wrapper receive");
+    console.log("wrapper receive",this);
 };
 fn.render = function() {
     return this.props.child;
