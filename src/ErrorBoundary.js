@@ -11,6 +11,8 @@ export function pushError(instance, hook, error) {
     if (catchUpdater) {
         //移除医生节点下方的所有真实节点
         catchUpdater._hasCatch = [error, describeError(names, hook), instance];
+        var u = instance.updater;
+        u.hydrate = u.render = u.resolve = noop;
         var vnode = catchUpdater.vnode;
         catchUpdater.children = {};
         delete vnode.child;
@@ -25,7 +27,7 @@ export function pushError(instance, hook, error) {
 export function captureError(instance, hook, args) {
     try {
         var fn = instance[hook];
-        if (fn && !instance._hasError) {
+        if (fn ) { //&& !instance._hasError
             return fn.apply(instance, args);
         }
         return true;
@@ -44,20 +46,7 @@ function describeError(names, hook) {
             .join(" created By ")
     );
 }
-function disconnectChildren(children) {
-    for (var i in children) {
-        var c = children[i];
-        c && (c._hasRef = false);
-        var node = c && c.stateNode;
-        if(node){
-            if(node.nodeType){
-                removeElement(node);
-            }else{
-                node.updater.exec = noop;
-            }
-        }
-    }
-}
+
 /**
  * 此方法遍历医生节点中所有updater,将它们的exec方法禁用，并收集沿途的标签名与组件名
  */
@@ -67,7 +56,7 @@ function findCatchComponent(instance, names) {
         var type = target.type;
         if (target.isTop) {
             disposeVnode(target, [], true);
-            return; 
+            return;
         } else if (target.vtype > 1) {
             var name = type.displayName || type.name;
             names.push(name);
@@ -78,20 +67,16 @@ function findCatchComponent(instance, names) {
                     dist._hasError = false;
                     dist.updater.dispose();
                 } else if (dist !== instance) {
-                    for(var i in  dist.updater.children){
-                        var a = dist.updater.children[i];
-                       
-                        disposeVnode(a, [], true);
+                    var updater = dist.updater;
+                    for (var i in updater.children) {
+                        var child = updater.children[i];
+                        disposeVnode(child, [], true);
                     }
                     //自已不能治愈自己
-                    //  disconnectChildren(dist.updater.children);
-                    return dist.updater; //移交更上级的医师处理
+                    return updater; //移交更上级的医师处理
                 }
-            }else{
-                //  disconnectChildren(dist.updater.children);
-            }//
+            } 
         } else if (target.vtype === 1) {
-            // disconnectChildren(target.updater.children);
             names.push(type);
         }
     } while ((target = target.return));
