@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
 
-   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
    
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -36,98 +36,51 @@
                 }
             }
             var list = [];
-            function logger(e) {
-                list.push(e);
+            var logger = function(msg) {
+                return function() {
+                    // return true for shouldComponentUpdate
+                    list.push(msg);
+                    return true;
+                };
+            };
+            class Outer extends React.Component {
+                componentWillMount = logger("outer componentWillMount");
+                componentDidMount = logger("outer componentDidMount");
+                componentWillReceiveProps = logger("outer componentWillReceiveProps");
+                shouldComponentUpdate = logger("outer shouldComponentUpdate");
+                componentWillUpdate = logger("outer componentWillUpdate");
+                componentDidUpdate = logger("outer componentDidUpdate");
+                componentWillUnmount = logger("outer componentWillUnmount");
+                render() {
+                    return (
+                        <div>
+                            <Inner x={this.props.x} />
+                        </div>
+                    );
+                }
             }
-            var A = class extends React.Component {
-                componentWillMount() {
-                    logger(this.props.name + " componentWillMount");
-                }
+    
+            class Inner extends React.Component {
+                componentWillMount = logger("inner componentWillMount");
+                componentDidMount = logger("inner componentDidMount");
+                componentWillReceiveProps = logger("inner componentWillReceiveProps");
+                shouldComponentUpdate = logger("inner shouldComponentUpdate");
+                componentWillUpdate = logger("inner componentWillUpdate");
+                componentDidUpdate = logger("inner componentDidUpdate");
+                componentWillUnmount = logger("inner componentWillUnmount");
                 render() {
-                    return <div />;
+                    return <span>{this.props.x}</span>;
                 }
-                componentDidMount() {
-                    logger(this.props.name + " componentDidMount");
-                }
-                componentDidUpdate() {
-                    logger(this.props.name + " componentDidUpdate");
-                }
-                componentWillUnmount() {
-                    logger(this.props.name + " componentWillUnmount");
-                }
-            };
-            var B = class extends React.Component {
-                componentWillMount() {
-                    logger(this.props.name + " componentWillMount");
-                }
-                render() {
-                    return <strong />;
-                }
-                componentDidMount() {
-                    logger(this.props.name + " componentDidMount");
-                }
-                componentWillUnmount() {
-                    logger(this.props.name + " componentWillUnmount");
-                }
-            };
-            ReactDOM.render(
-                <div>
-                    <A
-                        key="aa"
-                        name="a"
-                        ref={a => {
-                            logger("a " + !!a);
-                        }}
-                    />
-                    <A
-                        key="bb"
-                        name="b"
-                        ref={a => {
-                            logger("b " + !!a);
-                        }}
-                    />
-                </div>,
-                div
-            );
-            logger("update...");
-            ReactDOM.render(
-                <div>
-                    <B
-                        name="c"
-                        ref={a => {
-                            logger("c " + !!a);
-                        }}
-                    />
-                    <B
-                        name="d"
-                        ref={a => {
-                            logger("d " + !!a);
-                        }}
-                    />
-                </div>,
-                div
-            );
-            expect(list.join("\n")).toBe(
-                [
-                    "a componentWillMount",
-                    "b componentWillMount",
-                    "a componentDidMount",
-                    "a true",
-                    "b componentDidMount",
-                    "b true",
-                    "update...",
-                    "c componentWillMount",
-                    "d componentWillMount",
-                    "a false",
-                    "a componentWillUnmount",
-                    "b false",
-                    "b componentWillUnmount",
-                    "c componentDidMount",
-                    "c true",
-                    "d componentDidMount",
-                    "d true"
-                ].join("\n")
-            );
+            }
+    
+         
+            ReactDOM.render(<Outer x={17} />, container);
+            expect(list.join("\n")).toBe(["outer componentWillMount",
+             "inner componentWillMount",
+              "inner componentDidMount", 
+              "outer componentDidMount"].join("\n"));
+    
+          
             
           </script>
 

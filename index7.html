@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
-
-   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./lib/shallowCompare.js"></script>
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
    
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -15,17 +15,7 @@
 <body>
     
         <pre>应该等于
-            111instance
-            222instance
-            b mount
-            a1 remove
-            a2 remove
-            a3 remove
-            222null
-            111null
-            333instance
-            444instance
-            B ref      
+           
           
         </pre>
         <h1 id='example' class="root">
@@ -45,91 +35,73 @@
                     }
                 }
             }
-           
-            var list = [];
-            function logger(e) {
-                list.push(e);
-            }
-            class A extends React.Component {
-                componentWillUnmount() {
-                    logger(this.props.name+" remove");
-                }
-                render() {
-                    return <span>A</span>;
-                }
-            }
-            class B extends React.Component {
-                componentWillMount() {
-                    logger("b mount");
-                }
-                render() {
-                    return <span ref={a => logger("b ref") }>B</span>;
-                }
-            }
-            class App extends React.Component {
-                constructor(props) {
-                    super(props);
-                    this.state = {
-                        a: 1
-                    };
-                }
-                render() {
-                    // unmount hook > null ref > ref
-                    return (
-                        <div>
-                            {this.state.a
-                                ? [
-                                    <A name="a1" />,
-                                    <A name="a2"/>,
-                                    <A name="a3"/>,
-                                    <span
-                                        key="a"
-                                        ref={a => {
-                                            logger(111 + (a ? "instance" : "null"));
-                                        }}
-                                    >
-                                          a
-                                    </span>,
-                                    <span
-                                        key="b"
-                                        ref={a => {
-                                            logger(222 + (a ? "instance" : "null"));
-                                        }}
-                                    >
-                                          b
-                                    </span>
-                                ]
-                                : [
-                                    <span
-                                        key="b"
-                                        ref={a => {
-                                            logger(333 + (a ? "instance" : "null"));
-                                        }}
-                                    >
-                                          b
-                                    </span>,
-                                    <span
-                                        key="a"
-                                        ref={a => {
-                                            logger(444 + (a ? "instance" : "null"));
-                                        }}
-                                    >
-                                          a
-                                    </span>,
-                                    <B />
 
-                                ]}
-                        </div>
-                    );
-                }
+        var renderCalls = 0;
+        class PlasticWrap extends React.Component {
+            constructor(props, context) {
+                super(props, context);
+                this.state = {
+                    color: "green"
+                };
             }
-            var s = ReactDOM.render(<App />, div);
-            s.setState({ a: 0 });
-            var list2 =  ["111instance", "222instance","b mount",
-            "a1 remove", "a2 remove", "a3 remove", 
-            "222null", "111null", 
-            "333instance", "444instance", "b ref"]
-            expect(list.join("\n")).toBe(list2.join("\n"));
+
+            render() {
+                return <Apple color={this.state.color} ref="apple" />;
+            }
+        }
+
+        class Apple extends React.Component {
+            state = {
+                cut: false,
+                slices: 1
+            };
+
+            shouldComponentUpdate(nextProps, nextState) {
+                return shallowCompare(this, nextProps, nextState);
+            }
+
+            cut() {
+                console.log("=====")
+                this.setState({
+                    cut: true,
+                    slices: 10
+                });
+            }
+
+            eatSlice() {
+                this.setState({
+                    slices: this.state.slices - 1
+                });
+            }
+
+            render() {
+                renderCalls++;
+                return <div />;
+            }
+        }
+
+        var instance = ReactDOM.render(<PlasticWrap />, container);
+        expect(renderCalls).toBe(1);
+
+        // Do not re-render based on props
+        instance.setState({ color: "green" });
+        expect(renderCalls).toBe(1);
+
+        // Re-render based on props
+        instance.setState({ color: "red" });
+        expect(renderCalls).toBe(2);
+        // Re-render base on state
+        instance.refs.apple.cut();
+        expect(renderCalls).toBe(3);
+/*
+        // No re-render based on state
+        instance.refs.apple.cut();
+        expect(renderCalls).toBe(3);
+
+        // Re-render based on state again
+        instance.refs.apple.eatSlice();
+        expect(renderCalls).toBe(4);
+        */
           </script>
 
 

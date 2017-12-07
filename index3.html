@@ -7,7 +7,8 @@
 
    <script type='text/javascript' src="./dist/React.js"></script>
 
-
+   <!--<script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
         <script type="text/babel">
           var BrokenConstructor;
@@ -28,9 +29,9 @@
         var Normal;
         var logger;
       
-         var log = [];
+        var log = [];
             logger = function(a){
-             // console.log(a)
+              console.log(a)
               log.push(a)
             }
             BrokenConstructor = class extends React.Component {
@@ -435,7 +436,7 @@
                     }
 
                     logger(`${this.props.logName} render success`);
-                    return <div>{this.props.children}</div>;
+                    return <div className="XXX">{this.props.children}</div>;
                 }
                 componentDidCatch(error,info) {
                     logger(`${this.props.logName} componentDidCatch`);
@@ -533,47 +534,71 @@
         return {
             toBe: function(b) {
                 console.log(a,"vs", b, a === b)
+            },
+            toEqual(b){
+                console.log(a,"vs", b, a +""=== b+"")
             }
         }
     }
     var body = document.body
+    function child1Ref(x) {
+        logger("Child1 ref is set to " + x);
+    }
+    function child2Ref(x) {
+        logger("Child2 ref is set to " + x);
+    }
+    function errorMessageRef(x) {
+        logger("Error message ref is set to " + x);
+    }
+
     var container = document.createElement("div");
     ReactDOM.render(
-        <ErrorBoundary>
-            <Normal name="n1"/>
-            <BrokenRender />
-            <Normal name="n2"/>
+        <ErrorBoundary errorMessageRef={errorMessageRef}>
+            <div ref={child1Ref} />
         </ErrorBoundary>,
         container
     );
-    expect(container.firstChild.textContent).toBe("Caught an error: Hello.");
-    expect(log.join("\n")).toBe([
+    expect(log).toEqual([
         "ErrorBoundary constructor",
         "ErrorBoundary componentWillMount",
         "ErrorBoundary render success",
-        // Render first child
-        "Normal constructor",
-        "Normal componentWillMount",
-        "Normal render",
-        // Render second child (it throws)
+        "Child1 ref is set to [object HTMLDivElement]",
+        "ErrorBoundary componentDidMount"
+    ]);
+
+    log.length = 0;
+    ReactDOM.render(
+        <ErrorBoundary errorMessageRef={errorMessageRef}>
+            <div ref={child1Ref} />
+            <div ref={child2Ref} />
+            <BrokenRender />
+        </ErrorBoundary>,
+        container
+    );
+    expect(container.textContent).toBe("Caught an error: Hello.");
+    expect(log).toEqual([
+        "ErrorBoundary componentWillReceiveProps",
+        "ErrorBoundary componentWillUpdate",
+        "ErrorBoundary render success",
+        // BrokenRender will abort rendering:
         "BrokenRender constructor",
         "BrokenRender componentWillMount",
         "BrokenRender render [!]",
-        // Finish mounting with null children
-        "ErrorBoundary componentDidMount",
+        // Finish updating with null children
+        "Child1 ref is set to null",
+        "ErrorBoundary componentDidUpdate",
         // Handle the error
         "ErrorBoundary componentDidCatch",
-        // Render the error message
         "ErrorBoundary componentWillUpdate",
         "ErrorBoundary render error",
+        "Error message ref is set to [object HTMLDivElement]",
+        // Child2 ref is never set because its mounting aborted
         "ErrorBoundary componentDidUpdate"
-    ].join("\n"));
+    ]);
 
     log.length = 0;
     ReactDOM.unmountComponentAtNode(container);
-    expect(log+"").toBe(["ErrorBoundary componentWillUnmount"]+"");
-
-
+    expect(log).toEqual(["ErrorBoundary componentWillUnmount", "Error message ref is set to null"]);
 
     </script>
 

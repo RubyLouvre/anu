@@ -42,7 +42,7 @@ DOMUpdater.prototype = {
     },
     dispose(){
         var vnode = this.vnode;
-        Refs.detachRef(vnode);
+        Refs.fireRef(vnode);
         removeElement(vnode.stateNode);
         delete vnode.stateNode;
     }

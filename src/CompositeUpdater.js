@@ -154,7 +154,7 @@ CompositeUpdater.prototype = {
                 extend(instance, mixin);
             } else {
                 //不带生命周期的
-                instance.__isStateless = true;
+                vnode._stateless = true;
                 vnode.child = mixin;
                 this.mergeStates = alwaysNull;
                 this.willReceive = false;
@@ -311,7 +311,7 @@ CompositeUpdater.prototype = {
         } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
-                Refs.fireRef(vnode, instance.__isStateless ? null : instance);
+                Refs.fireRef(vnode, instance);
                 vnode._hasRef = false;
             }
             clearArray(this._pendingCallbacks).forEach(function(fn) {

@@ -8,10 +8,10 @@ window.pendingRefs = pendingRefs;
 export var Refs = {
     mountOrder: 1,
     currentOwner: null,
-    detachRef(vnode) {
-        Refs.fireRef(vnode, null); 
-    },
     fireRef(vnode, dom) {
+        if(vnode._disposed || vnode._stateless){
+            dom = null;
+        }
         var ref = vnode.ref;
         if (typeof ref === "function") {
             return ref(dom);
