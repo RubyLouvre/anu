@@ -32,8 +32,9 @@ function disposeElement(vnode, updateQueue, silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
     }else{
-        vnode._hasRef = false;
+        delete vnode.ref;
     }
+
     disposeChildren(updater.children, updateQueue, silent);
 }
 
@@ -47,9 +48,13 @@ function disposeComponent(vnode, updateQueue, silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
     }else{
-        vnode._hasRef = false;
+        if(updater.isMounted()){
+            updater.dispose();
+        }
+        delete vnode.ref;
     }
-    updater.insertQueue = updater.insertPoint = null;
+
+    updater.insertQueue = updater.insertPoint = NaN;//用null/undefined会碰到 xxx[0]抛错的问题
     disposeChildren(updater.children, updateQueue, silent);
 }
 
