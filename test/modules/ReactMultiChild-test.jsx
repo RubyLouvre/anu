@@ -289,6 +289,8 @@ describe("ReactMultiChild", function() {
         expect(container.textContent).toBe("8ABC4D5EFGH");
         ReactDOM.render(<Letters letters="GFE9DBACH" />, container);
         expect(container.textContent).toBe("GFE9DBACH");
+        ReactDOM.render(<Letters letters="AERCHOG" />, container);
+        expect(container.textContent).toBe("AERCHOG");
     });
 
     it("prepares new children before unmounting old", () => {

@@ -64,9 +64,7 @@ var AnuWrapper = function() {
     Component.call(this);
 };
 var fn = inherit(AnuWrapper, Component);
-fn.componentWillReceiveProps = function() {
-    // console.log("wrapper receive");
-};
+
 fn.render = function() {
     return this.props.child;
 };
@@ -234,7 +232,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     if (!updater._dirty) {
         updater._receiving = true;
         captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
-        delete this._receiving;
+        delete updater._receiving;
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.detachRef(lastVnode);
         }

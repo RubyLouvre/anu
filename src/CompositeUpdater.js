@@ -3,6 +3,8 @@ import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
+import { insertElement } from "./browser";
+
 function alwaysNull() {
     return null;
 }
@@ -62,7 +64,6 @@ CompositeUpdater.prototype = {
             //setState
             this._pendingStates.push(state);
         }
-
         if (this._hydrating) {
             //组件在更新过程（_hydrating = true），其setState/forceUpdate被调用
             //那么会延期到下一个渲染过程调用
@@ -121,7 +122,7 @@ CompositeUpdater.prototype = {
         //实例化组件
         try {
             var lastOwn = Refs.currentOwner;
-            if(isStateless){
+            if (isStateless) {
                 instance = {
                     refs: {},
                     __proto__: type.prototype,
@@ -131,8 +132,8 @@ CompositeUpdater.prototype = {
                 };
                 Refs.currentOwner = instance;
                 mixin = type(props, context);
-            }else{
-                instance =  new type(props, context);
+            } else {
+                instance = new type(props, context);
                 Refs.currentOwner = instance;
             }
         } catch (e) {
@@ -142,11 +143,7 @@ CompositeUpdater.prototype = {
             };
             vnode.stateNode = instance;
             this.instance = instance;
-            return pushError(
-                instance,
-                "constructor",
-                e
-            );
+            return pushError(instance, "constructor", e);
         } finally {
             Refs.currentOwner = lastOwn;
         }
@@ -182,7 +179,6 @@ CompositeUpdater.prototype = {
 
     hydrate(updateQueue, resetPoint) {
         let { instance, context, props, vnode, pendingVnode } = this;
-       
         let state = this.mergeStates();
         let shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
@@ -193,6 +189,12 @@ CompositeUpdater.prototype = {
                 this.vnode.child = child;
                 delete this.pendingVnode;
             }
+            var nodes = collectComponentNodes(this.children);
+            var queue = this.insertQueue;
+            nodes.forEach(function(el) {
+                insertElement(el, queue);
+                queue.unshift(el.stateNode);
+            });
         } else {
             captureError(instance, "componentWillUpdate", [props, state, context]);
             var { props: lastProps, state: lastState } = instance;
@@ -205,9 +207,9 @@ CompositeUpdater.prototype = {
         instance.state = state;
         instance.context = context;
         if (shouldUpdate) {
-            if(resetPoint){
+            if (resetPoint) {
                 this.insertPoint = this.insertQueue[0];
-            }else{
+            } else {
                 this.insertQueue = [this.insertPoint];
             }
             this.render(updateQueue);
@@ -216,7 +218,6 @@ CompositeUpdater.prototype = {
         updateQueue.push(this);
     },
     render(updateQueue) {
-
         let { vnode, pendingVnode, instance, parentContext } = this,
             nextChildren = emptyObject,
             lastChildren = emptyObject,
@@ -230,7 +231,7 @@ CompositeUpdater.prototype = {
         }
         this._hydrating = true;
 
-        if (this.willReceive === false) { 
+        if (this.willReceive === false) {
             rendered = vnode.child;
             delete this.willReceive;
         } else {
@@ -247,8 +248,8 @@ CompositeUpdater.prototype = {
         var hasMounted = this.isMounted();
         if (hasMounted) {
             lastChildren = this.children;
-        }        
-      
+        }
+
         if (number > 2) {
             if (number > 5) {
                 //array, object
@@ -259,22 +260,21 @@ CompositeUpdater.prototype = {
             //undefinded, null, boolean
             this.children = nextChildren; //emptyObject
             delete this.child;
-
         }
         var noSupport = !support16 && errorType[number];
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-       
+
         options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
-        let {instance, _hasCatch, vnode} = this;
+        let { instance, _hasCatch, vnode } = this;
         let hasMounted = this.isMounted();
-        if(!hasMounted){
+        if (!hasMounted) {
             this.isMounted = returnTrue;
-        }       
+        }
         vnode.hasMounted = true;
         if (this._hydrating) {
             let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
@@ -363,4 +363,25 @@ export function getContextByTypes(curContext, contextTypes) {
         }
     }
     return context;
+}
+
+export function collectComponentNodes(children) {
+    var ret = [];
+    for (var i in children) {
+        var child = children[i];
+        var inner = child.stateNode;
+        if (child._disposed) {
+            continue;
+        }
+        if (child.vtype < 2) {
+            ret.push(child);
+        } else {
+            var updater = inner.updater;
+            if (child.child) {
+                var args = collectComponentNodes(updater.children);
+                ret.push.apply(ret, args);
+            }
+        }
+    }
+    return ret;
 }
