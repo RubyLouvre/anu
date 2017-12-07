@@ -124,50 +124,11 @@ export function createElement(vnode, vparent) {
         return document.createElement(type);
     }
 }
-/*
-export function insertElement(vnode, insertPoint, parentNode) {
-    if (!parentNode) {
-        //找到可用的父节点
-        var p = vnode.return;
-        while (p) {
-            if (p.vtype === 1) {
-                parentNode = p.stateNode;
-                break;
-            }
-            p = p.return;
-        }
-    }
-    var dom = vnode.stateNode;
-    if (!insertPoint) {
-        //如果没有插入点，则插入到当前父节点的第一个节点之前
-        parentNode.insertBefore(dom, parentNode.firstChild);
-    } else {
-        var before = insertPoint.stateNode;
-        if (insertPoint.vtype < 2) {
-            //如果插入点是对应一个真实DOM，则插入到它之后
-            parentNode.insertBefore(dom, before.nextSibling);
-        } else {
-            //如果插入点是一个组件，那么找到下面的所有真实DOM，并插入其最后一个之后
-            var ch = before.updater.children;
-            var arr = getComponentNodes(ch);
-            if (arr.length) {
-                parentNode.insertBefore(dom, arr[arr.length - 1].nextSibling);
-            } else {
-                //如果是一个空组件，那么向前更换insertPoint
-                var prev = insertPoint.prev;
-                if (prev) {
-                    insertElement(vnode, prev, parentNode);
-                } else {
-                    console.log("还有没覆盖的情况？？");
-                    //还没有吗？
-                }
-            }
-        }
-    }
-}
-*/
+
 export function insertElement(vnode, insertQueue) {
-   
+    if(vnode._disposed) {
+        return;
+    }
     //找到可用的父节点
     var p = vnode.return, parentNode;
     while (p) {

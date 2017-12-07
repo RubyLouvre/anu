@@ -19,10 +19,9 @@ export function disposeVnode(vnode, updateQueue, silent) {
         } else {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
-            } else {
-                removeElement(vnode.stateNode);
-                delete vnode.stateNode;
-            }
+            } 
+            removeElement(vnode.stateNode);
+            // delete vnode.stateNode;
         }
     }
 }
@@ -32,9 +31,10 @@ function disposeElement(vnode, updateQueue, silent) {
     if (!silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
+    }else{
+        vnode._hasRef = false;
     }
     disposeChildren(updater.children, updateQueue, silent);
-   
 }
 
 function disposeComponent(vnode, updateQueue, silent) {
@@ -46,14 +46,15 @@ function disposeComponent(vnode, updateQueue, silent) {
     if (!silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
+    }else{
+        vnode._hasRef = false;
     }
+    updater.insertQueue = updater.insertPoint = null;
     disposeChildren(updater.children, updateQueue, silent);
 }
 
 export function disposeChildren(children, updateQueue, silent) {
     for (var i in children) {
-        if (children[i]) {
-            disposeVnode(children[i], updateQueue, silent);
-        } 
+        disposeVnode(children[i], updateQueue, silent);
     }
 }

@@ -292,7 +292,10 @@ CompositeUpdater.prototype = {
         if (_hasCatch) {
             delete this._hasCatch;
             instance._hasTry = true;
+            this._jobs.length = 0;
             //收集它上方的updater,强行结束它们
+            updateQueue.length = 0;
+            
             var p = vnode.return;
             do {
                 if (p.vtype > 1) {
@@ -301,6 +304,7 @@ CompositeUpdater.prototype = {
                     updateQueue.push(u);
                 }
             } while ((p = p.return));
+           
             this._hydrating = true; //让它不要立即执行，先执行其他的
             instance.componentDidCatch.apply(instance, _hasCatch);
             this._hydrating = false;

@@ -78,15 +78,20 @@ function findCatchComponent(instance, names) {
                     dist._hasError = false;
                     dist.updater.dispose();
                 } else if (dist !== instance) {
+                    for(var i in  dist.updater.children){
+                        var a = dist.updater.children[i];
+                       
+                        disposeVnode(a, [], true);
+                    }
                     //自已不能治愈自己
-                    disconnectChildren(dist.updater.children);
+                    //  disconnectChildren(dist.updater.children);
                     return dist.updater; //移交更上级的医师处理
                 }
             }else{
-                disconnectChildren(dist.updater.children);
-            }
+                //  disconnectChildren(dist.updater.children);
+            }//
         } else if (target.vtype === 1) {
-            disconnectChildren(target.updater.children);
+            // disconnectChildren(target.updater.children);
             names.push(type);
         }
     } while ((target = target.return));
