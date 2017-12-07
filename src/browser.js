@@ -181,8 +181,14 @@ export function insertElement(vnode, insertQueue) {
     var dom = vnode.stateNode, insertPoint = insertQueue[0];
     if (!insertPoint) {
         //如果没有插入点，则插入到当前父节点的第一个节点之前
+        if(parentNode.firstChild === dom){
+            return;
+        }
         parentNode.insertBefore(dom, parentNode.firstChild);
     } else {
+        if(insertPoint.nextSibling === dom){
+            return;
+        }
         parentNode.insertBefore(dom, insertPoint.nextSibling); 
     }
 }

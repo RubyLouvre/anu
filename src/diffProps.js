@@ -136,7 +136,7 @@ function getSVGAttributeName(name) {
 
 
 export function diffProps(dom, lastProps, nextProps, vnode) {
-    options.beforeProps(vnode);
+    options.beforeProps(vnode, lastProps);
     let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
@@ -156,7 +156,9 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
-            if (!action) {continue;}
+            if (!action) {
+                continue;
+            }
             actionStrategy[action](dom, name, false, lastProps, vnode);
         }
     }

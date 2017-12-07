@@ -33,7 +33,7 @@ export function CompositeUpdater(vnode, parentContext) {
     this.parentContext = parentContext;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = [];
+    this._jobs = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
@@ -112,7 +112,7 @@ CompositeUpdater.prototype = {
     },
 
     isMounted: returnFalse,
-    init(updateQueue) {
+    init(updateQueue, insertQueue) {
         let { props, context, vnode } = this;
         let type = vnode.type,
             isStateless = vnode.vtype === 4,
@@ -150,11 +150,13 @@ CompositeUpdater.prototype = {
         } finally {
             Refs.currentOwner = lastOwn;
         }
+        //如果是无状态组件需要再加工
         if (isStateless) {
             if (mixin && mixin.render) {
-                //支持module pattern component
+                //带生命周期的
                 extend(instance, mixin);
             } else {
+                //不带生命周期的
                 instance.__isStateless = true;
                 vnode.child = mixin;
                 this.mergeStates = alwaysNull;
@@ -167,16 +169,18 @@ CompositeUpdater.prototype = {
         instance.props = props;
         instance.context = context;
         instance.updater = this;
-
+        this.insertQueue = insertQueue;
+        this.insertPoint = insertQueue[0];
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
             instance.state = this.mergeStates();
         }
         //让顶层的元素updater进行收集
         this.render(updateQueue);
+        updateQueue.push(this);
     },
 
-    hydrate(updateQueue) {
+    hydrate(updateQueue, resetPoint) {
         let { instance, context, props, vnode, pendingVnode } = this;
        
         let state = this.mergeStates();
@@ -201,11 +205,14 @@ CompositeUpdater.prototype = {
         instance.state = state;
         instance.context = context;
         if (shouldUpdate) {
+            if(resetPoint){
+                this.insertPoint = this.insertQueue[0];
+            }else{
+                this.insertQueue = [this.insertPoint];
+            }
             this.render(updateQueue);
         }
         this.addJob("resolve");
-        this.insertQueue = [this.insertPoint];
-        console.log("this.insertQueue ", this.insertPoint);
         updateQueue.push(this);
     },
     render(updateQueue) {
@@ -238,13 +245,9 @@ CompositeUpdater.prototype = {
         }
         number = typeNumber(rendered);
         var hasMounted = this.isMounted();
-        console.log(this.insertQueue.concat(), this.name, "!!");
         if (hasMounted) {
             lastChildren = this.children;
-            
-        }
-        //this.insertPoint = this.insertQueue[0];
-        
+        }        
       
         if (number > 2) {
             if (number > 5) {
@@ -336,7 +339,6 @@ CompositeUpdater.prototype = {
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
-        //  delete vnode.child;
     }
 };
 

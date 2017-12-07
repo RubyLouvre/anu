@@ -1,14 +1,10 @@
-import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
+//import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
+import ReactTestUtils from "lib/ReactTestUtils";
 
 import React from "dist/React";
 describe("diffProps", function() {
     this.timeout(200000);
-    before(async () => {
-        await beforeHook();
-    });
-    after(async () => {
-        await afterHook(false);
-    });
+
     var body = document.body,
         div;
     beforeEach(function() {
@@ -18,7 +14,7 @@ describe("diffProps", function() {
     afterEach(function() {
         body.removeChild(div);
     });
-    it("使用对象解构", async () => {
+    it("使用对象解构",  () => {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -37,18 +33,16 @@ describe("diffProps", function() {
         }
 
         var s = ReactDOM.render(<App />, div);
-        await browser.pause(100).$apply();
         var dom = s.refs.a;
         expect(dom.title).toBe("xxx");
         expect(dom.className).toBe("aaa");
         s.setState({ title: "123", id: "uuuu" });
-        await browser.pause(100).$apply();
         expect(dom.title).toBe("123");
         expect(dom.className).toBe("aaa");
         expect(dom.id).toBe("uuuu");
     });
 
-    it("改变属性", async () => {
+    it("改变属性",  () => {
         var index = 1;
         class App extends React.Component {
             constructor(props) {
@@ -83,27 +77,23 @@ describe("diffProps", function() {
         }
 
         var s = ReactDOM.render(<App />, div);
-        await browser.pause(100).$apply();
         var dom = s.refs.a;
         expect(dom.title).toBe("xxx");
         expect(dom.className).toBe("ddd");
         expect(dom.id).toBe("h33");
+       
         var events = dom.__events || {};
-        expect(events.onClick || events.click).toA("function");
+        expect(typeof events.click).toBe("function");
+    
         expect(dom.getElementsByTagName("b").length).toBe(1);
-        index = 0;
-        await browser
-            .click("#h33")
-            .pause(100)
-            .$apply();
-
+        ReactTestUtils.Simulate.click(dom);
         dom = s.refs.a;
         expect(dom.title).toBe("yyy");
         expect(dom.className).toBe("");
         expect(dom.id).toBe("h44");
         expect(dom.getAttribute("data-bbb")).toBe("sss");
-        var events = dom.__events || {};
-        expect(events.onClick || events.click).toA("undefined");
+        events = dom.__events || {};
+        expect(typeof events.click).toBe("undefined");
         expect(dom.getElementsByTagName("b").length).toBe(0);
     });
 });

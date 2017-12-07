@@ -29,16 +29,13 @@ export function drainQueue(queue) {
     options.beforePatch();
     //先执行所有元素虚拟DOMrefs方法（从上到下）
     let updater;
-    var i = 6000;
     while ((updater = queue.shift())) {
         //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
         if (updater._disposed) {
             continue;
         }
-        if(--i < 0){
-            console.log("死循环了");
-            break;
-        }
+
+        //console.log(updater.name, updater._jobs+"");
         updater.exec(queue);
       
         var catchError = Refs.catchError;

@@ -375,7 +375,7 @@ describe("ReactComponentLifeCycle-test", function() {
     });
 
     it("should call nested lifecycle methods in the right order", () => {
-        var list;
+        var list = [];
         var logger = function(msg) {
             return function() {
                 // return true for shouldComponentUpdate
@@ -414,9 +414,11 @@ describe("ReactComponentLifeCycle-test", function() {
         }
 
         var container = document.createElement("div");
-        list = [];
         ReactDOM.render(<Outer x={17} />, container);
-        expect(list.join("\n")).toBe(["outer componentWillMount", "inner componentWillMount", "inner componentDidMount", "outer componentDidMount"].join("\n"));
+        expect(list.join("\n")).toBe(["outer componentWillMount",
+         "inner componentWillMount",
+          "inner componentDidMount", 
+          "outer componentDidMount"].join("\n"));
 
         list = [];
         ReactDOM.render(<Outer x={42} />, container);

@@ -19,9 +19,7 @@ export function createElement(type, config, ...children) {
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
     } else if (type + "" !== type) {
-        console.error("React.createElement的第一个参数有问题");
-        type = "#comment";
-        vtype = 0;
+        throw "React.createElement第一个参数只能是函数或字符串";
     }
     if (config != null) {
         for (let i in config) {

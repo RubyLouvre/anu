@@ -1,13 +1,12 @@
 
 import { removeElement } from "./browser";
-import { innerHTML, toArray, createUnique, collectAndResolve} from "./util";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { processFormElement, formElements } from "./ControlledComponent";
 
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
-    this._jobs = ["init"];
+    this._jobs = ["resolve"];
     this.vnode = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
@@ -27,20 +26,6 @@ DOMUpdater.prototype = {
         }
     },
     init(updateQueue){
-        this._jobs = ["batchMount"];
-        updateQueue.push(this);
-    },
-    batchMount(updateQueue){
-        //父节点主动添加它的孩子
-        var vnode = this.vnode, nodes = [],
-            dom = vnode.stateNode;
-      
-        nodes = collectAndResolve(this.children, updateQueue, this.name+"(batchMount)");       
-        /*    nodes.forEach(function(c){
-            dom.appendChild(c);
-        });
-        */
-        this.addJob("resolve");
         updateQueue.push(this);
     },
     resolve(){
@@ -55,45 +40,11 @@ DOMUpdater.prototype = {
         Refs.fireRef(vnode, dom);
        
     },
-    batchUpdate(lastChildren, nextChildren, debug) {//子节点主动让父节点来更新其孩子 Fragment []
-        var vnode = this.vnode;
-        var parentNode = vnode.stateNode,
-            newLength = nextChildren.length,
-            oldLength = lastChildren.length,
-            unique = createUnique();
-        var fullNodes = toArray(parentNode.childNodes);
-        var startIndex = fullNodes.indexOf(lastChildren[0]);
-        var insertPoint = fullNodes[startIndex] || null;
-        for (let i = 0; i < newLength; i++) {//Set
-            let child = nextChildren[i];
-            let last = lastChildren[i];
-            if (last === child) {
-                //如果相同
-            } else if (last && !unique.has(last)) {
-                parentNode.replaceChild(child, last); //如果这个位置有DOM，并且它不在新的nextChildren之中
-            } else if (insertPoint) {
-                parentNode.insertBefore(child, insertPoint.nextSibling);
-            } else {
-                parentNode.appendChild(child);
-            }
-            insertPoint = child;
-            unique.add(child);
-        }
-        if (newLength < oldLength) {
-            for (let i = newLength; i < oldLength; i++) {
-                if (!unique.has(lastChildren[i])) {
-                    removeElement(lastChildren[i]);
-                }
-            }
-        }
-    },
     dispose(){
         var vnode = this.vnode;
         Refs.detachRef(vnode);
-        //  if(vnode.props.)
         removeElement(vnode.stateNode);
         delete vnode.stateNode;
     }
    
 };
-// willMount 列队

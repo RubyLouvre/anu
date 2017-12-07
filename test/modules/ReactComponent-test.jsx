@@ -298,22 +298,21 @@ describe("ReactComponent", function() {
     });
 
     it("throws usefully when rendering badly-typed elements", () => {
-        spyOn(console, "error");
+        
       //  "Element type is invalid: expected a string (for built-in components) " +
       //  "or a class/function (for composite components) but got: undefined. " +
       //  "You likely forgot to export your component from the file it's defined in."
         var X = undefined;
         expect(() => ReactTestUtils.renderIntoDocument(<X />)).toThrowError(
-            "ReactDOM.render的第一个参数错误"
+            "React.createElement第一个参数只能是函数或字符串"
         );
 
         var Y = null;
         expect(() => ReactTestUtils.renderIntoDocument(<Y />)).toThrowError(
-            "ReactDOM.render的第一个参数错误"
+            "React.createElement第一个参数只能是函数或字符串"
         );
 
-        // One warning for each element creation
-        expect(console.error.calls.count()).toBe(2);
+       
     });
 
     it("includes owner name in the error about badly-typed elements", () => {
