@@ -81,18 +81,7 @@ export function createVnode(node) {
             //非HTML需要加上命名空间
             vnode.namespaceURI = ns;
         }
-        var props = {};
-        var attrs = node.attributes;
-        for(var i = 0, attr; attr = attrs[i++];){
-            if(attr.specified){
-                var name = attr.name;
-                if(name === "class") {
-                    name = "className";
-                }
-                props[name] = attr.value;
-            }
-        }
-        vnode.props = props;
+        vnode.props = getProps(node);
     } else {
         vnode = createVText(type, node.nodeValue);
     }
@@ -100,16 +89,33 @@ export function createVnode(node) {
     return vnode;
 }
 
+function getProps(node) {
+    var attrs = node.attributes,
+        props = {};
+    for (var i = 0, attr; (attr = attrs[i++]); ) {
+        if (attr.specified) {
+            var name = attr.name;
+            if (name === "class") {
+                name = "className";
+            }
+            props[name] = attr.value;
+        }
+    }
+    return props;
+}
+
 export function fiberizeChildren(c, updater) {
-    let flattenChildren = {}, vnode = updater.vnode,
-        ret = [], prev;
+    let flattenChildren = {},
+        vnode = updater.vnode,
+        ret = [],
+        prev;
     if (c !== void 666) {
         var lastText,
             lastIndex = 0;
         operateChildren(c, "", function(child, index) {
             let childType = typeNumber(child);
             if (childType < 3) {
-                //在React16中undefined, null, boolean不会产生节点 
+                //在React16中undefined, null, boolean不会产生节点
                 lastText = null;
                 return;
             } else if (childType < 5) {
@@ -124,12 +130,12 @@ export function fiberizeChildren(c, updater) {
                 lastText = null;
             }
             var key = child.key;
-           
-            if (key && !flattenChildren[".$"+key]) {
-                flattenChildren[".$"+key] = child;
+
+            if (key && !flattenChildren[".$" + key]) {
+                flattenChildren[".$" + key] = child;
             } else {
-                if(index === "."){
-                    index = "." + lastIndex; 
+                if (index === ".") {
+                    index = "." + lastIndex;
                 }
                 flattenChildren[index] = child;
             }
@@ -137,6 +143,7 @@ export function fiberizeChildren(c, updater) {
             child.return = vnode;
             if (prev) {
                 prev.sibling = child;
+                // child.prev = prev;
             }
             lastIndex++;
             prev = child;
@@ -146,9 +153,13 @@ export function fiberizeChildren(c, updater) {
         var child = ret[0];
         if (child) {
             vnode.child = child;
+            //  delete child.prev;
+        }
+        if (prev) {
+            delete prev.sibling;
         }
     }
-    return updater.children = flattenChildren;
+    return (updater.children = flattenChildren);
 }
 
 export function operateChildren(children, prefix, callback) {
@@ -160,19 +171,20 @@ export function operateChildren(children, prefix, callback) {
             });
             return;
         } else if ((iteratorFn = getIteractor(children))) {
-            var iterator = iteratorFn.call(children), ii = 0, step;
+            var iterator = iteratorFn.call(children),
+                ii = 0,
+                step;
             while (!(step = iterator.next()).done) {
                 operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
                 ii++;
             }
             return;
         }
-    } 
-    if(Object(children) === children && !children.type){
+    }
+    if (Object(children) === children && !children.type) {
         throw "children中存在非法的对象";
     }
     callback(children, prefix || ".");
-    
 }
 var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";

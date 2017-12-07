@@ -152,33 +152,33 @@ InnerSet.prototype = {
     }
 };
 
-function collectImpl(child, ret, resolve, debug) {
-    var inner = child.stateNode;
-    if (child._disposed) {
-        return;
-    }
-    if (child.vtype < 2) {
-        ret.push(inner);
-    } else {
-        var updater = inner.updater;
-        if (child.child) {
-            var args = collectAndResolve(updater.children, resolve, debug);
-            ret.push.apply(ret, args);
-        }
-        if (resolve) {
-            updater.addJob("resolve");
-            resolve.push(updater); //先执行内围的，再执行外围的
-        }
-    }
-}
-
 export function collectAndResolve(children, resolve, debug) {
     var ret = [];
-    if (children.type) {
-        collectImpl(children, ret, resolve, debug);
-    } else {
-        for (var i in children) {
-            collectImpl(children[i], ret, resolve, debug);
+    for (var i in children) {
+        var child = children[i];
+        var inner = child.stateNode;
+        if (child._disposed) {
+            continue;
+        }
+        if (child.vtype < 2) {
+            //  console.log(inner, debug);
+            ret.push(inner);
+        } else {
+            var updater = inner.updater;
+            if (updater.cache) {
+                ret.push.apply(ret, updater.cache);
+            } else {
+                if (child.child) {
+                    var args = collectAndResolve(updater.children, resolve, debug);
+                    updater.cache = args;
+                    ret.push.apply(ret, args);
+                }
+            }
+
+            if (resolve) {
+                updater.addJob("resolve");
+                resolve.push(updater); //先执行内围的，再执行外围的
+            }
         }
     }
     return ret;

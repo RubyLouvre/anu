@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--  <script type='text/javascript' src="./test/react.development.js"></script>
+    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+    <script src="./lib/babel.js"></script>
+
+</head>
+
+<body>
+
+    <div>这个默认会被清掉</div>
+    <div id='example'></div>
+    <pre>
+    </pre>
+
+    <script type='text/babel'>
+    var container = document.getElementById("example")
+    var div = container
+   var expect = function(a) {
+      return {
+          toBe: function(b) {
+              console.log(a,"\nvs\n", b, a === b)
+          }
+      }
+  }
+  function A(props){
+      return <span>{props.value}</span>
+  }
+  class App extends React.Component{
+      constructor(props){
+          super(props)
+          this.state = {
+              a:1
+          }
+      }
+      render(){
+          return (<div> {this.state.a ? 
+            [<A key="a" value="1"/>, <A key="b" value="2"/>, <A key="c" value="3"/>]:
+            [<A key="c" value="3"/>, <A key="b" value="2"/>, <A key="a" value="1"/>]} </div>)
+      }
+  }
+
+  
+  var s = ReactDOM.render(<App/>, div);   
+  console.log("--------------") 
+  s.setState({a: 0})
+    </script>
+</body>
+
+</html>

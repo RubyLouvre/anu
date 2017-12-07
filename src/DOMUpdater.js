@@ -34,15 +34,12 @@ DOMUpdater.prototype = {
         //父节点主动添加它的孩子
         var vnode = this.vnode, nodes = [],
             dom = vnode.stateNode;
-        if(vnode.child) {
-            nodes =  collectAndResolve(vnode.child, updateQueue);
-        }
-       
-        nodes.forEach(function(c){
+      
+        nodes = collectAndResolve(this.children, updateQueue, this.name+"(batchMount)");       
+        /*    nodes.forEach(function(c){
             dom.appendChild(c);
         });
-        
-        
+        */
         this.addJob("resolve");
         updateQueue.push(this);
     },
@@ -64,7 +61,6 @@ DOMUpdater.prototype = {
             newLength = nextChildren.length,
             oldLength = lastChildren.length,
             unique = createUnique();
-         
         var fullNodes = toArray(parentNode.childNodes);
         var startIndex = fullNodes.indexOf(lastChildren[0]);
         var insertPoint = fullNodes[startIndex] || null;
@@ -94,9 +90,8 @@ DOMUpdater.prototype = {
     dispose(){
         var vnode = this.vnode;
         Refs.detachRef(vnode);
-        if (vnode.props[innerHTML]) {//这里可能要重构
-            removeElement(vnode.stateNode);
-        }
+        //  if(vnode.props.)
+        removeElement(vnode.stateNode);
         delete vnode.stateNode;
     }
    

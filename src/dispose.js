@@ -1,4 +1,5 @@
 import { options } from "./util";
+import { removeElement } from "./browser";
 export const topVnodes = [];
 export const topNodes = [];
 
@@ -19,6 +20,7 @@ export function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             } else {
+                removeElement(vnode.stateNode);
                 delete vnode.stateNode;
             }
         }
@@ -32,6 +34,7 @@ function disposeElement(vnode, updateQueue, silent) {
         updateQueue.push(updater);
     }
     disposeChildren(updater.children, updateQueue, silent);
+   
 }
 
 function disposeComponent(vnode, updateQueue, silent) {

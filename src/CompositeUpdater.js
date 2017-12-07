@@ -204,6 +204,8 @@ CompositeUpdater.prototype = {
             this.render(updateQueue);
         }
         this.addJob("resolve");
+        this.insertQueue = [this.insertPoint];
+        console.log("this.insertQueue ", this.insertPoint);
         updateQueue.push(this);
     },
     render(updateQueue) {
@@ -236,9 +238,13 @@ CompositeUpdater.prototype = {
         }
         number = typeNumber(rendered);
         var hasMounted = this.isMounted();
+        console.log(this.insertQueue.concat(), this.name, "!!");
         if (hasMounted) {
             lastChildren = this.children;
+            
         }
+        //this.insertPoint = this.insertQueue[0];
+        
       
         if (number > 2) {
             if (number > 5) {
@@ -256,9 +262,8 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-     
-        options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue);
-      
+       
+        options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
