@@ -9,11 +9,12 @@ export var Refs = {
     mountOrder: 1,
     currentOwner: null,
     fireRef(vnode, dom) {
-        if(vnode._disposed || vnode._stateless){
+        if(vnode._disposed || vnode.stateNode.__isStateless){
             dom = null;
         }
         var ref = vnode.ref;
         if (typeof ref === "function") {
+            ref.done = true;
             return ref(dom);
         }
         var owner = vnode._owner;

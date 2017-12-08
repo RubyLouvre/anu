@@ -1,5 +1,4 @@
 import { disposeVnode } from "./dispose";
-import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 import { noop } from "./util";
 

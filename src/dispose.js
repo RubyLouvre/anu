@@ -1,6 +1,5 @@
 import { options } from "./util";
 import { removeElement } from "./browser";
-import { Refs } from "./Refs";
 
 export const topVnodes = [];
 export const topNodes = [];
@@ -21,27 +20,32 @@ export function disposeVnode(vnode, updateQueue, silent) {
         } else {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
-            }
+            } 
             removeElement(vnode.stateNode);
-            // delete vnode.stateNode;
         }
     }
 }
-
+function handleErrorRef(vnode) {
+    var refFn = vnode.ref;
+    if (refFn && refFn.call) {
+        //出错时没有执行过直接干掉, 否则提前传入null
+        if (refFn.done) {
+            refFn(null);
+        }
+        delete vnode.ref;
+    }
+}
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
     } else {
-        console.log(vnode.ref+" xxx "+vnode._hasRef);
-        if (vnode._hasRef) {
-            Refs.fireRef(vnode, null);
-        }
-        delete vnode.ref;
+        handleErrorRef(vnode);
     }
 
-    disposeChildren(updater.children, updateQueue, silent);
+    disposeChildren(updater.children, updateQueue,silent);
+    
 }
 
 function disposeComponent(vnode, updateQueue, silent) {
@@ -55,11 +59,11 @@ function disposeComponent(vnode, updateQueue, silent) {
         updater.addJob("dispose");
         updateQueue.push(updater);
     } else {
+        handleErrorRef(vnode);
         //组件出错时，在医生节点下的那些组件，如果它们已经resolve过，那么还能执行will unmount钩子
-        if (updater.isMounted()) {
+        if (updater._hydrating || updater.isMounted()) {
             updater.dispose();
         }
-        delete vnode.ref;
     }
 
     updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题

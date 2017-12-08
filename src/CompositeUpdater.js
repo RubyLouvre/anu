@@ -154,8 +154,8 @@ CompositeUpdater.prototype = {
                 extend(instance, mixin);
             } else {
                 //不带生命周期的
-                vnode._stateless = true;
                 vnode.child = mixin;
+                instance.__isStateless = true;
                 this.mergeStates = alwaysNull;
                 this.willReceive = false;
             }
@@ -265,7 +265,6 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-
         options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
@@ -294,8 +293,9 @@ CompositeUpdater.prototype = {
             instance._hasTry = true;
             this._jobs.length = 0;
             //收集它上方的updater,强行结束它们
+           
             updateQueue.length = 0;
-            
+
             var p = vnode.return;
             do {
                 if (p.vtype > 1) {
@@ -304,7 +304,7 @@ CompositeUpdater.prototype = {
                     updateQueue.push(u);
                 }
             } while ((p = p.return));
-           
+
             this._hydrating = true; //让它不要立即执行，先执行其他的
             instance.componentDidCatch.apply(instance, _hasCatch);
             this._hydrating = false;
@@ -338,8 +338,11 @@ CompositeUpdater.prototype = {
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
+        console.log("移除");
         Refs.fireRef(vnode, null);
+        
         captureError(instance, "componentWillUnmount", []);
+        
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
