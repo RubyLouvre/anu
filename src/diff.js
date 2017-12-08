@@ -312,7 +312,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                     exec: Refs.fireRef.bind(null, el, null)
                 });
             });
-
         for (let i in nextChildren) {
             nextChild = nextChildren[i];
             lastChild = matchNodes[i];

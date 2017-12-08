@@ -1,5 +1,6 @@
 import { options, clearArray } from "./util";
 import { Refs } from "./Refs";
+import { disposeVnode } from "./dispose";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -35,14 +36,55 @@ export function drainQueue(queue) {
             continue;
         }
 
-        //console.log(updater.name, updater._jobs+"");
-        updater.exec(queue);
-      
         var catchError = Refs.catchError;
-        if(catchError){
+        if (catchError) {
+            /**
+             * 当一个组件在componentDidMount出错时，其实整个列队也在执行componentDidMount,
+             * 这样让它们都执行完componentDidMount，然后让它们都执行componentWillUnmount,
+             * 这时这些钩子可能会出错，不用管它，最后将医生的componentDidCatch放进去救场
+             */
+
+            delete updater.vnode.ref;
+            for (var i in catchError.children) {
+                var child = catchError.children[i];
+                disposeVnode(child, queue, true); //这里只清理虚拟/真实DOM，不执行钩子
+            }
+            catchError.children ={};
+            var find = false;
+            var clearup = [];
+            for (var i = 0, el; (el = queue[i]); i++) {
+                if (el === catchError) {
+                    clearup.push(catchError);
+                    //只保留医生节点上方的组件
+                    queue.splice(0, i, catchError);
+                    queue.unshift.apply(queue, clearup);
+                    catchError.addJob("catch");
+                    find = true;
+                    break;
+                } else {
+                    //还没有来得及resolve的组件直接dispose，并且不执行ref
+                    delete el.vnode.ref;
+                    if (el.instance) {
+                        if (el.isMounted()) {
+                            //el._jobs = ["dispose"];
+                            el.addJob("dispose");
+                            clearup.push(el);
+                        }
+                    }else{
+                        el.addJob("resolve");
+                        clearup.push(el);
+                    }
+                }
+            }
+            if (!find) {
+                queue.splice(i, 0, catchError);
+                queue.unshift.apply(queue, clearup);
+                catchError.addJob("catch");
+            }
+
             delete Refs.catchError;
-            //执行错误边界的didMount/Update钩子
-            catchError.resolve(queue);
+        } else {
+            updater.exec(queue);
         }
     }
 

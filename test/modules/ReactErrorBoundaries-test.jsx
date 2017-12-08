@@ -857,9 +857,9 @@ describe("ReactErrorBoundaries", () => {
         var container = document.createElement("div");
         ReactDOM.render(
             <ErrorBoundary>
-                <Normal />
+                <Normal logName="Normal1"/>
                 <BrokenRender />
-                <Normal />
+                <Normal logName="Normal2"/>
             </ErrorBoundary>,
             container
         );
@@ -869,9 +869,9 @@ describe("ReactErrorBoundaries", () => {
             "ErrorBoundary componentWillMount",
             "ErrorBoundary render success",
             // Render first child
-            "Normal constructor",
-            "Normal componentWillMount",
-            "Normal render",
+            "Normal1 constructor",
+            "Normal1 componentWillMount",
+            "Normal1 render",
             // Render second child (it throws)
             "BrokenRender constructor",
             "BrokenRender componentWillMount",

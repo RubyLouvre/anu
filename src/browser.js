@@ -65,6 +65,9 @@ var recyclables = {
 };
 
 export function removeElement(node) {
+    if(!node) {
+        return;
+    }
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";

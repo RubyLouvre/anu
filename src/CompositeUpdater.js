@@ -1,9 +1,11 @@
+import { extend, options, typeNumber, emptyObject, isFn, 
+    returnFalse, returnTrue, clearArray, catchHook, disposeHook
+} from "../src/util";
 import { fiberizeChildren } from "./createElement";
-import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue, clearArray } from "../src/util";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
-import { Refs } from "./Refs";
 import { insertElement } from "./browser";
+import { Refs } from "./Refs";
 
 function alwaysNull() {
     return null;
@@ -239,7 +241,7 @@ CompositeUpdater.prototype = {
             Refs.currentOwner = instance;
 
             rendered = captureError(instance, "render", []);
-            if (instance._hasError) {
+            if (this._hasError) {
                 rendered = true;
             }
             Refs.currentOwner = lastOwn;
@@ -269,7 +271,7 @@ CompositeUpdater.prototype = {
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
-        let { instance, _hasCatch, vnode } = this;
+        let { instance, vnode } = this;
         let hasMounted = this.isMounted();
         if (!hasMounted) {
             this.isMounted = returnTrue;
@@ -288,26 +290,8 @@ CompositeUpdater.prototype = {
             delete this._hydrating;
         }
 
-        if (_hasCatch) {
-            delete this._hasCatch;
-            instance._hasTry = true;
-            this._jobs.length = 0;
-            //收集它上方的updater,强行结束它们
-           
-            updateQueue.length = 0;
-
-            var p = vnode.return;
-            do {
-                if (p.vtype > 1) {
-                    var u = p.stateNode.updater;
-                    u.addJob("resolve");
-                    updateQueue.push(u);
-                }
-            } while ((p = p.return));
-
-            this._hydrating = true; //让它不要立即执行，先执行其他的
-            instance.componentDidCatch.apply(instance, _hasCatch);
-            this._hydrating = false;
+        if (this._hasError) {
+            return;
         } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
@@ -333,16 +317,25 @@ CompositeUpdater.prototype = {
             updateQueue.push(this);
         }
     },
+    catch(updateQueue){
+        let { instance, _hasCatch } = this;
+        delete this._hasCatch;
+        this._hasTry = true;
+        this._jobs.length = 0;
+        this.children = {};
+        // this._hydrating = true; //让它不要立即执行，先执行其他的
+        instance[catchHook].apply(instance, _hasCatch);
+        //   this._hydrating = false;
+        //  this.addJob("hydrate");
+        //  updateQueue.push(this);
+    },
     dispose() {
         var instance = this.instance;
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
-        console.log("移除");
         Refs.fireRef(vnode, null);
-        
-        captureError(instance, "componentWillUnmount", []);
-        
+        captureError(instance, disposeHook, []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
