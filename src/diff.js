@@ -171,7 +171,7 @@ function mountChildren(vnode, children, context, updateQueue, insertQueue) {
     for (var i in children) {
         var child = children[i];
         mountVnode(child, context, updateQueue, insertQueue);
-        if (Refs.catchError) {
+        if (Refs.doctor) {
             break;
         }
     }
@@ -322,7 +322,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 mountVnode(nextChild, parentContext, updateQueue, insertQueue);
             }
 
-            if (Refs.catchError) {
+            if (Refs.doctor) {
                 return;
             }
         }

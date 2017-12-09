@@ -14,7 +14,7 @@ export function pushError(instance, hook, error) {
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        Refs.catchError = catchUpdater;
+        Refs.doctor = catchUpdater;
     } else {
         console.warn(describeError(names, hook)); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
@@ -73,11 +73,10 @@ function findCatchComponent(target, names) {
             instance = vnode.stateNode;
             if (instance[catchHook]) {
                 updater = instance.updater;
-                if (updater._hasTry) {
+                if (updater._isDoctor) {
+                    updater._isQuack = true;
                     disableHook(updater);
-                    updater.children = {};
                 } else if (target !== instance) {
-                    console.log("找到医生", updater.name);
                     return updater; //移交更上级的医师处理
                 }
             }

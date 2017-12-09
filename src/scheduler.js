@@ -25,7 +25,9 @@ export function enqueueUpdater(updater) {
         dirtyComponents.push(updater);
     }
 }
-
+var placehoder = {
+    _disposed: true
+};
 export function drainQueue(queue) {
     options.beforePatch();
     //先执行所有元素虚拟DOMrefs方法（从上到下）
@@ -36,8 +38,8 @@ export function drainQueue(queue) {
             continue;
         }
 
-        var catchError = Refs.catchError;
-        if (catchError) {
+        var doctor = Refs.doctor;
+        if (doctor) {
             queue.unshift(updater); //如果发生错误时，调度器已经将upater shift出来，那么需要再吞回去（unshift）
             /**
              * 当一个组件在componentDidMount出错时，其实整个列队也在执行componentDidMount,
@@ -45,37 +47,40 @@ export function drainQueue(queue) {
              * 这时这些钩子可能会出错，不用管它，最后将医生的componentDidCatch放进去救场
              */
 
-            //  delete updater.vnode.ref;
-            for (var i in catchError.children) {
-                var child = catchError.children[i];
+            for (var i in doctor.children) {
+                var child = doctor.children[i];
                 disposeVnode(child, queue, true); //这里只清理虚拟/真实DOM，不执行钩子
             }
-            catchError.children = {};
-            var catchIndex = 0;
-            //var isResolve = catchError.catchHook ===mountedHook || catchError.catchHook === updatedHook;
+            doctor.children = {};
+            var insertIndex = 0,
+                quack;
             //构建错误列队
             for (var i = 0, el; (el = queue[i]); i++) {
-                if (el === catchError) {
+                if (el === doctor) {
                     //只保留医生节点上方的组件
-                    catchIndex = i;
-                    break;
+                    insertIndex = i;
                 } else {
-                    //还没有来得及resolve的组件直接dispose，并且不执行ref
-
+                    if (el._isQuack) {
+                        queue[i] = placehoder;
+                        quack = el;
+                        delete el._isQuack;
+                        continue;
+                    }
+                    //还没有来得及resolve的组件直接dispose
                     if (el && el.isMounted()) {
-                        // delete el.vnode.ref;
                         el._states = ["dispose"];
                     } else {
-                        queue[i] = {
-                            _disposed: true
-                        };
+                        queue[i] = placehoder;
                     }
                 }
             }
-
-            queue.splice(catchIndex, 0, catchError);
-            catchError.addState("catch");
-            delete Refs.catchError;
+            queue.splice(insertIndex, 0, doctor);
+            doctor.addState("catch");
+            if (quack) {
+                quack._states = ["dispose"];
+                queue.unshift(quack);
+            }
+            delete Refs.doctor;
         } else {
             updater.transition(queue);
         }

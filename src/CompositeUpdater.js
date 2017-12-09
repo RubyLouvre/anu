@@ -307,28 +307,18 @@ CompositeUpdater.prototype = {
                 fn.call(instance);
             });
         }
-        var cbs = this._nextCallbacks,
-            cb;
-        if (cbs && cbs.length) {
-            //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
-            do {
-                cb = cbs.shift();
-                if (isFn(cb)) {
-                    this._pendingCallbacks.push(cb);
-                }
-            } while (cbs.length);
-            delete this._nextCallbacks;
-            this.addState("hydrate");
-            updateQueue.push(this);
-        }
+        transfer.call(this, updateQueue);
     },
-    catch(){
+    catch(queue){
         let { instance, _hasCatch } = this;
         delete this._hasCatch;
-        this._hasTry = true;
+        this._isDoctor = true;
         this._states.length = 0;
         this.children = {};
+        this._hydrating = true;
         instance[catchHook].apply(instance, _hasCatch);
+        this._hydrating = false;
+        transfer.call(this, queue);
 
     },
     dispose() {
@@ -343,6 +333,22 @@ CompositeUpdater.prototype = {
         this._disposed = true;
     }
 };
+function transfer(queue){
+    var cbs = this._nextCallbacks,
+        cb;
+    if (cbs && cbs.length) {
+        //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
+        do {
+            cb = cbs.shift();
+            if (isFn(cb)) {
+                this._pendingCallbacks.push(cb);
+            }
+        } while (cbs.length);
+        delete this._nextCallbacks;
+        this.addState("hydrate");
+        queue.push(this);
+    }
+}
 
 export function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
