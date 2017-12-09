@@ -1,6 +1,7 @@
 import { disposeVnode } from "./dispose";
 import { Refs } from "./Refs";
-import { noop, catchHook, disposeHook } from "./util";
+import { noop } from "./util";
+import { catchHook, disposeHook } from "./CompositeUpdater";
 
 export function pushError(instance, hook, error) {
     var names = [];
@@ -15,9 +16,11 @@ export function pushError(instance, hook, error) {
         delete catchUpdater.pendingVnode;
         Refs.catchError = catchUpdater;
     } else {
-        //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
-        throw error;
+        //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
+        if(!Refs.error){
+            Refs.error = error;
+        }
     }
 }
 export function captureError(instance, hook, args) {

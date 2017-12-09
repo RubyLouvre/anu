@@ -4,7 +4,6 @@ import { Refs } from "./Refs";
 export function Vnode(type, vtype, props, key, ref, _hasProps) {
     this.type = type;
     this.vtype = vtype;
-    this.hasMounted = false;
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;

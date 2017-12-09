@@ -3,7 +3,7 @@ import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { processFormElement, formElements } from "./ControlledComponent";
-
+import { returnFalse, returnTrue} from "../src/util";
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
     this._jobs = ["resolve"];
@@ -28,6 +28,7 @@ DOMUpdater.prototype = {
     init(updateQueue){
         updateQueue.push(this);
     },
+    isMounted: returnFalse,
     resolve(){
         var vnode = this.vnode;
         var dom = vnode.stateNode;
@@ -36,13 +37,13 @@ DOMUpdater.prototype = {
         if (formElements[type]) {
             processFormElement(vnode, dom, props);
         }
-        vnode.hasMounted = true;
+        this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
        
     },
     dispose(){
         var vnode = this.vnode;
-        Refs.fireRef(vnode);
+        Refs.fireRef(vnode,null);
         removeElement(vnode.stateNode);
         delete vnode.stateNode;
     }

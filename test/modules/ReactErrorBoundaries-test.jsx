@@ -1825,9 +1825,8 @@ describe("ReactErrorBoundaries", () => {
         } catch (err) {
             err2 = err;
         }
-
-        expect(err1.message).toMatch(/got: null/);
-        expect(err2.message).toMatch(/got: undefined/);
+        expect(err1).toBe("React.createElement第一个参数只能是函数或字符串");
+        expect(err2).toMatch("React.createElement第一个参数只能是函数或字符串");
     });
 
     it("renders empty output if error boundary does not handle the error", () => {
