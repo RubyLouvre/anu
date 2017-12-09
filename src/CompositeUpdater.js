@@ -1,5 +1,5 @@
 import { extend, options, typeNumber, emptyObject, isFn, 
-    returnFalse, returnTrue, clearArray, catchHook, disposeHook
+    returnFalse, returnTrue, clearArray
 } from "../src/util";
 import { fiberizeChildren } from "./createElement";
 import { drainQueue, enqueueUpdater } from "./scheduler";
@@ -7,9 +7,15 @@ import { pushError, captureError } from "./ErrorBoundary";
 import { insertElement } from "./browser";
 import { Refs } from "./Refs";
 
+
+
 function alwaysNull() {
     return null;
 }
+export var catchHook = "componentDidCatch";
+export var disposeHook = "componentWillUnmount";
+export var mountedHook = "componentDidMount";
+export var updatedHook = "componentDidUpdate";
 const support16 = true;
 const errorType = {
     0: "undefined",
@@ -276,9 +282,8 @@ CompositeUpdater.prototype = {
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
-        vnode.hasMounted = true;
         if (this._hydrating) {
-            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
+            let hookName = hasMounted ? updatedHook : mountedHook  ;
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -317,17 +322,14 @@ CompositeUpdater.prototype = {
             updateQueue.push(this);
         }
     },
-    catch(updateQueue){
+    catch(){
         let { instance, _hasCatch } = this;
         delete this._hasCatch;
         this._hasTry = true;
         this._jobs.length = 0;
         this.children = {};
-        // this._hydrating = true; //让它不要立即执行，先执行其他的
         instance[catchHook].apply(instance, _hasCatch);
-        //   this._hydrating = false;
-        //  this.addJob("hydrate");
-        //  updateQueue.push(this);
+
     },
     dispose() {
         var instance = this.instance;

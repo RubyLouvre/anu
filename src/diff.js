@@ -1,4 +1,4 @@
-import { options, innerHTML, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
+import { options, innerHTML,noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
 import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
@@ -309,7 +309,8 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             })
             .forEach(function(el) {
                 updateQueue.push({
-                    exec: Refs.fireRef.bind(null, el, null)
+                    exec: Refs.fireRef.bind(null, el, null),
+                    isMounted: noop
                 });
             });
         for (let i in nextChildren) {
