@@ -20,7 +20,7 @@ export function flushUpdaters() {
 
 export function enqueueUpdater(updater) {
     if (!updater._dirty) {
-        updater.addJob("hydrate");
+        updater.addState("hydrate");
         updater._dirty = true;
         dirtyComponents.push(updater);
     }
@@ -61,25 +61,24 @@ export function drainQueue(queue) {
                     break;
                 } else {
                     //还没有来得及resolve的组件直接dispose，并且不执行ref
-               
-                    if(el && el.isMounted()){
+
+                    if (el && el.isMounted()) {
                         // delete el.vnode.ref;
-                        el._jobs = ["dispose"];
-                    }else{
+                        el._states = ["dispose"];
+                    } else {
                         queue[i] = {
-                            _disposed: true,
-                            isMounted: noop
+                            _disposed: true
                         };
                     }
                 }
             }
-          
+
             queue.splice(catchIndex, 0, catchError);
-            catchError.addJob("catch");
+            catchError.addState("catch");
             delete Refs.catchError;
-        }else{
-            updater.exec(queue);
-        }  
+        } else {
+            updater.transition(queue);
+        }
     }
 
     options.afterPatch();

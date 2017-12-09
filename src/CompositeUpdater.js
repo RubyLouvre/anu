@@ -43,7 +43,7 @@ export function CompositeUpdater(vnode, parentContext) {
     this.parentContext = parentContext;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = ["resolve"];
+    this._states = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
@@ -52,16 +52,16 @@ export function CompositeUpdater(vnode, parentContext) {
 }
 
 CompositeUpdater.prototype = {
-    addJob: function(newJob) {
-        var jobs = this._jobs;
-        if (jobs[jobs.length - 1] !== newJob) {
-            jobs.push(newJob);
+    addState: function(state) {
+        var states = this._states;
+        if (states[states.length - 1] !== state) {
+            states.push(state);
         }
     },
-    exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
+    transition(updateQueue) {
+        var state = this._states.shift();
+        if (state) {
+            this[state](updateQueue);
         }
     },
     enqueueSetState(state, cb) {
@@ -96,7 +96,7 @@ CompositeUpdater.prototype = {
                 //componentWillReceiveProps中的setState/forceUpdate应该被忽略
                 return;
             }
-            this.addJob("hydrate");
+            this.addState("hydrate");
             drainQueue([this]);
         }
     },
@@ -222,7 +222,7 @@ CompositeUpdater.prototype = {
             }
             this.render(updateQueue);
         }
-        this.addJob("resolve");
+        this.addState("resolve");
         updateQueue.push(this);
     },
     render(updateQueue) {
@@ -318,7 +318,7 @@ CompositeUpdater.prototype = {
                 }
             } while (cbs.length);
             delete this._nextCallbacks;
-            this.addJob("hydrate");
+            this.addState("hydrate");
             updateQueue.push(this);
         }
     },
@@ -326,7 +326,7 @@ CompositeUpdater.prototype = {
         let { instance, _hasCatch } = this;
         delete this._hasCatch;
         this._hasTry = true;
-        this._jobs.length = 0;
+        this._states.length = 0;
         this.children = {};
         instance[catchHook].apply(instance, _hasCatch);
 

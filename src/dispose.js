@@ -29,13 +29,10 @@ export function disposeVnode(vnode, updateQueue, silent) {
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
-        updater.addJob("dispose");
+        updater.addState("dispose");
         updateQueue.push(updater);
     } else {
         // 只移除节点，不执行钩子
-        // handleErrorRef(vnode);
-        // updater.addJob("dispose");
-        // updateQueue.push(updater);
     }
     disposeChildren(updater.children, updateQueue,silent); 
 }
@@ -48,7 +45,7 @@ function disposeComponent(vnode, updateQueue, silent) {
     }
     var updater = instance.updater;
     if (!silent) {
-        updater.addJob("dispose");
+        updater.addState("dispose");
         updateQueue.push(updater);
     } 
     updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题

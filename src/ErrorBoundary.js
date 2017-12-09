@@ -54,7 +54,7 @@ function disableHook(u){
     u.hydrate = u.render = u.resolve = noop;
 }
 /**
- * 此方法遍历医生节点中所有updater,将它们的exec方法禁用，并收集沿途的标签名与组件名
+ * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
 function findCatchComponent(target, names) {
     var vnode = target.updater.vnode,

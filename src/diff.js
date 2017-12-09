@@ -202,7 +202,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertQueue) {
                 var nextChildren = fiberizeChildren(props.children, updater);
                 diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, []);
             }
-            updater.addJob("resolve");
+            updater.addState("resolve");
             updateQueue.push(updater);
         }
     } else {
@@ -309,7 +309,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             })
             .forEach(function(el) {
                 updateQueue.push({
-                    exec: Refs.fireRef.bind(null, el, null),
+                    transition: Refs.fireRef.bind(null, el, null),
                     isMounted: noop
                 });
             });

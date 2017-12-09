@@ -6,23 +6,23 @@ import { processFormElement, formElements } from "./ControlledComponent";
 import { returnFalse, returnTrue} from "../src/util";
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
-    this._jobs = ["resolve"];
+    this._states = ["resolve"];
     this.vnode = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
 
 DOMUpdater.prototype = {
-    addJob: function(newJob) {
-        var jobs = this._jobs;
-        if (jobs[jobs.length - 1] !== newJob) {
-            jobs.push(newJob);
+    addState: function(state) {
+        var states = this._states;
+        if (states[states.length - 1] !== state) {
+            states.push(state);
         }
     },
-    exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
+    transition(updateQueue) {
+        var state = this._states.shift();
+        if (state) {
+            this[state](updateQueue);
         }
     },
     init(updateQueue){
