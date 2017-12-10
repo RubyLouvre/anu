@@ -51,9 +51,13 @@ function disposeComponent(vnode, updateQueue, silent) {
         updater.addState("dispose");
         updateQueue.push(updater);
     } else if (updater.isMounted()) {
-        updater._states = ["dispose"];
+        if(silent === 1){
+            updater._states.length = 0;
+        }
+        updater.addState("dispose");
         updateQueue.push(updater);
-    }
+    } 
+     
     updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
     disposeChildren(updater.children, updateQueue, silent);
 }
