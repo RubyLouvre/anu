@@ -33,8 +33,10 @@ export function captureError(instance, hook, args) {
         }
         return true;
     } catch (error) {
+        if(hook === disposeHook){
+            instance[hook] = noop;
+        }
         if (Refs.ignoreError) {
-            console.log(error, "忽略");
             return;
         }
         pushError(instance, hook, error);
