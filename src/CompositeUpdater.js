@@ -208,6 +208,9 @@ CompositeUpdater.prototype = {
             var { props: lastProps, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState];
         }
+        if(this._hasError){
+            return;
+        }
         vnode.stateNode = instance;
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
@@ -310,13 +313,13 @@ CompositeUpdater.prototype = {
         transfer.call(this, updateQueue);
     },
     catch(queue){
-        let { instance, _hasCatch } = this;
-        delete this._hasCatch;
+        let { instance } = this;
+        delete Refs.ignoreError; 
         this._isDoctor = true;
         this._states.length = 0;
         this.children = {};
         this._hydrating = true;
-        instance[catchHook].apply(instance, _hasCatch);
+        instance[catchHook].apply(instance, Refs.errorInfo);
         this._hydrating = false;
         transfer.call(this, queue);
 
@@ -345,6 +348,7 @@ function transfer(queue){
             }
         } while (cbs.length);
         delete this._nextCallbacks;
+        console.log("transfer", queue.length);
         this.addState("hydrate");
         queue.push(this);
     }
