@@ -20,7 +20,7 @@ export function disposeVnode(vnode, updateQueue, silent) {
         } else {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
-            } 
+            }
             removeElement(vnode.stateNode);
         }
     }
@@ -32,9 +32,12 @@ function disposeElement(vnode, updateQueue, silent) {
         updater.addState("dispose");
         updateQueue.push(updater);
     } else {
-        // 只移除节点，不执行钩子
+        if (updater.isMounted()) {
+            updater._states = ["dispose"];
+            updateQueue.push(updater);
+        }
     }
-    disposeChildren(updater.children, updateQueue,silent); 
+    disposeChildren(updater.children, updateQueue, silent);
 }
 
 function disposeComponent(vnode, updateQueue, silent) {
@@ -47,7 +50,10 @@ function disposeComponent(vnode, updateQueue, silent) {
     if (!silent) {
         updater.addState("dispose");
         updateQueue.push(updater);
-    } 
+    } else if (updater.isMounted()) {
+        updater._states = ["dispose"];
+        updateQueue.push(updater);
+    }
     updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
     disposeChildren(updater.children, updateQueue, silent);
 }
