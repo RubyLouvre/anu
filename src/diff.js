@@ -232,6 +232,9 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     if (!updater._dirty) {
         updater._receiving = true;
         captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        if(updater._hasError){
+            return;
+        }
         delete updater._receiving;
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.fireRef(lastVnode, null);
