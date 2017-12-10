@@ -1,4 +1,3 @@
-
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
@@ -8,9 +7,13 @@ window.pendingRefs = pendingRefs;
 export var Refs = {
     mountOrder: 1,
     currentOwner: null,
-    // error: null,//捕捉到的第一个错误 
+    // errorUpdater null,//发生错误的第一个组件
+    // errorHook: string,//发生错误的生命周期钩子
+    // errorInfo: [],    //已经构建好的错误信息
+    // doctor: null      //能够处理错误的最近组件
+    // error: null      
     fireRef(vnode, dom) {
-        if(vnode._disposed || vnode.stateNode.__isStateless){
+        if (vnode._disposed || vnode.stateNode.__isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
@@ -18,7 +21,7 @@ export var Refs = {
             return ref(dom);
         }
         var owner = vnode._owner;
-        if(!ref) {
+        if (!ref) {
             return;
         }
         if (!owner) {
