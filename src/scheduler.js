@@ -26,64 +26,67 @@ export function enqueueUpdater(updater) {
     }
 }
 var placehoder = {
-    _disposed: true
+    transition: noop
 };
 export function drainQueue(queue) {
     options.beforePatch();
-    //先执行所有元素虚拟DOMrefs方法（从上到下）
     let updater;
+
     while ((updater = queue.shift())) {
-        //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
+        //console.log(updater.name,"执行"+ updater._states+" 状态");
         if (updater._disposed) {
             continue;
         }
-
         var doctor = Refs.doctor;
         if (doctor) {
-            queue.unshift(updater); //如果发生错误时，调度器已经将upater shift出来，那么需要再吞回去（unshift）
+            var isCreateRejectQueue = doctor === updater || !queue.length;
+            //console.log("isCreateRejectQueue", isCreateRejectQueue);
+            //如果出错组件是在resolved过，那么进行busy模式，即让调度器继续跑，直接它遇到自己
+            //这时就会构建与插入错误列队
+            var errorUpdater = Refs.errorUpdater;
+            //如果是在receiveHook中发生错误，那么进入lazy模式，让调度器空转
+            var isResolved = errorUpdater.isMounted()|| isCreateRejectQueue; //
             /**
-             * 当一个组件在componentDidMount出错时，其实整个列队也在执行componentDidMount,
-             * 这样让它们都执行完componentDidMount，然后让它们都执行componentWillUnmount,
-             * 这时这些钩子可能会出错，不用管它，最后将医生的componentDidCatch放进去救场
-             */
-
-            for (var i in doctor.children) {
-                var child = doctor.children[i];
-                disposeVnode(child, queue, true); //这里只清理虚拟/真实DOM，不执行钩子
-            }
-            doctor.children = {};
-            var insertIndex = 0,
-                quack;
-            //构建错误列队
-            for (var i = 0, el; (el = queue[i]); i++) {
-                if (el === doctor) {
-                    //只保留医生节点上方的组件
-                    insertIndex = i;
-                } else {
-                    if (el._isQuack) {
-                        queue[i] = placehoder;
-                        quack = el;
-                        delete el._isQuack;
-                        continue;
-                    }
-                    //还没有来得及resolve的组件直接dispose
-                    if (el && el.isMounted()) {
-                        el._states = ["dispose"];
-                    } else {
-                        queue[i] = placehoder;
-                    }
+ * 没有mounted时，碰到第一个医生节点，那么在医生之点构建错误列队 rejectQueue.concat(updater).concat(catchDoctor)
+ * 否则 updater rejectQueue.concat(catchDoctor)
+ */
+            console.log("isResolved", isCreateRejectQueue, errorUpdater._receiving,  errorUpdater.isMounted(), queue.map(function(el){
+                return el.name;
+            }));
+            if (isResolved) {
+                // if (isCreateRejectQueue ) {
+                // console.log("开始构建错误列队", updater.name);
+                var rejectedQueue = []; //收集要销毁的组件（要求必须resolved）
+                for (var i in doctor.children) {
+                    var child = doctor.children[i];
+                    disposeVnode(child, rejectedQueue, true);
                 }
+                // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
+                // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
+                doctor.children = {};
+                doctor.addState("catch");
+                if (!errorUpdater.isMounted() && updater == doctor) {
+                    //让其他先执行
+                    rejectedQueue.push(doctor);
+                    updater = placehoder;
+                }
+
+                rejectedQueue.push(doctor);
+               
+    
+                // console.log(rejectedQueue.concat());
+                delete Refs.doctor;
+                queue = rejectedQueue.concat(queue);
+                // queue.unshift.apply(queue, rejectedQueue);
+                // }
+            } else {
+                // if (!isCreateRejectQueue) {
+                continue; //调度器空转时不执行updater
+                // }
             }
-            queue.splice(insertIndex, 0, doctor);
-            doctor.addState("catch");
-            if (quack) {
-                quack._states = ["dispose"];
-                queue.unshift(quack);
-            }
-            delete Refs.doctor;
-        } else {
-            updater.transition(queue);
+           
         }
+        updater.transition(queue);
     }
 
     options.afterPatch();
