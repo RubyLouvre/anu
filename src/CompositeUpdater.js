@@ -348,7 +348,6 @@ function transfer(queue){
             }
         } while (cbs.length);
         delete this._nextCallbacks;
-        console.log("transfer", queue.length);
         this.addState("hydrate");
         queue.push(this);
     }

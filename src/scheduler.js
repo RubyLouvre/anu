@@ -33,58 +33,55 @@ export function drainQueue(queue) {
     let updater;
 
     while ((updater = queue.shift())) {
-        //console.log(updater.name,"执行"+ updater._states+" 状态");
+        // console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
             continue;
         }
         var doctor = Refs.doctor;
         if (doctor) {
-            var isCreateRejectQueue = doctor === updater || !queue.length;
-            //console.log("isCreateRejectQueue", isCreateRejectQueue);
-            //如果出错组件是在resolved过，那么进行busy模式，即让调度器继续跑，直接它遇到自己
-            //这时就会构建与插入错误列队
-            var errorUpdater = Refs.errorUpdater;
-            //如果是在receiveHook中发生错误，那么进入lazy模式，让调度器空转
-            var isResolved = errorUpdater.isMounted()|| isCreateRejectQueue; //
-            /**
- * 没有mounted时，碰到第一个医生节点，那么在医生之点构建错误列队 rejectQueue.concat(updater).concat(catchDoctor)
- * 否则 updater rejectQueue.concat(catchDoctor)
- */
-            console.log("isResolved", isCreateRejectQueue, errorUpdater._receiving,  errorUpdater.isMounted(), queue.map(function(el){
-                return el.name;
-            }));
-            if (isResolved) {
-                // if (isCreateRejectQueue ) {
-                // console.log("开始构建错误列队", updater.name);
-                var rejectedQueue = []; //收集要销毁的组件（要求必须resolved）
+            var src = Refs.errorUpdater,
+                hook = Refs.errorHook,
+                gotoCreateRejectQueue,
+                addDoctor,
+                silent; //2时添加disposed，1直接变成disposed
+            switch (hook) {
+            case "componentDidMount":
+            case "componentDidUpdate":
+            case "componentWillUnmount":
+                gotoCreateRejectQueue = queue.length === 0;//拖到最后构建
+                silent = 2;
+                break;
+            case "render":
+            case "constructor":
+            case "componentWillMount":
+            case "componentWillUpdate":
+            case "componentWillReceiveProps":
+                gotoCreateRejectQueue = true;//立即构建
+                queue.length = 0;
+                silent = 1;
+                addDoctor = true;
+                break;
+            }
+            if (gotoCreateRejectQueue) {
+                var rejectedQueue = [];
+                console.log("开始构建错误列队", updater.name);
+                //收集要销毁的组件（要求必须resolved）
                 for (var i in doctor.children) {
                     var child = doctor.children[i];
-                    disposeVnode(child, rejectedQueue, true);
+                    disposeVnode(child, rejectedQueue, silent);
                 }
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
                 doctor.children = {};
-                doctor.addState("catch");
-                if (!errorUpdater.isMounted() && updater == doctor) {
-                    //让其他先执行
+                if (addDoctor) {
                     rejectedQueue.push(doctor);
                     updater = placehoder;
                 }
-
+                doctor.addState("catch");
                 rejectedQueue.push(doctor);
-               
-    
-                // console.log(rejectedQueue.concat());
                 delete Refs.doctor;
                 queue = rejectedQueue.concat(queue);
-                // queue.unshift.apply(queue, rejectedQueue);
-                // }
-            } else {
-                // if (!isCreateRejectQueue) {
-                continue; //调度器空转时不执行updater
-                // }
             }
-           
         }
         updater.transition(queue);
     }
