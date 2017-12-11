@@ -64,6 +64,9 @@ export function drainQueue(queue) {
                 break;
             }
             if (gotoCreateRejectQueue) {
+                delete Refs.error;
+                delete Refs.doctor;
+                delete Refs.errorHook;
                 var rejectedQueue = [];
                 //收集要销毁的组件（要求必须resolved）
                 for (var i in doctor.children) {
@@ -79,7 +82,6 @@ export function drainQueue(queue) {
                 }
                 doctor.addState("catch");
                 rejectedQueue.push(doctor);
-                delete Refs.doctor;
                 queue = rejectedQueue.concat(queue);
             }
         }

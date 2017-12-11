@@ -1,10 +1,9 @@
 import { disposeVnode } from "./dispose";
 import { Refs } from "./Refs";
 import { noop } from "./util";
-import { catchHook, disposeHook } from "./CompositeUpdater";
 
 export function pushError(instance, hook, error) {
-    var names =[];
+    var names = [];
     var catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
     if (catchUpdater) {
@@ -31,7 +30,7 @@ export function captureError(instance, hook, args) {
         }
         return true;
     } catch (error) {
-        if(hook === disposeHook){
+        if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
         if (Refs.ignoreError) {
@@ -73,11 +72,12 @@ function findCatchComponent(target, names) {
             name = type.displayName || type.name;
             names.push(name);
             instance = vnode.stateNode;
-            if (instance[catchHook]) {
+            if (instance.componentDidCatch) {
                 updater = instance.updater;
                 if (updater._isDoctor) {
                     disableHook(updater);
-                } else if (target !== instance ) {//|| updater.errHook === "componentDidMount"
+                } else if (target !== instance) {
+                    //|| updater.errHook === "componentDidMount"
                     return updater; //移交更上级的医师处理
                 }
             }

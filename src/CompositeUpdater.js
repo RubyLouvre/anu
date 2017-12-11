@@ -7,15 +7,9 @@ import { pushError, captureError } from "./ErrorBoundary";
 import { insertElement } from "./browser";
 import { Refs } from "./Refs";
 
-
-
 function alwaysNull() {
     return null;
 }
-export var catchHook = "componentDidCatch";
-export var disposeHook = "componentWillUnmount";
-export var mountedHook = "componentDidMount";
-export var updatedHook = "componentDidUpdate";
 const support16 = true;
 const errorType = {
     0: "undefined",
@@ -288,7 +282,7 @@ CompositeUpdater.prototype = {
             this.isMounted = returnTrue;
         }
         if (this._hydrating) {
-            let hookName = hasMounted ? updatedHook : mountedHook  ;
+            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount"  ;
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -317,11 +311,11 @@ CompositeUpdater.prototype = {
     catch(queue){
         let { instance } = this;
         delete Refs.ignoreError; 
-        this._isDoctor = true;
         this._states.length = 0;
         this.children = {};
-        this._hydrating = true;
-        instance[catchHook].apply(instance, Refs.errorInfo);
+        this._isDoctor = this._hydrating = true;
+        instance.componentDidCatch.apply(instance, Refs.errorInfo);
+        delete Refs.errorInfo;
         this._hydrating = false;
         transfer.call(this, queue);
 
@@ -332,7 +326,7 @@ CompositeUpdater.prototype = {
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
         Refs.fireRef(vnode, null);
-        captureError(instance, disposeHook, []);
+        captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
