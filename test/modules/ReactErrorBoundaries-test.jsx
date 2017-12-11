@@ -559,7 +559,7 @@ describe("ReactErrorBoundaries", () => {
         var container1 = document.createElement("div");
         var container2 = document.createElement("div");
         var container3 = document.createElement("div");
-
+     
         ReactDOM.render(<span>Before 1</span>, container1);
         expect(() => {
             ReactDOM.render(<BrokenRender />, container2);

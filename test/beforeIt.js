@@ -24,7 +24,17 @@ var dddDIV = document.getElementById("aaa");
 var expect1 = function(a) {
     return {
         toBe: function(b) {
-            console.log(a, "\n\rvs\n\r",b, a === b);
+            console.log(a,"vs", b, a === b);
+        },
+        toEqual(b){
+            console.log(a,"vs", b, a +""=== b+"");
+        },
+        toThrow(b){
+            try{
+                a();
+            }catch(e){
+                console.log(e,"vs", b, e.message +""=== b+"");
+            }
         }
     };
 };

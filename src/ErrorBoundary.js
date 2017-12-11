@@ -4,12 +4,10 @@ import { noop } from "./util";
 import { catchHook, disposeHook } from "./CompositeUpdater";
 
 export function pushError(instance, hook, error) {
-    var names = [];
-
+    var names =[];
     var catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
     if (catchUpdater) {
-       
         disableHook(instance.updater); //禁止患者节点执行钩子
         Refs.errorInfo = [error, describeError(names, hook), instance];
         Refs.errorHook = hook;
@@ -66,9 +64,6 @@ function findCatchComponent(target, names) {
         updater,
         type,
         name;
-
-    Refs.errorUpdater = target.updater;
-
     do {
         type = vnode.type;
         if (vnode.isTop) {
@@ -81,7 +76,6 @@ function findCatchComponent(target, names) {
             if (instance[catchHook]) {
                 updater = instance.updater;
                 if (updater._isDoctor) {
-                    updater._isQuack = true;
                     disableHook(updater);
                 } else if (target !== instance ) {//|| updater.errHook === "componentDidMount"
                     return updater; //移交更上级的医师处理

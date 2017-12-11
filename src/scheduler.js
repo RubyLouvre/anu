@@ -39,8 +39,7 @@ export function drainQueue(queue) {
         }
         var doctor = Refs.doctor;
         if (doctor) {
-            var src = Refs.errorUpdater,
-                hook = Refs.errorHook,
+            var hook = Refs.errorHook,
                 gotoCreateRejectQueue,
                 addDoctor,
                 silent; //2时添加disposed，1直接变成disposed
@@ -57,7 +56,10 @@ export function drainQueue(queue) {
             case "componentWillUpdate":
             case "componentWillReceiveProps":
                 gotoCreateRejectQueue = true;//立即构建
-                queue.length = 0;
+                queue = queue.filter(function(el){
+                    return el._mountOrder < doctor._mountOrder;
+                });
+                //  queue.length = 0;
                 silent = 1;
                 addDoctor = true;
                 break;
