@@ -38,7 +38,7 @@ export function drainQueue(queue) {
             continue;
         }
         var doctor = Refs.doctor;
-        if (doctor) {
+        if (doctor) { //如果存在医生节点
             var hook = Refs.errorHook,
                 gotoCreateRejectQueue,
                 addDoctor,
@@ -59,7 +59,6 @@ export function drainQueue(queue) {
                 queue = queue.filter(function(el){
                     return el._mountOrder < doctor._mountOrder;
                 });
-                //  queue.length = 0;
                 silent = 1;
                 addDoctor = true;
                 break;
