@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-07
+ * by 司徒正美 Copyright 2017-12-11
  * IE9+
  */
 
@@ -11,6 +11,7 @@
 
 var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
 var innerHTML = "dangerouslySetInnerHTML";
+
 var emptyArray = [];
 var emptyObject = {};
 function deprecatedWarn(methodName) {
@@ -156,8 +157,12 @@ window.pendingRefs = pendingRefs;
 var Refs = {
     mountOrder: 1,
     currentOwner: null,
+    // errorHook: string,//发生错误的生命周期钩子
+    // errorInfo: [],    //已经构建好的错误信息
+    // doctor: null      //能够处理错误的最近组件
+    // error: null      
     fireRef: function fireRef(vnode, dom) {
-        if (vnode._disposed || vnode._stateless) {
+        if (vnode._disposed || vnode.stateNode.__isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
@@ -185,7 +190,6 @@ var Refs = {
 function Vnode(type, vtype, props, key, ref, _hasProps) {
     this.type = type;
     this.vtype = vtype;
-    this.hasMounted = false;
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -613,6 +617,9 @@ var recyclables = {
 };
 
 function removeElement(node) {
+    if (!node) {
+        return;
+    }
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -704,6 +711,74 @@ function insertElement(vnode, insertQueue) {
     }
 }
 
+var topVnodes = [];
+var topNodes = [];
+
+function disposeVnode(vnode, updateQueue, silent) {
+    if (vnode && !vnode._disposed) {
+        options.beforeDelete(vnode);
+        if (vnode.isTop) {
+            var i = topVnodes.indexOf(vnode);
+            if (i !== -1) {
+                topVnodes.splice(i, 1);
+                topNodes.splice(i, 1);
+            }
+        }
+        vnode._disposed = true;
+        if (vnode.vtype > 1) {
+            disposeComponent(vnode, updateQueue, silent);
+        } else {
+            if (vnode.vtype === 1) {
+                disposeElement(vnode, updateQueue, silent);
+            }
+            removeElement(vnode.stateNode);
+        }
+    }
+}
+
+function disposeElement(vnode, updateQueue, silent) {
+    var updater = vnode.updater;
+
+    if (!silent) {
+        updater.addState("dispose");
+        updateQueue.push(updater);
+    } else {
+        if (updater.isMounted()) {
+            updater._states = ["dispose"];
+            updateQueue.push(updater);
+        }
+    }
+    disposeChildren(updater.children, updateQueue, silent);
+}
+
+function disposeComponent(vnode, updateQueue, silent) {
+    var instance = vnode.stateNode;
+    if (!instance) {
+        //没有实例化
+        return;
+    }
+    var updater = instance.updater;
+    if (!silent) {
+        updater.addState("dispose");
+        updateQueue.push(updater);
+    } else if (updater.isMounted()) {
+        if (silent === 1) {
+            updater._states.length = 0;
+        }
+        updater.addState("dispose");
+        updateQueue.push(updater);
+    }
+
+    updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
+    disposeChildren(updater.children, updateQueue, silent);
+}
+
+function disposeChildren(children, updateQueue, silent) {
+    for (var i in children) {
+        disposeVnode(children[i], updateQueue, silent);
+    }
+}
+
 var dirtyComponents = [];
 function mountSorter(u1, u2) {
     //按文档顺序执行
@@ -722,34 +797,79 @@ function flushUpdaters() {
 
 function enqueueUpdater(updater) {
     if (!updater._dirty) {
-        updater.addJob("hydrate");
+        updater.addState("hydrate");
         updater._dirty = true;
         dirtyComponents.push(updater);
     }
 }
-
+var placehoder = {
+    transition: noop
+};
 function drainQueue(queue) {
     options.beforePatch();
-    //先执行所有元素虚拟DOMrefs方法（从上到下）
     var updater = void 0;
+
     while (updater = queue.shift()) {
-        //queue可能中途加入新元素,  因此不能直接使用queue.forEach(fn)
+        //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
             continue;
         }
-
-        //console.log(updater.name, updater._jobs+"");
-        updater.exec(queue);
-
-        var catchError = Refs.catchError;
-        if (catchError) {
-            delete Refs.catchError;
-            //执行错误边界的didMount/Update钩子
-            catchError.resolve(queue);
+        var doctor = Refs.doctor;
+        if (doctor) {
+            //如果存在医生节点
+            var hook = Refs.errorHook,
+                gotoCreateRejectQueue,
+                addDoctor,
+                silent; //2时添加disposed，1直接变成disposed
+            switch (hook) {
+                case "componentDidMount":
+                case "componentDidUpdate":
+                case "componentWillUnmount":
+                    gotoCreateRejectQueue = queue.length === 0; //拖到最后构建
+                    silent = 2;
+                    break;
+                case "render":
+                case "constructor":
+                case "componentWillMount":
+                case "componentWillUpdate":
+                case "componentWillReceiveProps":
+                    gotoCreateRejectQueue = true; //立即构建
+                    queue = queue.filter(function (el) {
+                        return el._mountOrder < doctor._mountOrder;
+                    });
+                    silent = 1;
+                    addDoctor = true;
+                    break;
+            }
+            if (gotoCreateRejectQueue) {
+                var rejectedQueue = [];
+                //收集要销毁的组件（要求必须resolved）
+                for (var i in doctor.children) {
+                    var child = doctor.children[i];
+                    disposeVnode(child, rejectedQueue, silent);
+                }
+                // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
+                // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
+                doctor.children = {};
+                if (addDoctor) {
+                    rejectedQueue.push(doctor);
+                    updater = placehoder;
+                }
+                doctor.addState("catch");
+                rejectedQueue.push(doctor);
+                delete Refs.doctor;
+                queue = rejectedQueue.concat(queue);
+            }
         }
+        updater.transition(queue);
     }
 
     options.afterPatch();
+    var error = Refs.error;
+    if (error) {
+        delete Refs.error;
+        throw error;
+    }
 }
 
 var globalEvents = {};
@@ -1325,107 +1445,40 @@ function createPortal(children, node) {
     return portal;
 }
 
-var topVnodes = [];
-var topNodes = [];
-
-function disposeVnode(vnode, updateQueue, silent) {
-    if (vnode && !vnode._disposed) {
-        options.beforeDelete(vnode);
-        if (vnode.isTop) {
-            var i = topVnodes.indexOf(vnode);
-            if (i !== -1) {
-                topVnodes.splice(i, 1);
-                topNodes.splice(i, 1);
-            }
-        }
-        vnode._disposed = true;
-        if (vnode.vtype > 1) {
-            disposeComponent(vnode, updateQueue, silent);
-        } else {
-            if (vnode.vtype === 1) {
-                disposeElement(vnode, updateQueue, silent);
-            }
-            removeElement(vnode.stateNode);
-            // delete vnode.stateNode;
-        }
-    }
-}
-
-function disposeElement(vnode, updateQueue, silent) {
-    var updater = vnode.updater;
-
-    if (!silent) {
-        updater.addJob("dispose");
-        updateQueue.push(updater);
-    } else {
-        console.log(vnode.ref + " xxx " + vnode._hasRef);
-        if (vnode._hasRef) {
-            Refs.fireRef(vnode, null);
-        }
-        delete vnode.ref;
-    }
-
-    disposeChildren(updater.children, updateQueue, silent);
-}
-
-function disposeComponent(vnode, updateQueue, silent) {
-    var instance = vnode.stateNode;
-    if (!instance) {
-        //没有实例化
-        return;
-    }
-    var updater = instance.updater;
-    if (!silent) {
-        updater.addJob("dispose");
-        updateQueue.push(updater);
-    } else {
-        //组件出错时，在医生节点下的那些组件，如果它们已经resolve过，那么还能执行will unmount钩子
-        if (updater.isMounted()) {
-            updater.dispose();
-        }
-        delete vnode.ref;
-    }
-
-    updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
-    disposeChildren(updater.children, updateQueue, silent);
-}
-
-function disposeChildren(children, updateQueue, silent) {
-    for (var i in children) {
-        disposeVnode(children[i], updateQueue, silent);
-    }
-}
-
-var catchHook = "componentDidCatch";
 function pushError(instance, hook, error) {
     var names = [];
-    instance._hasError = true;
     var catchUpdater = findCatchComponent(instance, names);
+    instance.updater._hasError = true;
     if (catchUpdater) {
-        //移除医生节点下方的所有真实节点
-        catchUpdater._hasCatch = [error, describeError(names, hook), instance];
-        var u = instance.updater;
-        u.hydrate = u.render = u.resolve = noop;
+        disableHook(instance.updater); //禁止患者节点执行钩子
+        Refs.errorInfo = [error, describeError(names, hook), instance];
+        Refs.errorHook = hook;
         var vnode = catchUpdater.vnode;
-        catchUpdater.children = {};
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        Refs.catchError = catchUpdater;
+        Refs.ignoreError = Refs.doctor = catchUpdater;
     } else {
-        //不做任何处理，遵循React15的逻辑
         console.warn(describeError(names, hook)); // eslint-disable-line
-        throw error;
+        //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
+        if (!Refs.error) {
+            Refs.error = error;
+        }
     }
 }
 function captureError(instance, hook, args) {
     try {
         var fn = instance[hook];
         if (fn) {
-            //&& !instance._hasError
             return fn.apply(instance, args);
         }
         return true;
     } catch (error) {
+        if (hook === disposeHook) {
+            instance[hook] = noop;
+        }
+        if (Refs.ignoreError) {
+            return;
+        }
         pushError(instance, hook, error);
     }
 }
@@ -1434,45 +1487,50 @@ function describeError(names, hook) {
         return "<" + componentName + " />";
     }).join(" created By ");
 }
-
+//让该组件不要再触发钩子
+function disableHook(u) {
+    u.hydrate = u.render = u.resolve = noop;
+}
 /**
- * 此方法遍历医生节点中所有updater,将它们的exec方法禁用，并收集沿途的标签名与组件名
+ * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
-function findCatchComponent(instance, names) {
-    var target = instance.updater.vnode;
+function findCatchComponent(target, names) {
+    var vnode = target.updater.vnode,
+        instance,
+        updater,
+        type,
+        name;
     do {
-        var type = target.type;
-        if (target.isTop) {
-            disposeVnode(target, [], true);
+        type = vnode.type;
+        if (vnode.isTop) {
+            disposeVnode(vnode, [], true);
             return;
-        } else if (target.vtype > 1) {
-            var name = type.displayName || type.name;
+        } else if (vnode.vtype > 1) {
+            name = type.displayName || type.name;
             names.push(name);
-            var dist = target.stateNode;
-            if (dist[catchHook]) {
-                if (dist._hasTry) {
-                    //治不好的医生要自杀
-                    dist._hasError = false;
-                    dist.updater.dispose();
-                } else if (dist !== instance) {
-                    var updater = dist.updater;
-                    for (var i in updater.children) {
-                        var child = updater.children[i];
-                        disposeVnode(child, [], true);
-                    }
-                    //自已不能治愈自己
+            instance = vnode.stateNode;
+            if (instance[catchHook]) {
+                updater = instance.updater;
+                if (updater._isDoctor) {
+                    disableHook(updater);
+                } else if (target !== instance) {
+                    //|| updater.errHook === "componentDidMount"
                     return updater; //移交更上级的医师处理
                 }
             }
-        } else if (target.vtype === 1) {
+        } else if (vnode.vtype === 1) {
             names.push(type);
         }
-    } while (target = target.return);
+    } while (vnode = vnode.return);
 }
 
 function alwaysNull() {
     return null;
 }
+var catchHook = "componentDidCatch";
+var disposeHook = "componentWillUnmount";
+var mountedHook = "componentDidMount";
+var updatedHook = "componentDidUpdate";
 var support16 = true;
 var errorType = {
     0: "undefined",
@@ -1502,7 +1560,7 @@ function CompositeUpdater(vnode, parentContext) {
     this.parentContext = parentContext;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._jobs = ["resolve"];
+    this._states = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
@@ -1511,16 +1569,16 @@ function CompositeUpdater(vnode, parentContext) {
 }
 
 CompositeUpdater.prototype = {
-    addJob: function addJob(newJob) {
-        var jobs = this._jobs;
-        if (jobs[jobs.length - 1] !== newJob) {
-            jobs.push(newJob);
+    addState: function addState(state) {
+        var states = this._states;
+        if (states[states.length - 1] !== state) {
+            states.push(state);
         }
     },
-    exec: function exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
+    transition: function transition(updateQueue) {
+        var state = this._states.shift();
+        if (state) {
+            this[state](updateQueue);
         }
     },
     enqueueSetState: function enqueueSetState(state, cb) {
@@ -1529,6 +1587,7 @@ CompositeUpdater.prototype = {
             this._forceUpdate = true;
         } else {
             //setState
+            console.log(state, "XXXX", this.name);
             this._pendingStates.push(state);
         }
         if (this._hydrating) {
@@ -1555,7 +1614,7 @@ CompositeUpdater.prototype = {
                 //componentWillReceiveProps中的setState/forceUpdate应该被忽略
                 return;
             }
-            this.addJob("hydrate");
+            this.addState("hydrate");
             drainQueue([this]);
         }
     },
@@ -1625,8 +1684,8 @@ CompositeUpdater.prototype = {
                 extend(instance, mixin);
             } else {
                 //不带生命周期的
-                vnode._stateless = true;
                 vnode.child = mixin;
+                instance.__isStateless = true;
                 this.mergeStates = alwaysNull;
                 this.willReceive = false;
             }
@@ -1654,6 +1713,9 @@ CompositeUpdater.prototype = {
             vnode = this.vnode,
             pendingVnode = this.pendingVnode;
 
+        if (this._states[0] === "hydrate") {
+            this._states.shift(); // ReactCompositeComponentNestedState-state
+        }
         var state = this.mergeStates();
         var shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
@@ -1677,6 +1739,9 @@ CompositeUpdater.prototype = {
 
             this._hookArgs = [lastProps, lastState];
         }
+        if (this._hasError) {
+            return;
+        }
         vnode.stateNode = instance;
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
@@ -1691,7 +1756,7 @@ CompositeUpdater.prototype = {
             }
             this.render(updateQueue);
         }
-        this.addJob("resolve");
+        this.addState("resolve");
         updateQueue.push(this);
     },
     render: function render(updateQueue) {
@@ -1718,9 +1783,8 @@ CompositeUpdater.prototype = {
         } else {
             var lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
-
             rendered = captureError(instance, "render", []);
-            if (instance._hasError) {
+            if (this._hasError) {
                 rendered = true;
             }
             Refs.currentOwner = lastOwn;
@@ -1746,23 +1810,20 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-
         options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve: function resolve(updateQueue) {
         var instance = this.instance,
-            _hasCatch = this._hasCatch,
             vnode = this.vnode;
 
         var hasMounted = this.isMounted();
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
-        vnode.hasMounted = true;
         if (this._hydrating) {
-            var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
+            var hookName = hasMounted ? updatedHook : mountedHook;
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -1774,25 +1835,8 @@ CompositeUpdater.prototype = {
             delete this._hydrating;
         }
 
-        if (_hasCatch) {
-            delete this._hasCatch;
-            instance._hasTry = true;
-            this._jobs.length = 0;
-            //收集它上方的updater,强行结束它们
-            updateQueue.length = 0;
-
-            var p = vnode.return;
-            do {
-                if (p.vtype > 1) {
-                    var u = p.stateNode.updater;
-                    u.addJob("resolve");
-                    updateQueue.push(u);
-                }
-            } while (p = p.return);
-
-            this._hydrating = true; //让它不要立即执行，先执行其他的
-            instance.componentDidCatch.apply(instance, _hasCatch);
-            this._hydrating = false;
+        if (this._hasError) {
+            return;
         } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
@@ -1803,20 +1847,19 @@ CompositeUpdater.prototype = {
                 fn.call(instance);
             });
         }
-        var cbs = this._nextCallbacks,
-            cb;
-        if (cbs && cbs.length) {
-            //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
-            do {
-                cb = cbs.shift();
-                if (isFn(cb)) {
-                    this._pendingCallbacks.push(cb);
-                }
-            } while (cbs.length);
-            delete this._nextCallbacks;
-            this.addJob("hydrate");
-            updateQueue.push(this);
-        }
+        transfer.call(this, updateQueue);
+    },
+    catch: function _catch(queue) {
+        var instance = this.instance;
+
+        delete Refs.ignoreError;
+        this._isDoctor = true;
+        this._states.length = 0;
+        this.children = {};
+        this._hydrating = true;
+        instance[catchHook].apply(instance, Refs.errorInfo);
+        this._hydrating = false;
+        transfer.call(this, queue);
     },
     dispose: function dispose() {
         var instance = this.instance;
@@ -1824,12 +1867,28 @@ CompositeUpdater.prototype = {
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
         Refs.fireRef(vnode, null);
-        captureError(instance, "componentWillUnmount", []);
+        captureError(instance, disposeHook, []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
     }
 };
+function transfer(queue) {
+    var cbs = this._nextCallbacks,
+        cb;
+    if (cbs && cbs.length) {
+        //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
+        do {
+            cb = cbs.shift();
+            if (isFn(cb)) {
+                this._pendingCallbacks.push(cb);
+            }
+        } while (cbs.length);
+        delete this._nextCallbacks;
+        this.addState("hydrate");
+        queue.push(this);
+    }
+}
 
 function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
@@ -2394,28 +2453,30 @@ function setOptionSelected(dom, selected) {
 
 function DOMUpdater(vnode) {
     this.name = vnode.type;
-    this._jobs = ["resolve"];
+    this._states = ["resolve"];
     this.vnode = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
 
 DOMUpdater.prototype = {
-    addJob: function addJob(newJob) {
-        var jobs = this._jobs;
-        if (jobs[jobs.length - 1] !== newJob) {
-            jobs.push(newJob);
+    addState: function addState(state) {
+        var states = this._states;
+        if (states[states.length - 1] !== state) {
+            states.push(state);
         }
     },
-    exec: function exec(updateQueue) {
-        var job = this._jobs.shift();
-        if (job) {
-            this[job](updateQueue);
+    transition: function transition(updateQueue) {
+        var state = this._states.shift();
+        if (state) {
+            this[state](updateQueue);
         }
     },
     init: function init(updateQueue) {
         updateQueue.push(this);
     },
+
+    isMounted: returnFalse,
     resolve: function resolve() {
         var vnode = this.vnode;
         var dom = vnode.stateNode;
@@ -2426,12 +2487,12 @@ DOMUpdater.prototype = {
         if (formElements[type]) {
             processFormElement(vnode, dom, props);
         }
-        vnode.hasMounted = true;
+        this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
     },
     dispose: function dispose() {
         var vnode = this.vnode;
-        Refs.fireRef(vnode);
+        Refs.fireRef(vnode, null);
         removeElement(vnode.stateNode);
         delete vnode.stateNode;
     }
@@ -2600,7 +2661,7 @@ function mountChildren(vnode, children, context, updateQueue, insertQueue) {
     for (var i in children) {
         var child = children[i];
         mountVnode(child, context, updateQueue, insertQueue);
-        if (Refs.catchError) {
+        if (Refs.doctor) {
             break;
         }
     }
@@ -2632,7 +2693,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertQueue) {
                 var nextChildren = fiberizeChildren(props.children, updater);
                 diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, []);
             }
-            updater.addJob("resolve");
+            updater.addState("resolve");
             updateQueue.push(updater);
         }
     } else {
@@ -2664,6 +2725,9 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     if (!updater._dirty) {
         updater._receiving = true;
         captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        if (updater._hasError) {
+            return;
+        }
         delete updater._receiving;
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.fireRef(lastVnode, null);
@@ -2739,10 +2803,10 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             return a.order - b.order;
         }).forEach(function (el) {
             updateQueue.push({
-                exec: Refs.fireRef.bind(null, el, null)
+                transition: Refs.fireRef.bind(null, el, null),
+                isMounted: noop
             });
         });
-
         for (var _i2 in nextChildren) {
             nextChild = nextChildren[_i2];
             lastChild = matchNodes[_i2];
@@ -2752,7 +2816,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 mountVnode(nextChild, parentContext, updateQueue, insertQueue);
             }
 
-            if (Refs.catchError) {
+            if (Refs.doctor) {
                 return;
             }
         }

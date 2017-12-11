@@ -187,6 +187,9 @@ CompositeUpdater.prototype = {
 
     hydrate(updateQueue, resetPoint) {
         let { instance, context, props, vnode, pendingVnode } = this;
+        if(this._states[0] === "hydrate"){
+            this._states.shift(); // ReactCompositeComponentNestedState-state
+        }
         let state = this.mergeStates();
         let shouldUpdate = true;
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
@@ -248,7 +251,6 @@ CompositeUpdater.prototype = {
         } else {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
-
             rendered = captureError(instance, "render", []);
             if (this._hasError) {
                 rendered = true;

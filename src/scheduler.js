@@ -33,7 +33,7 @@ export function drainQueue(queue) {
     let updater;
 
     while ((updater = queue.shift())) {
-        // console.log(updater.name, "执行" + updater._states + " 状态");
+        //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
             continue;
         }
@@ -65,7 +65,6 @@ export function drainQueue(queue) {
             }
             if (gotoCreateRejectQueue) {
                 var rejectedQueue = [];
-                console.log("开始构建错误列队", updater.name);
                 //收集要销毁的组件（要求必须resolved）
                 for (var i in doctor.children) {
                     var child = doctor.children[i];
