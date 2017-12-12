@@ -1,11 +1,7 @@
-import {createElement, win, fakeDoc,  DOMElement} from "src/browser";
-function getNs(){
-    console.log("不再使用");
-}
-describe("browser", function () {
+import { createElement, win, fakeDoc, DOMElement } from "src/browser";
 
-    it("window", function () {
-
+describe("browser", function() {
+    it("window", function() {
         expect(typeof win).toBe("object");
         expect(typeof win.document).toBe("object");
 
@@ -15,32 +11,15 @@ describe("browser", function () {
         expect(fakeDoc.createComment()).toA("boolean");
         expect(fakeDoc.textContent).toA("string");
     });
-    it("createElement", function () {
-        var a = createElement({type: "div"});
-        expect(typeof a).toBe("object");
-        expect(createElement({type: "span", ns: "xxx"}).nodeName.toLowerCase()).toBe("span");
 
+    it("createElement", function() {
+        var el = createElement({ type: "div" }, { vtype: 1 });
+        expect(typeof el).toBe("object");
+        expect(createElement({ type: "span", ns: "xxx" }, { vtype: 1 }).nodeName.toLowerCase()).toBe("span");
     });
-    it("getNs", function () {
-        return;
 
-        expect(getNs("svg")).toBe("http://www.w3.org/2000/svg");
-        /*
-        expect(getNs('use')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('path')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('rect')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('clipPath')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('circle')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('polyline')).toBe('http://www.w3.org/2000/svg')
-        expect(getNs('polygon')).toBe('http://www.w3.org/2000/svg')
-        */
-        expect(getNs("semantics")).toBe("http://www.w3.org/1998/Math/MathML");
-        expect(getNs("math")).toBe("http://www.w3.org/1998/Math/MathML");
-        expect(getNs("mo")).toBe("http://www.w3.org/1998/Math/MathML");
-        expect(getNs("menu")).toBe(null);
-    });
-    it("DOMElement", function () {
-        var el = fakeDoc.createElement("div");
+    it("DOMElement", function() {
+        var el = fakeDoc.createElement("div", { vtype: 1 });
         expect(el).toInstanceOf(DOMElement);
         expect(el.nodeName).toBe("div");
         expect(el.children).toA("array");
@@ -59,5 +38,4 @@ describe("browser", function () {
         expect(el.addEventListener).toA("function");
         expect(el.removeEventListener).toA("function");
     });
-
 });

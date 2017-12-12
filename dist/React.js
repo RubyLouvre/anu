@@ -649,7 +649,8 @@ var msie = document.documentMode || versions[typeNumber(document.all) + "" + typ
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 function createElement$1(vnode, p) {
-    var type = vnode.type;
+    var type = vnode.type,
+        ns;
     if (type === "#text") {
         //只重复利用文本节点
         var node = recyclables[type].pop();
@@ -662,29 +663,33 @@ function createElement$1(vnode, p) {
     if (type === "#comment") {
         return document.createComment(vnode.text);
     }
-    var ns = vnode.namespaceURI;
-    if (!ns) {
-        do {
-            if (p.vtype === 1) {
-                ns = p.namespaceURI;
-                break;
-            }
-        } while (p = p.return);
-    }
+
     if (type === "svg") {
         ns = NAMESPACE.svg;
     } else if (type === "math") {
         ns = NAMESPACE.math;
-    } else if (!ns || p.type.toLowerCase() === "foreignobject") {
-        return document.createElement(type);
+    } else {
+        ns = vnode.namespaceURI;
+        if (!ns) {
+            do {
+                if (p.vtype === 1) {
+                    ns = p.namespaceURI;
+                    if (p.type === "foreignObject") {
+                        ns = "";
+                    }
+                    break;
+                }
+            } while (p = p.return);
+        }
     }
     try {
-        vnode.namespaceURI = ns;
-        return document.createElementNS(ns, type);
+        if (ns) {
+            vnode.namespaceURI = ns;
+            return document.createElementNS(ns, type);
+        }
         //eslint-disable-next-line
-    } catch (e) {
-        return document.createElement(type);
-    }
+    } catch (e) {}
+    return document.createElement(type);
 }
 
 function insertElement(vnode, insertQueue) {
