@@ -406,9 +406,9 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const markup = ReactDOMServer.renderToString(stub);
-        expect(markup).toContain("<option selected=\"\" value=\"giraffe\"");
-        expect(markup).not.toContain("<option selected=\"\" value=\"monkey\"");
-        expect(markup).not.toContain("<option selected=\"\" value=\"gorilla\"");
+        expect(markup).toContain('<option selected="" value="giraffe"');
+        expect(markup).not.toContain('<option selected="" value="monkey"');
+        expect(markup).not.toContain('<option selected="" value="gorilla"');
     });
 
     it("should support server-side rendering with defaultValue", () => {
@@ -420,9 +420,9 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const markup = ReactDOMServer.renderToString(stub);
-        expect(markup).toContain("<option selected=\"\" value=\"giraffe\"");
-        expect(markup).not.toContain("<option selected=\"\" value=\"monkey\"");
-        expect(markup).not.toContain("<option selected=\"\" value=\"gorilla\"");
+        expect(markup).toContain('<option selected="" value="giraffe"');
+        expect(markup).not.toContain('<option selected="" value="monkey"');
+        expect(markup).not.toContain('<option selected="" value="gorilla"');
     });
 
     it("should support server-side rendering with multiple", () => {
@@ -434,14 +434,14 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const markup = ReactDOMServer.renderToString(stub);
-        expect(markup).toContain("<option selected=\"\" value=\"giraffe\"");
-        expect(markup).toContain("<option selected=\"\" value=\"gorilla\"");
-        expect(markup).not.toContain("<option selected=\"\" value=\"monkey\"");
+        expect(markup).toContain('<option selected="" value="giraffe"');
+        expect(markup).toContain('<option selected="" value="gorilla"');
+        expect(markup).not.toContain('<option selected="" value="monkey"');
     });
 
     it("should not control defaultValue if readding options", () => {
         //这个逻辑很怪
-        return 
+        return;
         const container = document.createElement("div");
 
         const select = ReactDOM.render(
@@ -563,9 +563,9 @@ describe("ReactDOMSelect", function() {
         );
         stub = ReactTestUtils.renderIntoDocument(stub);
         const node = ReactDOM.findDOMNode(stub);
-    
+
         ReactTestUtils.Simulate.change(node);
-    
+
         expect(node.value).toBe("giraffe");
     });
 
@@ -573,7 +573,7 @@ describe("ReactDOMSelect", function() {
         function changeView() {
             ReactDOM.unmountComponentAtNode(container);
         }
-    
+
         const container = document.createElement("div");
         let stub = (
             <select value="giraffe" onChange={changeView}>
@@ -584,7 +584,7 @@ describe("ReactDOMSelect", function() {
         );
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
-    
+
         expect(() => ReactTestUtils.Simulate.change(node)).not.toThrow();
     });
 
@@ -600,75 +600,141 @@ describe("ReactDOMSelect", function() {
         );
         const container = document.createElement("div");
         const node = ReactDOM.render(stub, container);
-    
+
         expect(node.options[0].selected).toBe(false); // a
         expect(node.options[1].selected).toBe(true); // b
         expect(node.options[2].selected).toBe(false); // c
     });
 
-    it('should allow controlling `value` in a nested render', () => {
+    it("should allow controlling `value` in a nested render", () => {
         let selectNode;
-    
+
         class Parent extends React.Component {
-          state = {
-            value: 'giraffe',
-          };
-    
-          componentDidMount() {
-            this._renderNested();
-          }
-    
-          componentDidUpdate() {
-            this._renderNested();
-          }
-    
-          _handleChange(event) {
-            this.setState({value: event.target.value});
-          }
-    
-          _renderNested() {
-            ReactDOM.render(
-              <select
-                onChange={this._handleChange.bind(this)}
-                ref={n => (selectNode = n)}
-                value={this.state.value}>
-                <option value="monkey">A monkey!</option>
-                <option value="giraffe">A giraffe!</option>
-                <option value="gorilla">A gorilla!</option>
-              </select>,
-              this._nestingContainer,
-            );
-          }
-    
-          render() {
-            return <div ref={n => (this._nestingContainer = n)} />;
-          }
+            state = {
+                value: "giraffe"
+            };
+
+            componentDidMount() {
+                this._renderNested();
+            }
+
+            componentDidUpdate() {
+                this._renderNested();
+            }
+
+            _handleChange(event) {
+                this.setState({ value: event.target.value });
+            }
+
+            _renderNested() {
+                ReactDOM.render(
+                    <select onChange={this._handleChange.bind(this)} ref={n => (selectNode = n)} value={this.state.value}>
+                        <option value="monkey">A monkey!</option>
+                        <option value="giraffe">A giraffe!</option>
+                        <option value="gorilla">A gorilla!</option>
+                    </select>,
+                    this._nestingContainer
+                );
+            }
+
+            render() {
+                return <div ref={n => (this._nestingContainer = n)} />;
+            }
         }
-    
-        const container = document.createElement('div');
-    
+
+        const container = document.createElement("div");
+
         document.body.appendChild(container);
-    
+
         ReactDOM.render(<Parent />, container);
-    
-        expect(selectNode.value).toBe('giraffe');
-    
-        selectNode.value = 'gorilla';
-    
-        let nativeEvent = document.createEvent('Event');
-        nativeEvent.initEvent('input', true, true);
+
+        expect(selectNode.value).toBe("giraffe");
+
+        selectNode.value = "gorilla";
+
+        let nativeEvent = document.createEvent("Event");
+        nativeEvent.initEvent("input", true, true);
         selectNode.dispatchEvent(nativeEvent);
-    
-        expect(selectNode.value).toEqual('gorilla');
-    
-        nativeEvent = document.createEvent('Event');
-        nativeEvent.initEvent('change', true, true);
+
+        expect(selectNode.value).toEqual("gorilla");
+
+        nativeEvent = document.createEvent("Event");
+        nativeEvent.initEvent("change", true, true);
         selectNode.dispatchEvent(nativeEvent);
-    
-        expect(selectNode.value).toEqual('gorilla');
-    
+
+        expect(selectNode.value).toEqual("gorilla");
+
         document.body.removeChild(container);
-      });
-    
-    
+    });
+
+    it("下拉菜单的options重排后确保selected正确", async () => {
+        class Select extends React.Component {
+            constructor() {
+                super();
+                this.state = {
+                    city: "bj",
+                    cities: [
+                        {
+                            value: "bj",
+                            text: "北京"
+                        },
+                        {
+                            value: "hj",
+                            text: "杭州"
+                        },
+                        {
+                            value: "nj",
+                            text: "南京"
+                        }
+                    ]
+                };
+            }
+            change() {
+                this.setState({
+                    cities: [
+                        {
+                            value: "hj",
+                            text: "杭州"
+                        },
+                        {
+                            value: "nj",
+                            text: "南京"
+                        },
+                        {
+                            value: "bj",
+                            text: "北京"
+                        }
+                    ]
+                });
+            }
+            handleCity(e) {
+                var value = e.target.value;
+                this.setState({ city: value });
+            }
+            render() {
+                return (
+                    <select name="city" id="node3" value={this.state.city} onChange={this.handleCity.bind(this)}>
+                        {this.state.cities.map(function(el, i) {
+                            return (
+                                <option value={el.value} ref={"o" + i}>
+                                    {el.text}
+                                </option>
+                            );
+                        })}
+                    </select>
+                );
+            }
+        }
+        var div = document.createElement("div");
+        var s = React.render(<Select />, div);
+
+        expect(s.refs.o0.text).toBe("北京");
+        expect(s.refs.o1.text).toBe("杭州");
+        expect(s.refs.o2.text).toBe("南京");
+        s.change();
+
+        expect(s.refs.o0.text).toBe("杭州");
+        expect(s.refs.o1.text).toBe("南京");
+        expect(s.refs.o2.text).toBe("北京");
+    });
 });

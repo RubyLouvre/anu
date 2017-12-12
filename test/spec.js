@@ -1,4 +1,4 @@
-/*
+
 import "./modules/createElement.spec";
 
 import "./modules/util.spec";
@@ -10,9 +10,9 @@ import "./modules/browser.spec";
 import "./modules/cloneElement.spec";
 
 require("./modules/context.spec.jsx");
-*/
+
 require("./modules/ReactDOMSVG-test.jsx");
-/*
+
 
 require("./modules/component.spec.jsx");
 
@@ -76,7 +76,7 @@ require("./modules/ReactES6Class-test.jsx");
 require("./modules/ReactErrorBoundaries-test.jsx");
 
 require("./modules/insert.jsx");
-*/
+
 /*
 
 用到selenium
