@@ -5,6 +5,7 @@
  反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
  */
 import { typeNumber } from "./util";
+
 export const formElements = {
     select: 1,
     textarea: 1,
@@ -76,7 +77,6 @@ export function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
-
         if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
             console.warn(`你为${vnode.type}[type=${domType}]元素指定了${duplexProp}属性，
@@ -95,8 +95,18 @@ export function processFormElement(vnode, dom, props) {
             }
             postUpdateSelectedOptions(vnode, dom);
         }
-    } else {
-        dom.duplexValue = props.value === undefined ? (typeNumber(props.children) > 4 ? dom.text : props.children) : props.value;
+    } else {//处理option标签
+        var arr = dom.children || [];
+        for(var i = 0, el; el = arr[i]; i++){
+            dom.removeChild(el);
+            i--;
+        }
+        if("value" in props){
+            dom.duplexValue = dom.value = props.value;
+            dom.duplexValue = dom.value;
+        }else{
+            dom.duplexValue = dom.text;
+        }
     }
 }
 

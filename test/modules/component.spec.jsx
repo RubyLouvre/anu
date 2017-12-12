@@ -214,114 +214,7 @@ describe("组件相关", function() {
         expect(s.refs.a.value).toBe("南京22");
         expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");
     });
-    it("多选下拉框", async () => {
-        class App extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    value: ["aaa", "ccc"]
-                };
-            }
-
-            onChange(e) {
-                var values = [];
-                var elems = e.target.getElementsByTagName("option");
-                for (var i = 0, el; (el = elems[i++]); ) {
-                    if (el.selected) {
-                        if (el.getAttribute("value") != null) {
-                            values.push(el.getAttribute("value"));
-                        } else {
-                            values.push(el.text);
-                        }
-                    }
-                }
-                this.setState({
-                    values: values
-                });
-            }
-            render() {
-                return (
-                    <select value={this.state.value} multiple="true" onChange={this.onChange.bind(this)}>
-                        <optgroup>
-                            <option ref="a">aaa</option>
-                            <option ref="b">bbb</option>
-                        </optgroup>
-                        <optgroup>
-                            <option ref="c">ccc</option>
-                            <option ref="d">ddd</option>
-                        </optgroup>
-                    </select>
-                );
-            }
-        }
-
-        var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
-        expect(s.refs.a.selected).toBe(true);
-        expect(s.refs.b.selected).toBe(false);
-        expect(s.refs.c.selected).toBe(true);
-        expect(s.refs.d.selected).toBe(false);
-        s.setState({
-            value: ["bbb", "ddd"]
-        });
-        await browser.pause(100).$apply();
-        expect(s.refs.a.selected).toBe(false);
-        expect(s.refs.b.selected).toBe(true);
-        expect(s.refs.c.selected).toBe(false);
-        expect(s.refs.d.selected).toBe(true);
-    });
-
-    it("多选下拉框defaultValue", function() {
-        class App extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    value: "ccc"
-                };
-            }
-
-            render() {
-                return (
-                    <select defaultValue={this.state.value}>
-                        <option ref="a">aaa</option>
-                        <option ref="b">bbb</option>
-                        <option ref="c">ccc</option>
-                        <option ref="d">ddd</option>
-                    </select>
-                );
-            }
-        }
-
-        var s = React.render(<App />, div);
-
-        expect(s.refs.c.selected).toBe(true);
-    });
-
-    it("多选下拉框没有defaultValue与ReactDOM.render的回调this指向问题", function() {
-        class App extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {};
-            }
-
-            render() {
-                return (
-                    <select>
-                        <option ref="a">aaa</option>
-                        <option ref="b">bbb</option>
-                        <option ref="c">ccc</option>
-                        <option ref="d">ddd</option>
-                    </select>
-                );
-            }
-        }
-
-        var s = React.render(<App />, div, function() {
-            expect(this.constructor.name).toBe("App");
-        });
-        expect(s.refs.a.selected).toBe(true);
-    });
-
+    
     it("一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount", function() {
         class App extends React.Component {
             constructor(props) {
@@ -398,18 +291,7 @@ describe("组件相关", function() {
         expect(destroyCount).toBe(0);
     });
 
-    it("select的准确匹配", function() {
-        var dom = ReactDOM.render(
-            <select value={222}>
-                <option value={111}>aaa</option>
-                <option value={"222"}>xxx</option>
-                <option value={222}>bbb</option>
-                <option value={333}>ccc</option>
-            </select>,
-            div
-        );
-        expect(dom.options[2].selected).toBe(true);
-    });
+   
     it("确保ref执行在componentDidMount之前", function() {
         var str = "";
         class Test extends React.Component {
@@ -661,4 +543,45 @@ describe("组件相关", function() {
         expect(b._owner.constructor).toBe(App);
         expect(c._owner.constructor).toBe(App);
     });
+
+
+
+    it('子组件的DOM节点改变了，会同步父节点的DOM',  () => {
+        var s, s2
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <A />
+            }
+        }
+        class A extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+            render() {
+                return <B />
+            }
+        }
+        class B extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    value: '3333'
+                };
+            }
+            componentDidMount() {
+                s2 = this
+            }
+            render() {
+                return this.state.value ? <div>111</div> : <strong>3333</strong>
+            }
+        }
+        var s = React.render(<App />, div);
+        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
+        s2.setState({value: 0});
+        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
+        expect(ReactDOM.findDOMNode(s).nodeName).toBe('STRONG');
+    })
 });

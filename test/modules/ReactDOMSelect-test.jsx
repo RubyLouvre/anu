@@ -1,13 +1,25 @@
 import React from "dist/React";
 import ReactTestUtils from "lib/ReactTestUtils";
 import ReactDOMServer from "dist/ReactDOMServer";
+import { constants } from "os";
 // https://github.com/facebook/react/blob/master/src/renderers/__tests__/EventPluginHub-test.js
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactDOMSelect", function() {
     this.timeout(200000);
     var noop = function() {};
-
+    var body = document.body,
+        div, container
+    beforeEach(function() {
+        div = document.createElement("div");
+        container = div
+        body.appendChild(div);
+    });
+    afterEach(function() {
+       
+        body.removeChild(div);
+        container = null
+    });
     it("should allow setting `defaultValue`", () => {
         let stub = (
             <select defaultValue="giraffe">
@@ -17,7 +29,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -36,7 +47,6 @@ describe("ReactDOMSelect", function() {
                 <option value="gorilla">A gorilla!</option>
             </select>
         );
-        const container = document.createElement("div");
         const stub = ReactDOM.render(el, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -57,7 +67,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -86,7 +95,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -111,7 +119,6 @@ describe("ReactDOMSelect", function() {
                 <option disabled={true}>Also Disabled</option>
             </select>
         );
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
         expect(node.options[0].selected).toBe(false);
@@ -127,7 +134,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -159,7 +165,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -189,7 +194,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -227,7 +231,6 @@ describe("ReactDOMSelect", function() {
 
     it("should reset child options selected when they are changed and `value` is set", () => {
         let stub = <select multiple={true} value={["a", "b"]} onChange={noop} />;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
 
         ReactDOM.render(
@@ -261,7 +264,6 @@ describe("ReactDOMSelect", function() {
                 <option value="gorilla">A gorilla!</option>
             </select>
         );
-        const container = document.createElement("div");
         const stub = ReactDOM.render(el, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -295,7 +297,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -325,7 +326,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -351,7 +351,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -375,7 +374,6 @@ describe("ReactDOMSelect", function() {
             </select>
         );
         const options = stub.props.children;
-        const container = document.createElement("div");
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
 
@@ -574,7 +572,6 @@ describe("ReactDOMSelect", function() {
             ReactDOM.unmountComponentAtNode(container);
         }
 
-        const container = document.createElement("div");
         let stub = (
             <select value="giraffe" onChange={changeView}>
                 <option value="monkey">A monkey!</option>
@@ -598,7 +595,6 @@ describe("ReactDOMSelect", function() {
                 </optgroup>
             </select>
         );
-        const container = document.createElement("div");
         const node = ReactDOM.render(stub, container);
 
         expect(node.options[0].selected).toBe(false); // a
@@ -642,10 +638,6 @@ describe("ReactDOMSelect", function() {
             }
         }
 
-        const container = document.createElement("div");
-
-        document.body.appendChild(container);
-
         ReactDOM.render(<Parent />, container);
 
         expect(selectNode.value).toBe("giraffe");
@@ -664,7 +656,7 @@ describe("ReactDOMSelect", function() {
 
         expect(selectNode.value).toEqual("gorilla");
 
-        document.body.removeChild(container);
+        
     });
 
     it("下拉菜单的options重排后确保selected正确", async () => {
@@ -725,8 +717,7 @@ describe("ReactDOMSelect", function() {
                 );
             }
         }
-        var div = document.createElement("div");
-        var s = React.render(<Select />, div);
+        var s = React.render(<Select />, container);
 
         expect(s.refs.o0.text).toBe("北京");
         expect(s.refs.o1.text).toBe("杭州");
@@ -736,5 +727,124 @@ describe("ReactDOMSelect", function() {
         expect(s.refs.o0.text).toBe("杭州");
         expect(s.refs.o1.text).toBe("南京");
         expect(s.refs.o2.text).toBe("北京");
+    });
+
+    it("带optgroup元素的多选下拉框", () => {
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    value: ["aaa", "ccc"]
+                };
+            }
+
+            onChange(e) {
+                var values = [];
+                var elems = e.target.getElementsByTagName("option");
+                for (var i = 0, el; (el = elems[i++]); ) {
+                    if (el.selected) {
+                        if (el.getAttribute("value") != null) {
+                            values.push(el.getAttribute("value"));
+                        } else {
+                            values.push(el.text);
+                        }
+                    }
+                }
+                this.setState({
+                    values: values
+                });
+            }
+            render() {
+                return (
+                    <select value={this.state.value} multiple="true" onChange={this.onChange.bind(this)}>
+                        <optgroup>
+                            <option ref="a">aaa</option>
+                            <option ref="b">bbb</option>
+                        </optgroup>
+                        <optgroup>
+                            <option ref="c">ccc</option>
+                            <option ref="d">ddd</option>
+                        </optgroup>
+                    </select>
+                );
+            }
+        }
+
+        var s = React.render(<App />, container);
+        expect(s.refs.a.selected).toBe(true);
+        expect(s.refs.b.selected).toBe(false);
+        expect(s.refs.c.selected).toBe(true);
+        expect(s.refs.d.selected).toBe(false);
+        s.setState({
+            value: ["bbb", "ddd"]
+        });
+        expect(s.refs.a.selected).toBe(false);
+        expect(s.refs.b.selected).toBe(true);
+        expect(s.refs.c.selected).toBe(false);
+        expect(s.refs.d.selected).toBe(true);
+    });
+
+    it("带defaultValue属性的多选下拉框", function() {
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    value: "ccc"
+                };
+            }
+
+            render() {
+                return (
+                    <select defaultValue={this.state.value}>
+                        <option ref="a">aaa</option>
+                        <option ref="b">bbb</option>
+                        <option ref="c">ccc</option>
+                        <option ref="d">ddd</option>
+                    </select>
+                );
+            }
+        }
+
+        var s = React.render(<App />, container);
+
+        expect(s.refs.c.selected).toBe(true);
+    });
+
+    it("多选下拉框没有defaultValue与ReactDOM.render的回调this指向问题", function() {
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {};
+            }
+
+            render() {
+                return (
+                    <select>
+                        <option ref="a">aaa</option>
+                        <option ref="b">bbb</option>
+                        <option ref="c">ccc</option>
+                        <option ref="d">ddd</option>
+                    </select>
+                );
+            }
+        }
+
+        var s = React.render(<App />, container, function() {
+            expect(this.constructor.name).toBe("App");
+        });
+        expect(s.refs.a.selected).toBe(true);
+    });
+
+    it("select的准确匹配", function() {
+        var dom = ReactDOM.render(
+            <select value={222}>
+                <option value={111}>aaa</option>
+                <option value={"222"}>xxx</option>
+                <option value={222}>bbb</option>
+                <option value={333}>ccc</option>
+            </select>,
+            container
+        );
+        expect(dom.options[2].selected).toBe(true);
     });
 });

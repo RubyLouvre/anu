@@ -1,6 +1,5 @@
 import React from "dist/React";
 import ReactTestUtils from "lib/ReactTestUtils";
-// https://github.com/facebook/react/blob/master/src/renderers/__tests__/EventPluginHub-test.js
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactDOMOption", function() {

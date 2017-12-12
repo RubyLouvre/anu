@@ -14,14 +14,15 @@ require("./modules/context.spec.jsx");
 require("./modules/ReactDOMSVG-test.jsx");
 
 
-require("./modules/component.spec.jsx");
 
 require("./modules/lifecycle.spec.jsx");
 
 require("./modules/diffProps.spec.jsx");
 
 require("./modules/ReactDOMSelect-test.jsx");
+require("./modules/ReactDOMOption-test.jsx");
 
+require("./modules/component.spec.jsx");
 
 
 require("./modules/event.spec.jsx");

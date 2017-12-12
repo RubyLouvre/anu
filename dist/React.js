@@ -709,9 +709,6 @@ function insertElement(vnode, insertQueue) {
 
     var dom = vnode.stateNode,
         insertPoint = insertQueue[0];
-    if (parentNode.nodeName === "OPTION" && dom.nodeType === 1) {
-        return;
-    }
     if (!insertPoint) {
         //如果没有插入点，则插入到当前父节点的第一个节点之前
         if (parentNode.firstChild === dom) {
@@ -2386,7 +2383,6 @@ function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
-
         if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
             console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\n      \u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u6765\u63A7\u5236" + duplexProp + "\u5C5E\u6027\u7684\u53D8\u5316\n      \u90A3\u4E48\u5B83\u5373\u4E3A\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
@@ -2404,7 +2400,18 @@ function processFormElement(vnode, dom, props) {
             postUpdateSelectedOptions(vnode, dom);
         }
     } else {
-        dom.duplexValue = props.value === undefined ? typeNumber(props.children) > 4 ? dom.text : props.children : props.value;
+        //处理option标签
+        var arr = dom.children || [];
+        for (var i = 0, el; el = arr[i]; i++) {
+            dom.removeChild(el);
+            i--;
+        }
+        if ("value" in props) {
+            dom.duplexValue = dom.value = props.value;
+            dom.duplexValue = dom.value;
+        } else {
+            dom.duplexValue = dom.text;
+        }
     }
 }
 
