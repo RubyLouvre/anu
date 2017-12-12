@@ -12,8 +12,7 @@ import "./modules/cloneElement.spec";
 require("./modules/context.spec.jsx");
 
 require("./modules/ReactDOMSVG-test.jsx");
-
-
+require("./modules/ReactDOMTextComponent-test.jsx");
 
 require("./modules/lifecycle.spec.jsx");
 
