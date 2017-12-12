@@ -5,9 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./lib/shallowCompare.js"></script>
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>
+   
+   <script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./test/react-dom.development.js"></script>
    
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -31,79 +33,76 @@
             var expect = function(a) {
                 return {
                     toBe: function(b) {
-                        console.log(a, "\n\rvs\n\r",b, a === b)
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                    toThrow(b){
+                        try{
+                            a()
+                        }catch(e){
+                            console.log(e,"vs", b, e.message +""=== b+"")
+                        }
                     }
                 }
             }
+           
+        const select = ReactDOM.render(
+            <select multiple={true} defaultValue={["giraffe"]}>
+                <option key="monkey" value="monkey">
+                    A monkey!
+                </option>
+                <option key="giraffe" value="giraffe">
+                    A giraffe!
+                </option>
+                <option key="gorilla" value="gorilla">
+                    A gorilla!
+                </option>
+            </select>,
+            container
+        );
+        const node = ReactDOM.findDOMNode(select);
 
-        var renderCalls = 0;
-        class PlasticWrap extends React.Component {
-            constructor(props, context) {
-                super(props, context);
-                this.state = {
-                    color: "green"
-                };
-            }
+        expect(node.options[0].selected).toBe(false); // monkey
+        expect(node.options[1].selected).toBe(true); // giraffe
+        expect(node.options[2].selected).toBe(false); // gorilla
 
-            render() {
-                return <Apple color={this.state.color} ref="apple" />;
-            }
-        }
+        ReactDOM.render(
+            <select multiple={true} defaultValue={["giraffe"]}>
+                <option key="monkey" value="monkey">
+                    A monkey!
+                </option>
+                <option key="gorilla" value="gorilla">
+                    A gorilla!
+                </option>
+            </select>,
+            container
+        );
 
-        class Apple extends React.Component {
-            state = {
-                cut: false,
-                slices: 1
-            };
+        expect(node.options[0].selected).toBe(false); // monkey
+        expect(node.options[1].selected).toBe(false); // gorilla
 
-            shouldComponentUpdate(nextProps, nextState) {
-                return shallowCompare(this, nextProps, nextState);
-            }
+        ReactDOM.render(
+            <select multiple={true} defaultValue={["giraffe"]}>
+                <option key="monkey" value="monkey">
+                    A monkey!
+                </option>
+                <option key="giraffe" value="giraffe">
+                    A giraffe!
+                </option>
+                <option key="gorilla" value="gorilla">
+                    A gorilla!
+                </option>
+            </select>,
+            container
+        );
 
-            cut() {
-                console.log("=====")
-                this.setState({
-                    cut: true,
-                    slices: 10
-                });
-            }
-
-            eatSlice() {
-                this.setState({
-                    slices: this.state.slices - 1
-                });
-            }
-
-            render() {
-                renderCalls++;
-                return <div />;
-            }
-        }
-
-        var instance = ReactDOM.render(<PlasticWrap />, container);
-        expect(renderCalls).toBe(1);
-
-        // Do not re-render based on props
-        instance.setState({ color: "green" });
-        expect(renderCalls).toBe(1);
-
-        // Re-render based on props
-        instance.setState({ color: "red" });
-        expect(renderCalls).toBe(2);
-        // Re-render base on state
-        instance.refs.apple.cut();
-        expect(renderCalls).toBe(3);
-/*
-        // No re-render based on state
-        instance.refs.apple.cut();
-        expect(renderCalls).toBe(3);
-
-        // Re-render based on state again
-        instance.refs.apple.eatSlice();
-        expect(renderCalls).toBe(4);
-        */
+        expect(node.options[0].selected).toBe(false); // monkey
+        expect(node.options[1].selected).toBe(false); // giraffe
+        expect(node.options[2].selected).toBe(false); // gorilla
           </script>
-
+ 
 
 </body>
     

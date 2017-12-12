@@ -1,11 +1,8 @@
 import { getChildContext, getContextByTypes } from "../src/CompositeUpdater";
-import { rnumber, cssNumber } from "../src/style";
-var React = typeof global === "object" ? global.React : window.React;
-var skipAttributes = {
-    ref: 1,
-    key: 1,
-    children: 1
-};
+import { fiberizeChildren } from "../src/createElement";
+import { typeNumber } from "../src/util";
+import { encodeEntities } from "./util";
+import { stringifyAttributes } from "./attributes";
 
 function renderVNode(vnode, context) {
     var { vtype, type, props } = vnode;
@@ -18,33 +15,29 @@ function renderVNode(vnode, context) {
         var innerHTML = props && props.dangerouslySetInnerHTML;
         innerHTML = innerHTML && innerHTML.__html;
         if (vtype === 1) {
-        //如果是元素节点
-            var attrs = [];
-            for (let name in props) {
-                var v = props[name];
-                if (
-                    skipAttributes[name] ||
-            (/^on[A-Z]/.test(name) && (skipAttributes[name] = true))
-                ) {
-                    continue;
-                }
-
-                if (name === "className" || name === "class") {
-                    name = "class";
-                    if (v && typeof v === "object") {
-                        v = hashToClassName(v);
+            //如果是元素节点
+            if (type === "option") {
+                //向上找到select元素
+                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {}
+                if (p && p.valuesSet) {
+                    var curValue = getOptionValue(vnode);
+                    if (p.valuesSet["&" + curValue]) {
+                        props = Object.assign({ selected: "" }, props); //添加一个selected属性
                     }
-                } else if (name.match(rXlink)) {
-                    name = name.toLowerCase().replace(rXlink, "xlink:$1");
-                } else if (name === "style" && v && typeof v === "object") {
-                    v = styleObjToCss(v);
                 }
-                if (skipFalseAndFunction(v)) {
-                    attrs.push(name + "=" + encodeAttributes(v + ""));
+            } else if (type === "select") {
+                var selectValue = vnode.props.value || vnode.props.defaultValue;
+                if (selectValue != null) {
+                    var values = [].concat(selectValue),
+                        valuesSet = {};
+                    values.forEach(function(el) {
+                        valuesSet["&" + el] = true;
+                    });
+                    vnode.valuesSet = valuesSet;
                 }
             }
-            attrs = attrs.length ? " " + attrs.join(" ") : "";
-            var str = "<" + type + attrs;
+
+            var str = "<" + type + stringifyAttributes(props);
             if (voidTags[type]) {
                 return str + "/>\n";
             }
@@ -52,14 +45,15 @@ function renderVNode(vnode, context) {
             if (innerHTML) {
                 str += innerHTML;
             } else {
-                //最近版本将虚拟DOM树结构调整了，children不一定为数组
-                React.Children.forEach(props.children, function(el) {
-                    if (el && el.vtype) {
-                        str += renderVNode(el, context);
-                    } else {
-                        str += el || "";
-                    }
-                });
+                var fakeUpdater = {
+                    vnode
+                };
+                var children = fiberizeChildren(props.children, fakeUpdater);
+                for (var i in children) {
+                    var child = children[i];
+                    str += renderVNode(child, context);
+                }
+                vnode.updater = fakeUpdater;
             }
             return str + "</" + type + ">\n";
         } else if (vtype > 1) {
@@ -69,72 +63,39 @@ function renderVNode(vnode, context) {
             vnode = toVnode(vnode, data);
             context = data.context;
             return renderVNode(vnode, context);
+        } else if (Array.isArray(vnode)) {
+            var multiChild = "";
+            vnode.forEach(function(el) {
+                multiChild += renderVNode(el, context);
+            });
+            return multiChild;
         } else {
             throw "数据不合法";
         }
     }
 }
 
-function hashToClassName(obj) {
-    var arr = [];
-    for (var i in obj) {
-        if (obj[i]) {
-            arr.push(i);
+function getOptionValue(option) {
+    if ("value" in option.props) {
+        return option.props.value;
+    } else {
+        var a = option.props.children;
+        if (a + "" === "a") {
+            return a;
+        } else {
+            return a.text;
         }
     }
-    return arr.join(" ");
-}
-const rXlink = /^xlink:?(.+)/;
-function skipFalseAndFunction(a) {
-    return a !== false && Object(a) !== a;
 }
 
-function styleObjToCss(obj) {
-    var arr = [];
-    for (var i in obj) {
-        var val = obj[i];
-        if (obj != null) {
-            var unit = "";
-            if (rnumber.test(val) && !cssNumber[name]) {
-                unit = "px";
-            }
-            arr.push(cssName(name) + ": " + val + unit);
-        }
-    }
-    return arr.join("; ");
-}
-const voidTags = [
-    "area",
-    "base",
-    "br",
-    "col",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr"
-];
-var cssCached = {
-    styleFloat: "float",
-    cssFloat: "float"
-};
+const voidTags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
 
-function cssName(name) {
-    if (cssCached[name]) {
-        return cssCached[name];
-    }
-
-    return (cssCached[name] = name.replace(/([A-Z])/g, "-$1").toLowerCase());
-}
-
-//===============重新实现transaction＝＝＝＝＝＝＝＝＝＝＝
-
-function toVnode(vnode, data, parentInstance) {
+/**
+ * 将组件虚拟DOM进行实例化，不断render，归化为元素虚拟DOM或文本节点或数组
+ * @param {*} vnode 组件虚拟DOM
+ * @param {*} data 一个包含context的对象
+ */
+function toVnode(vnode, data) {
     var parentContext = data.context,
         Type = vnode.type,
         instance,
@@ -147,7 +108,7 @@ function toVnode(vnode, data, parentInstance) {
         if (vnode.vtype === 4) {
             //处理无状态组件
             rendered = Type(props, instanceContext);
-            if(rendered && rendered.render){
+            if (rendered && rendered.render) {
                 rendered = rendered.render();
             }
             instance = {};
@@ -156,25 +117,15 @@ function toVnode(vnode, data, parentInstance) {
             instance = new Type(props, instanceContext);
             instance.props = instance.props || props;
             instance.context = instance.context || instanceContext;
-            if(instance.componentWillMount){
-                try{
+            if (instance.componentWillMount) {
+                try {
                     instance.componentWillMount();
-                }catch(e){}
+                } catch (e) {}
             }
             rendered = instance.render();
         }
-        if(rendered === null || rendered === false){
-            rendered = {
-                vtype: 0,
-                type: "#comment",
-                text: "empty"
-            };
-        }
-       
-        vnode._instance = instance;
-        if (parentInstance) {
-            instance.__parentInstance = parentInstance;
-        }
+
+        rendered = fixVnode(rendered);
 
         if (instance.componentWillMount) {
             instance.componentWillMount();
@@ -185,7 +136,13 @@ function toVnode(vnode, data, parentInstance) {
         if (instance.getChildContext) {
             data.context = getChildContext(instance, parentContext); //将context往下传
         }
-        return toVnode(rendered, data, instance);
+        if (Array.isArray(rendered)) {
+            return rendered.map(function(el) {
+                return toVnode(el, data, instance);
+            });
+        } else {
+            return toVnode(rendered, data, instance);
+        }
     } else {
         return vnode;
     }
@@ -193,76 +150,30 @@ function toVnode(vnode, data, parentInstance) {
 
 //==================实现序列化文本节点与属性值的相关方法=============
 
-var matchHtmlRegExp = /["'&<>]/;
-
-function escapeHtml(string) {
-    var str = "" + string;
-    var match = matchHtmlRegExp.exec(str);
-
-    if (!match) {
-        return str;
+function fixVnode(vnode) {
+    var number = typeNumber(vnode);
+    if (number < 3) {
+        // 0, 1, 2
+        return {
+            vtype: 0,
+            text: "",
+            type: "#text"
+        };
+    } else if (number < 5) {
+        //3, 4
+        return {
+            vtype: 0,
+            text: vnode + "",
+            type: "#text"
+        };
+    } else {
+        return vnode;
     }
-
-    var escape;
-    var html = "";
-    var index = 0;
-    var lastIndex = 0;
-
-    for (index = match.index; index < str.length; index++) {
-        switch (str.charCodeAt(index)) {
-        case 34:
-        // "
-            escape = "&quot;";
-            break;
-        case 38:
-        // &
-            escape = "&amp;";
-            break;
-        case 39:
-        // '
-            escape = "&#x27;"; // modified from escape-html; used to be '&#39'
-            break;
-        case 60:
-        // <
-            escape = "&lt;";
-            break;
-        case 62:
-        // >
-            escape = "&gt;";
-            break;
-        default:
-            continue;
-        }
-
-        if (lastIndex !== index) {
-            html += str.substring(lastIndex, index);
-        }
-
-        lastIndex = index + 1;
-        html += escape;
-    }
-
-    return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
-}
-
-function encodeEntities(text) {
-    if (typeof text === "boolean" || typeof text === "number") {
-        return "" + text;
-    }
-    return escapeHtml(text);
-}
-var attrCached = {};
-function encodeAttributes(value) {
-    if(attrCached[value]){
-        return attrCached[value];
-    }
-    return attrCached[value] = "\"" + encodeEntities(value) + "\"";
 }
 
 function renderToString(vnode, context) {
-    return renderVNode(vnode, context || {});
+    return renderVNode(fixVnode(vnode), context || {});
 }
-
 
 export default {
     renderToString,

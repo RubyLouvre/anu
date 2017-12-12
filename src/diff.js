@@ -193,7 +193,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertQueue) {
             }
             let updater = (nextVnode.updater = lastVnode.updater);
             updater.vnode = nextVnode;
-            updater.oldProps = lastVnode.props;
+            nextVnode.lastProps = lastVnode.props;
             let lastChildren = updater.children;
             let { props } = nextVnode;
             if (props[innerHTML]) {

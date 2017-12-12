@@ -136,7 +136,7 @@ function getSVGAttributeName(name) {
 
 
 export function diffProps(dom, lastProps, nextProps, vnode) {
-    options.beforeProps(vnode, lastProps);
+    options.beforeProps(vnode);
     let isSVG = vnode.namespaceURI === NAMESPACE.svg;
     let tag = vnode.type;
     //eslint-disable-next-line
@@ -272,7 +272,7 @@ export var actionStrategy = {
             } catch (e) {
                 dom.setAttribute(name, val);
             }
-            if (controlled[name]) {
+            if (controlled[name] && val ) {
                 dom._lastValue = val;
             }
         }

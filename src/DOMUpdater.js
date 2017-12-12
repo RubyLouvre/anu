@@ -32,8 +32,8 @@ DOMUpdater.prototype = {
     resolve(){
         var vnode = this.vnode;
         var dom = vnode.stateNode;
-        var { type, props} = vnode;
-        diffProps(dom, this.oldProps || {}, props, vnode);
+        var { type, props, lastProps} = vnode;
+        diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
             processFormElement(vnode, dom, props);
         }

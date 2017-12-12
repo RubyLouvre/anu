@@ -85,6 +85,14 @@ export function processFormElement(vnode, dom, props) {
             dom[eventName] = data[3];
         }
         if (duplexType === 3) {
+            var lastProps = vnode.lastProps || {};
+            if(!!lastProps.multiple !== !!props.multiple){
+                if(dom._hasSet === true){
+                    //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
+                    dom.selectedIndex = dom.selectedIndex; 
+                }
+                dom._hasSet = false;
+            }
             postUpdateSelectedOptions(vnode, dom);
         }
     } else {
@@ -119,25 +127,44 @@ function preventUserChange(e) {
     } else {
         updateOptionsOne(options, options.length, value);
     }
+    target._hasSet = true;
 }
 
 export function postUpdateSelectedOptions(vnode, target) {
     let props = vnode.props,
         multiple = !!props.multiple;
-    target._lastValue = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "";
+    if (typeNumber(props.value) > 1) {
+        target._lastValue = props.value;
+    } else if (typeNumber(props.defaultValue) > 1) {
+        if (target._hasSet) {
+            target._lastValue = multiple ? target._lastValue : target.value;
+        } else {
+            target._lastValue = props.defaultValue;
+        }
+    } else {
+        if(!target._lastValue){
+            target._lastValue = multiple ? [] : "";
+        }
+    }
     preventUserChange({
         target
     });
 }
 
 function updateOptionsOne(options, n, propValue) {
-    var stringValues = {};
+    var stringValues = {},
+        noDisableds = [];
     for (let i = 0; i < n; i++) {
         let option = options[i];
         let value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
         if (value === propValue) {
             //精确匹配
             return setOptionSelected(option, true);
+        }else{
+            // setOptionSelected(option, false);
         }
         stringValues[value] = option;
     }
@@ -147,8 +174,8 @@ function updateOptionsOne(options, n, propValue) {
         return setOptionSelected(match, true);
     }
     if (n) {
-        //选中第一个
-        setOptionSelected(options[0], true);
+        //选中第一个没有变disable的元素
+        setOptionSelected(noDisableds[0], true);
     }
 }
 

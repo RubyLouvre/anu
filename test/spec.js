@@ -12,11 +12,15 @@ import "./modules/cloneElement.spec";
 require("./modules/context.spec.jsx");
 
 require("./modules/component.spec.jsx");
-require("./modules/svg.spec.jsx");
+require("./modules/ReactDOMSVG-test.jsx");
 
 require("./modules/lifecycle.spec.jsx");
 
 require("./modules/diffProps.spec.jsx");
+
+require("./modules/ReactDOMSelect-test.jsx");
+
+
 
 require("./modules/event.spec.jsx");
 
@@ -61,9 +65,7 @@ require("./modules/ReactCompositeComponentDOMMinimalism-test.jsx");
 require("./modules/ReactCompositeComponentState-test.jsx");
 require("./modules/ReactElementClone-test.jsx");
 
-
 require("./modules/ReactDOM-test.jsx");
-
 
 require("./modules/findDOMNode-test.jsx");
 

@@ -2141,7 +2141,7 @@ function getSVGAttributeName(name) {
 }
 
 function diffProps(dom, lastProps, nextProps, vnode) {
-    options.beforeProps(vnode, lastProps);
+    options.beforeProps(vnode);
     var isSVG = vnode.namespaceURI === NAMESPACE.svg;
     var tag = vnode.type;
     //eslint-disable-next-line
@@ -2276,7 +2276,7 @@ var actionStrategy = {
             } catch (e) {
                 dom.setAttribute(name, val);
             }
-            if (controlled[name]) {
+            if (controlled[name] && val) {
                 dom._lastValue = val;
             }
         }
@@ -2379,6 +2379,14 @@ function processFormElement(vnode, dom, props) {
             dom[eventName] = data[3];
         }
         if (duplexType === 3) {
+            var lastProps = vnode.lastProps || {};
+            if (!!lastProps.multiple !== !!props.multiple) {
+                if (dom._hasSet === true) {
+                    //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
+                    dom.selectedIndex = dom.selectedIndex;
+                }
+                dom._hasSet = false;
+            }
             postUpdateSelectedOptions(vnode, dom);
         }
     } else {
@@ -2413,25 +2421,44 @@ function preventUserChange(e) {
     } else {
         updateOptionsOne(options$$1, options$$1.length, value);
     }
+    target._hasSet = true;
 }
 
 function postUpdateSelectedOptions(vnode, target) {
     var props = vnode.props,
         multiple = !!props.multiple;
-    target._lastValue = typeNumber(props.value) > 1 ? props.value : typeNumber(props.defaultValue) > 1 ? props.defaultValue : multiple ? [] : "";
+    if (typeNumber(props.value) > 1) {
+        target._lastValue = props.value;
+    } else if (typeNumber(props.defaultValue) > 1) {
+        if (target._hasSet) {
+            target._lastValue = multiple ? target._lastValue : target.value;
+        } else {
+            target._lastValue = props.defaultValue;
+        }
+    } else {
+        if (!target._lastValue) {
+            target._lastValue = multiple ? [] : "";
+        }
+    }
     preventUserChange({
         target: target
     });
 }
 
 function updateOptionsOne(options$$1, n, propValue) {
-    var stringValues = {};
+    var stringValues = {},
+        noDisableds = [];
     for (var i = 0; i < n; i++) {
         var option = options$$1[i];
         var value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
         if (value === propValue) {
             //精确匹配
             return setOptionSelected(option, true);
+        } else {
+            // setOptionSelected(option, false);
         }
         stringValues[value] = option;
     }
@@ -2441,8 +2468,8 @@ function updateOptionsOne(options$$1, n, propValue) {
         return setOptionSelected(match, true);
     }
     if (n) {
-        //选中第一个
-        setOptionSelected(options$$1[0], true);
+        //选中第一个没有变disable的元素
+        setOptionSelected(noDisableds[0], true);
     }
 }
 
@@ -2498,9 +2525,10 @@ DOMUpdater.prototype = {
         var vnode = this.vnode;
         var dom = vnode.stateNode;
         var type = vnode.type,
-            props = vnode.props;
+            props = vnode.props,
+            lastProps = vnode.lastProps;
 
-        diffProps(dom, this.oldProps || {}, props, vnode);
+        diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
             processFormElement(vnode, dom, props);
         }
@@ -2700,7 +2728,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertQueue) {
             }
             var updater = nextVnode.updater = lastVnode.updater;
             updater.vnode = nextVnode;
-            updater.oldProps = lastVnode.props;
+            nextVnode.lastProps = lastVnode.props;
             var lastChildren = updater.children;
             var props = nextVnode.props;
 
