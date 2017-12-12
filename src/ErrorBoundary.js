@@ -8,12 +8,20 @@ export function pushError(instance, hook, error) {
     instance.updater._hasError = true;
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        Refs.errorInfo = [error, describeError(names, hook), instance];
-        Refs.errorHook = hook;
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, describeError(names, hook), instance];
+        if( !Refs.errorHook){
+            Refs.errorHook = hook;
+            Refs.doctors = [catchUpdater];
+        }else{
+            if(Refs.doctors.indexOf(catchUpdater) === -1){
+                Refs.doctors.push(catchUpdater);
+            }
+        }
+       
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        Refs.ignoreError = Refs.doctor = catchUpdater;
+        // Refs.ignoreError = Refs.doctor = catchUpdater;
     } else {
         console.warn(describeError(names, hook)); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
@@ -33,9 +41,7 @@ export function captureError(instance, hook, args) {
         if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
-        if (Refs.ignoreError) {
-            return;
-        }
+     
         pushError(instance, hook, error);
     }
 }

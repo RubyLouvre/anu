@@ -12,10 +12,9 @@ import "./modules/cloneElement.spec";
 require("./modules/context.spec.jsx");
 
 require("./modules/component.spec.jsx");
+require("./modules/svg.spec.jsx");
 
 require("./modules/lifecycle.spec.jsx");
-
-require("./modules/svg.spec.jsx");
 
 require("./modules/diffProps.spec.jsx");
 
@@ -44,6 +43,7 @@ require("./modules/ReactStatelessComponent-test.jsx");
 
 
 require("./modules/ReactEmptyComponent-test.jsx");
+
 require("./modules/ReactIdentity-test.jsx");
 
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
@@ -70,3 +70,16 @@ require("./modules/findDOMNode-test.jsx");
 require("./modules/ReactES6Class-test.jsx");
 
 require("./modules/ReactErrorBoundaries-test.jsx");
+
+require("./modules/insert.jsx");
+
+/*
+
+用到selenium
+
+diffProps.spec
+component.spec
+event.spec
+node.spec
+redux.spec
+*/

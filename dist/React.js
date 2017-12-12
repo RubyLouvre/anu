@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-11
+ * by 司徒正美 Copyright 2017-12-12
  * IE9+
  */
 
@@ -159,8 +159,8 @@ var Refs = {
     currentOwner: null,
     // errorHook: string,//发生错误的生命周期钩子
     // errorInfo: [],    //已经构建好的错误信息
-    // doctor: null      //能够处理错误的最近组件
-    // error: null      
+    // doctors: null     //医生节点
+    // error: null       //第一个捕捉到的错误
     fireRef: function fireRef(vnode, dom) {
         if (vnode._disposed || vnode.stateNode.__isStateless) {
             dom = null;
@@ -814,10 +814,12 @@ function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-        var doctor = Refs.doctor;
-        if (doctor) {
+
+        var hook = Refs.errorHook;
+        if (hook) {
             //如果存在医生节点
-            var hook = Refs.errorHook,
+            var doctors = Refs.doctors,
+                doctor = doctors[0],
                 gotoCreateRejectQueue,
                 addDoctor,
                 silent; //2时添加disposed，1直接变成disposed
@@ -825,15 +827,19 @@ function drainQueue(queue) {
                 case "componentDidMount":
                 case "componentDidUpdate":
                 case "componentWillUnmount":
-                    gotoCreateRejectQueue = queue.length === 0; //拖到最后构建
+                    //render之后出错，拖动最后才构建错误列队
+
+                    gotoCreateRejectQueue = queue.length === 0;
+                    //console.log("跑到最后",doctors.length,gotoCreateRejectQueue);
                     silent = 2;
                     break;
-                case "render":
+                case "render": //render出错，说明还没有执行render
                 case "constructor":
                 case "componentWillMount":
                 case "componentWillUpdate":
                 case "componentWillReceiveProps":
-                    gotoCreateRejectQueue = true; //立即构建
+                    //render之前出错，会立即构建错误列队，然后加上医生节点之上的列队
+                    gotoCreateRejectQueue = true;
                     queue = queue.filter(function (el) {
                         return el._mountOrder < doctor._mountOrder;
                     });
@@ -842,22 +848,32 @@ function drainQueue(queue) {
                     break;
             }
             if (gotoCreateRejectQueue) {
+                delete Refs.error;
+                delete Refs.doctors;
+                delete Refs.errorHook;
                 var rejectedQueue = [];
                 //收集要销毁的组件（要求必须resolved）
-                for (var i in doctor.children) {
-                    var child = doctor.children[i];
-                    disposeVnode(child, rejectedQueue, silent);
-                }
+
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctor.children = {};
-                if (addDoctor) {
+                doctors.forEach(function (doctor, j) {
+                    for (var i in doctor.children) {
+                        var child = doctor.children[i];
+                        disposeVnode(child, rejectedQueue, silent);
+                    }
+                    console.log("rejectedQueue", rejectedQueue.length, j);
+                    doctor.children = {};
+                });
+                // rejectedQueue = Array.from(new Set(rejectedQueue));
+                doctors.forEach(function (doctor) {
+                    if (addDoctor) {
+                        rejectedQueue.push(doctor);
+                        updater = placehoder;
+                    }
+                    doctor.addState("catch");
                     rejectedQueue.push(doctor);
-                    updater = placehoder;
-                }
-                doctor.addState("catch");
-                rejectedQueue.push(doctor);
-                delete Refs.doctor;
+                });
+
                 queue = rejectedQueue.concat(queue);
             }
         }
@@ -1451,12 +1467,20 @@ function pushError(instance, hook, error) {
     instance.updater._hasError = true;
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        Refs.errorInfo = [error, describeError(names, hook), instance];
-        Refs.errorHook = hook;
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, describeError(names, hook), instance];
+        if (!Refs.errorHook) {
+            Refs.errorHook = hook;
+            Refs.doctors = [catchUpdater];
+        } else {
+            if (Refs.doctors.indexOf(catchUpdater) === -1) {
+                Refs.doctors.push(catchUpdater);
+            }
+        }
+
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        Refs.ignoreError = Refs.doctor = catchUpdater;
+        // Refs.ignoreError = Refs.doctor = catchUpdater;
     } else {
         console.warn(describeError(names, hook)); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
@@ -1473,12 +1497,10 @@ function captureError(instance, hook, args) {
         }
         return true;
     } catch (error) {
-        if (hook === disposeHook) {
+        if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
-        if (Refs.ignoreError) {
-            return;
-        }
+
         pushError(instance, hook, error);
     }
 }
@@ -1509,7 +1531,7 @@ function findCatchComponent(target, names) {
             name = type.displayName || type.name;
             names.push(name);
             instance = vnode.stateNode;
-            if (instance[catchHook]) {
+            if (instance.componentDidCatch) {
                 updater = instance.updater;
                 if (updater._isDoctor) {
                     disableHook(updater);
@@ -1527,10 +1549,6 @@ function findCatchComponent(target, names) {
 function alwaysNull() {
     return null;
 }
-var catchHook = "componentDidCatch";
-var disposeHook = "componentWillUnmount";
-var mountedHook = "componentDidMount";
-var updatedHook = "componentDidUpdate";
 var support16 = true;
 var errorType = {
     0: "undefined",
@@ -1587,7 +1605,6 @@ CompositeUpdater.prototype = {
             this._forceUpdate = true;
         } else {
             //setState
-            console.log(state, "XXXX", this.name);
             this._pendingStates.push(state);
         }
         if (this._hydrating) {
@@ -1823,7 +1840,7 @@ CompositeUpdater.prototype = {
             this.isMounted = returnTrue;
         }
         if (this._hydrating) {
-            var hookName = hasMounted ? updatedHook : mountedHook;
+            var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -1851,13 +1868,13 @@ CompositeUpdater.prototype = {
     },
     catch: function _catch(queue) {
         var instance = this.instance;
+        // delete Refs.ignoreError; 
 
-        delete Refs.ignoreError;
-        this._isDoctor = true;
         this._states.length = 0;
         this.children = {};
-        this._hydrating = true;
-        instance[catchHook].apply(instance, Refs.errorInfo);
+        this._isDoctor = this._hydrating = true;
+        instance.componentDidCatch.apply(instance, this.errorInfo);
+        delete this.errorInfo;
         this._hydrating = false;
         transfer.call(this, queue);
     },
@@ -1867,7 +1884,7 @@ CompositeUpdater.prototype = {
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
         Refs.fireRef(vnode, null);
-        captureError(instance, disposeHook, []);
+        captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
         this._disposed = true;
@@ -2661,7 +2678,7 @@ function mountChildren(vnode, children, context, updateQueue, insertQueue) {
     for (var i in children) {
         var child = children[i];
         mountVnode(child, context, updateQueue, insertQueue);
-        if (Refs.doctor) {
+        if (Refs.errorHook) {
             break;
         }
     }
@@ -2816,7 +2833,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
                 mountVnode(nextChild, parentContext, updateQueue, insertQueue);
             }
 
-            if (Refs.doctor) {
+            if (Refs.errorHook) {
                 return;
             }
         }

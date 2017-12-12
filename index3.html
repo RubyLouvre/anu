@@ -7,7 +7,7 @@
 
    <script type='text/javascript' src="./dist/React.js"></script>
 
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
+   <!--<script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
         <script type="text/babel">
@@ -434,7 +434,7 @@
                         logger(`${this.props.logName} render error`);
                         return this.props.renderError(this.state.error, this.props);
                     }
-
+                    
                     logger(`${this.props.logName} render success`);
                     return <div className="XXX">{this.props.children}</div>;
                 }
@@ -512,13 +512,50 @@
                     return <div>Caught an error: {this.props.message}.</div>;
                 }
             };
+   var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a,"vs", b, a === b)
+            },
+            toEqual(b){
+                console.log(a,"vs", b, a +""=== b+"")
+            },
+            toThrow(b){
+                try{
+                    a()
+                }catch(e){
+                    console.log(e,"vs", b, e.message +""=== b+"")
+                }
+            }
+        }
+    }
         </script>
 </head>
 
 <body>
     <div>开发者工具</div>
+    <xmp>
+       
+    </xmp>
     <pre>
-          
+        ["OuterErrorBoundary componentWillReceiveProps",
+         "OuterErrorBoundary componentWillUpdate",
+         "OuterErrorBoundary render success",
+         "InnerUnmountBoundary componentWillReceiveProps",
+         "InnerUnmountBoundary componentWillUpdate",
+         "InnerUnmountBoundary render success",
+         "BrokenRender constructor",
+         "BrokenRender componentWillMount",
+         "BrokenRender render [!]",
+         "InnerUnmountBoundary componentWillUnmount",
+         "InnerUpdateBoundary componentWillUnmount",
+         "BrokenComponentWillReceiveProps componentWillUnmount",
+         "BrokenComponentWillReceiveProps componentWillUnmount",
+         "OuterErrorBoundary componentDidUpdate",
+         "OuterErrorBoundary componentDidCatch",
+         "OuterErrorBoundary componentWillUpdate",
+         "OuterErrorBoundary render error",
+         "OuterErrorBoundary componentDidUpdate"]
   </pre>
     <div id='example'></div>
     <script type='text/babel'>
@@ -530,65 +567,90 @@
        window.ReactDOM = window.React;
    }
 
-   var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a,"vs", b, a === b)
-            },
-            toEqual(b){
-                console.log(a,"vs", b, a +""=== b+"")
-            }
-        }
-    }
     var body = document.body
-    var container = document.createElement("div");
+    function renderUnmountError(error) {
+        return <div>Caught an unmounting error: {error.message}.</div>;
+    }
+    function renderUpdateError(error) {
+        return <div>Caught an updating error: {error.message}.</div>;
+    }
+
+  // var container = document.createElement("div");
     ReactDOM.render(
-        <ErrorBoundary>
-            <BrokenComponentWillUnmount />
-            <BrokenComponentWillUnmount />
-            <Normal />
+        <ErrorBoundary logName="OuterErrorBoundary">
+            <ErrorBoundary logName="InnerUnmountBoundary" renderError={renderUnmountError}>
+               
+            </ErrorBoundary>
+            <ErrorBoundary logName="InnerUpdateBoundary" renderError={renderUpdateError}>
+                <BrokenComponentWillReceiveProps errorText="E3" />
+                <BrokenComponentWillReceiveProps errorText="E4" />
+            </ErrorBoundary>
         </ErrorBoundary>,
         container
     );
-    log.length = 0;
-    ReactDOM.render(
-        <ErrorBoundary>
-            <BrokenComponentWillUnmount />
-        </ErrorBoundary>,
-        container
-    );
-    expect(container.textContent).toBe("Caught an error: Hello.");
-    expect(log).toEqual([
-        "ErrorBoundary componentWillReceiveProps",
-        "ErrorBoundary componentWillUpdate",
-        "ErrorBoundary render success",
-        // Update existing child:
-        "BrokenComponentWillUnmount componentWillReceiveProps",
-        "BrokenComponentWillUnmount componentWillUpdate",
-        "BrokenComponentWillUnmount render",
-        // Unmounting throws:
-        "BrokenComponentWillUnmount componentWillUnmount [!]",
-        // Fiber proceeds with lifecycles despite errors
-        "Normal componentWillUnmount",
-        // The components have updated in this phase
-        "BrokenComponentWillUnmount componentDidUpdate",
-        "ErrorBoundary componentDidUpdate",
-        // Now that commit phase is done, Fiber unmounts the boundary's children
-        "BrokenComponentWillUnmount componentWillUnmount [!]",
-        "ErrorBoundary componentDidCatch",
-        // The initial render was aborted, so
-        // Fiber retries from the root.
-        "ErrorBoundary componentWillUpdate",
-        // Render an error now (stack will do it later)
-        "ErrorBoundary render error",
-        // Attempt to unmount previous child:
-        // Done
-        "ErrorBoundary componentDidUpdate"
-    ]);
+    
+    expect(log).toEqual(["OuterErrorBoundary constructor",
+     "OuterErrorBoundary componentWillMount",
+     "OuterErrorBoundary render success",
+     "InnerUnmountBoundary constructor",
+     "InnerUnmountBoundary componentWillMount",
+     "InnerUnmountBoundary render success",
+     "InnerUpdateBoundary constructor",
+     "InnerUpdateBoundary componentWillMount",
+     "InnerUpdateBoundary render success",
+     "BrokenComponentWillReceiveProps constructor",
+     "BrokenComponentWillReceiveProps componentWillMount",
+     "BrokenComponentWillReceiveProps render",
+     "BrokenComponentWillReceiveProps constructor",
+     "BrokenComponentWillReceiveProps componentWillMount",
+     "BrokenComponentWillReceiveProps render",
+     "InnerUnmountBoundary componentDidMount",
+     "BrokenComponentWillReceiveProps componentDidMount",
+     "BrokenComponentWillReceiveProps componentDidMount",
+     "InnerUpdateBoundary componentDidMount",
+     "OuterErrorBoundary componentDidMount"])
 
     log.length = 0;
-    ReactDOM.unmountComponentAtNode(container);
-    expect(log).toEqual(["ErrorBoundary componentWillUnmount"]);
+     
+    
+    ReactDOM.render(
+        <ErrorBoundary logName="OuterErrorBoundary">
+            <ErrorBoundary logName="InnerUnmountBoundary" renderError={renderUnmountError} />
+                <BrokenRender errorText="E1" />
+                <BrokenRender errorText="E2" />
+            <ErrorBoundary logName="InnerUpdateBoundary" renderError={renderUpdateError}>
+                <BrokenComponentWillReceiveProps errorText="E3" />
+                <BrokenComponentWillReceiveProps errorText="E4" />
+            </ErrorBoundary>
+        </ErrorBoundary>,
+        container
+    );
+
+    expect(container.firstChild.textContent).toBe("Caught an error: Hello.");
+    expect(log).toEqual([ "OuterErrorBoundary componentWillReceiveProps",
+    "OuterErrorBoundary componentWillUpdate",
+    "OuterErrorBoundary render success",
+    "InnerUnmountBoundary componentWillReceiveProps",
+    "InnerUnmountBoundary componentWillUpdate",
+    "InnerUnmountBoundary render success",
+    "BrokenRender constructor",
+    "BrokenRender componentWillMount",
+    "BrokenRender render [!]",
+    "InnerUnmountBoundary componentWillUnmount",
+    "InnerUpdateBoundary componentWillUnmount",
+    "BrokenComponentWillReceiveProps componentWillUnmount",
+    "BrokenComponentWillReceiveProps componentWillUnmount",
+    "OuterErrorBoundary componentDidUpdate",
+    "OuterErrorBoundary componentDidCatch",
+    "OuterErrorBoundary componentWillUpdate",
+    "OuterErrorBoundary render error",
+    "OuterErrorBoundary componentDidUpdate"
+    ]);
+
+   // log.length = 0;
+  //  ReactDOM.unmountComponentAtNode(container);
+  //  expect(log).toEqual(["OuterErrorBoundary componentWillUnmount", "InnerUnmountBoundary componentWillUnmount", "InnerUpdateBoundary componentWillUnmount"]);
+
 
     </script>
 

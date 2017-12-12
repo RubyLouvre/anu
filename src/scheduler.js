@@ -37,9 +37,12 @@ export function drainQueue(queue) {
         if (updater._disposed) {
             continue;
         }
-        var doctor = Refs.doctor;
-        if (doctor) { //如果存在医生节点
-            var hook = Refs.errorHook,
+       
+        var hook = Refs.errorHook;
+        if (hook) {
+            //如果存在医生节点
+            var doctors = Refs.doctors,
+                doctor = doctors[0],
                 gotoCreateRejectQueue,
                 addDoctor,
                 silent; //2时添加disposed，1直接变成disposed
@@ -47,16 +50,20 @@ export function drainQueue(queue) {
             case "componentDidMount":
             case "componentDidUpdate":
             case "componentWillUnmount":
-                gotoCreateRejectQueue = queue.length === 0;//拖到最后构建
+                //render之后出错，拖动最后才构建错误列队
+                
+                gotoCreateRejectQueue = queue.length === 0;
+                //console.log("跑到最后",doctors.length,gotoCreateRejectQueue);
                 silent = 2;
                 break;
-            case "render":
+            case "render": //render出错，说明还没有执行render
             case "constructor":
             case "componentWillMount":
             case "componentWillUpdate":
             case "componentWillReceiveProps":
-                gotoCreateRejectQueue = true;//立即构建
-                queue = queue.filter(function(el){
+                //render之前出错，会立即构建错误列队，然后加上医生节点之上的列队
+                gotoCreateRejectQueue = true;
+                queue = queue.filter(function(el) {
                     return el._mountOrder < doctor._mountOrder;
                 });
                 silent = 1;
@@ -65,23 +72,32 @@ export function drainQueue(queue) {
             }
             if (gotoCreateRejectQueue) {
                 delete Refs.error;
-                delete Refs.doctor;
+                delete Refs.doctors;
                 delete Refs.errorHook;
                 var rejectedQueue = [];
                 //收集要销毁的组件（要求必须resolved）
-                for (var i in doctor.children) {
-                    var child = doctor.children[i];
-                    disposeVnode(child, rejectedQueue, silent);
-                }
+               
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctor.children = {};
-                if (addDoctor) {
+                doctors.forEach(function(doctor, j){
+                    for (var i in doctor.children) {
+                        var child = doctor.children[i];
+                        disposeVnode(child, rejectedQueue, silent);
+                    }
+                    console.log("rejectedQueue",rejectedQueue.length, j);
+                    doctor.children = {};
+                    
+                });
+                // rejectedQueue = Array.from(new Set(rejectedQueue));
+                doctors.forEach(function(doctor){
+                    if (addDoctor) {
+                        rejectedQueue.push(doctor);
+                        updater = placehoder;
+                    }
+                    doctor.addState("catch");
                     rejectedQueue.push(doctor);
-                    updater = placehoder;
-                }
-                doctor.addState("catch");
-                rejectedQueue.push(doctor);
+                });
+        
                 queue = rejectedQueue.concat(queue);
             }
         }

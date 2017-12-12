@@ -5,8 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
-
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   
+  <!--<script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
    
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -35,55 +36,89 @@
                     }
                 }
             }
-            var list = [];
-            var logger = function(msg) {
-                return function() {
-                    // return true for shouldComponentUpdate
-                    list.push(msg);
-                    return true;
-                };
-            };
-            class Outer extends React.Component {
-                componentWillMount = logger("outer componentWillMount");
-                componentDidMount = logger("outer componentDidMount");
-                componentWillReceiveProps = logger("outer componentWillReceiveProps");
-                shouldComponentUpdate = logger("outer shouldComponentUpdate");
-                componentWillUpdate = logger("outer componentWillUpdate");
-                componentDidUpdate = logger("outer componentDidUpdate");
-                componentWillUnmount = logger("outer componentWillUnmount");
-                render() {
-                    return (
-                        <div>
-                            <Inner x={this.props.x} />
-                        </div>
-                    );
-                }
-            }
-    
-            class Inner extends React.Component {
-                componentWillMount = logger("inner componentWillMount");
-                componentDidMount = logger("inner componentDidMount");
-                componentWillReceiveProps = logger("inner componentWillReceiveProps");
-                shouldComponentUpdate = logger("inner shouldComponentUpdate");
-                componentWillUpdate = logger("inner componentWillUpdate");
-                componentDidUpdate = logger("inner componentDidUpdate");
-                componentWillUnmount = logger("inner componentWillUnmount");
-                render() {
-                    return <span>{this.props.x}</span>;
-                }
-            }
-    
-         
-            ReactDOM.render(<Outer x={17} />, container);
-            expect(list.join("\n")).toBe(["outer componentWillMount",
-             "inner componentWillMount",
-              "inner componentDidMount", 
-              "outer componentDidMount"].join("\n"));
-    
-          
-            
-          </script>
+            class ParentComponent extends React.Component {
+            state = { color: "blue" };
 
+            handleColor = color => {
+                this.props.logger("parent-handleColor", this.state.color);
+                this.setState({ color: color }, function() {
+                    this.props.logger("parent-setState-cb", this.state.color);
+                });
+            };
+
+            render() {
+                this.props.logger("parent-render", this.state.color);
+                return <ChildComponent logger={this.props.logger} color={this.state.color} onSelectColor={this.handleColor} />;
+            }
+        }
+
+        class ChildComponent extends React.Component {
+            constructor(props) {
+                super(props);
+                props.logger("getInitialState", props.color);
+                this.state = { hue: "dark " + props.color };
+            }
+
+            handleHue = (shade, color) => {
+                this.props.logger("handleHue", this.state.hue, this.props.color);
+                this.props.onSelectColor(color);
+                this.setState(
+                    function(state, props) {
+                        this.props.logger("setState-this", this.state.hue, this.props.color);
+                        this.props.logger("setState-args", state.hue, props.color);
+                        console.log("子组件要更新")
+                        return { hue: shade + " " + props.color };
+                    },
+                    function() {
+                        this.props.logger("child-setState-cb", this.state.hue, this.props.color);
+                    }
+                );
+            };
+
+            render() {
+                this.props.logger("render", this.state.hue, this.props.color);
+                return (
+                    <div>
+                        <button onClick={this.handleHue.bind(this, "dark", "blue")}>Dark Blue</button>
+                        <button onClick={this.handleHue.bind(this, "light", "blue")}>Light Blue</button>
+                        <button onClick={this.handleHue.bind(this, "dark", "green")}>Dark Green</button>
+                        <button onClick={this.handleHue.bind(this, "light", "green")}>Light Green</button>
+                    </div>
+                );
+            }
+        }
+
+        var container = document.createElement("div");
+        document.body.appendChild(container);
+        var list = [];
+        function logger() {
+            var str = [].slice.call(arguments, 0).join(" ")
+            console.log(str)
+            list.push(str);
+        }
+
+        void ReactDOM.render(<ParentComponent logger={logger} />, container);
+
+        // click "light green"
+        console.log("=======================")
+        container.childNodes[0].childNodes[3].click()
+        //console.log(JSON.stringify(logger.calls))
+        expect(list.join("\n")).toBe(
+            [
+                "parent-render blue",
+                "getInitialState blue",
+                "render dark blue blue",
+                "handleHue dark blue blue",
+                "parent-handleColor blue",
+                "parent-render green",
+                "setState-this dark blue blue",
+                "setState-args dark blue green",
+                "render light green green",
+                "child-setState-cb light green green",
+                "parent-setState-cb green"
+            ].join("\n")
+        );
+    </script>
 
 </body>
     

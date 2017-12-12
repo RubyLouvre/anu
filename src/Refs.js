@@ -9,7 +9,7 @@ export var Refs = {
     currentOwner: null,
     // errorHook: string,//发生错误的生命周期钩子
     // errorInfo: [],    //已经构建好的错误信息
-    // doctor: null      //能够处理错误的最近组件
+    // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
     fireRef(vnode, dom) {
         if (vnode._disposed || vnode.stateNode.__isStateless) {

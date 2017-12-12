@@ -310,12 +310,12 @@ CompositeUpdater.prototype = {
     },
     catch(queue){
         let { instance } = this;
-        delete Refs.ignoreError; 
+        // delete Refs.ignoreError; 
         this._states.length = 0;
         this.children = {};
         this._isDoctor = this._hydrating = true;
-        instance.componentDidCatch.apply(instance, Refs.errorInfo);
-        delete Refs.errorInfo;
+        instance.componentDidCatch.apply(instance, this.errorInfo);
+        delete this.errorInfo;
         this._hydrating = false;
         transfer.call(this, queue);
 
