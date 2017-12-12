@@ -648,7 +648,7 @@ var msie = document.documentMode || versions[typeNumber(document.all) + "" + typ
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
-function createElement$1(vnode, vparent) {
+function createElement$1(vnode, p) {
     var type = vnode.type;
     if (type === "#text") {
         //只重复利用文本节点
@@ -662,13 +662,20 @@ function createElement$1(vnode, vparent) {
     if (type === "#comment") {
         return document.createComment(vnode.text);
     }
-    var check = vparent || vnode;
-    var ns = check.namespaceURI;
+    var ns = vnode.namespaceURI;
+    if (!ns) {
+        do {
+            if (p.vtype === 1) {
+                ns = p.namespaceURI;
+                break;
+            }
+        } while (p = p.return);
+    }
     if (type === "svg") {
         ns = NAMESPACE.svg;
     } else if (type === "math") {
         ns = NAMESPACE.math;
-    } else if (!ns || check.type.toLowerCase() === "foreignobject") {
+    } else if (!ns || p.type.toLowerCase() === "foreignobject") {
         return document.createElement(type);
     }
     try {
@@ -1811,7 +1818,6 @@ CompositeUpdater.prototype = {
         if (hasMounted) {
             lastChildren = this.children;
         }
-
         if (number > 2) {
             if (number > 5) {
                 //array, object

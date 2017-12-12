@@ -256,7 +256,6 @@ CompositeUpdater.prototype = {
         if (hasMounted) {
             lastChildren = this.children;
         }
-
         if (number > 2) {
             if (number > 5) {
                 //array, object

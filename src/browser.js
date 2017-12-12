@@ -65,7 +65,7 @@ var recyclables = {
 };
 
 export function removeElement(node) {
-    if(!node) {
+    if (!node) {
         return;
     }
     if (node.nodeType === 1) {
@@ -96,7 +96,7 @@ export var msie = document.documentMode || versions[typeNumber(document.all) + "
 
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
-export function createElement(vnode, vparent) {
+export function createElement(vnode, p) {
     var type = vnode.type;
     if (type === "#text") {
         //只重复利用文本节点
@@ -110,13 +110,20 @@ export function createElement(vnode, vparent) {
     if (type === "#comment") {
         return document.createComment(vnode.text);
     }
-    var check = vparent || vnode;
-    var ns = check.namespaceURI;
+    var ns = vnode.namespaceURI;
+    if(!ns){
+        do {
+            if (p.vtype === 1) {
+                ns = p.namespaceURI;
+                break;
+            }
+        } while ((p = p.return));
+    }
     if (type === "svg") {
         ns = NAMESPACE.svg;
     } else if (type === "math") {
         ns = NAMESPACE.math;
-    } else if (!ns || check.type.toLowerCase() === "foreignobject") {
+    } else if (!ns || p.type.toLowerCase() === "foreignobject") {
         return document.createElement(type);
     }
     try {
@@ -129,11 +136,12 @@ export function createElement(vnode, vparent) {
 }
 
 export function insertElement(vnode, insertQueue) {
-    if(vnode._disposed) {
+    if (vnode._disposed) {
         return;
     }
     //找到可用的父节点
-    var p = vnode.return, parentNode;
+    var p = vnode.return,
+        parentNode;
     while (p) {
         if (p.vtype === 1) {
             parentNode = p.stateNode;
@@ -141,22 +149,22 @@ export function insertElement(vnode, insertQueue) {
         }
         p = p.return;
     }
-    
-    var dom = vnode.stateNode, insertPoint = insertQueue[0];
+
+    var dom = vnode.stateNode,
+        insertPoint = insertQueue[0];
     if (!insertPoint) {
         //如果没有插入点，则插入到当前父节点的第一个节点之前
-        if(parentNode.firstChild === dom){
+        if (parentNode.firstChild === dom) {
             return;
         }
         parentNode.insertBefore(dom, parentNode.firstChild);
     } else {
-        if(insertPoint.nextSibling === dom){
+        if (insertPoint.nextSibling === dom) {
             return;
         }
-        parentNode.insertBefore(dom, insertPoint.nextSibling); 
+        parentNode.insertBefore(dom, insertPoint.nextSibling);
     }
 }
-
 
 export function getComponentNodes(children, resolve, debug) {
     var ret = [];
