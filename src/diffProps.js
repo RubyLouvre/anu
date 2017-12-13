@@ -131,6 +131,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
         if (val !== lastProps[name]) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
+
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
@@ -186,8 +187,8 @@ var builtinStringProps = {
     title: 1,
     name: 1,
     alt: 1,
-    lang: 1,
-    value: 1
+    lang: 1
+    //  value: 1
 };
 
 controlledHook.observe = function(dom, name) {
@@ -197,41 +198,44 @@ controlledHook.observe = function(dom, name) {
             dom._hack = true;
             Object.defineProperty(dom, name, {
                 set: function(value) {
-                    if (name === "defaultValue") {
+                    if (dom.type === "textarea" && name === "defaultValue") {
                         dom.innerHTML = value;
                     }
-                    if (dom._observing) {
-                        //变动value/defaultXXX/innerHTML三方
-                        if (dom._userSet) {
-                            return;
+                    if (!dom._observing) {
+                        //注意defaultValue只会同步一次value
+                        if (!dom._setValue) {
+                            var parsedValue = dom[controllProp] = value;
+                            dom._lastValue = Array.isArray(value) ? value: parsedValue;
+                            dom._setValue = true;
                         }
-                        dom.__default = dom[controllProp] = value;
                     } else {
-                        dom._userSet = true;
-                        if (value == null) {
-                            dom._userSet = false;
-                        } //value/check不能变，只变defaultXXX
-                        dom.__default = value;
+                        //如果用户私下改变defaultValue，那么_setValue会被抺掉
+                        dom._setValue = value == null ? false : true;
                     }
+                    dom._defaultValue = value;
                 },
                 get: function() {
-                    return dom.__default;
-                }
+                    return dom._defaultValue;
+                },
+                configurable: true
             });
         }
     } catch (e) {}
     dom._observing = true;
 };
-controlledHook.stopObserve = function(dom) {
-    dom._observing = false;
-};
 
-var rform = /textarea|input/i;
-function uncontrolled(dom, name, val) {
+var rform = /textarea|input|select/i;
+function uncontrolled(dom, name, val, lastProps, vnode) {
     if (rform.test(dom.nodeName)) {
-        controlledHook.stopObserve(dom);
+        controlledHook.observe(dom, name); //绑定XXX
+        dom._observing = false;
+        if(vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple ){
+            //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
+            dom.selectedIndex = dom.selectedIndex;
+            dom._setValue = false;
+        }
         dom[name] = val;
-        controlledHook.observe(dom, name);
+        dom._observing = true;
     } else {
         dom.setAttribute(name, val);
     }

@@ -5,7 +5,6 @@
  都不会同步到视图
  */
 import { typeNumber } from "./util";
-
 export const formElements = {
     select: 1,
     textarea: 1,
@@ -21,8 +20,10 @@ var duplexData = {
             readOnly: 1,
             disabled: 1
         },
-        "oninput",
-        preventUserInput
+
+        preventUserInput,
+        "onchange",
+        "oninput"
     ],
     2: [
         "checked",
@@ -32,8 +33,9 @@ var duplexData = {
             readOnly: 1,
             disabled: 1
         },
-        "onclick",
-        preventUserClick
+
+        preventUserClick,
+        "onclick"
     ],
     3: [
         "value",
@@ -41,8 +43,9 @@ var duplexData = {
             onChange: 1,
             disabled: 1
         },
-        "onchange",
-        preventUserChange
+
+        preventUserChange,
+        "onchange"
     ]
 };
 
@@ -76,36 +79,31 @@ export function processFormElement(vnode, dom, props) {
         var data = duplexData[duplexType];
         var duplexProp = data[0];
         var keys = data[1];
-        var eventName = data[2];
-        if (duplexProp in props) {
-            if (dom._lastValue !== props[duplexProp]) {
-                if (props[duplexProp] == null) {
-                    dom._lastValue = void 666;
-                } else {
-                    dom._lastValue = dom[duplexProp] = props[duplexProp];
-                }
+        var cb = data[2];
+        var value = props[duplexProp];
+        if (vnode.type === "input") {
+            if(value == null && props.defaultValue != null ){
+                value = props.defaultValue;
             }
-
+            dom.setAttribute("value", "" + value);
+        }
+        if (duplexProp in props) {
+          
+            if(Array.isArray(value)){
+                dom._lastValue = value;
+            }else{
+                dom._lastValue = dom[duplexProp] = value;
+            }     
             if (!hasOtherControllProperty(props, keys)) {
                 // eslint-disable-next-line
                 console.warn(
                     `你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，因此框架不允许你通过输入改变该值`
                 );
-
-                dom[eventName] = data[3];
+                dom[data[3]] = cb;
+                dom[data[4]] = cb;
             }
         }
         if (duplexType === 3) {
-            var lastProps = vnode.lastProps || {};
-            if (dom._hasSet) {
-                if (!!lastProps.multiple !== !!props.multiple) {
-                    //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
-
-                    dom.selectedIndex = dom.selectedIndex;
-                    dom._hasSet = false;
-                    delete dom._lastValue;
-                }
-            }
             postUpdateSelectedOptions(vnode, dom);
         }
     } else {
@@ -125,8 +123,8 @@ export function processFormElement(vnode, dom, props) {
 }
 
 function hasOtherControllProperty(props, keys) {
-    for (var key in props) {
-        if (keys[key]) {
+    for (var key in keys) {
+        if (props[key]) {
             return true;
         }
     }
@@ -153,22 +151,18 @@ function preventUserChange(e) {
     } else {
         updateOptionsOne(options, options.length, value);
     }
-    target._hasSet = true;
+    target._setSelected = true;
 }
 
 export function postUpdateSelectedOptions(vnode, target) {
-    let props = vnode.props;
-    if (typeNumber(props.value) > 1) {
-        target._lastValue = props.value;
-    } else if (typeNumber(props.defaultValue) > 1) {
-        if (target._hasSet && !target.multiple) {
-            //只有在单选的情况，用户会乱修改select.value
-            if (target.value !== target._lastValue) {
-                target._lastValue = target.value;
-            }
+
+    if (target._setSelected && !target.multiple) {
+        //只有在单选的情况，用户会乱修改select.value
+        if (target.value !== target._lastValue) {
+            target._lastValue = target.value;
+            target._setValue = false;
         }
-        target._lastValue = "_lastValue" in target ? target._lastValue : props.defaultValue;
-    } 
+    }
     preventUserChange({
         target
     });
