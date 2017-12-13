@@ -1,5 +1,4 @@
 import React from "dist/React";
-import ReactTestUtils from "lib/ReactTestUtils";
 import ReactDOMServer from "dist/ReactDOMServer";
 //这里的测试可能与官方的有点不一样，因为不会产生多个文本节点
 describe("ReactDOMTextComponent", function() {

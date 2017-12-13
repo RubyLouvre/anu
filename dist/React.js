@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-12
+ * by 司徒正美 Copyright 2017-12-13
  * IE9+
  */
 
@@ -651,36 +651,45 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 function createElement$1(vnode, p) {
     var type = vnode.type,
         ns;
-    if (type === "#text") {
-        //只重复利用文本节点
-        var node = recyclables[type].pop();
-        if (node) {
-            node.nodeValue = vnode.text;
-            return node;
-        }
-        return document.createTextNode(vnode.text);
-    }
-    if (type === "#comment") {
-        return document.createComment(vnode.text);
-    }
-
-    if (type === "svg") {
-        ns = NAMESPACE.svg;
-    } else if (type === "math") {
-        ns = NAMESPACE.math;
-    } else {
-        ns = vnode.namespaceURI;
-        if (!ns) {
-            do {
-                if (p.vtype === 1) {
-                    ns = p.namespaceURI;
-                    if (p.type === "foreignObject") {
-                        ns = "";
+    switch (type) {
+        case "#text":
+            //只重复利用文本节点
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = vnode.text;
+                return node;
+            }
+            return document.createTextNode(vnode.text);
+        case "#comment":
+            return document.createComment(vnode.text);
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+        case "div":
+        case "span":
+        case "p":
+        case "tr":
+        case "td":
+        case "li":
+            ns = "";
+            break;
+        default:
+            ns = vnode.namespaceURI;
+            if (!ns) {
+                do {
+                    if (p.vtype === 1) {
+                        ns = p.namespaceURI;
+                        if (p.type === "foreignObject") {
+                            ns = "";
+                        }
+                        break;
                     }
-                    break;
-                }
-            } while (p = p.return);
-        }
+                } while (p = p.return);
+            }
+            break;
     }
     try {
         if (ns) {
@@ -840,9 +849,7 @@ function drainQueue(queue) {
                 case "componentDidUpdate":
                 case "componentWillUnmount":
                     //render之后出错，拖动最后才构建错误列队
-
                     gotoCreateRejectQueue = queue.length === 0;
-                    //console.log("跑到最后",doctors.length,gotoCreateRejectQueue);
                     silent = 2;
                     break;
                 case "render": //render出错，说明还没有执行render
@@ -873,7 +880,6 @@ function drainQueue(queue) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
                     }
-                    console.log("rejectedQueue", rejectedQueue.length, j);
                     doctor.children = {};
                 });
                 // rejectedQueue = Array.from(new Set(rejectedQueue));
@@ -2031,15 +2037,19 @@ function cssName(name, dom) {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+var controlledHook = {};
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
     value: 1,
-    defaultValue: 1
+    checked: 1
+    //  defaultValue: 1
 };
 
 var isSpecialAttr = {
     style: 1,
+    defaultValue: 1,
+    defaultChecked: 1,
     children: 1,
     innerHTML: 1,
     dangerouslySetInnerHTML: 1
@@ -2186,11 +2196,11 @@ function isBooleanAttr(dom, name) {
 }
 /**
  * 根据一个属性所在的元素或元素的文档类型，就可以永久决定该使用什么策略操作它
- * 
+ *
  * @param {any} dom 元素节点
  * @param {any} name 属性名
- * @param {any} isSVG 
- * @returns 
+ * @param {any} isSVG
+ * @returns
  */
 function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
@@ -2219,8 +2229,58 @@ var builtinStringProps = {
     lang: 1,
     value: 1
 };
+
+controlledHook.observe = function (dom, name) {
+    try {
+        var controllProp = name === "defaultValue" ? "value" : "checked";
+        if (!dom._hack) {
+            dom._hack = true;
+            Object.defineProperty(dom, name, {
+                set: function set(value) {
+                    if (name === "defaultValue") {
+                        dom.innerHTML = value;
+                    }
+                    if (dom._observing) {
+                        //变动value/defaultXXX/innerHTML三方
+                        if (dom._userSet) {
+                            return;
+                        }
+                        dom.__default = dom[controllProp] = value;
+                    } else {
+                        dom._userSet = true;
+                        if (value == null) {
+                            dom._userSet = false;
+                        } //value/check不能变，只变defaultXXX
+                        dom.__default = value;
+                    }
+                },
+                get: function get() {
+                    return dom.__default;
+                }
+            });
+        }
+    } catch (e) {}
+    dom._observing = true;
+};
+controlledHook.stopObserve = function (dom) {
+    dom._observing = false;
+};
+
+var rform = /textarea|input/i;
+function uncontrolled(dom, name, val) {
+    if (rform.test(dom.nodeName)) {
+        controlledHook.stopObserve(dom);
+        dom[name] = val;
+        controlledHook.observe(dom, name);
+    } else {
+        dom.setAttribute(name, val);
+    }
+}
+
 var actionStrategy = {
     innerHTML: noop,
+    defaultValue: uncontrolled,
+    defaultChecked: uncontrolled,
     children: noop,
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
@@ -2269,26 +2329,23 @@ var actionStrategy = {
         }
     },
     property: function property(dom, name, val) {
-        if (name !== "value" || dom[name] !== val) {
+        if (dom[name] !== val) {
             // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
             // 这时如果用 setAttribute 则会静默失败
             try {
                 if (!val && val !== 0) {
                     //如果它是字符串属性，并且不等于""，清空
-                    // if (typeNumber(dom[name]) === 4 && dom[name] !== "") {
                     if (builtinStringProps[name]) {
                         dom[name] = "";
                     }
-                    // }
                     dom.removeAttribute(name);
                 } else {
-                    dom[name] = val;
+                    if (!controlled[name]) {
+                        dom[name] = val;
+                    }
                 }
             } catch (e) {
                 dom.setAttribute(name, val);
-            }
-            if (controlled[name] && val) {
-                dom._lastValue = val;
             }
         }
     },
@@ -2322,10 +2379,10 @@ var actionStrategy = {
 };
 
 /**
- input, select, textarea这几个元素如果指定了value/checked的**状态属性**，就会包装成受控组件或非受控组件
- 受控组件是指，用户除了为它指定**状态属性**，还为它指定了onChange/onInput/disabled等用于控制此状态属性
- 变动的属性
- 反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
+ React对input, select, textarea进行了特殊处理，如果它指定了value/checked等受控属性，那么它需要添加onChange
+ onInput方法才能改变值的变动，否则框架会阻止你改变它。
+ 若你对这些元素指定了defaultValue/defaultChecked等非受控属性，那么它们只会作用于视图一次，以后你改变JSX上的值，
+ 都不会同步到视图
  */
 var formElements = {
     select: 1,
@@ -2383,19 +2440,32 @@ function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
-        if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
-            // eslint-disable-next-line
-            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86" + duplexProp + "\u5C5E\u6027\uFF0C\n      \u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\u6765\u63A7\u5236" + duplexProp + "\u5C5E\u6027\u7684\u53D8\u5316\n      \u90A3\u4E48\u5B83\u5373\u4E3A\u4E00\u4E2A\u975E\u53D7\u63A7\u7EC4\u4EF6\uFF0C\u7528\u6237\u65E0\u6CD5\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u5143\u7D20\u7684" + duplexProp + "\u503C");
-            dom[eventName] = data[3];
+        if (duplexProp in props) {
+            if (dom._lastValue !== props[duplexProp]) {
+                if (props[duplexProp] == null) {
+                    dom._lastValue = void 666;
+                } else {
+                    dom._lastValue = dom[duplexProp] = props[duplexProp];
+                }
+            }
+
+            if (!hasOtherControllProperty(props, keys)) {
+                // eslint-disable-next-line
+                console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\u56E0\u6B64\b\u6846\u67B6\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
+
+                dom[eventName] = data[3];
+            }
         }
         if (duplexType === 3) {
             var lastProps = vnode.lastProps || {};
-            if (!!lastProps.multiple !== !!props.multiple) {
-                if (dom._hasSet === true) {
+            if (dom._hasSet) {
+                if (!!lastProps.multiple !== !!props.multiple) {
                     //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
+
                     dom.selectedIndex = dom.selectedIndex;
+                    dom._hasSet = false;
+                    delete dom._lastValue;
                 }
-                dom._hasSet = false;
             }
             postUpdateSelectedOptions(vnode, dom);
         }
@@ -2426,7 +2496,9 @@ function hasOtherControllProperty(props, keys) {
 function preventUserInput(e) {
     var target = e.target;
     var name = e.type === "textarea" ? "innerHTML" : "value";
-    target[name] = target._lastValue;
+    if (target._lastValue != null) {
+        target[name] = target._lastValue;
+    }
 }
 
 function preventUserClick(e) {
@@ -2446,20 +2518,17 @@ function preventUserChange(e) {
 }
 
 function postUpdateSelectedOptions(vnode, target) {
-    var props = vnode.props,
-        multiple = !!props.multiple;
+    var props = vnode.props;
     if (typeNumber(props.value) > 1) {
         target._lastValue = props.value;
     } else if (typeNumber(props.defaultValue) > 1) {
-        if (target._hasSet) {
-            target._lastValue = multiple ? target._lastValue : target.value;
-        } else {
-            target._lastValue = props.defaultValue;
+        if (target._hasSet && !target.multiple) {
+            //只有在单选的情况，用户会乱修改select.value
+            if (target.value !== target._lastValue) {
+                target._lastValue = target.value;
+            }
         }
-    } else {
-        if (!target._lastValue) {
-            target._lastValue = multiple ? [] : "";
-        }
+        target._lastValue = "_lastValue" in target ? target._lastValue : props.defaultValue;
     }
     preventUserChange({
         target: target

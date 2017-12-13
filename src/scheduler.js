@@ -51,9 +51,7 @@ export function drainQueue(queue) {
             case "componentDidUpdate":
             case "componentWillUnmount":
                 //render之后出错，拖动最后才构建错误列队
-                
                 gotoCreateRejectQueue = queue.length === 0;
-                //console.log("跑到最后",doctors.length,gotoCreateRejectQueue);
                 silent = 2;
                 break;
             case "render": //render出错，说明还没有执行render
@@ -84,7 +82,6 @@ export function drainQueue(queue) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
                     }
-                    console.log("rejectedQueue",rejectedQueue.length, j);
                     doctor.children = {};
                     
                 });

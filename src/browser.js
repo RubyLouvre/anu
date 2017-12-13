@@ -99,7 +99,8 @@ export var modern = /NaN|undefined/.test(msie) || msie > 8;
 export function createElement(vnode, p) {
     var type = vnode.type,
         ns;
-    if (type === "#text") {
+    switch (type) {
+    case "#text":
         //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
@@ -107,16 +108,23 @@ export function createElement(vnode, p) {
             return node;
         }
         return document.createTextNode(vnode.text);
-    }
-    if (type === "#comment") {
+    case "#comment":
         return document.createComment(vnode.text);
-    }
-
-    if (type === "svg") {
+    case "svg":
         ns = NAMESPACE.svg;
-    } else if (type === "math") {
+        break;
+    case "math":
         ns = NAMESPACE.math;
-    } else {
+        break;
+    case "div":
+    case "span":
+    case "p":
+    case "tr":
+    case "td":
+    case "li":
+        ns = "";
+        break;
+    default:
         ns = vnode.namespaceURI;
         if (!ns) {
             do {
@@ -129,6 +137,7 @@ export function createElement(vnode, p) {
                 }
             } while ((p = p.return));
         }
+        break;
     }
     try {
         if (ns) {

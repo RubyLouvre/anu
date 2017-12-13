@@ -1,8 +1,8 @@
 /**
- input, select, textarea这几个元素如果指定了value/checked的**状态属性**，就会包装成受控组件或非受控组件
- 受控组件是指，用户除了为它指定**状态属性**，还为它指定了onChange/onInput/disabled等用于控制此状态属性
- 变动的属性
- 反之，它就是非受控组件，非受控组件会在框架内部添加一些事件，阻止**状态属性**被用户的行为改变，只能被setState改变
+ React对input, select, textarea进行了特殊处理，如果它指定了value/checked等受控属性，那么它需要添加onChange
+ onInput方法才能改变值的变动，否则框架会阻止你改变它。
+ 若你对这些元素指定了defaultValue/defaultChecked等非受控属性，那么它们只会作用于视图一次，以后你改变JSX上的值，
+ 都不会同步到视图
  */
 import { typeNumber } from "./util";
 
@@ -77,34 +77,48 @@ export function processFormElement(vnode, dom, props) {
         var duplexProp = data[0];
         var keys = data[1];
         var eventName = data[2];
-        if (duplexProp in props && !hasOtherControllProperty(props, keys)) {
-            // eslint-disable-next-line
-            console.warn(`你为${vnode.type}[type=${domType}]元素指定了${duplexProp}属性，
-      但是没有提供另外的${Object.keys(keys)}来控制${duplexProp}属性的变化
-      那么它即为一个非受控组件，用户无法通过输入改变元素的${duplexProp}值`);
-            dom[eventName] = data[3];
+        if (duplexProp in props) {
+            if (dom._lastValue !== props[duplexProp]) {
+                if (props[duplexProp] == null) {
+                    dom._lastValue = void 666;
+                } else {
+                    dom._lastValue = dom[duplexProp] = props[duplexProp];
+                }
+            }
+
+            if (!hasOtherControllProperty(props, keys)) {
+                // eslint-disable-next-line
+                console.warn(
+                    `你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，因此框架不允许你通过输入改变该值`
+                );
+
+                dom[eventName] = data[3];
+            }
         }
         if (duplexType === 3) {
             var lastProps = vnode.lastProps || {};
-            if(!!lastProps.multiple !== !!props.multiple){
-                if(dom._hasSet === true){
+            if (dom._hasSet) {
+                if (!!lastProps.multiple !== !!props.multiple) {
                     //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
-                    dom.selectedIndex = dom.selectedIndex; 
+
+                    dom.selectedIndex = dom.selectedIndex;
+                    dom._hasSet = false;
+                    delete dom._lastValue;
                 }
-                dom._hasSet = false;
             }
             postUpdateSelectedOptions(vnode, dom);
         }
-    } else {//处理option标签
+    } else {
+        //处理option标签
         var arr = dom.children || [];
-        for(var i = 0, el; el = arr[i]; i++){
+        for (var i = 0, el; (el = arr[i]); i++) {
             dom.removeChild(el);
             i--;
         }
-        if("value" in props){
+        if ("value" in props) {
             dom.duplexValue = dom.value = props.value;
             dom.duplexValue = dom.value;
-        }else{
+        } else {
             dom.duplexValue = dom.text;
         }
     }
@@ -121,7 +135,9 @@ function hasOtherControllProperty(props, keys) {
 function preventUserInput(e) {
     var target = e.target;
     var name = e.type === "textarea" ? "innerHTML" : "value";
-    target[name] = target._lastValue;
+    if (target._lastValue != null) {
+        target[name] = target._lastValue;
+    }
 }
 
 function preventUserClick(e) {
@@ -141,21 +157,18 @@ function preventUserChange(e) {
 }
 
 export function postUpdateSelectedOptions(vnode, target) {
-    let props = vnode.props,
-        multiple = !!props.multiple;
+    let props = vnode.props;
     if (typeNumber(props.value) > 1) {
         target._lastValue = props.value;
     } else if (typeNumber(props.defaultValue) > 1) {
-        if (target._hasSet) {
-            target._lastValue = multiple ? target._lastValue : target.value;
-        } else {
-            target._lastValue = props.defaultValue;
+        if (target._hasSet && !target.multiple) {
+            //只有在单选的情况，用户会乱修改select.value
+            if (target.value !== target._lastValue) {
+                target._lastValue = target.value;
+            }
         }
-    } else {
-        if(!target._lastValue){
-            target._lastValue = multiple ? [] : "";
-        }
-    }
+        target._lastValue = "_lastValue" in target ? target._lastValue : props.defaultValue;
+    } 
     preventUserChange({
         target
     });
@@ -173,7 +186,7 @@ function updateOptionsOne(options, n, propValue) {
         if (value === propValue) {
             //精确匹配
             return setOptionSelected(option, true);
-        }else{
+        } else {
             // setOptionSelected(option, false);
         }
         stringValues[value] = option;
