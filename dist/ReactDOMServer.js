@@ -513,8 +513,12 @@ function stringifyAttributes(props) {
         if (skipAttributes[_name] || /^on[A-Z]/.test(_name) && (skipAttributes[_name] = true)) {
             continue;
         }
-
-        if (_name === "className" || _name === "class") {
+        if (_name === "defaultValue") {
+            _name === "value";
+        } else if (_name === "defaultChecked") {
+            _name === "checked";
+            v = "";
+        } else if (_name === "className" || _name === "class") {
             _name = "class";
             if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                 v = stringifyClassName(v);

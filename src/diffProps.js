@@ -186,9 +186,9 @@ var builtinStringProps = {
     className: 1,
     title: 1,
     name: 1,
+    type: 1,
     alt: 1,
     lang: 1
-    //  value: 1
 };
 
 controlledHook.observe = function(dom, name) {
@@ -198,7 +198,7 @@ controlledHook.observe = function(dom, name) {
             dom._hack = true;
             Object.defineProperty(dom, name, {
                 set: function(value) {
-                    if (dom.type === "textarea" && name === "defaultValue") {
+                    if (dom.type === "textarea") {
                         dom.innerHTML = value;
                     }
                     if (!dom._observing) {

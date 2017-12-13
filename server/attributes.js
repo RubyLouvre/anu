@@ -63,8 +63,12 @@ export function stringifyAttributes(props){
         if (skipAttributes[name] || (/^on[A-Z]/.test(name) && (skipAttributes[name] = true))) {
             continue;
         }
-
-        if (name === "className" || name === "class") {
+        if (name === "defaultValue" ) {
+            name === "value";
+        }else  if (name === "defaultChecked" ) {
+            name === "checked";
+            v = "";
+        }else if (name === "className" || name === "class") {
             name = "class";
             if (v && typeof v === "object") {
                 v = stringifyClassName(v);

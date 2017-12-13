@@ -2043,7 +2043,6 @@ var controlledHook = {};
 var controlled = {
     value: 1,
     checked: 1
-    //  defaultValue: 1
 };
 
 var isSpecialAttr = {
@@ -2171,6 +2170,7 @@ function diffProps(dom, lastProps, nextProps, vnode) {
         if (val !== lastProps[name]) {
             var which = tag + isSVG + name;
             var action = strategyCache[which];
+
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
@@ -2225,9 +2225,9 @@ var builtinStringProps = {
     className: 1,
     title: 1,
     name: 1,
+    type: 1,
     alt: 1,
-    lang: 1,
-    value: 1
+    lang: 1
 };
 
 controlledHook.observe = function (dom, name) {
@@ -2237,41 +2237,44 @@ controlledHook.observe = function (dom, name) {
             dom._hack = true;
             Object.defineProperty(dom, name, {
                 set: function set(value) {
-                    if (name === "defaultValue") {
+                    if (dom.type === "textarea") {
                         dom.innerHTML = value;
                     }
-                    if (dom._observing) {
-                        //变动value/defaultXXX/innerHTML三方
-                        if (dom._userSet) {
-                            return;
+                    if (!dom._observing) {
+                        //注意defaultValue只会同步一次value
+                        if (!dom._setValue) {
+                            var parsedValue = dom[controllProp] = value;
+                            dom._lastValue = Array.isArray(value) ? value : parsedValue;
+                            dom._setValue = true;
                         }
-                        dom.__default = dom[controllProp] = value;
                     } else {
-                        dom._userSet = true;
-                        if (value == null) {
-                            dom._userSet = false;
-                        } //value/check不能变，只变defaultXXX
-                        dom.__default = value;
+                        //如果用户私下改变defaultValue，那么_setValue会被抺掉
+                        dom._setValue = value == null ? false : true;
                     }
+                    dom._defaultValue = value;
                 },
                 get: function get() {
-                    return dom.__default;
-                }
+                    return dom._defaultValue;
+                },
+                configurable: true
             });
         }
     } catch (e) {}
     dom._observing = true;
 };
-controlledHook.stopObserve = function (dom) {
-    dom._observing = false;
-};
 
-var rform = /textarea|input/i;
-function uncontrolled(dom, name, val) {
+var rform = /textarea|input|select/i;
+function uncontrolled(dom, name, val, lastProps, vnode) {
     if (rform.test(dom.nodeName)) {
-        controlledHook.stopObserve(dom);
+        controlledHook.observe(dom, name); //绑定XXX
+        dom._observing = false;
+        if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {
+            //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
+            dom.selectedIndex = dom.selectedIndex;
+            dom._setValue = false;
+        }
         dom[name] = val;
-        controlledHook.observe(dom, name);
+        dom._observing = true;
     } else {
         dom.setAttribute(name, val);
     }
@@ -2396,17 +2399,17 @@ var duplexData = {
         onInput: 1,
         readOnly: 1,
         disabled: 1
-    }, "oninput", preventUserInput],
+    }, preventUserInput, "onchange", "oninput"],
     2: ["checked", {
         onChange: 1,
         onClick: 1,
         readOnly: 1,
         disabled: 1
-    }, "onclick", preventUserClick],
+    }, preventUserClick, "onclick"],
     3: ["value", {
         onChange: 1,
         disabled: 1
-    }, "onchange", preventUserChange]
+    }, preventUserChange, "onchange"]
 };
 
 var duplexMap = {
@@ -2439,34 +2442,29 @@ function processFormElement(vnode, dom, props) {
         var data = duplexData[duplexType];
         var duplexProp = data[0];
         var keys = data[1];
-        var eventName = data[2];
-        if (duplexProp in props) {
-            if (dom._lastValue !== props[duplexProp]) {
-                if (props[duplexProp] == null) {
-                    dom._lastValue = void 666;
-                } else {
-                    dom._lastValue = dom[duplexProp] = props[duplexProp];
-                }
+        var cb = data[2];
+        var value = props[duplexProp];
+        if (vnode.type === "input") {
+            if (value == null && props.defaultValue != null) {
+                value = props.defaultValue;
             }
+            dom.setAttribute("value", "" + value);
+        }
+        if (duplexProp in props) {
 
+            if (Array.isArray(value)) {
+                dom._lastValue = value;
+            } else {
+                dom._lastValue = dom[duplexProp] = value;
+            }
             if (!hasOtherControllProperty(props, keys)) {
                 // eslint-disable-next-line
                 console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\u56E0\u6B64\b\u6846\u67B6\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
-
-                dom[eventName] = data[3];
+                dom[data[3]] = cb;
+                dom[data[4]] = cb;
             }
         }
         if (duplexType === 3) {
-            var lastProps = vnode.lastProps || {};
-            if (dom._hasSet) {
-                if (!!lastProps.multiple !== !!props.multiple) {
-                    //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
-
-                    dom.selectedIndex = dom.selectedIndex;
-                    dom._hasSet = false;
-                    delete dom._lastValue;
-                }
-            }
             postUpdateSelectedOptions(vnode, dom);
         }
     } else {
@@ -2486,8 +2484,8 @@ function processFormElement(vnode, dom, props) {
 }
 
 function hasOtherControllProperty(props, keys) {
-    for (var key in props) {
-        if (keys[key]) {
+    for (var key in keys) {
+        if (props[key]) {
             return true;
         }
     }
@@ -2514,21 +2512,17 @@ function preventUserChange(e) {
     } else {
         updateOptionsOne(options$$1, options$$1.length, value);
     }
-    target._hasSet = true;
+    target._setSelected = true;
 }
 
 function postUpdateSelectedOptions(vnode, target) {
-    var props = vnode.props;
-    if (typeNumber(props.value) > 1) {
-        target._lastValue = props.value;
-    } else if (typeNumber(props.defaultValue) > 1) {
-        if (target._hasSet && !target.multiple) {
-            //只有在单选的情况，用户会乱修改select.value
-            if (target.value !== target._lastValue) {
-                target._lastValue = target.value;
-            }
+
+    if (target._setSelected && !target.multiple) {
+        //只有在单选的情况，用户会乱修改select.value
+        if (target.value !== target._lastValue) {
+            target._lastValue = target.value;
+            target._setValue = false;
         }
-        target._lastValue = "_lastValue" in target ? target._lastValue : props.defaultValue;
     }
     preventUserChange({
         target: target

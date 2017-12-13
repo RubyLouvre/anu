@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script src="./test/react.development.js"></script>
+ <!-- <script src="./test/react.development.js"></script>
     <script src="./test/react-dom.development.js"></script> -->
     <script src="./lib/babel.js"></script>
   
@@ -16,16 +16,7 @@
     <div>这个默认会被清掉</div>
     <blockquote id='example'></blockquote>
     <pre>
-        app will mount
-        app render
-        child will mount
-        child did mount
-        app did mount
-        app will update
-        app new render2
-        child receive
-        child did update
-        app did update
+    
         
     </pre>
 
@@ -40,63 +31,12 @@
            }
        };
    };
-   var list = [];
-        function Old(props) {
-            return <span>{props.aaa}</span>;
-        }
-        ReactDOM.render(
-            <Old
-                ref={a => {
-                    list.push(!!a);
-                }}
-                aaa={111}
-            />,
+      
+     var dom =   ReactDOM.render(
+            <input value="xxx"  />,
             div
         );
-        ReactDOM.render(
-            <Old
-                ref={a => {
-                    list.push(!!a);
-                }}
-                aaa={222}
-            />,
-            div
-        );
-        expect(list.join("\n")).toBe([false, false, false].join("\n"));
-        console.log("============")
-        var list2 = [];
-        function New(props) {
-            return {
-                componentWillMount() {
-                    list2.push("mount");
-                },
-                componentWillUpdate() {
-                    list2.push("update");
-                },
-                render() {
-                    return <span>{props.aaa}</span>;
-                }
-            };
-        }
-        ReactDOM.render(
-            <New
-                ref={a => {
-                    list2.push(!!a);
-                }}
-                aaa={111}
-            />,
-            div
-        );
-        ReactDOM.render(
-            <New
-                ref={a => {
-                    list2.push(!!a);
-                }}
-                aaa={222}
-            />,
-            div
-        );
-        expect(list2.join("\n")).toBe(["mount", true, false, "update", true].join("\n"));
+      
 </script>
 
 </body>
