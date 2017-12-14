@@ -4,7 +4,6 @@
  若你对这些元素指定了defaultValue/defaultChecked等非受控属性，那么它们只会作用于视图一次，以后你改变JSX上的值，
  都不会同步到视图
  */
-import { typeNumber } from "./util";
 export const formElements = {
     select: 1,
     textarea: 1,
@@ -22,8 +21,8 @@ var duplexData = {
         },
 
         preventUserInput,
-        "onchange",
-        "oninput"
+        "change",
+        "input"
     ],
     2: [
         "checked",
@@ -35,7 +34,7 @@ var duplexData = {
         },
 
         preventUserClick,
-        "onclick"
+        "click"
     ],
     3: [
         "value",
@@ -45,7 +44,7 @@ var duplexData = {
         },
 
         preventUserChange,
-        "onchange"
+        "change"
     ]
 };
 
@@ -81,26 +80,37 @@ export function processFormElement(vnode, dom, props) {
         var keys = data[1];
         var cb = data[2];
         var value = props[duplexProp];
-        if (vnode.type === "input") {
-            if(value == null && props.defaultValue != null ){
-                value = props.defaultValue;
+        if (duplexType === 1 && vnode.type === "input" && duplexProp === "value") {
+            if (value == null) {
+                if (props.defaultValue != null) {
+                    value = props.defaultValue;
+                } else {
+                    return;
+                }
+            } else {
+                value = value + "";
             }
-            dom.setAttribute("value", "" + value);
+            dom.setAttribute("value", value);
         }
         if (duplexProp in props) {
-          
-            if(Array.isArray(value)){
-                dom._lastValue = value;
-            }else{
-                dom._lastValue = dom[duplexProp] = value;
-            }     
+            if (Array.isArray(value)) {
+                dom._persistValue = value;
+            } else {
+                if (dom._persistValue !== value) {
+                    dom._persistValue = dom[duplexProp] = value;
+                }
+            }
+
             if (!hasOtherControllProperty(props, keys)) {
                 // eslint-disable-next-line
                 console.warn(
-                    `你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，因此框架不允许你通过输入改变该值`
+                    `你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，框架将不允许你通过输入改变该值`
                 );
-                dom[data[3]] = cb;
-                dom[data[4]] = cb;
+                dom["on"+data[3]] = cb;
+                dom["on"+data[4]] = cb;
+            } else {
+                hijackEvent(dom, data[3], cb);
+                hijackEvent(dom, data[4], cb);
             }
         }
         if (duplexType === 3) {
@@ -121,7 +131,21 @@ export function processFormElement(vnode, dom, props) {
         }
     }
 }
-
+function hijackEvent(dom, n, cb) {
+    var obj = dom.__events;
+    if (!obj) {
+        return;
+    }
+    var fn = obj[n];
+    if(!fn){
+        return;
+    }
+    obj[n] = function(e) {
+        fn.call(dom, e);
+        cb(e);
+        obj[n] = fn;
+    };
+}
 function hasOtherControllProperty(props, keys) {
     for (var key in keys) {
         if (props[key]) {
@@ -133,8 +157,11 @@ function hasOtherControllProperty(props, keys) {
 function preventUserInput(e) {
     var target = e.target;
     var name = e.type === "textarea" ? "innerHTML" : "value";
-    if (target._lastValue != null) {
-        target[name] = target._lastValue;
+    var v = target._persistValue;
+    var noNull = v != null;
+    var noEqual = target[name] !== v; //2.0 , 2
+    if (noNull && noEqual) {
+        target[name] = v;
     }
 }
 
@@ -144,7 +171,7 @@ function preventUserClick(e) {
 
 function preventUserChange(e) {
     let target = e.target,
-        value = target._lastValue,
+        value = target._persistValue,
         options = target.options;
     if (target.multiple) {
         updateOptionsMore(options, options.length, value);
@@ -155,11 +182,10 @@ function preventUserChange(e) {
 }
 
 export function postUpdateSelectedOptions(vnode, target) {
-
     if (target._setSelected && !target.multiple) {
         //只有在单选的情况，用户会乱修改select.value
-        if (target.value !== target._lastValue) {
-            target._lastValue = target.value;
+        if (target.value !== target._persistValue) {
+            target._persistValue = target.value;
             target._setValue = false;
         }
     }
@@ -180,9 +206,7 @@ function updateOptionsOne(options, n, propValue) {
         if (value === propValue) {
             //精确匹配
             return setOptionSelected(option, true);
-        } else {
-            // setOptionSelected(option, false);
-        }
+        } 
         stringValues[value] = option;
     }
     var match = stringValues[propValue];

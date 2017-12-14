@@ -454,7 +454,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var skipAttributes = {
     ref: 1,
     key: 1,
-    children: 1
+    children: 1,
+    dangerouslySetInnerHTML: 1,
+    innerHTML: 1
 };
 var cssCached = {
     styleFloat: "float",
@@ -506,29 +508,47 @@ function stringifyStyleObject(obj) {
     return arr.join("; ");
 }
 
-function stringifyAttributes(props) {
+var forElement = {
+    select: 1,
+    input: 1,
+    textarea: 1
+};
+
+function stringifyAttributes(props, type) {
     var attrs = [];
     for (var _name in props) {
         var v = props[_name];
-        if (skipAttributes[_name] || /^on[A-Z]/.test(_name) && (skipAttributes[_name] = true)) {
+        if (skipAttributes[_name]) {
             continue;
         }
-        if (_name === "defaultValue") {
-            _name === "value";
-        } else if (_name === "defaultChecked") {
-            _name === "checked";
-            v = "";
-        } else if (_name === "className" || _name === "class") {
+        var checkType = false;
+        if (_name === "className" || _name === "class") {
             _name = "class";
             if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                 v = stringifyClassName(v);
+                checkType = true;
+            }
+        } else if (_name === "style") {
+            if (Object(v) == v) {
+                v = stringifyStyleObject(v);
+                checkType = true;
+            } else {
+                continue;
+            }
+        } else if (_name === "defaultValue") {
+            if (forElement[type]) {
+                _name = "value";
+            }
+        } else if (_name === "defaultChecked") {
+            if (forElement[type]) {
+                _name = "checked";
+                v = "";
+                checkType = true;
             }
         } else if (_name.match(rXlink)) {
             _name = _name.toLowerCase().replace(rXlink, "xlink:$1");
-        } else if (_name === "style" && v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
-            v = stringifyStyleObject(v);
         }
-        if (skipFalseAndFunction(v)) {
+        if (checkType || skipFalseAndFunction(v)) {
             attrs.push(_name + "=" + encodeAttributes(v + ""));
         }
     }
@@ -572,7 +592,7 @@ function renderVNode(vnode, context) {
                     }
                 }
 
-                var str = "<" + type + stringifyAttributes(props);
+                var str = "<" + type + stringifyAttributes(props, type);
                 if (voidTags[type]) {
                     return str + "/>\n";
                 }

@@ -2,7 +2,7 @@ import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
-export var controlledHook = {};
+export var uncontrolledImpl = {};
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
@@ -191,45 +191,47 @@ var builtinStringProps = {
     lang: 1
 };
 
-controlledHook.observe = function(dom, name) {
+uncontrolledImpl.observe = function(dom, name) {
     try {
-        var controllProp = name === "defaultValue" ? "value" : "checked";
-        if (!dom._hack) {
-            dom._hack = true;
-            Object.defineProperty(dom, name, {
-                set: function(value) {
-                    if (dom.type === "textarea") {
-                        dom.innerHTML = value;
-                    }
-                    if (!dom._observing) {
-                        //注意defaultValue只会同步一次value
-                        if (!dom._setValue) {
-                            var parsedValue = dom[controllProp] = value;
-                            dom._lastValue = Array.isArray(value) ? value: parsedValue;
-                            dom._setValue = true;
-                        }
-                    } else {
-                        //如果用户私下改变defaultValue，那么_setValue会被抺掉
-                        dom._setValue = value == null ? false : true;
-                    }
-                    dom._defaultValue = value;
-                },
-                get: function() {
-                    return dom._defaultValue;
-                },
-                configurable: true
-            });
+        if("_persistValue" in dom){
+            dom._setValue = true;
         }
+        var controllProp = name === "defaultValue" ? "value" : "checked";
+        Object.defineProperty(dom, name, {
+            set: function(value) {
+                if (dom.type === "textarea") {
+                    dom.innerHTML = value;
+                }
+                if (!dom._observing) {
+                    if (!dom._setValue) {
+                        //注意defaultValue只会同步一次value
+                        var parsedValue = (dom[controllProp] = value);
+                        dom._persistValue = Array.isArray(value) ? value : parsedValue;
+                        dom._setValue = true;
+                    }
+                } else {
+                    //如果用户私下改变defaultValue，那么_setValue会被抺掉
+                    dom._setValue = value == null ? false : true;
+                }
+                dom._defaultValue = value;
+            },
+            get: function() {
+                return dom._defaultValue;
+            },
+            configurable: true
+        });
     } catch (e) {}
-    dom._observing = true;
 };
 
 var rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, vnode) {
     if (rform.test(dom.nodeName)) {
-        controlledHook.observe(dom, name); //绑定XXX
+        if (!dom._hijack) {
+            dom._hijack = true;
+            uncontrolledImpl.observe(dom, name); //重写defaultXXX的setter/getter
+        }
         dom._observing = false;
-        if(vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple ){
+        if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {
             //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
             dom.selectedIndex = dom.selectedIndex;
             dom._setValue = false;

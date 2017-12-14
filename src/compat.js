@@ -2,7 +2,7 @@ import { document, msie } from "./browser";
 import { actionStrategy } from "./diffProps";
 import { oneObject, toLowerCase, innerHTML, noop } from "./util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent } from "./event";
-import { controlledHook} from "./diffProps";
+import { uncontrolledImpl } from "./diffProps";
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
 var noCheck = false;
@@ -75,9 +75,10 @@ if (msie < 9) {
             }
         }
     };
-    controlledHook.observe = noop;
-    controlledHook.stopObserve = noop;
-
+    if(msie < 8){
+        uncontrolledImpl.observe = noop;
+        uncontrolledImpl.stopObserve = noop;
+    }
     String("focus,blur").replace(/\w+/g, function(type) {
         eventHooks[type] = function(dom, name) {
             var mark = "__" + name;

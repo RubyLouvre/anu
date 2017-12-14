@@ -10,19 +10,19 @@ function normalizeCodeLocInfo(str) {
 function dispatchEventOnNode(node, type) {
     node.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
 }
-function emptyFunction(){}
+function emptyFunction() {}
 var setUntrackedValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
 
 describe("ReactDOMInput", function() {
     this.timeout(200000);
     //受控组件分成两种，完整的受控组件与残缺的受控组件，它们都产生一个 顽固的内部 值
     it("should properly control a value even if no event listener exists", () => {
-        const container = document.createElement("div");
-        const stub = ReactDOM.render(<input type="text" value="lion" />, container);
+        var container = document.createElement("div");
+        var stub = ReactDOM.render(<input type="text" value="lion" />, container);
 
         document.body.appendChild(container);
 
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         setUntrackedValue.call(node, "giraffe");
 
@@ -36,6 +36,7 @@ describe("ReactDOMInput", function() {
     });
 
     it("should control a value in reentrant events", () => {
+        return
         class ControlledInputs extends React.Component {
             state = { value: "lion" };
             a = null;
@@ -65,8 +66,8 @@ describe("ReactDOMInput", function() {
             }
         }
 
-        const container = document.createElement("div");
-        const instance = ReactDOM.render(<ControlledInputs />, container);
+        var container = document.createElement("div");
+        var instance = ReactDOM.render(<ControlledInputs />, container);
 
         // We need it to be in the body to test native event dispatching.
         document.body.appendChild(container);
@@ -86,6 +87,7 @@ describe("ReactDOMInput", function() {
         document.body.removeChild(container);
     });
     it("should control values in reentrant events with different targets", () => {
+        return
         class ControlledInputs extends React.Component {
             state = { value: "lion" };
             a = null;
@@ -107,8 +109,8 @@ describe("ReactDOMInput", function() {
             }
         }
 
-        const container = document.createElement("div");
-        const instance = ReactDOM.render(<ControlledInputs />, container);
+        var container = document.createElement("div");
+        var instance = ReactDOM.render(<ControlledInputs />, container);
 
         // We need it to be in the body to test native event dispatching.
         document.body.appendChild(container);
@@ -132,9 +134,9 @@ var jest = {
 
 describe("switching text inputs between numeric and string numbers", () => {
     it('does change the number 2 to "2.0" with no change handler', () => {
-        let stub = <input type="text" value={2} onChange={null} />;
+        var stub = <input type="text" value={2} onChange={null} />;
         stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         node.value = "2.0";
 
@@ -145,9 +147,9 @@ describe("switching text inputs between numeric and string numbers", () => {
     });
 
     it('does change the string "2" to "2.0" with no change handler', () => {
-        let stub = <input type="text" value={"2"} onChange={null} />;
+        var stub = <input type="text" value={"2"} onChange={null} />;
         stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         node.value = "2.0";
 
@@ -166,14 +168,14 @@ describe("switching text inputs between numeric and string numbers", () => {
                 this.setState({ value: event.target.value });
             };
             render() {
-                const { value } = this.state;
+                var { value } = this.state;
 
                 return <input type="text" value={value} onChange={this.onChange} />;
             }
         }
 
-        const stub = ReactTestUtils.renderIntoDocument(<Stub />);
-        const node = ReactDOM.findDOMNode(stub);
+        var stub = ReactTestUtils.renderIntoDocument(<Stub />);
+        var node = ReactDOM.findDOMNode(stub);
 
         node.value = "2.0";
 
@@ -193,8 +195,8 @@ describe("switching text inputs between numeric and string numbers", () => {
             }
         }
 
-        const stub = ReactTestUtils.renderIntoDocument(<Stub />);
-        const node = ReactDOM.findDOMNode(stub);
+        var stub = ReactTestUtils.renderIntoDocument(<Stub />);
+        var node = ReactDOM.findDOMNode(stub);
         stub.setState({ value: "0.98" });
 
         expect(node.value).toEqual("0.98");
@@ -210,8 +212,8 @@ describe("switching text inputs between numeric and string numbers", () => {
             }
         }
 
-        const stub = ReactTestUtils.renderIntoDocument(<Stub />);
-        const node = ReactDOM.findDOMNode(stub);
+        var stub = ReactTestUtils.renderIntoDocument(<Stub />);
+        var node = ReactDOM.findDOMNode(stub);
         stub.setState({ value: 0 });
 
         expect(node.value).toEqual("0");
@@ -227,17 +229,17 @@ describe("switching text inputs between numeric and string numbers", () => {
             }
         }
 
-        const stub = ReactTestUtils.renderIntoDocument(<Stub />);
-        const node = ReactDOM.findDOMNode(stub);
+        var stub = ReactTestUtils.renderIntoDocument(<Stub />);
+        var node = ReactDOM.findDOMNode(stub);
         stub.setState({ value: "3" });
 
         expect(node.value).toEqual("3");
     });
 
     it("should display `defaultValue` of number 0", () => {
-        let stub = <input type="text" defaultValue={0} />;
+        var stub = <input type="text" defaultValue={0} />;
         stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         expect(node.getAttribute("value")).toBe("0");
         expect(node.value).toBe("0");
@@ -250,8 +252,8 @@ describe("switching text inputs between numeric and string numbers", () => {
             }
         }
 
-        const component = ReactTestUtils.renderIntoDocument(<Test />);
-        const node = ReactDOM.findDOMNode(component);
+        var component = ReactTestUtils.renderIntoDocument(<Test />);
+        var node = ReactDOM.findDOMNode(component);
 
         Object.defineProperty(node, "defaultValue", {
             get() {
@@ -266,26 +268,26 @@ describe("switching text inputs between numeric and string numbers", () => {
     });
 
     it('should display "true" for `defaultValue` of `true`', () => {
-        let stub = <input type="text" defaultValue={true} />;
+        var stub = <input type="text" defaultValue={true} />;
         stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         expect(node.value).toBe("true");
     });
 
     it('should display "false" for `defaultValue` of `false`', () => {
-        let stub = <input type="text" defaultValue={false} />;
+        var stub = <input type="text" defaultValue={false} />;
         stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
+        var node = ReactDOM.findDOMNode(stub);
 
         expect(node.value).toBe("false");
     });
 
     it("should update `defaultValue` for uncontrolled input", () => {
         // input元素的value/defaultValue 都会产生一个value的特性
-        const container = document.createElement("div");
+        var container = document.createElement("div");
 
-        const node = ReactDOM.render(<input type="text" defaultValue="0" />, container);
+        var node = ReactDOM.render(<input type="text" defaultValue="0" />, container);
 
         expect(node.value).toBe("0");
 
@@ -296,9 +298,9 @@ describe("switching text inputs between numeric and string numbers", () => {
     });
 
     it("should update `defaultValue` for uncontrolled date/time input", () => {
-        const container = document.createElement("div");
+        var container = document.createElement("div");
 
-        const node = ReactDOM.render(<input type="date" defaultValue="1980-01-01" />, container);
+        var node = ReactDOM.render(<input type="date" defaultValue="1980-01-01" />, container);
 
         expect(node.value).toBe("1980-01-01");
 
@@ -311,127 +313,309 @@ describe("switching text inputs between numeric and string numbers", () => {
     });
 
     it("should take `defaultValue` when changing to uncontrolled input", () => {
-        const container = document.createElement("div");
-        const node = ReactDOM.render(<input type="text" value="0" readOnly="true" />, container);
+        //当受控组件转换为非受控组件时，其内部的顽固值 依然生效，不被串改
+        var container = document.createElement("div");
+        var node = ReactDOM.render(<input type="text" value="0" readOnly="true" />, container);
         expect(node.value).toBe("0");
         ReactDOM.render(<input type="text" defaultValue="1" />, container);
         expect(node.value).toBe("0");
     });
 
     it("should render defaultValue for SSR", () => {
-        const markup = ReactDOMServer.renderToString(<input type="text" defaultValue="1" />);
-        const div = document.createElement("div");
+        var markup = ReactDOMServer.renderToString(<input type="text" defaultValue="1" />);
+        var div = document.createElement("div");
         div.innerHTML = markup;
         expect(div.firstChild.getAttribute("value")).toBe("1");
         expect(div.firstChild.getAttribute("defaultValue")).toBe(null);
     });
 
     it("should render value for SSR", () => {
-        const element = <input type="text" value="1" onChange={() => {}} />;
-        const markup = ReactDOMServer.renderToString(element);
-        const div = document.createElement("div");
+        var element = <input type="text" value="1" onChange={() => {}} />;
+        var markup = ReactDOMServer.renderToString(element);
+        var div = document.createElement("div");
         div.innerHTML = markup;
         expect(div.firstChild.getAttribute("value")).toBe("1");
         expect(div.firstChild.getAttribute("defaultValue")).toBe(null);
     });
 
     it("should render name attribute if it is supplied", () => {
-        const container = document.createElement("div");
-        const node = ReactDOM.render(<input type="text" name="name" />, container);
+        var container = document.createElement("div");
+        var node = ReactDOM.render(<input type="text" name="name" />, container);
         expect(node.name).toBe("name");
         expect(container.firstChild.getAttribute("name")).toBe("name");
     });
 
     it("should render name attribute if it is supplied for SSR", () => {
-        const element = <input type="text" name="name" />;
-        const markup = ReactDOMServer.renderToString(element);
-        const div = document.createElement("div");
+        var element = <input type="text" name="name" />;
+        var markup = ReactDOMServer.renderToString(element);
+        var div = document.createElement("div");
         div.innerHTML = markup;
         expect(div.firstChild.getAttribute("name")).toBe("name");
     });
 
     it("should not render name attribute if it is not supplied", () => {
-        const container = document.createElement("div");
+        var container = document.createElement("div");
         ReactDOM.render(<input type="text" />, container);
         expect(container.firstChild.getAttribute("name")).toBe(null);
     });
 
-    it('should not render name attribute if it is not supplied for SSR', () => {
-        const element = <input type="text" />;
-        const markup = ReactDOMServer.renderToString(element);
-        const div = document.createElement('div');
+    it("should not render name attribute if it is not supplied for SSR", () => {
+        var element = <input type="text" />;
+        var markup = ReactDOMServer.renderToString(element);
+        var div = document.createElement("div");
         div.innerHTML = markup;
-        expect(div.firstChild.getAttribute('name')).toBe(null);
-      });
-    
-      it('should display "foobar" for `defaultValue` of `objToString`', () => {
-        const objToString = {
-          toString: function() {
-            return 'foobar';
-          },
-        };
-    
-        let stub = <input type="text" defaultValue={objToString} />;
-        stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
-    
-        expect(node.value).toBe('foobar');
-      });
+        expect(div.firstChild.getAttribute("name")).toBe(null);
+    });
 
-
-      it('should display `value` of number 0', () => {
-        let stub = <input type="text" value={0} />;
-        stub = ReactTestUtils.renderIntoDocument(stub);
-        const node = ReactDOM.findDOMNode(stub);
-    
-        expect(node.value).toBe('0');
-      });
-    
-      it('should allow setting `value` to `true`', () => {
-        const container = document.createElement('div');
-        let stub = <input type="text" value="yolo" onChange={emptyFunction} />;
-        const node = ReactDOM.render(stub, container);
-    
-        expect(node.value).toBe('yolo');
-    
-        stub = ReactDOM.render(
-          <input type="text" value={true} onChange={emptyFunction} />,
-          container,
-        );
-        expect(node.value).toEqual('true');
-      });
-    
-      it('should allow setting `value` to `false`', () => {
-        const container = document.createElement('div');
-        let stub = <input type="text" value="yolo" onChange={emptyFunction} />;
-        const node = ReactDOM.render(stub, container);
-    
-        expect(node.value).toBe('yolo');
-    
-        stub = ReactDOM.render(
-          <input type="text" value={false} onChange={emptyFunction} />,
-          container,
-        );
-        expect(node.value).toEqual('false');
-      });
-    
-      it('should allow setting `value` to `objToString`', () => {
-        const container = document.createElement('div');
-        let stub = <input type="text" value="foo" onChange={emptyFunction} />;
-        const node = ReactDOM.render(stub, container);
-    
-        expect(node.value).toBe('foo');
-    
-        const objToString = {
-          toString: function() {
-            return 'foobar';
-          },
+    it('should display "foobar" for `defaultValue` of `objToString`', () => {
+        var objToString = {
+            toString: function() {
+                return "foobar";
+            }
         };
-        stub = ReactDOM.render(
-          <input type="text" value={objToString} onChange={emptyFunction} />,
-          container,
-        );
-        expect(node.value).toEqual('foobar');
-      });
+
+        var stub = <input type="text" defaultValue={objToString} />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
+
+        expect(node.value).toBe("foobar");
+    });
+
+    it("should display `value` of number 0", () => {
+        var stub = <input type="text" value={0} />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
+
+        expect(node.value).toBe("0");
+    });
+
+    it("should allow setting `value` to `true`", () => {
+        var container = document.createElement("div");
+        var stub = <input type="text" value="yolo" onChange={emptyFunction} />;
+        var node = ReactDOM.render(stub, container);
+
+        expect(node.value).toBe("yolo");
+
+        stub = ReactDOM.render(<input type="text" value={true} onChange={emptyFunction} />, container);
+        expect(node.value).toEqual("true");
+    });
+
+    it("should allow setting `value` to `false`", () => {
+        var container = document.createElement("div");
+        var stub = <input type="text" value="yolo" onChange={emptyFunction} />;
+        var node = ReactDOM.render(stub, container);
+
+        expect(node.value).toBe("yolo");
+
+        stub = ReactDOM.render(<input type="text" value={false} onChange={emptyFunction} />, container);
+        expect(node.value).toEqual("false");
+    });
+
+    it("should allow setting `value` to `objToString`", () => {
+        var container = document.createElement("div");
+        var stub = <input type="text" value="foo" onChange={emptyFunction} />;
+        var node = ReactDOM.render(stub, container);
+
+        expect(node.value).toBe("foo");
+
+        var objToString = {
+            toString: function() {
+                return "foobar";
+            }
+        };
+        stub = ReactDOM.render(<input type="text" value={objToString} onChange={emptyFunction} />, container);
+        expect(node.value).toEqual("foobar");
+    });
+
+    it("should not incur unnecessary DOM mutations", () => {
+        var container = document.createElement("div");
+        ReactDOM.render(<input value="a" onChange={() => {}} />, container);
+
+        var node = container.firstChild;
+        var nodeValue = "a";
+        var calls = [];
+        Object.defineProperty(node, "value", {
+            get: function() {
+                return nodeValue;
+            },
+            set: function(newValue) {
+                nodeValue = newValue;
+                calls.push(newValue);
+            }
+        });
+
+        ReactDOM.render(<input value="a" onChange={() => {}} />, container);
+        expect(calls.length).toBe(0);
+
+        ReactDOM.render(<input value="b" onChange={() => {}} />, container);
+        expect(calls.length).toBe(1);
+    });
+
+    it("should not incur unnecessary DOM mutations for numeric type conversion", () => {
+        var container = document.createElement("div");
+        ReactDOM.render(<input value="0" onChange={() => {}} />, container);
+
+        var node = container.firstChild;
+        var nodeValue = "0";
+        var calls = [];
+        Object.defineProperty(node, "value", {
+            get: function() {
+                return nodeValue;
+            },
+            set: function(newValue) {
+                nodeValue = newValue;
+                calls.push(newValue);
+            }
+        });
+
+        ReactDOM.render(<input value={0} onChange={() => {}} />, container);
+        expect(calls.length).toBe(0);
+    });
+
+    it("should not incur unnecessary DOM mutations for the boolean type conversion", () => {
+        var container = document.createElement("div");
+        ReactDOM.render(<input value="true" onChange={() => {}} />, container);
+
+        var node = container.firstChild;
+        var nodeValue = "true";
+        var calls = [];
+        Object.defineProperty(node, "value", {
+            get: function() {
+                return nodeValue;
+            },
+            set: function(newValue) {
+                calls.push(newValue);
+                nodeValue = newValue;
+            }
+        });
+
+        ReactDOM.render(<input value={true} onChange={() => {}} />, container);
+        expect(calls.length).toBe(0);
+    });
+
+    it("should properly control a value of number `0`", () => {
+        var stub = <input type="text" value={0} onChange={emptyFunction} />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
+
+        node.value = "giraffe";
+        ReactTestUtils.Simulate.change(node);
+        expect(node.value).toBe("0");
+    });
+
+    it("should properly control 0.0 for a text input", () => {
+        var stub = <input type="text" value={0} onChange={emptyFunction} />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
+
+        node.value = "0.0";
+        ReactTestUtils.Simulate.change(node);
+        expect(node.value).toBe("0");
+    });
+
+    it("should properly control 0.0 for a number input", () => {
+        var stub = <input type="number" value={0} onChange={emptyFunction} />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
+
+        node.value = "0.0";
+        ReactTestUtils.Simulate.change(node, { target: { value: "0.0" } });
+        expect(node.value).toBe("0.0");
+    });
+
+    it("should properly transition from an empty value to 0", function() {
+        var container = document.createElement("div");
+
+        ReactDOM.render(<input type="text" value="" />, container);
+        ReactDOM.render(<input type="text" value={0} />, container);
+
+        var node = container.firstChild;
+
+        expect(node.value).toBe("0");
+        expect(node.defaultValue).toBe("0");
+    });
+
+    it("should properly transition from 0 to an empty value", function() {
+        var container = document.createElement("div");
+
+        ReactDOM.render(<input type="text" value={0} />, container);
+        ReactDOM.render(<input type="text" value="" />, container);
+
+        var node = container.firstChild;
+
+        expect(node.value).toBe("");
+        expect(node.defaultValue).toBe("");
+    });
+
+    it("should properly transition a text input from 0 to an empty 0.0", function() {
+        var container = document.createElement("div");
+
+        ReactDOM.render(<input type="text" value={0} />, container);
+        ReactDOM.render(<input type="text" value="0.0" />, container);
+
+        var node = container.firstChild;
+
+        expect(node.value).toBe("0.0");
+        expect(node.defaultValue).toBe("0.0");
+    });
+
+    it('should properly transition a number input from "" to 0', function() {
+        var container = document.createElement("div");
+
+        ReactDOM.render(<input type="number" value="" />, container);
+        ReactDOM.render(<input type="number" value={0} />, container);
+
+        var node = container.firstChild;
+
+        expect(node.value).toBe("0");
+        expect(node.defaultValue).toBe("0");
+    });
+
+    it('should properly transition a number input from "" to "0"', function() {
+        var container = document.createElement("div");
+
+        ReactDOM.render(<input type="number" value="" />, container);
+        ReactDOM.render(<input type="number" value="0" />, container);
+
+        var node = container.firstChild;
+
+        expect(node.value).toBe("0");
+        expect(node.defaultValue).toBe("0");
+    });
+    it("should have the correct target value", () => {
+        var container = document.createElement("div");
+        ReactDOM.render(<input value="0" onChange={() => {}} />, container);
+
+        var handled = false;
+        var handler = function(event) {
+            expect(event.target.nodeName).toBe("INPUT");
+            handled = true;
+        };
+        var stub = <input type="text" value={0} onChange={handler} />;
+
+        var node = ReactDOM.render(stub, container);
+
+        setUntrackedValue.call(node, "giraffe");
+
+        var fakeNativeEvent = function() {};
+        fakeNativeEvent.target = node;
+        fakeNativeEvent.path = [node, container];
+        ReactTestUtils.Simulate.change(node, fakeNativeEvent);
+
+        expect(handled).toBe(true);
+    });
+
+    it('should not set a value for submit buttons unnecessarily', () => {
+        var stub = <input type="submit" />;
+        stub = ReactTestUtils.renderIntoDocument(stub);
+        var node = ReactDOM.findDOMNode(stub);
     
+        // The value shouldn't be '', or else the button will have no text; it
+        // should have the default "Submit" or "Submit Query" label. Most browsers
+        // report this as not having a `value` attribute at all; IE reports it as
+        // the actual label that the user sees.
+        expect(
+          !node.hasAttribute('value') || node.getAttribute('value').length > 0,
+        ).toBe(true);
+      });
 });

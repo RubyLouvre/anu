@@ -86,8 +86,8 @@ function triggerEventFlow(paths, prop, e) {
         var path = paths[i];
         var fn = path.events[prop];
         if (isFn(fn)) {
-            e.currentTarget = path.dom;
-            fn.call(path.dom, e);
+            var dom =  e.currentTarget = path.dom;
+            fn.call(dom, e);
             if (e._stopPropagation) {
                 break;
             }

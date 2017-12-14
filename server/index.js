@@ -37,7 +37,7 @@ function renderVNode(vnode, context) {
                 }
             }
 
-            var str = "<" + type + stringifyAttributes(props);
+            var str = "<" + type + stringifyAttributes(props, type);
             if (voidTags[type]) {
                 return str + "/>\n";
             }

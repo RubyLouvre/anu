@@ -4,7 +4,9 @@ import { encodeEntities } from "./util";
 const skipAttributes = {
     ref: 1,
     key: 1,
-    children: 1
+    children: 1,
+    dangerouslySetInnerHTML: 1,
+    innerHTML: 1
 };
 const cssCached = {
     styleFloat: "float",
@@ -56,29 +58,47 @@ function stringifyStyleObject(obj) {
     return arr.join("; ");
 }
 
-export function stringifyAttributes(props){
+var forElement = {
+    select: 1,
+    input: 1,
+    textarea: 1
+};
+
+export function stringifyAttributes(props, type) {
     var attrs = [];
     for (let name in props) {
         var v = props[name];
-        if (skipAttributes[name] || (/^on[A-Z]/.test(name) && (skipAttributes[name] = true))) {
+        if (skipAttributes[name]) {
             continue;
         }
-        if (name === "defaultValue" ) {
-            name === "value";
-        }else  if (name === "defaultChecked" ) {
-            name === "checked";
-            v = "";
-        }else if (name === "className" || name === "class") {
+        var checkType = false;
+        if (name === "className" || name === "class") {
             name = "class";
             if (v && typeof v === "object") {
                 v = stringifyClassName(v);
+                checkType = true;
+            }
+        } else if (name === "style") {
+            if (Object(v) == v) {
+                v = stringifyStyleObject(v);
+                checkType = true;
+            } else {
+                continue;
+            }
+        } else if (name === "defaultValue") {
+            if (forElement[type]) {
+                name = "value";
+            }
+        } else if (name === "defaultChecked") {
+            if (forElement[type]) {
+                name = "checked";
+                v = "";
+                checkType = true;
             }
         } else if (name.match(rXlink)) {
             name = name.toLowerCase().replace(rXlink, "xlink:$1");
-        } else if (name === "style" && v && typeof v === "object") {
-            v = stringifyStyleObject(v);
         }
-        if (skipFalseAndFunction(v)) {
+        if (checkType || skipFalseAndFunction(v)) {
             attrs.push(name + "=" + encodeAttributes(v + ""));
         }
     }
