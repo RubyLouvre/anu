@@ -46,10 +46,10 @@ export function captureError(instance, hook, args) {
     }
 }
 function describeError(names, hook) {
-    var segments = [`**${hook}** method occur error in `];
+    var segments = [`**${hook}** method occur error `];
     names.forEach(function(name, i) {
         if (names[i + 1]) {
-            segments.push(name + " created By " + names[i + 1]);
+            segments.push("in "+ name + " (created By " + names[i + 1]+")");
         }
     });
     return segments.join("\n").trim();

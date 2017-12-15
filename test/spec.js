@@ -13,13 +13,17 @@ require("./modules/context.spec.jsx");
 
 require("./modules/ReactDOMSVG-test.jsx");
 require("./modules/ReactDOMTextComponent-test.jsx");
+require("./modules/ReactDOMTextarea-test.jsx");
+
+require("./modules/ReactDOMSelect-test.jsx");
+require("./modules/ReactDOMOption-test.jsx");
+require("./modules/ReactDOMInput-test.jsx");
+
 
 require("./modules/lifecycle.spec.jsx");
 
 require("./modules/diffProps.spec.jsx");
 
-require("./modules/ReactDOMSelect-test.jsx");
-require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/component.spec.jsx");
 
@@ -80,7 +84,6 @@ require("./modules/insert.jsx");
 /*
 
 用到selenium
-
 diffProps.spec
 component.spec
 event.spec
