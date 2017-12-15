@@ -132,7 +132,6 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
         if (val !== lastProps[name]) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
-
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
@@ -191,7 +190,6 @@ var builtinStringProps = {
     alt: 1,
     lang: 1
 };
-
 
 var rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, vnode) {
@@ -265,25 +263,26 @@ export var actionStrategy = {
         }
     },
     property: function(dom, name, val) {
-        if (dom[name] !== val) {
-            // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
-            // 这时如果用 setAttribute 则会静默失败
-            try {
-                if (!val && val !== 0) {
-                    //如果它是字符串属性，并且不等于""，清空
-                    if (builtinStringProps[name]) {
-                        dom[name] = "";
-                    }
-                    dom.removeAttribute(name);
-                } else {
-                    if (!controlled[name]) {
-                        dom[name] = val;
-                    }
-                }
-            } catch (e) {
-                dom.setAttribute(name, val);
-            }
+        // if (dom[name] !== val) {
+        // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
+        // 这时如果用 setAttribute 则会静默失败
+        if (controlled[name]) {
+            return;
         }
+        try {
+            if (!val && val !== 0) {
+                //如果它是字符串属性，并且不等于""，清空
+                if (builtinStringProps[name]) {
+                    dom[name] = "";
+                }
+                dom.removeAttribute(name);
+            } else {
+                dom[name] = val;
+            }
+        } catch (e) {
+            dom.setAttribute(name, val);
+        }
+        // }
     },
     event: function(dom, name, val, lastProps, vnode) {
         let events = dom.__events || (dom.__events = {});

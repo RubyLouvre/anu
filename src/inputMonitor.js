@@ -1,3 +1,6 @@
+/**
+通过对象监控实现非受控组件
+ */
 export var inputMonitor = {};
 var rcheck = /checked|radio/;
 var describe = {
@@ -8,7 +11,7 @@ var describe = {
         }
         if (!this._observing) {
             if (!this._setValue) {
-                //注意defaultValue只会同步一次value
+                //defaultXXX只会同步一次_persistValue
                 var parsedValue = (this[controllProp] = value);
                 this._persistValue = Array.isArray(value) ? value : parsedValue;
                 this._setValue = true;

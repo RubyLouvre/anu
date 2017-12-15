@@ -48,6 +48,7 @@ export function dispatchEvent(e, type, end) {
     }
     options.async = false;
     flushUpdaters();
+    
 }
 
 function collectPaths(from, end) {
@@ -86,8 +87,8 @@ function triggerEventFlow(paths, prop, e) {
         var path = paths[i];
         var fn = path.events[prop];
         if (isFn(fn)) {
-            var dom =  e.currentTarget = path.dom;
-            fn.call(dom, e);
+            e.currentTarget = path.dom;
+            fn.call(void 666,e);
             if (e._stopPropagation) {
                 break;
             }

@@ -288,7 +288,7 @@ describe("事件系统模块", function() {
                         }}
                     >
                         <div
-                            id="focus2"
+                            ref="focus2"
                             tabIndex={-1}
                             onFocus={this.onFocus1}
                             style={{
@@ -304,11 +304,7 @@ describe("事件系统模块", function() {
         }
 
         var s = ReactDOM.render(<App />, div);
-        await browser
-            .pause(100)
-            .click("#focus2")
-            .pause(100)
-            .$apply();
+        s.refs.focus2.focus()
 
         expect(aaa.trim()).toBe("aaa bbb");
     });
@@ -642,6 +638,7 @@ describe("事件系统模块", function() {
             }
             onInput(e) {
                 el = values.shift();
+                console.log(el)
                 this.setState({ value: e.target.value });
             }
 
@@ -661,8 +658,6 @@ describe("事件系统模块", function() {
         }
 
         var s = React.render(<TextArea />, div);
-
-        await browser.pause(100).$apply();
 
         expect(ReactDOM.findDOMNode(s).children[0].value).toBe("4");
 

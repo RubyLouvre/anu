@@ -992,8 +992,8 @@ function triggerEventFlow(paths, prop, e) {
         var path = paths[i];
         var fn = path.events[prop];
         if (isFn(fn)) {
-            var dom = e.currentTarget = path.dom;
-            fn.call(dom, e);
+            e.currentTarget = path.dom;
+            fn.call(void 666, e);
             if (e._stopPropagation) {
                 break;
             }
@@ -2035,6 +2035,9 @@ function cssName(name, dom) {
     return null;
 }
 
+/**
+通过对象监控实现非受控组件
+ */
 var inputMonitor = {};
 var rcheck = /checked|radio/;
 var describe = {
@@ -2045,7 +2048,7 @@ var describe = {
         }
         if (!this._observing) {
             if (!this._setValue) {
-                //注意defaultValue只会同步一次value
+                //defaultXXX只会同步一次_persistValue
                 var parsedValue = this[controllProp] = value;
                 this._persistValue = Array.isArray(value) ? value : parsedValue;
                 this._setValue = true;
@@ -2205,7 +2208,6 @@ function diffProps(dom, lastProps, nextProps, vnode) {
         if (val !== lastProps[name]) {
             var which = tag + isSVG + name;
             var action = strategyCache[which];
-
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
@@ -2337,25 +2339,26 @@ var actionStrategy = {
         }
     },
     property: function property(dom, name, val) {
-        if (dom[name] !== val) {
-            // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
-            // 这时如果用 setAttribute 则会静默失败
-            try {
-                if (!val && val !== 0) {
-                    //如果它是字符串属性，并且不等于""，清空
-                    if (builtinStringProps[name]) {
-                        dom[name] = "";
-                    }
-                    dom.removeAttribute(name);
-                } else {
-                    if (!controlled[name]) {
-                        dom[name] = val;
-                    }
-                }
-            } catch (e) {
-                dom.setAttribute(name, val);
-            }
+        // if (dom[name] !== val) {
+        // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
+        // 这时如果用 setAttribute 则会静默失败
+        if (controlled[name]) {
+            return;
         }
+        try {
+            if (!val && val !== 0) {
+                //如果它是字符串属性，并且不等于""，清空
+                if (builtinStringProps[name]) {
+                    dom[name] = "";
+                }
+                dom.removeAttribute(name);
+            } else {
+                dom[name] = val;
+            }
+        } catch (e) {
+            dom.setAttribute(name, val);
+        }
+        // }
     },
     event: function event(dom, name, val, lastProps, vnode) {
         var events = dom.__events || (dom.__events = {});
@@ -2387,10 +2390,7 @@ var actionStrategy = {
 };
 
 /**
- React对input, select, textarea进行了特殊处理，如果它指定了value/checked等受控属性，那么它需要添加onChange
- onInput方法才能改变值的变动，否则框架会阻止你改变它。
- 若你对这些元素指定了defaultValue/defaultChecked等非受控属性，那么它们只会作用于视图一次，以后你改变JSX上的值，
- 都不会同步到视图
+通过事件绑定实现受控组件
  */
 var formElements = {
     select: 1,
@@ -2405,10 +2405,13 @@ var duplexData = {
         readOnly: 1,
         disabled: 1
     }, function (a) {
-        return a == null ? "" : a + "";
+        return a == null ? null : a + "";
     }, function (dom, value, vnode) {
         if (vnode.type === "input") {
             dom.setAttribute("value", value);
+        } else if (vnode.type === "textarea" && value === null) {
+            value = dom.innerHTML;
+            //console.log(dom.innerHTML, value, dom._persistValue !== value)
         }
         if (dom._persistValue !== value) {
             dom._persistValue = dom.value = value;
@@ -2421,7 +2424,10 @@ var duplexData = {
         disabled: 1
     }, function (a) {
         return !!a;
-    }, function (dom, value) {
+    }, function (dom, value, vnode) {
+        if (vnode.props.value != null) {
+            dom.value = vnode.props.value;
+        }
         if (dom._persistValue !== value) {
             dom._persistValue = dom.checked = value;
         }
@@ -2431,7 +2437,7 @@ var duplexData = {
         disabled: 1
     }, function (a) {
         return a;
-    }, function postUpdateSelectedOptions(dom, value, vnode, isUncontrolled) {
+    }, function (dom, value, vnode, isUncontrolled) {
         //只有在单选的情况，用户会乱修改select.value
         if (isUncontrolled) {
             if (!dom.multiple && dom.value !== dom._persistValue) {
@@ -2445,10 +2451,10 @@ var duplexData = {
             }
         }
 
-        preventUserChange({
+        syncOptions({
             target: dom
         });
-    }, preventUserChange, "change"]
+    }, syncOptions, "change"]
 };
 
 var duplexMap = {
@@ -2498,11 +2504,9 @@ function inputControll(vnode, dom, props) {
             console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
-            console.log("===============");
         } else {
             hijackEvent(dom, event1, handle);
             hijackEvent(dom, event2, handle);
-            console.log(event1, event2);
         }
     } else {
         //处理option标签
@@ -2580,7 +2584,7 @@ function keepPersistValue(e) {
     }
 }
 
-function preventUserChange(e) {
+function syncOptions(e) {
     var target = e.target,
         value = target._persistValue,
         options = target.options;

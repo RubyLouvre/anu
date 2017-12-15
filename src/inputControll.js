@@ -1,8 +1,5 @@
 /**
- React对input, select, textarea进行了特殊处理，如果它指定了value/checked等受控属性，那么它需要添加onChange
- onInput方法才能改变值的变动，否则框架会阻止你改变它。
- 若你对这些元素指定了defaultValue/defaultChecked等非受控属性，那么它们只会作用于视图一次，以后你改变JSX上的值，
- 都不会同步到视图
+通过事件绑定实现受控组件
  */
 export const formElements = {
     select: 1,
@@ -20,11 +17,14 @@ var duplexData = {
             disabled: 1
         },
         function(a) {
-            return a == null ? "" : a + "";
+            return a == null ? null : a + "";
         },
         function(dom, value, vnode) {
             if (vnode.type === "input") {
                 dom.setAttribute("value", value);
+            } else if (vnode.type === "textarea" && value === null) {
+                value = dom.innerHTML;
+                //console.log(dom.innerHTML, value, dom._persistValue !== value)
             }
             if (dom._persistValue !== value) {
                 dom._persistValue = dom.value = value;
@@ -45,7 +45,10 @@ var duplexData = {
         function(a) {
             return !!a;
         },
-        function(dom, value) {
+        function(dom, value, vnode) {
+            if (vnode.props.value != null) {
+                dom.value = vnode.props.value;
+            }
             if (dom._persistValue !== value) {
                 dom._persistValue = dom.checked = value;
             }
@@ -63,7 +66,7 @@ var duplexData = {
         function(a) {
             return a;
         },
-        function postUpdateSelectedOptions(dom, value, vnode, isUncontrolled) {
+        function(dom, value, vnode, isUncontrolled) {
             //只有在单选的情况，用户会乱修改select.value
             if (isUncontrolled) {
                 if (!dom.multiple && dom.value !== dom._persistValue) {
@@ -77,11 +80,11 @@ var duplexData = {
                 }
             }
 
-            preventUserChange({
+            syncOptions({
                 target: dom
             });
         },
-        preventUserChange,
+        syncOptions,
         "change"
     ]
 };
@@ -133,11 +136,9 @@ export function inputControll(vnode, dom, props) {
             console.warn(`你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，框架将不允许你通过输入改变该值`);
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
-            console.log("===============");
         } else {
             hijackEvent(dom, event1, handle);
             hijackEvent(dom, event2, handle);
-            console.log(event1, event2);
         }
     } else {
         //处理option标签
@@ -215,7 +216,7 @@ function keepPersistValue(e) {
     }
 }
 
-function preventUserChange(e) {
+function syncOptions(e) {
     let target = e.target,
         value = target._persistValue,
         options = target.options;
