@@ -8,16 +8,16 @@ export function pushError(instance, hook, error) {
     instance.updater._hasError = true;
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, describeError(names, hook), instance];
-        if( !Refs.errorHook){
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: describeError(names, hook) }, instance];
+        if (!Refs.errorHook) {
             Refs.errorHook = hook;
             Refs.doctors = [catchUpdater];
-        }else{
-            if(Refs.doctors.indexOf(catchUpdater) === -1){
+        } else {
+            if (Refs.doctors.indexOf(catchUpdater) === -1) {
                 Refs.doctors.push(catchUpdater);
             }
         }
-       
+
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
@@ -41,20 +41,18 @@ export function captureError(instance, hook, args) {
         if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
-     
+
         pushError(instance, hook, error);
     }
 }
 function describeError(names, hook) {
-    return (
-        hook +
-        " occur error in " +
-        names
-            .map(function(componentName) {
-                return "<" + componentName + " />";
-            })
-            .join(" created By ")
-    );
+    var segments = [`**${hook}** method occur error in `];
+    names.forEach(function(name, i) {
+        if (names[i + 1]) {
+            segments.push(name + " created By " + names[i + 1]);
+        }
+    });
+    return segments.join("\n").trim();
 }
 //让该组件不要再触发钩子
 function disableHook(u) {
@@ -68,12 +66,16 @@ function findCatchComponent(target, names) {
         instance,
         updater,
         type,
-        name;
+        name,
+        catchIt;
     do {
         type = vnode.type;
         if (vnode.isTop) {
+            if (catchIt) {
+                return catchIt;
+            }
             disposeVnode(vnode, [], true);
-            return;
+            break;
         } else if (vnode.vtype > 1) {
             name = type.displayName || type.name;
             names.push(name);
@@ -82,9 +84,8 @@ function findCatchComponent(target, names) {
                 updater = instance.updater;
                 if (updater._isDoctor) {
                     disableHook(updater);
-                } else if (target !== instance) {
-                    //|| updater.errHook === "componentDidMount"
-                    return updater; //移交更上级的医师处理
+                } else if (!catchIt && target !== instance) {
+                    catchIt = updater;
                 }
             }
         } else if (vnode.vtype === 1) {
