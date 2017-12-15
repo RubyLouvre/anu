@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-14
+ * by 司徒正美 Copyright 2017-12-15
  * IE9+
  */
 
@@ -2035,9 +2035,44 @@ function cssName(name, dom) {
     return null;
 }
 
+var inputMonitor = {};
+var rcheck = /checked|radio/;
+var describe = {
+    set: function set(value) {
+        var controllProp = rcheck.test(this.type) ? "checked" : "value";
+        if (this.type === "textarea") {
+            this.innerHTML = value;
+        }
+        if (!this._observing) {
+            if (!this._setValue) {
+                //注意defaultValue只会同步一次value
+                var parsedValue = this[controllProp] = value;
+                this._persistValue = Array.isArray(value) ? value : parsedValue;
+                this._setValue = true;
+            }
+        } else {
+            //如果用户私下改变defaultValue，那么_setValue会被抺掉
+            this._setValue = value == null ? false : true;
+        }
+        this._defaultValue = value;
+    },
+    get: function get() {
+        return this._defaultValue;
+    },
+    configurable: true
+};
+
+inputMonitor.observe = function (dom, name) {
+    try {
+        if ("_persistValue" in dom) {
+            dom._setValue = true;
+        }
+        Object.defineProperty(dom, name, describe);
+    } catch (e) {}
+};
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var uncontrolledImpl = {};
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
@@ -2230,44 +2265,12 @@ var builtinStringProps = {
     lang: 1
 };
 
-uncontrolledImpl.observe = function (dom, name) {
-    try {
-        if ("_persistValue" in dom) {
-            dom._setValue = true;
-        }
-        var controllProp = name === "defaultValue" ? "value" : "checked";
-        Object.defineProperty(dom, name, {
-            set: function set(value) {
-                if (dom.type === "textarea") {
-                    dom.innerHTML = value;
-                }
-                if (!dom._observing) {
-                    if (!dom._setValue) {
-                        //注意defaultValue只会同步一次value
-                        var parsedValue = dom[controllProp] = value;
-                        dom._persistValue = Array.isArray(value) ? value : parsedValue;
-                        dom._setValue = true;
-                    }
-                } else {
-                    //如果用户私下改变defaultValue，那么_setValue会被抺掉
-                    dom._setValue = value == null ? false : true;
-                }
-                dom._defaultValue = value;
-            },
-            get: function get() {
-                return dom._defaultValue;
-            },
-            configurable: true
-        });
-    } catch (e) {}
-};
-
 var rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, vnode) {
     if (rform.test(dom.nodeName)) {
-        if (!dom._hijack) {
-            dom._hijack = true;
-            uncontrolledImpl.observe(dom, name); //重写defaultXXX的setter/getter
+        if (!dom._uncontrolled) {
+            dom._uncontrolled = true;
+            inputMonitor.observe(dom, name); //重写defaultXXX的setter/getter
         }
         dom._observing = false;
         if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {
@@ -2401,16 +2404,50 @@ var duplexData = {
         onInput: 1,
         readOnly: 1,
         disabled: 1
-    }, preventUserInput, "change", "input"],
+    }, function (a) {
+        return a == null ? "" : a + "";
+    }, function (dom, value, vnode) {
+        if (vnode.type === "input") {
+            dom.setAttribute("value", value);
+        }
+        if (dom._persistValue !== value) {
+            dom._persistValue = dom.value = value;
+        }
+    }, keepPersistValue, "change", "input"],
     2: ["checked", {
         onChange: 1,
         onClick: 1,
         readOnly: 1,
         disabled: 1
-    }, preventUserClick, "click"],
+    }, function (a) {
+        return !!a;
+    }, function (dom, value) {
+        if (dom._persistValue !== value) {
+            dom._persistValue = dom.checked = value;
+        }
+    }, keepPersistValue, "change", "click"],
     3: ["value", {
         onChange: 1,
         disabled: 1
+    }, function (a) {
+        return a;
+    }, function postUpdateSelectedOptions(dom, value, vnode, isUncontrolled) {
+        //只有在单选的情况，用户会乱修改select.value
+        if (isUncontrolled) {
+            if (!dom.multiple && dom.value !== dom._persistValue) {
+                dom._persistValue = dom.value;
+                dom._setValue = false;
+            }
+        } else {
+            //props中必须有value
+            if ("value" in vnode.props) {
+                dom._persistValue = value;
+            }
+        }
+
+        preventUserChange({
+            target: dom
+        });
     }, preventUserChange, "change"]
 };
 
@@ -2437,48 +2474,35 @@ var duplexMap = {
     "select-multiple": 3
 };
 
-function processFormElement(vnode, dom, props) {
+function inputControll(vnode, dom, props) {
     var domType = dom.type;
     var duplexType = duplexMap[domType];
+    var isUncontrolled = dom._uncontrolled;
     if (duplexType) {
         var data = duplexData[duplexType];
         var duplexProp = data[0];
         var keys = data[1];
-        var cb = data[2];
-        var value = props[duplexProp];
-        if (duplexType === 1 && vnode.type === "input" && duplexProp === "value") {
-            if (value == null) {
-                if (props.defaultValue != null) {
-                    value = props.defaultValue;
-                } else {
-                    return;
-                }
-            } else {
-                value = value + "";
-            }
-            dom.setAttribute("value", value);
+        var converter = data[2];
+        var sideEffect = data[3];
+        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
+        sideEffect(dom, value, vnode, isUncontrolled);
+        if (isUncontrolled) {
+            return;
         }
-        if (duplexProp in props) {
-            if (Array.isArray(value)) {
-                dom._persistValue = value;
-            } else {
-                if (dom._persistValue !== value) {
-                    dom._persistValue = dom[duplexProp] = value;
-                }
-            }
 
-            if (!hasOtherControllProperty(props, keys)) {
-                // eslint-disable-next-line
-                console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
-                dom["on" + data[3]] = cb;
-                dom["on" + data[4]] = cb;
-            } else {
-                hijackEvent(dom, data[3], cb);
-                hijackEvent(dom, data[4], cb);
-            }
-        }
-        if (duplexType === 3) {
-            postUpdateSelectedOptions(vnode, dom);
+        var handle = data[4];
+        var event1 = data[5];
+        var event2 = data[6];
+        if (!hasOtherControllProperty(props, keys)) {
+            // eslint-disable-next-line
+            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
+            dom["on" + event1] = handle;
+            dom["on" + event2] = handle;
+            console.log("===============");
+        } else {
+            hijackEvent(dom, event1, handle);
+            hijackEvent(dom, event2, handle);
+            console.log(event1, event2);
         }
     } else {
         //处理option标签
@@ -2489,27 +2513,31 @@ function processFormElement(vnode, dom, props) {
         }
         if ("value" in props) {
             dom.duplexValue = dom.value = props.value;
-            dom.duplexValue = dom.value;
         } else {
             dom.duplexValue = dom.text;
         }
     }
 }
-function hijackEvent(dom, n, cb) {
+function hijackEvent(dom, name, cb) {
     var obj = dom.__events;
     if (!obj) {
         return;
     }
-    var fn = obj[n];
-    if (!fn) {
+    var fn = obj[name];
+    if (!fn || fn._hijack) {
         return;
     }
-    obj[n] = function (e) {
-        fn.call(dom, e);
-        cb(e);
-        obj[n] = fn;
+    var neo = obj[name] = merge(fn, cb);
+    neo._hijack = true;
+}
+
+function merge(fn1, fn2) {
+    return function (e) {
+        fn1.call(this, e);
+        fn2.call(this, e);
     };
 }
+
 function hasOtherControllProperty(props, keys) {
     for (var key in keys) {
         if (props[key]) {
@@ -2517,20 +2545,39 @@ function hasOtherControllProperty(props, keys) {
         }
     }
 }
-
-function preventUserInput(e) {
-    var target = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : "value";
-    var v = target._persistValue;
-    var noNull = v != null;
-    var noEqual = target[name] !== v; //2.0 , 2
-    if (noNull && noEqual) {
-        target[name] = v;
+var breakNode = {
+    form: 1,
+    body: 1
+};
+function syncOtherRadios(dom, v) {
+    var queryRoot = dom;
+    while (queryRoot.parentNode) {
+        if (breakNode[queryRoot.nodeName.toLowerCase()]) {
+            break;
+        }
+        queryRoot = queryRoot.parentNode;
+    }
+    var inputs = queryRoot ? queryRoot.getElementsByTagName("input") : [];
+    for (var i = 0, el; el = inputs[i++];) {
+        if (el !== dom && el.type === dom.type && el.name === dom.name && el.form === dom.form) {
+            if (el.checked !== !v) {
+                el.checked = !v;
+            }
+        }
     }
 }
-
-function preventUserClick(e) {
-    e.preventDefault();
+function keepPersistValue(e) {
+    var dom = e.target;
+    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
+    var v = dom._persistValue;
+    if (dom.type === "radio") {
+        syncOtherRadios(dom, v);
+    }
+    var noNull = v != null;
+    var noEqual = dom[name] !== v; //2.0 , 2
+    if (noNull && noEqual) {
+        dom[name] = v;
+    }
 }
 
 function preventUserChange(e) {
@@ -2543,19 +2590,6 @@ function preventUserChange(e) {
         updateOptionsOne(options, options.length, value);
     }
     target._setSelected = true;
-}
-
-function postUpdateSelectedOptions(vnode, target) {
-    if (target._setSelected && !target.multiple) {
-        //只有在单选的情况，用户会乱修改select.value
-        if (target.value !== target._persistValue) {
-            target._persistValue = target.value;
-            target._setValue = false;
-        }
-    }
-    preventUserChange({
-        target: target
-    });
 }
 
 function updateOptionsOne(options, n, propValue) {
@@ -2641,7 +2675,7 @@ DOMUpdater.prototype = {
 
         diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
-            processFormElement(vnode, dom, props);
+            inputControll(vnode, dom, props);
         }
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);

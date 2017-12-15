@@ -12,11 +12,12 @@ describe("ReactDOMSelect", function() {
         div, container
     beforeEach(function() {
         div = document.createElement("div");
+
         container = div
         body.appendChild(div);
     });
     afterEach(function() {
-       
+        div.innerHTML = ""
         body.removeChild(div);
         container = null
     });

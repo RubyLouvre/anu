@@ -618,4 +618,60 @@ describe("switching text inputs between numeric and string numbers", () => {
           !node.hasAttribute('value') || node.getAttribute('value').length > 0,
         ).toBe(true);
       });
+
+
+      it('should control radio buttons', () => {
+        class RadioGroup extends React.Component {
+          render() {
+            return (
+              <div>
+                <input
+                  ref="a"
+                  type="radio"
+                  name="fruit"
+                  checked={true}
+                  onChange={emptyFunction}
+                />
+                A
+                <input ref="b" type="radio" name="fruit" onChange={emptyFunction} />
+                B
+                <form>
+                  <input
+                    ref="c"
+                    type="radio"
+                    name="fruit"
+                    defaultChecked={true}
+                    onChange={emptyFunction}
+                  />
+                </form>
+              </div>
+            );
+          }
+        }
+    
+        const stub = ReactTestUtils.renderIntoDocument(<RadioGroup />);
+        const aNode = stub.refs.a;
+        const bNode = stub.refs.b;
+        const cNode = stub.refs.c;
+    
+        expect(aNode.checked).toBe(true);
+        expect(bNode.checked).toBe(false);
+        // c is in a separate form and shouldn't be affected at all here
+        expect(cNode.checked).toBe(true);
+    
+        bNode.checked = true;
+        // This next line isn't necessary in a proper browser environment, but
+        // jsdom doesn't uncheck the others in a group (which makes this whole test
+        // a little less effective)
+        aNode.checked = false;
+        expect(cNode.checked).toBe(true);
+    
+        // Now let's run the actual ReactDOMInput change event handler
+        ReactTestUtils.Simulate.change(bNode);
+    
+        // The original state should have been restored
+        expect(aNode.checked).toBe(true);
+        expect(cNode.checked).toBe(true);
+      });
+    
 });

@@ -2,7 +2,8 @@ import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
-export var uncontrolledImpl = {};
+import { inputMonitor } from "./inputMonitor";
+
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 var controlled = {
@@ -191,44 +192,13 @@ var builtinStringProps = {
     lang: 1
 };
 
-uncontrolledImpl.observe = function(dom, name) {
-    try {
-        if("_persistValue" in dom){
-            dom._setValue = true;
-        }
-        var controllProp = name === "defaultValue" ? "value" : "checked";
-        Object.defineProperty(dom, name, {
-            set: function(value) {
-                if (dom.type === "textarea") {
-                    dom.innerHTML = value;
-                }
-                if (!dom._observing) {
-                    if (!dom._setValue) {
-                        //注意defaultValue只会同步一次value
-                        var parsedValue = (dom[controllProp] = value);
-                        dom._persistValue = Array.isArray(value) ? value : parsedValue;
-                        dom._setValue = true;
-                    }
-                } else {
-                    //如果用户私下改变defaultValue，那么_setValue会被抺掉
-                    dom._setValue = value == null ? false : true;
-                }
-                dom._defaultValue = value;
-            },
-            get: function() {
-                return dom._defaultValue;
-            },
-            configurable: true
-        });
-    } catch (e) {}
-};
 
 var rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, vnode) {
     if (rform.test(dom.nodeName)) {
-        if (!dom._hijack) {
-            dom._hijack = true;
-            uncontrolledImpl.observe(dom, name); //重写defaultXXX的setter/getter
+        if (!dom._uncontrolled) {
+            dom._uncontrolled = true;
+            inputMonitor.observe(dom, name); //重写defaultXXX的setter/getter
         }
         dom._observing = false;
         if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {

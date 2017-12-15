@@ -2,7 +2,7 @@
 import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
-import { processFormElement, formElements } from "./ControlledComponent";
+import { formElements, inputControll } from "./inputControll";
 import { returnFalse, returnTrue} from "../src/util";
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
@@ -35,7 +35,7 @@ DOMUpdater.prototype = {
         var { type, props, lastProps} = vnode;
         diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
-            processFormElement(vnode, dom, props);
+            inputControll(vnode, dom, props);
         }
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
