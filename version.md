@@ -2,14 +2,12 @@
 
 1. 重构findDOMNode,遇到注释节点返回null
 2. 支持React组件返回任何数据类型，如数组，字符串，数字，布尔,但对于undefined, null, boolean不会生成真实DOM
-3. 支持componentDidCatch钩子
+3. 支持componentDidCatch钩子与整个错误边界的逻辑
 4. 支持createPortal
 5. 分离出Vndoe模块，并且附带其节点关系属性（return, sibling, child），
    * return相当于之前的_hostParent,
    * sibling相当于nextSibling, 
    * child相当于firstChild，
-   * batchMpunt 批量添加DOM节点
-   * batchUpdate 批量更新DOM节点
 6. 模仿React16，使用`stateNode属性`代替旧有的_hostNode与_instance。 
 7. React.Children与flattenChilden底层依赖的方法由_flattenChildren改为operateChildren，让其更具通用性，
    flattenChilden更名为fiberizeChildren，产出一个`带链表结构的数组`。
