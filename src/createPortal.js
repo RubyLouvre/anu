@@ -1,41 +1,48 @@
-import { createVnode, fiberizeChildren, createElement } from "./createElement";
-import { options } from "./util";
+import { createVnode, createElement, fiberizeChildren } from "./createElement";
+import { Refs } from "./Refs";
 import { DOMUpdater } from "./DOMUpdater";
+import { disposeChildren } from "./dispose";
 
-function Portal(props) {
-    this.container = props.container;
+function Portal(props, context) {
+    this.isPortal = true;
+    this.props = props;
+    this.context = context;
 }
 Portal.prototype = {
     constructor: Portal,
     componentWillUnmount() {
-        var parentVnode = this.container;
-        console.log("移除");
-        options.diffChildren(this.portalUpdater.children, {}, parentVnode, {}, [], []);
+        disposeChildren(this._children, this.updater.updateQueue);
     },
-    componentWillReceiveProps(nextProps, context) {
-        var parentVnode = this.container;
-        options.receiveVnode(parentVnode, nextProps.container, context, [], []);
+    componentWillReceiveProps(props, context) {
+        this.props = props;
+        this.context = context;
+        updateDialog(this);
     },
     componentWillMount() {
-        var parentVnode = this.container;
-        var updater = new DOMUpdater(parentVnode);
-        this.portalUpdater = updater;
-        this.insertQueue = [];
-        var nextChildren = fiberizeChildren(parentVnode.props.children, updater);
-        options.diffChildren({}, nextChildren, parentVnode, {}, [], []);
+        updateDialog(this);
     },
     render() {
         return null;
     }
 };
+function updateDialog(self) {
+    let vnode = self.props.vnode;
+    let lastChildren = self._children || {};
+    let updateQueue = self.updater.updateQueue;
+    if (!self._updater) {
+        self._updater = new DOMUpdater(vnode);
+    }
+    let nextChildren = (self._children = fiberizeChildren(self.props.child, self._updater));
+    Refs.diffChildren(lastChildren, nextChildren, vnode, self.context, updateQueue, []);
+}
+
 //[Top API] ReactDOM.createPortal
-export function createPortal(children, node) {
-    var container = createVnode(node);
-    var props = container.props;
-    props.children = children;
+export function createPortal(child, node) {
+    var vnode = createVnode(node);
     var portal = createElement(Portal, {
-        container
+        vnode,
+        child
     });
-    container.return = portal;
+    vnode.return = portal;
     return portal;
 }

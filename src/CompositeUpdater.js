@@ -170,6 +170,7 @@ CompositeUpdater.prototype = {
         instance.updater = this;
         this.insertQueue = insertQueue;
         this.insertPoint = insertQueue[0];
+        this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
             instance.state = this.mergeStates();
@@ -271,7 +272,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
+        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {

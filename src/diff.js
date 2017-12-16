@@ -1,4 +1,4 @@
-import { options, innerHTML,noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
+import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
 import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
@@ -231,8 +231,9 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     nextVnode.stateNode = stateNode;
     if (!updater._dirty) {
         updater._receiving = true;
+        updater.updateQueue = updateQueue;
         captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
-        if(updater._hasError){
+        if (updater._hasError) {
             return;
         }
         delete updater._receiving;
@@ -332,5 +333,5 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
 }
 
-options.receiveVnode = receiveVnode;
-options.diffChildren = diffChildren;
+Refs.diffChildren = diffChildren;
+

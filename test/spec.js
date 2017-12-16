@@ -79,7 +79,9 @@ require("./modules/ReactES6Class-test.jsx");
 
 require("./modules/ReactErrorBoundaries-test.jsx");
 
-require("./modules/insert.jsx");
+require("./modules/insert.spec.jsx");
+
+require("./modules/createPortal.spec.jsx");
 
 /*
 

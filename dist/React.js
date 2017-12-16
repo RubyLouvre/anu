@@ -779,6 +779,9 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
+    if (instance.isPortal) {
+        updater.updateQueue = updateQueue;
+    }
     if (!silent) {
         updater.addState("dispose");
         updateQueue.push(updater);
@@ -2166,41 +2169,47 @@ DOMUpdater.prototype = {
     }
 };
 
-function Portal(props) {
-    this.container = props.container;
+function Portal(props, context) {
+    this.isPortal = true;
+    this.props = props;
+    this.context = context;
 }
 Portal.prototype = {
     constructor: Portal,
     componentWillUnmount: function componentWillUnmount() {
-        var parentVnode = this.container;
-        console.log("移除");
-        options.diffChildren(this.portalUpdater.children, {}, parentVnode, {}, [], []);
+        disposeChildren(this._children, this.updater.updateQueue);
     },
-    componentWillReceiveProps: function componentWillReceiveProps(nextProps, context) {
-        var parentVnode = this.container;
-        options.receiveVnode(parentVnode, nextProps.container, context, [], []);
+    componentWillReceiveProps: function componentWillReceiveProps(props, context) {
+        this.props = props;
+        this.context = context;
+        updateDialog(this);
     },
     componentWillMount: function componentWillMount() {
-        var parentVnode = this.container;
-        var updater = new DOMUpdater(parentVnode);
-        this.portalUpdater = updater;
-        this.insertQueue = [];
-        var nextChildren = fiberizeChildren(parentVnode.props.children, updater);
-        options.diffChildren({}, nextChildren, parentVnode, {}, [], []);
+        updateDialog(this);
     },
     render: function render() {
         return null;
     }
 };
+function updateDialog(self) {
+    var vnode = self.props.vnode;
+    var lastChildren = self._children || {};
+    var updateQueue = self.updater.updateQueue;
+    if (!self._updater) {
+        self._updater = new DOMUpdater(vnode);
+    }
+    var nextChildren = self._children = fiberizeChildren(self.props.child, self._updater);
+    Refs.diffChildren(lastChildren, nextChildren, vnode, self.context, updateQueue, []);
+}
+
 //[Top API] ReactDOM.createPortal
-function createPortal(children, node) {
-    var container = createVnode(node);
-    var props = container.props;
-    props.children = children;
+function createPortal(child, node) {
+    var vnode = createVnode(node);
     var portal = createElement(Portal, {
-        container: container
+        vnode: vnode,
+        child: child
     });
-    container.return = portal;
+    vnode.return = portal;
     return portal;
 }
 
@@ -2465,6 +2474,7 @@ CompositeUpdater.prototype = {
         instance.updater = this;
         this.insertQueue = insertQueue;
         this.insertPoint = insertQueue[0];
+        this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
             instance.state = this.mergeStates();
@@ -2576,7 +2586,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        options.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
+        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
@@ -2926,6 +2936,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     nextVnode.stateNode = stateNode;
     if (!updater._dirty) {
         updater._receiving = true;
+        updater.updateQueue = updateQueue;
         captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
         if (updater._hasError) {
             return;
@@ -3025,8 +3036,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     }
 }
 
-options.receiveVnode = receiveVnode;
-options.diffChildren = diffChildren;
+Refs.diffChildren = diffChildren;
 
 var React = {
     version: "1.1.5-pre6",

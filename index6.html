@@ -2,120 +2,131 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-  <!-- <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
-   
- <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
-   
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="./dist/React.js"></script>
+  <!--<script src="./test/react.development.js"></script>
+    <script src="./test/react-dom.development.js"></script>-->
+
+  <script src="./test/babel.js"></script>
+
 
 </head>
-<body>
-    
-        <pre>应该等于
-           
-          
-        </pre>
-        <h1 id='example' class="root">
 
-        </h1>
-        <script type='text/babel'>
-           var container = document.getElementById("example")
-         //   var div = container
-            var PropTypes = React.PropTypes
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                    toThrow(b){
-                        try{
-                            a()
-                        }catch(e){
-                            console.log(e,"vs", b, e.message +""=== b+"")
-                        }
-                    }
+<body>
+
+  <pre>
+            
+    </pre>
+  <div id='example'></div>
+  <div id='console'></div>
+  <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
                 }
             }
-
-            function dispatchEventOnNode(node, type) {
-                node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
+        }
+        var PropTypes = React.PropTypes
+        var body = document.body;
+        var container = document.createElement("div");
+        body.appendChild(container);
+        var innerWillMount, innerDidMount, innerWillUnmount;
+        class Inner extends React.Component{
+            render(){
+                return <p>inner</p>;
             }
-
-            var setUntrackedValue = Object.getOwnPropertyDescriptor(
-                HTMLInputElement.prototype,
-                'value',
-            ).set;
-            function noop(){}
+            componentWillUnmount(){
+                innerWillUnmount = true;
+            }
+            componentWillMount(){
+                innerWillMount = true;
+            }
+            componentDidMount(){
+                innerDidMount = true;
+            }
+        }
+        var testBubble = 0
+        class Container extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    show: false,
+                    number: 1
+                };
+            }
             
-    
-           
+            _show() {
+                if(this.state.show){
+                    return; //防止创建多个弹窗
+                }
+                this.setState({show: true});
+            }
             
-        const select = ReactDOM.render(
-            <select multiple={true} defaultValue={["giraffe"]}>
-                <option key="monkey" value="monkey">
-                    A monkey!
-                </option>
-                <option key="giraffe" value="giraffe">
-                    A giraffe!
-                </option>
-                <option key="gorilla" value="gorilla">
-                    A gorilla!
-                </option>
-            </select>,
-            container
-        );
-        const node = ReactDOM.findDOMNode(select);
-
-        expect(node.options[0].selected).toBe(false); // monkey
-        expect(node.options[1].selected).toBe(true); // giraffe
-        expect(node.options[2].selected).toBe(false); // gorilla
-
-        ReactDOM.render(
-            <select multiple={true} defaultValue={["giraffe"]}>
-                <option key="monkey" value="monkey">
-                    A monkey!
-                </option>
-                <option key="gorilla" value="gorilla">
-                    A gorilla!
-                </option>
-            </select>,
-            container
-        );
-
-        expect(node.options[0].selected).toBe(false); // monkey
-        expect(node.options[1].selected).toBe(false); // gorilla
-
-        ReactDOM.render(
-            <select multiple={true} defaultValue={["giraffe"]}>
-                <option key="monkey" value="monkey">
-                    A monkey!
-                </option>
-                <option key="giraffe" value="giraffe">
-                    A giraffe!
-                </option>
-                <option key="gorilla" value="gorilla">
-                    A gorilla!
-                </option>
-            </select>,
-            container
-        );
-
-        expect(node.options[0].selected).toBe(false); // monkey
-        expect(node.options[1].selected).toBe(false); // giraffe
-        expect(node.options[2].selected).toBe(false); // gorilla
-</script>
-
+            _close(e) {
+                this.setState({show: false});
+            }
+            
+            render() {
+                const {show} = this.state;
+              
+                return (
+                    <div className="Container" onClick={(e)=>{
+                         testBubble = true
+                         e.preventDefault();
+                    }}>
+                        <div className="hasClick" style={{background: "#00bcd4"}} ref="openDialog" onClick={this._show.bind(this)}>
+                            <div>Click me to show the Portal content</div>
+                            <div>State: {show && "visible" || "hidden"}</div>
+                            <div ref="vdialog">
+                            {show && <Portal>
+                                <div style={{background: "#ffeebb",height:200}}>
+                                  <p ref="number">{this.state.number}</p>
+                                    <Inner />
+                                    <button ref="closeDialog" onClick={this._close.bind(this)} type="button">&times; close portal</button>
+                                </div>
+                            </Portal>}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        }
+          
+        class Portal extends React.Component{
+            constructor(props) {
+                super(props);
+                this.node = document.createElement("div");
+                this.node.id = "dynamic";
+                body.appendChild(this.node);
+            }
+            componentWillUnmount(){
+              body.removeChild( this.node )
+            }
+            render() {
+                return ReactDOM.createPortal(this.props.children, this.node);
+            }
+        }
+        var s = ReactDOM.render(<Container />, container);
+        expect(!!s.refs.openDialog).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(false);
+        s.refs.openDialog.click();
+        expect(!!document.getElementById("dynamic")).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(true);
+        expect(innerWillMount).toBe(true);
+        expect(innerDidMount).toBe(true);
+        s.setState({number:10})
+        expect(s.refs.number.innerHTML).toBe("10");
+        testBubble = false
+        expect(s.refs.vdialog.innerHTML).toBe("");
+        s.refs.closeDialog.click()
+        expect(innerWillUnmount).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(false);
+        expect(testBubble).toBe(true);
+        
+        
+               </script>
 </body>
-    
- </html>
+
+</html>
