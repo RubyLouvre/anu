@@ -3178,7 +3178,7 @@ keysPolyfill();
 setTimeout(keysPolyfill, 0);
 setTimeout(keysPolyfill, 100);
 var React = {
-    version: "1.1.5-pre6",
+    version: "1.2.0",
     render: render,
     hydrate: render,
     options: options,
