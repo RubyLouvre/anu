@@ -1,5 +1,6 @@
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { options } from "./util";
+import { DOMUpdater } from "./DOMUpdater";
 
 function Portal(props) {
     this.container = props.container;
@@ -8,18 +9,20 @@ Portal.prototype = {
     constructor: Portal,
     componentWillUnmount() {
         var parentVnode = this.container;
-        options.diffChildren(this.updater.children, {}, parentVnode, {},[]);
+        console.log("移除");
+        options.diffChildren(this.portalUpdater.children, {}, parentVnode, {}, [], []);
     },
     componentWillReceiveProps(nextProps, context) {
         var parentVnode = this.container;
-        options.receiveVnode(parentVnode, nextProps.container, context, []);
+        options.receiveVnode(parentVnode, nextProps.container, context, [], []);
     },
     componentWillMount() {
         var parentVnode = this.container;
-        var updater = this.updater;
+        var updater = new DOMUpdater(parentVnode);
+        this.portalUpdater = updater;
+        this.insertQueue = [];
         var nextChildren = fiberizeChildren(parentVnode.props.children, updater);
-        options.diffChildren({}, nextChildren, parentVnode, {},[]);
-        parentVnode.batchMount();
+        options.diffChildren({}, nextChildren, parentVnode, {}, [], []);
     },
     render() {
         return null;
@@ -28,7 +31,6 @@ Portal.prototype = {
 //[Top API] ReactDOM.createPortal
 export function createPortal(children, node) {
     var container = createVnode(node);
-    container.props = container.props || {};
     var props = container.props;
     props.children = children;
     var portal = createElement(Portal, {
