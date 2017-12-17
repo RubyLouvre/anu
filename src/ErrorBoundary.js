@@ -21,7 +21,6 @@ export function pushError(instance, hook, error) {
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        // Refs.ignoreError = Refs.doctor = catchUpdater;
     } else {
         console.warn(describeError(names, hook)); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行

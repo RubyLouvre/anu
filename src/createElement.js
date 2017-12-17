@@ -137,21 +137,18 @@ export function fiberizeChildren(c, updater) {
                 }
                 flattenChildren[index] = child;
             }
-            child.index = ret.length;
+            child.index = lastIndex;
             child.return = vnode;
             if (prev) {
                 prev.sibling = child;
-                // child.prev = prev;
             }
-            lastIndex++;
             prev = child;
-
+            lastIndex++;
             ret.push(child);
         });
         var child = ret[0];
         if (child) {
             vnode.child = child;
-            //  delete child.prev;
         }
         if (prev) {
             delete prev.sibling;

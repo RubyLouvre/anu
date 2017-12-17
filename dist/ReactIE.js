@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-16
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-17
  */
 
 (function (global, factory) {
@@ -365,21 +365,18 @@ function fiberizeChildren(c, updater) {
                 }
                 flattenChildren[index] = child;
             }
-            child.index = ret.length;
+            child.index = lastIndex;
             child.return = vnode;
             if (prev) {
                 prev.sibling = child;
-                // child.prev = prev;
             }
-            lastIndex++;
             prev = child;
-
+            lastIndex++;
             ret.push(child);
         });
         var child = ret[0];
         if (child) {
             vnode.child = child;
-            //  delete child.prev;
         }
         if (prev) {
             delete prev.sibling;
@@ -1444,6 +1441,16 @@ fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
 };
 fn$1.isPureComponent = true;
 
+function AsyncComponent(props, context) {
+    Component.call(this, props, context);
+}
+var fn2 = inherit(AsyncComponent, Component);
+
+fn2.unstable_isAsyncReactComponent = true;
+fn2.render = function () {
+    return this.props.children;
+};
+
 var rnumber = /^-?\d+(\.\d+)?$/;
 /**
      * 为元素样子设置样式
@@ -1887,7 +1894,6 @@ var duplexData = {
             dom.setAttribute("value", value);
         } else if (vnode.type === "textarea" && value === null) {
             value = dom.innerHTML;
-            //console.log(dom.innerHTML, value, dom._persistValue !== value)
         }
         if (dom._persistValue !== value) {
             dom._persistValue = dom.value = value;
@@ -2231,7 +2237,6 @@ function pushError(instance, hook, error) {
         var vnode = catchUpdater.vnode;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
-        // Refs.ignoreError = Refs.doctor = catchUpdater;
     } else {
         console.warn(describeError(names, hook)); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行

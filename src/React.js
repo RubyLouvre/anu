@@ -6,7 +6,7 @@ import { Component } from "./Component";
 import { win as window } from "./browser";
 import { createClass } from "./createClass";
 import { cloneElement } from "./cloneElement";
-import { PureComponent } from "./PureComponent";
+import { PureComponent, AsyncComponent } from "./PureComponent";
 import { createElement } from "./createElement";
 import { createPortal } from "./createPortal";
 import { render,findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
@@ -29,6 +29,7 @@ var React = {
     isValidElement,
     unmountComponentAtNode,
     unstable_renderSubtreeIntoContainer,
+    unstable_AsyncComponent:AsyncComponent,
     createFactory(type) {
         console.warn("createFactory is deprecated"); // eslint-disable-line
         var factory = createElement.bind(null, type);
