@@ -47,22 +47,13 @@
                     }
                 }
             }
-            const el = (
-                <select defaultValue="giraffe">
-                    <option value="monkey">A monkey!</option>
-                    <option value="giraffe">A giraffe!</option>
-                    <option value="gorilla">A gorilla!</option>
-                </select>
-            );
-            const stub = ReactDOM.render(el, container);
-            const node = ReactDOM.findDOMNode(stub);
-    
-            expect(node.value).toBe("giraffe");
-    
-            node.value = "monkey";
-            ReactDOM.render(el, container);
-            // Uncontrolled selects shouldn't change the value after first mounting
-            expect(node.value).toEqual("monkey");
+            var a =  ReactDOM.render(<textarea defaultValue="foo" />, container);
+            ReactDOM.render(<textarea defaultValue="bar" />, container);
+            ReactDOM.render(<textarea defaultValue="noise" />, container);
+            expect(a.defaultValue).toBe("noise");
+            expect(a.value).toBe("foo");
+            expect(a.textContent).toBe("noise");
+            expect(a.innerHTML).toBe("noise");
           </script>
 
 </body>

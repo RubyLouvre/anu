@@ -369,67 +369,71 @@ function getProps(node) {
     return props;
 }
 
-function fiberizeChildren(c, updater) {
-    var flattenChildren = {},
-        vnode = updater.vnode,
-        ret = [],
-        prev = void 0;
-    if (c !== void 666) {
-        var lastText,
-            lastIndex = 0;
-        operateChildren(c, "", function (child, index) {
-            var childType = typeNumber(child);
-            if (childType < 3) {
-                //在React16中undefined, null, boolean不会产生节点
-                lastText = null;
-                return;
-            } else if (childType < 5) {
-                //number string
-                if (lastText) {
-                    //合并相邻的文本节点
-                    lastText.text += child;
-                    return;
-                }
-                lastText = child = createVText("#text", child + "");
-            } else {
-                lastText = null;
-            }
-            var key = child.key;
+var lastText;
+var flattenIndex;
+var flattenObject;
+var flattenPrev;
+var flattenArray;
+function flattenCb(child, index, vnode) {
+    var childType = typeNumber(child);
+    if (childType < 3) {
+        //在React16中undefined, null, boolean不会产生节点
+        lastText = null;
+        return;
+    } else if (childType < 5) {
+        //number string
+        if (lastText) {
+            //合并相邻的文本节点
+            lastText.text += child;
+            return;
+        }
+        lastText = child = createVText("#text", child + "");
+    } else {
+        lastText = null;
+    }
+    var key = child.key;
+    if (key && !flattenObject[".$" + key]) {
+        flattenObject[".$" + key] = child;
+    } else {
+        if (index === ".") {
+            index = "." + flattenIndex;
+        }
+        flattenObject[index] = child;
+    }
+    child.index = flattenIndex;
+    child.return = vnode;
+    if (flattenPrev) {
+        flattenPrev.sibling = child;
+    }
+    flattenPrev = child;
+    flattenIndex++;
+    flattenArray.push(child);
+}
 
-            if (key && !flattenChildren[".$" + key]) {
-                flattenChildren[".$" + key] = child;
-            } else {
-                if (index === ".") {
-                    index = "." + lastIndex;
-                }
-                flattenChildren[index] = child;
-            }
-            child.index = lastIndex;
-            child.return = vnode;
-            if (prev) {
-                prev.sibling = child;
-            }
-            prev = child;
-            lastIndex++;
-            ret.push(child);
-        });
-        var child = ret[0];
+function fiberizeChildren(c, updater) {
+    flattenObject = {}, flattenPrev = null, flattenArray = [];
+    var vnode = updater.vnode;
+    if (c !== void 666) {
+        lastText = null;
+        flattenIndex = 0;
+        operateChildren(c, "", flattenCb, vnode);
+        var child = flattenArray[0];
         if (child) {
             vnode.child = child;
         }
-        if (prev) {
-            delete prev.sibling;
+        if (flattenPrev) {
+            delete flattenPrev.sibling;
         }
     }
-    return updater.children = flattenChildren;
+    return updater.children = flattenObject;
 }
 
-function operateChildren(children, prefix, callback) {
+function operateChildren(children, prefix, callback, parent) {
     var iteratorFn;
     if (children) {
         if (children.forEach) {
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, parent);
             });
             return;
         } else if (iteratorFn = getIteractor(children)) {
@@ -437,7 +441,7 @@ function operateChildren(children, prefix, callback) {
                 ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, parent);
                 ii++;
             }
             return;
@@ -446,7 +450,7 @@ function operateChildren(children, prefix, callback) {
     if (Object(children) === children && !children.type) {
         throw "children中存在非法的对象";
     }
-    callback(children, prefix || ".");
+    callback(children, prefix || ".", parent);
 }
 var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";

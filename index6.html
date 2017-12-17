@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script src="./dist/React.js"></script>
-  <!--<script src="./test/react.development.js"></script>
-    <script src="./test/react-dom.development.js"></script>-->
+  <script src="./react.development2.js"></script>
+  <script src="./react-dom.development2.js"></script>
 
   <script src="./test/babel.js"></script>
 
@@ -28,105 +28,53 @@
                 }
             }
         }
-        var PropTypes = React.PropTypes
-        var body = document.body;
-        var container = document.createElement("div");
-        body.appendChild(container);
-        var innerWillMount, innerDidMount, innerWillUnmount;
-        class Inner extends React.Component{
-            render(){
-                return <p>inner</p>;
-            }
-            componentWillUnmount(){
-                innerWillUnmount = true;
-            }
-            componentWillMount(){
-                innerWillMount = true;
-            }
-            componentDidMount(){
-                innerDidMount = true;
-            }
-        }
-        var testBubble = 0
-        class Container extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    show: false,
-                    number: 1
-                };
-            }
-            
-            _show() {
-                if(this.state.show){
-                    return; //防止创建多个弹窗
+      var container = document.getElementById("example");
+      var AsyncComponent = React.unstable_AsyncComponent;
+
+      var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a,"vs", b, a === b)
+            },
+            toEqual(b){
+                console.log(a,"vs", b, a +""=== b+"")
+            },
+            toThrow(b){
+                try{
+                    a()
+                }catch(e){
+                    console.log(e,"vs", b, e.message +""=== b+"")
                 }
-                this.setState({show: true});
-            }
-            
-            _close(e) {
-                this.setState({show: false});
-            }
-            
-            render() {
-                const {show} = this.state;
-              
-                return (
-                    <div className="Container" onClick={(e)=>{
-                         testBubble = true
-                         e.preventDefault();
-                    }}>
-                        <div className="hasClick" style={{background: "#00bcd4"}} ref="openDialog" onClick={this._show.bind(this)}>
-                            <div>Click me to show the Portal content</div>
-                            <div>State: {show && "visible" || "hidden"}</div>
-                            <div ref="vdialog">
-                            {show && <Portal>
-                                <div style={{background: "#ffeebb",height:200}}>
-                                  <p ref="number">{this.state.number}</p>
-                                    <Inner />
-                                    <button ref="closeDialog" onClick={this._close.bind(this)} type="button">&times; close portal</button>
-                                </div>
-                            </Portal>}
-                            </div>
-                        </div>
-                    </div>
-                );
             }
         }
-          
-        class Portal extends React.Component{
-            constructor(props) {
-                super(props);
-                this.node = document.createElement("div");
-                this.node.id = "dynamic";
-                body.appendChild(this.node);
-            }
-            componentWillUnmount(){
-              body.removeChild( this.node )
-            }
-            render() {
-                return ReactDOM.createPortal(this.props.children, this.node);
-            }
-        }
-        var s = ReactDOM.render(<Container />, container);
-        expect(!!s.refs.openDialog).toBe(true);
-        expect(!!s.refs.closeDialog).toBe(false);
-        s.refs.openDialog.click();
-        expect(!!document.getElementById("dynamic")).toBe(true);
-        expect(!!s.refs.closeDialog).toBe(true);
-        expect(innerWillMount).toBe(true);
-        expect(innerDidMount).toBe(true);
-        s.setState({number:10})
-        expect(s.refs.number.innerHTML).toBe("10");
-        testBubble = false
-        expect(s.refs.vdialog.innerHTML).toBe("");
-        s.refs.closeDialog.click()
-        expect(innerWillUnmount).toBe(true);
-        expect(!!s.refs.closeDialog).toBe(false);
-        expect(testBubble).toBe(true);
-        
-        
-               </script>
+    }
+    
+    let instance;
+    class Component extends React.unstable_AsyncComponent {
+      state = {step: 0};
+      render() {
+        instance = this;
+        return <div>{this.state.step}</div>;
+      }
+    }
+
+    ReactDOM.render(
+      <div>
+        <Component />
+      </div>,
+      container,
+    );
+    setTimeout(function(){
+      instance.setState({step: 1});
+      expect(container.textContent).toEqual('0');
+      setTimeout(function(){
+        expect(container.textContent).toEqual('1');
+      },200)
+    
+    },100)
+   
+
+    </script>
 </body>
 
 </html>
