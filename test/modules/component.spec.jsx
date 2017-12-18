@@ -178,7 +178,7 @@ describe("组件相关", function() {
         ReactTestUtils.Simulate.click(ReactDOM.findDOMNode(vnode));
         expect(ReactDOM.findDOMNode(vnode).innerHTML).toBe("9");
     });
-    it("子组件是无状态组件", async () => {
+    it("子组件是无状态组件", () => {
         function Output(props) {
             return <strong>{props.value}</strong>;
         }
@@ -204,15 +204,21 @@ describe("组件相关", function() {
                 );
             }
         }
+        function dispatchEventOnNode(node, type) {
+            node.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
+        }
 
-        var s = React.render(<App />, div);
-        expect(s.refs.a.value).toBe("南京");
-        await browser
-            .setValue(s.refs.a, "南京22")
-            .pause(200)
-            .$apply();
-        expect(s.refs.a.value).toBe("南京22");
-        expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");
+        var s = ReactDOM.render(<App />, div);
+        var node = s.refs.a
+        expect(node.value).toBe("南京");
+        node.value = "南京A"
+        ReactTestUtils.Simulate.input(node);
+        
+        expect(node.value).toBe("南京A");
+        node.value = "南京AB"
+        ReactTestUtils.Simulate.input(node);
+        expect(node.value).toBe("南京AB");
+        expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京AB");
     });
     
     it("一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount", function() {

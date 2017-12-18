@@ -5,12 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-   <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>
    
   <!--<script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
-   
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -25,7 +24,7 @@
         </h1>
         <script type='text/babel'>
            var container = document.getElementById("example")
-         //   var div = container
+           var div = container
             var PropTypes = React.PropTypes
             if(!window.ReactDOM){
               window.ReactDOM = React
@@ -47,13 +46,20 @@
                     }
                 }
             }
-            var a =  ReactDOM.render(<textarea defaultValue="foo" />, container);
-            ReactDOM.render(<textarea defaultValue="bar" />, container);
-            ReactDOM.render(<textarea defaultValue="noise" />, container);
-            expect(a.defaultValue).toBe("noise");
-            expect(a.value).toBe("foo");
-            expect(a.textContent).toBe("noise");
-            expect(a.innerHTML).toBe("noise");
+            var container = document.createElement("div");
+            
+                    document.body.appendChild(container);
+                    function emptyFunction(){}
+                    var stub = <input type="number" value={2} onChange={emptyFunction} />;
+                    stub = ReactDOM.render(stub, container);
+                    var node = ReactDOM.findDOMNode(stub);
+            
+                    node.value = "0.0";
+                    ReactTestUtils.Simulate.change(node);
+                    expect(node.value).toBe("0.0");
+                  //  document.body.removeChild(container);
+           
+    
           </script>
 
 </body>

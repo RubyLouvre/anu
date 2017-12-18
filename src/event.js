@@ -1,6 +1,7 @@
 import { document } from "./browser";
 import { isFn, noop, options } from "./util";
 import { flushUpdaters } from "./scheduler";
+import { Refs } from "./Refs";
 
 var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -48,6 +49,14 @@ export function dispatchEvent(e, type, end) {
     }
     options.async = false;
     flushUpdaters();
+    Refs.controlledCbs.forEach(function(el){
+        if(el.stateNode){
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Refs.controlledCbs.length = 0;
     
 }
 

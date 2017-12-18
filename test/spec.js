@@ -17,6 +17,7 @@ require("./modules/ReactDOMTextarea-test.jsx");
 
 require("./modules/ReactDOMSelect-test.jsx");
 require("./modules/ReactDOMOption-test.jsx");
+
 require("./modules/ReactDOMInput-test.jsx");
 
 
@@ -26,7 +27,6 @@ require("./modules/diffProps.spec.jsx");
 
 
 require("./modules/component.spec.jsx");
-
 
 require("./modules/event.spec.jsx");
 

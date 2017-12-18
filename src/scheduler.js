@@ -31,7 +31,6 @@ var placehoder = {
 export function drainQueue(queue) {
     options.beforePatch();
     let updater;
-
     while ((updater = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
@@ -85,7 +84,6 @@ export function drainQueue(queue) {
                     doctor.children = {};
                     
                 });
-                // rejectedQueue = Array.from(new Set(rejectedQueue));
                 doctors.forEach(function(doctor){
                     if (addDoctor) {
                         rejectedQueue.push(doctor);
@@ -100,7 +98,7 @@ export function drainQueue(queue) {
         }
         updater.transition(queue);
     }
-
+   
     options.afterPatch();
     var error = Refs.error;
     if (error) {

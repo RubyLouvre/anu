@@ -7,8 +7,8 @@
 
    <script type='text/javascript' src="./dist/React.js"></script>
 
-  <!--<script type='text/javascript' src="./test/react.development.js"></script>
-   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+ <!--<script type='text/javascript' src="./react.js"></script>
+   <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
@@ -45,17 +45,42 @@
         }
     }
    // console.log(container)
-   var dom = ReactDOM.render(
-    <select value={222}>
-        <option value={111}>aaa</option>
-        <option value={"222"}>xxx</option>
-        <option value={222}>yyy</option>
+   function Output(props) {
+    return <strong>{props.value}</strong>;
+}
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            value: "南京"
+        };
+    }
 
-        <option value={333}>ccc</option>
-    </select>,
-    container
-);
-expect(dom.options[2].selected).toBe(true);//选中第二个
+    onChange(e) {
+        this.setState({
+            value: e.target.value
+        });
+    }
+    render() {
+        return (
+            <div>
+                <Output value={this.state.value} />
+                <input ref="a" value={this.state.value} onInput={this.onChange.bind(this)} />
+            </div>
+        );
+    }
+}
+
+var s = ReactDOM.render(<App />, div);
+expect(s.refs.a.value).toBe("南京");
+/*
+await browser
+    .setValue(s.refs.a, "南京22")
+    .pause(200)
+    .$apply();
+expect(s.refs.a.value).toBe("南京22");
+expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");
+*/
 </script>
 
 </body>

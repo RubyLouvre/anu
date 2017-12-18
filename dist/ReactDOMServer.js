@@ -95,6 +95,7 @@ function getDOMNode() {
 var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 var Refs = {
+    controlledCbs: [],
     mountOrder: 1,
     currentOwner: null,
     // errorHook: string,//发生错误的生命周期钩子
@@ -228,7 +229,9 @@ function flattenCb(child, index, vnode) {
 }
 
 function fiberizeChildren(c, updater) {
-    flattenObject = {}, flattenPrev = null, flattenArray = [];
+    flattenObject = {};
+    flattenPrev = null;
+    flattenArray = [];
     var vnode = updater.vnode;
     if (c !== void 666) {
         lastText = null;

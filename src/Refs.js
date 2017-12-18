@@ -5,6 +5,7 @@ function getDOMNode() {
 export const pendingRefs = [];
 window.pendingRefs = pendingRefs;
 export var Refs = {
+    controlledCbs: [],
     mountOrder: 1,
     currentOwner: null,
     // errorHook: string,//发生错误的生命周期钩子

@@ -1,6 +1,7 @@
 /**
 通过事件绑定实现受控组件
  */
+import { Refs } from "./Refs";
 export const formElements = {
     select: 1,
     textarea: 1,
@@ -22,6 +23,21 @@ var duplexData = {
         function(dom, value, vnode) {
             if (vnode.type === "input") {
                 dom.setAttribute("value", value);
+                if (dom.type === "number") {
+                    var valueAsNumber = parseFloat(dom.value) || 0;
+                    if (
+                        // eslint-disable-next-line
+                        value != valueAsNumber ||
+                        // eslint-disable-next-line
+                        (value == valueAsNumber && dom.value != value)
+                    ) {
+                        // Cast `value` to a string to ensure the value is set correctly. While
+                        // browsers typically do this as necessary, jsdom doesn't.
+                        value += "";
+                    } else {
+                        return;
+                    }
+                }
             } else if (vnode.type === "textarea" && value === null) {
                 value = dom.innerHTML;
             }
@@ -136,8 +152,8 @@ export function inputControll(vnode, dom, props) {
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
         } else {
-            hijackEvent(dom, event1, handle);
-            hijackEvent(dom, event2, handle);
+            vnode.controlledCb = handle;
+            Refs.controlledCbs.push(vnode);
         }
     } else {
         //处理option标签
@@ -153,25 +169,6 @@ export function inputControll(vnode, dom, props) {
         }
     }
 }
-function hijackEvent(dom, name, cb) {
-    var obj = dom.__events;
-    if (!obj) {
-        return;
-    }
-    var fn = obj[name];
-    if (!fn || fn._hijack) {
-        return;
-    }
-    var neo = (obj[name] = merge(fn, cb));
-    neo._hijack = true;
-}
-
-function merge(fn1, fn2) {
-    return function(e) {
-        fn1.call(this, e);
-        fn2.call(this, e);
-    };
-}
 
 function hasOtherControllProperty(props, keys) {
     for (var key in keys) {
@@ -180,34 +177,11 @@ function hasOtherControllProperty(props, keys) {
         }
     }
 }
-var breakNode = {
-    form: 1,
-    body: 1
-};
-function syncOtherRadios(dom, v) {
-    var queryRoot = dom;
-    while (queryRoot.parentNode) {
-        if (breakNode[queryRoot.nodeName.toLowerCase()]) {
-            break;
-        }
-        queryRoot = queryRoot.parentNode;
-    }
-    var inputs = queryRoot ? queryRoot.getElementsByTagName("input") : [];
-    for (var i = 0, el; (el = inputs[i++]); ) {
-        if (el !== dom && el.type === dom.type && el.name === dom.name && el.form === dom.form) {
-            if (el.checked !== !v) {
-                el.checked = !v;
-            }
-        }
-    }
-}
+
 function keepPersistValue(e) {
     var dom = e.target;
     var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
     var v = dom._persistValue;
-    if (dom.type === "radio") {
-        syncOtherRadios(dom, v);
-    }
     var noNull = v != null;
     var noEqual = dom[name] !== v; //2.0 , 2
     if (noNull && noEqual) {

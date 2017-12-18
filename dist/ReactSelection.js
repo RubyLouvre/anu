@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-12-17
+ * 此版本带有selection by 司徒正美 Copyright 2017-12-18
  * IE9+
  */
 
@@ -155,6 +155,7 @@ function getDOMNode() {
 var pendingRefs = [];
 window.pendingRefs = pendingRefs;
 var Refs = {
+    controlledCbs: [],
     mountOrder: 1,
     currentOwner: null,
     // errorHook: string,//发生错误的生命周期钩子
@@ -373,7 +374,9 @@ function flattenCb(child, index, vnode) {
 }
 
 function fiberizeChildren(c, updater) {
-    flattenObject = {}, flattenPrev = null, flattenArray = [];
+    flattenObject = {};
+    flattenPrev = null;
+    flattenArray = [];
     var vnode = updater.vnode;
     if (c !== void 666) {
         lastText = null;
@@ -833,7 +836,6 @@ var placehoder = {
 function drainQueue(queue) {
     options.beforePatch();
     var updater = void 0;
-
     while (updater = queue.shift()) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
@@ -886,7 +888,6 @@ function drainQueue(queue) {
                     }
                     doctor.children = {};
                 });
-                // rejectedQueue = Array.from(new Set(rejectedQueue));
                 doctors.forEach(function (doctor) {
                     if (addDoctor) {
                         rejectedQueue.push(doctor);
@@ -957,6 +958,14 @@ function dispatchEvent(e, type, end) {
     }
     options.async = false;
     flushUpdaters();
+    Refs.controlledCbs.forEach(function (el) {
+        if (el.stateNode) {
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Refs.controlledCbs.length = 0;
 }
 
 function collectPaths(from, end) {
@@ -1897,6 +1906,20 @@ var duplexData = {
     }, function (dom, value, vnode) {
         if (vnode.type === "input") {
             dom.setAttribute("value", value);
+            if (dom.type === "number") {
+                var valueAsNumber = parseFloat(dom.value) || 0;
+                if (
+                // eslint-disable-next-line
+                value != valueAsNumber ||
+                // eslint-disable-next-line
+                value == valueAsNumber && dom.value != value) {
+                    // Cast `value` to a string to ensure the value is set correctly. While
+                    // browsers typically do this as necessary, jsdom doesn't.
+                    value += "";
+                } else {
+                    return;
+                }
+            }
         } else if (vnode.type === "textarea" && value === null) {
             value = dom.innerHTML;
         }
@@ -1992,8 +2015,8 @@ function inputControll(vnode, dom, props) {
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
         } else {
-            hijackEvent(dom, event1, handle);
-            hijackEvent(dom, event2, handle);
+            vnode.controlledCb = handle;
+            Refs.controlledCbs.push(vnode);
         }
     } else {
         //处理option标签
@@ -2009,25 +2032,6 @@ function inputControll(vnode, dom, props) {
         }
     }
 }
-function hijackEvent(dom, name, cb) {
-    var obj = dom.__events;
-    if (!obj) {
-        return;
-    }
-    var fn = obj[name];
-    if (!fn || fn._hijack) {
-        return;
-    }
-    var neo = obj[name] = merge(fn, cb);
-    neo._hijack = true;
-}
-
-function merge(fn1, fn2) {
-    return function (e) {
-        fn1.call(this, e);
-        fn2.call(this, e);
-    };
-}
 
 function hasOtherControllProperty(props, keys) {
     for (var key in keys) {
@@ -2036,34 +2040,11 @@ function hasOtherControllProperty(props, keys) {
         }
     }
 }
-var breakNode = {
-    form: 1,
-    body: 1
-};
-function syncOtherRadios(dom, v) {
-    var queryRoot = dom;
-    while (queryRoot.parentNode) {
-        if (breakNode[queryRoot.nodeName.toLowerCase()]) {
-            break;
-        }
-        queryRoot = queryRoot.parentNode;
-    }
-    var inputs = queryRoot ? queryRoot.getElementsByTagName("input") : [];
-    for (var i = 0, el; el = inputs[i++];) {
-        if (el !== dom && el.type === dom.type && el.name === dom.name && el.form === dom.form) {
-            if (el.checked !== !v) {
-                el.checked = !v;
-            }
-        }
-    }
-}
+
 function keepPersistValue(e) {
     var dom = e.target;
     var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
     var v = dom._persistValue;
-    if (dom.type === "radio") {
-        syncOtherRadios(dom, v);
-    }
     var noNull = v != null;
     var noEqual = dom[name] !== v; //2.0 , 2
     if (noNull && noEqual) {

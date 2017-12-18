@@ -522,14 +522,18 @@ describe("ReactDOMInput", function() {
     });
 
     it("should properly control 0.0 for a number input", () => {
-        return
+        var container = document.createElement("div");
+
+        document.body.appendChild(container);
+        function emptyFunction(){}
         var stub = <input type="number" value={0} onChange={emptyFunction} />;
-        stub = ReactTestUtils.renderIntoDocument(stub);
+        stub = ReactDOM.render(stub, container);
         var node = ReactDOM.findDOMNode(stub);
 
         node.value = "0.0";
-        ReactTestUtils.Simulate.change(node, { target: { value: "0.0" } });
+        ReactTestUtils.Simulate.change(node);
         expect(node.value).toBe("0.0");
+        document.body.removeChild(container);
     });
 
     it("should properly transition from an empty value to 0", function() {
@@ -698,7 +702,7 @@ describe("ReactDOMInput", function() {
     });
 
     it("should control radio buttons if the tree updates during render", () => {
-        return;
+      
         const sharedParent = document.createElement("div");
         const container1 = document.createElement("div");
         const container2 = document.createElement("div");
