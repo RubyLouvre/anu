@@ -21,6 +21,10 @@ var duplexData = {
             return a == null ? null : a + "";
         },
         function(dom, value, vnode) {
+            if (value == null) {
+                return;
+            }
+
             if (vnode.type === "input") {
                 dom.setAttribute("value", value);
                 if (dom.type === "number") {
@@ -38,8 +42,6 @@ var duplexData = {
                         return;
                     }
                 }
-            } else if (vnode.type === "textarea" && value === null) {
-                value = dom.innerHTML;
             }
             if (dom._persistValue !== value) {
                 dom._persistValue = dom.value = value;

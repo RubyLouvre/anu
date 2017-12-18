@@ -1921,6 +1921,7 @@ var duplexData = {
             }
         } else if (vnode.type === "textarea" && value === null) {
             value = dom.innerHTML;
+            console.log(value);
         }
         if (dom._persistValue !== value) {
             dom._persistValue = dom.value = value;
