@@ -1,16 +1,10 @@
-import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
 import React from "dist/React";
 import PureComponent from "src/PureComponent";
 import ReactTestUtils from "lib/ReactTestUtils";
 
 describe("组件相关", function() {
     this.timeout(200000);
-    before(async () => {
-        await beforeHook();
-    });
-    after(async () => {
-        await afterHook(false);
-    });
+
     var body = document.body,
         div;
     beforeEach(function() {
@@ -209,18 +203,18 @@ describe("组件相关", function() {
         }
 
         var s = ReactDOM.render(<App />, div);
-        var node = s.refs.a
+        var node = s.refs.a;
         expect(node.value).toBe("南京");
-        node.value = "南京A"
+        node.value = "南京A";
         ReactTestUtils.Simulate.input(node);
-        
+
         expect(node.value).toBe("南京A");
-        node.value = "南京AB"
+        node.value = "南京AB";
         ReactTestUtils.Simulate.input(node);
         expect(node.value).toBe("南京AB");
         expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京AB");
     });
-    
+
     it("一个组件由元素节点变注释节点再回元素节点，不触发componentWillUnmount", function() {
         class App extends React.Component {
             constructor(props) {
@@ -285,8 +279,8 @@ describe("组件相关", function() {
 
         expect(updateCount).toBe(2);
         expect(receiveCount).toBe(2);
-        if(!React.createPortal){
-           expect(div.firstChild.childNodes[1].nodeType).toBe(8);
+        if (!React.createPortal) {
+            expect(div.firstChild.childNodes[1].nodeType).toBe(8);
         }
         expect(destroyCount).toBe(0);
         s.change("111");
@@ -297,7 +291,6 @@ describe("组件相关", function() {
         expect(destroyCount).toBe(0);
     });
 
-   
     it("确保ref执行在componentDidMount之前", function() {
         var str = "";
         class Test extends React.Component {
@@ -550,16 +543,14 @@ describe("组件相关", function() {
         expect(c._owner.constructor).toBe(App);
     });
 
-
-
-    it('子组件的DOM节点改变了，会同步父节点的DOM',  () => {
-        var s, s2
+    it("子组件的DOM节点改变了，会同步父节点的DOM", () => {
+        var s, s2;
         class App extends React.Component {
             constructor(props) {
                 super(props);
             }
             render() {
-                return <A />
+                return <A />;
             }
         }
         class A extends React.Component {
@@ -567,27 +558,120 @@ describe("组件相关", function() {
                 super(props);
             }
             render() {
-                return <B />
+                return <B />;
             }
         }
         class B extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
-                    value: '3333'
+                    value: "3333"
                 };
             }
             componentDidMount() {
-                s2 = this
+                s2 = this;
             }
             render() {
-                return this.state.value ? <div>111</div> : <strong>3333</strong>
+                return this.state.value ? <div>111</div> : <strong>3333</strong>;
             }
         }
         var s = React.render(<App />, div);
-        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
-        s2.setState({value: 0});
-        expect(ReactDOM.findDOMNode(s) ).toBe(ReactDOM.findDOMNode(s2));
-        expect(ReactDOM.findDOMNode(s).nodeName).toBe('STRONG');
-    })
+        expect(ReactDOM.findDOMNode(s)).toBe(ReactDOM.findDOMNode(s2));
+        s2.setState({ value: 0 });
+        expect(ReactDOM.findDOMNode(s)).toBe(ReactDOM.findDOMNode(s2));
+        expect(ReactDOM.findDOMNode(s).nodeName).toBe("STRONG");
+    });
+
+
+    it("移除组件",  () => {
+        var str = "";
+        class Component1 extends React.Component {
+            componentWillUnmount() {
+                str += "xxxx";
+            }
+            render() {
+                return <div className="component1">{this.props.children}</div>;
+            }
+        }
+        class Component2 extends React.Component {
+            componentWillUnmount() {
+                str += " yyyy";
+            }
+            render() {
+                return <div className="component2">xxx</div>;
+            }
+        }
+        var index = 1;
+        function detect(a) {
+            console.log("detect 方法", index, a);
+            if (index === 1) {
+                expect(typeof a).toBe("object");
+            } else {
+                expect(a).toBeNull();
+            }
+        }
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.handleClick = this.handleClick.bind(this);
+            }
+            handleClick() {
+                index = 0;
+                this.forceUpdate();
+                setTimeout(function() {
+                    console.log("应该输出", str);
+                });
+            }
+            render() {
+                return index ? (
+                    <div ref="a" onClick={this.handleClick.bind(this)}>
+                        <Component1>
+                            <p ref={detect}>这是子节点(移除节点测试1)</p>
+                            <Component2 />
+                        </Component1>
+                    </div>
+                ) : (
+                    <div>文本节点</div>
+                );
+            }
+        }
+
+        var s = React.render(<App />, div);
+        ReactTestUtils.Simulate.click(s.refs.a);
+       
+        expect(str).toBe("xxxx yyyy");
+    });
+    it("移除组件2",  () => {
+        var index = 1;
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.handleClick = this.handleClick.bind(this);
+            }
+            handleClick() {
+                index = 0;
+                this.forceUpdate();
+            }
+            render() {
+                return index ? (
+                    <div ref="a" onClick={this.handleClick.bind(this)}>
+                        <div ref="b">
+                            <span>这是点击前</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <p>
+                            <strong>这是点击后</strong>
+                        </p>
+                    </div>
+                );
+            }
+        }
+
+        var s = React.render(<App />, div);
+
+        ReactTestUtils.Simulate.click(s.refs.a);
+        expect(div.getElementsByTagName("p").length).toBe(1);
+    });
 });

@@ -1,4 +1,4 @@
-import { document } from "./browser";
+import { document, getActiveElement } from "./browser";
 import { isFn, noop, options } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
@@ -48,6 +48,7 @@ export function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
+    Refs.focusNode = getActiveElement();
     flushUpdaters();
     Refs.controlledCbs.forEach(function(el){
         if(el.stateNode){

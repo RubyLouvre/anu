@@ -308,6 +308,7 @@ fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
+fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
 try {
@@ -324,6 +325,10 @@ try {
 var win = w;
 
 var document = w.document || fakeDoc;
+
+
+
+
 var fragment = document.createDocumentFragment();
 
 

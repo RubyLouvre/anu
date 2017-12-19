@@ -34,6 +34,7 @@ fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
+fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
 try {
@@ -50,6 +51,19 @@ export var inBrowser = b;
 export var win = w;
 
 export var document = w.document || fakeDoc;
+export function getActiveElement(){
+    return document.activeElement || document.body;
+}
+
+export function focusNode(node) {
+    try {
+        node.focus();
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 export function emptyElement(node) {

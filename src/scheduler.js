@@ -1,6 +1,7 @@
 import { options, clearArray, noop } from "./util";
 import { Refs } from "./Refs";
 import { disposeVnode } from "./dispose";
+import { focusNode } from "./browser";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -30,6 +31,7 @@ var placehoder = {
 };
 export function drainQueue(queue) {
     options.beforePatch();
+    focusNode(Refs.focusNode);
     let updater;
     while ((updater = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -76,7 +78,7 @@ export function drainQueue(queue) {
                
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctors.forEach(function(doctor, j){
+                doctors.forEach(function(doctor){
                     for (var i in doctor.children) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
@@ -98,7 +100,6 @@ export function drainQueue(queue) {
         }
         updater.transition(queue);
     }
-   
     options.afterPatch();
     var error = Refs.error;
     if (error) {

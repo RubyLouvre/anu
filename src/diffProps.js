@@ -1,5 +1,6 @@
-import { NAMESPACE } from "./browser";
+import { NAMESPACE,focusNode } from "./browser";
 import { patchStyle } from "./style";
+import { Refs } from "./Refs";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
 import { inputMonitor } from "./inputMonitor";
@@ -13,6 +14,7 @@ var controlled = {
 
 var isSpecialAttr = {
     style: 1,
+    autoFocus: 1,
     defaultValue: 1,
     defaultChecked: 1,
     children: 1,
@@ -218,6 +220,13 @@ export var actionStrategy = {
     children: noop,
     style: function(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
+    },
+    autoFocus: function(dom){
+        if("form" in dom || dom.contentEditable ==="true"){
+            if(focusNode(dom)){
+                Refs.focusNode = dom;
+            }
+        }
     },
     svgClass: function(dom, name, val) {
         if (!val) {

@@ -71,7 +71,6 @@ require("./modules/ReactCompositeComponentDOMMinimalism-test.jsx");
 require("./modules/ReactCompositeComponentState-test.jsx");
 require("./modules/ReactElementClone-test.jsx");
 
-require("./modules/ReactDOM-test.jsx");
 
 require("./modules/findDOMNode-test.jsx");
 
@@ -83,12 +82,10 @@ require("./modules/insert.spec.jsx");
 
 require("./modules/createPortal.spec.jsx");
 
+require("./modules/ReactDOM-test.jsx");
+
 /*
 
 用到selenium
-diffProps.spec
-component.spec
 event.spec
-node.spec
-redux.spec
 */

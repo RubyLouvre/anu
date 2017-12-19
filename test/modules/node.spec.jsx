@@ -1,15 +1,7 @@
-import { beforeHook, afterHook, browser } from 'karma-event-driver-ext/cjs/event-driver-hooks';
 import React from 'dist/React'
 
 describe('node模块', function () {
     this.timeout(200000);
-    before(async () => {
-        await beforeHook();
-    });
-    after(async () => {
-        await afterHook(false);
-    });
-
     var body = document.body, div
     beforeEach(function () {
         div = document.createElement('div')
@@ -22,7 +14,7 @@ describe('node模块', function () {
     
   
 
-    it('元素节点存在dangerouslySetInnerHTML', async () => {
+    it('元素节点存在dangerouslySetInnerHTML',  () => {
         class App extends React.Component {
             constructor() {
                 super()
@@ -42,9 +34,7 @@ describe('node模块', function () {
             }
         }
         var s = React.render(<App />, div)
-        await browser
-            .pause(100)
-            .$apply()
+      
         expect(div.getElementsByTagName('strong').length).toBe(1)
         s.change(1)
         expect(div.getElementsByTagName('span').length).toBe(1)
@@ -53,7 +43,7 @@ describe('node模块', function () {
     })
    
    
-    it('removedChildren', async () => {
+    it('removedChildren',  () => {
         var index = 1
         class App extends React.Component {
             constructor(props) {
@@ -75,14 +65,13 @@ describe('node模块', function () {
 
         var s = React.render(<App />, div)
 
-        await browser.pause(100).$apply()
         expect(div.getElementsByTagName('p').length).toBe(4)
-        await browser.click(s.refs.a).pause(100).$apply()
+       s.refs.a.click()
         expect(div.getElementsByTagName('p').length).toBe(1)
     })
 
  
-    it('用一个新组件替换另一个组件', async () => {
+    it('用一个新组件替换另一个组件',  () => {
         var index = 1
         class App extends React.Component {
 
@@ -110,7 +99,6 @@ describe('node模块', function () {
         }
         var s = React.render(<App />, div)
 
-        await browser.pause(100).$apply()
         expect(div.getElementsByTagName('strong').length).toBe(1)
         s.handleClick()
         expect(div.getElementsByTagName('em').length).toBe(1)

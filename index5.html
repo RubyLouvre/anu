@@ -44,43 +44,58 @@
             }
         }
     }
-   // console.log(container)
-   function Output(props) {
-    return <strong>{props.value}</strong>;
-}
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: "南京"
+    let input;
+    let input2;
+    class A extends React.Component {
+        render() {
+            return (
+                <div>
+                    <input id="one" ref={r => (input = input || r)} />
+                    {this.props.showTwo && <input id="two" ref={r => (input2 = input2 || r)} />}
+                </div>
+            );
+        }
+
+        componentDidUpdate() {
+            // Focus should have been restored to the original input
+            expect(document.activeElement.id).toBe("one");
+            input2.focus();
+            expect(document.activeElement.id).toBe("two");
+            log.push("input2 focused");
+        }
+    }
+
+    const log = [];
+    var container = document.createElement("div");
+    document.body.appendChild(container);
+    ReactDOM.render(<A showTwo={false} />, container);
+    input.focus();
+
+    // When the second input is added, let's simulate losing focus, which is
+    // something that could happen when manipulating DOM nodes (but is hard to
+    // deterministically force without relying intensely on React DOM
+    // implementation details)
+    var div = container.firstChild;
+    ["appendChild", "insertBefore"].forEach(name => {
+        const mutator = div[name];
+        div[name] = function() {
+            if (input) {
+                input.blur();
+                expect(document.activeElement.tagName).toBe("BODY");
+                log.push("input2 inserted");
+            }
+            return mutator.apply(this, arguments);
         };
-    }
+    });
 
-    onChange(e) {
-        this.setState({
-            value: e.target.value
-        });
-    }
-    render() {
-        return (
-            <div>
-                <Output value={this.state.value} />
-                <input ref="a" value={this.state.value} onInput={this.onChange.bind(this)} />
-            </div>
-        );
-    }
-}
-
-var s = ReactDOM.render(<App />, div);
-expect(s.refs.a.value).toBe("南京");
-/*
-await browser
-    .setValue(s.refs.a, "南京22")
-    .pause(200)
-    .$apply();
-expect(s.refs.a.value).toBe("南京22");
-expect(div.getElementsByTagName("strong")[0].innerHTML).toBe("南京22");
-*/
+    expect(document.activeElement.id).toBe("one");
+    ReactDOM.render(<A showTwo={true} />, container);
+    // input2 gets added, which causes input to get blurred. Then
+    // componentDidUpdate focuses input2 and that should make it down to here,
+    // not get overwritten by focus restoration.
+    expect(document.activeElement.id).toBe("two");
+    expect(log).toEqual(["input2 inserted", "input2 focused"]);
+    document.body.removeChild(container);
 </script>
 
 </body>

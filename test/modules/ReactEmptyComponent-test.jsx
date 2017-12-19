@@ -99,4 +99,7 @@ describe("ReactEmptyComponent", function() {
 
         expect(noscript1).toBe(noscript2);
     });
+
+
+    
 });

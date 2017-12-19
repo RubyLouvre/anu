@@ -1,5 +1,5 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
+import { createElement as createDOMElement, emptyElement, insertElement, getActiveElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
@@ -97,6 +97,7 @@ function renderByAnu(vnode, container, callback, context = {}) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
+    Refs.focusNode = getActiveElement();    
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode

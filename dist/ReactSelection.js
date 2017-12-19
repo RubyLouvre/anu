@@ -590,6 +590,7 @@ fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
 fakeDoc.documentElement = new DOMElement("html");
+fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
 try {
@@ -606,6 +607,19 @@ var inBrowser = b;
 var win = w;
 
 var document = w.document || fakeDoc;
+function getActiveElement$1() {
+    return document.activeElement || document.body;
+}
+
+function focusNode$1(node) {
+    try {
+        node.focus();
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 function emptyElement(node) {
@@ -836,6 +850,7 @@ var placehoder = {
 };
 function drainQueue(queue) {
     options.beforePatch();
+    focusNode$1(Refs.focusNode);
     var updater = void 0;
     while (updater = queue.shift()) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -882,7 +897,7 @@ function drainQueue(queue) {
 
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctors.forEach(function (doctor, j) {
+                doctors.forEach(function (doctor) {
                     for (var i in doctor.children) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
@@ -903,7 +918,6 @@ function drainQueue(queue) {
         }
         updater.transition(queue);
     }
-
     options.afterPatch();
     var error = Refs.error;
     if (error) {
@@ -958,6 +972,7 @@ function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
+    Refs.focusNode = getActiveElement$1();
     flushUpdaters();
     Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
@@ -1583,6 +1598,7 @@ var controlled = {
 
 var isSpecialAttr = {
     style: 1,
+    autoFocus: 1,
     defaultValue: 1,
     defaultChecked: 1,
     children: 1,
@@ -1792,6 +1808,13 @@ var actionStrategy = {
     children: noop,
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
+    },
+    autoFocus: function autoFocus(dom) {
+        if ("form" in dom || dom.contentEditable === "true") {
+            if (focusNode$1(dom)) {
+                Refs.focusNode = dom;
+            }
+        }
     },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
@@ -2384,6 +2407,7 @@ CompositeUpdater.prototype = {
                 return;
             }
             this.addState("hydrate");
+            Refs.focusNode = getActiveElement$1();
             drainQueue([this]);
         }
     },
@@ -2792,6 +2816,7 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
+    Refs.focusNode = getActiveElement$1();
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode
@@ -3075,7 +3100,7 @@ function containsNode(a, b) {
     return false;
 }
 
-function focusNode(node) {
+function focusNode$$1(node) {
     //如果此元素不可见，IE8会抛错
     try {
         node.focus();
@@ -3088,7 +3113,7 @@ function getNodeTag(node) {
     return node.nodeName ? node.nodeName.toLowerCase() : "";
 }
 
-function getActiveElement(doc) {
+function getActiveElement$$1(doc) {
     doc = doc || (inBrowser ? document : undefined);
     if (typeof doc === "undefined") {
         return null;
@@ -3112,12 +3137,12 @@ var ReactInputSelection = {
     },
 
     getSelectionInformation: function getSelectionInformation() {
-        var focusedElem = getActiveElement();
+        var focusedElem = getActiveElement$$1();
         var selectionRange = ReactInputSelection.hasSelectionCapabilities(focusedElem) ? ReactInputSelection.getSelection(focusedElem) : null;
         return { focusedElem: focusedElem, selectionRange: selectionRange };
     },
     restoreSelection: function restoreSelection(lastInformation) {
-        var curFocusedElem = getActiveElement();
+        var curFocusedElem = getActiveElement$$1();
         var priorFocusedElem = lastInformation.focusedElem;
         var priorSelectionRange = lastInformation.selectionRange;
 
@@ -3125,7 +3150,7 @@ var ReactInputSelection = {
             if (ReactInputSelection.hasSelectionCapabilities(priorFocusedElem)) {
                 ReactInputSelection.setSelection(priorFocusedElem, priorSelectionRange);
             }
-            focusNode(priorFocusedElem);
+            focusNode$$1(priorFocusedElem);
         }
     },
     getSelection: function getSelection(input) {
@@ -3181,8 +3206,8 @@ var ReactInputSelection = {
     }
 };
 
-function isCollapsed(anchorNode, anchorOffset, focusNode, focusOffset) {
-    return anchorNode === focusNode && anchorOffset === focusOffset;
+function isCollapsed(anchorNode, anchorOffset, focusNode$$1, focusOffset) {
+    return anchorNode === focusNode$$1 && anchorOffset === focusOffset;
 }
 
 function getIEOffsets(node) {
@@ -3214,7 +3239,7 @@ function getModernOffsets(node) {
 
     var anchorNode = selection.anchorNode;
     var anchorOffset = selection.anchorOffset;
-    var focusNode = selection.focusNode;
+    var focusNode$$1 = selection.focusNode;
     var focusOffset = selection.focusOffset;
 
     var currentRange = selection.getRangeAt(0);
@@ -3254,7 +3279,7 @@ function getModernOffsets(node) {
     // Detect whether the selection is backward.
     var detectionRange = document.createRange();
     detectionRange.setStart(anchorNode, anchorOffset);
-    detectionRange.setEnd(focusNode, focusOffset);
+    detectionRange.setEnd(focusNode$$1, focusOffset);
     var isBackward = detectionRange.collapsed;
 
     return {

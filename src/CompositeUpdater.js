@@ -4,7 +4,7 @@ import { extend, options, typeNumber, emptyObject, isFn,
 import { fiberizeChildren } from "./createElement";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
-import { insertElement } from "./browser";
+import { insertElement,getActiveElement } from "./browser";
 import { Refs } from "./Refs";
 
 function alwaysNull() {
@@ -91,6 +91,7 @@ CompositeUpdater.prototype = {
                 return;
             }
             this.addState("hydrate");
+            Refs.focusNode = getActiveElement();
             drainQueue([this]);
         }
     },

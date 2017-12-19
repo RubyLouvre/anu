@@ -5,10 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">   
    <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-   <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>
-   
-  <!--<script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
    <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -46,19 +45,36 @@
                     }
                 }
             }
-            var container = document.createElement("div");
+            var originalFocus = HTMLElement.prototype.focus;
             
-                    document.body.appendChild(container);
-                    function emptyFunction(){}
-                    var stub = <input type="number" value={2} onChange={emptyFunction} />;
-                    stub = ReactDOM.render(stub, container);
-                    var node = ReactDOM.findDOMNode(stub);
+                try {
+                  var focusedElement;
+                  var inputFocusedAfterMount = false;
             
-                    node.value = "0.0";
-                    ReactTestUtils.Simulate.change(node);
-                    expect(node.value).toBe("0.0");
-                  //  document.body.removeChild(container);
-           
+                  // This test needs to determine that focus is called after mount.
+                  // Can't check document.activeElement because PhantomJS is too permissive;
+                  // It doesn't require element to be in the DOM to be focused.
+                  HTMLElement.prototype.focus = function() {
+                    focusedElement = this;
+                    inputFocusedAfterMount = !!this.parentNode;
+                  };
+            
+                  var container = document.createElement('div');
+                  document.body.appendChild(container);
+                  ReactDOM.render(
+                    <div>
+                      <h1>Auto-focus Test</h1>
+                      <input autoFocus={true} />
+                      <p>The above input should be focused after mount.</p>
+                    </div>,
+                    container,
+                  );
+            
+                  expect(inputFocusedAfterMount).toBe(true);
+                  expect(focusedElement.tagName).toBe('INPUT');
+                } finally {
+                  HTMLElement.prototype.focus = originalFocus;
+                }
     
           </script>
 
