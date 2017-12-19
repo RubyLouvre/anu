@@ -1,4 +1,4 @@
-import { options } from "./util";
+import { options,noop } from "./util";
 import { removeElement } from "./browser";
 
 export const topVnodes = [];
@@ -51,6 +51,7 @@ function disposeComponent(vnode, updateQueue, silent) {
         updater.updateQueue = updateQueue;
     }
     if (!silent) {
+        updater.hydrate = noop;//可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
     } else if (updater.isMounted()) {

@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-12-18
+ * QQ 370262116 by 司徒正美 Copyright 2017-12-19
  */
 
 (function (global, factory) {
@@ -940,6 +940,7 @@ function disposeComponent(vnode, updateQueue, silent) {
         updater.updateQueue = updateQueue;
     }
     if (!silent) {
+        updater.hydrate = noop; //可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
     } else if (updater.isMounted()) {
