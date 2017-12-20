@@ -1,4 +1,10 @@
-## 1.1.5
+## 1.2.1
+
+1. 优化fiberizeChildren的性能
+2. 修复受控组件在textarea, radio的BUG，将受控事件放到用户事件后集中执行
+3. 添加焦点系统的支持
+
+## 1.2.0(2017.12.17) 支持React16
 
 1. 重构findDOMNode,遇到注释节点返回null
 2. 支持React组件返回任何数据类型，如数组，字符串，数字，布尔,但对于undefined, null, boolean不会生成真实DOM

@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-12-19
+ * 此版本带有selection by 司徒正美 Copyright 2017-12-20
  * IE9+
  */
 
@@ -607,16 +607,22 @@ var inBrowser = b;
 var win = w;
 
 var document = w.document || fakeDoc;
-function getActiveElement$1() {
-    return document.activeElement || document.body;
-}
-
-function focusNode$1(node) {
-    try {
-        node.focus();
-        return true;
-    } catch (e) {
-        return false;
+var focusNode$1;
+function activeElement(node, toFocus) {
+    if (node) {
+        focusNode$1 = node;
+    } else {
+        node = document.activeElement;
+        if (node && node.nodeName !== "BODY") {
+            focusNode$1 = node;
+        }
+    }
+    if (toFocus) {
+        try {
+            focusNode$1.focus();
+        } catch (e) {
+            //hack
+        }
     }
 }
 
@@ -850,7 +856,7 @@ var placehoder = {
 };
 function drainQueue(queue) {
     options.beforePatch();
-    focusNode$1(Refs.focusNode);
+    activeElement(null, true);
     var updater = void 0;
     while (updater = queue.shift()) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -918,6 +924,7 @@ function drainQueue(queue) {
         }
         updater.transition(queue);
     }
+    activeElement(null, true);
     options.afterPatch();
     var error = Refs.error;
     if (error) {
@@ -972,7 +979,9 @@ function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    Refs.focusNode = getActiveElement$1();
+    //if (bubble === "focus") {
+    // activeElement();
+    //}
     flushUpdaters();
     Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
@@ -1811,9 +1820,7 @@ var actionStrategy = {
     },
     autoFocus: function autoFocus(dom) {
         if ("form" in dom || dom.contentEditable === "true") {
-            if (focusNode$1(dom)) {
-                Refs.focusNode = dom;
-            }
+            activeElement(dom);
         }
     },
     svgClass: function svgClass(dom, name, val) {
@@ -2234,9 +2241,10 @@ function pushError(instance, hook, error) {
     var names = [];
     var catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
+    var stack = describeError(names, hook);
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: describeError(names, hook) }, instance];
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: stack }, instance];
         if (!Refs.errorHook) {
             Refs.errorHook = hook;
             Refs.doctors = [catchUpdater];
@@ -2250,7 +2258,7 @@ function pushError(instance, hook, error) {
         delete vnode.child;
         delete catchUpdater.pendingVnode;
     } else {
-        console.warn(describeError(names, hook)); // eslint-disable-line
+        console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Refs.error) {
             Refs.error = error;
@@ -2407,7 +2415,6 @@ CompositeUpdater.prototype = {
                 return;
             }
             this.addState("hydrate");
-            Refs.focusNode = getActiveElement$1();
             drainQueue([this]);
         }
     },
@@ -2644,7 +2651,6 @@ CompositeUpdater.prototype = {
     },
     catch: function _catch(queue) {
         var instance = this.instance;
-        // delete Refs.ignoreError; 
 
         this._states.length = 0;
         this.children = {};
@@ -2816,7 +2822,8 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-    Refs.focusNode = getActiveElement$1();
+
+    activeElement();
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode
@@ -3100,7 +3107,7 @@ function containsNode(a, b) {
     return false;
 }
 
-function focusNode$$1(node) {
+function focusNode(node) {
     //如果此元素不可见，IE8会抛错
     try {
         node.focus();
@@ -3113,7 +3120,7 @@ function getNodeTag(node) {
     return node.nodeName ? node.nodeName.toLowerCase() : "";
 }
 
-function getActiveElement$$1(doc) {
+function getActiveElement(doc) {
     doc = doc || (inBrowser ? document : undefined);
     if (typeof doc === "undefined") {
         return null;
@@ -3137,12 +3144,12 @@ var ReactInputSelection = {
     },
 
     getSelectionInformation: function getSelectionInformation() {
-        var focusedElem = getActiveElement$$1();
+        var focusedElem = getActiveElement();
         var selectionRange = ReactInputSelection.hasSelectionCapabilities(focusedElem) ? ReactInputSelection.getSelection(focusedElem) : null;
         return { focusedElem: focusedElem, selectionRange: selectionRange };
     },
     restoreSelection: function restoreSelection(lastInformation) {
-        var curFocusedElem = getActiveElement$$1();
+        var curFocusedElem = getActiveElement();
         var priorFocusedElem = lastInformation.focusedElem;
         var priorSelectionRange = lastInformation.selectionRange;
 
@@ -3150,7 +3157,7 @@ var ReactInputSelection = {
             if (ReactInputSelection.hasSelectionCapabilities(priorFocusedElem)) {
                 ReactInputSelection.setSelection(priorFocusedElem, priorSelectionRange);
             }
-            focusNode$$1(priorFocusedElem);
+            focusNode(priorFocusedElem);
         }
     },
     getSelection: function getSelection(input) {
@@ -3206,8 +3213,8 @@ var ReactInputSelection = {
     }
 };
 
-function isCollapsed(anchorNode, anchorOffset, focusNode$$1, focusOffset) {
-    return anchorNode === focusNode$$1 && anchorOffset === focusOffset;
+function isCollapsed(anchorNode, anchorOffset, focusNode, focusOffset) {
+    return anchorNode === focusNode && anchorOffset === focusOffset;
 }
 
 function getIEOffsets(node) {
@@ -3239,7 +3246,7 @@ function getModernOffsets(node) {
 
     var anchorNode = selection.anchorNode;
     var anchorOffset = selection.anchorOffset;
-    var focusNode$$1 = selection.focusNode;
+    var focusNode = selection.focusNode;
     var focusOffset = selection.focusOffset;
 
     var currentRange = selection.getRangeAt(0);
@@ -3279,7 +3286,7 @@ function getModernOffsets(node) {
     // Detect whether the selection is backward.
     var detectionRange = document.createRange();
     detectionRange.setStart(anchorNode, anchorOffset);
-    detectionRange.setEnd(focusNode$$1, focusOffset);
+    detectionRange.setEnd(focusNode, focusOffset);
     var isBackward = detectionRange.collapsed;
 
     return {

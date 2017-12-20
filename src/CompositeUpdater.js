@@ -1,10 +1,8 @@
-import { extend, options, typeNumber, emptyObject, isFn, 
-    returnFalse, returnTrue, clearArray
-} from "../src/util";
+import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue, clearArray } from "../src/util";
 import { fiberizeChildren } from "./createElement";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
-import { insertElement,getActiveElement } from "./browser";
+import { insertElement } from "./browser";
 import { Refs } from "./Refs";
 
 function alwaysNull() {
@@ -91,7 +89,6 @@ CompositeUpdater.prototype = {
                 return;
             }
             this.addState("hydrate");
-            Refs.focusNode = getActiveElement();
             drainQueue([this]);
         }
     },
@@ -183,7 +180,7 @@ CompositeUpdater.prototype = {
 
     hydrate(updateQueue, resetPoint) {
         let { instance, context, props, vnode, pendingVnode } = this;
-        if(this._states[0] === "hydrate"){
+        if (this._states[0] === "hydrate") {
             this._states.shift(); // ReactCompositeComponentNestedState-state
         }
         let state = this.mergeStates();
@@ -207,7 +204,7 @@ CompositeUpdater.prototype = {
             var { props: lastProps, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState];
         }
-        if(this._hasError){
+        if (this._hasError) {
             return;
         }
         vnode.stateNode = instance;
@@ -283,7 +280,7 @@ CompositeUpdater.prototype = {
             this.isMounted = returnTrue;
         }
         if (this._hydrating) {
-            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount"  ;
+            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -309,9 +306,8 @@ CompositeUpdater.prototype = {
         }
         transfer.call(this, updateQueue);
     },
-    catch(queue){
+    catch(queue) {
         let { instance } = this;
-        // delete Refs.ignoreError; 
         this._states.length = 0;
         this.children = {};
         this._isDoctor = this._hydrating = true;
@@ -319,7 +315,6 @@ CompositeUpdater.prototype = {
         delete this.errorInfo;
         this._hydrating = false;
         transfer.call(this, queue);
-
     },
     dispose() {
         var instance = this.instance;
@@ -333,7 +328,7 @@ CompositeUpdater.prototype = {
         this._disposed = true;
     }
 };
-function transfer(queue){
+function transfer(queue) {
     var cbs = this._nextCallbacks,
         cb;
     if (cbs && cbs.length) {

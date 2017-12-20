@@ -70,7 +70,6 @@ describe("ReactDOM", function() {
     });
 
     it("preserves focus", () => {
-        return
         let input;
         let input2;
         class A extends React.Component {
@@ -85,9 +84,9 @@ describe("ReactDOM", function() {
 
             componentDidUpdate() {
                 // Focus should have been restored to the original input
-                expect(document.activeElement.id).toBe("one");
+                expect(document.activeElement.id+"3").toBe("one3");
                 input2.focus();
-                expect(document.activeElement.id).toBe("two");
+                expect(document.activeElement.id+"4").toBe("two4");
                 log.push("input2 focused");
             }
         }
@@ -97,7 +96,7 @@ describe("ReactDOM", function() {
         document.body.appendChild(container);
         ReactDOM.render(<A showTwo={false} />, container);
         input.focus();
-
+        console.log(document.activeElement,"activeElement")
         // When the second input is added, let's simulate losing focus, which is
         // something that could happen when manipulating DOM nodes (but is hard to
         // deterministically force without relying intensely on React DOM
@@ -107,6 +106,7 @@ describe("ReactDOM", function() {
             const mutator = div[name];
             div[name] = function() {
                 if (input) {
+                    console.log(input, "要失去焦点")
                     input.blur();
                     expect(document.activeElement.tagName).toBe("BODY");
                     log.push("input2 inserted");
@@ -116,12 +116,12 @@ describe("ReactDOM", function() {
         });
 
 
-        expect(document.activeElement.id).toBe("one");
+        expect(document.activeElement.id+"1").toBe("one1");
         ReactDOM.render(<A showTwo={true} />, container);
         // input2 gets added, which causes input to get blurred. Then
         // componentDidUpdate focuses input2 and that should make it down to here,
         // not get overwritten by focus restoration.
-        expect(document.activeElement.id).toBe("two");
+        expect(document.activeElement.id+'2').toBe("two2");
         expect(log).toEqual(["input2 inserted", "input2 focused"]);
         document.body.removeChild(container);
     });

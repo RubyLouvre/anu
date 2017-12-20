@@ -327,8 +327,6 @@ var win = w;
 var document = w.document || fakeDoc;
 
 
-
-
 var fragment = document.createDocumentFragment();
 
 

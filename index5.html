@@ -80,6 +80,7 @@
         const mutator = div[name];
         div[name] = function() {
             if (input) {
+                console.log(input, "要失去焦点")
                 input.blur();
                 expect(document.activeElement.tagName).toBe("BODY");
                 log.push("input2 inserted");
@@ -95,7 +96,7 @@
     // not get overwritten by focus restoration.
     expect(document.activeElement.id).toBe("two");
     expect(log).toEqual(["input2 inserted", "input2 focused"]);
-    document.body.removeChild(container);
+   // document.body.removeChild(container);
 </script>
 
 </body>

@@ -9,6 +9,7 @@ import { cloneElement } from "./cloneElement";
 import { PureComponent, AsyncComponent } from "./PureComponent";
 import { createElement } from "./createElement";
 import { createPortal } from "./createPortal";
+
 import { render,findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
 var React = {

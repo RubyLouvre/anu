@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-19
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-20
  */
 
 (function (global, factory) {
@@ -606,16 +606,22 @@ try {
 var win = w;
 
 var document = w.document || fakeDoc;
-function getActiveElement() {
-    return document.activeElement || document.body;
-}
-
-function focusNode(node) {
-    try {
-        node.focus();
-        return true;
-    } catch (e) {
-        return false;
+var focusNode;
+function activeElement(node, toFocus) {
+    if (node) {
+        focusNode = node;
+    } else {
+        node = document.activeElement;
+        if (node && node.nodeName !== "BODY") {
+            focusNode = node;
+        }
+    }
+    if (toFocus) {
+        try {
+            focusNode.focus();
+        } catch (e) {
+            //hack
+        }
     }
 }
 
@@ -849,7 +855,7 @@ var placehoder = {
 };
 function drainQueue(queue) {
     options.beforePatch();
-    focusNode(Refs.focusNode);
+    activeElement(null, true);
     var updater = void 0;
     while (updater = queue.shift()) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -917,6 +923,7 @@ function drainQueue(queue) {
         }
         updater.transition(queue);
     }
+    activeElement(null, true);
     options.afterPatch();
     var error = Refs.error;
     if (error) {
@@ -971,7 +978,9 @@ function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    Refs.focusNode = getActiveElement();
+    //if (bubble === "focus") {
+    // activeElement();
+    //}
     flushUpdaters();
     Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
@@ -1810,9 +1819,7 @@ var actionStrategy = {
     },
     autoFocus: function autoFocus(dom) {
         if ("form" in dom || dom.contentEditable === "true") {
-            if (focusNode(dom)) {
-                Refs.focusNode = dom;
-            }
+            activeElement(dom);
         }
     },
     svgClass: function svgClass(dom, name, val) {
@@ -2233,9 +2240,10 @@ function pushError(instance, hook, error) {
     var names = [];
     var catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
+    var stack = describeError(names, hook);
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: describeError(names, hook) }, instance];
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: stack }, instance];
         if (!Refs.errorHook) {
             Refs.errorHook = hook;
             Refs.doctors = [catchUpdater];
@@ -2249,7 +2257,7 @@ function pushError(instance, hook, error) {
         delete vnode.child;
         delete catchUpdater.pendingVnode;
     } else {
-        console.warn(describeError(names, hook)); // eslint-disable-line
+        console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Refs.error) {
             Refs.error = error;
@@ -2406,7 +2414,6 @@ CompositeUpdater.prototype = {
                 return;
             }
             this.addState("hydrate");
-            Refs.focusNode = getActiveElement();
             drainQueue([this]);
         }
     },
@@ -2643,7 +2650,6 @@ CompositeUpdater.prototype = {
     },
     catch: function _catch(queue) {
         var instance = this.instance;
-        // delete Refs.ignoreError; 
 
         this._states.length = 0;
         this.children = {};
@@ -2815,7 +2821,8 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-    Refs.focusNode = getActiveElement();
+
+    activeElement();
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode

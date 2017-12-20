@@ -1,6 +1,5 @@
-import { NAMESPACE,focusNode } from "./browser";
+import { NAMESPACE, activeElement } from "./browser";
 import { patchStyle } from "./style";
-import { Refs } from "./Refs";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
 import { inputMonitor } from "./inputMonitor";
@@ -222,10 +221,8 @@ export var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function(dom){
-        if("form" in dom || dom.contentEditable ==="true"){
-            if(focusNode(dom)){
-                Refs.focusNode = dom;
-            }
+        if("form" in dom || dom.contentEditable === "true"){
+            activeElement(dom);
         }
     },
     svgClass: function(dom, name, val) {

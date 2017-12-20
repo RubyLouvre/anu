@@ -28,7 +28,6 @@ require("./modules/diffProps.spec.jsx");
 
 require("./modules/component.spec.jsx");
 
-require("./modules/event.spec.jsx");
 
 require("./modules/node.spec.jsx");
 
@@ -81,6 +80,10 @@ require("./modules/ReactErrorBoundaries-test.jsx");
 require("./modules/insert.spec.jsx");
 
 require("./modules/createPortal.spec.jsx");
+
+
+require("./modules/event.spec.jsx");
+
 
 require("./modules/ReactDOM-test.jsx");
 

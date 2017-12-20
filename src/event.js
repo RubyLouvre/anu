@@ -48,9 +48,9 @@ export function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    if (bubble === "focus") {
-        activeElement();
-    }
+    //if (bubble === "focus") {
+    // activeElement();
+    //}
     flushUpdaters();
     Refs.controlledCbs.forEach(function(el) {
         if (el.stateNode) {

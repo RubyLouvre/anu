@@ -1,7 +1,7 @@
 import { options, clearArray, noop } from "./util";
 import { Refs } from "./Refs";
 import { disposeVnode } from "./dispose";
-import { focusNode } from "./browser";
+import { activeElement } from "./browser";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -31,7 +31,7 @@ var placehoder = {
 };
 export function drainQueue(queue) {
     options.beforePatch();
-    focusNode(Refs.focusNode);
+    activeElement(null, true);
     let updater;
     while ((updater = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -100,6 +100,7 @@ export function drainQueue(queue) {
         }
         updater.transition(queue);
     }
+    activeElement(null, true);
     options.afterPatch();
     var error = Refs.error;
     if (error) {
