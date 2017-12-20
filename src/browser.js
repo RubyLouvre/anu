@@ -51,16 +51,22 @@ export var inBrowser = b;
 export var win = w;
 
 export var document = w.document || fakeDoc;
-export function getActiveElement(){
-    return document.activeElement || document.body;
-}
-
-export function focusNode(node) {
-    try {
-        node.focus();
-        return true;
-    } catch (e) {
-        return false;
+var focusNode;
+export function activeElement(node, toFocus) {
+    if (node) {
+        focusNode = node;
+    } else {
+        node = document.activeElement;
+        if (node && node.nodeName !== "BODY") {
+            focusNode = node;
+        }
+    }
+    if(toFocus){
+        try{
+            focusNode.focus();
+        }catch(e){
+            //hack
+        }
     }
 }
 
