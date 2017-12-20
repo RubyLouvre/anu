@@ -58,13 +58,16 @@ export function activeElement(node, toFocus) {
     } else {
         node = document.activeElement;
         if (node && node.nodeName !== "BODY") {
+            if (focusNode === node) {
+                return;
+            }
             focusNode = node;
         }
     }
-    if(toFocus){
-        try{
+    if (toFocus) {
+        try {
             focusNode.focus();
-        }catch(e){
+        } catch (e) {
             //hack
         }
     }
