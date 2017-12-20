@@ -6,9 +6,10 @@ export function pushError(instance, hook, error) {
     var names = [];
     var catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
+    var stack = describeError(names, hook);
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
-        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: describeError(names, hook) }, instance];
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: stack }, instance];
         if (!Refs.errorHook) {
             Refs.errorHook = hook;
             Refs.doctors = [catchUpdater];
@@ -22,7 +23,7 @@ export function pushError(instance, hook, error) {
         delete vnode.child;
         delete catchUpdater.pendingVnode;
     } else {
-        console.warn(describeError(names, hook)); // eslint-disable-line
+        console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Refs.error) {
             Refs.error = error;
