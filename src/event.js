@@ -1,4 +1,4 @@
-import { document, getActiveElement } from "./browser";
+import { document, activeElement } from "./browser";
 import { isFn, noop, options } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
@@ -48,17 +48,18 @@ export function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    Refs.focusNode = getActiveElement();
+    if (bubble === "focus") {
+        activeElement();
+    }
     flushUpdaters();
-    Refs.controlledCbs.forEach(function(el){
-        if(el.stateNode){
+    Refs.controlledCbs.forEach(function(el) {
+        if (el.stateNode) {
             el.controlledCb({
                 target: el.stateNode
             });
         }
     });
     Refs.controlledCbs.length = 0;
-    
 }
 
 function collectPaths(from, end) {
@@ -70,7 +71,8 @@ function collectPaths(from, end) {
             return paths;
         }
     }
-    if(!node || node.nodeType >1 ){//如果跑到document上
+    if (!node || node.nodeType > 1) {
+        //如果跑到document上
         return paths;
     }
     var vnode = node.__events.vnode;
@@ -80,7 +82,7 @@ function collectPaths(from, end) {
             if (dom === end) {
                 break;
             }
-            if(!dom){
+            if (!dom) {
                 // console.log(vnode,"没有实例化");
                 break;
             }
@@ -88,7 +90,7 @@ function collectPaths(from, end) {
                 paths.push({ dom: dom, events: dom.__events });
             }
         }
-    } while ((vnode = vnode.return));// eslint-disable-line
+    } while ((vnode = vnode.return)); // eslint-disable-line
     return paths;
 }
 
@@ -98,7 +100,7 @@ function triggerEventFlow(paths, prop, e) {
         var fn = path.events[prop];
         if (isFn(fn)) {
             e.currentTarget = path.dom;
-            fn.call(void 666,e);
+            fn.call(void 666, e);
             if (e._stopPropagation) {
                 break;
             }
