@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">   
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+  
+  <!--<script type='text/javascript' src="./test/react.development.js"></script>
+   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
+<style>
+    .modal{
+        background: rgb(0, 47, 167);
+    }
+</style>
+</head>
+<body>
+    
+        <h1>测试</h1><input /><input />
+        <h1 id='app-root' className="root">
+
+        </h1>
+        <h1 id='modal-root' className="model">
+            
+                    </h1>
+        <script type='text/babel'>
+         
+            var PropTypes = React.PropTypes
+            if(!window.ReactDOM){
+              window.ReactDOM = React
+            }
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                    toThrow(b){
+                        try{
+                            a()
+                        }catch(e){
+                            console.log(e,"vs", b, e.message +""=== b+"")
+                        }
+                    }
+                }
+            }
+            // These two containers are siblings in the DOM
+            var body = document.body;
+        var container = document.createElement("div");
+        body.appendChild(container);
+        var innerWillMount, innerDidMount, innerWillUnmount;
+        class Inner extends React.Component {
+            render() {
+                return <p>inner</p>;
+            }
+            componentWillUnmount() {
+                console.log("Inner componentWillUnmount ")
+                innerWillUnmount = true;
+            }
+            componentWillMount() {
+                innerWillMount = true;
+            }
+            componentDidMount() {
+                innerDidMount = true;
+            }
+        }
+        var testBubble = 0;
+        class Container extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    show: false,
+                    number: 1,
+                    empty: false
+                };
+            }
+
+            _show() {
+                if (this.state.show) {
+                    return; //防止创建多个弹窗
+                }
+                this.setState({ show: true });
+            }
+            componentWillUnmount(){
+                console.log("Container componentWillUnmount ")
+            }
+            _close(e) {
+                this.setState({ show: false });
+            }
+          
+            render() {
+                const { show, empty } = this.state;
+
+                return (
+                    empty ? null:
+                    <div
+                        className="Container"
+                        onClick={e => {
+                            testBubble = true;
+                            e.preventDefault();
+                        }}
+                    >
+                        <div className="hasClick" style={{ background: "#00bcd4" }} ref="openDialog" onClick={this._show.bind(this)}>
+                            <div>State: {(show && "visible") || "hidden"}</div>
+                            <div ref="vdialog" className="portalOuter">
+                                {show && (
+                                    <Portal>
+                                        <div className="portalInner" style={{ background: "#ffeebb", height: 200 }}>
+                                            <p ref="number">{this.state.number}</p>
+                                            <Inner />
+                                            <button ref="closeDialog" onClick={this._close.bind(this)} type="button">
+                                                &times; close portal
+                                            </button>
+                                        </div>
+                                    </Portal>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        class Portal extends React.Component {
+            constructor(props) {
+                super(props);
+                this.node = document.createElement("div");
+                this.node.id = "dynamic";
+                body.appendChild(this.node);
+            }
+            componentWillUnmount() {
+                console.log("Portal componentWillUnmount ")
+                body.removeChild(this.node);
+            }
+            render() {
+                return ReactDOM.createPortal(this.props.children, this.node);
+            }
+        }
+        var s = ReactDOM.render(<Container />, container);
+        expect(!!s.refs.openDialog).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(false);
+        s.refs.openDialog.click();
+        expect(!!document.getElementById("dynamic")).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(true);
+        
+        expect(innerWillMount).toBe(true);
+        expect(innerDidMount).toBe(true);
+        s.setState({ number: 10 });
+        expect(s.refs.number.innerHTML).toBe("10");
+        testBubble = false;
+        expect(s.refs.vdialog.innerHTML).toBe("");
+       
+        s.setState({empty: true})
+     //   s.refs.closeDialog.click();
+     //   expect(innerWillUnmount).toBe(true);
+     //   console.log(s.refs.closeDialog);
+        // expect(!!s.refs.closeDialog).toBe(false);
+    //    expect(testBubble).toBe(true);
+    
+          </script>
+
+</body>
+    
+ </html>
