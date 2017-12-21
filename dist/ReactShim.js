@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2017-12-20
+ * QQ 370262116 by 司徒正美 Copyright 2017-12-21
  */
 
 (function (global, factory) {
@@ -652,6 +652,9 @@ function activeElement(node, toFocus) {
     } else {
         node = document.activeElement;
         if (node && node.nodeName !== "BODY") {
+            if (focusNode === node) {
+                return;
+            }
             focusNode = node;
         }
     }
@@ -922,7 +925,14 @@ function disposeVnode(vnode, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
+
         vnode._disposed = true;
+        if (vnode.portal) {
+            disposeChildren(vnode.portal.updater.children, updateQueue, silent);
+            // disposeElement(vnode, updateQueue, silent);
+            return;
+        }
+
         if (vnode.vtype > 1) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
@@ -956,9 +966,7 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-    if (instance.isPortal) {
-        updater.updateQueue = updateQueue;
-    }
+
     if (!silent) {
         updater.hydrate = noop; //可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
@@ -2039,48 +2047,24 @@ DOMUpdater.prototype = {
     }
 };
 
-function Portal(props, context) {
-    this.isPortal = true;
-    this.props = props;
-    this.context = context;
-}
-Portal.prototype = {
-    constructor: Portal,
-    componentWillUnmount: function componentWillUnmount() {
-        disposeChildren(this._children, this.updater.updateQueue);
-    },
-    componentWillReceiveProps: function componentWillReceiveProps(props, context) {
-        this.props = props;
-        this.context = context;
-        updateDialog(this);
-    },
-    componentWillMount: function componentWillMount() {
-        updateDialog(this);
-    },
-    render: function render() {
-        return null;
-    }
-};
-function updateDialog(self) {
-    var vnode = self.props.vnode;
-    var lastChildren = self._children || {};
-    var updateQueue = self.updater.updateQueue;
-    if (!self._updater) {
-        self._updater = new DOMUpdater(vnode);
-    }
-    var nextChildren = self._children = fiberizeChildren(self.props.child, self._updater);
-    Refs.diffChildren(lastChildren, nextChildren, vnode, self.context, updateQueue, []);
+function AnuPortal(props) {
+    return props.children;
 }
 
 //[Top API] ReactDOM.createPortal
-function createPortal(child, node) {
-    var vnode = createVnode(node);
-    var portal = createElement(Portal, {
-        vnode: vnode,
-        child: child
-    });
-    vnode.return = portal;
-    return portal;
+function createPortal(children, node) {
+    var vnode;
+    if (node.__events) {
+        vnode = node.__events.vnode;
+    } else {
+        vnode = createVnode(node);
+        var v = node.__events = {};
+        v.vnode = vnode;
+        new DOMUpdater(vnode);
+    }
+    var ret = createElement(AnuPortal, { children: children });
+    ret.portal = vnode;
+    return ret;
 }
 
 function pushError(instance, hook, error) {
@@ -2437,26 +2421,41 @@ CompositeUpdater.prototype = {
             Refs.currentOwner = lastOwn;
         }
         number = typeNumber(rendered);
-        var hasMounted = this.isMounted();
-        if (hasMounted) {
-            lastChildren = this.children;
+        var _this = this;
+        var portalVnode = vnode.portal;
+        if (portalVnode) {
+            _this = portalVnode.updater;
+            _this.insertQueue = _this.insertQueue || [];
+            portalVnode.return = vnode.return;
+            vnode = portalVnode;
         }
+        var hasMounted = _this.isMounted();
+        if (hasMounted) {
+            lastChildren = _this.children;
+        }
+
         if (number > 2) {
             if (number > 5) {
                 //array, object
                 childContext = getChildContext(instance, parentContext);
             }
-            nextChildren = fiberizeChildren(rendered, this);
+            nextChildren = fiberizeChildren(rendered, _this);
         } else {
             //undefinded, null, boolean
-            this.children = nextChildren; //emptyObject
-            delete this.child;
+            _this.children = nextChildren; //emptyObject
+            delete _this.child;
         }
         var noSupport = !support16 && errorType[number];
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
+
+        // console.log(vnode.props.vnode);
+        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, _this.insertQueue);
+        if (portalVnode) {
+            _this.isMounted = returnTrue;
+            // _this.children = nextChildren;
+        }
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界

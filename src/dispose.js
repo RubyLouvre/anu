@@ -14,7 +14,14 @@ export function disposeVnode(vnode, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
+        
         vnode._disposed = true;
+        if(vnode.portal){
+            disposeChildren(vnode.portal.updater.children, updateQueue, silent);
+            // disposeElement(vnode, updateQueue, silent);
+            return;
+        }
+        
         if (vnode.vtype > 1) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
@@ -47,9 +54,7 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-    if (instance.isPortal) {
-        updater.updateQueue = updateQueue;
-    }
+    
     if (!silent) {
         updater.hydrate = noop;//可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
