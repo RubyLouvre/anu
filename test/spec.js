@@ -81,7 +81,6 @@ require("./modules/insert.spec.jsx");
 
 require("./modules/createPortal.spec.jsx");
 
-
 require("./modules/event.spec.jsx");
 
 

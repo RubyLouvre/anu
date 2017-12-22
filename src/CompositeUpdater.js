@@ -252,13 +252,7 @@ CompositeUpdater.prototype = {
         }
         number = typeNumber(rendered);
         var _this = this;
-        var portalVnode = vnode.portal;
-        if(portalVnode){
-            _this =  portalVnode.updater;
-            _this.insertQueue = _this.insertQueue || [];
-            portalVnode.return = vnode.return;
-            vnode = portalVnode;
-        }
+       
         var hasMounted = _this.isMounted();
         if (hasMounted) {
             lastChildren = _this.children;
@@ -279,14 +273,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-      
-        // console.log(vnode.props.vnode);
         Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, _this.insertQueue);
-        if(portalVnode){
-            _this.isMounted = returnTrue;
-            // _this.children = nextChildren;
-        }
-       
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {

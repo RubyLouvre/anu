@@ -7,16 +7,17 @@ function AnuPortal(props){
 
 //[Top API] ReactDOM.createPortal
 export function createPortal(children, node) {
-    var vnode;
-    if(node.__events){
+    var vnode, events = node.__events;
+    if(events){
         vnode = node.__events.vnode;
     }else{
+        events = (node.__events = {});
         vnode = createVnode(node);
-        var v = node.__events = {};
-        v.vnode = vnode;
+        events.vnode = vnode;
         new DOMUpdater(vnode);
     }
-    var ret = createElement(AnuPortal,{children});
-    ret.portal = vnode;
-    return ret;
+    var child = createElement(AnuPortal,{children});
+    events.child = child;
+    child.superReturn = vnode;
+    return child;
 }

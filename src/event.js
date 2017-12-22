@@ -35,10 +35,7 @@ export function dispatchEvent(e, type, end) {
     }
     var bubble = e.type;
     var dom = e.target;
-    if(bubble === "focus"){
-        // console.log(  nodeOperate,"nodeOperate","focus");
-    }else if(bubble === "blur"){
-        // console.log(  nodeOperate,"nodeOperate","blur",e.target );
+    if(bubble === "blur"){
         if(Refs.nodeOperate){
             Refs.focusNode = dom;
             Refs.selectionStart = dom.selectionStart;
@@ -86,7 +83,8 @@ function collectPaths(from, end) {
         //如果跑到document上
         return paths;
     }
-    var vnode = node.__events.vnode;
+    var mid = node.__events;
+    var vnode = mid.child || mid.vnode;
     do {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;

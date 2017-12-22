@@ -187,7 +187,7 @@ export function insertElement(vnode, insertQueue) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.return;
+        p = p.superReturn || p.return;
     }
 
     var dom = vnode.stateNode,

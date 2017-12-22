@@ -743,7 +743,7 @@ function insertElement(vnode, insertQueue) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.return;
+        p = p.superReturn || p.return;
     }
 
     var dom = vnode.stateNode,
@@ -781,10 +781,16 @@ function disposeVnode(vnode, updateQueue, silent) {
         }
 
         vnode._disposed = true;
-        if (vnode.portal) {
-            disposeChildren(vnode.portal.updater.children, updateQueue, silent);
-            // disposeElement(vnode, updateQueue, silent);
-            return;
+        if (vnode.superReturn) {
+            var dom = vnode.superReturn.stateNode;
+            delete dom.__events;
+            // var p = vnode.portal;
+            // console.log(vnode.vtype,"!!!");
+            //  disposeChildren(vnode.portal.updater.children, updateQueue, silent);
+            //  disposeElement(p, updateQueue, silent);
+            //  console.log(vnode.portal.updater.children,"移除弹窗的东西");
+            //  vnode.portal.updater.children = {};
+            //  disposeElement(vnode, updateQueue, silent);
         }
 
         if (vnode.vtype > 1) {
@@ -793,14 +799,18 @@ function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            //  removeElement(vnode.stateNode);
             updateQueue.push({
-                transition: removeElement.bind(0, vnode.stateNode)
+                node: vnode.stateNode,
+                vnode: vnode,
+                transition: remove
             });
         }
     }
 }
-
+function remove() {
+    delete this.vnode.stateNode;
+    removeElement(this.node);
+}
 function disposeElement(vnode, updateQueue, silent) {
     var updater = vnode.updater;
 
@@ -823,8 +833,9 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-
+    console.log(updater.name);
     if (!silent) {
+
         updater.hydrate = noop; //可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
@@ -1034,7 +1045,8 @@ function collectPaths(from, end) {
         //如果跑到document上
         return paths;
     }
-    var vnode = node.__events.vnode;
+    var mid = node.__events;
+    var vnode = mid.child || mid.vnode;
     do {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;
@@ -2196,18 +2208,20 @@ function AnuPortal(props) {
 
 //[Top API] ReactDOM.createPortal
 function createPortal(children, node) {
-    var vnode;
-    if (node.__events) {
+    var vnode,
+        events = node.__events;
+    if (events) {
         vnode = node.__events.vnode;
     } else {
+        events = node.__events = {};
         vnode = createVnode(node);
-        var v = node.__events = {};
-        v.vnode = vnode;
+        events.vnode = vnode;
         new DOMUpdater(vnode);
     }
-    var ret = createElement(AnuPortal, { children: children });
-    ret.portal = vnode;
-    return ret;
+    var child = createElement(AnuPortal, { children: children });
+    events.child = child;
+    child.superReturn = vnode;
+    return child;
 }
 
 function pushError(instance, hook, error) {
@@ -2565,13 +2579,7 @@ CompositeUpdater.prototype = {
         }
         number = typeNumber(rendered);
         var _this = this;
-        var portalVnode = vnode.portal;
-        if (portalVnode) {
-            _this = portalVnode.updater;
-            _this.insertQueue = _this.insertQueue || [];
-            portalVnode.return = vnode.return;
-            vnode = portalVnode;
-        }
+
         var hasMounted = _this.isMounted();
         if (hasMounted) {
             lastChildren = _this.children;
@@ -2592,13 +2600,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-
-        // console.log(vnode.props.vnode);
         Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, _this.insertQueue);
-        if (portalVnode) {
-            _this.isMounted = returnTrue;
-            // _this.children = nextChildren;
-        }
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
@@ -2886,6 +2888,9 @@ function mountVnode(vnode, context, updateQueue, insertQueue) {
             var children = fiberizeChildren(vnode.props.children, _updater);
             mountChildren(vnode, children, context, updateQueue, []);
             _updater.init(updateQueue);
+        }
+        if (vnode.type === "a") {
+            console.log(vnode);
         }
         insertElement(vnode, insertQueue);
     } else {

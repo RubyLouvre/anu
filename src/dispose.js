@@ -16,10 +16,9 @@ export function disposeVnode(vnode, updateQueue, silent) {
         }
         
         vnode._disposed = true;
-        if(vnode.portal){
-            disposeChildren(vnode.portal.updater.children, updateQueue, silent);
-            // disposeElement(vnode, updateQueue, silent);
-            return;
+        if(vnode.superReturn){
+            var dom = vnode.superReturn.stateNode;
+            delete dom.__events;
         }
         
         if (vnode.vtype > 1) {
@@ -28,14 +27,19 @@ export function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            //  removeElement(vnode.stateNode);
             updateQueue.push({
-                transition:removeElement.bind(0, vnode.stateNode)
+                node: vnode.stateNode,
+                vnode: vnode,
+                transition:remove
             });
+           
         }
     }
 }
-
+function remove(){
+    delete this.vnode.stateNode;
+    removeElement(this.node);
+}
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
@@ -57,8 +61,8 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-    
     if (!silent) {
+       
         updater.hydrate = noop;//可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
