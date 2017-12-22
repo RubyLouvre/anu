@@ -1,5 +1,5 @@
 import { typeNumber } from "./util";
-
+import { Refs } from "./Refs";
 //用于后端的元素节点
 export function DOMElement(type) {
     this.nodeName = type;
@@ -51,28 +51,29 @@ export var inBrowser = b;
 export var win = w;
 
 export var document = w.document || fakeDoc;
-var focusNode;
-export function activeElement(node, toFocus) {
-    if (node) {
-        focusNode = node;
-    } else {
-        node = document.activeElement;
-        if (node && node.nodeName !== "BODY") {
-            if (focusNode === node) {
-                return;
-            }
-            focusNode = node;
-        }
-    }
-    if (toFocus) {
-        try {
-            focusNode.focus();
-        } catch (e) {
-            //hack
-        }
-    }
-}
 
+export var duplexMap = {
+    color: 1,
+    date: 1,
+    datetime: 1,
+    "datetime-local": 1,
+    email: 1,
+    month: 1,
+    number: 1,
+    password: 1,
+    range: 1,
+    search: 1,
+    tel: 1,
+    text: 1,
+    time: 1,
+    url: 1,
+    week: 1,
+    textarea: 1,
+    checkbox: 2,
+    radio: 2,
+    "select-one": 3,
+    "select-multiple": 3
+};
 var isStandard = "textContent" in document;
 var fragment = document.createDocumentFragment();
 export function emptyElement(node) {
@@ -86,11 +87,11 @@ export function emptyElement(node) {
 var recyclables = {
     "#text": []
 };
-
 export function removeElement(node) {
     if (!node) {
         return;
     }
+    Refs.nodeOperate = true;
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -106,6 +107,7 @@ export function removeElement(node) {
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
+    Refs.nodeOperate = false;
 }
 
 var versions = {
@@ -176,6 +178,7 @@ export function insertElement(vnode, insertQueue) {
     if (vnode._disposed) {
         return;
     }
+  
     //找到可用的父节点
     var p = vnode.return,
         parentNode;
@@ -194,12 +197,16 @@ export function insertElement(vnode, insertQueue) {
         if (parentNode.firstChild === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, parentNode.firstChild);
+        Refs.nodeOperate = false;
     } else {
         if (insertPoint.nextSibling === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, insertPoint.nextSibling);
+        Refs.nodeOperate = false;
     }
 }
 
