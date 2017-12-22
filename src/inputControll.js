@@ -2,6 +2,9 @@
 通过事件绑定实现受控组件
  */
 import { Refs } from "./Refs";
+import { duplexMap } from "./browser";
+
+
 export const formElements = {
     select: 1,
     textarea: 1,
@@ -104,29 +107,6 @@ var duplexData = {
         syncOptions,
         "change"
     ]
-};
-
-var duplexMap = {
-    color: 1,
-    date: 1,
-    datetime: 1,
-    "datetime-local": 1,
-    email: 1,
-    month: 1,
-    number: 1,
-    password: 1,
-    range: 1,
-    search: 1,
-    tel: 1,
-    text: 1,
-    time: 1,
-    url: 1,
-    week: 1,
-    textarea: 1,
-    checkbox: 2,
-    radio: 2,
-    "select-one": 3,
-    "select-multiple": 3
 };
 
 export function inputControll(vnode, dom, props) {
