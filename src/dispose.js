@@ -28,7 +28,10 @@ export function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            removeElement(vnode.stateNode);
+            //  removeElement(vnode.stateNode);
+            updateQueue.push({
+                transition:removeElement.bind(0, vnode.stateNode)
+            });
         }
     }
 }
