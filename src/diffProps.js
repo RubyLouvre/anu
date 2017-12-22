@@ -1,4 +1,4 @@
-import { NAMESPACE, activeElement } from "./browser";
+import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
@@ -221,8 +221,8 @@ export var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function(dom){
-        if("form" in dom || dom.contentEditable === "true"){
-            activeElement(dom);
+        if(duplexMap[dom.type] < 3  || dom.contentEditable === "true"){
+            dom.focus();
         }
     },
     svgClass: function(dom, name, val) {
