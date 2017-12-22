@@ -295,7 +295,17 @@ CompositeUpdater.prototype = {
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
+        var node = Refs.focusNode;
+        if(node){
+            try{
+                node.focus();
+                node.selectionStart = Refs.selectionStart;
+                node.selectionEnd = Refs.selectionEnd;
+            }catch(e){}
+            delete Refs.focusNode;
+        }
         if (this._hydrating) {
+            
             let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
