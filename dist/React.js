@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-21
+ * by 司徒正美 Copyright 2017-12-22
  * IE9+
  */
 
@@ -606,31 +606,32 @@ try {
 
 var win = w;
 
-var document = w.document || fakeDoc;
-var focusNode;
-function activeElement(node, toFocus) {
-    if (node) {
-        focusNode = node;
-    } else {
-        node = document.activeElement;
-        if (node && node.nodeName !== "BODY") {
-            if (focusNode === node) {
-                return;
-            }
-            focusNode = node;
-        }
-    }
-    if (toFocus) {
-        try {
-            focusNode.focus();
-        } catch (e) {
-            //hack
-        }
-    }
-}
+var document$1 = w.document || fakeDoc;
 
-var isStandard = "textContent" in document;
-var fragment = document.createDocumentFragment();
+var duplexMap = {
+    color: 1,
+    date: 1,
+    datetime: 1,
+    "datetime-local": 1,
+    email: 1,
+    month: 1,
+    number: 1,
+    password: 1,
+    range: 1,
+    search: 1,
+    tel: 1,
+    text: 1,
+    time: 1,
+    url: 1,
+    week: 1,
+    textarea: 1,
+    checkbox: 2,
+    radio: 2,
+    "select-one": 3,
+    "select-multiple": 3
+};
+var isStandard = "textContent" in document$1;
+var fragment = document$1.createDocumentFragment();
 function emptyElement(node) {
     var child;
     while (child = node.firstChild) {
@@ -642,11 +643,11 @@ function emptyElement(node) {
 var recyclables = {
     "#text": []
 };
-
 function removeElement(node) {
     if (!node) {
         return;
     }
+    Refs.nodeOperate = true;
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -662,6 +663,7 @@ function removeElement(node) {
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
+    Refs.nodeOperate = false;
 }
 
 var versions = {
@@ -671,7 +673,7 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+var msie = document$1.documentMode || versions[typeNumber(document$1.all) + "" + typeNumber(win.XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
@@ -686,9 +688,9 @@ function createElement$1(vnode, p) {
                 node.nodeValue = vnode.text;
                 return node;
             }
-            return document.createTextNode(vnode.text);
+            return document$1.createTextNode(vnode.text);
         case "#comment":
-            return document.createComment(vnode.text);
+            return document$1.createComment(vnode.text);
         case "svg":
             ns = NAMESPACE.svg;
             break;
@@ -721,17 +723,18 @@ function createElement$1(vnode, p) {
     try {
         if (ns) {
             vnode.namespaceURI = ns;
-            return document.createElementNS(ns, type);
+            return document$1.createElementNS(ns, type);
         }
         //eslint-disable-next-line
     } catch (e) {}
-    return document.createElement(type);
+    return document$1.createElement(type);
 }
 
 function insertElement(vnode, insertQueue) {
     if (vnode._disposed) {
         return;
     }
+
     //找到可用的父节点
     var p = vnode.return,
         parentNode;
@@ -750,12 +753,16 @@ function insertElement(vnode, insertQueue) {
         if (parentNode.firstChild === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, parentNode.firstChild);
+        Refs.nodeOperate = false;
     } else {
         if (insertPoint.nextSibling === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, insertPoint.nextSibling);
+        Refs.nodeOperate = false;
     }
 }
 
@@ -786,7 +793,10 @@ function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            removeElement(vnode.stateNode);
+            //  removeElement(vnode.stateNode);
+            updateQueue.push({
+                transition: removeElement.bind(0, vnode.stateNode)
+            });
         }
     }
 }
@@ -864,7 +874,7 @@ var placehoder = {
 };
 function drainQueue(queue) {
     options.beforePatch();
-    activeElement(null, true);
+
     var updater = void 0;
     while (updater = queue.shift()) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
@@ -932,7 +942,7 @@ function drainQueue(queue) {
         }
         updater.transition(queue);
     }
-    activeElement(null, true);
+
     options.afterPatch();
     var error = Refs.error;
     if (error) {
@@ -941,7 +951,7 @@ function drainQueue(queue) {
     }
 }
 
-var globalEvents = {};
+var globalEvents = document$1.__events || (document$1.__events = {});
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 var eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
@@ -963,7 +973,7 @@ function isEventName(name) {
     );
 }
 
-var isTouch = "ontouchstart" in document;
+var isTouch = "ontouchstart" in document$1;
 
 function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
@@ -972,12 +982,23 @@ function dispatchEvent(e, type, end) {
         e.type = type;
     }
     var bubble = e.type;
+    var dom = e.target;
+    if (bubble === "focus") {
+        // console.log(  nodeOperate,"nodeOperate","focus");
+    } else if (bubble === "blur") {
+        // console.log(  nodeOperate,"nodeOperate","blur",e.target );
+        if (Refs.nodeOperate) {
+            Refs.focusNode = dom;
+            Refs.selectionStart = dom.selectionStart;
+            Refs.selectionEnd = dom.selectionEnd;
+        }
+    }
 
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
     }
-    var paths = collectPaths(e.target, end || document);
+    var paths = collectPaths(e.target, end || document$1);
     var captured = bubble + "capture";
     options.async = true;
 
@@ -987,10 +1008,9 @@ function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    //if (bubble === "focus") {
-    // activeElement();
-    //}
+
     flushUpdaters();
+
     Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
@@ -1047,10 +1067,10 @@ function triggerEventFlow(paths, prop, e) {
     }
 }
 
-function addGlobalEvent(name) {
+function addGlobalEvent(name, capture) {
     if (!globalEvents[name]) {
         globalEvents[name] = true;
-        addEvent(document, name, dispatchEvent);
+        addEvent(document$1, name, dispatchEvent, !!capture);
     }
 }
 
@@ -1084,7 +1104,7 @@ eventPropHooks.click = function (e) {
             IE9-11 wheel deltaY 下40 上-40
             chrome wheel deltaY 下100 上-100 */
 /* istanbul ignore next  */
-var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
+var fixWheelType = "onmousewheel" in document$1 ? "mousewheel" : document$1.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
 var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, function (e) {
@@ -1098,14 +1118,8 @@ eventHooks.wheel = function (dom) {
     });
 };
 
-var fixFocus = {};
 "blur,focus".replace(/\w+/g, function (type) {
-    eventHooks[type] = function () {
-        if (!fixFocus[type]) {
-            fixFocus[type] = true;
-            addEvent(document, type, dispatchEvent, true);
-        }
-    };
+    addGlobalEvent(type, true);
 });
 /**
  * 
@@ -1204,12 +1218,12 @@ var doubleClickHandle = createHandle("doubleclick");
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password/.test(dom.type)) {
-        addEvent(document, "input", changeHandle);
+        addEvent(document$1, "input", changeHandle);
     }
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {
-    addEvent(document, "dblclick", doubleClickHandle);
+    addEvent(document$1, "dblclick", doubleClickHandle);
 };
 
 function SyntheticEvent(event) {
@@ -1827,8 +1841,8 @@ var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function autoFocus(dom) {
-        if ("form" in dom || dom.contentEditable === "true") {
-            activeElement(dom);
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+            dom.focus();
         }
     },
     svgClass: function svgClass(dom, name, val) {
@@ -2008,29 +2022,6 @@ var duplexData = {
     }, syncOptions, "change"]
 };
 
-var duplexMap = {
-    color: 1,
-    date: 1,
-    datetime: 1,
-    "datetime-local": 1,
-    email: 1,
-    month: 1,
-    number: 1,
-    password: 1,
-    range: 1,
-    search: 1,
-    tel: 1,
-    text: 1,
-    time: 1,
-    url: 1,
-    week: 1,
-    textarea: 1,
-    checkbox: 2,
-    radio: 2,
-    "select-one": 3,
-    "select-multiple": 3
-};
-
 function inputControll(vnode, dom, props) {
     var domType = dom.type;
     var duplexType = duplexMap[domType];
@@ -2196,8 +2187,6 @@ DOMUpdater.prototype = {
     dispose: function dispose() {
         var vnode = this.vnode;
         Refs.fireRef(vnode, null);
-        removeElement(vnode.stateNode);
-        delete vnode.stateNode;
     }
 };
 
@@ -2621,7 +2610,17 @@ CompositeUpdater.prototype = {
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
+        var node = Refs.focusNode;
+        if (node) {
+            try {
+                node.focus();
+                node.selectionStart = Refs.selectionStart;
+                node.selectionEnd = Refs.selectionEnd;
+            } catch (e) {}
+            delete Refs.focusNode;
+        }
         if (this._hydrating) {
+
             var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
@@ -2821,8 +2820,10 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-
-    activeElement();
+    Refs.focusNode = document.activeElement;
+    if (Refs.focusNode === document.body) {
+        Refs.focusNode = null;
+    }
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode

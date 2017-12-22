@@ -1,9 +1,10 @@
-import { document, activeElement } from "./browser";
+import { document} from "./browser";
 import { isFn, noop, options } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
 
-var globalEvents = {};
+
+var globalEvents = document.__events || (document.__events = {});
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 export var eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
@@ -33,6 +34,17 @@ export function dispatchEvent(e, type, end) {
         e.type = type;
     }
     var bubble = e.type;
+    var dom = e.target;
+    if(bubble === "focus"){
+        // console.log(  nodeOperate,"nodeOperate","focus");
+    }else if(bubble === "blur"){
+        // console.log(  nodeOperate,"nodeOperate","blur",e.target );
+        if(Refs.nodeOperate){
+            Refs.focusNode = dom;
+            Refs.selectionStart = dom.selectionStart;
+            Refs.selectionEnd = dom.selectionEnd;
+        }
+    }
 
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
@@ -48,10 +60,9 @@ export function dispatchEvent(e, type, end) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     options.async = false;
-    //if (bubble === "focus") {
-    // activeElement();
-    //}
+ 
     flushUpdaters();
+ 
     Refs.controlledCbs.forEach(function(el) {
         if (el.stateNode) {
             el.controlledCb({
@@ -108,10 +119,10 @@ function triggerEventFlow(paths, prop, e) {
     }
 }
 
-export function addGlobalEvent(name) {
+export function addGlobalEvent(name, capture) {
     if (!globalEvents[name]) {
         globalEvents[name] = true;
-        addEvent(document, name, dispatchEvent);
+        addEvent(document, name, dispatchEvent, !!capture);
     }
 }
 
@@ -159,14 +170,8 @@ eventHooks.wheel = function(dom) {
     });
 };
 
-var fixFocus = {};
 "blur,focus".replace(/\w+/g, function(type) {
-    eventHooks[type] = function() {
-        if (!fixFocus[type]) {
-            fixFocus[type] = true;
-            addEvent(document, type, dispatchEvent, true);
-        }
-    };
+    addGlobalEvent(type, true);
 });
 /**
  * 

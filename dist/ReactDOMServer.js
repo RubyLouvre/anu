@@ -324,10 +324,34 @@ try {
 
 var win = w;
 
-var document = w.document || fakeDoc;
+var document$1 = w.document || fakeDoc;
+/*
+export function activeElement(node, toFocus) {
+    if (node) {
+        focusNode = node;
+    } else {
+        node = document.activeElement;
+        if (node && node.nodeName !== "BODY") {
+            if (focusNode === node) {
+                return;
+            }
+            focusNode = node;
+        }
+    }
+    if (toFocus) {
+        try {
+            focusNode.focus();
+        } catch (e) {
+            //hack
+        }
+    }
+}
+*/
 
 
-var fragment = document.createDocumentFragment();
+
+
+var fragment = document$1.createDocumentFragment();
 
 
 
@@ -339,7 +363,7 @@ var versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+var msie = document$1.documentMode || versions[typeNumber(document$1.all) + "" + typeNumber(win.XMLHttpRequest)];
 
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 

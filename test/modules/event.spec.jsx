@@ -272,9 +272,11 @@ describe("事件系统模块", function() {
             }
 
             onFocus1() {
+                console.log("focus 1")
                 aaa += "aaa ";
             }
             onFocus2(e) {
+                console.log("focus 2")
                 aaa += "bbb ";
             }
 
@@ -485,7 +487,7 @@ describe("事件系统模块", function() {
             .$apply();
         expect(s.refs.sss.value).toBe("北京");
     });
-    it("empty Component", async () => {
+    it("输入内容", async () => {
         class Empty extends React.Component {
             render() {
                 return null;
@@ -519,7 +521,6 @@ describe("事件系统模块", function() {
         }
 
         var s = React.render(<App />, div);
-        await browser.pause(100).$apply();
         expect(s.refs.a.value).toBe("南京");
         await browser
             .setValue(s.refs.a, "北京")

@@ -1,7 +1,6 @@
 import { options, clearArray, noop } from "./util";
 import { Refs } from "./Refs";
 import { disposeVnode } from "./dispose";
-import { activeElement } from "./browser";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -31,14 +30,14 @@ var placehoder = {
 };
 export function drainQueue(queue) {
     options.beforePatch();
-    activeElement(null, true);
+   
     let updater;
     while ((updater = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
             continue;
         }
-       
+
         var hook = Refs.errorHook;
         if (hook) {
             //如果存在医生节点
@@ -75,18 +74,17 @@ export function drainQueue(queue) {
                 delete Refs.errorHook;
                 var rejectedQueue = [];
                 //收集要销毁的组件（要求必须resolved）
-               
+
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctors.forEach(function(doctor){
+                doctors.forEach(function(doctor) {
                     for (var i in doctor.children) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
                     }
                     doctor.children = {};
-                    
                 });
-                doctors.forEach(function(doctor){
+                doctors.forEach(function(doctor) {
                     if (addDoctor) {
                         rejectedQueue.push(doctor);
                         updater = placehoder;
@@ -94,13 +92,13 @@ export function drainQueue(queue) {
                     doctor.addState("catch");
                     rejectedQueue.push(doctor);
                 });
-        
+
                 queue = rejectedQueue.concat(queue);
             }
         }
         updater.transition(queue);
     }
-    activeElement(null, true);
+
     options.afterPatch();
     var error = Refs.error;
     if (error) {

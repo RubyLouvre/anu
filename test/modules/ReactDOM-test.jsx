@@ -91,8 +91,8 @@ describe("ReactDOM", function() {
             }
         }
 
-        const log = [];
-        const container = document.createElement("div");
+        var log = [];
+        var container = document.createElement("div");
         document.body.appendChild(container);
         ReactDOM.render(<A showTwo={false} />, container);
         input.focus();
@@ -101,7 +101,7 @@ describe("ReactDOM", function() {
         // something that could happen when manipulating DOM nodes (but is hard to
         // deterministically force without relying intensely on React DOM
         // implementation details)
-        const div = container.firstChild;
+        var div = container.firstChild;
         ["appendChild", "insertBefore"].forEach(name => {
             const mutator = div[name];
             div[name] = function() {
