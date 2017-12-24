@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-12-22
+ * 此版本带有selection by 司徒正美 Copyright 2017-12-24
  * IE9+
  */
 
@@ -607,52 +607,7 @@ var inBrowser = b;
 var win = w;
 
 var document$1 = w.document || fakeDoc;
-var focusNode$1;
-/*
-export function activeElement(node, toFocus) {
-    if (node) {
-        focusNode = node;
-    } else {
-        node = document.activeElement;
-        if (node && node.nodeName !== "BODY") {
-            if (focusNode === node) {
-                return;
-            }
-            focusNode = node;
-        }
-    }
-    if (toFocus) {
-        try {
-            focusNode.focus();
-        } catch (e) {
-            //hack
-        }
-    }
-}
-*/
-function blurElement() {
-    var a = focusNode$1;
-    focusNode$1 = null;
-    return a;
-}
-function activeElement(node, toFocus) {
-    if (node) {
-        focusNode$1 = node;
-    } else {
-        var node1 = document$1.activeElement;
-        if (node1 && node1.nodeName !== "BODY") {
-            if (focusNode$1 === node1) {
-                return;
-            }
-            focusNode$1 = node1;
-        }
-    }
-    try {
-        toFocus && focusNode$1 && focusNode$1.focus();
-    } catch (e) {
-        //hack
-    }
-}
+
 var duplexMap = {
     color: 1,
     date: 1,
@@ -675,11 +630,6 @@ var duplexMap = {
     "select-one": 3,
     "select-multiple": 3
 };
-function switchFocus(dom) {
-    if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
-        activeElement(dom);
-    }
-}
 var isStandard = "textContent" in document$1;
 var fragment = document$1.createDocumentFragment();
 function emptyElement(node) {
@@ -693,11 +643,11 @@ function emptyElement(node) {
 var recyclables = {
     "#text": []
 };
-
 function removeElement(node) {
     if (!node) {
         return;
     }
+    Refs.nodeOperate = true;
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -713,6 +663,7 @@ function removeElement(node) {
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
+    Refs.nodeOperate = false;
 }
 
 var versions = {
@@ -783,6 +734,7 @@ function insertElement(vnode, insertQueue) {
     if (vnode._disposed) {
         return;
     }
+
     //找到可用的父节点
     var p = vnode.return,
         parentNode;
@@ -791,7 +743,7 @@ function insertElement(vnode, insertQueue) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.return;
+        p = p.superReturn || p.return;
     }
 
     var dom = vnode.stateNode,
@@ -801,12 +753,16 @@ function insertElement(vnode, insertQueue) {
         if (parentNode.firstChild === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, parentNode.firstChild);
+        Refs.nodeOperate = false;
     } else {
         if (insertPoint.nextSibling === dom) {
             return;
         }
+        Refs.nodeOperate = true;
         parentNode.insertBefore(dom, insertPoint.nextSibling);
+        Refs.nodeOperate = false;
     }
 }
 
@@ -825,10 +781,9 @@ function disposeVnode(vnode, updateQueue, silent) {
         }
 
         vnode._disposed = true;
-        if (vnode.portal) {
-            disposeChildren(vnode.portal.updater.children, updateQueue, silent);
-            // disposeElement(vnode, updateQueue, silent);
-            return;
+        if (vnode.superReturn) {
+            var dom = vnode.superReturn.stateNode;
+            delete dom.__events;
         }
 
         if (vnode.vtype > 1) {
@@ -837,14 +792,18 @@ function disposeVnode(vnode, updateQueue, silent) {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            //  removeElement(vnode.stateNode);
             updateQueue.push({
-                transition: removeElement.bind(0, vnode.stateNode)
+                node: vnode.stateNode,
+                vnode: vnode,
+                transition: remove
             });
         }
     }
 }
-
+function remove() {
+    delete this.vnode.stateNode;
+    removeElement(this.node);
+}
 function disposeElement(vnode, updateQueue, silent) {
     var updater = vnode.updater;
 
@@ -867,8 +826,8 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-
     if (!silent) {
+
         updater.hydrate = noop; //可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
@@ -918,7 +877,6 @@ var placehoder = {
 };
 function drainQueue(queue) {
     options.beforePatch();
-    // activeElement(null, true);
 
     var updater = void 0;
     while (updater = queue.shift()) {
@@ -987,7 +945,6 @@ function drainQueue(queue) {
         }
         updater.transition(queue);
     }
-    //  activeElement(null, true);
 
     options.afterPatch();
     var error = Refs.error;
@@ -997,7 +954,7 @@ function drainQueue(queue) {
     }
 }
 
-var globalEvents = {};
+var globalEvents = document$1.__events || (document$1.__events = {});
 var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 var eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
@@ -1028,12 +985,15 @@ function dispatchEvent(e, type, end) {
         e.type = type;
     }
     var bubble = e.type;
-    if (bubble === "focus") {
-        Refs.a = document$1.activeElement;
-        //switchFocus(e.target);
-    } else if (bubble === "blur") {
-        Refs.a = blurElement();
+    var dom = e.target;
+    if (bubble === "blur") {
+        if (Refs.nodeOperate) {
+            Refs.focusNode = dom;
+            Refs.selectionStart = dom.selectionStart;
+            Refs.selectionEnd = dom.selectionEnd;
+        }
     }
+
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -1074,7 +1034,8 @@ function collectPaths(from, end) {
         //如果跑到document上
         return paths;
     }
-    var vnode = node.__events.vnode;
+    var mid = node.__events;
+    var vnode = mid.child || mid.vnode;
     do {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;
@@ -1107,10 +1068,10 @@ function triggerEventFlow(paths, prop, e) {
     }
 }
 
-function addGlobalEvent(name) {
+function addGlobalEvent(name, capture) {
     if (!globalEvents[name]) {
         globalEvents[name] = true;
-        addEvent(document$1, name, dispatchEvent);
+        addEvent(document$1, name, dispatchEvent, !!capture);
     }
 }
 
@@ -1159,7 +1120,7 @@ eventHooks.wheel = function (dom) {
 };
 
 "blur,focus".replace(/\w+/g, function (type) {
-    addEvent(document$1, type, dispatchEvent, true);
+    addGlobalEvent(type, true);
 });
 /**
  * 
@@ -1880,7 +1841,11 @@ var actionStrategy = {
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
-    autoFocus: switchFocus,
+    autoFocus: function autoFocus(dom) {
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+            dom.focus();
+        }
+    },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
             dom.removeAttribute("class");
@@ -2232,18 +2197,20 @@ function AnuPortal(props) {
 
 //[Top API] ReactDOM.createPortal
 function createPortal(children, node) {
-    var vnode;
-    if (node.__events) {
+    var vnode,
+        events = node.__events;
+    if (events) {
         vnode = node.__events.vnode;
     } else {
+        events = node.__events = {};
         vnode = createVnode(node);
-        var v = node.__events = {};
-        v.vnode = vnode;
+        events.vnode = vnode;
         new DOMUpdater(vnode);
     }
-    var ret = createElement(AnuPortal, { children: children });
-    ret.portal = vnode;
-    return ret;
+    var child = createElement(AnuPortal, { children: children });
+    events.child = child;
+    child.superReturn = vnode;
+    return child;
 }
 
 function pushError(instance, hook, error) {
@@ -2601,13 +2568,7 @@ CompositeUpdater.prototype = {
         }
         number = typeNumber(rendered);
         var _this = this;
-        var portalVnode = vnode.portal;
-        if (portalVnode) {
-            _this = portalVnode.updater;
-            _this.insertQueue = _this.insertQueue || [];
-            portalVnode.return = vnode.return;
-            vnode = portalVnode;
-        }
+
         var hasMounted = _this.isMounted();
         if (hasMounted) {
             lastChildren = _this.children;
@@ -2628,13 +2589,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-
-        // console.log(vnode.props.vnode);
         Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, _this.insertQueue);
-        if (portalVnode) {
-            _this.isMounted = returnTrue;
-            // _this.children = nextChildren;
-        }
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
@@ -2646,11 +2601,17 @@ CompositeUpdater.prototype = {
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
+        var node = Refs.focusNode;
+        if (node) {
+            try {
+                node.focus();
+                node.selectionStart = Refs.selectionStart;
+                node.selectionEnd = Refs.selectionEnd;
+            } catch (e) {}
+            delete Refs.focusNode;
+        }
         if (this._hydrating) {
-            if (Refs.a && Refs.a !== document.body) {
-                activeElement(Refs.a);
-                delete Refs.a;
-            }
+
             var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
@@ -2850,11 +2811,10 @@ function renderByAnu(vnode, container, callback) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
-    Refs.a = document.activeElement;
-    if (Refs.a === document.body) {
-        Refs.a = null;
+    Refs.focusNode = document.activeElement;
+    if (Refs.focusNode === document.body) {
+        Refs.focusNode = null;
     }
-    // activeElement();
     Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode

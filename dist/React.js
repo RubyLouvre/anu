@@ -2878,9 +2878,6 @@ function mountVnode(vnode, context, updateQueue, insertQueue) {
             mountChildren(vnode, children, context, updateQueue, []);
             _updater.init(updateQueue);
         }
-        if (vnode.type === "a") {
-            console.log(vnode);
-        }
         insertElement(vnode, insertQueue);
     } else {
         var updater = new CompositeUpdater(vnode, context);
