@@ -47,60 +47,114 @@
                     }
                 }
             }  
-            let input;
-        let input2;
-        class A extends React.Component {
+            var body = document.body;
+        var container = document.createElement("div");
+        body.appendChild(container);
+        var innerWillMount, innerDidMount, innerWillUnmount;
+        class Inner extends React.Component {
             render() {
+                return <p>inner</p>;
+            }
+            componentWillUnmount() {
+                innerWillUnmount = true;
+            }
+            componentWillMount() {
+                innerWillMount = true;
+            }
+            componentDidMount() {
+                innerDidMount = true;
+            }
+        }
+        var testBubble = 0;
+        class Container extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    show: false,
+                    number: 1
+                };
+            }
+
+            _show() {
+                if (this.state.show) {
+                    return; //防止创建多个弹窗
+                }
+                this.setState({ show: true });
+            }
+
+            _close(e) {
+                this.setState({ show: false });
+            }
+
+            render() {
+                const { show } = this.state;
+
                 return (
-                    <div>
-                        <input id="one" ref={r => (input = input || r)} />
-                        {this.props.showTwo && <input id="two" ref={r => (input2 = input2 || r)} />}
+                    <div
+                        className="Container"
+                        onClick={e => {
+                            testBubble = true;
+                            e.preventDefault();
+                        }}
+                    >
+                        <div className="hasClick" style={{ background: "#00bcd4" }} ref="openDialog" onClick={this._show.bind(this)}>
+                            <div>Click me to show the Portal content</div>
+                            <div>State: {(show && "visible") || "hidden"}</div>
+                            <div ref="vdialog">
+                                {show && (
+                                    <Portal>
+                                        <div style={{ background: "#ffeebb", height: 200 }}>
+                                            <p ref="number">{this.state.number}</p>
+                                            <Inner />
+                                            <button ref="closeDialog" onClick={this._close.bind(this)} type="button">
+                                                &times; close portal
+                                            </button>
+                                        </div>
+                                    </Portal>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 );
             }
-
-            componentDidUpdate() {
-                // Focus should have been restored to the original input
-                expect(document.activeElement.id+"3").toBe("one3");
-                input2.focus();
-                expect(document.activeElement.id+"4").toBe("two4");
-                log.push("input2 focused");
-            }
         }
 
-        var log = [];
-        var container = document.createElement("div");
-        document.body.appendChild(container);
-        ReactDOM.render(<A showTwo={false} />, container);
-        input.focus();
-        console.log(document.activeElement,"activeElement")
-        // When the second input is added, let's simulate losing focus, which is
-        // something that could happen when manipulating DOM nodes (but is hard to
-        // deterministically force without relying intensely on React DOM
-        // implementation details)
-        var div = container.firstChild;
-        ["appendChild", "insertBefore"].forEach(name => {
-            const mutator = div[name];
-            div[name] = function() {
-                if (input) {
-                    console.log(input, "要失去焦点")
-                    input.blur();
-                    expect(document.activeElement.tagName).toBe("BODY");
-                    log.push("input2 inserted");
-                }
-                return mutator.apply(this, arguments);
-            };
-        });
-
-
-        expect(document.activeElement.id+"1").toBe("one1");
-        ReactDOM.render(<A showTwo={true} />, container);
-        // input2 gets added, which causes input to get blurred. Then
-        // componentDidUpdate focuses input2 and that should make it down to here,
-        // not get overwritten by focus restoration.
-        expect(document.activeElement.id+'2').toBe("two2");
-        expect(log).toEqual(["input2 inserted", "input2 focused"]);
-        document.body.removeChild(container);
+        class Portal extends React.Component {
+            constructor(props) {
+                super(props);
+                this.node = document.createElement("div");
+                this.node.id = "dynamic";
+                body.appendChild(this.node);
+            }
+            componentWillUnmount() {
+                console.log(this.node)
+                body.removeChild(this.node);
+            }
+            render() {
+                return ReactDOM.createPortal(this.props.children, this.node);
+            }
+        }
+        var s = ReactDOM.render(<Container />, container);
+        expect(!!s.refs.openDialog).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(false);
+        s.refs.openDialog.click();
+        expect(!!document.getElementById("dynamic")).toBe(true);
+        expect(!!s.refs.closeDialog).toBe(true);
+        
+        expect(innerWillMount).toBe(true);
+        expect(innerDidMount).toBe(true);
+        
+        s.setState({ number: 10 });
+        expect(s.refs.number.innerHTML).toBe("10");
+        testBubble = false;
+        expect(s.refs.vdialog.innerHTML).toBe("");
+        
+        s.refs.closeDialog.click();
+        expect(innerWillUnmount).toBe(true);
+        console.log(s.refs.closeDialog);
+       expect(!!s.refs.closeDialog).toBe(false);
+        expect(testBubble).toBe(true);
+        
           </script>
 
 </body>

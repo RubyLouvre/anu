@@ -112,7 +112,8 @@ describe("ReactChildren", function() {
 
         var mappedChildren = React.Children.map(instance.props.children, callback, context);
         assertCalls();
-        expect(mappedChildren).toEqual([<div key=".$keyZero" />, <div key=".$keyTwo" />, <div key=".$keyFour" />]);
+        expect(mappedChildren).toEqual([<div key=".$keyZero" />, 
+            <div key=".$keyTwo" />, <div key=".$keyFour" />]);
     });
     it("React.Children.forEach不处理null void 0", () => {
         var i = 0;
@@ -167,7 +168,9 @@ describe("ReactChildren", function() {
 
         var mappedChildren = React.Children.map(instance.props.children, callback, context);
         assertCalls();
-        expect(mappedChildren).toEqual([<div key=".$divNode" />, <span key=".1:0:$spanNode" />, <a key=".2:$aNode" />, "string", 1234]);
+        expect(mappedChildren).toEqual([<div key=".$divNode" />, 
+            <span key=".1:0:$spanNode" />,
+            <a key=".2:$aNode" />, "string", 1234]);
     });
 
     it("should be called for each child in nested structure", () => {

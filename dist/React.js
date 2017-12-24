@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-22
+ * by 司徒正美 Copyright 2017-12-24
  * IE9+
  */
 
@@ -784,13 +784,6 @@ function disposeVnode(vnode, updateQueue, silent) {
         if (vnode.superReturn) {
             var dom = vnode.superReturn.stateNode;
             delete dom.__events;
-            // var p = vnode.portal;
-            // console.log(vnode.vtype,"!!!");
-            //  disposeChildren(vnode.portal.updater.children, updateQueue, silent);
-            //  disposeElement(p, updateQueue, silent);
-            //  console.log(vnode.portal.updater.children,"移除弹窗的东西");
-            //  vnode.portal.updater.children = {};
-            //  disposeElement(vnode, updateQueue, silent);
         }
 
         if (vnode.vtype > 1) {
@@ -833,7 +826,6 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
-    console.log(updater.name);
     if (!silent) {
 
         updater.hydrate = noop; //可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
@@ -994,10 +986,7 @@ function dispatchEvent(e, type, end) {
     }
     var bubble = e.type;
     var dom = e.target;
-    if (bubble === "focus") {
-        // console.log(  nodeOperate,"nodeOperate","focus");
-    } else if (bubble === "blur") {
-        // console.log(  nodeOperate,"nodeOperate","blur",e.target );
+    if (bubble === "blur") {
         if (Refs.nodeOperate) {
             Refs.focusNode = dom;
             Refs.selectionStart = dom.selectionStart;
