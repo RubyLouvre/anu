@@ -1,8 +1,10 @@
-import { extend, options, typeNumber, emptyObject, isFn, returnFalse, returnTrue, clearArray } from "../src/util";
+import { extend, options, typeNumber, emptyObject, isFn, 
+    returnFalse, returnTrue, clearArray
+} from "../src/util";
 import { fiberizeChildren } from "./createElement";
 import { drainQueue, enqueueUpdater } from "./scheduler";
 import { pushError, captureError } from "./ErrorBoundary";
-import { insertElement } from "./browser";
+import { insertElement, document } from "./browser";
 import { Refs } from "./Refs";
 
 function alwaysNull() {
@@ -78,7 +80,7 @@ CompositeUpdater.prototype = {
                 this._pendingCallbacks.push(cb);
             }
         }
-        if (options.async) {
+        if (document.__async) {
             //在事件句柄中执行setState会进行合并
             enqueueUpdater(this);
             return;
@@ -167,7 +169,7 @@ CompositeUpdater.prototype = {
         instance.context = context;
         instance.updater = this;
         this.insertQueue = insertQueue;
-        this.insertPoint = insertQueue[0];
+        this.insertPoint = insertQueue.dom;
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
@@ -180,7 +182,7 @@ CompositeUpdater.prototype = {
 
     hydrate(updateQueue, resetPoint) {
         let { instance, context, props, vnode, pendingVnode } = this;
-        if (this._states[0] === "hydrate") {
+        if(this._states[0] === "hydrate"){
             this._states.shift(); // ReactCompositeComponentNestedState-state
         }
         let state = this.mergeStates();
@@ -197,14 +199,15 @@ CompositeUpdater.prototype = {
             var queue = this.insertQueue;
             nodes.forEach(function(el) {
                 insertElement(el, queue);
-                queue.unshift(el.stateNode);
+                queue.dom = el.stateNode;
+                // queue.unshift(el.stateNode);
             });
         } else {
             captureError(instance, "componentWillUpdate", [props, state, context]);
             var { props: lastProps, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState];
         }
-        if (this._hasError) {
+        if(this._hasError){
             return;
         }
         vnode.stateNode = instance;
@@ -215,9 +218,9 @@ CompositeUpdater.prototype = {
         instance.context = context;
         if (shouldUpdate) {
             if (resetPoint) {
-                this.insertPoint = this.insertQueue[0];
+                this.insertPoint = this.insertQueue.dom;
             } else {
-                this.insertQueue = [this.insertPoint];
+                this.insertQueue =  {}; // [this.insertPoint];
             }
             this.render(updateQueue);
         }
@@ -251,29 +254,26 @@ CompositeUpdater.prototype = {
             Refs.currentOwner = lastOwn;
         }
         number = typeNumber(rendered);
-        var _this = this;
-       
-        var hasMounted = _this.isMounted();
+        var hasMounted = this.isMounted();
         if (hasMounted) {
-            lastChildren = _this.children;
+            lastChildren = this.children;
         }
-       
         if (number > 2) {
             if (number > 5) {
                 //array, object
                 childContext = getChildContext(instance, parentContext);
             }
-            nextChildren = fiberizeChildren(rendered, _this);
+            nextChildren = fiberizeChildren(rendered, this);
         } else {
             //undefinded, null, boolean
-            _this.children = nextChildren; //emptyObject
-            delete _this.child;
+            this.children = nextChildren; //emptyObject
+            delete this.child;
         }
         var noSupport = !support16 && errorType[number];
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, _this.insertQueue);
+        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
@@ -286,14 +286,14 @@ CompositeUpdater.prototype = {
         if(node){
             try{
                 node.focus();
-                node.selectionStart = Refs.selectionStart;
-                node.selectionEnd = Refs.selectionEnd;
-            }catch(e){}
+                node.__inner__ = true;
+            }catch(e){
+                //hack
+            }
             delete Refs.focusNode;
         }
         if (this._hydrating) {
-            
-            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
+            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount"  ;
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -319,8 +319,9 @@ CompositeUpdater.prototype = {
         }
         transfer.call(this, updateQueue);
     },
-    catch(queue) {
+    catch(queue){
         let { instance } = this;
+        // delete Refs.ignoreError; 
         this._states.length = 0;
         this.children = {};
         this._isDoctor = this._hydrating = true;
@@ -328,6 +329,7 @@ CompositeUpdater.prototype = {
         delete this.errorInfo;
         this._hydrating = false;
         transfer.call(this, queue);
+
     },
     dispose() {
         var instance = this.instance;
@@ -341,7 +343,7 @@ CompositeUpdater.prototype = {
         this._disposed = true;
     }
 };
-function transfer(queue) {
+function transfer(queue){
     var cbs = this._nextCallbacks,
         cb;
     if (cbs && cbs.length) {

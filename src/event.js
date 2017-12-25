@@ -1,10 +1,9 @@
-import { document} from "./browser";
-import { isFn, noop, options } from "./util";
+import { document } from "./browser";
+import { isFn, noop } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
 
-
-var globalEvents = document.__events || (document.__events = {});
+var globalEvents = {};
 export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
 export var eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
@@ -38,28 +37,30 @@ export function dispatchEvent(e, type, end) {
     if(bubble === "blur"){
         if(Refs.nodeOperate){
             Refs.focusNode = dom;
-            Refs.selectionStart = dom.selectionStart;
-            Refs.selectionEnd = dom.selectionEnd;
+        }
+    }else if(bubble === "focus"){
+        if(dom.__inner__){
+            dom.__inner__ = false;
+            return;
         }
     }
-
     var hook = eventPropHooks[bubble];
+
     if (hook && false === hook(e)) {
         return;
     }
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
-    options.async = true;
+    document.__async = true;
 
     triggerEventFlow(paths, captured, e);
 
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
-    options.async = false;
- 
+    document.__async = false;
+
     flushUpdaters();
- 
     Refs.controlledCbs.forEach(function(el) {
         if (el.stateNode) {
             el.controlledCb({
@@ -79,19 +80,17 @@ function collectPaths(from, end) {
             return paths;
         }
     }
-    if (!node || node.nodeType > 1) {
-        //如果跑到document上
+    if(!node || node.nodeType >1 ){//如果跑到document上
         return paths;
     }
-    var mid = node.__events;
-    var vnode = mid.child || mid.vnode;
+    var vnode = node.__events.vnode;
     do {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;
             if (dom === end) {
                 break;
             }
-            if (!dom) {
+            if(!dom){
                 // console.log(vnode,"没有实例化");
                 break;
             }
@@ -99,7 +98,7 @@ function collectPaths(from, end) {
                 paths.push({ dom: dom, events: dom.__events });
             }
         }
-    } while ((vnode = vnode.return)); // eslint-disable-line
+    } while ((vnode = vnode.return));// eslint-disable-line
     return paths;
 }
 
@@ -109,7 +108,7 @@ function triggerEventFlow(paths, prop, e) {
         var fn = path.events[prop];
         if (isFn(fn)) {
             e.currentTarget = path.dom;
-            fn.call(void 666, e);
+            fn.call(void 666,e);
             if (e._stopPropagation) {
                 break;
             }
@@ -120,7 +119,7 @@ function triggerEventFlow(paths, prop, e) {
 export function addGlobalEvent(name, capture) {
     if (!globalEvents[name]) {
         globalEvents[name] = true;
-        addEvent(document, name, dispatchEvent, !!capture);
+        addEvent(document, name, dispatchEvent, capture);
     }
 }
 
@@ -168,8 +167,12 @@ eventHooks.wheel = function(dom) {
     });
 };
 
+
 "blur,focus".replace(/\w+/g, function(type) {
-    addGlobalEvent(type, true);
+    if(!document["__"+type]){
+        document["__"+type] = true;
+        addGlobalEvent(type, true);
+    }
 });
 /**
  * 

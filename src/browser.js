@@ -174,7 +174,7 @@ export function createElement(vnode, p) {
     return document.createElement(type);
 }
 
-export function insertElement(vnode, insertQueue) {
+export function insertElement(vnode, insertPoint) {
     if (vnode._disposed) {
         return;
     }
@@ -191,23 +191,17 @@ export function insertElement(vnode, insertQueue) {
     }
 
     var dom = vnode.stateNode,
-        insertPoint = insertQueue[0];
-    if (!insertPoint) {
+        //  insertPoint = insertQueue.dom,
+        after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
+   
         //如果没有插入点，则插入到当前父节点的第一个节点之前
-        if (parentNode.firstChild === dom) {
-            return;
-        }
-        Refs.nodeOperate = true;
-        parentNode.insertBefore(dom, parentNode.firstChild);
-        Refs.nodeOperate = false;
-    } else {
-        if (insertPoint.nextSibling === dom) {
-            return;
-        }
-        Refs.nodeOperate = true;
-        parentNode.insertBefore(dom, insertPoint.nextSibling);
-        Refs.nodeOperate = false;
+    if (after=== dom) {
+        return;
     }
+    Refs.nodeOperate = true;
+    parentNode.insertBefore(dom, after);
+    Refs.nodeOperate = false;
+   
 }
 
 export function getComponentNodes(children, resolve, debug) {

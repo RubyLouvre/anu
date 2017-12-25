@@ -1,5 +1,5 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
+import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
@@ -97,11 +97,11 @@ function renderByAnu(vnode, container, callback, context = {}) {
         topNodes.push(container);
         nodeIndex = topNodes.length - 1;
     }
+    Refs.currentOwner = null; //防止干扰
     Refs.focusNode = document.activeElement;
     if(Refs.focusNode === document.body){
         Refs.focusNode = null;
     }
-    Refs.currentOwner = null; //防止干扰
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode
     nextWrapper.isTop = true;
@@ -157,14 +157,15 @@ function mountVnode(vnode, context, updateQueue, insertQueue) {
     options.beforeInsert(vnode);
     if (vnode.vtype === 0 || vnode.vtype === 1) {
         vnode.stateNode = createDOMElement(vnode, vnode.return);
-        insertQueue.unshift(vnode.stateNode);
+        //  insertQueue.unshift(vnode.stateNode);
+        insertQueue.dom = vnode.stateNode;
         if (vnode.vtype === 1) {
             let updater = new DOMUpdater(vnode);
             let children = fiberizeChildren(vnode.props.children, updater);
             mountChildren(vnode, children, context, updateQueue, []);
             updater.init(updateQueue);
         }
-        insertElement(vnode, insertQueue);
+        insertElement(vnode, insertQueue.dom);
     } else {
         var updater = new CompositeUpdater(vnode, context);
         updater.init(updateQueue, insertQueue);
@@ -185,8 +186,10 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertQueue) {
     var dom = (nextVnode.stateNode = lastVnode.stateNode);
     options.beforeUpdate(nextVnode);
     if (lastVnode.vtype < 2) {
-        insertElement(nextVnode, insertQueue);
-        insertQueue.unshift(dom);
+        var insertPoint = insertQueue.dom;
+        insertElement(nextVnode, insertPoint);
+        insertQueue.dom = dom;
+        //  insertQueue.unshift(dom);
         if (lastVnode.vtype === 0) {
             if (nextVnode.text !== lastVnode.text) {
                 dom.nodeValue = nextVnode.text;

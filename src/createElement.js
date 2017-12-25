@@ -101,7 +101,6 @@ function getProps(node) {
     }
     return props;
 }
-
 var lastText, flattenIndex, flattenObject, flattenPrev, flattenArray;
 function flattenCb(child, index, vnode) {
     let childType = typeNumber(child);

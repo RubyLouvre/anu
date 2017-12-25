@@ -32,33 +32,36 @@ function keysPolyfill() {//解决IE下Object.keys的性能问题
 keysPolyfill();
 setTimeout(keysPolyfill, 0);
 setTimeout(keysPolyfill, 100);
-var React = {
-    version: "VERSION",
-    render,
-    hydrate: render,
-    options,
-    PropTypes,
-    Children, 
-    Component,
-    eventSystem,
-    findDOMNode,
-    createClass,
-    createPortal,
-    createElement,
-    cloneElement,
-    PureComponent,
-    isValidElement,
-    unmountComponentAtNode,
-    unstable_renderSubtreeIntoContainer,
 
-    createFactory(type) {
-        console.warn("createFactory is deprecated"); // eslint-disable-line
-        var factory = createElement.bind(null, type);
-        factory.type = type;
-        return factory;
-    }
-};
-
-window.React = window.ReactDOM = React;
-
+var React;
+if (window.React && window.React.options) {
+    React = window.React;
+} else {
+    React = window.React = window.ReactDOM =  {
+        version: "VERSION",
+        render,
+        hydrate: render,
+        options,
+        PropTypes,
+        Children, 
+        Component,
+        eventSystem,
+        findDOMNode,
+        createClass,
+        createPortal,
+        createElement,
+        cloneElement,
+        PureComponent,
+        isValidElement,
+        unmountComponentAtNode,
+        unstable_renderSubtreeIntoContainer,
+    
+        createFactory(type) {
+            console.warn("createFactory is deprecated"); // eslint-disable-line
+            var factory = createElement.bind(null, type);
+            factory.type = type;
+            return factory;
+        }
+    };
+}
 export default React;

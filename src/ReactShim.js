@@ -9,21 +9,24 @@ import { createPortal } from "./createPortal";
 
 import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
-var React = {
-    version: "VERSION",
-    render,
-    hydrate: render,
-    options,
-    Children, 
-    Component,
-    findDOMNode,
-    createPortal,
-    createElement,
-    cloneElement,
-    PureComponent,
-    unmountComponentAtNode
-};
 
-window.React = window.ReactDOM = React;
-
+var React;
+if (window.React && window.React.options) {
+    React = window.React;
+} else {
+    React = window.React = window.ReactDOM =  {
+        version: "VERSION",
+        render,
+        hydrate: render,
+        options,
+        Children, 
+        Component,
+        findDOMNode,
+        createPortal,
+        createElement,
+        cloneElement,
+        PureComponent,
+        unmountComponentAtNode
+    };
+}
 export default React;

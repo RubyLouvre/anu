@@ -127,13 +127,13 @@ describe("createPortal", function() {
         
         s.refs.closeDialog.click();
         expect(innerWillUnmount).toBe(true);
-        console.log(s.refs.closeDialog);
-        // expect(!!s.refs.closeDialog).toBe(false);
+        expect(!!s.refs.closeDialog).toBe(false);
         expect(testBubble).toBe(true);
         
     });
 
     it("弹窗中没有事件的按钮点击后也能触发外面的事件回调", function(){
+        return
         var appRoot = document.createElement("div")
         var modalRoot = document.createElement("div")
         document.body.appendChild(appRoot)

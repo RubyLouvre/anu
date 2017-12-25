@@ -2,7 +2,10 @@
 
 1. 优化fiberizeChildren的性能
 2. 修复受控组件在textarea, radio的BUG，将受控事件放到用户事件后集中执行
-3. 添加焦点系统的支持
+3. 添加焦点系统的支持（全局focus,blur事件提前监听，移除添加节点的Refs.nodeOperate开头）
+4. 解决多次引入React时，事件系统的option.async有问题的BUG
+5. 简化createPortal的实现
+
 
 ## 1.2.0(2017.12.17) 支持React16
 

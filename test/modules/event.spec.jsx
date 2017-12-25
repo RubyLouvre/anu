@@ -336,6 +336,7 @@ describe("事件系统模块", function() {
         class App extends React.Component {
             constructor(props) {
                 super(props);
+                this.__merge = true
                 this.state = {
                     path: "111"
                 };
@@ -383,8 +384,8 @@ describe("事件系统模块", function() {
         });
         var list2 = ["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."];
         ReactTestUtils.Simulate.click(s.refs.click2time);
-
         expect(list).toEqual(list2);
+       
     });
 
    

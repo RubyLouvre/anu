@@ -1,4 +1,4 @@
-import { options,noop } from "./util";
+import { options } from "./util";
 import { removeElement } from "./browser";
 
 export const topVnodes = [];
@@ -14,32 +14,18 @@ export function disposeVnode(vnode, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
-        
         vnode._disposed = true;
-        if(vnode.superReturn){
-            var dom = vnode.superReturn.stateNode;
-            delete dom.__events;
-        }
-        
         if (vnode.vtype > 1) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            updateQueue.push({
-                node: vnode.stateNode,
-                vnode: vnode,
-                transition:remove
-            });
-           
+            removeElement(vnode.stateNode);
         }
     }
 }
-function remove(){
-    delete this.vnode.stateNode;
-    removeElement(this.node);
-}
+
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
@@ -61,9 +47,10 @@ function disposeComponent(vnode, updateQueue, silent) {
         return;
     }
     var updater = instance.updater;
+    if (instance.isPortal) {
+        updater.updateQueue = updateQueue;
+    }
     if (!silent) {
-       
-        updater.hydrate = noop;//可能它的update还在drainQueue，被执行hydrate，render, diffChildren，引发无谓的性能消耗
         updater.addState("dispose");
         updateQueue.push(updater);
     } else if (updater.isMounted()) {

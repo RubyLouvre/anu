@@ -14,6 +14,9 @@
 <body>
 
     <div>这个默认会被清掉</div>
+    <p><input id="a" value="111"/><input id="b" value="222"/><input id="c" value="333"/><span tabindex="-1" id="span">333</span></p>
+    <p><input id="d" value="444"/><input id="e" value="555"/><input id="f" value="666"/></p>
+
     <blockquote id='example'></blockquote>
     <pre>
     
@@ -44,6 +47,7 @@
           }
       }
   }  
+  /*
   var appRoot = document.createElement("div")
         var modalRoot = document.createElement("div")
         document.body.appendChild(appRoot)
@@ -129,6 +133,17 @@
         expect(c).toBe(1)
         ChildButton.click()
         expect(c).toBe(2)
+        */
+        var a = document.querySelector("#a")
+        a.focus()
+        setTimeout(function(){
+        var i =  document.createElement("input")
+        i.value ="333"
+        a.parentNode.appendChild(i)
+       // document.body.appendChild(i)
+         // var c = document.querySelector("#d")
+         // c.parentNode.removeChild(c)
+        },3000)
 </script>
 
 </body>

@@ -15,12 +15,4 @@ fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
 };
 fn.isPureComponent = true;
 
-export function AsyncComponent(props, context) {
-    Component.call(this, props, context);
-}
-let fn2 = inherit(AsyncComponent, Component);
 
-fn2.unstable_isAsyncReactComponent = true;
-fn2.render = function() {
-    return this.props.children;
-};

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <!--<script src="./test/react.js"></script>
     <script src="./test/react-dom.js"></script>-->
     <script src="./lib/babel.js"></script>
@@ -22,42 +23,78 @@
     <script type='text/babel'>
     var container = document.getElementById("example")
     var div = container
-   var expect = function(a) {
-      return {
-          toBe: function(b) {
-              console.log(a,"\nvs\n", b, a === b)
-          }
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a,"vs", b, a === b)
+            },
+            toEqual(b){
+                console.log(a,"vs", b, a +""=== b+"")
+            },
+            toThrow(b){
+                try{
+                    a()
+                }catch(e){
+                    console.log(e,"vs", b, e.message +""=== b+"")
+                }
+            }
+        }
+    }
+  var list = [];
+  class App extends React.Component {
+      constructor(props) {
+          super(props);
+          this.__merge = true
+          this.state = {
+              path: "111"
+          };
+      }
+
+      render() {
+          list.push("render " + this.state.path);
+          return (
+              <div>
+                  <span ref="click2time" onClick={this.onClick.bind(this)}>
+                      {this.state.path}
+                  </span>
+              </div>
+          );
+      }
+
+      onClick() {
+          this.setState(
+              {
+                  path: "click"
+              },
+              function() {
+                  list.push("click....");
+              }
+          );
+          this.setState(
+              {
+                  path: "click2"
+              },
+              function() {
+                  list.push("click2....");
+              }
+          );
+      }
+      componentWillUpdate() {
+          list.push("will update");
+      }
+      componentDidUpdate() {
+          list.push("did update");
       }
   }
- 
-  //确保ref执行在componentDidMount之前
-  var str = "";
-        class Test extends React.Component {
-            componentDidMount() {
-                expect(typeof this.refs.wrapper).toBe("object");
-                str += "111";
-            }
-            render() {
-                return (
-                    <div ref="wrapper" id="aaa">
-                        xxx<B />
-                    </div>
-                );
-            }
-        }
-        class B extends React.Component {
-            componentDidMount() {
-                expect(typeof this.refs.wrapper2).toBe("object");
-                str += "222";
-            }
-            render() {
-                return <p ref="wrapper2">son</p>;
-            }
-        }
-        var s = React.render(<Test />, div);
 
-        expect(str).toBe("222111");
-        expect(React.findDOMNode(s.refs.wrapper)).toBe(div.querySelector("#aaa"));
+  var s = ReactDOM.render(<App />, div, function() {
+      list.push("ReactDOM cb");
+  });
+  var list2 = ["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."];
+  ReactTestUtils.Simulate.click(s.refs.click2time);
+
+  expect(list).toEqual(list2);
+
 
       </script>
 </body>

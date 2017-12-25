@@ -28,7 +28,6 @@ require("./modules/diffProps.spec.jsx");
 
 require("./modules/component.spec.jsx");
 
-
 require("./modules/node.spec.jsx");
 
 require("./modules/ref.spec.jsx");
