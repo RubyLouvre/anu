@@ -15,17 +15,28 @@ export function disposeVnode(vnode, updateQueue, silent) {
             }
         }
         vnode._disposed = true;
+        if(vnode.superReturn){
+            var dom = vnode.superReturn.stateNode;
+            delete dom.__events;
+        }
         if (vnode.vtype > 1) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
             if (vnode.vtype === 1) {
                 disposeElement(vnode, updateQueue, silent);
             }
-            removeElement(vnode.stateNode);
+            updateQueue.push({
+                node: vnode.stateNode,
+                vnode: vnode,
+                transition:remove
+            });
         }
     }
 }
-
+function remove(){
+    delete this.vnode.stateNode;
+    removeElement(this.node);
+}
 function disposeElement(vnode, updateQueue, silent) {
     var { updater } = vnode;
     if (!silent) {
