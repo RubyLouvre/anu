@@ -2905,7 +2905,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 disposeChildren(lastChildren, updateQueue);
             } else {
                 var nextChildren = fiberizeChildren(props.children, updater);
-                diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, []);
+                diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, {});
             }
             updater.addState("resolve");
             updateQueue.push(updater);
@@ -2976,25 +2976,26 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     var lastChild = void 0,
         nextChild = void 0,
         isEmpty = true,
-        child = void 0;
-    //  parentIsElement = parentVnode.vtype === 1;
+        child = void 0,
+        firstChild = void 0;
+    if (parentVnode.vtype === 1) {
+        firstChild = parentVnode.stateNode.firstChild;
+    }
     for (var i in lastChildren) {
         isEmpty = false;
         child = lastChildren[i];
-        /*   if (parentVnode.vtype === 1) {
-            //向下找到其第一个元素节点子孙
-            var firstChild = parentVnode.stateNode.firstChild;
-            if (firstChild) {
-                do {
-                    if (child.vtype < 2) {
-                        break;
-                    }
-                } while ((child = child.child));
-                if (child) {
-                    child.stateNode = firstChild;
+        //向下找到其第一个元素节点子孙
+        if (firstChild) {
+            do {
+                if (child.superReturn) {
+                    break;
                 }
-            }
-        }*/
+                if (child.vtype < 2) {
+                    child.stateNode = firstChild;
+                    break;
+                }
+            } while (child = child.child);
+        }
         break;
     }
 
@@ -3002,7 +3003,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     if (isEmpty) {
         mountChildren(parentVnode, nextChildren, parentContext, updateQueue, insertCarrier);
     } else {
-
         var matchNodes = {},
             matchRefs = [];
         for (var _i in lastChildren) {
@@ -3033,7 +3033,6 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
             if (lastChild) {
                 receiveVnode(lastChild, nextChild, parentContext, updateQueue, insertCarrier);
             } else {
-
                 mountVnode(nextChild, parentContext, updateQueue, insertCarrier);
             }
 

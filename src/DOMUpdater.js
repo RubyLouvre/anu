@@ -1,8 +1,7 @@
-
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { formElements, inputControll } from "./inputControll";
-import { returnFalse, returnTrue} from "../src/util";
+import { returnFalse, returnTrue } from "../src/util";
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
     this._states = ["resolve"];
@@ -24,25 +23,23 @@ DOMUpdater.prototype = {
             this[state](updateQueue);
         }
     },
-    init(updateQueue){
+    init(updateQueue) {
         updateQueue.push(this);
     },
     isMounted: returnFalse,
-    resolve(){
+    resolve() {
         var vnode = this.vnode;
         var dom = vnode.stateNode;
-        var { type, props, lastProps} = vnode;
+        var { type, props, lastProps } = vnode;
         diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
             inputControll(vnode, dom, props);
         }
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
-       
     },
-    dispose(){
+    dispose() {
         var vnode = this.vnode;
-        Refs.fireRef(vnode,null);
+        Refs.fireRef(vnode, null);
     }
-   
 };
