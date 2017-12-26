@@ -39,6 +39,9 @@ export function CompositeUpdater(vnode, parentContext) {
     this._pendingStates = [];
     this._states = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
+    if(vnode.superReturn){
+        this.isPortal = true;
+    }
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
     //  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
     //  this._nextCallbacks = [] 表示组件需要在下一周期重新渲染
@@ -115,7 +118,7 @@ CompositeUpdater.prototype = {
     },
 
     isMounted: returnFalse,
-    init(updateQueue, insertQueue) {
+    init(updateQueue, insertCarrier) {
         let { props, context, vnode } = this;
         let type = vnode.type,
             isStateless = vnode.vtype === 4,
@@ -168,8 +171,9 @@ CompositeUpdater.prototype = {
         instance.props = props;
         instance.context = context;
         instance.updater = this;
-        this.insertQueue = insertQueue;
-        this.insertPoint = insertQueue.dom;
+        var queue =  this.insertCarrier =  (this.isPortal ?  {} : insertCarrier);
+      
+        this.insertPoint = queue.dom;
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
@@ -180,7 +184,7 @@ CompositeUpdater.prototype = {
         updateQueue.push(this);
     },
 
-    hydrate(updateQueue, resetPoint) {
+    hydrate(updateQueue, inner) {
         let { instance, context, props, vnode, pendingVnode } = this;
         if(this._states[0] === "hydrate"){
             this._states.shift(); // ReactCompositeComponentNestedState-state
@@ -196,7 +200,7 @@ CompositeUpdater.prototype = {
                 delete this.pendingVnode;
             }
             var nodes = collectComponentNodes(this.children);
-            var queue = this.insertQueue;
+            var queue = this.insertCarrier;
             nodes.forEach(function(el) {
                 insertElement(el, queue);
                 queue.dom = el.stateNode;
@@ -216,12 +220,10 @@ CompositeUpdater.prototype = {
         instance.props = props;
         instance.state = state;
         instance.context = context;
+        if(!inner) {
+            this.insertCarrier.dom = this.insertPoint;
+        }
         if (shouldUpdate) {
-            if (resetPoint) {
-                this.insertPoint = this.insertQueue.dom;
-            } else {
-                this.insertQueue =  {}; // [this.insertPoint];
-            }
             this.render(updateQueue);
         }
         this.addState("resolve");
@@ -273,7 +275,7 @@ CompositeUpdater.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertQueue);
+        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
