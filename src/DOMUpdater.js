@@ -1,5 +1,4 @@
 
-import { removeElement } from "./browser";
 import { Refs } from "./Refs";
 import { diffProps } from "./diffProps";
 import { formElements, inputControll } from "./inputControll";
@@ -44,8 +43,6 @@ DOMUpdater.prototype = {
     dispose(){
         var vnode = this.vnode;
         Refs.fireRef(vnode,null);
-        removeElement(vnode.stateNode);
-        delete vnode.stateNode;
     }
    
 };

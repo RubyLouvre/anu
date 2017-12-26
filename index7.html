@@ -100,7 +100,7 @@
                         <div className="hasClick" style={{ background: "#00bcd4" }} ref="openDialog" onClick={this._show.bind(this)}>
                             <div>Click me to show the Portal content</div>
                             <div>State: {(show && "visible") || "hidden"}</div>
-                            <div ref="vdialog">
+                            <div ref="vdialog" className="vdialog">
                                 {show && (
                                     <Portal>
                                         <div style={{ background: "#ffeebb", height: 200 }}>
@@ -111,7 +111,7 @@
                                             </button>
                                         </div>
                                     </Portal>
-                                )}
+                                )}<span>111</span><span>222</span>
                             </div>
                         </div>
                     </div>
@@ -134,6 +134,7 @@
                 return ReactDOM.createPortal(this.props.children, this.node);
             }
         }
+
         var s = ReactDOM.render(<Container />, container);
         expect(!!s.refs.openDialog).toBe(true);
         expect(!!s.refs.closeDialog).toBe(false);
@@ -143,12 +144,14 @@
         
         expect(innerWillMount).toBe(true);
         expect(innerDidMount).toBe(true);
+        console.log("==========")
         
         s.setState({ number: 10 });
         expect(s.refs.number.innerHTML).toBe("10");
         testBubble = false;
-        expect(s.refs.vdialog.innerHTML).toBe("");
-        
+       
+        expect(s.refs.vdialog.innerHTML.toLowerCase()).toBe("<span>111</span><span>222</span>");
+       
         s.refs.closeDialog.click();
         expect(innerWillUnmount).toBe(true);
         console.log(s.refs.closeDialog);

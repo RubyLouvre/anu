@@ -83,7 +83,8 @@ function collectPaths(from, end) {
     if(!node || node.nodeType >1 ){//如果跑到document上
         return paths;
     }
-    var vnode = node.__events.vnode;
+    var mid = node.__events;
+    var vnode = mid.child || mid.vnode;
     do {
         if (vnode.vtype === 1) {
             var dom = vnode.stateNode;
@@ -91,7 +92,6 @@ function collectPaths(from, end) {
                 break;
             }
             if(!dom){
-                // console.log(vnode,"没有实例化");
                 break;
             }
             if (dom.__events) {

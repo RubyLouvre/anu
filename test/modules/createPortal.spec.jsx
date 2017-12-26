@@ -89,7 +89,7 @@ describe("createPortal", function() {
                                             </button>
                                         </div>
                                     </Portal>
-                                )}
+                                )}<span>111</span><span>222</span>
                             </div>
                         </div>
                     </div>
@@ -123,7 +123,7 @@ describe("createPortal", function() {
         s.setState({ number: 10 });
         expect(s.refs.number.innerHTML).toBe("10");
         testBubble = false;
-        expect(s.refs.vdialog.innerHTML).toBe("");
+        expect(s.refs.vdialog.innerHTML.toLowerCase()).toBe("<span>111</span><span>222</span>");
         
         s.refs.closeDialog.click();
         expect(innerWillUnmount).toBe(true);
@@ -133,7 +133,6 @@ describe("createPortal", function() {
     });
 
     it("弹窗中没有事件的按钮点击后也能触发外面的事件回调", function(){
-        return
         var appRoot = document.createElement("div")
         var modalRoot = document.createElement("div")
         document.body.appendChild(appRoot)
