@@ -178,7 +178,6 @@ export function insertElement(vnode, insertPoint) {
     if (vnode._disposed) {
         return;
     }
-  
     //找到可用的父节点
     var p = vnode.return,
         parentNode;
@@ -191,17 +190,14 @@ export function insertElement(vnode, insertPoint) {
     }
 
     var dom = vnode.stateNode,
-        //  insertPoint = insertQueue.dom,
-        after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
-   
         //如果没有插入点，则插入到当前父节点的第一个节点之前
-    if (after=== dom) {
+        after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
+    if (after === dom) {
         return;
     }
     Refs.nodeOperate = true;
     parentNode.insertBefore(dom, after);
     Refs.nodeOperate = false;
-   
 }
 
 export function getComponentNodes(children, resolve, debug) {
