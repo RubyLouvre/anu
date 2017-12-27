@@ -1,6 +1,6 @@
 {
   "name": "anujs",
-  "version": "1.2.1-pre",
+  "version": "1.2.1",
   "description": "a mini React-like framework",
   "main": "dist/React.js",
   "scripts": {
