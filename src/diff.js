@@ -98,10 +98,6 @@ function renderByAnu(vnode, container, callback, context = {}) {
         nodeIndex = topNodes.length - 1;
     }
     Refs.currentOwner = null; //防止干扰
-    Refs.focusNode = document.activeElement;
-    if (Refs.focusNode === document.body) {
-        Refs.focusNode = null;
-    }
     var nextWrapper = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode
     nextWrapper.isTop = true;
