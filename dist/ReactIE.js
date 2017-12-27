@@ -10,6 +10,7 @@
 
 var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
 var innerHTML = "dangerouslySetInnerHTML";
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var emptyArray = [];
 var emptyObject = {};
@@ -1458,7 +1459,6 @@ function createClass(spec) {
     return Constructor;
 }
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
 function shallowEqual(objA, objB) {
     if (Object.is(objA, objB)) {
         return true;
@@ -3170,7 +3170,7 @@ function keysPolyfill() {
         Object.keys = function keys(obj) {
             var a = [];
             for (var k in obj) {
-                if (obj.hasOwnProperty(k)) {
+                if (hasOwnProperty.call(obj, k)) {
                     a.push(k);
                 }
             }

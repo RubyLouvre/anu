@@ -1,5 +1,4 @@
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-import { typeNumber } from "./util";
+import { typeNumber, hasOwnProperty } from "./util";
 export function shallowEqual(objA, objB) {
     if (Object.is(objA, objB)) {
         return true;

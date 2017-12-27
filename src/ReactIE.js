@@ -1,4 +1,4 @@
-import { options } from "./util";
+import { options, hasOwnProperty } from "./util";
 import { Children } from "./Children";
 import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
@@ -16,12 +16,13 @@ import "./compat";
 function needFix(fn) {
     return !/native code/.test(fn);
 }
-function keysPolyfill() {//解决IE下Object.keys的性能问题
+function keysPolyfill() {
+    //解决IE下Object.keys的性能问题
     if (needFix(Object.keys)) {
         Object.keys = function keys(obj) {
             var a = [];
-            for(var k in obj) {
-                if (obj.hasOwnProperty(k)) {
+            for (var k in obj) {
+                if (hasOwnProperty.call(obj, k)) {
                     a.push(k);
                 }
             }
@@ -37,13 +38,13 @@ var React;
 if (window.React && window.React.options) {
     React = window.React;
 } else {
-    React = window.React = window.ReactDOM =  {
+    React = window.React = window.ReactDOM = {
         version: "VERSION",
         render,
         hydrate: render,
         options,
         PropTypes,
-        Children, 
+        Children,
         Component,
         eventSystem,
         findDOMNode,
@@ -55,7 +56,7 @@ if (window.React && window.React.options) {
         isValidElement,
         unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer,
-    
+
         createFactory(type) {
             console.warn("createFactory is deprecated"); // eslint-disable-line
             var factory = createElement.bind(null, type);
