@@ -424,7 +424,7 @@ function operateChildren(children, prefix, callback, parent) {
     }
     callback(children, prefix || ".", parent);
 }
-var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
     if (typeNumber(a) > 7) {
@@ -437,7 +437,9 @@ function getIteractor(a) {
 
 function cloneElement(vnode, props) {
     if (!vnode.vtype) {
-        return extend({}, vnode);
+        var clone = extend({}, vnode);
+        delete clone._disposed;
+        return clone;
     }
     var owner = vnode._owner,
         lastOwn = Refs.currentOwner,
@@ -462,6 +464,7 @@ function cloneElement(vnode, props) {
     args[0] = vnode.type;
     args[1] = configs;
     if (argsLength === 2 && configs.children) {
+        delete configs.children._disposed;
         args.push(configs.children);
     }
     var ret = createElement.apply(null, args);
@@ -3050,7 +3053,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 Refs.diffChildren = diffChildren;
 
 var React = {
-    version: "1.2.1-pre",
+    version: "1.2.1",
     render: render,
     hydrate: render,
     options: options,

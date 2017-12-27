@@ -275,7 +275,7 @@ function operateChildren(children, prefix, callback, parent) {
     }
     callback(children, prefix || ".", parent);
 }
-var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
     if (typeNumber(a) > 7) {
