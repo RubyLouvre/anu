@@ -3,31 +3,25 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
+    <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-  
-  <!--<script type='text/javascript' src="./test/react.development.js"></script>
-   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
-<style>
-    .modal{
-        background: rgb(0, 47, 167);
-    }
-</style>
 </head>
-<body>
-    
-        <h1>测试</h1>
-        <h1 id='app-root' className="root">
 
-        </h1>
-        <h1 id='modal-root' className="model">
-            
-                    </h1>
-        <script type='text/babel'>
-         
-            var PropTypes = React.PropTypes
+<body>
+
+    <h1>测试</h1>
+    <h1 id='app-root' className="root">
+
+    </h1>
+    <script type='text/babel'>
+            var check = function () {
+                return null;
+            };
+            check.isRequired = check;
+            var PropTypes = React.PropTypes || {
+                string: check
+            }
             if(!window.ReactDOM){
               window.ReactDOM = React
             }
@@ -49,56 +43,22 @@
                     }
                 }
             }
-            var aaa = "";
-            class App extends React.Component {
-                constructor(props) {
-                    super(props);
-                    this.state = {
-                        aaa: {
-                            a: 7
-                        }
-                    };
-                }
-    
-                onFocus1() {
-                    aaa += "aaa ";
-                }
-                onFocus2(e) {
-                    aaa += "bbb ";
-                }
-    
-                render() {
-                    return (
-                        <div
-                            onFocus={this.onFocus2}
-                            style={{
-                                width: 200,
-                                height: 200
-                            }}
-                        >
-                            <div
-                                ref="focus2"
-                                tabIndex={-1}
-                                onFocus={this.onFocus1}
-                                style={{
-                                    width: 100,
-                                    height: 100
-                                }}
-                            >
-                                222
-                            </div>
-                        </div>
-                    );
-                }
-            }
-    
-            var s = ReactDOM.render(<App />, container);
-            s.refs.focus2.focus()
-    
-            expect(aaa.trim()).toBe("aaa bbb");
-        
+ function Example() {
+    return (
+      <>
+        Some text.
+        <h2>A heading</h2>
+        More text.
+        <h2>Another heading</h2>
+        Even more text.
+      </>
+     );
+  }
+  ReactDOM.render(<Example />, container);
+
+ 
           </script>
 
 </body>
-    
- </html>
+
+</html>
