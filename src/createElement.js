@@ -1,5 +1,9 @@
-import { typeNumber } from "./util";
+import { typeNumber,hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
 import { Vnode } from "./vnode";
+
+function Fragment(props){
+    return props.children;
+}
 /**
  * 虚拟DOM工厂
  *
@@ -18,6 +22,9 @@ export function createElement(type, config, ...children) {
         argsLen = children.length;
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
+    } else if(type === REACT_FRAGMENT_TYPE ){
+        type = Fragment,
+        vtype = 4;
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
@@ -182,7 +189,7 @@ export function operateChildren(children, prefix, callback, parent) {
     }
     callback(children, prefix || ".", parent);
 }
-var REAL_SYMBOL = typeof Symbol === "function" && Symbol.iterator;
+var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
     if (typeNumber(a) > 7) {

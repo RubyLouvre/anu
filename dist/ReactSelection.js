@@ -9,9 +9,11 @@
 	(global.React = factory());
 }(this, (function () {
 
-var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element") || 0xeac7;
+var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var innerHTML = "dangerouslySetInnerHTML";
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
 var emptyArray = [];
 var emptyObject = {};
@@ -227,6 +229,9 @@ Vnode.prototype = {
     $$typeof: REACT_ELEMENT_TYPE
 };
 
+function Fragment(props) {
+    return props.children;
+}
 /**
  * 虚拟DOM工厂
  *
@@ -249,6 +254,8 @@ function createElement(type, config) {
         argsLen = children.length;
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
+    } else if (type === REACT_FRAGMENT_TYPE) {
+        type = Fragment, vtype = 4;
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }

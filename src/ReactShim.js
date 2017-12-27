@@ -1,5 +1,5 @@
 import { Component } from "./Component";
-import { options } from "./util";
+import { options, REACT_FRAGMENT_TYPE } from "./util";
 import { Children } from "./Children";
 import { win as window } from "./browser";
 import { createElement } from "./createElement";
@@ -18,6 +18,7 @@ if (window.React && window.React.options) {
         version: "VERSION",
         render,
         hydrate: render,
+        Fragment: REACT_FRAGMENT_TYPE,
         options,
         Children, 
         Component,

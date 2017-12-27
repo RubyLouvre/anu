@@ -1,4 +1,4 @@
-import { options } from "./util";
+import { options, REACT_FRAGMENT_TYPE } from "./util";
 import { Children } from "./Children";
 import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
@@ -13,13 +13,14 @@ import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_r
 
 var React;
 if (window.React && window.React.options) {
-    React = window.React;//解决引入多个
+    React = window.React; //解决引入多个
 } else {
     React = window.React = window.ReactDOM = {
         version: "VERSION",
         render,
         hydrate: render,
         options,
+        Fragment: REACT_FRAGMENT_TYPE,
         PropTypes,
         Children,
         createPortal,

@@ -1,7 +1,9 @@
 export var __push = Array.prototype.push;
-export var REACT_ELEMENT_TYPE = (typeof Symbol === "function" && Symbol["for"] && Symbol["for"]("react.element")) || 0xeac7;
+export var hasSymbol = typeof Symbol === "function" && Symbol["for"]; 
+export var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 export var innerHTML = "dangerouslySetInnerHTML";
 export var hasOwnProperty = Object.prototype.hasOwnProperty;
+export var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
 export var emptyArray = [];
 export var emptyObject = {};
