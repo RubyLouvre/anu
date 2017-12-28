@@ -21,8 +21,14 @@ export function cloneElement(vnode, props) {
         }else if(vnode._hasRef){
             configs.ref = vnode.ref;
         }
+        
     }else{
         configs = old;
+    }
+    for(var i in configs){
+        if(i !== "children" && configs[i] && configs[i].$$typeof){
+            configs[i] = cloneElement(configs[i]);
+        }
     }
     Refs.currentOwner = owner;
 

@@ -498,6 +498,11 @@ function cloneElement(vnode, props) {
     } else {
         configs = old;
     }
+    for (var i in configs) {
+        if (i !== "children" && configs[i] && configs[i].$$typeof) {
+            configs[i] = cloneElement(configs[i]);
+        }
+    }
     Refs.currentOwner = owner;
 
     var args = [].slice.call(arguments, 0),
@@ -2716,6 +2721,8 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
             var _updater = new DOMUpdater(vnode);
             var children = fiberizeChildren(vnode.props.children, _updater);
             mountChildren(vnode, children, context, updateQueue, {});
+            // diffProps( vnode.stateNode,  {}, vnode.props, vnode);
+
             _updater.init(updateQueue);
         }
         insertElement(vnode, beforeDOM);
@@ -2762,6 +2769,8 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 var nextChildren = fiberizeChildren(props.children, updater);
                 diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, {});
             }
+            //  diffProps( dom, lastVnode.props, nextVnode.props, nextVnode);
+
             updater.addState("resolve");
             updateQueue.push(updater);
         }

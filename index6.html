@@ -5,7 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
+    <!--<script type='text/javascript' src="./react.development2.js"></script>
+    <script type='text/javascript' src="./react-dom.development2.js"></script>-->
+
+    <script src="lib/babel.js"></script>
 </head>
 
 <body>
@@ -26,35 +29,44 @@
               window.ReactDOM = React
             }
             var container = document.getElementById("app-root")
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                    toThrow(b){
-                        try{
-                            a()
-                        }catch(e){
-                            console.log(e,"vs", b, e.message +""=== b+"")
-                        }
-                    }
+
+            class Tree extends React.Component{
+                constructor(props){
+                    super(props)
+                    this.state = {}
                 }
+                renderTreeNode(child, index){
+                    var childProps = {}
+                    childProps.checkable = this.props.checkable
+                    console.log(this.props)
+                    return React.cloneElement(child, childProps);
+                }
+                render() {
+                  
+                    var props = this.props
+                    return React.createElement(
+                    'ul',
+                    {
+                        className: "root",
+                        role: 'tree-node',
+                        unselectable: 'on'
+                    },
+                    React.Children.map(props.children, this.renderTreeNode, this)
+                    );
+                };
             }
- function Example() {
-    return (
-      <>
-        Some text.
-        <h2>A heading</h2>
-        More text.
-        <h2>Another heading</h2>
-        Even more text.
-      </>
-     );
-  }
-  ReactDOM.render(<Example />, container);
+            class TreeNode extends React.Component{
+                 render(){
+                     return <li>{this.props.checkable}{this.props.children}</li>
+                 }
+            }
+          
+          var s =  ReactDOM.render(<Tree checkable={ <input className="checked" />}>
+            <TreeNode>1111</TreeNode>
+            <TreeNode>2222</TreeNode>
+            <TreeNode>3333</TreeNode>
+            </Tree>
+            , container);
 
  
           </script>

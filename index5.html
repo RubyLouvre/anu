@@ -44,58 +44,21 @@
             }
         }
     }
-    let input;
-    let input2;
-    class A extends React.Component {
-        render() {
-            return (
-                <div>
-                    <input id="one" ref={r => (input = input || r)} />
-                    {this.props.showTwo && <input id="two" ref={r => (input2 = input2 || r)} />}
-                </div>
-            );
-        }
-
-        componentDidUpdate() {
-            // Focus should have been restored to the original input
-            expect(document.activeElement.id).toBe("one");
-            input2.focus();
-            expect(document.activeElement.id).toBe("two");
-            log.push("input2 focused");
-        }
+    var context = {};
+    var callback = function(kid, index) {
+        expect(this).toBe(context);
+        expect(index).toBe(0);
+        return kid;
     }
 
-    const log = [];
-    var container = document.createElement("div");
-    document.body.appendChild(container);
-    ReactDOM.render(<A showTwo={false} />, container);
-    input.focus();
-
-    // When the second input is added, let's simulate losing focus, which is
-    // something that could happen when manipulating DOM nodes (but is hard to
-    // deterministically force without relying intensely on React DOM
-    // implementation details)
-    var div = container.firstChild;
-    ["appendChild", "insertBefore"].forEach(name => {
-        const mutator = div[name];
-        div[name] = function() {
-            if (input) {
-                console.log(input, "要失去焦点")
-                input.blur();
-                expect(document.activeElement.tagName).toBe("BODY");
-                log.push("input2 inserted");
-            }
-            return mutator.apply(this, arguments);
-        };
-    });
-
-    expect(document.activeElement.id).toBe("one");
-    ReactDOM.render(<A showTwo={true} />, container);
-    // input2 gets added, which causes input to get blurred. Then
-    // componentDidUpdate focuses input2 and that should make it down to here,
-    // not get overwritten by focus restoration.
-    expect(document.activeElement.id).toBe("two");
-    expect(log).toEqual(["input2 inserted", "input2 focused"]);
+    var simpleKid = <span />;
+    var instance = <div>{simpleKid}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
+ //   expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+  //  callback.calls.reset();
+    var mappedChildren = React.Children.map(instance.props.children, callback, context);
+  //  expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    expect(mappedChildren[0]).toEqual(<span key=".0" />);
    // document.body.removeChild(container);
 </script>
 
