@@ -190,65 +190,68 @@ function createVText(type, text) {
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 
 
-var lastText;
-var flattenIndex;
-var flattenObject;
-var flattenPrev;
-var flattenArray;
-function flattenCb(child, index, vnode) {
+var flattenStack = [];
+function flattenCb(child, key, vnode) {
     var childType = typeNumber(child);
+    var flatten = flattenStack[0];
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
-        lastText = null;
+        flatten.lastText = null;
         return;
     } else if (childType < 5) {
         //number string
-        if (lastText) {
+        if (flatten.lastText) {
             //合并相邻的文本节点
-            lastText.text += child;
+            flatten.lastText.text += child;
             return;
         }
-        lastText = child = createVText("#text", child + "");
+        flatten.lastText = child = createVText("#text", child + "");
     } else {
-        lastText = null;
+        flatten.lastText = null;
     }
-    var key = child.key;
-    if (key && !flattenObject[".$" + key]) {
-        flattenObject[".$" + key] = child;
+    var postfix = child.key,
+        children = flatten.children;
+    if (postfix && !children[".$" + postfix]) {
+        children[".$" + postfix] = child;
     } else {
-        if (index === ".") {
-            index = "." + flattenIndex;
+        if (key === ".") {
+            key = "." + flatten.index;
         }
-        flattenObject[index] = child;
+        children[key] = child;
     }
-    child.index = flattenIndex;
+    child.index = flatten.index;
     child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
+    if (flatten.prev) {
+        flatten.prev.sibling = child;
     }
-    flattenPrev = child;
-    flattenIndex++;
-    flattenArray.push(child);
+    flatten.prev = child;
+    flatten.index++;
+    if (!vnode.child) {
+        vnode.child = child;
+    }
 }
 
 function fiberizeChildren(c, updater) {
-    flattenObject = {};
-    flattenPrev = null;
-    flattenArray = [];
-    var vnode = updater.vnode;
     if (c !== void 666) {
-        lastText = null;
-        flattenIndex = 0;
+        var vnode = updater.vnode;
+        flattenStack.unshift({
+            index: 0,
+            children: {}
+            /** 
+            prev: null,
+            lastText: null,
+            */
+        });
+        delete vnode.child;
         operateChildren(c, "", flattenCb, vnode);
-        var child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
+        var top = flattenStack.shift();
+        if (top.prev) {
+            delete top.prev.sibling;
         }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }
+        return updater.children = top.children;
+    } else {
+        return updater.children = {};
     }
-    return updater.children = flattenObject;
 }
 
 function operateChildren(children, prefix, callback, parent) {

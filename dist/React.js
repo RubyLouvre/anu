@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2017-12-27
+ * by 司徒正美 Copyright 2017-12-28
  * IE9+
  */
 
@@ -339,65 +339,68 @@ function getProps(node) {
     }
     return props;
 }
-var lastText;
-var flattenIndex;
-var flattenObject;
-var flattenPrev;
-var flattenArray;
-function flattenCb(child, index, vnode) {
+var flattenStack = [];
+function flattenCb(child, key, vnode) {
     var childType = typeNumber(child);
+    var flatten = flattenStack[0];
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
-        lastText = null;
+        flatten.lastText = null;
         return;
     } else if (childType < 5) {
         //number string
-        if (lastText) {
+        if (flatten.lastText) {
             //合并相邻的文本节点
-            lastText.text += child;
+            flatten.lastText.text += child;
             return;
         }
-        lastText = child = createVText("#text", child + "");
+        flatten.lastText = child = createVText("#text", child + "");
     } else {
-        lastText = null;
+        flatten.lastText = null;
     }
-    var key = child.key;
-    if (key && !flattenObject[".$" + key]) {
-        flattenObject[".$" + key] = child;
+    var postfix = child.key,
+        children = flatten.children;
+    if (postfix && !children[".$" + postfix]) {
+        children[".$" + postfix] = child;
     } else {
-        if (index === ".") {
-            index = "." + flattenIndex;
+        if (key === ".") {
+            key = "." + flatten.index;
         }
-        flattenObject[index] = child;
+        children[key] = child;
     }
-    child.index = flattenIndex;
+    child.index = flatten.index;
     child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
+    if (flatten.prev) {
+        flatten.prev.sibling = child;
     }
-    flattenPrev = child;
-    flattenIndex++;
-    flattenArray.push(child);
+    flatten.prev = child;
+    flatten.index++;
+    if (!vnode.child) {
+        vnode.child = child;
+    }
 }
 
 function fiberizeChildren(c, updater) {
-    flattenObject = {};
-    flattenPrev = null;
-    flattenArray = [];
-    var vnode = updater.vnode;
     if (c !== void 666) {
-        lastText = null;
-        flattenIndex = 0;
+        var vnode = updater.vnode;
+        flattenStack.unshift({
+            index: 0,
+            children: {}
+            /** 
+            prev: null,
+            lastText: null,
+            */
+        });
+        delete vnode.child;
         operateChildren(c, "", flattenCb, vnode);
-        var child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
+        var top = flattenStack.shift();
+        if (top.prev) {
+            delete top.prev.sibling;
         }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }
+        return updater.children = top.children;
+    } else {
+        return updater.children = {};
     }
-    return updater.children = flattenObject;
 }
 
 function operateChildren(children, prefix, callback, parent) {
@@ -472,6 +475,31 @@ function cloneElement(vnode, props) {
     return ret;
 }
 
+var mapStack = [];
+function mapWrapperCb(old, prefix) {
+    if (old === void 0 || old === false || old === true) {
+        old = null;
+    }
+    var cur = mapStack[0];
+    var el = cur.callback.call(cur.context, old, cur.index);
+    var index = cur.index;
+    cur.index++;
+    if (cur.isEach || el == null) {
+        return;
+    }
+    if (el.vtype) {
+        //如果返回的el等于old,还需要使用原来的key, _prefix
+        var key = computeKey(old, el, prefix, index);
+        cur.arr.push(cloneElement(el, { key: key }));
+    } else if (el.type) {
+        cur.arr.push(extend({}, el));
+    } else {
+        cur.arr.push(el);
+    }
+}
+function K(el) {
+    return el;
+}
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -490,53 +518,30 @@ var Children = {
         });
         return index;
     },
-    map: function map(children, callback, context) {
+    map: function map(children, callback, context, isEach) {
         if (children == null) {
             return children;
         }
-        var index = 0,
-            ret = [];
-        operateChildren(children, "", function (old, prefix) {
-            if (old == null || old === false || old === true) {
-                old = null;
-            }
-            var outerIndex = index;
-            var el = callback.call(context, old, index);
-            index++;
-            if (el == null) {
-                return;
-            }
-            if (el.vtype) {
-                //如果返回的el等于old,还需要使用原来的key, _prefix
-                var key = computeKey(old, el, prefix, outerIndex);
-                ret.push(cloneElement(el, { key: key }));
-            } else if (el.type) {
-                ret.push(extend({}, el));
-            } else {
-                ret.push(el);
-            }
+        mapStack.unshift({
+            index: 0,
+            callback: callback,
+            context: context,
+            isEach: isEach,
+            arr: []
         });
-        return ret;
+        operateChildren(children, "", mapWrapperCb);
+        var top = mapStack.shift();
+        return top.arr;
     },
     forEach: function forEach(children, callback, context) {
-        if (children != null) {
-            var index = 0;
-            operateChildren(children, "", function (el) {
-                if (el == null || el === false || el === true) {
-                    el = null;
-                }
-                callback.call(context, el, index++);
-            });
-        }
+        Children.map(children, callback, context, true);
     },
 
     toArray: function toArray$$1(children) {
         if (children == null) {
             return [];
         }
-        return Children.map(children, function (el) {
-            return el;
-        });
+        return Children.map(children, K);
     }
 };
 var rthimNumer = /\d+\$/;
@@ -559,13 +564,16 @@ function computeKey(old, el, prefix, index) {
     }
     return key.replace(rthimNumer, "$");
 }
+
 function escapeKey(key) {
     return String(key).replace(/[=:]/g, escaperFn);
 }
+
 var escaperLookup = {
     "=": "=0",
     ":": "=2"
 };
+
 function escaperFn(match) {
     return escaperLookup[match];
 }

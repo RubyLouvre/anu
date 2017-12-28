@@ -2,6 +2,31 @@ import { operateChildren } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { extend } from "./util";
 
+var mapStack = [];
+function mapWrapperCb(old, prefix) {
+    if (old === void 0 || old === false || old === true) {
+        old = null;
+    }
+    var cur = mapStack[0];
+    var el = cur.callback.call(cur.context, old, cur.index);
+    var index = cur.index;
+    cur.index++;
+    if (cur.isEach || el == null) {
+        return;
+    }
+    if (el.vtype) {
+        //如果返回的el等于old,还需要使用原来的key, _prefix
+        var key = computeKey(old, el, prefix, index);
+        cur.arr.push(cloneElement(el, { key: key }));
+    } else if (el.type) {
+        cur.arr.push(extend({}, el));
+    } else {
+        cur.arr.push(el);
+    }
+}
+function K (el){
+    return el;
+}
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -20,52 +45,29 @@ export const Children = {
         });
         return index;
     },
-    map(children, callback, context) {
+    map(children, callback, context, isEach) {
         if (children == null) {
             return children;
         }
-        var index = 0,
-            ret = [];
-        operateChildren(children, "", function(old, prefix) {
-            if (old == null || old === false || old === true) {
-                old = null;
-            }
-            let outerIndex = index;
-            let el = callback.call(context, old, index);
-            index++;
-            if (el == null) {
-                return;
-            }
-            if (el.vtype) {
-                //如果返回的el等于old,还需要使用原来的key, _prefix
-                var key = computeKey(old, el, prefix, outerIndex);
-                ret.push(cloneElement(el, { key }));
-            } else if (el.type) {
-                ret.push(extend({}, el));
-            } else {
-                ret.push(el);
-            }
+        mapStack.unshift({
+            index: 0,
+            callback,
+            context,
+            isEach,
+            arr: []
         });
-        return ret;
+        operateChildren(children, "", mapWrapperCb);
+        var top = mapStack.shift();
+        return top.arr;
     },
     forEach(children, callback, context) {
-        if (children != null) {
-            var index = 0;
-            operateChildren(children, "", function(el) {
-                if (el == null || el === false || el === true) {
-                    el = null;
-                }       
-                callback.call(context, el, index++);
-            });
-        }
+        Children.map(children, callback, context, true);
     },
     toArray: function(children) {
         if (children == null) {
             return [];
         }
-        return Children.map(children, function(el) {
-            return el;
-        });
+        return Children.map(children, K);
     }
 };
 var rthimNumer = /\d+\$/;
@@ -83,18 +85,21 @@ function computeKey(old, el, prefix, index) {
         if (key) {
             key = prefix + "$" + key;
         } else {
-            key = prefix ==="." ? prefix + index: prefix;
+            key = prefix === "." ? prefix + index : prefix;
         }
     }
     return key.replace(rthimNumer, "$");
 }
+
 function escapeKey(key) {
     return String(key).replace(/[=:]/g, escaperFn);
 }
+
 var escaperLookup = {
     "=": "=0",
     ":": "=2"
 };
+
 function escaperFn(match) {
     return escaperLookup[match];
 }

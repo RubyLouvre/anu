@@ -1,7 +1,7 @@
-import { typeNumber,hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
+import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
 import { Vnode } from "./vnode";
 
-function Fragment(props){
+function Fragment(props) {
     return props.children;
 }
 /**
@@ -22,9 +22,8 @@ export function createElement(type, config, ...children) {
         argsLen = children.length;
     if (type && type.call) {
         vtype = type.prototype && type.prototype.render ? 2 : 4;
-    } else if(type === REACT_FRAGMENT_TYPE ){
-        type = Fragment,
-        vtype = 4;
+    } else if (type === REACT_FRAGMENT_TYPE) {
+        (type = Fragment), (vtype = 4);
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
@@ -108,61 +107,68 @@ function getProps(node) {
     }
     return props;
 }
-var lastText, flattenIndex, flattenObject, flattenPrev, flattenArray;
-function flattenCb(child, index, vnode) {
+var flattenStack = [];
+function flattenCb(child, key, vnode) {
     let childType = typeNumber(child);
+    let flatten = flattenStack[0];
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
-        lastText = null;
+        flatten.lastText = null;
         return;
     } else if (childType < 5) {
         //number string
-        if (lastText) {
+        if (flatten.lastText) {
             //合并相邻的文本节点
-            lastText.text += child;
+            flatten.lastText.text += child;
             return;
         }
-        lastText = child = createVText("#text", child + "");
+        flatten.lastText = child = createVText("#text", child + "");
     } else {
-        lastText = null;
+        flatten.lastText = null;
     }
-    var key = child.key;
-    if (key && !flattenObject[".$" + key]) {
-        flattenObject[".$" + key] = child;
+    let postfix = child.key, 
+        children = flatten.children;
+    if (postfix && !children[".$" + postfix]) {
+        children[".$" + postfix] = child;
     } else {
-        if (index === ".") {
-            index = "." + flattenIndex;
+        if (key === ".") {
+            key = "." + flatten.index;
         }
-        flattenObject[index] = child;
+        children[key] = child;
     }
-    child.index = flattenIndex;
+    child.index = flatten.index;
     child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
+    if (flatten.prev) {
+        flatten.prev.sibling = child;
     }
-    flattenPrev = child;
-    flattenIndex++;
-    flattenArray.push(child);
+    flatten.prev = child;
+    flatten.index++;
+    if(!vnode.child){
+        vnode.child = child;
+    }
 }
 
 export function fiberizeChildren(c, updater) {
-    flattenObject = {};
-    flattenPrev = null;
-    flattenArray = [];
-    let vnode = updater.vnode;
     if (c !== void 666) {
-        lastText = null;
-        flattenIndex = 0;
+        let vnode = updater.vnode;
+        flattenStack.unshift({
+            index: 0,
+            children: {}
+            /** 
+            prev: null,
+            lastText: null,
+            */
+        });
+        delete vnode.child;
         operateChildren(c, "", flattenCb, vnode);
-        let child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
+        let top = flattenStack.shift();
+        if (top.prev) {
+            delete top.prev.sibling;
         }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }
+        return updater.children = top.children;        
+    }else{
+        return updater.children = {};
     }
-    return (updater.children = flattenObject);
 }
 
 export function operateChildren(children, prefix, callback, parent) {
