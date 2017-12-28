@@ -1,10 +1,9 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
+import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
 import { Component } from "./Component";
-
 import { DOMUpdater } from "./DOMUpdater";
 import { drainQueue } from "./scheduler";
 import { Refs } from "./Refs";
@@ -162,6 +161,10 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
             updater.init(updateQueue);
         }
         insertElement(vnode, beforeDOM);
+        if(vnode.updater) {
+            vnode.updater.props();
+        }
+
     } else {
         var updater = new CompositeUpdater(vnode, context);
         updater.init(updateQueue, insertCarrier);
@@ -204,6 +207,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 var nextChildren = fiberizeChildren(props.children, updater);
                 diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, {});
             }
+            updater.props();
             updater.addState("resolve");
             updateQueue.push(updater);
         }
@@ -271,7 +275,8 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
     let lastChild,
         nextChild,
         isEmpty = true,
-        child, firstChild;
+        child,
+        firstChild;
     if (parentVnode.vtype === 1) {
         firstChild = parentVnode.stateNode.firstChild;
     }
