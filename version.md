@@ -1,6 +1,8 @@
 ## 1.2.2
 
 1. cloneElement需要处理disposed元素
+2. cloneElement 对于props的虚拟DOM进行复制
+2. 设置属性的时机提前
 
 
 ## 1.2.1 (2017.12.27)

@@ -15,7 +15,6 @@ function Fragment(props) {
 
 export function createElement(type, config, ...children) {
     let props = {},
-        _hasProps = 0,
         vtype = 1,
         key = null,
         ref = null,
@@ -38,10 +37,7 @@ export function createElement(type, config, ...children) {
                 if (val !== void 0) {
                     ref = val;
                 }
-            } else if (i === "children") {
-                props[i] = val;
             } else {
-                _hasProps = 1;
                 props[i] = val;
             }
         }
@@ -57,12 +53,11 @@ export function createElement(type, config, ...children) {
     if (defaultProps) {
         for (let propName in defaultProps) {
             if (props[propName] === void 666) {
-                _hasProps = 1;
                 props[propName] = defaultProps[propName];
             }
         }
     }
-    return new Vnode(type, vtype, props, key, ref, _hasProps);
+    return new Vnode(type, vtype, props, key, ref);
 }
 
 export function createVText(type, text) {

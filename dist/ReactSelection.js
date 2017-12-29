@@ -191,7 +191,7 @@ var Refs = {
     }
 };
 
-function Vnode(type, vtype, props, key, ref, _hasProps) {
+function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
     if (vtype) {
@@ -200,10 +200,6 @@ function Vnode(type, vtype, props, key, ref, _hasProps) {
 
         if (key) {
             this.key = key;
-        }
-
-        if (vtype === 1) {
-            this._hasProps = _hasProps;
         }
 
         var refType = typeNumber(ref);
@@ -247,7 +243,6 @@ function createElement(type, config) {
     }
 
     var props = {},
-        _hasProps = 0,
         vtype = 1,
         key = null,
         ref = null,
@@ -270,10 +265,7 @@ function createElement(type, config) {
                 if (val !== void 0) {
                     ref = val;
                 }
-            } else if (i === "children") {
-                props[i] = val;
             } else {
-                _hasProps = 1;
                 props[i] = val;
             }
         }
@@ -289,12 +281,11 @@ function createElement(type, config) {
     if (defaultProps) {
         for (var propName in defaultProps) {
             if (props[propName] === void 666) {
-                _hasProps = 1;
                 props[propName] = defaultProps[propName];
             }
         }
     }
-    return new Vnode(type, vtype, props, key, ref, _hasProps);
+    return new Vnode(type, vtype, props, key, ref);
 }
 
 function createVText(type, text) {

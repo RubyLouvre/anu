@@ -131,7 +131,7 @@ var Refs = {
     }
 };
 
-function Vnode(type, vtype, props, key, ref, _hasProps) {
+function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
     if (vtype) {
@@ -140,10 +140,6 @@ function Vnode(type, vtype, props, key, ref, _hasProps) {
 
         if (key) {
             this.key = key;
-        }
-
-        if (vtype === 1) {
-            this._hasProps = _hasProps;
         }
 
         var refType = typeNumber(ref);

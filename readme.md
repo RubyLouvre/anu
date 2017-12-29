@@ -7,9 +7,7 @@
 <a href="https://travis-ci.org/RubyLouvre/anu">
 <img src="https://travis-ci.org/RubyLouvre/anu.svg?branch=master" alt="Travis CI Status"/>
 </a>
-<a href="https://codeclimate.com/github/RubyLouvre/anu">
-<img src="https://codeclimate.com/github/RubyLouvre/anu/badges/gpa.svg" />
-</a>
+
 </p>
 
 

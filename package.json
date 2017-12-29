@@ -1,7 +1,7 @@
 {
   "name": "anujs",
   "version": "1.2.2",
-  "description": "a mini React-like framework",
+  "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
     "build": "rollup -c build/rollup.js && rollup -c build/rollup.ie.js && rollup -c build/rollup.selection.js && rollup -c build/rollup.shim.js && rollup -c build/rollup.ssr.js && node build/shim.script.js ",
