@@ -34,18 +34,19 @@ export function dispatchEvent(e, type, end) {
     }
     var bubble = e.type;
     var dom = e.target;
-    if(bubble === "blur"){
-        if(Refs.nodeOperate){
+    if (bubble === "blur") {
+        if (Refs.nodeOperate) {
             Refs.focusNode = dom;
+            Refs.type = bubble;
         }
-    }else if(bubble === "focus"){
-        if(dom.__inner__){
+    } else if (bubble === "focus") {
+        if (dom.__inner__) {
             dom.__inner__ = false;
             return;
         }
     }
-    var hook = eventPropHooks[bubble];
 
+    var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
     }
@@ -80,7 +81,8 @@ function collectPaths(from, end) {
             return paths;
         }
     }
-    if(!node || node.nodeType >1 ){//如果跑到document上
+    if (!node || node.nodeType > 1) {
+        //如果跑到document上
         return paths;
     }
     var mid = node.__events;
@@ -91,14 +93,14 @@ function collectPaths(from, end) {
             if (dom === end) {
                 break;
             }
-            if(!dom){
+            if (!dom) {
                 break;
             }
             if (dom.__events) {
                 paths.push({ dom: dom, events: dom.__events });
             }
         }
-    } while ((vnode = vnode.return));// eslint-disable-line
+    } while ((vnode = vnode.return)); // eslint-disable-line
     return paths;
 }
 
@@ -108,7 +110,7 @@ function triggerEventFlow(paths, prop, e) {
         var fn = path.events[prop];
         if (isFn(fn)) {
             e.currentTarget = path.dom;
-            fn.call(void 666,e);
+            fn.call(void 666, e);
             if (e._stopPropagation) {
                 break;
             }
@@ -167,13 +169,13 @@ eventHooks.wheel = function(dom) {
     });
 };
 
-
 "blur,focus".replace(/\w+/g, function(type) {
-    if(!document["__"+type]){
-        document["__"+type] = true;
+    if (!document["__" + type]) {
+        document["__" + type] = true;
         addGlobalEvent(type, true);
     }
 });
+
 /**
  * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
