@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
 
-   <script type='text/javascript' src="./dist/React.js"></script>
+   <script type='text/javascript' src="./dist/ReactSelection.js"></script>
 
  <!-- <script type='text/javascript' src="./react.js"></script>
    <script type='text/javascript' src="./react-dom.js"></script>-->
@@ -44,22 +44,25 @@
             }
         }
     }
-    var context = {};
-    var callback = function(kid, index) {
-        expect(this).toBe(context);
-        expect(index).toBe(0);
-        return kid;
+  
+    class App extends React.Component{
+        constructor(props){
+            super(props)
+            this.state = {
+                str: "dddd"
+            }
+        }
+        keydown(e){
+            this.setState({str: e.target.innerHTML})
+        }
+        render() {
+            return <div contentEditable={true} 
+          /*  onMouseUp={this.keydown.bind(this)} */ onInput={this.keydown.bind(this)}>{this.state.str}</div>
+        };
     }
 
-    var simpleKid = <span />;
-    var instance = <div>{simpleKid}</div>;
-    React.Children.forEach(instance.props.children, callback, context);
- //   expect(callback).toHaveBeenCalledWith(simpleKid, 0);
-  //  callback.calls.reset();
-    var mappedChildren = React.Children.map(instance.props.children, callback, context);
-  //  expect(callback).toHaveBeenCalledWith(simpleKid, 0);
-    expect(mappedChildren[0]).toEqual(<span key=".0" />);
-   // document.body.removeChild(container);
+    // Changing `defaultValue` should do nothing.
+    ReactDOM.render(<App />, container);
 </script>
 
 </body>

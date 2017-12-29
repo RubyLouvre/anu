@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-28
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-29
  */
 
 (function (global, factory) {
@@ -1002,6 +1002,7 @@ function dispatchEvent(e, type, end) {
     if (bubble === "blur") {
         if (Refs.nodeOperate) {
             Refs.focusNode = dom;
+            Refs.type = bubble;
         }
     } else if (bubble === "focus") {
         if (dom.__inner__) {
@@ -1009,8 +1010,8 @@ function dispatchEvent(e, type, end) {
             return;
         }
     }
-    var hook = eventPropHooks[bubble];
 
+    var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
     }
@@ -1139,6 +1140,7 @@ eventHooks.wheel = function (dom) {
         addGlobalEvent(type, true);
     }
 });
+
 /**
  * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
