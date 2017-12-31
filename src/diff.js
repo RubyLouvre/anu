@@ -43,7 +43,7 @@ export function findDOMNode(ref) {
         return null;
     }
     if (ref.nodeType) {
-        //如果本身是元素节
+        //如果本身是元素节点
         return ref;
     }
     //实例必然拥有updater与render
