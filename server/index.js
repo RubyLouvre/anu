@@ -3,6 +3,9 @@ import { fiberizeChildren } from "../src/createElement";
 import { typeNumber } from "../src/util";
 import { encodeEntities } from "./util";
 import { stringifyAttributes } from "./attributes";
+// https://github.com/juliangruber/stream 
+// 如果要用在前端，需要加这个库 npm install stream
+import { Readable } from "stream";
 
 function renderVNode(vnode, context) {
     var { vtype, type, props } = vnode;
@@ -18,7 +21,9 @@ function renderVNode(vnode, context) {
             //如果是元素节点
             if (type === "option") {
                 //向上找到select元素
-                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {}
+                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                    // no operation
+                }
                 if (p && p.valuesSet) {
                     var curValue = getOptionValue(vnode);
                     if (p.valuesSet["&" + curValue]) {
@@ -75,6 +80,81 @@ function renderVNode(vnode, context) {
     }
 }
 
+function* renderVNodeGen(vnode, context) {
+    var { vtype, type, props } = vnode;
+    switch (type) {
+    case "#text":
+        yield encodeEntities(vnode.text);
+        break;
+    case "#comment":
+        yield "<!--" + vnode.text + "-->";
+        break;
+    default:
+        var innerHTML = props && props.dangerouslySetInnerHTML;
+        innerHTML = innerHTML && innerHTML.__html;
+        if (vtype === 1) {
+            //如果是元素节点
+            if (type === "option") {
+                //向上找到select元素
+                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                    // no operation
+                }
+                if (p && p.valuesSet) {
+                    var curValue = getOptionValue(vnode);
+                    if (p.valuesSet["&" + curValue]) {
+                        props = Object.assign({ selected: "" }, props); //添加一个selected属性
+                    }
+                }
+            } else if (type === "select") {
+                var selectValue = vnode.props.value || vnode.props.defaultValue;
+                if (selectValue != null) {
+                    var values = [].concat(selectValue),
+                        valuesSet = {};
+                    values.forEach(function(el) {
+                        valuesSet["&" + el] = true;
+                    });
+                    vnode.valuesSet = valuesSet;
+                }
+            }
+
+            var str = "<" + type + stringifyAttributes(props, type);
+            if (voidTags[type]) {
+                yield str + "/>\n";
+            }
+            str += ">";
+            if (innerHTML) {
+                str += innerHTML;
+            } else {
+                var fakeUpdater = {
+                    vnode
+                };
+                var children = fiberizeChildren(props.children, fakeUpdater);
+                for (var i in children) {
+                    var child = children[i];
+                    str += renderVNode(child, context);
+                }
+                vnode.updater = fakeUpdater;
+            }
+            yield str + "</" + type + ">\n";
+        } else if (vtype > 1) {
+            var data = {
+                context
+            };
+            vnode = toVnode(vnode, data);
+            context = data.context;
+            yield renderVNode(vnode, context);
+        } else if (Array.isArray(vnode)) {
+            var multiChild = "";
+            vnode.forEach(function(el) {
+                multiChild += renderVNode(el, context);
+            });
+            yield multiChild;
+        } else {
+            throw "数据不合法";
+        }
+    }
+}
+
 function getOptionValue(option) {
     if ("value" in option.props) {
         return option.props.value;
@@ -88,7 +168,22 @@ function getOptionValue(option) {
     }
 }
 
-const voidTags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
+const voidTags = [
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr"
+];
 
 /**
  * 将组件虚拟DOM进行实例化，不断render，归化为元素虚拟DOM或文本节点或数组
@@ -120,7 +215,9 @@ function toVnode(vnode, data) {
             if (instance.componentWillMount) {
                 try {
                     instance.componentWillMount();
-                } catch (e) {}
+                } catch (e) {
+                    // no operation
+                }
             }
             rendered = instance.render();
         }
@@ -153,14 +250,14 @@ function toVnode(vnode, data) {
 function fixVnode(vnode) {
     var number = typeNumber(vnode);
     if (number < 3) {
-        // 0, 1, 2
+    // 0, 1, 2
         return {
             vtype: 0,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
-        //3, 4
+    //3, 4
         return {
             vtype: 0,
             text: vnode + "",
@@ -175,7 +272,26 @@ function renderToString(vnode, context) {
     return renderVNode(fixVnode(vnode), context || {});
 }
 
+function renderToNodeStream(vnode, context) {
+    const rs = new Readable();
+    const it = renderVNodeGen(vnode, context || {});
+
+    rs._read = function() {
+        const v = it.next();
+
+        if (!v.done) {
+            rs.push(v.value.toString());
+        } else {
+            rs.push(null);
+        }
+    };
+
+    return rs;
+}
+
 export default {
     renderToString,
-    renderToStaticMarkup: renderToString
+    renderToStaticMarkup: renderToString,
+    renderToNodeStream,
+    renderToStaticNodeStream: renderToNodeStream
 };
