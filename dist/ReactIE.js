@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2017-12-29
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-01-01
  */
 
 (function (global, factory) {
@@ -2758,7 +2758,7 @@ function findDOMNode(ref) {
         return null;
     }
     if (ref.nodeType) {
-        //如果本身是元素节
+        //如果本身是元素节点
         return ref;
     }
     //实例必然拥有updater与render

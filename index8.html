@@ -2,149 +2,120 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script src="./test/react.development.js"></script>
-    <script src="./test/react-dom.development.js"></script> -->
-    <script src="./lib/babel.js"></script>
-  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
 </head>
 
 <body>
 
-    <div>这个默认会被清掉</div>
-    <p><input id="a" value="111"/><input id="b" value="222"/><input id="c" value="333"/><span tabindex="-1" id="span">333</span></p>
-    <p><input id="d" value="444"/><input id="e" value="555"/><input id="f" value="666"/></p>
+  <script>
+    function Node(key) {
+      this.key = key;
+      this.left = null;
+      this.right = null;
+      this.height = 1;
+    }
 
-    <blockquote id='example'></blockquote>
-    <pre>
-    
-        
-    </pre>
-
-    <script type='text/babel'>
-  var container = document.getElementById("example")
-  var div = container
-  var PropTypes = React.PropTypes
-  if(!window.ReactDOM){
-    window.ReactDOM = React
-  }
-  var expect = function(a) {
-      return {
-          toBe: function(b) {
-              console.log(a,"vs", b, a === b)
-          },
-          toEqual(b){
-              console.log(a,"vs", b, a +""=== b+"")
-          },
-          toThrow(b){
-              try{
-                  a()
-              }catch(e){
-                  console.log(e,"vs", b, e.message +""=== b+"")
-              }
-          }
+    function hasChild(a) {
+      for (var i in a.childs) {
+        return true
       }
-  }  
-  /*
-  var appRoot = document.createElement("div")
-        var modalRoot = document.createElement("div")
-        document.body.appendChild(appRoot)
-        document.body.appendChild(modalRoot)
-        class Modal extends React.Component {
-          constructor(props) {
-            super(props);
-            this.el = document.createElement('div');
+      return false
+    }
+    class Tree {
+      constructor(data, parent) {
+        this.childs = {}
+        this.data = [data]
+        this.parent = parent
+      }
+      insert(key) {
+        Node.path = []
+        var target = this.search(key)
+        target.add(key)
+      }
+      //找到能添加key的那个节点
+      search(key) {
+        if (hasChild(this)) {
+          var data = this.data
+          var min = data[0]
+          var max = data[data.length - 1]
+          if (key < min) {
+            Node.path.push("left")
+            return this.childs["left"].search(key)
+          } else if (key > max) {
+            Node.path.push("right")
+            return this.childs["right"].search(key)
+          } else if(data.length === 2){
+            Node.path.push("middle")
+            return this.childs["middle"].search(key)
           }
-        
-          componentDidMount() {
-            // The portal element is inserted in the DOM tree after
-            // the Modal's children are mounted, meaning that children
-            // will be mounted on a detached DOM node. If a child
-            // component requires to be attached to the DOM tree
-            // immediately when mounted, for example to measure a
-            // DOM node, or uses 'autoFocus' in a descendant, add
-            // state to Modal and only render the children when Modal
-            // is inserted in the DOM tree.
-            modalRoot.appendChild(this.el);
-          }
-        
-          componentWillUnmount() {
-            modalRoot.removeChild(this.el);
-          }
-        
-          render() {
-            return ReactDOM.createPortal(
-              this.props.children,
-              this.el,
-            );
+        } else {
+          return this
+        }
+      }
+      add(key) {
+        if (!this.data.includes(key)) {
+          this.data.push(key)
+          this.data.sort()
+          if (this.data.length === 3) {
+            this.split()
+            if ((this.parent instanceof Node)) {
+              this.parent.add(this.data.pop())
+            }
+          } else {
+            if (this.childs.hidden) {
+              var branch = Node.path.pop()
+              if (branch === "left") {
+                this.childs.middle = this.childs.hidden
+              } else if (branch === "right") {
+                this.childs.middle = this.childs.right
+                this.childs.right = this.childs.hidden
+              }
+              delete this.childs.hidden
+            }
           }
         }
-        var c = 0
-        class Parent extends React.Component {
-          constructor(props) {
-            super(props);
-            this.state = {clicks: 0};
-            this.handleClick = this.handleClick.bind(this);
+      }
+      split() {
+        if ((this.parent instanceof Node) && this.data.length) {
+          branch = Node.path.pop()
+          newNodeLeft = new Node(this.data.shift(), this)
+          newNodeRight = new Node(this.data.pop(), this)
+          if (branch == "left") {
+            // left hidden middle right
+            newNodeLeft.childs["left"] = this.childs["left"]
+            newNodeLeft.childs["right"] = this.childs["hidden"]
+            newNodeRight.childs["left"] = this.childs["middle"]
+            newNodeRight.childs["right"] = this.childs["right"]
+          } else if (branch === "middle") {
+            newNodeLeft.childs["left"] = this.childs["left"]
+            newNodeLeft.childs["right"] = this.childs["middle"]
+            newNodeRight.childs["left"] = this.childs["hidden"]
+            newNodeRight.childs["right"] = this.childs["right"]
+          } else if (branch == "right") {
+            newNodeLeft.childs["left"] = this.childs["left"]
+            newNodeLeft.childs["right"] = this.childs["middle"]
+            newNodeRight.childs["left"] = this.childs["right"]
+            newNodeRight.childs["right"] = this.childs["hidden"]
           }
-        
-          handleClick() {
-            // This will fire when the button in Child is clicked,
-            // updating Parent's state, even though button
-            // is not direct descendant in the DOM.
-            c ++
-            this.setState(prevState => ({
-              clicks: prevState.clicks + 1
-            }));
-          }
-        
-          render() {
-            return (
-              <div onClick={this.handleClick}>
-                <p>Number of clicks: {this.state.clicks}</p>
-                <p>
-                  Open up the browser DevTools
-                  to observe that the button
-                  is not a child of the div
-                  with the onClick handler.
-                </p>
-                <Modal>
-                  <Child />
-                </Modal>
-              </div>
-            );
-          }
+          newNodeLeft.childs["left"].parent = newNodeLeft
+          newNodeLeft.childs["right"].parent = newNodeLeft
+          newNodeRight.childs["left"].parent = newNodeRight
+          newNodeRight.childs["right"].parent = newNodeRight
+          this.childs["left"] = newNodeLeft
+          this.childs["right"] = newNodeRight
+          delete this.childs["mid"]
         }
-        
-        function Child() {
-          // The click event on this button will bubble up to parent,
-          // because there is no 'onClick' attribute defined
-          return (
-            <div className="modal">
-              <button type="button" id="ChildButton">Click</button>
-            </div>
-          );
-        }
-        
-        ReactDOM.render(<Parent />, appRoot);
-        var ChildButton = document.getElementById("ChildButton")
-        ChildButton.click()
-        expect(c).toBe(1)
-        ChildButton.click()
-        expect(c).toBe(2)
-        */
-        var a = document.querySelector("#a")
-        a.focus()
-        setTimeout(function(){
-        var i =  document.createElement("input")
-        i.value ="333"
-        a.parentNode.appendChild(i)
-       // document.body.appendChild(i)
-         // var c = document.querySelector("#d")
-         // c.parentNode.removeChild(c)
-        },3000)
-</script>
+      }
+    }
+
+    var t = new Tree
+    t.add(5)
+    t.add(3)
+    t.add(6)
+    t.add(8)
+console.log(t)
+  </script>
 
 </body>
 

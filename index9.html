@@ -4,99 +4,253 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <!--<script src="./test/react.js"></script>
-    <script src="./test/react-dom.js"></script>-->
-    <script src="./lib/babel.js"></script>
-
 </head>
 
 <body>
 
-    <div>这个默认会被清掉</div>
-    <div id='example'></div>
-    <pre>
-      
-    </pre>
+    <script>
 
-    <script type='text/babel'>
-    var container = document.getElementById("example")
-    var div = container
-    var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a,"vs", b, a === b)
-            },
-            toEqual(b){
-                console.log(a,"vs", b, a +""=== b+"")
-            },
-            toThrow(b){
-                try{
-                    a()
-                }catch(e){
-                    console.log(e,"vs", b, e.message +""=== b+"")
+        class Node {
+            constructor(key, parent) {
+                this.keys = [key]
+                this.children = []
+                this.parent = parent
+            }
+            isLeaf() {
+                return !this.children[0]
+            }
+            addKeys(key) {
+                //(1)如果2-3-4树中已存在当前插入的key，则插入失败，
+                //否则最终一定是在叶子节点中进行插入操作
+                if (!this.keys.includes(key)) {
+                    this.keys.push(key)
+                    this.keys.sort(function (a, b) {
+                        return a - b
+                    })
+                }
+
+            }
+        }
+        class Tree234 {
+            constructor() {
+                this.root = null
+            }
+            search(node, key, matchMode) {
+                if (!matchMode && node.isLeaf()) {
+                    return node
+                }
+                var keys = node.keys
+                for (var i = 0, n = keys.length; i < n; i++) {
+                    if (key === keys[i]) {
+                        return node
+                    } if (key < keys[i]) {
+                        return this.search(node.children[i], key, matchMode)
+                    }
+                }
+                return this.search(node.children[i], key, matchMode)
+            }
+            insert(key) {
+                if (!this.root) {//没有根节点
+                    this.root = new Node(key)
+                } else {
+                    var node = this.search(this.root, key)
+                    insertNode(node, key, this)
+                }
+            }
+            remove(key) {
+                if (this.root) {
+                    var node = this.search(this.root, key, true)
+                    if (node) {
+                        removeNode(node, key, this)
+                    }
                 }
             }
         }
-    }
-  var list = [];
-  class App extends React.Component {
-      constructor(props) {
-          super(props);
-          this.__merge = true
-          this.state = {
-              path: "111"
-          };
-      }
+        function split(keys) { //将4结点的三个key分裂成三个2结吉
+            var top = new Node(keys[1])
+            var left = new Node(keys[0], top)
+            var right = new Node(keys[2], top)
+            return [top, left, right]
+        }
+        function addKeys(keys, key) {
+            if (!keys.includes(key)) {
+                keys.push(key)
+                keys.sort(function (a, b) {
+                    return a - b
+                })
+            }
+        }
+        function removeKeys(keys, key) {
+            var i = keys.indexOf(key)
+            keys.splice(i, 1)
+            if (keys.length > 1) {
+                keys.sort(function (a, b) {
+                    return a - b
+                })
+            }
+        }
+        function insertNode(node, key, tree) {
+            var keys = node.keys
+            if (keys.length === 3) {
+                //分裂当前节点为子树
+                var [top, left, right] = split(keys)
+                //添加原来的孩子
+                var children = node.children
+                if (children.length === 4) {//是4节点
+                    children[0].parent = left
+                    children[1].parent = left
+                    left.children = [children[0], children[1]]
+                    children[2].parent = right
+                    children[3].parent = right
+                    right.children = [children[2], children[3]]
+                }
+                var newNode = node.parent
+                var newKey = top.keys[0]
+                if (!newNode) {
+                    tree.root = top
+                    top.children.push(left, right)
+                } else {
+                    //我们把分裂形成的根节点中的key看成向上层插入的key，然后重复第2步和第3步。
+                    //node.parent一定是拆分后的left, right的父节点，上方可能再分裂
+                    var parent = insertNode(newNode, newKey, tree)
+                    left.parent = parent
+                    right.parent = parent
+                    //让left, right作为parent的孩子
+                    var index = parent.children.indexOf(node)
+                    parent.children.splice(index, 1, left, right)
+                }
+                //决定新key要插入哪个节点中
+                node = key < keys[0] ? left : right;
+            }
+            addKeys(node.keys, key)
+            return node
+        }
+        function removeNode(node, key, tree) {
+            var keys = node.keys
+            if (node.isLeaf()) {
+                if (node.children > 1) {//如果不是2节点， over
+                    removeKeys(keys, key)
+                }
+            }
+        }
+        var t = new Tree234()
+        t.insert(2)
+        t.insert(3)
+        t.insert(1)
+        t.insert(4)
+        t.insert(5)
+        t.insert(6)
+        t.insert(7)
 
-      render() {
-          list.push("render " + this.state.path);
-          return (
-              <div>
-                  <span ref="click2time" onClick={this.onClick.bind(this)}>
-                      {this.state.path}
-                  </span>
-              </div>
-          );
-      }
+        t.insert(8)
+        t.insert(9)
 
-      onClick() {
-          this.setState(
-              {
-                  path: "click"
-              },
-              function() {
-                  list.push("click....");
-              }
-          );
-          this.setState(
-              {
-                  path: "click2"
-              },
-              function() {
-                  list.push("click2....");
-              }
-          );
-      }
-      componentWillUpdate() {
-          list.push("will update");
-      }
-      componentDidUpdate() {
-          list.push("did update");
-      }
-  }
+        t.insert(10)
+        t.insert(11)
+        t.insert(12)
+        t.insert(13)
+        t.insert(14)
+        console.log(t)
+        function removeNode2(node, key, tree) {
+            var pos = node.keys.indexOf(key)
+            if (!node.isLeaf()) { //如果是叶节点
+                removeKeys(node.keys, key)
+            } else { //如果是非叶节点，可以使用successor/
+                var successor = node.children[pos + i]
+                while (successor.children[0]) {
+                    successor = successor.children[0]; // successor
+                }
+                var curKey = successor.keys[0]; //
+                node.keys[pos] = curKey
+                removeKeys(successor.keys, curKey);
+                node = successor
+            }
+            if (!node.keys.length) {
+                handleUnderflow(node, null, tree);
+            }
+        }
+        function handleUnderflow(node, Z, tree) {
+            if (node === tree.root) {
+                tree.root = null
+                return
+            }
+            var parent = node.parent;
+            var slibings = parent.children;
+            var children = node.children;
+            var pos = slibings.indexOf(node);
+            if (pos <= 2 && slibings[pos + 1] && slibings[pos + 1].keys.length > 1) {
+                /**
+                 * siblings结构为 [otherNode, node, siblng]
+                 */
+                var sibling = slibings[pos + 1];
+                if (Z != null) {
+                    children.push(Z)
+                    Z.parent = node;
+                }
+                //将父节点的key下交给目标节点        
+                node.keys[0] = parent.keys[pos];
+                //兄弟节点转移最左边的key与child给parent\node
+                parent.keys[pos] = sibling.keys.shift()
+                var newChild = sibling.children.shift()
+                if (newChild) {
+                    children.push(newChild)
+                    newChild.parent = node
+                }
+            } else if (pos > 0 && siblings[pos - 1] && siblings[pos - 1].keys.length > 1) {
+                /**
+                 * siblings结构为 [sibling, node, otherNode]
+                 */
+                var sibling = siblings[pos - 1];
+                var newChild = sibling.children.pop()
+                if (newChild) {
+                    children.push(newChild)
+                    newChild.parent = node
+                }
+                node.keys[0] = parent.keys[pos - 1];
+                if (Z != null) {
+                    children.push(Z)
+                    Z.parent = node;
+                }
+                parent.keys[pos - 1] = sibling.keys.pop()
+            } else if (pos != 3 && siblings[pos + 1] != null) {
+                //合并右节点
+                var sibling = siblings[pos + 1];
+                if (Z != null) {
+                    children.push(Z)
+                    Z.parent = node;
+                }
+                var newChild = sibling.children.shift()
+                if (newChild) {
+                    children.push(newChild)
+                    newChild.parent = node
+                }
+                node.keys[1] = sibling.keys[0]
+                //转移第二个孩子
+                var newChild = sibling.children.shift()
+                if (newChild) {
+                    children.push(newChild)
+                    newChild.parent = node
+                }
+                siblings.splice(pos, 1)
+                if (parent.keys.length) {
+                    handleUnderflow(parent, p, tree);
+                }
+            } else {//合并左节点
+                var sibling = siblings[pos - 1];
+                sibling.keys[1] = parnet.keys[pos-1];
+                if (Z != null) {
+                    children.push(Z)
+                    Z.parent = node;
+                }
+                if (parent.keys.length) {
+                    handleUnderflow(parent, sibling);
+                }
+            }
+        }
 
-  var s = ReactDOM.render(<App />, div, function() {
-      list.push("ReactDOM cb");
-  });
-  var list2 = ["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."];
-  ReactTestUtils.Simulate.click(s.refs.click2time);
 
-  expect(list).toEqual(list2);
+    </script>
 
-
-      </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2017-12-29
+ * 此版本带有selection by 司徒正美 Copyright 2018-01-01
  * IE9+
  */
 
@@ -2759,7 +2759,7 @@ function findDOMNode(ref) {
         return null;
     }
     if (ref.nodeType) {
-        //如果本身是元素节
+        //如果本身是元素节点
         return ref;
     }
     //实例必然拥有updater与render
