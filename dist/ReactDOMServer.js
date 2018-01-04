@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.ReactDOMServer = factory());
-}(this, (function () {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('stream')) :
+	typeof define === 'function' && define.amd ? define(['stream'], factory) :
+	(global.ReactDOMServer = factory(global.stream));
+}(this, (function (stream) {
 
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
@@ -561,6 +561,10 @@ function stringifyAttributes(props, type) {
     return attrs.length ? " " + attrs.join(" ") : "";
 }
 
+var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
+
+// https://github.com/juliangruber/stream 
+// 如果要用在前端，需要加这个库 npm install stream
 function renderVNode(vnode, context) {
     var _vnode = vnode,
         vtype = _vnode.vtype,
@@ -579,7 +583,9 @@ function renderVNode(vnode, context) {
                 //如果是元素节点
                 if (type === "option") {
                     //向上找到select元素
-                    for (var p = vnode.return; p && p.type !== "select"; p === p.return) {}
+                    for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                        // no operation
+                    }
                     if (p && p.valuesSet) {
                         var curValue = getOptionValue(vnode);
                         if (p.valuesSet["&" + curValue]) {
@@ -636,6 +642,150 @@ function renderVNode(vnode, context) {
     }
 }
 
+function renderVNodeGen(vnode, context) {
+    var _vnode2, vtype, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
+
+    return regeneratorRuntime.wrap(function renderVNodeGen$(_context) {
+        while (1) {
+            switch (_context.prev = _context.next) {
+                case 0:
+                    _vnode2 = vnode, vtype = _vnode2.vtype, type = _vnode2.type, props = _vnode2.props;
+                    _context.t0 = type;
+                    _context.next = _context.t0 === "#text" ? 4 : _context.t0 === "#comment" ? 7 : 10;
+                    break;
+
+                case 4:
+                    _context.next = 6;
+                    return encodeEntities(vnode.text);
+
+                case 6:
+                    return _context.abrupt("break", 40);
+
+                case 7:
+                    _context.next = 9;
+                    return "<!--" + vnode.text + "-->";
+
+                case 9:
+                    return _context.abrupt("break", 40);
+
+                case 10:
+                    innerHTML$$1 = props && props.dangerouslySetInnerHTML;
+
+                    innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
+
+                    if (!(vtype === 1)) {
+                        _context.next = 24;
+                        break;
+                    }
+
+                    //如果是元素节点
+                    if (type === "option") {
+                        //向上找到select元素
+                        for (p = vnode.return; p && p.type !== "select"; p === p.return) {
+                            // no operation
+                        }
+                        if (p && p.valuesSet) {
+                            curValue = getOptionValue(vnode);
+
+                            if (p.valuesSet["&" + curValue]) {
+                                props = Object.assign({ selected: "" }, props); //添加一个selected属性
+                            }
+                        }
+                    } else if (type === "select") {
+                        selectValue = vnode.props.value || vnode.props.defaultValue;
+
+                        if (selectValue != null) {
+                            values = [].concat(selectValue), valuesSet = {};
+
+                            values.forEach(function (el) {
+                                valuesSet["&" + el] = true;
+                            });
+                            vnode.valuesSet = valuesSet;
+                        }
+                    }
+
+                    str = "<" + type + stringifyAttributes(props, type);
+
+                    if (!voidTags[type]) {
+                        _context.next = 18;
+                        break;
+                    }
+
+                    _context.next = 18;
+                    return str + "/>\n";
+
+                case 18:
+                    str += ">";
+                    if (innerHTML$$1) {
+                        str += innerHTML$$1;
+                    } else {
+                        fakeUpdater = {
+                            vnode: vnode
+                        };
+                        children = fiberizeChildren(props.children, fakeUpdater);
+
+                        for (i in children) {
+                            child = children[i];
+
+                            str += renderVNode(child, context);
+                        }
+                        vnode.updater = fakeUpdater;
+                    }
+                    _context.next = 22;
+                    return str + "</" + type + ">\n";
+
+                case 22:
+                    _context.next = 40;
+                    break;
+
+                case 24:
+                    if (!(vtype > 1)) {
+                        _context.next = 32;
+                        break;
+                    }
+
+                    data = {
+                        context: context
+                    };
+
+                    vnode = toVnode(vnode, data);
+                    context = data.context;
+                    _context.next = 30;
+                    return renderVNode(vnode, context);
+
+                case 30:
+                    _context.next = 40;
+                    break;
+
+                case 32:
+                    if (!Array.isArray(vnode)) {
+                        _context.next = 39;
+                        break;
+                    }
+
+                    multiChild = "";
+
+                    vnode.forEach(function (el) {
+                        multiChild += renderVNode(el, context);
+                    });
+                    _context.next = 37;
+                    return multiChild;
+
+                case 37:
+                    _context.next = 40;
+                    break;
+
+                case 39:
+                    throw "数据不合法";
+
+                case 40:
+                case "end":
+                    return _context.stop();
+            }
+        }
+    }, _marked, this);
+}
+
 function getOptionValue(option) {
     if ("value" in option.props) {
         return option.props.value;
@@ -681,7 +831,9 @@ function toVnode(vnode, data) {
             if (instance.componentWillMount) {
                 try {
                     instance.componentWillMount();
-                } catch (e) {}
+                } catch (e) {
+                    // no operation
+                }
             }
             rendered = instance.render();
         }
@@ -736,9 +888,28 @@ function renderToString(vnode, context) {
     return renderVNode(fixVnode(vnode), context || {});
 }
 
+function renderToNodeStream(vnode, context) {
+    var rs = new stream.Readable();
+    var it = renderVNodeGen(vnode, context || {});
+
+    rs._read = function () {
+        var v = it.next();
+
+        if (!v.done) {
+            rs.push(v.value.toString());
+        } else {
+            rs.push(null);
+        }
+    };
+
+    return rs;
+}
+
 var index = {
     renderToString: renderToString,
-    renderToStaticMarkup: renderToString
+    renderToStaticMarkup: renderToString,
+    renderToNodeStream: renderToNodeStream,
+    renderToStaticNodeStream: renderToNodeStream
 };
 
 return index;

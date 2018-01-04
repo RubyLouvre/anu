@@ -70,6 +70,23 @@ describe("util", function () {
         expect(toLowerCase("onA")).toBe("ona");
     });
     it("inherit", () => {
+        var x = "x";
+        function A1() {}
+        A1.prototype = {
+            test: () => x = "a"
+        };
+
+        function B1() {}
+        B1.prototype = {
+            test: () => x = "b"
+        };
+        inherit(B1, A1);
+        var b = new B1();
+        b.test();
+        expect(x).toBe("b");
+
+    });
+    it("inherit2", () => {
         function A() {}
 
         function B() {}
@@ -78,8 +95,8 @@ describe("util", function () {
 
         expect(a instanceof A).toBe(true);
         expect(a instanceof B).toBe(true);
+        
     });
-
     it("camelize", function () {
 
         expect(typeof camelize).toBe("function");

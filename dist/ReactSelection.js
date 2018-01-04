@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2018-01-01
+ * 此版本带有selection by 司徒正美 Copyright 2018-01-04
  * IE9+
  */
 
@@ -63,12 +63,12 @@ function noop() {}
  */
 function inherit(SubClass, SupClass) {
     function Bridge() {}
+    var orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
-
     var fn = SubClass.prototype = new Bridge();
 
     // 避免原型链拉长导致方法查找的性能开销
-    extend(fn, SupClass.prototype);
+    extend(fn, orig);
     fn.constructor = SubClass;
     return fn;
 }

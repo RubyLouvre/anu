@@ -53,12 +53,12 @@ export function noop() {}
  */
 export function inherit(SubClass, SupClass) {
     function Bridge() {}
+    let orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
-
     let fn = (SubClass.prototype = new Bridge());
 
     // 避免原型链拉长导致方法查找的性能开销
-    extend(fn, SupClass.prototype);
+    extend(fn, orig);
     fn.constructor = SubClass;
     return fn;
 }
