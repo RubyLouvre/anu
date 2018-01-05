@@ -1,4 +1,11 @@
-## 1.2.2
+## 1.2.2(2018.01.05)
+
+1. 解决PropTypes的share问题
+2. 修复utils的inherit BUG
+3. 添加后端渲染的renderToNodeStream支持
+4. Component添加isReactCompent方法，增强对第三方的支持
+
+## 1.2.2(2017.12.30)
 
 1. cloneElement需要处理disposed元素
 2. cloneElement 对于props的虚拟DOM进行复制
