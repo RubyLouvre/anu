@@ -1,6 +1,6 @@
 
 var check = function () {
-    return null;
+    return check;
 };
 check.isRequired = check;
 export var PropTypes = {

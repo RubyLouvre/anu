@@ -14,7 +14,7 @@ var text2 = str2.replace(/Object\.freeze/g, "extend").replace(/\/\/freeze_start(
 
 fs.writeFileSync(dir2, text2, { encoding: "utf8" });
 // fs.writeFileSync( path.join(__dirname, "../../antd-test/node_modules/qreact/dist/React.js"), text2, { encoding: "utf8" });
-// fs.writeFileSync( path.join(__dirname, "../../test-anujs-async-render/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
+// fs.writeFileSync( path.join(__dirname, "../../react-study/node_modules/anujs/dist/React.js"), text2, { encoding: "utf8" });
 
 // fs.writeFileSync( path.join(__dirname, "../../antd-test/other/React.js"), text2, { encoding: "utf8" });
 

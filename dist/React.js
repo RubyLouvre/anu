@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-01-04
+ * by 司徒正美 Copyright 2018-01-05
  * IE9+
  */
 
@@ -1297,7 +1297,7 @@ var eventSystem = extend({
 });
 
 var check = function check() {
-    return null;
+    return check;
 };
 check.isRequired = check;
 var PropTypes = {
@@ -1342,6 +1342,8 @@ Component.prototype = {
     replaceState: function replaceState() {
         deprecatedWarn("replaceState");
     },
+
+    isReactComponent: returnTrue,
     isMounted: function isMounted() {
         deprecatedWarn("isMounted");
         return (this.updater || fakeObject).isMounted();

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-01-04
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-01-05
  */
 
 (function (global, factory) {
@@ -1296,7 +1296,7 @@ var eventSystem = extend({
 });
 
 var check = function check() {
-    return null;
+    return check;
 };
 check.isRequired = check;
 var PropTypes = {
@@ -1341,6 +1341,8 @@ Component.prototype = {
     replaceState: function replaceState() {
         deprecatedWarn("replaceState");
     },
+
+    isReactComponent: returnTrue,
     isMounted: function isMounted() {
         deprecatedWarn("isMounted");
         return (this.updater || fakeObject).isMounted();

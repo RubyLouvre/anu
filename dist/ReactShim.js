@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-01-04
+ * QQ 370262116 by 司徒正美 Copyright 2018-01-05
  */
 
 (function (global, factory) {
@@ -216,6 +216,8 @@ Component.prototype = {
     replaceState: function replaceState() {
         deprecatedWarn("replaceState");
     },
+
+    isReactComponent: returnTrue,
     isMounted: function isMounted() {
         deprecatedWarn("isMounted");
         return (this.updater || fakeObject).isMounted();

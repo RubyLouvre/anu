@@ -1,4 +1,4 @@
-import { deprecatedWarn, returnFalse } from "./util";
+import { deprecatedWarn, returnFalse,returnTrue } from "./util";
 import { Refs } from "./Refs";
 /**
  *组件的基类
@@ -25,6 +25,7 @@ Component.prototype = {
     replaceState() {
         deprecatedWarn("replaceState");
     },
+    isReactComponent:returnTrue,
     isMounted() {
         deprecatedWarn("isMounted");
         return (this.updater || fakeObject).isMounted();

@@ -9,112 +9,35 @@
 <body>
 
   <script>
-    function Node(key) {
-      this.key = key;
-      this.left = null;
-      this.right = null;
-      this.height = 1;
-    }
-
-    function hasChild(a) {
-      for (var i in a.childs) {
-        return true
-      }
-      return false
-    }
-    class Tree {
-      constructor(data, parent) {
-        this.childs = {}
-        this.data = [data]
-        this.parent = parent
-      }
-      insert(key) {
-        Node.path = []
-        var target = this.search(key)
-        target.add(key)
-      }
-      //找到能添加key的那个节点
-      search(key) {
-        if (hasChild(this)) {
-          var data = this.data
-          var min = data[0]
-          var max = data[data.length - 1]
-          if (key < min) {
-            Node.path.push("left")
-            return this.childs["left"].search(key)
-          } else if (key > max) {
-            Node.path.push("right")
-            return this.childs["right"].search(key)
-          } else if(data.length === 2){
-            Node.path.push("middle")
-            return this.childs["middle"].search(key)
-          }
-        } else {
-          return this
-        }
-      }
-      add(key) {
-        if (!this.data.includes(key)) {
-          this.data.push(key)
-          this.data.sort()
-          if (this.data.length === 3) {
-            this.split()
-            if ((this.parent instanceof Node)) {
-              this.parent.add(this.data.pop())
+  function quickSort(arr, low, high) {
+    low = low == null ? 0 : low;
+    high = high == null ? arr.length-1: high;
+    if (low < high) {
+        var l = low,
+            h = high,
+            key = arr[l];
+        while (l < h) {
+            while (l < h && arr[h] > key) {
+                h--;
             }
-          } else {
-            if (this.childs.hidden) {
-              var branch = Node.path.pop()
-              if (branch === "left") {
-                this.childs.middle = this.childs.hidden
-              } else if (branch === "right") {
-                this.childs.middle = this.childs.right
-                this.childs.right = this.childs.hidden
-              }
-              delete this.childs.hidden
+            if (l < h) {
+                arr[l++] = arr[h];
             }
-          }
+            while (l < h && arr[l] < key) {
+                l++;
+            }
+            if (l < h) {
+                arr[h--] = arr[l];
+            }
         }
-      }
-      split() {
-        if ((this.parent instanceof Node) && this.data.length) {
-          branch = Node.path.pop()
-          newNodeLeft = new Node(this.data.shift(), this)
-          newNodeRight = new Node(this.data.pop(), this)
-          if (branch == "left") {
-            // left hidden middle right
-            newNodeLeft.childs["left"] = this.childs["left"]
-            newNodeLeft.childs["right"] = this.childs["hidden"]
-            newNodeRight.childs["left"] = this.childs["middle"]
-            newNodeRight.childs["right"] = this.childs["right"]
-          } else if (branch === "middle") {
-            newNodeLeft.childs["left"] = this.childs["left"]
-            newNodeLeft.childs["right"] = this.childs["middle"]
-            newNodeRight.childs["left"] = this.childs["hidden"]
-            newNodeRight.childs["right"] = this.childs["right"]
-          } else if (branch == "right") {
-            newNodeLeft.childs["left"] = this.childs["left"]
-            newNodeLeft.childs["right"] = this.childs["middle"]
-            newNodeRight.childs["left"] = this.childs["right"]
-            newNodeRight.childs["right"] = this.childs["hidden"]
-          }
-          newNodeLeft.childs["left"].parent = newNodeLeft
-          newNodeLeft.childs["right"].parent = newNodeLeft
-          newNodeRight.childs["left"].parent = newNodeRight
-          newNodeRight.childs["right"].parent = newNodeRight
-          this.childs["left"] = newNodeLeft
-          this.childs["right"] = newNodeRight
-          delete this.childs["mid"]
-        }
-      }
+        arr[l] = key;
+        quickSort(arr, low, l - 1);
+        quickSort(arr, l + 1, high);
     }
-
-    var t = new Tree
-    t.add(5)
-    t.add(3)
-    t.add(6)
-    t.add(8)
-console.log(t)
+}
+var arr =[4,51,7,3,9,1,0,33];
+quickSort(arr)
+console.log(arr)
   </script>
 
 </body>
