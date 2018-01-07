@@ -203,7 +203,7 @@ function updateOptionsOne(options, n, propValue) {
         //字符串模糊匹配
         return setOptionSelected(match, true);
     }
-    if (n) {
+    if (n && noDisableds[0]) {
         //选中第一个没有变disable的元素
         setOptionSelected(noDisableds[0], true);
     }
