@@ -39,6 +39,15 @@ describe("ReactDOMSelect", function() {
         ReactDOM.render(<select defaultValue="gorilla">{options}</select>, container);
         expect(node.value).toEqual("giraffe");
     });
+    it("处理option都是disabled的情况`", () => {
+        var s = ReactDOM.render(<select value="111">
+                <option disabled="true">111</option>
+                <option disabled="true">222</option>
+                <option disabled="true">333</option>
+        </select>, container);
+        const node = ReactDOM.findDOMNode(s);
+        expect(node.selectedIndex).toEqual(0);
+    })
 
     it("should not control when using `defaultValue`", () => {
         const el = (

@@ -54,10 +54,10 @@ describe("事件系统模块", function() {
         var s = ReactDOM.render(vnode, div);
 
         expect(s.state.aaa).toBe(111);
-        ReactTestUtils.Simulate.click(React.findDOMNode(vnode));
+        ReactTestUtils.Simulate.click(React.findDOMNode(s));
 
         expect(s.state.aaa).toBe(112);
-        ReactTestUtils.Simulate.click(React.findDOMNode(vnode));
+        ReactTestUtils.Simulate.click(React.findDOMNode(s));
 
         expect(s.state.aaa).toBe(113);
         //确保存在eventSystem对象

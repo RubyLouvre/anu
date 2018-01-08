@@ -37,25 +37,24 @@ export function unmountComponentAtNode(container) {
     }
 }
 //[Top API] ReactDOM.findDOMNode
-export function findDOMNode(ref) {
-    if (ref == null) {
+export function findDOMNode(componentOrElement) {
+    if (componentOrElement == null) {
         //如果是null
         return null;
     }
-    if (ref.nodeType) {
+    if (componentOrElement.nodeType ) {
         //如果本身是元素节点
-        return ref;
+        return componentOrElement;
     }
     //实例必然拥有updater与render
-    if (ref.render) {
-        //如果是组件实例
-        return findDOMNode(ref.updater.vnode);
-    }
-    var vnode = ref.stateNode; //如果是虚拟DOM或组件实例
-    if (vnode.nodeType) {
-        return vnode.nodeType === 8 ? null : vnode;
-    } else {
-        return findDOMNode(ref.child);
+    if (componentOrElement.render) {
+        var node = componentOrElement.updater.vnode;
+        var c = node.child;
+        if(c){
+            return findDOMNode(c.stateNode);
+        }else{
+            return null;
+        }
     }
 }
 
