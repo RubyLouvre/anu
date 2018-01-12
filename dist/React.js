@@ -1211,7 +1211,7 @@ function getLowestCommonAncestor(instA, instB) {
 
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function (dom) {
-        dom.onclick = dom.onclick = noop;
+        dom.onclick = dom.onclick || noop;
     };
 }
 
@@ -2135,7 +2135,6 @@ var actionStrategy = {
                 var eventName = getBrowserName(name);
                 var hook = eventHooks[eventName];
                 addGlobalEvent(eventName);
-
                 if (hook) {
                     hook(dom, eventName);
                 }
