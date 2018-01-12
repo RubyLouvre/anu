@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-01-08
+ * QQ 370262116 by 司徒正美 Copyright 2018-01-12
  */
 
 (function (global, factory) {
@@ -939,6 +939,11 @@ function inputControll(vnode, dom, props) {
         var keys = data[1];
         var converter = data[2];
         var sideEffect = data[3];
+        if (duplexType === 2) {
+            if (!("checked" in props)) {
+                return;
+            }
+        }
         var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
         sideEffect(dom, value, vnode, isUncontrolled);
         if (isUncontrolled) {
@@ -1559,7 +1564,9 @@ function getLowestCommonAncestor(instA, instB) {
 }
 
 if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = noop;
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
+        dom.onclick = dom.onclick = noop;
+    };
 }
 
 function createHandle(name, fn) {
@@ -1974,6 +1981,7 @@ var actionStrategy = {
                 var eventName = getBrowserName(name);
                 var hook = eventHooks[eventName];
                 addGlobalEvent(eventName);
+
                 if (hook) {
                     hook(dom, eventName);
                 }

@@ -255,7 +255,9 @@ function getLowestCommonAncestor(instA, instB) {
 }
 
 if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = noop;
+    eventHooks.click = eventHooks.clickcapture = function(dom){
+        dom.onclick= dom.onclick = noop;
+    };
 }
 
 export function createHandle(name, fn) {

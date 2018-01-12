@@ -113,12 +113,17 @@ export function inputControll(vnode, dom, props) {
     var domType = dom.type;
     var duplexType = duplexMap[domType];
     var isUncontrolled = dom._uncontrolled;
-    if (duplexType) {
+    if (duplexType ) {
         var data = duplexData[duplexType];
         var duplexProp = data[0];
         var keys = data[1];
         var converter = data[2];
         var sideEffect = data[3];
+        if(duplexType === 2){
+            if(!("checked" in props)){
+                return;
+            }
+        }
         var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
         sideEffect(dom, value, vnode, isUncontrolled);
         if (isUncontrolled) {
