@@ -67,7 +67,7 @@
     "rollup-plugin-istanbul": "^1.1.0",
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",
-    "selenium-standalone": "^6.11.0",
+    "selenium-standalone": "^6.12.0",
     "semicolon-less": "^0.7.0",
     "webpack": "^1.14.0"
   },

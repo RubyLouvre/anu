@@ -3,27 +3,26 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">   
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-  
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
 
       </script>
 </head>
+
 <body>
-    
-        <pre>应该等于
+
+    <pre>应该等于
            
           
         </pre>
-        <h1 id='example' class="root">
+    <h1 id='example' class="root">
 
-        </h1>
-        <script type='text/babel'>
+    </h1>
+    <script type='text/babel'>
            var container = document.getElementById("example")
            var div = container
             var PropTypes = React.PropTypes
@@ -38,128 +37,56 @@
                     toEqual(b){
                         console.log(a,"vs", b, a +""=== b+"")
                     },
-                    toThrow(b){
-                        try{
-                            a()
-                        }catch(e){
-                            console.log(e,"vs", b, e.message +""=== b+"")
-                        }
-                    }
                 }
             }  
-            var body = document.body;
+        var body = document.body;
         var container = document.createElement("div");
         body.appendChild(container);
-        var innerWillMount, innerDidMount, innerWillUnmount;
-        class Inner extends React.Component {
-            render() {
-                return <p>inner</p>;
-            }
-            componentWillUnmount() {
-                innerWillUnmount = true;
-            }
-            componentWillMount() {
-                innerWillMount = true;
-            }
-            componentDidMount() {
-                innerDidMount = true;
-            }
-        }
-        var testBubble = 0;
-        class Container extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    show: false,
-                    number: 1
-                };
-            }
-
-            _show() {
-                if (this.state.show) {
-                    return; //防止创建多个弹窗
-                }
-                this.setState({ show: true });
-            }
-
-            _close(e) {
-                this.setState({ show: false });
-            }
-
-            render() {
-                const { show } = this.state;
-
-                return (
-                    <div
-                        className="Container"
-                        onClick={e => {
-                            testBubble = true;
-                            e.preventDefault();
-                        }}
-                    >
-                        <div className="hasClick" style={{ background: "#00bcd4" }} ref="openDialog" onClick={this._show.bind(this)}>
-                            <div>Click me to show the Portal content</div>
-                            <div>State: {(show && "visible") || "hidden"}</div>
-                            <div ref="vdialog" className="vdialog">
-                                {show && (
-                                    <Portal>
-                                        <div style={{ background: "#ffeebb", height: 200 }}>
-                                            <p ref="number">{this.state.number}</p>
-                                            <Inner />
-                                            <button ref="closeDialog" onClick={this._close.bind(this)} type="button">
-                                                &times; close portal
-                                            </button>
-                                        </div>
-                                    </Portal>
-                                )}<span>111</span><span>222</span>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-        }
-
-        class Portal extends React.Component {
-            constructor(props) {
-                super(props);
-                this.node = document.createElement("div");
-                this.node.id = "dynamic";
-                body.appendChild(this.node);
-            }
-            componentWillUnmount() {
-                console.log(this.node)
-                body.removeChild(this.node);
-            }
-            render() {
-                return ReactDOM.createPortal(this.props.children, this.node);
-            }
-        }
-
-        var s = ReactDOM.render(<Container />, container);
-        expect(!!s.refs.openDialog).toBe(true);
-        expect(!!s.refs.closeDialog).toBe(false);
-        s.refs.openDialog.click();
-        expect(!!document.getElementById("dynamic")).toBe(true);
-        expect(!!s.refs.closeDialog).toBe(true);
-        
-        expect(innerWillMount).toBe(true);
-        expect(innerDidMount).toBe(true);
-        console.log("==========")
-        
-        s.setState({ number: 10 });
-        expect(s.refs.number.innerHTML).toBe("10");
-        testBubble = false;
+      
        
-        expect(s.refs.vdialog.innerHTML.toLowerCase()).toBe("<span>111</span><span>222</span>");
-       
-        s.refs.closeDialog.click();
-        expect(innerWillUnmount).toBe(true);
-        console.log(s.refs.closeDialog);
-       expect(!!s.refs.closeDialog).toBe(false);
-        expect(testBubble).toBe(true);
-        
-          </script>
+function initRMQ(array){
+    var dpmin = [], dpmax = [];
+  
+    var n = array.length;
+    //注意， 它是以1为起点，因此我们需要在原数组前补上一个空元素
+    for(let i = 0; i < n; i++) { 
+        if(!dpmin[i]){
+            dpmin[i] = [];
+            dpmin[i][0] = array[i];
+            dpmax[i] = [];
+            dpmax[i][0] = array[i];
+        }
+    } 
+    var m = Math.log(n*1.0)/Math.log(2.0);//用于划分区间
+    for(let j = 1;  j <= m; j++){   
+        for(let i = 0; i+(1<<j)-1< n; i++){  //区间起点  
+            dpmax[i][j] = Math.max(dpmax[i][j-1],dpmax[i+(1<<(j-1))][j-1]);  
+            dpmin[i][j] = Math.min(dpmin[i][j-1],dpmin[i+(1<<(j-1))][j-1]);  
+        }  
+    }  
+    console.log(dpmax)
+    return [dpmin, dpmax];
+}
+
+function getRMQmax(L, R, dpmax){
+    var k = Math.log(R-L) / Math.LN2;
+    k = Math.floor(k)
+    console.log(k)
+    return Math.max(dpmax[L][k],dpmax[R-(1<<k)+1][k]);
+}
+
+function getRMQmin(L, R, dpmin){
+    var k = Math.log(R-L)/Math.LN2; 
+    k = Math.floor(k)
+    return Math.min(dpmin[L][k],dpmin[R-(1<<k)+1][k]);
+}
+var array = [3,2,4,5,6,8,1,2,9,7];
+var [dpmin, dpmax] = initRMQ(array);
+console.log(getRMQmax(0 ,8, dpmax)); // getMax(array.slice(0, 8))  8
+console.log(getRMQmax(0 ,5, dpmax)); // getMax(array.slice(0,5)) 6
+
+</script>
 
 </body>
-    
- </html>
+
+</html>

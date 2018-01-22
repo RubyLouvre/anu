@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-01-12
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-01-22
  */
 
 (function (global, factory) {
@@ -1225,12 +1225,17 @@ function createHandle(name, fn) {
 
 var changeHandle = createHandle("change");
 var doubleClickHandle = createHandle("doubleclick");
+var scrollHandle = createHandle("scroll");
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password/.test(dom.type)) {
         addEvent(document, "input", changeHandle);
     }
+};
+
+eventHooks.scrollcapture = eventHooks.scroll = function (dom) {
+    addEvent(dom, "scroll", scrollHandle);
 };
 
 eventHooks.doubleclick = eventHooks.doubleclickcapture = function () {

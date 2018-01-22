@@ -5,12 +5,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
 
-   <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./lib/devtools.js"></script>
-
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script type='text/javascript' src="./lib/devtools.js"></script>-->
+  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
  <!-- <script type='text/javascript' src="./react.js"></script>
    <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
+    <style>
+        .wrapper{
+            height:200px;
+            width:200px;
+            overflow: scroll;
+        }
+        .inner{
+            height:500px;
+            width:200px;
+            background: magenta;
+        }
+    </style>
 </head>
 
 <body>
@@ -28,111 +41,30 @@
        window.ReactDOM = window.React;
    }
 
-   var expect = function(a) {
-        return {
-            toBe: function(b) {
-                console.log(a,"vs", b, a === b)
-            },
-            toEqual(b){
-                console.log(a,"vs", b, a +""=== b+"")
-            },
-            toThrow(b){
-                try{
-                    a()
-                }catch(e){
-                    console.log(e,"vs", b, e.message +""=== b+"")
-                }
+ 
+        class App extends React.PureComponent {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    time: 555
+                };
+            }
+
+            onscroll(e) {
+                this.setState({
+                    time: e.timeStamp
+                })
+            }
+            render() {
+                return <div><div className="wrapper" onScroll={this.onscroll.bind(this)}>
+                    <div className="inner">{this.state.time}</div>
+                    </div>{this.state.time}</div>
             }
         }
-    }
-    var innerWillMount, innerDidMount, innerWillUnmount;
-    class Inner extends React.Component {
-        render() {
-            return <p>inner</p>;
-        }
-        componentWillUnmount() {
-            innerWillUnmount = true;
-        }
-        componentWillMount() {
-            innerWillMount = true;
-        }
-        componentDidMount() {
-            innerDidMount = true;
-        }
-    }
-    var testBubble = 0;
-    class Container extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = {
-                show: false,
-                number: 1
-            };
-        }
 
-        _show() {
-            if (this.state.show) {
-                return; //防止创建多个弹窗
-            }
-            this.setState({ show: true });
-        }
+        var vnode = <App />;
+        ReactDOM.render(vnode, div);
 
-        _close(e) {
-            this.setState({ show: false });
-        }
-
-        render() {
-            const { show } = this.state;
-
-            return (
-                <div
-                    className="Container"
-                    onClick={e => {
-                        testBubble = true;
-                        e.preventDefault();
-                    }}
-                >
-                    <div className="hasClick" style={{ background: "#00bcd4" }} ref="openDialog" onClick={this._show.bind(this)}>
-                        <div>Click me to show the Portal content</div>
-                        <div>State: {(show && "visible") || "hidden"}</div>
-                        <div ref="vdialog" className="vdialog">
-                            {show && (
-                                <Portal>
-                                    <div style={{ background: "#ffeebb", height: 200 }}>
-                                        <p ref="number">{this.state.number}</p>
-                                        <Inner />
-                                        <button ref="closeDialog" onClick={this._close.bind(this)} type="button">
-                                            &times; close portal
-                                        </button>
-                                    </div>
-                                </Portal>
-                            )}<span>111</span><span>222</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-    }
-
-    class Portal extends React.Component {
-        constructor(props) {
-            super(props);
-            this.node = document.createElement("div");
-            this.node.id = "dynamic";
-            body.appendChild(this.node);
-        }
-        componentWillUnmount() {
-            console.log(this.node)
-            body.removeChild(this.node);
-        }
-        render() {
-            return ReactDOM.createPortal(this.props.children, this.node);
-        }
-    }
-
-    var s = ReactDOM.render(<Container />, container);
-    expect(!!s.refs.openDialog).toBe(true);
-    expect(!!s.refs.closeDialog).toBe(false);
 </script>
 
 </body>
