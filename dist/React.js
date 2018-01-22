@@ -1613,11 +1613,7 @@ function inputControll(vnode, dom, props) {
         var keys = data[1];
         var converter = data[2];
         var sideEffect = data[3];
-        if (duplexType === 2) {
-            if (!("checked" in props)) {
-                return;
-            }
-        }
+
         var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
         sideEffect(dom, value, vnode, isUncontrolled);
         if (isUncontrolled) {
