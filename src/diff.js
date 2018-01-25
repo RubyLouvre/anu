@@ -21,7 +21,8 @@ export function render(vnode, container, callback) {
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 export function unstable_renderSubtreeIntoContainer(lastVnode, nextVnode, container, callback) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
-    var parentContext = (lastVnode && lastVnode.context) || {};
+    var updater = lastVnode && lastVnode.updater;
+    var parentContext = updater ? updater.parentContext : {};
     return renderByAnu(nextVnode, container, callback, parentContext);
 }
 //[Top API] ReactDOM.unmountComponentAtNode

@@ -266,7 +266,7 @@ function operateChildren(children, prefix, callback, parent) {
             return;
         }
     }
-    if (Object(children) === children && !children.type) {
+    if (Object(children) === children && !children.call && !children.type) {
         throw "children中存在非法的对象";
     }
     callback(children, prefix || ".", parent);

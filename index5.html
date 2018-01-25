@@ -9,8 +9,8 @@
   <!-- <script type='text/javascript' src="./lib/devtools.js"></script>-->
   <!-- <script type='text/javascript' src="./test/react.development.js"></script>
   <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
- <!-- <script type='text/javascript' src="./react.js"></script>
-   <script type='text/javascript' src="./react-dom.js"></script>-->
+  <!--<script src="./react.js"></script>
+  <script src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <style>
         .wrapper{
@@ -36,11 +36,15 @@
    
    var container = document.getElementById("example");
    var div = container;
-   var PropTypes = React.PropTypes 
+ //  var PropTypes = React.PropTypes 
    if (!window.ReactDOM) {
        window.ReactDOM = window.React;
    }
 
+
+       function C(){
+           return <p>xxx</p>
+       }
  
         class App extends React.PureComponent {
             constructor(props) {
@@ -56,14 +60,12 @@
                 })
             }
             render() {
-                return <div><div className="wrapper" onScroll={this.onscroll.bind(this)}>
-                    <div className="inner">{this.state.time}</div>
-                    </div>{this.state.time}</div>
+                return <div className="app">{ (props) =>  <p>这是函数</p> }</div>
             }
         }
 
-        var vnode = <App />;
-        ReactDOM.render(vnode, div);
+
+        ReactDOM.render(<App/>, container);
 
 </script>
 

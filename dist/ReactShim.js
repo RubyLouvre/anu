@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-01-22
+ * QQ 370262116 by 司徒正美 Copyright 2018-01-25
  */
 
 (function (global, factory) {
@@ -451,7 +451,7 @@ function operateChildren(children, prefix, callback, parent) {
             return;
         }
     }
-    if (Object(children) === children && !children.type) {
+    if (Object(children) === children && !children.call && !children.type) {
         throw "children中存在非法的对象";
     }
     callback(children, prefix || ".", parent);
