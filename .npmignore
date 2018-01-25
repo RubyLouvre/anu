@@ -11,3 +11,5 @@ version.md
 karma.conf.js
 chromedriver
 selenium-server-*
+/.vscode/*
+/.history/*
