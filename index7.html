@@ -43,50 +43,110 @@
         var container = document.createElement("div");
         body.appendChild(container);
       
-       
-function initRMQ(array){
-    var dpmin = [], dpmax = [];
-  
-    var n = array.length;
-    //注意， 它是以1为起点，因此我们需要在原数组前补上一个空元素
-    for(let i = 0; i < n; i++) { 
-        if(!dpmin[i]){
-            dpmin[i] = [];
-            dpmin[i][0] = array[i];
-            dpmax[i] = [];
-            dpmax[i][0] = array[i];
+        
+        function getSuffix(str) {
+            var len = str.length, 
+                max = str.charCodeAt(0), 
+                min = max,
+                xbuckets = [],
+                sa = [],
+                rank = [];
+            // 字符串转charCode
+            for (let i = 0; i < len; i++) {
+                let c = str.charCodeAt(i);
+                rank[i] = c;
+                max = Math.max(max, c);
+                min = Math.min(min, c);
+            }
+            //压缩charCode值
+            rank.forEach(function(el, i){
+                rank[i] = {x: el - min + 1 };
+            });
+            var hasDuplicate = true, k = 0;
+            while(hasDuplicate){
+                //重置数据
+                hasDuplicate = false;
+                xbuckets.length = 0;
+                //倍增，目的是求关键字y
+                var d = 1 << k; k ++;
+        
+                rank.forEach(function(el, i){
+                    //根据关键字x，进行基数排序，并同时计算关键字y
+                    el.y = rank[i+ d] ? rank[i+ d].x: 0;
+                   
+                    var index = el.x;
+                    if(!xbuckets[index]){
+                        xbuckets[index] = [el];
+                    }else{
+                        xbuckets[index].push(el);
+                    }
+                });
+        
+                var newIndex = 1, last = {};
+                xbuckets.forEach(function(bucket){
+                    if(bucket){
+                        //使用计数排序对每个桶再进行排序
+                        var cache = {};
+                        var yxbuckets = [];
+                        bucket.forEach(function(el){
+                            var index = el.y;
+                            if(!yxbuckets[index]){
+                                yxbuckets[index] = [el];
+                            }else{
+                                yxbuckets[index].push(el);
+                            }
+                        });
+                        var j = 0;
+                        yxbuckets.forEach(function(ybucket){
+                            if(ybucket){
+                                ybucket.forEach(function(el){
+                                    if(el.y !== last.y){
+                                        el.x = newIndex++;
+                                        cache[el.y] = el.x;
+                                    }else{
+                                        hasDuplicate = true;
+                                        el.x = cache[el.y];
+                                    }
+                                    bucket[j++] = el; //这里可以不要
+                                    last = el;
+                                });
+                            }
+                        });
+                    }
+                });
+             
+            }
+            //rank是从1开始的，因此这里面要减1
+            rank = rank.map(function(el, i ){
+                sa[el.x - 1] = i;
+                return el.x;
+            });
+            console.log("rank数组", rank);
+            console.log("后缀数组", sa);
+            return sa;
         }
-    } 
-    var m = Math.log(n*1.0)/Math.log(2.0);//用于划分区间
-    for(let j = 1;  j <= m; j++){   
-        for(let i = 0; i+(1<<j)-1< n; i++){  //区间起点  
-            dpmax[i][j] = Math.max(dpmax[i][j-1],dpmax[i+(1<<(j-1))][j-1]);  
-            dpmin[i][j] = Math.min(dpmin[i][j-1],dpmin[i+(1<<(j-1))][j-1]);  
-        }  
-    }  
-    console.log(dpmax)
-    return [dpmin, dpmax];
+        
+
+var a = getSuffix("aabaaaab"); 
+function getHeight(str, sa){
+    var n = str.length, k = 0, rank = [], height = []
+    for(var i = 1;i<=n;i++) {
+        rank[sa[i]]=i;
+    }
+    for(var i=0;i<n;i++){
+         if(k) k--;
+         var j=sa[rank[i]-1];
+         while(i+k < n && j+k<n &&r[i+k]==r[j+k]) {
+            k++;
+         }
+         height[rank[i]]=k;
+    }
+    return height
 }
 
-function getRMQmax(L, R, dpmax){
-    var k = Math.log(R-L) / Math.LN2;
-    k = Math.floor(k)
-    console.log(k)
-    return Math.max(dpmax[L][k],dpmax[R-(1<<k)+1][k]);
-}
-
-function getRMQmin(L, R, dpmin){
-    var k = Math.log(R-L)/Math.LN2; 
-    k = Math.floor(k)
-    return Math.min(dpmin[L][k],dpmin[R-(1<<k)+1][k]);
-}
-var array = [3,2,4,5,6,8,1,2,9,7];
-var [dpmin, dpmax] = initRMQ(array);
-console.log(getRMQmax(0 ,8, dpmax)); // getMax(array.slice(0, 8))  8
-console.log(getRMQmax(0 ,5, dpmax)); // getMax(array.slice(0,5)) 6
 
 </script>
-
+3, 4, 5, 0, 6, 1, 7, 2 
 </body>
 
 </html>

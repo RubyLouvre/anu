@@ -9,3 +9,5 @@ node_modules/
 index*.html
 version.md
 karma.conf.js
+chromedriver
+selenium-server-*
