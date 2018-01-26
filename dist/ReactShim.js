@@ -2918,7 +2918,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.2.5",
+        version: "1.2.6",
         render: render,
         hydrate: render,
         Fragment: REACT_FRAGMENT_TYPE,
