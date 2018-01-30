@@ -49,7 +49,10 @@ describe("只测试节点的增删移动不测生命周期钩子", function() {
         );
         expect(div.textContent).toBe("111222bbbccc");
     });
+    it("children为函数", () => {
 
+
+    });
     it("存在返回数组的组件", () => {
         class App extends React.Component {
             constructor(props) {

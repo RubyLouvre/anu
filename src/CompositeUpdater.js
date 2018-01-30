@@ -338,11 +338,12 @@ CompositeUpdater.prototype = {
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
+       
         Refs.fireRef(vnode, null);
         captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
-        this._disposed = true;
+        vnode._disposed = this._disposed = true;
     }
 };
 function transfer(queue){

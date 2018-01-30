@@ -14,7 +14,7 @@ export function disposeVnode(vnode, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
-        vnode._disposed = true;
+      
         if(vnode.superReturn){
             var dom = vnode.superReturn.stateNode;
             delete dom.__events;
@@ -34,6 +34,7 @@ export function disposeVnode(vnode, updateQueue, silent) {
     }
 }
 function remove(){
+    this.vnode._disposed = true;
     delete this.vnode.stateNode;
     removeElement(this.node);
 }

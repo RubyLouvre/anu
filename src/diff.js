@@ -242,7 +242,9 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     if (!updater._dirty) {
         updater._receiving = true;
         updater.updateQueue = updateQueue;
-        captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        if(willReceive){
+            captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        }
         if (updater._hasError) {
             return;
         }

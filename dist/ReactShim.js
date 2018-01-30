@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-01-26
+ * QQ 370262116 by 司徒正美 Copyright 2018-01-30
  */
 
 (function (global, factory) {
@@ -1132,7 +1132,7 @@ function disposeVnode(vnode, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
-        vnode._disposed = true;
+
         if (vnode.superReturn) {
             var dom = vnode.superReturn.stateNode;
             delete dom.__events;
@@ -1152,6 +1152,7 @@ function disposeVnode(vnode, updateQueue, silent) {
     }
 }
 function remove() {
+    this.vnode._disposed = true;
     delete this.vnode.stateNode;
     removeElement(this.node);
 }
@@ -2513,11 +2514,12 @@ CompositeUpdater.prototype = {
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
         var vnode = this.vnode;
+
         Refs.fireRef(vnode, null);
         captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
-        this._disposed = true;
+        vnode._disposed = this._disposed = true;
     }
 };
 function transfer(queue) {
@@ -2811,7 +2813,9 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     if (!updater._dirty) {
         updater._receiving = true;
         updater.updateQueue = updateQueue;
-        captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        if (willReceive) {
+            captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+        }
         if (updater._hasError) {
             return;
         }
