@@ -30,7 +30,8 @@ describe("ReactComponentLifeCycle-test", function() {
 
         var element = <StatefulComponent />;
         var firstInstance = ReactDOM.render(element, container);
-        ReactDOM.unmountComponentAtNode(container);
+        var bool = ReactDOM.unmountComponentAtNode(container);
+        expect(bool).toBe(true)
         var secondInstance = ReactDOM.render(element, container);
         expect(firstInstance).not.toBe(secondInstance);
     });

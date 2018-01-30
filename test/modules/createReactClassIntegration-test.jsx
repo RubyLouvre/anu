@@ -371,7 +371,8 @@ it('should warn when using deprecated non-static spec keys', () => {
     var container = document.createElement('div');
     ReactDOM.render(<Component />, container);
     ReactDOM.render(<Component />, container);
-    ReactDOM.unmountComponentAtNode(container);
+    var a = ReactDOM.unmountComponentAtNode(container);
+    expect(a).toEqual(true)
     instance.log('after unmount');
     expect(ops).toEqual([
       'getInitialState: false',

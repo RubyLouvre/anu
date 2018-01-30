@@ -40,32 +40,56 @@
    if (!window.ReactDOM) {
        window.ReactDOM = window.React;
    }
-
-
-       function C(){
-           return <p>xxx</p>
-       }
- 
-        class App extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    time: 555
-                };
+       
+class SuffixNode {
+    constructor() {
+        this.children = [];
+    }
+}
+class SuffixTree {
+    constructor() {
+        this.root = new SuffixNode();
+    }
+    isValid(str) {
+        return /^[a-z1-9]+$/i.test(str);
+    }
+    insert(word) {
+        // addWord
+        if (this.isValid(word)) {
+          console.log("word", word)
+            var cur = this.root,
+                children = cur.children, remain = 1
+            for (var i = 0; i < word.length; i++) {
+                var c = word.charAt(i);
+                var addNode = true;
+                for (var j = 0; j < i; j++) {
+                    var node = children[j];
+                    if(!node){
+                       remain++
+                       addNode = false;
+                       console.log("进入这里")
+                    }else{
+                      if ( node.edge.indexOf(c) === 0) {
+                         addNode = false;
+                      }
+                      node.edge += c; //修改原有的边
+                    }
+                    
+                }
+                if (addNode) {
+                  node = new SuffixNode();
+                  node.edge = c;
+                  children.push(node);
+                }
             }
-
-            onscroll(e) {
-                this.setState({
-                    time: e.timeStamp
-                })
-            }
-            render() {
-                return <div className="app">{ (props) =>  <p>这是函数</p> }</div>
-            }
+           
         }
+    }
+}
+var tree = new SuffixTree();
+tree.insert("abcab");
+console.log(tree);
 
-
-        ReactDOM.render(<App/>, container);
 
 </script>
 

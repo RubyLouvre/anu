@@ -2762,7 +2762,9 @@ function unmountComponentAtNode(container) {
         drainQueue(queue);
         emptyElement(container);
         container.__component = null;
+        return true;
     }
+    return false;
 }
 //[Top API] ReactDOM.findDOMNode
 function findDOMNode(componentOrElement) {
