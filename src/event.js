@@ -134,7 +134,6 @@ export function getBrowserName(onStr) {
 }
 
 
-
 /**
  * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
@@ -151,18 +150,18 @@ function getRelatedTarget(e) {
 }
 
 
-String("mouseenter,mouseleave").replace(/\w+/g, function(type) {
-    eventHooks[type] = function(dom, name) {
-        var mark = "__" + name;
+String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
+    eventHooks[name] = function(dom, type) {
+        var mark = "__" + type;
         if (!dom[mark]) {
             dom[mark] = true;
-            var mask = name === "mouseenter" ? "mouseover" : "mouseout";
+            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
             addEvent(dom, mask, function(e) {
                 let t = getRelatedTarget(e);
                 if (!t || (t !== dom && !contains(dom, t))) {
                     var common = getLowestCommonAncestor(dom, t);
                     //由于不冒泡，因此paths长度为1
-                    dispatchEvent(e, name, common);
+                    dispatchEvent(e, type, common);
                 }
             });
         }
@@ -264,12 +263,14 @@ export var focusMap = {
 };
 function blurFocus(e){
     var dom = e.target || e.srcElement;
-    if(dom.__inner__){
+    var type = focusMap[e.type];
+    var isFocus = type === "focus";
+    if(isFocus && dom.__inner__){
         dom.__inner__ = false;
         return;
     }
-    var type = focusMap[e.type];
-    if(type === "blur" && Refs.focusNode === dom){
+   
+    if(!isFocus && Refs.focusNode === dom){
         Refs.focusNode = null;
     }
     do{
@@ -285,12 +286,11 @@ function blurFocus(e){
 }
 
 "blur,focus".replace(/\w+/g, function (type) {
-    if(document["__"+type]){
-        return;
+    var mark = "__" + type;
+    if(!document[mark]){ 
+        globalEvents[type] = document[mark] = true;
+        addEvent(document, focusMap[type], blurFocus,true);
     }
-    document["__"+ type] = true;
-    globalEvents[type] = true;
-    addEvent(document, focusMap[type], blurFocus,true);
 });
 
 eventHooks.scroll = function(dom, name) {
