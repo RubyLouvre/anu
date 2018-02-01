@@ -3168,12 +3168,11 @@ if (msie < 9) {
     };
     if (msie < 8) {
         inputMonitor.observe = noop;
-        focusMap.focus = "focusin";
-        focusMap.blur = "focusout";
-        focusMap.focusin = "focus";
-        focusMap.focusout = "blur";
     }
-
+    focusMap.focus = "focusin";
+    focusMap.blur = "focusout";
+    focusMap.focusin = "focus";
+    focusMap.focusout = "blur";
     Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
         if (!("pageX" in event)) {
             var doc = event.target.ownerDocument || document;
