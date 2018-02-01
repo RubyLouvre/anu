@@ -1,5 +1,5 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, insertElement } from "./browser";
+import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
@@ -115,7 +115,6 @@ function renderByAnu(vnode, container, callback, context = {}) {
             ".0": nextWrapper
         };
         nextWrapper.child = vnode;
-
         genVnodes(nextWrapper, context, updateQueue, insertCarrier); // 这里会从下到上添加updater
     }
     top.updater.init(updateQueue); // 添加最顶层的updater
@@ -187,8 +186,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
     var dom = (nextVnode.stateNode = lastVnode.stateNode);
     options.beforeUpdate(nextVnode);
     if (lastVnode.vtype < 2) {
-        var insertPoint = insertCarrier.dom;
-        insertElement(nextVnode, insertPoint);
+        insertElement(nextVnode, insertCarrier.dom);
         insertCarrier.dom = dom;
         if (lastVnode.vtype === 0) {
             if (nextVnode.text !== lastVnode.text) {

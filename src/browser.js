@@ -80,6 +80,9 @@ export function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
         emptyElement(child);
+        if(child === Refs.focusNode){
+            Refs.focusNode = false;
+        }
         node.removeChild(child);
     }
 }
@@ -91,7 +94,6 @@ export function removeElement(node) {
     if (!node) {
         return;
     }
-    Refs.nodeOperate = true;
     if (node.nodeType === 1) {
         if (isStandard) {
             node.textContent = "";
@@ -105,9 +107,11 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
+    if(node === Refs.focusNode){
+        Refs.focusNode = false;
+    }
     fragment.appendChild(node);
     fragment.removeChild(node);
-    Refs.nodeOperate = false;
 }
 
 var versions = {
@@ -173,7 +177,16 @@ export function createElement(vnode, p) {
     } catch (e) {}
     return document.createElement(type);
 }
-
+export function contains(a, b) {
+    if (b) {
+        while ((b = b.parentNode)) {
+            if (b === a) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 export function insertElement(vnode, insertPoint) {
     if (vnode._disposed) {
         return;
@@ -195,9 +208,22 @@ export function insertElement(vnode, insertPoint) {
     if (after === dom) {
         return;
     }
-    Refs.nodeOperate = true;
+    if(after === null && dom === parentNode.lastChild){
+        return;
+    }
+    var isElement = vnode.vtype;
+
+    var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
-    Refs.nodeOperate = false;
+    if(isElement &&  prevFocus !== document.activeElement && contains(document.body, prevFocus)){
+        try{
+            Refs.focusNode = prevFocus;
+            prevFocus.__inner__ = true;
+            prevFocus.focus();
+        }catch(e){
+            prevFocus.__inner__ = false;
+        }
+    }
 }
 
 export function getComponentNodes(children, resolve, debug) {

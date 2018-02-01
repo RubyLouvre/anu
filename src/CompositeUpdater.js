@@ -202,7 +202,7 @@ CompositeUpdater.prototype = {
             var nodes = collectComponentNodes(this.children);
             var queue = this.insertCarrier;
             nodes.forEach(function(el) {
-                insertElement(el, queue);
+                insertElement(el, queue.dom);
                 queue.dom = el.stateNode;
                 // queue.unshift(el.stateNode);
             });
@@ -283,16 +283,6 @@ CompositeUpdater.prototype = {
         let hasMounted = this.isMounted();
         if (!hasMounted) {
             this.isMounted = returnTrue;
-        }
-        var node = Refs.focusNode;
-        if(node){
-            try{
-                node.focus();
-                node.__inner__ = true;
-            }catch(e){
-                //hack
-            }
-            delete Refs.focusNode;
         }
         if (this._hydrating) {
             let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount"  ;

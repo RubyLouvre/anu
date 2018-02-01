@@ -1,4 +1,4 @@
-import { document } from "./browser";
+import { document, modern, contains } from "./browser";
 import { isFn, noop } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
@@ -34,16 +34,14 @@ export function dispatchEvent(e, type, end) {
     }
     var bubble = e.type;
     var dom = e.target;
-    if (bubble === "blur") {
-        if (Refs.nodeOperate) {
-            Refs.focusNode = dom;
-            Refs.type = bubble;
-        }
-    } else if (bubble === "focus") {
+    if((type === "focus" || type === "blur") && e.currentTarget !== dom){
+        return;
+    }
+    if (bubble === "focus") {
         if (dom.__inner__) {
             dom.__inner__ = false;
             return;
-        }
+        } 
     }
 
     var hook = eventPropHooks[bubble];
@@ -145,10 +143,6 @@ export function getBrowserName(onStr) {
     return lower;
 }
 
-eventPropHooks.click = function(e) {
-    return !e.target.disabled;
-};
-
 /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
             firefox DOMMouseScroll detail 下3 上-3
             firefox wheel detlaY 下3 上-3
@@ -169,13 +163,6 @@ eventHooks.wheel = function(dom) {
     });
 };
 
-"blur,focus".replace(/\w+/g, function(type) {
-    if (!document["__" + type]) {
-        document["__" + type] = true;
-        addGlobalEvent(type, true);
-    }
-});
-
 /**
  * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
@@ -191,16 +178,6 @@ function getRelatedTarget(e) {
     return e.relatedTarget;
 }
 
-function contains(a, b) {
-    if (b) {
-        while ((b = b.parentNode)) {
-            if (b === a) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 
 String("mouseenter,mouseleave").replace(/\w+/g, function(type) {
     eventHooks[type] = function(dom, name) {
@@ -254,14 +231,9 @@ function getLowestCommonAncestor(instA, instB) {
     return null;
 }
 
-if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = function(dom){
-        dom.onclick= dom.onclick || noop;
-    };
-}
-
+var specialHandles = {};
 export function createHandle(name, fn) {
-    return function(e) {
+    specialHandles[name] = function(e) {
         if (fn && fn(e) === false) {
             return;
         }
@@ -269,23 +241,46 @@ export function createHandle(name, fn) {
     };
 }
 
-var changeHandle = createHandle("change");
-var doubleClickHandle = createHandle("doubleclick");
-var scrollHandle = createHandle("scroll");
+createHandle("change");
+createHandle("doubleclick");
+createHandle("scroll");
+
+if (isTouch) {
+    eventHooks.click = eventHooks.clickcapture = function(dom) {
+        dom.onclick = dom.onclick || noop;
+    };
+}
+
+eventPropHooks.click = function(e) {
+    return !e.target.disabled;
+};
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function(dom) {
     if (/text|password/.test(dom.type)) {
-        addEvent(document, "input", changeHandle);
+        addEvent(document, "input", specialHandles.change);
     }
 };
 
-eventHooks.scrollcapture = eventHooks.scroll = function(dom) {  
-    addEvent(dom, "scroll", scrollHandle);
+//这两个事件不进行全局监听
+"blur,focus".replace(/\w+/g, function(type) {
+    globalEvents[type] = true;
+    createHandle(type);
+    eventHooks[type] = function(dom, name) {
+        if (modern) {
+            addEvent(dom, name, specialHandles[name], true);
+        } else {
+            addEvent(dom, name === "focus" ? "focusin" : "focusout", specialHandles[name]);
+        }
+    };
+});
+
+eventHooks.scroll = function(dom, name) {
+    addEvent(dom, name, specialHandles[name]);
 };
 
-eventHooks.doubleclick = eventHooks.doubleclickcapture = function() {
-    addEvent(document, "dblclick", doubleClickHandle);
+eventHooks.doubleclick = function(dom, name) {
+    addEvent(document, "dblclick", specialHandles[name]);
 };
 
 export function SyntheticEvent(event) {

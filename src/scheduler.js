@@ -31,13 +31,11 @@ var placehoder = {
 export function drainQueue(queue) {
     options.beforePatch();
     let updater;
-
     while ((updater = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
         if (updater._disposed) {
             continue;
         }
-       
         var hook = Refs.errorHook;
         if (hook) {
             //如果存在医生节点

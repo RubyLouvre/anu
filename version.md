@@ -1,3 +1,19 @@
+## 1.2.7
+
+1. 修正componentWillReceiveProps 的执行条件，修改_disposed开关的位置
+2. 支持children为函数
+3. 修改_disposed开关的位置
+4. 修正焦点系统，它只会在browser的insertElement, removeElement中执行
+5. 修正focus/blur事件的绑定方式，捕获时需要屏蔽内部的事件
+6. 修正insertElement中多执行一次无效的DOM插入操作及CompositeUpdatet.hydrate的insertElement传参错误
+
+## 1.2.6(2018.01.26)
+修正 unstable_renderSubtreeIntoContainer 中context对象的错误指向
+
+## 1.2.5(2018.01.23)
+
+1. 修正受控组件 radio的BUG，它导致无法修改value
+
 ## 1.2.4（2018.01.22）
 
 1. 解决移动端scroll事件

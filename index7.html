@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
 
@@ -44,106 +45,65 @@
         body.appendChild(container);
       
         
-        function getSuffix(str) {
-            var len = str.length, 
-                max = str.charCodeAt(0), 
-                min = max,
-                xbuckets = [],
-                sa = [],
-                rank = [];
-            // 字符串转charCode
-            for (let i = 0; i < len; i++) {
-                let c = str.charCodeAt(i);
-                rank[i] = c;
-                max = Math.max(max, c);
-                min = Math.min(min, c);
+        let input;
+        let input2;
+        class A extends React.Component {
+            render() {
+                return (
+                    <div class="A">
+                        <input onFocus={(e)=>{e}} id="one" ref={r => (input = input || r)} />
+                        {this.props.showTwo && <input id="two" ref={r => (input2 = input2 || r)} />}
+                    </div>
+                );
             }
-            //压缩charCode值
-            rank.forEach(function(el, i){
-                rank[i] = {x: el - min + 1 };
-            });
-            var hasDuplicate = true, k = 0;
-            while(hasDuplicate){
-                //重置数据
-                hasDuplicate = false;
-                xbuckets.length = 0;
-                //倍增，目的是求关键字y
-                var d = 1 << k; k ++;
-        
-                rank.forEach(function(el, i){
-                    //根据关键字x，进行基数排序，并同时计算关键字y
-                    el.y = rank[i+ d] ? rank[i+ d].x: 0;
-                   
-                    var index = el.x;
-                    if(!xbuckets[index]){
-                        xbuckets[index] = [el];
-                    }else{
-                        xbuckets[index].push(el);
-                    }
-                });
-        
-                var newIndex = 1, last = {};
-                xbuckets.forEach(function(bucket){
-                    if(bucket){
-                        //使用计数排序对每个桶再进行排序
-                        var cache = {};
-                        var yxbuckets = [];
-                        bucket.forEach(function(el){
-                            var index = el.y;
-                            if(!yxbuckets[index]){
-                                yxbuckets[index] = [el];
-                            }else{
-                                yxbuckets[index].push(el);
-                            }
-                        });
-                        var j = 0;
-                        yxbuckets.forEach(function(ybucket){
-                            if(ybucket){
-                                ybucket.forEach(function(el){
-                                    if(el.y !== last.y){
-                                        el.x = newIndex++;
-                                        cache[el.y] = el.x;
-                                    }else{
-                                        hasDuplicate = true;
-                                        el.x = cache[el.y];
-                                    }
-                                    bucket[j++] = el; //这里可以不要
-                                    last = el;
-                                });
-                            }
-                        });
-                    }
-                });
-             
+
+            componentDidUpdate() {
+                // Focus should have been restored to the original input
+                expect(document.activeElement.id+"3").toBe("one3");
+                input2.focus();
+                expect(document.activeElement.id+"4").toBe("two4");
+                log.push("input2 focused");
             }
-            //rank是从1开始的，因此这里面要减1
-            rank = rank.map(function(el, i ){
-                sa[el.x - 1] = i;
-                return el.x;
-            });
-            console.log("rank数组", rank);
-            console.log("后缀数组", sa);
-            return sa;
         }
-        
 
-var a = getSuffix("aabaaaab"); 
-function getHeight(str, sa){
-    var n = str.length, k = 0, rank = [], height = []
-    for(var i = 1;i<=n;i++) {
-        rank[sa[i]]=i;
-    }
-    for(var i=0;i<n;i++){
-         if(k) k--;
-         var j=sa[rank[i]-1];
-         while(i+k < n && j+k<n &&r[i+k]==r[j+k]) {
-            k++;
-         }
-         height[rank[i]]=k;
-    }
-    return height
-}
+        var log = [];
+        var container = document.createElement("div");
+        document.body.appendChild(container);
+        ReactDOM.render(<A showTwo={false} />, container);
+       
+        input.focus();
+        var ii = container.getElementsByTagName("input")[0]
+        ii.className = "firstInput"
+        console.log(document.activeElement,"activeElement")
+        // When the second input is added, let's simulate losing focus, which is
+        // something that could happen when manipulating DOM nodes (but is hard to
+        // deterministically force without relying intensely on React DOM
+        // implementation details)
+        var div = container.firstChild;
+       
+        ["appendChild", "insertBefore"].forEach(name => {
+            const mutator = div[name];
+            div[name] = function() {
+                if (input) {
+                    console.log(input, "要失去焦点",name)
+                    input.blur();
+                    expect(document.activeElement.tagName).toBe("BODY");
+                    log.push("input2 inserted");
+                }
+                return mutator.apply(this, arguments);
+            };
+        });
 
+
+        expect(document.activeElement.id+"1").toBe("one1");
+        console.log('===========')
+        ReactDOM.render(<A showTwo={true}  />, container);
+        // input2 gets added, which causes input to get blurred. Then
+        // componentDidUpdate focuses input2 and that should make it down to here,
+        // not get overwritten by focus restoration.
+        expect(document.activeElement.id+'2').toBe("two2");
+        expect(log).toEqual(["input2 inserted", "input2 focused"]);
+        document.body.removeChild(container);
 
 </script>
 3, 4, 5, 0, 6, 1, 7, 2 
