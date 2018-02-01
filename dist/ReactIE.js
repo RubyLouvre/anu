@@ -1012,17 +1012,7 @@ function dispatchEvent(e, type, end) {
         e.type = type;
     }
     var bubble = e.type;
-    var dom = e.target;
-    if ((type === "focus" || type === "blur") && e.currentTarget !== dom) {
-        return;
-    }
-    if (bubble === "focus") {
-        if (dom.__inner__) {
-            dom.__inner__ = false;
-            return;
-        }
-    }
-
+    //var dom = e.target;
     var hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
@@ -1122,26 +1112,6 @@ function getBrowserName(onStr) {
     return lower;
 }
 
-/* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
-            firefox DOMMouseScroll detail 下3 上-3
-            firefox wheel detlaY 下3 上-3
-            IE9-11 wheel deltaY 下40 上-40
-            chrome wheel deltaY 下100 上-100 */
-/* istanbul ignore next  */
-var fixWheelType = "onmousewheel" in document ? "mousewheel" : document.onwheel !== void 666 ? "wheel" : "DOMMouseScroll";
-var fixWheelDelta = fixWheelType === "mousewheel" ? "wheelDetla" : fixWheelType === "wheel" ? "deltaY" : "detail";
-eventHooks.wheel = function (dom) {
-    addEvent(dom, fixWheelType, function (e) {
-        var delta = e[fixWheelDelta] > 0 ? -120 : 120;
-        var deltaY = ~~dom.__wheel + delta;
-        dom.__wheel = deltaY;
-        e = new SyntheticEvent(e);
-        e.type = "wheel";
-        e.deltaY = deltaY;
-        dispatchEvent(e);
-    });
-};
-
 /**
  * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
@@ -1211,7 +1181,7 @@ function getLowestCommonAncestor(instA, instB) {
 
 var specialHandles = {};
 function createHandle(name, fn) {
-    specialHandles[name] = function (e) {
+    return specialHandles[name] = function (e) {
         if (fn && fn(e) === false) {
             return;
         }
@@ -1222,6 +1192,7 @@ function createHandle(name, fn) {
 createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
+createHandle("wheel");
 
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function (dom) {
@@ -1233,6 +1204,20 @@ eventPropHooks.click = function (e) {
     return !e.target.disabled;
 };
 
+var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
+globalEvents.wheel = true;
+eventHooks.wheel = function (dom) {
+    addEvent(dom, fixWheelType, specialHandles.wheel);
+};
+
+eventPropHooks.wheel = function (event) {
+    event.deltaX = "deltaX" in event ? event.deltaX : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
+    "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
+    event.deltaY = "deltaY" in event ? event.deltaY : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
+    "wheelDeltaY" in event ? -event.wheelDeltaY : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
+    "wheelDelta" in event ? -event.wheelDelta : 0;
+};
+
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password/.test(dom.type)) {
@@ -1240,23 +1225,47 @@ eventHooks.changecapture = eventHooks.change = function (dom) {
     }
 };
 
-//这两个事件不进行全局监听
-"blur,focus".replace(/\w+/g, function (type) {
-    globalEvents[type] = true;
-    createHandle(type);
-    eventHooks[type] = function (dom, name) {
-        if (modern) {
-            addEvent(dom, name, specialHandles[name], true);
+function blurFocus(e) {
+    var dom = e.target;
+    if (dom.__inner__) {
+        dom.__inner__ = false;
+        return;
+    }
+    var type = e.type;
+    type = type === "focusin" ? "focus" : type === "focusout" ? "blur" : type;
+    if (type === "blur" && Refs.focusNode === dom) {
+        Refs.focusNode = null;
+    }
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
+                dispatchEvent(e, type);
+                break;
+            }
         } else {
-            addEvent(dom, name === "focus" ? "focusin" : "focusout", specialHandles[name]);
+            break;
         }
-    };
+    } while (dom = dom.parentNode);
+}
+
+"blur,focus".replace(/\w+/g, function (type) {
+    if (document["__" + type]) {
+        return;
+    }
+    document["__" + type] = true;
+    globalEvents[type] = true;
+    if (modern) {
+        addEvent(document, type, blurFocus, true);
+    } else {
+        addEvent(document, type === "focus" ? "focusin" : "focusout", blurFocus);
+    }
 });
 
 eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
+globalEvents.doubleclick = true;
 eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };

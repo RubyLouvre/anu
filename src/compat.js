@@ -78,6 +78,7 @@ if (msie < 9) {
     if(msie < 8){
         inputMonitor.observe = noop;
     }
+    
     String("focus,blur").replace(/\w+/g, function(type) {
         eventHooks[type] = function(dom, name) {
             var mark = "__" + name;

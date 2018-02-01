@@ -2,42 +2,92 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
+    <script type="text/babel">
+
+      </script>
 </head>
 
 <body>
 
-  <script>
-  function quickSort(arr, low, high) {
-    low = low == null ? 0 : low;
-    high = high == null ? arr.length-1: high;
-    if (low < high) {
-        var l = low,
-            h = high,
-            key = arr[l];
-        while (l < h) {
-            while (l < h && arr[h] > key) {
-                h--;
+    <pre>应该等于
+           
+          
+        </pre>
+    <h1 id='example' class="root">
+
+    </h1>
+    <script type='text/babel'>
+           var container = document.getElementById("example")
+           var div = container
+            var PropTypes = React.PropTypes
+            if(!window.ReactDOM){
+              window.ReactDOM = React
             }
-            if (l < h) {
-                arr[l++] = arr[h];
-            }
-            while (l < h && arr[l] < key) {
-                l++;
-            }
-            if (l < h) {
-                arr[h--] = arr[l];
-            }
-        }
-        arr[l] = key;
-        quickSort(arr, low, l - 1);
-        quickSort(arr, l + 1, high);
-    }
-}
-var arr =[4,51,7,3,9,1,0,33];
-quickSort(arr)
-console.log(arr)
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                }
+            }  
+        var body = document.body;
+        var container = document.createElement("div");
+        body.appendChild(container);
+  var aaa = "";
+  class App extends React.Component {
+      constructor(props) {
+          super(props);
+          this.state = {
+              aaa: {
+                  a: 7
+              }
+          };
+      }
+
+      onWheel(e) {
+          console.log(e.deltaY, e)
+      }
+      
+
+      render() {
+          return (
+              <div
+                  onWheel={this.onWheel}
+                  style={{
+                      width: 200,
+                      height: 200
+                  }}
+              >
+                  <div
+                      ref="focus2"
+                      tabIndex={-1}
+                      onFocus={this.onFocus1}
+                      style={{
+                          width: 100,
+                          height: 100
+                      }}
+                  >
+                      222
+                  </div>
+              </div>
+          );
+      }
+  }
+
+  var s = ReactDOM.render(<App />, div);
+  s.refs.focus2.focus()
+  console.log("得到焦点")
+  expect(aaa.trim()).toBe("aaa bbb");
   </script>
 
 </body>
