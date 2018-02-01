@@ -1,7 +1,7 @@
 import { document, msie } from "./browser";
 import { actionStrategy } from "./diffProps";
-import { oneObject, toLowerCase, innerHTML, noop } from "./util";
-import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent } from "./event";
+import { oneObject, innerHTML, noop } from "./util";
+import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent, focusMap } from "./event";
 import { inputMonitor } from "./inputMonitor";
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
@@ -77,31 +77,11 @@ if (msie < 9) {
     };
     if(msie < 8){
         inputMonitor.observe = noop;
+        focusMap.focus = "focusin";
+        focusMap.blur = "focusout";
+        focusMap.focusin = "focus";
+        focusMap.focusout = "blur";
     }
-    
-    String("focus,blur").replace(/\w+/g, function(type) {
-        eventHooks[type] = function(dom, name) {
-            var mark = "__" + name;
-            if (!dom[mark]) {
-                dom[mark] = true;
-                var mask = name === "focus" ? "focusin" : "focusout";
-                addEvent(dom, mask, function(e) {
-                    //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
-                    var tagName = e.srcElement.tagName;
-                    if (!tagName) {
-                        return;
-                    }
-                    // <body> #document
-                    var tag = toLowerCase(tagName);
-                    if (tag == "#document" || tag == "body") {
-                        return;
-                    }
-                    e.target = dom; //因此focusin事件的srcElement有问题，强行修正
-                    dispatchEvent(e, name, dom.parentNode);
-                });
-            }
-        };
-    });
 
     Object.assign(
         eventPropHooks,

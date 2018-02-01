@@ -1225,15 +1225,17 @@ eventHooks.changecapture = eventHooks.change = function (dom) {
         addEvent(document, "input", specialHandles.change);
     }
 };
-
+var focusMap = {
+    "focus": "focus",
+    "blur": "blur"
+};
 function blurFocus(e) {
-    var dom = e.target;
+    var dom = e.target || e.srcElement;
     if (dom.__inner__) {
         dom.__inner__ = false;
         return;
     }
-    var type = e.type;
-    type = type === "focusin" ? "focus" : type === "focusout" ? "blur" : type;
+    var type = focusMap[e.type];
     if (type === "blur" && Refs.focusNode === dom) {
         Refs.focusNode = null;
     }
@@ -1255,17 +1257,14 @@ function blurFocus(e) {
     }
     document["__" + type] = true;
     globalEvents[type] = true;
-    if (modern) {
-        addEvent(document, type, blurFocus, true);
-    } else {
-        addEvent(document, type === "focus" ? "focusin" : "focusout", blurFocus);
-    }
+    addEvent(document, focusMap[type], blurFocus, true);
 });
 
 eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
+globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
@@ -1328,6 +1327,7 @@ var eventSystem = extend({
 	addEvent: addEvent,
 	getBrowserName: getBrowserName,
 	createHandle: createHandle,
+	focusMap: focusMap,
 	SyntheticEvent: SyntheticEvent
 });
 

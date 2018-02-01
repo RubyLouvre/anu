@@ -523,10 +523,11 @@ describe("事件系统模块", function() {
 
         var s = React.render(<App />, div);
         expect(s.refs.a.value).toBe("南京");
-     /* 临时关闭掉
+     // 临时关闭掉
+     /*
         await browser
             .setValue(s.refs.a, "北京")
-           // .pause(100)
+            .pause(100)
             .$apply();
         expect(s.refs.a.value).toBe("北京");
         */

@@ -1224,15 +1224,17 @@ eventHooks.changecapture = eventHooks.change = function (dom) {
         addEvent(document, "input", specialHandles.change);
     }
 };
-
+var focusMap = {
+    "focus": "focus",
+    "blur": "blur"
+};
 function blurFocus(e) {
-    var dom = e.target;
+    var dom = e.target || e.srcElement;
     if (dom.__inner__) {
         dom.__inner__ = false;
         return;
     }
-    var type = e.type;
-    type = type === "focusin" ? "focus" : type === "focusout" ? "blur" : type;
+    var type = focusMap[e.type];
     if (type === "blur" && Refs.focusNode === dom) {
         Refs.focusNode = null;
     }
@@ -1254,17 +1256,14 @@ function blurFocus(e) {
     }
     document["__" + type] = true;
     globalEvents[type] = true;
-    if (modern) {
-        addEvent(document, type, blurFocus, true);
-    } else {
-        addEvent(document, type === "focus" ? "focusin" : "focusout", blurFocus);
-    }
+    addEvent(document, focusMap[type], blurFocus, true);
 });
 
 eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
+globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
@@ -1327,6 +1326,7 @@ var eventSystem = extend({
 	addEvent: addEvent,
 	getBrowserName: getBrowserName,
 	createHandle: createHandle,
+	focusMap: focusMap,
 	SyntheticEvent: SyntheticEvent
 });
 
@@ -3167,30 +3167,11 @@ if (msie < 9) {
     };
     if (msie < 8) {
         inputMonitor.observe = noop;
+        focusMap.focus = "focusin";
+        focusMap.blur = "focusout";
+        focusMap.focusin = "focus";
+        focusMap.focusout = "blur";
     }
-    String("focus,blur").replace(/\w+/g, function (type) {
-        eventHooks[type] = function (dom, name) {
-            var mark = "__" + name;
-            if (!dom[mark]) {
-                dom[mark] = true;
-                var mask = name === "focus" ? "focusin" : "focusout";
-                addEvent(dom, mask, function (e) {
-                    //https://www.ibm.com/developerworks/cn/web/1407_zhangyao_IE11Dojo/ window
-                    var tagName = e.srcElement.tagName;
-                    if (!tagName) {
-                        return;
-                    }
-                    // <body> #document
-                    var tag = toLowerCase(tagName);
-                    if (tag == "#document" || tag == "body") {
-                        return;
-                    }
-                    e.target = dom; //因此focusin事件的srcElement有问题，强行修正
-                    dispatchEvent(e, name, dom.parentNode);
-                });
-            }
-        };
-    });
 
     Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
         if (!("pageX" in event)) {
