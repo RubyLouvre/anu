@@ -15,19 +15,20 @@
 npm install anujs
 ```
 
-读作 安努 ，苏美尔的主神，开天辟地。一个高级兼容官方React的迷你React框架，用于上线时无痛替换React，压缩整个项目的体积。
+读作 安努 ，苏美尔的主神，开天辟地。一个高级兼容官方React16的迷你React框架，用于上线时无痛替换React，压缩整个项目的体积。
 QQ交流学习群：  370262116
 
 特点：
 
-1. 支持React的无狀态组件，纯组件，高阶组件，受控组件与[非受控组件](https://github.com/RubyLouvre/anu/wiki/%E9%9D%9E%E5%8F%97%E6%8E%A7%E7%BB%84%E4%BB%B6)，
-2. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
-3. 体积足够少(2000行相对于react+react-dom的3万行, gz为其1/5大小)
-4. 性能是官方React的**两倍**以上  [测试页面](https://github.com/RubyLouvre/anu/blob/master/pref/anu.html)、 [结果统计](https://github.com/RubyLouvre/anu/issues/10#issuecomment-305694971)
-5. 生命周期函数的参数与官方保持一致
-6. 直接与[react-redux, react-router-dom, react-router-redux](https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90)混用
-7. 支持[后端渲染](https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
-8. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
+1. 是为数不多能支持React16的迷你React库，
+2. 支持React的无狀态组件，纯组件，高阶组件，受控组件与[非受控组件](https://github.com/RubyLouvre/anu/wiki/%E9%9D%9E%E5%8F%97%E6%8E%A7%E7%BB%84%E4%BB%B6)，
+3. 命名空间就是React，此外还暴露了另一个别名ReactDOM在window上
+4. 体积足够少(2000行相对于react+react-dom的3万行, gz为其1/5大小)
+5. 性能是官方React的**两倍**以上  [测试页面](https://github.com/RubyLouvre/anu/blob/master/pref/anu.html)、 [结果统计](https://github.com/RubyLouvre/anu/issues/10#issuecomment-305694971)
+6. 生命周期函数的参数与官方保持一致，跑通官方400多个单元测试（其他迷你库都无法跑官方测试）
+7. 直接与[react-redux, react-router-dom, react-router-redux](https://github.com/RubyLouvre/anu/wiki/react-router-redux%E7%9A%84%E8%B7%AF%E7%94%B1%E4%BE%8B%E5%AD%90)混用
+8. 支持[后端渲染]（ renderToString, renderToStaticMarkup， renderToNodeStream ，renderToStaticNodeStream）(https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
+9. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
 脚手架  https://github.com/Levan-Du/anu-cli
 
