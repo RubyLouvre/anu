@@ -34,7 +34,7 @@ function deprecatedWarn(methodName) {
  */
 function extend(obj, props) {
     for (var i in props) {
-        if (props.hasOwnProperty(i)) {
+        if (hasOwnProperty.call(props, i)) {
             obj[i] = props[i];
         }
     }
@@ -485,7 +485,7 @@ function cloneElement(vnode, props) {
         old = vnode.props,
         configs = {};
     if (props) {
-        Object.assign(configs, old, props);
+        extend(extend(configs, old), props);
         configs.key = props.key !== void 666 ? props.key : vnode.key;
         if (props.ref !== void 666) {
             configs.ref = props.ref;
@@ -2568,7 +2568,7 @@ function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         var context = instance.getChildContext();
         if (context) {
-            parentContext = Object.assign({}, parentContext, context);
+            parentContext = extend(extend({}, parentContext), context);
         }
     }
     return parentContext;

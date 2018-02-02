@@ -32,7 +32,7 @@ function deprecatedWarn(methodName) {
  */
 function extend(obj, props) {
     for (var i in props) {
-        if (props.hasOwnProperty(i)) {
+        if (hasOwnProperty.call(props, i)) {
             obj[i] = props[i];
         }
     }
@@ -444,7 +444,7 @@ function cloneElement(vnode, props) {
         old = vnode.props,
         configs = {};
     if (props) {
-        Object.assign(configs, old, props);
+        extend(extend(configs, old), props);
         configs.key = props.key !== void 666 ? props.key : vnode.key;
         if (props.ref !== void 666) {
             configs.ref = props.ref;
@@ -1444,17 +1444,20 @@ function flattenHooks(key, hooks) {
     var hookType = _typeof(hooks[0]);
     if (hookType === "object") {
         // Merge objects
-        hooks.unshift({});
-        return Object.assign.apply(null, hooks);
+        var ret = {};
+        for (var i = 0; i < hooks.length; i++) {
+            extend(ret, hooks[i]);
+        }
+        return ret;
     } else if (hookType === "function" && hooks.length > 1) {
         return function () {
             var ret = {},
                 r = void 0,
                 hasReturn = MANY_MERGED[key];
-            for (var i = 0; i < hooks.length; i++) {
-                r = hooks[i].apply(this, arguments);
+            for (var _i = 0; _i < hooks.length; _i++) {
+                r = hooks[_i].apply(this, arguments);
                 if (hasReturn && r) {
-                    Object.assign(ret, r);
+                    extend(ret, r);
                 }
             }
             if (hasReturn) {
@@ -2722,7 +2725,7 @@ function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         var context = instance.getChildContext();
         if (context) {
-            parentContext = Object.assign({}, parentContext, context);
+            parentContext = extend(extend({}, parentContext), context);
         }
     }
     return parentContext;
@@ -3181,7 +3184,7 @@ if (msie < 9) {
     focusMap.blur = "focusout";
     focusMap.focusin = "focus";
     focusMap.focusout = "blur";
-    Object.assign(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
+    extend(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
         if (!("pageX" in event)) {
             var doc = event.target.ownerDocument || document;
             var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
@@ -3190,7 +3193,7 @@ if (msie < 9) {
         }
     }));
 
-    Object.assign(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
+    extend(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
         /* istanbul ignore next  */
         if (event.which == null && event.type.indexOf("key") === 0) {
             /* istanbul ignore next  */

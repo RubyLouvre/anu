@@ -33,7 +33,7 @@ function deprecatedWarn(methodName) {
  */
 function extend(obj, props) {
     for (var i in props) {
-        if (props.hasOwnProperty(i)) {
+        if (hasOwnProperty.call(props, i)) {
             obj[i] = props[i];
         }
     }
@@ -445,7 +445,7 @@ function cloneElement(vnode, props) {
         old = vnode.props,
         configs = {};
     if (props) {
-        Object.assign(configs, old, props);
+        extend(extend(configs, old), props);
         configs.key = props.key !== void 666 ? props.key : vnode.key;
         if (props.ref !== void 666) {
             configs.ref = props.ref;
@@ -1445,17 +1445,20 @@ function flattenHooks(key, hooks) {
     var hookType = _typeof(hooks[0]);
     if (hookType === "object") {
         // Merge objects
-        hooks.unshift({});
-        return Object.assign.apply(null, hooks);
+        var ret = {};
+        for (var i = 0; i < hooks.length; i++) {
+            extend(ret, hooks[i]);
+        }
+        return ret;
     } else if (hookType === "function" && hooks.length > 1) {
         return function () {
             var ret = {},
                 r = void 0,
                 hasReturn = MANY_MERGED[key];
-            for (var i = 0; i < hooks.length; i++) {
-                r = hooks[i].apply(this, arguments);
+            for (var _i = 0; _i < hooks.length; _i++) {
+                r = hooks[_i].apply(this, arguments);
                 if (hasReturn && r) {
-                    Object.assign(ret, r);
+                    extend(ret, r);
                 }
             }
             if (hasReturn) {
@@ -2723,7 +2726,7 @@ function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         var context = instance.getChildContext();
         if (context) {
-            parentContext = Object.assign({}, parentContext, context);
+            parentContext = extend(extend({}, parentContext), context);
         }
     }
     return parentContext;

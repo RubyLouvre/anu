@@ -7,7 +7,7 @@
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 
-
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
 
@@ -20,7 +20,14 @@ var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
  * @param {any} props
  * @returns
  */
-
+function extend(obj, props) {
+    for (var i in props) {
+        if (hasOwnProperty.call(props, i)) {
+            obj[i] = props[i];
+        }
+    }
+    return obj;
+}
 
 
 var __type = Object.prototype.toString;
@@ -362,7 +369,7 @@ function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         var context = instance.getChildContext();
         if (context) {
-            parentContext = Object.assign({}, parentContext, context);
+            parentContext = extend(extend({}, parentContext), context);
         }
     }
     return parentContext;

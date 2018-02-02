@@ -23,7 +23,7 @@ export function deprecatedWarn(methodName) {
  */
 export function extend(obj, props) {
     for (let i in props) {
-        if (props.hasOwnProperty(i)) {
+        if (hasOwnProperty.call(props,i)) {
             obj[i] = props[i];
         }
     }

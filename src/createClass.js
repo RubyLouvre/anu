@@ -44,8 +44,11 @@ function flattenHooks(key, hooks) {
     let hookType = typeof hooks[0];
     if (hookType === "object") {
     // Merge objects
-        hooks.unshift({});
-        return Object.assign.apply(null, hooks);
+        var ret = {};
+        for(var i = 0; i < hooks.length; i++){
+            extend(ret, hooks[i]);
+        }
+        return ret;
     } else if (hookType === "function" && hooks.length > 1) {
         return function() {
             let ret = {},
@@ -54,7 +57,7 @@ function flattenHooks(key, hooks) {
             for (let i = 0; i < hooks.length; i++) {
                 r = hooks[i].apply(this, arguments);
                 if (hasReturn && r) {
-                    Object.assign(ret, r);
+                    extend(ret, r);
                 }
             }
             if (hasReturn) {

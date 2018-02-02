@@ -356,7 +356,7 @@ export function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         let context = instance.getChildContext();
         if (context) {
-            parentContext = Object.assign({}, parentContext, context);
+            parentContext = extend(extend({}, parentContext), context);
         }
     }
     return parentContext;

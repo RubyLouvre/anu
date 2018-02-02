@@ -1,6 +1,6 @@
 import { document, msie } from "./browser";
 import { actionStrategy } from "./diffProps";
-import { oneObject, innerHTML, noop } from "./util";
+import { oneObject, innerHTML, noop, extend } from "./util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent, focusMap } from "./event";
 import { inputMonitor } from "./inputMonitor";
 
@@ -82,7 +82,7 @@ if (msie < 9) {
     focusMap.blur = "focusout";
     focusMap.focusin = "focus";
     focusMap.focusout = "blur";
-    Object.assign(
+    extend(
         eventPropHooks,
         oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function(event) {
             if (!("pageX" in event)) {
@@ -94,7 +94,7 @@ if (msie < 9) {
         })
     );
 
-    Object.assign(
+    extend(
         eventPropHooks,
         oneObject("keyup, keydown, keypress", function(event) {
             /* istanbul ignore next  */

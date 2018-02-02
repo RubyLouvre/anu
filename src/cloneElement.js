@@ -13,7 +13,7 @@ export function cloneElement(vnode, props) {
         old = vnode.props,
         configs = {  };
     if (props) {
-        Object.assign(configs, old, props);
+        extend(extend(configs, old), props);
         configs.key = props.key !== void 666 ? props.key :vnode.key;
         if(props.ref !== void 666){
             configs.ref = props.ref;
