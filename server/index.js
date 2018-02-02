@@ -51,7 +51,7 @@ function renderVNode(vnode, context) {
                 str += innerHTML;
             } else {
                 var fakeUpdater = {
-                    vnode
+                    _reactInternalFiber: vnode
                 };
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {

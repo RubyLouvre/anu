@@ -51,8 +51,8 @@ export function findDOMNode(componentOrElement) {
     }
     //实例必然拥有updater与render
     if (componentOrElement.render) {
-        var node = componentOrElement.updater.vnode;
-        var c = node.child;
+        var vnode = componentOrElement.updater._reactInternalFiber;
+        var c = vnode.child;
         if(c){
             return findDOMNode(c.stateNode);
         }else{
@@ -197,7 +197,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 nextVnode.namespaceURI = lastVnode.namespaceURI;
             }
             let updater = (nextVnode.updater = lastVnode.updater);
-            updater.vnode = nextVnode;
+            updater._reactInternalFiber = nextVnode;
             nextVnode.lastProps = lastVnode.props;
             let lastChildren = updater.children;
             let { props } = nextVnode;
@@ -271,7 +271,7 @@ function receiveVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier)
         mountVnode(nextVnode, context, updateQueue, insertCarrier);
     }
 }
-
+// https://github.com/onmyway133/DeepDiff
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue, insertCarrier) {
     //这里都是走新的任务列队
     let lastChild,

@@ -131,9 +131,16 @@ var Refs = {
     }
 };
 
+var mapVtype = {
+    0: 6,
+    4: 1,
+    2: 2,
+    1: 5
+};
 function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
+    this.tag = mapVtype[vtype];
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -231,7 +238,7 @@ function fiberizeChildren(c, updater) {
     flattenObject = {};
     flattenPrev = null;
     flattenArray = [];
-    var vnode = updater.vnode;
+    var vnode = updater._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         flattenIndex = 0;
@@ -613,7 +620,7 @@ function renderVNode(vnode, context) {
                     str += innerHTML$$1;
                 } else {
                     var fakeUpdater = {
-                        vnode: vnode
+                        _reactInternalFiber: vnode
                     };
                     var children = fiberizeChildren(props.children, fakeUpdater);
                     for (var i in children) {

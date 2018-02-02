@@ -1,4 +1,4 @@
-import { document, modern, contains } from "./browser";
+import { document, contains } from "./browser";
 import { isFn, noop } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
@@ -135,7 +135,6 @@ export function getBrowserName(onStr) {
 
 
 /**
- * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
 对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
 在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
@@ -216,6 +215,9 @@ createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
+globalEvents.wheel = true;
+globalEvents.scroll = true;
+globalEvents.doubleclick = true;
 
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function(dom) {
@@ -231,7 +233,6 @@ eventPropHooks.click = function(e) {
 const fixWheelType =  document.onwheel !== void 666 ? "wheel" : 
     "onmousewheel" in document ? "mousewheel" :
         "DOMMouseScroll";
-globalEvents.wheel = true;
 eventHooks.wheel = function(dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
@@ -261,6 +262,7 @@ export var focusMap = {
     "focus": "focus",
     "blur": "blur"
 };
+
 function blurFocus(e){
     var dom = e.target || e.srcElement;
     var type = focusMap[e.type];
@@ -297,8 +299,6 @@ eventHooks.scroll = function(dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
-globalEvents.scroll = true;
-globalEvents.doubleclick = true;
 eventHooks.doubleclick = function(dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };
@@ -322,6 +322,8 @@ export function SyntheticEvent(event) {
 
 var eventProto = (SyntheticEvent.prototype = {
     fixEvent: noop, //留给以后扩展用
+    fixHooks: noop,
+    persist: noop,
     preventDefault: function() {
         var e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
@@ -329,7 +331,6 @@ var eventProto = (SyntheticEvent.prototype = {
             e.preventDefault();
         }
     },
-    fixHooks: noop,
     stopPropagation: function() {
         var e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;
@@ -337,7 +338,6 @@ var eventProto = (SyntheticEvent.prototype = {
             e.stopPropagation();
         }
     },
-    persist: noop,
     stopImmediatePropagation: function() {
         this.stopPropagation();
         this.stopImmediate = true;

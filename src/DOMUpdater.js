@@ -6,7 +6,7 @@ import { diffProps } from "./diffProps";
 export function DOMUpdater(vnode) {
     this.name = vnode.type;
     this._states = ["resolve"];
-    this.vnode = vnode;
+    this._reactInternalFiber = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
@@ -29,7 +29,7 @@ DOMUpdater.prototype = {
     },
     isMounted: returnFalse,
     props() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         var dom = vnode.stateNode;
         var { type, props, lastProps } = vnode;
         diffProps(dom, lastProps || {}, props, vnode);
@@ -38,13 +38,13 @@ DOMUpdater.prototype = {
         }
     },
     resolve() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         var dom = vnode.stateNode;
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
     },
     dispose() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         Refs.fireRef(vnode, null);
     }
 };

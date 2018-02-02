@@ -1,9 +1,15 @@
 import { typeNumber, options, REACT_ELEMENT_TYPE } from "./util";
 import { Refs } from "./Refs";
-
+var mapVtype = {
+    0: 6,
+    4 :1,
+    2: 2,
+    1: 5
+};
 export function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
+    this.tag = mapVtype[vtype];
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;

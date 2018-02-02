@@ -19,7 +19,7 @@ export function pushError(instance, hook, error) {
             }
         }
 
-        var vnode = catchUpdater.vnode;
+        var vnode = catchUpdater._reactInternalFiber;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
     } else {
@@ -62,7 +62,7 @@ function disableHook(u) {
  * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
 function findCatchComponent(target, names) {
-    var vnode = target.updater.vnode,
+    var vnode = target.updater._reactInternalFiber,
         instance,
         updater,
         type,

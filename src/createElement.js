@@ -144,7 +144,7 @@ export function fiberizeChildren(c, updater) {
     flattenObject = {};
     flattenPrev = null;
     flattenArray = [];
-    let vnode = updater.vnode;
+    let vnode = updater._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         flattenIndex = 0;

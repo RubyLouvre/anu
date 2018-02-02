@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-01
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-02
  */
 
 (function (global, factory) {
@@ -190,9 +190,16 @@ var Refs = {
     }
 };
 
+var mapVtype = {
+    0: 6,
+    4: 1,
+    2: 2,
+    1: 5
+};
 function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
+    this.tag = mapVtype[vtype];
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -375,7 +382,7 @@ function fiberizeChildren(c, updater) {
     flattenObject = {};
     flattenPrev = null;
     flattenArray = [];
-    var vnode = updater.vnode;
+    var vnode = updater._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         flattenIndex = 0;
@@ -1113,7 +1120,6 @@ function getBrowserName(onStr) {
 }
 
 /**
- * 
 DOM通过event对象的relatedTarget属性提供了相关元素的信息。这个属性只对于mouseover和mouseout事件才包含值；
 对于其他事件，这个属性的值是null。IE不支持realtedTarget属性，但提供了保存着同样信息的不同属性。
 在mouseover事件触发时，IE的fromElement属性中保存了相关元素；
@@ -1193,6 +1199,9 @@ createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
+globalEvents.wheel = true;
+globalEvents.scroll = true;
+globalEvents.doubleclick = true;
 
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function (dom) {
@@ -1205,7 +1214,6 @@ eventPropHooks.click = function (e) {
 };
 
 var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
-globalEvents.wheel = true;
 eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
@@ -1228,6 +1236,7 @@ var focusMap = {
     "focus": "focus",
     "blur": "blur"
 };
+
 function blurFocus(e) {
     var dom = e.target || e.srcElement;
     var type = focusMap[e.type];
@@ -1264,8 +1273,6 @@ eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
-globalEvents.scroll = true;
-globalEvents.doubleclick = true;
 eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };
@@ -1289,6 +1296,8 @@ function SyntheticEvent(event) {
 
 var eventProto = SyntheticEvent.prototype = {
     fixEvent: noop, //留给以后扩展用
+    fixHooks: noop,
+    persist: noop,
     preventDefault: function preventDefault() {
         var e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
@@ -1296,7 +1305,6 @@ var eventProto = SyntheticEvent.prototype = {
             e.preventDefault();
         }
     },
-    fixHooks: noop,
     stopPropagation: function stopPropagation() {
         var e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;
@@ -1304,7 +1312,6 @@ var eventProto = SyntheticEvent.prototype = {
             e.stopPropagation();
         }
     },
-    persist: noop,
     stopImmediatePropagation: function stopImmediatePropagation() {
         this.stopPropagation();
         this.stopImmediate = true;
@@ -2184,7 +2191,7 @@ var actionStrategy = {
 function DOMUpdater(vnode) {
     this.name = vnode.type;
     this._states = ["resolve"];
-    this.vnode = vnode;
+    this._reactInternalFiber = vnode;
     vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
@@ -2208,7 +2215,7 @@ DOMUpdater.prototype = {
 
     isMounted: returnFalse,
     props: function props() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         var dom = vnode.stateNode;
         var type = vnode.type,
             props = vnode.props,
@@ -2220,13 +2227,13 @@ DOMUpdater.prototype = {
         }
     },
     resolve: function resolve() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         var dom = vnode.stateNode;
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
     },
     dispose: function dispose() {
-        var vnode = this.vnode;
+        var vnode = this._reactInternalFiber;
         Refs.fireRef(vnode, null);
     }
 };
@@ -2270,7 +2277,7 @@ function pushError(instance, hook, error) {
             }
         }
 
-        var vnode = catchUpdater.vnode;
+        var vnode = catchUpdater._reactInternalFiber;
         delete vnode.child;
         delete catchUpdater.pendingVnode;
     } else {
@@ -2313,7 +2320,7 @@ function disableHook(u) {
  * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
 function findCatchComponent(target, names) {
-    var vnode = target.updater.vnode,
+    var vnode = target.updater._reactInternalFiber,
         instance,
         updater,
         type,
@@ -2372,7 +2379,7 @@ function CompositeUpdater(vnode, parentContext) {
     }
     this.name = type.displayName || type.name;
     this.props = props;
-    this.vnode = vnode;
+    this._reactInternalFiber = vnode;
     this.context = getContextByTypes(parentContext, type.contextTypes);
     this.parentContext = parentContext;
     this._pendingCallbacks = [];
@@ -2462,7 +2469,7 @@ CompositeUpdater.prototype = {
     init: function init(updateQueue, insertCarrier) {
         var props = this.props,
             context = this.context,
-            vnode = this.vnode;
+            vnode = this._reactInternalFiber;
 
         var type = vnode.type,
             isStateless = vnode.vtype === 4,
@@ -2531,7 +2538,7 @@ CompositeUpdater.prototype = {
         var instance = this.instance,
             context = this.context,
             props = this.props,
-            vnode = this.vnode,
+            vnode = this._reactInternalFiber,
             pendingVnode = this.pendingVnode;
 
         if (this._states[0] === "hydrate") {
@@ -2542,9 +2549,9 @@ CompositeUpdater.prototype = {
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
             if (pendingVnode) {
-                var child = this.vnode.child;
-                this.vnode = pendingVnode;
-                this.vnode.child = child;
+                var child = this._reactInternalFiber.child;
+                this._reactInternalFiber = pendingVnode;
+                pendingVnode.child = child;
                 delete this.pendingVnode;
             }
             var nodes = collectComponentNodes(this.children);
@@ -2580,7 +2587,7 @@ CompositeUpdater.prototype = {
         updateQueue.push(this);
     },
     render: function render(updateQueue) {
-        var vnode = this.vnode,
+        var vnode = this._reactInternalFiber,
             pendingVnode = this.pendingVnode,
             instance = this.instance,
             parentContext = this.parentContext,
@@ -2592,7 +2599,7 @@ CompositeUpdater.prototype = {
 
 
         if (pendingVnode) {
-            vnode = this.vnode = pendingVnode;
+            vnode = this._reactInternalFiber = pendingVnode;
             delete this.pendingVnode;
         }
         this._hydrating = true;
@@ -2635,7 +2642,7 @@ CompositeUpdater.prototype = {
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve: function resolve(updateQueue) {
         var instance = this.instance,
-            vnode = this.vnode;
+            vnode = this._reactInternalFiber;
 
         var hasMounted = this.isMounted();
         if (!hasMounted) {
@@ -2681,10 +2688,11 @@ CompositeUpdater.prototype = {
         transfer.call(this, queue);
     },
     dispose: function dispose() {
-        var instance = this.instance;
+        var vnode = this._reactInternalFiber,
+            instance = this.instance;
+
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
-        var vnode = this.vnode;
 
         Refs.fireRef(vnode, null);
         captureError(instance, "componentWillUnmount", []);
@@ -2796,8 +2804,8 @@ function findDOMNode(componentOrElement) {
     }
     //实例必然拥有updater与render
     if (componentOrElement.render) {
-        var node = componentOrElement.updater.vnode;
-        var c = node.child;
+        var vnode = componentOrElement.updater._reactInternalFiber;
+        var c = vnode.child;
         if (c) {
             return findDOMNode(c.stateNode);
         } else {
@@ -2943,7 +2951,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 nextVnode.namespaceURI = lastVnode.namespaceURI;
             }
             var updater = nextVnode.updater = lastVnode.updater;
-            updater.vnode = nextVnode;
+            updater._reactInternalFiber = nextVnode;
             nextVnode.lastProps = lastVnode.props;
             var lastChildren = updater.children;
             var props = nextVnode.props;
@@ -3020,7 +3028,7 @@ function receiveVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier)
         mountVnode(nextVnode, context, updateQueue, insertCarrier);
     }
 }
-
+// https://github.com/onmyway133/DeepDiff
 function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue, insertCarrier) {
     //这里都是走新的任务列队
     var lastChild = void 0,
