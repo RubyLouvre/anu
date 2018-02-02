@@ -3105,7 +3105,7 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 Refs.diffChildren = diffChildren;
 
 var React = {
-    version: "1.2.7",
+    version: "1.2.8",
     render: render,
     hydrate: render,
     options: options,

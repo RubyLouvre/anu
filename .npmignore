@@ -13,3 +13,6 @@ chromedriver
 selenium-server-*
 /.vscode/*
 /.history/*
+xxx.js
+index.css
+stand.js

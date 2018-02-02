@@ -3109,7 +3109,7 @@ if (win.React && win.React.options) {
     React = win.React; //解决引入多个
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.2.7",
+        version: "1.2.8",
         render: render,
         hydrate: render,
         options: options,

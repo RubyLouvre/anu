@@ -1,4 +1,11 @@
-## 1.2.7
+## 1.2.8(2018.02.02)
+
+1. 简化focus/blur事件的实现，IE7－8的实现更加精简了
+2. 修正wheel事件的属性计算方式，与官方保持一致
+3. 为了支持react-hot-loader, vnode.updater.vnode更名为vnode.updater._reactInnerFiber, vtype更名为tag
+4. 测试工具与调试工具进行了部分属性调整
+
+## 1.2.7(2018.02.01)
 
 1. 修正componentWillReceiveProps 的执行条件，修改_disposed开关的位置
 2. 支持children为函数
