@@ -14,6 +14,72 @@ describe("生命周期例子", function() {
     afterEach(function() {
         body.removeChild(div);
     });
+    it('should support getDerivedStateFromProps for module pattern components', () => {
+        function Child() {
+          return {
+            state: {
+              count: 1,
+            },
+            render() {
+              return <div>{`count:${this.state.count}`}</div>;
+            },
+          };
+        }
+        Child.getDerivedStateFromProps = (props, prevState) => {
+          return {
+            count: prevState.count + props.incrementBy,
+          };
+        };
+    
+        const el = document.createElement('div');
+
+        React.render(<Child incrementBy={0} />, el);
+        expect(el.textContent).toBe('count:1');
+    
+        React.render(<Child incrementBy={2} />, el);
+        expect(el.textContent).toBe('count:3');
+    
+        React.render(<Child incrementBy={1} />, el);
+        expect(el.textContent).toBe('count:4');
+     });
+     it('does not call static getDerivedStateFromProps for state-only updates', () => {
+        let ops = [];
+        let instance;
+    
+        class LifeCycle extends React.Component {
+          state = {};
+          static getDerivedStateFromProps(props, prevState) {
+            ops.push('getDerivedStateFromProps');
+            return {foo: 'foo'};
+          }
+          changeState() {
+            this.setState({foo: 'bar'});
+          }
+          componentDidUpdate() {
+            ops.push('componentDidUpdate');
+          }
+          render() {
+            ops.push('render');
+            instance = this;
+            return null;
+          }
+        }
+        const el = document.createElement('div');
+        React.render(<LifeCycle />, el);
+     
+    
+        expect(ops).toEqual(['getDerivedStateFromProps', 'render']);
+        expect(instance.state).toEqual({foo: 'foo'});
+    
+        ops = [];
+    
+        instance.changeState();
+       
+    
+        expect(ops).toEqual(['render', 'componentDidUpdate']);
+        expect(instance.state).toEqual({foo: 'bar'});
+      });
+      
     it("只更新了一个子组件时，被该子组件要求全局重新渲染",function(){
         var list = [];
         var flag = 1;

@@ -2,7 +2,7 @@ import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, de
 import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
 import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
-import { CompositeUpdater, getContextByTypes } from "./CompositeUpdater";
+import { CompositeUpdater, getContextByTypes, getDerivedStateFromProps } from "./CompositeUpdater";
 import { Component } from "./Component";
 import { DOMUpdater } from "./DOMUpdater";
 import { drainQueue } from "./scheduler";
@@ -220,6 +220,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     // todo:减少数据的接收次数
     let { type, stateNode } = lastVnode,
         updater = stateNode.updater,
+        nextProps = nextVnode.props,
         willReceive = lastVnode !== nextVnode,
         nextContext;
     if (!type.contextTypes) {
@@ -228,7 +229,8 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
         nextContext = getContextByTypes(parentContext, type.contextTypes);
         willReceive = true;
     }
-    updater.props = nextVnode.props;
+   
+    updater.props = nextProps;
     if (updater.isPortal) {
         updater.insertCarrier = {};
     } else {
@@ -243,7 +245,10 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
         updater._receiving = true;
         updater.updateQueue = updateQueue;
         if(willReceive){
-            captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+            captureError(stateNode, "componentWillReceiveProps", [nextProps, nextContext]);
+        }
+        if(lastVnode.props !== nextProps){
+            getDerivedStateFromProps(updater, type, nextProps, stateNode.state)
         }
         if (updater._hasError) {
             return;

@@ -165,8 +165,9 @@ CompositeUpdater.prototype = {
                 this.willReceive = false;
             }
         }
-
+       
         vnode.stateNode = this.instance = instance;
+        getDerivedStateFromProps(this, type, props, instance.state)
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
@@ -177,8 +178,8 @@ CompositeUpdater.prototype = {
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
-            instance.state = this.mergeStates();
         }
+        instance.state = this.mergeStates();
         //让顶层的元素updater进行收集
         this.render(updateQueue);
         updateQueue.push(this);
@@ -349,6 +350,14 @@ function transfer(queue){
         delete this._nextCallbacks;
         this.addState("hydrate");
         queue.push(this);
+    }
+}
+export function getDerivedStateFromProps(updater,type, props, state){
+    if(isFn(type.getDerivedStateFromProps)){
+       var state = type.getDerivedStateFromProps.call(null, props, state)
+       if(state != null){
+          updater._pendingStates.push(state)
+       }
     }
 }
 

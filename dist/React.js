@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-02-02
+ * by 司徒正美 Copyright 2018-02-05
  * IE9+
  */
 
@@ -2522,6 +2522,7 @@ CompositeUpdater.prototype = {
         }
 
         vnode.stateNode = this.instance = instance;
+        getDerivedStateFromProps(this, type, props, instance.state);
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
@@ -2532,8 +2533,8 @@ CompositeUpdater.prototype = {
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
-            instance.state = this.mergeStates();
         }
+        instance.state = this.mergeStates();
         //让顶层的元素updater进行收集
         this.render(updateQueue);
         updateQueue.push(this);
@@ -2719,6 +2720,14 @@ function transfer(queue) {
         delete this._nextCallbacks;
         this.addState("hydrate");
         queue.push(this);
+    }
+}
+function getDerivedStateFromProps(updater, type, props, state) {
+    if (isFn(type.getDerivedStateFromProps)) {
+        var state = type.getDerivedStateFromProps.call(null, props, state);
+        if (state != null) {
+            updater._pendingStates.push(state);
+        }
     }
 }
 
@@ -2980,6 +2989,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
     var type = lastVnode.type,
         stateNode = lastVnode.stateNode,
         updater = stateNode.updater,
+        nextProps = nextVnode.props,
         willReceive = lastVnode !== nextVnode,
         nextContext = void 0;
 
@@ -2989,7 +2999,8 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
         nextContext = getContextByTypes(parentContext, type.contextTypes);
         willReceive = true;
     }
-    updater.props = nextVnode.props;
+
+    updater.props = nextProps;
     if (updater.isPortal) {
         updater.insertCarrier = {};
     } else {
@@ -3004,7 +3015,10 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
         updater._receiving = true;
         updater.updateQueue = updateQueue;
         if (willReceive) {
-            captureError(stateNode, "componentWillReceiveProps", [nextVnode.props, nextContext]);
+            captureError(stateNode, "componentWillReceiveProps", [nextProps, nextContext]);
+        }
+        if (lastVnode.props !== nextProps) {
+            getDerivedStateFromProps(updater, type, nextProps, stateNode.state);
         }
         if (updater._hasError) {
             return;

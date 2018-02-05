@@ -365,6 +365,8 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
  */
 
 
+
+
 function getChildContext(instance, parentContext) {
     if (instance.getChildContext) {
         var context = instance.getChildContext();
@@ -575,7 +577,7 @@ function stringifyAttributes(props, type) {
     return attrs.length ? " " + attrs.join(" ") : "";
 }
 
-var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
+var _marked = [renderVNodeGen].map(regeneratorRuntime.mark);
 
 // https://github.com/juliangruber/stream 
 // 如果要用在前端，需要加这个库 npm install stream
@@ -797,7 +799,7 @@ function renderVNodeGen(vnode, context) {
                     return _context.stop();
             }
         }
-    }, _marked, this);
+    }, _marked[0], this);
 }
 
 function getOptionValue(option) {
