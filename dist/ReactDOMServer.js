@@ -5,10 +5,12 @@
 }(this, (function (stream) {
 
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
+
+
 
 
 
@@ -577,7 +579,7 @@ function stringifyAttributes(props, type) {
     return attrs.length ? " " + attrs.join(" ") : "";
 }
 
-var _marked = [renderVNodeGen].map(regeneratorRuntime.mark);
+var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
 
 // https://github.com/juliangruber/stream 
 // 如果要用在前端，需要加这个库 npm install stream
@@ -799,7 +801,7 @@ function renderVNodeGen(vnode, context) {
                     return _context.stop();
             }
         }
-    }, _marked[0], this);
+    }, _marked, this);
 }
 
 function getOptionValue(option) {

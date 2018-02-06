@@ -29,7 +29,9 @@ var duplexData = {
             }
 
             if (vnode.type === "input") {
+                dom.__anuSetValue = true;//抑制onpropertychange
                 dom.setAttribute("value", value);
+                dom.__anuSetValue = false;
                 if (dom.type === "number") {
                     var valueAsNumber = parseFloat(dom.value) || 0;
                     if (
@@ -47,7 +49,9 @@ var duplexData = {
                 }
             }
             if (dom._persistValue !== value) {
+                dom.__anuSetValue = true;//抑制onpropertychange
                 dom._persistValue = dom.value = value;
+                dom.__anuSetValue = false;
             }
         },
         keepPersistValue,
@@ -167,8 +171,11 @@ function keepPersistValue(e) {
     var v = dom._persistValue;
     var noNull = v != null;
     var noEqual = dom[name] !== v; //2.0 , 2
+
     if (noNull && noEqual) {
+      
         dom[name] = v;
+       
     }
 }
 

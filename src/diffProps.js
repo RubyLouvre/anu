@@ -1,4 +1,4 @@
-import { NAMESPACE, duplexMap } from "./browser";
+import { NAMESPACE, duplexMap, modern } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
@@ -286,9 +286,10 @@ export var actionStrategy = {
                 dom[name] = val;
             }
         } catch (e) {
-            dom.setAttribute(name, val);
+            try{//修改type会引发多次报错
+                dom.setAttribute(name, val);
+            }catch(e){/*ignore*/}
         }
-        // }
     },
     event: function(dom, name, val, lastProps, vnode) {
         let events = dom.__events || (dom.__events = {});

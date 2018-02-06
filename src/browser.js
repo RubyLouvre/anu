@@ -175,7 +175,12 @@ export function createElement(vnode, p) {
         }
         //eslint-disable-next-line
     } catch (e) {}
-    return document.createElement(type);
+    var elem = document.createElement(type);
+    var inputType = vnode.props && vnode.props.type;//IE6-8下立即设置type属性
+    if(inputType){
+        elem.type = inputType;
+    }
+    return elem;
 }
 export function contains(a, b) {
     if (b) {

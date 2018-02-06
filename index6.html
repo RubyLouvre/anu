@@ -4,9 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./react.development2.js"></script>
-    <script type='text/javascript' src="./react-dom.development2.js"></script>-->
+    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
+    <script type='text/javascript' src="./test/react.development.js"></script>
+    <script type='text/javascript' src="./test/react-dom.development.js"></script>
+    
 
     <script src="lib/babel.js"></script>
 </head>
@@ -29,7 +30,7 @@
               window.ReactDOM = React
             }
             var container = document.getElementById("app-root")
-
+            var count = 2
             class Tree extends React.Component{
                 constructor(props){
                     super(props)
@@ -38,8 +39,12 @@
                 renderTreeNode(child, index){
                     var childProps = {}
                     childProps.checkable = this.props.checkable
-                    console.log(this.props)
-                    return React.cloneElement(child, childProps);
+                    if(!this.props.checkable.xxx){
+                        this.props.checkable.xxx = count++
+                    } 
+                   
+                    var a =  React.cloneElement(child, childProps);
+                    return a
                 }
                 render() {
                     var props = this.props
@@ -60,7 +65,7 @@
                  }
             }
           
-          var s =  ReactDOM.render(<Tree checkable={ <input className="checked" />}>
+          var s =  ReactDOM.render(<Tree checkable={ <input className="checked" type="radio" defaultChecked="true"/>}>
             <TreeNode>1111</TreeNode>
             <TreeNode>2222</TreeNode>
             <TreeNode>3333</TreeNode>

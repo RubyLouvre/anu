@@ -1,6 +1,6 @@
 import { document, msie } from "./browser";
 import { actionStrategy } from "./diffProps";
-import { oneObject, innerHTML, noop, extend } from "./util";
+import { oneObject, innerHTML, noop, extend, returnTrue } from "./util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent, focusMap } from "./event";
 import { inputMonitor } from "./inputMonitor";
 
@@ -26,17 +26,28 @@ function syncValueByOptionValue(dom) {
 
 var fixIEChangeHandle = createHandle("change", function(e) {
     var dom = e.srcElement;
-    if (dom.type === "select-one") {
-        if (!dom.__bindFixValueFn) {
-            addEvent(dom, "propertychange", setSelectValue);
-            dom.__bindFixValueFn = true;
+    switch (e.type) {
+    case "change":
+        if (dom.type === "select-one") {
+            if (!dom.__bindFixValueFn) {
+                addEvent(dom, "propertychange", setSelectValue);
+                dom.__bindFixValueFn = true;
+            }
+            noCheck = true;
+            syncValueByOptionValue(dom);
+            noCheck = false;
         }
-        noCheck = true;
-        syncValueByOptionValue(dom);
-        noCheck = false;
-    }
-    if (e.type === "propertychange") {
-        return e.propertyName === "value";
+        return true;
+    case "click":
+        return true;
+    case "propertychange":
+        if (e.propertyName === "value") {
+            if (dom.__anuSetValue) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 });
 
@@ -75,7 +86,7 @@ if (msie < 9) {
             }
         }
     };
-    if(msie < 8){
+    if (msie < 8) {
         inputMonitor.observe = noop;
     }
     focusMap.focus = "focusin";

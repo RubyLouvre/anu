@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
    <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
@@ -37,37 +38,30 @@
                     },
                     toEqual(b){
                         console.log(a,"vs", b, a +""=== b+"")
-                    }
+                    },
                 }
+            }  
+        var body = document.body;
+        var container = document.createElement("div");
+        body.appendChild(container);
+      
+  
+        class A extends React.Component {
+            render() {
+                return (
+                    <div class="A">
+                       <button type="button" onClick={ ()=>{
+                           console.log("xxx")
+                       }}> 点我</button>
+                    </div>
+                );
             }
-            let ops = [];
-        let instance;
-    
-        class LifeCycle extends React.Component {
-          state = {};
-          static getDerivedStateFromProps(props, prevState) {
-            ops.push('getDerivedStateFromProps');
-            return {foo: 'foo'};
-          }
-          changeState() {
-            this.setState({foo: 'bar'});
-          }
-          componentDidUpdate() {
-            ops.push('componentDidUpdate');
-          }
-          render() {
-            ops.push('render');
-            instance = this;
-            return null;
-          }
+
+  
         }
-        const el = document.createElement('div');
-        React.render(<LifeCycle />, el);
+
      
-    
-        expect(ops).toEqual(['getDerivedStateFromProps', 'render']);
-        expect(instance.state).toEqual({foo: 'foo'});
-        
+       ReactDOM.render(<A />, container)
 
 </script>
 3, 4, 5, 0, 6, 1, 7, 2 

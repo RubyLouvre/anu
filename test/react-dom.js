@@ -5863,7 +5863,12 @@ var n=t[o][1][e];return s(n?n:e);
  * @extends ReactMultiChild
  */
         function ReactDOMComponent(element) {
+            console.log(element)
+
             var tag = element.type;
+            if(tag === "input"){
+                console.log(this)
+            }
             validateDangerousTag(tag);
             this._currentElement = element;
             this._tag = tag.toLowerCase();

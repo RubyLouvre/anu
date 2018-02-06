@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-05
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-06
  */
 
 (function (global, factory) {
@@ -9,10 +9,12 @@
 }(this, (function () {
 
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var innerHTML = "dangerouslySetInnerHTML";
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
+
+
 
 var emptyArray = [];
 var emptyObject = {};
@@ -749,7 +751,12 @@ function createElement$1(vnode, p) {
         }
         //eslint-disable-next-line
     } catch (e) {}
-    return document.createElement(type);
+    var elem = document.createElement(type);
+    var inputType = vnode.props && vnode.props.type; //IE6-8下立即设置type属性
+    if (inputType) {
+        elem.type = inputType;
+    }
+    return elem;
 }
 function contains(a, b) {
     if (b) {
@@ -1262,11 +1269,18 @@ function blurFocus(e) {
 }
 
 "blur,focus".replace(/\w+/g, function (type) {
-    var mark = "__" + type;
-    if (!document[mark]) {
-        globalEvents[type] = document[mark] = true;
-        addEvent(document, focusMap[type], blurFocus, true);
-    }
+    globalEvents[type] = true;
+    /* if(modern){
+        var mark = "__" + type;
+        if(!document[mark]){ 
+            document[mark] = true;
+            addEvent(document, type, blurFocus,true);
+        }
+    }else{*/
+    eventHooks[type] = function (dom, name) {
+        addEvent(dom, focusMap[name], blurFocus);
+    };
+    /* } */
 });
 
 eventHooks.scroll = function (dom, name) {
@@ -1581,7 +1595,9 @@ var duplexData = {
         }
 
         if (vnode.type === "input") {
+            dom.__anuSetValue = true; //抑制onpropertychange
             dom.setAttribute("value", value);
+            dom.__anuSetValue = false;
             if (dom.type === "number") {
                 var valueAsNumber = parseFloat(dom.value) || 0;
                 if (
@@ -1598,7 +1614,9 @@ var duplexData = {
             }
         }
         if (dom._persistValue !== value) {
+            dom.__anuSetValue = true; //抑制onpropertychange
             dom._persistValue = dom.value = value;
+            dom.__anuSetValue = false;
         }
     }, keepPersistValue, "change", "input"],
     2: ["checked", {
@@ -1699,7 +1717,9 @@ function keepPersistValue(e) {
     var v = dom._persistValue;
     var noNull = v != null;
     var noEqual = dom[name] !== v; //2.0 , 2
+
     if (noNull && noEqual) {
+
         dom[name] = v;
     }
 }
@@ -2158,9 +2178,11 @@ var actionStrategy = {
                 dom[name] = val;
             }
         } catch (e) {
-            dom.setAttribute(name, val);
+            try {
+                //修改type会引发多次报错
+                dom.setAttribute(name, val);
+            } catch (e) {/*ignore*/}
         }
-        // }
     },
     event: function event(dom, name, val, lastProps, vnode) {
         var events = dom.__events || (dom.__events = {});
@@ -3142,17 +3164,28 @@ function syncValueByOptionValue(dom) {
 
 var fixIEChangeHandle = createHandle("change", function (e) {
     var dom = e.srcElement;
-    if (dom.type === "select-one") {
-        if (!dom.__bindFixValueFn) {
-            addEvent(dom, "propertychange", setSelectValue);
-            dom.__bindFixValueFn = true;
-        }
-        noCheck = true;
-        syncValueByOptionValue(dom);
-        noCheck = false;
-    }
-    if (e.type === "propertychange") {
-        return e.propertyName === "value";
+    switch (e.type) {
+        case "change":
+            if (dom.type === "select-one") {
+                if (!dom.__bindFixValueFn) {
+                    addEvent(dom, "propertychange", setSelectValue);
+                    dom.__bindFixValueFn = true;
+                }
+                noCheck = true;
+                syncValueByOptionValue(dom);
+                noCheck = false;
+            }
+            return true;
+        case "click":
+            return true;
+        case "propertychange":
+            if (e.propertyName === "value") {
+                if (dom.__anuSetValue) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
     }
 });
 
