@@ -1,3 +1,9 @@
+## 1.2.9(2018.02.06)
+
+1. 修正focus/blur事件的实现
+2. 修正IE6－8下onchange因为是用onproperty实现，会引发无限循环的BUG
+3. 修正diffProps无法修改input元素的type属性的BUG，改为在createElement方法中立即添加type属性
+
 ## 1.2.8(2018.02.02)
 
 1. 简化focus/blur事件的实现，IE7－8的实现更加精简了
@@ -7,7 +13,7 @@
 
 ## 1.2.7(2018.02.01)
 
-1. 修正componentWillReceiveProps 的执行条件，修改_disposed开关的位置
+1. 修正componentWillReceiveProps 的执行条件
 2. 支持children为函数
 3. 修改_disposed开关的位置
 4. 修正焦点系统，它只会在browser的insertElement, removeElement中执行
