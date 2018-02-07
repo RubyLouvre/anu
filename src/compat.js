@@ -141,10 +141,9 @@ if (msie < 9) {
     extend(
         eventPropHooks,
         oneObject("keyup, keydown, keypress", function(event) {
-            /* istanbul ignore next  */
-            if (event.which == null && event.type.indexOf("key") === 0) {
-                /* istanbul ignore next  */
+            if (!event.which && event.type.indexOf("key") === 0) {
                 event.key = translateToKey[event.keyCode];
+                /* istanbul ignore next  */
                 event.which = event.charCode != null ? event.charCode : event.keyCode;
             }
         })

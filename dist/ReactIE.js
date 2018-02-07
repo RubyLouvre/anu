@@ -784,17 +784,38 @@ function insertElement(vnode, insertPoint) {
     }
 
     var dom = vnode.stateNode,
+        after = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
 
-    //如果没有插入点，则插入到当前父节点的第一个节点之前
-    after = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
     if (after === dom) {
         return;
     }
     if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    var isElement = vnode.vtype;
+    if (after && !contains(parentNode, after)) {
+        return;
+    }
 
+    /*
+    if(insertPoint){
+        //如果非父节点的孩子
+        if(!contains(parentNode,insertPoint)){
+            return;
+        }
+        after = insertPoint.nextSibling;
+        //如果已经插入
+        if(after === null && dom === parentNode.lastChild){
+            return;
+        }
+    }else{
+        after = parentNode.firstChild;
+        //如果已经插入
+        if (after === dom) {
+            return;
+        }
+    }
+    */
+    var isElement = vnode.vtype;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
@@ -3235,10 +3256,47 @@ if (msie < 9) {
             event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
         }
     }));
-
+    var translateToKey = {
+        "8": "Backspace",
+        "9": "Tab",
+        "12": "Clear",
+        "13": "Enter",
+        "16": "Shift",
+        "17": "Control",
+        "18": "Alt",
+        "19": "Pause",
+        "20": "CapsLock",
+        "27": "Escape",
+        "32": " ",
+        "33": "PageUp",
+        "34": "PageDown",
+        "35": "End",
+        "36": "Home",
+        "37": "ArrowLeft",
+        "38": "ArrowUp",
+        "39": "ArrowRight",
+        "40": "ArrowDown",
+        "45": "Insert",
+        "46": "Delete",
+        "112": "F1",
+        "113": "F2",
+        "114": "F3",
+        "115": "F4",
+        "116": "F5",
+        "117": "F6",
+        "118": "F7",
+        "119": "F8",
+        "120": "F9",
+        "121": "F10",
+        "122": "F11",
+        "123": "F12",
+        "144": "NumLock",
+        "145": "ScrollLock",
+        "224": "Meta"
+    };
     extend(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
-        /* istanbul ignore next  */
-        if (event.which == null && event.type.indexOf("key") === 0) {
+        if (!event.which && event.type.indexOf("key") === 0) {
+            event.key = translateToKey[event.keyCode];
             /* istanbul ignore next  */
             event.which = event.charCode != null ? event.charCode : event.keyCode;
         }

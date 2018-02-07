@@ -785,17 +785,38 @@ function insertElement(vnode, insertPoint) {
     }
 
     var dom = vnode.stateNode,
+        after = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
 
-    //如果没有插入点，则插入到当前父节点的第一个节点之前
-    after = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
     if (after === dom) {
         return;
     }
     if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    var isElement = vnode.vtype;
+    if (after && !contains(parentNode, after)) {
+        return;
+    }
 
+    /*
+    if(insertPoint){
+        //如果非父节点的孩子
+        if(!contains(parentNode,insertPoint)){
+            return;
+        }
+        after = insertPoint.nextSibling;
+        //如果已经插入
+        if(after === null && dom === parentNode.lastChild){
+            return;
+        }
+    }else{
+        after = parentNode.firstChild;
+        //如果已经插入
+        if (after === dom) {
+            return;
+        }
+    }
+    */
+    var isElement = vnode.vtype;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
