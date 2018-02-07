@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-02-06
+ * QQ 370262116 by 司徒正美 Copyright 2018-02-07
  */
 
 (function (global, factory) {
@@ -1627,17 +1627,17 @@ function blurFocus(e) {
 
 "blur,focus".replace(/\w+/g, function (type) {
     globalEvents[type] = true;
-    /* if(modern){
+    if (modern) {
         var mark = "__" + type;
-        if(!document[mark]){ 
+        if (!document[mark]) {
             document[mark] = true;
-            addEvent(document, type, blurFocus,true);
+            addEvent(document, type, blurFocus, true);
         }
-    }else{*/
-    eventHooks[type] = function (dom, name) {
-        addEvent(dom, focusMap[name], blurFocus);
-    };
-    /* } */
+    } else {
+        eventHooks[type] = function (dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    }
 });
 
 eventHooks.scroll = function (dom, name) {

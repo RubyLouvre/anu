@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-06
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-07
  */
 
 (function (global, factory) {
@@ -1270,17 +1270,17 @@ function blurFocus(e) {
 
 "blur,focus".replace(/\w+/g, function (type) {
     globalEvents[type] = true;
-    /* if(modern){
+    if (modern) {
         var mark = "__" + type;
-        if(!document[mark]){ 
+        if (!document[mark]) {
             document[mark] = true;
-            addEvent(document, type, blurFocus,true);
+            addEvent(document, type, blurFocus, true);
         }
-    }else{*/
-    eventHooks[type] = function (dom, name) {
-        addEvent(dom, focusMap[name], blurFocus);
-    };
-    /* } */
+    } else {
+        eventHooks[type] = function (dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    }
 });
 
 eventHooks.scroll = function (dom, name) {
@@ -3164,28 +3164,24 @@ function syncValueByOptionValue(dom) {
 
 var fixIEChangeHandle = createHandle("change", function (e) {
     var dom = e.srcElement;
-    switch (e.type) {
-        case "change":
-            if (dom.type === "select-one") {
-                if (!dom.__bindFixValueFn) {
-                    addEvent(dom, "propertychange", setSelectValue);
-                    dom.__bindFixValueFn = true;
-                }
-                noCheck = true;
-                syncValueByOptionValue(dom);
-                noCheck = false;
-            }
-            return true;
-        case "click":
-            return true;
-        case "propertychange":
-            if (e.propertyName === "value") {
-                if (dom.__anuSetValue) {
-                    return false;
-                }
-            } else {
+    if (dom.type === "select-one") {
+        if (!dom.__bindFixValueFn) {
+            addEvent(dom, "propertychange", setSelectValue);
+            dom.__bindFixValueFn = true;
+        }
+        noCheck = true;
+        syncValueByOptionValue(dom);
+        noCheck = false;
+        return true;
+    }
+    if (e.type === "propertychange") {
+        if (e.propertyName === "value") {
+            if (dom.__anuSetValue) {
                 return false;
             }
+        } else {
+            return false;
+        }
     }
 });
 

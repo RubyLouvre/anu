@@ -26,26 +26,22 @@ function syncValueByOptionValue(dom) {
 
 var fixIEChangeHandle = createHandle("change", function(e) {
     var dom = e.srcElement;
-    switch (e.type) {
-    case "change":
-        if (dom.type === "select-one") {
-            if (!dom.__bindFixValueFn) {
-                addEvent(dom, "propertychange", setSelectValue);
-                dom.__bindFixValueFn = true;
-            }
-            noCheck = true;
-            syncValueByOptionValue(dom);
-            noCheck = false;
+    if (dom.type === "select-one") {
+        if (!dom.__bindFixValueFn) {
+            addEvent(dom, "propertychange", setSelectValue);
+            dom.__bindFixValueFn = true;
         }
+        noCheck = true;
+        syncValueByOptionValue(dom);
+        noCheck = false;
         return true;
-    case "click":
-        return true;
-    case "propertychange":
-        if (e.propertyName === "value") {
-            if (dom.__anuSetValue) {
+    }
+    if (e.type === "propertychange" ) {
+        if( e.propertyName === "value"){
+            if(dom.__anuSetValue){
                 return false;
             }
-        } else {
+        }else{
             return false;
         }
     }

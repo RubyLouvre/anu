@@ -289,17 +289,17 @@ function blurFocus(e){
 
 "blur,focus".replace(/\w+/g, function (type) {
     globalEvents[type] = true;
-    /* if(modern){
+    if(modern){
         var mark = "__" + type;
         if(!document[mark]){ 
             document[mark] = true;
             addEvent(document, type, blurFocus,true);
         }
-    }else{*/
-    eventHooks[type] = function(dom, name) {
-        addEvent(dom, focusMap[name], blurFocus);
-    };
-    /* } */
+    }else{
+        eventHooks[type] = function(dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    } 
 });
 
 eventHooks.scroll = function(dom, name) {
