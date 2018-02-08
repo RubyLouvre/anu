@@ -174,12 +174,18 @@ function getPropAction(dom, name, isSVG) {
     if (isEventName(name)) {
         return "event";
     }
+   
     if (isSVG) {
         return "svgAttr";
+    }
+    //img.width = '100px'时,取img.width为0,必须用setAttribute
+    if((name === "width" || name === "height")){
+        return "attribute";
     }
     if (isBooleanAttr(dom, name)) {
         return "booleanAttr";
     }
+
 
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }

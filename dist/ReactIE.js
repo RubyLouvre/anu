@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-07
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-02-08
  */
 
 (function (global, factory) {
@@ -795,26 +795,6 @@ function insertElement(vnode, insertPoint) {
     if (after && !contains(parentNode, after)) {
         return;
     }
-
-    /*
-    if(insertPoint){
-        //如果非父节点的孩子
-        if(!contains(parentNode,insertPoint)){
-            return;
-        }
-        after = insertPoint.nextSibling;
-        //如果已经插入
-        if(after === null && dom === parentNode.lastChild){
-            return;
-        }
-    }else{
-        after = parentNode.firstChild;
-        //如果已经插入
-        if (after === dom) {
-            return;
-        }
-    }
-    */
     var isElement = vnode.vtype;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
@@ -2087,8 +2067,13 @@ function getPropAction(dom, name, isSVG) {
     if (isEventName(name)) {
         return "event";
     }
+
     if (isSVG) {
         return "svgAttr";
+    }
+    //img.width = '100px'时,取img.width为0,必须用setAttribute
+    if (name === "width" || name === "height") {
+        return "attribute";
     }
     if (isBooleanAttr(dom, name)) {
         return "booleanAttr";

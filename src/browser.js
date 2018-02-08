@@ -219,26 +219,6 @@ export function insertElement(vnode, insertPoint) {
     if(after && !contains(parentNode,after)){
         return;
     }
-
-    /*
-    if(insertPoint){
-        //如果非父节点的孩子
-        if(!contains(parentNode,insertPoint)){
-            return;
-        }
-        after = insertPoint.nextSibling;
-        //如果已经插入
-        if(after === null && dom === parentNode.lastChild){
-            return;
-        }
-    }else{
-        after = parentNode.firstChild;
-        //如果已经插入
-        if (after === dom) {
-            return;
-        }
-    }
- */
     var isElement = vnode.vtype;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
