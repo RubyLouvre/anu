@@ -254,7 +254,7 @@ eventPropHooks.wheel = function(event){
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function(dom) {
-    if (/text|password/.test(dom.type)) {
+    if (/text|password|search/.test(dom.type)) {
         addEvent(document, "input", specialHandles.change);
     }
 };
