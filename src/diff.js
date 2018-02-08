@@ -1,10 +1,10 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
 import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
-import { disposeVnode, disposeChildren, topVnodes, topNodes } from "./dispose";
+import { disposeVnode, disposeChildren, topFibers, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
-import { CompositeUpdater, getContextByTypes, getDerivedStateFromProps } from "./CompositeUpdater";
+import { ComponentFiber, getContextByTypes, getDerivedStateFromProps } from "./ComponentFiber";
 import { Component } from "./Component";
-import { DOMUpdater } from "./DOMUpdater";
+import { HostFiber } from "./HostFiber";
 import { drainQueue } from "./scheduler";
 import { Refs } from "./Refs";
 import { captureError } from "./ErrorBoundary";
@@ -29,9 +29,9 @@ export function unstable_renderSubtreeIntoContainer(lastVnode, nextVnode, contai
 export function unmountComponentAtNode(container) {
     let nodeIndex = topNodes.indexOf(container);
     if (nodeIndex > -1) {
-        var lastVnode = topVnodes[nodeIndex];
+        var lastFiber = topFibers[nodeIndex];
         var queue = [];
-        disposeVnode(lastVnode, queue);
+        disposeVnode(lastFiber, queue);
         drainQueue(queue);
         emptyElement(container);
         container.__component = null;
@@ -71,111 +71,99 @@ fn.render = function() {
 };
 
 // ReactDOM.render的内部实现 Host
-function renderByAnu(vnode, container, callback, context = {}) {
-    if (!(container && container.appendChild)) {
+function renderByAnu(vnode, root, callback, context = {}) {
+    if (!(root && root.appendChild)) {
         throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
     //__component用来标识这个真实DOM是ReactDOM.render的容器，通过它可以取得上一次的虚拟DOM
-    // 但是在IE6－8中，文本/注释节点不能通过添加自定义属性来引用虚拟DOM，这时我们额外引进topVnode,
+    // 但是在IE6－8中，文本/注释节点不能通过添加自定义属性来引用虚拟DOM，这时我们额外引进topFiber,
     //topNode来寻找它们。
 
-    let nodeIndex = topNodes.indexOf(container),
-        lastWrapper,
-        top,
-        wrapper,
+    let nodeIndex = topNodes.indexOf(root),
+        lastRootFiber,
         updateQueue = [],
         insertCarrier = {};
     //updaterQueue是用来装载updater， insertCarrier是用来装载插入DOM树的真实DOM
     if (nodeIndex !== -1) {
-        lastWrapper = topVnodes[nodeIndex];
-        wrapper = lastWrapper.stateNode.updater;
-        if (wrapper._hydrating) {
+        lastRootFiber = topFibers[nodeIndex];
+        if (lastRootFiber._hydrating) {
             //如果是在componentDidMount/Update中使用了ReactDOM.render，那么将延迟到此组件的resolve阶段执行
-            wrapper._pendingCallbacks.push(renderByAnu.bind(null, vnode, container, callback, context));
-            return lastWrapper.child.stateNode;
+            lastRootFiber._pendingCallbacks.push(renderByAnu.bind(null, vnode, root, callback, context));
+            return lastRootFiber.child.stateNode; //这里要改
         }
     } else {
-        topNodes.push(container);
+        topNodes.push(root);
         nodeIndex = topNodes.length - 1;
     }
     Refs.currentOwner = null; //防止干扰
-    var nextWrapper = createElement(AnuWrapper, { child: vnode });
+    var cbVnode = createElement(AnuWrapper, { child: vnode });
     // top(contaner) > nextWrapper > vnode
-    nextWrapper.isTop = true;
-    topVnodes[nodeIndex] = nextWrapper;
-    if (lastWrapper) {
-        top = nextWrapper.return = lastWrapper.return;
-        top.child = nextWrapper;
-        receiveVnode(lastWrapper, nextWrapper, context, updateQueue, insertCarrier);
+    // nextWrapper.isTop = true;
+    //  topFibers[nodeIndex] = nextWrapper;
+    if (lastRootFiber) {
+        receiveVnode(lastRootFiber.child, vnode, context, updateQueue, insertCarrier);
+        cbFiber = lastRootFiber;
     } else {
-        top = nextWrapper.return = createVnode(container);
-        var topUpdater = new DOMUpdater(top);
-        top.child = nextWrapper;
-        topUpdater.children = {
-            ".0": nextWrapper
+        var rootVnode = createVnode(root);
+        var rootFiber = new HostFiber(rootVnode);
+        var children = rootFiber.children = {
+            ".0": cbVnode
         };
-        nextWrapper.child = vnode;
-        genVnodes(nextWrapper, context, updateQueue, insertCarrier); // 这里会从下到上添加updater
+        emptyElement(root);
+        mountChildren(rootFiber, children, context, updateQueue, insertCarrier);
     }
-    top.updater.init(updateQueue); // 添加最顶层的updater
-
-    container.__component = nextWrapper; //兼容旧的
-    wrapper = nextWrapper.stateNode.updater;
+    rootFiber.init(updateQueue); // 添加最顶层的updater
+    var cbFiber = rootFiber.child;
+    root.__component = cbFiber; //兼容旧的
 
     if (callback) {
-        wrapper._pendingCallbacks.push(callback.bind(vnode.stateNode));
+        cbFiber._pendingCallbacks.push(callback.bind(vnode.stateNode));
     }
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    return vnode.stateNode;
+    return cbFiber.child.stateNode;
 }
 
-function genVnodes(vnode, context, updateQueue, insertCarrier) {
-    let parentNode = vnode.return.stateNode;
-    let nodes = toArray(parentNode.childNodes || emptyArray);
-    let lastVnode = null;
-    for (var i = 0, dom; (dom = nodes[i++]); ) {
-        if (toLowerCase(dom.nodeName) === vnode.type) {
-            lastVnode = createVnode(dom);
-        } else {
-            parentNode.removeChild(dom);
-        }
-    }
-    if (lastVnode) {
-        receiveVnode(lastVnode, vnode, context, updateQueue, insertCarrier);
-    } else {
-        mountVnode(vnode, context, updateQueue, insertCarrier);
-    }
-}
+
 
 //mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
 function mountVnode(vnode, context, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
-    if (vnode.vtype === 0 || vnode.vtype === 1) {
-        vnode.stateNode = createDOMElement(vnode, vnode.return);
+    var fiber;
+    if (vnode.tag === 5 || vnode.tag === 6) {
+        fiber = new HostFiber(vnode);
+        fiber.stateNode =  createDOMElement(vnode, vnode.return);
         var beforeDOM = insertCarrier.dom;
-        insertCarrier.dom = vnode.stateNode;
-        if (vnode.vtype === 1) {
-            let updater = new DOMUpdater(vnode);
-            let children = fiberizeChildren(vnode.props.children, updater);
+        insertCarrier.dom = fiber.stateNode;
+        if(vnode.tag === 6){
+            let children = fiberizeChildren(vnode.props.children, fiber);
             mountChildren(vnode, children, context, updateQueue, {});
-            updater.init(updateQueue);
+            fiber.init(updateQueue);
         }
-        insertElement(vnode, beforeDOM);
-        if(vnode.updater) {
-            vnode.updater.props();
+        insertElement(fiber, beforeDOM);
+        if(vnode.tag === 6){
+            fiber.props();
         }
-
     } else {
-        var updater = new CompositeUpdater(vnode, context);
-        updater.init(updateQueue, insertCarrier);
+        fiber = new ComponentFiber(vnode, context);
+        fiber.init(updateQueue, insertCarrier);
     }
+    return fiber;
 }
 
-function mountChildren(vnode, children, context, updateQueue, insertCarrier) {
+function mountChildren(parentFiber, children, context, updateQueue, insertCarrier) {
+    var prevFiber, firstFiber, index = 0;
     for (var i in children) {
         var child = children[i];
-        mountVnode(child, context, updateQueue, insertCarrier);
+        var fiber = children[i] = mountVnode(child, context, updateQueue, insertCarrier);
+        fiber.index = index++;
+        if(!firstFiber){
+            parentFiber.child = firstFiber = fiber;
+        }
+        if(prevFiber){
+            prevFiber.sibling = fiber;
+        }
+        prevFiber = fiber;
         if (Refs.errorHook) {
             break;
         }
@@ -248,7 +236,7 @@ function receiveComponent(lastVnode, nextVnode, parentContext, updateQueue, inse
             captureError(stateNode, "componentWillReceiveProps", [nextProps, nextContext]);
         }
         if(lastVnode.props !== nextProps){
-            getDerivedStateFromProps(updater, type, nextProps, stateNode.state)
+            getDerivedStateFromProps(updater, type, nextProps, stateNode.state);
         }
         if (updater._hasError) {
             return;

@@ -185,8 +185,6 @@ function getPropAction(dom, name, isSVG) {
     if (isBooleanAttr(dom, name)) {
         return "booleanAttr";
     }
-
-
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
 var builtinStringProps = {
@@ -275,7 +273,6 @@ export var actionStrategy = {
         }
     },
     property: function(dom, name, val) {
-        // if (dom[name] !== val) {
         // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
         // 这时如果用 setAttribute 则会静默失败
         if (controlled[name]) {

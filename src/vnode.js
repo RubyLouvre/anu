@@ -1,10 +1,10 @@
 import { typeNumber, options, REACT_ELEMENT_TYPE } from "./util";
 import { Refs } from "./Refs";
 var mapVtype = {
-    0: 6,
-    4 :1,
-    2: 2,
-    1: 5
+    0: 6, //text
+    4 :1, //function
+    2: 2, //class
+    1: 5  //element
 };
 export function Vnode(type, vtype, props, key, ref) {
     this.type = type;

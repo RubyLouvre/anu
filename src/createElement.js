@@ -130,6 +130,7 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
+    /*  
     child.index = flattenIndex;
     child.return = vnode;
     if (flattenPrev) {
@@ -137,27 +138,28 @@ function flattenCb(child, index, vnode) {
     }
     flattenPrev = child;
     flattenIndex++;
+    */
     flattenArray.push(child);
 }
 
-export function fiberizeChildren(c, updater) {
+export function fiberizeChildren(c, fiber) {
     flattenObject = {};
-    flattenPrev = null;
+    // flattenPrev = null;
     flattenArray = [];
-    let vnode = updater._reactInternalFiber;
+    let vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         flattenIndex = 0;
         operateChildren(c, "", flattenCb, vnode);
-        let child = flattenArray[0];
+        /*  let child = flattenArray[0];
         if (child) {
             vnode.child = child;
         }
         if (flattenPrev) {
             delete flattenPrev.sibling;
-        }
+        }*/
     }
-    return (updater.children = flattenObject);
+    return (fiber.children = flattenObject);
 }
 
 export function operateChildren(children, prefix, callback, parent) {

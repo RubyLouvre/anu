@@ -25,7 +25,7 @@ const errorType = {
  * @param {any} instance
  * @param {any} vnode
  */
-export function CompositeUpdater(vnode, parentContext) {
+export function componentFiber(vnode, parentContext) {
     var { type, props } = vnode;
     if (!type) {
         throw vnode;
@@ -48,7 +48,7 @@ export function CompositeUpdater(vnode, parentContext) {
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
 }
 
-CompositeUpdater.prototype = {
+componentFiber.prototype = {
     addState: function(state) {
         var states = this._states;
         if (states[states.length - 1] !== state) {
@@ -167,7 +167,7 @@ CompositeUpdater.prototype = {
         }
        
         vnode.stateNode = this.instance = instance;
-        getDerivedStateFromProps(this, type, props, instance.state)
+        getDerivedStateFromProps(this, type, props, instance.state);
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
@@ -354,10 +354,10 @@ function transfer(queue){
 }
 export function getDerivedStateFromProps(updater,type, props, state){
     if(isFn(type.getDerivedStateFromProps)){
-       var state = type.getDerivedStateFromProps.call(null, props, state)
-       if(state != null){
-          updater._pendingStates.push(state)
-       }
+        var state = type.getDerivedStateFromProps.call(null, props, state);
+        if(state != null){
+            updater._pendingStates.push(state);
+        }
     }
 }
 

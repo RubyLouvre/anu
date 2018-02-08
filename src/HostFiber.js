@@ -3,15 +3,15 @@ import { formElements, inputControll } from "./inputControll";
 import { returnFalse, returnTrue } from "../src/util";
 import { diffProps } from "./diffProps";
 
-export function DOMUpdater(vnode) {
+export function HostFiber(vnode) {
     this.name = vnode.type;
     this._states = ["resolve"];
     this._reactInternalFiber = vnode;
-    vnode.updater = this;
+    //  vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
 
-DOMUpdater.prototype = {
+HostFiber.prototype = {
     addState: function(state) {
         var states = this._states;
         if (states[states.length - 1] !== state) {
@@ -30,7 +30,7 @@ DOMUpdater.prototype = {
     isMounted: returnFalse,
     props() {
         var vnode = this._reactInternalFiber;
-        var dom = vnode.stateNode;
+        var dom = this.stateNode;
         var { type, props, lastProps } = vnode;
         diffProps(dom, lastProps || {}, props, vnode);
         if (formElements[type]) {
@@ -39,7 +39,7 @@ DOMUpdater.prototype = {
     },
     resolve() {
         var vnode = this._reactInternalFiber;
-        var dom = vnode.stateNode;
+        var dom = this.stateNode;
         this.isMounted = returnTrue;
         Refs.fireRef(vnode, dom);
     },

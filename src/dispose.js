@@ -1,16 +1,16 @@
 import { options } from "./util";
 import { removeElement } from "./browser";
 
-export const topVnodes = [];
+export const topFibers = [];
 export const topNodes = [];
 
 export function disposeVnode(vnode, updateQueue, silent) {
     if (vnode && !vnode._disposed) {
         options.beforeDelete(vnode);
         if (vnode.isTop) {
-            var i = topVnodes.indexOf(vnode);
+            var i = topFibers.indexOf(vnode);
             if (i !== -1) {
-                topVnodes.splice(i, 1);
+                topFibers.splice(i, 1);
                 topNodes.splice(i, 1);
             }
         }

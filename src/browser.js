@@ -157,7 +157,7 @@ export function createElement(vnode, p) {
         ns = vnode.namespaceURI;
         if (!ns) {
             do {
-                if (p.vtype === 1) {
+                if (p.tag === 5) {
                     ns = p.namespaceURI;
                     if (p.type === "foreignObject") {
                         ns = "";
@@ -192,22 +192,22 @@ export function contains(a, b) {
     }
     return false;
 }
-export function insertElement(vnode, insertPoint) {
-    if (vnode._disposed) {
+export function insertElement(fiber, insertPoint) {
+    if (fiber._disposed) {
         return;
     }
     //找到可用的父节点
-    var p = vnode.return,
+    var p = fiber.return,
         parentNode;
     while (p) {
-        if (p.vtype === 1) {
+        if (p.tag === 5) {
             parentNode = p.stateNode;
             break;
         }
         p = p.superReturn || p.return;
     }
 
-    var dom = vnode.stateNode,
+    var dom = fiber.stateNode,
         after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
 
     if (after === dom) {
@@ -219,7 +219,7 @@ export function insertElement(vnode, insertPoint) {
     if(after && !contains(parentNode,after)){
         return;
     }
-    var isElement = vnode.vtype;
+    var isElement = fiber.tag === 5;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
     if(isElement &&  prevFocus !== document.activeElement && contains(document.body, prevFocus)){
