@@ -29,7 +29,7 @@ HostFiber.prototype = {
         updateQueue.push(this);
     },
     isMounted: returnFalse,
-    props() {
+    attr() {
         var vnode = this._reactInternalFiber;
         var dom = this.stateNode;
         var { type, props, lastProps } = vnode;

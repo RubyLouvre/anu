@@ -141,10 +141,10 @@ var Refs = {
 };
 
 var mapVtype = {
-    0: 6,
-    4: 1,
-    2: 2,
-    1: 5
+    0: 6, //text
+    4: 1, //function
+    2: 2, //class
+    1: 5 //element
 };
 function Vnode(type, vtype, props, key, ref) {
     this.type = type;
@@ -205,7 +205,6 @@ function createVText(type, text) {
 var lastText;
 var flattenIndex;
 var flattenObject;
-var flattenPrev;
 var flattenArray;
 function flattenCb(child, index, vnode) {
     var childType = typeNumber(child);
@@ -233,6 +232,7 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
+    /*  
     child.index = flattenIndex;
     child.return = vnode;
     if (flattenPrev) {
@@ -240,27 +240,28 @@ function flattenCb(child, index, vnode) {
     }
     flattenPrev = child;
     flattenIndex++;
+    */
     flattenArray.push(child);
 }
 
-function fiberizeChildren(c, updater) {
+function fiberizeChildren(c, fiber) {
     flattenObject = {};
-    flattenPrev = null;
+    // flattenPrev = null;
     flattenArray = [];
-    var vnode = updater._reactInternalFiber;
+    var vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         flattenIndex = 0;
         operateChildren(c, "", flattenCb, vnode);
-        var child = flattenArray[0];
+        /*  let child = flattenArray[0];
         if (child) {
             vnode.child = child;
         }
         if (flattenPrev) {
             delete flattenPrev.sibling;
-        }
+        }*/
     }
-    return updater.children = flattenObject;
+    return fiber.children = flattenObject;
 }
 
 function operateChildren(children, prefix, callback, parent) {

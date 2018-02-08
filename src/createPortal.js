@@ -1,5 +1,5 @@
 import { createVnode, createElement } from "./createElement";
-import { DOMUpdater } from "./DOMUpdater";
+import { HostFiber } from "./HostFiber";
 
 function AnuPortal(props){
     return props.children;
@@ -14,7 +14,7 @@ export function createPortal(children, node) {
         events = node.__events = {};
         vnode = createVnode(node);
         events.vnode = vnode;
-        new DOMUpdater(vnode);
+        new HostFiber(vnode);
     }
 
     var child = createElement(AnuPortal, { children: children });

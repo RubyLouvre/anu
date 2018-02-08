@@ -105,11 +105,13 @@ function renderByAnu(vnode, root, callback, context = {}) {
         cbFiber = lastRootFiber;
     } else {
         var rootVnode = createVnode(root);
+        //  rootVnode.props.children = rootVnode
         var rootFiber = new HostFiber(rootVnode);
+        rootFiber.stateNode = root;
+        emptyElement(root);
         var children = rootFiber.children = {
             ".0": cbVnode
         };
-        emptyElement(root);
         mountChildren(rootFiber, children, context, updateQueue, insertCarrier);
     }
     rootFiber.init(updateQueue); // 添加最顶层的updater
@@ -121,7 +123,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
     }
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    return cbFiber.child.stateNode;
+    //return cbFiber.child.stateNode;
 }
 
 
@@ -132,20 +134,22 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
     var fiber;
     if (vnode.tag === 5 || vnode.tag === 6) {
         fiber = new HostFiber(vnode);
+        fiber.return = vnode.return;
         fiber.stateNode = createDOMElement(vnode, vnode.return);
         var beforeDOM = insertCarrier.dom;
         insertCarrier.dom = fiber.stateNode;
-        if(vnode.tag === 6){
+        if(fiber.tag === 5){
             let children = fiberizeChildren(vnode.props.children, fiber);
             mountChildren(fiber, children, context, updateQueue, {});
             fiber.init(updateQueue);
         }
         insertElement(fiber, beforeDOM);
-        if(vnode.tag === 6){
-            fiber.props();
+        if(fiber.tag === 5){
+            fiber.attr();
         }
     } else {
         fiber = new ComponentFiber(vnode, context);
+        fiber.return = vnode.return;
         fiber.init(updateQueue, insertCarrier);
     }
     return fiber;
@@ -162,9 +166,10 @@ function mountChildren(parentFiber, children, context, updateQueue, insertCarrie
     var prevFiber, firstFiber, index = 0;
     for (var i in children) {
         var child = children[i];
+        child.return = parentFiber;
         var fiber = children[i] = mountVnode(child, context, updateQueue, insertCarrier);
         fiber.index = index++;
-        fiber.return = parentFiber;
+        //  fiber.return = parentFiber;
         if(!firstFiber){
             parentFiber.child = firstFiber = fiber;
         }
@@ -203,7 +208,7 @@ function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) 
                 var nextChildren = fiberizeChildren(props.children, updater);
                 diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, {});
             }
-            updater.props();
+            updater.attr();
             updater.addState("resolve");
             updateQueue.push(updater);
         }

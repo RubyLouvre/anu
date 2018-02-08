@@ -25,15 +25,18 @@ const errorType = {
  * @param {any} instance
  * @param {any} vnode
  */
-export function componentFiber(vnode, parentContext) {
+export function ComponentFiber(vnode, parentContext) {
     var { type, props } = vnode;
     if (!type) {
+        console.log(vnode);
         throw vnode;
     }
     this.type = type;
     this.tag = vnode.tag;
     this.name = type.displayName || type.name;
     this.props = props;
+
+
     this._reactInternalFiber = vnode;
     this.context = getContextByTypes(parentContext, type.contextTypes);
     this.parentContext = parentContext;
@@ -50,7 +53,7 @@ export function componentFiber(vnode, parentContext) {
     //  this._forceUpdate = true 表示会无视shouldComponentUpdate的结果
 }
 
-componentFiber.prototype = {
+ComponentFiber.prototype = {
     addState: function(state) {
         var states = this._states;
         if (states[states.length - 1] !== state) {

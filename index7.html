@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./dist/React.js"></script>
     <!--<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
    <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
@@ -26,7 +25,7 @@
     </h1>
     <script type='text/babel'>
            var container = document.getElementById("example")
-           var div = container
+         
             var PropTypes = React.PropTypes
             if(!window.ReactDOM){
               window.ReactDOM = React
@@ -41,30 +40,11 @@
                     },
                 }
             }  
-        var body = document.body;
-        var container = document.createElement("div");
-        body.appendChild(container);
-      
-  
-        class A extends React.Component {
-            render() {
-                return (
-                    <div class="A">
-                       <button type="button" onClick={ ()=>{
-                           console.log("xxx")
-                       }}> 点我</button>
-                    </div>
-                );
-            }
-
-  
-        }
-
      
-       ReactDOM.render(<A />, container)
+     
+       ReactDOM.render(<div>1111</div>, container)
 
 </script>
-3, 4, 5, 0, 6, 1, 7, 2 
-</body>
+
 
 </html>

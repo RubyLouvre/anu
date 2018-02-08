@@ -197,6 +197,7 @@ export function insertElement(fiber, insertPoint) {
         return;
     }
     //找到可用的父节点
+    console.log(fiber);
     var p = fiber.return,
         parentNode;
     while (p) {
@@ -207,8 +208,9 @@ export function insertElement(fiber, insertPoint) {
         p = p.portalReturn || p.return;
     }
 
-    var dom = fiber.stateNode,
-        after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
+    var dom = fiber.stateNode;
+    console.log(dom);
+    var after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
 
     if (after === dom) {
         return;

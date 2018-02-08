@@ -1,4 +1,4 @@
-import { getChildContext, getContextByTypes } from "../src/CompositeUpdater";
+import { getChildContext, getContextByTypes } from "../src/ComponentFiber";
 import { fiberizeChildren } from "../src/createElement";
 import { typeNumber } from "../src/util";
 import { encodeEntities } from "./util";
