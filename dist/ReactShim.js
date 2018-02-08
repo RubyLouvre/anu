@@ -2098,11 +2098,11 @@ HostFiber.prototype = {
         var vnode = this._reactInternalFiber;
         var dom = this.stateNode;
         this.isMounted = returnTrue;
-        Refs.fireRef(vnode, dom);
+        // Refs.fireRef(vnode, dom);
     },
     dispose: function dispose() {
         var vnode = this._reactInternalFiber;
-        Refs.fireRef(vnode, null);
+        // Refs.fireRef(vnode, null);
     }
 };
 
@@ -2509,6 +2509,7 @@ ComponentFiber.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
+        console.log("---");
         Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertCarrier);
     },
 
@@ -2752,7 +2753,8 @@ function renderByAnu(vnode, root, callback) {
     }
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    //return cbFiber.child.stateNode;
+    console.log(cbFiber);
+    return cbFiber.child.stateNode;
 }
 
 //mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
@@ -2910,15 +2912,15 @@ function receiveVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier)
     }
 }
 // https://github.com/onmyway133/DeepDiff
-function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue, insertCarrier) {
+function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, updateQueue, insertCarrier) {
     //这里都是走新的任务列队
     var lastChild = void 0,
         nextChild = void 0,
         isEmpty = true,
         child = void 0,
         firstChild = void 0;
-    if (parentVnode.vtype === 1) {
-        firstChild = parentVnode.stateNode.firstChild;
+    if (parentFiber.tag === 5) {
+        firstChild = parentFiber.stateNode.firstChild;
     }
     for (var i in lastChildren) {
         isEmpty = false;
@@ -2940,7 +2942,8 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
-        mountChildren(parentVnode, nextChildren, parentContext, updateQueue, insertCarrier);
+        console.log("isEmpty");
+        mountChildren(parentFiber, nextChildren, parentContext, updateQueue, insertCarrier);
     } else {
         var matchNodes = {},
             matchRefs = [];

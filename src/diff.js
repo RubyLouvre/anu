@@ -123,7 +123,8 @@ function renderByAnu(vnode, root, callback, context = {}) {
     }
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    //return cbFiber.child.stateNode;
+    console.log(cbFiber);
+    return cbFiber.child.stateNode;
 }
 
 
@@ -278,15 +279,15 @@ function receiveVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier)
     }
 }
 // https://github.com/onmyway133/DeepDiff
-function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, updateQueue, insertCarrier) {
+function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, updateQueue, insertCarrier) {
     //这里都是走新的任务列队
     let lastChild,
         nextChild,
         isEmpty = true,
         child,
         firstChild;
-    if (parentVnode.vtype === 1) {
-        firstChild = parentVnode.stateNode.firstChild;
+    if (parentFiber.tag === 5) {
+        firstChild = parentFiber.stateNode.firstChild;
     }
     for (var i in lastChildren) {
         isEmpty = false;
@@ -308,7 +309,8 @@ function diffChildren(lastChildren, nextChildren, parentVnode, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
-        mountChildren(parentVnode, nextChildren, parentContext, updateQueue, insertCarrier);
+        console.log("isEmpty");
+        mountChildren(parentFiber, nextChildren, parentContext, updateQueue, insertCarrier);
     } else {
         var matchNodes = {},
             matchRefs = [];
