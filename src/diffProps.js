@@ -197,14 +197,14 @@ var builtinStringProps = {
 };
 
 var rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, vnode) {
+function uncontrolled(dom, name, val, lastProps, fiber) {
     if (rform.test(dom.nodeName)) {
         if (!dom._uncontrolled) {
             dom._uncontrolled = true;
             inputMonitor.observe(dom, name); //重写defaultXXX的setter/getter
         }
         dom._observing = false;
-        if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {
+        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
             //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
             dom.selectedIndex = dom.selectedIndex;
             dom._setValue = false;
@@ -294,9 +294,9 @@ export var actionStrategy = {
             }catch(e){/*ignore*/}
         }
     },
-    event: function(dom, name, val, lastProps, vnode) {
+    event: function(dom, name, val, lastProps, fiber) {
         let events = dom.__events || (dom.__events = {});
-        events.vnode = vnode;
+        events.vnode = fiber;
         let refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];

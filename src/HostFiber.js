@@ -4,10 +4,11 @@ import { returnFalse, returnTrue } from "../src/util";
 import { diffProps } from "./diffProps";
 
 export function HostFiber(vnode) {
-    this.name = vnode.type;
+    this.type = this.name = vnode.type;
+    this.props = vnode.props;
+    this.tag = vnode.tag;
     this._states = ["resolve"];
     this._reactInternalFiber = vnode;
-    //  vnode.updater = this;
     this._mountOrder = Refs.mountOrder++;
 }
 
@@ -32,7 +33,7 @@ HostFiber.prototype = {
         var vnode = this._reactInternalFiber;
         var dom = this.stateNode;
         var { type, props, lastProps } = vnode;
-        diffProps(dom, lastProps || {}, props, vnode);
+        diffProps(dom, lastProps || {}, props, this);
         if (formElements[type]) {
             inputControll(vnode, dom, props);
         }

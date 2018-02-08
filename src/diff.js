@@ -132,12 +132,12 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
     var fiber;
     if (vnode.tag === 5 || vnode.tag === 6) {
         fiber = new HostFiber(vnode);
-        fiber.stateNode =  createDOMElement(vnode, vnode.return);
+        fiber.stateNode = createDOMElement(vnode, vnode.return);
         var beforeDOM = insertCarrier.dom;
         insertCarrier.dom = fiber.stateNode;
         if(vnode.tag === 6){
             let children = fiberizeChildren(vnode.props.children, fiber);
-            mountChildren(vnode, children, context, updateQueue, {});
+            mountChildren(fiber, children, context, updateQueue, {});
             fiber.init(updateQueue);
         }
         insertElement(fiber, beforeDOM);
@@ -150,13 +150,21 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
     }
     return fiber;
 }
-
+/**
+ * 重写children对象中的vnode为fiber，并用child, sibling, return关联各个fiber
+ * @param {Fiber} parentFiber 
+ * @param {Object} children 
+ * @param {Object} context 
+ * @param {Array} updateQueue 
+ * @param {Object} insertCarrier 
+ */
 function mountChildren(parentFiber, children, context, updateQueue, insertCarrier) {
     var prevFiber, firstFiber, index = 0;
     for (var i in children) {
         var child = children[i];
         var fiber = children[i] = mountVnode(child, context, updateQueue, insertCarrier);
         fiber.index = index++;
+        fiber.return = parentFiber;
         if(!firstFiber){
             parentFiber.child = firstFiber = fiber;
         }

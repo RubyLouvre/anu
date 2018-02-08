@@ -30,6 +30,8 @@ export function componentFiber(vnode, parentContext) {
     if (!type) {
         throw vnode;
     }
+    this.type = type;
+    this.tag = vnode.tag;
     this.name = type.displayName || type.name;
     this.props = props;
     this._reactInternalFiber = vnode;

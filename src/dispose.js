@@ -15,8 +15,8 @@ export function disposeVnode(vnode, updateQueue, silent) {
             }
         }
       
-        if(vnode.superReturn){
-            var dom = vnode.superReturn.stateNode;
+        if(vnode.portalReturn){
+            var dom = vnode.portalReturn.stateNode;
             delete dom.__events;
         }
         if (vnode.vtype > 1) {

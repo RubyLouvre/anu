@@ -204,7 +204,7 @@ export function insertElement(fiber, insertPoint) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.superReturn || p.return;
+        p = p.portalReturn || p.return;
     }
 
     var dom = fiber.stateNode,
