@@ -30,7 +30,7 @@ function K (el){
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (children && children.vtype) {
+        if (children && children.tag) {
             return children;
         }
         throw new Error("expect only one child");

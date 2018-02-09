@@ -19,10 +19,10 @@ export function disposeVnode(vnode, updateQueue, silent) {
             var dom = vnode.portalReturn.stateNode;
             delete dom.__events;
         }
-        if (vnode.vtype > 1) {
+        if (vnode.tag < 4) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
-            if (vnode.vtype === 1) {
+            if (vnode.tag === 5) {
                 disposeElement(vnode, updateQueue, silent);
             }
             updateQueue.push({

@@ -243,7 +243,7 @@ export function getComponentNodes(children, resolve, debug) {
         if (child._disposed) {
             continue;
         }
-        if (child.vtype < 2) {
+        if (child.tag > 4) {
             ret.push(inner);
         } else {
             var updater = inner.updater;

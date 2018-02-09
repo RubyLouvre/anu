@@ -126,7 +126,7 @@ ComponentFiber.prototype = {
     init(updateQueue, insertCarrier) {
         let { props, context, _reactInternalFiber:vnode } = this;
         let type = vnode.type,
-            isStateless = vnode.vtype === 4,
+            isStateless = vnode.tag === 1,
             instance,
             mixin;
         //实例化组件
@@ -210,7 +210,6 @@ ComponentFiber.prototype = {
             nodes.forEach(function(el) {
                 insertElement(el, queue.dom);
                 queue.dom = el.stateNode;
-                // queue.unshift(el.stateNode);
             });
         } else {
             captureError(instance, "componentWillUpdate", [props, state, context]);
@@ -238,7 +237,7 @@ ComponentFiber.prototype = {
     render(updateQueue) {
         let { _reactInternalFiber: vnode, pendingVnode, instance, parentContext } = this,
             nextChildren = emptyObject,
-            lastChildren = emptyObject,
+            lastChildren = this.children || emptyObject,
             childContext = parentContext,
             rendered,
             number;
@@ -281,8 +280,8 @@ ComponentFiber.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        console.log("---");
-        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertCarrier);
+        console.log("xxxxxxx");
+        Refs.diffChildren(lastChildren, nextChildren, this, childContext, updateQueue, this.insertCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
@@ -398,7 +397,7 @@ export function collectComponentNodes(children) {
         if (child._disposed) {
             continue;
         }
-        if (child.vtype < 2) {
+        if (child.tag > 4) {
             ret.push(child);
         } else {
             var updater = inner.updater;

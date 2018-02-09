@@ -133,7 +133,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
 function mountVnode(vnode, context, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
     var fiber;
-    if (vnode.tag === 5 || vnode.tag === 6) {
+    if (vnode.tag > 4) {
         fiber = new HostFiber(vnode);
         fiber.return = vnode.return;
         fiber.stateNode = createDOMElement(vnode, vnode.return);
@@ -187,10 +187,10 @@ function mountChildren(parentFiber, children, context, updateQueue, insertCarrie
 function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) {
     var dom = (nextVnode.stateNode = lastVnode.stateNode);
     options.beforeUpdate(nextVnode);
-    if (lastVnode.vtype < 2) {
+    if (lastVnode.tag > 4) {
         insertElement(nextVnode, insertCarrier.dom);
         insertCarrier.dom = dom;
-        if (lastVnode.vtype === 0) {
+        if (lastVnode.tag === 6) {
             if (nextVnode.text !== lastVnode.text) {
                 dom.nodeValue = nextVnode.text;
             }
@@ -298,7 +298,7 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
                 if (child.superReturn) {
                     break;
                 }
-                if (child.vtype < 2) {
+                if (child.tag > 4 ) {
                     child.stateNode = firstChild;
                     break;
                 }
@@ -309,7 +309,6 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
-        console.log("isEmpty");
         mountChildren(parentFiber, nextChildren, parentContext, updateQueue, insertCarrier);
     } else {
         var matchNodes = {},
@@ -319,7 +318,7 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
             lastChild = lastChildren[i];
             if (nextChild && nextChild.type === lastChild.type) {
                 matchNodes[i] = lastChild;
-                if (lastChild.vtype < 2 && lastChild.ref !== nextChild.ref) {
+                if (lastChild.tag > 4 && lastChild.ref !== nextChild.ref) {
                     lastChild.order = nextChild.index;
                     matchRefs.push(lastChild);
                 }

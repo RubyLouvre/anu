@@ -76,7 +76,7 @@ function findCatchComponent(target, names) {
             }
             disposeVnode(vnode, [], true);
             break;
-        } else if (vnode.vtype > 1) {
+        } else if (vnode.tag < 4) {//1,2
             name = type.displayName || type.name;
             names.push(name);
             instance = vnode.stateNode;
@@ -88,7 +88,7 @@ function findCatchComponent(target, names) {
                     catchIt = updater;
                 }
             }
-        } else if (vnode.vtype === 1) {
+        } else if (vnode.tag === 5) {
             names.push(type);
         }
     } while ((vnode = vnode.return));

@@ -76,7 +76,7 @@ function collectPaths(from, end) {
     var mid = node.__events;
     var vnode = mid.child || mid.vnode;
     do {
-        if (vnode.vtype === 1) {
+        if (vnode.tag === 5) {
             var dom = vnode.stateNode;
             if (dom === end) {
                 break;

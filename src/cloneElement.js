@@ -3,7 +3,7 @@ import { Refs} from "./Refs";
 import { extend } from "./util";
 
 export function cloneElement(vnode, props) {
-    if (!vnode.vtype) {
+    if (!vnode.tag === 6) {
         var clone = extend({}, vnode);
         delete clone._disposed;
         return clone;

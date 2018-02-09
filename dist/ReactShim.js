@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-02-08
+ * QQ 370262116 by 司徒正美 Copyright 2018-02-09
  */
 
 (function (global, factory) {
@@ -225,16 +225,32 @@ Component.prototype = {
     render: function render() {}
 };
 
-var mapVtype = {
-    0: 6, //text
+var vtype2tag = {
+    0: 6, //text,
+    1: 5, //element,
     4: 1, //function
-    2: 2, //class
-    1: 5 //element
+    2: 2 //class
 };
+/*
+ IndeterminateComponent = 0; // Before we know whether it is functional or class
+ FunctionalComponent = 1;
+ ClassComponent = 2;
+ HostRoot = 3; // Root of a host tree. Could be nested inside another node.
+ HostPortal = 4; // A subtree. Could be an entry point to a different renderer.
+ HostComponent = 5;
+ HostText = 6;
+ CallComponent = 7;
+ CallHandlerPhase = 8;
+ ReturnComponent = 9;
+ Fragment = 10;
+ Mode = 11;
+ ContextConsumer = 12;
+ ContextProvider = 13;
+*/
 function Vnode(type, vtype, props, key, ref) {
     this.type = type;
     this.vtype = vtype;
-    this.tag = mapVtype[vtype];
+    this.tag = vtype2tag[vtype];
     if (vtype) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -470,7 +486,7 @@ function getIteractor(a) {
 }
 
 function cloneElement(vnode, props) {
-    if (!vnode.vtype) {
+    if (!vnode.tag === 6) {
         var clone = extend({}, vnode);
         delete clone._disposed;
         return clone;
@@ -539,7 +555,7 @@ function K(el) {
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (children && children.vtype) {
+        if (children && children.tag) {
             return children;
         }
         throw new Error("expect only one child");
@@ -1179,10 +1195,10 @@ function disposeVnode(vnode, updateQueue, silent) {
             var dom = vnode.portalReturn.stateNode;
             delete dom.__events;
         }
-        if (vnode.vtype > 1) {
+        if (vnode.tag < 4) {
             disposeComponent(vnode, updateQueue, silent);
         } else {
-            if (vnode.vtype === 1) {
+            if (vnode.tag === 5) {
                 disposeElement(vnode, updateQueue, silent);
             }
             updateQueue.push({
@@ -1422,7 +1438,7 @@ function collectPaths(from, end) {
     var mid = node.__events;
     var vnode = mid.child || mid.vnode;
     do {
-        if (vnode.vtype === 1) {
+        if (vnode.tag === 5) {
             var dom = vnode.stateNode;
             if (dom === end) {
                 break;
@@ -2202,7 +2218,8 @@ function findCatchComponent(target, names) {
             }
             disposeVnode(vnode, [], true);
             break;
-        } else if (vnode.vtype > 1) {
+        } else if (vnode.tag < 4) {
+            //1,2
             name = type.displayName || type.name;
             names.push(name);
             instance = vnode.stateNode;
@@ -2214,7 +2231,7 @@ function findCatchComponent(target, names) {
                     catchIt = updater;
                 }
             }
-        } else if (vnode.vtype === 1) {
+        } else if (vnode.tag === 5) {
             names.push(type);
         }
     } while (vnode = vnode.return);
@@ -2344,7 +2361,7 @@ ComponentFiber.prototype = {
             vnode = this._reactInternalFiber;
 
         var type = vnode.type,
-            isStateless = vnode.vtype === 4,
+            isStateless = vnode.tag === 1,
             instance = void 0,
             mixin = void 0;
         //实例化组件
@@ -2432,7 +2449,6 @@ ComponentFiber.prototype = {
             nodes.forEach(function (el) {
                 insertElement(el, queue.dom);
                 queue.dom = el.stateNode;
-                // queue.unshift(el.stateNode);
             });
         } else {
             captureError(instance, "componentWillUpdate", [props, state, context]);
@@ -2465,7 +2481,7 @@ ComponentFiber.prototype = {
             instance = this.instance,
             parentContext = this.parentContext,
             nextChildren = emptyObject,
-            lastChildren = emptyObject,
+            lastChildren = this.children || emptyObject,
             childContext = parentContext,
             rendered = void 0,
             number = void 0;
@@ -2509,8 +2525,8 @@ ComponentFiber.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        console.log("---");
-        Refs.diffChildren(lastChildren, nextChildren, vnode, childContext, updateQueue, this.insertCarrier);
+        console.log("xxxxxxx");
+        Refs.diffChildren(lastChildren, nextChildren, this, childContext, updateQueue, this.insertCarrier);
     },
 
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
@@ -2631,7 +2647,7 @@ function collectComponentNodes(children) {
         if (child._disposed) {
             continue;
         }
-        if (child.vtype < 2) {
+        if (child.tag > 4) {
             ret.push(child);
         } else {
             var updater = inner.updater;
@@ -2761,7 +2777,7 @@ function renderByAnu(vnode, root, callback) {
 function mountVnode(vnode, context, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
     var fiber;
-    if (vnode.tag === 5 || vnode.tag === 6) {
+    if (vnode.tag > 4) {
         fiber = new HostFiber(vnode);
         fiber.return = vnode.return;
         fiber.stateNode = createElement$1(vnode, vnode.return);
@@ -2817,10 +2833,10 @@ function mountChildren(parentFiber, children, context, updateQueue, insertCarrie
 function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) {
     var dom = nextVnode.stateNode = lastVnode.stateNode;
     options.beforeUpdate(nextVnode);
-    if (lastVnode.vtype < 2) {
+    if (lastVnode.tag > 4) {
         insertElement(nextVnode, insertCarrier.dom);
         insertCarrier.dom = dom;
-        if (lastVnode.vtype === 0) {
+        if (lastVnode.tag === 6) {
             if (nextVnode.text !== lastVnode.text) {
                 dom.nodeValue = nextVnode.text;
             }
@@ -2931,7 +2947,7 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
                 if (child.superReturn) {
                     break;
                 }
-                if (child.vtype < 2) {
+                if (child.tag > 4) {
                     child.stateNode = firstChild;
                     break;
                 }
@@ -2942,7 +2958,6 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
-        console.log("isEmpty");
         mountChildren(parentFiber, nextChildren, parentContext, updateQueue, insertCarrier);
     } else {
         var matchNodes = {},
@@ -2952,7 +2967,7 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
             lastChild = lastChildren[_i];
             if (nextChild && nextChild.type === lastChild.type) {
                 matchNodes[_i] = lastChild;
-                if (lastChild.vtype < 2 && lastChild.ref !== nextChild.ref) {
+                if (lastChild.tag > 4 && lastChild.ref !== nextChild.ref) {
                     lastChild.order = nextChild.index;
                     matchRefs.push(lastChild);
                 }
