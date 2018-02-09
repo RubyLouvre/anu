@@ -3,10 +3,16 @@ import { formElements, inputControll } from "./inputControll";
 import { returnFalse, returnTrue } from "../src/util";
 import { diffProps } from "./diffProps";
 
-export function HostFiber(vnode) {
+/**
+ * 将虚拟DOM转换为Fiber
+ * @param {vnode} vnode 
+ * @param {Fiber} parentFiber 
+ */
+export function HostFiber(vnode, parentFiber) {
     this.type = this.name = vnode.type;
     this.props = vnode.props;
     this.tag = vnode.tag;
+    this.return = parentFiber;
     this._states = ["resolve"];
     this._reactInternalFiber = vnode;
     this._mountOrder = Refs.mountOrder++;
@@ -42,10 +48,10 @@ HostFiber.prototype = {
         var vnode = this._reactInternalFiber;
         var dom = this.stateNode;
         this.isMounted = returnTrue;
-        // Refs.fireRef(vnode, dom);
+        Refs.fireRef(vnode, dom, this);
     },
     dispose() {
         var vnode = this._reactInternalFiber;
-        // Refs.fireRef(vnode, null);
+        Refs.fireRef(vnode, null, this);
     }
 };

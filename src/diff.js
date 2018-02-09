@@ -76,20 +76,19 @@ function renderByAnu(vnode, root, callback, context = {}) {
         throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
     //__component用来标识这个真实DOM是ReactDOM.render的容器，通过它可以取得上一次的虚拟DOM
-    // 但是在IE6－8中，文本/注释节点不能通过添加自定义属性来引用虚拟DOM，这时我们额外引进topFiber,
-    //topNode来寻找它们。
-
+    // 但是在IE6－8中，文本/注释节点不能通过添加自定义属性来引用虚拟DOM，这时我们额外引进topFibers,
+    //topNodes来寻找它们。
     let nodeIndex = topNodes.indexOf(root),
-        lastRootFiber,
+        wrapperFiber,
         updateQueue = [],
         insertCarrier = {};
     //updaterQueue是用来装载updater， insertCarrier是用来装载插入DOM树的真实DOM
     if (nodeIndex !== -1) {
-        lastRootFiber = topFibers[nodeIndex];
-        if (lastRootFiber._hydrating) {
+        wrapperFiber = topFibers[nodeIndex];
+        if (wrapperFiber._hydrating) {
             //如果是在componentDidMount/Update中使用了ReactDOM.render，那么将延迟到此组件的resolve阶段执行
-            lastRootFiber._pendingCallbacks.push(renderByAnu.bind(null, vnode, root, callback, context));
-            return lastRootFiber.child.stateNode; //这里要改
+            wrapperFiber._pendingCallbacks.push(renderByAnu.bind(null, vnode, root, callback, context));
+            return wrapperFiber.child.stateNode; //这里要改
         }
     } else {
         topNodes.push(root);
@@ -97,51 +96,51 @@ function renderByAnu(vnode, root, callback, context = {}) {
     }
     Refs.currentOwner = null; //防止干扰
     var cbVnode = createElement(AnuWrapper, { child: vnode });
-    // top(contaner) > nextWrapper > vnode
-    // nextWrapper.isTop = true;
-    //  topFibers[nodeIndex] = nextWrapper;
-    if (lastRootFiber) {
-        receiveVnode(lastRootFiber.child, vnode, context, updateQueue, insertCarrier);
-        cbFiber = lastRootFiber;
+    if (wrapperFiber) {
+        receiveVnode(wrapperFiber, cbVnode, context, updateQueue, insertCarrier);
     } else {
         var rootVnode = createVnode(root);
-        //  rootVnode.props.children = rootVnode
         var rootFiber = new HostFiber(rootVnode);
         rootFiber.stateNode = root;
+        rootFiber.context = context;
         emptyElement(root);
         var children = rootFiber.children = {
             ".0": cbVnode
         };
-        mountChildren(rootFiber, children, context, updateQueue, insertCarrier);
+        mountChildren(children, rootFiber, updateQueue, insertCarrier);
     }
     rootFiber.init(updateQueue); // 添加最顶层的updater
-    var cbFiber = rootFiber.child;
-    root.__component = cbFiber; //兼容旧的
-
+    wrapperFiber = rootFiber.child;
+    topFibers[nodeIndex] = wrapperFiber;
+    wrapperFiber.isTop = true;
+    root.__component = wrapperFiber; //兼容旧的
     if (callback) {
-        cbFiber._pendingCallbacks.push(callback.bind(vnode.stateNode));
+        wrapperFiber._pendingCallbacks.push(callback.bind(wrapperFiber.child.stateNode));
     }
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
-    console.log(cbFiber);
-    return cbFiber.child.stateNode;
+    return wrapperFiber.child.stateNode;
 }
 
 
-
-//mountVnode只是转换虚拟DOM为真实DOM，不做插入DOM树操作
-function mountVnode(vnode, context, updateQueue, insertCarrier) {
+/**
+ * 
+ * @param {Vnode} vnode 
+ * @param {Fiber} parentFiber 
+ * @param {Array} updateQueue 
+ * @param {Object} insertCarrier 
+ */
+function mountVnode(vnode, parentFiber, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
     var fiber;
     if (vnode.tag > 4) {
-        fiber = new HostFiber(vnode);
-        fiber.return = vnode.return;
-        fiber.stateNode = createDOMElement(vnode, vnode.return);
+        fiber = new HostFiber(vnode, parentFiber);
+        fiber.stateNode = createDOMElement(vnode, parentFiber);
         var beforeDOM = insertCarrier.dom;
         insertCarrier.dom = fiber.stateNode;
         if(fiber.tag === 5){
             let children = fiberizeChildren(vnode.props.children, fiber);
-            mountChildren(fiber, children, context, updateQueue, {});
+            mountChildren(children, fiber, updateQueue, {});
             fiber.init(updateQueue);
         }
         insertElement(fiber, beforeDOM);
@@ -149,28 +148,24 @@ function mountVnode(vnode, context, updateQueue, insertCarrier) {
             fiber.attr();
         }
     } else {
-        fiber = new ComponentFiber(vnode, context);
-        fiber.return = vnode.return;
+        fiber = new ComponentFiber(vnode, parentFiber);
         fiber.init(updateQueue, insertCarrier);
     }
     return fiber;
 }
 /**
  * 重写children对象中的vnode为fiber，并用child, sibling, return关联各个fiber
- * @param {Fiber} parentFiber 
  * @param {Object} children 
- * @param {Object} context 
+ * @param {Fiber} parentFiber 
  * @param {Array} updateQueue 
  * @param {Object} insertCarrier 
  */
-function mountChildren(parentFiber, children, context, updateQueue, insertCarrier) {
+function mountChildren(children, parentFiber, updateQueue, insertCarrier) {
     var prevFiber, firstFiber, index = 0;
     for (var i in children) {
         var child = children[i];
-        child.return = parentFiber;
-        var fiber = children[i] = mountVnode(child, context, updateQueue, insertCarrier);
+        var fiber = children[i] = mountVnode(child, parentFiber, updateQueue, insertCarrier);
         fiber.index = index++;
-        //  fiber.return = parentFiber;
         if(!firstFiber){
             parentFiber.child = firstFiber = fiber;
         }
@@ -309,7 +304,7 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
 
     //优化： 只添加
     if (isEmpty) {
-        mountChildren(parentFiber, nextChildren, parentContext, updateQueue, insertCarrier);
+        mountChildren(nextChildren, parentFiber, updateQueue, insertCarrier);
     } else {
         var matchNodes = {},
             matchRefs = [];

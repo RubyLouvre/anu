@@ -19,8 +19,10 @@ export function pushError(instance, hook, error) {
             }
         }
 
-        var vnode = catchUpdater._reactInternalFiber;
-        delete vnode.child;
+        // var vnode = catchUpdater._reactInternalFiber;
+        //  delete vnode.child;
+        //   delete catchUpdater.pendingVnode;
+        delete catchUpdater.child;
         delete catchUpdater.pendingVnode;
     } else {
         console.warn(stack); // eslint-disable-line
@@ -62,34 +64,31 @@ function disableHook(u) {
  * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
 function findCatchComponent(target, names) {
-    var vnode = target.updater._reactInternalFiber,
+    var fiber = target.updater,
         instance,
-        updater,
-        type,
         name,
         catchIt;
     do {
-        type = vnode.type;
-        if (vnode.isTop) {
+        name = fiber.name;
+        if (fiber.isTop) {
             if (catchIt) {
                 return catchIt;
             }
-            disposeVnode(vnode, [], true);
+            disposeVnode(fiber, [], true);
             break;
-        } else if (vnode.tag < 4) {//1,2
-            name = type.displayName || type.name;
+        } else if (fiber.tag < 4) {//1,2
             names.push(name);
-            instance = vnode.stateNode;
+            instance = fiber.stateNode;
             if (instance.componentDidCatch) {
-                updater = instance.updater;
-                if (updater._isDoctor) {
-                    disableHook(updater);
+                fiber = instance.updater;
+                if (fiber._isDoctor) {
+                    disableHook(fiber);
                 } else if (!catchIt && target !== instance) {
-                    catchIt = updater;
+                    catchIt = fiber;
                 }
             }
-        } else if (vnode.tag === 5) {
-            names.push(type);
+        } else if (fiber.tag === 5) {
+            names.push(name);
         }
-    } while ((vnode = vnode.return));
+    } while ((fiber = fiber.return));
 }

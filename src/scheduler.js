@@ -30,10 +30,10 @@ var placehoder = {
 };
 export function drainQueue(queue) {
     options.beforePatch();
-    let updater;
-    while ((updater = queue.shift())) {
+    let fiber;
+    while ((fiber = queue.shift())) {
         //console.log(updater.name, "执行" + updater._states + " 状态");
-        if (updater._disposed) {
+        if (fiber._disposed) {
             continue;
         }
         var hook = Refs.errorHook;
@@ -75,7 +75,7 @@ export function drainQueue(queue) {
                
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctors.forEach(function(doctor, j){
+                doctors.forEach(function(doctor){
                     for (var i in doctor.children) {
                         var child = doctor.children[i];
                         disposeVnode(child, rejectedQueue, silent);
@@ -87,7 +87,7 @@ export function drainQueue(queue) {
                 doctors.forEach(function(doctor){
                     if (addDoctor) {
                         rejectedQueue.push(doctor);
-                        updater = placehoder;
+                        fiber = placehoder;
                     }
                     doctor.addState("catch");
                     rejectedQueue.push(doctor);
@@ -96,7 +96,7 @@ export function drainQueue(queue) {
                 queue = rejectedQueue.concat(queue);
             }
         }
-        updater.transition(queue);
+        fiber.transition(queue);
     }
 
     options.afterPatch();

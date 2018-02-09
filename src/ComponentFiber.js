@@ -1,4 +1,5 @@
-import { extend, options, typeNumber, emptyObject, isFn, 
+import {
+    extend, options, typeNumber, emptyObject, isFn,
     returnFalse, returnTrue, clearArray
 } from "../src/util";
 import { fiberizeChildren } from "./createElement";
@@ -19,32 +20,36 @@ const errorType = {
     7: "array"
 };
 /**
- * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
- *
- * @export
- * @param {any} instance
- * @param {any} vnode
+ * 将虚拟DOM转换为Fiber
+ * @param {vnode} vnode 
+ * @param {Fiber} parentFiber 
  */
-export function ComponentFiber(vnode, parentContext) {
+export function ComponentFiber(vnode, parentFiber) {
     var { type, props } = vnode;
     if (!type) {
-        console.log(vnode);
         throw vnode;
     }
     this.type = type;
+
     this.tag = vnode.tag;
     this.name = type.displayName || type.name;
     this.props = props;
-
+    this.return = parentFiber;
+    do {
+        var c = parentFiber.context;
+        if (c) {
+            this.parentContext = c;
+            this.context = getContextByTypes(c, type.contextTypes);
+            break;
+        }
+    } while ((parentFiber = parentFiber.return));
 
     this._reactInternalFiber = vnode;
-    this.context = getContextByTypes(parentContext, type.contextTypes);
-    this.parentContext = parentContext;
     this._pendingCallbacks = [];
     this._pendingStates = [];
     this._states = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
-    if(vnode.superReturn){
+    if (vnode.superReturn) {
         this.isPortal = true;
     }
     // update总是保存最新的数据，如state, props, context, parentContext, parentVnode
@@ -54,7 +59,7 @@ export function ComponentFiber(vnode, parentContext) {
 }
 
 ComponentFiber.prototype = {
-    addState: function(state) {
+    addState: function (state) {
         var states = this._states;
         if (states[states.length - 1] !== state) {
             states.push(state);
@@ -103,7 +108,7 @@ ComponentFiber.prototype = {
         }
     },
     mergeStates() {
-        let instance = this.instance,
+        let instance = this.stateNode,
             pendings = this._pendingStates,
             n = pendings.length,
             state = instance.state;
@@ -124,9 +129,8 @@ ComponentFiber.prototype = {
 
     isMounted: returnFalse,
     init(updateQueue, insertCarrier) {
-        let { props, context, _reactInternalFiber:vnode } = this;
-        let type = vnode.type,
-            isStateless = vnode.tag === 1,
+        let { props, context, type, tag } = this,
+            isStateless = tag === 1,
             instance,
             mixin;
         //实例化组件
@@ -136,7 +140,7 @@ ComponentFiber.prototype = {
                 instance = {
                     refs: {},
                     __proto__: type.prototype,
-                    render: function() {
+                    render: function () {
                         return type(this.props, this.context);
                     }
                 };
@@ -151,8 +155,8 @@ ComponentFiber.prototype = {
             instance = {
                 updater: this
             };
-            vnode.stateNode = instance;
-            this.instance = instance;
+            //  vnode.stateNode = instance;
+            this.stateNode = instance;
             return pushError(instance, "constructor", e);
         } finally {
             Refs.currentOwner = lastOwn;
@@ -164,21 +168,21 @@ ComponentFiber.prototype = {
                 extend(instance, mixin);
             } else {
                 //不带生命周期的
-                vnode.child = mixin;
+                this.child = mixin;
                 instance.__isStateless = true;
                 this.mergeStates = alwaysNull;
                 this.willReceive = false;
             }
         }
-       
-        vnode.stateNode = this.instance = instance;
+
+        this.stateNode = instance;
         getDerivedStateFromProps(this, type, props, instance.state);
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
         instance.updater = this;
-        var queue =  this.insertCarrier =  (this.isPortal ?  {} : insertCarrier);
-      
+        var queue = this.insertCarrier = (this.isPortal ? {} : insertCarrier);
+
         this.insertPoint = queue.dom;
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
@@ -191,8 +195,8 @@ ComponentFiber.prototype = {
     },
 
     hydrate(updateQueue, inner) {
-        let { instance, context, props, _reactInternalFiber:vnode, pendingVnode } = this;
-        if(this._states[0] === "hydrate"){
+        let { stateNode: instance, context, props, pendingVnode } = this;
+        if (this._states[0] === "hydrate") {
             this._states.shift(); // ReactCompositeComponentNestedState-state
         }
         let state = this.mergeStates();
@@ -200,14 +204,14 @@ ComponentFiber.prototype = {
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
             if (pendingVnode) {
-                var child = this._reactInternalFiber.child;
+                var child = this.child;
                 this._reactInternalFiber = pendingVnode;
                 pendingVnode.child = child;
                 delete this.pendingVnode;
             }
             var nodes = collectComponentNodes(this.children);
             var queue = this.insertCarrier;
-            nodes.forEach(function(el) {
+            nodes.forEach(function (el) {
                 insertElement(el, queue.dom);
                 queue.dom = el.stateNode;
             });
@@ -216,16 +220,16 @@ ComponentFiber.prototype = {
             var { props: lastProps, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState];
         }
-        if(this._hasError){
+        if (this._hasError) {
             return;
         }
-        vnode.stateNode = instance;
+
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
         instance.props = props;
         instance.state = state;
         instance.context = context;
-        if(!inner) {
+        if (!inner) {
             this.insertCarrier.dom = this.insertPoint;
         }
         if (shouldUpdate) {
@@ -235,7 +239,7 @@ ComponentFiber.prototype = {
         updateQueue.push(this);
     },
     render(updateQueue) {
-        let { _reactInternalFiber: vnode, pendingVnode, instance, parentContext } = this,
+        let { stateNode:instance, parentContext, pendingVnode } = this,
             nextChildren = emptyObject,
             lastChildren = this.children || emptyObject,
             childContext = parentContext,
@@ -243,13 +247,13 @@ ComponentFiber.prototype = {
             number;
 
         if (pendingVnode) {
-            vnode = this._reactInternalFiber = pendingVnode;
+            this._reactInternalFiber = pendingVnode;
             delete this.pendingVnode;
         }
         this._hydrating = true;
 
         if (this.willReceive === false) {
-            rendered = vnode.child;
+            rendered = this.child; //原来是vnode.child
             delete this.willReceive;
         } else {
             let lastOwn = Refs.currentOwner;
@@ -280,18 +284,17 @@ ComponentFiber.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
-        console.log("xxxxxxx");
         Refs.diffChildren(lastChildren, nextChildren, this, childContext, updateQueue, this.insertCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
     resolve(updateQueue) {
-        let { instance, _reactInternalFiber: vnode } = this;
+        let { stateNode: instance, _reactInternalFiber: vnode } = this;
         let hasMounted = this.isMounted();
         if (!hasMounted) {
             this.isMounted = returnTrue;
         }
         if (this._hydrating) {
-            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount"  ;
+            let hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
             captureError(instance, hookName, this._hookArgs || []);
             //执行React Chrome DevTools的钩子
             if (hasMounted) {
@@ -308,17 +311,17 @@ ComponentFiber.prototype = {
         } else {
             //执行组件ref（发生错误时不执行）
             if (vnode._hasRef) {
-                Refs.fireRef(vnode, instance);
+                Refs.fireRef(vnode, instance, this);
                 vnode._hasRef = false;
             }
-            clearArray(this._pendingCallbacks).forEach(function(fn) {
+            clearArray(this._pendingCallbacks).forEach(function (fn) {
                 fn.call(instance);
             });
         }
         transfer.call(this, updateQueue);
     },
-    catch(queue){
-        let { instance } = this;
+    catch(queue) {
+        let { stateNode: instance } = this;
         // delete Refs.ignoreError; 
         this._states.length = 0;
         this.children = {};
@@ -330,18 +333,18 @@ ComponentFiber.prototype = {
 
     },
     dispose() {
-        let {_reactInternalFiber: vnode, instance} = this;
+        let { stateNode: instance } = this;
         options.beforeUnmount(instance);
         instance.setState = instance.forceUpdate = returnFalse;
-       
-        Refs.fireRef(vnode, null);
+
+        Refs.fireRef(this, null);
         captureError(instance, "componentWillUnmount", []);
         //在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
         this.isMounted = returnFalse;
-        vnode._disposed = this._disposed = true;
+        this._disposed = true;
     }
 };
-function transfer(queue){
+function transfer(queue) {
     var cbs = this._nextCallbacks,
         cb;
     if (cbs && cbs.length) {
@@ -357,10 +360,10 @@ function transfer(queue){
         queue.push(this);
     }
 }
-export function getDerivedStateFromProps(updater,type, props, state){
-    if(isFn(type.getDerivedStateFromProps)){
+export function getDerivedStateFromProps(updater, type, props, state) {
+    if (isFn(type.getDerivedStateFromProps)) {
         var state = type.getDerivedStateFromProps.call(null, props, state);
-        if(state != null){
+        if (state != null) {
             updater._pendingStates.push(state);
         }
     }

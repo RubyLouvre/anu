@@ -6,19 +6,23 @@ function AnuPortal(props){
 }
 
 export function createPortal(children, node) {
-    var vnode,
+    /*  var fiber,
         events = node.__events;
     if (events) {
-        vnode = node.__events.vnode;
+        fiber = node.__events.vnode;
     } else {
         events = node.__events = {};
-        vnode = createVnode(node);
-        events.vnode = vnode;
-        new HostFiber(vnode);
-    }
+        var vnode = createVnode(node);
+        fiber = HostFiber(vnode);
+        events.vnode = fiber;
+    }*/
 
-    var child = createElement(AnuPortal, { children: children });
+    var child = createElement(AnuPortal, { children: children, node });
+    /*var children = {
+        ".0": child
+    };
+    fiber.children = children;
     events.child = child;
-    child.portalReturn = vnode;
+    child.portalReturn = vnode;*/
     return child;
 }

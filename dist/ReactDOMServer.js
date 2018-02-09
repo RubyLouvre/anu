@@ -114,8 +114,8 @@ var Refs = {
     // errorInfo: [],    //已经构建好的错误信息
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
-    fireRef: function fireRef(vnode, dom) {
-        if (vnode._disposed || vnode.stateNode.__isStateless) {
+    fireRef: function fireRef(vnode, dom, fiber) {
+        if (fiber._disposed || fiber.__isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
@@ -376,11 +376,9 @@ var msie = document.documentMode || versions[typeNumber(document.all) + "" + typ
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 /**
- * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
- *
- * @export
- * @param {any} instance
- * @param {any} vnode
+ * 将虚拟DOM转换为Fiber
+ * @param {vnode} vnode 
+ * @param {Fiber} parentFiber 
  */
 
 
