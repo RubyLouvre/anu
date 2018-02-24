@@ -266,11 +266,12 @@ ComponentFiber.prototype = {
             Refs.currentOwner = lastOwn;
         }
         number = typeNumber(rendered);
-        var hasMounted = this.isMounted();
+       /* var hasMounted = this.isMounted();
        
         if (hasMounted) {
             lastChildren = this.children;
         }
+        */
         if (number > 2) {
             if (number > 5) {
                 //array, object
@@ -285,9 +286,7 @@ ComponentFiber.prototype = {
         var noSupport = !support16 && errorType[number];
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
-        }
-        console.log("hasMounted",hasMounted,lastChildren, nextChildren, this, childContext)
-        
+        }        
         Refs.diffChildren(lastChildren, nextChildren, this, childContext, updateQueue, this.insertCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界

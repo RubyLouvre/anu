@@ -107,7 +107,6 @@ function renderByAnu(vnode, root, callback, context = {}) {
         var children = rootFiber.children = {
             ".0": cbVnode
         };
-        console.log("跑这里")
         mountChildren(children, rootFiber, updateQueue, insertCarrier);
     }
     rootFiber.init(updateQueue); // 添加最顶层的updater
@@ -135,7 +134,6 @@ function renderByAnu(vnode, root, callback, context = {}) {
 function mountVnode(vnode, parentFiber, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
     var fiber;
-    console.log("mountVnode tag", vnode.tag, vnode.type)
     if (vnode.tag > 4) {
         fiber = new HostFiber(vnode, parentFiber);
         fiber.stateNode = createDOMElement(vnode, parentFiber);
@@ -265,7 +263,6 @@ function isSameNode(a, b) {
 function receiveVnode(fiber, vnode, context, updateQueue, insertCarrier) {
     if (isSameNode(fiber, vnode)) {
         //组件虚拟DOM已经在diffChildren生成并插入DOM树
-        console.log("updateVnode",fiber, vnode)
         updateVnode(fiber, vnode, context, updateQueue, insertCarrier);
     } else {
         disposeVnode(fiber, updateQueue);
@@ -304,7 +301,6 @@ function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, i
     if (isEmpty) {
         mountChildren(vnodes, parentFiber, updateQueue, insertCarrier);
     } else {
-        console.log("更新children")
         var matchFibers = {},
             matchFibersWithRef = [];
         for (let i in fibers) {
