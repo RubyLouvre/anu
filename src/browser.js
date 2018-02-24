@@ -208,6 +208,9 @@ export function insertElement(fiber, insertPoint) {
     }
 
     var dom = fiber.stateNode;
+    if(!parentNode){
+        console.log("没有parentNode")
+    }
     var after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
 
     if (after === dom) {

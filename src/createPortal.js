@@ -18,6 +18,7 @@ export function createPortal(children, node) {
     }*/
 
     var child = createElement(AnuPortal, { children: children, node });
+    child.portalReturn = vnode;
     /*var children = {
         ".0": child
     };

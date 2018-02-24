@@ -107,6 +107,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
         var children = rootFiber.children = {
             ".0": cbVnode
         };
+        console.log("跑这里")
         mountChildren(children, rootFiber, updateQueue, insertCarrier);
     }
     rootFiber.init(updateQueue); // 添加最顶层的updater
@@ -117,6 +118,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
     if (callback) {
         wrapperFiber._pendingCallbacks.push(callback.bind(wrapperFiber.child.stateNode));
     }
+    console.log("开始描绘视图")
     drainQueue(updateQueue);
     //组件返回组件实例，而普通虚拟DOM 返回元素节点
     return wrapperFiber.child.stateNode;
@@ -133,6 +135,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
 function mountVnode(vnode, parentFiber, updateQueue, insertCarrier) {
     options.beforeInsert(vnode);
     var fiber;
+    console.log("mountVnode tag", vnode.tag, vnode.type)
     if (vnode.tag > 4) {
         fiber = new HostFiber(vnode, parentFiber);
         fiber.stateNode = createDOMElement(vnode, parentFiber);
@@ -163,8 +166,7 @@ function mountVnode(vnode, parentFiber, updateQueue, insertCarrier) {
 function mountChildren(children, parentFiber, updateQueue, insertCarrier) {
     var prevFiber, firstFiber, index = 0;
     for (var i in children) {
-        var child = children[i];
-        var fiber = children[i] = mountVnode(child, parentFiber, updateQueue, insertCarrier);
+        var fiber = children[i] = mountVnode(children[i], parentFiber, updateQueue, insertCarrier);
         fiber.index = index++;
         if(!firstFiber){
             parentFiber.child = firstFiber = fiber;
@@ -179,37 +181,33 @@ function mountChildren(children, parentFiber, updateQueue, insertCarrier) {
     }
 }
 
-function updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) {
-    var dom = (nextVnode.stateNode = lastVnode.stateNode);
-    options.beforeUpdate(nextVnode);
-    if (lastVnode.tag > 4) {
-        insertElement(nextVnode, insertCarrier.dom);
+function updateVnode(fiber, vnode, context, updateQueue, insertCarrier) {
+    var dom = fiber.stateNode;
+    options.beforeUpdate(vnode);
+    if (fiber.tag > 4) {//文本，元素
+        insertElement(fiber, insertCarrier.dom);
         insertCarrier.dom = dom;
-        if (lastVnode.tag === 6) {
-            if (nextVnode.text !== lastVnode.text) {
-                dom.nodeValue = nextVnode.text;
+        if (fiber.tag === 6) {//文本
+            if (vnode.text !== fiber.text) {
+                dom.nodeValue = fiber.text = vnode.text;
             }
-        } else {
-            if (lastVnode.namespaceURI) {
-                nextVnode.namespaceURI = lastVnode.namespaceURI;
-            }
-            let updater = (nextVnode.updater = lastVnode.updater);
-            updater._reactInternalFiber = nextVnode;
-            nextVnode.lastProps = lastVnode.props;
-            let lastChildren = updater.children;
-            let { props } = nextVnode;
+        } else {//元素
+            fiber._reactInternalFiber = vnode;
+            fiber.lastProps = fiber.props
+            let props = fiber.props = vnode.props
+            let lastChildren = fiber.children;
             if (props[innerHTML]) {
                 disposeChildren(lastChildren, updateQueue);
             } else {
-                var nextChildren = fiberizeChildren(props.children, updater);
-                diffChildren(lastChildren, nextChildren, nextVnode, context, updateQueue, {});
+                var nextChildren = fiberizeChildren(props.children, fiber);
+                diffChildren(lastChildren, nextChildren, fiber, context, updateQueue, {});
             }
-            updater.attr();
-            updater.addState("resolve");
-            updateQueue.push(updater);
+            fiber.attr();
+            fiber.addState("resolve");
+            updateQueue.push(fiber);
         }
     } else {
-        receiveComponent(lastVnode, nextVnode, context, updateQueue, insertCarrier);
+        receiveComponent(fiber, vnode, context, updateQueue, insertCarrier);
     }
 }
 
@@ -264,13 +262,14 @@ function isSameNode(a, b) {
     }
 }
 
-function receiveVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier) {
-    if (isSameNode(lastVnode, nextVnode)) {
+function receiveVnode(fiber, vnode, context, updateQueue, insertCarrier) {
+    if (isSameNode(fiber, vnode)) {
         //组件虚拟DOM已经在diffChildren生成并插入DOM树
-        updateVnode(lastVnode, nextVnode, context, updateQueue, insertCarrier);
+        console.log("updateVnode",fiber, vnode)
+        updateVnode(fiber, vnode, context, updateQueue, insertCarrier);
     } else {
-        disposeVnode(lastVnode, updateQueue);
-        mountVnode(nextVnode, context, updateQueue, insertCarrier);
+        disposeVnode(fiber, updateQueue);
+        mountVnode(vnode, fiber.return, updateQueue, insertCarrier);
     }
 }
 // https://github.com/onmyway133/DeepDiff
@@ -282,7 +281,11 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
         child,
         firstChild;
     if (parentFiber.tag === 5) {
+        if(!parentFiber.stateNode){
+            console.log("有问题",parentFiber)
+        }
         firstChild = parentFiber.stateNode.firstChild;
+       
     }
     for (var i in lastChildren) {
         isEmpty = false;
@@ -301,11 +304,11 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
         }
         break;
     }
-
     //优化： 只添加
     if (isEmpty) {
         mountChildren(nextChildren, parentFiber, updateQueue, insertCarrier);
     } else {
+        console.log("更新children")
         var matchNodes = {},
             matchRefs = [];
         for (let i in lastChildren) {
@@ -332,13 +335,14 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
                     isMounted: noop
                 });
             });
+
         for (let i in nextChildren) {
             nextChild = nextChildren[i];
             lastChild = matchNodes[i];
             if (lastChild) {
                 receiveVnode(lastChild, nextChild, parentContext, updateQueue, insertCarrier);
             } else {
-                mountVnode(nextChild, parentContext, updateQueue, insertCarrier);
+                mountVnode(nextChild, parentFiber, updateQueue, insertCarrier);
             }
 
             if (Refs.errorHook) {

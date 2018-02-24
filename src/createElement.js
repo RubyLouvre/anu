@@ -130,35 +130,20 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
-    /*  
-    child.index = flattenIndex;
-    child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
-    }
-    flattenPrev = child;
-    flattenIndex++;
-    */
+    flattenIndex ++
     flattenArray.push(child);
 }
 
 export function fiberizeChildren(c, fiber) {
     flattenObject = {};
-    // flattenPrev = null;
+    flattenIndex = 0;
     flattenArray = [];
     let vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
-        flattenIndex = 0;
         operateChildren(c, "", flattenCb, vnode);
-        /*  let child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
-        }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }*/
     }
+    flattenIndex = 0;
     return (fiber.children = flattenObject);
 }
 

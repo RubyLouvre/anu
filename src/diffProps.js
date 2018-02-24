@@ -123,10 +123,10 @@ function getSVGAttributeName(name) {
     return (svgCache[orig] = name);
 }
 
-export function diffProps(dom, lastProps, nextProps, vnode) {
-    options.beforeProps(vnode);
-    let isSVG = vnode.namespaceURI === NAMESPACE.svg;
-    let tag = vnode.type;
+export function diffProps(dom, lastProps, nextProps, fiber) {
+    options.beforeProps(fiber);
+    let isSVG = fiber.namespaceURI === NAMESPACE.svg;
+    let tag = fiber.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name];
@@ -136,7 +136,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[action](dom, name, val, lastProps, vnode);
+            actionStrategy[action](dom, name, val, lastProps, fiber);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -147,7 +147,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 continue;
             }
-            actionStrategy[action](dom, name, false, lastProps, vnode);
+            actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
 }

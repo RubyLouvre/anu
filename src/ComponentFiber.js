@@ -181,8 +181,8 @@ ComponentFiber.prototype = {
         instance.props = props;
         instance.context = context;
         instance.updater = this;
-        var queue = this.insertCarrier = (this.isPortal ? {} : insertCarrier);
-
+        var queue =  (this.isPortal ? {} : insertCarrier);
+        this.insertCarrier = queue
         this.insertPoint = queue.dom;
         this.updateQueue = updateQueue;
         if (instance.componentWillMount) {
@@ -233,6 +233,7 @@ ComponentFiber.prototype = {
             this.insertCarrier.dom = this.insertPoint;
         }
         if (shouldUpdate) {
+            console.log("shouldUpdate")
             this.render(updateQueue);
         }
         this.addState("resolve");
@@ -266,6 +267,7 @@ ComponentFiber.prototype = {
         }
         number = typeNumber(rendered);
         var hasMounted = this.isMounted();
+       
         if (hasMounted) {
             lastChildren = this.children;
         }
@@ -284,6 +286,8 @@ ComponentFiber.prototype = {
         if (noSupport) {
             pushError(instance, "render", new Error("React15 fail to render " + noSupport));
         }
+        console.log("hasMounted",hasMounted,lastChildren, nextChildren, this, childContext)
+        
         Refs.diffChildren(lastChildren, nextChildren, this, childContext, updateQueue, this.insertCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
