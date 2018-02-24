@@ -195,12 +195,12 @@ function updateVnode(fiber, vnode, context, updateQueue, insertCarrier) {
             fiber._reactInternalFiber = vnode;
             fiber.lastProps = fiber.props
             let props = fiber.props = vnode.props
-            let lastChildren = fiber.children;
+            let fibers = fiber.children;
             if (props[innerHTML]) {
-                disposeChildren(lastChildren, updateQueue);
+                disposeChildren(fibers, updateQueue);
             } else {
-                var nextChildren = fiberizeChildren(props.children, fiber);
-                diffChildren(lastChildren, nextChildren, fiber, context, updateQueue, {});
+                var vnodes = fiberizeChildren(props.children, fiber);
+                diffChildren(fibers, vnodes, fiber, context, updateQueue, {});
             }
             fiber.attr();
             fiber.addState("resolve");
@@ -273,23 +273,19 @@ function receiveVnode(fiber, vnode, context, updateQueue, insertCarrier) {
     }
 }
 // https://github.com/onmyway133/DeepDiff
-function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, updateQueue, insertCarrier) {
+function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, insertCarrier) {
     //这里都是走新的任务列队
-    let lastChild,
-        nextChild,
-        isEmpty = true,
+    let fiber,
+        vnode, 
         child,
-        firstChild;
+        firstChild,
+        isEmpty = true;
     if (parentFiber.tag === 5) {
-        if(!parentFiber.stateNode){
-            console.log("有问题",parentFiber)
-        }
         firstChild = parentFiber.stateNode.firstChild;
-       
     }
-    for (var i in lastChildren) {
+    for (let i in fibers) {
         isEmpty = false;
-        child = lastChildren[i];
+        child = fibers[i];
         //向下找到其第一个元素节点子孙
         if (firstChild) {
             do {
@@ -306,26 +302,26 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
     }
     //优化： 只添加
     if (isEmpty) {
-        mountChildren(nextChildren, parentFiber, updateQueue, insertCarrier);
+        mountChildren(vnodes, parentFiber, updateQueue, insertCarrier);
     } else {
         console.log("更新children")
-        var matchNodes = {},
-            matchRefs = [];
-        for (let i in lastChildren) {
-            nextChild = nextChildren[i];
-            lastChild = lastChildren[i];
-            if (nextChild && nextChild.type === lastChild.type) {
-                matchNodes[i] = lastChild;
-                if (lastChild.tag > 4 && lastChild.ref !== nextChild.ref) {
-                    lastChild.order = nextChild.index;
-                    matchRefs.push(lastChild);
+        var matchFibers = {},
+            matchFibersWithRef = [];
+        for (let i in fibers) {
+            vnode = vnodes[i];
+            fiber = fibers[i];
+            if (vnode && vnode.type === fiber.type) {
+                matchFibers[i] = fiber;
+                if (fiber.tag > 4 && fiber.ref !== vnode.ref) {
+                    fiber.order = vnode.index;
+                    matchFibersWithRef.push(fiber);
                 }
                 continue;
             }
-            disposeVnode(lastChild, updateQueue);
+            disposeVnode(fiber, updateQueue);
         }
         //step2: 更新或新增节点
-        matchRefs
+        matchFibersWithRef
             .sort(function(a, b) {
                 return a.order - b.order;
             })
@@ -336,13 +332,14 @@ function diffChildren(lastChildren, nextChildren, parentFiber, parentContext, up
                 });
             });
 
-        for (let i in nextChildren) {
-            nextChild = nextChildren[i];
-            lastChild = matchNodes[i];
-            if (lastChild) {
-                receiveVnode(lastChild, nextChild, parentContext, updateQueue, insertCarrier);
+        for (let i in vnodes) {
+            vnode = vnodes[i];
+            fiber = matchFibers[i];
+            if (fiber) {
+                vnodes[i] = fiber;
+                receiveVnode(fiber, vnode, parentContext, updateQueue, insertCarrier);
             } else {
-                mountVnode(nextChild, parentFiber, updateQueue, insertCarrier);
+                mountVnode(vnode, parentFiber, updateQueue, insertCarrier);
             }
 
             if (Refs.errorHook) {
