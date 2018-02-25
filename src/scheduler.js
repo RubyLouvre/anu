@@ -32,7 +32,7 @@ export function drainQueue(queue) {
     options.beforePatch();
     let fiber;
     while ((fiber = queue.shift())) {
-        //console.log(updater.name, "执行" + updater._states + " 状态");
+        console.log(fiber.name, "执行" + fiber._states + " 状态");
         if (fiber._disposed) {
             continue;
         }

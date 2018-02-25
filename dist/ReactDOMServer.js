@@ -248,35 +248,20 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
-    /*  
-    child.index = flattenIndex;
-    child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
-    }
-    flattenPrev = child;
     flattenIndex++;
-    */
     flattenArray.push(child);
 }
 
 function fiberizeChildren(c, fiber) {
     flattenObject = {};
-    // flattenPrev = null;
+    flattenIndex = 0;
     flattenArray = [];
     var vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
-        flattenIndex = 0;
         operateChildren(c, "", flattenCb, vnode);
-        /*  let child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
-        }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }*/
     }
+    flattenIndex = 0;
     return fiber.children = flattenObject;
 }
 
@@ -385,26 +370,26 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 
 function getChildContext(instance, parentContext) {
-    if (instance.getChildContext) {
-        var context = instance.getChildContext();
-        if (context) {
-            parentContext = extend(extend({}, parentContext), context);
-        }
-    }
-    return parentContext;
+	if (instance.getChildContext) {
+		var context = instance.getChildContext();
+		if (context) {
+			parentContext = extend(extend({}, parentContext), context);
+		}
+	}
+	return parentContext;
 }
 
 function getContextByTypes(curContext, contextTypes) {
-    var context = {};
-    if (!contextTypes || !curContext) {
-        return context;
-    }
-    for (var key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = curContext[key];
-        }
-    }
-    return context;
+	var context = {};
+	if (!contextTypes || !curContext) {
+		return context;
+	}
+	for (var key in contextTypes) {
+		if (contextTypes.hasOwnProperty(key)) {
+			context[key] = curContext[key];
+		}
+	}
+	return context;
 }
 
 var matchHtmlRegExp = /["'&<>]/;
