@@ -159,11 +159,10 @@ ComponentFiber.prototype = {
 				this.child = mixin;
 				instance.__isStateless = true;
 				this.mergeStates = alwaysNull;
-				this.willReceive = false;
+				this._willReceive = false;
 			}
 		}
-		this._unmaskedContext = instance.getChildContext ? getUnmaskedContext(instance, context) : context;
-		console.log(this.name, ' this._unmaskedContext ', this._unmaskedContext);
+		
 		this.stateNode = instance;
 		getDerivedStateFromProps(this, type, props, instance.state);
 		//如果没有调用constructor super，需要加上这三行
@@ -217,6 +216,7 @@ ComponentFiber.prototype = {
 		if (!inner) {
 			this._insertCarrier.dom = this._insertPoint;
 		}
+		
 		if (shouldUpdate) {
 			this.render(updateQueue);
 		}
@@ -224,14 +224,14 @@ ComponentFiber.prototype = {
 		updateQueue.push(this);
 	},
 	render(updateQueue) {
-		let { stateNode: instance } = this,
+		let { stateNode: instance, context } = this,
 			children = emptyObject,
 			fibers = this._children || emptyObject,
 			rendered,
 			number;
 
 		this._hydrating = true;
-
+		this._unmaskedContext = instance.getChildContext ? getUnmaskedContext(instance, context) : context;
 		if (this._willReceive === false) {
 			rendered = this.child; //原来是vnode.child
 			delete this._willReceive;

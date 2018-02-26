@@ -218,7 +218,7 @@ function receiveComponent(fiber, nextVnode, updateQueue, insertCarrier) {
 		nextContext = getContextProvider(fiber.return); //取得parentContext
 
 	if (type.contextTypes) {
-		nextContext = getMaskedContext(context, type.contextTypes);
+		nextContext = getMaskedContext(nextContext, type.contextTypes);
 		willReceive = true;
 		fiber.context = nextContext;
 	}
