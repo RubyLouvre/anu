@@ -1,6 +1,6 @@
 import { Refs } from "./Refs";
 import { formElements, inputControll } from "./inputControll";
-import { returnFalse, returnTrue, emptyObject } from "../src/util";
+import { returnFalse, returnTrue, emptyObject, extend } from "../src/util";
 import { diffProps } from "./diffProps";
 
 /**
@@ -9,9 +9,8 @@ import { diffProps } from "./diffProps";
  * @param {Fiber} parentFiber 
  */
 export function HostFiber(vnode, parentFiber) {
-    this.type = this.name = vnode.type;
-    this.props = vnode.props;
-    this.tag = vnode.tag;
+    extend(this, vnode);
+    this.name = vnode.type;
     this.return = parentFiber;
     this._states = ["resolve"];
   //  this.namesplace 

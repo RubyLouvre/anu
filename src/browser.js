@@ -126,19 +126,18 @@ export var msie = document.documentMode || versions[typeNumber(document.all) + "
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createElement(vnode, p) {
-    var type = vnode.type,
-        ns;
+    let {type, props, namespaceURI:ns, text } = vnode
     switch (type) {
     case "#text":
         //只重复利用文本节点
-        var node = recyclables[type].pop();
+        let node = recyclables[type].pop();
         if (node) {
-            node.nodeValue = vnode.text;
+            node.nodeValue = text;
             return node;
         }
-        return document.createTextNode(vnode.text);
+        return document.createTextNode(text);
     case "#comment":
-        return document.createComment(vnode.text);
+        return document.createComment(text);
     case "svg":
         ns = NAMESPACE.svg;
         break;
@@ -154,7 +153,6 @@ export function createElement(vnode, p) {
         ns = "";
         break;
     default:
-        ns = vnode.namespaceURI;
         if (!ns) {
             do {
                 if (p.tag === 5) {
@@ -176,7 +174,7 @@ export function createElement(vnode, p) {
         //eslint-disable-next-line
     } catch (e) {}
     var elem = document.createElement(type);
-    var inputType = vnode.props && vnode.props.type;//IE6-8下立即设置type属性
+    var inputType = props && props.type;//IE6-8下立即设置type属性
     if(inputType){
         elem.type = inputType;
     }

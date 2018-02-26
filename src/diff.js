@@ -19,11 +19,11 @@ export function render(vnode, container, callback) {
 	return renderByAnu(vnode, container, callback);
 }
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
-export function unstable_renderSubtreeIntoContainer(lastVnode, nextVnode, container, callback) {
+export function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
 	deprecatedWarn('unstable_renderSubtreeIntoContainer');
-	var updater = lastVnode && lastVnode.updater;
-	var parentContext = updater ? updater.parentContext : {};
-	return renderByAnu(nextVnode, container, callback, parentContext);
+	var updater = instance && instance.updater;
+	var parentContext = updater ? updater._unmaskedContext : {};
+	return renderByAnu(vnode, container, callback, parentContext);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
 export function unmountComponentAtNode(container) {
@@ -40,19 +40,19 @@ export function unmountComponentAtNode(container) {
 	return false;
 }
 //[Top API] ReactDOM.findDOMNode
-export function findDOMNode(componentOrElement) {
-	if (componentOrElement == null) {
+export function findDOMNode(instanceOrElement) {
+	if (instanceOrElement == null) {
 		//如果是null
 		return null;
 	}
-	if (componentOrElement.nodeType) {
+	if (instanceOrElement.nodeType) {
 		//如果本身是元素节点
-		return componentOrElement;
+		return instanceOrElement;
 	}
 	//实例必然拥有updater与render
-	if (componentOrElement.render) {
-		var vnode = componentOrElement.updater._reactInternalFiber;
-		var c = vnode.child;
+	if (instanceOrElement.render) {
+		var fiber = instanceOrElement.updater;
+		var c = fiber.child;
 		if (c) {
 			return findDOMNode(c.stateNode);
 		} else {
@@ -92,7 +92,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
 			return wrapperFiber.child.stateNode; //这里要改
 		}
 		//updaterQueue是用来装载fiber， insertCarrier是用来装载定位用的DOM
-		receiveVnode(wrapperFiber, wrapperVnode, context, updateQueue, insertCarrier);
+		receiveVnode(wrapperFiber, wrapperVnode, updateQueue, insertCarrier);
 	} else {
 		emptyElement(root);
 		topNodes.push(root);
@@ -132,7 +132,7 @@ function mountVnode(vnode, parentFiber, updateQueue, insertCarrier) {
 	var fiber;
 	if (vnode.tag > 4) {
 		fiber = new HostFiber(vnode, parentFiber);
-		fiber.stateNode = createDOMElement(vnode, parentFiber);
+		fiber.stateNode = createDOMElement(fiber, parentFiber);
 		var beforeDOM = insertCarrier.dom;
 		insertCarrier.dom = fiber.stateNode;
 		if (fiber.tag === 5) {

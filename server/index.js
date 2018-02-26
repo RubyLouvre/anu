@@ -21,7 +21,7 @@ function renderVNode(vnode, context) {
             //如果是元素节点
             if (type === "option") {
                 //向上找到select元素
-                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                     // no operation
                 }
                 if (p && p.valuesSet) {
@@ -56,6 +56,7 @@ function renderVNode(vnode, context) {
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
+                    child.return = vnode;
                     str += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
@@ -96,7 +97,7 @@ function* renderVNodeGen(vnode, context) {
             //如果是元素节点
             if (type === "option") {
                 //向上找到select元素
-                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                     // no operation
                 }
                 if (p && p.valuesSet) {
@@ -131,6 +132,7 @@ function* renderVNodeGen(vnode, context) {
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
+                    child.return = vnode;
                     str += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;

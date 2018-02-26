@@ -21,15 +21,9 @@ const errorType = {
  * @param {Fiber} parentFiber 
  */
 export function ComponentFiber(vnode, parentFiber) {
-	var { type, props } = vnode;
-	if (!type) {
-		throw vnode;
-	}
-	this.type = type;
-
-	this.tag = vnode.tag;
+	extend(this, vnode);
+	var type = vnode.type
 	this.name = type.displayName || type.name;
-	this.props = props;
 	this.return = parentFiber;
 	this.context = getMaskedContext(getContextProvider(parentFiber), type.contextTypes);
 	this._reactInternalFiber = vnode;

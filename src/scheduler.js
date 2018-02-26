@@ -1,6 +1,6 @@
 import { options, clearArray, noop } from "./util";
 import { Refs } from "./Refs";
-import { disposeVnode } from "./dispose";
+import { disposeVnode,disposeChildren } from "./dispose";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
