@@ -212,11 +212,11 @@ ComponentFiber.prototype = {
 			var { props: lastProps, state: lastState } = instance;
 			this._hookArgs = [ lastProps, lastState ];
 		}
-		
+
 		if (this._hasError) {
 			return;
 		}
-      /*  if (pendingVnode) {
+		/*  if (pendingVnode) {
 			//  var child = this.child;
 			this._reactInternalFiber = pendingVnode;
 			//  pendingVnode.child = child;
@@ -312,7 +312,7 @@ ComponentFiber.prototype = {
 		} else {
 			//执行组件ref（发生错误时不执行）
 			if (vnode._hasRef) {
-				Refs.fireRef(vnode, instance, this);
+				Refs.fireRef(this, instance, vnode);
 				vnode._hasRef = false;
 			}
 			clearArray(this._pendingCallbacks).forEach(function(fn) {
@@ -337,7 +337,7 @@ ComponentFiber.prototype = {
 		options.beforeUnmount(instance);
 		instance.setState = instance.forceUpdate = returnFalse;
 
-		Refs.fireRef(this, null);
+		Refs.fireRef(this, null, this._reactInternalFiber);
 		captureError(instance, 'componentWillUnmount', []);
 		//在执行componentWillUnmount后才将关联的元素节点解绑，防止用户在钩子里调用 findDOMNode方法
 		this.isMounted = returnFalse;
@@ -391,7 +391,7 @@ export function getContextByTypes(curContext, contextTypes) {
 	}
 	return context;
 }
-
+//收集fiber
 export function collectComponentNodes(children) {
 	var ret = [];
 	for (var i in children) {
@@ -412,3 +412,4 @@ export function collectComponentNodes(children) {
 	}
 	return ret;
 }
+//明天测试ref,与tests

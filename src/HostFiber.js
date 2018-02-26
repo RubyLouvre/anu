@@ -44,13 +44,10 @@ HostFiber.prototype = {
         }
     },
     resolve() {
-        var vnode = this._reactInternalFiber;
-        var dom = this.stateNode;
         this.isMounted = returnTrue;
-        Refs.fireRef(vnode, dom, this);
+        Refs.fireRef(this, this.stateNode, this._reactInternalFiber);
     },
     dispose() {
-        var vnode = this._reactInternalFiber;
-        Refs.fireRef(vnode, null, this);
+        Refs.fireRef(this, null, this._reactInternalFiber);
     }
 };

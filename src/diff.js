@@ -224,17 +224,16 @@ function receiveComponent(fiber, nextVnode, parentContext, updateQueue, insertCa
 		fiber.context = nextContext;
 	}
 
-	
 	if (fiber.isPortal) {
 		fiber.insertCarrier = {};
 	} else {
 		fiber.insertCarrier = insertCarrier;
 	}
-    var lastVnode = fiber._reactInternalFiber;
-    fiber._reactInternalFiber = nextVnode
-    fiber.parentContext = parentContext;
-    fiber.props = nextProps;
-   
+	var lastVnode = fiber._reactInternalFiber;
+	fiber._reactInternalFiber = nextVnode;
+	fiber.parentContext = parentContext;
+	fiber.props = nextProps;
+
 	//fiber.pendingVnode = nextVnode;
 	//fiber.context = nextContext;
 	fiber.willReceive = willReceive;
@@ -258,7 +257,7 @@ function receiveComponent(fiber, nextVnode, parentContext, updateQueue, insertCa
 		}
 
 		if (lastVnode.ref !== nextVnode.ref) {
-			Refs.fireRef(fiber, null);
+			Refs.fireRef(fiber, null, nextVnode);
 		}
 		fiber.hydrate(updateQueue, true);
 	}
@@ -330,9 +329,9 @@ function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, i
 			.sort(function(a, b) {
 				return a.order - b.order;
 			})
-			.forEach(function(el) {
+			.forEach(function(fiber) {
 				updateQueue.push({
-					transition: Refs.fireRef.bind(null, el, null),
+					transition: Refs.fireRef.bind(null, fiber, null, fiber._reactInternalFiber),
 					isMounted: noop
 				});
 			});
