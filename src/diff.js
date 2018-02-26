@@ -99,7 +99,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
 		rootIndex = topNodes.length - 1;
 		var rootFiber = new HostFiber(createVnode(root));
 		rootFiber.stateNode = root;
-		rootFiber._providerContext = context;
+		rootFiber._unmaskedContext = context;
 		var children = (rootFiber._children = {
 			'.0': wrapperVnode
 		});
@@ -222,8 +222,8 @@ function receiveComponent(fiber, nextVnode, updateQueue, insertCarrier) {
 		willReceive = true;
 		fiber.context = nextContext;
 	}
-	fiber.willReceive = willReceive;
-	fiber._insertCarrier = fiber.isPortal ? {} : insertCarrier;
+	fiber._willReceive = willReceive;
+	fiber._insertCarrier = fiber._return ? {} : insertCarrier;
 
 	var lastVnode = fiber._reactInternalFiber;
 	fiber._reactInternalFiber = nextVnode;
@@ -285,7 +285,7 @@ function diffChildren(fibers, vnodes, parentFiber, updateQueue, insertCarrier) {
 		//向下找到其第一个元素节点子孙
 		if (firstChild) {
 			do {
-				if (child.superReturn) {
+				if (child._return) {
 					break;
 				}
 				if (child.tag > 4) {

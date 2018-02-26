@@ -15,8 +15,8 @@ export function disposeVnode(fiber, updateQueue, silent) {
             }
         }
       
-        if(fiber.portalReturn){
-            var dom = fiber.portalReturn.stateNode;
+        if(fiber._return){
+            var dom = fiber._return.stateNode;
             delete dom.__events;
         }
         if (fiber.tag < 4) {
@@ -57,10 +57,6 @@ function disposeComponent(fiber, updateQueue, silent) {
     if (!instance) {
         //没有实例化
         return;
-    }
-  
-    if (instance.isPortal) {
-      //  fiber._updateQueue = updateQueue;
     }
     if (!silent) {
         fiber.addState("dispose");

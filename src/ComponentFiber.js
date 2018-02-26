@@ -8,7 +8,6 @@ import { Refs } from './Refs';
 function alwaysNull() {
 	return null;
 }
-const support16 = true;
 const errorType = {
 	0: 'undefined',
 	2: 'boolean',
@@ -38,8 +37,8 @@ export function ComponentFiber(vnode, parentFiber) {
 	this._pendingStates = [];
 	this._states = [ 'resolve' ];
 	this._mountOrder = Refs.mountOrder++;
-	if (vnode.superReturn) {
-		this.isPortal = true;
+	if (vnode._return) {
+		this._return = vnode._return;
 	}
 	//  fiber总是保存最新的数据，如state, props, context
 	//  this._hydrating = true 表示组件会调用render方法及componentDidMount/Update钩子
@@ -171,7 +170,7 @@ ComponentFiber.prototype = {
 		instance.props = props;
 		instance.context = context;
 		instance.updater = this;
-		var carrier = this.isPortal ? {} : insertCarrier;
+		var carrier = this._return ? {} : insertCarrier;
 		this._insertCarrier = carrier;
 		this._insertPoint = carrier.dom;
 		//this._updateQueue = updateQueue;
@@ -185,7 +184,7 @@ ComponentFiber.prototype = {
 	},
 
 	hydrate(updateQueue, inner) {
-		let { stateNode: instance, context, props, pendingVnode } = this;
+		let { stateNode: instance, context, props } = this;
 		if (this._states[0] === 'hydrate') {
 			this._states.shift(); // ReactCompositeComponentNestedState-state
 		}
@@ -225,7 +224,7 @@ ComponentFiber.prototype = {
 		updateQueue.push(this);
 	},
 	render(updateQueue) {
-		let { stateNode: instance, pendingVnode } = this,
+		let { stateNode: instance } = this,
 			children = emptyObject,
 			fibers = this._children || emptyObject,
 			rendered,
@@ -233,9 +232,9 @@ ComponentFiber.prototype = {
 
 		this._hydrating = true;
 
-		if (this.willReceive === false) {
+		if (this._willReceive === false) {
 			rendered = this.child; //原来是vnode.child
-			delete this.willReceive;
+			delete this._willReceive;
 		} else {
 			let lastOwn = Refs.currentOwner;
 			Refs.currentOwner = instance;
@@ -253,10 +252,7 @@ ComponentFiber.prototype = {
 			this._children = children; //emptyObject
 			delete this.child;
 		}
-		var noSupport = !support16 && errorType[number];
-		if (noSupport) {
-			pushError(instance, 'render', new Error('React15 fail to render ' + noSupport));
-		}
+
 		Refs.diffChildren(fibers, children, this, updateQueue, this._insertCarrier);
 	},
 	// ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界

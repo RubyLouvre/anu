@@ -18,12 +18,12 @@ export function createPortal(children, node) {
     }*/
 
     var child = createElement(AnuPortal, { children: children, node });
-    child.portalReturn = vnode;
+    child._return = vnode;
     /*var children = {
         ".0": child
     };
     fiber._children = children;
     events.child = child;
-    child.portalReturn = vnode;*/
+    child._return = vnode;*/
     return child;
 }

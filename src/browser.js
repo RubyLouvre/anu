@@ -204,13 +204,10 @@ export function insertElement(fiber, insertPoint) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.portalReturn || p.return;
+        p = p._return || p.return;
     }
 
     var dom = fiber.stateNode;
-    if(!parentNode){
-        console.log("没有parentNode")
-    }
     var after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
 
     if (after === dom) {
@@ -236,23 +233,3 @@ export function insertElement(fiber, insertPoint) {
     }
 }
 
-export function getComponentNodes(children, resolve, debug) {
-    var ret = [];
-    for (var i in children) {
-        var child = children[i];
-        var inner = child.stateNode;
-        if (child._disposed) {
-            continue;
-        }
-        if (child.tag > 4) {
-            ret.push(inner);
-        } else {
-            var fiber = inner.updater;
-            if (child.child) {
-                var args = getComponentNodes(fiber._children, resolve, debug);
-                ret.push.apply(ret, args);
-            }
-        }
-    }
-    return ret;
-}
