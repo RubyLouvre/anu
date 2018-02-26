@@ -144,7 +144,7 @@ export function fiberizeChildren(c, fiber) {
         operateChildren(c, "", flattenCb, vnode);
     }
     flattenIndex = 0;
-    return (fiber.children = flattenObject);
+    return (fiber._children = flattenObject);
 }
 
 export function operateChildren(children, prefix, callback, parent) {

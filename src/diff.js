@@ -2,7 +2,7 @@ import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, de
 import { createElement as createDOMElement, emptyElement, insertElement, document } from './browser';
 import { disposeVnode, disposeChildren, topFibers, topNodes } from './dispose';
 import { createVnode, fiberizeChildren, createElement } from './createElement';
-import { ComponentFiber, getContextByTypes, getDerivedStateFromProps } from './ComponentFiber';
+import { ComponentFiber, getContextProvider, getDerivedStateFromProps, getMaskedContext } from './ComponentFiber';
 import { Component } from './Component';
 import { HostFiber } from './HostFiber';
 import { drainQueue } from './scheduler';
@@ -11,7 +11,7 @@ import { captureError } from './ErrorBoundary';
 
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
-	return vnode && vnode.vtype;
+	return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
 
 //[Top API] ReactDOM.render
@@ -99,8 +99,8 @@ function renderByAnu(vnode, root, callback, context = {}) {
 		rootIndex = topNodes.length - 1;
 		var rootFiber = new HostFiber(createVnode(root));
 		rootFiber.stateNode = root;
-		rootFiber.context = context;
-		var children = (rootFiber.children = {
+		rootFiber._providerContext = context;
+		var children = (rootFiber._children = {
 			'.0': wrapperVnode
 		});
 		mountChildren(children, rootFiber, updateQueue, insertCarrier);
@@ -177,7 +177,7 @@ function mountChildren(children, parentFiber, updateQueue, insertCarrier) {
 	}
 }
 
-function updateVnode(fiber, vnode, context, updateQueue, insertCarrier) {
+function updateVnode(fiber, vnode, updateQueue, insertCarrier) {
 	var dom = fiber.stateNode;
 	options.beforeUpdate(vnode);
 	if (fiber.tag > 4) {
@@ -194,53 +194,44 @@ function updateVnode(fiber, vnode, context, updateQueue, insertCarrier) {
 			fiber._reactInternalFiber = vnode;
 			fiber.lastProps = fiber.props;
 			let props = (fiber.props = vnode.props);
-			let fibers = fiber.children;
+			let fibers = fiber._children;
 			if (props[innerHTML]) {
 				disposeChildren(fibers, updateQueue);
 			} else {
 				var vnodes = fiberizeChildren(props.children, fiber);
-				diffChildren(fibers, vnodes, fiber, context, updateQueue, {});
+				diffChildren(fibers, vnodes, fiber, updateQueue, {});
 			}
 			fiber.attr();
 			fiber.addState('resolve');
 			updateQueue.push(fiber);
 		}
 	} else {
-		receiveComponent(fiber, vnode, context, updateQueue, insertCarrier);
+		receiveComponent(fiber, vnode, updateQueue, insertCarrier);
 	}
 }
 
-function receiveComponent(fiber, nextVnode, parentContext, updateQueue, insertCarrier) {
+function receiveComponent(fiber, nextVnode, updateQueue, insertCarrier) {
 	// todo:减少数据的接收次数
 	let { type, stateNode } = fiber,
 		nextProps = nextVnode.props,
 		willReceive = fiber._reactInternalFiber !== nextVnode,
-		nextContext;
-	if (!type.contextTypes) {
-		nextContext = stateNode.context;
-	} else {
-		nextContext = getContextByTypes(parentContext, type.contextTypes);
+		nextContext = getContextProvider(fiber.return); //取得parentContext
+
+	if (type.contextTypes) {
+		nextContext = getMaskedContext(context, type.contextTypes);
 		willReceive = true;
 		fiber.context = nextContext;
 	}
+	fiber.willReceive = willReceive;
+	fiber._insertCarrier = fiber.isPortal ? {} : insertCarrier;
 
-	if (fiber.isPortal) {
-		fiber.insertCarrier = {};
-	} else {
-		fiber.insertCarrier = insertCarrier;
-	}
 	var lastVnode = fiber._reactInternalFiber;
 	fiber._reactInternalFiber = nextVnode;
-	fiber.parentContext = parentContext;
 	fiber.props = nextProps;
 
-	//fiber.pendingVnode = nextVnode;
-	//fiber.context = nextContext;
-	fiber.willReceive = willReceive;
-	//nextVnode.stateNode = stateNode;
 	if (!fiber._dirty) {
 		fiber._receiving = true;
-		fiber.updateQueue = updateQueue;
+		//fiber._updateQueue = updateQueue;
 		if (willReceive) {
 			captureError(stateNode, 'componentWillReceiveProps', [ nextProps, nextContext ]);
 		}
@@ -269,16 +260,16 @@ function isSameNode(a, b) {
 	}
 }
 
-function receiveVnode(fiber, vnode, context, updateQueue, insertCarrier) {
+function receiveVnode(fiber, vnode, updateQueue, insertCarrier) {
 	if (isSameNode(fiber, vnode)) {
-		updateVnode(fiber, vnode, context, updateQueue, insertCarrier);
+		updateVnode(fiber, vnode, updateQueue, insertCarrier);
 	} else {
 		disposeVnode(fiber, updateQueue);
 		mountVnode(vnode, fiber.return, updateQueue, insertCarrier);
 	}
 }
 // https://github.com/onmyway133/DeepDiff
-function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, insertCarrier) {
+function diffChildren(fibers, vnodes, parentFiber, updateQueue, insertCarrier) {
 	//这里都是走新的任务列队
 	let fiber,
 		vnode,
@@ -332,7 +323,7 @@ function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, i
 			.forEach(function(fiber) {
 				updateQueue.push({
 					transition: Refs.fireRef.bind(null, fiber, null, fiber._reactInternalFiber),
-					isMounted: noop
+					_isMounted: noop
 				});
 			});
 
@@ -341,7 +332,7 @@ function diffChildren(fibers, vnodes, parentFiber, parentContext, updateQueue, i
 			fiber = matchFibers[i];
 			if (fiber) {
 				vnodes[i] = fiber;
-				receiveVnode(fiber, vnode, parentContext, updateQueue, insertCarrier);
+				receiveVnode(fiber, vnode, updateQueue, insertCarrier);
 			} else {
 				mountVnode(vnode, parentFiber, updateQueue, insertCarrier);
 			}

@@ -35,7 +35,7 @@ HostFiber.prototype = {
     init(updateQueue) {
         updateQueue.push(this);
     },
-    isMounted: returnFalse,
+    _isMounted: returnFalse,
     attr() {
         var { type, props, lastProps, stateNode: dom } = this;
         diffProps(dom, lastProps || emptyObject, props, this);
@@ -44,7 +44,7 @@ HostFiber.prototype = {
         }
     },
     resolve() {
-        this.isMounted = returnTrue;
+        this._isMounted = returnTrue;
         Refs.fireRef(this, this.stateNode, this._reactInternalFiber);
     },
     dispose() {

@@ -44,12 +44,12 @@ function disposeElement(fiber, updateQueue, silent) {
         fiber.addState("dispose");
         updateQueue.push(fiber);
     } else {
-        if (fiber.isMounted()) {
+        if (fiber._isMounted()) {
             fiber._states = ["dispose"];
             updateQueue.push(fiber);
         }
     }
-    disposeChildren(fiber.children, updateQueue, silent);
+    disposeChildren(fiber._children, updateQueue, silent);
 }
 
 function disposeComponent(fiber, updateQueue, silent) {
@@ -60,12 +60,12 @@ function disposeComponent(fiber, updateQueue, silent) {
     }
   
     if (instance.isPortal) {
-        fiber.updateQueue = updateQueue;
+      //  fiber._updateQueue = updateQueue;
     }
     if (!silent) {
         fiber.addState("dispose");
         updateQueue.push(fiber);
-    } else if (fiber.isMounted()) {
+    } else if (fiber._isMounted()) {
         if (silent === 1) {
             fiber._states.length = 0;
         }
@@ -73,8 +73,8 @@ function disposeComponent(fiber, updateQueue, silent) {
         updateQueue.push(fiber);
     }
 
-    fiber.insertQueue = fiber.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
-    disposeChildren(fiber.children, updateQueue, silent);
+    fiber._insertCarrier = fiber._insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
+    disposeChildren(fiber._children, updateQueue, silent);
 }
 
 export function disposeChildren(children, updateQueue, silent) {

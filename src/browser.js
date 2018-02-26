@@ -247,9 +247,9 @@ export function getComponentNodes(children, resolve, debug) {
         if (child.tag > 4) {
             ret.push(inner);
         } else {
-            var updater = inner.updater;
+            var fiber = inner.updater;
             if (child.child) {
-                var args = getComponentNodes(updater.children, resolve, debug);
+                var args = getComponentNodes(fiber._children, resolve, debug);
                 ret.push.apply(ret, args);
             }
         }

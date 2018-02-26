@@ -32,7 +32,7 @@ export function drainQueue(queue) {
     options.beforePatch();
     let fiber;
     while ((fiber = queue.shift())) {
-        console.log(fiber.name, "执行" + fiber._states + " 状态");
+       // console.log(fiber.name, "执行" + fiber._states + " 状态");
         if (fiber._disposed) {
             continue;
         }
@@ -76,12 +76,12 @@ export function drainQueue(queue) {
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
                 doctors.forEach(function(doctor){
-                    for (var i in doctor.children) {
-                        var child = doctor.children[i];
+                    disposeChildren(doctor._children,rejectedQueue, silent)
+                   /* for (var i in doctor._children) {
+                        var child = doctor._children[i];
                         disposeVnode(child, rejectedQueue, silent);
-                    }
-                    doctor.children = {};
-                    
+                    }*/
+                    doctor._children = {};
                 });
                 // rejectedQueue = Array.from(new Set(rejectedQueue));
                 doctors.forEach(function(doctor){

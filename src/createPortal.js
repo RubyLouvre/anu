@@ -22,7 +22,7 @@ export function createPortal(children, node) {
     /*var children = {
         ".0": child
     };
-    fiber.children = children;
+    fiber._children = children;
     events.child = child;
     child.portalReturn = vnode;*/
     return child;

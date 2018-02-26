@@ -14,7 +14,7 @@ function mapWrapperCb(old, prefix) {
     if (cur.isEach || el == null) {
         return;
     }
-    if (el.vtype) {
+    if (el.tag < 6) {
         //如果返回的el等于old,还需要使用原来的key, _prefix
         var key = computeKey(old, el, prefix, index);
         cur.arr.push(cloneElement(el, { key: key }));
