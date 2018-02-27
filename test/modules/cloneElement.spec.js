@@ -37,7 +37,7 @@ describe("cloneElement", function () {
         function A() { }
         var b = React.cloneElement({
             type: A,
-            vtype: 2,
+            tag: 2,
             props: {}
         }, {
             children: [111, 222],

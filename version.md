@@ -1,3 +1,20 @@
+## 1.3.0
+
+1. 属性名与方法名大改动，与React16的Fiber靠近
+   * `vnode.vtype` --> fiber.tag
+   * `instance.__isStateless` --> fiber._isStateless
+   * `updater` --> fiber
+   * `updater.vnode` --> fiber._reactInternalFiber
+   * `updater.willReceive` --> fiber._willReceive
+   * `updater.children` --> fiber._children
+   * `updater.isMounted()` --> fiber._isMounted()
+   * `updater.insertCarrier` --> fiber._mountCarrier
+   * `updater.insertPoint` --> fiber._mountPoint
+   * `updater.parentContext` --> fiber._unmaskedContext
+
+2. CompositeUpdater.js更名为ComponentFiber.js, DOMUpdater.js更名为HostFiber.js
+3. 内部许多方法去掉context传参，需要时通过getContextProvider获得，getChildContext 更名为getUnmaskedContext, getContextByTypes为getMaskedContext
+
 ## 1.2.9(2018.02.06)
 
 1. 修正focus/blur事件的实现

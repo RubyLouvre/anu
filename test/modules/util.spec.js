@@ -15,8 +15,8 @@ import {
 } from "src/event";
 
 import {
-    getChildContext
-} from "src/CompositeUpdater";
+    getUnmaskedContext
+} from "src/ComponentFiber";
 
 describe("util", function () {
 
@@ -119,7 +119,7 @@ describe("util", function () {
         };
         expect(toArray(dom.childNodes).length).toBe(3);
     });
-    it("getChildContext", () => {
+    it("getUnmaskedContext", () => {
         var instance = {
             getChildContext: function () {
                 return {
@@ -127,7 +127,7 @@ describe("util", function () {
                 };
             }
         };
-        var b = getChildContext(instance, {
+        var b = getUnmaskedContext(instance, {
             b: 4
         });
         expect(b).toEqual({

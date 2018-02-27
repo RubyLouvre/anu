@@ -13,13 +13,13 @@ describe("browser", function() {
     });
 
     it("createElement", function() {
-        var el = createElement({ type: "div" }, { vtype: 1 });
+        var el = createElement({ type: "div" }, { tag: 5 });
         expect(typeof el).toBe("object");
-        expect(createElement({ type: "span", ns: "xxx" }, { vtype: 1 }).nodeName.toLowerCase()).toBe("span");
+        expect(createElement({ type: "span", ns: "xxx" }, { tag: 5 }).nodeName.toLowerCase()).toBe("span");
     });
 
     it("DOMElement", function() {
-        var el = fakeDoc.createElement("div", { vtype: 1 });
+        var el = fakeDoc.createElement("div", { tag: 5 });
         expect(el).toInstanceOf(DOMElement);
         expect(el.nodeName).toBe("div");
         expect(el.children).toA("array");

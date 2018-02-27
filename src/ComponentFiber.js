@@ -110,7 +110,7 @@ ComponentFiber.prototype = {
 	},
 
 	_isMounted: returnFalse,
-	init(updateQueue, insertCarrier) {
+	init(updateQueue, mountCarrier) {
 		let { props, context, type, tag } = this,
 			isStateless = tag === 1,
 			instance,
@@ -151,7 +151,7 @@ ComponentFiber.prototype = {
 			} else {
 				//不带生命周期的
 				this.child = mixin;
-				instance.__isStateless = true;
+				this._isStateless = true;
 				this.mergeStates = alwaysNull;
 				this._willReceive = false;
 			}
@@ -163,9 +163,9 @@ ComponentFiber.prototype = {
 		instance.props = props;
 		instance.context = context;
 		instance.updater = this;
-		var carrier = this._return ? {} : insertCarrier;
-		this._insertCarrier = carrier;
-		this._insertPoint = carrier.dom;
+		var carrier = this._return ? {} : mountCarrier;
+		this._mountCarrier = carrier;
+		this._mountPoint = carrier.dom;
 		//this._updateQueue = updateQueue;
 		if (instance.componentWillMount) {
 			captureError(instance, 'componentWillMount', []);
@@ -187,7 +187,7 @@ ComponentFiber.prototype = {
 			shouldUpdate = false;
 
 			var nodes = collectComponentNodes(this._children);
-			var carrier = this._insertCarrier;
+			var carrier = this._mountCarrier;
 			nodes.forEach(function(el) {
 				insertElement(el, carrier.dom);
 				carrier.dom = el.stateNode;
@@ -208,7 +208,7 @@ ComponentFiber.prototype = {
 		instance.state = state;
 		instance.context = context;
 		if (!inner) {
-			this._insertCarrier.dom = this._insertPoint;
+			this._mountCarrier.dom = this._mountPoint;
 		}
 		
 		if (shouldUpdate) {
@@ -247,7 +247,7 @@ ComponentFiber.prototype = {
 			delete this.child;
 		}
 
-		Refs.diffChildren(fibers, children, this, updateQueue, this._insertCarrier);
+		Refs.diffChildren(fibers, children, this, updateQueue, this._mountCarrier);
 	},
 	// ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界
 	resolve(updateQueue) {

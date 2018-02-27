@@ -69,7 +69,7 @@ function disposeComponent(fiber, updateQueue, silent) {
         updateQueue.push(fiber);
     }
 
-    fiber._insertCarrier = fiber._insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
+    fiber._mountCarrier = fiber._mountPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
     disposeChildren(fiber._children, updateQueue, silent);
 }
 

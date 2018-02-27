@@ -190,7 +190,7 @@ export function contains(a, b) {
     }
     return false;
 }
-export function insertElement(fiber, insertPoint) {
+export function insertElement(fiber, mountPoint) {
     if (fiber._disposed) {
         return;
     }
@@ -206,7 +206,7 @@ export function insertElement(fiber, insertPoint) {
     }
 
     var dom = fiber.stateNode;
-    var after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
+    var after = mountPoint ? mountPoint.nextSibling: parentNode.firstChild;
 
     if (after === dom) {
         return;

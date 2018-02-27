@@ -114,8 +114,8 @@ var Refs = {
     // errorInfo: [],    //已经构建好的错误信息
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
-    fireRef: function fireRef(vnode, dom, fiber) {
-        if (fiber._disposed || fiber.__isStateless) {
+    fireRef: function fireRef(fiber, dom, vnode) {
+        if (fiber._disposed || fiber._isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
@@ -164,7 +164,7 @@ var vtype2tag = {
 */
 function Vnode(type, vtype, props, key, ref) {
     this.type = type;
-    this.vtype = vtype;
+    // this.vtype = vtype;
     this.tag = vtype2tag[vtype];
     if (vtype) {
         this.props = props;
@@ -248,7 +248,7 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
-    flattenIndex++;
+    child.index = flattenIndex++;
     flattenArray.push(child);
 }
 
@@ -262,7 +262,7 @@ function fiberizeChildren(c, fiber) {
         operateChildren(c, "", flattenCb, vnode);
     }
     flattenIndex = 0;
-    return fiber.children = flattenObject;
+    return fiber._children = flattenObject;
 }
 
 function operateChildren(children, prefix, callback, parent) {
@@ -368,18 +368,7 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 
 
-
-function getChildContext(instance, parentContext) {
-	if (instance.getChildContext) {
-		var context = instance.getChildContext();
-		if (context) {
-			parentContext = extend(extend({}, parentContext), context);
-		}
-	}
-	return parentContext;
-}
-
-function getContextByTypes(curContext, contextTypes) {
+function getMaskedContext(curContext, contextTypes) {
 	var context = {};
 	if (!contextTypes || !curContext) {
 		return context;
@@ -391,6 +380,25 @@ function getContextByTypes(curContext, contextTypes) {
 	}
 	return context;
 }
+function getUnmaskedContext(instance, parentContext) {
+	var context = instance.getChildContext();
+	if (context) {
+		parentContext = extend(extend({}, parentContext), context);
+	}
+	return parentContext;
+}
+function getContextProvider(fiber) {
+	do {
+		var c = fiber._unmaskedContext;
+		if (c) {
+			return c;
+		}
+	} while (fiber = fiber.return);
+}
+
+//收集fiber
+
+//明天测试ref,与tests
 
 var matchHtmlRegExp = /["'&<>]/;
 
@@ -585,7 +593,7 @@ var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
 // 如果要用在前端，需要加这个库 npm install stream
 function renderVNode(vnode, context) {
     var _vnode = vnode,
-        vtype = _vnode.vtype,
+        tag = _vnode.tag,
         type = _vnode.type,
         props = _vnode.props;
 
@@ -597,11 +605,11 @@ function renderVNode(vnode, context) {
         default:
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-            if (vtype === 1) {
+            if (tag === 5) {
                 //如果是元素节点
                 if (type === "option") {
                     //向上找到select元素
-                    for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                    for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                         // no operation
                     }
                     if (p && p.valuesSet) {
@@ -636,12 +644,13 @@ function renderVNode(vnode, context) {
                     var children = fiberizeChildren(props.children, fakeUpdater);
                     for (var i in children) {
                         var child = children[i];
+                        child.return = vnode;
                         str += renderVNode(child, context);
                     }
                     vnode.updater = fakeUpdater;
                 }
                 return str + "</" + type + ">\n";
-            } else if (vtype > 1) {
+            } else if (tag < 3) {
                 var data = {
                     context: context
                 };
@@ -661,13 +670,13 @@ function renderVNode(vnode, context) {
 }
 
 function renderVNodeGen(vnode, context) {
-    var _vnode2, vtype, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
+    var _vnode2, tag, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
 
     return regeneratorRuntime.wrap(function renderVNodeGen$(_context) {
         while (1) {
             switch (_context.prev = _context.next) {
                 case 0:
-                    _vnode2 = vnode, vtype = _vnode2.vtype, type = _vnode2.type, props = _vnode2.props;
+                    _vnode2 = vnode, tag = _vnode2.tag, type = _vnode2.type, props = _vnode2.props;
                     _context.t0 = type;
                     _context.next = _context.t0 === "#text" ? 4 : _context.t0 === "#comment" ? 7 : 10;
                     break;
@@ -691,7 +700,7 @@ function renderVNodeGen(vnode, context) {
 
                     innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
 
-                    if (!(vtype === 1)) {
+                    if (!(tag === 5)) {
                         _context.next = 24;
                         break;
                     }
@@ -699,7 +708,7 @@ function renderVNodeGen(vnode, context) {
                     //如果是元素节点
                     if (type === "option") {
                         //向上找到select元素
-                        for (p = vnode.return; p && p.type !== "select"; p === p.return) {
+                        for (p = vnode.return; p && p.type !== "select"; p = p.return) {
                             // no operation
                         }
                         if (p && p.valuesSet) {
@@ -745,6 +754,7 @@ function renderVNodeGen(vnode, context) {
                         for (i in children) {
                             child = children[i];
 
+                            child.return = vnode;
                             str += renderVNode(child, context);
                         }
                         vnode.updater = fakeUpdater;
@@ -757,7 +767,7 @@ function renderVNodeGen(vnode, context) {
                     break;
 
                 case 24:
-                    if (!(vtype > 1)) {
+                    if (!(tag < 3)) {
                         _context.next = 32;
                         break;
                     }
@@ -830,11 +840,11 @@ function toVnode(vnode, data) {
         instance,
         rendered;
 
-    if (vnode.vtype > 1) {
+    if (vnode.tag < 3) {
         var props = vnode.props;
         // props = getComponentProps(Type, props)
-        var instanceContext = getContextByTypes(parentContext, Type.contextTypes);
-        if (vnode.vtype === 4) {
+        var instanceContext = getMaskedContext(parentContext, Type.contextTypes);
+        if (vnode.tag === 1) {
             //处理无状态组件
             rendered = Type(props, instanceContext);
             if (rendered && rendered.render) {
@@ -865,7 +875,7 @@ function toVnode(vnode, data) {
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getChildContext(instance, parentContext); //将context往下传
+            data.context = getUnmaskedContext(instance, parentContext); //将context往下传
         }
         if (Array.isArray(rendered)) {
             return rendered.map(function (el) {
@@ -886,14 +896,14 @@ function fixVnode(vnode) {
     if (number < 3) {
         // 0, 1, 2
         return {
-            vtype: 0,
+            tag: 6,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
         //3, 4
         return {
-            vtype: 0,
+            tag: 6,
             text: vnode + "",
             type: "#text"
         };

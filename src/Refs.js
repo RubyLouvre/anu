@@ -13,7 +13,7 @@ export var Refs = {
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
     fireRef(fiber, dom, vnode) {
-        if (fiber._disposed || fiber.__isStateless) {
+        if (fiber._disposed || fiber._isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
