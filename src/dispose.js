@@ -7,7 +7,7 @@ export const topNodes = [];
 export function disposeVnode(fiber, updateQueue, silent) {
     if (fiber && !fiber._disposed) {
         options.beforeDelete(fiber._reactInnerFiber);
-        if (fiber.isTop) {
+        if (fiber.name === "AnuInternalFiber") {
             var i = topFibers.indexOf(fiber);
             if (i !== -1) {
                 topFibers.splice(i, 1);
@@ -58,10 +58,11 @@ function disposeComponent(fiber, updateQueue, silent) {
         //没有实例化
         return;
     }
+    
     if (!silent) {
         fiber.addState("dispose");
         updateQueue.push(fiber);
-    } else if (fiber._isMounted()) {
+    } else if (fiber._isMounted && fiber._isMounted()) {
         if (silent === 1) {
             fiber._states.length = 0;
         }

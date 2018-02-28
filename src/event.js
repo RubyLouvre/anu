@@ -74,7 +74,10 @@ function collectPaths(from, end) {
         return paths;
     }
     var mid = node.__events;
-    var vnode = mid.child || mid.vnode;
+    var vnode = mid.vnode;
+    if(vnode._isPortal){
+        vnode = vnode.child;
+    }
     do {
         if (vnode.tag === 5) {
             var dom = vnode.stateNode;

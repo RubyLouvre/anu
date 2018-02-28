@@ -15,6 +15,7 @@ var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
 
 
+
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -368,32 +369,34 @@ var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 
 
+
 function getMaskedContext(curContext, contextTypes) {
-	var context = {};
-	if (!contextTypes || !curContext) {
-		return context;
-	}
-	for (var key in contextTypes) {
-		if (contextTypes.hasOwnProperty(key)) {
-			context[key] = curContext[key];
-		}
-	}
-	return context;
+    var context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
+    }
+    return context;
 }
+
 function getUnmaskedContext(instance, parentContext) {
-	var context = instance.getChildContext();
-	if (context) {
-		parentContext = extend(extend({}, parentContext), context);
-	}
-	return parentContext;
+    var context = instance.getChildContext();
+    if (context) {
+        parentContext = extend(extend({}, parentContext), context);
+    }
+    return parentContext;
 }
 function getContextProvider(fiber) {
-	do {
-		var c = fiber._unmaskedContext;
-		if (c) {
-			return c;
-		}
-	} while (fiber = fiber.return);
+    do {
+        var c = fiber._unmaskedContext;
+        if (c) {
+            return c;
+        }
+    } while (fiber = fiber.return);
 }
 
 //收集fiber

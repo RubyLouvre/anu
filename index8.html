@@ -1,92 +1,99 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
-    <script type='text/javascript' src="./test/react.development.js"></script>
-    <script type='text/javascript' src="./test/react-dom.development.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
-    <script type="text/babel">
+   <script src="./dist/React.js"></script>
+   <!--<script src="./test/react.development.js"></script>
+    <script src="./test/react-dom.development.js"></script>-->
 
-      </script>
+    <script src="./test/babel.js"></script>
+   
+
 </head>
-
 <body>
 
-    <pre>应该等于
-           
-          
-        </pre>
-    <h1 id='example' class="root">
-
-    </h1>
+    <pre>
+            
+    </pre>
+    <div id='example'></div>
+    <div id='console'></div>
     <script type='text/babel'>
-           var container = document.getElementById("example")
-           var div = container
-            var PropTypes = React.PropTypes
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
                 }
-            }  
-        var body = document.body;
-        var container = document.createElement("div");
-        body.appendChild(container);
-  var aaa = "";
-  class App extends React.Component {
-      constructor(props) {
-          super(props);
-          this.state = {
-              aaa: {
-                  a: 7
-              }
-          };
-      }
+            }
+        }
+        var PropTypes = React.PropTypes
 
-      onWheel(e) {
-          console.log(e.deltaY, e)
-      }
+        var container = document.getElementById("example")
       
-
-      render() {
-          return (
-              <div
-                  onWheel={this.onWheel}
-                  style={{
-                      width: 200,
-                      height: 200
-                  }}
-              >
-                  <div
-                      ref="focus2"
-                      tabIndex={-1}
-                      onFocus={this.onFocus1}
-                      style={{
-                          width: 100,
-                          height: 100
-                      }}
-                  >
-                      222
+        class Container extends React.Component {
+          constructor(props) {
+            super(props);
+            this.state = {
+              show: false,
+              xxx: 1
+            }
+          }
+          
+          _show() {
+            if(this.state.show){
+                return //防止创建多个弹窗
+            }
+            console.log("show")
+            document.getElementById('console').innerHTML += 'SHOW<br>';
+            this.setState({show: true});
+          }
+          
+          _close(e) {
+           // e.stopPropagation()
+            console.log(e.target)
+            console.log("hide")
+            document.getElementById('console').innerHTML = '';
+            this.setState({show: false});
+          }
+          
+          render() {
+            const {show} = this.state;
+            
+            return (
+                <div className="Container" onClick={()=>{ console.log("能接受到Portal冒泡上来的事件")}}>
+              <div className="hasClick" style={{background: '#00bcd4'}} onClick={this._show.bind(this)}>
+                <div>Click me to show the Portal content</div>
+                <div>State: {show && 'visible' || 'hidden'}</div>
+                {show && <Portal>
+                  <div style={{background: '#ffeebb',height:200}}>{this.state.xxx}
+                    <button onClick={this._close.bind(this)}>&times; close portal</button>
                   </div>
+                </Portal>}
               </div>
-          );
-      }
-  }
-
-  var s = ReactDOM.render(<App />, div);
-console.log(s)
-  </script>
-
+              </div>
+            )
+          }
+        }
+        
+        class Portal extends React.Component{
+          constructor(props) {
+            super(props);
+            this.node = document.createElement('div');
+            this.node.className = "dynamic"
+            document.body.appendChild(this.node);
+          }
+          componentWillUnmount(){
+           // document.body.removeChild(this.node);
+          }
+          
+          render() {
+            return ReactDOM.createPortal(this.props.children, this.node);
+          }
+        }
+       var s = ReactDOM.render(<Container />, document.getElementById('example'));
+        
+        
+               </script>
 </body>
 
 </html>

@@ -19,11 +19,7 @@ export function pushError(instance, hook, error) {
             }
         }
 
-        // var vnode = catchUpdater._reactInternalFiber;
-        //  delete vnode.child;
-        //   delete catchUpdater.pendingVnode;
         delete catchUpdater.child;
-        delete catchUpdater.pendingVnode;
     } else {
         console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
@@ -43,7 +39,6 @@ export function captureError(instance, hook, args) {
         if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
-
         pushError(instance, hook, error);
     }
 }
@@ -70,7 +65,7 @@ function findCatchComponent(target, names) {
         catchIt;
     do {
         name = fiber.name;
-        if (fiber.isTop) {
+        if (fiber.name === "AnuInternalFiber") {
             if (catchIt) {
                 return catchIt;
             }
@@ -80,7 +75,6 @@ function findCatchComponent(target, names) {
             names.push(name);
             instance = fiber.stateNode;
             if (instance.componentDidCatch) {
-                fiber = instance.updater;
                 if (fiber._isDoctor) {
                     disableHook(fiber);
                 } else if (!catchIt && target !== instance) {

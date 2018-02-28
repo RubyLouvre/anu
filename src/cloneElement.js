@@ -25,11 +25,6 @@ export function cloneElement(vnode, props) {
     }else{
         configs = old;
     }
-    for(var i in configs){
-        if(i !== "children" && configs[i] && configs[i].$$typeof){
-            configs[i] = cloneElement(configs[i]);
-        }
-    }
     Refs.currentOwner = owner;
 
     let args = [].slice.call(arguments, 0),

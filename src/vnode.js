@@ -24,7 +24,7 @@ var vtype2tag = {
 */
 export function Vnode(type, vtype, props, key, ref) {
     this.type = type;
-   // this.vtype = vtype;
+    // this.vtype = vtype;
     this.tag = vtype2tag[vtype];
     if (vtype) {
         this.props = props;

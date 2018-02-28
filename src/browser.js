@@ -19,17 +19,17 @@ var fn = (DOMElement.prototype = {
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-        ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-        ",detachEvent"
-).replace(/\w+/g, function(name) {
-    fn[name] = function() {
+    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+    ",detachEvent"
+).replace(/\w+/g, function (name) {
+    fn[name] = function () {
         console.log("fire " + name); // eslint-disable-line
     };
 });
 
 //用于后端的document
 export var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(type) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
     return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
@@ -80,7 +80,7 @@ export function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
         emptyElement(child);
-        if(child === Refs.focusNode){
+        if (child === Refs.focusNode) {
             Refs.focusNode = false;
         }
         node.removeChild(child);
@@ -107,7 +107,7 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-    if(node === Refs.focusNode){
+    if (node === Refs.focusNode) {
         Refs.focusNode = false;
     }
     fragment.appendChild(node);
@@ -126,11 +126,11 @@ export var msie = document.documentMode || versions[typeNumber(document.all) + "
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createElement(vnode, p) {
-    let {type, props, namespaceURI:ns, text } = vnode
+    let { type, props, namespaceURI: ns, text } = vnode;
     switch (type) {
     case "#text":
         //只重复利用文本节点
-        let node = recyclables[type].pop();
+        var node = recyclables[type].pop();
         if (node) {
             node.nodeValue = text;
             return node;
@@ -172,10 +172,10 @@ export function createElement(vnode, p) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-    } catch (e) {}
+    } catch (e) { }
     var elem = document.createElement(type);
     var inputType = props && props.type;//IE6-8下立即设置type属性
-    if(inputType){
+    if (inputType) {
         elem.type = inputType;
     }
     return elem;
@@ -206,26 +206,26 @@ export function insertElement(fiber, mountPoint) {
     }
 
     var dom = fiber.stateNode;
-    var after = mountPoint ? mountPoint.nextSibling: parentNode.firstChild;
+    var after = mountPoint ? mountPoint.nextSibling : parentNode.firstChild;
 
     if (after === dom) {
         return;
     }
-    if(after === null && dom === parentNode.lastChild){
+    if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    if(after && !contains(parentNode,after)){
+    if (after && !contains(parentNode, after)) {
         return;
     }
     var isElement = fiber.tag === 5;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
-    if(isElement &&  prevFocus !== document.activeElement && contains(document.body, prevFocus)){
-        try{
+    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
+        try {
             Refs.focusNode = prevFocus;
             prevFocus.__inner__ = true;
             prevFocus.focus();
-        }catch(e){
+        } catch (e) {
             prevFocus.__inner__ = false;
         }
     }
