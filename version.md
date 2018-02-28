@@ -14,7 +14,8 @@
 
 2. CompositeUpdater.js更名为ComponentFiber.js, DOMUpdater.js更名为HostFiber.js
 3. 内部许多方法去掉`context`传参，需要时通过`getContextProvider`获得，`getChildContext` 更名为`getUnmaskedContext`, getContextByTypes`为getMaskedContext`
-4. diff机制，之前是通过新旧vnode进行比较，现在是将vnode转换为一个fiber(可以看作是vnode的强化版，里面有stateNode, return, child, sibling, _children等属性)，然后fiber与新vnode进行比较。
+4. diff机制，由新旧vnode进行比较，改成fiber与新vnode进行比较，用新vnode的数据更新fiber与视图
+5. 添加input[type=search]的onChange事件支持
 
 ## 1.2.9(2018.02.06)
 
