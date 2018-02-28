@@ -1,5 +1,5 @@
 import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { createElement as createDOMElement, emptyElement, insertElement, document } from "./browser";
+import { emptyElement, insertElement, document } from "./browser";
 import { disposeVnode, disposeChildren, topFibers, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { ComponentFiber, getContextProvider, getDerivedStateFromProps, getMaskedContext } from "./ComponentFiber";
@@ -127,35 +127,21 @@ function renderByAnu(vnode, root, callback, context = {}) {
  * @param {Object} mountCarrier 
  */
 function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
-    options.beforeInsert(vnode);
-    var fiber;
-    if (vnode.tag > 4) {
-        fiber = new HostFiber(vnode, parentFiber);
-       
-        if(vnode._return){
-            var p = fiber._return = vnode._return;
-            p.child = fiber;
-        }
-        fiber.stateNode = createDOMElement(fiber, parentFiber);
-        var beforeDOM = mountCarrier.dom;
-        mountCarrier.dom = fiber.stateNode;
-        if (fiber.tag === 5) {
-            let children = fiberizeChildren(vnode.props.children, fiber);
-            mountChildren(children, fiber, updateQueue, {});
-            fiber.init(updateQueue);
-        }
-        insertElement(fiber, beforeDOM);
-        if (fiber.tag === 5) {
-            fiber.attr();
-        }
-    } else {
-        fiber = new ComponentFiber(vnode, parentFiber);
-        if(vnode._return){
-            var p = fiber._return = vnode._return;
-            p.child = fiber;"ews";
-        }
-        fiber.init(updateQueue, mountCarrier);
-    }
+	options.beforeInsert(vnode);
+	var useHostFiber = vnode.tag > 4 
+	var fiberCtor = useHostFiber ? HostFiber: ComponentFiber
+	var fiber =  new fiberCtor(vnode, parentFiber);
+	if(vnode._return){
+		var p = fiber._return = vnode._return;
+		p.child = fiber;
+	}
+    fiber.init(updateQueue, mountCarrier, function(){
+		if (fiber.tag === 5) {
+			let children = fiberizeChildren(vnode.props.children, fiber);
+			mountChildren(children, fiber, updateQueue, {});
+		}
+	});
+    
     return fiber;
 }
 /**

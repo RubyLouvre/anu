@@ -2057,51 +2057,63 @@ var actionStrategy = {
  * @param {Fiber} parentFiber 
  */
 function HostFiber(vnode, parentFiber) {
-    extend(this, vnode);
-    this.name = vnode.type;
-    this.return = parentFiber;
-    this._states = ["resolve"];
-    //  this.namesplace 
-    this._reactInternalFiber = vnode;
-    this._mountOrder = Refs.mountOrder++;
+	extend(this, vnode);
+	this.name = vnode.type;
+	this.return = parentFiber;
+	this._states = ['resolve'];
+	//  this.namesplace
+	this._reactInternalFiber = vnode;
+	this._mountOrder = Refs.mountOrder++;
 }
 
 HostFiber.prototype = {
-    addState: function addState(state) {
-        var states = this._states;
-        if (states[states.length - 1] !== state) {
-            states.push(state);
-        }
-    },
-    transition: function transition(updateQueue) {
-        var state = this._states.shift();
-        if (state) {
-            this[state](updateQueue);
-        }
-    },
-    init: function init(updateQueue) {
-        updateQueue.push(this);
-    },
+	addState: function addState(state) {
+		var states = this._states;
+		if (states[states.length - 1] !== state) {
+			states.push(state);
+		}
+	},
+	transition: function transition(updateQueue) {
+		var state = this._states.shift();
+		if (state) {
+			this[state](updateQueue);
+		}
+	},
 
-    _isMounted: returnFalse,
-    attr: function attr() {
-        var type = this.type,
-            props = this.props,
-            lastProps = this.lastProps,
-            dom = this.stateNode;
+	// init(updateQueue) {
+	//  updateQueue.push(this);
+	// },
+	init: function init(updateQueue, mountCarrier, initChildren) {
+		var dom = this.stateNode = createElement$1(this, this.return);
+		var beforeDOM = mountCarrier.dom;
+		mountCarrier.dom = dom;
+		initChildren();
+		insertElement(this, beforeDOM);
+		if (this.tag == 5) {
+			this.attr();
+			updateQueue.push(this);
+		}
+	},
 
-        diffProps(dom, lastProps || emptyObject, props, this);
-        if (formElements[type]) {
-            inputControll(this, dom, props);
-        }
-    },
-    resolve: function resolve() {
-        this._isMounted = returnTrue;
-        Refs.fireRef(this, this.stateNode, this._reactInternalFiber);
-    },
-    dispose: function dispose() {
-        Refs.fireRef(this, null, this._reactInternalFiber);
-    }
+	_isMounted: returnFalse,
+	attr: function attr() {
+		var type = this.type,
+		    props = this.props,
+		    lastProps = this.lastProps,
+		    dom = this.stateNode;
+
+		diffProps(dom, lastProps || emptyObject, props, this);
+		if (formElements[type]) {
+			inputControll(this, dom, props);
+		}
+	},
+	resolve: function resolve() {
+		this._isMounted = returnTrue;
+		Refs.fireRef(this, this.stateNode, this._reactInternalFiber);
+	},
+	dispose: function dispose() {
+		Refs.fireRef(this, null, this._reactInternalFiber);
+	}
 };
 
 function AnuPortal(props) {
@@ -2646,7 +2658,7 @@ function findDOMNode(instanceOrElement) {
 var AnuInternalFiber = function AnuInternalFiber() {
     Component.call(this);
 };
-AnuInternalFiber.displayName = "AnuInternalFiber";
+AnuInternalFiber.displayName = "AnuInternalFiber"; //fix IE6-8函数没有name属性
 var fn$2 = inherit(AnuInternalFiber, Component);
 
 fn$2.render = function () {
@@ -2711,34 +2723,20 @@ function renderByAnu(vnode, root, callback) {
  */
 function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
     options.beforeInsert(vnode);
-    var fiber;
-    if (vnode.tag > 4) {
-        fiber = new HostFiber(vnode, parentFiber);
-
-        if (vnode._return) {
-            var p = fiber._return = vnode._return;
-            p.child = fiber;
-        }
-        fiber.stateNode = createElement$1(fiber, parentFiber);
-        var beforeDOM = mountCarrier.dom;
-        mountCarrier.dom = fiber.stateNode;
+    var useHostFiber = vnode.tag > 4;
+    var fiberCtor = useHostFiber ? HostFiber : ComponentFiber;
+    var fiber = new fiberCtor(vnode, parentFiber);
+    if (vnode._return) {
+        var p = fiber._return = vnode._return;
+        p.child = fiber;
+    }
+    fiber.init(updateQueue, mountCarrier, function () {
         if (fiber.tag === 5) {
             var children = fiberizeChildren(vnode.props.children, fiber);
             mountChildren(children, fiber, updateQueue, {});
-            fiber.init(updateQueue);
         }
-        insertElement(fiber, beforeDOM);
-        if (fiber.tag === 5) {
-            fiber.attr();
-        }
-    } else {
-        fiber = new ComponentFiber(vnode, parentFiber);
-        if (vnode._return) {
-            var p = fiber._return = vnode._return;
-            p.child = fiber;"ews";
-        }
-        fiber.init(updateQueue, mountCarrier);
-    }
+    });
+
     return fiber;
 }
 /**

@@ -1,4 +1,4 @@
-/*
+
 import "./modules/createElement.spec";
 
 import "./modules/util.spec";
@@ -7,7 +7,7 @@ import "./modules/style.spec";
 import "./modules/classInherit.spec";
 import "./modules/shallow.spec";
 import "./modules/browser.spec";
-*/
+
 import "./modules/cloneElement.spec";
 
 require("./modules/context.spec.jsx");
@@ -53,7 +53,7 @@ require("./modules/ReactStatelessComponent-test.jsx");
 
 
 require("./modules/ReactEmptyComponent-test.jsx");
-/*
+
 require("./modules/ReactIdentity-test.jsx");
 
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
@@ -87,4 +87,3 @@ require("./modules/event.spec.jsx");
 
 require("./modules/ReactDOM-test.jsx");
 
-*/
