@@ -186,33 +186,26 @@ var Refs = {
     }
 };
 
-var vtype2tag = {
-    0: 6, //text,
-    1: 5, //element,
-    4: 1, //function
-    2: 2 //class
-};
 /*
- IndeterminateComponent = 0; // Before we know whether it is functional or class
+ IndeterminateComponent = 0; // 不用
  FunctionalComponent = 1;
  ClassComponent = 2;
- HostRoot = 3; // Root of a host tree. Could be nested inside another node.
- HostPortal = 4; // A subtree. Could be an entry point to a different renderer.
- HostComponent = 5;
+ HostRoot = 3; // 不用
+ HostPortal = 4; // 不用
+ HostComponent = 5; 
  HostText = 6;
- CallComponent = 7;
- CallHandlerPhase = 8;
- ReturnComponent = 9;
- Fragment = 10;
- Mode = 11;
- ContextConsumer = 12;
- ContextProvider = 13;
+ CallComponent = 7; // 不用
+ CallHandlerPhase = 8;// 不用
+ ReturnComponent = 9;// 不用
+ Fragment = 10;// 不用
+ Mode = 11; // 不用
+ ContextConsumer = 12;// 不用
+ ContextProvider = 13;// 不用
 */
-function Vnode(type, vtype, props, key, ref) {
+function Vnode(type, tag, props, key, ref) {
     this.type = type;
-    // this.vtype = vtype;
-    this.tag = vtype2tag[vtype];
-    if (vtype) {
+    this.tag = tag;
+    if (tag !== 6) {
         this.props = props;
         this._owner = Refs.currentOwner;
 
@@ -227,10 +220,6 @@ function Vnode(type, vtype, props, key, ref) {
             this.ref = ref;
         }
     }
-    /*
-      this.stateNode = null
-    */
-
     options.afterCreate(this);
 }
 
@@ -261,14 +250,14 @@ function createElement(type, config) {
     }
 
     var props = {},
-        vtype = 1,
+        tag = 5,
         key = null,
         ref = null,
         argsLen = children.length;
     if (type && type.call) {
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
+        tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type === REACT_FRAGMENT_TYPE) {
-        type = Fragment, vtype = 4;
+        type = Fragment, tag = 1;
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
@@ -303,11 +292,11 @@ function createElement(type, config) {
             }
         }
     }
-    return new Vnode(type, vtype, props, key, ref);
+    return new Vnode(type, tag, props, key, ref);
 }
 
 function createVText(type, text) {
-    var vnode = new Vnode(type, 0);
+    var vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
@@ -318,7 +307,7 @@ function createVnode(node) {
     var type = node.nodeName,
         vnode;
     if (node.nodeType === 1) {
-        vnode = new Vnode(type, 1);
+        vnode = new Vnode(type, 5);
         var ns = node.namespaceURI;
         if (!ns || ns.indexOf("html") >= 22) {
             vnode.type = type.toLowerCase(); //HTML的虚拟DOM的type需要小写化
@@ -2237,10 +2226,6 @@ HostFiber.prototype = {
 			this[state](updateQueue);
 		}
 	},
-
-	// init(updateQueue) {
-	//  updateQueue.push(this);
-	// },
 	init: function init(updateQueue, mountCarrier, initChildren) {
 		var dom = this.stateNode = createElement$1(this, this.return);
 		var beforeDOM = mountCarrier.dom;
@@ -2970,7 +2955,6 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
 
 
 	if (type.contextTypes) {
-		//  nextContext = getContextProvider(fiber.return); //取得parentContext
 		nextContext = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
 		willReceive = true;
 		fiber.context = nextContext;
@@ -2986,7 +2970,6 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
 
 	if (!fiber._dirty) {
 		fiber._receiving = true;
-		//fiber._updateQueue = updateQueue;
 		if (willReceive) {
 			captureError(stateNode, 'componentWillReceiveProps', [nextProps, nextContext]);
 		}

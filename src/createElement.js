@@ -15,14 +15,14 @@ function Fragment(props) {
 
 export function createElement(type, config, ...children) {
     let props = {},
-        vtype = 1,
+        tag = 5,
         key = null,
         ref = null,
         argsLen = children.length;
     if (type && type.call) {
-        vtype = type.prototype && type.prototype.render ? 2 : 4;
+        tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type === REACT_FRAGMENT_TYPE) {
-        (type = Fragment), (vtype = 4);
+        (type = Fragment), (tag = 1);
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
@@ -57,11 +57,11 @@ export function createElement(type, config, ...children) {
             }
         }
     }
-    return new Vnode(type, vtype, props, key, ref);
+    return new Vnode(type, tag, props, key, ref);
 }
 
 export function createVText(type, text) {
-    var vnode = new Vnode(type, 0);
+    var vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
@@ -72,7 +72,7 @@ export function createVnode(node) {
     var type = node.nodeName,
         vnode;
     if (node.nodeType === 1) {
-        vnode = new Vnode(type, 1);
+        vnode = new Vnode(type, 5);
         var ns = node.namespaceURI;
         if (!ns || ns.indexOf("html") >= 22) {
             vnode.type = type.toLowerCase(); //HTML的虚拟DOM的type需要小写化

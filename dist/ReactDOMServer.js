@@ -141,33 +141,26 @@ var Refs = {
     }
 };
 
-var vtype2tag = {
-    0: 6, //text,
-    1: 5, //element,
-    4: 1, //function
-    2: 2 //class
-};
 /*
- IndeterminateComponent = 0; // Before we know whether it is functional or class
+ IndeterminateComponent = 0; // 不用
  FunctionalComponent = 1;
  ClassComponent = 2;
- HostRoot = 3; // Root of a host tree. Could be nested inside another node.
- HostPortal = 4; // A subtree. Could be an entry point to a different renderer.
- HostComponent = 5;
+ HostRoot = 3; // 不用
+ HostPortal = 4; // 不用
+ HostComponent = 5; 
  HostText = 6;
- CallComponent = 7;
- CallHandlerPhase = 8;
- ReturnComponent = 9;
- Fragment = 10;
- Mode = 11;
- ContextConsumer = 12;
- ContextProvider = 13;
+ CallComponent = 7; // 不用
+ CallHandlerPhase = 8;// 不用
+ ReturnComponent = 9;// 不用
+ Fragment = 10;// 不用
+ Mode = 11; // 不用
+ ContextConsumer = 12;// 不用
+ ContextProvider = 13;// 不用
 */
-function Vnode(type, vtype, props, key, ref) {
+function Vnode(type, tag, props, key, ref) {
     this.type = type;
-    // this.vtype = vtype;
-    this.tag = vtype2tag[vtype];
-    if (vtype) {
+    this.tag = tag;
+    if (tag !== 6) {
         this.props = props;
         this._owner = Refs.currentOwner;
 
@@ -182,10 +175,6 @@ function Vnode(type, vtype, props, key, ref) {
             this.ref = ref;
         }
     }
-    /*
-      this.stateNode = null
-    */
-
     options.afterCreate(this);
 }
 
@@ -210,7 +199,7 @@ Vnode.prototype = {
 
 
 function createVText(type, text) {
-    var vnode = new Vnode(type, 0);
+    var vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
