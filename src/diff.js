@@ -64,7 +64,7 @@ export function findDOMNode(instanceOrElement) {
 var AnuInternalFiber = function() {
     Component.call(this);
 };
-AnuInternalFiber.displayName = "AnuInternalFiber";
+AnuInternalFiber.displayName = "AnuInternalFiber";//fix IE6-8函数没有name属性
 var fn = inherit(AnuInternalFiber, Component);
 
 fn.render = function() {
