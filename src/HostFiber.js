@@ -32,16 +32,13 @@ HostFiber.prototype = {
 			this[state](updateQueue);
 		}
 	},
-	// init(updateQueue) {
-	//  updateQueue.push(this);
-	// },
 	init(updateQueue, mountCarrier, initChildren) {
 		var dom = (this.stateNode = createElement(this, this.return));
 		var beforeDOM = mountCarrier.dom;
         mountCarrier.dom = dom;
-        initChildren();
+        initChildren(this);
 		insertElement(this, beforeDOM);
-		if (this.tag == 5) {
+		if (this.tag === 5) {
 			this.attr();
 			updateQueue.push(this);
 		}
