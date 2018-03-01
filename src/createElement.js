@@ -130,7 +130,7 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
-    child.index = flattenIndex ++
+    child.index = flattenIndex ++;
     flattenArray.push(child);
 }
 

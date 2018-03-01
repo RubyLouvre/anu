@@ -1,5 +1,4 @@
-import { cloneElement } from "src/cloneElement";
-import { createClass } from "src/createClass";
+import React from "dist/React";
 
 describe("cloneElement", function () {
     it("test", () => {
@@ -10,7 +9,7 @@ describe("cloneElement", function () {
                 children: []
             }
         };
-        expect(cloneElement(a).props.v).toBe(1);
+        expect(React.cloneElement(a).props.v).toBe(1);
     });
 
     it("array", () => {
@@ -22,15 +21,15 @@ describe("cloneElement", function () {
             }
         };
  
-        expect(cloneElement(a).props.v).toBe(2);
+        expect(React.cloneElement(a).props.v).toBe(2);
     });
     it("should transfer the key property", ()=> {
-        var Component = createClass({
+        var Component = React.createClass({
             render: function() {
                 return null;
             },
         });
-        var clone = cloneElement(<Component />, {key: "xyz"});
+        var clone = React.cloneElement(<Component />, {key: "xyz"});
         expect(clone.key).toBe("xyz");
     });
     it("children", () => {
@@ -45,5 +44,46 @@ describe("cloneElement", function () {
             key: "tabContent"
         });
         expect(b.props.children.length).toBe(2);
+    });
+
+    it("属性是一个虚拟DOM，被重复clone", ()=>{
+        class Tree extends React.Component{
+            constructor(props){
+                super(props);
+                this.state = {};
+            }
+            renderTreeNode(child){
+                var childProps = {};
+                childProps.checkable = this.props.checkable;
+               
+                return React.cloneElement(child, childProps);
+            }
+            render() {
+                var props = this.props;
+                return React.createElement(
+                    "ul",
+                    {
+                        className: "root",
+                        role: "tree-node",
+                        unselectable: "on"
+                    },
+                    React.Children.map(props.children, this.renderTreeNode, this)
+                );
+            }
+        }
+        class TreeNode extends React.Component{
+            render(){
+                return <li>{this.props.checkable}{this.props.children}</li>;
+            }
+        }
+        var container = document.createElement("div");
+        ReactDOM.render(<Tree checkable={ <input className="checked" type="radio" defaultChecked="true"/>}>
+            <TreeNode>1111</TreeNode>
+            <TreeNode>2222</TreeNode>
+            <TreeNode>3333</TreeNode>
+        </Tree>
+            , container);
+        var inputs =  container.getElementsByTagName("input");
+        expect(inputs.length).toBe(3);
     });
 });

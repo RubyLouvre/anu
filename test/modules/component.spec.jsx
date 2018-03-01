@@ -1,5 +1,4 @@
 import React from "dist/React";
-import PureComponent from "src/PureComponent";
 import ReactTestUtils from "lib/ReactTestUtils";
 
 describe("组件相关", function() {
