@@ -210,7 +210,7 @@ ComponentFiber.prototype = {
         updateQueue.push(this);
     },
     render(updateQueue) {
-        let { stateNode: instance, context } = this,
+        let { stateNode: instance } = this,
             children = emptyObject,
             fibers = this._children || emptyObject,
             rendered,

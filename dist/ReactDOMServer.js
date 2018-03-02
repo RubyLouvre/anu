@@ -212,7 +212,7 @@ var lastText;
 var flattenIndex;
 var flattenObject;
 var flattenArray;
-function flattenCb(child, index, vnode) {
+function flattenCb(child, index) {
     var childType = typeNumber(child);
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
@@ -246,21 +246,21 @@ function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
     flattenArray = [];
-    var vnode = fiber._reactInternalFiber;
+    //let vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
-        operateChildren(c, "", flattenCb, vnode);
+        operateChildren(c, "", flattenCb);
     }
     flattenIndex = 0;
     return fiber._children = flattenObject;
 }
 
-function operateChildren(children, prefix, callback, parent) {
+function operateChildren(children, prefix, callback) {
     var iteratorFn;
     if (children) {
         if (children.forEach) {
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, parent);
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
             });
             return;
         } else if (iteratorFn = getIteractor(children)) {
@@ -268,7 +268,7 @@ function operateChildren(children, prefix, callback, parent) {
                 ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, parent);
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
                 ii++;
             }
             return;
