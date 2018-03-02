@@ -179,6 +179,7 @@ function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
         //文本，元素
         insertElement(fiber, mountCarrier.dom);
         mountCarrier.dom = dom;
+       
         if (fiber.tag === 6) {
             //文本
             if (vnode.text !== fiber.text) {
@@ -213,15 +214,13 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         willReceive = fiber._reactInternalFiber !== nextVnode;
 
     if (type.contextTypes) {
-        nextContext = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
+        nextContext = fiber.context = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
         willReceive = true;
-        fiber.context = nextContext;
     } else {
         nextContext = stateNode.context;
     }
     fiber._willReceive = willReceive;
     fiber._mountCarrier = fiber._return ? {} : mountCarrier;
-
     var lastVnode = fiber._reactInternalFiber;
     fiber._reactInternalFiber = nextVnode;
     fiber.props = nextProps;
@@ -330,6 +329,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
         var prevFiber,
             firstFiber,
             index = 0;
+     
         for (let i in children) {
             
             vnode = children[i];

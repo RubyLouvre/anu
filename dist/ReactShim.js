@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-03-01
+ * QQ 370262116 by 司徒正美 Copyright 2018-03-02
  */
 
 (function (global, factory) {
@@ -2434,7 +2434,13 @@ ComponentFiber.prototype = {
 
         this._hydrating = true;
         //给下方使用的context
-        this._unmaskedContext = instance.getChildContext ? getUnmaskedContext(instance, context) : getContextProvider(this.return);
+
+        if (instance.getChildContext) {
+            var c = getContextProvider(this.return);
+            c = getUnmaskedContext(instance, c);
+            this._unmaskedContext = c;
+        }
+
         if (this._willReceive === false) {
             rendered = this.child; //原来是vnode.child
             delete this._willReceive;
@@ -2756,6 +2762,7 @@ function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
         //文本，元素
         insertElement(fiber, mountCarrier.dom);
         mountCarrier.dom = dom;
+
         if (fiber.tag === 6) {
             //文本
             if (vnode.text !== fiber.text) {
@@ -2792,15 +2799,13 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
 
 
     if (type.contextTypes) {
-        nextContext = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
+        nextContext = fiber.context = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
         willReceive = true;
-        fiber.context = nextContext;
     } else {
         nextContext = stateNode.context;
     }
     fiber._willReceive = willReceive;
     fiber._mountCarrier = fiber._return ? {} : mountCarrier;
-
     var lastVnode = fiber._reactInternalFiber;
     fiber._reactInternalFiber = nextVnode;
     fiber.props = nextProps;
@@ -2907,6 +2912,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
         var prevFiber,
             firstFiber,
             index = 0;
+
         for (var _i2 in children) {
 
             vnode = children[_i2];
@@ -2935,7 +2941,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.2.9",
+        version: "1.3.0-alpha",
         render: render,
         hydrate: render,
         Fragment: REACT_FRAGMENT_TYPE,

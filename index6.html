@@ -30,7 +30,19 @@
               window.ReactDOM = React
             }
             var container = document.getElementById("app-root")
-           
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                }
+            }  
+            function TreeNode(props){
+                return <li>{props.text}</li>
+            }
             class Tree extends React.Component{
                 constructor(props){
                     super(props)
@@ -40,22 +52,44 @@
                 }
                
                 render() {
-                   
                    return this.state.children.map(function(el){
-                        return <li key={"."+el}>{el}</li>
+                        return <TreeNode key={el} text={el} />
                     })
                 };
             }
      var s
      ReactDOM.render(<ul><Tree ref={(e)=>{s = e}} /></ul> , container);
-
- setTimeout(function(){
+      /*  var fibers = s.updater._children;
+        var keys = [], els = [], k = []
+        for(var i in fibers){
+            keys.push(i)
+            var el = fibers[i]
+            els.push(el)
+            k.push(el.key)
+        }
+     
+       expect( keys ).toEqual( [".$.1", ".$.2", ".$.3"])
+       expect( k ).toEqual( [".1", ".2", ".3"])
+       expect(s.updater.child ).toBe(els[0])
+       */
      s.setState(function(el){
          el.children.reverse()
          return el
      })
- })
-          </script>
+/*
+     var fibers = s.updater._children;
+     var keys = [], els = [], k = []
+     for(var i in fibers){
+            keys.push(i)
+            var el = fibers[i]
+            els.push(el)
+            k.push(el.key)
+        }
+        expect( keys ).toEqual( [".$.3", ".$.2", ".$.1"])
+       expect( k ).toEqual( [".3", ".2", ".1"])
+       expect(s.updater.child ).toBe(els[0])
+       expect(els[2].siblings ).toBe(undefined)*/
+     </script>
 
 </body>
 

@@ -218,8 +218,13 @@ ComponentFiber.prototype = {
 
         this._hydrating = true;
         //给下方使用的context
-        this._unmaskedContext = instance.getChildContext ? getUnmaskedContext(instance, context) :
-            getContextProvider(this.return);
+       
+        if (instance.getChildContext) {
+            var c = getContextProvider(this.return);
+            c = getUnmaskedContext(instance, c);
+            this._unmaskedContext = c;
+        }
+        
         if (this._willReceive === false) {
             rendered = this.child; //原来是vnode.child
             delete this._willReceive;
