@@ -1,33 +1,33 @@
 import { options } from "./util";
 import { removeElement } from "./browser";
 
-export const topVnodes = [];
+export const topFibers = [];
 export const topNodes = [];
 
-export function disposeVnode(vnode, updateQueue, silent) {
-    if (vnode && !vnode._disposed) {
-        options.beforeDelete(vnode);
-        if (vnode.isTop) {
-            var i = topVnodes.indexOf(vnode);
+export function disposeVnode(fiber, updateQueue, silent) {
+    if (fiber && !fiber._disposed) {
+        options.beforeDelete(fiber._reactInnerFiber);
+        if (fiber.name === "AnuInternalFiber") {
+            var i = topFibers.indexOf(fiber);
             if (i !== -1) {
-                topVnodes.splice(i, 1);
+                topFibers.splice(i, 1);
                 topNodes.splice(i, 1);
             }
         }
       
-        if(vnode.superReturn){
-            var dom = vnode.superReturn.stateNode;
+        if(fiber._return){
+            var dom = fiber._return.stateNode;
             delete dom.__events;
         }
-        if (vnode.vtype > 1) {
-            disposeComponent(vnode, updateQueue, silent);
+        if (fiber.tag < 4) {
+            disposeComponent(fiber, updateQueue, silent);
         } else {
-            if (vnode.vtype === 1) {
-                disposeElement(vnode, updateQueue, silent);
+            if (fiber.tag === 5) {
+                disposeElement(fiber, updateQueue, silent);
             }
             updateQueue.push({
-                node: vnode.stateNode,
-                vnode: vnode,
+                node: fiber.stateNode,
+                vnode: fiber,
                 transition:remove
             });
         }
@@ -38,43 +38,40 @@ function remove(){
     delete this.vnode.stateNode;
     removeElement(this.node);
 }
-function disposeElement(vnode, updateQueue, silent) {
-    var { updater } = vnode;
+function disposeElement(fiber, updateQueue, silent) {
+ 
     if (!silent) {
-        updater.addState("dispose");
-        updateQueue.push(updater);
+        fiber.addState("dispose");
+        updateQueue.push(fiber);
     } else {
-        if (updater.isMounted()) {
-            updater._states = ["dispose"];
-            updateQueue.push(updater);
+        if (fiber._isMounted()) {
+            fiber._states = ["dispose"];
+            updateQueue.push(fiber);
         }
     }
-    disposeChildren(updater.children, updateQueue, silent);
+    disposeChildren(fiber._children, updateQueue, silent);
 }
 
-function disposeComponent(vnode, updateQueue, silent) {
-    var instance = vnode.stateNode;
+function disposeComponent(fiber, updateQueue, silent) {
+    var instance = fiber.stateNode;
     if (!instance) {
         //没有实例化
         return;
     }
-    var updater = instance.updater;
-    if (instance.isPortal) {
-        updater.updateQueue = updateQueue;
-    }
+    
     if (!silent) {
-        updater.addState("dispose");
-        updateQueue.push(updater);
-    } else if (updater.isMounted()) {
+        fiber.addState("dispose");
+        updateQueue.push(fiber);
+    } else if (fiber._isMounted && fiber._isMounted()) {
         if (silent === 1) {
-            updater._states.length = 0;
+            fiber._states.length = 0;
         }
-        updater.addState("dispose");
-        updateQueue.push(updater);
+        fiber.addState("dispose");
+        updateQueue.push(fiber);
     }
 
-    updater.insertQueue = updater.insertPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
-    disposeChildren(updater.children, updateQueue, silent);
+    fiber._mountCarrier = fiber._mountPoint = NaN; //用null/undefined会碰到 xxx[0]抛错的问题
+    disposeChildren(fiber._children, updateQueue, silent);
 }
 
 export function disposeChildren(children, updateQueue, silent) {

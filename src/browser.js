@@ -19,17 +19,17 @@ var fn = (DOMElement.prototype = {
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-        ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-        ",detachEvent"
-).replace(/\w+/g, function(name) {
-    fn[name] = function() {
+    ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+    ",detachEvent"
+).replace(/\w+/g, function (name) {
+    fn[name] = function () {
         console.log("fire " + name); // eslint-disable-line
     };
 });
 
 //用于后端的document
 export var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(type) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
     return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
@@ -80,7 +80,7 @@ export function emptyElement(node) {
     var child;
     while ((child = node.firstChild)) {
         emptyElement(child);
-        if(child === Refs.focusNode){
+        if (child === Refs.focusNode) {
             Refs.focusNode = false;
         }
         node.removeChild(child);
@@ -107,7 +107,7 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-    if(node === Refs.focusNode){
+    if (node === Refs.focusNode) {
         Refs.focusNode = false;
     }
     fragment.appendChild(node);
@@ -126,19 +126,18 @@ export var msie = document.documentMode || versions[typeNumber(document.all) + "
 export var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createElement(vnode, p) {
-    var type = vnode.type,
-        ns;
+    let { type, props, namespaceURI: ns, text } = vnode;
     switch (type) {
     case "#text":
         //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
-            node.nodeValue = vnode.text;
+            node.nodeValue = text;
             return node;
         }
-        return document.createTextNode(vnode.text);
+        return document.createTextNode(text);
     case "#comment":
-        return document.createComment(vnode.text);
+        return document.createComment(text);
     case "svg":
         ns = NAMESPACE.svg;
         break;
@@ -154,10 +153,9 @@ export function createElement(vnode, p) {
         ns = "";
         break;
     default:
-        ns = vnode.namespaceURI;
         if (!ns) {
             do {
-                if (p.vtype === 1) {
+                if (p.tag === 5) {
                     ns = p.namespaceURI;
                     if (p.type === "foreignObject") {
                         ns = "";
@@ -174,10 +172,10 @@ export function createElement(vnode, p) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-    } catch (e) {}
+    } catch (e) { }
     var elem = document.createElement(type);
-    var inputType = vnode.props && vnode.props.type;//IE6-8下立即设置type属性
-    if(inputType){
+    var inputType = props && props.type;//IE6-8下立即设置type属性
+    if (inputType) {
         elem.type = inputType;
     }
     return elem;
@@ -192,64 +190,44 @@ export function contains(a, b) {
     }
     return false;
 }
-export function insertElement(vnode, insertPoint) {
-    if (vnode._disposed) {
+export function insertElement(fiber, mountPoint) {
+    if (fiber._disposed) {
         return;
     }
     //找到可用的父节点
-    var p = vnode.return,
+    var p = fiber.return,
         parentNode;
     while (p) {
-        if (p.vtype === 1) {
+        if (p.tag === 5) {
             parentNode = p.stateNode;
             break;
         }
-        p = p.superReturn || p.return;
+        p = p._return || p.return;
     }
 
-    var dom = vnode.stateNode,
-        after = insertPoint ? insertPoint.nextSibling: parentNode.firstChild;
+    var dom = fiber.stateNode;
+    var after = mountPoint ? mountPoint.nextSibling : parentNode.firstChild;
 
     if (after === dom) {
         return;
     }
-    if(after === null && dom === parentNode.lastChild){
+    if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    if(after && !contains(parentNode,after)){
+    if (after && !contains(parentNode, after)) {
         return;
     }
-    var isElement = vnode.vtype;
+    var isElement = fiber.tag === 5;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
-    if(isElement &&  prevFocus !== document.activeElement && contains(document.body, prevFocus)){
-        try{
+    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
+        try {
             Refs.focusNode = prevFocus;
             prevFocus.__inner__ = true;
             prevFocus.focus();
-        }catch(e){
+        } catch (e) {
             prevFocus.__inner__ = false;
         }
     }
 }
 
-export function getComponentNodes(children, resolve, debug) {
-    var ret = [];
-    for (var i in children) {
-        var child = children[i];
-        var inner = child.stateNode;
-        if (child._disposed) {
-            continue;
-        }
-        if (child.vtype < 2) {
-            ret.push(inner);
-        } else {
-            var updater = inner.updater;
-            if (child.child) {
-                var args = getComponentNodes(updater.children, resolve, debug);
-                ret.push.apply(ret, args);
-            }
-        }
-    }
-    return ret;
-}

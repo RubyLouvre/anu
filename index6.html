@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <!--<script type='text/javascript' src="./dist/React.js"></script>-->
-    <script type='text/javascript' src="./test/react.development.js"></script>
-    <script type='text/javascript' src="./test/react-dom.development.js"></script>
-    
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
-    <script src="lib/babel.js"></script>
+
+    <script src="test/babel.js"></script>
 </head>
 
 <body>
@@ -30,50 +30,58 @@
               window.ReactDOM = React
             }
             var container = document.getElementById("app-root")
-            var count = 2
-            class Tree extends React.Component{
-                constructor(props){
-                    super(props)
-                    this.state = {}
-                }
-                renderTreeNode(child, index){
-                    var childProps = {}
-                    childProps.checkable = this.props.checkable
-                    if(!this.props.checkable.xxx){
-                        this.props.checkable.xxx = count++
-                    } 
-                   
-                    var a =  React.cloneElement(child, childProps);
-                    return a
-                }
-                render() {
-                    var props = this.props
-                    return React.createElement(
-                    'ul',
-                    {
-                        className: "root",
-                        role: 'tree-node',
-                        unselectable: 'on'
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
                     },
-                    React.Children.map(props.children, this.renderTreeNode, this)
-                    );
-                };
-            }
-            class TreeNode extends React.Component{
-                 render(){
-                     return <li>{this.props.checkable}{this.props.children}</li>
-                 }
-            }
-          
-          var s =  ReactDOM.render(<Tree checkable={ <input className="checked" type="radio" defaultChecked="true"/>}>
-            <TreeNode>1111</TreeNode>
-            <TreeNode>2222</TreeNode>
-            <TreeNode>3333</TreeNode>
-            </Tree>
-            , container);
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                }
+            }  
+            const ThemeContext = React.createContext('light');
 
- 
-          </script>
+        class ThemeToggler extends React.Component {
+            state = { theme: 'light' };
+            render() {
+                return (
+                // Pass the current context value to the Provider's `value` prop.
+                // Changes are detected using strict comparison (Object.is)
+                <ThemeContext.Provider value={this.state.theme}>
+                    <button type="button"
+                        onClick={() => {
+                            this.setState(state => ({
+                            theme: state.theme === 'light' ? 'dark' : 'light'
+                            }));
+                        }}
+                    >
+                    Toggle theme
+                    </button>
+                    {this.props.children}
+                </ThemeContext.Provider>
+                );
+            }
+        }
+
+        class Title extends React.Component {
+        render() {
+            return (
+            // The Consumer uses a render prop API. Avoids conflicts in the
+            // props namespace.
+            <ThemeContext.Consumer>
+                {theme => (
+                <h1 style={{ color: theme === 'light' ? '#000' : '#fff', 
+                            backgroundColor: theme === 'light' ? '#fff' : '#000',  }}>
+                    {this.props.children}
+                </h1>
+                )}
+            </ThemeContext.Consumer>
+            );
+        }
+        }
+        ReactDOM.render(<div><ThemeToggler ><Title>xxx</Title></ThemeToggler></div>, container)
+     </script>
 
 </body>
 

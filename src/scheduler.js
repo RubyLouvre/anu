@@ -1,6 +1,6 @@
 import { options, clearArray, noop } from "./util";
 import { Refs } from "./Refs";
-import { disposeVnode } from "./dispose";
+import { disposeChildren } from "./dispose";
 
 const dirtyComponents = [];
 function mountSorter(u1, u2) {
@@ -30,10 +30,10 @@ var placehoder = {
 };
 export function drainQueue(queue) {
     options.beforePatch();
-    let updater;
-    while ((updater = queue.shift())) {
-        //console.log(updater.name, "执行" + updater._states + " 状态");
-        if (updater._disposed) {
+    let fiber;
+    while ((fiber = queue.shift())) {
+        // console.log(fiber.name, "执行" + fiber._states + " 状态");
+        if (fiber._disposed) {
             continue;
         }
         var hook = Refs.errorHook;
@@ -71,23 +71,22 @@ export function drainQueue(queue) {
                 delete Refs.doctors;
                 delete Refs.errorHook;
                 var rejectedQueue = [];
-                //收集要销毁的组件（要求必须resolved）
-               
+                // 收集要销毁的组件（要求必须resolved）
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
-                doctors.forEach(function(doctor, j){
-                    for (var i in doctor.children) {
-                        var child = doctor.children[i];
+                doctors.forEach(function(doctor){
+                    disposeChildren(doctor._children,rejectedQueue, silent);
+                    /* for (var i in doctor._children) {
+                        var child = doctor._children[i];
                         disposeVnode(child, rejectedQueue, silent);
-                    }
-                    doctor.children = {};
-                    
+                    }*/
+                    doctor._children = {};
                 });
                 // rejectedQueue = Array.from(new Set(rejectedQueue));
                 doctors.forEach(function(doctor){
                     if (addDoctor) {
                         rejectedQueue.push(doctor);
-                        updater = placehoder;
+                        fiber = placehoder;
                     }
                     doctor.addState("catch");
                     rejectedQueue.push(doctor);
@@ -96,7 +95,7 @@ export function drainQueue(queue) {
                 queue = rejectedQueue.concat(queue);
             }
         }
-        updater.transition(queue);
+        fiber.transition(queue);
     }
 
     options.afterPatch();

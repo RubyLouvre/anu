@@ -4,7 +4,7 @@ describe("createElement", function() {
     it("type", () => {
         var el = React.createElement("p", null, "aaa");
         expect(el.type).toBe("p");
-        expect(el.vtype).toBe(1);
+        expect(el.tag).toBe(5);
         expect(el.props.children).toA("string");
         expect(el.props.children.length).toBe(3);
     });
@@ -38,7 +38,7 @@ describe("createElement", function() {
 
         el = React.createElement("p", null, []);
         expect(el.props.children.length).toBe(0);
-        expect(el.vtype).toBe(1);
+        expect(el.tag).toBe(5);
         el = React.createElement("p", { children: ["aaa", "bbb"] });
         expect(el.props.children.length).toBe(2);
     });
@@ -75,9 +75,9 @@ describe("createElement", function() {
             }
         }
         var el = React.createElement(A, {});
-        expect(el.vtype).toBe(2);
+        expect(el.tag).toBe(2);
         el = React.createElement(function() {}, {});
-        expect(el.vtype).toBe(4);
+        expect(el.tag).toBe(1);
         var obj = new A().render();
         expect(obj.props.children).toEqual(void 666);
         expect(obj.props.id).toBe("aaa");

@@ -9,6 +9,7 @@ import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 import { createElement } from "./createElement";
 import { createPortal } from "./createPortal";
+import { createContext } from "./createContext";
 
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
@@ -51,6 +52,7 @@ if (window.React && window.React.options) {
         findDOMNode,
         createClass,
         createPortal,
+        createContext,
         createElement,
         cloneElement,
         PureComponent,

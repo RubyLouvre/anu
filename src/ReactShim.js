@@ -6,6 +6,7 @@ import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 import { createPortal } from "./createPortal";
+import { createContext } from "./createContext";
 
 import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
@@ -22,8 +23,10 @@ if (window.React && window.React.options) {
         options,
         Children, 
         Component,
+       
         findDOMNode,
         createPortal,
+        createContext,
         createElement,
         cloneElement,
         PureComponent,

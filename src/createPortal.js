@@ -1,24 +1,22 @@
 import { createVnode, createElement } from "./createElement";
-import { DOMUpdater } from "./DOMUpdater";
-
+import { HostFiber } from "./HostFiber";
 function AnuPortal(props){
     return props.children;
 }
 
 export function createPortal(children, node) {
-    var vnode,
+    var fiber,
         events = node.__events;
     if (events) {
-        vnode = node.__events.vnode;
+        fiber = node.__events.vnode;
     } else {
         events = node.__events = {};
-        vnode = createVnode(node);
-        events.vnode = vnode;
-        new DOMUpdater(vnode);
+        var vnode = createVnode(node);
+        fiber = new HostFiber(vnode);
+        events.vnode = fiber;
     }
-
+    fiber._isPortal = true;
     var child = createElement(AnuPortal, { children: children });
-    events.child = child;
-    child.superReturn = vnode;
+    child._return = fiber;
     return child;
 }

@@ -123,10 +123,10 @@ function getSVGAttributeName(name) {
     return (svgCache[orig] = name);
 }
 
-export function diffProps(dom, lastProps, nextProps, vnode) {
-    options.beforeProps(vnode);
-    let isSVG = vnode.namespaceURI === NAMESPACE.svg;
-    let tag = vnode.type;
+export function diffProps(dom, lastProps, nextProps, fiber) {
+    options.beforeProps(fiber);
+    let isSVG = fiber.namespaceURI === NAMESPACE.svg;
+    let tag = fiber.type;
     //eslint-disable-next-line
     for (let name in nextProps) {
         let val = nextProps[name];
@@ -136,7 +136,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 action = strategyCache[which] = getPropAction(dom, name, isSVG);
             }
-            actionStrategy[action](dom, name, val, lastProps, vnode);
+            actionStrategy[action](dom, name, val, lastProps, fiber);
         }
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
@@ -147,7 +147,7 @@ export function diffProps(dom, lastProps, nextProps, vnode) {
             if (!action) {
                 continue;
             }
-            actionStrategy[action](dom, name, false, lastProps, vnode);
+            actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
 }
@@ -185,8 +185,6 @@ function getPropAction(dom, name, isSVG) {
     if (isBooleanAttr(dom, name)) {
         return "booleanAttr";
     }
-
-
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
 var builtinStringProps = {
@@ -199,14 +197,14 @@ var builtinStringProps = {
 };
 
 var rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, vnode) {
+function uncontrolled(dom, name, val, lastProps, fiber) {
     if (rform.test(dom.nodeName)) {
         if (!dom._uncontrolled) {
             dom._uncontrolled = true;
             inputMonitor.observe(dom, name); //重写defaultXXX的setter/getter
         }
         dom._observing = false;
-        if (vnode.type === "select" && dom._setValue && !lastProps.multiple !== !vnode.props.multiple) {
+        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
             //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
             dom.selectedIndex = dom.selectedIndex;
             dom._setValue = false;
@@ -275,7 +273,6 @@ export var actionStrategy = {
         }
     },
     property: function(dom, name, val) {
-        // if (dom[name] !== val) {
         // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
         // 这时如果用 setAttribute 则会静默失败
         if (controlled[name]) {
@@ -297,9 +294,9 @@ export var actionStrategy = {
             }catch(e){/*ignore*/}
         }
     },
-    event: function(dom, name, val, lastProps, vnode) {
+    event: function(dom, name, val, lastProps, fiber) {
         let events = dom.__events || (dom.__events = {});
-        events.vnode = vnode;
+        events.vnode = fiber;
         let refName = toLowerCase(name.slice(2));
         if (val === false) {
             delete events[refName];

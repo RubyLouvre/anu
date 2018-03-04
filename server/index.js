@@ -1,4 +1,4 @@
-import { getChildContext, getContextByTypes } from "../src/CompositeUpdater";
+import { getUnmaskedContext, getMaskedContext } from "../src/ComponentFiber";
 import { fiberizeChildren } from "../src/createElement";
 import { typeNumber } from "../src/util";
 import { encodeEntities } from "./util";
@@ -8,7 +8,7 @@ import { stringifyAttributes } from "./attributes";
 import { Readable } from "stream";
 
 function renderVNode(vnode, context) {
-    var { vtype, type, props } = vnode;
+    var { tag, type, props } = vnode;
     switch (type) {
     case "#text":
         return encodeEntities(vnode.text);
@@ -17,11 +17,11 @@ function renderVNode(vnode, context) {
     default:
         var innerHTML = props && props.dangerouslySetInnerHTML;
         innerHTML = innerHTML && innerHTML.__html;
-        if (vtype === 1) {
+        if (tag === 5) {
             //如果是元素节点
             if (type === "option") {
                 //向上找到select元素
-                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                     // no operation
                 }
                 if (p && p.valuesSet) {
@@ -56,12 +56,13 @@ function renderVNode(vnode, context) {
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
+                    child.return = vnode;
                     str += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
             }
             return str + "</" + type + ">\n";
-        } else if (vtype > 1) {
+        } else if (tag < 3) {
             var data = {
                 context
             };
@@ -81,7 +82,7 @@ function renderVNode(vnode, context) {
 }
 
 function* renderVNodeGen(vnode, context) {
-    var { vtype, type, props } = vnode;
+    var { tag, type, props } = vnode;
     switch (type) {
     case "#text":
         yield encodeEntities(vnode.text);
@@ -92,11 +93,11 @@ function* renderVNodeGen(vnode, context) {
     default:
         var innerHTML = props && props.dangerouslySetInnerHTML;
         innerHTML = innerHTML && innerHTML.__html;
-        if (vtype === 1) {
+        if (tag === 5) {
             //如果是元素节点
             if (type === "option") {
                 //向上找到select元素
-                for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                     // no operation
                 }
                 if (p && p.valuesSet) {
@@ -131,12 +132,13 @@ function* renderVNodeGen(vnode, context) {
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
+                    child.return = vnode;
                     str += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
             }
             yield str + "</" + type + ">\n";
-        } else if (vtype > 1) {
+        } else if (tag < 3) {
             var data = {
                 context
             };
@@ -196,11 +198,11 @@ function toVnode(vnode, data) {
         instance,
         rendered;
 
-    if (vnode.vtype > 1) {
+    if (vnode.tag < 3) {
         var props = vnode.props;
         // props = getComponentProps(Type, props)
-        var instanceContext = getContextByTypes(parentContext, Type.contextTypes);
-        if (vnode.vtype === 4) {
+        var instanceContext = getMaskedContext(parentContext, Type.contextTypes);
+        if (vnode.tag === 1) {
             //处理无状态组件
             rendered = Type(props, instanceContext);
             if (rendered && rendered.render) {
@@ -231,7 +233,7 @@ function toVnode(vnode, data) {
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getChildContext(instance, parentContext); //将context往下传
+            data.context = getUnmaskedContext(instance, parentContext); //将context往下传
         }
         if (Array.isArray(rendered)) {
             return rendered.map(function(el) {
@@ -252,14 +254,14 @@ function fixVnode(vnode) {
     if (number < 3) {
     // 0, 1, 2
         return {
-            vtype: 0,
+            tag: 6,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
     //3, 4
         return {
-            vtype: 0,
+            tag: 6,
             text: vnode + "",
             type: "#text"
         };

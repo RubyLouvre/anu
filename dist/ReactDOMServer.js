@@ -15,6 +15,7 @@ var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
 
 
+
 /**
  * 复制一个对象的属性到另一个对象
  *
@@ -114,8 +115,8 @@ var Refs = {
     // errorInfo: [],    //已经构建好的错误信息
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
-    fireRef: function fireRef(vnode, dom) {
-        if (vnode._disposed || vnode.stateNode.__isStateless) {
+    fireRef: function fireRef(fiber, dom, vnode) {
+        if (fiber._disposed || fiber._isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
@@ -140,17 +141,26 @@ var Refs = {
     }
 };
 
-var mapVtype = {
-    0: 6,
-    4: 1,
-    2: 2,
-    1: 5
-};
-function Vnode(type, vtype, props, key, ref) {
+/*
+ IndeterminateComponent = 0; // 不用
+ FunctionalComponent = 1;
+ ClassComponent = 2;
+ HostRoot = 3; // 不用
+ HostPortal = 4; // 不用
+ HostComponent = 5; 
+ HostText = 6;
+ CallComponent = 7; // 不用
+ CallHandlerPhase = 8;// 不用
+ ReturnComponent = 9;// 不用
+ Fragment = 10;// 不用
+ Mode = 11; // 不用
+ ContextConsumer = 12;// 不用
+ ContextProvider = 13;// 不用
+*/
+function Vnode(type, tag, props, key, ref) {
     this.type = type;
-    this.vtype = vtype;
-    this.tag = mapVtype[vtype];
-    if (vtype) {
+    this.tag = tag;
+    if (tag !== 6) {
         this.props = props;
         this._owner = Refs.currentOwner;
 
@@ -165,10 +175,6 @@ function Vnode(type, vtype, props, key, ref) {
             this.ref = ref;
         }
     }
-    /*
-      this.stateNode = null
-    */
-
     options.afterCreate(this);
 }
 
@@ -193,7 +199,7 @@ Vnode.prototype = {
 
 
 function createVText(type, text) {
-    var vnode = new Vnode(type, 0);
+    var vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
@@ -205,9 +211,8 @@ function createVText(type, text) {
 var lastText;
 var flattenIndex;
 var flattenObject;
-var flattenPrev;
 var flattenArray;
-function flattenCb(child, index, vnode) {
+function flattenCb(child, index) {
     var childType = typeNumber(child);
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
@@ -233,42 +238,29 @@ function flattenCb(child, index, vnode) {
         }
         flattenObject[index] = child;
     }
-    child.index = flattenIndex;
-    child.return = vnode;
-    if (flattenPrev) {
-        flattenPrev.sibling = child;
-    }
-    flattenPrev = child;
-    flattenIndex++;
+    child.index = flattenIndex++;
     flattenArray.push(child);
 }
 
-function fiberizeChildren(c, updater) {
+function fiberizeChildren(c, fiber) {
     flattenObject = {};
-    flattenPrev = null;
+    flattenIndex = 0;
     flattenArray = [];
-    var vnode = updater._reactInternalFiber;
+    //let vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
-        flattenIndex = 0;
-        operateChildren(c, "", flattenCb, vnode);
-        var child = flattenArray[0];
-        if (child) {
-            vnode.child = child;
-        }
-        if (flattenPrev) {
-            delete flattenPrev.sibling;
-        }
+        operateChildren(c, "", flattenCb);
     }
-    return updater.children = flattenObject;
+    flattenIndex = 0;
+    return fiber._children = flattenObject;
 }
 
-function operateChildren(children, prefix, callback, parent) {
+function operateChildren(children, prefix, callback) {
     var iteratorFn;
     if (children) {
         if (children.forEach) {
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, parent);
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
             });
             return;
         } else if (iteratorFn = getIteractor(children)) {
@@ -276,7 +268,7 @@ function operateChildren(children, prefix, callback, parent) {
                 ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, parent);
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
                 ii++;
             }
             return;
@@ -359,27 +351,15 @@ var msie = document.documentMode || versions[typeNumber(document.all) + "" + typ
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 /**
- * 为了防止污染用户的实例，需要将操作组件虚拟DOM与生命周期钩子的逻辑全部抽象到这个类中
- *
- * @export
- * @param {any} instance
- * @param {any} vnode
+ * 将虚拟DOM转换为Fiber
+ * @param {vnode} vnode 
+ * @param {Fiber} parentFiber 
  */
 
 
 
 
-function getChildContext(instance, parentContext) {
-    if (instance.getChildContext) {
-        var context = instance.getChildContext();
-        if (context) {
-            parentContext = extend(extend({}, parentContext), context);
-        }
-    }
-    return parentContext;
-}
-
-function getContextByTypes(curContext, contextTypes) {
+function getMaskedContext(curContext, contextTypes) {
     var context = {};
     if (!contextTypes || !curContext) {
         return context;
@@ -391,6 +371,26 @@ function getContextByTypes(curContext, contextTypes) {
     }
     return context;
 }
+
+function getUnmaskedContext(instance, parentContext) {
+    var context = instance.getChildContext();
+    if (context) {
+        parentContext = extend(extend({}, parentContext), context);
+    }
+    return parentContext;
+}
+function getContextProvider(fiber) {
+    do {
+        var c = fiber._unmaskedContext;
+        if (c) {
+            return c;
+        }
+    } while (fiber = fiber.return);
+}
+
+//收集fiber
+
+//明天测试ref,与tests
 
 var matchHtmlRegExp = /["'&<>]/;
 
@@ -585,7 +585,7 @@ var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
 // 如果要用在前端，需要加这个库 npm install stream
 function renderVNode(vnode, context) {
     var _vnode = vnode,
-        vtype = _vnode.vtype,
+        tag = _vnode.tag,
         type = _vnode.type,
         props = _vnode.props;
 
@@ -597,11 +597,11 @@ function renderVNode(vnode, context) {
         default:
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-            if (vtype === 1) {
+            if (tag === 5) {
                 //如果是元素节点
                 if (type === "option") {
                     //向上找到select元素
-                    for (var p = vnode.return; p && p.type !== "select"; p === p.return) {
+                    for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
                         // no operation
                     }
                     if (p && p.valuesSet) {
@@ -636,12 +636,13 @@ function renderVNode(vnode, context) {
                     var children = fiberizeChildren(props.children, fakeUpdater);
                     for (var i in children) {
                         var child = children[i];
+                        child.return = vnode;
                         str += renderVNode(child, context);
                     }
                     vnode.updater = fakeUpdater;
                 }
                 return str + "</" + type + ">\n";
-            } else if (vtype > 1) {
+            } else if (tag < 3) {
                 var data = {
                     context: context
                 };
@@ -661,13 +662,13 @@ function renderVNode(vnode, context) {
 }
 
 function renderVNodeGen(vnode, context) {
-    var _vnode2, vtype, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
+    var _vnode2, tag, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
 
     return regeneratorRuntime.wrap(function renderVNodeGen$(_context) {
         while (1) {
             switch (_context.prev = _context.next) {
                 case 0:
-                    _vnode2 = vnode, vtype = _vnode2.vtype, type = _vnode2.type, props = _vnode2.props;
+                    _vnode2 = vnode, tag = _vnode2.tag, type = _vnode2.type, props = _vnode2.props;
                     _context.t0 = type;
                     _context.next = _context.t0 === "#text" ? 4 : _context.t0 === "#comment" ? 7 : 10;
                     break;
@@ -691,7 +692,7 @@ function renderVNodeGen(vnode, context) {
 
                     innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
 
-                    if (!(vtype === 1)) {
+                    if (!(tag === 5)) {
                         _context.next = 24;
                         break;
                     }
@@ -699,7 +700,7 @@ function renderVNodeGen(vnode, context) {
                     //如果是元素节点
                     if (type === "option") {
                         //向上找到select元素
-                        for (p = vnode.return; p && p.type !== "select"; p === p.return) {
+                        for (p = vnode.return; p && p.type !== "select"; p = p.return) {
                             // no operation
                         }
                         if (p && p.valuesSet) {
@@ -745,6 +746,7 @@ function renderVNodeGen(vnode, context) {
                         for (i in children) {
                             child = children[i];
 
+                            child.return = vnode;
                             str += renderVNode(child, context);
                         }
                         vnode.updater = fakeUpdater;
@@ -757,7 +759,7 @@ function renderVNodeGen(vnode, context) {
                     break;
 
                 case 24:
-                    if (!(vtype > 1)) {
+                    if (!(tag < 3)) {
                         _context.next = 32;
                         break;
                     }
@@ -830,11 +832,11 @@ function toVnode(vnode, data) {
         instance,
         rendered;
 
-    if (vnode.vtype > 1) {
+    if (vnode.tag < 3) {
         var props = vnode.props;
         // props = getComponentProps(Type, props)
-        var instanceContext = getContextByTypes(parentContext, Type.contextTypes);
-        if (vnode.vtype === 4) {
+        var instanceContext = getMaskedContext(parentContext, Type.contextTypes);
+        if (vnode.tag === 1) {
             //处理无状态组件
             rendered = Type(props, instanceContext);
             if (rendered && rendered.render) {
@@ -865,7 +867,7 @@ function toVnode(vnode, data) {
         // patchRef(vnode._owner, vnode.props.ref, instance)
 
         if (instance.getChildContext) {
-            data.context = getChildContext(instance, parentContext); //将context往下传
+            data.context = getUnmaskedContext(instance, parentContext); //将context往下传
         }
         if (Array.isArray(rendered)) {
             return rendered.map(function (el) {
@@ -886,14 +888,14 @@ function fixVnode(vnode) {
     if (number < 3) {
         // 0, 1, 2
         return {
-            vtype: 0,
+            tag: 6,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
         //3, 4
         return {
-            vtype: 0,
+            tag: 6,
             text: vnode + "",
             type: "#text"
         };

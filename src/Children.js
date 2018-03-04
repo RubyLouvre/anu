@@ -14,7 +14,7 @@ function mapWrapperCb(old, prefix) {
     if (cur.isEach || el == null) {
         return;
     }
-    if (el.vtype) {
+    if (el.tag < 6) {
         //如果返回的el等于old,还需要使用原来的key, _prefix
         var key = computeKey(old, el, prefix, index);
         cur.arr.push(cloneElement(el, { key: key }));
@@ -30,7 +30,7 @@ function K (el){
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (children && children.vtype) {
+        if (children && children.tag) {
             return children;
         }
         throw new Error("expect only one child");

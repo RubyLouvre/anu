@@ -16,7 +16,7 @@ export function Component(props, context) {
 }
 var fakeObject = {
     enqueueSetState: returnFalse,
-    isMounted: returnFalse
+    _isMounted: returnFalse
 };
 
 
@@ -28,7 +28,7 @@ Component.prototype = {
     isReactComponent:returnTrue,
     isMounted() {
         deprecatedWarn("isMounted");
-        return (this.updater || fakeObject).isMounted();
+        return (this.updater || fakeObject)._isMounted();
     },
     setState(state, cb) {
         (this.updater || fakeObject).enqueueSetState(state, cb);

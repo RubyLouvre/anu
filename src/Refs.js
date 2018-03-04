@@ -12,8 +12,8 @@ export var Refs = {
     // errorInfo: [],    //已经构建好的错误信息
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
-    fireRef(vnode, dom) {
-        if (vnode._disposed || vnode.stateNode.__isStateless) {
+    fireRef(fiber, dom, vnode) {
+        if (fiber._disposed || fiber._isStateless) {
             dom = null;
         }
         var ref = vnode.ref;
