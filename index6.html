@@ -40,32 +40,47 @@
                     },
                 }
             }  
-            function TreeNode(props){
-                return <li>{props.text}</li>
+            const ThemeContext = React.createContext('light');
+
+        class ThemeToggler extends React.Component {
+            state = { theme: 'light' };
+            render() {
+                return (
+                // Pass the current context value to the Provider's `value` prop.
+                // Changes are detected using strict comparison (Object.is)
+                <ThemeContext.Provider value={this.state.theme}>
+                    <button type="button"
+                        onClick={() => {
+                            this.setState(state => ({
+                            theme: state.theme === 'light' ? 'dark' : 'light'
+                            }));
+                        }}
+                    >
+                    Toggle theme
+                    </button>
+                    {this.props.children}
+                </ThemeContext.Provider>
+                );
             }
-            class Tree extends React.Component{
-                constructor(props){
-                    super(props)
-                    this.state = {
-                        a: 1,
-                        b: 2
-                    }
-                }
-                componentWillReceiveProps(props){
-                    this.setState({
-                        a: props.a,
-                        b: props.b
-                    })
-                }
-                render() {
-                   return [<div>{this.state.a}</div>,<p>{this.state.b}</p>]
-                };
-            }
-     var s
-    s = ReactDOM.render([<Tree key="a"/>, <Tree key="b" />], container);
-    document.getElementsByTagName("div")[0].id ="first"
-    s = ReactDOM.render([<Tree key="b" a="22" b="33"/>, <Tree key="a" a="44" b="55"/>], container);
-     console.log(s)
+        }
+
+        class Title extends React.Component {
+        render() {
+            return (
+            // The Consumer uses a render prop API. Avoids conflicts in the
+            // props namespace.
+            <ThemeContext.Consumer>
+                {theme => (
+                <h1 style={{ color: theme === 'light' ? '#000' : '#fff', 
+                            backgroundColor: theme === 'light' ? '#fff' : '#000',  }}>
+                    {this.props.children}
+                </h1>
+                )}
+            </ThemeContext.Consumer>
+            );
+        }
+        }
+        ReactDOM.render(<div><ThemeToggler ><Title>xxx</Title></ThemeToggler></div>, container)
      </script>
 
 </body>

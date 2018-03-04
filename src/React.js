@@ -8,6 +8,7 @@ import { createClass } from "./createClass";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 import { createElement } from "./createElement";
+import { createContext } from "./createContext";
 import { createPortal } from "./createPortal";
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
@@ -24,6 +25,7 @@ if (window.React && window.React.options) {
         PropTypes,
         Children,
         createPortal,
+        createContext,
         Component,
         eventSystem,
         findDOMNode,

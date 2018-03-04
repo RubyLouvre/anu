@@ -2281,6 +2281,133 @@ function createPortal(children, node) {
     return child;
 }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+// https://github.com/jamiebuilds/create-react-context
+// https://codesandbox.io/s/7kw2j5kl7j
+var uuid = 1;
+function gud() {
+    return uuid++;
+}
+
+var MAX_SIGNED_31_BIT_INT = 1073741823;
+
+function createEventEmitter(value) {
+    var handlers = [];
+    return {
+        on: function on(handler) {
+            handlers.push(handler);
+        },
+        off: function off(handler) {
+            handlers = handlers.filter(function (h) {
+                return h !== handler;
+            });
+        },
+        get: function get() {
+            return value;
+        },
+        set: function set(newValue, changedBits) {
+            value = newValue;
+            handlers.forEach(function (handler) {
+                return handler(value, changedBits);
+            });
+        }
+    };
+}
+
+function onlyChild(children) {
+    return Array.isArray(children) ? children[0] : children;
+}
+
+function createContext(defaultValue, calculateChangedBits) {
+    var contextProp = "__create-react-context-" + gud() + "__";
+    function Provider(props, context) {
+        Component.call(this, props, context);
+        this.emitter = createEventEmitter(props.value);
+    }
+    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
+    var fn = inherit(Provider, Component);
+    fn.getChildContext = function () {
+        return _defineProperty({}, contextProp, this.emitter);
+    };
+    fn.componentWillReceiveProps = function (nextProps) {
+        if (this.props.value !== nextProps.value) {
+            var oldValue = this.props.value;
+            var newValue = nextProps.value;
+            var changedBits = void 0;
+            if (Object.is(oldValue, newValue)) {
+                changedBits = 0; // No change
+            } else {
+                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_SIGNED_31_BIT_INT;
+
+                changedBits |= 0;
+
+                if (changedBits !== 0) {
+                    this.emitter.set(nextProps.value, changedBits);
+                }
+            }
+        }
+    };
+    fn.render = function () {
+        return this.props.children;
+    };
+    function Consumer(props, context) {
+        var _this = this;
+
+        Component.call(this, props, context);
+
+        this.observedBits = 0;
+        this.state = {
+            value: this.getValue()
+        };
+        this.onUpdate = function (newValue, changedBits) {
+            var observedBits = _this.observedBits | 0;
+            if ((observedBits & changedBits) !== 0) {
+                _this.setState({ value: _this.getValue() });
+            }
+        };
+    }
+    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
+    var fn2 = inherit(Consumer, Component);
+    fn2.componentWillReceiveProps = function (nextProps) {
+        var observedBits = nextProps.observedBits;
+
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+        : observedBits;
+    };
+    fn2.getValue = function () {
+        if (this.context[contextProp]) {
+            return this.context[contextProp].get();
+        } else {
+            return defaultValue;
+        }
+    };
+
+    fn2.componentDidMount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].on(this.onUpdate);
+        }
+        var observedBits = this.props.observedBits;
+
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+        : observedBits;
+    };
+
+    fn2.componentWillUnmount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].off(this.onUpdate);
+        }
+    };
+
+    fn2.render = function () {
+        return onlyChild(this.props.children)(this.state.value);
+    };
+    return {
+        Provider: Provider,
+        Consumer: Consumer
+    };
+}
+
 function pushError(instance, hook, error) {
     var names = [];
     var catchUpdater = findCatchComponent(instance, names);
@@ -3285,6 +3412,7 @@ if (win.React && win.React.options) {
         findDOMNode: findDOMNode,
         createClass: createClass,
         createPortal: createPortal,
+        createContext: createContext,
         createElement: createElement,
         cloneElement: cloneElement,
         PureComponent: PureComponent,
