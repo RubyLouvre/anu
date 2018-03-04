@@ -9,7 +9,7 @@
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
 
-    <script src="lib/babel.js"></script>
+    <script src="test/babel.js"></script>
 </head>
 
 <body>
@@ -47,48 +47,25 @@
                 constructor(props){
                     super(props)
                     this.state = {
-                        children: [1,2,3]
+                        a: 1,
+                        b: 2
                     }
                 }
-               
-                render() {
-                   return this.state.children.map(function(el){
-                        return <TreeNode key={el} text={el} />
+                componentWillReceiveProps(props){
+                    this.setState({
+                        a: props.a,
+                        b: props.b
                     })
+                }
+                render() {
+                   return [<div>{this.state.a}</div>,<p>{this.state.b}</p>]
                 };
             }
      var s
-     ReactDOM.render(<ul><Tree ref={(e)=>{s = e}} /></ul> , container);
-      /*  var fibers = s.updater._children;
-        var keys = [], els = [], k = []
-        for(var i in fibers){
-            keys.push(i)
-            var el = fibers[i]
-            els.push(el)
-            k.push(el.key)
-        }
-     
-       expect( keys ).toEqual( [".$.1", ".$.2", ".$.3"])
-       expect( k ).toEqual( [".1", ".2", ".3"])
-       expect(s.updater.child ).toBe(els[0])
-       */
-     s.setState(function(el){
-         el.children.reverse()
-         return el
-     })
-/*
-     var fibers = s.updater._children;
-     var keys = [], els = [], k = []
-     for(var i in fibers){
-            keys.push(i)
-            var el = fibers[i]
-            els.push(el)
-            k.push(el.key)
-        }
-        expect( keys ).toEqual( [".$.3", ".$.2", ".$.1"])
-       expect( k ).toEqual( [".3", ".2", ".1"])
-       expect(s.updater.child ).toBe(els[0])
-       expect(els[2].siblings ).toBe(undefined)*/
+    s = ReactDOM.render([<Tree key="a"/>, <Tree key="b" />], container);
+    document.getElementsByTagName("div")[0].id ="first"
+    s = ReactDOM.render([<Tree key="b" a="22" b="33"/>, <Tree key="a" a="44" b="55"/>], container);
+     console.log(s)
      </script>
 
 </body>

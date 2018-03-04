@@ -1,5 +1,5 @@
-import { options, innerHTML, noop, inherit, toLowerCase, emptyArray, toArray, deprecatedWarn } from "./util";
-import { emptyElement, insertElement, document } from "./browser";
+import { options, innerHTML, noop, inherit, extend, deprecatedWarn } from "./util";
+import { emptyElement, insertElement } from "./browser";
 import { disposeVnode, disposeChildren, topFibers, topNodes } from "./dispose";
 import { createVnode, fiberizeChildren, createElement } from "./createElement";
 import { ComponentFiber, getContextProvider, getDerivedStateFromProps, getMaskedContext } from "./ComponentFiber";
@@ -92,7 +92,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
             wrapperFiber._pendingCallbacks.push(renderByAnu.bind(null, vnode, root, callback, context));
             return wrapperFiber.child.stateNode; //这里要改
         }
-        //updaterQueue是用来装载fiber， mountCarrier是用来装载定位用的DOM
+        //updaterQueue是用来装载fiber， mountCarrier是用来确保节点插入正确的位置
         wrapperFiber = receiveVnode(wrapperFiber, wrapperVnode, updateQueue, mountCarrier);
     } else {
         emptyElement(root);
@@ -170,6 +170,7 @@ function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
             break;
         }
     }
+    
 }
 
 function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
@@ -177,6 +178,7 @@ function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
     options.beforeUpdate(vnode);
     if (fiber.tag > 4) {
         //文本，元素
+  
         insertElement(fiber, mountCarrier.dom);
         mountCarrier.dom = dom;
        
@@ -220,7 +222,9 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         nextContext = stateNode.context;
     }
     fiber._willReceive = willReceive;
+    fiber._mountPoint =  fiber._return ? null : mountCarrier.dom;
     fiber._mountCarrier = fiber._return ? {} : mountCarrier;
+    //  fiber._mountCarrier.dom = fiber._mountPoint;
     var lastVnode = fiber._reactInternalFiber;
     fiber._reactInternalFiber = nextVnode;
     fiber.props = nextProps;
@@ -267,6 +271,7 @@ function receiveVnode(fiber, vnode, updateQueue, mountCarrier) {
 }
 // https://github.com/onmyway133/DeepDiff
 function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) {
+    var r = mountCarrier.dom;
     //这里都是走新的任务列队
     let fiber,
         vnode,
@@ -352,5 +357,6 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
             delete prevFiber.sibling;
         }
     }
+   
 }
 Refs.diffChildren = diffChildren;

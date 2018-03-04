@@ -157,7 +157,7 @@ ComponentFiber.prototype = {
         instance.updater = this;
         var carrier = this._return ? {} : mountCarrier;
         this._mountCarrier = carrier;
-        this._mountPoint = carrier.dom;
+        this._mountPoint = carrier.dom || null;
         //this._updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
@@ -180,6 +180,7 @@ ComponentFiber.prototype = {
 
             var nodes = collectComponentNodes(this._children);
             var carrier = this._mountCarrier;
+            carrier.dom = this._mountPoint;
             nodes.forEach(function(el) {
                 insertElement(el, carrier.dom);
                 carrier.dom = el.stateNode;
@@ -245,7 +246,6 @@ ComponentFiber.prototype = {
             this._children = children; //emptyObject
             delete this.child;
         }
-
         Refs.diffChildren(fibers, children, this, updateQueue, this._mountCarrier);
     },
     // ComponentDidMount/update钩子，React Chrome DevTools的钩子， 组件ref, 及错误边界

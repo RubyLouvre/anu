@@ -103,7 +103,7 @@ function getProps(node) {
     return props;
 }
 
-var lastText, flattenIndex, flattenObject, flattenPrev, flattenArray;
+var lastText, flattenIndex, flattenObject, flattenArray;
 function flattenCb(child, index) {
     let childType = typeNumber(child);
     if (childType < 3) {
