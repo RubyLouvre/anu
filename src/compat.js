@@ -1,6 +1,6 @@
 import { document, msie } from "./browser";
 import { actionStrategy } from "./diffProps";
-import { oneObject, innerHTML, noop, extend, returnTrue } from "./util";
+import { oneObject, innerHTML, noop, extend } from "./util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent, focusMap } from "./event";
 import { inputMonitor } from "./inputMonitor";
 
