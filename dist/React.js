@@ -1556,14 +1556,12 @@ fn$1.isPureComponent = true;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-// https://github.com/jamiebuilds/create-react-context
-// https://codesandbox.io/s/7kw2j5kl7j
 var uuid = 1;
 function gud() {
     return uuid++;
 }
 
-var MAX_SIGNED_31_BIT_INT = 1073741823;
+var MAX_NUMBER = 1073741823;
 
 function createEventEmitter(value) {
     var handlers = [];
@@ -1611,7 +1609,7 @@ function createContext(defaultValue, calculateChangedBits) {
             if (Object.is(oldValue, newValue)) {
                 changedBits = 0; // No change
             } else {
-                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_SIGNED_31_BIT_INT;
+                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
 
                 changedBits |= 0;
 
@@ -1645,7 +1643,7 @@ function createContext(defaultValue, calculateChangedBits) {
     fn2.componentWillReceiveProps = function (nextProps) {
         var observedBits = nextProps.observedBits;
 
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER // Subscribe to all changes by default
         : observedBits;
     };
     fn2.getValue = function () {
@@ -1662,7 +1660,7 @@ function createContext(defaultValue, calculateChangedBits) {
         }
         var observedBits = this.props.observedBits;
 
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER // Subscribe to all changes by default
         : observedBits;
     };
 

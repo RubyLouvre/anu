@@ -1,14 +1,13 @@
 import { inherit } from "./util";
 import { Component } from "./Component";
 import { PropTypes } from "./PropTypes";
-// https://github.com/jamiebuilds/create-react-context
-// https://codesandbox.io/s/7kw2j5kl7j
+
 var uuid = 1;
 function gud() {
     return uuid++;
 }
 
-const MAX_SIGNED_31_BIT_INT = 1073741823;
+const MAX_NUMBER = 1073741823;
 
 function createEventEmitter(value) {
     let handlers = [];
@@ -62,7 +61,7 @@ export function createContext(defaultValue, calculateChangedBits) {
                 changedBits =
                     typeof calculateChangedBits === "function"
                         ? calculateChangedBits(oldValue, newValue)
-                        : MAX_SIGNED_31_BIT_INT;
+                        : MAX_NUMBER;
 
                 changedBits |= 0;
 
@@ -97,7 +96,7 @@ export function createContext(defaultValue, calculateChangedBits) {
         let { observedBits } = nextProps;
         this.observedBits =
             observedBits === undefined || observedBits === null
-                ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+                ? MAX_NUMBER // Subscribe to all changes by default
                 : observedBits;
     };
     fn2.getValue = function () {
@@ -115,7 +114,7 @@ export function createContext(defaultValue, calculateChangedBits) {
         let { observedBits } = this.props;
         this.observedBits =
             observedBits === undefined || observedBits === null
-                ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+                ? MAX_NUMBER // Subscribe to all changes by default
                 : observedBits;
     };
 
