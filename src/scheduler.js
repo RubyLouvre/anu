@@ -76,10 +76,6 @@ export function drainQueue(queue) {
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
                 doctors.forEach(function(doctor){
                     disposeChildren(doctor._children,rejectedQueue, silent);
-                    /* for (var i in doctor._children) {
-                        var child = doctor._children[i];
-                        disposeVnode(child, rejectedQueue, silent);
-                    }*/
                     doctor._children = {};
                 });
                 // rejectedQueue = Array.from(new Set(rejectedQueue));

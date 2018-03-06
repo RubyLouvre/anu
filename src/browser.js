@@ -214,9 +214,9 @@ export function insertElement(fiber, mountPoint) {
     if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    if (after && !contains(parentNode, after)) {
+    /*  if (after && !contains(parentNode, after)) {
         return;
-    }
+    }*/
     var isElement = fiber.tag === 5;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);

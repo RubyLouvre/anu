@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
@@ -40,67 +40,50 @@
                     },
                 }
             }  
-            class Leaf extends React.Component {
-                static contextTypes = {
-                    foo: PropTypes.string.isRequired
-                };
+          
+        
+
+ const ops = [];
     
-                componentWillReceiveProps(nextProps, nextContext) {
-                    expect(("foo" in nextContext)+"1").toBe(true+"1");
-                }
-    
-                shouldComponentUpdate(nextProps, nextState, nextContext) {
-                    expect("foo" in nextContext).toBe(true);
-                    return true;
-                }
-    
-                render() {
-                    return <span>{this.context.foo}</span>;
-                }
+ class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
             }
     
-            class Intermediary extends React.Component {
-                componentWillReceiveProps(nextProps, nextContext) {
-                    expect(("foo" in nextContext)+"2").toBe(false+'2');
-                }
-    
-                shouldComponentUpdate(nextProps, nextState, nextContext) {
-                    expect(("foo" in nextContext)+"2").toBe(false+'2');
-                    return true;
-                }
-    
-                render() {
-                    return <Leaf />;
-                }
+            render() {
+                return <div>Hello</div>;
             }
+        }
     
-            class Parent extends React.Component {
-                static childContextTypes = {
-                    foo: PropTypes.string
-                };
+        function Foo({condition}) {
+      return condition ? (
+        <React.Fragment>
+          <React.Fragment>
+            <Stateful key="a" />
+          </React.Fragment>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <Stateful key="a" />
+        </React.Fragment>
+      );
+    }
     
-                getChildContext() {
-                    return {
-                        foo: this.props.cntxt //noise
-                    };
-                }
+    ReactDOM.render(<Foo condition={true} />,div);
+  console.log("=====================")
+
+   ReactDOM.render(<Foo condition={false} />, div);
+  
+    expect(ops).toEqual([]);
+   expect(div.getElementsByTagName("div").length).toEqual(1);
     
-                render() {
-                    return <Intermediary />;
-                }
-            }
+
+   ReactDOM.render(<Foo condition={true} />,div);
     
-            var div = document.createElement("div");
-            ReactDOM.render(<Parent cntxt="noise" />, div);
-            expect(div.children[0].innerHTML).toBe("noise");
-            div.children[0].innerHTML = "aliens";
-            div.children[0].id = "aliens";
-            expect(div.children[0].innerHTML).toBe("aliens");
-            expect(div.children[0].id).toBe("aliens");
-            ReactDOM.render(<Parent cntxt="bar" />, div);
-            expect(div.children[0].innerHTML).toBe("bar");
-            expect(div.children[0].id).toBe("aliens");
-    
+
+   expect(ops).toEqual([]);
+   expect(div.getElementsByTagName("div").length).toEqual(1);
+
            
 </script>
 

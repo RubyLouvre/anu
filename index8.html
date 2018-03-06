@@ -1,99 +1,96 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script src="./dist/React.js"></script>
-   <!--<script src="./test/react.development.js"></script>
-    <script src="./test/react-dom.development.js"></script>-->
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
+    <script type="text/babel">
 
-    <script src="./test/babel.js"></script>
-   
-
+      </script>
 </head>
+
 <body>
 
-    <pre>
-            
-    </pre>
-    <div id='example'></div>
-    <div id='console'></div>
-    <script type='text/babel'>
-        var expect = function(a) {
-            return {
-                toBe: function(b) {
-                    console.log(a, b, a === b)
-                }
-            }
-        }
-        var PropTypes = React.PropTypes
+    <pre>应该等于
+           
+          
+        </pre>
+    <h1 id='example' class="root">
 
-        var container = document.getElementById("example")
-      
-        class Container extends React.Component {
-          constructor(props) {
-            super(props);
-            this.state = {
-              show: false,
-              xxx: 1
+    </h1>
+    <script type='text/babel'>
+            var container = document.getElementById("example")
+            var div = container;
+            var PropTypes = React.PropTypes
+            if(!window.ReactDOM){
+              window.ReactDOM = React
             }
-          }
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                }
+            }  
           
-          _show() {
-            if(this.state.show){
-                return //防止创建多个弹窗
-            }
-            console.log("show")
-            document.getElementById('console').innerHTML += 'SHOW<br>';
-            this.setState({show: true});
-          }
-          
-          _close(e) {
-           // e.stopPropagation()
-            console.log(e.target)
-            console.log("hide")
-            document.getElementById('console').innerHTML = '';
-            this.setState({show: false});
-          }
-          
-          render() {
-            const {show} = this.state;
-            
-            return (
-                <div className="Container" onClick={()=>{ console.log("能接受到Portal冒泡上来的事件")}}>
-              <div className="hasClick" style={{background: '#00bcd4'}} onClick={this._show.bind(this)}>
-                <div>Click me to show the Portal content</div>
-                <div>State: {show && 'visible' || 'hidden'}</div>
-                {show && <Portal>
-                  <div style={{background: '#ffeebb',height:200}}>{this.state.xxx}
-                    <button onClick={this._close.bind(this)}>&times; close portal</button>
-                  </div>
-                </Portal>}
-              </div>
-              </div>
-            )
-          }
+        
+
+  const ops = [];
+    
+    class Stateful extends React.Component {
+        componentDidUpdate() {
+            ops.push("Update Stateful");
         }
-        
-        class Portal extends React.Component{
-          constructor(props) {
-            super(props);
-            this.node = document.createElement('div');
-            this.node.className = "dynamic"
-            document.body.appendChild(this.node);
-          }
-          componentWillUnmount(){
-           // document.body.removeChild(this.node);
-          }
-          
-          render() {
-            return ReactDOM.createPortal(this.props.children, this.node);
-          }
+
+        render() {
+            return <div>Hello</div>;
         }
-       var s = ReactDOM.render(<Container />, document.getElementById('example'));
-        
-        
-               </script>
-</body>
+    }
+
+    function Foo({condition}) {
+        return condition ? (
+            <React.Fragment>
+                <React.Fragment>
+                    <React.Fragment>
+                        <Stateful key="a" />
+                    </React.Fragment>
+                </React.Fragment>
+            </React.Fragment>
+        ) : (
+            <React.Fragment>
+                <React.Fragment>
+                    <React.Fragment>
+                        <div />
+                        <Stateful key="a" />
+                    </React.Fragment>
+                </React.Fragment>
+            </React.Fragment>
+        );
+    }
+
+    ReactDOM.render(<Foo condition={true} />,div);
+  
+
+    ReactDOM.render(<Foo condition={false} />, div);
+  
+    expect(ops).toEqual(["Update Stateful"]);
+    expect(div.getElementsByTagName("div").length).toEqual(2);
+
+    ReactDOM.render(<Foo condition={true} />,div);
+    
+
+    expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+    expect(div.getElementsByTagName("div").length).toEqual(1);
+           
+</script>
+
 
 </html>

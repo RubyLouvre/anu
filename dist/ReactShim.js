@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-03-04
+ * QQ 370262116 by 司徒正美 Copyright 2018-03-06
  */
 
 (function (global, factory) {
@@ -382,7 +382,7 @@ var lastText;
 var flattenIndex;
 var flattenObject;
 var flattenArray;
-function flattenCb(child, index) {
+function flattenCb(child, index, fragmentDeep) {
     var childType = typeNumber(child);
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
@@ -400,6 +400,9 @@ function flattenCb(child, index) {
         lastText = null;
     }
     var key = child.key;
+    if (key && fragmentDeep) {
+        key = fragmentDeep + key;
+    }
     if (key && !flattenObject[".$" + key]) {
         flattenObject[".$" + key] = child;
     } else {
@@ -416,7 +419,6 @@ function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
     flattenArray = [];
-    //let vnode = fiber._reactInternalFiber;
     if (c !== void 666) {
         lastText = null;
         operateChildren(c, "", flattenCb);
@@ -425,12 +427,18 @@ function fiberizeChildren(c, fiber) {
     return fiber._children = flattenObject;
 }
 
-function operateChildren(children, prefix, callback) {
+function operateChildren(children, prefix, callback, deep) {
     var iteratorFn;
     if (children) {
+        if (children.type === Fragment) {
+            var next = deep == null ? 0 : deep + 1;
+            //忽略掉第一层<React.Fragment>, 从第二层起记作1，2，3
+            operateChildren(children.props.children, deep != null ? prefix ? prefix + ":" + 0 : "." + 0 : prefix, callback, next);
+            return;
+        }
         if (children.forEach) {
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback);
+                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, deep);
             });
             return;
         } else if (iteratorFn = getIteractor(children)) {
@@ -438,7 +446,7 @@ function operateChildren(children, prefix, callback) {
                 ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback);
+                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, deep);
                 ii++;
             }
             return;
@@ -447,7 +455,7 @@ function operateChildren(children, prefix, callback) {
     if (Object(children) === children && !children.call && !children.type) {
         throw "children中存在非法的对象";
     }
-    callback(children, prefix || ".", parent);
+    callback(children, prefix || ".", deep);
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
@@ -814,9 +822,9 @@ function insertElement(fiber, mountPoint) {
     if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    if (after && !contains(parentNode, after)) {
+    /*  if (after && !contains(parentNode, after)) {
         return;
-    }
+    }*/
     var isElement = fiber.tag === 5;
     var prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
@@ -1187,7 +1195,8 @@ function remove() {
 function disposeElement(fiber, updateQueue, silent) {
 
     if (!silent) {
-        fiber.addState("dispose");
+        // fiber.addState("dispose");
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
     } else {
         if (fiber._isMounted()) {
@@ -1204,15 +1213,12 @@ function disposeComponent(fiber, updateQueue, silent) {
         //没有实例化
         return;
     }
-
     if (!silent) {
-        fiber.addState("dispose");
+        //  fiber.addState("dispose");
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
-    } else if (fiber._isMounted && fiber._isMounted()) {
-        if (silent === 1) {
-            fiber._states.length = 0;
-        }
-        fiber.addState("dispose");
+    } else if (fiber._isMounted()) {
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
     }
 
@@ -1300,10 +1306,6 @@ function drainQueue(queue) {
                 // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
                 doctors.forEach(function (doctor) {
                     disposeChildren(doctor._children, rejectedQueue, silent);
-                    /* for (var i in doctor._children) {
-                        var child = doctor._children[i];
-                        disposeVnode(child, rejectedQueue, silent);
-                    }*/
                     doctor._children = {};
                 });
                 // rejectedQueue = Array.from(new Set(rejectedQueue));
@@ -2178,10 +2180,6 @@ function createEventEmitter(value) {
     };
 }
 
-function onlyChild(children) {
-    return Array.isArray(children) ? children[0] : children;
-}
-
 function createContext(defaultValue, calculateChangedBits) {
     var contextProp = "__create-react-context-" + gud() + "__";
     function Provider(props, context) {
@@ -2263,7 +2261,7 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 
     fn2.render = function () {
-        return onlyChild(this.props.children)(this.state.value);
+        return this.props.children(this.state.value);
     };
     return {
         Provider: Provider,
@@ -2850,7 +2848,7 @@ function renderByAnu(vnode, root, callback) {
 
     drainQueue(updateQueue);
     //组件虚拟DOM返回组件实例，而元素虚拟DOM返回元素节点
-    return wrapperFiber.child.stateNode;
+    return wrapperFiber.child ? wrapperFiber.child.stateNode : null;
 }
 
 /**
@@ -3091,7 +3089,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.3.0-alpha",
+        version: "1.2.9",
         render: render,
         hydrate: render,
         Fragment: REACT_FRAGMENT_TYPE,

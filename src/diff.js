@@ -61,19 +61,19 @@ export function findDOMNode(instanceOrElement) {
     }
 }
 
-var AnuInternalFiber = function() {
+var AnuInternalFiber = function () {
     Component.call(this);
 };
 AnuInternalFiber.displayName = "AnuInternalFiber"; //fix IE6-8函数没有name属性
 var fn = inherit(AnuInternalFiber, Component);
 
-fn.render = function() {
+fn.render = function () {
     return this.props.child;
 };
 // ReactDOM.render的内部实现 Host
 function renderByAnu(vnode, root, callback, context = {}) {
     if (!(root && root.appendChild)) {
-		throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
+        throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
     //__component用来标识这个真实DOM是ReactDOM.render的容器，通过它可以取得上一次的虚拟DOM
     // 但是在IE6－8中，文本/注释节点不能通过添加自定义属性来引用虚拟DOM，这时我们额外引进topFibers,
@@ -115,7 +115,7 @@ function renderByAnu(vnode, root, callback, context = {}) {
 
     drainQueue(updateQueue);
     //组件虚拟DOM返回组件实例，而元素虚拟DOM返回元素节点
-    return wrapperFiber.child.stateNode;
+    return wrapperFiber.child ? wrapperFiber.child.stateNode : null;
 }
 
 /**
@@ -137,12 +137,12 @@ function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
     fiber.init(
         updateQueue,
         mountCarrier,
-		
-        function(f) {
+
+        function (f) {
             let children = fiberizeChildren(f.props.children, f);
             mountChildren(children, f, updateQueue, {});
         }
-		
+
     );
     return fiber;
 }
@@ -170,7 +170,7 @@ function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
             break;
         }
     }
-    
+
 }
 
 function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
@@ -178,10 +178,10 @@ function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
     options.beforeUpdate(vnode);
     if (fiber.tag > 4) {
         //文本，元素
-  
+
         insertElement(fiber, mountCarrier.dom);
         mountCarrier.dom = dom;
-       
+
         if (fiber.tag === 6) {
             //文本
             if (vnode.text !== fiber.text) {
@@ -222,7 +222,7 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         nextContext = stateNode.context;
     }
     fiber._willReceive = willReceive;
-    fiber._mountPoint =  fiber._return ? null : mountCarrier.dom;
+    fiber._mountPoint = fiber._return ? null : mountCarrier.dom;
     fiber._mountCarrier = fiber._return ? {} : mountCarrier;
     //  fiber._mountCarrier.dom = fiber._mountPoint;
     var lastVnode = fiber._reactInternalFiber;
@@ -232,7 +232,7 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
     if (!fiber._dirty) {
         fiber._receiving = true;
         if (willReceive) {
-            captureError(stateNode, "componentWillReceiveProps", [ nextProps, nextContext ]);
+            captureError(stateNode, "componentWillReceiveProps", [nextProps, nextContext]);
         }
         if (lastVnode.props !== nextProps) {
             try {
@@ -309,7 +309,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
             fiber = fibers[i];
             if (vnode && vnode.type === fiber.type) {
                 matchFibers[i] = fiber;
-                if(vnode.key != null){
+                if (vnode.key != null) {
                     fiber.key = vnode.key;
                 }
                 if (fiber.tag === 5 && fiber.ref !== vnode.ref) {
@@ -325,18 +325,18 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
         }
         //step2: 更新或新增节点
         matchFibersWithRef
-            .sort(function(a, b) {
+            .sort(function (a, b) {
                 return a.index - b.index; //原来叫order
             })
-            .forEach(function(fiber) {
+            .forEach(function (fiber) {
                 updateQueue.push(fiber);
             });
         var prevFiber,
             firstFiber,
             index = 0;
-     
+
         for (let i in children) {
-            
+
             vnode = children[i];
             fiber = children[i] = matchFibers[i]
                 ? receiveVnode(matchFibers[i], vnode, updateQueue, mountCarrier)
@@ -353,10 +353,10 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
                 return;
             }
         }
-        if(prevFiber){
+        if (prevFiber) {
             delete prevFiber.sibling;
         }
     }
-   
+
 }
 Refs.diffChildren = diffChildren;

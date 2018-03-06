@@ -41,7 +41,8 @@ function remove(){
 function disposeElement(fiber, updateQueue, silent) {
  
     if (!silent) {
-        fiber.addState("dispose");
+        // fiber.addState("dispose");
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
     } else {
         if (fiber._isMounted()) {
@@ -58,15 +59,12 @@ function disposeComponent(fiber, updateQueue, silent) {
         //没有实例化
         return;
     }
-    
     if (!silent) {
-        fiber.addState("dispose");
+        //  fiber.addState("dispose");
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
-    } else if (fiber._isMounted && fiber._isMounted()) {
-        if (silent === 1) {
-            fiber._states.length = 0;
-        }
-        fiber.addState("dispose");
+    } else if (fiber._isMounted()) {
+        fiber._states = ["dispose"];
         updateQueue.push(fiber);
     }
 

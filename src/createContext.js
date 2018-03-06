@@ -31,10 +31,6 @@ function createEventEmitter(value) {
     };
 }
 
-function onlyChild(children) {
-    return Array.isArray(children) ? children[0] : children;
-}
-
 export function createContext(defaultValue, calculateChangedBits) {
     const contextProp = "__create-react-context-" + gud() + "__";
     function Provider(props, context) {
@@ -126,7 +122,7 @@ export function createContext(defaultValue, calculateChangedBits) {
 
 
     fn2.render = function () {
-        return onlyChild(this.props.children)(this.state.value);
+        return this.props.children(this.state.value);
     };
     return {
         Provider,
