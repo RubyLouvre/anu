@@ -43,52 +43,38 @@
           
         
 
-  const ops = [];
-    
-    class Stateful extends React.Component {
-        componentDidUpdate() {
-            ops.push("Update Stateful");
-        }
+     const ops = [];
 
-        render() {
-            return <div>Hello</div>;
-        }
+class Stateful extends React.Component {
+    componentDidUpdate() {
+        ops.push("Update Stateful");
     }
 
-    function Foo({condition}) {
-        return condition ? (
-            <React.Fragment>
-                <React.Fragment>
-                    <React.Fragment>
-                        <Stateful key="a" />
-                    </React.Fragment>
-                </React.Fragment>
-            </React.Fragment>
-        ) : (
-            <React.Fragment>
-                <React.Fragment>
-                    <React.Fragment>
-                        <div />
-                        <Stateful key="a" />
-                    </React.Fragment>
-                </React.Fragment>
-            </React.Fragment>
-        );
+    render() {
+        return <div>Hello</div>;
     }
+}
 
-    ReactDOM.render(<Foo condition={true} />,div);
-  
 
-    ReactDOM.render(<Foo condition={false} />, div);
-  
-    expect(ops).toEqual(["Update Stateful"]);
-    expect(div.getElementsByTagName("div").length).toEqual(2);
+function Foo({condition}) {
+    return condition ? (
+        <React.Fragment>{[<Stateful key="a" />]}</React.Fragment>
+    ) : (
+        [[<Stateful key="a" />]]
+    );
+}
 
-    ReactDOM.render(<Foo condition={true} />,div);
-    
+ReactDOM.render(<Foo condition={true} />,div);
 
-    expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
-    expect(div.getElementsByTagName("div").length).toEqual(1);
+ReactDOM.render(<Foo condition={false} />,div);
+
+expect(ops).toEqual([]);
+expect(div.getElementsByTagName("div").length).toEqual(1);
+ReactDOM.render(<Foo condition={true} />,div);
+
+expect(ops).toEqual([]);
+expect(div.getElementsByTagName("div").length).toEqual(1); 
+
            
 </script>
 

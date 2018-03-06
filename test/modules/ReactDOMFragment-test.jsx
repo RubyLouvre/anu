@@ -265,5 +265,198 @@ describe("ReactDOMFragment", function() {
         expect(div.getElementsByTagName("div").length).toEqual(1);
     
     });
+    it("should not preserve state of children if nested 2 levels with siblings", function() {
+        const ops = [];
     
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+    
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+    
+        function Foo({condition}) {
+            return condition ? (
+                <Stateful key="a" />
+            ) : (
+                <React.Fragment>
+                    <React.Fragment>
+                        <Stateful key="a" />
+                    </React.Fragment>
+                    <div />
+                </React.Fragment>
+            );
+        }
+    
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        ReactDOM.render(<Foo condition={false} />,div);
+     
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(2);
+    
+    
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(1);
+    
+    });
+
+    it("should preserve state between array nested in fragment and fragment", function() {
+
+
+        const ops = [];
+
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+
+        function Foo({condition}) {
+            return condition ? (
+                <React.Fragment>
+                    <Stateful key="a" />
+                </React.Fragment>
+            ) : (
+                <React.Fragment>{[<Stateful key="a" />]}</React.Fragment>
+            );
+        }
+
+        ReactDOM.render(<Foo condition={true} />,div);
+        // ReactDOM.flush();
+
+        ReactDOM.render(<Foo condition={false} />,div);
+        // ReactDOM.flush();
+
+        expect(ops).toEqual(["Update Stateful"]);
+        expect(div.getElementsByTagName("div").length).toEqual(1);
+        ReactDOM.render(<Foo condition={true} />,div);
+        // ReactDOM.flush();
+
+        expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+        expect(div.getElementsByTagName("div").length).toEqual(1); 
+    });
+
+    it("should preserve state between top level fragment and array", function() {
+        const ops = [];
+
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+    
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+    
+        function Foo({condition}) {
+            return condition ? (
+                [<Stateful key="a" />]
+            ) : (
+                <React.Fragment>
+                    <Stateful key="a" />
+                </React.Fragment>
+            );
+        }
+    
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        ReactDOM.render(<Foo condition={false} />,div);
+    
+        expect(ops).toEqual(["Update Stateful"]);
+        expect(div.getElementsByTagName("div").length).toEqual(1);
+        ReactDOM.render(<Foo condition={true} />,div);
+        // ReactDOM.flush();
+    
+        expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+        expect(div.getElementsByTagName("div").length).toEqual(1); 
+    });
+
+    it("should not preserve state between array nested in fragment and double nested fragment", function() {
+    
+        const ops = [];
+
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+    
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+    
+       
+        function Foo({condition}) {
+            return condition ? (
+                <React.Fragment>{[<Stateful key="a" />]}</React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <React.Fragment>
+                        <Stateful key="a" />
+                    </React.Fragment>
+                </React.Fragment>
+            );
+        }
+    
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        ReactDOM.render(<Foo condition={false} />,div);
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(1);
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(1); 
+    });
+    it("should not preserve state between array nested in fragment and double nested array", function() {
+        return;
+        const ops = [];
+
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+    
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+    
+       
+        function Foo({condition}) {
+            return condition ? (
+                <React.Fragment>{[<Stateful key="a" />]}</React.Fragment>
+            ) : (
+                [[<Stateful key="a" />]]
+            );
+        }
+    
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        ReactDOM.render(<Foo condition={false} />,div);
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(1);
+        ReactDOM.render(<Foo condition={true} />,div);
+    
+        expect(ops).toEqual([]);
+        expect(div.getElementsByTagName("div").length).toEqual(1); 
+    
+    });
+
+
+
 });
