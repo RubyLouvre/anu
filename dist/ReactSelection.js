@@ -3107,7 +3107,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
 Refs.diffChildren = diffChildren;
 
 var React = {
-    version: "1.2.9",
+    version: "1.3.0",
     render: render,
     hydrate: render,
     options: options,
