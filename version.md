@@ -1,4 +1,4 @@
-## 1.3.0
+## 1.3.0(2018.03.06)
 
 1. 支持React16.3的createContext new API
 2. 添加大量React.Fragment测试，修正一些边缘的BUG
