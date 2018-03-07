@@ -22,7 +22,7 @@ require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/ReactDOMInput-test.jsx");
 
-require("./modules/ReactDOMFragment-test.jsx");
+//require("./modules/ReactDOMFragment-test.jsx");
 
 
 require("./modules/lifecycle.spec.jsx");
@@ -41,7 +41,7 @@ require("./modules/ref.spec.jsx");
 require("./modules/ReactTestUtils-test.jsx");
 
 require("./modules/ReactChildren-test.jsx");
-
+/*
 require("./modules/ReactComponent-test.jsx");
 
 require("./modules/ReactMultiChild-test.jsx");
@@ -88,4 +88,4 @@ require("./modules/event.spec.jsx");
 
 
 require("./modules/ReactDOM-test.jsx");
-
+*/

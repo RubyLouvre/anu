@@ -1,6 +1,6 @@
 import { operateChildren } from "./createElement";
 import { cloneElement } from "./cloneElement";
-import { extend } from "./util";
+import { extend ,escapeKey} from "./util";
 
 var mapStack = [];
 function mapWrapperCb(old, prefix) {
@@ -24,7 +24,7 @@ function mapWrapperCb(old, prefix) {
         cur.arr.push(el);
     }
 }
-function K (el){
+function K(el) {
     return el;
 }
 export const Children = {
@@ -40,7 +40,7 @@ export const Children = {
             return 0;
         }
         var index = 0;
-        operateChildren(children, "", function() {
+        operateChildren(children, "", function () {
             index++;
         });
         return index;
@@ -63,7 +63,7 @@ export const Children = {
     forEach(children, callback, context) {
         Children.map(children, callback, context, true);
     },
-    toArray: function(children) {
+    toArray: function (children) {
         if (children == null) {
             return [];
         }
@@ -76,30 +76,19 @@ function computeKey(old, el, prefix, index) {
     let oldKey = old && old.key != null ? escapeKey(old.key) : null;
     let key;
     if (oldKey && curKey) {
-        key = prefix + "$" + oldKey;
         if (oldKey !== curKey) {
-            key = curKey + "/" + key;
+            key = curKey + "/." + prefix;
+        } else {
+            key = prefix ? "." + prefix : ".$" + curKey;
         }
     } else {
         key = curKey || oldKey;
-        if (key) {
-            key = prefix + "$" + key;
+        if (prefix) {
+            key = "." + prefix;
         } else {
-            key = prefix === "." ? prefix + index : prefix;
+            key = key ? ".$" + key : "." + index;
         }
     }
     return key.replace(rthimNumer, "$");
 }
 
-function escapeKey(key) {
-    return String(key).replace(/[=:]/g, escaperFn);
-}
-
-var escaperLookup = {
-    "=": "=0",
-    ":": "=2"
-};
-
-function escaperFn(match) {
-    return escaperLookup[match];
-}

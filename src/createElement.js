@@ -1,4 +1,4 @@
-import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
+import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE, escapeKey } from "./util";
 import { Vnode } from "./vnode";
 
 function Fragment(props) {
@@ -48,7 +48,6 @@ export function createElement(type, config, ...children) {
     } else if (argsLen > 1) {
         props.children = children;
     }
-
     let defaultProps = type.defaultProps;
     if (defaultProps) {
         for (let propName in defaultProps) {
@@ -104,7 +103,7 @@ function getProps(node) {
 }
 
 var lastText, flattenIndex, flattenObject, flattenArray;
-function flattenCb(child, index, fragmentDeep) {
+function flattenCb(child, key) {
     let childType = typeNumber(child);
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
@@ -121,18 +120,7 @@ function flattenCb(child, index, fragmentDeep) {
     } else {
         lastText = null;
     }
-    var key = child.key;
-    if (key && fragmentDeep) {
-        key = fragmentDeep + key;
-    }
-    if (key && !flattenObject[".$" + key]) {
-        flattenObject[".$" + key] = child;
-    } else {
-        if (index === ".") {
-            index = "." + flattenIndex;
-        }
-        flattenObject[index] = child;
-    }
+    flattenObject["."+key] = child;
     child.index = flattenIndex++;
     flattenArray.push(child);
 }
@@ -143,26 +131,32 @@ export function fiberizeChildren(c, fiber) {
     flattenArray = [];
     if (c !== void 666) {
         lastText = null;
-        operateChildren(c, "", flattenCb);
+        operateChildren(c, "", flattenCb, 0);
     }
     flattenIndex = 0;
     return (fiber._children = flattenObject);
 }
-
+function genPrefix(el, index, prefix, deep) {
+    var ret = el && el.key != null ? "$" + escapeKey(el.key) : index;
+    if (deep) {
+        ret = prefix + ":" + ret;
+    } 
+    return ret;
+}
 export function operateChildren(children, prefix, callback, deep) {
-    var iteratorFn;
+    var iteratorFn, el;
+
     if (children) {
         if (children.type === Fragment) {
-            var next = deep == null ? 0 : deep + 1;
-            //忽略掉第一层<React.Fragment>, 从第二层起记作1，2，3
-            operateChildren(children.props.children,
-                deep != null ?
-                    (prefix ? prefix + ":" + 0 : "." + 0) : prefix, callback, next);
+            el = children.props.children;
+            console.log("xxxxx")
+            operateChildren(el,
+                deep ? genPrefix(el, 0, prefix, deep) : prefix, callback, true);
             return;
         }
         if (children.forEach) {
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, deep);
+                operateChildren(el, genPrefix(el,  i, prefix, deep), callback, true);
             });
             return;
         } else if ((iteratorFn = getIteractor(children))) {
@@ -170,7 +164,8 @@ export function operateChildren(children, prefix, callback, deep) {
                 ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, deep);
+                el = step.value;
+                operateChildren(el, genPrefix(el, ii, prefix, deep), callback, true);
                 ii++;
             }
             return;
@@ -179,7 +174,7 @@ export function operateChildren(children, prefix, callback, deep) {
     if (Object(children) === children && !children.call && !children.type) {
         throw "children中存在非法的对象";
     }
-    callback(children, prefix || ".", deep);
+    callback(children, prefix || 0, deep);
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
