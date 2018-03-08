@@ -1,18 +1,17 @@
 import React from "dist/React";
-import ReactTestUtils from "lib/ReactTestUtils";
 var ReactDOM = window.ReactDOM || React;
 
 describe("ReactDOMFragment", function () {
     this.timeout(200000);
     var body = document.body,
         div;
+    
     var ReactNoop = {
         render(vdom) {
             ReactDOM.render(vdom, div);
         },
         flush() { },
         getChildren() {
-
             return div.getElementsByTagName("div").length;
         },
         getText() {

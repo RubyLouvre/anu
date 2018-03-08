@@ -40,60 +40,68 @@
                     },
                 }
             }  
-            var ReactNoop = {
+
+     function collectVDOM(vdom, array) {
+         console.log(vdom)
+		if (vdom.tag == 5) {
+			var children = [];
+			var element = {
+				type: vdom.type,
+				children: children
+            };
+            array.push(element)
+			var c = vdom._children;
+			for (var i in c) {
+				collectVDOM(c[i], children);
+			}
+		} else if (vdom.tag === 6) {
+			array.push( vdom.text +"");
+		} else {
+            var c = vdom._children;
+			for (var i in c) {
+				collectVDOM(c[i], array);
+			}
+		}
+	}
+  var ReactNoop = {
         render(vdom) {
             ReactDOM.render(vdom, div);
         },
         flush() { },
         getChildren() {
-
-            return div.getElementsByTagName("div").length;
+            var c = div.__component,
+                ret = [];
+            collectVDOM(c, ret);
+            return ret;
         },
         getText() {
             return div.innerHTML.toLowerCase();
         }
     }
-            const ops = [];
+    const Context = React.createContext(1);
+	function span(prop) {
+		return { type: 'span', children: [prop] };
+	}
+    function Consumer(props) {
+        return <Context.Consumer>{(value) => <span>{'Result: ' + value}</span>}</Context.Consumer>;
+    }
 
-            class Stateful extends React.Component {
-                componentDidUpdate() {
-                    ops.push("Update Stateful");
-                }
-    
-                render() {
-                    return <div>Hello</div>;
-                }
-            }
-    
-            function Foo({ condition }) {
-                return condition ? (
-                    <Stateful key="a" />
-                ) : (
-                        <React.Fragment>
-                            <>
-                                <Stateful key="a" />
-                            </>
-                            <div />
-                        </React.Fragment>
-                    );
-            }
-    
-    
-            ReactNoop.render(<Foo condition={true} />);
-            ReactNoop.flush();
-    
-            ReactNoop.render(<Foo condition={false} />);
-            ReactNoop.flush();
-    
-            expect(ops).toEqual([]);
-            expect(ReactNoop.getChildren()).toEqual(2);
-    
-            ReactNoop.render(<Foo condition={true} />);
-            ReactNoop.flush();
-    
-            expect(ops).toEqual([]);
-            expect(ReactNoop.getChildren()).toEqual(1);
-          
+    const Indirection = React.Fragment;
+    function App(props) {
+        return (
+            <Context.Provider value={props.value}>
+                <Indirection>
+                    <Indirection>
+                        <Consumer />
+                    </Indirection>
+                </Indirection>
+            </Context.Provider>
+        );
+    }
+//ReactDOM.render(<App value={2} />, div)
+ReactNoop.render(<App value={3} />);
+var a = ReactNoop.getChildren();
+console.log(a)
 </script>
 
 

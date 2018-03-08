@@ -90,3 +90,6 @@ require("./modules/event.spec.jsx");
 
 require("./modules/ReactDOM-test.jsx");
 
+require("./modules/ReactNewContext-test.jsx");
+
+
