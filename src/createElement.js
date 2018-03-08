@@ -1,9 +1,6 @@
-import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
+import { typeNumber, hasSymbol, Fragment } from "./util";
 import { Vnode } from "./vnode";
 
-function Fragment(props) {
-    return props.children;
-}
 /**
  * 虚拟DOM工厂
  *
@@ -21,8 +18,6 @@ export function createElement(type, config, ...children) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type === REACT_FRAGMENT_TYPE) {
-        (type = Fragment), (tag = 1);
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }

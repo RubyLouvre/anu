@@ -1,4 +1,4 @@
-import { options, REACT_FRAGMENT_TYPE, hasOwnProperty } from "./util";
+import { options, Fragment, hasOwnProperty } from "./util";
 import { Children } from "./Children";
 import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
@@ -43,7 +43,7 @@ if (window.React && window.React.options) {
         version: "VERSION",
         render,
         hydrate: render,
-        Fragment: REACT_FRAGMENT_TYPE,
+        Fragment,
         options,
         PropTypes,
         Children,

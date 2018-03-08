@@ -8,9 +8,10 @@ var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
-var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
-
+function Fragment(props) {
+    return props.children;
+}
 
 
 
@@ -189,9 +190,6 @@ Vnode.prototype = {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function Fragment(props) {
-    return props.children;
-}
 /**
  * 虚拟DOM工厂
  *

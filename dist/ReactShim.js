@@ -14,9 +14,10 @@ var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var innerHTML = "dangerouslySetInnerHTML";
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
-var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
 
-
+function Fragment(props) {
+    return props.children;
+}
 
 
 var emptyObject = {};
@@ -274,9 +275,6 @@ Vnode.prototype = {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function Fragment(props) {
-    return props.children;
-}
 /**
  * 虚拟DOM工厂
  *
@@ -298,8 +296,6 @@ function createElement(type, config) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type === REACT_FRAGMENT_TYPE) {
-        type = Fragment, tag = 1;
     } else if (type + "" !== type) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
@@ -3108,7 +3104,7 @@ if (win.React && win.React.options) {
         version: "1.3.0",
         render: render,
         hydrate: render,
-        Fragment: REACT_FRAGMENT_TYPE,
+        Fragment: Fragment,
         options: options,
         Children: Children,
         Component: Component,

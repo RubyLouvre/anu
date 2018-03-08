@@ -1,4 +1,4 @@
-import { options, REACT_FRAGMENT_TYPE } from "./util";
+import { options, Fragment } from "./util";
 import { Children } from "./Children";
 import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
@@ -21,7 +21,7 @@ if (window.React && window.React.options) {
         render,
         hydrate: render,
         options,
-        Fragment: REACT_FRAGMENT_TYPE,
+        Fragment,
         PropTypes,
         Children,
         createPortal,

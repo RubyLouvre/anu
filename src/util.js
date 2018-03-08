@@ -3,10 +3,10 @@ export var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 export var innerHTML = "dangerouslySetInnerHTML";
 export var hasOwnProperty = Object.prototype.hasOwnProperty;
 export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
-export const REACT_FRAGMENT_TYPE = hasSymbol ? Symbol["for"]("react.fragment") : 0xeacb;
-export const REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for("react.provider") : 0xeacd;
-export const REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for("react.context") : 0xeace;
 
+export function Fragment(props) {
+    return props.children;
+}
 
 export var emptyArray = [];
 export var emptyObject = {};

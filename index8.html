@@ -40,19 +40,59 @@
                     },
                 }
             }  
-            var context = {};
-        var callback = function(kid, index) {
-            expect(this).toBe(context);
-            return kid;
-        }
+            var ReactNoop = {
+        render(vdom) {
+            ReactDOM.render(vdom, div);
+        },
+        flush() { },
+        getChildren() {
 
-        var simpleKid = <span key="simple" />;
-        var instance = <div>{[simpleKid]}</div>;
-        React.Children.forEach(instance.props.children, callback, context);
-      
-        var mappedChildren = React.Children.map(instance.props.children, callback, context);
-        expect(callback).toHaveBeenCalledWith(simpleKid, 0);
-        expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
+            return div.getElementsByTagName("div").length;
+        },
+        getText() {
+            return div.innerHTML.toLowerCase();
+        }
+    }
+            const ops = [];
+
+            class Stateful extends React.Component {
+                componentDidUpdate() {
+                    ops.push("Update Stateful");
+                }
+    
+                render() {
+                    return <div>Hello</div>;
+                }
+            }
+    
+            function Foo({ condition }) {
+                return condition ? (
+                    <Stateful key="a" />
+                ) : (
+                        <React.Fragment>
+                            <>
+                                <Stateful key="a" />
+                            </>
+                            <div />
+                        </React.Fragment>
+                    );
+            }
+    
+    
+            ReactNoop.render(<Foo condition={true} />);
+            ReactNoop.flush();
+    
+            ReactNoop.render(<Foo condition={false} />);
+            ReactNoop.flush();
+    
+            expect(ops).toEqual([]);
+            expect(ReactNoop.getChildren()).toEqual(2);
+    
+            ReactNoop.render(<Foo condition={true} />);
+            ReactNoop.flush();
+    
+            expect(ops).toEqual([]);
+            expect(ReactNoop.getChildren()).toEqual(1);
           
 </script>
 
