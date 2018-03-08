@@ -187,6 +187,8 @@ Vnode.prototype = {
     $$typeof: REACT_ELEMENT_TYPE
 };
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function Fragment(props) {
     return props.children;
 }
@@ -269,7 +271,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (typeNumber(el) >= 7) {
+    if (el && (typeof el === "undefined" ? "undefined" : _typeof(el)) === "object") {
         if (el.forEach) {
             return 1;
         }
@@ -285,14 +287,14 @@ function isIterable(el) {
 }
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
 function operateChildren(children, prefix, callback, iterableType, isTop) {
-    var key = children && children.key ? "$" + children.key : "";
+
     switch (iterableType) {
         case 0:
-        case void 666:
             if (Object(children) === children && !children.call && !children.type) {
                 throw "children中存在非法的对象";
             }
-            callback(children, prefix || key || "0");
+            var key = prefix || (children && children.key ? "$" + children.key : "0");
+            callback(children, key);
             break;
         case 1:
             //数组，Map, Set
@@ -303,6 +305,7 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
             break;
         case 2:
             //React.Fragment
+            var key = children && children.key ? "$" + children.key : "";
             var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
             var el = children.props.children;
             var t = isIterable(el);
@@ -517,7 +520,7 @@ var cssMap = oneObject("float", "cssFloat");
  * @returns 
  */
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var skipAttributes = {
     ref: 1,
@@ -592,7 +595,7 @@ function stringifyAttributes(props, type) {
         var checkType = false;
         if (_name === "className" || _name === "class") {
             _name = "class";
-            if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
+            if (v && (typeof v === "undefined" ? "undefined" : _typeof$1(v)) === "object") {
                 v = stringifyClassName(v);
                 checkType = true;
             }

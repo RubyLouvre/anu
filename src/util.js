@@ -146,16 +146,3 @@ export var toArray =
         }
         return ret;
     };
-    export function escapeKey(key) {
-        return String(key).replace(/[=:]/g, escaperFn);
-    }
-    
-    var escaperLookup = {
-        "=": "=0",
-        ":": "=2"
-    };
-    
- function escaperFn(match) {
-        return escaperLookup[match];
-    }
-    

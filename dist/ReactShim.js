@@ -147,20 +147,6 @@ function typeNumber(data) {
     return a || 8;
 }
 
-
-function escapeKey(key) {
-    return String(key).replace(/[=:]/g, escaperFn);
-}
-
-var escaperLookup = {
-    "=": "=0",
-    ":": "=2"
-};
-
-function escaperFn(match) {
-    return escaperLookup[match];
-}
-
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
@@ -285,6 +271,8 @@ Vnode.prototype = {
 
     $$typeof: REACT_ELEMENT_TYPE
 };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function Fragment(props) {
     return props.children;
@@ -450,7 +438,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (typeNumber(el) >= 7) {
+    if (el && (typeof el === "undefined" ? "undefined" : _typeof(el)) === "object") {
         if (el.forEach) {
             return 1;
         }
@@ -466,14 +454,14 @@ function isIterable(el) {
 }
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
 function operateChildren(children, prefix, callback, iterableType, isTop) {
-    var key = children && children.key ? "$" + children.key : "";
+
     switch (iterableType) {
         case 0:
-        case void 666:
             if (Object(children) === children && !children.call && !children.type) {
                 throw "children中存在非法的对象";
             }
-            callback(children, prefix || key || "0");
+            var key = prefix || (children && children.key ? "$" + children.key : "0");
+            callback(children, key);
             break;
         case 1:
             //数组，Map, Set
@@ -484,6 +472,7 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
             break;
         case 2:
             //React.Fragment
+            var key = children && children.key ? "$" + children.key : "";
             var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
             var el = children.props.children;
             var t = isIterable(el);
@@ -554,93 +543,85 @@ function cloneElement(vnode, props) {
 
 var mapStack = [];
 function mapWrapperCb(old, prefix) {
-    if (old === void 0 || old === false || old === true) {
-        old = null;
-    }
-    var cur = mapStack[0];
-    var el = cur.callback.call(cur.context, old, cur.index);
-    var index = cur.index;
-    cur.index++;
-    if (cur.isEach || el == null) {
-        return;
-    }
-    if (el.tag < 6) {
-        //如果返回的el等于old,还需要使用原来的key, _prefix
-        var key = computeKey(old, el, prefix, index);
-        cur.arr.push(cloneElement(el, { key: key }));
-    } else if (el.type) {
-        cur.arr.push(extend({}, el));
-    } else {
-        cur.arr.push(el);
-    }
+	if (old === void 0 || old === false || old === true) {
+		old = null;
+	}
+	var cur = mapStack[0];
+	var el = cur.callback.call(cur.context, old, cur.index);
+	var index = cur.index;
+	cur.index++;
+	if (cur.isEach || el == null) {
+		return;
+	}
+	if (el.tag < 6) {
+		//如果返回的el等于old,还需要使用原来的key, _prefix
+		var key = computeKey(old, el, prefix, index);
+		cur.arr.push(cloneElement(el, { key: key }));
+	} else if (el.type) {
+		cur.arr.push(extend({}, el));
+	} else {
+		cur.arr.push(el);
+	}
 }
 function K(el) {
-    return el;
+	return el;
 }
 var Children = {
-    only: function only(children) {
-        //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (children && children.tag) {
-            return children;
-        }
-        throw new Error("expect only one child");
-    },
-    count: function count(children) {
-        if (children == null) {
-            return 0;
-        }
-        var index = 0;
-        operateChildren(children, "", function () {
-            index++;
-        }, isIterable(children), true);
-        return index;
-    },
-    map: function map(children, callback, context, isEach) {
-        if (children == null) {
-            return children;
-        }
-        mapStack.unshift({
-            index: 0,
-            callback: callback,
-            context: context,
-            isEach: isEach,
-            arr: []
-        });
-        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
-        var top = mapStack.shift();
-        return top.arr;
-    },
-    forEach: function forEach(children, callback, context) {
-        Children.map(children, callback, context, true);
-    },
+	only: function only(children) {
+		//only方法接受的参数只能是一个对象，不能是多个对象（数组）。
+		if (children && children.tag) {
+			return children;
+		}
+		throw new Error('expect only one child');
+	},
+	count: function count(children) {
+		if (children == null) {
+			return 0;
+		}
+		var index = 0;
+		Children.map(children, function () {
+			index++;
+		}, null, true);
+		return index;
+	},
+	map: function map(children, callback, context, isEach) {
+		if (children == null) {
+			return children;
+		}
+		mapStack.unshift({
+			index: 0,
+			callback: callback,
+			context: context,
+			isEach: isEach,
+			arr: []
+		});
+		operateChildren(children, '', mapWrapperCb, isIterable(children), true);
+		var top = mapStack.shift();
+		return top.arr;
+	},
+	forEach: function forEach(children, callback, context) {
+		Children.map(children, callback, context, true);
+	},
 
-    toArray: function toArray$$1(children) {
-        if (children == null) {
-            return [];
-        }
-        return Children.map(children, K);
-    }
+	toArray: function toArray$$1(children) {
+		if (children == null) {
+			return [];
+		}
+		return Children.map(children, K);
+	}
 };
-var rthimNumer = /\d+\$/;
+
 function computeKey(old, el, prefix, index) {
-    var curKey = el && el.key != null ? escapeKey(el.key) : null;
-    var oldKey = old && old.key != null ? escapeKey(old.key) : null;
-    var key = void 0;
-    if (oldKey && curKey) {
-        if (oldKey !== curKey) {
-            key = curKey + "/." + prefix;
-        } else {
-            key = prefix ? "." + prefix : ".$" + curKey;
-        }
-    } else {
-        key = curKey || oldKey;
-        if (prefix) {
-            key = "." + prefix;
-        } else {
-            key = key ? ".$" + key : "." + index;
-        }
-    }
-    return key.replace(rthimNumer, "$");
+	var curKey = el && el.key != null ? el.key : null;
+	var oldKey = old && old.key != null ? old.key : null;
+	var dot = '.' + prefix;
+	if (oldKey && curKey && oldKey !== curKey) {
+		return curKey + '/' + dot;
+	}
+	if (prefix) {
+		return dot;
+	}
+	return curKey ? '.' + curKey : '.' + index;
 }
 
 //用于后端的元素节点
