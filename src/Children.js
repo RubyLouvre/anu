@@ -1,6 +1,6 @@
-import { operateChildren } from "./createElement";
+import { operateChildren, isIterable } from "./createElement";
 import { cloneElement } from "./cloneElement";
-import { extend ,escapeKey} from "./util";
+import { extend, escapeKey } from "./util";
 
 var mapStack = [];
 function mapWrapperCb(old, prefix) {
@@ -42,7 +42,7 @@ export const Children = {
         var index = 0;
         operateChildren(children, "", function () {
             index++;
-        });
+        }, isIterable(children), true);
         return index;
     },
     map(children, callback, context, isEach) {
@@ -56,7 +56,7 @@ export const Children = {
             isEach,
             arr: []
         });
-        operateChildren(children, "", mapWrapperCb);
+        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
         var top = mapStack.shift();
         return top.arr;
     },

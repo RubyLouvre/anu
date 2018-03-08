@@ -1,4 +1,4 @@
-import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE, escapeKey } from "./util";
+import { typeNumber, hasSymbol, REACT_FRAGMENT_TYPE } from "./util";
 import { Vnode } from "./vnode";
 
 function Fragment(props) {
@@ -48,6 +48,7 @@ export function createElement(type, config, ...children) {
     } else if (argsLen > 1) {
         props.children = children;
     }
+
     let defaultProps = type.defaultProps;
     if (defaultProps) {
         for (let propName in defaultProps) {
@@ -120,7 +121,12 @@ function flattenCb(child, key) {
     } else {
         lastText = null;
     }
-    flattenObject["."+key] = child;
+    if (!flattenObject["." + key]) {
+        flattenObject["." + key] = child;
+    } else {
+        key = "." + flattenIndex;
+        flattenObject[key] = child;
+    }
     child.index = flattenIndex++;
     flattenArray.push(child);
 }
@@ -130,60 +136,87 @@ export function fiberizeChildren(c, fiber) {
     flattenIndex = 0;
     flattenArray = [];
     if (c !== void 666) {
-        lastText = null;
-        operateChildren(c, "", flattenCb, 0);
+        lastText = null;//c 为fiber.props.children
+        operateChildren(c, "", flattenCb, isIterable(c), true);
     }
     flattenIndex = 0;
     return (fiber._children = flattenObject);
 }
-function genPrefix(el, index, prefix, deep) {
-    var ret = el && el.key != null ? "$" + escapeKey(el.key) : index;
-    if (deep) {
-        ret = prefix + ":" + ret;
-    } 
-    return ret;
-}
-export function operateChildren(children, prefix, callback, deep) {
-    var iteratorFn, el;
 
-    if (children) {
-        if (children.type === Fragment) {
-            el = children.props.children;
-            console.log("xxxxx")
-            operateChildren(el,
-                deep ? genPrefix(el, 0, prefix, deep) : prefix, callback, true);
-            return;
+function computeName(el, i, prefix, isTop) {
+    var k = i + "";
+    if (el) {
+        if (el.type == Fragment) {
+            k = el.key ? "" : k;
+        } else {
+            k = el.key ? "$" + el.key : k;
         }
-        if (children.forEach) {
+    }
+    if (!isTop && prefix) {
+        return prefix + ":" + k;
+    }
+    return k;
+}
+export function isIterable(el) {
+    if (typeNumber(el) >= 7) {
+        if (el.forEach) {
+            return 1;
+        }
+        if (el.type === Fragment) {
+            return 2;
+        }
+        var t = getIteractor(el);
+        if (t) {
+            return t;
+        }
+    }
+    return 0;
+}
+//operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
+export function operateChildren(children, prefix, callback, iterableType, isTop) {
+    var key = children && children.key ? "$" + children.key : "";
+    switch (iterableType) {
+        case 0:
+        case void 666:
+            if (Object(children) === children && !children.call && !children.type) {
+                throw "children中存在非法的对象";
+            }
+            callback(children, prefix || key || "0");
+            break;
+        case 1: //数组，Map, Set
             children.forEach(function (el, i) {
-                operateChildren(el, genPrefix(el,  i, prefix, deep), callback, true);
+                var k = computeName(el, i, prefix, isTop);
+                operateChildren(el, k, callback, isIterable(el), false);
             });
-            return;
-        } else if ((iteratorFn = getIteractor(children))) {
-            var iterator = iteratorFn.call(children),
+            break;
+        case 2: //React.Fragment
+            var k = isTop ? key : (prefix ? prefix + ":0" : key || "0");
+            var el = children.props.children;
+            var t = isIterable(el);
+            if (!t) {
+                el = [el];
+                t = 1;
+            }
+            operateChildren(el, k, callback, t, false);
+            break;
+        default:
+            var iterator = iterableType.call(children),
                 ii = 0,
+                el,
                 step;
             while (!(step = iterator.next()).done) {
                 el = step.value;
-                operateChildren(el, genPrefix(el, ii, prefix, deep), callback, true);
+                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
                 ii++;
             }
-            return;
-        }
+            break;
     }
-    if (Object(children) === children && !children.call && !children.type) {
-        throw "children中存在非法的对象";
-    }
-    callback(children, prefix || 0, deep);
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
-    if (typeNumber(a) > 7) {
-        var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
-        if (iteratorFn && iteratorFn.call) {
-            return iteratorFn;
-        }
+    var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
+    if (iteratorFn && iteratorFn.call) {
+        return iteratorFn;
     }
 }
-

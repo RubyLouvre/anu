@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
@@ -40,42 +40,20 @@
                     },
                 }
             }  
-            const ops = [];
-    
-    class Stateful extends React.Component {
-        componentDidUpdate() {
-            ops.push("Update Stateful");
+            var context = {};
+        var callback = function(kid, index) {
+            expect(this).toBe(context);
+            return kid;
         }
 
-        render() {
-            return <div>Hello</div>;
-        }
-    }
-
-    function Foo({condition}) {
-        return condition ? (
-            <Stateful key="a" />
-        ) : (
-            <React.Fragment>
-                <Stateful key="a" />
-                <div key="b">World</div>
-            </React.Fragment>
-        );
-    }
-
-    ReactDOM.render(<Foo condition={true} />,div);
-  
-
-    ReactDOM.render(<Foo condition={false} />,div);
-  
-    expect(ops).toEqual(["Update Stateful"]);
-    expect(div.getElementsByTagName("div").length).toEqual(2);
-
-    ReactDOM.render(<Foo condition={true} />,div);
-
-    expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
-    expect(div.getElementsByTagName("div").length).toEqual(1);
-    
+        var simpleKid = <span key="simple" />;
+        var instance = <div>{[simpleKid]}</div>;
+        React.Children.forEach(instance.props.children, callback, context);
+      
+        var mappedChildren = React.Children.map(instance.props.children, callback, context);
+        expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+        expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
+          
 </script>
 
 

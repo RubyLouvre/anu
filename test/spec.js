@@ -1,4 +1,4 @@
-
+/*
 import "./modules/createElement.spec";
 
 import "./modules/util.spec";
@@ -21,9 +21,11 @@ require("./modules/ReactDOMSelect-test.jsx");
 require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/ReactDOMInput-test.jsx");
+*/
+require("./modules/ReactDOMFragment-test.jsx");
+require("./modules/ReactChildren-test.jsx");
 
-//require("./modules/ReactDOMFragment-test.jsx");
-
+/*
 
 require("./modules/lifecycle.spec.jsx");
 
@@ -36,12 +38,11 @@ require("./modules/node.spec.jsx");
 
 require("./modules/ref.spec.jsx");
 
-//require("./modules/redux.spec.jsx");
+require("./modules/redux.spec.jsx");
 
 require("./modules/ReactTestUtils-test.jsx");
 
-require("./modules/ReactChildren-test.jsx");
-/*
+
 require("./modules/ReactComponent-test.jsx");
 
 require("./modules/ReactMultiChild-test.jsx");

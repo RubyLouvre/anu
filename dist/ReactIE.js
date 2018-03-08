@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-06
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-08
  */
 
 (function (global, factory) {
@@ -143,6 +143,20 @@ function typeNumber(data) {
     }
     var a = numberMap[__type.call(data)];
     return a || 8;
+}
+
+
+function escapeKey(key) {
+    return String(key).replace(/[=:]/g, escaperFn);
+}
+
+var escaperLookup = {
+    "=": "=0",
+    ":": "=2"
+};
+
+function escaperFn(match) {
+    return escaperLookup[match];
 }
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
@@ -341,7 +355,7 @@ var lastText;
 var flattenIndex;
 var flattenObject;
 var flattenArray;
-function flattenCb(child, index, fragmentDeep) {
+function flattenCb(child, key) {
     var childType = typeNumber(child);
     if (childType < 3) {
         //在React16中undefined, null, boolean不会产生节点
@@ -358,17 +372,11 @@ function flattenCb(child, index, fragmentDeep) {
     } else {
         lastText = null;
     }
-    var key = child.key;
-    if (key && fragmentDeep) {
-        key = fragmentDeep + key;
-    }
-    if (key && !flattenObject[".$" + key]) {
-        flattenObject[".$" + key] = child;
+    if (!flattenObject["." + key]) {
+        flattenObject["." + key] = child;
     } else {
-        if (index === ".") {
-            index = "." + flattenIndex;
-        }
-        flattenObject[index] = child;
+        key = "." + flattenIndex;
+        flattenObject[key] = child;
     }
     child.index = flattenIndex++;
     flattenArray.push(child);
@@ -379,51 +387,90 @@ function fiberizeChildren(c, fiber) {
     flattenIndex = 0;
     flattenArray = [];
     if (c !== void 666) {
-        lastText = null;
-        operateChildren(c, "", flattenCb);
+        lastText = null; //c 为fiber.props.children
+        operateChildren(c, "", flattenCb, isIterable(c), true);
     }
     flattenIndex = 0;
     return fiber._children = flattenObject;
 }
 
-function operateChildren(children, prefix, callback, deep) {
-    var iteratorFn;
-    if (children) {
-        if (children.type === Fragment) {
-            var next = deep == null ? 0 : deep + 1;
-            //忽略掉第一层<React.Fragment>, 从第二层起记作1，2，3
-            operateChildren(children.props.children, deep != null ? prefix ? prefix + ":" + 0 : "." + 0 : prefix, callback, next);
-            return;
+function computeName(el, i, prefix, isTop) {
+    var k = i + "";
+    if (el) {
+        if (el.type == Fragment) {
+            k = el.key ? "" : k;
+        } else {
+            k = el.key ? "$" + el.key : k;
         }
-        if (children.forEach) {
+    }
+    if (!isTop && prefix) {
+        return prefix + ":" + k;
+    }
+    return k;
+}
+function isIterable(el) {
+    if (typeNumber(el) >= 7) {
+        if (el.forEach) {
+            return 1;
+        }
+        if (el.type === Fragment) {
+            return 2;
+        }
+        var t = getIteractor(el);
+        if (t) {
+            return t;
+        }
+    }
+    return 0;
+}
+//operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
+function operateChildren(children, prefix, callback, iterableType, isTop) {
+    var key = children && children.key ? "$" + children.key : "";
+    switch (iterableType) {
+        case 0:
+        case void 666:
+            if (Object(children) === children && !children.call && !children.type) {
+                throw "children中存在非法的对象";
+            }
+            callback(children, prefix || key || "0");
+            break;
+        case 1:
+            //数组，Map, Set
             children.forEach(function (el, i) {
-                operateChildren(el, prefix ? prefix + ":" + i : "." + i, callback, deep);
+                var k = computeName(el, i, prefix, isTop);
+                operateChildren(el, k, callback, isIterable(el), false);
             });
-            return;
-        } else if (iteratorFn = getIteractor(children)) {
-            var iterator = iteratorFn.call(children),
+            break;
+        case 2:
+            //React.Fragment
+            var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
+            var el = children.props.children;
+            var t = isIterable(el);
+            if (!t) {
+                el = [el];
+                t = 1;
+            }
+            operateChildren(el, k, callback, t, false);
+            break;
+        default:
+            var iterator = iterableType.call(children),
                 ii = 0,
+                el,
                 step;
             while (!(step = iterator.next()).done) {
-                operateChildren(step.value, prefix ? prefix + ":" + ii : "." + ii, callback, deep);
+                el = step.value;
+                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
                 ii++;
             }
-            return;
-        }
+            break;
     }
-    if (Object(children) === children && !children.call && !children.type) {
-        throw "children中存在非法的对象";
-    }
-    callback(children, prefix || ".", deep);
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
-    if (typeNumber(a) > 7) {
-        var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
-        if (iteratorFn && iteratorFn.call) {
-            return iteratorFn;
-        }
+    var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
+    if (iteratorFn && iteratorFn.call) {
+        return iteratorFn;
     }
 }
 
@@ -504,7 +551,7 @@ var Children = {
         var index = 0;
         operateChildren(children, "", function () {
             index++;
-        });
+        }, isIterable(children), true);
         return index;
     },
     map: function map(children, callback, context, isEach) {
@@ -518,7 +565,7 @@ var Children = {
             isEach: isEach,
             arr: []
         });
-        operateChildren(children, "", mapWrapperCb);
+        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
         var top = mapStack.shift();
         return top.arr;
     },
@@ -539,32 +586,20 @@ function computeKey(old, el, prefix, index) {
     var oldKey = old && old.key != null ? escapeKey(old.key) : null;
     var key = void 0;
     if (oldKey && curKey) {
-        key = prefix + "$" + oldKey;
         if (oldKey !== curKey) {
-            key = curKey + "/" + key;
+            key = curKey + "/." + prefix;
+        } else {
+            key = prefix ? "." + prefix : ".$" + curKey;
         }
     } else {
         key = curKey || oldKey;
-        if (key) {
-            key = prefix + "$" + key;
+        if (prefix) {
+            key = "." + prefix;
         } else {
-            key = prefix === "." ? prefix + index : prefix;
+            key = key ? ".$" + key : "." + index;
         }
     }
     return key.replace(rthimNumer, "$");
-}
-
-function escapeKey(key) {
-    return String(key).replace(/[=:]/g, escaperFn);
-}
-
-var escaperLookup = {
-    "=": "=0",
-    ":": "=2"
-};
-
-function escaperFn(match) {
-    return escaperLookup[match];
 }
 
 //用于后端的元素节点
