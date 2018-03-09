@@ -153,7 +153,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 export function isIterable(el) {
-    if (el && typeof el === "object") {
+    if (typeNumber(el) > 6) {
         if (el.forEach) {
             return 1;
         }
@@ -169,7 +169,7 @@ export function isIterable(el) {
 }
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
 export function operateChildren(children, prefix, callback, iterableType, isTop) {
-   
+
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {

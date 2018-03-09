@@ -232,8 +232,6 @@ Vnode.prototype = {
     $$typeof: REACT_ELEMENT_TYPE
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /**
  * 虚拟DOM工厂
  *
@@ -393,7 +391,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (el && (typeof el === "undefined" ? "undefined" : _typeof(el)) === "object") {
+    if (typeNumber(el) > 6) {
         if (el.forEach) {
             return 1;
         }
@@ -1408,7 +1406,7 @@ Component.prototype = {
     render: function render() {}
 };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 /**
  * 为了兼容0.13之前的版本
@@ -1450,7 +1448,7 @@ var MANY_MERGED = {
 };
 
 function flattenHooks(key, hooks) {
-    var hookType = _typeof$1(hooks[0]);
+    var hookType = _typeof(hooks[0]);
     if (hookType === "object") {
         // Merge objects
         var ret = {};

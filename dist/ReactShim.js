@@ -273,8 +273,6 @@ Vnode.prototype = {
     $$typeof: REACT_ELEMENT_TYPE
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /**
  * 虚拟DOM工厂
  *
@@ -434,7 +432,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (el && (typeof el === "undefined" ? "undefined" : _typeof(el)) === "object") {
+    if (typeNumber(el) > 6) {
         if (el.forEach) {
             return 1;
         }

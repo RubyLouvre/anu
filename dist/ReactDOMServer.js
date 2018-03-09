@@ -188,8 +188,6 @@ Vnode.prototype = {
     $$typeof: REACT_ELEMENT_TYPE
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /**
  * 虚拟DOM工厂
  *
@@ -269,7 +267,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (el && (typeof el === "undefined" ? "undefined" : _typeof(el)) === "object") {
+    if (typeNumber(el) > 6) {
         if (el.forEach) {
             return 1;
         }
@@ -518,7 +516,7 @@ var cssMap = oneObject("float", "cssFloat");
  * @returns 
  */
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var skipAttributes = {
     ref: 1,
@@ -593,7 +591,7 @@ function stringifyAttributes(props, type) {
         var checkType = false;
         if (_name === "className" || _name === "class") {
             _name = "class";
-            if (v && (typeof v === "undefined" ? "undefined" : _typeof$1(v)) === "object") {
+            if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                 v = stringifyClassName(v);
                 checkType = true;
             }

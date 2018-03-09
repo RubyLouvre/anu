@@ -89,22 +89,22 @@
     const Context = React.createContext(1);
 
 function Provider(props) {
-    ReactNoop.yield('Provider');
     return (
-        <Context.Provider value={props.value}>
-            {props.children}
-        </Context.Provider>
+        <Context.Consumer>
+            {contextValue => (
+                // Multiply previous context value by 2, unless prop overrides
+                <Context.Provider value={props.value || contextValue * 2}>
+                    {props.children}
+                </Context.Provider>
+            )}
+        </Context.Consumer>
     );
 }
 
 function Consumer(props) {
-    ReactNoop.yield('Consumer');
     return (
         <Context.Consumer>
-            {value => {
-                ReactNoop.yield('Consumer render prop');
-                return <span>{'Result: ' + value}</span>;
-            }}
+            {value => <span>{'Result: ' + value}</span>}
         </Context.Consumer>
     );
 }
@@ -114,44 +114,39 @@ class Indirection extends React.Component {
         return false;
     }
     render() {
-        ReactNoop.yield('Indirection');
         return this.props.children;
     }
 }
 
 function App(props) {
-    ReactNoop.yield('App');
     return (
         <Provider value={props.value}>
             <Indirection>
-                <Indirection>
-                    <Consumer />
-                </Indirection>
+                <Provider>
+                    <Indirection>
+                        <Provider>
+                            <Indirection>
+                                <Consumer />
+                            </Indirection>
+                        </Provider>
+                    </Indirection>
+                </Provider>
             </Indirection>
         </Provider>
     );
 }
 
 ReactNoop.render(<App value={2} />);
-expect(ReactNoop.flush()).toEqual([
-    'App',
-    'Provider',
-    'Indirection',
-    'Indirection',
-    'Consumer',
-    'Consumer render prop',
-]);
-expect(ReactNoop.getChildren()).toEqual([span('Result: 2')]);
+ReactNoop.flush();
+console.log(ReactNoop.getChildren())
+
+//expect(ReactNoop.getChildren()).toEqual([span('Result: 8')]);
 
 // Update
 ReactNoop.render(<App value={3} />);
-expect(ReactNoop.flush()).toEqual([
-    'App',
-    'Provider',
-    'Consumer render prop',
-]);
-expect(ReactNoop.getChildren()).toEqual([span('Result: 3')]);
-
+ReactNoop.flush();
+console.log(ReactNoop.getChildren())
+//expect(ReactNoop.getChildren()).toEqual([span('Result: 12')]);
      </script>
 
 </body>
