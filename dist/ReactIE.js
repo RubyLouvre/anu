@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-08
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-09
  */
 
 (function (global, factory) {
@@ -2502,10 +2502,6 @@ function findCatchComponent(target, names) {
     } while (fiber = fiber.return);
 }
 
-function alwaysNull() {
-    return null;
-}
-
 /**
  * 将虚拟DOM转换为Fiber
  * @param {vnode} vnode 
@@ -2607,7 +2603,7 @@ ComponentFiber.prototype = {
             tag = this.tag,
             isStateless = tag === 1,
             instance = void 0,
-            mixin = void 0;
+            hasLifeCycle = void 0;
         //实例化组件
 
         try {
@@ -2616,43 +2612,48 @@ ComponentFiber.prototype = {
                 instance = {
                     refs: {},
                     __proto__: type.prototype,
-                    render: function render() {
-                        return type(this.props, this.context);
+                    __init__: true,
+                    props: props,
+                    context: context,
+                    render: function f() {
+                        var a = type(this.props, this.context);
+                        //如果无状态组件返回一个带render与生命周期钩子的纯对象
+                        if (a && a.render) {
+                            hasLifeCycle = a;
+                            return this.__init__ ? null : a.render.call(this);
+                        }
+                        return a;
                     }
                 };
                 Refs.currentOwner = instance;
-                mixin = type(props, context);
+                this.child = instance.render();
+                if (hasLifeCycle) {
+                    for (var i in hasLifeCycle) {
+                        if (i !== "render") {
+                            instance[i] = hasLifeCycle[i];
+                        }
+                    }
+                    hasLifeCycle = false;
+                } else {
+                    this._willReceive = false;
+                    this._isStateless = true;
+                }
+                delete instance.__init__;
             } else {
                 instance = new type(props, context);
-                Refs.currentOwner = instance;
             }
         } catch (e) {
-            //失败时，则创建一个假的instance
-            instance = {
+            instance = { //伪造一个组件实例
                 updater: this
             };
-            //  vnode.stateNode = instance;
             this.stateNode = instance;
             return pushError(instance, "constructor", e);
         } finally {
             Refs.currentOwner = lastOwn;
         }
-        //如果是无状态组件需要再加工
-        if (isStateless) {
-            if (mixin && mixin.render) {
-                //带生命周期的
-                extend(instance, mixin);
-            } else {
-                //不带生命周期的
-                this.child = mixin;
-                this._isStateless = true;
-                this.mergeStates = alwaysNull;
-                this._willReceive = false;
-            }
-        }
-
         this.stateNode = instance;
         getDerivedStateFromProps(this, type, props, instance.state);
+
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
@@ -2660,7 +2661,6 @@ ComponentFiber.prototype = {
         var carrier = this._return ? {} : mountCarrier;
         this._mountCarrier = carrier;
         this._mountPoint = carrier.dom || null;
-        //this._updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
         }
@@ -2732,10 +2732,16 @@ ComponentFiber.prototype = {
             c = getUnmaskedContext(instance, c);
             this._unmaskedContext = c;
         }
-
         if (this._willReceive === false) {
-            rendered = this.child; //原来是vnode.child
-            delete this._willReceive;
+            var a = this.child;
+            if (a && a.sibling) {
+                rendered = [];
+                for (; a; a = a.sibling) {
+                    rendered.push(a);
+                }
+            } else {
+                rendered = a;
+            }
         } else {
             var lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
@@ -3096,7 +3102,6 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         nextContext = void 0,
         willReceive = fiber._reactInternalFiber !== nextVnode;
 
-
     if (type.contextTypes) {
         nextContext = fiber.context = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
         willReceive = true;
@@ -3153,7 +3158,6 @@ function receiveVnode(fiber, vnode, updateQueue, mountCarrier) {
 }
 // https://github.com/onmyway133/DeepDiff
 function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) {
-    var r = mountCarrier.dom;
     //这里都是走新的任务列队
     var fiber = void 0,
         vnode = void 0,

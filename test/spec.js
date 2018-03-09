@@ -27,7 +27,7 @@ require("./modules/ReactChildren-test.jsx");
 
 
 
-require("./modules/lifecycle.spec.jsx");
+require("./modules/ReactComponentHook.jsx");
 
 require("./modules/diffProps.spec.jsx");
 
@@ -91,5 +91,3 @@ require("./modules/event.spec.jsx");
 require("./modules/ReactDOM-test.jsx");
 
 require("./modules/ReactNewContext-test.jsx");
-
-

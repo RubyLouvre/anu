@@ -2,7 +2,7 @@
 import React from "dist/React";
 import ReactTestUtils from "lib/ReactTestUtils";
 
-describe("生命周期例子", function() {
+describe("ReactComponentHook", function() {
     this.timeout(200000);
 
     var body = document.body,

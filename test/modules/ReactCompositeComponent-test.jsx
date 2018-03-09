@@ -10,7 +10,7 @@ var shallowCompare = require("../../lib/shallowCompare");
 var ReactDOM = window.ReactDOM || React;
 var PropTypes = React.PropTypes;
 
-describe("ReactCompositeComponent", function() {
+describe("ReactCompositeComponent", function () {
     this.timeout(200000);
 
     it("should support module pattern components", () => {
@@ -52,7 +52,7 @@ describe("ReactCompositeComponent", function() {
         el = ReactDOM.findDOMNode(instance);
         expect(el.tagName).toBe("A");
     });
-   
+
     it("should react to state changes from callbacks", () => {
         var instance = ReactTestUtils.renderIntoDocument(<MorphingComponent />);
         var el = ReactDOM.findDOMNode(instance);
@@ -204,7 +204,7 @@ describe("ReactCompositeComponent", function() {
 
             componentWillUnmount() {
                 expect(() => {
-                    this.setState({ value: 2 }, function() {
+                    this.setState({ value: 2 }, function () {
                         cbCalled = true;
                     });
                 }).not.toThrow();
@@ -377,6 +377,38 @@ describe("ReactCompositeComponent", function() {
         expect(ReactDOM.findDOMNode(component).innerHTML).toBe("bar");
     });
 
+    it("有生命周期的无状态组件更新", () => {
+        var list = []
+        var div = document.createElement("div")
+        function App(props) {
+
+            return {
+                componentWillMount() {
+                    list.push("will mount")
+                },
+                componentWillUpdate() {
+                    list.push("will update")
+                },
+                componentDidMount() {
+                    list.push("did mount")
+                },
+                componentDidUpdate() {
+                    list.push("did update")
+                },
+                render() {
+                    list.push("render " + props.x)
+                    return <span>{props.x}</span>
+                }
+            }
+
+        }
+        ReactDOM.render(<App x={1} />, div)
+        ReactDOM.render(<App x={2} />, div)
+        expect(list).toEqual([
+             "will mount","render 1", "did mount", "will update","render 2", "did update"
+        ])
+    })
+
     it("should skip update when rerendering element in container", () => {
         class Parent extends React.Component {
             render() {
@@ -462,7 +494,7 @@ describe("ReactCompositeComponent", function() {
         expect(childInstance.context).toEqual({ foo: "bar", flag: true });
     });
     //context穿透更新
-    
+
     it("should pass context when re-rendered for static child within a composite component", () => {
         class Parent extends React.Component {
             static childContextTypes = {
@@ -624,7 +656,7 @@ describe("ReactCompositeComponent", function() {
 
         expect(parentInstance.state.flag).toBe(false);
 
-   });
+    });
 
     it("unmasked context propagates through updates", () => {
 
@@ -853,7 +885,7 @@ describe("ReactCompositeComponent", function() {
         var instance = ReactDOM.render(<Component update={0} />, container);
         expect(renders).toBe(1);
         expect(instance.state.updated).toBe(false);
- 
+
     });
 
     it("should update refs if shouldComponentUpdate gives false", () => {
@@ -990,17 +1022,17 @@ describe("ReactCompositeComponent", function() {
     });
 
     it("should support objects with prototypes as state", () => {
-        var NotActuallyImmutable = function(str) {
+        var NotActuallyImmutable = function (str) {
             this.str = str;
         };
-        NotActuallyImmutable.prototype.amIImmutable = function() {
+        NotActuallyImmutable.prototype.amIImmutable = function () {
             return true;
         };
         class Moo extends React.Component {
             state = new NotActuallyImmutable("first");
             // No longer a public API, but we can test that it works internally by
             // reaching into the updater.
-            _replaceState = function(a) {
+            _replaceState = function (a) {
                 this.state = a;
                 this.forceUpdate();
             };
@@ -1024,7 +1056,7 @@ describe("ReactCompositeComponent", function() {
         // Here we lose the prototype.
         expect(moo.state.amIImmutable).toBe(undefined);
     });
-    
+
     it("props对象不能在构造器里被重写", () => {
         var container = document.createElement("div");
         class Foo extends React.Component {
@@ -1096,21 +1128,21 @@ describe("ReactCompositeComponent", function() {
             }
         };
         var err = false
-        try{
+        try {
             ReactDOM.render(<App ref={setRef} stage={1} />, container);
             ReactDOM.render(<App ref={setRef} stage={2} />, container);
-        }catch(e){
+        } catch (e) {
             console.log(e)
             err = true
         }
         expect(err).toBe(true);
         expect(count).toBe(1);
     });
-    
+
     it("prepares new child before unmounting old", () => {
         var list = []
-        function logger(e){
-          list.push(e)
+        function logger(e) {
+            list.push(e)
         }
 
         class Spy extends React.Component {
@@ -1139,8 +1171,8 @@ describe("ReactCompositeComponent", function() {
         ReactDOM.render(<Wrapper name="A" />, container);
         ReactDOM.render(<Wrapper name="B" />, container);
         var list2 = ReactDOM.createPortal ?
-        ["A componentWillMount", "A render", "A componentDidMount", "B componentWillMount", "B render", "A componentWillUnmount", "B componentDidMount"]:
-        ["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"]
+            ["A componentWillMount", "A render", "A componentDidMount", "B componentWillMount", "B render", "A componentWillUnmount", "B componentDidMount"] :
+            ["A componentWillMount", "A render", "A componentDidMount", "A componentWillUnmount", "B componentWillMount", "B render", "B componentDidMount"]
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
@@ -1303,9 +1335,9 @@ describe("ReactCompositeComponent", function() {
         var b = <Component />;
         var container = document.createElement("div");
         var s = ReactDOM.render(b, container);
-        expect(!!React.findDOMNode(s) ).toBe(true);
+        expect(!!React.findDOMNode(s)).toBe(true);
         s.setState({ a: 2 });
-        expect(!!React.findDOMNode(s) ).toBe(true);
+        expect(!!React.findDOMNode(s)).toBe(true);
     });
-    
+
 });

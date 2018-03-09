@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>
+   <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
 
@@ -30,6 +30,7 @@
               window.ReactDOM = React
             }
             var container = document.getElementById("app-root")
+            var div = container;
             var expect = function(a) {
                 return {
                     toBe: function(b) {
@@ -40,47 +41,117 @@
                     },
                 }
             }  
-            const ThemeContext = React.createContext('light');
-
-        class ThemeToggler extends React.Component {
-            state = { theme: 'light' };
-            render() {
-                return (
-                // Pass the current context value to the Provider's `value` prop.
-                // Changes are detected using strict comparison (Object.is)
-                <ThemeContext.Provider value={this.state.theme}>
-                    <button type="button"
-                        onClick={() => {
-                            this.setState(state => ({
-                            theme: state.theme === 'light' ? 'dark' : 'light'
-                            }));
-                        }}
-                    >
-                    Toggle theme
-                    </button>
-                    {this.props.children}
-                </ThemeContext.Provider>
-                );
+            function collectVDOM(vdom, array) {
+        if (vdom.tag == 5) {
+            var children = [];
+            var element = {
+                type: vdom.type,
+                children: children
+            };
+            array.push(element)
+            var c = vdom._children;
+            for (var i in c) {
+                collectVDOM(c[i], children);
+            }
+        } else if (vdom.tag === 6) {
+            array.push(vdom.text + "");
+        } else {
+            var c = vdom._children;
+            for (var i in c) {
+                collectVDOM(c[i], array);
             }
         }
+    }
+    function span(prop) {
+        return { type: 'span', children: [prop] };
+    }
+    var yieldData = []
+    var ReactNoop = {
+        render(vdom) {
+            ReactDOM.render(vdom, div);
+        },
+        yield(a) {
+            yieldData.push(a)
+        },
+        flush() {
+            var ret = yieldData.concat()
+            yieldData.length = 0;
+            return ret;
+        },
+        getChildren() {
+            var c = div.__component,
+                ret = [];
+            collectVDOM(c, ret);
+            return ret;
+        }
+    };
+  
+    const Context = React.createContext(1);
 
-        class Title extends React.Component {
-        render() {
-            return (
-            // The Consumer uses a render prop API. Avoids conflicts in the
-            // props namespace.
-            <ThemeContext.Consumer>
-                {theme => (
-                <h1 style={{ color: theme === 'light' ? '#000' : '#fff', 
-                            backgroundColor: theme === 'light' ? '#fff' : '#000',  }}>
-                    {this.props.children}
-                </h1>
-                )}
-            </ThemeContext.Consumer>
-            );
-        }
-        }
-        ReactDOM.render(<div><ThemeToggler ><Title>xxx</Title></ThemeToggler></div>, container)
+function Provider(props) {
+    ReactNoop.yield('Provider');
+    return (
+        <Context.Provider value={props.value}>
+            {props.children}
+        </Context.Provider>
+    );
+}
+
+function Consumer(props) {
+    ReactNoop.yield('Consumer');
+    return (
+        <Context.Consumer>
+            {value => {
+                ReactNoop.yield('Consumer render prop');
+                return <span>{'Result: ' + value}</span>;
+            }}
+        </Context.Consumer>
+    );
+}
+
+class Indirection extends React.Component {
+    shouldComponentUpdate() {
+        return false;
+    }
+    render() {
+        ReactNoop.yield('Indirection');
+        return this.props.children;
+    }
+}
+
+function App(props) {
+    ReactNoop.yield('App');
+    return (
+        <Provider value={props.value}>
+            <Indirection>
+                <Indirection>
+                    <Consumer />
+                </Indirection>
+            </Indirection>
+        </Provider>
+    );
+}
+
+ReactNoop.render(<App value={2} />);
+expect(ReactNoop.flush()).toEqual([
+    'App',
+    'Provider',
+    'Indirection',
+    'Indirection',
+    'Consumer',
+    'Consumer render prop',
+]);
+expect(ReactNoop.getChildren()).toEqual([span('Result: 2')]);
+
+// Update
+ReactNoop.render(<App value={3} />);
+expect(ReactNoop.flush()).toEqual([
+    'App',
+    'Provider',
+    'Consumer render prop',
+]);
+expect(ReactNoop.getChildren()).toEqual([span('Result: 3')]);
+
      </script>
 
 </body>

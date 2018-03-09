@@ -214,7 +214,6 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         nextProps = nextVnode.props,
         nextContext,
         willReceive = fiber._reactInternalFiber !== nextVnode;
-
     if (type.contextTypes) {
         nextContext = fiber.context = getMaskedContext(getContextProvider(fiber.return), type.contextTypes);
         willReceive = true;
@@ -271,7 +270,6 @@ function receiveVnode(fiber, vnode, updateQueue, mountCarrier) {
 }
 // https://github.com/onmyway133/DeepDiff
 function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) {
-    var r = mountCarrier.dom;
     //这里都是走新的任务列队
     let fiber,
         vnode,

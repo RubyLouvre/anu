@@ -1,83 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/babel.js"></script>
-    <script type="text/babel">
-
-      </script>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+        <meta
+            http-equiv="X-UA-Compatible"
+            content="ie=edge"
+        />
+        <title>Document</title>
 </head>
 
 <body>
-
-    <pre>应该等于
-           
-          
-        </pre>
-    <h1 id='example' class="root">
-
-    </h1>
-    <script type='text/babel'>
-            var container = document.getElementById("example")
-            var div = container;
-            var PropTypes = React.PropTypes
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                }
-            }  
-          
-        
-
- const ops = [];
-    
- class Stateful extends React.Component {
-    componentDidUpdate() {
-        ops.push("Update Stateful");
-    }
-
-    render() {
-        return <div>Hello</div>;
-    }
-}
-   
-function Foo({condition}) {
-    return <div><React.Fragment><span>111</span><span key="xxx">222</span><span>333</span></React.Fragment></div>
-}
-
-ReactDOM.render(<Foo condition={true} />,div);
-
-
-  
-
-  // ReactDOM.render(<Foo condition={false} />, div);
-  /*
-    expect(ops).toEqual([]);
-   expect(div.getElementsByTagName("div").length).toEqual(1);
-    
-
-   ReactDOM.render(<Foo condition={true} />,div);
-    
-
-   expect(ops).toEqual([]);
-   expect(div.getElementsByTagName("div").length).toEqual(1);
-*/
-           
-</script>
-
+    <div id="test"></div>
+    <div id="content"></div>
+</body>
+<script src="app.js"></script>
 
 </html>

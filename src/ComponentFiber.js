@@ -5,9 +5,6 @@ import { pushError, captureError } from "./ErrorBoundary";
 import { insertElement, document } from "./browser";
 import { Refs } from "./Refs";
 
-function alwaysNull() {
-    return null;
-}
 
 /**
  * 将虚拟DOM转换为Fiber
@@ -23,7 +20,7 @@ export function ComponentFiber(vnode, parentFiber) {
     this._reactInternalFiber = vnode;
     this._pendingCallbacks = [];
     this._pendingStates = [];
-    this._states = [ "resolve" ];
+    this._states = ["resolve"];
     this._mountOrder = Refs.mountOrder++;
 
     //  fiber总是保存最新的数据，如state, props, context
@@ -33,7 +30,7 @@ export function ComponentFiber(vnode, parentFiber) {
 }
 
 ComponentFiber.prototype = {
-    addState: function(state) {
+    addState: function (state) {
         var states = this._states;
         if (states[states.length - 1] !== state) {
             states.push(state);
@@ -57,7 +54,7 @@ ComponentFiber.prototype = {
             //组件在更新过程（_hydrating = true），其setState/forceUpdate被调用
             //那么会延期到下一个渲染过程调用
             if (!this._nextCallbacks) {
-                this._nextCallbacks = [ cb ];
+                this._nextCallbacks = [cb];
             } else {
                 this._nextCallbacks.push(cb);
             }
@@ -78,7 +75,7 @@ ComponentFiber.prototype = {
                 return;
             }
             this.addState("hydrate");
-            drainQueue([ this ]);
+            drainQueue([this]);
         }
     },
     mergeStates() {
@@ -106,7 +103,7 @@ ComponentFiber.prototype = {
         let { props, context, type, tag } = this,
             isStateless = tag === 1,
             instance,
-            mixin;
+            hasLifeCycle;
         //实例化组件
         try {
             var lastOwn = Refs.currentOwner;
@@ -114,43 +111,48 @@ ComponentFiber.prototype = {
                 instance = {
                     refs: {},
                     __proto__: type.prototype,
-                    render: function() {
-                        return type(this.props, this.context);
+                    __init__: true,
+                    props,
+                    context,
+                    render: function f() {
+                        var a = type(this.props, this.context);
+                        //如果无状态组件返回一个带render与生命周期钩子的纯对象
+                        if (a && a.render) {
+                            hasLifeCycle = a;
+                            return this.__init__ ? null : a.render.call(this);
+                        }
+                        return a;
                     }
                 };
                 Refs.currentOwner = instance;
-                mixin = type(props, context);
+                this.child = instance.render();
+                if (hasLifeCycle) {
+                    for (var i in hasLifeCycle) {
+                        if (i !== "render") {
+                            instance[i] = hasLifeCycle[i];
+                        }
+                    }
+                    hasLifeCycle = false;
+                } else {
+                    this._willReceive = false;
+                    this._isStateless = true;
+                }
+                delete instance.__init__;
             } else {
                 instance = new type(props, context);
-                Refs.currentOwner = instance;
             }
         } catch (e) {
-            //失败时，则创建一个假的instance
-            instance = {
+            instance = {//伪造一个组件实例
                 updater: this
             };
-            //  vnode.stateNode = instance;
             this.stateNode = instance;
             return pushError(instance, "constructor", e);
         } finally {
             Refs.currentOwner = lastOwn;
         }
-        //如果是无状态组件需要再加工
-        if (isStateless) {
-            if (mixin && mixin.render) {
-                //带生命周期的
-                extend(instance, mixin);
-            } else {
-                //不带生命周期的
-                this.child = mixin;
-                this._isStateless = true;
-                this.mergeStates = alwaysNull;
-                this._willReceive = false;
-            }
-        }
-		
         this.stateNode = instance;
         getDerivedStateFromProps(this, type, props, instance.state);
+
         //如果没有调用constructor super，需要加上这三行
         instance.props = props;
         instance.context = context;
@@ -158,7 +160,6 @@ ComponentFiber.prototype = {
         var carrier = this._return ? {} : mountCarrier;
         this._mountCarrier = carrier;
         this._mountPoint = carrier.dom || null;
-        //this._updateQueue = updateQueue;
         if (instance.componentWillMount) {
             captureError(instance, "componentWillMount", []);
         }
@@ -175,26 +176,26 @@ ComponentFiber.prototype = {
         }
         let state = this.mergeStates();
         let shouldUpdate = true;
-        if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [ props, state, context ])) {
+        if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
 
             var nodes = collectComponentNodes(this._children);
             var carrier = this._mountCarrier;
             carrier.dom = this._mountPoint;
-            nodes.forEach(function(el) {
+            nodes.forEach(function (el) {
                 insertElement(el, carrier.dom);
                 carrier.dom = el.stateNode;
             });
         } else {
-            captureError(instance, "componentWillUpdate", [ props, state, context ]);
+            captureError(instance, "componentWillUpdate", [props, state, context]);
             var { props: lastProps, state: lastState } = instance;
-            this._hookArgs = [ lastProps, lastState ];
+            this._hookArgs = [lastProps, lastState];
         }
 
         if (this._hasError) {
             return;
         }
-	
+
         delete this._forceUpdate;
         //既然setState了，无论shouldComponentUpdate结果如何，用户传给的state对象都会作用到组件上
         instance.props = props;
@@ -203,7 +204,7 @@ ComponentFiber.prototype = {
         if (!inner) {
             this._mountCarrier.dom = this._mountPoint;
         }
-		
+
         if (shouldUpdate) {
             this.render(updateQueue);
         }
@@ -219,16 +220,23 @@ ComponentFiber.prototype = {
 
         this._hydrating = true;
         //给下方使用的context
-       
+
         if (instance.getChildContext) {
             var c = getContextProvider(this.return);
             c = getUnmaskedContext(instance, c);
             this._unmaskedContext = c;
         }
-        
         if (this._willReceive === false) {
-            rendered = this.child; //原来是vnode.child
-            delete this._willReceive;
+            var a = this.child;
+            if (a && a.sibling) {
+                rendered = [];
+                for (; a; a = a.sibling) {
+                    rendered.push(a);
+                }
+            } else {
+                rendered = a;
+            }
+
         } else {
             let lastOwn = Refs.currentOwner;
             Refs.currentOwner = instance;
@@ -276,7 +284,7 @@ ComponentFiber.prototype = {
                 Refs.fireRef(this, instance, vnode);
                 vnode._hasRef = false;
             }
-            clearArray(this._pendingCallbacks).forEach(function(fn) {
+            clearArray(this._pendingCallbacks).forEach(function (fn) {
                 fn.call(instance);
             });
         }

@@ -1,3 +1,6 @@
+1. React.Fragment支持key属性
+2. 修正有`生命周期的无状态组件`的更新BUG
+
 ## 1.3.0(2018.03.06)
 
 1. 支持React16.3的createContext new API
