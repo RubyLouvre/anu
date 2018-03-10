@@ -1,4 +1,5 @@
 import babel from "rollup-plugin-babel";
+import cleanup from 'rollup-plugin-cleanup';
 //import builtins from "rollup-plugin-node-builtins";
 
 export default {
@@ -16,7 +17,7 @@ export default {
                 }
             ]
         ]
-    })],
+    }),cleanup()],
     moduleName: "ReactDOMServer",
     useStrict: false
 };

@@ -50,7 +50,7 @@ export function drainQueue(queue) {
             case "componentWillUnmount":
                 //render之后出错，拖动最后才构建错误列队
                 gotoCreateRejectQueue = queue.length === 0;
-                silent = 2;
+                silent = 1;
                 break;
             case "render": //render出错，说明还没有执行render
             case "constructor":
@@ -70,25 +70,24 @@ export function drainQueue(queue) {
                 delete Refs.error;
                 delete Refs.doctors;
                 delete Refs.errorHook;
-                var rejectedQueue = [];
+                var unwindQueue = [];
                 // 收集要销毁的组件（要求必须resolved）
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
-                // 详见CompositeUpdater#catch()与ErrorBoundary#captureError()中的Refs.ignoreError开关
+                // 详见CompositeUpdater#catch()
                 doctors.forEach(function(doctor){
-                    disposeChildren(doctor._children,rejectedQueue, silent);
+                    disposeChildren(doctor._children,unwindQueue, silent);
                     doctor._children = {};
                 });
-                // rejectedQueue = Array.from(new Set(rejectedQueue));
                 doctors.forEach(function(doctor){
                     if (addDoctor) {
-                        rejectedQueue.push(doctor);
+                        unwindQueue.push(doctor);
                         fiber = placehoder;
                     }
                     doctor.addState("catch");
-                    rejectedQueue.push(doctor);
+                    unwindQueue.push(doctor);
                 });
         
-                queue = rejectedQueue.concat(queue);
+                queue = unwindQueue.concat(queue);
             }
         }
         fiber.transition(queue);

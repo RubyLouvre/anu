@@ -8,22 +8,12 @@ var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
-
 function Fragment(props) {
     return props.children;
 }
 
 
 
-
-
-/**
- * 复制一个对象的属性到另一个对象
- *
- * @param {any} obj
- * @param {any} props
- * @returns
- */
 function extend(obj, props) {
     for (var i in props) {
         if (hasOwnProperty.call(props, i)) {
@@ -35,39 +25,17 @@ function extend(obj, props) {
 
 
 var __type = Object.prototype.toString;
-
-/**
- * 一个空函数
- *
- * @export
- */
 function noop() {}
-
-/**
- * 类继承
- *
- * @export
- * @param {any} SubClass
- * @param {any} SupClass
- */
-
-
-
-
 
 
 
 
 var rword = /[^, ]+/g;
-
 function oneObject(array, val) {
     if (array + "" === array) {
-        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     var result = {},
-
-    //eslint-disable-next-line
     value = val !== void 666 ? val : 1;
     for (var i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
@@ -76,13 +44,8 @@ function oneObject(array, val) {
 }
 
 
-
-
-
 var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
-
 var numberMap = {
-    //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
     "[object Number]": 3,
     "[object String]": 4,
@@ -90,7 +53,6 @@ var numberMap = {
     "[object Symbol]": 6,
     "[object Array]": 7
 };
-// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
 function typeNumber(data) {
     if (data === null) {
         return 1;
@@ -102,7 +64,6 @@ function typeNumber(data) {
     return a || 8;
 }
 
-//fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 function getDOMNode() {
     return this;
 }
@@ -112,10 +73,6 @@ var Refs = {
     mountOrder: 1,
     currentOwner: null,
     controlledCbs: [],
-    // errorHook: string,//发生错误的生命周期钩子
-    // errorInfo: [],    //已经构建好的错误信息
-    // doctors: null     //医生节点
-    // error: null       //第一个捕捉到的错误
     fireRef: function fireRef(fiber, dom, vnode) {
         if (fiber._disposed || fiber._isStateless) {
             dom = null;
@@ -142,72 +99,35 @@ var Refs = {
     }
 };
 
-/*
- IndeterminateComponent = 0; // 不用
- FunctionalComponent = 1;
- ClassComponent = 2;
- HostRoot = 3; // 不用
- HostPortal = 4; // 不用
- HostComponent = 5; 
- HostText = 6;
- CallComponent = 7; // 不用
- CallHandlerPhase = 8;// 不用
- ReturnComponent = 9;// 不用
- Fragment = 10;// 不用
- Mode = 11; // 不用
- ContextConsumer = 12;// 不用
- ContextProvider = 13;// 不用
-*/
 function Vnode(type, tag, props, key, ref) {
     this.type = type;
     this.tag = tag;
     if (tag !== 6) {
         this.props = props;
         this._owner = Refs.currentOwner;
-
         if (key) {
             this.key = key;
         }
-
         var refType = typeNumber(ref);
         if (refType === 3 || refType === 4 || refType === 5) {
-            //number, string, function
             this._hasRef = true;
             this.ref = ref;
         }
     }
     options.afterCreate(this);
 }
-
 Vnode.prototype = {
     getDOMNode: function getDOMNode() {
         return this.stateNode || null;
     },
-
-
     $$typeof: REACT_ELEMENT_TYPE
 };
-
-/**
- * 虚拟DOM工厂
- *
- * @param {string|function|Component} type
- * @param {object} props
- * @param {array} ...children
- * @returns
- */
-
-
 
 function createVText(type, text) {
     var vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
-
-// 用于辅助XML元素的生成（svg, math),
-// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-
 
 var lastText;
 var flattenIndex;
@@ -216,13 +136,10 @@ var flattenArray;
 function flattenCb(child, key) {
     var childType = typeNumber(child);
     if (childType < 3) {
-        //在React16中undefined, null, boolean不会产生节点
         lastText = null;
         return;
     } else if (childType < 5) {
-        //number string
         if (lastText) {
-            //合并相邻的文本节点
             lastText.text += child;
             return;
         }
@@ -239,19 +156,17 @@ function flattenCb(child, key) {
     child.index = flattenIndex++;
     flattenArray.push(child);
 }
-
 function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
     flattenArray = [];
     if (c !== void 666) {
-        lastText = null; //c 为fiber.props.children
+        lastText = null;
         operateChildren(c, "", flattenCb, isIterable(c), true);
     }
     flattenIndex = 0;
     return fiber._children = flattenObject;
 }
-
 function computeName(el, i, prefix, isTop) {
     var k = i + "";
     if (el) {
@@ -281,9 +196,7 @@ function isIterable(el) {
     }
     return 0;
 }
-//operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
 function operateChildren(children, prefix, callback, iterableType, isTop) {
-
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
@@ -293,14 +206,12 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
             callback(children, key);
             break;
         case 1:
-            //数组，Map, Set
             children.forEach(function (el, i) {
                 var k = computeName(el, i, prefix, isTop);
                 operateChildren(el, k, callback, isIterable(el), false);
             });
             break;
         case 2:
-            //React.Fragment
             var key = children && children.key ? "$" + children.key : "";
             var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
             var el = children.props.children;
@@ -333,25 +244,20 @@ function getIteractor(a) {
     }
 }
 
-//用于后端的元素节点
 function DOMElement(type) {
     this.nodeName = type;
     this.style = {};
     this.children = [];
 }
 
-
-
 var fn = DOMElement.prototype = {
     contains: Boolean
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
     fn[name] = function () {
-        console.log("fire " + name); // eslint-disable-line
+        console.log("fire " + name);
     };
 });
-
-//用于后端的document
 var fakeDoc = new DOMElement();
 fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
     return new DOMElement(type);
@@ -371,122 +277,88 @@ try {
     };
 }
 
-
 var win = w;
-
 var document = w.document || fakeDoc;
-
 
 var fragment = document.createDocumentFragment();
 
 
-
-
 var versions = {
-    88: 7, //IE7-8 objectobject
-    80: 6, //IE6 objectundefined
-    "00": NaN, // other modern browsers
+    88: 7,
+    80: 6,
+    "00": NaN,
     "08": NaN
 };
-/* istanbul ignore next  */
 var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
-
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
-/**
- * 将虚拟DOM转换为Fiber
- * @param {vnode} vnode 
- * @param {Fiber} parentFiber 
- */
-
-
-
-
 function getMaskedContext(curContext, contextTypes) {
-    var context = {};
-    if (!contextTypes || !curContext) {
-        return context;
-    }
-    for (var key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = curContext[key];
-        }
-    }
-    return context;
+	var context = {};
+	if (!contextTypes || !curContext) {
+		return context;
+	}
+	for (var key in contextTypes) {
+		if (contextTypes.hasOwnProperty(key)) {
+			context[key] = curContext[key];
+		}
+	}
+	return context;
 }
-
 function getUnmaskedContext(instance, parentContext) {
-    var context = instance.getChildContext();
-    if (context) {
-        parentContext = extend(extend({}, parentContext), context);
-    }
-    return parentContext;
+	var context = instance.getChildContext();
+	if (context) {
+		parentContext = extend(extend({}, parentContext), context);
+	}
+	return parentContext;
 }
 function getContextProvider(fiber) {
-    do {
-        var c = fiber._unmaskedContext;
-        if (c) {
-            return c;
-        }
-    } while (fiber = fiber.return);
+	do {
+		var c = fiber._unmaskedContext;
+		if (c) {
+			return c;
+		}
+	} while (fiber = fiber.return);
 }
 
-//收集fiber
-
-//明天测试ref,与tests
-
 var matchHtmlRegExp = /["'&<>]/;
-
 function escapeHtml(string) {
     var str = "" + string;
     var match = matchHtmlRegExp.exec(str);
-
     if (!match) {
         return str;
     }
-
     var escape;
     var html = "";
     var index = 0;
     var lastIndex = 0;
-
     for (index = match.index; index < str.length; index++) {
         switch (str.charCodeAt(index)) {
             case 34:
-                // "
                 escape = "&quot;";
                 break;
             case 38:
-                // &
                 escape = "&amp;";
                 break;
             case 39:
-                // '
-                escape = "&#x27;"; // modified from escape-html; used to be '&#39'
+                escape = "&#x27;";
                 break;
             case 60:
-                // <
                 escape = "&lt;";
                 break;
             case 62:
-                // >
                 escape = "&gt;";
                 break;
             default:
                 continue;
         }
-
         if (lastIndex !== index) {
             html += str.substring(lastIndex, index);
         }
-
         lastIndex = index + 1;
         html += escape;
     }
-
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 }
-
 function encodeEntities(text) {
     if (typeof text === "boolean" || typeof text === "number") {
         return "" + text;
@@ -495,29 +367,11 @@ function encodeEntities(text) {
 }
 
 var rnumber = /^-?\d+(\.\d+)?$/;
-/**
-     * 为元素样子设置样式
-     * 
-     * @export
-     * @param {any} dom 
-     * @param {any} lastStyle 
-     * @param {any} nextStyle 
-     */
-
 
 var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-
 var cssMap = oneObject("float", "cssFloat");
 
-/**
- * 转换成当前浏览器可用的样式名
- * 
- * @param {any} name 
- * @returns 
- */
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var skipAttributes = {
     ref: 1,
     key: 1,
@@ -530,14 +384,12 @@ var cssCached = {
     cssFloat: "float"
 };
 var rXlink = /^xlink:?(.+)/;
-
 function cssName$$1(name) {
     if (cssCached[name]) {
         return cssCached[name];
     }
     return cssCached[name] = name.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
-
 function stringifyClassName(obj) {
     var arr = [];
     for (var i in obj) {
@@ -547,7 +399,6 @@ function stringifyClassName(obj) {
     }
     return arr.join(" ");
 }
-
 var attrCached = {};
 function encodeAttributes(value) {
     if (attrCached[value]) {
@@ -555,11 +406,9 @@ function encodeAttributes(value) {
     }
     return attrCached[value] = "\"" + encodeEntities(value) + "\"";
 }
-
 function skipFalseAndFunction(a) {
     return a !== false && Object(a) !== a;
 }
-
 function stringifyStyleObject(obj) {
     var arr = [];
     for (var i in obj) {
@@ -574,13 +423,11 @@ function stringifyStyleObject(obj) {
     }
     return arr.join("; ");
 }
-
 var forElement = {
     select: 1,
     input: 1,
     textarea: 1
 };
-
 function stringifyAttributes(props, type) {
     var attrs = [];
     for (var _name in props) {
@@ -622,16 +469,12 @@ function stringifyAttributes(props, type) {
     return attrs.length ? " " + attrs.join(" ") : "";
 }
 
-var _marked = /*#__PURE__*/regeneratorRuntime.mark(renderVNodeGen);
-
-// https://github.com/juliangruber/stream 
-// 如果要用在前端，需要加这个库 npm install stream
+var _marked =              regeneratorRuntime.mark(renderVNodeGen);
 function renderVNode(vnode, context) {
     var _vnode = vnode,
         tag = _vnode.tag,
         type = _vnode.type,
         props = _vnode.props;
-
     switch (type) {
         case "#text":
             return encodeEntities(vnode.text);
@@ -641,16 +484,13 @@ function renderVNode(vnode, context) {
             var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
             innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
             if (tag === 5) {
-                //如果是元素节点
                 if (type === "option") {
-                    //向上找到select元素
                     for (var p = vnode.return; p && p.type !== "select"; p = p.return) {
-                        // no operation
                     }
                     if (p && p.valuesSet) {
                         var curValue = getOptionValue(vnode);
                         if (p.valuesSet["&" + curValue]) {
-                            props = Object.assign({ selected: "" }, props); //添加一个selected属性
+                            props = Object.assign({ selected: "" }, props);
                         }
                     }
                 } else if (type === "select") {
@@ -664,7 +504,6 @@ function renderVNode(vnode, context) {
                         vnode.valuesSet = valuesSet;
                     }
                 }
-
                 var str = "<" + type + stringifyAttributes(props, type);
                 if (voidTags[type]) {
                     return str + "/>\n";
@@ -703,10 +542,8 @@ function renderVNode(vnode, context) {
             }
     }
 }
-
 function renderVNodeGen(vnode, context) {
     var _vnode2, tag, type, props, innerHTML$$1, p, curValue, selectValue, values, valuesSet, str, fakeUpdater, children, i, child, data, multiChild;
-
     return regeneratorRuntime.wrap(function renderVNodeGen$(_context) {
         while (1) {
             switch (_context.prev = _context.next) {
@@ -715,67 +552,49 @@ function renderVNodeGen(vnode, context) {
                     _context.t0 = type;
                     _context.next = _context.t0 === "#text" ? 4 : _context.t0 === "#comment" ? 7 : 10;
                     break;
-
                 case 4:
                     _context.next = 6;
                     return encodeEntities(vnode.text);
-
                 case 6:
                     return _context.abrupt("break", 40);
-
                 case 7:
                     _context.next = 9;
                     return "<!--" + vnode.text + "-->";
-
                 case 9:
                     return _context.abrupt("break", 40);
-
                 case 10:
                     innerHTML$$1 = props && props.dangerouslySetInnerHTML;
-
                     innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-
                     if (!(tag === 5)) {
                         _context.next = 24;
                         break;
                     }
-
-                    //如果是元素节点
                     if (type === "option") {
-                        //向上找到select元素
                         for (p = vnode.return; p && p.type !== "select"; p = p.return) {
-                            // no operation
                         }
                         if (p && p.valuesSet) {
                             curValue = getOptionValue(vnode);
-
                             if (p.valuesSet["&" + curValue]) {
-                                props = Object.assign({ selected: "" }, props); //添加一个selected属性
+                                props = Object.assign({ selected: "" }, props);
                             }
                         }
                     } else if (type === "select") {
                         selectValue = vnode.props.value || vnode.props.defaultValue;
-
                         if (selectValue != null) {
                             values = [].concat(selectValue), valuesSet = {};
-
                             values.forEach(function (el) {
                                 valuesSet["&" + el] = true;
                             });
                             vnode.valuesSet = valuesSet;
                         }
                     }
-
                     str = "<" + type + stringifyAttributes(props, type);
-
                     if (!voidTags[type]) {
                         _context.next = 18;
                         break;
                     }
-
                     _context.next = 18;
                     return str + "/>\n";
-
                 case 18:
                     str += ">";
                     if (innerHTML$$1) {
@@ -785,10 +604,8 @@ function renderVNodeGen(vnode, context) {
                             vnode: vnode
                         };
                         children = fiberizeChildren(props.children, fakeUpdater);
-
                         for (i in children) {
                             child = children[i];
-
                             child.return = vnode;
                             str += renderVNode(child, context);
                         }
@@ -796,51 +613,40 @@ function renderVNodeGen(vnode, context) {
                     }
                     _context.next = 22;
                     return str + "</" + type + ">\n";
-
                 case 22:
                     _context.next = 40;
                     break;
-
                 case 24:
                     if (!(tag < 3)) {
                         _context.next = 32;
                         break;
                     }
-
                     data = {
                         context: context
                     };
-
                     vnode = toVnode(vnode, data);
                     context = data.context;
                     _context.next = 30;
                     return renderVNode(vnode, context);
-
                 case 30:
                     _context.next = 40;
                     break;
-
                 case 32:
                     if (!Array.isArray(vnode)) {
                         _context.next = 39;
                         break;
                     }
-
                     multiChild = "";
-
                     vnode.forEach(function (el) {
                         multiChild += renderVNode(el, context);
                     });
                     _context.next = 37;
                     return multiChild;
-
                 case 37:
                     _context.next = 40;
                     break;
-
                 case 39:
                     throw "数据不合法";
-
                 case 40:
                 case "end":
                     return _context.stop();
@@ -848,7 +654,6 @@ function renderVNodeGen(vnode, context) {
         }
     }, _marked, this);
 }
-
 function getOptionValue(option) {
     if ("value" in option.props) {
         return option.props.value;
@@ -861,33 +666,22 @@ function getOptionValue(option) {
         }
     }
 }
-
 var voidTags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
-
-/**
- * 将组件虚拟DOM进行实例化，不断render，归化为元素虚拟DOM或文本节点或数组
- * @param {*} vnode 组件虚拟DOM
- * @param {*} data 一个包含context的对象
- */
 function toVnode(vnode, data) {
     var parentContext = data.context,
         Type = vnode.type,
         instance,
         rendered;
-
     if (vnode.tag < 3) {
         var props = vnode.props;
-        // props = getComponentProps(Type, props)
         var instanceContext = getMaskedContext(parentContext, Type.contextTypes);
         if (vnode.tag === 1) {
-            //处理无状态组件
             rendered = Type(props, instanceContext);
             if (rendered && rendered.render) {
                 rendered = rendered.render();
             }
             instance = {};
         } else {
-            //处理普通组件
             instance = new Type(props, instanceContext);
             instance.props = instance.props || props;
             instance.context = instance.context || instanceContext;
@@ -895,22 +689,16 @@ function toVnode(vnode, data) {
                 try {
                     instance.componentWillMount();
                 } catch (e) {
-                    // no operation
                 }
             }
             rendered = instance.render();
         }
-
         rendered = fixVnode(rendered);
-
         if (instance.componentWillMount) {
             instance.componentWillMount();
         }
-        // <App />下面存在<A ref="a"/>那么AppInstance.refs.a = AInstance
-        // patchRef(vnode._owner, vnode.props.ref, instance)
-
         if (instance.getChildContext) {
-            data.context = getUnmaskedContext(instance, parentContext); //将context往下传
+            data.context = getUnmaskedContext(instance, parentContext);
         }
         if (Array.isArray(rendered)) {
             return rendered.map(function (el) {
@@ -923,20 +711,15 @@ function toVnode(vnode, data) {
         return vnode;
     }
 }
-
-//==================实现序列化文本节点与属性值的相关方法=============
-
 function fixVnode(vnode) {
     var number = typeNumber(vnode);
     if (number < 3) {
-        // 0, 1, 2
         return {
             tag: 6,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
-        //3, 4
         return {
             tag: 6,
             text: vnode + "",
@@ -946,28 +729,22 @@ function fixVnode(vnode) {
         return vnode;
     }
 }
-
 function renderToString(vnode, context) {
     return renderVNode(fixVnode(vnode), context || {});
 }
-
 function renderToNodeStream(vnode, context) {
     var rs = new stream.Readable();
     var it = renderVNodeGen(vnode, context || {});
-
     rs._read = function () {
         var v = it.next();
-
         if (!v.done) {
             rs.push(v.value.toString());
         } else {
             rs.push(null);
         }
     };
-
     return rs;
 }
-
 var index = {
     renderToString: renderToString,
     renderToStaticMarkup: renderToString,

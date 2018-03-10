@@ -1,62 +1,55 @@
-import { options } from "../src/util";
+import { options, Fragment } from "../src/util";
 import { Children } from "../src/Children";
 import * as eventSystem from "../src/event";
 import { PropTypes } from "../src/PropTypes";
 import { Component } from "../src/Component";
-import { win as window, inBrowser, document } from "../src/browser";
+import { win as window, contains as containsNode} from "../src/browser";
 import { createClass } from "../src/createClass";
 import { cloneElement } from "../src/cloneElement";
 import { PureComponent } from "../src/PureComponent";
 import { createElement } from "../src/createElement";
+import { createContext } from "../src/createContext";
 import { createPortal } from "../src/createPortal";
-
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "../src/diff";
 
-
-var React = {
-    version: "VERSION",
-    render,
-    hydrate: render,
-    options,
-    PropTypes,
-    createPortal,
-    Children, 
-    Component,
-    eventSystem,
-    findDOMNode,
-    createClass,
-    createElement,
-    cloneElement,
-    PureComponent,
-    isValidElement,
-    unmountComponentAtNode,
-    unstable_renderSubtreeIntoContainer,
-
-    createFactory(type) {
-        console.warn("createFactory is deprecated"); // eslint-disable-line
-        var factory = createElement.bind(null, type);
-        factory.type = type;
-        return factory;
-    }
-};
-
-
+var React;
+if (window.React && window.React.options) {
+    React = window.React; //解决引入多个
+} else {
+    React = window.React = window.ReactDOM = {
+        version: "VERSION",
+        render,
+        hydrate: render,
+        options,
+        Fragment,
+        PropTypes,
+        Children,
+        createPortal,
+        createContext,
+        Component,
+        eventSystem,
+        findDOMNode,
+        createClass,
+        createElement,
+        cloneElement,
+        PureComponent,
+        isValidElement,
+        unmountComponentAtNode,
+        unstable_renderSubtreeIntoContainer,
+        createFactory(type) {
+            console.warn("createFactory is deprecated"); // eslint-disable-line
+            var factory = createElement.bind(null, type);
+            factory.type = type;
+            return factory;
+        }
+    };
+}
 
 function isInDocument(node) {
     if (!inBrowser) {
         return false;
     }
     return containsNode(document.documentElement, node);
-}
-function containsNode(a, b) {
-    if (b) {
-        while ((b = b.parentNode)) {
-            if (b === a) {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 function focusNode(node) {

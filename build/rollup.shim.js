@@ -1,6 +1,7 @@
 import babel from "rollup-plugin-babel";
 import replace from "rollup-plugin-re";
 import filesize from "rollup-plugin-filesize";
+import cleanup from 'rollup-plugin-cleanup';
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
@@ -24,7 +25,7 @@ export default {
                 ]
             ]
         }),
-
+        cleanup(),
         license({
             banner: `此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
         unmountComponentAtNode,unstable_renderSubtreeIntoContainer
