@@ -13,6 +13,7 @@
 | React.cloneElement           | Top-Level API | ✔️    | ✔️     | ✔️              |
 | React.createFactory          | Top-Level API | ✔️    | ✔️     | ✔️              |
 | React.isValidElement         | Top-Level API | ✔️    | ✔️     | ✔️              |
+| React.createPortal(16.0新)  | Top-Level API | ✔️    | ✔️     |✖️               |
 | React.createContext(16.3新)  | Top-Level API | ✔️    | ✔️     |✖️               |
 | React.Fragment(16.2新)       | Top-Level API | ✔️    | ✔️     |  ✖️          |
 | React.DOM                    | Top-Level API | ✔️    | ✖️     | ✔️              |
