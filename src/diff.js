@@ -154,16 +154,13 @@ function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
  * @param {Object} mountCarrier 
  */
 function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
-    var prevFiber, firstFiber;
-    //	index = 0;
+    var prevFiber;
     for (var i in children) {
         var fiber = (children[i] = mountVnode(children[i], parentFiber, updateQueue, mountCarrier));
-        //	fiber.index = index++;
-        if (!firstFiber) {
-            parentFiber.child = firstFiber = fiber;
-        }
         if (prevFiber) {
             prevFiber.sibling = fiber;
+        }else{
+            parentFiber.child = fiber;
         }
         prevFiber = fiber;
         if (Refs.errorHook) {
@@ -330,21 +327,18 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
                 updateQueue.push(fiber);
             });
         var prevFiber,
-            firstFiber,
             index = 0;
 
         for (let i in children) {
-
             vnode = children[i];
             fiber = children[i] = matchFibers[i]
                 ? receiveVnode(matchFibers[i], vnode, updateQueue, mountCarrier)
                 : mountVnode(vnode, parentFiber, updateQueue, mountCarrier);
             fiber.index = index++;
-            if (!firstFiber) {
-                parentFiber.child = firstFiber = fiber;
-            }
             if (prevFiber) {
                 prevFiber.sibling = fiber;
+            }else{
+                parentFiber.child = fiber;
             }
             prevFiber = fiber;
             if (Refs.errorHook) {
