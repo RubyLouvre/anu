@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-03-10
+ * QQ 370262116 by 司徒正美 Copyright 2018-03-14
  */
 
 (function (global, factory) {
@@ -329,7 +329,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (typeNumber(el) > 6) {
+    if (el instanceof Object) {
         if (el.forEach) {
             return 1;
         }
@@ -2010,347 +2010,347 @@ function findCatchComponent(target, names) {
 }
 
 function ComponentFiber(vnode, parentFiber) {
-	extend(this, vnode);
-	var type = vnode.type;
-	this.name = type.displayName || type.name;
-	this.return = parentFiber;
-	this.context = getMaskedContext(getContextProvider(parentFiber), type.contextTypes);
-	this._reactInternalFiber = vnode;
-	this._pendingCallbacks = [];
-	this._pendingStates = [];
-	this._states = ['resolve'];
-	this._mountOrder = Refs.mountOrder++;
+    extend(this, vnode);
+    var type = vnode.type;
+    this.name = type.displayName || type.name;
+    this.return = parentFiber;
+    this.context = getMaskedContext(getContextProvider(parentFiber), type.contextTypes);
+    this._reactInternalFiber = vnode;
+    this._pendingCallbacks = [];
+    this._pendingStates = [];
+    this._states = ["resolve"];
+    this._mountOrder = Refs.mountOrder++;
 }
 ComponentFiber.prototype = {
-	addState: function addState(state) {
-		var states = this._states;
-		if (states[states.length - 1] !== state) {
-			states.push(state);
-		}
-	},
-	transition: function transition(updateQueue) {
-		var state = this._states.shift();
-		if (state) {
-			this[state](updateQueue);
-		}
-	},
-	enqueueSetState: function enqueueSetState(state, cb) {
-		if (state === true) {
-			this._forceUpdate = true;
-		} else {
-			this._pendingStates.push(state);
-		}
-		if (this._hydrating) {
-			if (!this._nextCallbacks) {
-				this._nextCallbacks = [cb];
-			} else {
-				this._nextCallbacks.push(cb);
-			}
-			return;
-		} else {
-			if (isFn(cb)) {
-				this._pendingCallbacks.push(cb);
-			}
-		}
-		if (document.__async) {
-			enqueueUpdater(this);
-			return;
-		}
-		if (this._isMounted === returnTrue) {
-			if (this._receiving) {
-				return;
-			}
-			this.addState('hydrate');
-			drainQueue([this]);
-		}
-	},
-	mergeStates: function mergeStates() {
-		var instance = this.stateNode,
-		    pendings = this._pendingStates,
-		    n = pendings.length,
-		    state = instance.state;
-		if (n === 0) {
-			return state;
-		}
-		var nextState = extend({}, state);
-		for (var i = 0; i < n; i++) {
-			var pending = pendings[i];
-			if (pending && pending.call) {
-				pending = pending.call(instance, nextState, this.props);
-			}
-			extend(nextState, pending);
-		}
-		pendings.length = 0;
-		return nextState;
-	},
-	_isMounted: returnFalse,
-	init: function init(updateQueue, mountCarrier) {
-		var props = this.props,
-		    context = this.context,
-		    type = this.type,
-		    tag = this.tag,
-		    isStateless = tag === 1,
-		    instance = void 0,
-		    lifeCycleHook = void 0;
-		try {
-			var lastOwn = Refs.currentOwner;
-			if (isStateless) {
-				instance = {
-					refs: {},
-					__proto__: type.prototype,
-					__init__: true,
-					props: props,
-					context: context,
-					render: function f() {
-						var a = type(this.props, this.context);
-						if (a && a.render) {
-							lifeCycleHook = a;
-							return this.__init__ ? null : a.render.call(this);
-						}
-						return a;
-					}
-				};
-				Refs.currentOwner = instance;
-				this.child = instance.render();
-				if (lifeCycleHook) {
-					for (var i in lifeCycleHook) {
-						if (i !== 'render') {
-							instance[i] = lifeCycleHook[i];
-						}
-					}
-					lifeCycleHook = false;
-				} else {
-					this._willReceive = false;
-					this._isStateless = true;
-				}
-				delete instance.__init__;
-			} else {
-				instance = new type(props, context);
-			}
-		} catch (e) {
-			instance = {
-				updater: this
-			};
-			this.stateNode = instance;
-			return pushError(instance, 'constructor', e);
-		} finally {
-			Refs.currentOwner = lastOwn;
-		}
-		this.stateNode = instance;
-		getDerivedStateFromProps(this, type, props, instance.state);
-		instance.props = props;
-		instance.context = context;
-		instance.updater = this;
-		var carrier = this._return ? {} : mountCarrier;
-		this._mountCarrier = carrier;
-		this._mountPoint = carrier.dom || null;
-		if (instance.componentWillMount) {
-			captureError(instance, 'componentWillMount', []);
-		}
-		instance.state = this.mergeStates();
-		this.render(updateQueue);
-		updateQueue.push(this);
-	},
-	hydrate: function hydrate(updateQueue, inner) {
-		var instance = this.stateNode,
-		    context = this.context,
-		    props = this.props;
-		if (this._states[0] === 'hydrate') {
-			this._states.shift();
-		}
-		var state = this.mergeStates();
-		var shouldUpdate = true;
-		if (!this._forceUpdate && !captureError(instance, 'shouldComponentUpdate', [props, state, context])) {
-			shouldUpdate = false;
-			var nodes = collectComponentNodes(this._children);
-			var carrier = this._mountCarrier;
-			carrier.dom = this._mountPoint;
-			nodes.forEach(function (el) {
-				insertElement(el, carrier.dom);
-				carrier.dom = el.stateNode;
-			});
-		} else {
-			captureError(instance, 'componentWillUpdate', [props, state, context]);
-			var lastProps = instance.props,
-			    lastState = instance.state;
-			this._hookArgs = [lastProps, lastState];
-		}
-		if (this._hasError) {
-			return;
-		}
-		delete this._forceUpdate;
-		instance.props = props;
-		instance.state = state;
-		instance.context = context;
-		if (!inner) {
-			this._mountCarrier.dom = this._mountPoint;
-		}
-		if (shouldUpdate) {
-			this.render(updateQueue);
-		}
-		this.addState('resolve');
-		updateQueue.push(this);
-	},
-	render: function render(updateQueue) {
-		var instance = this.stateNode,
-		    children = emptyObject,
-		    fibers = this._children || emptyObject,
-		    rendered = void 0,
-		    number = void 0;
-		this._hydrating = true;
-		if (instance.getChildContext) {
-			var c = getContextProvider(this.return);
-			c = getUnmaskedContext(instance, c);
-			this._unmaskedContext = c;
-		}
-		if (this._willReceive === false) {
-			var a = this.child;
-			if (a && a.sibling) {
-				rendered = [];
-				for (; a; a = a.sibling) {
-					rendered.push(a);
-				}
-			} else {
-				rendered = a;
-			}
-		} else {
-			var lastOwn = Refs.currentOwner;
-			Refs.currentOwner = instance;
-			rendered = captureError(instance, 'render', []);
-			if (this._hasError) {
-				rendered = true;
-			}
-			Refs.currentOwner = lastOwn;
-		}
-		number = typeNumber(rendered);
-		if (number > 2) {
-			children = fiberizeChildren(rendered, this);
-		} else {
-			this._children = children;
-			delete this.child;
-		}
-		Refs.diffChildren(fibers, children, this, updateQueue, this._mountCarrier);
-	},
-	resolve: function resolve(updateQueue) {
-		var instance = this.stateNode,
-		    vnode = this._reactInternalFiber;
-		var hasMounted = this._isMounted();
-		if (!hasMounted) {
-			this._isMounted = returnTrue;
-		}
-		if (this._hydrating) {
-			var hookName = hasMounted ? 'componentDidUpdate' : 'componentDidMount';
-			captureError(instance, hookName, this._hookArgs || []);
-			if (hasMounted) {
-				options.afterUpdate(instance);
-			} else {
-				options.afterMount(instance);
-			}
-			delete this._hookArgs;
-			delete this._hydrating;
-		}
-		if (this._hasError) {
-			return;
-		} else {
-			if (vnode._hasRef) {
-				Refs.fireRef(this, instance, vnode);
-				vnode._hasRef = false;
-			}
-			clearArray(this._pendingCallbacks).forEach(function (fn) {
-				fn.call(instance);
-			});
-		}
-		transfer.call(this, updateQueue);
-	},
-	catch: function _catch(queue) {
-		var instance = this.stateNode;
-		this._states.length = 0;
-		this._children = {};
-		this._isDoctor = this._hydrating = true;
-		instance.componentDidCatch.apply(instance, this.errorInfo);
-		delete this.errorInfo;
-		this._hydrating = false;
-		transfer.call(this, queue);
-	},
-	dispose: function dispose() {
-		var instance = this.stateNode;
-		options.beforeUnmount(instance);
-		instance.setState = instance.forceUpdate = returnFalse;
-		Refs.fireRef(this, null, this._reactInternalFiber);
-		captureError(instance, 'componentWillUnmount', []);
-		this._isMounted = returnFalse;
-		this._disposed = true;
-	}
+    addState: function addState(state) {
+        var states = this._states;
+        if (states[states.length - 1] !== state) {
+            states.push(state);
+        }
+    },
+    transition: function transition(updateQueue) {
+        var state = this._states.shift();
+        if (state) {
+            this[state](updateQueue);
+        }
+    },
+    enqueueSetState: function enqueueSetState(state, cb) {
+        if (state === true) {
+            this._forceUpdate = true;
+        } else {
+            this._pendingStates.push(state);
+        }
+        if (this._hydrating) {
+            if (!this._nextCallbacks) {
+                this._nextCallbacks = [cb];
+            } else {
+                this._nextCallbacks.push(cb);
+            }
+            return;
+        } else {
+            if (isFn(cb)) {
+                this._pendingCallbacks.push(cb);
+            }
+        }
+        if (document.__async) {
+            enqueueUpdater(this);
+            return;
+        }
+        if (this._isMounted === returnTrue) {
+            if (this._receiving) {
+                return;
+            }
+            this.addState("hydrate");
+            drainQueue([this]);
+        }
+    },
+    mergeStates: function mergeStates() {
+        var instance = this.stateNode,
+            pendings = this._pendingStates,
+            n = pendings.length,
+            state = instance.state;
+        if (n === 0) {
+            return state;
+        }
+        var nextState = extend({}, state);
+        for (var i = 0; i < n; i++) {
+            var pending = pendings[i];
+            if (pending && pending.call) {
+                pending = pending.call(instance, nextState, this.props);
+            }
+            extend(nextState, pending);
+        }
+        pendings.length = 0;
+        return nextState;
+    },
+    _isMounted: returnFalse,
+    init: function init(updateQueue, mountCarrier) {
+        var props = this.props,
+            context = this.context,
+            type = this.type,
+            tag = this.tag,
+            isStateless = tag === 1,
+            instance = void 0,
+            lifeCycleHook = void 0;
+        try {
+            var lastOwn = Refs.currentOwner;
+            if (isStateless) {
+                instance = {
+                    refs: {},
+                    __proto__: type.prototype,
+                    __init__: true,
+                    props: props,
+                    context: context,
+                    render: function f() {
+                        var a = type(this.props, this.context);
+                        if (a && a.render) {
+                            lifeCycleHook = a;
+                            return this.__init__ ? null : a.render.call(this);
+                        }
+                        return a;
+                    }
+                };
+                Refs.currentOwner = instance;
+                this.child = instance.render();
+                if (lifeCycleHook) {
+                    for (var i in lifeCycleHook) {
+                        if (i !== "render") {
+                            instance[i] = lifeCycleHook[i];
+                        }
+                    }
+                    lifeCycleHook = false;
+                } else {
+                    this._willReceive = false;
+                    this._isStateless = true;
+                }
+                delete instance.__init__;
+            } else {
+                instance = new type(props, context);
+            }
+        } catch (e) {
+            instance = {
+                updater: this
+            };
+            this.stateNode = instance;
+            return pushError(instance, "constructor", e);
+        } finally {
+            Refs.currentOwner = lastOwn;
+        }
+        this.stateNode = instance;
+        getDerivedStateFromProps(this, type, props, instance.state);
+        instance.props = props;
+        instance.context = context;
+        instance.updater = this;
+        var carrier = this._return ? {} : mountCarrier;
+        this._mountCarrier = carrier;
+        this._mountPoint = carrier.dom || null;
+        if (instance.componentWillMount) {
+            captureError(instance, "componentWillMount", []);
+        }
+        instance.state = this.mergeStates();
+        this.render(updateQueue);
+        updateQueue.push(this);
+    },
+    hydrate: function hydrate(updateQueue, inner) {
+        var instance = this.stateNode,
+            context = this.context,
+            props = this.props;
+        if (this._states[0] === "hydrate") {
+            this._states.shift();
+        }
+        var state = this.mergeStates();
+        var shouldUpdate = true;
+        if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
+            shouldUpdate = false;
+            var nodes = collectComponentNodes(this._children);
+            var carrier = this._mountCarrier;
+            carrier.dom = this._mountPoint;
+            nodes.forEach(function (el) {
+                insertElement(el, carrier.dom);
+                carrier.dom = el.stateNode;
+            });
+        } else {
+            captureError(instance, "componentWillUpdate", [props, state, context]);
+            var lastProps = instance.props,
+                lastState = instance.state;
+            this._hookArgs = [lastProps, lastState];
+        }
+        if (this._hasError) {
+            return;
+        }
+        delete this._forceUpdate;
+        instance.props = props;
+        instance.state = state;
+        instance.context = context;
+        if (!inner) {
+            this._mountCarrier.dom = this._mountPoint;
+        }
+        if (shouldUpdate) {
+            this.render(updateQueue);
+        }
+        this.addState("resolve");
+        updateQueue.push(this);
+    },
+    render: function render(updateQueue) {
+        var instance = this.stateNode,
+            children = emptyObject,
+            fibers = this._children || emptyObject,
+            rendered = void 0,
+            number = void 0;
+        this._hydrating = true;
+        if (instance.getChildContext) {
+            var c = getContextProvider(this.return);
+            c = getUnmaskedContext(instance, c);
+            this._unmaskedContext = c;
+        }
+        if (this._willReceive === false) {
+            var a = this.child;
+            if (a && a.sibling) {
+                rendered = [];
+                for (; a; a = a.sibling) {
+                    rendered.push(a);
+                }
+            } else {
+                rendered = a;
+            }
+        } else {
+            var lastOwn = Refs.currentOwner;
+            Refs.currentOwner = instance;
+            rendered = captureError(instance, "render", []);
+            if (this._hasError) {
+                rendered = true;
+            }
+            Refs.currentOwner = lastOwn;
+        }
+        number = typeNumber(rendered);
+        if (number > 2) {
+            children = fiberizeChildren(rendered, this);
+        } else {
+            this._children = children;
+            delete this.child;
+        }
+        Refs.diffChildren(fibers, children, this, updateQueue, this._mountCarrier);
+    },
+    resolve: function resolve(updateQueue) {
+        var instance = this.stateNode,
+            vnode = this._reactInternalFiber;
+        var hasMounted = this._isMounted();
+        if (!hasMounted) {
+            this._isMounted = returnTrue;
+        }
+        if (this._hydrating) {
+            var hookName = hasMounted ? "componentDidUpdate" : "componentDidMount";
+            captureError(instance, hookName, this._hookArgs || []);
+            if (hasMounted) {
+                options.afterUpdate(instance);
+            } else {
+                options.afterMount(instance);
+            }
+            delete this._hookArgs;
+            delete this._hydrating;
+        }
+        if (this._hasError) {
+            return;
+        } else {
+            if (vnode._hasRef) {
+                Refs.fireRef(this, instance, vnode);
+                vnode._hasRef = false;
+            }
+            clearArray(this._pendingCallbacks).forEach(function (fn) {
+                fn.call(instance);
+            });
+        }
+        transfer.call(this, updateQueue);
+    },
+    catch: function _catch(queue) {
+        var instance = this.stateNode;
+        this._states.length = 0;
+        this._children = {};
+        this._isDoctor = this._hydrating = true;
+        instance.componentDidCatch.apply(instance, this.errorInfo);
+        delete this.errorInfo;
+        this._hydrating = false;
+        transfer.call(this, queue);
+    },
+    dispose: function dispose() {
+        var instance = this.stateNode;
+        options.beforeUnmount(instance);
+        instance.setState = instance.forceUpdate = returnFalse;
+        Refs.fireRef(this, null, this._reactInternalFiber);
+        captureError(instance, "componentWillUnmount", []);
+        this._isMounted = returnFalse;
+        this._disposed = true;
+    }
 };
 function transfer(queue) {
-	var cbs = this._nextCallbacks,
-	    cb;
-	if (cbs && cbs.length) {
-		do {
-			cb = cbs.shift();
-			if (isFn(cb)) {
-				this._pendingCallbacks.push(cb);
-			}
-		} while (cbs.length);
-		delete this._nextCallbacks;
-		this.addState('hydrate');
-		queue.push(this);
-	}
+    var cbs = this._nextCallbacks,
+        cb;
+    if (cbs && cbs.length) {
+        do {
+            cb = cbs.shift();
+            if (isFn(cb)) {
+                this._pendingCallbacks.push(cb);
+            }
+        } while (cbs.length);
+        delete this._nextCallbacks;
+        this.addState("hydrate");
+        queue.push(this);
+    }
 }
 function getDerivedStateFromProps(updater, type, props, state) {
-	if (isFn(type.getDerivedStateFromProps)) {
-		state = type.getDerivedStateFromProps.call(null, props, state);
-		if (state != null) {
-			updater._pendingStates.push(state);
-		}
-	}
+    if (isFn(type.getDerivedStateFromProps)) {
+        state = type.getDerivedStateFromProps.call(null, props, state);
+        if (state != null) {
+            updater._pendingStates.push(state);
+        }
+    }
 }
 function getMaskedContext(curContext, contextTypes) {
-	var context = {};
-	if (!contextTypes || !curContext) {
-		return context;
-	}
-	for (var key in contextTypes) {
-		if (contextTypes.hasOwnProperty(key)) {
-			context[key] = curContext[key];
-		}
-	}
-	return context;
+    var context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
+    }
+    return context;
 }
 function getUnmaskedContext(instance, parentContext) {
-	var context = instance.getChildContext();
-	if (context) {
-		parentContext = extend(extend({}, parentContext), context);
-	}
-	return parentContext;
+    var context = instance.getChildContext();
+    if (context) {
+        parentContext = extend(extend({}, parentContext), context);
+    }
+    return parentContext;
 }
 function getContextProvider(fiber) {
-	do {
-		var c = fiber._unmaskedContext;
-		if (c) {
-			return c;
-		}
-	} while (fiber = fiber.return);
+    do {
+        var c = fiber._unmaskedContext;
+        if (c) {
+            return c;
+        }
+    } while (fiber = fiber.return);
 }
 function collectComponentNodes(children) {
-	var ret = [];
-	for (var i in children) {
-		var child = children[i];
-		var instance = child.stateNode;
-		if (child._disposed) {
-			continue;
-		}
-		if (child.tag > 4) {
-			ret.push(child);
-		} else {
-			var fiber = instance.updater;
-			if (child.child) {
-				var args = collectComponentNodes(fiber._children);
-				ret.push.apply(ret, args);
-			}
-		}
-	}
-	return ret;
+    var ret = [];
+    for (var i in children) {
+        var child = children[i];
+        var instance = child.stateNode;
+        if (child._disposed) {
+            continue;
+        }
+        if (child.tag > 4) {
+            ret.push(child);
+        } else {
+            var fiber = instance.updater;
+            if (child.child) {
+                var args = collectComponentNodes(fiber._children);
+                ret.push.apply(ret, args);
+            }
+        }
+    }
+    return ret;
 }
 
 function render(vnode, container, callback) {
@@ -2450,14 +2450,13 @@ function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
     return fiber;
 }
 function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
-    var prevFiber, firstFiber;
+    var prevFiber;
     for (var i in children) {
         var fiber = children[i] = mountVnode(children[i], parentFiber, updateQueue, mountCarrier);
-        if (!firstFiber) {
-            parentFiber.child = firstFiber = fiber;
-        }
         if (prevFiber) {
             prevFiber.sibling = fiber;
+        } else {
+            parentFiber.child = fiber;
         }
         prevFiber = fiber;
         if (Refs.errorHook) {
@@ -2603,17 +2602,15 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
             updateQueue.push(fiber);
         });
         var prevFiber,
-            firstFiber,
             index = 0;
         for (var _i2 in children) {
             vnode = children[_i2];
             fiber = children[_i2] = matchFibers[_i2] ? receiveVnode(matchFibers[_i2], vnode, updateQueue, mountCarrier) : mountVnode(vnode, parentFiber, updateQueue, mountCarrier);
             fiber.index = index++;
-            if (!firstFiber) {
-                parentFiber.child = firstFiber = fiber;
-            }
             if (prevFiber) {
                 prevFiber.sibling = fiber;
+            } else {
+                parentFiber.child = fiber;
             }
             prevFiber = fiber;
             if (Refs.errorHook) {

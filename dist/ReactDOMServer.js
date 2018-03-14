@@ -182,7 +182,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 function isIterable(el) {
-    if (typeNumber(el) > 6) {
+    if (el instanceof Object) {
         if (el.forEach) {
             return 1;
         }
@@ -293,31 +293,31 @@ var msie = document.documentMode || versions[typeNumber(document.all) + "" + typ
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 
 function getMaskedContext(curContext, contextTypes) {
-	var context = {};
-	if (!contextTypes || !curContext) {
-		return context;
-	}
-	for (var key in contextTypes) {
-		if (contextTypes.hasOwnProperty(key)) {
-			context[key] = curContext[key];
-		}
-	}
-	return context;
+    var context = {};
+    if (!contextTypes || !curContext) {
+        return context;
+    }
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = curContext[key];
+        }
+    }
+    return context;
 }
 function getUnmaskedContext(instance, parentContext) {
-	var context = instance.getChildContext();
-	if (context) {
-		parentContext = extend(extend({}, parentContext), context);
-	}
-	return parentContext;
+    var context = instance.getChildContext();
+    if (context) {
+        parentContext = extend(extend({}, parentContext), context);
+    }
+    return parentContext;
 }
 function getContextProvider(fiber) {
-	do {
-		var c = fiber._unmaskedContext;
-		if (c) {
-			return c;
-		}
-	} while (fiber = fiber.return);
+    do {
+        var c = fiber._unmaskedContext;
+        if (c) {
+            return c;
+        }
+    } while (fiber = fiber.return);
 }
 
 var matchHtmlRegExp = /["'&<>]/;

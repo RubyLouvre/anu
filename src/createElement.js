@@ -153,7 +153,7 @@ function computeName(el, i, prefix, isTop) {
     return k;
 }
 export function isIterable(el) {
-    if (typeNumber(el) > 6) {
+    if (el instanceof Object) {
         if (el.forEach) {
             return 1;
         }
