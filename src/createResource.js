@@ -1,5 +1,5 @@
 import { noop } from "./util";
-import {createContext} from "./createContext";
+import { createContext } from "./createContext";
 const Empty = 0;
 const Pending = 1;
 const Resolved = 2;
