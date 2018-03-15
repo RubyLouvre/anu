@@ -5,7 +5,7 @@ import { win as window } from "./browser";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 
-import { createRef } from "./createRef";
+import { createRef,forwardRef } from "./createRef";
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
@@ -28,6 +28,7 @@ if (window.React && window.React.options) {
        
         findDOMNode,
         createRef,
+        forwardRef,
         createPortal,
         createContext,
         createElement,

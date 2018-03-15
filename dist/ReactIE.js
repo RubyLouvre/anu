@@ -1238,6 +1238,16 @@ function createRef() {
         current: null
     };
 }
+function RefComponent(fn) {
+    function RefProvider(props, ref) {
+        return fn(props, ref);
+    }
+    RefProvider.isRef = true;
+    return RefProvider;
+}
+function forwardRef(fn) {
+    return RefComponent(fn);
+}
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var NOBIND = {
@@ -2936,6 +2946,7 @@ if (win.React && win.React.options) {
         eventSystem: eventSystem,
         findDOMNode: findDOMNode,
         createRef: createRef,
+        forwardRef: forwardRef,
         createClass: createClass,
         createPortal: createPortal,
         createContext: createContext,

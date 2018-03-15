@@ -155,4 +155,79 @@ describe("React.forwardRef", function () {
         expect(ref instanceof Child).toBe(true);
         expect(setRefCount).toBe(1);
       });
+
+      it('should not break lifecycle error handling', () => {
+        class ErrorBoundary extends React.Component {
+          state = {error: null};
+          componentDidCatch(error) {
+            ReactNoop.yield('ErrorBoundary.componentDidCatch');
+            this.setState({error});
+          }
+          render() {
+            if (this.state.error) {
+              ReactNoop.yield('ErrorBoundary.render: catch');
+              return null;
+            }
+            ReactNoop.yield('ErrorBoundary.render: try');
+            return this.props.children;
+          }
+        }
+    
+        class BadRender extends React.Component {
+          render() {
+            ReactNoop.yield('BadRender throw');
+            throw new Error('oops!');
+          }
+        }
+    
+        function Wrapper(props) {
+          ReactNoop.yield('Wrapper');
+          return <BadRender {...props} ref={props.forwardedRef} />;
+        }
+    
+        const RefForwardingComponent = React.forwardRef((props, ref) => (
+          <Wrapper {...props} forwardedRef={ref} />
+        ));
+    
+        const ref = React.createRef();
+    
+        ReactNoop.render(
+          <ErrorBoundary>
+            <RefForwardingComponent ref={ref} />
+          </ErrorBoundary>,
+        );
+        expect(ReactNoop.flush()).toEqual([
+          'ErrorBoundary.render: try',
+          'Wrapper',
+          'BadRender throw',
+          'ErrorBoundary.componentDidCatch',
+          'ErrorBoundary.render: catch',
+        ]);
+        expect(ref.current).toBe(null);
+      });
+    
+      it('should support rendering null', () => {
+        const RefForwardingComponent = React.forwardRef((props, ref) => null);
+    
+        const ref = React.createRef();
+    
+        ReactNoop.render(<RefForwardingComponent ref={ref} />);
+        ReactNoop.flush();
+        expect(ref.current).toBe(null);
+      });
+      it('should support rendering null for multiple children', () => {
+        const RefForwardingComponent = React.forwardRef((props, ref) => null);
+    
+        const ref = React.createRef();
+    
+        ReactNoop.render(
+          <div>
+            <div />
+            <RefForwardingComponent ref={ref} />
+            <div />
+          </div>,
+        );
+        ReactNoop.flush();
+        expect(ref.current).toBe(null);
+      });
 })

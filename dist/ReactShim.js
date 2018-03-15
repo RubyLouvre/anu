@@ -754,6 +754,16 @@ function createRef() {
         current: null
     };
 }
+function RefComponent(fn) {
+    function RefProvider(props, ref) {
+        return fn(props, ref);
+    }
+    RefProvider.isRef = true;
+    return RefProvider;
+}
+function forwardRef(fn) {
+    return RefComponent(fn);
+}
 
 var formElements = {
     select: 1,
@@ -2657,6 +2667,7 @@ if (win.React && win.React.options) {
         Component: Component,
         findDOMNode: findDOMNode,
         createRef: createRef,
+        forwardRef: forwardRef,
         createPortal: createPortal,
         createContext: createContext,
         createElement: createElement,
