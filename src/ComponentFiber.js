@@ -124,19 +124,26 @@ ComponentFiber.prototype = {
                     }
                 };
                 Refs.currentOwner = instance;
-                this.child = instance.render();
-                if (lifeCycleHook) {
-                    for (var i in lifeCycleHook) {
-                        if (i !== "render") {
-                            instance[i] = lifeCycleHook[i];
-                        }
-                    }
-                    lifeCycleHook = false;
+                if (type.isRef) {
+                    instance.render = function () {
+                        delete this.updater._reactInternalFiber._hasRef;
+                        return type(this.props, this.updater.ref);
+                    };
                 } else {
-                    this._willReceive = false;
-                    this._isStateless = true;
+                    this.child = instance.render();
+                    if (lifeCycleHook) {
+                        for (var i in lifeCycleHook) {
+                            if (i !== "render") {
+                                instance[i] = lifeCycleHook[i];
+                            }
+                        }
+                        lifeCycleHook = false;
+                    } else {
+                        this._willReceive = false;
+                        this._isStateless = true;
+                    }
+                    delete instance.__init__;
                 }
-                delete instance.__init__;
             } else {
                 //有狀态组件
                 instance = new type(props, context);

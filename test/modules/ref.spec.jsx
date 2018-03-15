@@ -3,19 +3,121 @@ import ReactTestUtils from "lib/ReactTestUtils";
 //https://github.com/facebook/react/blob/master/src/isomorphic/children/__tests__/ReactChildren-test.js
 var ReactDOM = window.ReactDOM || React;
 
-describe("ref模块", function() {
+describe("ref模块", function () {
     this.timeout(200000);
 
     var body = document.body,
         div;
-    beforeEach(function() {
+    beforeEach(function () {
         div = document.createElement("div");
         body.appendChild(div);
     });
-    afterEach(function() {
+    afterEach(function () {
         body.removeChild(div);
     });
-    it("类型相同，有带key变成不带key", function() {
+
+    /**
+   * Counts clicks and has a renders an item for each click. Each item rendered
+   * has a ref of the form "clickLogN".
+   */
+    var TestComponent = class extends React.Component {
+        render() {
+            return (
+                <div>
+                    {this.props.destroy
+                        ? null
+                        : <div ref="theInnerDiv">
+                            Lets try to destroy this.
+              </div>}
+                </div>
+            );
+        }
+    };
+
+    it('should remove refs when destroying the parent', () => {
+        var container = document.createElement('div');
+        var testInstance = ReactDOM.render(<TestComponent />, container);
+        expect(ReactTestUtils.isDOMComponent(testInstance.refs.theInnerDiv)).toBe(
+            true,
+        );
+        expect(
+            Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
+                .length,
+        ).toEqual(1);
+        ReactDOM.unmountComponentAtNode(container);
+        expect(
+            Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
+                .length,
+        ).toEqual(0);
+    });
+
+    it('should remove refs when destroying the child', () => {
+        var container = document.createElement('div');
+        var testInstance = ReactDOM.render(<TestComponent />, container);
+        expect(testInstance.refs.theInnerDiv.tagName).toBe(
+            "DIV",
+        );
+        expect(
+            Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
+                .length,
+        ).toBe(1);
+        ReactDOM.render(<TestComponent destroy={true} />, container);
+        expect(
+            Object.keys(testInstance.refs || {}).filter(key => testInstance.refs[key])
+                .length,
+        ).toBe(0);
+    });
+
+    it('should not error when destroying child with ref asynchronously', () => {
+        class Modal extends React.Component {
+            componentDidMount() {
+                this.div = document.createElement('div');
+                document.body.appendChild(this.div);
+                this.componentDidUpdate();
+            }
+
+            componentDidUpdate() {
+                ReactDOM.render(<div>{this.props.children}</div>, this.div);
+            }
+
+            componentWillUnmount() {
+                var self = this;
+                // some async animation
+                setTimeout(function () {
+                    expect(function () {
+                        ReactDOM.unmountComponentAtNode(self.div);
+                    }).not.toThrow();
+                    document.body.removeChild(self.div);
+                }, 0);
+            }
+
+            render() {
+                return null;
+            }
+        }
+
+        class AppModal extends React.Component {
+            render() {
+                return (
+                    <Modal>
+                        <a ref="ref" />
+                    </Modal>
+                );
+            }
+        }
+
+        class App extends React.Component {
+            render() {
+                return this.props.hidden ? null : <AppModal onClose={this.close} />;
+            }
+        }
+
+        var container = document.createElement('div');
+        ReactDOM.render(<App />, container);
+        ReactDOM.render(<App hidden={true} />, container);
+    });
+
+    it("类型相同，有带key变成不带key", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -58,7 +160,7 @@ describe("ref模块", function() {
         );
         expect(list.join("\n")).toBe(["a true", "b true", "a false", "b false", "c true", "d true"].join("\n"));
     });
-    it("类型相同，有带key变成带key", function() {
+    it("类型相同，有带key变成带key", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -103,7 +205,7 @@ describe("ref模块", function() {
         );
         expect(list.join("\n")).toBe(["a true", "b true", "a false", "b false", "c true", "d true"].join("\n"));
     });
-    it("类型不一样，但key", function() {
+    it("类型不一样，但key", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -149,7 +251,7 @@ describe("ref模块", function() {
         );
         expect(list.join("\n")).toBe(["a true", "b true", "a false", "b false", "c true", "d true"].join("\n"));
     });
-    it("类型不一样，没有key", function() {
+    it("类型不一样，没有key", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -174,14 +276,14 @@ describe("ref模块", function() {
         ReactDOM.render(
             <div>
                 <span
-                   
+
                     name="c"
                     ref={a => {
                         logger("c " + !!a);
                     }}
                 />
                 <span
-                  
+
                     name="d"
                     ref={a => {
                         logger("d " + !!a);
@@ -193,7 +295,7 @@ describe("ref模块", function() {
         );
         expect(list.join("\n")).toBe(["a true", "b true", "a false", "b false", "c true", "d true"].join("\n"));
     });
-    it("patchRef", function() {
+    it("patchRef", function () {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -224,7 +326,7 @@ describe("ref模块", function() {
         expect(s.myTextInput).toBeDefined();
     });
 
-    it("patchRef Component", function() {
+    it("patchRef Component", function () {
         class App extends React.Component {
             render() {
                 return (
@@ -250,7 +352,7 @@ describe("ref模块", function() {
         expect(s.refs.a).toInstanceOf(A);
     });
 
-    it("没有组件的情况", function() {
+    it("没有组件的情况", function () {
         var index = 0;
         function ref(a) {
             index++;
@@ -260,13 +362,13 @@ describe("ref模块", function() {
         var s = ReactTestUtils.renderIntoDocument(<div ref={ref} />);
         expect(index).toBe(1);
     });
-    it("should invoke refs in Component.render()", function() {
+    it("should invoke refs in Component.render()", function () {
         var i = 0;
-        let outer = function(a) {
+        let outer = function (a) {
             expect(a).toBe(div.firstChild);
             i++;
         };
-        let inner = function(a) {
+        let inner = function (a) {
             expect(a).toBe(div.firstChild.firstChild);
             i++;
         };
@@ -283,7 +385,7 @@ describe("ref模块", function() {
 
         expect(i).toBe(2);
     });
-    it("rener方法在存在其他组件，那么组件以innerHTML方式引用子节点，子节点有ref", function() {
+    it("rener方法在存在其他组件，那么组件以innerHTML方式引用子节点，子节点有ref", function () {
         class App extends React.Component {
             constructor(props) {
                 super(props);
@@ -319,7 +421,7 @@ describe("ref模块", function() {
 
         expect(Object.keys(s.refs).sort()).toEqual(["child", "inner", "parent"]);
     });
-    it("用户在构造器里生成虚拟DOM", function() {
+    it("用户在构造器里生成虚拟DOM", function () {
         var a;
         class App extends React.Component {
             constructor(props) {
@@ -350,12 +452,12 @@ describe("ref模块", function() {
                 );
             }
         }
-        ReactDOM.render(<App />,div);
+        ReactDOM.render(<App />, div);
 
         expect(a).toBe(true);
     });
 
-    it("Stateless组件也会被执行", function() {
+    it("Stateless组件也会被执行", function () {
         var b;
         function App() {
             return <div>StateLess</div>;
@@ -367,7 +469,7 @@ describe("ref模块", function() {
 
         expect(b).toBe(null);
     });
-    it("ReactDOM.render中的元素也会被执行", function() {
+    it("ReactDOM.render中的元素也会被执行", function () {
         var b;
         function refFn(a) {
             b = a;
@@ -376,7 +478,7 @@ describe("ref模块", function() {
 
         expect(b && b.tagName).toBe("H1");
     });
-    it("带ref的组件被子组件cloneElement", function() {
+    it("带ref的组件被子组件cloneElement", function () {
         class Select extends React.Component {
             constructor(props) {
                 super(props);
@@ -430,7 +532,7 @@ describe("ref模块", function() {
         expect(typeof s.refs.root).toBe("object");
         expect(typeof s.refs.trigger).toBe("object");
     });
-    it("相同位置上的元素节点的string ref值不一样", function() {
+    it("相同位置上的元素节点的string ref值不一样", function () {
         class Foo extends React.Component {
             render() {
                 return <div>{this.props.a ? <span ref="aaa" className="aaa" /> : <span ref="bbb" className="bbb" />}</div>;
@@ -442,7 +544,7 @@ describe("ref模块", function() {
         expect(s.refs.aaa).toBe(void 666);
         expect(s.refs.bbb.className).toBe("bbb");
     });
-    it("相同位置上的元素节点的ref类型不一样", function() {
+    it("相同位置上的元素节点的ref类型不一样", function () {
         var a = 1;
         class Foo extends React.Component {
             render() {
@@ -451,13 +553,13 @@ describe("ref模块", function() {
                         {this.props.a ? (
                             <span ref="aaa" className="aaa" />
                         ) : (
-                            <span
-                                ref={function(b) {
-                                    a = b;
-                                }}
-                                className="bbb"
-                            />
-                        )}
+                                <span
+                                    ref={function (b) {
+                                        a = b;
+                                    }}
+                                    className="bbb"
+                                />
+                            )}
                     </div>
                 );
             }
@@ -468,7 +570,7 @@ describe("ref模块", function() {
         expect(s.refs.aaa).toBe(void 666);
         expect(typeof a).toBe("object");
     });
-    it("为元素添加ref", function() {
+    it("为元素添加ref", function () {
         class Foo extends React.Component {
             render() {
                 return <div>{this.props.a ? <span className="aaa" /> : <span ref="aaa" className="bbb" />}</div>;
@@ -479,7 +581,7 @@ describe("ref模块", function() {
         ReactDOM.render(<Foo a={0} />, div);
         expect(typeof s.refs.aaa).toBe("object");
     });
-    it("相同位置上的元素节点的ref函数不一样", function() {
+    it("相同位置上的元素节点的ref函数不一样", function () {
         var log = [];
         class Foo extends React.Component {
             render() {
@@ -487,19 +589,19 @@ describe("ref模块", function() {
                     <div>
                         {this.props.a ? (
                             <span
-                                ref={function(a) {
+                                ref={function (a) {
                                     log.push(a);
                                 }}
                                 className="aaa"
                             />
                         ) : (
-                            <b
-                                ref={function(a) {
-                                    log.push(a);
-                                }}
-                                className="bbb"
-                            />
-                        )}
+                                <b
+                                    ref={function (a) {
+                                        log.push(a);
+                                    }}
+                                    className="bbb"
+                                />
+                            )}
                     </div>
                 );
             }
@@ -513,7 +615,7 @@ describe("ref模块", function() {
         expect(log[0].nodeName).toBe("SPAN");
         expect(log[2].nodeName).toBe("B");
     });
-    it("相同位置上的元素节点的ref函数一样", function() {
+    it("相同位置上的元素节点的ref函数一样", function () {
         var log = [];
         function refFn(a) {
             log.push(a);
@@ -533,7 +635,7 @@ describe("ref模块", function() {
 
         expect(log[2].nodeName).toBe("B");
     });
-    it("组件虚拟DOM的ref总在componentDidMount/Update后才执行", function() {
+    it("组件虚拟DOM的ref总在componentDidMount/Update后才执行", function () {
         var list = [];
         class Static extends React.Component {
             componentDidMount() {
@@ -557,7 +659,7 @@ describe("ref模块", function() {
                     return (
                         <div>
                             <Static
-                                ref={function(b) {
+                                ref={function (b) {
                                     list.push(b === null ? "null 222" : "instance 222");
                                 }}
                             >
@@ -569,7 +671,7 @@ describe("ref模块", function() {
                     return (
                         <div>
                             <Static
-                                ref={function(a) {
+                                ref={function (a) {
                                     list.push(a === null ? "null 111" : "instance 111");
                                 }}
                             >
@@ -587,14 +689,14 @@ describe("ref模块", function() {
         ReactDOM.render(<Component flipped={true} />, container);
         expect(list).toEqual(["static render", "static did mount", "instance 111", "null 111", "static will update", "static render", "static did update", "instance 222"]);
     });
-    it("先执行匹配元素的detach ref，然后卸载组件，最后attach ref", function() {
+    it("先执行匹配元素的detach ref，然后卸载组件，最后attach ref", function () {
         var list = [];
         function logger(e) {
             list.push(e);
         }
         class A extends React.Component {
             componentWillUnmount() {
-                logger(this.props.name+" remove");
+                logger(this.props.name + " remove");
             }
             render() {
                 return <span>A</span>;
@@ -605,7 +707,7 @@ describe("ref模块", function() {
                 logger("b mount");
             }
             render() {
-                return <span ref={a => logger("b ref") }>B</span>;
+                return <span ref={a => logger("b ref")}>B</span>;
             }
         }
         class App extends React.Component {
@@ -621,15 +723,15 @@ describe("ref模块", function() {
                         {this.state.a
                             ? [
                                 <A name="a1" />,
-                                <A name="a2"/>,
-                                <A name="a3"/>,
+                                <A name="a2" />,
+                                <A name="a3" />,
                                 <span
                                     key="a"
                                     ref={a => {
                                         logger(111 + (a ? "instance" : "null"));
                                     }}
                                 >
-                                      a
+                                    a
                                 </span>,
                                 <span
                                     key="b"
@@ -637,7 +739,7 @@ describe("ref模块", function() {
                                         logger(222 + (a ? "instance" : "null"));
                                     }}
                                 >
-                                      b
+                                    b
                                 </span>
                             ]
                             : [
@@ -647,7 +749,7 @@ describe("ref模块", function() {
                                         logger(333 + (a ? "instance" : "null"));
                                     }}
                                 >
-                                      b
+                                    b
                                 </span>,
                                 <span
                                     key="a"
@@ -655,7 +757,7 @@ describe("ref模块", function() {
                                         logger(444 + (a ? "instance" : "null"));
                                     }}
                                 >
-                                      a
+                                    a
                                 </span>,
                                 <B />
                             ]}
@@ -665,14 +767,14 @@ describe("ref模块", function() {
         }
         var s = ReactDOM.render(<App />, div);
         s.setState({ a: 0 });
-        var list2 =  ["111instance", "222instance","b mount",
-            "a1 remove", "a2 remove", "a3 remove", 
-            "222null", "111null", 
+        var list2 = ["111instance", "222instance", "b mount",
+            "a1 remove", "a2 remove", "a3 remove",
+            "222null", "111null",
             "333instance", "444instance", "b ref"];
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
-    it("ref与生命周期的执行顺序，更新后没有key", function() {
+    it("ref与生命周期的执行顺序，更新后没有key", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -767,7 +869,7 @@ describe("ref模块", function() {
             ].join("\n")
         );
     });
-    it("ref与生命周期的执行顺序，更新后有key", function() {
+    it("ref与生命周期的执行顺序，更新后有key", function () {
         var list = [];
         function logger(e) {
             list.push(e);

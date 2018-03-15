@@ -81,10 +81,14 @@ var Refs = {
         if (typeof ref === "function") {
             return ref(dom);
         }
-        var owner = vnode._owner;
+        if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+            ref.current = dom;
+            return;
+        }
         if (!ref) {
             return;
         }
+        var owner = vnode._owner;
         if (!owner) {
             throw "Element ref was specified as a string (" + ref + ") but no owner was set";
         }
@@ -109,7 +113,7 @@ function Vnode(type, tag, props, key, ref) {
             this.key = key;
         }
         var refType = typeNumber(ref);
-        if (refType === 3 || refType === 4 || refType === 5) {
+        if (refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             this._hasRef = true;
             this.ref = ref;
         }

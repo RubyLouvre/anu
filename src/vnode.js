@@ -19,7 +19,7 @@ import { Refs } from "./Refs";
 */
 export function Vnode(type, tag, props, key, ref) {
     this.type = type;
-    this.tag = tag
+    this.tag = tag;
     if (tag !== 6) {
         this.props = props;
         this._owner = Refs.currentOwner;
@@ -29,7 +29,7 @@ export function Vnode(type, tag, props, key, ref) {
         }
 
         let refType = typeNumber(ref);
-        if (refType === 3 || refType === 4 || refType === 5) {
+        if (refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             //number, string, function
             this._hasRef = true;
             this.ref = ref;

@@ -120,10 +120,14 @@ var Refs = {
         if (typeof ref === "function") {
             return ref(dom);
         }
-        var owner = vnode._owner;
+        if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+            ref.current = dom;
+            return;
+        }
         if (!ref) {
             return;
         }
+        var owner = vnode._owner;
         if (!owner) {
             throw "Element ref was specified as a string (" + ref + ") but no owner was set";
         }
@@ -148,7 +152,7 @@ function Vnode(type, tag, props, key, ref) {
             this.key = key;
         }
         var refType = typeNumber(ref);
-        if (refType === 3 || refType === 4 || refType === 5) {
+        if (refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             this._hasRef = true;
             this.ref = ref;
         }
@@ -1231,7 +1235,7 @@ fn$1.isPureComponent = true;
 
 function createRef() {
     return {
-        value: null
+        current: null
     };
 }
 
@@ -2234,19 +2238,26 @@ ComponentFiber.prototype = {
                     }
                 };
                 Refs.currentOwner = instance;
-                this.child = instance.render();
-                if (lifeCycleHook) {
-                    for (var i in lifeCycleHook) {
-                        if (i !== "render") {
-                            instance[i] = lifeCycleHook[i];
-                        }
-                    }
-                    lifeCycleHook = false;
+                if (type.isRef) {
+                    instance.render = function () {
+                        delete this.updater._reactInternalFiber._hasRef;
+                        return type(this.props, this.updater.ref);
+                    };
                 } else {
-                    this._willReceive = false;
-                    this._isStateless = true;
+                    this.child = instance.render();
+                    if (lifeCycleHook) {
+                        for (var i in lifeCycleHook) {
+                            if (i !== "render") {
+                                instance[i] = lifeCycleHook[i];
+                            }
+                        }
+                        lifeCycleHook = false;
+                    } else {
+                        this._willReceive = false;
+                        this._isStateless = true;
+                    }
+                    delete instance.__init__;
                 }
-                delete instance.__init__;
             } else {
                 instance = new type(props, context);
             }
@@ -2660,6 +2671,8 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
         }
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.fireRef(fiber, null, lastVnode);
+        } else {
+            delete nextVnode.ref;
         }
         fiber.hydrate(updateQueue, true);
     }

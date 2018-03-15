@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <!-- <script type='text/javascript' src="./src/React2.js"></script>-->
-    <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>
+     <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script src="test/babel.js"></script>
 </head>
 
@@ -15,47 +15,114 @@
 </body>
 <script type="text/babel">
     var container = document.getElementById("test");
-    class Root extends React.Component{
-        constructor(props){
-            super(props)
-            this.props = props
-            this.state = {
-                x: 1
+    var expect = function(a) {
+        return {
+            toBe: function(b) {
+                console.log(a,"vs", b, a === b)
+            },
+            toEqual(b){
+                console.log(a,"vs", b, a +""=== b+"")
+            },
+            toThrow(b){
+                try{
+                    a()
+                }catch(e){
+                    console.log(e,"vs", b, e.message +""=== b+"")
+                }
             }
         }
-        render(){
-            console.log("Root render..", Date.now())
-            return <h1><A x={this.state.x} /></h1>
-        }
-        componentDidMount(){
-            console.log("Root componentDidMount")
-            this.setState({
-                x: 2
-            })
-        }
     }
-    class A extends React.Component{
-        constructor(props){
-            super(props)
-            this.props = props
-            this.state = {
-                text: props.x
+    class Child extends React.Component {
+          constructor(props) {
+            super(props);
+          }
+          render() {
+            console.log(this.props.value);
+            return null;
+          }
+        }
+    
+        function Wrapper(props) {
+          return <Child {...props} ref={props.forwardedRef} />;
+        }
+    
+        const RefForwardingComponent = React.forwardRef((props, ref) => (
+          <Wrapper {...props} forwardedRef={ref} />
+        ));
+    
+        let setRefCount = 0;
+        let ref;
+    
+        const setRef = r => {
+          setRefCount++;
+          ref = r;
+        };
+    
+
+    ReactDOM.render(<RefForwardingComponent ref={setRef} value={123} />,container);
+  console.log(ref)
+  expect(ref instanceof Child).toBe(true);
+        expect(setRefCount).toBe(1);
+
+    ReactDOM.render(<RefForwardingComponent ref={setRef} value={456} />,container);
+    expect(ref instanceof Child).toBe(true);
+        expect(setRefCount).toBe(1);
+/*
+
+ var list = [];
+        class Static extends React.Component {
+            componentDidMount() {
+                list.push("static did mount");
+            }
+            componentWillUpdate() {
+                list.push("static will update");
+            }
+            componentDidUpdate() {
+                list.push("static did update");
+            }
+            render() {
+                list.push("static render");
+                return <div>{this.props.children}</div>;
             }
         }
-        componentWillReceiveProps(p){
-            this.setState({
-               text: p.x
-            })
+
+        class Component extends React.Component {
+            render() {
+                if (this.props.flipped) {
+                    return (
+                        <div>
+                            <Static
+                                ref={function (b) {
+                                    list.push(b === null ? "null 222" : "instance 222");
+                                }}
+                            >
+                                B
+                            </Static>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div>
+                            <Static
+                                ref={function (a) {
+                                    list.push(a === null ? "null 111" : "instance 111");
+                                }}
+                            >
+                                A
+                            </Static>
+                        </div>
+                    );
+                }
+            }
         }
-        render(){
-            console.log("A render..", Date.now())
-            return <h2>{this.state.text}</h2>
-        }
-    }
-    ReactDOM.render(<Root />, container, function(){
-        console.log("callback",Date.now())
-    })
-   console.log("end", Date.now())
+
+        var container = document.createElement("div");
+        ReactDOM.render(<Component flipped={false} />, container);
+
+        ReactDOM.render(<Component flipped={true} />, container);
+        expect(list).toEqual(["static render", "static did mount", "instance 111", "null 111", 
+        "static will update", "static render", "static did update", "instance 222"]);
+        */
 </script>
 
 </html>

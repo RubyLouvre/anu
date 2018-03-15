@@ -1,7 +1,7 @@
-//import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
-import ReactTestUtils from "lib/ReactTestUtils";
 
 import React from "dist/React";
+import ReactTestUtils from "lib/ReactTestUtils";
+
 describe("diffProps", function() {
     this.timeout(200000);
 

@@ -244,6 +244,8 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
 
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.fireRef(fiber, null, lastVnode);
+        }else{
+            delete nextVnode.ref;
         }
 
         fiber.hydrate(updateQueue, true);

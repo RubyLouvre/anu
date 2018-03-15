@@ -7,7 +7,7 @@ import { win as window } from "./browser";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 
-import { createRef } from "./createRef";
+import { createRef,forwardRef } from "./createRef";
 import { createClass } from "./createClass";//deprecated
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
@@ -33,6 +33,7 @@ if (window.React && window.React.options) {
         eventSystem,
         findDOMNode,
         createRef,
+        forwardRef,
         createClass,
         createElement,
         cloneElement,
