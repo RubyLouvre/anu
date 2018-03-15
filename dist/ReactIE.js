@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-14
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-15
  */
 
 (function (global, factory) {
@@ -1198,6 +1198,43 @@ Component.prototype = {
     render: function render() {}
 };
 
+function shallowEqual(objA, objB) {
+    if (Object.is(objA, objB)) {
+        return true;
+    }
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function PureComponent(props, context) {
+    Component.call(this, props, context);
+}
+var fn$1 = inherit(PureComponent, Component);
+fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
+    var a = shallowEqual(this.props, nextProps);
+    var b = shallowEqual(this.state, nextState);
+    return !a || !b;
+};
+fn$1.isPureComponent = true;
+
+function createRef() {
+    return {
+        value: null
+    };
+}
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var NOBIND = {
     render: 1,
@@ -1300,37 +1337,6 @@ function createClass(spec) {
     }
     return Constructor;
 }
-
-function shallowEqual(objA, objB) {
-    if (Object.is(objA, objB)) {
-        return true;
-    }
-    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-        return false;
-    }
-    var keysA = Object.keys(objA);
-    var keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) {
-        return false;
-    }
-    for (var i = 0; i < keysA.length; i++) {
-        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-var fn$1 = inherit(PureComponent, Component);
-fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
-};
-fn$1.isPureComponent = true;
 
 var formElements = {
     select: 1,
@@ -2916,6 +2922,7 @@ if (win.React && win.React.options) {
         Component: Component,
         eventSystem: eventSystem,
         findDOMNode: findDOMNode,
+        createRef: createRef,
         createClass: createClass,
         createPortal: createPortal,
         createContext: createContext,

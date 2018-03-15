@@ -1,7 +1,7 @@
 /**
  * 此版本要求浏览器没有createClass, createFactory, PropTypes, isValidElement,
  * unmountComponentAtNode,unstable_renderSubtreeIntoContainer
- * QQ 370262116 by 司徒正美 Copyright 2018-03-14
+ * QQ 370262116 by 司徒正美 Copyright 2018-03-15
  */
 
 (function (global, factory) {
@@ -744,6 +744,12 @@ fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
     return !a || !b;
 };
 fn$1.isPureComponent = true;
+
+function createRef() {
+    return {
+        value: null
+    };
+}
 
 var formElements = {
     select: 1,
@@ -2637,6 +2643,7 @@ if (win.React && win.React.options) {
         Children: Children,
         Component: Component,
         findDOMNode: findDOMNode,
+        createRef: createRef,
         createPortal: createPortal,
         createContext: createContext,
         createElement: createElement,

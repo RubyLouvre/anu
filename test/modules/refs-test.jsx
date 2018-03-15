@@ -1,6 +1,4 @@
 import React from "dist/React";
-import { beforeHook, afterHook, browser } from "karma-event-driver-ext/cjs/event-driver-hooks";
-import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
 
 //https://github.com/facebook/react/blob/master/src/renderers/dom/test/__tests__/ReactTestUtils-test.js
@@ -8,13 +6,13 @@ var ReactDOM = window.ReactDOM || React;
 
 describe("reactiverefs", function() {
     this.timeout(200000);
-    before(async () => {
+  /*  before(async () => {
         await beforeHook();
     });
     after(async () => {
         await afterHook(false);
     });
-
+*/
     /**
      * Counts clicks and has a renders an item for each click. Each item rendered
      * has a ref of the form "clickLogN".

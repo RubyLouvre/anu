@@ -4,12 +4,14 @@ import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
 import { Component } from "./Component";
 import { win as window } from "./browser";
-import { createClass } from "./createClass";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
-import { createElement } from "./createElement";
+
+import { createRef } from "./createRef";
+import { createClass } from "./createClass";//deprecated
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
+import { createElement } from "./createElement";
 
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
@@ -50,6 +52,7 @@ if (window.React && window.React.options) {
         Component,
         eventSystem,
         findDOMNode,
+        createRef,
         createClass,
         createPortal,
         createContext,

@@ -48,7 +48,6 @@ require("./modules/ReactComponent-test.jsx");
 require("./modules/ReactMultiChild-test.jsx");
 
 require("./modules/refs-test.jsx");
-require("./modules/refs-destruction-test.jsx");
 
 require("./modules/ReactUpdates-test.jsx");
 

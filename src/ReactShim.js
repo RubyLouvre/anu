@@ -2,11 +2,13 @@ import { Component } from "./Component";
 import { options, Fragment } from "./util";
 import { Children } from "./Children";
 import { win as window } from "./browser";
-import { createElement } from "./createElement";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
+
+import { createRef } from "./createRef";
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
+import { createElement } from "./createElement";
 
 import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
@@ -25,6 +27,7 @@ if (window.React && window.React.options) {
         Component,
        
         findDOMNode,
+        createRef,
         createPortal,
         createContext,
         createElement,

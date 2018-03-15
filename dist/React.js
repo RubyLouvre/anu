@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-03-14
+ * by 司徒正美 Copyright 2018-03-15
  * IE9+
  */
 
@@ -1199,6 +1199,43 @@ Component.prototype = {
     render: function render() {}
 };
 
+function shallowEqual(objA, objB) {
+    if (Object.is(objA, objB)) {
+        return true;
+    }
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function PureComponent(props, context) {
+    Component.call(this, props, context);
+}
+var fn$1 = inherit(PureComponent, Component);
+fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
+    var a = shallowEqual(this.props, nextProps);
+    var b = shallowEqual(this.state, nextState);
+    return !a || !b;
+};
+fn$1.isPureComponent = true;
+
+function createRef() {
+    return {
+        value: null
+    };
+}
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var NOBIND = {
     render: 1,
@@ -1300,145 +1337,6 @@ function createClass(spec) {
         Constructor.defaultProps = spec.getDefaultProps();
     }
     return Constructor;
-}
-
-function shallowEqual(objA, objB) {
-    if (Object.is(objA, objB)) {
-        return true;
-    }
-    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-        return false;
-    }
-    var keysA = Object.keys(objA);
-    var keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) {
-        return false;
-    }
-    for (var i = 0; i < keysA.length; i++) {
-        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-var fn$1 = inherit(PureComponent, Component);
-fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
-};
-fn$1.isPureComponent = true;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-var uuid = 1;
-function gud() {
-    return uuid++;
-}
-var MAX_NUMBER = 1073741823;
-function createEventEmitter(value) {
-    var handlers = [];
-    return {
-        on: function on(handler) {
-            handlers.push(handler);
-        },
-        off: function off(handler) {
-            handlers = handlers.filter(function (h) {
-                return h !== handler;
-            });
-        },
-        get: function get() {
-            return value;
-        },
-        set: function set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(function (handler) {
-                return handler(value, changedBits);
-            });
-        }
-    };
-}
-function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
-    function Provider(props, context) {
-        Component.call(this, props, context);
-        this.emitter = createEventEmitter(props.value);
-    }
-    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
-    var fn = inherit(Provider, Component);
-    fn.getChildContext = function () {
-        return _defineProperty({}, contextProp, this.emitter);
-    };
-    fn.componentWillReceiveProps = function (nextProps) {
-        if (this.props.value !== nextProps.value) {
-            var oldValue = this.props.value;
-            var newValue = nextProps.value;
-            var changedBits = void 0;
-            if (Object.is(oldValue, newValue)) {
-                changedBits = 0;
-            } else {
-                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                changedBits |= 0;
-                if (changedBits !== 0) {
-                    this.emitter.set(nextProps.value, changedBits);
-                }
-            }
-        }
-    };
-    fn.render = function () {
-        return this.props.children;
-    };
-    function Consumer(props, context) {
-        var _this = this;
-        Component.call(this, props, context);
-        this.observedBits = 0;
-        this.state = {
-            value: this.getValue()
-        };
-        this.onUpdate = function (newValue, changedBits) {
-            var observedBits = _this.observedBits | 0;
-            if ((observedBits & changedBits) !== 0) {
-                _this.setState({ value: _this.getValue() });
-            }
-        };
-    }
-    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
-    var fn2 = inherit(Consumer, Component);
-    fn2.componentWillReceiveProps = function (nextProps) {
-        var observedBits = nextProps.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.getValue = function () {
-        if (this.context[contextProp]) {
-            return this.context[contextProp].get();
-        } else {
-            return defaultValue;
-        }
-    };
-    fn2.componentDidMount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].on(this.onUpdate);
-        }
-        var observedBits = this.props.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.componentWillUnmount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].off(this.onUpdate);
-        }
-    };
-    fn2.render = function () {
-        return this.props.children(this.state.value);
-    };
-    return {
-        Provider: Provider,
-        Consumer: Consumer
-    };
 }
 
 var formElements = {
@@ -2046,6 +1944,114 @@ function createPortal(children, node) {
     var child = createElement(AnuPortal, { children: children });
     child._return = fiber;
     return child;
+}
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var uuid = 1;
+function gud() {
+    return uuid++;
+}
+var MAX_NUMBER = 1073741823;
+function createEventEmitter(value) {
+    var handlers = [];
+    return {
+        on: function on(handler) {
+            handlers.push(handler);
+        },
+        off: function off(handler) {
+            handlers = handlers.filter(function (h) {
+                return h !== handler;
+            });
+        },
+        get: function get() {
+            return value;
+        },
+        set: function set(newValue, changedBits) {
+            value = newValue;
+            handlers.forEach(function (handler) {
+                return handler(value, changedBits);
+            });
+        }
+    };
+}
+function createContext(defaultValue, calculateChangedBits) {
+    var contextProp = "__create-react-context-" + gud() + "__";
+    function Provider(props, context) {
+        Component.call(this, props, context);
+        this.emitter = createEventEmitter(props.value);
+    }
+    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
+    var fn = inherit(Provider, Component);
+    fn.getChildContext = function () {
+        return _defineProperty({}, contextProp, this.emitter);
+    };
+    fn.componentWillReceiveProps = function (nextProps) {
+        if (this.props.value !== nextProps.value) {
+            var oldValue = this.props.value;
+            var newValue = nextProps.value;
+            var changedBits = void 0;
+            if (Object.is(oldValue, newValue)) {
+                changedBits = 0;
+            } else {
+                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                changedBits |= 0;
+                if (changedBits !== 0) {
+                    this.emitter.set(nextProps.value, changedBits);
+                }
+            }
+        }
+    };
+    fn.render = function () {
+        return this.props.children;
+    };
+    function Consumer(props, context) {
+        var _this = this;
+        Component.call(this, props, context);
+        this.observedBits = 0;
+        this.state = {
+            value: this.getValue()
+        };
+        this.onUpdate = function (newValue, changedBits) {
+            var observedBits = _this.observedBits | 0;
+            if ((observedBits & changedBits) !== 0) {
+                _this.setState({ value: _this.getValue() });
+            }
+        };
+    }
+    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
+    var fn2 = inherit(Consumer, Component);
+    fn2.componentWillReceiveProps = function (nextProps) {
+        var observedBits = nextProps.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.getValue = function () {
+        if (this.context[contextProp]) {
+            return this.context[contextProp].get();
+        } else {
+            return defaultValue;
+        }
+    };
+    fn2.componentDidMount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].on(this.onUpdate);
+        }
+        var observedBits = this.props.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.componentWillUnmount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].off(this.onUpdate);
+        }
+    };
+    fn2.render = function () {
+        return this.props.children(this.state.value);
+    };
+    return {
+        Provider: Provider,
+        Consumer: Consumer
+    };
 }
 
 function pushError(instance, hook, error) {
@@ -2767,6 +2773,7 @@ if (win.React && win.React.options) {
         Component: Component,
         eventSystem: eventSystem,
         findDOMNode: findDOMNode,
+        createRef: createRef,
         createClass: createClass,
         createElement: createElement,
         cloneElement: cloneElement,
