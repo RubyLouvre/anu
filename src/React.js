@@ -15,7 +15,7 @@ import { createElement } from "./createElement";
 
 import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
 
-var React;
+let React;
 if (window.React && window.React.options) {
     React = window.React; //解决引入多个
 } else {
@@ -43,7 +43,7 @@ if (window.React && window.React.options) {
         unstable_renderSubtreeIntoContainer,
         createFactory(type) {
             console.warn("createFactory is deprecated"); // eslint-disable-line
-            var factory = createElement.bind(null, type);
+            let factory = createElement.bind(null, type);
             factory.type = type;
             return factory;
         }

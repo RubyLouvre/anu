@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2018-03-15
+ * 此版本带有selection by 司徒正美 Copyright 2018-03-16
  * IE9+
  */
 
@@ -219,7 +219,7 @@ function createVText(type, text) {
 }
 function createVnode(node) {
     var type = node.nodeName,
-        vnode;
+        vnode = void 0;
     if (node.nodeType === 1) {
         vnode = new Vnode(type, 5);
         var ns = node.namespaceURI;
@@ -249,10 +249,9 @@ function getProps(node) {
     }
     return props;
 }
-var lastText;
-var flattenIndex;
-var flattenObject;
-var flattenArray;
+var lastText = void 0;
+var flattenIndex = void 0;
+var flattenObject = void 0;
 function flattenCb(child, key) {
     var childType = typeNumber(child);
     if (childType < 3) {
@@ -274,12 +273,10 @@ function flattenCb(child, key) {
         flattenObject[key] = child;
     }
     child.index = flattenIndex++;
-    flattenArray.push(child);
 }
 function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
-    flattenArray = [];
     if (c !== void 666) {
         lastText = null;
         operateChildren(c, "", flattenCb, isIterable(c), true);
@@ -317,35 +314,37 @@ function isIterable(el) {
     return 0;
 }
 function operateChildren(children, prefix, callback, iterableType, isTop) {
+    var key = void 0,
+        el = void 0,
+        t = void 0,
+        iterator = void 0;
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
                 throw "children中存在非法的对象";
             }
-            var key = prefix || (children && children.key ? "$" + children.key : "0");
+            key = prefix || (children && children.key ? "$" + children.key : "0");
             callback(children, key);
             break;
         case 1:
             children.forEach(function (el, i) {
-                var k = computeName(el, i, prefix, isTop);
-                operateChildren(el, k, callback, isIterable(el), false);
+                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
             });
             break;
         case 2:
-            var key = children && children.key ? "$" + children.key : "";
-            var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
-            var el = children.props.children;
-            var t = isIterable(el);
+            key = children && children.key ? "$" + children.key : "";
+            key = isTop ? key : prefix ? prefix + ":0" : key || "0";
+            el = children.props.children;
+            t = isIterable(el);
             if (!t) {
                 el = [el];
                 t = 1;
             }
-            operateChildren(el, k, callback, t, false);
+            operateChildren(el, key, callback, t, false);
             break;
         default:
-            var iterator = iterableType.call(children),
-                ii = 0,
-                el,
+            iterator = iterableType.call(children);
+            var ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
                 el = step.value;
@@ -402,81 +401,81 @@ function cloneElement(vnode, props) {
 
 var mapStack = [];
 function mapWrapperCb(old, prefix) {
-	if (old === void 0 || old === false || old === true) {
-		old = null;
-	}
-	var cur = mapStack[0];
-	var el = cur.callback.call(cur.context, old, cur.index);
-	var index = cur.index;
-	cur.index++;
-	if (cur.isEach || el == null) {
-		return;
-	}
-	if (el.tag < 6) {
-		var key = computeKey(old, el, prefix, index);
-		cur.arr.push(cloneElement(el, { key: key }));
-	} else if (el.type) {
-		cur.arr.push(extend({}, el));
-	} else {
-		cur.arr.push(el);
-	}
+    if (old === void 0 || old === false || old === true) {
+        old = null;
+    }
+    var cur = mapStack[0];
+    var el = cur.callback.call(cur.context, old, cur.index);
+    var index = cur.index;
+    cur.index++;
+    if (cur.isEach || el == null) {
+        return;
+    }
+    if (el.tag < 6) {
+        var key = computeKey(old, el, prefix, index);
+        cur.arr.push(cloneElement(el, { key: key }));
+    } else if (el.type) {
+        cur.arr.push(extend({}, el));
+    } else {
+        cur.arr.push(el);
+    }
 }
 function K(el) {
-	return el;
+    return el;
 }
 var Children = {
-	only: function only(children) {
-		if (children && children.tag) {
-			return children;
-		}
-		throw new Error('expect only one child');
-	},
-	count: function count(children) {
-		if (children == null) {
-			return 0;
-		}
-		var index = 0;
-		Children.map(children, function () {
-			index++;
-		}, null, true);
-		return index;
-	},
-	map: function map(children, callback, context, isEach) {
-		if (children == null) {
-			return children;
-		}
-		mapStack.unshift({
-			index: 0,
-			callback: callback,
-			context: context,
-			isEach: isEach,
-			arr: []
-		});
-		operateChildren(children, '', mapWrapperCb, isIterable(children), true);
-		var top = mapStack.shift();
-		return top.arr;
-	},
-	forEach: function forEach(children, callback, context) {
-		Children.map(children, callback, context, true);
-	},
-	toArray: function toArray$$1(children) {
-		if (children == null) {
-			return [];
-		}
-		return Children.map(children, K);
-	}
+    only: function only(children) {
+        if (children && children.tag) {
+            return children;
+        }
+        throw new Error("expect only one child");
+    },
+    count: function count(children) {
+        if (children == null) {
+            return 0;
+        }
+        var index = 0;
+        Children.map(children, function () {
+            index++;
+        }, null, true);
+        return index;
+    },
+    map: function map(children, callback, context, isEach) {
+        if (children == null) {
+            return children;
+        }
+        mapStack.unshift({
+            index: 0,
+            callback: callback,
+            context: context,
+            isEach: isEach,
+            arr: []
+        });
+        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
+        var top = mapStack.shift();
+        return top.arr;
+    },
+    forEach: function forEach(children, callback, context) {
+        Children.map(children, callback, context, true);
+    },
+    toArray: function toArray$$1(children) {
+        if (children == null) {
+            return [];
+        }
+        return Children.map(children, K);
+    }
 };
 function computeKey(old, el, prefix, index) {
-	var curKey = el && el.key != null ? el.key : null;
-	var oldKey = old && old.key != null ? old.key : null;
-	var dot = '.' + prefix;
-	if (oldKey && curKey && oldKey !== curKey) {
-		return curKey + '/' + dot;
-	}
-	if (prefix) {
-		return dot;
-	}
-	return curKey ? '.' + curKey : '.' + index;
+    var curKey = el && el.key != null ? el.key : null;
+    var oldKey = old && old.key != null ? old.key : null;
+    var dot = "." + prefix;
+    if (oldKey && curKey && oldKey !== curKey) {
+        return curKey + "/" + dot;
+    }
+    if (prefix) {
+        return dot;
+    }
+    return curKey ? "." + curKey : "." + index;
 }
 
 function DOMElement(type) {
@@ -544,7 +543,7 @@ var duplexMap = {
 var isStandard = "textContent" in document$1;
 var fragment = document$1.createDocumentFragment();
 function emptyElement(node) {
-    var child;
+    var child = void 0;
     while (child = node.firstChild) {
         emptyElement(child);
         if (child === Refs.focusNode) {
@@ -657,7 +656,7 @@ function insertElement(fiber, mountPoint) {
         return;
     }
     var p = fiber.return,
-        parentNode;
+        parentNode = void 0;
     while (p) {
         if (p.tag === 5) {
             parentNode = p.stateNode;
@@ -788,50 +787,52 @@ function drainQueue(queue) {
         }
         var hook = Refs.errorHook;
         if (hook) {
-            var doctors = Refs.doctors,
-                doctor = doctors[0],
-                gotoCreateRejectQueue,
-                addDoctor,
-                silent;
-            switch (hook) {
-                case "componentDidMount":
-                case "componentDidUpdate":
-                case "componentWillUnmount":
-                    gotoCreateRejectQueue = queue.length === 0;
-                    silent = 1;
-                    break;
-                case "render":
-                case "constructor":
-                case "componentWillMount":
-                case "componentWillUpdate":
-                case "componentWillReceiveProps":
-                    gotoCreateRejectQueue = true;
-                    queue = queue.filter(function (el) {
-                        return el._mountOrder < doctor._mountOrder;
+            (function () {
+                var doctors = Refs.doctors,
+                    doctor = doctors[0],
+                    gotoCreateRejectQueue = void 0,
+                    addDoctor = void 0,
+                    silent = void 0;
+                switch (hook) {
+                    case "componentDidMount":
+                    case "componentDidUpdate":
+                    case "componentWillUnmount":
+                        gotoCreateRejectQueue = queue.length === 0;
+                        silent = 1;
+                        break;
+                    case "render":
+                    case "constructor":
+                    case "componentWillMount":
+                    case "componentWillUpdate":
+                    case "componentWillReceiveProps":
+                        gotoCreateRejectQueue = true;
+                        queue = queue.filter(function (el) {
+                            return el._mountOrder < doctor._mountOrder;
+                        });
+                        silent = 1;
+                        addDoctor = true;
+                        break;
+                }
+                if (gotoCreateRejectQueue) {
+                    delete Refs.error;
+                    delete Refs.doctors;
+                    delete Refs.errorHook;
+                    var unwindQueue = [];
+                    doctors.forEach(function (doctor) {
+                        disposeChildren(doctor._children, unwindQueue, silent);
+                        doctor._children = {};
                     });
-                    silent = 1;
-                    addDoctor = true;
-                    break;
-            }
-            if (gotoCreateRejectQueue) {
-                delete Refs.error;
-                delete Refs.doctors;
-                delete Refs.errorHook;
-                var unwindQueue = [];
-                doctors.forEach(function (doctor) {
-                    disposeChildren(doctor._children, unwindQueue, silent);
-                    doctor._children = {};
-                });
-                doctors.forEach(function (doctor) {
-                    if (addDoctor) {
+                    doctors.forEach(function (doctor) {
+                        if (addDoctor) {
+                            unwindQueue.push(doctor);
+                            fiber = placehoder;
+                        }
+                        doctor.addState("catch");
                         unwindQueue.push(doctor);
-                        fiber = placehoder;
-                    }
-                    doctor.addState("catch");
-                    unwindQueue.push(doctor);
-                });
-                queue = unwindQueue.concat(queue);
-            }
+                    });
+                    queue = unwindQueue.concat(queue);
+                }
+            })();
         }
         fiber.transition(queue);
     }
@@ -1271,7 +1272,7 @@ function applyMixins(proto, mixins) {
     }
 }
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n  };");
     return curry(Component, NOBIND, spec);
 }
 function createClass(spec) {
@@ -1704,7 +1705,7 @@ inputMonitor.observe = function (dom, name) {
             dom._setValue = true;
         }
         Object.defineProperty(dom, name, describe);
-    } catch (e) {}
+    } catch (e) {        }
 };
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -2036,7 +2037,7 @@ function AnuPortal(props) {
     return props.children;
 }
 function createPortal(children, node) {
-    var fiber,
+    var fiber = void 0,
         events = node.__events;
     if (events) {
         fiber = node.__events.vnode;
@@ -2104,9 +2105,9 @@ function disableHook(u) {
 }
 function findCatchComponent(target, names) {
     var fiber = target.updater,
-        instance,
-        name,
-        catchIt;
+        instance = void 0,
+        name = void 0,
+        catchIt = void 0;
     do {
         name = fiber.name;
         if (fiber.name === "AnuInternalFiber") {
@@ -2212,10 +2213,10 @@ ComponentFiber.prototype = {
             type = this.type,
             tag = this.tag,
             isStateless = tag === 1,
+            lastOwn = Refs.currentOwner,
             instance = void 0,
             lifeCycleHook = void 0;
         try {
-            var lastOwn = Refs.currentOwner;
             if (isStateless) {
                 instance = {
                     refs: {},
@@ -2413,7 +2414,7 @@ ComponentFiber.prototype = {
 };
 function transfer(queue) {
     var cbs = this._nextCallbacks,
-        cb;
+        cb = void 0;
     if (cbs && cbs.length) {
         do {
             cb = cbs.shift();
@@ -2587,7 +2588,7 @@ function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
     return fiber;
 }
 function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
-    var prevFiber;
+    var prevFiber = void 0;
     for (var i in children) {
         var fiber = children[i] = mountVnode(children[i], parentFiber, updateQueue, mountCarrier);
         if (prevFiber) {
@@ -2740,7 +2741,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
         }).forEach(function (fiber) {
             updateQueue.push(fiber);
         });
-        var prevFiber,
+        var prevFiber = void 0,
             index = 0;
         for (var _i2 in children) {
             vnode = children[_i2];

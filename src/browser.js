@@ -7,14 +7,14 @@ export function DOMElement(type) {
     this.children = [];
 }
 
-export var NAMESPACE = {
+export const NAMESPACE = {
     svg: "http://www.w3.org/2000/svg",
     xmlns: "http://www.w3.org/2000/xmlns/",
     xlink: "http://www.w3.org/1999/xlink",
     math: "http://www.w3.org/1998/Math/MathML"
 };
 
-var fn = (DOMElement.prototype = {
+let fn = (DOMElement.prototype = {
     contains: Boolean
 });
 String(
@@ -28,7 +28,7 @@ String(
 });
 
 //用于后端的document
-export var fakeDoc = new DOMElement();
+export let fakeDoc = new DOMElement();
 fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
     return new DOMElement(type);
 };
@@ -47,12 +47,12 @@ try {
     };
 }
 
-export var inBrowser = b;
-export var win = w;
+export let inBrowser = b;
+export let win = w;
 
-export var document = w.document || fakeDoc;
+export let document = w.document || fakeDoc;
 
-export var duplexMap = {
+export let duplexMap = {
     color: 1,
     date: 1,
     datetime: 1,
@@ -74,10 +74,10 @@ export var duplexMap = {
     "select-one": 3,
     "select-multiple": 3
 };
-var isStandard = "textContent" in document;
-var fragment = document.createDocumentFragment();
+let isStandard = "textContent" in document;
+let fragment = document.createDocumentFragment();
 export function emptyElement(node) {
-    var child;
+    let child;
     while ((child = node.firstChild)) {
         emptyElement(child);
         if (child === Refs.focusNode) {
@@ -87,7 +87,7 @@ export function emptyElement(node) {
     }
 }
 
-var recyclables = {
+const recyclables = {
     "#text": []
 };
 export function removeElement(node) {
@@ -114,16 +114,16 @@ export function removeElement(node) {
     fragment.removeChild(node);
 }
 
-var versions = {
+const versions = {
     88: 7, //IE7-8 objectobject
     80: 6, //IE6 objectundefined
     "00": NaN, // other modern browsers
     "08": NaN
 };
 /* istanbul ignore next  */
-export var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+export let msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
 
-export var modern = /NaN|undefined/.test(msie) || msie > 8;
+export let modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createElement(vnode, p) {
     let { type, props, namespaceURI: ns, text } = vnode;
@@ -173,8 +173,8 @@ export function createElement(vnode, p) {
         }
         //eslint-disable-next-line
     } catch (e) { }
-    var elem = document.createElement(type);
-    var inputType = props && props.type;//IE6-8下立即设置type属性
+    let elem = document.createElement(type);
+    let inputType = props && props.type;//IE6-8下立即设置type属性
     if (inputType) {
         elem.type = inputType;
     }
@@ -195,7 +195,7 @@ export function insertElement(fiber, mountPoint) {
         return;
     }
     //找到可用的父节点
-    var p = fiber.return,
+    let p = fiber.return,
         parentNode;
     while (p) {
         if (p.tag === 5) {
@@ -205,8 +205,8 @@ export function insertElement(fiber, mountPoint) {
         p = p._return || p.return;
     }
 
-    var dom = fiber.stateNode;
-    var after = mountPoint ? mountPoint.nextSibling : parentNode.firstChild;
+    let dom = fiber.stateNode;
+    let after = mountPoint ? mountPoint.nextSibling : parentNode.firstChild;
 
     if (after === dom) {
         return;
@@ -214,11 +214,8 @@ export function insertElement(fiber, mountPoint) {
     if (after === null && dom === parentNode.lastChild) {
         return;
     }
-    /*  if (after && !contains(parentNode, after)) {
-        return;
-    }*/
-    var isElement = fiber.tag === 5;
-    var prevFocus = isElement && document.activeElement;
+    let isElement = fiber.tag === 5;
+    let prevFocus = isElement && document.activeElement;
     parentNode.insertBefore(dom, after);
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
         try {

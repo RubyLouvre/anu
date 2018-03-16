@@ -3,10 +3,10 @@ import { Refs } from "./Refs";
 import { noop } from "./util";
 
 export function pushError(instance, hook, error) {
-    var names = [];
-    var catchUpdater = findCatchComponent(instance, names);
+    let names = [];
+    let catchUpdater = findCatchComponent(instance, names);
     instance.updater._hasError = true;
-    var stack = describeError(names, hook);
+    let stack = describeError(names, hook);
     if (catchUpdater) {
         disableHook(instance.updater); //禁止患者节点执行钩子
         catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: stack }, instance];
@@ -30,7 +30,7 @@ export function pushError(instance, hook, error) {
 }
 export function captureError(instance, hook, args) {
     try {
-        var fn = instance[hook];
+        let fn = instance[hook];
         if (fn) {
             return fn.apply(instance, args);
         }
@@ -43,10 +43,10 @@ export function captureError(instance, hook, args) {
     }
 }
 function describeError(names, hook) {
-    var segments = [`**${hook}** method occur error `];
-    names.forEach(function(name, i) {
+    let segments = [`**${hook}** method occur error `];
+    names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push("in "+ name + " (created By " + names[i + 1]+")");
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
     return segments.join("\n").trim();
@@ -59,7 +59,7 @@ function disableHook(u) {
  * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名
  */
 function findCatchComponent(target, names) {
-    var fiber = target.updater,
+    let fiber = target.updater,
         instance,
         name,
         catchIt;

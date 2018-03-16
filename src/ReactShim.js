@@ -13,7 +13,7 @@ import { createElement } from "./createElement";
 import { render, findDOMNode, unmountComponentAtNode } from "./diff";
 
 
-var React;
+let React;
 if (window.React && window.React.options) {
     React = window.React;
 } else {

@@ -1,15 +1,15 @@
-export var __push = Array.prototype.push;
-export var hasSymbol = typeof Symbol === "function" && Symbol["for"]; 
-export var innerHTML = "dangerouslySetInnerHTML";
-export var hasOwnProperty = Object.prototype.hasOwnProperty;
+export let __push = Array.prototype.push;
+export let hasSymbol = typeof Symbol === "function" && Symbol["for"]; 
+export let innerHTML = "dangerouslySetInnerHTML";
+export let hasOwnProperty = Object.prototype.hasOwnProperty;
 export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 
 export function Fragment(props) {
     return props.children;
 }
 
-export var emptyArray = [];
-export var emptyObject = {};
+export let emptyArray = [];
+export let emptyObject = {};
 export function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         //eslint-disable-next-line
@@ -68,7 +68,7 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-var lowerCache = {};
+let lowerCache = {};
 export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
@@ -81,7 +81,7 @@ export function isFn(obj) {
     return __type.call(obj) === "[object Function]";
 }
 
-var rword = /[^, ]+/g;
+let rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
     if (array + "" === array) {
@@ -97,14 +97,14 @@ export function oneObject(array, val) {
     return result;
 }
 
-var rcamelize = /[-_][^-_]/g;
+let rcamelize = /[-_][^-_]/g;
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
     if (!target || (target.indexOf("-") < 0 && target.indexOf("_") < 0)) {
         return target;
     }
     //转换为驼峰风格
-    var str = target.replace(rcamelize, function(match) {
+    let str = target.replace(rcamelize, function(match) {
         return match.charAt(1).toUpperCase();
     });
     return firstLetterLower(str);
@@ -114,9 +114,9 @@ export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
-export var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+export let options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 
-var numberMap = {
+let numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
     "[object Number]": 3,
@@ -133,15 +133,15 @@ export function typeNumber(data) {
     if (data === void 666) {
         return 0;
     }
-    var a = numberMap[__type.call(data)];
+    let a = numberMap[__type.call(data)];
     return a || 8;
 }
 
-export var toArray =
+export let toArray =
     Array.from ||
     function(a) {
-        var ret = [];
-        for (var i = 0, n = a.length; i < n; i++) {
+        let ret = [];
+        for (let i = 0, n = a.length; i < n; i++) {
             ret[i] = a[i];
         }
         return ret;

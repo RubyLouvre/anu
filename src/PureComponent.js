@@ -9,8 +9,8 @@ export function PureComponent(props, context) {
 let fn = inherit(PureComponent, Component);
 
 fn.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
+    let a = shallowEqual(this.props, nextProps);
+    let b = shallowEqual(this.state, nextState);
     return !a || !b;
 };
 fn.isPureComponent = true;

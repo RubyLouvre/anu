@@ -1,28 +1,28 @@
 import { createElement } from "./createElement";
-import { Refs} from "./Refs";
+import { Refs } from "./Refs";
 import { extend } from "./util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.tag === 6) {
-        var clone = extend({}, vnode);
+        let clone = extend({}, vnode);
         delete clone._disposed;
         return clone;
     }
     let owner = vnode._owner,
         lastOwn = Refs.currentOwner,
         old = vnode.props,
-        configs = {  };
+        configs = {};
     if (props) {
         extend(extend(configs, old), props);
-        configs.key = props.key !== void 666 ? props.key :vnode.key;
-        if(props.ref !== void 666){
+        configs.key = props.key !== void 666 ? props.key : vnode.key;
+        if (props.ref !== void 666) {
             configs.ref = props.ref;
             owner = lastOwn;
-        }else if(vnode._hasRef){
+        } else if (vnode._hasRef) {
             configs.ref = vnode.ref;
         }
-        
-    }else{
+
+    } else {
         configs = old;
     }
     Refs.currentOwner = owner;

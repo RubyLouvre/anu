@@ -12,7 +12,7 @@ import { Refs } from "./Refs";
  */
 export function ComponentFiber(vnode, parentFiber) {
     extend(this, vnode);
-    var type = vnode.type;
+    let type = vnode.type;
     this.name = type.displayName || type.name;
     this.return = parentFiber;
     this.context = getMaskedContext(getContextProvider(parentFiber), type.contextTypes);
@@ -30,13 +30,13 @@ export function ComponentFiber(vnode, parentFiber) {
 
 ComponentFiber.prototype = {
     addState: function (state) {
-        var states = this._states;
+        let states = this._states;
         if (states[states.length - 1] !== state) {
             states.push(state);
         }
     },
     transition(updateQueue) {
-        var state = this._states.shift();
+        let state = this._states.shift();
         if (state) {
             this[state](updateQueue);
         }
@@ -101,10 +101,10 @@ ComponentFiber.prototype = {
     init(updateQueue, mountCarrier) {
         let { props, context, type, tag } = this,
             isStateless = tag === 1,
+            lastOwn = Refs.currentOwner,
             instance,
             lifeCycleHook;
         try {
-            var lastOwn = Refs.currentOwner;
             if (isStateless) {
                 instance = {
                     refs: {},
@@ -113,7 +113,7 @@ ComponentFiber.prototype = {
                     props,
                     context,
                     render: function f() {
-                        var a = type(this.props, this.context);
+                        let a = type(this.props, this.context);
                         if (a && a.render) {
                             //返回一带render方法的纯对象，说明这是带lifycycle hook的无狀态组件
                             //需要对象里的hook复制到instance中
@@ -132,7 +132,7 @@ ComponentFiber.prototype = {
                 } else {
                     this.child = instance.render();
                     if (lifeCycleHook) {
-                        for (var i in lifeCycleHook) {
+                        for (let i in lifeCycleHook) {
                             if (i !== "render") {
                                 instance[i] = lifeCycleHook[i];
                             }
@@ -165,7 +165,7 @@ ComponentFiber.prototype = {
         instance.props = props;
         instance.context = context;
         instance.updater = this;
-        var carrier = this._return ? {} : mountCarrier;
+        let carrier = this._return ? {} : mountCarrier;
         this._mountCarrier = carrier;
         this._mountPoint = carrier.dom || null;
         if (instance.componentWillMount) {
@@ -187,8 +187,8 @@ ComponentFiber.prototype = {
         if (!this._forceUpdate && !captureError(instance, "shouldComponentUpdate", [props, state, context])) {
             shouldUpdate = false;
 
-            var nodes = collectComponentNodes(this._children);
-            var carrier = this._mountCarrier;
+            let nodes = collectComponentNodes(this._children);
+            let carrier = this._mountCarrier;
             carrier.dom = this._mountPoint;
             nodes.forEach(function (el) {
                 insertElement(el, carrier.dom);
@@ -196,7 +196,7 @@ ComponentFiber.prototype = {
             });
         } else {
             captureError(instance, "componentWillUpdate", [props, state, context]);
-            var { props: lastProps, state: lastState } = instance;
+            let { props: lastProps, state: lastState } = instance;
             this._hookArgs = [lastProps, lastState];
         }
 
@@ -230,12 +230,12 @@ ComponentFiber.prototype = {
         //给下方使用的context
 
         if (instance.getChildContext) {
-            var c = getContextProvider(this.return);
+            let c = getContextProvider(this.return);
             c = getUnmaskedContext(instance, c);
             this._unmaskedContext = c;
         }
         if (this._willReceive === false) {
-            var a = this.child;
+            let a = this.child;
             if (a && a.sibling) {
                 rendered = [];
                 for (; a; a = a.sibling) {
@@ -320,7 +320,7 @@ ComponentFiber.prototype = {
     }
 };
 function transfer(queue) {
-    var cbs = this._nextCallbacks,
+    let cbs = this._nextCallbacks,
         cb;
     if (cbs && cbs.length) {
         //如果在componentDidMount/Update钩子里执行了setState，那么再次渲染此组件
@@ -366,7 +366,7 @@ export function getUnmaskedContext(instance, parentContext) {
 }
 export function getContextProvider(fiber) {
     do {
-        var c = fiber._unmaskedContext;
+        let c = fiber._unmaskedContext;
         if (c) {
             return c;
         }
@@ -375,19 +375,19 @@ export function getContextProvider(fiber) {
 
 //收集fiber
 export function collectComponentNodes(children) {
-    var ret = [];
-    for (var i in children) {
-        var child = children[i];
-        var instance = child.stateNode;
+    let ret = [];
+    for (let i in children) {
+        let child = children[i];
+        let instance = child.stateNode;
         if (child._disposed) {
             continue;
         }
         if (child.tag > 4) {
             ret.push(child);
         } else {
-            var fiber = instance.updater;
+            let fiber = instance.updater;
             if (child.child) {
-                var args = collectComponentNodes(fiber._children);
+                let args = collectComponentNodes(fiber._children);
                 ret.push.apply(ret, args);
             }
         }

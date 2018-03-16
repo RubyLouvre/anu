@@ -21,16 +21,16 @@ export function render(vnode, container, callback) {
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 export function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
-    var updater = instance && instance.updater;
-    var parentContext = updater ? updater._unmaskedContext : {};
+    let updater = instance && instance.updater;
+    let parentContext = updater ? updater._unmaskedContext : {};
     return renderByAnu(vnode, container, callback, parentContext);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
 export function unmountComponentAtNode(container) {
     let rootIndex = topNodes.indexOf(container);
     if (rootIndex > -1) {
-        var lastFiber = topFibers[rootIndex];
-        var queue = [];
+        let lastFiber = topFibers[rootIndex];
+        let queue = [];
         disposeVnode(lastFiber, queue);
         drainQueue(queue);
         emptyElement(container);
@@ -51,8 +51,8 @@ export function findDOMNode(instanceOrElement) {
     }
     //实例必然拥有updater与render
     if (instanceOrElement.render) {
-        var fiber = instanceOrElement.updater;
-        var c = fiber.child;
+        let fiber = instanceOrElement.updater;
+        let c = fiber.child;
         if (c) {
             return findDOMNode(c.stateNode);
         } else {
@@ -61,11 +61,11 @@ export function findDOMNode(instanceOrElement) {
     }
 }
 
-var AnuInternalFiber = function () {
+let AnuInternalFiber = function () {
     Component.call(this);
 };
 AnuInternalFiber.displayName = "AnuInternalFiber"; //fix IE6-8函数没有name属性
-var fn = inherit(AnuInternalFiber, Component);
+let fn = inherit(AnuInternalFiber, Component);
 
 fn.render = function () {
     return this.props.child;
@@ -98,10 +98,10 @@ function renderByAnu(vnode, root, callback, context = {}) {
         emptyElement(root);
         topNodes.push(root);
         rootIndex = topNodes.length - 1;
-        var rootFiber = new HostFiber(createVnode(root));
+        let rootFiber = new HostFiber(createVnode(root));
         rootFiber.stateNode = root;
         rootFiber._unmaskedContext = context;
-        var children = (rootFiber._children = {
+        let children = (rootFiber._children = {
             ".0": wrapperVnode
         });
         mountChildren(children, rootFiber, updateQueue, mountCarrier);
@@ -127,11 +127,11 @@ function renderByAnu(vnode, root, callback, context = {}) {
  */
 function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
     options.beforeInsert(vnode);
-    var useHostFiber = vnode.tag > 4;
-    var fiberCtor = useHostFiber ? HostFiber : ComponentFiber;
-    var fiber = new fiberCtor(vnode, parentFiber);
+    let useHostFiber = vnode.tag > 4;
+    let fiberCtor = useHostFiber ? HostFiber : ComponentFiber;
+    let fiber = new fiberCtor(vnode, parentFiber);
     if (vnode._return) {
-        var p = (fiber._return = vnode._return);
+        let p = (fiber._return = vnode._return);
         p.child = fiber;
     }
     fiber.init(
@@ -154,12 +154,12 @@ function mountVnode(vnode, parentFiber, updateQueue, mountCarrier) {
  * @param {Object} mountCarrier 
  */
 function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
-    var prevFiber;
-    for (var i in children) {
-        var fiber = (children[i] = mountVnode(children[i], parentFiber, updateQueue, mountCarrier));
+    let prevFiber;
+    for (let i in children) {
+        let fiber = (children[i] = mountVnode(children[i], parentFiber, updateQueue, mountCarrier));
         if (prevFiber) {
             prevFiber.sibling = fiber;
-        }else{
+        } else {
             parentFiber.child = fiber;
         }
         prevFiber = fiber;
@@ -171,11 +171,10 @@ function mountChildren(children, parentFiber, updateQueue, mountCarrier) {
 }
 
 function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
-    var dom = fiber.stateNode;
+    let dom = fiber.stateNode;
     options.beforeUpdate(vnode);
     if (fiber.tag > 4) {
         //文本，元素
-
         insertElement(fiber, mountCarrier.dom);
         mountCarrier.dom = dom;
 
@@ -193,7 +192,7 @@ function updateVnode(fiber, vnode, updateQueue, mountCarrier) {
             if (props[innerHTML]) {
                 disposeChildren(fibers, updateQueue);
             } else {
-                var children = fiberizeChildren(props.children, fiber);
+                let children = fiberizeChildren(props.children, fiber);
                 diffChildren(fibers, children, fiber, updateQueue, {});
             }
             fiber.attr();
@@ -221,7 +220,7 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
     fiber._mountPoint = fiber._return ? null : mountCarrier.dom;
     fiber._mountCarrier = fiber._return ? {} : mountCarrier;
     //  fiber._mountCarrier.dom = fiber._mountPoint;
-    var lastVnode = fiber._reactInternalFiber;
+    let lastVnode = fiber._reactInternalFiber;
     fiber._reactInternalFiber = nextVnode;
     fiber.props = nextProps;
 
@@ -244,7 +243,7 @@ function receiveComponent(fiber, nextVnode, updateQueue, mountCarrier) {
 
         if (lastVnode.ref !== nextVnode.ref) {
             Refs.fireRef(fiber, null, lastVnode);
-        }else{
+        } else {
             delete nextVnode.ref;
         }
 
@@ -299,7 +298,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
     if (isEmpty) {
         mountChildren(children, parentFiber, updateQueue, mountCarrier);
     } else {
-        var matchFibers = {},
+        let matchFibers = {},
             matchFibersWithRef = [];
         for (let i in fibers) {
             vnode = children[i];
@@ -328,7 +327,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
             .forEach(function (fiber) {
                 updateQueue.push(fiber);
             });
-        var prevFiber,
+        let prevFiber,
             index = 0;
 
         for (let i in children) {
@@ -339,7 +338,7 @@ function diffChildren(fibers, children, parentFiber, updateQueue, mountCarrier) 
             fiber.index = index++;
             if (prevFiber) {
                 prevFiber.sibling = fiber;
-            }else{
+            } else {
                 parentFiber.child = fiber;
             }
             prevFiber = fiber;

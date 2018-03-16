@@ -34,7 +34,7 @@ function collectMixins(mixins) {
 
     return keyed;
 }
-var MANY_MERGED = {
+const MANY_MERGED = {
     getInitialState: 1,
     getDefaultProps: 1,
     getChildContext: 1
@@ -43,14 +43,14 @@ var MANY_MERGED = {
 function flattenHooks(key, hooks) {
     let hookType = typeof hooks[0];
     if (hookType === "object") {
-    // Merge objects
-        var ret = {};
-        for(var i = 0; i < hooks.length; i++){
+        // Merge objects
+        let ret = {};
+        for (let i = 0; i < hooks.length; i++) {
             extend(ret, hooks[i]);
         }
         return ret;
     } else if (hookType === "function" && hooks.length > 1) {
-        return function() {
+        return function () {
             let ret = {},
                 r,
                 hasReturn = MANY_MERGED[key];
@@ -100,7 +100,6 @@ function newCtor(className, spec) {
           throw "getInitialState只能返回纯JS对象或者null"
         }
       }
-
   };`
     );
     return curry(Component, NOBIND, spec);
@@ -111,8 +110,8 @@ export function createClass(spec) {
     if (!isFn(spec.render)) {
         throw "请实现render方法";
     }
-    var Constructor = newCtor(spec.displayName || "Component", spec);
-    var proto = inherit(Constructor, Component);
+    let Constructor = newCtor(spec.displayName || "Component", spec);
+    let proto = inherit(Constructor, Component);
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
@@ -125,9 +124,9 @@ export function createClass(spec) {
     }
     "propTypes,contextTypes,childContextTypes,displayName".replace(
         /\w+/g,
-        function(name) {
+        function (name) {
             if (spec[name]) {
-                var props = (Constructor[name] = spec[name]);
+                let props = (Constructor[name] = spec[name]);
                 if (name !== "displayName") {
                     for (let i in props) {
                         if (!isFn(props[i])) {

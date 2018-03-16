@@ -1,4 +1,4 @@
-import { NAMESPACE, duplexMap, modern } from "./browser";
+import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
@@ -6,12 +6,12 @@ import { inputMonitor } from "./inputMonitor";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
-var controlled = {
+let controlled = {
     value: 1,
     checked: 1
 };
 
-var isSpecialAttr = {
+let isSpecialAttr = {
     style: 1,
     autoFocus: 1,
     defaultValue: 1,
@@ -21,15 +21,15 @@ var isSpecialAttr = {
     dangerouslySetInnerHTML: 1
 };
 
-var svgCache = {};
-var strategyCache = {};
+let svgCache = {};
+let strategyCache = {};
 /**
  * 仅匹配 svg 属性名中的第一个驼峰处，如 viewBox 中的 wB，
  * 数字表示该特征在属性列表中重复的次数
  * -1 表示用 ":" 隔开的属性 (xlink:href, xlink:title 等)
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
-var svgCamelCase = {
+let svgCamelCase = {
     w: { r: 1, b: 1, t: 1 },
     e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
     o: { r: 1 },
@@ -52,7 +52,7 @@ var svgCamelCase = {
 
 // SVG 属性列表中驼峰命名和短横线分隔命名特征值有重复
 // 列出了重复特征中的短横线命名的属性名
-var specialSVGPropertyName = {
+let specialSVGPropertyName = {
     "overline-thickness": 2,
     "underline-thickness": 2,
     "overline-position": 2,
@@ -78,7 +78,7 @@ var specialSVGPropertyName = {
 };
 
 // 重复属性名的特征值列表
-var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
+let repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
 
 function createRepaceFn(split) {
     return function(match) {
@@ -86,9 +86,9 @@ function createRepaceFn(split) {
     };
 }
 
-var rhump = /[a-z][A-Z]/;
-var toHyphen = createRepaceFn("-");
-var toColon = createRepaceFn(":");
+let rhump = /[a-z][A-Z]/;
+let toHyphen = createRepaceFn("-");
+let toColon = createRepaceFn(":");
 
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
@@ -187,7 +187,7 @@ function getPropAction(dom, name, isSVG) {
     }
     return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
-var builtinStringProps = {
+let builtinStringProps = {
     className: 1,
     title: 1,
     name: 1,
@@ -196,7 +196,7 @@ var builtinStringProps = {
     lang: 1
 };
 
-var rform = /textarea|input|select/i;
+let rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, fiber) {
     if (rform.test(dom.nodeName)) {
         if (!dom._uncontrolled) {
@@ -216,7 +216,7 @@ function uncontrolled(dom, name, val, lastProps, fiber) {
     }
 }
 
-export var actionStrategy = {
+export let actionStrategy = {
     innerHTML: noop,
     defaultValue: uncontrolled,
     defaultChecked: uncontrolled,

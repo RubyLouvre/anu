@@ -56,7 +56,7 @@ export function createElement(type, config, ...children) {
 }
 
 export function createVText(type, text) {
-    var vnode = new Vnode(type, 6);
+    let vnode = new Vnode(type, 6);
     vnode.text = text;
     return vnode;
 }
@@ -64,11 +64,11 @@ export function createVText(type, text) {
 // 用于辅助XML元素的生成（svg, math),
 // 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
 export function createVnode(node) {
-    var type = node.nodeName,
+    let type = node.nodeName,
         vnode;
     if (node.nodeType === 1) {
         vnode = new Vnode(type, 5);
-        var ns = node.namespaceURI;
+        let ns = node.namespaceURI;
         if (!ns || ns.indexOf("html") >= 22) {
             vnode.type = type.toLowerCase(); //HTML的虚拟DOM的type需要小写化
         } else {
@@ -84,11 +84,11 @@ export function createVnode(node) {
 }
 
 function getProps(node) {
-    var attrs = node.attributes,
+    let attrs = node.attributes,
         props = {};
-    for (var i = 0, attr; (attr = attrs[i++]);) {
+    for (let i = 0, attr; (attr = attrs[i++]);) {
         if (attr.specified) {
-            var name = attr.name;
+            let name = attr.name;
             if (name === "class") {
                 name = "className";
             }
@@ -98,7 +98,7 @@ function getProps(node) {
     return props;
 }
 
-var lastText, flattenIndex, flattenObject, flattenArray;
+let lastText, flattenIndex, flattenObject;
 function flattenCb(child, key) {
     let childType = typeNumber(child);
     if (childType < 3) {
@@ -123,13 +123,13 @@ function flattenCb(child, key) {
         flattenObject[key] = child;
     }
     child.index = flattenIndex++;
-    flattenArray.push(child);
+    // flattenArray.push(child);
 }
 
 export function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
-    flattenArray = [];
+    //  flattenArray = [];
     if (c !== void 666) {
         lastText = null;//c 为fiber.props.children
         operateChildren(c, "", flattenCb, isIterable(c), true);
@@ -139,7 +139,7 @@ export function fiberizeChildren(c, fiber) {
 }
 
 function computeName(el, i, prefix, isTop) {
-    var k = i + "";
+    let k = i + "";
     if (el) {
         if (el.type == Fragment) {
             k = el.key ? "" : k;
@@ -160,7 +160,7 @@ export function isIterable(el) {
         if (el.type === Fragment) {
             return 2;
         }
-        var t = getIteractor(el);
+        let t = getIteractor(el);
         if (t) {
             return t;
         }
@@ -169,36 +169,34 @@ export function isIterable(el) {
 }
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
 export function operateChildren(children, prefix, callback, iterableType, isTop) {
-
+    let key, el, t, iterator;
     switch (iterableType) {
     case 0:
         if (Object(children) === children && !children.call && !children.type) {
             throw "children中存在非法的对象";
         }
-        var key = prefix || (children && children.key ? "$" + children.key : "0");
+        key = prefix || (children && children.key ? "$" + children.key : "0");
         callback(children, key);
         break;
     case 1: //数组，Map, Set
         children.forEach(function (el, i) {
-            var k = computeName(el, i, prefix, isTop);
-            operateChildren(el, k, callback, isIterable(el), false);
+            operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
         });
         break;
     case 2: //React.Fragment
-        var key = children && children.key ? "$" + children.key : "";
-        var k = isTop ? key : (prefix ? prefix + ":0" : key || "0");
-        var el = children.props.children;
-        var t = isIterable(el);
+        key = children && children.key ? "$" + children.key : "";
+        key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
+        el = children.props.children;
+        t = isIterable(el);
         if (!t) {
             el = [el];
             t = 1;
         }
-        operateChildren(el, k, callback, t, false);
+        operateChildren(el, key, callback, t, false);
         break;
     default:
-        var iterator = iterableType.call(children),
-            ii = 0,
-            el,
+        iterator = iterableType.call(children);
+        var ii = 0,
             step;
         while (!(step = iterator.next()).done) {
             el = step.value;
@@ -208,10 +206,10 @@ export function operateChildren(children, prefix, callback, iterableType, isTop)
         break;
     }
 }
-var REAL_SYMBOL = hasSymbol && Symbol.iterator;
-var FAKE_SYMBOL = "@@iterator";
+let REAL_SYMBOL = hasSymbol && Symbol.iterator;
+let FAKE_SYMBOL = "@@iterator";
 function getIteractor(a) {
-    var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
+    let iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {
         return iteratorFn;
     }

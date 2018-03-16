@@ -4,7 +4,7 @@ function getDOMNode() {
 }
 export const pendingRefs = [];
 window.pendingRefs = pendingRefs;
-export var Refs = {
+export let Refs = {
     mountOrder: 1,
     currentOwner: null,
     controlledCbs: [],
@@ -16,7 +16,7 @@ export var Refs = {
         if (fiber._disposed || fiber._isStateless) {
             dom = null;
         }
-        var ref = vnode.ref;
+        let ref = vnode.ref;
         if (typeof ref === "function") {
             return ref(dom);
         }
@@ -27,7 +27,7 @@ export var Refs = {
         if (!ref) {
             return;
         }
-        var owner = vnode._owner;
+        let owner = vnode._owner;
         if (!owner) {
             throw `Element ref was specified as a string (${ref}) but no owner was set`;
         }

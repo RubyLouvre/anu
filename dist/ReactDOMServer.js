@@ -133,10 +133,9 @@ function createVText(type, text) {
     return vnode;
 }
 
-var lastText;
-var flattenIndex;
-var flattenObject;
-var flattenArray;
+var lastText = void 0;
+var flattenIndex = void 0;
+var flattenObject = void 0;
 function flattenCb(child, key) {
     var childType = typeNumber(child);
     if (childType < 3) {
@@ -158,12 +157,10 @@ function flattenCb(child, key) {
         flattenObject[key] = child;
     }
     child.index = flattenIndex++;
-    flattenArray.push(child);
 }
 function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
-    flattenArray = [];
     if (c !== void 666) {
         lastText = null;
         operateChildren(c, "", flattenCb, isIterable(c), true);
@@ -201,35 +198,37 @@ function isIterable(el) {
     return 0;
 }
 function operateChildren(children, prefix, callback, iterableType, isTop) {
+    var key = void 0,
+        el = void 0,
+        t = void 0,
+        iterator = void 0;
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
                 throw "children中存在非法的对象";
             }
-            var key = prefix || (children && children.key ? "$" + children.key : "0");
+            key = prefix || (children && children.key ? "$" + children.key : "0");
             callback(children, key);
             break;
         case 1:
             children.forEach(function (el, i) {
-                var k = computeName(el, i, prefix, isTop);
-                operateChildren(el, k, callback, isIterable(el), false);
+                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
             });
             break;
         case 2:
-            var key = children && children.key ? "$" + children.key : "";
-            var k = isTop ? key : prefix ? prefix + ":0" : key || "0";
-            var el = children.props.children;
-            var t = isIterable(el);
+            key = children && children.key ? "$" + children.key : "";
+            key = isTop ? key : prefix ? prefix + ":0" : key || "0";
+            el = children.props.children;
+            t = isIterable(el);
             if (!t) {
                 el = [el];
                 t = 1;
             }
-            operateChildren(el, k, callback, t, false);
+            operateChildren(el, key, callback, t, false);
             break;
         default:
-            var iterator = iterableType.call(children),
-                ii = 0,
-                el,
+            iterator = iterableType.call(children);
+            var ii = 0,
                 step;
             while (!(step = iterator.next()).done) {
                 el = step.value;

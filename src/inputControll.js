@@ -11,7 +11,7 @@ export const formElements = {
     input: 1,
     option: 1
 };
-var duplexData = {
+let duplexData = {
     1: [
         "value",
         {
@@ -20,10 +20,10 @@ var duplexData = {
             readOnly: 1,
             disabled: 1
         },
-        function(a) {
+        function (a) {
             return a == null ? null : a + "";
         },
-        function(dom, value, vnode) {
+        function (dom, value, vnode) {
             if (value == null) {
                 return;
             }
@@ -33,7 +33,7 @@ var duplexData = {
                 dom.setAttribute("value", value);
                 dom.__anuSetValue = false;
                 if (dom.type === "number") {
-                    var valueAsNumber = parseFloat(dom.value) || 0;
+                    let valueAsNumber = parseFloat(dom.value) || 0;
                     if (
                         // eslint-disable-next-line
                         value != valueAsNumber ||
@@ -66,10 +66,10 @@ var duplexData = {
             readOnly: 1,
             disabled: 1
         },
-        function(a) {
+        function (a) {
             return !!a;
         },
-        function(dom, value, vnode) {
+        function (dom, value, vnode) {
             if (vnode.props.value != null) {
                 dom.value = vnode.props.value;
             }
@@ -87,10 +87,10 @@ var duplexData = {
             onChange: 1,
             disabled: 1
         },
-        function(a) {
+        function (a) {
             return a;
         },
-        function(dom, value, vnode, isUncontrolled) {
+        function (dom, value, vnode, isUncontrolled) {
             //只有在单选的情况，用户会乱修改select.value
             if (isUncontrolled) {
                 if (!dom.multiple && dom.value !== dom._persistValue) {
@@ -114,25 +114,25 @@ var duplexData = {
 };
 
 export function inputControll(vnode, dom, props) {
-    var domType = dom.type;
-    var duplexType = duplexMap[domType];
-    var isUncontrolled = dom._uncontrolled;
-    if (duplexType ) {
-        var data = duplexData[duplexType];
-        var duplexProp = data[0];
-        var keys = data[1];
-        var converter = data[2];
-        var sideEffect = data[3];
+    let domType = dom.type;
+    let duplexType = duplexMap[domType];
+    let isUncontrolled = dom._uncontrolled;
+    if (duplexType) {
+        let data = duplexData[duplexType];
+        let duplexProp = data[0];
+        let keys = data[1];
+        let converter = data[2];
+        let sideEffect = data[3];
 
-        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
+        let value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
         sideEffect(dom, value, vnode, isUncontrolled);
         if (isUncontrolled) {
             return;
         }
 
-        var handle = data[4];
-        var event1 = data[5];
-        var event2 = data[6];
+        let handle = data[4];
+        let event1 = data[5];
+        let event2 = data[6];
         if (!hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
             console.warn(`你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，框架将不允许你通过输入改变该值`);
@@ -144,8 +144,8 @@ export function inputControll(vnode, dom, props) {
         }
     } else {
         //处理option标签
-        var arr = dom.children || [];
-        for (var i = 0, el; (el = arr[i]); i++) {
+        let arr = dom.children || [];
+        for (let i = 0, el; (el = arr[i]); i++) {
             dom.removeChild(el);
             i--;
         }
@@ -158,7 +158,7 @@ export function inputControll(vnode, dom, props) {
 }
 
 function hasOtherControllProperty(props, keys) {
-    for (var key in keys) {
+    for (let key in keys) {
         if (props[key]) {
             return true;
         }
@@ -166,16 +166,14 @@ function hasOtherControllProperty(props, keys) {
 }
 
 function keepPersistValue(e) {
-    var dom = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
-    var v = dom._persistValue;
-    var noNull = v != null;
-    var noEqual = dom[name] !== v; //2.0 , 2
+    let dom = e.target;
+    let name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
+    let v = dom._persistValue;
+    let noNull = v != null;
+    let noEqual = dom[name] !== v; //2.0 , 2
 
     if (noNull && noEqual) {
-      
         dom[name] = v;
-       
     }
 }
 
@@ -192,7 +190,7 @@ function syncOptions(e) {
 }
 
 function updateOptionsOne(options, n, propValue) {
-    var stringValues = {},
+    let stringValues = {},
         noDisableds = [];
     for (let i = 0; i < n; i++) {
         let option = options[i];
@@ -206,7 +204,7 @@ function updateOptionsOne(options, n, propValue) {
         }
         stringValues[value] = option;
     }
-    var match = stringValues[propValue];
+    let match = stringValues[propValue];
     if (match) {
         //字符串模糊匹配
         return setOptionSelected(match, true);
@@ -218,7 +216,7 @@ function updateOptionsOne(options, n, propValue) {
 }
 
 function updateOptionsMore(options, n, propValue) {
-    var selectedValue = {};
+    let selectedValue = {};
     try {
         for (let i = 0; i < propValue.length; i++) {
             selectedValue["&" + propValue[i]] = true;

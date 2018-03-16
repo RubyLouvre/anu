@@ -1,15 +1,15 @@
-import { document,modern, contains } from "./browser";
+import { document, modern, contains } from "./browser";
 import { isFn, noop } from "./util";
 import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
 
-var globalEvents = {};
-export var eventPropHooks = {}; //用于在事件回调里对事件对象进行
-export var eventHooks = {}; //用于在元素上绑定特定的事件
+let globalEvents = {};
+export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
+export let eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
 // onMouseMove --> mousemove
 
-export var eventLowerCache = {
+export let eventLowerCache = {
     onClick: "click",
     onChange: "change",
     onWheel: "wheel"
@@ -24,7 +24,7 @@ export function isEventName(name) {
     return /^on[A-Z]/.test(name);
 }
 
-export var isTouch = "ontouchstart" in document;
+export let isTouch = "ontouchstart" in document;
 
 export function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
@@ -32,14 +32,14 @@ export function dispatchEvent(e, type, end) {
     if (type) {
         e.type = type;
     }
-    var bubble = e.type;
-    //var dom = e.target;
-    var hook = eventPropHooks[bubble];
+    let bubble = e.type;
+    //let dom = e.target;
+    let hook = eventPropHooks[bubble];
     if (hook && false === hook(e)) {
         return;
     }
-    var paths = collectPaths(e.target, end || document);
-    var captured = bubble + "capture";
+    let paths = collectPaths(e.target, end || document);
+    let captured = bubble + "capture";
     document.__async = true;
 
     triggerEventFlow(paths, captured, e);
@@ -50,7 +50,7 @@ export function dispatchEvent(e, type, end) {
     document.__async = false;
 
     flushUpdaters();
-    Refs.controlledCbs.forEach(function(el) {
+    Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
                 target: el.stateNode
@@ -61,8 +61,8 @@ export function dispatchEvent(e, type, end) {
 }
 
 function collectPaths(from, end) {
-    var paths = [];
-    var node = from;
+    let paths = [];
+    let node = from;
     while (node && !node.__events) {
         node = node.parentNode;
         if (end === from) {
@@ -73,14 +73,14 @@ function collectPaths(from, end) {
         //如果跑到document上
         return paths;
     }
-    var mid = node.__events;
-    var vnode = mid.vnode;
-    if(vnode._isPortal){
+    let mid = node.__events;
+    let vnode = mid.vnode;
+    if (vnode._isPortal) {
         vnode = vnode.child;
     }
     do {
         if (vnode.tag === 5) {
-            var dom = vnode.stateNode;
+            let dom = vnode.stateNode;
             if (dom === end) {
                 break;
             }
@@ -96,9 +96,9 @@ function collectPaths(from, end) {
 }
 
 function triggerEventFlow(paths, prop, e) {
-    for (var i = paths.length; i--; ) {
-        var path = paths[i];
-        var fn = path.events[prop];
+    for (let i = paths.length; i--;) {
+        let path = paths[i];
+        let fn = path.events[prop];
         if (isFn(fn)) {
             e.currentTarget = path.dom;
             fn.call(void 666, e);
@@ -124,13 +124,13 @@ export function addEvent(el, type, fn, bool) {
     }
 }
 
-var rcapture = /Capture$/;
+let rcapture = /Capture$/;
 export function getBrowserName(onStr) {
-    var lower = eventLowerCache[onStr];
+    let lower = eventLowerCache[onStr];
     if (lower) {
         return lower;
     }
-    var camel = onStr.slice(2).replace(rcapture, "");
+    let camel = onStr.slice(2).replace(rcapture, "");
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -152,16 +152,16 @@ function getRelatedTarget(e) {
 }
 
 
-String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
-    eventHooks[name] = function(dom, type) {
-        var mark = "__" + type;
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        let mark = "__" + type;
         if (!dom[mark]) {
             dom[mark] = true;
-            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
-            addEvent(dom, mask, function(e) {
+            let mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function (e) {
                 let t = getRelatedTarget(e);
                 if (!t || (t !== dom && !contains(dom, t))) {
-                    var common = getLowestCommonAncestor(dom, t);
+                    let common = getLowestCommonAncestor(dom, t);
                     //由于不冒泡，因此paths长度为1
                     dispatchEvent(e, type, common);
                 }
@@ -171,12 +171,12 @@ String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
 });
 
 function getLowestCommonAncestor(instA, instB) {
-    var depthA = 0;
-    for (var tempA = instA; tempA; tempA = tempA.parentNode) {
+    let depthA = 0;
+    for (let tempA = instA; tempA; tempA = tempA.parentNode) {
         depthA++;
     }
-    var depthB = 0;
-    for (var tempB = instB; tempB; tempB = tempB.parentNode) {
+    let depthB = 0;
+    for (let tempB = instB; tempB; tempB = tempB.parentNode) {
         depthB++;
     }
 
@@ -193,7 +193,7 @@ function getLowestCommonAncestor(instA, instB) {
     }
 
     // Walk in lockstep until we find a match.
-    var depth = depthA;
+    let depth = depthA;
     while (depth--) {
         if (instA === instB) {
             return instA;
@@ -204,9 +204,9 @@ function getLowestCommonAncestor(instA, instB) {
     return null;
 }
 
-var specialHandles = {};
+let specialHandles = {};
 export function createHandle(name, fn) {
-    return specialHandles[name] = function(e) {
+    return specialHandles[name] = function (e) {
         if (fn && fn(e) === false) {
             return;
         }
@@ -223,24 +223,24 @@ globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 
 if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = function(dom) {
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
         dom.onclick = dom.onclick || noop;
     };
 }
 
-eventPropHooks.click = function(e) {
+eventPropHooks.click = function (e) {
     return !e.target.disabled;
 };
 
 
-const fixWheelType =  document.onwheel !== void 666 ? "wheel" : 
+const fixWheelType = document.onwheel !== void 666 ? "wheel" :
     "onmousewheel" in document ? "mousewheel" :
         "DOMMouseScroll";
-eventHooks.wheel = function(dom) {
+eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 
-eventPropHooks.wheel = function(event){
+eventPropHooks.wheel = function (event) {
     event.deltaX = "deltaX" in event
         ? event.deltaX
         : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
@@ -256,60 +256,60 @@ eventPropHooks.wheel = function(event){
 
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
-eventHooks.changecapture = eventHooks.change = function(dom) {
+eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password|search/.test(dom.type)) {
         addEvent(document, "input", specialHandles.change);
     }
 };
-export var focusMap = {
+export let focusMap = {
     "focus": "focus",
     "blur": "blur"
 };
 
-function blurFocus(e){
-    var dom = e.target || e.srcElement;
-    var type = focusMap[e.type];
-    var isFocus = type === "focus";
-    if(isFocus && dom.__inner__){
+function blurFocus(e) {
+    let dom = e.target || e.srcElement;
+    let type = focusMap[e.type];
+    let isFocus = type === "focus";
+    if (isFocus && dom.__inner__) {
         dom.__inner__ = false;
         return;
     }
-   
-    if(!isFocus && Refs.focusNode === dom){
+
+    if (!isFocus && Refs.focusNode === dom) {
         Refs.focusNode = null;
     }
-    do{
-        if(dom.nodeType ===1){
-            if(dom.__events && dom.__events[type]){
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
                 dispatchEvent(e, type);
                 break;
             }
-        }else{
+        } else {
             break;
         }
-    }while((dom = dom.parentNode));
+    } while ((dom = dom.parentNode));
 }
 
 "blur,focus".replace(/\w+/g, function (type) {
     globalEvents[type] = true;
-    if(modern){
-        var mark = "__" + type;
-        if(!document[mark]){ 
+    if (modern) {
+        let mark = "__" + type;
+        if (!document[mark]) {
             document[mark] = true;
-            addEvent(document, type, blurFocus,true);
+            addEvent(document, type, blurFocus, true);
         }
-    }else{
-        eventHooks[type] = function(dom, name) {
+    } else {
+        eventHooks[type] = function (dom, name) {
             addEvent(dom, focusMap[name], blurFocus);
         };
-    } 
+    }
 });
 
-eventHooks.scroll = function(dom, name) {
+eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
-eventHooks.doubleclick = function(dom, name) {
+eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };
 
@@ -317,7 +317,7 @@ export function SyntheticEvent(event) {
     if (event.nativeEvent) {
         return event;
     }
-    for (var i in event) {
+    for (let i in event) {
         if (!eventProto[i]) {
             this[i] = event[i];
         }
@@ -330,36 +330,36 @@ export function SyntheticEvent(event) {
     this.nativeEvent = event;
 }
 
-var eventProto = (SyntheticEvent.prototype = {
+let eventProto = (SyntheticEvent.prototype = {
     fixEvent: noop, //留给以后扩展用
     fixHooks: noop,
     persist: noop,
-    preventDefault: function() {
-        var e = this.nativeEvent || {};
+    preventDefault: function () {
+        let e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
         if (e.preventDefault) {
             e.preventDefault();
         }
     },
-    stopPropagation: function() {
-        var e = this.nativeEvent || {};
+    stopPropagation: function () {
+        let e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;
         if (e.stopPropagation) {
             e.stopPropagation();
         }
     },
-    stopImmediatePropagation: function() {
+    stopImmediatePropagation: function () {
         this.stopPropagation();
         this.stopImmediate = true;
     },
-    toString: function() {
+    toString: function () {
         return "[object Event]";
     }
 });
 /* istanbul ignore next  */
 //freeze_start
 Object.freeze ||
-    (Object.freeze = function(a) {
+    (Object.freeze = function (a) {
         return a;
     });
 //freeze_end

@@ -23,8 +23,8 @@ function keysPolyfill() {
     //解决IE下Object.keys的性能问题
     if (needFix(Object.keys)) {
         Object.keys = function keys(obj) {
-            var a = [];
-            for (var k in obj) {
+            let a = [];
+            for (let k in obj) {
                 if (hasOwnProperty.call(obj, k)) {
                     a.push(k);
                 }
@@ -37,7 +37,7 @@ keysPolyfill();
 setTimeout(keysPolyfill, 0);
 setTimeout(keysPolyfill, 100);
 
-var React;
+let React;
 if (window.React && window.React.options) {
     React = window.React;
 } else {
@@ -66,7 +66,7 @@ if (window.React && window.React.options) {
 
         createFactory(type) {
             console.warn("createFactory is deprecated"); // eslint-disable-line
-            var factory = createElement.bind(null, type);
+            let factory = createElement.bind(null, type);
             factory.type = type;
             return factory;
         }

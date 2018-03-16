@@ -1,9 +1,9 @@
 
-var check = function () {
+let check = function () {
     return check;
 };
 check.isRequired = check;
-export var PropTypes = {
+export let PropTypes = {
     array: check,
     bool: check,
     func: check,

@@ -2,7 +2,7 @@ import { inherit } from "./util";
 import { Component } from "./Component";
 import { PropTypes } from "./PropTypes";
 
-var uuid = 1;
+let uuid = 1;
 function gud() {
     return uuid++;
 }

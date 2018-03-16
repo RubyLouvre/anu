@@ -10,7 +10,7 @@ function mountSorter(u1, u2) {
 }
 export function flushUpdaters() {
     if (dirtyComponents.length) {
-        var currentQueue = clearArray(dirtyComponents).sort(mountSorter);
+        let currentQueue = clearArray(dirtyComponents).sort(mountSorter);
         currentQueue.forEach(function(el) {
             delete el._dirty;
         });
@@ -25,7 +25,7 @@ export function enqueueUpdater(updater) {
         dirtyComponents.push(updater);
     }
 }
-var placehoder = {
+let placehoder = {
     transition: noop
 };
 export function drainQueue(queue) {
@@ -36,10 +36,10 @@ export function drainQueue(queue) {
         if (fiber._disposed) {
             continue;
         }
-        var hook = Refs.errorHook;
+        let hook = Refs.errorHook;
         if (hook) {
             //如果存在医生节点
-            var doctors = Refs.doctors,
+            let doctors = Refs.doctors,
                 doctor = doctors[0],
                 gotoCreateRejectQueue,
                 addDoctor,
@@ -70,7 +70,7 @@ export function drainQueue(queue) {
                 delete Refs.error;
                 delete Refs.doctors;
                 delete Refs.errorHook;
-                var unwindQueue = [];
+                let unwindQueue = [];
                 // 收集要销毁的组件（要求必须resolved）
                 // 错误列队的钩子如果发生错误，如果还没有到达医生节点，它的出错会被忽略掉，
                 // 详见CompositeUpdater#catch()
@@ -94,7 +94,7 @@ export function drainQueue(queue) {
     }
 
     options.afterPatch();
-    var error = Refs.error;
+    let error = Refs.error;
     if (error) {
         delete Refs.error;
         throw error;

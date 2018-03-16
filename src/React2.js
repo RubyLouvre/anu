@@ -351,7 +351,7 @@ function commitAllWork(fiber) {
         commitWork(f);
     });
     fiber.stateNode._rootContainerFiber = fiber;
-    console.log(new Date - 0, "commitAllWork")
+    console.log(new Date - 0, "commitAllWork");
     nextUnitOfWork = null;
     pendingCommit = null;
 }
@@ -394,8 +394,8 @@ function commitDeletion(fiber, domParent) {
     }
 }
 
-var React = {
+let React = {
     createElement,
     Component,
     render
-}
+};

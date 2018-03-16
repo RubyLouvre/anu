@@ -1,5 +1,5 @@
 import { oneObject, camelize } from "./util";
-export var rnumber = /^-?\d+(\.\d+)?$/;
+export let rnumber = /^-?\d+(\.\d+)?$/;
 /**
      * 为元素样子设置样式
      * 
@@ -40,13 +40,13 @@ export function patchStyle(dom, lastStyle, nextStyle) {
     }
 }
 
-export var cssNumber = oneObject(
+export let cssNumber = oneObject(
     "animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom"
 );
 
-//var testStyle = document.documentElement.style
-var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-export var cssMap = oneObject("float", "cssFloat");
+//let testStyle = document.documentElement.style
+let prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
+export let cssMap = oneObject("float", "cssFloat");
 
 /**
  * 转换成当前浏览器可用的样式名

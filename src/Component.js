@@ -14,7 +14,7 @@ export function Component(props, context) {
     this.refs = {};
     this.state = null;
 }
-var fakeObject = {
+const fakeObject = {
     enqueueSetState: returnFalse,
     _isMounted: returnFalse
 };

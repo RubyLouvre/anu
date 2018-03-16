@@ -8,7 +8,7 @@ export function disposeVnode(fiber, updateQueue, silent) {
     if (fiber && !fiber._disposed) {
         options.beforeDelete(fiber._reactInnerFiber);
         if (fiber.name === "AnuInternalFiber") {
-            var i = topFibers.indexOf(fiber);
+            let i = topFibers.indexOf(fiber);
             if (i !== -1) {
                 topFibers.splice(i, 1);
                 topNodes.splice(i, 1);
@@ -16,7 +16,7 @@ export function disposeVnode(fiber, updateQueue, silent) {
         }
       
         if(fiber._return){
-            var dom = fiber._return.stateNode;
+            let dom = fiber._return.stateNode;
             delete dom.__events;
         }
         if (fiber.tag < 4) {
@@ -54,7 +54,7 @@ function disposeElement(fiber, updateQueue, silent) {
 }
 
 function disposeComponent(fiber, updateQueue, silent) {
-    var instance = fiber.stateNode;
+    let instance = fiber.stateNode;
     if (!instance) {
         //没有实例化
         return;
@@ -73,7 +73,7 @@ function disposeComponent(fiber, updateQueue, silent) {
 }
 
 export function disposeChildren(children, updateQueue, silent) {
-    for (var i in children) {
+    for (let i in children) {
         disposeVnode(children[i], updateQueue, silent);
     }
 }
