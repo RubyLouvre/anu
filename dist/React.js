@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-03-16
+ * by 司徒正美 Copyright 2018-03-18
  * IE9+
  */
 
@@ -2785,7 +2785,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.3.0",
+        version: "1.3.1",
         render: render,
         hydrate: render,
         options: options,
