@@ -1,5 +1,10 @@
+## 1.3.1(2018.03.18)
+
 1. React.Fragment支持key属性
 2. 修正有`生命周期的无状态组件`的更新BUG
+3. 实现React.createRef与React.forwardRef
+4. 实现createResource与createSubscription这两个处理狀态的新包，放于lib下
+5. var 集体更改为let const
 
 ## 1.3.0(2018.03.06)
 
