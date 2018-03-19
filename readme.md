@@ -7,24 +7,21 @@
 <a href="https://travis-ci.org/RubyLouvre/anu">
 <img src="https://travis-ci.org/RubyLouvre/anu.svg?branch=master" alt="Travis CI Status"/>
 </a>
-
 </p>
-
 
 ```bash
 npm install anujs
 ```
-
 读作 安努 ，苏美尔的主神，开天辟地。一个高级兼容官方React16的迷你React框架，用于上线时无痛替换React，压缩整个项目的体积。
 QQ交流学习群：  370262116
 
 ### 特点：
 
-1. 支持React16的各种新功能，Fragment, componentDidCatch, creactContext, createRef, forwardRef...
-2. 体积足够少(2000行相对于react+react-dom的3万行, gz为其1/3大小)
-3. 跑通官方500多个单元测试（其他迷你库都无法跑官方测试）
-4. 支持React全家桶（react-redux, react-router-dom, react-router-redux）
-5. 支持[后端渲染]（ renderToString, renderToStaticMarkup， renderToNodeStream ，renderToStaticNodeStream）
+1. 支持React16的各种**新功能**，Fragment, componentDidCatch, creactContext, createRef, forwardRef...
+2. 体积非常迷你(2000行相对于react+react-dom的3万行, gz为其1/3大小)
+3. 跑通**官方500多个单元测试**（其他迷你库都无法跑官方测试）
+4. 支持**React全家桶**（react-redux, react-router-dom, react-router-redux）
+5. 支持**后端渲染**（ renderToString, renderToStaticMarkup， renderToNodeStream ，renderToStaticNodeStream）
 6. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
 ### 官方脚手架 
