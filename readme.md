@@ -30,7 +30,9 @@ QQ交流学习群：  370262116
 8. 支持[后端渲染]（ renderToString, renderToStaticMarkup， renderToNodeStream ，renderToStaticNodeStream）(https://github.com/RubyLouvre/anu/wiki/%E5%90%8E%E7%AB%AF%E6%B8%B2%E6%9F%93)
 9. 支持[官方的chrome DevTools](https://github.com/RubyLouvre/anu/wiki/react-chrome%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7)
 
-脚手架  https://github.com/RubyLouvre/anu-cli
+### 脚手架 
+
+https://github.com/RubyLouvre/create-anu-app
 
 
 ![image](https://cloud.githubusercontent.com/assets/190846/26769869/e5e1f6c0-49e4-11e7-94c9-f106179cf40f.png)
