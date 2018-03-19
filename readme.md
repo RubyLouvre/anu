@@ -85,8 +85,7 @@ selenium-standalone start
 # 另开窗口
 npm run build
 ```
-或者
-//linux32可以改成mac, window
+linux32可以改成mac, window
 
 ```bash
 wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux32.zip
