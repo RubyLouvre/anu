@@ -57,7 +57,7 @@ export function createElement(type, config, ...children) {
 
 export function createVText(type, text) {
     let vnode = new Vnode(type, 6);
-    vnode.text = text;
+    vnode.props = {children: text};
     return vnode;
 }
 

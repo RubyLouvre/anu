@@ -13,7 +13,7 @@ import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
 
-import { render, findDOMNode, isValidElement, unmountComponentAtNode, unstable_renderSubtreeIntoContainer } from "./diff";
+import { render, findDOMNode, isValidElement } from "./diff2";
 
 let React;
 if (window.React && window.React.options) {
@@ -39,8 +39,6 @@ if (window.React && window.React.options) {
         cloneElement,
         PureComponent,
         isValidElement,
-        unmountComponentAtNode,
-        unstable_renderSubtreeIntoContainer,
         createFactory(type) {
             console.warn("createFactory is deprecated"); // eslint-disable-line
             let factory = createElement.bind(null, type);
