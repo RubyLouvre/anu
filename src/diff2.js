@@ -64,7 +64,7 @@ function renderByAnu(vnode, root, callback) {
 	return instance;
 }
 function getNextUnitOfWork() {
-	var fiber = updateQueue.shift();
+	let fiber = updateQueue.shift();
 	if (!fiber) {
 		return;
 	}
@@ -77,8 +77,8 @@ function getNextUnitOfWork() {
 	return fiber;
 }
 function workLoop(deadline) {
-	var topWork = getNextUnitOfWork();
-	var fiber = topWork;
+	let topWork = getNextUnitOfWork();
+	let fiber = topWork;
 	while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
 		fiber = performUnitOfWork(fiber, topWork);
 	}
@@ -114,9 +114,10 @@ function performUnitOfWork(fiber, topWork) {
 		if (f === topWork) {
 			break;
 		}
-		if (f.sibling) {//往右走
+		if (f.sibling) {
+			//往右走
 			return f.sibling;
-		} 
+		}
 		f = f.return;
 	}
 }
@@ -158,11 +159,11 @@ const WORKING = 1;
 const MOUNT = 2;
 const UPDATE = 3;
 const DELETE = 5;
-const CONTENT = 7
+const CONTENT = 7;
 const CALLBACK = 11;
 const REF = 13;
 const NULLREF = 17;
-var effectNames = [ MOUNT, UPDATE, DELETE, CONTENT, CALLBACK, REF, NULLREF ];
+const effectNames = [ MOUNT, UPDATE, DELETE, CONTENT, CALLBACK, REF, NULLREF ];
 function commitWork(fiber) {
 	let parentFiber = fiber.return;
 	if (!parentFiber) {
@@ -203,8 +204,8 @@ function commitWork(fiber) {
 					}
 					break;
 				case CONTENT:
-                    fiber.stateNode.nodeValue = fiber.props.children;
-                    break
+					fiber.stateNode.nodeValue = fiber.props.children;
+					break;
 				case REF:
 					Refs.fireRef(fiber, instance);
 					break;
@@ -239,8 +240,8 @@ function get(key) {
 	return key._reactInternalFiber;
 }
 function enqueueSetState(instance, state, callback) {
-	var fiber = get(instance);
-	var isForceUpdate = state === true;
+	let fiber = get(instance);
+	let isForceUpdate = state === true;
 	updateQueue.unshift(
 		Object.assign({}, fiber, {
 			stateNode: instance,
@@ -302,12 +303,12 @@ function updateClassComponent(fiber) {
 	let { props: lastProps, state: lastState } = instance;
 	fiber.lastState = lastProps;
 	fiber.lastProps = lastState;
-	var oldFiber = instance._reactInternalFiber;
+	let oldFiber = instance._reactInternalFiber;
 	instance._reactInternalFiber = fiber;
 	fiber.partialState = null;
 	if (instance.getChildContext) {
 		try {
-			var c = instance.getChildContext();
+			let c = instance.getChildContext();
 			c = Object.assign({}, nextContext, c);
 		} catch (e) {
 			c = {};
