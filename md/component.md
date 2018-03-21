@@ -33,7 +33,7 @@ ReactDOM.render(<Input />, rootElement)
 ```
 
 ###2.纯组件
-纯数组与有状态组件唯一不同就是其父类。父类为它指定了特殊的shouldComponentUpdate。当用户调用了setState，或父组件发生render操作时，子组件也会发生render操作，这时我们可以指定shouldComponentUpdate方法，通过返回false阻止此组件进行更新。
+纯组件与有状态组件唯一不同就是其父类。父类为它指定了特殊的shouldComponentUpdate。当用户调用了setState，或父组件发生render操作时，子组件也会发生render操作，这时我们可以指定shouldComponentUpdate方法，通过返回false阻止此组件进行更新。
 
 为了减少无效的更新操作，shouldComponentUpdate的实现是非常关键的，因此在早期React版本中有一个叫PureRenderMixin插件非常受欢迎。返回此组件就整合到React中，诞生了现在的纯组件。
 
@@ -62,7 +62,7 @@ ReactDOM.render(<Input />, rootElement)
 
 ###3.无状态组件
 
-一个数组是总继承什么父类，必须消耗许多性能，并且在组件挂载到DOM树或更新过程中，会触发一系列生命周期钩子，这也会消耗性能。为了避开所有这一切的性能损失，于是React推出了无状态组件。无状态组就是一个普通的函数，特殊之处是函数的第一个字母大写，接受两个参数(props与context)，返回JSX。
+一个组件是总继承什么父类，必须消耗许多性能，并且在组件挂载到DOM树或更新过程中，会触发一系列生命周期钩子，这也会消耗性能。为了避开所有这一切的性能损失，于是React推出了无状态组件。无状态组就是一个普通的函数，特殊之处是函数的第一个字母大写，接受两个参数(props与context)，返回JSX。
 
 
 ```javascript
