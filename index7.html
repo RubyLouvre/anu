@@ -24,6 +24,18 @@
              x: "司徒正美"
          }
       }
+      componentWillMount(){
+          console.log("App componentWillMount")
+      }
+      componentDidMount(){
+          console.log("App componentDidMount")
+      }
+      componentWillUpdate(){
+          console.log("App componentWillUpdate")
+      }
+      componentDidUpdate(){
+          console.log("App componentDidUpdate")
+      }
       getChildContext(){
           return {
               child: 333
@@ -50,12 +62,13 @@
 
 var b
    var a = ReactDOM.render(<App />,container, function(){
-       console.log(this, '!!!')
+       console.log(this, '执行ReactDOM.render回调')
        b = this
+       console.log("准备setState")
        b.setState({
            x: "xxx"
        }, function(){
-           console.log("xxxxx",this)
+          console.log(this, '执行setState回调')
        })
    });
 
