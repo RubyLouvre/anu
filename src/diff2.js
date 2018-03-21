@@ -91,13 +91,17 @@ function commitAllWork(fiber) {
 	fiber.effects.concat(fiber).forEach((f) => {
 		commitWork(f);
 	});
-	fiber.effects = null;
 	if (fiber.callback) {
 		//ReactDOM.render/forceUpdate/setState callback
 		fiber.callback.call(fiber.stateNode);
 	}
 }
-
+/**
+ * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
+ * 没有，则找其父节点的孩子
+ * @param {Fiber} fiber 
+ * @param {Fiber} topWork 
+ */
 function performUnitOfWork(fiber, topWork) {
 	beginWork(fiber);
 	if (fiber.child && fiber.effectTag !== NOWORK) {
@@ -110,10 +114,9 @@ function performUnitOfWork(fiber, topWork) {
 		if (f === topWork) {
 			break;
 		}
-		if (f.sibling) {
-			// Sibling needs to beginWork
+		if (f.sibling) {//往右走
 			return f.sibling;
-		}
+		} 
 		f = f.return;
 	}
 }
@@ -229,7 +232,7 @@ function updateHostComponent(fiber) {
 			fiber.effectTag *= CONTENT;
 		}
 	} else if (fiber.props) {
-		reconcileChildrenArray(fiber, children);
+		diffChildren(fiber, children);
 	}
 }
 function get(key) {
@@ -351,7 +354,7 @@ function updateClassComponent(fiber) {
 		return;
 	}
 	const children = instance.render();
-	reconcileChildrenArray(fiber, children);
+	diffChildren(fiber, children);
 }
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {
@@ -359,13 +362,11 @@ function isSameNode(a, b) {
 	}
 }
 
-function reconcileChildrenArray(parentFiber, children) {
+function diffChildren(parentFiber, children) {
 	let oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {}; //旧的
 	let newFibers = fiberizeChildren(children, parentFiber); //新的
 	let effects = parentFiber.effects || (parentFiber.effects = []);
 	let matchFibers = {};
-	// console.log(parentFiber.alternate,oldFibers, newFibers);
-
 	for (let i in oldFibers) {
 		let newFiber = newFibers[i];
 		let oldFiber = oldFibers[i];
@@ -375,7 +376,6 @@ function reconcileChildrenArray(parentFiber, children) {
 				oldFiber.key = newFiber.key;
 			}
 			if (oldFiber.ref !== newFiber.ref) {
-				console.log('NULLREF');
 				oldFiber.effectTag *= NULLREF;
 				effects.push(oldFiber);
 			}
