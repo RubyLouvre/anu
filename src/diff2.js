@@ -2,6 +2,7 @@ import { emptyElement, createElement } from "./browser";
 import { getProps, fiberizeChildren } from "./createElement";
 import { returnFalse, returnTrue, emptyObject, isFn } from "./util";
 import { captureError as callLifeCycleHook, pushError } from "./ErrorBoundary";
+import { Refs } from "./Refs";
 
 export function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
@@ -100,6 +101,9 @@ function commitAllWork(fiber) {
             }
         }
         f.effectTag = f.effects = null;
+        if (f.ref) {
+            Refs.fireRef(f, instance);
+        }
     });
     fiber.effects = null;
     if (fiber.callback) {//ReactDOM.render/forceUpdate/setState callback
@@ -117,7 +121,9 @@ function commitWork(fiber) {
         domParentFiber = domParentFiber.return;
     }
     const domParent = domParentFiber.stateNode;
-
+    if (fiber.effectTag === NULLREF) {
+        Refs.fireRef(fiber, null);
+    }
     if (fiber.effectTag == PLACEMENT && fiber.tag >= 5) {
         // console.log("插入", fiber);
         domParent.appendChild(fiber.stateNode);
@@ -132,7 +138,7 @@ function commitWork(fiber) {
 
 function performUnitOfWork(fiber, topWork) {
     beginWork(fiber);
-    if (fiber.child) {
+    if (fiber.child && fiber.effectTag !== NOWORK) {
         return fiber.child;
     }
     // No child, we call completeWork until we find a sibling
@@ -159,7 +165,7 @@ function completeWork(fiber, topWork) {
         }
     }
 
-    if (fiber.return && fiber !== topWork) {
+    if (fiber.return && fiber.effectTag !== NOWORK && fiber !== topWork) {
         const childEffects = fiber.effects || [];
         const thisEffect = fiber.effectTag != null ? [fiber] : [];
         const parentEffects = fiber.return.effects || [];
@@ -257,10 +263,6 @@ function updateClassComponent(fiber) {
     let nextContext = getMaskedContext(type.contextTypes);
     if (instance == null) {
         instance = fiber.stateNode = createInstance(type, nextProps, nextContext);
-    } else if (nextProps === instance.props && !fiber.partialState) {
-        // No need to render, clone children from last time
-        cloneChildFibers(fiber);
-        return;
     }
     let { props: lastProps, state: lastState } = instance;
     fiber.lastState = lastProps;
@@ -312,6 +314,7 @@ function updateClassComponent(fiber) {
     instance.props = nextProps;
     instance.state = Object.assign({}, lastState, fiber.partialState);
     if (!shouldUpdate) {
+        fiber.effectTag = NOWORK;
         return;
     }
     const children = instance.render();
@@ -325,10 +328,11 @@ function isSameNode(a, b) {
 var PLACEMENT = 1,
     UPDATE = 2,
     DELETION = 3,
-    NULLREF = 4;
+    NULLREF = 4,
+    NOWORK = 5;
 function reconcileChildrenArray(parentFiber, children) {
 
-    let oldFibers = parentFiber.alternate? parentFiber.alternate._children: {}; //旧的
+    let oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {}; //旧的
     let newFibers = fiberizeChildren(children, parentFiber);//新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
@@ -342,8 +346,11 @@ function reconcileChildrenArray(parentFiber, children) {
             if (newFiber.key != null) {
                 oldFiber.key = newFiber.key;
             }
-            if (oldFiber.tag === 5 && oldFiber.ref !== oldFiber.ref) {
-                oldFiber.effectTag = NULLREF;
+            if (oldFiber.ref !== newFiber.ref) {
+
+                //oldFiber.effectTag = NULLREF;
+                effects.push(Object.assign({},
+                    oldFiber, { effectTag: NULLREF }));
             }
             continue;
         }
@@ -397,6 +404,7 @@ function cloneChildFibers(parentFiber) {
     if (!oldFiber.child) {
         return;
     }
+    //oldFiber._children
 
     let oldChild = oldFiber.child;
     let prevChild = null;

@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
-  <script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+ <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script src="test/babel.js"></script>
 </head>
 
@@ -43,7 +43,7 @@
       }
       render(){
           console.log(new Date-0)
-          return <div><p>{this.state.x}</p><A dd={new Date-0}/></div>
+          return <div ref={true} class="app"><p ref={(a)=>{console.log(a, "p")}}>{this.state.x}</p><A dd={new Date-0}/></div>
       }
   }
   class A extends React.Component{
@@ -70,7 +70,7 @@
          }
       }
       render(){
-          return <strong>{this.context.child}{this.props.dd}</strong>
+          return <strong >{this.context.child}{this.props.dd}</strong>
       }
   }
 
