@@ -194,13 +194,12 @@ function get(key) {
 }
 function enqueueSetState(instance, state, callback) {
     var fiber = get(instance);
-    var isForce = state === true;
+    var isForceUpdate = state === true;
     updateQueue.unshift(
         Object.assign({}, fiber, {
             alternate: fiber,
-            from: "class",
-            partialState: isForce ? null : state,
-            isForce,
+            partialState: isForceUpdate ? null : state,
+            isForceUpdate,
             callback
         })
     );
