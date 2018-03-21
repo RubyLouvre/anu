@@ -28,13 +28,13 @@ Component.prototype = {
     isReactComponent:returnTrue,
     isMounted() {
         deprecatedWarn("isMounted");
-        return (this.updater || fakeObject)._isMounted();
+        return (this.updater || fakeObject)._isMounted(this);
     },
     setState(state, cb) {
-        (this.updater || fakeObject).enqueueSetState(state, cb);
+        (this.updater || fakeObject).enqueueSetState(this, state, cb);
     },
     forceUpdate(cb) {
-        (this.updater || fakeObject).enqueueSetState(true, cb);
+        (this.updater || fakeObject).enqueueSetState(this, true, cb);
     },
     render() {}
 };

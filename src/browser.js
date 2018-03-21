@@ -125,7 +125,8 @@ export let msie = document.documentMode || versions[typeNumber(document.all) + "
 
 export let modern = /NaN|undefined/.test(msie) || msie > 8;
 
-export function createElement(vnode, p) {
+export function createElement(vnode) {
+    let p = vnode.return
     let { type, props, namespaceURI: ns, text } = vnode;
     switch (type) {
     case "#text":

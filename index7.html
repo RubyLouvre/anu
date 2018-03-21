@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
+  <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script src="test/babel.js"></script>
 </head>
 
@@ -24,13 +24,39 @@
              x: "司徒正美"
          }
       }
+      getChildContext(){
+          return {
+              child: 333
+          }
+      }
       render(){
-          return <div><p>{this.state.x}</p></div>
+          return <div><p>{this.state.x}</p><A dd={new Date-0}/></div>
+      }
+  }
+  class A extends React.Component{
+      static contextTypes = {
+          child: true
+      }
+      constructor(a,b){
+         super(a, b)
+         this.state = {
+             x: "司徒正美"
+         }
+      }
+      render(){
+          return <strong>{this.context.child}</strong>
       }
   }
 
+var b
    var a = ReactDOM.render(<App />,container, function(){
        console.log(this, '!!!')
+       b = this
+       b.setState({
+           x: "xxx"
+       }, function(){
+           console.log("xxxxx",this)
+       })
    });
 
 </script>

@@ -83,7 +83,7 @@ export function createVnode(node) {
     return vnode;
 }
 
-function getProps(node) {
+export function getProps(node) {
     let attrs = node.attributes,
         props = {};
     for (let i = 0, attr; (attr = attrs[i++]);) {
