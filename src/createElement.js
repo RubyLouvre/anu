@@ -1,4 +1,4 @@
-import { typeNumber, hasSymbol, Fragment } from "./util";
+import { typeNumber, hasSymbol, Fragment,emptyObject } from "./util";
 import { Vnode } from "./vnode";
 
 /**
@@ -109,7 +109,7 @@ function flattenCb(child, key) {
         //number string
         if (lastText) {
             //合并相邻的文本节点
-            lastText.text += child;
+            lastText.props.children += child;
             return;
         }
         lastText = child = createVText("#text", child + "");
@@ -122,7 +122,7 @@ function flattenCb(child, key) {
         key = "." + flattenIndex;
         flattenObject[key] = child;
     }
-    child.index = flattenIndex++;
+    flattenIndex++;
     // flattenArray.push(child);
 }
 

@@ -27,7 +27,6 @@ Component.prototype = {
     },
     isReactComponent:returnTrue,
     isMounted() {
-        deprecatedWarn("isMounted");
         return (this.updater || fakeObject)._isMounted(this);
     },
     setState(state, cb) {

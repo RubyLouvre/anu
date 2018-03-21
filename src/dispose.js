@@ -45,7 +45,7 @@ function disposeElement(fiber, updateQueue, silent) {
         fiber._states = ["dispose"];
         updateQueue.push(fiber);
     } else {
-        if (fiber._isMounted()) {
+        if (fiber._isMounted && fiber._isMounted()) {
             fiber._states = ["dispose"];
             updateQueue.push(fiber);
         }
