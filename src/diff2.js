@@ -1,6 +1,8 @@
 import { emptyElement, createElement } from "./browser";
-import { createVnode, createVText, getProps } from "./createElement";
+import { createVText, getProps } from "./createElement";
 import { typeNumber, returnFalse, returnTrue } from "./util";
+import { captureError as callLifeCycleHook, pushError } from "./ErrorBoundary";
+
 export function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
 }
@@ -37,7 +39,8 @@ function renderByAnu(vnode, root, callback) {
     if (!(root && root.appendChild)) {
 		throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
-    updateQueue.push({
+    let instance;
+    let hostRoot = {
         stateNode: root,
         from: "root",
         tag: 5,
@@ -46,15 +49,18 @@ function renderByAnu(vnode, root, callback) {
             children: vnode
         }),
         alternate: root.__component,
-        callback
-    });
+        callback() {
+            instance = hostRoot.child ? hostRoot.child.stateNode : null;
+            callback && callback.call(instance);
+        }
+    };
+    updateQueue.push(hostRoot);
     workLoop({
         timeRemaining() {
             return 2;
         }
     });
-    var hostRoot = root.__component;
-    return hostRoot.child ? hostRoot.child.instance : null;
+    return instance;
 }
 function getNextUnitOfWork() {
     var fiber = updateQueue.shift();
@@ -62,6 +68,9 @@ function getNextUnitOfWork() {
         return;
     }
     if (fiber.from == "root") {
+        if (!fiber.stateNode.__component) {
+            emptyElement(fiber.stateNode);
+        }
         fiber.stateNode.__component = fiber;
     }
     return fiber;
@@ -76,11 +85,7 @@ function workLoop(deadline) {
         commitAllWork(topWork);
     }
 }
-function callLifeCycleHook(instance, hook, args) {
-    if (instance[hook]) {
-        instance[hook].apply(instance, args);
-    }
-}
+
 function commitAllWork(fiber) {
     fiber.effects.concat(fiber).forEach((f) => {
         commitWork(f);
@@ -96,15 +101,14 @@ function commitAllWork(fiber) {
         f.effectTag = f.effects = null;
     });
     fiber.effects = null;
-    if (fiber.callback) {
-        fiber.callback.call(fiber.child ? fiber.child.stateNode : null);
-        delete fiber.callback;
+    if (fiber.callback) {//ReactDOM.render/forceUpdate/setState callback
+        fiber.callback.call(fiber.stateNode);
     }
 }
 
 function commitWork(fiber) {
     let domParentFiber = fiber.return;
-    if(!domParentFiber){
+    if (!domParentFiber) {
         return;
     }
 
@@ -175,7 +179,6 @@ function updateHostComponent(fiber) {
         try {
             fiber.stateNode = createElement(fiber);
         } catch (e) {
-            console.log(fiber);
             throw e;
         }
     }
@@ -228,6 +231,7 @@ function getMaskedContext(contextTypes) {
 function createInstance(type, props, context) {
     let instance = new type(props, context);
     instance.updater = {
+        name: type.displayName || type.name,
         enqueueSetState: enqueueSetState,
         _isMounted: returnFalse
     };
@@ -244,16 +248,11 @@ function updateClassComponent(fiber) {
         cloneChildFibers(fiber);
         return;
     }
-    instance.context = context;
-    instance.props = fiber.props;
-    instance.state = Object.assign({}, instance.state, fiber.partialState);
+    let { props: lastProps, state: lastState } = instance;
+    fiber.lastState = lastProps;
+    fiber.lastProps = lastState;
     instance._reactInternalFiber = fiber;
     fiber.partialState = null;
-    if (instance.isMounted()) {
-        callLifeCycleHook(instance, "componentWillUpdate", []);
-    } else {
-        callLifeCycleHook(instance, "componentWillMount", []);
-    }
     if (instance.getChildContext) {
         try {
             var c = instance.getChildContext();
@@ -262,6 +261,23 @@ function updateClassComponent(fiber) {
             c = {};
         }
         contextStack.unshift(c);
+    }
+    let shouldUpdate = true;
+    if (instance.isMounted()) {
+        let args = [instance.props, instance.state, instance.context];
+        if (!fiber.forceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
+            shouldUpdate = false;
+        } else {
+            callLifeCycleHook(instance, "componentWillUpdate", args);
+        }
+    } else {
+        callLifeCycleHook(instance, "componentWillMount", []);
+    }
+    instance.context = context;
+    instance.props = fiber.props;
+    instance.state = Object.assign({}, instance.state, fiber.partialState);
+    if (!shouldUpdate) {
+        return;
     }
     const children = instance.render();
     reconcileChildrenArray(fiber, children);

@@ -2033,6 +2033,85 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 }
 
+function pushError(instance, hook, error) {
+    var names = [];
+    var catchUpdater = findCatchComponent(instance, names);
+    instance.updater._hasError = true;
+    var stack = describeError(names, hook);
+    if (catchUpdater) {
+        disableHook(instance.updater);
+        catchUpdater.errorInfo = catchUpdater.errorInfo || [error, { componentStack: stack }, instance];
+        if (!Refs.errorHook) {
+            Refs.errorHook = hook;
+            Refs.doctors = [catchUpdater];
+        } else {
+            if (Refs.doctors.indexOf(catchUpdater) === -1) {
+                Refs.doctors.push(catchUpdater);
+            }
+        }
+        delete catchUpdater.child;
+    } else {
+        console.warn(stack);
+        if (!Refs.error) {
+            Refs.error = error;
+        }
+    }
+}
+function captureError(instance, hook, args) {
+    try {
+        var fn = instance[hook];
+        if (fn) {
+            return fn.apply(instance, args);
+        }
+        return true;
+    } catch (error) {
+        if (hook === "componentWillUnmount") {
+            instance[hook] = noop;
+        }
+        pushError(instance, hook, error);
+    }
+}
+function describeError(names, hook) {
+    var segments = ["**" + hook + "** method occur error "];
+    names.forEach(function (name, i) {
+        if (names[i + 1]) {
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
+        }
+    });
+    return segments.join("\n").trim();
+}
+function disableHook(u) {
+    u.hydrate = u.render = u.resolve = noop;
+}
+function findCatchComponent(target, names) {
+    var fiber = target.updater,
+        instance = void 0,
+        name = void 0,
+        catchIt = void 0;
+    do {
+        name = fiber.name;
+        if (fiber.name === "AnuInternalFiber") {
+            if (catchIt) {
+                return catchIt;
+            }
+            disposeVnode(fiber, [], true);
+            break;
+        } else if (fiber.tag < 4) {
+            names.push(name);
+            instance = fiber.stateNode;
+            if (instance.componentDidCatch) {
+                if (fiber._isDoctor) {
+                    disableHook(fiber);
+                } else if (!catchIt && target !== instance) {
+                    catchIt = fiber;
+                }
+            }
+        } else if (fiber.tag === 5) {
+            names.push(name);
+        }
+    } while (fiber = fiber.return);
+}
+
 function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
 }
@@ -2059,11 +2138,12 @@ function findDOMNode(instanceOrElement) {
 var contextStack = [{}];
 var updateQueue = [];
 var ENOUGH_TIME = 1;
-function renderByAnu(vnode, root, callback) {
+function renderByAnu(vnode, root, _callback) {
     if (!(root && root.appendChild)) {
         throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF";
     }
-    updateQueue.push({
+    var instance = void 0;
+    var hostRoot = {
         stateNode: root,
         from: "root",
         tag: 5,
@@ -2072,15 +2152,18 @@ function renderByAnu(vnode, root, callback) {
             children: vnode
         }),
         alternate: root.__component,
-        callback: callback
-    });
+        callback: function callback() {
+            instance = hostRoot.child ? hostRoot.child.stateNode : null;
+            _callback && _callback.call(instance);
+        }
+    };
+    updateQueue.push(hostRoot);
     workLoop({
         timeRemaining: function timeRemaining() {
             return 2;
         }
     });
-    var hostRoot = root.__component;
-    return hostRoot.child ? hostRoot.child.instance : null;
+    return instance;
 }
 function getNextUnitOfWork() {
     var fiber = updateQueue.shift();
@@ -2088,6 +2171,9 @@ function getNextUnitOfWork() {
         return;
     }
     if (fiber.from == "root") {
+        if (!fiber.stateNode.__component) {
+            emptyElement(fiber.stateNode);
+        }
         fiber.stateNode.__component = fiber;
     }
     return fiber;
@@ -2102,20 +2188,15 @@ function workLoop(deadline) {
         commitAllWork(topWork);
     }
 }
-function callLifeCycleHook(instance, hook, args) {
-    if (instance[hook]) {
-        instance[hook].apply(instance, args);
-    }
-}
 function commitAllWork(fiber) {
     fiber.effects.concat(fiber).forEach(function (f) {
         commitWork(f);
         var instance = f.stateNode;
         if (f.tag === 2) {
             if (instance.isMounted()) {
-                callLifeCycleHook(instance, "componentDidUpdate", []);
+                captureError(instance, "componentDidUpdate", []);
             } else {
-                callLifeCycleHook(instance, "componentDidMount", []);
+                captureError(instance, "componentDidMount", []);
                 instance.updater._isMounted = returnTrue;
             }
         }
@@ -2123,8 +2204,7 @@ function commitAllWork(fiber) {
     });
     fiber.effects = null;
     if (fiber.callback) {
-        fiber.callback.call(fiber.child ? fiber.child.stateNode : null);
-        delete fiber.callback;
+        fiber.callback.call(fiber.stateNode);
     }
 }
 function commitWork(fiber) {
@@ -2186,7 +2266,6 @@ function updateHostComponent(fiber) {
         try {
             fiber.stateNode = createElement$1(fiber);
         } catch (e) {
-            console.log(fiber);
             throw e;
         }
     }
@@ -2236,6 +2315,7 @@ function getMaskedContext(contextTypes) {
 function createInstance(type, props, context) {
     var instance = new type(props, context);
     instance.updater = {
+        name: type.displayName || type.name,
         enqueueSetState: enqueueSetState,
         _isMounted: returnFalse
     };
@@ -2252,16 +2332,13 @@ function updateClassComponent(fiber) {
         cloneChildFibers(fiber);
         return;
     }
-    instance.context = context;
-    instance.props = fiber.props;
-    instance.state = Object.assign({}, instance.state, fiber.partialState);
+    var _instance = instance,
+        lastProps = _instance.props,
+        lastState = _instance.state;
+    fiber.lastState = lastProps;
+    fiber.lastProps = lastState;
     instance._reactInternalFiber = fiber;
     fiber.partialState = null;
-    if (instance.isMounted()) {
-        callLifeCycleHook(instance, "componentWillUpdate", []);
-    } else {
-        callLifeCycleHook(instance, "componentWillMount", []);
-    }
     if (instance.getChildContext) {
         try {
             var c = instance.getChildContext();
@@ -2270,6 +2347,23 @@ function updateClassComponent(fiber) {
             c = {};
         }
         contextStack.unshift(c);
+    }
+    var shouldUpdate = true;
+    if (instance.isMounted()) {
+        var args = [instance.props, instance.state, instance.context];
+        if (!fiber.forceUpdate && !captureError(instance, "shouldComponentUpdate", args)) {
+            shouldUpdate = false;
+        } else {
+            captureError(instance, "componentWillUpdate", args);
+        }
+    } else {
+        captureError(instance, "componentWillMount", []);
+    }
+    instance.context = context;
+    instance.props = fiber.props;
+    instance.state = Object.assign({}, instance.state, fiber.partialState);
+    if (!shouldUpdate) {
+        return;
     }
     var children = instance.render();
     reconcileChildrenArray(fiber, children);
