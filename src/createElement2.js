@@ -99,8 +99,7 @@ export function getProps(node) {
 }
 
 let lastText, flattenIndex, flattenObject;
-function flattenCb(child, key) {
-    let childType = typeNumber(child);
+function flattenCb(child, key, childType) {
     let textType = childType === 3 || childType === 4;
     if (textType) {
         //number string
@@ -127,9 +126,10 @@ function flattenCb(child, key) {
 export function fiberizeChildren(c, fiber) {
     flattenObject = {};
     flattenIndex = 0;
+    //  flattenArray = [];
     if (c !== void 666) {
         lastText = null;//c 为fiber.props.children
-        operateChildren(c, "", flattenCb, isIterable(c), true);
+        operateChildren(c, "", flattenCb, typeNumber(c), true);
     }
     flattenIndex = 0;
     return (fiber._children = flattenObject);
@@ -164,41 +164,60 @@ export function isIterable(el) {
     }
     return 0;
 }
+
+function operateArray(children, prefix, isTop, callback) {
+    children.forEach(function (el, i) {
+        operateChildren(el, computeName(el, i, prefix, isTop), callback, typeNumber(el), false);
+    });
+}
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
-export function operateChildren(children, prefix, callback, iterableType, isTop) {
-    let key, el, t, iterator;
-    switch (iterableType) {
-    case 0:
-        if (Object(children) === children && !children.call && !children.type) {
-            throw "children中存在非法的对象";
+export function operateChildren(children, prefix, callback, number, isTop) {
+    let key, el, iterator;
+    switch (number) {
+    case 0://undefined
+    case 1://null
+    case 2://boolean
+    case 3://number
+    case 4://string
+    case 5://function
+    case 6://string
+        callback(children, key, number);
+        break;
+    case 7://array
+        operateArray(children, prefix, isTop, callback);
+        break;
+    case 8://object
+        if (children.forEach) {
+            operateArray(children, prefix, isTop, callback);
+            return;
+        } else if (children.type === Fragment) {
+            key = children.key ? "$" + children.key : "";
+            key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
+            el = children.props.children;
+            var innerNumber = typeNumber(el);
+            if (innerNumber < 7 || !isIterable(el)) {
+                el = [el];
+                innerNumber = 7;
+            }
+            operateChildren(el, key, callback, innerNumber, false);
+            return;
         }
-        key = prefix || (children && children.key ? "$" + children.key : "0");
-        callback(children, key);
-        break;
-    case 1: //数组，Map, Set
-        children.forEach(function (el, i) {
-            operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
-        });
-        break;
-    case 2: //React.Fragment
-        key = children && children.key ? "$" + children.key : "";
-        key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
-        el = children.props.children;
-        t = isIterable(el);
-        if (!t) {
-            el = [el];
-            t = 1;
-        }
-        operateChildren(el, key, callback, t, false);
-        break;
-    default:
-        iterator = iterableType.call(children);
-        var ii = 0,
-            step;
-        while (!(step = iterator.next()).done) {
-            el = step.value;
-            operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
-            ii++;
+        var cursor = getIteractor(children);
+        if (cursor) {
+            iterator = cursor.call(children);
+            var ii = 0,
+                step;
+            while (!(step = iterator.next()).done) {
+                el = step.value;
+                operateChildren(el, computeName(el, ii, prefix, isTop), callback, typeNumber(el), false);
+                ii++;
+            }
+        } else {
+            if (Object(children) === children && !children.call && !children.type) {
+                throw "children中存在非法的对象";
+            }
+            key = prefix || children.key ? "$" + children.key : "0";
+            callback(children, key, number);
         }
         break;
     }

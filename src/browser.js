@@ -126,7 +126,7 @@ export let msie = document.documentMode || versions[typeNumber(document.all) + "
 export let modern = /NaN|undefined/.test(msie) || msie > 8;
 
 export function createElement(vnode) {
-    let p = vnode.return
+    let p = vnode.return;
     let { type, props, namespaceURI: ns, text } = vnode;
     switch (type) {
     case "#text":
@@ -191,12 +191,13 @@ export function contains(a, b) {
     }
     return false;
 }
-export function insertElement(fiber, mountPoint) {
-    if (fiber._disposed) {
-        return;
-    }
+
+let insertContainer = null,
+    insertPoint = null;
+export function insertElement(fiber) {
     //找到可用的父节点
     let p = fiber.return,
+        dom = fiber.stateNode,
         parentNode;
     while (p) {
         if (p.tag === 5) {
@@ -205,19 +206,20 @@ export function insertElement(fiber, mountPoint) {
         }
         p = p._return || p.return;
     }
-
-    let dom = fiber.stateNode;
-    let after = mountPoint ? mountPoint.nextSibling : parentNode.firstChild;
-
-    if (after === dom) {
+    if (parentNode !== insertContainer) {
+        insertContainer = parentNode;
+        insertPoint = null;
+    }
+    let offset = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
+    if (offset === dom) {
         return;
     }
-    if (after === null && dom === parentNode.lastChild) {
+    if (offset === null && dom === parentNode.lastChild) {
         return;
     }
     let isElement = fiber.tag === 5;
     let prevFocus = isElement && document.activeElement;
-    parentNode.insertBefore(dom, after);
+    insertContainer.insertBefore(dom, offset);
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
         try {
             Refs.focusNode = prevFocus;

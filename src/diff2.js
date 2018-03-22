@@ -1,9 +1,11 @@
-import { emptyElement, createElement } from './browser';
+import { emptyElement, createElement, insertElement, removeElement } from './browser';
 import { getProps, fiberizeChildren } from './createElement';
-import { returnFalse, returnTrue, emptyObject, isFn } from './util';
+import { returnFalse, returnTrue, emptyObject, isFn, ownerStack, get, updateQueue } from './util';
 import { captureError as callLifeCycleHook, pushError } from './ErrorBoundary';
 import { Refs } from './Refs';
-
+import { ComponentFiber, createInstance } from './ComponentFiber';
+import { inputControll, formElements } from './inputControll';
+import { diffProps } from './diffProps';
 export function render(vnode, container, callback) {
 	return renderByAnu(vnode, container, callback);
 }
@@ -12,18 +14,18 @@ export function isValidElement(vnode) {
 	return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
 //[Top API] ReactDOM.findDOMNode
-export function findDOMNode(instanceOrElement) {
-	if (instanceOrElement == null) {
+export function findDOMNode(stateNode) {
+	if (stateNode == null) {
 		//如果是null
 		return null;
 	}
-	if (instanceOrElement.nodeType) {
+	if (stateNode.nodeType) {
 		//如果本身是元素节点
-		return instanceOrElement;
+		return stateNode;
 	}
 	//实例必然拥有updater与render
-	if (instanceOrElement.render) {
-		let fiber = instanceOrElement.updater;
+	if (stateNode.render) {
+		let fiber = get(stateNode);
 		let c = fiber.child;
 		if (c) {
 			return findDOMNode(c.stateNode);
@@ -33,7 +35,6 @@ export function findDOMNode(instanceOrElement) {
 	}
 }
 let contextStack = [ emptyObject ],
-	updateQueue = [],
 	ENOUGH_TIME = 1;
 
 function renderByAnu(vnode, root, callback) {
@@ -49,7 +50,8 @@ function renderByAnu(vnode, root, callback) {
 		props: Object.assign(getProps(root), {
 			children: vnode
 		}),
-		alternate: root.__component,
+		effectTag: CALLBACK,
+		alternate: get(root),
 		callback() {
 			instance = hostRoot.child ? hostRoot.child.stateNode : null;
 			callback && callback.call(instance);
@@ -69,10 +71,10 @@ function getNextUnitOfWork() {
 		return;
 	}
 	if (fiber.from == 'root') {
-		if (!fiber.stateNode.__component) {
+		if (!get(fiber.stateNode)) {
 			emptyElement(fiber.stateNode);
 		}
-		fiber.stateNode.__component = fiber;
+		fiber.stateNode._reactInternalFiber = fiber;
 	}
 	return fiber;
 }
@@ -91,10 +93,6 @@ function commitAllWork(fiber) {
 	fiber.effects.concat(fiber).forEach((f) => {
 		commitWork(f);
 	});
-	if (fiber.callback) {
-		//ReactDOM.render/forceUpdate/setState callback
-		fiber.callback.call(fiber.stateNode);
-	}
 }
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
@@ -127,9 +125,7 @@ function beginWork(fiber) {
 	if (!fiber.effectTag) {
 		fiber.effectTag = WORKING;
 	}
-	if (fiber.ref) {
-		fiber.effectTag *= REF;
-	}
+
 	if (fiber.tag > 4) {
 		updateHostComponent(fiber);
 	} else {
@@ -148,59 +144,73 @@ function completeWork(fiber, topWork) {
 
 	if (fiber.return && fiber.effectTag !== NOWORK && fiber !== topWork) {
 		const childEffects = fiber.effects || [];
-		const thisEffect = fiber.effectTag != null ? [ fiber ] : [];
+		const thisEffect = fiber.effectTag > 1 ? [ fiber ] : [];
 		const parentEffects = fiber.return.effects || [];
 		fiber.return.effects = parentEffects.concat(childEffects, thisEffect);
 	}
 }
 
-const NOWORK = 0;
-const WORKING = 1;
-const MOUNT = 2;
-const UPDATE = 3;
-const DELETE = 5;
-const CONTENT = 7;
-const CALLBACK = 11;
-const REF = 13;
-const NULLREF = 17;
-const effectNames = [ MOUNT, UPDATE, DELETE, CONTENT, CALLBACK, REF, NULLREF ];
+const NOWORK = 0; //不处理此节点及孩子
+const WORKING = 1; //用于叠加其他任务
+const MOUNT = 2; //插入或移动
+const ATTR = 3; //更新属性
+const CONTENT = 5; //设置文本
+const NULLREF = 7; //ref null
+const HOOK = 11; //componentDidMount/Update/WillUnmount
+const REF = 13; //ref stateNode
+const DELETE = 17; //移出DOM树
+const CALLBACK = 19; //回调
+const effectNames = [ MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK ];
+const effectLength = effectNames.length;
+/**
+ * 基于素数的任务系统
+ * @param {Fiber} fiber 
+ */
 function commitWork(fiber) {
-	let parentFiber = fiber.return;
-	if (!parentFiber) {
-		return;
-	}
-
-	while (parentFiber.tag == 2) {
-		parentFiber = parentFiber.return;
-	}
-	let parentNode = parentFiber.stateNode;
 	let instance = fiber.stateNode;
 	let amount = fiber.effectTag;
-	for (let i = 0; i < 7; i++) {
+	for (let i = 0; i < effectLength; i++) {
 		let effectNo = effectNames[i];
 		if (effectNo > amount) {
 			break;
 		}
 		let remainder = amount / effectNo;
 		if (remainder == ~~remainder) {
+			//如果能整除，下面的分支操作以后要改成注入方法
 			amount = remainder;
 			switch (effectNo) {
 				case MOUNT:
 					if (fiber.tag > 3) {
-						parentNode.appendChild(fiber.stateNode);
+						//5, 6
+						insertElement(fiber);
 					}
 					break;
-				case UPDATE:
+				case ATTR:
+					let { type, props, lastProps, stateNode: dom } = fiber;
+					diffProps(dom, lastProps || emptyObject, props, fiber);
+					if (formElements[type]) {
+						inputControll(fiber, dom, props);
+					}
 					break;
 				case DELETE:
-					commitDeletion(fiber, parentNode);
+					if (fiber.tag > 3) {
+						removeElement(fiber.stateNode);
+					}
+					delete fiber.stateNode;
 					break;
-				case CALLBACK:
-					if (instance.isMounted()) {
-						callLifeCycleHook(instance, 'componentDidUpdate', []);
+
+				case HOOK:
+					if (fiber.disposed) {
+						callLifeCycleHook(instance, 'componentWillUnmount', []);
+						instance.updater._isMounted = returnFalse;
+						//  delete fiber.stateNode;
 					} else {
-						callLifeCycleHook(instance, 'componentDidMount', []);
-						instance.updater._isMounted = returnTrue;
+						if (instance.isMounted()) {
+							callLifeCycleHook(instance, 'componentDidUpdate', []);
+						} else {
+							callLifeCycleHook(instance, 'componentDidMount', []);
+							instance.updater._isMounted = returnTrue;
+						}
 					}
 					break;
 				case CONTENT:
@@ -212,10 +222,15 @@ function commitWork(fiber) {
 				case NULLREF:
 					Refs.fireRef(fiber, null);
 					break;
+				case CALLBACK:
+					//ReactDOM.render/forceUpdate/setState callback
+					fiber.callback.call(fiber.stateNode);
+					break;
 			}
 		}
 	}
 	fiber.effectTag = amount;
+	fiber.effects = null;
 }
 
 function updateHostComponent(fiber) {
@@ -236,32 +251,57 @@ function updateHostComponent(fiber) {
 		diffChildren(fiber, children);
 	}
 }
-function get(key) {
-	return key._reactInternalFiber;
-}
+
 function enqueueSetState(instance, state, callback) {
 	let fiber = get(instance);
 	let isForceUpdate = state === true;
-	updateQueue.unshift(
-		Object.assign({}, fiber, {
-			stateNode: instance,
-			alternate: fiber,
-			effectTag: null,
-			partialState: isForceUpdate ? null : state,
-			isForceUpdate,
-			callback
-		})
-	);
-
+	state = isForceUpdate ? null : state;
+	let prevEffect;
+	updateQueue.some(function(el) {
+		if (el.stateNode === instance) {
+			prevEffect = el;
+		}
+	});
+	if (prevEffect) {
+		if (isForceUpdate) {
+			prevEffect.isForceUpdate = isForceUpdate;
+		}
+		if (state) {
+			prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
+		}
+		if (callback) {
+			prevEffect.effectTag = CALLBACK;
+			let prev = prevEffect.callback;
+			if (prev) {
+				prevEffect.callback = function() {
+					prev.call(this);
+					callback.call(this);
+				};
+			} else {
+				prevEffect.callback = callback;
+			}
+		}
+	} else {
+		updateQueue.unshift(
+			Object.assign({}, fiber, {
+				stateNode: instance,
+				alternate: fiber,
+				effectTag: callback ? CALLBACK : null,
+				partialState: state,
+				isForceUpdate,
+				callback
+			})
+		);
+	}
 	if (this._isMounted === returnTrue) {
 		if (this._receiving) {
 			//componentWillReceiveProps中的setState/forceUpdate应该被忽略
 			return;
 		}
-		// this.addState("hydrate");
 		requestIdleCallback(performWork);
 	}
 }
+
 function performWork(deadline) {
 	workLoop(deadline);
 	if (updateQueue.length > 0) {
@@ -284,31 +324,23 @@ function getMaskedContext(contextTypes) {
 	}
 	return hasKey ? context : emptyObject;
 }
-function createInstance(type, props, context) {
-	let instance = new type(props, context);
-	instance.updater = {
-		name: type.displayName || type.name,
-		enqueueSetState: enqueueSetState,
-		_isMounted: returnFalse
-	};
-	return instance;
-}
 
 function updateClassComponent(fiber) {
-	let { type, props: nextProps, stateNode: instance } = fiber;
+	let { type, props: nextProps, stateNode: instance, partialState } = fiber;
 	let nextContext = getMaskedContext(type.contextTypes);
 	if (instance == null) {
-		instance = fiber.stateNode = createInstance(type, nextProps, nextContext);
+		instance = fiber.stateNode = createInstance(fiber, nextContext);
+		instance.updater.enqueueSetState = enqueueSetState;
 	}
-	let { props: lastProps, state: lastState } = instance;
+	let { props: lastProps, state: lastState } = instance,
+		c;
 	fiber.lastState = lastProps;
 	fiber.lastProps = lastState;
-	let oldFiber = instance._reactInternalFiber;
 	instance._reactInternalFiber = fiber;
 	fiber.partialState = null;
 	if (instance.getChildContext) {
 		try {
-			let c = instance.getChildContext();
+			c = instance.getChildContext();
 			c = Object.assign({}, nextContext, c);
 		} catch (e) {
 			c = {};
@@ -316,14 +348,16 @@ function updateClassComponent(fiber) {
 		contextStack.unshift(c);
 	}
 	let shouldUpdate = true;
+	let nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
 	if (instance.isMounted()) {
-		let willReceive = oldFiber !== fiber && instance.context !== nextContext;
+		let propsChange = lastProps !== nextProps;
+		let willReceive = propsChange && instance.context !== nextContext;
 		let updater = instance.updater;
-		updater._receiving;
+		updater._receiving = true;
 		if (willReceive) {
 			callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
 		}
-		if (oldFiber.props !== nextProps) {
+		if (propsChange) {
 			try {
 				getDerivedStateFromProps(instance, type, nextProps, lastState);
 			} catch (error) {
@@ -332,7 +366,7 @@ function updateClassComponent(fiber) {
 		}
 		delete updater._receiving;
 
-		let args = [ nextProps, instance.state, nextContext ];
+		let args = [ nextProps, nextState, nextContext ];
 		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
 			shouldUpdate = false;
 		} else {
@@ -346,20 +380,48 @@ function updateClassComponent(fiber) {
 		}
 		callLifeCycleHook(instance, 'componentWillMount', []);
 	}
-	fiber.effectTag *= CALLBACK;
+	fiber.effectTag *= HOOK;
 	instance.context = nextContext;
 	instance.props = nextProps;
-	instance.state = Object.assign({}, lastState, fiber.partialState);
+	instance.state = nextState;
 	if (!shouldUpdate) {
 		fiber.effectTag = NOWORK;
+		cloneChildren(fiber);
+		if (ownerStack[0] === instance) {
+			ownerStack.shift();
+		}
 		return;
 	}
-	const children = instance.render();
+	var lastOwn = Refs.currentOwner,
+		children;
+	Refs.currentOwner = instance;
+	try {
+		children = instance.render();
+	} finally {
+		if (ownerStack[0] === instance) {
+			ownerStack.shift();
+		}
+		Refs.currentOwner = lastOwn;
+	}
 	diffChildren(fiber, children);
 }
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {
 		return true;
+	}
+}
+function disposeFiber(fiber, effects) {
+	if (fiber.ref) {
+		fiber.effectTag *= NULLREF;
+	}
+	fiber.effectTag *= DELETE;
+	fiber.disposed = true;
+	if (fiber.tag < 3) {
+		fiber.effectTag *= HOOK;
+	}
+	effects.push(fiber);
+	for (let child = fiber.child; child; child = child.sibling) {
+		disposeFiber(child, effects);
 	}
 }
 
@@ -382,32 +444,33 @@ function diffChildren(parentFiber, children) {
 			}
 			continue;
 		}
-		oldFiber.effectTag *= DELETE;
-		effects.push(oldFiber);
+		disposeFiber(oldFiber, effects);
 	}
 
 	let prevFiber,
 		index = 0;
 	for (let i in newFibers) {
-		let newFiber = newFibers[i];
+		let newFiber = (newFibers[i] = new ComponentFiber(newFibers[i]));
 		newFiber.effectTag = WORKING;
 		let oldFiber = matchFibers[i];
 		if (oldFiber) {
+			newFiber.effectTag *= MOUNT;
+			// newFiber.effectTag *= ATTR;todo
 			if (isSameNode(oldFiber, newFiber)) {
-				newFiber.effectTag *= UPDATE;
+				//更新
 				newFiber.stateNode = oldFiber.stateNode;
 				newFiber.alternate = oldFiber;
 			} else {
-				oldFiber.effectTag *= DELETE;
-				effects.push(oldFiber);
-				newFiber.effectTag *= MOUNT;
+				disposeFiber(oldFiber, effects);
 			}
 		} else {
 			newFiber.effectTag *= MOUNT;
-			//  console.log("xxxx",newFiber.effectTag,MOUNT)
 		}
 		newFiber.index = index++;
 		newFiber.return = parentFiber;
+		if (newFiber.ref) {
+			newFiber.effectTag *= REF;
+		}
 		if (prevFiber) {
 			prevFiber.sibling = newFiber;
 		} else {
@@ -427,33 +490,14 @@ export function getDerivedStateFromProps(instance, type, props, state) {
 		}
 	}
 }
-function commitDeletion() {}
 
-function cloneChildFibers(parentFiber) {
+function cloneChildren(parentFiber) {
 	const oldFiber = parentFiber.alternate;
-	if (!oldFiber.child) {
+	if (!oldFiber) {
 		return;
 	}
-	//oldFiber._children
-
-	let oldChild = oldFiber.child;
-	let prevChild = null;
-	while (oldChild) {
-		const newChild = {
-			type: oldChild.type,
-			tag: oldChild.tag,
-			stateNode: oldChild.stateNode,
-			props: oldChild.props,
-			partialState: oldChild.partialState,
-			alternate: oldChild,
-			return: parentFiber
-		};
-		if (prevChild) {
-			prevChild.sibling = newChild;
-		} else {
-			parentFiber.child = newChild;
-		}
-		prevChild = newChild;
-		oldChild = oldChild.sibling;
+	parentFiber._children = oldFiber._children;
+	if (oldFiber.child) {
+		parentFiber.child = oldFiber.child;
 	}
 }

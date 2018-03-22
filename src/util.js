@@ -7,9 +7,13 @@ export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0
 export function Fragment(props) {
     return props.children;
 }
-
-export let emptyArray = [];
-export let emptyObject = {};
+export function get(key){
+  return key._reactInternalFiber
+}
+export const updateQueue = []
+export const ownerStack = []
+export const emptyArray = [];
+export const emptyObject = {};
 export function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         //eslint-disable-next-line

@@ -1,98 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./lib/devtools.js"></script>-->
-  <!-- <script type='text/javascript' src="./test/react.development.js"></script>
-  <script type='text/javascript' src="./test/react-dom.development.js"></script>-->
-  <!--<script src="./react.js"></script>
-  <script src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/babel.js"></script>
-    <style>
-        .wrapper{
-            height:200px;
-            width:200px;
-            overflow: scroll;
-        }
-        .inner{
-            height:500px;
-            width:200px;
-            background: magenta;
-        }
-    </style>
+     <script type='text/javascript' src="./dist/React.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script src="test/babel.js"></script>
 </head>
 
 <body>
-    <div>开发者工具</div>
-    <pre>
-          
-  </pre>
-    <div id='example'></div>
-    <script type='text/babel'>
-   
-   var container = document.getElementById("example");
-   var div = container;
- //  var PropTypes = React.PropTypes 
-   if (!window.ReactDOM) {
-       window.ReactDOM = window.React;
-   }
-       
-class SuffixNode {
-    constructor() {
-        this.children = [];
-    }
-}
-class SuffixTree {
-    constructor() {
-        this.root = new SuffixNode();
-    }
-    isValid(str) {
-        return /^[a-z1-9]+$/i.test(str);
-    }
-    insert(word) {
-        // addWord
-        if (this.isValid(word)) {
-          console.log("word", word)
-            var cur = this.root,
-                children = cur.children, remain = 1
-            for (var i = 0; i < word.length; i++) {
-                var c = word.charAt(i);
-                var addNode = true;
-                for (var j = 0; j < i; j++) {
-                    var node = children[j];
-                    if(!node){
-                       remain++
-                       addNode = false;
-                       console.log("进入这里")
-                    }else{
-                      if ( node.edge.indexOf(c) === 0) {
-                         addNode = false;
-                      }
-                      node.edge += c; //修改原有的边
-                    }
-                    
-                }
-                if (addNode) {
-                  node = new SuffixNode();
-                  node.edge = c;
-                  children.push(node);
-                }
-            }
-           
-        }
-    }
-}
-var tree = new SuffixTree();
-tree.insert("abcab");
-console.log(tree);
+    <div id="test"></div>
+    <div id="content"></div>
+</body>
+<script type="text/babel">
+    var container = document.getElementById("test");
+ 
+  class App extends React.Component{
+      constructor(a,b){
+         super(a, b)
+         this.state = {
+             x: "司徒正美"
+         }
+      }
+      componentWillMount(){
+          console.log("App componentWillMount")
+      }
+      componentDidMount(){
+          console.log("App componentDidMount")
+      }
+      componentWillUpdate(){
+          console.log("App componentWillUpdate")
+      }
+      componentDidUpdate(){
+          console.log("App componentDidUpdate")
+      }
+      getChildContext(){
+          return {
+              child: 333
+          }
+      }
+      render(){
+          return <div>{this.state.x ? <p>
+            <A ref={(a)=>{console.log("A",a)}} />
+            <span ref={ (a)=>{console.log("span",a)} }>xxxx</span>
+            </p>: "删除"}
+            </div>
+      }
+  }
+  class A extends React.Component{
+      static contextTypes = {
+          child: true
+      }
+      componentDidUpdate(){
+          console.log("A componentDidUpdate")
+      }
+      componentDidMount(){
+          console.log("A componentDidMount")
+      }
+      componentWillReceiveProps(p, c){
+          console.log(p, c)
+          console.log("A componentWillReceiveProps")
+      }
+    /*  shouldComponentUpdate(){
+          console.log("A shouldComponentUpdate")
+      }
+      */
+      componentWillUnmount(){
+          console.log(this._reactInternalFiber.child.stateNode.innerHTML)
+          console.log("A componentWillUnmount")
+      }
+      constructor(a,b){
+         super(a, b)
+         this.state = {
+             x: "司徒正美"
+         }
+      }
+      render(){
+          return <strong ref={ (a)=>{console.log("strong",a)} }>{this.context.child}</strong>
+      }
+  }
 
+   var b
+   ReactDOM.render(<App />,container, function(){
+       console.log(this, '执行ReactDOM.render回调')
+       b = this
+       console.log("准备setState")
+       b.setState({
+           x: 0
+       }, function(){
+          console.log(this, '执行setState回调')
+       })
+   });
 
 </script>
-
-</body>
 
 </html>

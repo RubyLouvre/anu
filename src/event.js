@@ -1,6 +1,6 @@
 import { document, modern, contains } from "./browser";
 import { isFn, noop } from "./util";
-import { flushUpdaters } from "./scheduler";
+//import { flushUpdaters } from "./scheduler";
 import { Refs } from "./Refs";
 
 let globalEvents = {};
@@ -49,7 +49,7 @@ export function dispatchEvent(e, type, end) {
     }
     document.__async = false;
 
-    flushUpdaters();
+    // flushUpdaters();
     Refs.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
