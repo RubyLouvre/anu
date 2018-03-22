@@ -39,7 +39,6 @@ function remove(){
     removeElement(this.node);
 }
 function disposeElement(fiber, updateQueue, silent) {
- 
     if (!silent) {
         // fiber.addState("dispose");
         fiber._states = ["dispose"];
