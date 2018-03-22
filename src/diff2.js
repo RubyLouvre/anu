@@ -1,4 +1,4 @@
-import { emptyElement, createElement } from "./browser";
+import { emptyElement, createElement, insertElement, removeElement } from "./browser";
 import { getProps, fiberizeChildren } from "./createElement";
 import { returnFalse, returnTrue, emptyObject, isFn } from "./util";
 import { captureError as callLifeCycleHook, pushError } from "./ErrorBoundary";
@@ -49,6 +49,7 @@ function renderByAnu(vnode, root, callback) {
         props: Object.assign(getProps(root), {
             children: vnode
         }),
+        effectTag: CALLBACK,
         alternate: root.__component,
         callback() {
             instance = hostRoot.child ? hostRoot.child.stateNode : null;
@@ -91,10 +92,7 @@ function commitAllWork(fiber) {
     fiber.effects.concat(fiber).forEach((f) => {
         commitWork(f);
     });
-    if (fiber.callback) {
-        //ReactDOM.render/forceUpdate/setState callback
-        fiber.callback.call(fiber.stateNode);
-    }
+
 }
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
@@ -147,7 +145,7 @@ function completeWork(fiber, topWork) {
 
     if (fiber.return && fiber.effectTag !== NOWORK && fiber !== topWork) {
         const childEffects = fiber.effects || [];
-        const thisEffect = fiber.effectTag != null ? [fiber] : [];
+        const thisEffect = fiber.effectTag > 1 ? [fiber] : [];
         const parentEffects = fiber.return.effects || [];
         fiber.return.effects = parentEffects.concat(childEffects, thisEffect);
     }
@@ -159,23 +157,18 @@ const MOUNT = 2;
 const UPDATE = 3;
 const DELETE = 5;
 const CONTENT = 7;
-const CALLBACK = 11;
+const HOOK = 11;
 const REF = 13;
 const NULLREF = 17;
-var effectNames = [MOUNT, UPDATE, DELETE, CONTENT, CALLBACK, REF, NULLREF];
+const CALLBACK = 19;
+const effectNames = [MOUNT, UPDATE, DELETE, CONTENT, HOOK, REF, NULLREF, CALLBACK];
+const effectLength = effectNames.length;
 function commitWork(fiber) {
-    let parentFiber = fiber.return;
-    if (!parentFiber) {
-        return;
-    }
+    
 
-    while (parentFiber.tag == 2) {
-        parentFiber = parentFiber.return;
-    }
-    let parentNode = parentFiber.stateNode;
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
             break;
@@ -185,16 +178,24 @@ function commitWork(fiber) {
             amount = remainder;
             switch (effectNo) {
             case MOUNT:
-                if (fiber.tag > 3) {
-                    parentNode.appendChild(fiber.stateNode);
+            case UPDATE:
+                if (fiber.tag > 3) {//5, 6
+                    insertElement(fiber);
                 }
                 break;
-            case UPDATE:
-                break;
             case DELETE:
-                commitDeletion(fiber, parentNode);
+                if (fiber.tag > 3) {
+                    removeElement(fiber.stateNode);
+                }
+                // commitDeletion(fiber, parentNode);
                 break;
             case CALLBACK:
+                if (fiber.callback) {
+                    //ReactDOM.render/forceUpdate/setState callback
+                    fiber.callback.call(fiber.stateNode);
+                }
+                break;
+            case HOOK:
                 if (instance.isMounted()) {
                     callLifeCycleHook(instance, "componentDidUpdate", []);
                 } else {
@@ -245,7 +246,7 @@ function enqueueSetState(instance, state, callback) {
         Object.assign({}, fiber, {
             stateNode: instance,
             alternate: fiber,
-            effectTag: null,
+            effectTag: callback ? CALLBACK : null,
             partialState: isForceUpdate ? null : state,
             isForceUpdate,
             callback
@@ -345,7 +346,7 @@ function updateClassComponent(fiber) {
         }
         callLifeCycleHook(instance, "componentWillMount", []);
     }
-    fiber.effectTag *= CALLBACK;
+    fiber.effectTag *= HOOK;
     instance.context = nextContext;
     instance.props = nextProps;
     instance.state = Object.assign({}, lastState, fiber.partialState);
@@ -404,7 +405,6 @@ function diffChildren(parentFiber, children) {
             }
         } else {
             newFiber.effectTag *= MOUNT;
-            //  console.log("xxxx",newFiber.effectTag,MOUNT)
         }
         newFiber.index = index++;
         newFiber.return = parentFiber;
