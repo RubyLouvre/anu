@@ -1,18 +1,18 @@
-
 import { Refs } from './Refs';
-import { noop, get } from './util';
+import { noop, get, updateQueue } from './util';
 
 export function pushError(instance, hook, error) {
-	let names = [], fiber = get(instance)
+	let names = [],
+		fiber = get(instance);
 	let catchFiber = findCatchComponent(fiber, names);
 	let stack = describeError(names, hook);
 	if (catchFiber) {
-        disableHook(fiber); //禁止患者节点执行钩子
+		disableHook(fiber); //禁止患者节点执行钩子
 		catchFiber.errorInfo = catchFiber.errorInfo || [ error, { componentStack: stack }, instance ];
-        delete catchFiber._children;
-        delete catchFiber.child;
-        catchFiber.effectTag = 29;
-        updateQueue.push(catchFiber)
+		delete catchFiber._children;
+		delete catchFiber.child;
+		catchFiber.effectTag = 29;
+		updateQueue.push(catchFiber);
 	} else {
 		console.warn(stack); // eslint-disable-line
 		//如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
@@ -52,8 +52,8 @@ function disableEffect(fiber) {
 	}
 	fiber.effectTag = 0;
 	for (var child = fiber.child; child; child = child.sibling) {
-        disableEffect(fiber)
-    }
+		disableEffect(fiber);
+	}
 }
 /**
  * 此方法遍历医生节点中所有updater，收集沿途的标签名与组件名

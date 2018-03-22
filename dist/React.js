@@ -9,102 +9,104 @@
 	(global.React = factory());
 }(this, (function () {
 
-var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+var hasSymbol = typeof Symbol === 'function' && Symbol['for'];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol['for']('react.element') : 0xeac7;
 function Fragment(props) {
-    return props.children;
+	return props.children;
 }
 function get(key) {
-    return key._reactInternalFiber;
+	return key._reactInternalFiber;
 }
-var updateQueue$1 = [];
+var updateQueue = [];
 var ownerStack = [];
+var topFibers = [];
+var topNodes = [];
 
 var emptyObject = {};
-function deprecatedWarn(methodName) {
-    if (!deprecatedWarn[methodName]) {
-        console.warn(methodName + " is deprecated");
-        deprecatedWarn[methodName] = 1;
-    }
+function deprecatedWarn$1(methodName) {
+	if (!deprecatedWarn$1[methodName]) {
+		console.warn(methodName + ' is deprecated');
+		deprecatedWarn$1[methodName] = 1;
+	}
 }
 function extend(obj, props) {
-    for (var i in props) {
-        if (hasOwnProperty.call(props, i)) {
-            obj[i] = props[i];
-        }
-    }
-    return obj;
+	for (var i in props) {
+		if (hasOwnProperty.call(props, i)) {
+			obj[i] = props[i];
+		}
+	}
+	return obj;
 }
 function returnFalse() {
-    return false;
+	return false;
 }
 function returnTrue() {
-    return true;
+	return true;
 }
 var __type = Object.prototype.toString;
 function noop() {}
 function inherit(SubClass, SupClass) {
-    function Bridge() {}
-    var orig = SubClass.prototype;
-    Bridge.prototype = SupClass.prototype;
-    var fn = SubClass.prototype = new Bridge();
-    extend(fn, orig);
-    fn.constructor = SubClass;
-    return fn;
+	function Bridge() {}
+	var orig = SubClass.prototype;
+	Bridge.prototype = SupClass.prototype;
+	var fn = SubClass.prototype = new Bridge();
+	extend(fn, orig);
+	fn.constructor = SubClass;
+	return fn;
 }
 var lowerCache = {};
 function toLowerCase(s) {
-    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
+	return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
 function isFn(obj) {
-    return __type.call(obj) === "[object Function]";
+	return __type.call(obj) === '[object Function]';
 }
 var rword = /[^, ]+/g;
 function oneObject(array, val) {
-    if (array + "" === array) {
-        array = array.match(rword) || [];
-    }
-    var result = {},
-    value = val !== void 666 ? val : 1;
-    for (var i = 0, n = array.length; i < n; i++) {
-        result[array[i]] = value;
-    }
-    return result;
+	if (array + '' === array) {
+		array = array.match(rword) || [];
+	}
+	var result = {},
+	value = val !== void 666 ? val : 1;
+	for (var i = 0, n = array.length; i < n; i++) {
+		result[array[i]] = value;
+	}
+	return result;
 }
 var rcamelize = /[-_][^-_]/g;
 function camelize(target) {
-    if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
-        return target;
-    }
-    var str = target.replace(rcamelize, function (match) {
-        return match.charAt(1).toUpperCase();
-    });
-    return firstLetterLower(str);
+	if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
+		return target;
+	}
+	var str = target.replace(rcamelize, function (match) {
+		return match.charAt(1).toUpperCase();
+	});
+	return firstLetterLower(str);
 }
 function firstLetterLower(str) {
-    return str.charAt(0).toLowerCase() + str.slice(1);
+	return str.charAt(0).toLowerCase() + str.slice(1);
 }
-var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+var options = oneObject(['beforeProps', 'afterCreate', 'beforeInsert', 'beforeDelete', 'beforeUpdate', 'afterUpdate', 'beforePatch', 'afterPatch', 'beforeUnmount', 'afterMount'], noop);
 var numberMap = {
-    "[object Boolean]": 2,
-    "[object Number]": 3,
-    "[object String]": 4,
-    "[object Function]": 5,
-    "[object Symbol]": 6,
-    "[object Array]": 7
+	'[object Boolean]': 2,
+	'[object Number]': 3,
+	'[object String]': 4,
+	'[object Function]': 5,
+	'[object Symbol]': 6,
+	'[object Array]': 7
 };
 function typeNumber(data) {
-    if (data === null) {
-        return 1;
-    }
-    if (data === void 666) {
-        return 0;
-    }
-    var a = numberMap[__type.call(data)];
-    return a || 8;
+	if (data === null) {
+		return 1;
+	}
+	if (data === void 666) {
+		return 0;
+	}
+	var a = numberMap[__type.call(data)];
+	return a || 8;
 }
 
 function pushError(instance, hook, error) {
@@ -220,7 +222,6 @@ var Refs = {
                 delete owner.refs[ref];
             }
         } catch (e) {
-            console.log(e);
             pushError(owner, "ref", e);
         }
     }
@@ -1120,7 +1121,7 @@ var fakeObject = {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        deprecatedWarn("replaceState");
+        deprecatedWarn$1("replaceState");
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted() {
@@ -1254,7 +1255,7 @@ function newCtor(className, spec) {
     return curry(Component, NOBIND, spec);
 }
 function createClass(spec) {
-    deprecatedWarn("createClass");
+    deprecatedWarn$1("createClass");
     if (!isFn(spec.render)) {
         throw "请实现render方法";
     }
@@ -2040,6 +2041,8 @@ function findDOMNode(stateNode) {
 		}
 	}
 }
+
+
 var contextStack = [emptyObject];
 var ENOUGH_TIME = 1;
 function renderByAnu(vnode, root, _callback) {
@@ -2062,7 +2065,11 @@ function renderByAnu(vnode, root, _callback) {
 			_callback && _callback.call(instance);
 		}
 	};
-	updateQueue$1.push(hostRoot);
+	if (topNodes.indexOf(root) == -1) {
+		topNodes.push(root);
+		topFibers.push(hostRoot);
+	}
+	updateQueue.push(hostRoot);
 	workLoop({
 		timeRemaining: function timeRemaining() {
 			return 2;
@@ -2071,7 +2078,7 @@ function renderByAnu(vnode, root, _callback) {
 	return instance;
 }
 function getNextUnitOfWork() {
-	var fiber = updateQueue$1.shift();
+	var fiber = updateQueue.shift();
 	if (!fiber) {
 		return;
 	}
@@ -2149,7 +2156,8 @@ var HOOK = 11;
 var REF = 13;
 var DELETE = 17;
 var CALLBACK = 19;
-var effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK];
+var ERR = 23;
+var effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK, ERR];
 var effectLength = effectNames.length;
 function commitWork(fiber) {
 	var instance = fiber.stateNode;
@@ -2180,7 +2188,12 @@ function commitWork(fiber) {
 					break;
 				case DELETE:
 					if (fiber.tag > 3) {
-						removeElement(fiber.stateNode);
+						removeElement(instance);
+						var j = topNodes.indexOf(instance);
+						if (j !== -1) {
+							topFibers.splice(j, 1);
+							topNodes.splice(j, 1);
+						}
 					}
 					delete fiber.stateNode;
 					break;
@@ -2207,7 +2220,14 @@ function commitWork(fiber) {
 					Refs.fireRef(fiber, null);
 					break;
 				case CALLBACK:
-					fiber.callback.call(fiber.stateNode);
+					fiber.callback.call(instance);
+					break;
+				case ERR:
+					var updater = instance.updater;
+					updater._isDoctor = true;
+					instance.componentDidCatch.apply(instance, fiber.errorInfo);
+					fiber.errorInfo = null;
+					updater._isDoctor = false;
 					break;
 			}
 		}
@@ -2238,7 +2258,7 @@ function enqueueSetState(instance, state, callback) {
 	var isForceUpdate = state === true;
 	state = isForceUpdate ? null : state;
 	var prevEffect = void 0;
-	updateQueue$1.some(function (el) {
+	updateQueue.some(function (el) {
 		if (el.stateNode === instance) {
 			prevEffect = el;
 		}
@@ -2263,7 +2283,7 @@ function enqueueSetState(instance, state, callback) {
 			}
 		}
 	} else {
-		updateQueue$1.unshift(Object.assign({}, fiber, {
+		updateQueue.unshift(Object.assign({}, fiber, {
 			stateNode: instance,
 			alternate: fiber,
 			effectTag: callback ? CALLBACK : null,
@@ -2281,7 +2301,7 @@ function enqueueSetState(instance, state, callback) {
 }
 function performWork(deadline) {
 	workLoop(deadline);
-	if (updateQueue$1.length > 0) {
+	if (updateQueue.length > 0) {
 		requestIdleCallback(performWork);
 	}
 }
@@ -2389,7 +2409,7 @@ function isSameNode(a, b) {
 		return true;
 	}
 }
-function disposeFiber(fiber, effects) {
+function detachFiber(fiber, effects) {
 	if (fiber.ref) {
 		fiber.effectTag *= NULLREF;
 	}
@@ -2400,7 +2420,7 @@ function disposeFiber(fiber, effects) {
 	}
 	effects.push(fiber);
 	for (var child = fiber.child; child; child = child.sibling) {
-		disposeFiber(child, effects);
+		detachFiber(child, effects);
 	}
 }
 function diffChildren(parentFiber, children) {
@@ -2422,7 +2442,7 @@ function diffChildren(parentFiber, children) {
 			}
 			continue;
 		}
-		disposeFiber(oldFiber, effects);
+		detachFiber(oldFiber, effects);
 	}
 	var prevFiber = void 0,
 	    index = 0;
@@ -2436,7 +2456,7 @@ function diffChildren(parentFiber, children) {
 				_newFiber.stateNode = _oldFiber.stateNode;
 				_newFiber.alternate = _oldFiber;
 			} else {
-				disposeFiber(_oldFiber, effects);
+				detachFiber(_oldFiber, effects);
 			}
 		} else {
 			_newFiber.effectTag *= MOUNT;
@@ -2478,35 +2498,35 @@ function cloneChildren(parentFiber) {
 
 var React = void 0;
 if (win.React && win.React.options) {
-    React = win.React;
+	React = win.React;
 } else {
-    React = win.React = win.ReactDOM = {
-        version: "1.3.1",
-        render: render,
-        hydrate: render,
-        options: options,
-        Fragment: Fragment,
-        PropTypes: PropTypes,
-        Children: Children,
-        createPortal: createPortal,
-        createContext: createContext,
-        Component: Component,
-        eventSystem: eventSystem,
-        findDOMNode: findDOMNode,
-        createRef: createRef,
-        forwardRef: forwardRef,
-        createClass: createClass,
-        createElement: createElement,
-        cloneElement: cloneElement,
-        PureComponent: PureComponent,
-        isValidElement: isValidElement,
-        createFactory: function createFactory(type) {
-            console.warn("createFactory is deprecated");
-            var factory = createElement.bind(null, type);
-            factory.type = type;
-            return factory;
-        }
-    };
+	React = win.React = win.ReactDOM = {
+		version: '1.3.1',
+		render: render,
+		hydrate: render,
+		options: options,
+		Fragment: Fragment,
+		PropTypes: PropTypes,
+		Children: Children,
+		createPortal: createPortal,
+		createContext: createContext,
+		Component: Component,
+		eventSystem: eventSystem,
+		findDOMNode: findDOMNode,
+		createRef: createRef,
+		forwardRef: forwardRef,
+		createClass: createClass,
+		createElement: createElement,
+		cloneElement: cloneElement,
+		PureComponent: PureComponent,
+		isValidElement: isValidElement,
+		createFactory: function createFactory(type) {
+			console.warn('createFactory is deprecated');
+			var factory = createElement.bind(null, type);
+			factory.type = type;
+			return factory;
+		}
+	};
 }
 var React$1 = React;
 
