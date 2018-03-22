@@ -3,6 +3,7 @@ import { getProps, fiberizeChildren } from "./createElement";
 import { returnFalse, returnTrue, emptyObject, isFn } from "./util";
 import { captureError as callLifeCycleHook, pushError } from "./ErrorBoundary";
 import { Refs } from "./Refs";
+import { ComponentFiber, createInstance } from "./ComponentFiber";
 
 export function render(vnode, container, callback) {
     return renderByAnu(vnode, container, callback);
@@ -214,10 +215,8 @@ function commitWork(fiber) {
                 Refs.fireRef(fiber, null);
                 break;
             case CALLBACK:
-                if (fiber.callback) {
-                    //ReactDOM.render/forceUpdate/setState callback
-                    fiber.callback.call(fiber.stateNode);
-                }
+                //ReactDOM.render/forceUpdate/setState callback
+                fiber.callback.call(fiber.stateNode);
                 break;
             }
         }
@@ -320,21 +319,14 @@ function getMaskedContext(contextTypes) {
     }
     return hasKey ? context : emptyObject;
 }
-function createInstance(type, props, context) {
-    let instance = new type(props, context);
-    instance.updater = {
-        name: type.displayName || type.name,
-        enqueueSetState: enqueueSetState,
-        _isMounted: returnFalse
-    };
-    return instance;
-}
+
 
 function updateClassComponent(fiber) {
     let { type, props: nextProps, stateNode: instance, partialState } = fiber;
     let nextContext = getMaskedContext(type.contextTypes);
     if (instance == null) {
-        instance = fiber.stateNode = createInstance(type, nextProps, nextContext);
+        instance = fiber.stateNode = createInstance(fiber, nextContext);
+        instance.updater.enqueueSetState = enqueueSetState;
     }
     let { props: lastProps, state: lastState } = instance, c;
     fiber.lastState = lastProps;
@@ -356,7 +348,7 @@ function updateClassComponent(fiber) {
         let propsChange = lastProps !== nextProps;
         let willReceive = propsChange && instance.context !== nextContext;
         let updater = instance.updater;
-        updater._receiving;
+        updater._receiving = true;
         if (willReceive) {
             callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
         }
@@ -440,13 +432,13 @@ function diffChildren(parentFiber, children) {
     let prevFiber,
         index = 0;
     for (let i in newFibers) {
-        let newFiber = newFibers[i];
+        let newFiber = newFibers[i] = new ComponentFiber(newFibers[i]);
         newFiber.effectTag = WORKING;
         let oldFiber = matchFibers[i];
         if (oldFiber) {
             newFiber.effectTag *= MOUNT;
             // newFiber.effectTag *= ATTR;todo
-            if (isSameNode(oldFiber, newFiber)) {
+            if (isSameNode(oldFiber, newFiber)) {//更新
                 newFiber.stateNode = oldFiber.stateNode;
                 newFiber.alternate = oldFiber;
             } else {

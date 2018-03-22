@@ -49,10 +49,7 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-var lowerCache = {};
-function toLowerCase(s) {
-    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
-}
+
 function clearArray(a) {
     return a.splice(0, a.length);
 }
@@ -71,19 +68,8 @@ function oneObject(array, val) {
     }
     return result;
 }
-var rcamelize = /[-_][^-_]/g;
-function camelize(target) {
-    if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
-        return target;
-    }
-    var str = target.replace(rcamelize, function (match) {
-        return match.charAt(1).toUpperCase();
-    });
-    return firstLetterLower(str);
-}
-function firstLetterLower(str) {
-    return str.charAt(0).toLowerCase() + str.slice(1);
-}
+
+
 var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     "[object Boolean]": 2,
@@ -104,218 +90,6 @@ function typeNumber(data) {
     return a || 8;
 }
 
-function DOMElement(type) {
-    this.nodeName = type;
-    this.style = {};
-    this.children = [];
-}
-var NAMESPACE = {
-    svg: "http://www.w3.org/2000/svg",
-    xmlns: "http://www.w3.org/2000/xmlns/",
-    xlink: "http://www.w3.org/1999/xlink",
-    math: "http://www.w3.org/1998/Math/MathML"
-};
-var fn = DOMElement.prototype = {
-    contains: Boolean
-};
-String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
-    fn[name] = function () {
-        console.log("fire " + name);
-    };
-});
-var fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
-    return new DOMElement(type);
-};
-fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
-fakeDoc.documentElement = new DOMElement("html");
-fakeDoc.body = new DOMElement("body");
-fakeDoc.nodeName = "#document";
-fakeDoc.textContent = "";
-try {
-    var w = window;
-    var b = !!w.alert;
-} catch (e) {
-    b = false;
-    w = {
-        document: fakeDoc
-    };
-}
-
-var win = w;
-var document = w.document || fakeDoc;
-var duplexMap = {
-    color: 1,
-    date: 1,
-    datetime: 1,
-    "datetime-local": 1,
-    email: 1,
-    month: 1,
-    number: 1,
-    password: 1,
-    range: 1,
-    search: 1,
-    tel: 1,
-    text: 1,
-    time: 1,
-    url: 1,
-    week: 1,
-    textarea: 1,
-    checkbox: 2,
-    radio: 2,
-    "select-one": 3,
-    "select-multiple": 3
-};
-var isStandard = "textContent" in document;
-var fragment = document.createDocumentFragment();
-function emptyElement(node) {
-    var child = void 0;
-    while (child = node.firstChild) {
-        emptyElement(child);
-        if (child === Refs.focusNode) {
-            Refs.focusNode = false;
-        }
-        node.removeChild(child);
-    }
-}
-var recyclables = {
-    "#text": []
-};
-function removeElement(node) {
-    if (!node) {
-        return;
-    }
-    if (node.nodeType === 1) {
-        if (isStandard) {
-            node.textContent = "";
-        } else {
-            emptyElement(node);
-        }
-        node.__events = null;
-    } else if (node.nodeType === 3) {
-        if (recyclables["#text"].length < 100) {
-            recyclables["#text"].push(node);
-        }
-    }
-    if (node === Refs.focusNode) {
-        Refs.focusNode = false;
-    }
-    fragment.appendChild(node);
-    fragment.removeChild(node);
-}
-var versions = {
-    88: 7,
-    80: 6,
-    "00": NaN,
-    "08": NaN
-};
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
-var modern = /NaN|undefined/.test(msie) || msie > 8;
-function createElement$1(vnode) {
-    var p = vnode.return;
-    var type = vnode.type,
-        props = vnode.props,
-        ns = vnode.namespaceURI,
-        text = vnode.text;
-    switch (type) {
-        case "#text":
-            var node = recyclables[type].pop();
-            if (node) {
-                node.nodeValue = text;
-                return node;
-            }
-            return document.createTextNode(text);
-        case "#comment":
-            return document.createComment(text);
-        case "svg":
-            ns = NAMESPACE.svg;
-            break;
-        case "math":
-            ns = NAMESPACE.math;
-            break;
-        case "div":
-        case "span":
-        case "p":
-        case "tr":
-        case "td":
-        case "li":
-            ns = "";
-            break;
-        default:
-            if (!ns) {
-                do {
-                    if (p.tag === 5) {
-                        ns = p.namespaceURI;
-                        if (p.type === "foreignObject") {
-                            ns = "";
-                        }
-                        break;
-                    }
-                } while (p = p.return);
-            }
-            break;
-    }
-    try {
-        if (ns) {
-            vnode.namespaceURI = ns;
-            return document.createElementNS(ns, type);
-        }
-    } catch (e) {}
-    var elem = document.createElement(type);
-    var inputType = props && props.type;
-    if (inputType) {
-        elem.type = inputType;
-    }
-    return elem;
-}
-function contains(a, b) {
-    if (b) {
-        while (b = b.parentNode) {
-            if (b === a) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-var insertContainer = null;
-var insertPoint = null;
-function insertElement(fiber) {
-    var p = fiber.return,
-        dom = fiber.stateNode,
-        parentNode = void 0;
-    while (p) {
-        if (p.tag === 5) {
-            parentNode = p.stateNode;
-            break;
-        }
-        p = p._return || p.return;
-    }
-    if (parentNode !== insertContainer) {
-        insertContainer = parentNode;
-        insertPoint = null;
-    }
-    var offset = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
-    if (offset === dom) {
-        return;
-    }
-    if (offset === null && dom === parentNode.lastChild) {
-        return;
-    }
-    var isElement = fiber.tag === 5;
-    var prevFocus = isElement && document.activeElement;
-    insertContainer.insertBefore(dom, offset);
-    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
-        try {
-            Refs.focusNode = prevFocus;
-            prevFocus.__inner__ = true;
-            prevFocus.focus();
-        } catch (e) {
-            prevFocus.__inner__ = false;
-        }
-    }
-}
-
 var topFibers = [];
 var topNodes = [];
 function disposeVnode(fiber, updateQueue, silent) {
@@ -328,55 +102,7 @@ function disposeVnode(fiber, updateQueue, silent) {
                 topNodes.splice(i, 1);
             }
         }
-        if (fiber._return) {
-            var dom = fiber._return.stateNode;
-            delete dom.__events;
-        }
-        if (fiber.tag < 4) {
-            disposeComponent(fiber, updateQueue, silent);
-        } else {
-            if (fiber.tag === 5) {
-                disposeElement(fiber, updateQueue, silent);
-            }
-            updateQueue.push({
-                node: fiber.stateNode,
-                vnode: fiber,
-                transition: remove
-            });
-        }
     }
-}
-function remove() {
-    this.vnode._disposed = true;
-    delete this.vnode.stateNode;
-    removeElement(this.node);
-}
-function disposeElement(fiber, updateQueue, silent) {
-    if (!silent) {
-        fiber._states = ["dispose"];
-        updateQueue.push(fiber);
-    } else {
-        if (fiber._isMounted && fiber._isMounted()) {
-            fiber._states = ["dispose"];
-            updateQueue.push(fiber);
-        }
-    }
-    disposeChildren(fiber._children, updateQueue, silent);
-}
-function disposeComponent(fiber, updateQueue, silent) {
-    var instance = fiber.stateNode;
-    if (!instance) {
-        return;
-    }
-    if (!silent) {
-        fiber._states = ["dispose"];
-        updateQueue.push(fiber);
-    } else if (fiber._isMounted()) {
-        fiber._states = ["dispose"];
-        updateQueue.push(fiber);
-    }
-    fiber._mountCarrier = fiber._mountPoint = NaN;
-    disposeChildren(fiber._children, updateQueue, silent);
 }
 function disposeChildren(children, updateQueue, silent) {
     for (var i in children) {
@@ -839,6 +565,197 @@ function computeKey(old, el, prefix, index) {
         return dot;
     }
     return curKey ? "." + curKey : "." + index;
+}
+
+function DOMElement(type) {
+    this.nodeName = type;
+    this.style = {};
+    this.children = [];
+}
+var NAMESPACE = {
+    svg: "http://www.w3.org/2000/svg",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+    xlink: "http://www.w3.org/1999/xlink",
+    math: "http://www.w3.org/1998/Math/MathML"
+};
+var fn = DOMElement.prototype = {
+    contains: Boolean
+};
+String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
+    fn[name] = function () {
+        console.log("fire " + name);
+    };
+});
+var fakeDoc = new DOMElement();
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
+    return new DOMElement(type);
+};
+fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
+fakeDoc.documentElement = new DOMElement("html");
+fakeDoc.body = new DOMElement("body");
+fakeDoc.nodeName = "#document";
+fakeDoc.textContent = "";
+try {
+    var w = window;
+    var b = !!w.alert;
+} catch (e) {
+    b = false;
+    w = {
+        document: fakeDoc
+    };
+}
+
+var win = w;
+var document = w.document || fakeDoc;
+
+var isStandard = "textContent" in document;
+var fragment = document.createDocumentFragment();
+function emptyElement(node) {
+    var child = void 0;
+    while (child = node.firstChild) {
+        emptyElement(child);
+        if (child === Refs.focusNode) {
+            Refs.focusNode = false;
+        }
+        node.removeChild(child);
+    }
+}
+var recyclables = {
+    "#text": []
+};
+function removeElement(node) {
+    if (!node) {
+        return;
+    }
+    if (node.nodeType === 1) {
+        if (isStandard) {
+            node.textContent = "";
+        } else {
+            emptyElement(node);
+        }
+        node.__events = null;
+    } else if (node.nodeType === 3) {
+        if (recyclables["#text"].length < 100) {
+            recyclables["#text"].push(node);
+        }
+    }
+    if (node === Refs.focusNode) {
+        Refs.focusNode = false;
+    }
+    fragment.appendChild(node);
+    fragment.removeChild(node);
+}
+var versions = {
+    88: 7,
+    80: 6,
+    "00": NaN,
+    "08": NaN
+};
+var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+var modern = /NaN|undefined/.test(msie) || msie > 8;
+function createElement$1(vnode) {
+    var p = vnode.return;
+    var type = vnode.type,
+        props = vnode.props,
+        ns = vnode.namespaceURI,
+        text = vnode.text;
+    switch (type) {
+        case "#text":
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = text;
+                return node;
+            }
+            return document.createTextNode(text);
+        case "#comment":
+            return document.createComment(text);
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+        case "div":
+        case "span":
+        case "p":
+        case "tr":
+        case "td":
+        case "li":
+            ns = "";
+            break;
+        default:
+            if (!ns) {
+                do {
+                    if (p.tag === 5) {
+                        ns = p.namespaceURI;
+                        if (p.type === "foreignObject") {
+                            ns = "";
+                        }
+                        break;
+                    }
+                } while (p = p.return);
+            }
+            break;
+    }
+    try {
+        if (ns) {
+            vnode.namespaceURI = ns;
+            return document.createElementNS(ns, type);
+        }
+    } catch (e) {}
+    var elem = document.createElement(type);
+    var inputType = props && props.type;
+    if (inputType) {
+        elem.type = inputType;
+    }
+    return elem;
+}
+function contains(a, b) {
+    if (b) {
+        while (b = b.parentNode) {
+            if (b === a) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+var insertContainer = null;
+var insertPoint = null;
+function insertElement(fiber) {
+    var p = fiber.return,
+        dom = fiber.stateNode,
+        parentNode = void 0;
+    while (p) {
+        if (p.tag === 5) {
+            parentNode = p.stateNode;
+            break;
+        }
+        p = p._return || p.return;
+    }
+    if (parentNode !== insertContainer) {
+        insertContainer = parentNode;
+        insertPoint = null;
+    }
+    var offset = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
+    if (offset === dom) {
+        return;
+    }
+    if (offset === null && dom === parentNode.lastChild) {
+        return;
+    }
+    var isElement = fiber.tag === 5;
+    var prevFocus = isElement && document.activeElement;
+    insertContainer.insertBefore(dom, offset);
+    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
+        try {
+            Refs.focusNode = prevFocus;
+            prevFocus.__inner__ = true;
+            prevFocus.focus();
+        } catch (e) {
+            prevFocus.__inner__ = false;
+        }
+    }
 }
 
 var dirtyComponents = [];
@@ -1434,592 +1351,76 @@ function createClass(spec) {
     return Constructor;
 }
 
-var formElements = {
-    select: 1,
-    textarea: 1,
-    input: 1,
-    option: 1
-};
-var duplexData = {
-    1: ["value", {
-        onChange: 1,
-        onInput: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return a == null ? null : a + "";
-    }, function (dom, value, vnode) {
-        if (value == null) {
-            return;
-        }
-        if (vnode.type === "input") {
-            dom.__anuSetValue = true;
-            dom.setAttribute("value", value);
-            dom.__anuSetValue = false;
-            if (dom.type === "number") {
-                var valueAsNumber = parseFloat(dom.value) || 0;
-                if (
-                value != valueAsNumber ||
-                value == valueAsNumber && dom.value != value) {
-                    value += "";
-                } else {
-                    return;
-                }
-            }
-        }
-        if (dom._persistValue !== value) {
-            dom.__anuSetValue = true;
-            dom._persistValue = dom.value = value;
-            dom.__anuSetValue = false;
-        }
-    }, keepPersistValue, "change", "input"],
-    2: ["checked", {
-        onChange: 1,
-        onClick: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return !!a;
-    }, function (dom, value, vnode) {
-        if (vnode.props.value != null) {
-            dom.value = vnode.props.value;
-        }
-        if (dom._persistValue !== value) {
-            dom._persistValue = dom.checked = value;
-        }
-    }, keepPersistValue, "change", "click"],
-    3: ["value", {
-        onChange: 1,
-        disabled: 1
-    }, function (a) {
-        return a;
-    }, function (dom, value, vnode, isUncontrolled) {
-        if (isUncontrolled) {
-            if (!dom.multiple && dom.value !== dom._persistValue) {
-                dom._persistValue = dom.value;
-                dom._setValue = false;
-            }
-        } else {
-            if ("value" in vnode.props) {
-                dom._persistValue = value;
-            }
-        }
-        syncOptions({
-            target: dom
-        });
-    }, syncOptions, "change"]
-};
-function inputControll(vnode, dom, props) {
-    var domType = dom.type;
-    var duplexType = duplexMap[domType];
-    var isUncontrolled = dom._uncontrolled;
-    if (duplexType) {
-        var data = duplexData[duplexType];
-        var duplexProp = data[0];
-        var keys = data[1];
-        var converter = data[2];
-        var sideEffect = data[3];
-        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
-        sideEffect(dom, value, vnode, isUncontrolled);
-        if (isUncontrolled) {
-            return;
-        }
-        var handle = data[4];
-        var event1 = data[5];
-        var event2 = data[6];
-        if (!hasOtherControllProperty(props, keys)) {
-            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
-            dom["on" + event1] = handle;
-            dom["on" + event2] = handle;
-        } else {
-            vnode.controlledCb = handle;
-            Refs.controlledCbs.push(vnode);
-        }
-    } else {
-        var arr = dom.children || [];
-        for (var i = 0, el; el = arr[i]; i++) {
-            dom.removeChild(el);
-            i--;
-        }
-        if ("value" in props) {
-            dom.duplexValue = dom.value = props.value;
-        } else {
-            dom.duplexValue = dom.text;
-        }
-    }
+function ComponentFiber(vnode) {
+    extend(this, vnode);
+    var type = vnode.type;
+    this.name = type.displayName || type.name;
 }
-function hasOtherControllProperty(props, keys) {
-    for (var key in keys) {
-        if (props[key]) {
-            return true;
-        }
-    }
-}
-function keepPersistValue(e) {
-    var dom = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
-    var v = dom._persistValue;
-    var noNull = v != null;
-    var noEqual = dom[name] !== v;
-    if (noNull && noEqual) {
-        dom[name] = v;
-    }
-}
-function syncOptions(e) {
-    var target = e.target,
-        value = target._persistValue,
-        options = target.options;
-    if (target.multiple) {
-        updateOptionsMore(options, options.length, value);
-    } else {
-        updateOptionsOne(options, options.length, value);
-    }
-    target._setSelected = true;
-}
-function updateOptionsOne(options, n, propValue) {
-    var stringValues = {},
-        noDisableds = [];
-    for (var i = 0; i < n; i++) {
-        var option = options[i];
-        var value = option.duplexValue;
-        if (!option.disabled) {
-            noDisableds.push(option);
-        }
-        if (value === propValue) {
-            return setOptionSelected(option, true);
-        }
-        stringValues[value] = option;
-    }
-    var match = stringValues[propValue];
-    if (match) {
-        return setOptionSelected(match, true);
-    }
-    if (n && noDisableds[0]) {
-        setOptionSelected(noDisableds[0], true);
-    }
-}
-function updateOptionsMore(options, n, propValue) {
-    var selectedValue = {};
-    try {
-        for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
-        }
-    } catch (e) {
-        console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
-    }
-    for (var _i = 0; _i < n; _i++) {
-        var option = options[_i];
-        var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
-        setOptionSelected(option, selected);
-    }
-}
-function setOptionSelected(dom, selected) {
-    dom.selected = selected;
-}
-
-var rnumber = /^-?\d+(\.\d+)?$/;
-function patchStyle(dom, lastStyle, nextStyle) {
-    if (lastStyle === nextStyle) {
-        return;
-    }
-    for (var name in nextStyle) {
-        var val = nextStyle[name];
-        if (lastStyle[name] !== val) {
-            name = cssName(name, dom);
-            if (val !== 0 && !val) {
-                val = "";
-            } else if (rnumber.test(val) && !cssNumber[name]) {
-                val = val + "px";
-            }
-            try {
-                dom.style[name] = val;
-            } catch (e) {
-                console.log("dom.style[" + name + "] = " + val + "throw error");
-            }
-        }
-    }
-    for (var _name in lastStyle) {
-        if (!(_name in nextStyle)) {
-            _name = cssName(_name, dom);
-            dom.style[_name] = "";
-        }
-    }
-}
-var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-var cssMap = oneObject("float", "cssFloat");
-function cssName(name, dom) {
-    if (cssMap[name]) {
-        return cssMap[name];
-    }
-    var host = dom && dom.style || {};
-    for (var i = 0, n = prefixes.length; i < n; i++) {
-        var camelCase = camelize(prefixes[i] + name);
-        if (camelCase in host) {
-            return cssMap[name] = camelCase;
-        }
-    }
-    return null;
-}
-
-var inputMonitor = {};
-var rcheck = /checked|radio/;
-var describe = {
-    set: function set(value) {
-        var controllProp = rcheck.test(this.type) ? "checked" : "value";
-        if (this.type === "textarea") {
-            this.innerHTML = value;
-        }
-        if (!this._observing) {
-            if (!this._setValue) {
-                var parsedValue = this[controllProp] = value;
-                this._persistValue = Array.isArray(value) ? value : parsedValue;
-                this._setValue = true;
-            }
-        } else {
-            this._setValue = value == null ? false : true;
-        }
-        this._defaultValue = value;
-    },
-    get: function get() {
-        return this._defaultValue;
-    },
-    configurable: true
-};
-inputMonitor.observe = function (dom, name) {
-    try {
-        if ("_persistValue" in dom) {
-            dom._setValue = true;
-        }
-        Object.defineProperty(dom, name, describe);
-    } catch (e) {        }
-};
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-var controlled = {
-    value: 1,
-    checked: 1
-};
-var isSpecialAttr = {
-    style: 1,
-    autoFocus: 1,
-    defaultValue: 1,
-    defaultChecked: 1,
-    children: 1,
-    innerHTML: 1,
-    dangerouslySetInnerHTML: 1
-};
-var svgCache = {};
-var strategyCache = {};
-var svgCamelCase = {
-    w: { r: 1, b: 1, t: 1 },
-    e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
-    o: { r: 1 },
-    c: { m: 1 },
-    p: { p: 1 },
-    t: { s: 2, t: 1, u: 1, c: 1, d: 1, o: 1, x: 1, y: 1, l: 1 },
-    l: { r: 1, m: 1, u: 1, b: -1, l: -1, s: -1 },
-    r: { r: 1, u: 2, h: 1, w: 1, c: 1, e: 1 },
-    h: { r: 1, a: 1, l: 1, t: 1 },
-    y: { p: 1, s: 1, t: 1, c: 1 },
-    g: { c: 1 },
-    k: { a: -1, h: -1, r: -1, s: -1, t: -1, c: 1, u: 1 },
-    m: { o: 1, l: 1, a: 1 },
-    n: { c: 1, t: 1, u: 1 },
-    s: { a: 3 },
-    f: { x: 1, y: 1 },
-    d: { e: 1, f: 1, m: 1, d: 1 },
-    x: { c: 1 }
-};
-var specialSVGPropertyName = {
-    "overline-thickness": 2,
-    "underline-thickness": 2,
-    "overline-position": 2,
-    "underline-position": 2,
-    "stroke-miterlimit": 2,
-    "baseline-shift": 2,
-    "clip-path": 2,
-    "font-size": 2,
-    "font-size-adjust": 2,
-    "font-stretch": 2,
-    "font-style": 2,
-    "text-decoration": 2,
-    "vert-origin-x": 2,
-    "vert-origin-y": 2,
-    "paint-order": 2,
-    "fill-rule": 2,
-    "color-rendering": 2,
-    "marker-end": 2,
-    "pointer-events": 2,
-    "units-per-em": 2,
-    "strikethrough-thickness": 2,
-    "lighting-color": 2
-};
-var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
-function createRepaceFn(split) {
-    return function (match) {
-        return match.slice(0, 1) + split + match.slice(1).toLowerCase();
+function createUpdater() {
+    return {
+        _mountOrder: Refs.mountOrder++,
+        enqueueSetState: noop,
+        _isMounted: returnFalse
     };
 }
-var rhump = /[a-z][A-Z]/;
-var toHyphen = createRepaceFn("-");
-var toColon = createRepaceFn(":");
-function getSVGAttributeName(name) {
-    if (svgCache[name]) {
-        return svgCache[name];
-    }
-    var key = name.match(rhump);
-    if (!key) {
-        return svgCache[name] = name;
-    }
-    var _ref = [].concat(_toConsumableArray(key[0].toLowerCase())),
-        prefix = _ref[0],
-        postfix = _ref[1];
-    var orig = name;
-    if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
-        var count = svgCamelCase[prefix][postfix];
-        if (count === -1) {
-            return svgCache[orig] = {
-                name: name.replace(rhump, toColon),
-                ifSpecial: true
+function createInstance(fiber, context) {
+    var updater = createUpdater();
+    var props = fiber.props,
+        type = fiber.type,
+        tag = fiber.tag,
+        isStateless = tag === 1,
+        lastOwn = Refs.currentOwner,
+        instance = void 0,
+        lifeCycleHook = void 0;
+    try {
+        if (isStateless) {
+            instance = {
+                refs: {},
+                __proto__: type.prototype,
+                __init__: true,
+                props: props,
+                context: context,
+                render: function f() {
+                    var a = type(this.props, this.context);
+                    if (a && a.render) {
+                        lifeCycleHook = a;
+                        return this.__init__ ? null : a.render.call(this);
+                    }
+                    return a;
+                }
             };
-        }
-        if (~repeatedKey.indexOf(prefix + postfix)) {
-            var dashName = name.replace(rhump, toHyphen);
-            if (specialSVGPropertyName[dashName]) {
-                name = dashName;
-            }
-        }
-    } else {
-        name = name.replace(rhump, toHyphen);
-    }
-    return svgCache[orig] = name;
-}
-function diffProps(dom, lastProps, nextProps, fiber) {
-    options.beforeProps(fiber);
-    var isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    var tag = fiber.type;
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var which = tag + isSVG + name;
-            var action = strategyCache[which];
-            if (!action) {
-                action = strategyCache[which] = getPropAction(dom, name, isSVG);
-            }
-            actionStrategy[action](dom, name, val, lastProps, fiber);
-        }
-    }
-    for (var _name in lastProps) {
-        if (!nextProps.hasOwnProperty(_name)) {
-            var _which = tag + isSVG + _name;
-            var _action = strategyCache[_which];
-            if (!_action) {
-                continue;
-            }
-            actionStrategy[_action](dom, _name, false, lastProps, fiber);
-        }
-    }
-}
-function isBooleanAttr(dom, name) {
-    var val = dom[name];
-    return val === true || val === false;
-}
-function getPropAction(dom, name, isSVG) {
-    if (isSVG && name === "className") {
-        return "svgClass";
-    }
-    if (isSpecialAttr[name]) {
-        return name;
-    }
-    if (isEventName(name)) {
-        return "event";
-    }
-    if (isSVG) {
-        return "svgAttr";
-    }
-    if (name === "width" || name === "height") {
-        return "attribute";
-    }
-    if (isBooleanAttr(dom, name)) {
-        return "booleanAttr";
-    }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
-}
-var builtinStringProps = {
-    className: 1,
-    title: 1,
-    name: 1,
-    type: 1,
-    alt: 1,
-    lang: 1
-};
-var rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, fiber) {
-    if (rform.test(dom.nodeName)) {
-        if (!dom._uncontrolled) {
-            dom._uncontrolled = true;
-            inputMonitor.observe(dom, name);
-        }
-        dom._observing = false;
-        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
-            dom.selectedIndex = dom.selectedIndex;
-            dom._setValue = false;
-        }
-        dom[name] = val;
-        dom._observing = true;
-    } else {
-        dom.setAttribute(name, val);
-    }
-}
-var actionStrategy = {
-    innerHTML: noop,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    children: noop,
-    style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
-    },
-    autoFocus: function autoFocus(dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
-            dom.focus();
-        }
-    },
-    svgClass: function svgClass(dom, name, val) {
-        if (!val) {
-            dom.removeAttribute("class");
-        } else {
-            dom.setAttribute("class", val);
-        }
-    },
-    svgAttr: function svgAttr(dom, name, val) {
-        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        var nameRes = getSVGAttributeName(name);
-        if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(":")[0];
-            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
-        } else {
-            dom[method](nameRes, val || "");
-        }
-    },
-    booleanAttr: function booleanAttr(dom, name, val) {
-        dom[name] = !!val;
-        if (dom[name] === false) {
-            dom.removeAttribute(name);
-        } else if (dom[name] === "false") {
-            dom[name] = "";
-        }
-    },
-    attribute: function attribute(dom, name, val) {
-        if (val == null || val === false) {
-            return dom.removeAttribute(name);
-        }
-        try {
-            dom.setAttribute(name, val);
-        } catch (e) {
-            console.warn("setAttribute error", name, val);
-        }
-    },
-    property: function property(dom, name, val) {
-        if (controlled[name]) {
-            return;
-        }
-        try {
-            if (!val && val !== 0) {
-                if (builtinStringProps[name]) {
-                    dom[name] = "";
-                }
-                dom.removeAttribute(name);
+            Refs.currentOwner = instance;
+            if (type.isRef) {
+                instance.render = function () {
+                    return type(this.props, this.ref);
+                };
             } else {
-                dom[name] = val;
-            }
-        } catch (e) {
-            try {
-                dom.setAttribute(name, val);
-            } catch (e) {          }
-        }
-    },
-    event: function event(dom, name, val, lastProps, fiber) {
-        var events = dom.__events || (dom.__events = {});
-        events.vnode = fiber;
-        var refName = toLowerCase(name.slice(2));
-        if (val === false) {
-            delete events[refName];
-        } else {
-            if (!lastProps[name]) {
-                var eventName = getBrowserName(name);
-                var hook = eventHooks[eventName];
-                addGlobalEvent(eventName);
-                if (hook) {
-                    hook(dom, eventName);
+                fiber.child = instance.render();
+                if (lifeCycleHook) {
+                    for (var i in lifeCycleHook) {
+                        if (i !== "render") {
+                            instance[i] = lifeCycleHook[i];
+                        }
+                    }
+                    lifeCycleHook = false;
+                } else {
+                    updater._willReceive = false;
+                    updater._isStateless = true;
                 }
+                delete instance.__init__;
             }
-            events[refName] = val;
+        } else {
+            instance = new type(props, context);
         }
-    },
-    dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
-        var oldhtml = lastProps[name] && lastProps[name].__html;
-        var html = val && val.__html;
-        if (html !== oldhtml) {
-            dom.innerHTML = html;
-        }
+    } catch (e) {
+        instance = {};
+    } finally {
+        Refs.currentOwner = lastOwn;
     }
-};
-
-function HostFiber(vnode, parentFiber) {
-    extend(this, vnode);
-    this.name = vnode.type;
-    this.return = parentFiber;
-    this._states = ["resolve"];
-    this._reactInternalFiber = vnode;
-    this._mountOrder = Refs.mountOrder++;
+    fiber.stateNode = instance;
+    instance.updater = updater;
+    return instance;
 }
-HostFiber.prototype = {
-    addState: function addState(state) {
-        var states = this._states;
-        if (states[states.length - 1] !== state) {
-            states.push(state);
-        }
-    },
-    transition: function transition(updateQueue) {
-        var state = this._states.shift();
-        if (state) {
-            this[state](updateQueue);
-        }
-    },
-    init: function init(updateQueue, mountCarrier, initChildren) {
-        var dom = this.stateNode = createElement$1(this, this.return);
-        var beforeDOM = mountCarrier.dom;
-        mountCarrier.dom = dom;
-        if (this.tag === 5) {
-            initChildren(this);
-        }
-        insertElement(this, beforeDOM);
-        if (this.tag === 5) {
-            this.attr();
-            updateQueue.push(this);
-        }
-    },
-    _isMounted: returnFalse,
-    attr: function attr() {
-        var type = this.type,
-            props = this.props,
-            lastProps = this.lastProps,
-            dom = this.stateNode;
-        diffProps(dom, lastProps || emptyObject, props, this);
-        if (formElements[type]) {
-            inputControll(this, dom, props);
-        }
-    },
-    resolve: function resolve() {
-        this._isMounted = returnTrue;
-        Refs.fireRef(this, this.stateNode, this._reactInternalFiber);
-    },
-    dispose: function dispose() {
-        Refs.fireRef(this, null, this._reactInternalFiber);
-    }
-};
 
 function AnuPortal(props) {
     return props.children;
@@ -2032,7 +1433,7 @@ function createPortal(children, node) {
     } else {
         events = node.__events = {};
         var vnode = createVnode(node);
-        fiber = new HostFiber(vnode);
+        fiber = new ComponentFiber(vnode);
         events.vnode = fiber;
     }
     fiber._isPortal = true;
@@ -2332,9 +1733,7 @@ function commitWork(fiber) {
                     Refs.fireRef(fiber, null);
                     break;
                 case CALLBACK:
-                    if (fiber.callback) {
-                        fiber.callback.call(fiber.stateNode);
-                    }
+                    fiber.callback.call(fiber.stateNode);
                     break;
             }
         }
@@ -2430,15 +1829,6 @@ function getMaskedContext(contextTypes) {
     }
     return hasKey ? context : emptyObject;
 }
-function createInstance(type, props, context) {
-    var instance = new type(props, context);
-    instance.updater = {
-        name: type.displayName || type.name,
-        enqueueSetState: enqueueSetState,
-        _isMounted: returnFalse
-    };
-    return instance;
-}
 function updateClassComponent(fiber) {
     var type = fiber.type,
         nextProps = fiber.props,
@@ -2446,15 +1836,15 @@ function updateClassComponent(fiber) {
         partialState = fiber.partialState;
     var nextContext = getMaskedContext(type.contextTypes);
     if (instance == null) {
-        instance = fiber.stateNode = createInstance(type, nextProps, nextContext);
+        instance = fiber.stateNode = createInstance(fiber, nextContext);
+        instance.updater.enqueueSetState = enqueueSetState;
     }
     var _instance = instance,
         lastProps = _instance.props,
-        lastState = _instance.state;
+        lastState = _instance.state,
+        c = void 0;
     fiber.lastState = lastProps;
     fiber.lastProps = lastState;
-    var oldFiber = instance._reactInternalFiber,
-        c = void 0;
     instance._reactInternalFiber = fiber;
     fiber.partialState = null;
     if (instance.getChildContext) {
@@ -2469,10 +1859,10 @@ function updateClassComponent(fiber) {
     var shouldUpdate = true;
     var nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
     if (instance.isMounted()) {
-        var propsChange = oldFiber.props !== nextProps;
+        var propsChange = lastProps !== nextProps;
         var willReceive = propsChange && instance.context !== nextContext;
         var updater = instance.updater;
-        updater._receiving;
+        updater._receiving = true;
         if (willReceive) {
             captureError(instance, "componentWillReceiveProps", [nextProps, nextContext]);
         }
@@ -2553,7 +1943,7 @@ function diffChildren(parentFiber, children) {
     var prevFiber = void 0,
         index = 0;
     for (var _i in newFibers) {
-        var _newFiber = newFibers[_i];
+        var _newFiber = newFibers[_i] = new ComponentFiber(newFibers[_i]);
         _newFiber.effectTag = WORKING;
         var _oldFiber = matchFibers[_i];
         if (_oldFiber) {

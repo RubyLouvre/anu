@@ -1,5 +1,5 @@
 import { createVnode, createElement } from "./createElement";
-import { HostFiber } from "./HostFiber";
+import { ComponentFiber } from "./ComponentFiber";
 function AnuPortal(props){
     return props.children;
 }
@@ -12,7 +12,7 @@ export function createPortal(children, node) {
     } else {
         events = node.__events = {};
         let vnode = createVnode(node);
-        fiber = new HostFiber(vnode);
+        fiber = new ComponentFiber(vnode);
         events.vnode = fiber;
     }
     fiber._isPortal = true;
