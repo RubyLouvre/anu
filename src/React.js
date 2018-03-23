@@ -11,11 +11,10 @@ import { createClass } from "./createClass"; //deprecated
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
-import { render, findDOMNode, isValidElement } from "./diff";
+import { render, findDOMNode, isValidElement, unstable_renderSubtreeIntoContainer,unmountComponentAtNode } from "./diff";
 
 import { DOMRenderer } from "./DOMRenderer";
 
-createRenderer(DOMRenderer);
 
 
 var win = getWindow();
@@ -24,6 +23,7 @@ let React;
 if (prevReact && prevReact.options) {
     React = prevReact; //解决引入多个
 } else {
+    createRenderer(DOMRenderer);
     React = win.React = win.ReactDOM = {
         version: "VERSION",
         render,
@@ -44,6 +44,8 @@ if (prevReact && prevReact.options) {
         cloneElement,
         PureComponent,
         isValidElement,
+        unmountComponentAtNode,
+        unstable_renderSubtreeIntoContainer,
         createFactory(type) {
 			console.warn('createFactory is deprecated'); // eslint-disable-line
             let factory = createElement.bind(null, type);

@@ -90,7 +90,13 @@ function renderByAnu(vnode, root, callback) {
     });
     return instance;
 }
-
+function requestIdleCallback(fn){
+    fn({
+        timeRemaining() {
+            return 2;
+        }
+    });
+}
 function getNextUnitOfWork() {
     let fiber = updateQueue.shift();
     if (!fiber) {
@@ -211,7 +217,6 @@ function commitWork(fiber) {
                 shader.insertElement(fiber);
                 break;
             case ATTR://只对原生组件
-                console.log("设置ATTR");
                 shader.updateAttribute(fiber);
                 break;
             case DETACH:

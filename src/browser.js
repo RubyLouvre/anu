@@ -41,7 +41,7 @@ fakeDoc.textContent = "";
 var win = getWindow();
 export var inBrowser = !!win.alert;
 
-if(!inBrowser){
+if (!inBrowser) {
     win.document = fakeDoc;
 }
 
@@ -192,8 +192,9 @@ let insertContainer = null,
 export function insertElement(fiber) {
     //找到可用的父节点
     let p = fiber.return,
+        prevInsert = insertPoint,
         dom = fiber.stateNode,
-        parentNode;
+        parentNode, offset;
     while (p) {
         if (p.tag === 5) {
             parentNode = p.stateNode;
@@ -201,11 +202,14 @@ export function insertElement(fiber) {
         }
         p = p._return || p.return;
     }
+    insertPoint = dom;
     if (parentNode !== insertContainer) {
         insertContainer = parentNode;
-        insertPoint = null;
+        offset = parentNode.firstChild;
+    } else {
+        offset = prevInsert.nextSibling;
     }
-    let offset = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
+
     if (offset === dom) {
         return;
     }

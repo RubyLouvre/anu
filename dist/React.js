@@ -756,8 +756,10 @@ var insertContainer = null;
 var insertPoint = null;
 function insertElement(fiber) {
     var p = fiber.return,
+        prevInsert = insertPoint,
         dom = fiber.stateNode,
-        parentNode = void 0;
+        parentNode = void 0,
+        offset = void 0;
     while (p) {
         if (p.tag === 5) {
             parentNode = p.stateNode;
@@ -765,11 +767,13 @@ function insertElement(fiber) {
         }
         p = p._return || p.return;
     }
+    insertPoint = dom;
     if (parentNode !== insertContainer) {
         insertContainer = parentNode;
-        insertPoint = null;
+        offset = parentNode.firstChild;
+    } else {
+        offset = prevInsert.nextSibling;
     }
-    var offset = insertPoint ? insertPoint.nextSibling : parentNode.firstChild;
     if (offset === dom) {
         return;
     }
@@ -1543,8 +1547,23 @@ function findDOMNode(stateNode) {
         }
     }
 }
-
-
+function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
+    deprecatedWarn("unstable_renderSubtreeIntoContainer");
+    return renderByAnu(vnode, container, callback, instance.context);
+}
+function unmountComponentAtNode(container) {
+    var rootIndex = topNodes.indexOf(container);
+    if (rootIndex > -1) {
+        var lastFiber = topFibers[rootIndex],
+            effects = [];
+        detachFiber(lastFiber, effects);
+        lastFiber.effects = effects;
+        commitWork(lastFiber);
+        container._reactInternalFiber = null;
+        return true;
+    }
+    return false;
+}
 var ENOUGH_TIME = 1;
 function renderByAnu(vnode, root, _callback) {
     if (!(root && root.appendChild)) {
@@ -1578,6 +1597,13 @@ function renderByAnu(vnode, root, _callback) {
         }
     });
     return instance;
+}
+function requestIdleCallback(fn) {
+    fn({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
 }
 function getNextUnitOfWork() {
     var fiber = updateQueue.shift();
@@ -1678,7 +1704,6 @@ function commitWork(fiber) {
                     shader.insertElement(fiber);
                     break;
                 case ATTR:
-                    console.log("设置ATTR");
                     shader.updateAttribute(fiber);
                     break;
                 case DETACH:
@@ -2330,7 +2355,6 @@ function getSVGAttributeName(name) {
 function diffProps(dom, lastProps, nextProps, fiber) {
     options.beforeProps(fiber);
     var isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    console.log(fiber, isSVG);
     var tag = fiber.type;
     for (var name in nextProps) {
         var val = nextProps[name];
@@ -2529,13 +2553,13 @@ var DOMRenderer = {
     }
 };
 
-createRenderer(DOMRenderer);
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
 if (prevReact && prevReact.options) {
     React = prevReact;
 } else {
+    createRenderer(DOMRenderer);
     React = win.React = win.ReactDOM = {
         version: "1.3.1",
         render: render,
@@ -2556,6 +2580,8 @@ if (prevReact && prevReact.options) {
         cloneElement: cloneElement,
         PureComponent: PureComponent,
         isValidElement: isValidElement,
+        unmountComponentAtNode: unmountComponentAtNode,
+        unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
         createFactory: function createFactory(type) {
             console.warn('createFactory is deprecated');
             var factory = createElement.bind(null, type);
