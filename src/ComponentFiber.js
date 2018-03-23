@@ -9,7 +9,7 @@ import { contextStack, emptyObject } from "./share";
 export function ComponentFiber(vnode) {
     extend(this, vnode);
     let type = vnode.type;
-    this.name = type.displayName || type.name;
+    this.name = type.displayName || type.name || type;
 }
 
 

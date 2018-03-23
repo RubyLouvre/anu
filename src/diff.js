@@ -59,17 +59,18 @@ export function unmountComponentAtNode(container) {
 let ENOUGH_TIME = 1;
 function renderByAnu(vnode, root, callback) {
     if (!(root && root.appendChild)) {
-		throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
+        throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
     }
     let instance;
     let hostRoot = {
         stateNode: root,
-        from: "root",
+        root: true,
         tag: 5,
         type: root.tagName.toLowerCase(),
         props: Object.assign({
             children: vnode
         }),
+        namespaceURI: root.namespaceURI,//必须知道第一个元素的文档类型
         effectTag: CALLBACK,
         alternate: get(root),
         callback() {
@@ -95,7 +96,7 @@ function getNextUnitOfWork() {
     if (!fiber) {
         return;
     }
-    if (fiber.from == "root") {
+    if (fiber.root) {
         if (!get(fiber.stateNode)) {
             shader.emptyElement(fiber);
         }
@@ -177,16 +178,16 @@ function completeWork(fiber, topWork) {
 
 const NOWORK = 0; //不处理此节点及孩子
 const WORKING = 1; //用于叠加其他任务
-const MOUNT = 2; //插入或移动
+const PLACE = 2; //插入或移动
 const ATTR = 3; //更新属性
 const CONTENT = 5; //设置文本
 const NULLREF = 7; //ref null
 const HOOK = 11; //componentDidMount/Update/WillUnmount
 const REF = 13; //ref stateNode
-const DELETE = 17; //移出DOM树
+const DETACH = 17; //移出DOM树
 const CALLBACK = 19; //回调
-const CATRH = 23; //出错
-const effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK, CATCH];
+const CAPTURE = 23; //出错
+const effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 const effectLength = effectNames.length;
 /**
  * 基于素数的任务系统
@@ -195,6 +196,7 @@ const effectLength = effectNames.length;
 function commitWork(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
+    let updater = instance.updater;
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -205,13 +207,14 @@ function commitWork(fiber) {
             //如果能整除，下面的分支操作以后要改成注入方法
             amount = remainder;
             switch (effectNo) {
-            case MOUNT://只对原生组件
+            case PLACE://只对原生组件
                 shader.insertElement(fiber);
                 break;
             case ATTR://只对原生组件
+                console.log("设置ATTR");
                 shader.updateAttribute(fiber);
                 break;
-            case DELETE:
+            case DETACH:
                 if (fiber.tag > 3) {//只对原生组件
                     shader.removeElement(fiber);
                 }//业务 & 原生
@@ -220,13 +223,13 @@ function commitWork(fiber) {
             case HOOK: //只对业务组件
                 if (fiber.disposed) {
                     callLifeCycleHook(instance, "componentWillUnmount", []);
-                    instance.updater._isMounted = returnFalse;
+                    updater._isMounted = returnFalse;
                 } else {
-                    if (instance.isMounted()) {
+                    if (updater._isMounted()) {
                         callLifeCycleHook(instance, "componentDidUpdate", []);
                     } else {
                         callLifeCycleHook(instance, "componentDidMount", []);
-                        instance.updater._isMounted = returnTrue;
+                        updater._isMounted = returnTrue;
                     }
                 }
                 break;
@@ -243,8 +246,7 @@ function commitWork(fiber) {
                 //ReactDOM.render/forceUpdate/setState callback
                 fiber.callback.call(instance);
                 break;
-            case CATRH:
-                var updater = instance.updater;
+            case CAPTURE:
                 updater._isDoctor = true;
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);
                 fiber.errorInfo = null;
@@ -323,6 +325,9 @@ function updateHostComponent(fiber) {
             throw e;
         }
     }
+    if (fiber.tag == 5 && !fiber.root) {
+        fiber.effectTag *= ATTR;
+    }
     const children = fiber.props && fiber.props.children;
     if (fiber.tag === 6) {
         const prev = fiber.alternate;
@@ -357,11 +362,12 @@ function updateClassComponent(fiber) {
         contextStack.unshift(c);
     }
     let shouldUpdate = true;
+    let updater = instance.updater;
     let nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
-    if (instance.isMounted()) {
+
+    if (updater._isMounted()) {
         let propsChange = lastProps !== nextProps;
         let willReceive = propsChange && instance.context !== nextContext;
-        let updater = instance.updater;
         updater._receiving = true;
         if (willReceive) {
             callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
@@ -425,7 +431,7 @@ function detachFiber(fiber, effects) {
     if (fiber.ref) {
         fiber.effectTag *= NULLREF;
     }
-    fiber.effectTag *= DELETE;
+    fiber.effectTag *= DETACH;
     fiber.disposed = true;
     if (fiber.tag < 3) {
         fiber.effectTag *= HOOK;
@@ -465,26 +471,22 @@ function diffChildren(parentFiber, children) {
         newFiber.effectTag = WORKING;
         let oldFiber = matchFibers[i];
         if (oldFiber) {
-            if (newFiber.tag > 3) {
-                newFiber.effectTag *= MOUNT;
-                newFiber.effectTag *= ATTR;
-            }
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
                 newFiber.alternate = oldFiber;
             } else {
                 detachFiber(oldFiber, effects);
             }
-        } else {
-            if (newFiber.tag > 3) {
-                newFiber.effectTag *= MOUNT;
-            }
         }
-        newFiber.index = index++;
-        newFiber.return = parentFiber;
+        if (newFiber.tag > 3) {
+            newFiber.effectTag *= PLACE;
+        }
         if (newFiber.ref) {
             newFiber.effectTag *= REF;
         }
+        newFiber.index = index++;
+        newFiber.return = parentFiber;
+
         if (prevFiber) {
             prevFiber.sibling = newFiber;
         } else {

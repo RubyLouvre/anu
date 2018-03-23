@@ -137,7 +137,7 @@ function pushError(instance, hook, error) {
         catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }, instance];
         delete catchFiber._children;
         delete catchFiber.child;
-        catchFiber.effectTag = 29;
+        catchFiber.effectTag = 23;
         updateQueue.push(catchFiber);
     } else {
         console.warn(stack);
@@ -1301,7 +1301,7 @@ function createClass(spec) {
 function ComponentFiber(vnode) {
     extend(this, vnode);
     var type = vnode.type;
-    this.name = type.displayName || type.name;
+    this.name = type.displayName || type.name || type;
 }
 function createUpdater() {
     return {
@@ -1553,12 +1553,13 @@ function renderByAnu(vnode, root, _callback) {
     var instance = void 0;
     var hostRoot = {
         stateNode: root,
-        from: "root",
+        root: true,
         tag: 5,
         type: root.tagName.toLowerCase(),
         props: Object.assign({
             children: vnode
         }),
+        namespaceURI: root.namespaceURI,
         effectTag: CALLBACK,
         alternate: get(root),
         callback: function callback() {
@@ -1583,7 +1584,7 @@ function getNextUnitOfWork() {
     if (!fiber) {
         return;
     }
-    if (fiber.from == "root") {
+    if (fiber.root) {
         if (!get(fiber.stateNode)) {
             shader.emptyElement(fiber);
         }
@@ -1649,20 +1650,21 @@ function completeWork(fiber, topWork) {
 }
 var NOWORK = 0;
 var WORKING = 1;
-var MOUNT = 2;
+var PLACE = 2;
 var ATTR = 3;
 var CONTENT = 5;
 var NULLREF = 7;
 var HOOK = 11;
 var REF = 13;
-var DELETE = 17;
+var DETACH = 17;
 var CALLBACK = 19;
-var ERR = 23;
-var effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK, ERR];
+var CAPTURE = 23;
+var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 function commitWork(fiber) {
     var instance = fiber.stateNode;
     var amount = fiber.effectTag;
+    var updater = instance.updater;
     for (var i = 0; i < effectLength; i++) {
         var effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -1672,13 +1674,14 @@ function commitWork(fiber) {
         if (remainder == ~~remainder) {
             amount = remainder;
             switch (effectNo) {
-                case MOUNT:
+                case PLACE:
                     shader.insertElement(fiber);
                     break;
                 case ATTR:
+                    console.log("设置ATTR");
                     shader.updateAttribute(fiber);
                     break;
-                case DELETE:
+                case DETACH:
                     if (fiber.tag > 3) {
                         shader.removeElement(fiber);
                     }
@@ -1687,13 +1690,13 @@ function commitWork(fiber) {
                 case HOOK:
                     if (fiber.disposed) {
                         captureError(instance, "componentWillUnmount", []);
-                        instance.updater._isMounted = returnFalse;
+                        updater._isMounted = returnFalse;
                     } else {
-                        if (instance.isMounted()) {
+                        if (updater._isMounted()) {
                             captureError(instance, "componentDidUpdate", []);
                         } else {
                             captureError(instance, "componentDidMount", []);
-                            instance.updater._isMounted = returnTrue;
+                            updater._isMounted = returnTrue;
                         }
                     }
                     break;
@@ -1709,8 +1712,7 @@ function commitWork(fiber) {
                 case CALLBACK:
                     fiber.callback.call(instance);
                     break;
-                case ERR:
-                    var updater = instance.updater;
+                case CAPTURE:
                     updater._isDoctor = true;
                     instance.componentDidCatch.apply(instance, fiber.errorInfo);
                     fiber.errorInfo = null;
@@ -1782,6 +1784,9 @@ function updateHostComponent(fiber) {
             throw e;
         }
     }
+    if (fiber.tag == 5 && !fiber.root) {
+        fiber.effectTag *= ATTR;
+    }
     var children = fiber.props && fiber.props.children;
     if (fiber.tag === 6) {
         var prev = fiber.alternate;
@@ -1820,11 +1825,11 @@ function updateClassComponent(fiber) {
         contextStack.unshift(c);
     }
     var shouldUpdate = true;
+    var updater = instance.updater;
     var nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
-    if (instance.isMounted()) {
+    if (updater._isMounted()) {
         var propsChange = lastProps !== nextProps;
         var willReceive = propsChange && instance.context !== nextContext;
-        var updater = instance.updater;
         updater._receiving = true;
         if (willReceive) {
             captureError(instance, "componentWillReceiveProps", [nextProps, nextContext]);
@@ -1885,7 +1890,7 @@ function detachFiber(fiber, effects) {
     if (fiber.ref) {
         fiber.effectTag *= NULLREF;
     }
-    fiber.effectTag *= DELETE;
+    fiber.effectTag *= DETACH;
     fiber.disposed = true;
     if (fiber.tag < 3) {
         fiber.effectTag *= HOOK;
@@ -1923,26 +1928,21 @@ function diffChildren(parentFiber, children) {
         _newFiber.effectTag = WORKING;
         var _oldFiber = matchFibers[_i];
         if (_oldFiber) {
-            if (_newFiber.tag > 3) {
-                _newFiber.effectTag *= MOUNT;
-                _newFiber.effectTag *= ATTR;
-            }
             if (isSameNode(_oldFiber, _newFiber)) {
                 _newFiber.stateNode = _oldFiber.stateNode;
                 _newFiber.alternate = _oldFiber;
             } else {
                 detachFiber(_oldFiber, effects);
             }
-        } else {
-            if (_newFiber.tag > 3) {
-                _newFiber.effectTag *= MOUNT;
-            }
         }
-        _newFiber.index = index++;
-        _newFiber.return = parentFiber;
+        if (_newFiber.tag > 3) {
+            _newFiber.effectTag *= PLACE;
+        }
         if (_newFiber.ref) {
             _newFiber.effectTag *= REF;
         }
+        _newFiber.index = index++;
+        _newFiber.return = parentFiber;
         if (prevFiber) {
             prevFiber.sibling = _newFiber;
         } else {
@@ -2330,6 +2330,7 @@ function getSVGAttributeName(name) {
 function diffProps(dom, lastProps, nextProps, fiber) {
     options.beforeProps(fiber);
     var isSVG = fiber.namespaceURI === NAMESPACE.svg;
+    console.log(fiber, isSVG);
     var tag = fiber.type;
     for (var name in nextProps) {
         var val = nextProps[name];
@@ -2518,7 +2519,7 @@ var DOMRenderer = {
         emptyElement(fiber.stateNode);
     },
     removeElement: function removeElement$$1(fiber) {
-        var instance = fiber.instance;
+        var instance = fiber.stateNode;
         removeElement(instance);
         var j = topNodes.indexOf(instance);
         if (j !== -1) {
