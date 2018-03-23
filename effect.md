@@ -7,9 +7,9 @@
 | MOUNT   | 插入DOM树          | ✖️              | ✖️        | ✔️               | ✔️          |
 | ATTR    | 修改属性           | ✖️              | ✖️        | ✔️               | ✖️          |
 | CONTEXT | 修改文本           | ✖️              | ✖️        | ✖️               | ✔️          |
-| NULLREF | ref(stateNOde)     | ✔️              | ✔️        | ✔️               | ✖️          |
-| HOOK    | 执行生命周期回调   | ✔️              | ✔️        | ✖️               | ✖️          |
-| REF     | ref(stateNOde)     | ✔️              | ✔️        | ✔️               | ✖️          |
+| NULLREF | ref(null)        | ✔️              | ✔️        | ✔️               | ✖️          |
+| HOOK    | 执行生命周期回调    | ✔️              | ✖️        | ✖️               | ✖️          |
+| REF     | ref(stateNode)     | ✔️              | ✔️        | ✔️               | ✖️          |
 | DELETE  | 移出DOM树          | ✖️              | ✖️        | ✔️               | ✔️          |
 | CALLBAL | render/setState cb | ✔️              | ✔️        | ✔️               | ✔️          |
-| CATCH   | componentDidCatch  | ✔️              | ✔️        | ✖️               | ✖️          |
+| CATCH   | componentDidCatch  | ✔️              | ✖️        | ✖️               | ✖️          |
