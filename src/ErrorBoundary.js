@@ -12,7 +12,7 @@ export function pushError(instance, hook, error) {
         catchFiber.errorInfo = catchFiber.errorInfo || [ error, { componentStack: stack }, instance ];
         delete catchFiber._children;
         delete catchFiber.child;
-        catchFiber.effectTag = 29;
+        catchFiber.effectTag = 23;
         updateQueue.push(catchFiber);
     } else {
 		console.warn(stack); // eslint-disable-line

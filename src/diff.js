@@ -185,8 +185,8 @@ const HOOK = 11; //componentDidMount/Update/WillUnmount
 const REF = 13; //ref stateNode
 const DELETE = 17; //移出DOM树
 const CALLBACK = 19; //回调
-const ERR = 23; //出错
-const effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK, ERR];
+const CATRH = 23; //出错
+const effectNames = [MOUNT, ATTR, CONTENT, NULLREF, HOOK, REF, DELETE, CALLBACK, CATCH];
 const effectLength = effectNames.length;
 /**
  * 基于素数的任务系统
@@ -205,20 +205,19 @@ function commitWork(fiber) {
             //如果能整除，下面的分支操作以后要改成注入方法
             amount = remainder;
             switch (effectNo) {
-            case MOUNT:
-                //5, 6
+            case MOUNT://只对原生组件
                 shader.insertElement(fiber);
                 break;
-            case ATTR:
+            case ATTR://只对原生组件
                 shader.updateAttribute(fiber);
                 break;
             case DELETE:
-                if (fiber.tag > 3) {
+                if (fiber.tag > 3) {//只对原生组件
                     shader.removeElement(fiber);
-                }
+                }//业务 & 原生
                 delete fiber.stateNode;
                 break;
-            case HOOK:
+            case HOOK: //只对业务组件
                 if (fiber.disposed) {
                     callLifeCycleHook(instance, "componentWillUnmount", []);
                     instance.updater._isMounted = returnFalse;
@@ -244,7 +243,7 @@ function commitWork(fiber) {
                 //ReactDOM.render/forceUpdate/setState callback
                 fiber.callback.call(instance);
                 break;
-            case ERR:
+            case CATRH:
                 var updater = instance.updater;
                 updater._isDoctor = true;
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);

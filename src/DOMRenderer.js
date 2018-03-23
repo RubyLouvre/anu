@@ -4,7 +4,7 @@ import { diffProps } from "./diffProps";
 import { emptyObject, topNodes, topFibers } from "./share";
 import { emptyElement, createElement, insertElement, removeElement } from "./browser";
 //其他Renderer也要实现这些方法
-export var DOMRenderer = {
+export let DOMRenderer = {
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
@@ -21,7 +21,7 @@ export var DOMRenderer = {
         emptyElement(fiber.stateNode);
     },
     removeElement(fiber) {
-        let instance = fiber.instance;
+        let instance = fiber.stateNode;
         removeElement(instance);
         let j = topNodes.indexOf(instance);
         if (j !== -1) {
