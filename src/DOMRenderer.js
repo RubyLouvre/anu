@@ -1,7 +1,9 @@
 
 import { inputControll, formElements } from "./inputControll";
 import { diffProps } from "./diffProps";
-import { emptyObject, topNodes, topFibers } from "./share";
+import { get } from "./util";
+import { Refs } from "./Refs";
+import { emptyObject, topNodes, topFibers, updateQueue } from "./share";
 import { emptyElement, createElement, insertElement, removeElement } from "./browser";
 //其他Renderer也要实现这些方法
 export let DOMRenderer = {
@@ -15,9 +17,42 @@ export let DOMRenderer = {
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
     },
+    render(vnode, root, callback) {
+        if (!(root && root.appendChild)) {
+            throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
+        }
+        let instance;
+        let hostRoot = {
+            stateNode: root,
+            root: true,
+            tag: 5,
+            type: root.tagName.toLowerCase(),
+            props: Object.assign({
+                children: vnode
+            }),
+            namespaceURI: root.namespaceURI,//必须知道第一个元素的文档类型
+            effectTag: 19,//CALLBACK
+            alternate: get(root),
+            callback() {
+                instance = hostRoot.child ? hostRoot.child.stateNode : null;
+                callback && callback.call(instance);
+            }
+        };
+        if (topNodes.indexOf(root) == -1) {
+            topNodes.push(root);
+            topFibers.push(hostRoot);
+        }
+        updateQueue.push(hostRoot);
+        Refs.workLoop({
+            timeRemaining() {
+                return 2;
+            }
+        });
+        return instance;
+    },
     createElement,
     insertElement,
-    emptyElement(fiber){
+    emptyElement(fiber) {
         emptyElement(fiber.stateNode);
     },
     removeElement(fiber) {

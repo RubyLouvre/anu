@@ -187,12 +187,10 @@ export function contains(a, b) {
     return false;
 }
 
-let insertContainer = null,
-    insertPoint = null;
+
 export function insertElement(fiber) {
     //找到可用的父节点
     let p = fiber.return,
-        prevInsert = insertPoint,
         dom = fiber.stateNode,
         parentNode, offset;
     while (p) {
@@ -202,14 +200,9 @@ export function insertElement(fiber) {
         }
         p = p._return || p.return;
     }
-    insertPoint = dom;
-    if (parentNode !== insertContainer) {
-        insertContainer = parentNode;
-        offset = parentNode.firstChild;
-    } else {
-        offset = prevInsert.nextSibling;
-    }
 
+    offset = parentNode._justInsert ? parentNode._justInsert.nextSibling:  parentNode.firstChild;
+    parentNode._justInsert = dom;
     if (offset === dom) {
         return;
     }
@@ -218,7 +211,7 @@ export function insertElement(fiber) {
     }
     let isElement = fiber.tag === 5;
     let prevFocus = isElement && document.activeElement;
-    insertContainer.insertBefore(dom, offset);
+    parentNode.insertBefore(dom, offset);
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
         try {
             Refs.focusNode = prevFocus;

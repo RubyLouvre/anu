@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
@@ -41,112 +41,13 @@
                     },
                 }
             }  
-            function collectVDOM(vdom, array) {
-        if (vdom.tag == 5) {
-            var children = [];
-            var element = {
-                type: vdom.type,
-                children: children
-            };
-            array.push(element)
-            var c = vdom._children;
-            for (var i in c) {
-                collectVDOM(c[i], children);
-            }
-        } else if (vdom.tag === 6) {
-            array.push(vdom.text + "");
-        } else {
-            var c = vdom._children;
-            for (var i in c) {
-                collectVDOM(c[i], array);
-            }
-        }
-    }
-    function span(prop) {
-        return { type: 'span', children: [prop] };
-    }
-    var yieldData = []
-    var ReactNoop = {
-        render(vdom) {
-            ReactDOM.render(vdom, div);
-        },
-        yield(a) {
-            yieldData.push(a)
-        },
-        flush() {
-            var ret = yieldData.concat()
-            yieldData.length = 0;
-            return ret;
-        },
-        getChildren() {
-            var c = div.__component,
-                ret = [];
-            collectVDOM(c, ret);
-            return ret;
-        }
-    };
-  
-    const Context = React.createContext(1);
-
-function Provider(props) {
-    return (
-        <Context.Consumer>
-            {contextValue => (
-                // Multiply previous context value by 2, unless prop overrides
-                <Context.Provider value={props.value || contextValue * 2}>
-                    {props.children}
-                </Context.Provider>
-            )}
-        </Context.Consumer>
-    );
-}
-
-function Consumer(props) {
-    return (
-        <Context.Consumer>
-            {value => <span>{'Result: ' + value}</span>}
-        </Context.Consumer>
-    );
-}
-
-class Indirection extends React.Component {
-    shouldComponentUpdate() {
-        return false;
-    }
-    render() {
-        return this.props.children;
-    }
-}
-
-function App(props) {
-    return (
-        <Provider value={props.value}>
-            <Indirection>
-                <Provider>
-                    <Indirection>
-                        <Provider>
-                            <Indirection>
-                                <Consumer />
-                            </Indirection>
-                        </Provider>
-                    </Indirection>
-                </Provider>
-            </Indirection>
-        </Provider>
-    );
-}
-
-ReactNoop.render(<App value={2} />);
-ReactNoop.flush();
-console.log(ReactNoop.getChildren())
-
-//expect(ReactNoop.getChildren()).toEqual([span('Result: 8')]);
-
-// Update
-ReactNoop.render(<App value={3} />);
-ReactNoop.flush();
-console.log(ReactNoop.getChildren())
-//expect(ReactNoop.getChildren()).toEqual([span('Result: 12')]);
+            var s = ReactNoop.render(<select value="111">
+                <option >111</option>
+                <option>222</option>
+                <option >333</option>
+             </select>);
+      console.log( ReactNoop.getChildren())
+        
      </script>
 
 </body>

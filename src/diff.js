@@ -6,10 +6,6 @@ import { returnFalse, returnTrue, deprecatedWarn, get, shader } from "./util";
 import { Refs } from "./Refs";
 import { topFibers, topNodes, updateQueue, componentStack, contextStack } from "./share";
 
-
-export function render(vnode, container, callback) {
-    return renderByAnu(vnode, container, callback);
-}
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
     return vnode && vnode.tag > 0 && vnode.tag !== 6;
@@ -39,7 +35,7 @@ export function findDOMNode(stateNode) {
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 export function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
-    return renderByAnu(vnode, container, callback, instance.context);
+    return shader.render(vnode, container, callback);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
 export function unmountComponentAtNode(container) {
@@ -57,39 +53,7 @@ export function unmountComponentAtNode(container) {
 }
 
 let ENOUGH_TIME = 1;
-function renderByAnu(vnode, root, callback) {
-    if (!(root && root.appendChild)) {
-        throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
-    }
-    let instance;
-    let hostRoot = {
-        stateNode: root,
-        root: true,
-        tag: 5,
-        type: root.tagName.toLowerCase(),
-        props: Object.assign({
-            children: vnode
-        }),
-        namespaceURI: root.namespaceURI,//必须知道第一个元素的文档类型
-        effectTag: CALLBACK,
-        alternate: get(root),
-        callback() {
-            instance = hostRoot.child ? hostRoot.child.stateNode : null;
-            callback && callback.call(instance);
-        }
-    };
-    if (topNodes.indexOf(root) == -1) {
-        topNodes.push(root);
-        topFibers.push(hostRoot);
-    }
-    updateQueue.push(hostRoot);
-    workLoop({
-        timeRemaining() {
-            return 2;
-        }
-    });
-    return instance;
-}
+
 function requestIdleCallback(fn){
     fn({
         timeRemaining() {
@@ -121,7 +85,7 @@ function workLoop(deadline) {
         commitAllWork(topWork);
     }
 }
-
+Refs.workLoop = workLoop;
 function commitAllWork(fiber) {
     fiber.effects.concat(fiber).forEach((f) => {
         commitWork(f);

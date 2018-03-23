@@ -4,7 +4,7 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c build/rollup.js",
+    "build": "rollup -c build/rollup.js && rollup -c build/rollup.noop.js",
     "test": "node node_modules/karma-event-driver-ext",
     "devtools": "rollup -c build/rollup.tools.js",
     "webpack": "^1.14.0",

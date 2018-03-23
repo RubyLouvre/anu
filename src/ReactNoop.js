@@ -1,19 +1,17 @@
 import { options, Fragment, createRenderer, getWindow } from "./util";
 import { Children } from "./Children";
-import * as eventSystem from "./event";
 import { PropTypes } from "./PropTypes";
 import { Component } from "./Component";
 import { cloneElement } from "./cloneElement";
 import { PureComponent } from "./PureComponent";
 
 import { createRef, forwardRef } from "./createRef";
-import { createClass } from "./createClass"; //deprecated
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
-import { findDOMNode, isValidElement, unstable_renderSubtreeIntoContainer,unmountComponentAtNode } from "./diff";
+import { findDOMNode, isValidElement,unmountComponentAtNode } from "./diff";
 
-import { DOMRenderer } from "./DOMRenderer";
+import { NoopRenderer } from "./NoopRenderer";
 
 
 
@@ -23,12 +21,14 @@ let React;
 if (prevReact && prevReact.options) {
     React = prevReact; //解决引入多个
 } else {
-    createRenderer(DOMRenderer);
-    var render = DOMRenderer.render;
-    React = win.React = win.ReactDOM = {
+    createRenderer(NoopRenderer);
+    var render = NoopRenderer.render;
+    React = win.React = win.ReactNoop = {
         version: "VERSION",
         render,
         hydrate: render,
+        flush:  NoopRenderer.flush,
+        getChildren: NoopRenderer.getChildren,
         options,
         Fragment,
         PropTypes,
@@ -36,17 +36,14 @@ if (prevReact && prevReact.options) {
         createPortal,
         createContext,
         Component,
-        eventSystem,
         findDOMNode,
         createRef,
         forwardRef,
-        createClass,
         createElement,
         cloneElement,
         PureComponent,
         isValidElement,
         unmountComponentAtNode,
-        unstable_renderSubtreeIntoContainer,
         createFactory(type) {
 			console.warn('createFactory is deprecated'); // eslint-disable-line
             let factory = createElement.bind(null, type);
