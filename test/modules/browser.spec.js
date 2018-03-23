@@ -1,7 +1,9 @@
 import { createElement, win, fakeDoc, DOMElement } from "src/browser";
+import { getWindow } from "src/util";
 
 describe("browser", function() {
     it("window", function() {
+        var win = getWindow();
         expect(typeof win).toBe("object");
         expect(typeof win.document).toBe("object");
 

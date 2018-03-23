@@ -29,6 +29,10 @@
             if(!window.ReactDOM){
               window.ReactDOM = React
             }
+             
+    function span(...children) {
+        return { type: "span", children: children };
+    }
             var container = document.getElementById("app-root")
             var div = container;
             var expect = function(a) {
@@ -41,12 +45,16 @@
                     },
                 }
             }  
-            var s = ReactNoop.render(<select value="111">
-                <option >111</option>
-                <option>222</option>
-                <option >333</option>
-             </select>);
-      console.log( ReactNoop.getChildren())
+            const element = (
+            <React.Fragment>
+                <span>foo</span>
+            </React.Fragment>
+        );
+
+        ReactNoop.render(element);
+        ReactNoop.flush();
+
+        expect(ReactNoop.getChildren()).toEqual( [span("foo")])
         
      </script>
 

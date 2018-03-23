@@ -2,7 +2,10 @@
 import { Refs } from "./Refs";
 import { updateQueue } from "./share";
 //其他Renderer也要实现这些方法
-var rootContainer = {};
+var rootContainer = {
+    type:"root",
+    children: []
+};
 function cleanChildren(array) {
     if (!Array.isArray(array)) {
         return array;
@@ -61,17 +64,25 @@ export let NoopRenderer = {
         let p = fiber.return,
             dom = fiber.stateNode,
             parentNode;
-        if (!fiber.return) {
+        if (!fiber.return && typeof dom.type === "string"  ) {
+
+            console.log("进入这里", dom);
             rootContainer = dom;
+
             return;
         }
         while (p) {
             if (p.tag === 5) {
                 parentNode = p.stateNode;
+                console.log("break", parentNode);
                 break;
             }
             p = p._return || p.return;
         }
+        if (!parentNode) {
+            parentNode = rootContainer;
+        }
+        console.log(fiber, parentNode,"!!!");
         var children = parentNode.children;
         var offset = parentNode._justInsert ? children.indexOf(parentNode._justInsert) : 0;
         parentNode._justInsert = dom;

@@ -14,9 +14,6 @@ import {
     isEventName
 } from "src/event";
 
-import {
-    getUnmaskedContext
-} from "src/ComponentFiber";
 
 describe("util", function () {
 
@@ -119,22 +116,7 @@ describe("util", function () {
         };
         expect(toArray(dom.childNodes).length).toBe(3);
     });
-    it("getUnmaskedContext", () => {
-        var instance = {
-            getChildContext: function () {
-                return {
-                    a: 1
-                };
-            }
-        };
-        var b = getUnmaskedContext(instance, {
-            b: 4
-        });
-        expect(b).toEqual({
-            a: 1,
-            b: 4
-        });
-    });
+
   
 
     it("typeNumber", () => {
