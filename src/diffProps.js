@@ -1,8 +1,9 @@
 import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { toLowerCase, noop, typeNumber, emptyObject, options } from "./util";
+import { toLowerCase, noop, typeNumber, options } from "./util";
 import { inputMonitor } from "./inputMonitor";
+import { emptyObject } from "./share";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589

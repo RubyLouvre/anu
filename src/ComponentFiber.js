@@ -1,5 +1,6 @@
-import { extend, returnFalse, noop } from "./util";
+import { extend, returnFalse, isFn } from "./util";
 import { Refs } from "./Refs";
+import { contextStack, emptyObject } from "./share";
 
 /**
  * 将虚拟DOM转换为Fiber
@@ -12,13 +13,40 @@ export function ComponentFiber(vnode) {
 }
 
 
+
 export function createUpdater() {
     return {
         _mountOrder: Refs.mountOrder++,
-        enqueueSetState: noop,
+        enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
 }
+
+export function getDerivedStateFromProps(instance, type, props, state) {
+    if (isFn(type.getDerivedStateFromProps)) {
+        state = type.getDerivedStateFromProps.call(null, props, state);
+        if (state != null) {
+            instance.setState(state);
+        }
+    }
+}
+
+export function getMaskedContext(contextTypes) {
+    let context = {};
+    if (!contextTypes) {
+        return emptyObject;
+    }
+    let parentContext = contextStack[0],
+        hasKey;
+    for (let key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            hasKey = true;
+            context[key] = parentContext[key];
+        }
+    }
+    return hasKey ? context : emptyObject;
+}
+
 export function createInstance(fiber, context) {
     let updater = createUpdater();
     let { props, type, tag } = fiber,

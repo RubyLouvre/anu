@@ -1,4 +1,4 @@
-import { typeNumber } from "./util";
+import { typeNumber, getWindow } from "./util";
 import { Refs } from "./Refs";
 //用于后端的元素节点
 export function DOMElement(type) {
@@ -37,20 +37,15 @@ fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
-try {
-    var w = window;
-    var b = !!w.alert;
-} catch (e) {
-    b = false;
-    w = {
-        document: fakeDoc
-    };
+
+var win = getWindow();
+export var inBrowser = !!win.alert;
+
+if(!inBrowser){
+    win.document = fakeDoc;
 }
 
-export let inBrowser = b;
-export let win = w;
-
-export let document = w.document || fakeDoc;
+export let document = win.document;
 
 export let duplexMap = {
     color: 1,
