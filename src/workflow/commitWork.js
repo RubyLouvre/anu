@@ -13,10 +13,11 @@ import {
 } from "../effectTag"
 import { callLifeCycleHook, pushError } from './unwindWork';
 import { returnFalse, returnTrue, shader } from "../util";
+import { Refs } from "../Refs";
 
 /**
  * 基于素数的任务系统
- * @param {*} fiber 
+ * @param {Refs} fiber 
  */
 export function commitWork(fiber) {
 	let instance = fiber.stateNode;

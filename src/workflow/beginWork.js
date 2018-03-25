@@ -82,22 +82,19 @@ function updateClassComponent(fiber) {
 
 	if (updater._isMounted()) {
 		let propsChange = lastProps !== nextProps;
-		//只要props/context任于一个发生变化，就会触发componentWillReceiveProps
-		let willReceive = propsChange || instance.context !== nextContext;
-		updater._receiving = true;
-		fiber._willReceive = willReceive;
-		if (willReceive) {
-			callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
+		if (!partialState) {//调用了setState的实例不会走cwr
+			//只要props/context任于一个发生变化，就会触发cwr
+			let willReceive = propsChange || instance.context !== nextContext;
+			updater._receiving = true;
+			if (willReceive) {
+				callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
+			}
+			fiber._willReceive = willReceive;
+			delete updater._receiving;
 		}
 		if (propsChange) {
-			try {
-				getDerivedStateFromProps(instance, type, nextProps, lastState);
-			} catch (error) {
-				pushError(instance, 'getDerivedStateFromProps', error);
-			}
+			getDerivedStateFromProps(instance, type, nextProps, lastState);
 		}
-		delete updater._receiving;
-
 		let args = [ nextProps, nextState, nextContext ];
 		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
 			shouldUpdate = false;
@@ -105,11 +102,7 @@ function updateClassComponent(fiber) {
 			callLifeCycleHook(instance, 'componentWillUpdate', args);
 		}
 	} else {
-		try {
-			getDerivedStateFromProps(instance, type, nextProps, lastState);
-		} catch (error) {
-			pushError(instance, 'getDerivedStateFromProps', error);
-		}
+		getDerivedStateFromProps(instance, type, nextProps, emptyObject);
 		callLifeCycleHook(instance, 'componentWillMount', []);
 	}
 	fiber.effectTag *= HOOK;
@@ -174,12 +167,19 @@ export function detachFiber(fiber, effects) {
 	}
 }
 
+var gDSFP = 'getDerivedStateFromProps';
+
 function getDerivedStateFromProps(instance, type, props, state) {
-	if (isFn(type.getDerivedStateFromProps)) {
-		state = type.getDerivedStateFromProps.call(null, props, state);
-		if (state != null) {
-			instance.setState(state);
+	try {
+		var method = type[gDSFP];
+		if (method) {
+			state = method.call(null, props, state);
+			if (state != null) {
+				instance.setState(state);
+			}
 		}
+	} catch (error) {
+		pushError(instance, gDSFP, error);
 	}
 }
 

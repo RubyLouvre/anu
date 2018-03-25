@@ -167,6 +167,7 @@ shader.updaterComponent = function(instance, state, callback) {
 			})
 		);
 	}
+
 	if (this._isMounted === returnTrue) {
 		if (this._receiving) {
 			//componentWillReceiveProps中的setState/forceUpdate应该被忽略
