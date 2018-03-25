@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
@@ -12,29 +12,16 @@
     <script src="test/babel.js"></script>
 </head>
 
-<body>
-
-    <h1>测试</h1>
-    <h1 id='app-root' className="root">
+<body><h1 id="ee"></h1><h1 id='app-root' className="root">
 
     </h1>
     <script type='text/babel'>
-            var check = function () {
-                return null;
-            };
-            check.isRequired = check;
-            var PropTypes = React.PropTypes || {
-                string: check
-            }
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
-             
-    function span(...children) {
-        return { type: "span", children: children };
-    }
+           
+         
             var container = document.getElementById("app-root")
             var div = container;
+           // var node = document.getElementById("ee")
+          //  ee.replaceChild(document.createElement("span"), ee.childNodes[0])
             var expect = function(a) {
                 return {
                     toBe: function(b) {
@@ -45,18 +32,48 @@
                     },
                 }
             }  
-            const element = (
-            <React.Fragment>
-                <span>foo</span>
-            </React.Fragment>
-        );
+            var first = 0
+             //组件应该知道它的孩子会插入的位置
+            class App extends React.Component{
+                constructor(a,b){
+                    super(a,b)
+                    this.state ={
+                        keys: ["a","b","c"]
+                    }
+                }
+                componentWillUpdate(){
+                    console.log("componentWillUpdate")
+                }
+                render(){
+                    var keys = this.state.keys
+                    return <div><span key={keys[0]}>{keys[0]}</span><A />
+                        <span key={keys[1]}>{keys[1]}</span>
+                        <span key={keys[2]}>{keys[2]}</span></div>
+                }
+            }
+      
+            class A extends React.Component{
+                constructor(a,b){
+                    super(a,b)
+                }
+                render(){
+                    return <strong>xxx</strong>
+                }
+            }  
 
-        ReactNoop.render(element);
-        ReactNoop.flush();
 
-        expect(ReactNoop.getChildren()).toEqual( [span("foo")])
+
+       var app =  React.render(<App /> ,container, function(a){
+           console.log(this)
+       });
+        console.log("11111")
+        first = 1
+      //  React.render(<App /> ,container);
         
      </script>
+     <div>
+         <span>xxx</span><span>xxx</span><span>xxx</span>
+     </div>
 
 </body>
 

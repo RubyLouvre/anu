@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
     <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -25,11 +24,8 @@
     </h1>
     <script type='text/babel'>
             var container = document.getElementById("example")
-            var div = container;
-            var PropTypes = React.PropTypes
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
+          //  var div = container;
+            var React = ReactNoop
             var expect = function(a) {
                 return {
                     toBe: function(b) {
@@ -41,67 +37,59 @@
                 }
             }  
 
-     function collectVDOM(vdom, array) {
-         console.log(vdom)
-		if (vdom.tag == 5) {
-			var children = [];
-			var element = {
-				type: vdom.type,
-				children: children
-            };
-            array.push(element)
-			var c = vdom._children;
-			for (var i in c) {
-				collectVDOM(c[i], children);
-			}
-		} else if (vdom.tag === 6) {
-			array.push( vdom.text +"");
-		} else {
-            var c = vdom._children;
-			for (var i in c) {
-				collectVDOM(c[i], array);
-			}
-		}
-	}
-  var ReactNoop = {
-        render(vdom) {
-            ReactDOM.render(vdom, div);
-        },
-        flush() { },
-        getChildren() {
-            var c = div.__component,
-                ret = [];
-            collectVDOM(c, ret);
-            return ret;
-        },
-        getText() {
-            return div.innerHTML.toLowerCase();
-        }
+   
+            function div(...children) {
+        return { type: "div", props:null,  children: children };
     }
-    const Context = React.createContext(1);
-	function span(prop) {
-		return { type: 'span', children: [prop] };
-	}
-    function Consumer(props) {
-        return <Context.Consumer>{(value) => <span>{'Result: ' + value}</span>}</Context.Consumer>;
-    }
+            const ops = [];
 
-    const Indirection = React.Fragment;
-    function App(props) {
-        return (
-            <Context.Provider value={props.value}>
-                <Indirection>
-                    <Indirection>
-                        <Consumer />
-                    </Indirection>
-                </Indirection>
-            </Context.Provider>
-        );
-    }
-//ReactDOM.render(<App value={2} />, div)
-ReactNoop.render(<App value={3} />);
-var a = ReactNoop.getChildren();
-console.log(a)
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
+            }
+
+            render() {
+                return <div>Hello</div>;
+            }
+        }
+
+        function Foo({ condition }) {
+            return condition ? (
+                <React.Fragment>
+                    <React.Fragment>
+                        <React.Fragment>
+                            <Stateful key="a" />
+                        </React.Fragment>
+                    </React.Fragment>
+                </React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <React.Fragment>
+                        <React.Fragment>
+                            <div />
+                            <Stateful key="a" />
+                        </React.Fragment>
+                    </React.Fragment>
+                </React.Fragment>
+            );
+        }
+
+
+        ReactNoop.render(<Foo condition={true} />);
+        ReactNoop.flush();
+
+        ReactNoop.render(<Foo condition={false} />);
+        ReactNoop.flush();
+
+        expect(ops).toEqual(["Update Stateful"]);
+        expect(ReactNoop.getChildren()).toEqual([div(),div("Hello")]);
+/*
+        ReactNoop.render(<Foo condition={true} />);
+        ReactNoop.flush();
+
+        expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+        expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
+*/
 </script>
 
 

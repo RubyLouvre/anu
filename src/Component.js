@@ -1,4 +1,4 @@
-import { deprecatedWarn, returnFalse, returnTrue } from "./util";
+import { deprecatedWarn, returnFalse,returnTrue } from "./util";
 import { Refs } from "./Refs";
 /**
  *组件的基类
@@ -8,6 +8,7 @@ import { Refs } from "./Refs";
  */
 export function Component(props, context) {
     //防止用户在构造器生成JSX
+    
     Refs.currentOwner = this;
     this.context = context;
     this.props = props;
@@ -37,6 +38,4 @@ Component.prototype = {
     },
     render() {}
 };
-
-
 

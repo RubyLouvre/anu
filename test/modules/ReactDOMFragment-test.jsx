@@ -1,28 +1,28 @@
-import React from "dist/React";
-import { createReactNoop } from "lib/createReactNoop";
+//import React from "dist/React";
+import ReactNoop from "dist/ReactNoop";
 
-var ReactDOM = window.ReactDOM || React;
+var React= ReactNoop;
 
 describe("ReactDOMFragment", function () {
     this.timeout(200000);
-    var body = document.body,ReactNoop,
+    var body = document.body,
         div1;
 
    
     function span(...children) {
-        return { type: "span", children: children };
+        return { type: "span", props:null, children: children };
     }
     function div(...children) {
-        return { type: "div", children: children };
+        return { type: "div", props:null,  children: children };
     }
 
     beforeEach(function () {
         div1 = document.createElement("div");
         body.appendChild(div1);
-        ReactNoop = createReactNoop(div1, ReactDOM);
     });
     afterEach(function () {
         body.removeChild(div1);
+        ReactNoop.reset()
     });
     it("should render a single child via noop renderer", () => {
         const element = (
@@ -41,8 +41,9 @@ describe("ReactDOMFragment", function () {
 
         ReactNoop.render(element);
         ReactNoop.flush();
-
-        expect(ReactNoop.getChildren()).toEqual([]);
+var a = ReactNoop.getChildren()
+console.log(a, a.length)
+        expect(a).toEqual([]);
     });
     it("should render multiple children via noop renderer", () => {
         const element = (

@@ -27,9 +27,9 @@ export let DOMRenderer = {
             root: true,
             tag: 5,
             type: root.tagName.toLowerCase(),
-            props: Object.assign({
+            props: {
                 children: vnode
-            }),
+            },
             namespaceURI: root.namespaceURI,//必须知道第一个元素的文档类型
             effectTag: 19,//CALLBACK
             alternate: get(root),

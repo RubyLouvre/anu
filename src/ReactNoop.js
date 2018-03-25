@@ -13,23 +13,22 @@ import { findDOMNode, isValidElement,unmountComponentAtNode } from "./diff";
 
 import { NoopRenderer } from "./NoopRenderer";
 
-
-
 var win = getWindow();
-var prevReact = win.React;
+var prevReact = win.ReactNoop;
 let React;
-if (prevReact && prevReact.options) {
+if (prevReact && prevReact.isReactNoop) {
     React = prevReact; //解决引入多个
 } else {
     createRenderer(NoopRenderer);
     var render = NoopRenderer.render;
-    React = win.React = win.ReactNoop = {
+    ReactNoop = win.ReactNoop = { //放出全局的ReactNoop
         version: "VERSION",
         render,
-        hydrate: render,
         flush:  NoopRenderer.flush,
+        reset:  NoopRenderer.reset,
         getChildren: NoopRenderer.getChildren,
         options,
+        isReactNoop: true,
         Fragment,
         PropTypes,
         Children,
@@ -52,4 +51,4 @@ if (prevReact && prevReact.options) {
         }
     };
 }
-export default React;
+export default ReactNoop;

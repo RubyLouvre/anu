@@ -28,7 +28,7 @@ export default {
         }),
 
         license({
-            banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,"")}
+            banner: `此个版本专门用于测试\nby 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,"")}
       IE9+
       `
         }),
@@ -45,6 +45,6 @@ export default {
         }),
         filesize()
     ],
-    moduleName: "React",
+    moduleName: "ReactNoop",
     useStrict: false
 };
