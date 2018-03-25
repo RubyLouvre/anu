@@ -111,8 +111,8 @@ var componentStack = [];
 var topFibers = [];
 var topNodes = [];
 
-var emptyObject = {};
-var contextStack = [emptyObject];
+var emptyObject$1 = {};
+var contextStack = [emptyObject$1];
 
 function pushError(instance, hook, error) {
     var names = [],
@@ -128,12 +128,12 @@ function pushError(instance, hook, error) {
         updateQueue.push(catchFiber);
     } else {
         console.warn(stack);
-        if (!Refs.error) {
-            Refs.error = error;
+        if (!Refs$1.error) {
+            Refs$1.error = error;
         }
     }
 }
-function captureError(instance, hook, args) {
+function callLifeCycleHook(instance, hook, args) {
     try {
         var fn = instance[hook];
         if (fn) {
@@ -197,7 +197,7 @@ function getDOMNode() {
     return this;
 }
 
-var Refs = {
+var Refs$1 = {
     mountOrder: 1,
     currentOwner: null,
     controlledCbs: [],
@@ -237,7 +237,7 @@ function Vnode(type, tag, props, key, ref) {
     this.tag = tag;
     if (tag !== 6) {
         this.props = props;
-        this._owner = Refs.currentOwner;
+        this._owner = Refs$1.currentOwner;
         if (key) {
             this.key = key;
         }
@@ -463,7 +463,7 @@ function cloneElement(vnode, props) {
         return clone;
     }
     var owner = vnode._owner,
-        lastOwn = Refs.currentOwner,
+        lastOwn = Refs$1.currentOwner,
         old = vnode.props,
         configs = {};
     if (props) {
@@ -478,7 +478,7 @@ function cloneElement(vnode, props) {
     } else {
         configs = old;
     }
-    Refs.currentOwner = owner;
+    Refs$1.currentOwner = owner;
     var args = [].slice.call(arguments, 0),
         argsLength = args.length;
     args[0] = vnode.type;
@@ -488,7 +488,7 @@ function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     var ret = createElement.apply(null, args);
-    Refs.currentOwner = lastOwn;
+    Refs$1.currentOwner = lastOwn;
     return ret;
 }
 
@@ -594,7 +594,7 @@ var PropTypes = {
 };
 
 function Component(props, context) {
-    Refs.currentOwner = this;
+    Refs$1.currentOwner = this;
     this.context = context;
     this.props = props;
     this.refs = {};
@@ -669,98 +669,324 @@ function forwardRef(fn) {
     return RefComponent(fn);
 }
 
-function ComponentFiber(vnode) {
-    extend(this, vnode);
-    var type = vnode.type;
-    this.name = type.displayName || type.name || type;
+function createInstance(fiber, context) {
+	var updater = {
+		_mountOrder: Refs$1.mountOrder++,
+		enqueueSetState: returnFalse,
+		_isMounted: returnFalse
+	};
+	var props = fiber.props,
+	    type = fiber.type,
+	    tag = fiber.tag,
+	    isStateless = tag === 1,
+	    lastOwn = Refs$1.currentOwner,
+	    instance = void 0,
+	    lifeCycleHook = void 0;
+	try {
+		if (isStateless) {
+			instance = {
+				refs: {},
+				__proto__: type.prototype,
+				__init__: true,
+				props: props,
+				context: context,
+				render: function f() {
+					var a = type(this.props, this.context);
+					if (a && a.render) {
+						lifeCycleHook = a;
+						return this.__init__ ? null : a.render.call(this);
+					}
+					return a;
+				}
+			};
+			Refs$1.currentOwner = instance;
+			if (type.isRef) {
+				instance.render = function () {
+					return type(this.props, this.ref);
+				};
+			} else {
+				fiber.child = instance.render();
+				if (lifeCycleHook) {
+					for (var i in lifeCycleHook) {
+						if (i !== 'render') {
+							instance[i] = lifeCycleHook[i];
+						}
+					}
+					lifeCycleHook = false;
+				} else {
+					updater._willReceive = false;
+					updater._isStateless = true;
+				}
+				delete instance.__init__;
+			}
+		} else {
+			instance = new type(props, context);
+		}
+	} catch (e) {
+		instance = {};
+	} finally {
+		Refs$1.currentOwner = lastOwn;
+	}
+	fiber.stateNode = instance;
+	instance.updater = updater;
+	return instance;
 }
-function createUpdater() {
-    return {
-        _mountOrder: Refs.mountOrder++,
-        enqueueSetState: returnFalse,
-        _isMounted: returnFalse
-    };
+
+var NOWORK$1 = 0;
+var WORKING = 1;
+var PLACE = 2;
+var ATTR = 3;
+var CONTENT = 5;
+var NULLREF = 7;
+var HOOK = 11;
+var REF = 13;
+var DETACH = 17;
+var CALLBACK$1 = 19;
+var CAPTURE = 23;
+var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK$1, CAPTURE];
+var effectLength = effectNames.length;
+
+function beginWork(fiber) {
+	if (!fiber.effectTag) {
+		fiber.effectTag = WORKING;
+	}
+	if (fiber.tag > 3) {
+		updateHostComponent(fiber);
+	} else {
+		updateClassComponent(fiber);
+	}
+}
+function Fiber(vnode) {
+	extend(this, vnode);
+	var type = vnode.type;
+	this.name = type.displayName || type.name || type;
+}
+function updateHostComponent(fiber) {
+	if (!fiber.stateNode) {
+		try {
+			fiber.stateNode = shader.createElement(fiber);
+		} catch (e) {
+			throw e;
+		}
+	}
+	if (fiber.tag == 5 && !fiber.root) {
+		fiber.effectTag *= ATTR;
+	}
+	if (fiber.parent) {
+		var b = fiber.parent.before;
+		fiber.mountPoint = b;
+		fiber.parent.before = fiber.stateNode;
+	}
+	var children = fiber.props && fiber.props.children;
+	if (fiber.tag === 6) {
+		var prev = fiber.alternate;
+		if (!prev || prev.props.children !== children) {
+			fiber.effectTag *= CONTENT;
+		}
+	} else if (fiber.props) {
+		diffChildren(fiber, children);
+	}
+}
+function updateClassComponent(fiber) {
+	var type = fiber.type,
+	    nextProps = fiber.props,
+	    instance = fiber.stateNode,
+	    partialState = fiber.partialState;
+	var nextContext = getMaskedContext(type.contextTypes);
+	if (instance == null) {
+		instance = fiber.stateNode = createInstance(fiber, nextContext);
+		instance.updater.enqueueSetState = shader.updaterComponent;
+	}
+	var _instance = instance,
+	    lastProps = _instance.props,
+	    lastState = _instance.state,
+	    c = void 0;
+	fiber.lastState = lastProps;
+	fiber.lastProps = lastState;
+	instance._reactInternalFiber = fiber;
+	fiber.partialState = null;
+	if (fiber.parent) {
+		fiber.mountPoint = fiber.parent.before;
+	}
+	if (instance.getChildContext) {
+		try {
+			c = instance.getChildContext();
+			c = Object.assign({}, nextContext, c);
+		} catch (e) {
+			c = {};
+		}
+		contextStack.unshift(c);
+	}
+	var shouldUpdate = true;
+	var updater = instance.updater;
+	var nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
+	if (updater._isMounted()) {
+		var propsChange = lastProps !== nextProps;
+		var willReceive = propsChange && instance.context !== nextContext;
+		updater._receiving = true;
+		if (willReceive) {
+			callLifeCycleHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
+		}
+		if (propsChange) {
+			try {
+				getDerivedStateFromProps(instance, type, nextProps, lastState);
+			} catch (error) {
+				pushError(instance, 'getDerivedStateFromProps', error);
+			}
+		}
+		delete updater._receiving;
+		var args = [nextProps, nextState, nextContext];
+		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
+			shouldUpdate = false;
+		} else {
+			callLifeCycleHook(instance, 'componentWillUpdate', args);
+		}
+	} else {
+		try {
+			getDerivedStateFromProps(instance, type, nextProps, lastState);
+		} catch (error) {
+			pushError(instance, 'getDerivedStateFromProps', error);
+		}
+		callLifeCycleHook(instance, 'componentWillMount', []);
+	}
+	fiber.effectTag *= HOOK;
+	instance.context = nextContext;
+	instance.props = nextProps;
+	instance.state = nextState;
+	if (!shouldUpdate) {
+		fiber.effectTag = NOWORK$1;
+		cloneChildren(fiber);
+		if (componentStack[0] === instance) {
+			componentStack.shift();
+		}
+		return;
+	}
+	var lastOwn = Refs$1.currentOwner,
+	    children;
+	Refs$1.currentOwner = instance;
+	try {
+		children = instance.render();
+	} finally {
+		if (componentStack[0] === instance) {
+			componentStack.shift();
+		}
+		Refs$1.currentOwner = lastOwn;
+	}
+	diffChildren(fiber, children);
+}
+function isSameNode(a, b) {
+	if (a.type === b.type && a.key === b.key) {
+		return true;
+	}
+}
+function detachFiber(fiber, effects) {
+	if (fiber.ref) {
+		fiber.effectTag *= NULLREF;
+	}
+	fiber.effectTag *= DETACH;
+	fiber.disposed = true;
+	if (fiber.tag < 3) {
+		fiber.effectTag *= HOOK;
+	}
+	effects.push(fiber);
+	for (var child = fiber.child; child; child = child.sibling) {
+		detachFiber(child, effects);
+	}
 }
 function getDerivedStateFromProps(instance, type, props, state) {
-    if (isFn(type.getDerivedStateFromProps)) {
-        state = type.getDerivedStateFromProps.call(null, props, state);
-        if (state != null) {
-            instance.setState(state);
-        }
-    }
+	if (isFn(type.getDerivedStateFromProps)) {
+		state = type.getDerivedStateFromProps.call(null, props, state);
+		if (state != null) {
+			instance.setState(state);
+		}
+	}
 }
 function getMaskedContext(contextTypes) {
-    var context = {};
-    if (!contextTypes) {
-        return emptyObject;
-    }
-    var parentContext = contextStack[0],
-        hasKey = void 0;
-    for (var key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            hasKey = true;
-            context[key] = parentContext[key];
-        }
-    }
-    return hasKey ? context : emptyObject;
+	var context = {};
+	if (!contextTypes) {
+		return emptyObject;
+	}
+	var parentContext = contextStack[0],
+	    hasKey = void 0;
+	for (var key in contextTypes) {
+		if (contextTypes.hasOwnProperty(key)) {
+			hasKey = true;
+			context[key] = parentContext[key];
+		}
+	}
+	return hasKey ? context : emptyObject;
 }
-function createInstance(fiber, context) {
-    var updater = createUpdater();
-    var props = fiber.props,
-        type = fiber.type,
-        tag = fiber.tag,
-        isStateless = tag === 1,
-        lastOwn = Refs.currentOwner,
-        instance = void 0,
-        lifeCycleHook = void 0;
-    try {
-        if (isStateless) {
-            instance = {
-                refs: {},
-                __proto__: type.prototype,
-                __init__: true,
-                props: props,
-                context: context,
-                render: function f() {
-                    var a = type(this.props, this.context);
-                    if (a && a.render) {
-                        lifeCycleHook = a;
-                        return this.__init__ ? null : a.render.call(this);
-                    }
-                    return a;
-                }
-            };
-            Refs.currentOwner = instance;
-            if (type.isRef) {
-                instance.render = function () {
-                    return type(this.props, this.ref);
-                };
-            } else {
-                fiber.child = instance.render();
-                if (lifeCycleHook) {
-                    for (var i in lifeCycleHook) {
-                        if (i !== "render") {
-                            instance[i] = lifeCycleHook[i];
-                        }
-                    }
-                    lifeCycleHook = false;
-                } else {
-                    updater._willReceive = false;
-                    updater._isStateless = true;
-                }
-                delete instance.__init__;
-            }
-        } else {
-            instance = new type(props, context);
-        }
-    } catch (e) {
-        instance = {};
-    } finally {
-        Refs.currentOwner = lastOwn;
-    }
-    fiber.stateNode = instance;
-    instance.updater = updater;
-    return instance;
+function diffChildren(parentFiber, children) {
+	var oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {};
+	var newFibers = fiberizeChildren(children, parentFiber);
+	var effects = parentFiber.effects || (parentFiber.effects = []);
+	var matchFibers = {};
+	var parent = parentFiber;
+	do {
+		if (parent.tag === 5) {
+			break;
+		}
+	} while (parent = parent.return);
+	parent = parent.stateNode;
+	for (var i in oldFibers) {
+		var newFiber = newFibers[i];
+		var oldFiber = oldFibers[i];
+		if (newFiber && newFiber.type === oldFiber.type) {
+			matchFibers[i] = oldFiber;
+			if (newFiber.key != null) {
+				oldFiber.key = newFiber.key;
+			}
+			if (oldFiber.ref !== newFiber.ref) {
+				oldFiber.effectTag *= NULLREF;
+				effects.push(oldFiber);
+			}
+			continue;
+		}
+		detachFiber(oldFiber, effects);
+	}
+	var prevFiber = void 0,
+	    index = 0;
+	for (var _i in newFibers) {
+		var _newFiber = newFibers[_i] = new Fiber(newFibers[_i]);
+		_newFiber.effectTag = WORKING;
+		_newFiber.parent = parent;
+		var _oldFiber = matchFibers[_i];
+		if (_oldFiber) {
+			if (isSameNode(_oldFiber, _newFiber)) {
+				_newFiber.stateNode = _oldFiber.stateNode;
+				_newFiber.alternate = _oldFiber;
+			} else {
+				detachFiber(_oldFiber, effects);
+			}
+		}
+		if (_newFiber.tag > 3) {
+			_newFiber.effectTag *= PLACE;
+		}
+		if (_newFiber.ref) {
+			_newFiber.effectTag *= REF;
+		}
+		_newFiber.index = index++;
+		_newFiber.return = parentFiber;
+		if (prevFiber) {
+			prevFiber.sibling = _newFiber;
+		} else {
+			parentFiber.child = _newFiber;
+		}
+		prevFiber = _newFiber;
+	}
+	if (prevFiber) {
+		delete prevFiber.sibling;
+	}
+}
+function cloneChildren(parentFiber) {
+	var oldFiber = parentFiber.alternate;
+	if (!oldFiber) {
+		return;
+	}
+	parentFiber._children = oldFiber._children;
+	if (oldFiber.child) {
+		parentFiber.child = oldFiber.child;
+	}
 }
 
 function AnuPortal(props) {
@@ -774,7 +1000,7 @@ function createPortal(children, node) {
     } else {
         events = node.__events = {};
         var vnode = createVnode(node);
-        fiber = new ComponentFiber(vnode);
+        fiber = new Fiber(vnode);
         events.vnode = fiber;
     }
     fiber._isPortal = true;
@@ -891,6 +1117,88 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 }
 
+function completeWork(fiber, topWork) {
+	var parentFiber = fiber.return;
+	var parent = fiber.parent;
+	if (fiber.tag == 2) {
+		fiber.stateNode._reactInternalFiber = fiber;
+		if (fiber.stateNode.getChildContext) {
+			contextStack.pop();
+		}
+	}
+	if (parentFiber && fiber.effectTag !== NOWORK && fiber !== topWork) {
+		var childEffects = fiber.effects || [];
+		var thisEffect = fiber.effectTag > 1 ? [fiber] : [];
+		var parentEffects = parentFiber.effects || [];
+		parent.offset = fiber.stateNode;
+		parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
+	}
+}
+
+function commitWork(fiber) {
+	var instance = fiber.stateNode;
+	var amount = fiber.effectTag;
+	var updater = instance.updater;
+	for (var i = 0; i < effectLength; i++) {
+		var effectNo = effectNames[i];
+		if (effectNo > amount) {
+			break;
+		}
+		var remainder = amount / effectNo;
+		if (remainder == ~~remainder) {
+			amount = remainder;
+			switch (effectNo) {
+				case PLACE:
+					shader.insertElement(fiber);
+					break;
+				case ATTR:
+					delete fiber.before;
+					shader.updateAttribute(fiber);
+					break;
+				case DETACH:
+					if (fiber.tag > 3) {
+						shader.removeElement(fiber);
+					}
+					break;
+				case HOOK:
+					delete fiber.before;
+					if (fiber.disposed) {
+						callLifeCycleHook(instance, 'componentWillUnmount', []);
+						updater._isMounted = returnFalse;
+					} else {
+						if (updater._isMounted()) {
+							callLifeCycleHook(instance, 'componentDidUpdate', []);
+						} else {
+							callLifeCycleHook(instance, 'componentDidMount', []);
+							updater._isMounted = returnTrue;
+						}
+					}
+					break;
+				case CONTENT:
+					shader.updateContext(fiber);
+					break;
+				case REF:
+					Refs.fireRef(fiber, instance);
+					break;
+				case NULLREF:
+					Refs.fireRef(fiber, null);
+					break;
+				case CALLBACK$1:
+					fiber.callback.call(instance);
+					break;
+				case CAPTURE:
+					updater._isDoctor = true;
+					instance.componentDidCatch.apply(instance, fiber.errorInfo);
+					fiber.errorInfo = null;
+					updater._isDoctor = false;
+					break;
+			}
+		}
+	}
+	fiber.effectTag = amount;
+	fiber.effects = null;
+}
+
 function isValidElement(vnode) {
 	return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
@@ -957,15 +1265,13 @@ function workLoop(deadline) {
 		commitAllWork(topWork);
 	}
 }
-Refs.workLoop = workLoop;
+Refs$1.workLoop = workLoop;
 function commitAllWork(fiber) {
-	fiber.effects.concat(fiber).forEach(function (f) {
-		commitWork(f);
-	});
+	fiber.effects.concat(fiber).forEach(commitWork);
 }
 function performUnitOfWork(fiber, topWork) {
 	beginWork(fiber);
-	if (fiber.child && fiber.effectTag !== NOWORK) {
+	if (fiber.child && fiber.effectTag !== NOWORK$1) {
 		return fiber.child;
 	}
 	var f = fiber;
@@ -980,110 +1286,7 @@ function performUnitOfWork(fiber, topWork) {
 		f = f.return;
 	}
 }
-function beginWork(fiber) {
-	if (!fiber.effectTag) {
-		fiber.effectTag = WORKING;
-	}
-	if (fiber.tag > 3) {
-		updateHostComponent(fiber);
-	} else {
-		updateClassComponent(fiber);
-	}
-}
-function completeWork(fiber, topWork) {
-	var parentFiber = fiber.return;
-	var parent = fiber.parent;
-	if (fiber.tag == 2) {
-		fiber.stateNode._reactInternalFiber = fiber;
-		if (fiber.stateNode.getChildContext) {
-			contextStack.pop();
-		}
-	}
-	if (parentFiber && fiber.effectTag !== NOWORK && fiber !== topWork) {
-		var childEffects = fiber.effects || [];
-		var thisEffect = fiber.effectTag > 1 ? [fiber] : [];
-		var parentEffects = parentFiber.effects || [];
-		parent.offset = fiber.stateNode;
-		parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
-	}
-}
-var NOWORK = 0;
-var WORKING = 1;
-var PLACE = 2;
-var ATTR = 3;
-var CONTENT = 5;
-var NULLREF = 7;
-var HOOK = 11;
-var REF = 13;
-var DETACH = 17;
-var CALLBACK = 19;
-var CAPTURE = 23;
-var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
-var effectLength = effectNames.length;
-function commitWork(fiber) {
-	var instance = fiber.stateNode;
-	var amount = fiber.effectTag;
-	var updater = instance.updater;
-	for (var i = 0; i < effectLength; i++) {
-		var effectNo = effectNames[i];
-		if (effectNo > amount) {
-			break;
-		}
-		var remainder = amount / effectNo;
-		if (remainder == ~~remainder) {
-			amount = remainder;
-			switch (effectNo) {
-				case PLACE:
-					shader.insertElement(fiber);
-					break;
-				case ATTR:
-					delete fiber.before;
-					shader.updateAttribute(fiber);
-					break;
-				case DETACH:
-					if (fiber.tag > 3) {
-						shader.removeElement(fiber);
-					}
-					break;
-				case HOOK:
-					delete fiber.before;
-					if (fiber.disposed) {
-						captureError(instance, 'componentWillUnmount', []);
-						updater._isMounted = returnFalse;
-					} else {
-						if (updater._isMounted()) {
-							captureError(instance, 'componentDidUpdate', []);
-						} else {
-							captureError(instance, 'componentDidMount', []);
-							updater._isMounted = returnTrue;
-						}
-					}
-					break;
-				case CONTENT:
-					shader.updateContext(fiber);
-					break;
-				case REF:
-					Refs.fireRef(fiber, instance);
-					break;
-				case NULLREF:
-					Refs.fireRef(fiber, null);
-					break;
-				case CALLBACK:
-					fiber.callback.call(instance);
-					break;
-				case CAPTURE:
-					updater._isDoctor = true;
-					instance.componentDidCatch.apply(instance, fiber.errorInfo);
-					fiber.errorInfo = null;
-					updater._isDoctor = false;
-					break;
-			}
-		}
-	}
-	fiber.effectTag = amount;
-	fiber.effects = null;
-}
-function enqueueSetState(instance, state, callback) {
+shader.updaterComponent = function (instance, state, callback) {
 	var fiber = get(instance);
 	var isForceUpdate = state === true;
 	state = isForceUpdate ? null : state;
@@ -1128,215 +1331,11 @@ function enqueueSetState(instance, state, callback) {
 		}
 		requestIdleCallback(performWork);
 	}
-}
+};
 function performWork(deadline) {
 	workLoop(deadline);
 	if (updateQueue.length > 0) {
 		requestIdleCallback(performWork);
-	}
-}
-function updateHostComponent(fiber) {
-	if (!fiber.stateNode) {
-		try {
-			fiber.stateNode = shader.createElement(fiber);
-		} catch (e) {
-			throw e;
-		}
-	}
-	if (fiber.tag == 5 && !fiber.root) {
-		fiber.effectTag *= ATTR;
-	}
-	if (fiber.parent) {
-		var b = fiber.parent.before;
-		fiber.mountPoint = b;
-		fiber.parent.before = fiber.stateNode;
-	}
-	var children = fiber.props && fiber.props.children;
-	if (fiber.tag === 6) {
-		var prev = fiber.alternate;
-		if (!prev || prev.props.children !== children) {
-			fiber.effectTag *= CONTENT;
-		}
-	} else if (fiber.props) {
-		diffChildren(fiber, children);
-	}
-}
-function updateClassComponent(fiber) {
-	var type = fiber.type,
-	    nextProps = fiber.props,
-	    instance = fiber.stateNode,
-	    partialState = fiber.partialState;
-	var nextContext = getMaskedContext(type.contextTypes);
-	if (instance == null) {
-		instance = fiber.stateNode = createInstance(fiber, nextContext);
-		instance.updater.enqueueSetState = enqueueSetState;
-	}
-	var _instance = instance,
-	    lastProps = _instance.props,
-	    lastState = _instance.state,
-	    c = void 0;
-	fiber.lastState = lastProps;
-	fiber.lastProps = lastState;
-	instance._reactInternalFiber = fiber;
-	fiber.partialState = null;
-	if (fiber.parent) {
-		fiber.mountPoint = fiber.parent.before;
-	}
-	if (instance.getChildContext) {
-		try {
-			c = instance.getChildContext();
-			c = Object.assign({}, nextContext, c);
-		} catch (e) {
-			c = {};
-		}
-		contextStack.unshift(c);
-	}
-	var shouldUpdate = true;
-	var updater = instance.updater;
-	var nextState = partialState ? Object.assign({}, lastState, partialState) : lastState;
-	if (updater._isMounted()) {
-		var propsChange = lastProps !== nextProps;
-		var willReceive = propsChange && instance.context !== nextContext;
-		updater._receiving = true;
-		if (willReceive) {
-			captureError(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
-		}
-		if (propsChange) {
-			try {
-				getDerivedStateFromProps(instance, type, nextProps, lastState);
-			} catch (error) {
-				pushError(instance, 'getDerivedStateFromProps', error);
-			}
-		}
-		delete updater._receiving;
-		var args = [nextProps, nextState, nextContext];
-		if (!fiber.isForceUpdate && !captureError(instance, 'shouldComponentUpdate', args)) {
-			shouldUpdate = false;
-		} else {
-			captureError(instance, 'componentWillUpdate', args);
-		}
-	} else {
-		try {
-			getDerivedStateFromProps(instance, type, nextProps, lastState);
-		} catch (error) {
-			pushError(instance, 'getDerivedStateFromProps', error);
-		}
-		captureError(instance, 'componentWillMount', []);
-	}
-	fiber.effectTag *= HOOK;
-	instance.context = nextContext;
-	instance.props = nextProps;
-	instance.state = nextState;
-	if (!shouldUpdate) {
-		fiber.effectTag = NOWORK;
-		cloneChildren(fiber);
-		if (componentStack[0] === instance) {
-			componentStack.shift();
-		}
-		return;
-	}
-	var lastOwn = Refs.currentOwner,
-	    children;
-	Refs.currentOwner = instance;
-	try {
-		children = instance.render();
-	} finally {
-		if (componentStack[0] === instance) {
-			componentStack.shift();
-		}
-		Refs.currentOwner = lastOwn;
-	}
-	diffChildren(fiber, children);
-}
-function isSameNode(a, b) {
-	if (a.type === b.type && a.key === b.key) {
-		return true;
-	}
-}
-function detachFiber(fiber, effects) {
-	if (fiber.ref) {
-		fiber.effectTag *= NULLREF;
-	}
-	fiber.effectTag *= DETACH;
-	fiber.disposed = true;
-	if (fiber.tag < 3) {
-		fiber.effectTag *= HOOK;
-	}
-	effects.push(fiber);
-	for (var child = fiber.child; child; child = child.sibling) {
-		detachFiber(child, effects);
-	}
-}
-function diffChildren(parentFiber, children) {
-	var oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {};
-	var newFibers = fiberizeChildren(children, parentFiber);
-	var effects = parentFiber.effects || (parentFiber.effects = []);
-	var matchFibers = {};
-	var parent = parentFiber;
-	do {
-		if (parent.tag === 5) {
-			break;
-		}
-	} while (parent = parent.return);
-	parent = parent.stateNode;
-	for (var i in oldFibers) {
-		var newFiber = newFibers[i];
-		var oldFiber = oldFibers[i];
-		if (newFiber && newFiber.type === oldFiber.type) {
-			matchFibers[i] = oldFiber;
-			if (newFiber.key != null) {
-				oldFiber.key = newFiber.key;
-			}
-			if (oldFiber.ref !== newFiber.ref) {
-				oldFiber.effectTag *= NULLREF;
-				effects.push(oldFiber);
-			}
-			continue;
-		}
-		detachFiber(oldFiber, effects);
-	}
-	var prevFiber = void 0,
-	    index = 0;
-	for (var _i in newFibers) {
-		var _newFiber = newFibers[_i] = new ComponentFiber(newFibers[_i]);
-		_newFiber.effectTag = WORKING;
-		_newFiber.parent = parent;
-		var _oldFiber = matchFibers[_i];
-		if (_oldFiber) {
-			if (isSameNode(_oldFiber, _newFiber)) {
-				_newFiber.stateNode = _oldFiber.stateNode;
-				_newFiber.alternate = _oldFiber;
-			} else {
-				detachFiber(_oldFiber, effects);
-			}
-		}
-		if (_newFiber.tag > 3) {
-			_newFiber.effectTag *= PLACE;
-		}
-		if (_newFiber.ref) {
-			_newFiber.effectTag *= REF;
-		}
-		_newFiber.index = index++;
-		_newFiber.return = parentFiber;
-		if (prevFiber) {
-			prevFiber.sibling = _newFiber;
-		} else {
-			parentFiber.child = _newFiber;
-		}
-		prevFiber = _newFiber;
-	}
-	if (prevFiber) {
-		delete prevFiber.sibling;
-	}
-}
-function cloneChildren(parentFiber) {
-	var oldFiber = parentFiber.alternate;
-	if (!oldFiber) {
-		return;
-	}
-	parentFiber._children = oldFiber._children;
-	if (oldFiber.child) {
-		parentFiber.child = oldFiber.child;
 	}
 }
 
@@ -1395,7 +1394,7 @@ var NoopRenderer = {
 			}
 		};
 		updateQueue.push(hostRoot);
-		Refs.workLoop({
+		Refs$1.workLoop({
 			timeRemaining: function timeRemaining() {
 				return 2;
 			}

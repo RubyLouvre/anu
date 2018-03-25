@@ -1,4 +1,4 @@
-import { pushError } from "./ErrorBoundary";
+import { pushError } from "./workflow/unwindWork";
 import { isFn } from "./util";
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM

@@ -1,6 +1,6 @@
-import { Refs } from "./Refs";
-import { updateQueue } from "./share";
-import { noop, get } from "./util";
+import { Refs } from "../Refs";
+import { updateQueue } from "../share";
+import { noop, get } from "../util";
 
 export function pushError(instance, hook, error) {
     let names = [],
@@ -22,7 +22,7 @@ export function pushError(instance, hook, error) {
         }
     }
 }
-export function captureError(instance, hook, args) {
+export function callLifeCycleHook(instance, hook, args) {
     try {
         let fn = instance[hook];
         if (fn) {
