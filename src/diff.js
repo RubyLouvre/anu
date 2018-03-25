@@ -1,9 +1,9 @@
-import { Refs } from './Refs';
+
 import { topFibers, topNodes, updateQueue } from './share';
 import { beginWork, detachFiber } from './workflow/beginWork';
 import { completeWork } from './workflow/completeWork';
 import { commitWork } from './workflow/commitWork';
-import { NOWORK} from "./effectTag"
+import { NOWORK } from './effectTag';
 import { returnTrue, deprecatedWarn, get, shader } from './util';
 
 //[Top API] React.isValidElement
@@ -30,6 +30,16 @@ export function findDOMNode(stateNode) {
 			return null;
 		}
 	}
+}
+export function render(vnode, root, callback) {
+	var hostRoot = shader.updateRoot(vnode, root, callback);
+	updateQueue.push(hostRoot);
+	workLoop({
+		timeRemaining() {
+			return 2;
+		}
+	});
+	return hostRoot.child ? hostRoot.child.stateNode : null;
 }
 
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
@@ -85,8 +95,6 @@ function workLoop(deadline) {
 		commitAllWork(topWork);
 	}
 }
-
-Refs.workLoop = workLoop;
 
 function commitAllWork(fiber) {
 	fiber.effects.concat(fiber).forEach(commitWork);
@@ -165,7 +173,7 @@ shader.updaterComponent = function(instance, state, callback) {
 		}
 		requestIdleCallback(performWork);
 	}
-}
+};
 
 function performWork(deadline) {
 	workLoop(deadline);

@@ -1219,6 +1219,16 @@ function findDOMNode(stateNode) {
 		}
 	}
 }
+function render(vnode, root, callback) {
+	var hostRoot = shader.updateRoot(vnode, root, callback);
+	updateQueue.push(hostRoot);
+	workLoop({
+		timeRemaining: function timeRemaining() {
+			return 2;
+		}
+	});
+	return hostRoot.child ? hostRoot.child.stateNode : null;
+}
 
 function unmountComponentAtNode(container) {
 	var rootIndex = topNodes.indexOf(container);
@@ -1265,7 +1275,6 @@ function workLoop(deadline) {
 		commitAllWork(topWork);
 	}
 }
-Refs$1.workLoop = workLoop;
 function commitAllWork(fiber) {
 	fiber.effects.concat(fiber).forEach(commitWork);
 }
@@ -1376,9 +1385,8 @@ var NoopRenderer = {
 			children: []
 		};
 	},
-	render: function render(vnode) {
-		var instance;
-		var hostRoot = {
+	updateRoot: function updateRoot(vnode) {
+		return {
 			type: 'root',
 			root: true,
 			stateNode: rootContainer,
@@ -1389,17 +1397,9 @@ var NoopRenderer = {
 			effectTag: 19,
 			alternate: rootContainer._reactInternalFiber,
 			callback: function callback() {
-				var fiber = this._reactInternalFiber;
-				instance = fiber.child ? fiber.child.stateNode : null;
+				console.log("...");
 			}
 		};
-		updateQueue.push(hostRoot);
-		Refs$1.workLoop({
-			timeRemaining: function timeRemaining() {
-				return 2;
-			}
-		});
-		return instance;
 	},
 	getChildren: function getChildren() {
 		return cleanChildren(rootContainer.children || []);
@@ -1466,7 +1466,6 @@ if (prevReact && prevReact.isReactNoop) {
     React = prevReact;
 } else {
     createRenderer(NoopRenderer);
-    var render = NoopRenderer.render;
     ReactNoop = win.ReactNoop = {
         version: "1.3.1",
         render: render,

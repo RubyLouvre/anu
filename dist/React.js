@@ -1841,6 +1841,16 @@ function findDOMNode(stateNode) {
 		}
 	}
 }
+function render(vnode, root, callback) {
+	var hostRoot = shader.updateRoot(vnode, root, callback);
+	updateQueue.push(hostRoot);
+	workLoop({
+		timeRemaining: function timeRemaining() {
+			return 2;
+		}
+	});
+	return hostRoot.child ? hostRoot.child.stateNode : null;
+}
 function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
 	deprecatedWarn('unstable_renderSubtreeIntoContainer');
 	return shader.render(vnode, container, callback);
@@ -1890,7 +1900,6 @@ function workLoop(deadline) {
 		commitAllWork(topWork);
 	}
 }
-Refs$1.workLoop = workLoop;
 function commitAllWork(fiber) {
 	fiber.effects.concat(fiber).forEach(commitWork);
 }
@@ -2498,66 +2507,59 @@ var actionStrategy = {
 };
 
 var DOMRenderer = {
-    updateAttribute: function updateAttribute(fiber) {
-        var type = fiber.type,
-            props = fiber.props,
-            lastProps = fiber.lastProps,
-            stateNode = fiber.stateNode;
-        diffProps(stateNode, lastProps || emptyObject$1, props, fiber);
-        if (formElements[type]) {
-            inputControll(fiber, stateNode, props);
-        }
-    },
-    updateContext: function updateContext(fiber) {
-        fiber.stateNode.nodeValue = fiber.props.children;
-    },
-    render: function render(vnode, root, _callback) {
-        if (!(root && root.appendChild)) {
-            throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF";
-        }
-        var instance = void 0;
-        var hostRoot = {
-            stateNode: root,
-            root: true,
-            tag: 5,
-            type: root.tagName.toLowerCase(),
-            props: {
-                children: vnode
-            },
-            namespaceURI: root.namespaceURI,
-            effectTag: 19,
-            alternate: get(root),
-            callback: function callback() {
-                instance = hostRoot.child ? hostRoot.child.stateNode : null;
-                _callback && _callback.call(instance);
-            }
-        };
-        if (topNodes.indexOf(root) == -1) {
-            topNodes.push(root);
-            topFibers.push(hostRoot);
-        }
-        updateQueue.push(hostRoot);
-        Refs$1.workLoop({
-            timeRemaining: function timeRemaining() {
-                return 2;
-            }
-        });
-        return instance;
-    },
-    createElement: createElement$1,
-    insertElement: insertElement,
-    emptyElement: function emptyElement$$1(fiber) {
-        emptyElement(fiber.stateNode);
-    },
-    removeElement: function removeElement$$1(fiber) {
-        var instance = fiber.stateNode;
-        removeElement(instance);
-        var j = topNodes.indexOf(instance);
-        if (j !== -1) {
-            topFibers.splice(j, 1);
-            topNodes.splice(j, 1);
-        }
-    }
+	updateAttribute: function updateAttribute(fiber) {
+		var type = fiber.type,
+		    props = fiber.props,
+		    lastProps = fiber.lastProps,
+		    stateNode = fiber.stateNode;
+		diffProps(stateNode, lastProps || emptyObject$1, props, fiber);
+		if (formElements[type]) {
+			inputControll(fiber, stateNode, props);
+		}
+	},
+	updateContext: function updateContext(fiber) {
+		fiber.stateNode.nodeValue = fiber.props.children;
+	},
+	updateRoot: function updateRoot(vnode, root, _callback) {
+		if (!(root && root.appendChild)) {
+			throw 'ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF';
+		}
+		var hostRoot = {
+			stateNode: root,
+			root: true,
+			tag: 5,
+			type: root.tagName.toLowerCase(),
+			props: {
+				children: vnode
+			},
+			namespaceURI: root.namespaceURI,
+			effectTag: 19,
+			alternate: get(root),
+			callback: function callback() {
+				var instance = hostRoot.child ? hostRoot.child.stateNode : null;
+				_callback && _callback.call(instance);
+			}
+		};
+		if (topNodes.indexOf(root) == -1) {
+			topNodes.push(root);
+			topFibers.push(hostRoot);
+		}
+		return hostRoot;
+	},
+	createElement: createElement$1,
+	insertElement: insertElement,
+	emptyElement: function emptyElement$$1(fiber) {
+		emptyElement(fiber.stateNode);
+	},
+	removeElement: function removeElement$$1(fiber) {
+		var instance = fiber.stateNode;
+		removeElement(instance);
+		var j = topNodes.indexOf(instance);
+		if (j !== -1) {
+			topFibers.splice(j, 1);
+			topNodes.splice(j, 1);
+		}
+	}
 };
 
 var win = getWindow();
@@ -2567,7 +2569,6 @@ if (prevReact && prevReact.options) {
     React = prevReact;
 } else {
     createRenderer(DOMRenderer);
-    var render = DOMRenderer.render;
     React = win.React = win.ReactDOM = {
         version: "1.3.1",
         render: render,

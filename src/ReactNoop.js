@@ -9,7 +9,7 @@ import { createRef, forwardRef } from "./createRef";
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
-import { findDOMNode, isValidElement,unmountComponentAtNode } from "./diff";
+import { render, findDOMNode, isValidElement,unmountComponentAtNode } from "./diff";
 
 import { NoopRenderer } from "./NoopRenderer";
 
@@ -20,7 +20,6 @@ if (prevReact && prevReact.isReactNoop) {
     React = prevReact; //解决引入多个
 } else {
     createRenderer(NoopRenderer);
-    var render = NoopRenderer.render;
     ReactNoop = win.ReactNoop = { //放出全局的ReactNoop
         version: "VERSION",
         render,

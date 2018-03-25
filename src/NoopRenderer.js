@@ -38,10 +38,8 @@ export let NoopRenderer = {
 			children: []
 		};
 	},
-	render(vnode) {
-		var instance;
-
-		var hostRoot = {
+	updateRoot(vnode) {
+		return  {
 			type: 'root',
 			root: true,
 			stateNode: rootContainer,
@@ -52,17 +50,9 @@ export let NoopRenderer = {
 			effectTag: 19, //CALLBACK
 			alternate: rootContainer._reactInternalFiber,
 			callback() {
-				var fiber = this._reactInternalFiber;
-				instance = fiber.child ? fiber.child.stateNode : null;
+				console.log("...")
 			}
 		};
-		updateQueue.push(hostRoot);
-		Refs.workLoop({
-			timeRemaining() {
-				return 2;
-			}
-		});
-		return instance;
 	},
 	getChildren() {
 		return cleanChildren(rootContainer.children || []);
