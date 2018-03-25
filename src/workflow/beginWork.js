@@ -1,5 +1,5 @@
 import { callLifeCycleHook, pushError } from './unwindWork';
-import { contextStack, componentStack } from '../share';
+import { contextStack, componentStack, emptyObject } from '../share';
 import { fiberizeChildren } from '../createElement';
 import { createInstance } from '../createInstance';
 import { NOWORK, WORKING, PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK, CAPTURE } from '../effectTag';
@@ -82,8 +82,10 @@ function updateClassComponent(fiber) {
 
 	if (updater._isMounted()) {
 		let propsChange = lastProps !== nextProps;
-		let willReceive = propsChange && instance.context !== nextContext;
+		//只要props/context任于一个发生变化，就会触发componentWillReceiveProps
+		let willReceive = propsChange || instance.context !== nextContext;
 		updater._receiving = true;
+		fiber._willReceive = willReceive;
 		if (willReceive) {
 			callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
 		}
@@ -123,18 +125,32 @@ function updateClassComponent(fiber) {
 		}
 		return;
 	}
-	var lastOwn = Refs.currentOwner,
-		children;
-	Refs.currentOwner = instance;
-	try {
-		children = instance.render();
-	} finally {
+	var rendered;
+	if (fiber._willReceive === false) {
+		delete fiber._willReceive;
+		let a = fiber.child;
+		if (a && a.sibling) {
+			rendered = [];
+			for (; a; a = a.sibling) {
+				rendered.push(a);
+			}
+		} else {
+			rendered = a;
+		}
+	} else {
+		let lastOwn = Refs.currentOwner;
+		Refs.currentOwner = instance;
+		rendered = callLifeCycleHook(instance, 'render', []);
 		if (componentStack[0] === instance) {
 			componentStack.shift();
 		}
+		if (updater._hasError) {
+			rendered = [];
+		}
 		Refs.currentOwner = lastOwn;
 	}
-	diffChildren(fiber, children);
+
+	diffChildren(fiber, rendered);
 }
 
 function isSameNode(a, b) {

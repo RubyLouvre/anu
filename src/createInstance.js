@@ -49,8 +49,8 @@ export function createInstance(fiber, context) {
 					}
 					lifeCycleHook = false;
 				} else {
-					updater._willReceive = false;
-					updater._isStateless = true;
+					fiber._willReceive = false;
+					fiber._isStateless = true;
 				}
 				delete instance.__init__;
 			}

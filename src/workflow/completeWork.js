@@ -1,4 +1,5 @@
 import { contextStack } from '../share';
+import { NOWORK } from '../effectTag';
 
 export function completeWork(fiber, topWork) {
 	//收集effects
@@ -15,8 +16,6 @@ export function completeWork(fiber, topWork) {
 		const childEffects = fiber.effects || [];
 		const thisEffect = fiber.effectTag > 1 ? [ fiber ] : [];
 		const parentEffects = parentFiber.effects || [];
-
-		parent.offset = fiber.stateNode;
 		parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
 	}
 }

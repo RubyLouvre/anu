@@ -32,7 +32,7 @@ export function findDOMNode(stateNode) {
 	}
 }
 export function render(vnode, root, callback) {
-	var hostRoot = shader.updateRoot(vnode, root, callback);
+	let hostRoot = shader.updateRoot(vnode, root, callback);
 	updateQueue.push(hostRoot);
 	workLoop({
 		timeRemaining() {
@@ -70,6 +70,7 @@ function requestIdleCallback(fn) {
 		}
 	});
 }
+
 function getNextUnitOfWork() {
 	let fiber = updateQueue.shift();
 	if (!fiber) {
