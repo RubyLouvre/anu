@@ -112,7 +112,9 @@ function workLoop(deadline) {
 }
 
 function commitAllWork(fiber) {
-    fiber.effects.concat(fiber).forEach(commitWork);
+    if( fiber.effects){
+        fiber.effects.concat(fiber).forEach(commitWork);
+    }
 }
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
@@ -143,6 +145,7 @@ function mergeState(fiber, state, isForceUpdate, callback) {
     if (isForceUpdate) {
         fiber.isForceUpdate = isForceUpdate;
     }
+    fiber.alternate = fiber;
     if (state) {
         fiber.partialState = Object.assign(fiber.partialState || {}, state);
     }
@@ -167,8 +170,8 @@ shader.updateComponent = function (instance, state, callback) {//setState
         } else {
             fiber.pendingState = Object.assign({}, fiber, {
                 stateNode: instance,
-                alternate: fiber,
-                effectTag: callback ? CALLBACK : null,
+                alternate: fiber,  
+                effectTag: callback ? CALLBACK : 1,
                 partialState: state,
                 isForceUpdate,
                 callback
@@ -178,7 +181,9 @@ shader.updateComponent = function (instance, state, callback) {//setState
     } else {
         //如果是在componentWillXXX中，那么直接修改已经fiber及instance
         mergeState(fiber, state, isForceUpdate, callback);
-        instance.state = fiber.partialState;
+        if(!fiber.effectTag){
+            fiber.effectTag = 1;
+        }
         if(!this._hooking){ //不在生命周期钩子中时，需要立即触发（或异步触发）
             updateQueue.push(fiber);
             requestIdleCallback(performWork);

@@ -45,15 +45,16 @@ export function commitWork(fiber) {
                 if (fiber.tag > 3) {
                     //只对原生组件
                     shader.removeElement(fiber);
-                } //业务 & 原生
+                }
+                //业务 & 原生
                 //	delete fiber.stateNode;
                 break;
             case HOOK: //只对业务组件
                 delete fiber.before;
-               
+             
                 if (fiber.disposed) {
+                    updater._isMounted = updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);
-                    updater._isMounted = returnFalse;
                 } else {
                     if (updater._isMounted()) {
                         callLifeCycleHook(instance, "componentDidUpdate", []);
@@ -90,6 +91,6 @@ export function commitWork(fiber) {
             }
         }
     }
-    fiber.effectTag = amount;
-    fiber.effects = null;
+    fiber.effectTag = fiber.effects = null;
+    
 }

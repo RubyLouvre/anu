@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
 
@@ -19,9 +19,14 @@
            
          
             var container = document.getElementById("app-root")
-            var div = container;
-           // var node = document.getElementById("ee")
-          //  ee.replaceChild(document.createElement("span"), ee.childNodes[0])
+           // var div = container;
+           var React = ReactNoop
+           function span(...children) {
+        return { type: "span", props:null, children: children };
+    }
+    function div(...children) {
+        return { type: "div", props:null,  children: children };
+    }
             var expect = function(a) {
                 return {
                     toBe: function(b) {
@@ -32,43 +37,43 @@
                     },
                 }
             }  
-            var first = 0
-             //组件应该知道它的孩子会插入的位置
-            class App extends React.Component{
-                constructor(a,b){
-                    super(a,b)
-                    this.state ={
-                        keys: ["a","b","c"]
-                    }
-                }
-                componentWillUpdate(){
-                    console.log("componentWillUpdate")
-                }
-                render(){
-                    var keys = this.state.keys
-                    return <div><span key={keys[0]}>{keys[0]}</span><A />
-                        <span key={keys[1]}>{keys[1]}</span>
-                        <span key={keys[2]}>{keys[2]}</span></div>
-                }
+            const ops = [];
+
+        class Stateful extends React.Component {
+            componentDidUpdate() {
+                ops.push("Update Stateful");
             }
-      
-            class A extends React.Component{
-                constructor(a,b){
-                    super(a,b)
-                }
-                render(){
-                    return <strong>xxx</strong>
-                }
-            }  
 
+            render() {
+                return <div>Hello</div>;
+            }
+        }
 
+        function Foo({ condition }) {
+            return condition ? (
+                <Stateful key="a" />
+            ) : (
+                <React.Fragment>
+                    <Stateful key="a" />
+                    <div key="b">World</div>
+                </React.Fragment>
+            );
+        }
 
-       var app =  React.render(<App /> ,container, function(a){
-           console.log(this)
-       });
-        console.log("11111")
-        first = 1
-      //  React.render(<App /> ,container);
+        ReactNoop.render(<Foo condition={true} />);
+        ReactNoop.flush();
+
+        ReactNoop.render(<Foo condition={false} />);
+        ReactNoop.flush();
+
+        expect(ops).toEqual(["Update Stateful"]);
+        expect(ReactNoop.getChildren()).toEqual([div("Hello"),div("World")]);
+
+        ReactNoop.render(<Foo condition={true} />);
+        ReactNoop.flush();
+
+        expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+        expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
         
      </script>
      <div>

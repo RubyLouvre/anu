@@ -735,15 +735,15 @@ function createInstance(fiber, context) {
 var NOWORK = 0;
 var WORKING = 1;
 var PLACE = 2;
-var ATTR = 3;
-var CONTENT = 5;
+var CONTENT = 3;
+var ATTR = 5;
 var NULLREF = 7;
 var HOOK = 11;
 var REF = 13;
 var DETACH = 17;
 var CALLBACK = 19;
 var CAPTURE = 23;
-var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
+var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
 function beginWork(fiber) {
@@ -888,10 +888,10 @@ function isSameNode(a, b) {
     }
 }
 function detachFiber(fiber, effects) {
+    fiber.effectTag = DETACH;
     if (fiber.ref) {
         fiber.effectTag *= NULLREF;
     }
-    fiber.effectTag *= DETACH;
     fiber.disposed = true;
     if (fiber.tag < 3) {
         fiber.effectTag *= HOOK;
@@ -932,7 +932,8 @@ function getMaskedContext(contextTypes) {
     return hasKey ? context : emptyObject;
 }
 function diffChildren(parentFiber, children) {
-    var oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {};
+    var prev = parentFiber.alternate;
+    var oldFibers = prev ? prev._children : {};
     var newFibers = fiberizeChildren(children, parentFiber);
     var effects = parentFiber.effects || (parentFiber.effects = []);
     var matchFibers = {};
@@ -1133,20 +1134,19 @@ function createContext(defaultValue, calculateChangedBits) {
 }
 
 function completeWork(fiber, topWork) {
-	var parentFiber = fiber.return;
-	var parent = fiber.parent;
-	if (fiber.tag == 2) {
-		fiber.stateNode._reactInternalFiber = fiber;
-		if (fiber.stateNode.getChildContext) {
-			contextStack.pop();
-		}
-	}
-	if (parentFiber && fiber.effectTag !== NOWORK && fiber !== topWork) {
-		var childEffects = fiber.effects || [];
-		var thisEffect = fiber.effectTag > 1 ? [fiber] : [];
-		var parentEffects = parentFiber.effects || [];
-		parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
-	}
+    var parentFiber = fiber.return;
+    if (fiber.tag < 3) {
+        fiber.stateNode._reactInternalFiber = fiber;
+        if (fiber.stateNode.getChildContext) {
+            contextStack.pop();
+        }
+    }
+    if (parentFiber && fiber.effectTag !== NOWORK && fiber !== topWork) {
+        var childEffects = fiber.effects || [];
+        var thisEffect = fiber.effectTag > 1 ? [fiber] : [];
+        var parentEffects = parentFiber.effects || [];
+        parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
+    }
 }
 
 function commitWork(fiber) {
@@ -1177,8 +1177,8 @@ function commitWork(fiber) {
                 case HOOK:
                     delete fiber.before;
                     if (fiber.disposed) {
+                        updater._isMounted = updater.enqueueSetState = returnFalse;
                         callLifeCycleHook(instance, "componentWillUnmount", []);
-                        updater._isMounted = returnFalse;
                     } else {
                         if (updater._isMounted()) {
                             callLifeCycleHook(instance, "componentDidUpdate", []);
@@ -1214,8 +1214,7 @@ function commitWork(fiber) {
             }
         }
     }
-    fiber.effectTag = amount;
-    fiber.effects = null;
+    fiber.effectTag = fiber.effects = null;
 }
 
 function isValidElement(vnode) {
@@ -1307,7 +1306,9 @@ function workLoop(deadline) {
     }
 }
 function commitAllWork(fiber) {
-    fiber.effects.concat(fiber).forEach(commitWork);
+    if (fiber.effects) {
+        fiber.effects.concat(fiber).forEach(commitWork);
+    }
 }
 function performUnitOfWork(fiber, topWork) {
     beginWork(fiber);
@@ -1330,6 +1331,7 @@ function mergeState(fiber, state, isForceUpdate, callback) {
     if (isForceUpdate) {
         fiber.isForceUpdate = isForceUpdate;
     }
+    fiber.alternate = fiber;
     if (state) {
         fiber.partialState = Object.assign(fiber.partialState || {}, state);
     }
@@ -1353,7 +1355,7 @@ shader.updateComponent = function (instance, state, callback) {
             fiber.pendingState = Object.assign({}, fiber, {
                 stateNode: instance,
                 alternate: fiber,
-                effectTag: callback ? CALLBACK : null,
+                effectTag: callback ? CALLBACK : 1,
                 partialState: state,
                 isForceUpdate: isForceUpdate,
                 callback: callback
@@ -1362,7 +1364,9 @@ shader.updateComponent = function (instance, state, callback) {
         }
     } else {
         mergeState(fiber, state, isForceUpdate, callback);
-        instance.state = fiber.partialState;
+        if (!fiber.effectTag) {
+            fiber.effectTag = 1;
+        }
         if (!this._hooking) {
             updateQueue.push(fiber);
             requestIdleCallback(performWork);

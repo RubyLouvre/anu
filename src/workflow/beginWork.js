@@ -93,8 +93,10 @@ function updateClassComponent(fiber) {
             }
         }
         let args = [nextProps, fiber.partialState, nextContext];
+
         if (!fiber.isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             shouldUpdate = false;
+
         } else {
             callLifeCycleHook(instance, "componentWillUpdate", args);
         }
@@ -150,10 +152,10 @@ function isSameNode(a, b) {
 }
 
 export function detachFiber(fiber, effects) {
+    fiber.effectTag = DETACH;
     if (fiber.ref) {
         fiber.effectTag *= NULLREF;
     }
-    fiber.effectTag *= DETACH;
     fiber.disposed = true;
     if (fiber.tag < 3) {
         fiber.effectTag *= HOOK;
@@ -202,7 +204,8 @@ function getMaskedContext(contextTypes) {
  * @param {*} children 
  */
 function diffChildren(parentFiber, children) {
-    let oldFibers = parentFiber.alternate ? parentFiber.alternate._children : {}; //旧的
+    let prev = parentFiber.alternate;
+    let oldFibers = prev ? prev._children : {}; //旧的
     let newFibers = fiberizeChildren(children, parentFiber); //新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
