@@ -82,7 +82,7 @@ let specialSVGPropertyName = {
 let repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
 
 function createRepaceFn(split) {
-    return function(match) {
+    return function (match) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
@@ -175,12 +175,12 @@ function getPropAction(dom, name, isSVG) {
     if (isEventName(name)) {
         return "event";
     }
-   
+
     if (isSVG) {
         return "svgAttr";
     }
     //img.width = '100px'时,取img.width为0,必须用setAttribute
-    if((name === "width" || name === "height")){
+    if ((name === "width" || name === "height")) {
         return "attribute";
     }
     if (isBooleanAttr(dom, name)) {
@@ -222,22 +222,22 @@ export let actionStrategy = {
     defaultValue: uncontrolled,
     defaultChecked: uncontrolled,
     children: noop,
-    style: function(dom, _, val, lastProps) {
+    style: function (dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
-    autoFocus: function(dom){
-        if(duplexMap[dom.type] < 3  || dom.contentEditable === "true"){
+    autoFocus: function (dom) {
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
             dom.focus();
         }
     },
-    svgClass: function(dom, name, val) {
+    svgClass: function (dom, name, val) {
         if (!val) {
             dom.removeAttribute("class");
         } else {
             dom.setAttribute("class", val);
         }
     },
-    svgAttr: function(dom, name, val) {
+    svgAttr: function (dom, name, val) {
         // http://www.w3school.com.cn/xlink/xlink_reference.asp
         // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
         // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
@@ -252,7 +252,7 @@ export let actionStrategy = {
             dom[method](nameRes, val || "");
         }
     },
-    booleanAttr: function(dom, name, val) {
+    booleanAttr: function (dom, name, val) {
         // 布尔属性必须使用el.xxx = true|false方式设值 如果为false, IE全系列下相当于setAttribute(xxx,""),
         // 会影响到样式,需要进一步处理 eslint-disable-next-line
         dom[name] = !!val;
@@ -263,7 +263,7 @@ export let actionStrategy = {
             dom[name] = "";
         }
     },
-    attribute: function(dom, name, val) {
+    attribute: function (dom, name, val) {
         if (val == null || val === false) {
             return dom.removeAttribute(name);
         }
@@ -273,7 +273,7 @@ export let actionStrategy = {
             console.warn("setAttribute error", name, val); // eslint-disable-line
         }
     },
-    property: function(dom, name, val) {
+    property: function (dom, name, val) {
         // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
         // 这时如果用 setAttribute 则会静默失败
         if (controlled[name]) {
@@ -290,12 +290,12 @@ export let actionStrategy = {
                 dom[name] = val;
             }
         } catch (e) {
-            try{//修改type会引发多次报错
+            try {//修改type会引发多次报错
                 dom.setAttribute(name, val);
-            }catch(e){/*ignore*/}
+            } catch (e) {/*ignore*/ }
         }
     },
-    event: function(dom, name, val, lastProps, fiber) {
+    event: function (dom, name, val, lastProps, fiber) {
         let events = dom.__events || (dom.__events = {});
         events.vnode = fiber;
         let refName = toLowerCase(name.slice(2));
@@ -315,7 +315,7 @@ export let actionStrategy = {
             events[refName] = val;
         }
     },
-    dangerouslySetInnerHTML: function(dom, name, val, lastProps) {
+    dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
         let html = val && val.__html;
         if (html !== oldhtml) {

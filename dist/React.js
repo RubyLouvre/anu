@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-03-25
+ * by 司徒正美 Copyright 2018-03-26
  * IE9+
  */
 
@@ -1485,6 +1485,7 @@ function updateClassComponent(fiber) {
 		return;
 	}
 	var rendered;
+	updater._hydrating = true;
 	if (fiber._willReceive === false) {
 		delete fiber._willReceive;
 		var _a = fiber.child;
@@ -1811,6 +1812,7 @@ function commitWork(fiber) {
 							updater._isMounted = returnTrue;
 						}
 					}
+					delete updater._hydrating;
 					break;
 				case CONTENT:
 					shader.updateContext(fiber);
@@ -1838,155 +1840,166 @@ function commitWork(fiber) {
 }
 
 function isValidElement(vnode) {
-	return vnode && vnode.tag > 0 && vnode.tag !== 6;
+    return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
 function findDOMNode(stateNode) {
-	if (stateNode == null) {
-		return null;
-	}
-	if (stateNode.nodeType) {
-		return stateNode;
-	}
-	if (stateNode.render) {
-		var fiber = get(stateNode);
-		var c = fiber.child;
-		if (c) {
-			return findDOMNode(c.stateNode);
-		} else {
-			return null;
-		}
-	}
+    if (stateNode == null) {
+        return null;
+    }
+    if (stateNode.nodeType) {
+        return stateNode;
+    }
+    if (stateNode.render) {
+        var fiber = get(stateNode);
+        var c = fiber.child;
+        if (c) {
+            return findDOMNode(c.stateNode);
+        } else {
+            return null;
+        }
+    }
 }
 function render(vnode, root, callback) {
-	var hostRoot = shader.updateRoot(vnode, root, callback);
-	updateQueue.push(hostRoot);
-	workLoop({
-		timeRemaining: function timeRemaining() {
-			return 2;
-		}
-	});
-	return hostRoot.child ? hostRoot.child.stateNode : null;
+    var hostRoot = shader.updateRoot(vnode, root, callback);
+    updateQueue.push(hostRoot);
+    var prev = hostRoot.alternate;
+    if (prev && prev._hydrating) {
+        return;
+    }
+    hostRoot._hydrating = true;
+    performWork({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
+    return hostRoot.child ? hostRoot.child.stateNode : null;
 }
 function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
-	deprecatedWarn('unstable_renderSubtreeIntoContainer');
-	return shader.render(vnode, container, callback);
+    deprecatedWarn("unstable_renderSubtreeIntoContainer");
+    return shader.render(vnode, container, callback);
 }
 function unmountComponentAtNode(container) {
-	var rootIndex = topNodes.indexOf(container);
-	if (rootIndex > -1) {
-		var lastFiber = topFibers[rootIndex],
-		    effects = [];
-		detachFiber(lastFiber, effects);
-		lastFiber.effects = effects;
-		commitWork(lastFiber);
-		container._reactInternalFiber = null;
-		return true;
-	}
-	return false;
+    var rootIndex = topNodes.indexOf(container);
+    if (rootIndex > -1) {
+        var lastFiber = topFibers[rootIndex],
+            effects = [];
+        detachFiber(lastFiber, effects);
+        lastFiber.effects = effects;
+        commitWork(lastFiber);
+        container._reactInternalFiber = null;
+        return true;
+    }
+    return false;
 }
 var ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
-	fn({
-		timeRemaining: function timeRemaining() {
-			return 2;
-		}
-	});
+    fn({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
 }
 function getNextUnitOfWork() {
-	var fiber = updateQueue.shift();
-	if (!fiber) {
-		return;
-	}
-	if (fiber.root) {
-		fiber.stateNode = fiber.stateNode || {};
-		if (!get(fiber.stateNode)) {
-			shader.emptyElement(fiber);
-		}
-		fiber.stateNode._reactInternalFiber = fiber;
-	}
-	return fiber;
+    var fiber = updateQueue.shift();
+    if (!fiber) {
+        return;
+    }
+    if (fiber.root) {
+        fiber.stateNode = fiber.stateNode || {};
+        if (!get(fiber.stateNode)) {
+            shader.emptyElement(fiber);
+        }
+        fiber.stateNode._reactInternalFiber = fiber;
+    }
+    return fiber;
 }
 function workLoop(deadline) {
-	var topWork = getNextUnitOfWork();
-	var fiber = topWork;
-	while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
-		fiber = performUnitOfWork(fiber, topWork);
-	}
-	if (topWork) {
-		commitAllWork(topWork);
-	}
+    var topWork = getNextUnitOfWork();
+    var fiber = topWork;
+    while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
+        fiber = performUnitOfWork(fiber, topWork);
+    }
+    if (topWork) {
+        commitAllWork(topWork);
+    }
 }
 function commitAllWork(fiber) {
-	fiber.effects.concat(fiber).forEach(commitWork);
+    fiber.effects.concat(fiber).forEach(commitWork);
 }
 function performUnitOfWork(fiber, topWork) {
-	beginWork(fiber);
-	if (fiber.child && fiber.effectTag !== NOWORK) {
-		return fiber.child;
-	}
-	var f = fiber;
-	while (f) {
-		completeWork(f, topWork);
-		if (f === topWork) {
-			break;
-		}
-		if (f.sibling) {
-			return f.sibling;
-		}
-		f = f.return;
-	}
+    beginWork(fiber);
+    if (fiber.child && fiber.effectTag !== NOWORK) {
+        return fiber.child;
+    }
+    var f = fiber;
+    while (f) {
+        completeWork(f, topWork);
+        if (f === topWork) {
+            break;
+        }
+        if (f.sibling) {
+            return f.sibling;
+        }
+        f = f.return;
+    }
 }
 shader.updaterComponent = function (instance, state, callback) {
-	var fiber = get(instance);
-	var isForceUpdate = state === true;
-	state = isForceUpdate ? null : state;
-	var prevEffect = void 0;
-	updateQueue.some(function (el) {
-		if (el.stateNode === instance) {
-			prevEffect = el;
-		}
-	});
-	if (prevEffect) {
-		if (isForceUpdate) {
-			prevEffect.isForceUpdate = isForceUpdate;
-		}
-		if (state) {
-			prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
-		}
-		if (callback) {
-			prevEffect.effectTag = CALLBACK;
-			var prev = prevEffect.callback;
-			if (prev) {
-				prevEffect.callback = function () {
-					prev.call(this);
-					callback.call(this);
-				};
-			} else {
-				prevEffect.callback = callback;
-			}
-		}
-	} else {
-		updateQueue.unshift(Object.assign({}, fiber, {
-			stateNode: instance,
-			alternate: fiber,
-			effectTag: callback ? CALLBACK : null,
-			partialState: state,
-			isForceUpdate: isForceUpdate,
-			callback: callback
-		}));
-	}
-	if (this._isMounted === returnTrue) {
-		if (this._receiving) {
-			return;
-		}
-		requestIdleCallback(performWork);
-	}
+    var fiber = get(instance);
+    var isForceUpdate = state === true;
+    state = isForceUpdate ? null : state;
+    if (this._hydrating) {
+        console.log("666666");
+        return;
+    } else {
+        var prevEffect = void 0;
+        updateQueue.some(function (el) {
+            if (el.stateNode === instance) {
+                prevEffect = el;
+            }
+        });
+        if (prevEffect && !instance.updater._hydrating) {
+            if (isForceUpdate) {
+                prevEffect.isForceUpdate = isForceUpdate;
+            }
+            if (state) {
+                prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
+            }
+            if (callback) {
+                prevEffect.effectTag = CALLBACK;
+                var prev = prevEffect.callback;
+                if (prev) {
+                    prevEffect.callback = function () {
+                        prev.call(this);
+                        callback.call(this);
+                    };
+                } else {
+                    prevEffect.callback = callback;
+                }
+            }
+        } else {
+            updateQueue.push(Object.assign({}, fiber, {
+                stateNode: instance,
+                alternate: fiber,
+                effectTag: callback ? CALLBACK : null,
+                partialState: state,
+                isForceUpdate: isForceUpdate,
+                callback: callback
+            }));
+        }
+        if (this._isMounted === returnTrue) {
+            if (this._receiving) {
+                return;
+            }
+            requestIdleCallback(performWork);
+        }
+    }
 };
 function performWork(deadline) {
-	workLoop(deadline);
-	if (updateQueue.length > 0) {
-		requestIdleCallback(performWork);
-	}
+    workLoop(deadline);
+    console.log(updateQueue.length, "xxx");
+    if (updateQueue.length > 0) {
+        requestIdleCallback(performWork);
+    }
 }
 
 var formElements = {
@@ -1996,27 +2009,27 @@ var formElements = {
     option: 1
 };
 var duplexData = {
-    1: ["value", {
+    1: ['value', {
         onChange: 1,
         onInput: 1,
         readOnly: 1,
         disabled: 1
     }, function (a) {
-        return a == null ? null : a + "";
+        return a == null ? null : a + '';
     }, function (dom, value, vnode) {
         if (value == null) {
             return;
         }
-        if (vnode.type === "input") {
+        if (vnode.type === 'input') {
             dom.__anuSetValue = true;
-            dom.setAttribute("value", value);
+            dom.setAttribute('value', value);
             dom.__anuSetValue = false;
-            if (dom.type === "number") {
+            if (dom.type === 'number') {
                 var valueAsNumber = parseFloat(dom.value) || 0;
                 if (
                 value != valueAsNumber ||
                 value == valueAsNumber && dom.value != value) {
-                    value += "";
+                    value += '';
                 } else {
                     return;
                 }
@@ -2027,8 +2040,8 @@ var duplexData = {
             dom._persistValue = dom.value = value;
             dom.__anuSetValue = false;
         }
-    }, keepPersistValue, "change", "input"],
-    2: ["checked", {
+    }, keepPersistValue, 'change', 'input'],
+    2: ['checked', {
         onChange: 1,
         onClick: 1,
         readOnly: 1,
@@ -2042,8 +2055,8 @@ var duplexData = {
         if (dom._persistValue !== value) {
             dom._persistValue = dom.checked = value;
         }
-    }, keepPersistValue, "change", "click"],
-    3: ["value", {
+    }, keepPersistValue, 'change', 'click'],
+    3: ['value', {
         onChange: 1,
         disabled: 1
     }, function (a) {
@@ -2055,14 +2068,14 @@ var duplexData = {
                 dom._setValue = false;
             }
         } else {
-            if ("value" in vnode.props) {
+            if ('value' in vnode.props) {
                 dom._persistValue = value;
             }
         }
         syncOptions({
             target: dom
         });
-    }, syncOptions, "change"]
+    }, syncOptions, 'change']
 };
 function inputControll(vnode, dom, props) {
     var domType = dom.type;
@@ -2083,9 +2096,9 @@ function inputControll(vnode, dom, props) {
         var event1 = data[5];
         var event2 = data[6];
         if (!hasOtherControllProperty(props, keys)) {
-            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
-            dom["on" + event1] = handle;
-            dom["on" + event2] = handle;
+            console.warn('\u4F60\u4E3A' + vnode.type + '[type=' + domType + ']\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**' + duplexProp + '\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(keys) + '\n\u6765\u64CD\u4F5C' + duplexProp + '\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C');
+            dom['on' + event1] = handle;
+            dom['on' + event2] = handle;
         } else {
             vnode.controlledCb = handle;
             Refs.controlledCbs.push(vnode);
@@ -2096,7 +2109,7 @@ function inputControll(vnode, dom, props) {
             dom.removeChild(el);
             i--;
         }
-        if ("value" in props) {
+        if ('value' in props) {
             dom.duplexValue = dom.value = props.value;
         } else {
             dom.duplexValue = dom.text;
@@ -2112,7 +2125,7 @@ function hasOtherControllProperty(props, keys) {
 }
 function keepPersistValue(e) {
     var dom = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
+    var name = e.type === 'textarea' ? 'innerHTML' : /check|radio/.test(dom.type) ? 'checked' : 'value';
     var v = dom._persistValue;
     var noNull = v != null;
     var noEqual = dom[name] !== v;
@@ -2157,7 +2170,7 @@ function updateOptionsMore(options, n, propValue) {
     var selectedValue = {};
     try {
         for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
+            selectedValue['&' + propValue[i]] = true;
         }
     } catch (e) {
         console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
@@ -2165,7 +2178,7 @@ function updateOptionsMore(options, n, propValue) {
     for (var _i = 0; _i < n; _i++) {
         var option = options[_i];
         var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
+        var selected = selectedValue.hasOwnProperty('&' + value);
         setOptionSelected(option, selected);
     }
 }
@@ -2288,38 +2301,38 @@ var svgCamelCase = {
     x: { c: 1 }
 };
 var specialSVGPropertyName = {
-    "overline-thickness": 2,
-    "underline-thickness": 2,
-    "overline-position": 2,
-    "underline-position": 2,
-    "stroke-miterlimit": 2,
-    "baseline-shift": 2,
-    "clip-path": 2,
-    "font-size": 2,
-    "font-size-adjust": 2,
-    "font-stretch": 2,
-    "font-style": 2,
-    "text-decoration": 2,
-    "vert-origin-x": 2,
-    "vert-origin-y": 2,
-    "paint-order": 2,
-    "fill-rule": 2,
-    "color-rendering": 2,
-    "marker-end": 2,
-    "pointer-events": 2,
-    "units-per-em": 2,
-    "strikethrough-thickness": 2,
-    "lighting-color": 2
+    'overline-thickness': 2,
+    'underline-thickness': 2,
+    'overline-position': 2,
+    'underline-position': 2,
+    'stroke-miterlimit': 2,
+    'baseline-shift': 2,
+    'clip-path': 2,
+    'font-size': 2,
+    'font-size-adjust': 2,
+    'font-stretch': 2,
+    'font-style': 2,
+    'text-decoration': 2,
+    'vert-origin-x': 2,
+    'vert-origin-y': 2,
+    'paint-order': 2,
+    'fill-rule': 2,
+    'color-rendering': 2,
+    'marker-end': 2,
+    'pointer-events': 2,
+    'units-per-em': 2,
+    'strikethrough-thickness': 2,
+    'lighting-color': 2
 };
-var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
+var repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
 function createRepaceFn(split) {
     return function (match) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
 var rhump = /[a-z][A-Z]/;
-var toHyphen = createRepaceFn("-");
-var toColon = createRepaceFn(":");
+var toHyphen = createRepaceFn('-');
+var toColon = createRepaceFn(':');
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
@@ -2382,25 +2395,25 @@ function isBooleanAttr(dom, name) {
     return val === true || val === false;
 }
 function getPropAction(dom, name, isSVG) {
-    if (isSVG && name === "className") {
-        return "svgClass";
+    if (isSVG && name === 'className') {
+        return 'svgClass';
     }
     if (isSpecialAttr[name]) {
         return name;
     }
     if (isEventName(name)) {
-        return "event";
+        return 'event';
     }
     if (isSVG) {
-        return "svgAttr";
+        return 'svgAttr';
     }
-    if (name === "width" || name === "height") {
-        return "attribute";
+    if (name === 'width' || name === 'height') {
+        return 'attribute';
     }
     if (isBooleanAttr(dom, name)) {
-        return "booleanAttr";
+        return 'booleanAttr';
     }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
+    return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
 }
 var builtinStringProps = {
     className: 1,
@@ -2418,7 +2431,7 @@ function uncontrolled(dom, name, val, lastProps, fiber) {
             inputMonitor.observe(dom, name);
         }
         dom._observing = false;
-        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
+        if (fiber.type === 'select' && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
             dom.selectedIndex = dom.selectedIndex;
             dom._setValue = false;
         }
@@ -2437,33 +2450,33 @@ var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function autoFocus(dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === 'true') {
             dom.focus();
         }
     },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
-            dom.removeAttribute("class");
+            dom.removeAttribute('class');
         } else {
-            dom.setAttribute("class", val);
+            dom.setAttribute('class', val);
         }
     },
     svgAttr: function svgAttr(dom, name, val) {
-        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        var method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
         var nameRes = getSVGAttributeName(name);
         if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(":")[0];
-            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
+            var prefix = nameRes.name.split(':')[0];
+            dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
         } else {
-            dom[method](nameRes, val || "");
+            dom[method](nameRes, val || '');
         }
     },
     booleanAttr: function booleanAttr(dom, name, val) {
         dom[name] = !!val;
         if (dom[name] === false) {
             dom.removeAttribute(name);
-        } else if (dom[name] === "false") {
-            dom[name] = "";
+        } else if (dom[name] === 'false') {
+            dom[name] = '';
         }
     },
     attribute: function attribute(dom, name, val) {
@@ -2483,7 +2496,7 @@ var actionStrategy = {
         try {
             if (!val && val !== 0) {
                 if (builtinStringProps[name]) {
-                    dom[name] = "";
+                    dom[name] = '';
                 }
                 dom.removeAttribute(name);
             } else {
@@ -2523,59 +2536,60 @@ var actionStrategy = {
 };
 
 var DOMRenderer = {
-	updateAttribute: function updateAttribute(fiber) {
-		var type = fiber.type,
-		    props = fiber.props,
-		    lastProps = fiber.lastProps,
-		    stateNode = fiber.stateNode;
-		diffProps(stateNode, lastProps || emptyObject, props, fiber);
-		if (formElements[type]) {
-			inputControll(fiber, stateNode, props);
-		}
-	},
-	updateContext: function updateContext(fiber) {
-		fiber.stateNode.nodeValue = fiber.props.children;
-	},
-	updateRoot: function updateRoot(vnode, root, _callback) {
-		if (!(root && root.appendChild)) {
-			throw 'ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF';
-		}
-		var hostRoot = {
-			stateNode: root,
-			root: true,
-			tag: 5,
-			type: root.tagName.toLowerCase(),
-			props: {
-				children: vnode
-			},
-			namespaceURI: root.namespaceURI,
-			effectTag: 19,
-			alternate: get(root),
-			callback: function callback() {
-				var instance = hostRoot.child ? hostRoot.child.stateNode : null;
-				_callback && _callback.call(instance);
-			}
-		};
-		if (topNodes.indexOf(root) == -1) {
-			topNodes.push(root);
-			topFibers.push(hostRoot);
-		}
-		return hostRoot;
-	},
-	createElement: createElement$1,
-	insertElement: insertElement,
-	emptyElement: function emptyElement$$1(fiber) {
-		emptyElement(fiber.stateNode);
-	},
-	removeElement: function removeElement$$1(fiber) {
-		var instance = fiber.stateNode;
-		removeElement(instance);
-		var j = topNodes.indexOf(instance);
-		if (j !== -1) {
-			topFibers.splice(j, 1);
-			topNodes.splice(j, 1);
-		}
-	}
+    updateAttribute: function updateAttribute(fiber) {
+        var type = fiber.type,
+            props = fiber.props,
+            lastProps = fiber.lastProps,
+            stateNode = fiber.stateNode;
+        diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        if (formElements[type]) {
+            inputControll(fiber, stateNode, props);
+        }
+    },
+    updateContext: function updateContext(fiber) {
+        fiber.stateNode.nodeValue = fiber.props.children;
+    },
+    updateRoot: function updateRoot(vnode, root, _callback) {
+        if (!(root && root.appendChild)) {
+            throw 'ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF';
+        }
+        var hostRoot = {
+            stateNode: root,
+            root: true,
+            tag: 5,
+            type: root.tagName.toLowerCase(),
+            props: {
+                children: vnode
+            },
+            namespaceURI: root.namespaceURI,
+            effectTag: 19,
+            alternate: get(root),
+            callback: function callback() {
+                var instance = hostRoot.child ? hostRoot.child.stateNode : null;
+                _callback && _callback.call(instance);
+                hostRoot._hydrating = false;
+            }
+        };
+        if (topNodes.indexOf(root) == -1) {
+            topNodes.push(root);
+            topFibers.push(hostRoot);
+        }
+        return hostRoot;
+    },
+    createElement: createElement$1,
+    insertElement: insertElement,
+    emptyElement: function emptyElement$$1(fiber) {
+        emptyElement(fiber.stateNode);
+    },
+    removeElement: function removeElement$$1(fiber) {
+        var instance = fiber.stateNode;
+        removeElement(instance);
+        var j = topNodes.indexOf(instance);
+        if (j !== -1) {
+            topFibers.splice(j, 1);
+            topNodes.splice(j, 1);
+        }
+    }
 };
 
 var win = getWindow();
@@ -2586,7 +2600,7 @@ if (prevReact && prevReact.options) {
 } else {
     createRenderer(DOMRenderer);
     React = win.React = win.ReactDOM = {
-        version: "1.3.1",
+        version: '1.3.1',
         render: render,
         hydrate: render,
         options: options,

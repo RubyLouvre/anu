@@ -9,22 +9,22 @@ import { createRef, forwardRef } from "./createRef";
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
-import { render, findDOMNode, isValidElement,unmountComponentAtNode } from "./diff";
+import { render, findDOMNode, isValidElement, unmountComponentAtNode } from "./diff";
 
 import { NoopRenderer } from "./NoopRenderer";
 
 var win = getWindow();
 var prevReact = win.ReactNoop;
-let React;
+let ReactNoop;
 if (prevReact && prevReact.isReactNoop) {
-    React = prevReact; //解决引入多个
+    ReactNoop = prevReact; //解决引入多个
 } else {
     createRenderer(NoopRenderer);
     ReactNoop = win.ReactNoop = { //放出全局的ReactNoop
         version: "VERSION",
         render,
-        flush:  NoopRenderer.flush,
-        reset:  NoopRenderer.reset,
+        flush: NoopRenderer.flush,
+        reset: NoopRenderer.reset,
         getChildren: NoopRenderer.getChildren,
         options,
         isReactNoop: true,
@@ -43,7 +43,7 @@ if (prevReact && prevReact.isReactNoop) {
         isValidElement,
         unmountComponentAtNode,
         createFactory(type) {
-			console.warn('createFactory is deprecated'); // eslint-disable-line
+            console.warn('createFactory is deprecated'); // eslint-disable-line
             let factory = createElement.bind(null, type);
             factory.type = type;
             return factory;

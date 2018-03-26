@@ -11,7 +11,7 @@ import { createClass } from "./createClass"; //deprecated
 import { createPortal } from "./createPortal";
 import { createContext } from "./createContext";
 import { createElement } from "./createElement";
-import { render, findDOMNode, isValidElement, unstable_renderSubtreeIntoContainer,unmountComponentAtNode } from "./diff";
+import { render, findDOMNode, isValidElement, unstable_renderSubtreeIntoContainer, unmountComponentAtNode } from "./diff";
 
 import { DOMRenderer } from "./DOMRenderer";
 
@@ -47,7 +47,7 @@ if (prevReact && prevReact.options) {
         unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer,
         createFactory(type) {
-			console.warn('createFactory is deprecated'); // eslint-disable-line
+            console.warn('createFactory is deprecated'); // eslint-disable-line
             let factory = createElement.bind(null, type);
             factory.type = type;
             return factory;

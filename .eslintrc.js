@@ -18,6 +18,7 @@ module.exports = {
         "module": true,
         "define": true,
         "expect": true,
+        "React": true,
         "it": true,
         "describe": true,
         "exports": true
