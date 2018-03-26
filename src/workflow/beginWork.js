@@ -93,10 +93,10 @@ function updateClassComponent(fiber) {
             }
         }
         let args = [nextProps, fiber.partialState, nextContext];
-
+        console.log(fiber.isForceUpdate,partialState,lastState );
         if (!fiber.isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             shouldUpdate = false;
-
+            console.log("21111222");
         } else {
             callLifeCycleHook(instance, "componentWillUpdate", args);
         }
@@ -115,11 +115,13 @@ function updateClassComponent(fiber) {
         if (componentStack[0] === instance) {
             componentStack.shift();
         }
+        console.log("返回");
         return;
     }
     var rendered;
     updater._hydrating = true;
     if (fiber._willReceive === false) {
+        console.log("???????" ,fiber._willReceive);
         delete fiber._willReceive;
         let a = fiber.child;
         if (a && a.sibling) {

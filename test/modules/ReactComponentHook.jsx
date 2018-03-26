@@ -2,88 +2,88 @@
 import React from "dist/React";
 import ReactTestUtils from "lib/ReactTestUtils";
 
-describe("ReactComponentHook", function() {
+describe("ReactComponentHook", function () {
     this.timeout(200000);
 
     var body = document.body,
         div;
-    beforeEach(function() {
+    beforeEach(function () {
         div = document.createElement("div");
         body.appendChild(div);
     });
-    afterEach(function() {
+    afterEach(function () {
         body.removeChild(div);
     });
     it('should support getDerivedStateFromProps for module pattern components', () => {
         function Child() {
-          return {
-            state: {
-              count: 1,
-            },
-            render() {
-              return <div>{`count:${this.state.count}`}</div>;
-            },
-          };
+            return {
+                state: {
+                    count: 1,
+                },
+                render() {
+                    return <div>{`count:${this.state.count}`}</div>;
+                },
+            };
         }
         Child.getDerivedStateFromProps = (props, prevState) => {
-          return {
-            count: prevState.count + props.incrementBy,
-          };
+            return {
+                count: prevState.count + props.incrementBy,
+            };
         };
-    
+
         const el = document.createElement('div');
 
         React.render(<Child incrementBy={0} />, el);
         expect(el.textContent).toBe('count:1');
-    
+
         React.render(<Child incrementBy={2} />, el);
         expect(el.textContent).toBe('count:3');
-    
+
         React.render(<Child incrementBy={1} />, el);
         expect(el.textContent).toBe('count:4');
-     });
-     it('does not call static getDerivedStateFromProps for state-only updates', () => {
+    });
+    it('does not call static getDerivedStateFromProps for state-only updates', () => {
         let ops = [];
         let instance;
-    
+
         class LifeCycle extends React.Component {
-          state = {};
-          static getDerivedStateFromProps(props, prevState) {
-            ops.push('getDerivedStateFromProps');
-            return {foo: 'foo'};
-          }
-          changeState() {
-            this.setState({foo: 'bar'});
-          }
-          componentDidUpdate() {
-            ops.push('componentDidUpdate');
-          }
-          render() {
-            ops.push('render');
-            instance = this;
-            return null;
-          }
+            state = {};
+            static getDerivedStateFromProps(props, prevState) {
+                ops.push('getDerivedStateFromProps');
+                return { foo: 'foo' };
+            }
+            changeState() {
+                this.setState({ foo: 'bar' });
+            }
+            componentDidUpdate() {
+                ops.push('componentDidUpdate');
+            }
+            render() {
+                ops.push('render');
+                instance = this;
+                return null;
+            }
         }
         const el = document.createElement('div');
         React.render(<LifeCycle />, el);
-     
-    
+
+
         expect(ops).toEqual(['getDerivedStateFromProps', 'render']);
-        expect(instance.state).toEqual({foo: 'foo'});
-    
+        expect(instance.state).toEqual({ foo: 'foo' });
+
         ops = [];
-    
+
         instance.changeState();
-       
-    
+
+
         expect(ops).toEqual(['render', 'componentDidUpdate']);
-        expect(instance.state).toEqual({foo: 'bar'});
-      });
-      
-    it("只更新了一个子组件时，被该子组件要求全局重新渲染",function(){
+        expect(instance.state).toEqual({ foo: 'bar' });
+    });
+
+    it("只更新了一个子组件时，被该子组件要求全局重新渲染", function () {
         var list = [];
         var flag = 1;
-        function logger(e){
+        function logger(e) {
             list.push(e);
         }
         class A extends React.Component {
@@ -93,22 +93,22 @@ describe("ReactComponentHook", function() {
                     text: "aaa"
                 };
             }
-  
+
             componentDidMount() {
                 logger("A did mount");
-                ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
-            
+                ReactDOM.render(<div><A text="111" /><B text="222" /><C text="333" /></div>, div);
+
             }
-            componentWillReceiveProps(){
+            componentWillReceiveProps() {
                 logger("A will receive");
             }
             componentDidUpdate() {
                 logger("A did update");
-                if(flag){
+                if (flag) {
                     flag = 0;
-                    ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
+                    ReactDOM.render(<div><A text="111" /><B text="222" /><C text="333" /></div>, div);
                 }
-  
+
             }
             render() {
                 return <div>{this.state.text}</div>;
@@ -121,12 +121,12 @@ describe("ReactComponentHook", function() {
                     text: "bbb"
                 };
             }
-  
+
             componentDidMount() {
-          
+
                 logger("B did mount");
             }
-            componentWillReceiveProps(){
+            componentWillReceiveProps() {
                 logger("B will receive");
             }
             componentDidUpdate() {
@@ -143,7 +143,7 @@ describe("ReactComponentHook", function() {
                     text: "ccc"
                 };
             }
-            componentWillReceiveProps(){
+            componentWillReceiveProps() {
                 logger("C will receive");
             }
             componentDidMount() {
@@ -156,7 +156,7 @@ describe("ReactComponentHook", function() {
                 return <div>{this.state.text}</div>;
             }
         }
-        var s = ReactDOM.render(<div><A/><B/><C/></div>, div);
+        var s = ReactDOM.render(<div><A /><B /><C /></div>, div);
         expect(list.join("\n")).toBe([
             "A did mount",
             "B did mount",
@@ -174,9 +174,9 @@ describe("ReactComponentHook", function() {
             "B did update",
             "C did update"
         ].join("\n"));
-  
+
     });
-    it("如果在componentDidMount中调用setState方法\n那么setState的所有回调，\n都会延迟到componentDidUpdate中执行", function() {
+    it("如果在componentDidMount中调用setState方法\n那么setState的所有回调，\n都会延迟到componentDidUpdate中执行", function () {
         var list = [];
         class App extends React.Component {
             constructor(props) {
@@ -190,7 +190,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: "bbb"
                     },
-                    function() {
+                    function () {
                         list.push("1111");
                     }
                 );
@@ -200,7 +200,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: "cccc"
                     },
-                    function() {
+                    function () {
                         list.push("2222");
                     }
                 );
@@ -208,7 +208,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: "xxx"
                     },
-                    function() {
+                    function () {
                         list.push("3333");
                     }
                 );
@@ -228,16 +228,16 @@ describe("ReactComponentHook", function() {
         }
 
         ReactDOM.render(<App />, div);
-        var list2 = ReactDOM.createPortal ? ["bbb","did mount",1111,
-            "will update","xxx","did update", 2222,3333]:
-            ["bbb","did mount","will update","xxx","did update",1111,2222,3333];
-        
+        var list2 = ReactDOM.createPortal ? ["bbb", "did mount", 1111,
+            "will update", "xxx", "did update", 2222, 3333] :
+            ["bbb", "did mount", "will update", "xxx", "did update", 1111, 2222, 3333];
+
         expect(list.join("-")).toBe(
             list2.join("-")
         );
-       
+
     });
-    it("父组件没有DidMount之时被子组件在willMount钩子里调用其setState", function() {
+    it("父组件没有DidMount之时被子组件在willMount钩子里调用其setState", function () {
         var list = [];
         class App extends React.Component {
             constructor(props) {
@@ -304,10 +304,10 @@ describe("ReactComponentHook", function() {
             "child receive",
             "child did update",
             "app did update"
-        ] );
+        ]);
     });
 
-    it("父组件DidMount之时被子组件在componentWillReceiveProps钩子里调用其setState\n父组件的再次render会待到这次render完才调起", function() {
+    it("父组件DidMount之时被子组件在componentWillReceiveProps钩子里调用其setState\n父组件的再次render会待到这次render完才调起", function () {
         var list = [];
         class App extends React.Component {
             constructor(props) {
@@ -353,7 +353,7 @@ describe("ReactComponentHook", function() {
                         {
                             aaa: "child call app render " + ++a
                         },
-                        function() {
+                        function () {
                             list.push("componentWillReceiveProps 1");
                         }
                     );
@@ -361,7 +361,7 @@ describe("ReactComponentHook", function() {
                         {
                             aaa: "child call app render " + ++a
                         },
-                        function() {
+                        function () {
                             list.push("componentWillReceiveProps 2");
                         }
                     );
@@ -399,7 +399,7 @@ describe("ReactComponentHook", function() {
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
-    it("第一次渲染时不会触发componentWillUpdate", function() {
+    it("第一次渲染时不会触发componentWillUpdate", function () {
         var a = 1;
         class ReceivePropsComponent extends React.Component {
             componentWillUpdate() {
@@ -414,7 +414,7 @@ describe("ReactComponentHook", function() {
         expect(a).toBe(1);
     });
 
-    it("先执行子组件的mount钩子再到父组件的mount钩子", function() {
+    it("先执行子组件的mount钩子再到父组件的mount钩子", function () {
         let log = [];
 
         class Inner extends React.Component {
@@ -440,7 +440,7 @@ describe("ReactComponentHook", function() {
         React.render(<Outer />, div);
         expect(log.join("-")).toBe("inner-outer");
     });
-    it("在componentWillMount中使用setState", function() {
+    it("在componentWillMount中使用setState", function () {
         var list = [];
         class App extends React.Component {
             constructor(props) {
@@ -454,7 +454,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: 222
                     },
-                    function() {
+                    function () {
                         list.push("555");
                     }
                 );
@@ -462,7 +462,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: 333
                     },
-                    function() {
+                    function () {
                         list.push("666");
                     }
                 );
@@ -474,12 +474,12 @@ describe("ReactComponentHook", function() {
         }
 
         React.render(<App />, div);
-   
+
         expect(list.join("-")).toBe("333-555-666");
         expect(div.textContent || div.innerText).toBe("333");
     });
 
-    it("在componentDidMount中使用setState，会导致willMount, DidMout中的回调都延后",function() {
+    it("在componentDidMount中使用setState，会导致willMount, DidMout中的回调都延后", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -497,7 +497,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: 222
                     },
-                    function() {
+                    function () {
                         logger("555");
                     }
                 );
@@ -505,7 +505,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: 333
                     },
-                    function() {
+                    function () {
                         logger("666");
                     }
                 );
@@ -515,7 +515,7 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: 444
                     },
-                    function() {
+                    function () {
                         logger("777");
                     }
                 );
@@ -528,12 +528,12 @@ describe("ReactComponentHook", function() {
         }
 
         ReactDOM.render(<App />, div);
-        var list2 = ReactDOM.createPortal ?[333,555,666,444,777]:[333,444,555,666,777];
+        var list2 = ReactDOM.createPortal ? [333, 555, 666, 444, 777] : [333, 444, 555, 666, 777];
         expect(list.join("-")).toBe(list2.join("-"));
         expect(div.textContent || div.innerText).toBe("444");
     });
 
-    it("ReactDOM的回调总在最后",function() {
+    it("ReactDOM的回调总在最后", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -551,7 +551,7 @@ describe("ReactComponentHook", function() {
                     {
                         path: "222"
                     },
-                    function() {
+                    function () {
                         logger("componentWillMount setState cb1");
                     }
                 );
@@ -559,7 +559,7 @@ describe("ReactComponentHook", function() {
                     {
                         path: "333"
                     },
-                    function() {
+                    function () {
                         logger("componentWillMount setState cb2");
                     }
                 );
@@ -580,7 +580,7 @@ describe("ReactComponentHook", function() {
                     {
                         path: "eeee"
                     },
-                    function() {
+                    function () {
                         logger("componentWillMount setState cb3");
                     }
                 );
@@ -598,7 +598,7 @@ describe("ReactComponentHook", function() {
                     {
                         path: "child"
                     },
-                    function() {
+                    function () {
                         logger("child setState");
                     }
                 );
@@ -608,10 +608,10 @@ describe("ReactComponentHook", function() {
                 return <p>33333</p>;
             }
         }
-        ReactDOM.render(<App />, div, function() {
+        ReactDOM.render(<App />, div, function () {
             logger("ReactDOM cb");
         });
-     
+
 
         var list2 = React.createPortal ? [
             "render 333",
@@ -625,26 +625,26 @@ describe("ReactComponentHook", function() {
             "did update",
             "child setState",
             "componentWillMount setState cb3"
-        ]:[
-            "render 333",
-            "child render",
-            "will update",
-            "render eeee",
-            "child render",
-            "did update",
-            "componentWillMount setState cb1",
-            "componentWillMount setState cb2",
-            "child setState",
-            "componentWillMount setState cb3",
-            "ReactDOM cb"
-        ];
+        ] : [
+                "render 333",
+                "child render",
+                "will update",
+                "render eeee",
+                "child render",
+                "did update",
+                "componentWillMount setState cb1",
+                "componentWillMount setState cb2",
+                "child setState",
+                "componentWillMount setState cb3",
+                "ReactDOM cb"
+            ];
 
-        
+
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 
 
-    it("在componentWillUnmount中setState应该不起作用", function() {
+    it("在componentWillUnmount中setState应该不起作用", function () {
         class Issue extends React.PureComponent {
             constructor(props) {
                 super(props);
@@ -688,14 +688,14 @@ describe("ReactComponentHook", function() {
             }
         }
         var s = ReactDOM.render(<App />, div);
-   
+
         expect(div.getElementsByTagName("span").length).toBe(1);
-        s.setState({showIssue: false});
-     
+        s.setState({ showIssue: false });
+
         expect(div.getElementsByTagName("span").length).toBe(0);
     });
 
-    it("forceUpdate在componentDidMount中使用",function(){
+    it("forceUpdate在componentDidMount中使用", function () {
         var list = [];
         function logger(e) {
             list.push(e);
@@ -712,18 +712,18 @@ describe("ReactComponentHook", function() {
                     {
                         aaa: "bbb"
                     },
-                    function() {
+                    function () {
                         logger("1111");
                     }
                 );
             }
             componentDidMount() {
                 this.state.aaa = "cccc";
-                this.forceUpdate(function() {
+                this.forceUpdate(function () {
                     logger("2222");
                 });
                 this.state.aaa = "dddd";
-                this.forceUpdate(function() {
+                this.forceUpdate(function () {
                     logger("3333");
                 });
                 logger("did mount");
@@ -734,17 +734,17 @@ describe("ReactComponentHook", function() {
             componentDidUpdate() {
                 logger("app did update");
             }
-     
+
             render() {
                 logger("render " + this.state.aaa);
                 return <div>{this.state.aaa}</div>;
             }
         }
-        ReactDOM.render(<App />, div, function() {
+        ReactDOM.render(<App />, div, function () {
             logger("ReactDOM cb");
         });
-     
-        var list2 = ReactDOM.createPortal ? [
+
+        var list2 = [
             "render bbb",
             "did mount",
             "1111",
@@ -754,20 +754,10 @@ describe("ReactComponentHook", function() {
             "app did update",
             "2222",
             "3333"
-        ]:[
-            "render bbb",
-            "did mount",
-            "app will update",
-            "render dddd",
-            "app did update",
-            "1111",
-            "2222",
-            "3333",
-            "ReactDOM cb"
-        ];
-        expect(list+"").toBe(list2+"");
+        ]
+        expect(list.join("\n")).toBe(list2.join("\n"));
     });
-    it("事件回调里执行多个组件的setState，不会按触发时的顺序执行，而是按文档顺序执行",function(){
+    it("事件回调里执行多个组件的setState，不会按触发时的顺序执行，而是按文档顺序执行", function () {
         var list = [];
         class App extends React.Component {
             constructor(props) {
@@ -776,26 +766,26 @@ describe("ReactComponentHook", function() {
             }
             handleClick() {
                 this.refs.c.setState({
-                    text:"第1"
-                },function(){
+                    text: "第1"
+                }, function () {
                     list.push("c的回调");
                 });
                 this.refs.a.setState({
-                    text:"第2"
-                }, function(){
+                    text: "第2"
+                }, function () {
                     list.push("a的回调");
                 });
                 this.refs.b.setState({
-                    text:"第3"
-                },function(){
+                    text: "第3"
+                }, function () {
                     list.push("b的回调");
                 });
             }
             render() {
                 return <div ref="kk" onClick={this.handleClick.bind(this)}>
-                    <Child name="a" ref="a" >aaa</Child> 
-                    <Child name="b" ref="b" >bbb</Child> 
-                    <Child name="c" ref="c" >ccc</Child> 
+                    <Child name="a" ref="a" >aaa</Child>
+                    <Child name="b" ref="b" >bbb</Child>
+                    <Child name="c" ref="c" >ccc</Child>
                 </div>;
             }
         }
@@ -806,13 +796,13 @@ describe("ReactComponentHook", function() {
                     text: props.children
                 };
             }
-            componentWillUpdate(){
-                list.push(this.props.name+" will update");
+            componentWillUpdate() {
+                list.push(this.props.name + " will update");
             }
-            componentDidUpdate(){
-                list.push(this.props.name+" did update");
+            componentDidUpdate() {
+                list.push(this.props.name + " did update");
             }
-            render(){
+            render() {
                 return <span className={this.props.name}>{this.state.text}</span>;
             }
         }
@@ -828,17 +818,17 @@ describe("ReactComponentHook", function() {
             "b的回调",
             "c did update",
             "c的回调"
-        ]:[
-            "a will update",
-            "b will update",
-            "c will update",
-            "a did update",
-            "b did update",
-            "c did update",
-            "a的回调",
-            "b的回调",
-            "c的回调"
-        ];
+        ] : [
+                "a will update",
+                "b will update",
+                "c will update",
+                "a did update",
+                "b did update",
+                "c did update",
+                "a的回调",
+                "b的回调",
+                "c的回调"
+            ];
         expect(list.join("\n")).toBe(list2.join("\n"));
     });
 });

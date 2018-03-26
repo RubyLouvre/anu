@@ -53,57 +53,67 @@
                     },
                 }
             }  
-            class Issue extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    status: "normal"
-                };
-            }
-
-            componentWillUnmount() {
-                console.log("执行componentWillUnmount")
-                this.setState({ status: "unmount" });
-            }
-
-            render() {
-                const { status } = this.state;
-
-                if (status === "unmount") {
-                    throw new Error("Issue unmounted");
-                }
-
-                return <span>Issue status: {status}</span>;
-            }
+            var list = [];
+        function logger(e) {
+            list.push(e);
         }
-
-        class App extends React.PureComponent {
+        class App extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
-                    showIssue: true
+                    aaa: "aaa"
                 };
             }
-
-            render() {
-                const { showIssue } = this.state;
-                console.log("render ", showIssue)
-                return (
-                    <div>
-                        {showIssue && <Issue />}
-                        <b>测试错误</b>
-                    </div>
+            componentWillMount() {
+                this.setState(
+                    {
+                        aaa: "bbb"
+                    },
+                    function() {
+                        logger("1111");
+                    }
                 );
             }
-        }
-        var s = ReactDOM.render(<App />, div);
-   
-        expect(div.getElementsByTagName("span").length).toBe(1);
-        console.log("SET FLASE",s)
-       s.setState({showIssue: false});
+            componentDidMount() {
+                this.state.aaa = "cccc";
+                this.forceUpdate(function() {
+                    logger("2222");
+                });
+                this.state.aaa = "dddd";
+                this.forceUpdate(function() {
+                    logger("3333");
+                });
+                logger("did mount");
+            }
+            componentWillUpdate() {
+                logger("app will update");
+            }
+            componentDidUpdate() {
+                logger("app did update");
+            }
      
-     //   expect(div.getElementsByTagName("span").length).toBe(0);
-              
+            render() {
+                logger("render " + this.state.aaa);
+                return <div>{this.state.aaa}</div>;
+            }
+        }
+        ReactDOM.render(<App />, div, function() {
+            logger("ReactDOM cb");
+        });
+     
+        var list2 =  [
+            "render bbb",
+            "did mount",
+            "1111",
+            "ReactDOM cb",
+            "app will update",
+            "render dddd",
+            "app did update",
+            "2222",
+            "3333"
+    ]
+    expect(list.join("\n")).toBe(list2.join("\n"));
+
 </script>
 
 
