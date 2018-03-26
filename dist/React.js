@@ -1454,7 +1454,10 @@ function updateClassComponent(fiber) {
 			delete updater._receiving;
 		}
 		if (propsChange) {
-			getDerivedStateFromProps(instance, type, nextProps, lastState);
+			var a = getDerivedStateFromProps(instance, type, nextProps, lastState);
+			if (a != null) {
+				nextState = a;
+			}
 		}
 		var args = [nextProps, nextState, nextContext];
 		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
@@ -1463,7 +1466,10 @@ function updateClassComponent(fiber) {
 			callLifeCycleHook(instance, 'componentWillUpdate', args);
 		}
 	} else {
-		getDerivedStateFromProps(instance, type, nextProps, emptyObject);
+		var a = getDerivedStateFromProps(instance, type, nextProps, lastState);
+		if (a != null) {
+			nextState = a;
+		}
 		callLifeCycleHook(instance, 'componentWillMount', []);
 	}
 	fiber.effectTag *= HOOK;
@@ -1481,14 +1487,14 @@ function updateClassComponent(fiber) {
 	var rendered;
 	if (fiber._willReceive === false) {
 		delete fiber._willReceive;
-		var a = fiber.child;
-		if (a && a.sibling) {
+		var _a = fiber.child;
+		if (_a && _a.sibling) {
 			rendered = [];
-			for (; a; a = a.sibling) {
-				rendered.push(a);
+			for (; _a; _a = _a.sibling) {
+				rendered.push(_a);
 			}
 		} else {
-			rendered = a;
+			rendered = _a;
 		}
 	} else {
 		var lastOwn = Refs.currentOwner;
@@ -1528,10 +1534,7 @@ function getDerivedStateFromProps(instance, type, props, state) {
 	try {
 		var method = type[gDSFP];
 		if (method) {
-			state = method.call(null, props, state);
-			if (state != null) {
-				instance.setState(state);
-			}
+			return method.call(null, props, state);
 		}
 	} catch (error) {
 		pushError(instance, gDSFP, error);

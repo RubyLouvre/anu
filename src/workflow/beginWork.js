@@ -82,7 +82,8 @@ function updateClassComponent(fiber) {
 
 	if (updater._isMounted()) {
 		let propsChange = lastProps !== nextProps;
-		if (!partialState) {//调用了setState的实例不会走cwr
+		if (!partialState) {
+			//调用了setState的实例不会走cwr
 			//只要props/context任于一个发生变化，就会触发cwr
 			let willReceive = propsChange || instance.context !== nextContext;
 			updater._receiving = true;
@@ -93,7 +94,10 @@ function updateClassComponent(fiber) {
 			delete updater._receiving;
 		}
 		if (propsChange) {
-			getDerivedStateFromProps(instance, type, nextProps, lastState);
+			var a = getDerivedStateFromProps(instance, type, nextProps, lastState);
+			if (a != null) {
+				nextState = a;
+			}
 		}
 		let args = [ nextProps, nextState, nextContext ];
 		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
@@ -102,7 +106,10 @@ function updateClassComponent(fiber) {
 			callLifeCycleHook(instance, 'componentWillUpdate', args);
 		}
 	} else {
-		getDerivedStateFromProps(instance, type, nextProps, emptyObject);
+		var a = getDerivedStateFromProps(instance, type, nextProps, lastState);
+		if (a != null) {
+			nextState = a;
+		}
 		callLifeCycleHook(instance, 'componentWillMount', []);
 	}
 	fiber.effectTag *= HOOK;
@@ -119,6 +126,7 @@ function updateClassComponent(fiber) {
 		return;
 	}
 	var rendered;
+	updater._hydrating = true
 	if (fiber._willReceive === false) {
 		delete fiber._willReceive;
 		let a = fiber.child;
@@ -142,7 +150,6 @@ function updateClassComponent(fiber) {
 		}
 		Refs.currentOwner = lastOwn;
 	}
-
 	diffChildren(fiber, rendered);
 }
 
@@ -173,10 +180,7 @@ function getDerivedStateFromProps(instance, type, props, state) {
 	try {
 		var method = type[gDSFP];
 		if (method) {
-			state = method.call(null, props, state);
-			if (state != null) {
-				instance.setState(state);
-			}
+			return method.call(null, props, state);
 		}
 	} catch (error) {
 		pushError(instance, gDSFP, error);

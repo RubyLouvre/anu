@@ -16,20 +16,22 @@ require("./modules/ReactDOMSVG-test.jsx");
 require("./modules/ReactDOMTextComponent-test.jsx");
 
 require("./modules/ReactDOMTextarea-test.jsx");
-
+/*
 require("./modules/ReactDOMSelect-test.jsx");
 require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/ReactDOMInput-test.jsx");
+*/
 
 require("./modules/ReactDOMFragment-test.jsx");
 
 require("./modules/ReactChildren-test.jsx");
 
+//只更新了一个子组件时，被该子组件要求全局重新渲染
 
 
 require("./modules/ReactComponentHook.jsx");
-
+/*
 require("./modules/diffProps.spec.jsx");
 
 
@@ -93,3 +95,5 @@ require("./modules/ReactDOM-test.jsx");
 require("./modules/ReactNewContext-test.jsx");
 
 require("./modules/createRef-test.jsx");
+*/
+

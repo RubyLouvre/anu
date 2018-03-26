@@ -4,30 +4,75 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
+    <script type="text/babel">
+
+      </script>
 </head>
 
 <body>
 
-    <script>
-        var d = {};
-        function s(a) {
-            switch(a){
-               case 1:
-                return 1;
-               case 2:
-                return 2;
-               case d:
-                return 3;
-              default:
-                return 4
-            }
-        }
-        console.log(s(1))
-        console.log(s(2))
-        console.log(s(d))
-        console.log(s(6))
-    </script>
+    <pre>应该等于
+           
+          
+        </pre>
+    <h1 id='example' class="root">
 
-</body>
+    </h1>
+    <script type='text/babel'>
+            var container = document.getElementById("example")
+          //  var div = container;
+          if(!window.ReactDOM){
+            window. ReactDOM = React
+          }
+           // 
+            var expect = function(a) {
+                return {
+                    toBe: function(b) {
+                        console.log(a,"vs", b, a === b)
+                    },
+                    toEqual(b){
+                        console.log(a,"vs", b, a +""=== b+"")
+                    },
+                }
+            }  
+            var a = 1
+            function Child() {
+                console.log("只执行一次")
+                return {
+                  state: {
+                     count: ++a
+                  },
+                  componentWillMount(){
+                      console.log("componentWillMount")
+                  },
+                  componentDidMount(){
+                      console.log("componentDidMount")
+                  },
+                  render(a, b) {
+                     console.log(this.props)
+                     return <div>{`count:${this.state.count}`}</div>;
+                  },
+                };
+              }
+             
+          
+              const el = document.createElement('div');
+          
+              ReactDOM.render(<Child incrementBy={0} />, el);
+              expect(el.textContent).toBe('count:2');
+        
+              ReactDOM.render(<Child incrementBy={2} />, el);
+              expect(el.textContent).toBe('count:2');
+            //  console.log("==========")
+
+           //   React.render(<Child incrementBy={1} />, el);
+            //  expect(el.textContent).toBe('count:4');
+              
+</script>
+
 
 </html>

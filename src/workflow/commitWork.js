@@ -60,6 +60,7 @@ export function commitWork(fiber) {
 							updater._isMounted = returnTrue;
 						}
 					}
+					delete updater._hydrating;
 					break;
 				case CONTENT:
 					shader.updateContext(fiber);

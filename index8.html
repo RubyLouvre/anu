@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./test/react.js"></script>
+   <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
@@ -25,7 +25,10 @@
     <script type='text/babel'>
             var container = document.getElementById("example")
           //  var div = container;
-            var ReactDOM = React
+          if(!window.ReactDOM){
+            window. ReactDOM = React
+          }
+           // 
             var expect = function(a) {
                 return {
                     toBe: function(b) {
@@ -37,73 +40,42 @@
                 }
             }  
 
-   
-            let inst, div, div2, foreignObject, foreignObject2, g, image, image2, svg, svg2, svg3, svg4;
+            function Child() {
+                return {
+                  state: {
+                    count: 1,
+                  },
+                  componentWillMount(){
+                      console.log("componentWillMount")
+                  },
+                  componentDidMount(){
+                      console.log("componentDidMount")
+                  },
+                  render() {
+                     console.log(this.state.count, this, "render")
+                    return <div>{`count:${this.state.count}`}</div>;
+                  },
+                };
+              }
+              Child.getDerivedStateFromProps = (props, prevState) => {
+                 console.log("getDerivedStateFromProps",  props.incrementBy, prevState.count, prevState.count + props.incrementBy )
+                return {
+                  count: prevState.count + props.incrementBy,
+                };
+              };
+          
+              const el = document.createElement('div');
+            //  console.log("==========")
+              ReactDOM.render(<Child incrementBy={0} />, el);
+              expect(el.textContent).toBe('count:1');
+         console.log("=========")
+              React.render(<Child incrementBy={2} />, el);
+              expect(el.textContent).toBe('count:3');
+            //  console.log("==========")
 
-            class App extends React.Component {
-                state = { step: 0 };
-                render() {
-                    inst = this;
-
-                    const { step } = this.state;
-                    if (step === 0) {
-                        return null;
-                    }
-                    return (
-                        <g ref={el => (g = el)} strokeWidth="5">
-                            <svg ref={el => (svg2 = el)}>
-                                <foreignObject ref={el => (foreignObject = el)}>
-                                    <svg ref={el => (svg3 = el)}>
-                                        <svg ref={el => (svg4 = el)} />
-                                        <image ref={el => (image = el)} xlinkHref="http://i.imgur.com/w7GCRPb.png" />
-                                    </svg>
-                                    <div ref={el => (div = el)} />
-                                </foreignObject>
-                            </svg>
-                            <image ref={el => (image2 = el)} xlinkHref="http://i.imgur.com/w7GCRPb.png" />
-                            <foreignObject ref={el => (foreignObject2 = el)}>
-                                <div ref={el => (div2 = el)} />
-                            </foreignObject>
-                        </g>
-                    );
-                }
-            }
-    
-            const node = document.createElement("div");
-            ReactDOM.render(
-                <svg ref={el => (svg = el)}>
-                    <App />
-                </svg>,
-                node
-            );
-            inst.setState({ step: 1 });
-
-            [svg, svg2, svg3, svg4].forEach(el => {
-                expect(el.namespaceURI).toBe("http://www.w3.org/2000/svg");
-                // SVG tagName is case sensitive.
-                expect(el.tagName).toBe("svg");
-            });
-    
-            expect(g.namespaceURI).toBe("http://www.w3.org/2000/svg");
-            expect(g.tagName).toBe("g");
-            expect(g.getAttribute("stroke-width")).toBe("5");
-            [image, image2].forEach(el => {
-                expect(el.namespaceURI).toBe("http://www.w3.org/2000/svg");
-                expect(el.tagName).toBe("image");
-                expect(el.getAttributeNS("http://www.w3.org/1999/xlink", "href")).toBe("http://i.imgur.com/w7GCRPb.png");
-            });
-    
-            [foreignObject, foreignObject2].forEach(el => {
-                expect(el.namespaceURI).toBe("http://www.w3.org/2000/svg");
-                expect(el.tagName).toBe("foreignObject");
-            });
-            [div, div2].forEach(el => {
-                expect(el.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
-                // DOM tagName is capitalized by browsers.
-                expect(el.tagName).toBe("DIV");
-            });
-
-
+           //   React.render(<Child incrementBy={1} />, el);
+            //  expect(el.textContent).toBe('count:4');
+              
 </script>
 
 

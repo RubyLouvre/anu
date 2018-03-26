@@ -1,4 +1,3 @@
-
 import { topFibers, topNodes, updateQueue } from './share';
 import { beginWork, detachFiber } from './workflow/beginWork';
 import { completeWork } from './workflow/completeWork';
@@ -130,33 +129,9 @@ shader.updaterComponent = function(instance, state, callback) {
 	let fiber = get(instance);
 	let isForceUpdate = state === true;
 	state = isForceUpdate ? null : state;
-	let prevEffect;
-	updateQueue.some(function(el) {
-		if (el.stateNode === instance) {
-			prevEffect = el;
-		}
-	});
-	if (prevEffect) {
-		if (isForceUpdate) {
-			prevEffect.isForceUpdate = isForceUpdate;
-		}
-		if (state) {
-			prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
-		}
-		if (callback) {
-			prevEffect.effectTag = CALLBACK;
-			let prev = prevEffect.callback;
-			if (prev) {
-				prevEffect.callback = function() {
-					prev.call(this);
-					callback.call(this);
-				};
-			} else {
-				prevEffect.callback = callback;
-			}
-		}
-	} else {
-		updateQueue.unshift(
+
+	if (this._hydrating) {
+		updateQueue.push(
 			Object.assign({}, fiber, {
 				stateNode: instance,
 				alternate: fiber,
@@ -166,14 +141,52 @@ shader.updaterComponent = function(instance, state, callback) {
 				callback
 			})
 		);
-	}
-
-	if (this._isMounted === returnTrue) {
-		if (this._receiving) {
-			//componentWillReceiveProps中的setState/forceUpdate应该被忽略
-			return;
+		return;
+	} else {
+		let prevEffect;
+		updateQueue.some(function(el) {
+			if (el.stateNode === instance) {
+				prevEffect = el;
+			}
+		});
+		if (prevEffect && !instance.updater._hydrating) {
+			if (isForceUpdate) {
+				prevEffect.isForceUpdate = isForceUpdate;
+			}
+			if (state) {
+				prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
+			}
+			if (callback) {
+				prevEffect.effectTag = CALLBACK;
+				let prev = prevEffect.callback;
+				if (prev) {
+					prevEffect.callback = function() {
+						prev.call(this);
+						callback.call(this);
+					};
+				} else {
+					prevEffect.callback = callback;
+				}
+			}
+		} else {
+			updateQueue.push(
+				Object.assign({}, fiber, {
+					stateNode: instance,
+					alternate: fiber,
+					effectTag: callback ? CALLBACK : null,
+					partialState: state,
+					isForceUpdate,
+					callback
+				})
+			);
 		}
-		requestIdleCallback(performWork);
+		if (this._isMounted === returnTrue) {
+			if (this._receiving) {
+				//componentWillReceiveProps中的setState/forceUpdate应该被忽略
+				return;
+			}
+			requestIdleCallback(performWork);
+		}
 	}
 };
 
