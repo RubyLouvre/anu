@@ -1,5 +1,5 @@
 import { createElement } from "./createElement";
-import { extend, shader } from "./util";
+import { extend, Flutter } from "./util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.tag === 6) {
@@ -8,7 +8,7 @@ export function cloneElement(vnode, props) {
         return clone;
     }
     let owner = vnode._owner,
-        lastOwn = shader.currentOwner,
+        lastOwn = Flutter.currentOwner,
         old = vnode.props,
         configs = {};
     if (props) {
@@ -24,7 +24,7 @@ export function cloneElement(vnode, props) {
     } else {
         configs = old;
     }
-    shader.currentOwner = owner;
+    Flutter.currentOwner = owner;
 
     let args = [].slice.call(arguments, 0),
         argsLength = args.length;
@@ -35,6 +35,6 @@ export function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     let ret = createElement.apply(null, args);
-    shader.currentOwner = lastOwn;
+    Flutter.currentOwner = lastOwn;
     return ret;
 }

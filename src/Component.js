@@ -1,4 +1,4 @@
-import { deprecatedWarn, shader, returnFalse,returnTrue } from "./util";
+import { deprecatedWarn, Flutter, returnFalse,returnTrue } from "./util";
 /**
  *组件的基类
  *
@@ -8,7 +8,7 @@ import { deprecatedWarn, shader, returnFalse,returnTrue } from "./util";
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     
-    shader.currentOwner = this;
+    Flutter.currentOwner = this;
     this.context = context;
     this.props = props;
     this.refs = {};

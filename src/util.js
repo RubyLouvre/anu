@@ -23,10 +23,10 @@ export function getWindow() {
     }
 }
 export function createRenderer(methods) {
-    extend(shader, methods);
+    extend(Flutter, methods);
 }
 
-export var shader = {
+export const Flutter = {
     interactQueue: [],
     mainThread: [],
     controlledCbs: [],

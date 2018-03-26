@@ -1,5 +1,5 @@
 import { document, modern, contains } from './browser';
-import { isFn, noop, shader } from './util';
+import { isFn, noop, Flutter, __push } from './util';
 
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -40,7 +40,7 @@ export function dispatchEvent(e, type, end) {
 	}
 	let paths = collectPaths(e.target, end || document);
 	let captured = bubble + 'capture';
-	var fibers = shader.interactQueue || (shader.interactQueue = []);
+	var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
 
 	triggerEventFlow(paths, captured, e);
 
@@ -49,17 +49,17 @@ export function dispatchEvent(e, type, end) {
 	}
 
 	fibers.sort(mountSorter);
-	__push.apply(shader.mainThread, fibers);
-	shader.interactQueue = 0;
-	shader.scheduleWork();
-	shader.controlledCbs.forEach(function(el) {
+	__push.apply(Flutter.mainThread, fibers);
+	Flutter.interactQueue = 0;
+	Flutter.scheduleWork();
+	Flutter.controlledCbs.forEach(function(el) {
 		if (el.stateNode) {
 			el.controlledCb({
 				target: el.stateNode
 			});
 		}
 	});
-	shader.controlledCbs.length = 0;
+	Flutter.controlledCbs.length = 0;
 }
 
 function collectPaths(from, end) {
@@ -274,8 +274,8 @@ function blurFocus(e) {
 		return;
 	}
 
-	if (!isFocus && shader.focusNode === dom) {
-		shader.focusNode = null;
+	if (!isFocus && Flutter.focusNode === dom) {
+		Flutter.focusNode = null;
 	}
 	do {
 		if (dom.nodeType === 1) {

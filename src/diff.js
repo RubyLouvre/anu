@@ -3,8 +3,8 @@ import { beginWork, detachFiber } from './workflow/beginWork';
 import { completeWork } from './workflow/completeWork';
 import { commitWork } from './workflow/commitWork';
 import { NOWORK, CALLBACK } from './effectTag';
-import { deprecatedWarn, get, shader } from './util';
-let updateQueue = shader.mainThread;
+import { deprecatedWarn, get, Flutter } from './util';
+let updateQueue = Flutter.mainThread;
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
 	return vnode && vnode.tag > 0 && vnode.tag !== 6;
@@ -31,7 +31,7 @@ export function findDOMNode(stateNode) {
 	}
 }
 export function render(vnode, root, callback) {
-	let hostRoot = shader.updateRoot(vnode, root);
+	let hostRoot = Flutter.updateRoot(vnode, root);
 	let instance = null;
 	hostRoot.effectTag = CALLBACK;
 	hostRoot._hydrating = true; //lock 表示正在渲染
@@ -47,11 +47,11 @@ export function render(vnode, root, callback) {
 	if (prev && prev._hydrating) {
 		return;
 	}
-	shader.scheduleWork();
+	Flutter.scheduleWork();
 	return instance;
 }
 
-shader.scheduleWork = function() {
+Flutter.scheduleWork = function() {
 	performWork({
 		timeRemaining() {
 			return 2;
@@ -69,7 +69,7 @@ function performWork(deadline) {
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer
 export function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
 	deprecatedWarn('unstable_renderSubtreeIntoContainer');
-	return shader.render(vnode, container, callback);
+	return Flutter.render(vnode, container, callback);
 }
 //[Top API] ReactDOM.unmountComponentAtNode
 export function unmountComponentAtNode(container) {
@@ -103,7 +103,7 @@ function getNextUnitOfWork() {
 	if (fiber.root) {
 		fiber.stateNode = fiber.stateNode || {};
 		if (!get(fiber.stateNode)) {
-			shader.emptyElement(fiber);
+			Flutter.emptyElement(fiber);
 		}
 		fiber.stateNode._reactInternalFiber = fiber;
 	}
@@ -169,13 +169,13 @@ function mergeState(fiber, state, isForceUpdate, callback) {
 	}
 }
 
-shader.updateComponent = function(instance, state, callback) {
+Flutter.updateComponent = function(instance, state, callback) {
 	//setState
 	let fiber = get(instance);
 	let isForceUpdate = state === true;
 	state = isForceUpdate ? null : state;
 
-	if (this._hydrating || shader.interactQueue) {
+	if (this._hydrating || Flutter.interactQueue) {
 		//如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
 		if (fiber.pendingState) {
 			mergeState(fiber.pendingState, state, isForceUpdate, callback);
@@ -189,7 +189,7 @@ shader.updateComponent = function(instance, state, callback) {
 				isForceUpdate,
 				callback
 			});
-			var queue = Refs.interactQueue || updateQueue;
+			var queue = Flutter.interactQueue || updateQueue;
 			queue.push(fiber.pendingState);
 		}
 	} else {
@@ -202,7 +202,7 @@ shader.updateComponent = function(instance, state, callback) {
 		if (!this._hooking) {
 			//不在生命周期钩子中时，需要立即触发（或异步触发）
 			updateQueue.push(fiber);
-			shader.scheduleWork();
+			Flutter.scheduleWork();
 		}
 	}
 };

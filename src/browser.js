@@ -1,4 +1,4 @@
-import { typeNumber, getWindow, shader } from './util';
+import { typeNumber, getWindow, Flutter } from './util';
 //用于后端的元素节点
 export function DOMElement(type) {
 	this.nodeName = type;
@@ -74,8 +74,8 @@ export function emptyElement(node) {
 	let child;
 	while ((child = node.firstChild)) {
 		emptyElement(child);
-		if (child === shader.focusNode) {
-			shader.focusNode = false;
+		if (child === Flutter.focusNode) {
+			Flutter.focusNode = false;
 		}
 		node.removeChild(child);
 	}
@@ -101,8 +101,8 @@ export function removeElement(node) {
 			recyclables['#text'].push(node);
 		}
 	}
-	if (node === shader.focusNode) {
-		shader.focusNode = false;
+	if (node === Flutter.focusNode) {
+		Flutter.focusNode = false;
 	}
 	fragment.appendChild(node);
 	fragment.removeChild(node);
@@ -212,7 +212,7 @@ export function insertElement(fiber) {
 
 	if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
 		try {
-			shader.focusNode = prevFocus;
+			Flutter.focusNode = prevFocus;
 			prevFocus.__inner__ = true;
 			prevFocus.focus();
 		} catch (e) {

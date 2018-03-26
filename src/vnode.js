@@ -1,11 +1,11 @@
-import { typeNumber, options, REACT_ELEMENT_TYPE, shader } from "./util";
+import { typeNumber, options, REACT_ELEMENT_TYPE, Flutter } from "./util";
 
 export function Vnode(type, tag, props, key, ref) {
     this.type = type;
     this.tag = tag;
     if (tag !== 6) {
         this.props = props;
-        this._owner = shader.currentOwner;
+        this._owner = Flutter.currentOwner;
 
         if (key) {
             this.key = key;

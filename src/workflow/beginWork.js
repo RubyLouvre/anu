@@ -3,7 +3,7 @@ import { contextStack, componentStack, emptyObject } from "../share";
 import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
 import { NOWORK, WORKING, PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF } from "../effectTag";
-import { extend, shader, get } from "../util";
+import { extend, Flutter, get } from "../util";
 
 //用于实例化组件
 export function beginWork(fiber) {
@@ -26,7 +26,7 @@ export function Fiber(vnode) {
 function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
         try {
-            fiber.stateNode = shader.createElement(fiber);
+            fiber.stateNode = Flutter.createElement(fiber);
         } catch (e) {
             throw e;
         }
@@ -55,7 +55,7 @@ function updateClassComponent(fiber) {
     let nextContext = getMaskedContext(type.contextTypes);
     if (instance == null) {
         instance = fiber.stateNode = createInstance(fiber, nextContext);
-        instance.updater.enqueueSetState = shader.updateComponent;
+        instance.updater.enqueueSetState = Flutter.updateComponent;
     }
     let { props: lastProps, state: lastState } = instance,
         c;
@@ -128,8 +128,8 @@ function updateClassComponent(fiber) {
             rendered = a;
         }
     } else {
-        let lastOwn = shader.currentOwner;
-        shader.currentOwner = instance;
+        let lastOwn = Flutter.currentOwner;
+        Flutter.currentOwner = instance;
         rendered = callLifeCycleHook(instance, "render", []);
         if (componentStack[0] === instance) {
             componentStack.shift();
@@ -137,7 +137,7 @@ function updateClassComponent(fiber) {
         if (updater._hasError) {
             rendered = [];
         }
-        shader.currentOwner = lastOwn;
+        Flutter.currentOwner = lastOwn;
     }
     diffChildren(fiber, rendered);
 }

@@ -12,7 +12,7 @@ import {
     effectNames
 } from "../effectTag";
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { returnFalse, returnTrue, shader } from "../util";
+import { returnFalse, returnTrue, Flutter } from "../util";
 import { Refs } from "../Refs";
 
 /**
@@ -35,16 +35,16 @@ export function commitWork(fiber) {
             amount = remainder;
             switch (effectNo) {
             case PLACE: //只对原生组件
-                shader.insertElement(fiber);
+                Flutter.insertElement(fiber);
                 break;
             case ATTR: //只对原生组件
                 delete fiber.before;
-                shader.updateAttribute(fiber);
+                Flutter.updateAttribute(fiber);
                 break;
             case DETACH:
                 if (fiber.tag > 3) {
                     //只对原生组件
-                    shader.removeElement(fiber);
+                    Flutter.removeElement(fiber);
                 }
                 //业务 & 原生
                 //	delete fiber.stateNode;
@@ -67,7 +67,7 @@ export function commitWork(fiber) {
                 delete updater._hydrating;
                 break;
             case CONTENT:
-                shader.updateContext(fiber);
+                Flutter.updateContext(fiber);
                 break;
             case REF:
                 Refs.fireRef(fiber, instance);

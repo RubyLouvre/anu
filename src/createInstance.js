@@ -1,14 +1,14 @@
-import { returnFalse, shader } from './util';
+import { returnFalse, Flutter } from './util';
 
 export function createInstance(fiber, context) {
 	let updater = {
-		mountOrder: shader.mountOrder++,
+		mountOrder: Flutter.mountOrder++,
 		enqueueSetState: returnFalse,
 		_isMounted: returnFalse
 	};
 	let { props, type, tag } = fiber,
 		isStateless = tag === 1,
-		lastOwn = shader.currentOwner,
+		lastOwn = Flutter.currentOwner,
 		instance,
 		lifeCycleHook;
 	try {
@@ -31,7 +31,7 @@ export function createInstance(fiber, context) {
 				}
 			};
 
-			shader.currentOwner = instance;
+			Flutter.currentOwner = instance;
 			if (type.isRef) {
 				instance.render = function() {
 					//  delete this.updater._hasRef;
@@ -59,7 +59,7 @@ export function createInstance(fiber, context) {
 	} catch (e) {
 		instance = {};
 	} finally {
-		shader.currentOwner = lastOwn;
+		Flutter.currentOwner = lastOwn;
 	}
 	fiber.stateNode = instance;
 	instance.updater = updater;
