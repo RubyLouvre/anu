@@ -1363,9 +1363,9 @@ var NULLREF = 7;
 var HOOK = 11;
 var REF = 13;
 var DETACH = 17;
-var CALLBACK$1 = 19;
+var CALLBACK = 19;
 var CAPTURE = 23;
-var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK$1, CAPTURE];
+var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
 function beginWork(fiber) {
@@ -1775,68 +1775,68 @@ function completeWork(fiber, topWork) {
 }
 
 function commitWork(fiber) {
-	var instance = fiber.stateNode;
-	var amount = fiber.effectTag;
-	var updater = instance.updater;
-	for (var i = 0; i < effectLength; i++) {
-		var effectNo = effectNames[i];
-		if (effectNo > amount) {
-			break;
-		}
-		var remainder = amount / effectNo;
-		if (remainder == ~~remainder) {
-			amount = remainder;
-			switch (effectNo) {
-				case PLACE:
-					shader.insertElement(fiber);
-					break;
-				case ATTR:
-					delete fiber.before;
-					shader.updateAttribute(fiber);
-					break;
-				case DETACH:
-					if (fiber.tag > 3) {
-						shader.removeElement(fiber);
-					}
-					break;
-				case HOOK:
-					delete fiber.before;
-					if (fiber.disposed) {
-						callLifeCycleHook(instance, 'componentWillUnmount', []);
-						updater._isMounted = returnFalse;
-					} else {
-						if (updater._isMounted()) {
-							callLifeCycleHook(instance, 'componentDidUpdate', []);
-						} else {
-							callLifeCycleHook(instance, 'componentDidMount', []);
-							updater._isMounted = returnTrue;
-						}
-					}
-					delete updater._hydrating;
-					break;
-				case CONTENT:
-					shader.updateContext(fiber);
-					break;
-				case REF:
-					Refs.fireRef(fiber, instance);
-					break;
-				case NULLREF:
-					Refs.fireRef(fiber, null);
-					break;
-				case CALLBACK$1:
-					fiber.callback.call(instance);
-					break;
-				case CAPTURE:
-					updater._isDoctor = true;
-					instance.componentDidCatch.apply(instance, fiber.errorInfo);
-					fiber.errorInfo = null;
-					updater._isDoctor = false;
-					break;
-			}
-		}
-	}
-	fiber.effectTag = amount;
-	fiber.effects = null;
+    var instance = fiber.stateNode;
+    var amount = fiber.effectTag;
+    var updater = instance.updater;
+    for (var i = 0; i < effectLength; i++) {
+        var effectNo = effectNames[i];
+        if (effectNo > amount) {
+            break;
+        }
+        var remainder = amount / effectNo;
+        if (remainder == ~~remainder) {
+            amount = remainder;
+            switch (effectNo) {
+                case PLACE:
+                    shader.insertElement(fiber);
+                    break;
+                case ATTR:
+                    delete fiber.before;
+                    shader.updateAttribute(fiber);
+                    break;
+                case DETACH:
+                    if (fiber.tag > 3) {
+                        shader.removeElement(fiber);
+                    }
+                    break;
+                case HOOK:
+                    delete fiber.before;
+                    if (fiber.disposed) {
+                        callLifeCycleHook(instance, "componentWillUnmount", []);
+                        updater._isMounted = returnFalse;
+                    } else {
+                        if (updater._isMounted()) {
+                            callLifeCycleHook(instance, "componentDidUpdate", []);
+                        } else {
+                            callLifeCycleHook(instance, "componentDidMount", []);
+                            updater._isMounted = returnTrue;
+                        }
+                    }
+                    delete updater._hydrating;
+                    break;
+                case CONTENT:
+                    shader.updateContext(fiber);
+                    break;
+                case REF:
+                    Refs.fireRef(fiber, instance);
+                    break;
+                case NULLREF:
+                    Refs.fireRef(fiber, null);
+                    break;
+                case CALLBACK:
+                    fiber.callback.call(instance);
+                    break;
+                case CAPTURE:
+                    updater._isDoctor = true;
+                    instance.componentDidCatch.apply(instance, fiber.errorInfo);
+                    fiber.errorInfo = null;
+                    updater._isDoctor = false;
+                    break;
+            }
+        }
+    }
+    fiber.effectTag = amount;
+    fiber.effects = null;
 }
 
 function isValidElement(vnode) {
@@ -1860,7 +1860,14 @@ function findDOMNode(stateNode) {
     }
 }
 function render(vnode, root, callback) {
-    var hostRoot = shader.updateRoot(vnode, root, callback);
+    var hostRoot = shader.updateRoot(vnode, root);
+    var instance = null;
+    hostRoot.effectTag = CALLBACK;
+    hostRoot.callback = function () {
+        instance = hostRoot.child ? hostRoot.child.stateNode : null;
+        callback && callback.call(instance);
+        hostRoot._hydrating = false;
+    };
     updateQueue.push(hostRoot);
     var prev = hostRoot.alternate;
     if (prev && prev._hydrating) {
@@ -1872,7 +1879,7 @@ function render(vnode, root, callback) {
             return 2;
         }
     });
-    return hostRoot.child ? hostRoot.child.stateNode : null;
+    return instance;
 }
 function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
     deprecatedWarn("unstable_renderSubtreeIntoContainer");
@@ -2009,27 +2016,27 @@ var formElements = {
     option: 1
 };
 var duplexData = {
-    1: ['value', {
+    1: ["value", {
         onChange: 1,
         onInput: 1,
         readOnly: 1,
         disabled: 1
     }, function (a) {
-        return a == null ? null : a + '';
+        return a == null ? null : a + "";
     }, function (dom, value, vnode) {
         if (value == null) {
             return;
         }
-        if (vnode.type === 'input') {
+        if (vnode.type === "input") {
             dom.__anuSetValue = true;
-            dom.setAttribute('value', value);
+            dom.setAttribute("value", value);
             dom.__anuSetValue = false;
-            if (dom.type === 'number') {
+            if (dom.type === "number") {
                 var valueAsNumber = parseFloat(dom.value) || 0;
                 if (
                 value != valueAsNumber ||
                 value == valueAsNumber && dom.value != value) {
-                    value += '';
+                    value += "";
                 } else {
                     return;
                 }
@@ -2040,8 +2047,8 @@ var duplexData = {
             dom._persistValue = dom.value = value;
             dom.__anuSetValue = false;
         }
-    }, keepPersistValue, 'change', 'input'],
-    2: ['checked', {
+    }, keepPersistValue, "change", "input"],
+    2: ["checked", {
         onChange: 1,
         onClick: 1,
         readOnly: 1,
@@ -2055,8 +2062,8 @@ var duplexData = {
         if (dom._persistValue !== value) {
             dom._persistValue = dom.checked = value;
         }
-    }, keepPersistValue, 'change', 'click'],
-    3: ['value', {
+    }, keepPersistValue, "change", "click"],
+    3: ["value", {
         onChange: 1,
         disabled: 1
     }, function (a) {
@@ -2068,14 +2075,14 @@ var duplexData = {
                 dom._setValue = false;
             }
         } else {
-            if ('value' in vnode.props) {
+            if ("value" in vnode.props) {
                 dom._persistValue = value;
             }
         }
         syncOptions({
             target: dom
         });
-    }, syncOptions, 'change']
+    }, syncOptions, "change"]
 };
 function inputControll(vnode, dom, props) {
     var domType = dom.type;
@@ -2096,9 +2103,9 @@ function inputControll(vnode, dom, props) {
         var event1 = data[5];
         var event2 = data[6];
         if (!hasOtherControllProperty(props, keys)) {
-            console.warn('\u4F60\u4E3A' + vnode.type + '[type=' + domType + ']\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**' + duplexProp + '\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684' + Object.keys(keys) + '\n\u6765\u64CD\u4F5C' + duplexProp + '\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C');
-            dom['on' + event1] = handle;
-            dom['on' + event2] = handle;
+            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
+            dom["on" + event1] = handle;
+            dom["on" + event2] = handle;
         } else {
             vnode.controlledCb = handle;
             Refs.controlledCbs.push(vnode);
@@ -2109,7 +2116,7 @@ function inputControll(vnode, dom, props) {
             dom.removeChild(el);
             i--;
         }
-        if ('value' in props) {
+        if ("value" in props) {
             dom.duplexValue = dom.value = props.value;
         } else {
             dom.duplexValue = dom.text;
@@ -2125,7 +2132,7 @@ function hasOtherControllProperty(props, keys) {
 }
 function keepPersistValue(e) {
     var dom = e.target;
-    var name = e.type === 'textarea' ? 'innerHTML' : /check|radio/.test(dom.type) ? 'checked' : 'value';
+    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
     var v = dom._persistValue;
     var noNull = v != null;
     var noEqual = dom[name] !== v;
@@ -2170,7 +2177,7 @@ function updateOptionsMore(options, n, propValue) {
     var selectedValue = {};
     try {
         for (var i = 0; i < propValue.length; i++) {
-            selectedValue['&' + propValue[i]] = true;
+            selectedValue["&" + propValue[i]] = true;
         }
     } catch (e) {
         console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
@@ -2178,7 +2185,7 @@ function updateOptionsMore(options, n, propValue) {
     for (var _i = 0; _i < n; _i++) {
         var option = options[_i];
         var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty('&' + value);
+        var selected = selectedValue.hasOwnProperty("&" + value);
         setOptionSelected(option, selected);
     }
 }
@@ -2301,38 +2308,38 @@ var svgCamelCase = {
     x: { c: 1 }
 };
 var specialSVGPropertyName = {
-    'overline-thickness': 2,
-    'underline-thickness': 2,
-    'overline-position': 2,
-    'underline-position': 2,
-    'stroke-miterlimit': 2,
-    'baseline-shift': 2,
-    'clip-path': 2,
-    'font-size': 2,
-    'font-size-adjust': 2,
-    'font-stretch': 2,
-    'font-style': 2,
-    'text-decoration': 2,
-    'vert-origin-x': 2,
-    'vert-origin-y': 2,
-    'paint-order': 2,
-    'fill-rule': 2,
-    'color-rendering': 2,
-    'marker-end': 2,
-    'pointer-events': 2,
-    'units-per-em': 2,
-    'strikethrough-thickness': 2,
-    'lighting-color': 2
+    "overline-thickness": 2,
+    "underline-thickness": 2,
+    "overline-position": 2,
+    "underline-position": 2,
+    "stroke-miterlimit": 2,
+    "baseline-shift": 2,
+    "clip-path": 2,
+    "font-size": 2,
+    "font-size-adjust": 2,
+    "font-stretch": 2,
+    "font-style": 2,
+    "text-decoration": 2,
+    "vert-origin-x": 2,
+    "vert-origin-y": 2,
+    "paint-order": 2,
+    "fill-rule": 2,
+    "color-rendering": 2,
+    "marker-end": 2,
+    "pointer-events": 2,
+    "units-per-em": 2,
+    "strikethrough-thickness": 2,
+    "lighting-color": 2
 };
-var repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
+var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
 function createRepaceFn(split) {
     return function (match) {
         return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
 var rhump = /[a-z][A-Z]/;
-var toHyphen = createRepaceFn('-');
-var toColon = createRepaceFn(':');
+var toHyphen = createRepaceFn("-");
+var toColon = createRepaceFn(":");
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
@@ -2395,25 +2402,25 @@ function isBooleanAttr(dom, name) {
     return val === true || val === false;
 }
 function getPropAction(dom, name, isSVG) {
-    if (isSVG && name === 'className') {
-        return 'svgClass';
+    if (isSVG && name === "className") {
+        return "svgClass";
     }
     if (isSpecialAttr[name]) {
         return name;
     }
     if (isEventName(name)) {
-        return 'event';
+        return "event";
     }
     if (isSVG) {
-        return 'svgAttr';
+        return "svgAttr";
     }
-    if (name === 'width' || name === 'height') {
-        return 'attribute';
+    if (name === "width" || name === "height") {
+        return "attribute";
     }
     if (isBooleanAttr(dom, name)) {
-        return 'booleanAttr';
+        return "booleanAttr";
     }
-    return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
+    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
 }
 var builtinStringProps = {
     className: 1,
@@ -2431,7 +2438,7 @@ function uncontrolled(dom, name, val, lastProps, fiber) {
             inputMonitor.observe(dom, name);
         }
         dom._observing = false;
-        if (fiber.type === 'select' && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
+        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
             dom.selectedIndex = dom.selectedIndex;
             dom._setValue = false;
         }
@@ -2450,33 +2457,33 @@ var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function autoFocus(dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === 'true') {
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
             dom.focus();
         }
     },
     svgClass: function svgClass(dom, name, val) {
         if (!val) {
-            dom.removeAttribute('class');
+            dom.removeAttribute("class");
         } else {
-            dom.setAttribute('class', val);
+            dom.setAttribute("class", val);
         }
     },
     svgAttr: function svgAttr(dom, name, val) {
-        var method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
+        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
         var nameRes = getSVGAttributeName(name);
         if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(':')[0];
-            dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
+            var prefix = nameRes.name.split(":")[0];
+            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
         } else {
-            dom[method](nameRes, val || '');
+            dom[method](nameRes, val || "");
         }
     },
     booleanAttr: function booleanAttr(dom, name, val) {
         dom[name] = !!val;
         if (dom[name] === false) {
             dom.removeAttribute(name);
-        } else if (dom[name] === 'false') {
-            dom[name] = '';
+        } else if (dom[name] === "false") {
+            dom[name] = "";
         }
     },
     attribute: function attribute(dom, name, val) {
@@ -2496,7 +2503,7 @@ var actionStrategy = {
         try {
             if (!val && val !== 0) {
                 if (builtinStringProps[name]) {
-                    dom[name] = '';
+                    dom[name] = "";
                 }
                 dom.removeAttribute(name);
             } else {
@@ -2549,9 +2556,9 @@ var DOMRenderer = {
     updateContext: function updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
     },
-    updateRoot: function updateRoot(vnode, root, _callback) {
+    updateRoot: function updateRoot(vnode, root) {
         if (!(root && root.appendChild)) {
-            throw 'ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF';
+            throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF";
         }
         var hostRoot = {
             stateNode: root,
@@ -2562,13 +2569,7 @@ var DOMRenderer = {
                 children: vnode
             },
             namespaceURI: root.namespaceURI,
-            effectTag: 19,
-            alternate: get(root),
-            callback: function callback() {
-                var instance = hostRoot.child ? hostRoot.child.stateNode : null;
-                _callback && _callback.call(instance);
-                hostRoot._hydrating = false;
-            }
+            alternate: get(root)
         };
         if (topNodes.indexOf(root) == -1) {
             topNodes.push(root);
@@ -2600,7 +2601,7 @@ if (prevReact && prevReact.options) {
 } else {
     createRenderer(DOMRenderer);
     React = win.React = win.ReactDOM = {
-        version: '1.3.1',
+        version: "1.3.1",
         render: render,
         hydrate: render,
         options: options,

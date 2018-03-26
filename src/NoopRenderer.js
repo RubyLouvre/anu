@@ -1,3 +1,4 @@
+import { get } from "./util";
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
@@ -43,11 +44,7 @@ export let NoopRenderer = {
                 children: vnode
             },
             tag: 5,
-            effectTag: 19, //CALLBACK
-            alternate: rootContainer._reactInternalFiber,
-            callback() {
-                console.log('...');// eslint-disable-line
-            }
+            alternate: get(rootContainer),
         };
     },
     getChildren() {
@@ -90,7 +87,7 @@ export let NoopRenderer = {
         }
     },
     emptyElement(fiber) {
-        [].concat(fiber.children).forEach(NoopRenderer.removeElement);
+        // [].concat(fiber.children).forEach(NoopRenderer.removeElement);
     },
     removeElement(fiber) {
         if (fiber.parent) {

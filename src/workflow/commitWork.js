@@ -10,8 +10,8 @@ import {
     CAPTURE,
     effectLength,
     effectNames
-} from "../effectTag"
-import { callLifeCycleHook, pushError } from './unwindWork';
+} from "../effectTag";
+import { callLifeCycleHook, pushError } from "./unwindWork";
 import { returnFalse, returnTrue, shader } from "../util";
 import { Refs } from "../Refs";
 
@@ -20,70 +20,70 @@ import { Refs } from "../Refs";
  * @param {Refs} fiber 
  */
 export function commitWork(fiber) {
-	let instance = fiber.stateNode;
-	let amount = fiber.effectTag;
-	let updater = instance.updater;
-	for (let i = 0; i < effectLength; i++) {
-		let effectNo = effectNames[i];
-		if (effectNo > amount) {
-			break;
-		}
-		let remainder = amount / effectNo;
-		if (remainder == ~~remainder) {
-			//如果能整除，下面的分支操作以后要改成注入方法
-			amount = remainder;
-			switch (effectNo) {
-				case PLACE: //只对原生组件
-					shader.insertElement(fiber);
-					break;
-				case ATTR: //只对原生组件
-					delete fiber.before;
-					shader.updateAttribute(fiber);
-					break;
-				case DETACH:
-					if (fiber.tag > 3) {
-						//只对原生组件
-						shader.removeElement(fiber);
-					} //业务 & 原生
-				//	delete fiber.stateNode;
-					break;
-				case HOOK: //只对业务组件
-					delete fiber.before;
-					if (fiber.disposed) {
-						callLifeCycleHook(instance, 'componentWillUnmount', []);
-						updater._isMounted = returnFalse;
-					} else {
-						if (updater._isMounted()) {
-							callLifeCycleHook(instance, 'componentDidUpdate', []);
-						} else {
-							callLifeCycleHook(instance, 'componentDidMount', []);
-							updater._isMounted = returnTrue;
-						}
-					}
-					delete updater._hydrating;
-					break;
-				case CONTENT:
-					shader.updateContext(fiber);
-					break;
-				case REF:
-					Refs.fireRef(fiber, instance);
-					break;
-				case NULLREF:
-					Refs.fireRef(fiber, null);
-					break;
-				case CALLBACK:
-					//ReactDOM.render/forceUpdate/setState callback
-					fiber.callback.call(instance);
-					break;
-				case CAPTURE:
-					updater._isDoctor = true;
-					instance.componentDidCatch.apply(instance, fiber.errorInfo);
-					fiber.errorInfo = null;
-					updater._isDoctor = false;
-					break;
-			}
-		}
-	}
-	fiber.effectTag = amount;
-	fiber.effects = null;
+    let instance = fiber.stateNode;
+    let amount = fiber.effectTag;
+    let updater = instance.updater;
+    for (let i = 0; i < effectLength; i++) {
+        let effectNo = effectNames[i];
+        if (effectNo > amount) {
+            break;
+        }
+        let remainder = amount / effectNo;
+        if (remainder == ~~remainder) {
+            //如果能整除，下面的分支操作以后要改成注入方法
+            amount = remainder;
+            switch (effectNo) {
+            case PLACE: //只对原生组件
+                shader.insertElement(fiber);
+                break;
+            case ATTR: //只对原生组件
+                delete fiber.before;
+                shader.updateAttribute(fiber);
+                break;
+            case DETACH:
+                if (fiber.tag > 3) {
+                    //只对原生组件
+                    shader.removeElement(fiber);
+                } //业务 & 原生
+                //	delete fiber.stateNode;
+                break;
+            case HOOK: //只对业务组件
+                delete fiber.before;
+                if (fiber.disposed) {
+                    callLifeCycleHook(instance, "componentWillUnmount", []);
+                    updater._isMounted = returnFalse;
+                } else {
+                    if (updater._isMounted()) {
+                        callLifeCycleHook(instance, "componentDidUpdate", []);
+                    } else {
+                        callLifeCycleHook(instance, "componentDidMount", []);
+                        updater._isMounted = returnTrue;
+                    }
+                }
+                delete updater._hydrating;
+                break;
+            case CONTENT:
+                shader.updateContext(fiber);
+                break;
+            case REF:
+                Refs.fireRef(fiber, instance);
+                break;
+            case NULLREF:
+                Refs.fireRef(fiber, null);
+                break;
+            case CALLBACK:
+                //ReactDOM.render/forceUpdate/setState callback
+                fiber.callback.call(instance);
+                break;
+            case CAPTURE:
+                updater._isDoctor = true;
+                instance.componentDidCatch.apply(instance, fiber.errorInfo);
+                fiber.errorInfo = null;
+                updater._isDoctor = false;
+                break;
+            }
+        }
+    }
+    fiber.effectTag = amount;
+    fiber.effects = null;
 }

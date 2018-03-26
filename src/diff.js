@@ -2,7 +2,7 @@ import { topFibers, topNodes, updateQueue } from "./share";
 import { beginWork, detachFiber } from "./workflow/beginWork";
 import { completeWork } from "./workflow/completeWork";
 import { commitWork } from "./workflow/commitWork";
-import { NOWORK } from "./effectTag";
+import { NOWORK, CALLBACK } from "./effectTag";
 import { returnTrue, deprecatedWarn, get, shader } from "./util";
 
 //[Top API] React.isValidElement
@@ -31,7 +31,14 @@ export function findDOMNode(stateNode) {
     }
 }
 export function render(vnode, root, callback) {
-    let hostRoot = shader.updateRoot(vnode, root, callback);
+    let hostRoot = shader.updateRoot(vnode, root);
+    let instance = null;
+    hostRoot.effectTag = CALLBACK;
+    hostRoot.callback = function(){
+        instance = hostRoot.child ? hostRoot.child.stateNode : null;
+        callback && callback.call(instance);
+        hostRoot._hydrating = false;
+    };
     updateQueue.push(hostRoot);
     var prev = hostRoot.alternate;
     //如果之前的还没有执行完，那么等待它执行完再处理,
@@ -45,7 +52,7 @@ export function render(vnode, root, callback) {
             return 2;
         }
     });
-    return hostRoot.child ? hostRoot.child.stateNode : null;
+    return instance;
 }
 
 //[Top API] ReactDOM.unstable_renderSubtreeIntoContainer

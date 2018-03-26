@@ -15,7 +15,7 @@ export let DOMRenderer = {
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
     },
-    updateRoot(vnode, root, callback) {
+    updateRoot(vnode, root) {
         if (!(root && root.appendChild)) {
             throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
         }
@@ -28,13 +28,7 @@ export let DOMRenderer = {
                 children: vnode
             },
             namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
-            effectTag: 19, //CALLBACK
-            alternate: get(root),
-            callback() {
-                let instance = hostRoot.child ? hostRoot.child.stateNode : null;
-                callback && callback.call(instance);
-                hostRoot._hydrating = false;
-            }
+            alternate: get(root)
         };
         if (topNodes.indexOf(root) == -1) {
             topNodes.push(root);

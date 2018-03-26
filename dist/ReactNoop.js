@@ -741,9 +741,9 @@ var NULLREF = 7;
 var HOOK = 11;
 var REF = 13;
 var DETACH = 17;
-var CALLBACK$1 = 19;
+var CALLBACK = 19;
 var CAPTURE = 23;
-var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK$1, CAPTURE];
+var effectNames = [PLACE, ATTR, CONTENT, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
 function beginWork(fiber) {
@@ -1153,68 +1153,68 @@ function completeWork(fiber, topWork) {
 }
 
 function commitWork(fiber) {
-	var instance = fiber.stateNode;
-	var amount = fiber.effectTag;
-	var updater = instance.updater;
-	for (var i = 0; i < effectLength; i++) {
-		var effectNo = effectNames[i];
-		if (effectNo > amount) {
-			break;
-		}
-		var remainder = amount / effectNo;
-		if (remainder == ~~remainder) {
-			amount = remainder;
-			switch (effectNo) {
-				case PLACE:
-					shader.insertElement(fiber);
-					break;
-				case ATTR:
-					delete fiber.before;
-					shader.updateAttribute(fiber);
-					break;
-				case DETACH:
-					if (fiber.tag > 3) {
-						shader.removeElement(fiber);
-					}
-					break;
-				case HOOK:
-					delete fiber.before;
-					if (fiber.disposed) {
-						callLifeCycleHook(instance, 'componentWillUnmount', []);
-						updater._isMounted = returnFalse;
-					} else {
-						if (updater._isMounted()) {
-							callLifeCycleHook(instance, 'componentDidUpdate', []);
-						} else {
-							callLifeCycleHook(instance, 'componentDidMount', []);
-							updater._isMounted = returnTrue;
-						}
-					}
-					delete updater._hydrating;
-					break;
-				case CONTENT:
-					shader.updateContext(fiber);
-					break;
-				case REF:
-					Refs.fireRef(fiber, instance);
-					break;
-				case NULLREF:
-					Refs.fireRef(fiber, null);
-					break;
-				case CALLBACK$1:
-					fiber.callback.call(instance);
-					break;
-				case CAPTURE:
-					updater._isDoctor = true;
-					instance.componentDidCatch.apply(instance, fiber.errorInfo);
-					fiber.errorInfo = null;
-					updater._isDoctor = false;
-					break;
-			}
-		}
-	}
-	fiber.effectTag = amount;
-	fiber.effects = null;
+    var instance = fiber.stateNode;
+    var amount = fiber.effectTag;
+    var updater = instance.updater;
+    for (var i = 0; i < effectLength; i++) {
+        var effectNo = effectNames[i];
+        if (effectNo > amount) {
+            break;
+        }
+        var remainder = amount / effectNo;
+        if (remainder == ~~remainder) {
+            amount = remainder;
+            switch (effectNo) {
+                case PLACE:
+                    shader.insertElement(fiber);
+                    break;
+                case ATTR:
+                    delete fiber.before;
+                    shader.updateAttribute(fiber);
+                    break;
+                case DETACH:
+                    if (fiber.tag > 3) {
+                        shader.removeElement(fiber);
+                    }
+                    break;
+                case HOOK:
+                    delete fiber.before;
+                    if (fiber.disposed) {
+                        callLifeCycleHook(instance, "componentWillUnmount", []);
+                        updater._isMounted = returnFalse;
+                    } else {
+                        if (updater._isMounted()) {
+                            callLifeCycleHook(instance, "componentDidUpdate", []);
+                        } else {
+                            callLifeCycleHook(instance, "componentDidMount", []);
+                            updater._isMounted = returnTrue;
+                        }
+                    }
+                    delete updater._hydrating;
+                    break;
+                case CONTENT:
+                    shader.updateContext(fiber);
+                    break;
+                case REF:
+                    Refs.fireRef(fiber, instance);
+                    break;
+                case NULLREF:
+                    Refs.fireRef(fiber, null);
+                    break;
+                case CALLBACK:
+                    fiber.callback.call(instance);
+                    break;
+                case CAPTURE:
+                    updater._isDoctor = true;
+                    instance.componentDidCatch.apply(instance, fiber.errorInfo);
+                    fiber.errorInfo = null;
+                    updater._isDoctor = false;
+                    break;
+            }
+        }
+    }
+    fiber.effectTag = amount;
+    fiber.effects = null;
 }
 
 function isValidElement(vnode) {
@@ -1238,7 +1238,14 @@ function findDOMNode(stateNode) {
     }
 }
 function render(vnode, root, callback) {
-    var hostRoot = shader.updateRoot(vnode, root, callback);
+    var hostRoot = shader.updateRoot(vnode, root);
+    var instance = null;
+    hostRoot.effectTag = CALLBACK;
+    hostRoot.callback = function () {
+        instance = hostRoot.child ? hostRoot.child.stateNode : null;
+        callback && callback.call(instance);
+        hostRoot._hydrating = false;
+    };
     updateQueue.push(hostRoot);
     var prev = hostRoot.alternate;
     if (prev && prev._hydrating) {
@@ -1250,7 +1257,7 @@ function render(vnode, root, callback) {
             return 2;
         }
     });
-    return hostRoot.child ? hostRoot.child.stateNode : null;
+    return instance;
 }
 
 function unmountComponentAtNode(container) {
@@ -1382,7 +1389,7 @@ function cleanChildren(array) {
         return array;
     }
     return array.map(function (el) {
-        if (el.type == '#text') {
+        if (el.type == "#text") {
             return el.children;
         } else {
             return {
@@ -1394,7 +1401,7 @@ function cleanChildren(array) {
     });
 }
 var rootContainer = {
-    type: 'root',
+    type: "root",
     props: null,
     children: []
 };
@@ -1406,25 +1413,21 @@ var NoopRenderer = {
     },
     reset: function reset() {
         rootContainer = {
-            type: 'root',
+            type: "root",
             props: null,
             children: []
         };
     },
     updateRoot: function updateRoot(vnode) {
         return {
-            type: 'root',
+            type: "root",
             root: true,
             stateNode: rootContainer,
             props: {
                 children: vnode
             },
             tag: 5,
-            effectTag: 19,
-            alternate: rootContainer._reactInternalFiber,
-            callback: function callback() {
-                console.log('...');
-            }
+            alternate: get(rootContainer)
         };
     },
     getChildren: function getChildren() {
@@ -1467,7 +1470,6 @@ var NoopRenderer = {
         }
     },
     emptyElement: function emptyElement(fiber) {
-        [].concat(fiber.children).forEach(NoopRenderer.removeElement);
     },
     removeElement: function removeElement(fiber) {
         if (fiber.parent) {
@@ -1492,7 +1494,7 @@ if (prevReact && prevReact.isReactNoop) {
 } else {
     createRenderer(NoopRenderer);
     ReactNoop = win.ReactNoop = {
-        version: '1.3.1',
+        version: "1.3.1",
         render: render,
         flush: NoopRenderer.flush,
         reset: NoopRenderer.reset,
