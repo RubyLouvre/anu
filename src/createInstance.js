@@ -1,16 +1,15 @@
 
-import { returnFalse } from "./util";
-import { Refs } from "./Refs";
+import { returnFalse, shader } from "./util";
 
 export function createInstance(fiber, context) {
     let updater = {
-        _mountOrder: Refs.mountOrder++,
+        _mountOrder: shader.mountOrder++,
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
     let { props, type, tag } = fiber,
         isStateless = tag === 1,
-        lastOwn = Refs.currentOwner,
+        lastOwn = shader.currentOwner,
         instance,
         lifeCycleHook;
     try {
@@ -33,7 +32,7 @@ export function createInstance(fiber, context) {
                 }
             };
 
-            Refs.currentOwner = instance;
+            shader.currentOwner = instance;
             if (type.isRef) {
                 instance.render = function() {
                     //  delete this.updater._hasRef;
@@ -61,7 +60,7 @@ export function createInstance(fiber, context) {
     } catch (e) {
         instance = {};
     } finally {
-        Refs.currentOwner = lastOwn;
+        shader.currentOwner = lastOwn;
     }
     fiber.stateNode = instance;
     instance.updater = updater;

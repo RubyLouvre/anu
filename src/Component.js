@@ -1,5 +1,4 @@
-import { deprecatedWarn, returnFalse,returnTrue } from "./util";
-import { Refs } from "./Refs";
+import { deprecatedWarn, shader, returnFalse,returnTrue } from "./util";
 /**
  *组件的基类
  *
@@ -9,7 +8,7 @@ import { Refs } from "./Refs";
 export function Component(props, context) {
     //防止用户在构造器生成JSX
     
-    Refs.currentOwner = this;
+    shader.currentOwner = this;
     this.context = context;
     this.props = props;
     this.refs = {};

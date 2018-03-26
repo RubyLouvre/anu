@@ -1,7 +1,7 @@
 /**
 通过事件绑定实现受控组件
  */
-import { Refs } from "./Refs";
+import { shader } from "./util";
 import { duplexMap } from "./browser";
 
 
@@ -140,7 +140,7 @@ export function inputControll(vnode, dom, props) {
             dom["on" + event2] = handle;
         } else {
             vnode.controlledCb = handle;
-            Refs.controlledCbs.push(vnode);
+            shader.controlledCbs.push(vnode);
         }
     } else {
         //处理option标签

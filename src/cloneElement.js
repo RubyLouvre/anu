@@ -1,6 +1,5 @@
 import { createElement } from "./createElement";
-import { Refs } from "./Refs";
-import { extend } from "./util";
+import { extend, shader } from "./util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.tag === 6) {
@@ -9,7 +8,7 @@ export function cloneElement(vnode, props) {
         return clone;
     }
     let owner = vnode._owner,
-        lastOwn = Refs.currentOwner,
+        lastOwn = shader.currentOwner,
         old = vnode.props,
         configs = {};
     if (props) {
@@ -25,7 +24,7 @@ export function cloneElement(vnode, props) {
     } else {
         configs = old;
     }
-    Refs.currentOwner = owner;
+    shader.currentOwner = owner;
 
     let args = [].slice.call(arguments, 0),
         argsLength = args.length;
@@ -36,6 +35,6 @@ export function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     let ret = createElement.apply(null, args);
-    Refs.currentOwner = lastOwn;
+    shader.currentOwner = lastOwn;
     return ret;
 }

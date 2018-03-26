@@ -1,12 +1,11 @@
-import { typeNumber, options, REACT_ELEMENT_TYPE } from "./util";
-import { Refs } from "./Refs";
+import { typeNumber, options, REACT_ELEMENT_TYPE, shader } from "./util";
 
 export function Vnode(type, tag, props, key, ref) {
     this.type = type;
     this.tag = tag;
     if (tag !== 6) {
         this.props = props;
-        this._owner = Refs.currentOwner;
+        this._owner = shader.currentOwner;
 
         if (key) {
             this.key = key;

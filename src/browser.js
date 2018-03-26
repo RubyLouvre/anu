@@ -1,5 +1,4 @@
-import { typeNumber, getWindow } from './util';
-import { Refs } from './Refs';
+import { typeNumber, getWindow, shader } from './util';
 //用于后端的元素节点
 export function DOMElement(type) {
 	this.nodeName = type;
@@ -75,8 +74,8 @@ export function emptyElement(node) {
 	let child;
 	while ((child = node.firstChild)) {
 		emptyElement(child);
-		if (child === Refs.focusNode) {
-			Refs.focusNode = false;
+		if (child === shader.focusNode) {
+			shader.focusNode = false;
 		}
 		node.removeChild(child);
 	}
@@ -102,8 +101,8 @@ export function removeElement(node) {
 			recyclables['#text'].push(node);
 		}
 	}
-	if (node === Refs.focusNode) {
-		Refs.focusNode = false;
+	if (node === shader.focusNode) {
+		shader.focusNode = false;
 	}
 	fragment.appendChild(node);
 	fragment.removeChild(node);
@@ -213,7 +212,7 @@ export function insertElement(fiber) {
 
 	if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
 		try {
-			Refs.focusNode = prevFocus;
+			shader.focusNode = prevFocus;
 			prevFocus.__inner__ = true;
 			prevFocus.focus();
 		} catch (e) {

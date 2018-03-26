@@ -1,6 +1,6 @@
-import { Refs } from "../Refs";
-import { updateQueue } from "../share";
-import { noop, get } from "../util";
+
+import { noop, get, shader } from "../util";
+let updateQueue = shader.mainThread
 
 export function pushError(instance, hook, error) {
     let names = [],
@@ -17,8 +17,8 @@ export function pushError(instance, hook, error) {
     } else {
 		console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
-        if (!Refs.error) {
-            Refs.error = error;
+        if (!shader.error) {
+            shader.error = error;
         }
     }
 }

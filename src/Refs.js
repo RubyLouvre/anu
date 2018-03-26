@@ -6,12 +6,8 @@ import { isFn } from "./util";
 function getDOMNode() {
     return this;
 }
-export const pendingRefs = [];
 
 export let Refs = {
-    mountOrder: 1,
-    currentOwner: null,
-    controlledCbs: [],
     // errorHook: string,//发生错误的生命周期钩子
     // errorInfo: [],    //已经构建好的错误信息
     // doctors: null     //医生节点

@@ -26,7 +26,13 @@ export function createRenderer(methods) {
     extend(shader, methods);
 }
 
-export var shader = {};
+export var shader = {
+    interactQueue: [],
+    mainThread: [],
+    controlledCbs: [],
+    mountOrder: 1,
+    currentOwner: null
+};
 
 export function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
