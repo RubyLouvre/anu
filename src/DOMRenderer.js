@@ -31,9 +31,11 @@ export let DOMRenderer = {
 			namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
 			effectTag: 19, //CALLBACK
 			alternate: get(root),
+			_hydrating: true,
 			callback() {
 				let instance = hostRoot.child ? hostRoot.child.stateNode : null;
 				callback && callback.call(instance);
+				hostRoot._hydrating = false
 			}
 		};
 		if (topNodes.indexOf(root) == -1) {

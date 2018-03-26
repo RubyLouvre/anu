@@ -33,6 +33,9 @@ export function findDOMNode(stateNode) {
 export function render(vnode, root, callback) {
 	let hostRoot = shader.updateRoot(vnode, root, callback);
 	updateQueue.push(hostRoot);
+	if(hostRoot.alternate && hostRoot.alternate._hydrating){
+		return
+	}
 	workLoop({
 		timeRemaining() {
 			return 2;
@@ -131,7 +134,8 @@ shader.updaterComponent = function(instance, state, callback) {
 	state = isForceUpdate ? null : state;
 
 	if (this._hydrating) {
-		updateQueue.push(
+		console.log("666666")
+		/*updateQueue.push(
 			Object.assign({}, fiber, {
 				stateNode: instance,
 				alternate: fiber,
@@ -140,7 +144,7 @@ shader.updaterComponent = function(instance, state, callback) {
 				isForceUpdate,
 				callback
 			})
-		);
+		);*/
 		return;
 	} else {
 		let prevEffect;

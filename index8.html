@@ -24,7 +24,7 @@
     </h1>
     <script type='text/babel'>
             var container = document.getElementById("example")
-          //  var div = container;
+            var div = container;
           if(!window.ReactDOM){
             window. ReactDOM = React
           }
@@ -39,42 +39,100 @@
                     },
                 }
             }  
-
-            function Child() {
-                return {
-                  state: {
-                    count: 1,
-                  },
-                  componentWillMount(){
-                      console.log("componentWillMount")
-                  },
-                  componentDidMount(){
-                      console.log("componentDidMount")
-                  },
-                  render() {
-                     console.log(this.state.count, this, "render")
-                    return <div>{`count:${this.state.count}`}</div>;
-                  },
-                };
-              }
-              Child.getDerivedStateFromProps = (props, prevState) => {
-                 console.log("getDerivedStateFromProps",  props.incrementBy, prevState.count, prevState.count + props.incrementBy )
-                return {
-                  count: prevState.count + props.incrementBy,
-                };
-              };
-          
-              const el = document.createElement('div');
-            //  console.log("==========")
-              ReactDOM.render(<Child incrementBy={0} />, el);
-              expect(el.textContent).toBe('count:1');
-         console.log("=========")
-              React.render(<Child incrementBy={2} />, el);
-              expect(el.textContent).toBe('count:3');
-            //  console.log("==========")
-
-           //   React.render(<Child incrementBy={1} />, el);
-            //  expect(el.textContent).toBe('count:4');
+            var list = [];
+            var flag = 1;
+            function logger(e){
+                list.push(e);
+            }
+            class A extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        text: "aaa"
+                    };
+                }
+      
+                componentDidMount() {
+                    logger("A did mount");
+                    ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
+                
+                }
+                componentWillReceiveProps(){
+                    logger("A will receive");
+                }
+                componentDidUpdate() {
+                    logger("A did update");
+                    if(flag){
+                        flag = 0;
+                        ReactDOM.render(<div><A text="111"/><B text="222"/><C text="333"/></div>, div);
+                    }
+      
+                }
+                render() {
+                    return <div>{this.state.text}</div>;
+                }
+            }
+            class B extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        text: "bbb"
+                    };
+                }
+      
+                componentDidMount() {
+              
+                    logger("B did mount");
+                }
+                componentWillReceiveProps(){
+                    logger("B will receive");
+                }
+                componentDidUpdate() {
+                    logger("B did update");
+                }
+                render() {
+                    return <div>{this.state.text}</div>;
+                }
+            }
+            class C extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        text: "ccc"
+                    };
+                }
+                componentWillReceiveProps(){
+                    logger("C will receive");
+                }
+                componentDidMount() {
+                    logger("C did mount");
+                }
+                componentDidUpdate() {
+                    logger("C did update");
+                }
+                render() {
+                    return <div>{this.state.text}</div>;
+                }
+            }
+            var s = ReactDOM.render(<div><A/><B/><C/></div>, div);
+            expect(list.join("\n")).toBe([
+                "A did mount",
+                "B did mount",
+                "C did mount",
+                "A will receive",
+                "B will receive",
+                "C will receive",
+                "A did update",
+                "B did update",
+                "C did update",
+                "A will receive",
+                "B will receive",
+                "C will receive",
+                "A did update",
+                "B did update",
+                "C did update"
+            ].join("\n"));
+      
               
 </script>
 
