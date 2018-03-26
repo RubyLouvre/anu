@@ -4,7 +4,6 @@ import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
 import { NOWORK, WORKING, PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF } from "../effectTag";
 import { extend, shader, get } from "../util";
-import { Refs } from "../Refs";
 
 //用于实例化组件
 export function beginWork(fiber) {
@@ -129,8 +128,8 @@ function updateClassComponent(fiber) {
             rendered = a;
         }
     } else {
-        let lastOwn = Refs.currentOwner;
-        Refs.currentOwner = instance;
+        let lastOwn = shader.currentOwner;
+        shader.currentOwner = instance;
         rendered = callLifeCycleHook(instance, "render", []);
         if (componentStack[0] === instance) {
             componentStack.shift();
@@ -138,7 +137,7 @@ function updateClassComponent(fiber) {
         if (updater._hasError) {
             rendered = [];
         }
-        Refs.currentOwner = lastOwn;
+        shader.currentOwner = lastOwn;
     }
     diffChildren(fiber, rendered);
 }
@@ -241,7 +240,8 @@ function diffChildren(parentFiber, children) {
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
-                newFiber.alternate = oldFiber;
+				newFiber.alternate = oldFiber;
+				
             } else {
                 detachFiber(oldFiber, effects);
             }

@@ -638,7 +638,7 @@ var contextStack = [emptyObject];
 
 function createInstance(fiber, context) {
     var updater = {
-        _mountOrder: shader.mountOrder++,
+        mountOrder: shader.mountOrder++,
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
@@ -712,41 +712,6 @@ var CALLBACK = 19;
 var CAPTURE = 23;
 var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
-
-function getDOMNode() {
-    return this;
-}
-var Refs$1 = {
-    fireRef: function fireRef(fiber, dom) {
-        if (fiber._isStateless) {
-            dom = null;
-        }
-        var ref = fiber.ref;
-        var owner = fiber._owner;
-        try {
-            if (isFn(ref)) {
-                return ref(dom);
-            }
-            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
-                ref.current = dom;
-                return;
-            }
-            if (!owner) {
-                throw "Element ref was specified as a string (" + ref + ") but no owner was set";
-            }
-            if (dom) {
-                if (dom.nodeType) {
-                    dom.getDOMNode = getDOMNode;
-                }
-                owner.refs[ref] = dom;
-            } else {
-                delete owner.refs[ref];
-            }
-        } catch (e) {
-            pushError(owner, "ref", e);
-        }
-    }
-};
 
 function beginWork(fiber) {
     if (!fiber.effectTag) {
@@ -872,8 +837,8 @@ function updateClassComponent(fiber) {
             rendered = a;
         }
     } else {
-        var lastOwn = Refs$1.currentOwner;
-        Refs$1.currentOwner = instance;
+        var lastOwn = shader.currentOwner;
+        shader.currentOwner = instance;
         rendered = callLifeCycleHook(instance, "render", []);
         if (componentStack[0] === instance) {
             componentStack.shift();
@@ -881,7 +846,7 @@ function updateClassComponent(fiber) {
         if (updater._hasError) {
             rendered = [];
         }
-        Refs$1.currentOwner = lastOwn;
+        shader.currentOwner = lastOwn;
     }
     diffChildren(fiber, rendered);
 }
@@ -1152,6 +1117,41 @@ function completeWork(fiber, topWork) {
     }
 }
 
+function getDOMNode() {
+    return this;
+}
+var Refs$1 = {
+    fireRef: function fireRef(fiber, dom) {
+        if (fiber._isStateless) {
+            dom = null;
+        }
+        var ref = fiber.ref;
+        var owner = fiber._owner;
+        try {
+            if (isFn(ref)) {
+                return ref(dom);
+            }
+            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                ref.current = dom;
+                return;
+            }
+            if (!owner) {
+                throw "Element ref was specified as a string (" + ref + ") but no owner was set";
+            }
+            if (dom) {
+                if (dom.nodeType) {
+                    dom.getDOMNode = getDOMNode;
+                }
+                owner.refs[ref] = dom;
+            } else {
+                delete owner.refs[ref];
+            }
+        } catch (e) {
+            pushError(owner, "ref", e);
+        }
+    }
+};
+
 function commitWork(fiber) {
     var instance = fiber.stateNode;
     var amount = fiber.effectTag;
@@ -1368,6 +1368,7 @@ shader.updateComponent = function (instance, state, callback) {
 			fiber.pendingState = Object.assign({}, fiber, {
 				stateNode: instance,
 				alternate: fiber,
+				mountOrder: this.mountOrder,
 				effectTag: callback ? CALLBACK : 1,
 				partialState: state,
 				isForceUpdate: isForceUpdate,

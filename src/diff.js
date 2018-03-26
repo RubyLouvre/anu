@@ -4,7 +4,7 @@ import { completeWork } from './workflow/completeWork';
 import { commitWork } from './workflow/commitWork';
 import { NOWORK, CALLBACK } from './effectTag';
 import { deprecatedWarn, get, shader } from './util';
-let updateQueue = shader.mainThread
+let updateQueue = shader.mainThread;
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
 	return vnode && vnode.tag > 0 && vnode.tag !== 6;
@@ -183,6 +183,7 @@ shader.updateComponent = function(instance, state, callback) {
 			fiber.pendingState = Object.assign({}, fiber, {
 				stateNode: instance,
 				alternate: fiber,
+				mountOrder: this.mountOrder,
 				effectTag: callback ? CALLBACK : 1,
 				partialState: state,
 				isForceUpdate,
@@ -201,7 +202,7 @@ shader.updateComponent = function(instance, state, callback) {
 		if (!this._hooking) {
 			//不在生命周期钩子中时，需要立即触发（或异步触发）
 			updateQueue.push(fiber);
-			shader.scheduleWork()
+			shader.scheduleWork();
 		}
 	}
 };
