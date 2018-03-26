@@ -29,6 +29,7 @@ export function commitWork(fiber) {
             break;
         }
         let remainder = amount / effectNo;
+
         if (remainder == ~~remainder) {
             //如果能整除，下面的分支操作以后要改成注入方法
             amount = remainder;
@@ -49,6 +50,7 @@ export function commitWork(fiber) {
                 break;
             case HOOK: //只对业务组件
                 delete fiber.before;
+               
                 if (fiber.disposed) {
                     callLifeCycleHook(instance, "componentWillUnmount", []);
                     updater._isMounted = returnFalse;
@@ -56,10 +58,11 @@ export function commitWork(fiber) {
                     if (updater._isMounted()) {
                         callLifeCycleHook(instance, "componentDidUpdate", []);
                     } else {
-                        callLifeCycleHook(instance, "componentDidMount", []);
                         updater._isMounted = returnTrue;
+                        callLifeCycleHook(instance, "componentDidMount", []);
                     }
                 }
+                delete fiber.pendingState;
                 delete updater._hydrating;
                 break;
             case CONTENT:
@@ -73,7 +76,10 @@ export function commitWork(fiber) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                fiber.callback.call(instance);
+                var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback];
+                queue.forEach(function (fn) {
+                    fn.call(instance);
+                });
                 break;
             case CAPTURE:
                 updater._isDoctor = true;

@@ -3,7 +3,7 @@ import { beginWork, detachFiber } from "./workflow/beginWork";
 import { completeWork } from "./workflow/completeWork";
 import { commitWork } from "./workflow/commitWork";
 import { NOWORK, CALLBACK } from "./effectTag";
-import { returnTrue, deprecatedWarn, get, shader } from "./util";
+import { deprecatedWarn, get, shader } from "./util";
 
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
@@ -34,19 +34,19 @@ export function render(vnode, root, callback) {
     let hostRoot = shader.updateRoot(vnode, root);
     let instance = null;
     hostRoot.effectTag = CALLBACK;
-    hostRoot.callback = function(){
+    hostRoot._hydrating = true;//lock 表示正在渲染
+    hostRoot.callback = function () {
         instance = hostRoot.child ? hostRoot.child.stateNode : null;
         callback && callback.call(instance);
-        hostRoot._hydrating = false;
+        hostRoot._hydrating = false;//unlock
     };
     updateQueue.push(hostRoot);
     var prev = hostRoot.alternate;
     //如果之前的还没有执行完，那么等待它执行完再处理,
     //比如在某个组件的cb调用了ReactDOM.render就会遇到这种情况 
-    if(prev && prev._hydrating){
+    if (prev && prev._hydrating) {
         return;
     }
-    hostRoot._hydrating = true;
     performWork({
         timeRemaining() {
             return 2;
@@ -106,7 +106,7 @@ function workLoop(deadline) {
         fiber = performUnitOfWork(fiber, topWork);
     }
     if (topWork) {
-       
+
         commitAllWork(topWork);
     }
 }
@@ -139,68 +139,48 @@ function performUnitOfWork(fiber, topWork) {
         f = f.return;
     }
 }
+function mergeState(fiber, state, isForceUpdate, callback) {
+    if (isForceUpdate) {
+        fiber.isForceUpdate = isForceUpdate;
+    }
+    if (state) {
+        fiber.partialState = Object.assign(fiber.partialState || {}, state);
+    }
+    if (callback) {
+        if (fiber.callback) {
+            fiber.callback = [].concat(fiber.callback, callback);
+        } else {
+            fiber.callback = callback;
+            fiber.effectTag *= CALLBACK;
+        }
+    }
+}
 
-shader.updaterComponent = function(instance, state, callback) {
+shader.updateComponent = function (instance, state, callback) {//setState
     let fiber = get(instance);
     let isForceUpdate = state === true;
     state = isForceUpdate ? null : state;
-
     if (this._hydrating) {
-        console.log("666666");
-        /*updateQueue.push(
-			Object.assign({}, fiber, {
-				stateNode: instance,
-				alternate: fiber,
-				effectTag: callback ? CALLBACK : null,
-				partialState: state,
-				isForceUpdate,
-				callback
-			})
-		);*/
-        return;
-    } else {
-        let prevEffect;
-        updateQueue.some(function(el) {
-            if (el.stateNode === instance) {
-                prevEffect = el;
-            }
-        });
-        if (prevEffect && !instance.updater._hydrating) {
-            if (isForceUpdate) {
-                prevEffect.isForceUpdate = isForceUpdate;
-            }
-            if (state) {
-                prevEffect.partialState = Object.assign(prevEffect.partialState || {}, state);
-            }
-            if (callback) {
-                prevEffect.effectTag = CALLBACK;
-                let prev = prevEffect.callback;
-                if (prev) {
-                    prevEffect.callback = function() {
-                        prev.call(this);
-                        callback.call(this);
-                    };
-                } else {
-                    prevEffect.callback = callback;
-                }
-            }
+        //如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
+        if (fiber.pendingState) {
+            mergeState(fiber.pendingState, state, isForceUpdate, callback);
         } else {
-            updateQueue.push(
-                Object.assign({}, fiber, {
-                    stateNode: instance,
-                    alternate: fiber,
-                    effectTag: callback ? CALLBACK : null,
-                    partialState: state,
-                    isForceUpdate,
-                    callback
-                })
-            );
+            fiber.pendingState = Object.assign({}, fiber, {
+                stateNode: instance,
+                alternate: fiber,
+                effectTag: callback ? CALLBACK : null,
+                partialState: state,
+                isForceUpdate,
+                callback
+            });
+            updateQueue.push(fiber.pendingState);
         }
-        if (this._isMounted === returnTrue) {
-            if (this._receiving) {
-                //componentWillReceiveProps中的setState/forceUpdate应该被忽略
-                return;
-            }
+    } else {
+        //如果是在componentWillXXX中，那么直接修改已经fiber及instance
+        mergeState(fiber, state, isForceUpdate, callback);
+        instance.state = fiber.partialState;
+        if(!this._hooking){ //不在生命周期钩子中时，需要立即触发（或异步触发）
+            updateQueue.push(fiber);
             requestIdleCallback(performWork);
         }
     }
@@ -208,7 +188,6 @@ shader.updaterComponent = function(instance, state, callback) {
 
 function performWork(deadline) {
     workLoop(deadline);
-    console.log(updateQueue.length, "xxx");
     if (updateQueue.length > 0) {
         requestIdleCallback(performWork);
     }

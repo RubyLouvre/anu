@@ -375,7 +375,7 @@ describe("ReactComponentHook", function() {
                 return <p>A</p>;
             }
         }
-        React.render(<App />, div);
+        ReactDOM.render(<App />, div);
 
         var list2 = [
             "app will mount",
@@ -552,15 +552,15 @@ describe("ReactComponentHook", function() {
                         path: "222"
                     },
                     function() {
-                        logger("componentWillMount cb");
+                        logger("componentWillMount setState cb1");
                     }
                 );
                 this.setState(
                     {
-                        path: "2222"
+                        path: "333"
                     },
                     function() {
-                        logger("componentWillMount cb2");
+                        logger("componentWillMount setState cb2");
                     }
                 );
             }
@@ -581,7 +581,7 @@ describe("ReactComponentHook", function() {
                         path: "eeee"
                     },
                     function() {
-                        logger("componentDidMount cb");
+                        logger("componentWillMount setState cb3");
                     }
                 );
             }
@@ -614,28 +614,28 @@ describe("ReactComponentHook", function() {
      
 
         var list2 = React.createPortal ? [
-            "render 2222",
+            "render 333",
             "child render",
-            "componentWillMount cb",
-            "componentWillMount cb2",
+            "componentWillMount setState cb1",
+            "componentWillMount setState cb2",
             "ReactDOM cb",
             "will update",
             "render eeee",
             "child render",
             "did update",
             "child setState",
-            "componentDidMount cb",
+            "componentWillMount setState cb3"
         ]:[
-            "render 2222",
+            "render 333",
             "child render",
             "will update",
             "render eeee",
             "child render",
             "did update",
-            "componentWillMount cb",
-            "componentWillMount cb2",
+            "componentWillMount setState cb1",
+            "componentWillMount setState cb2",
             "child setState",
-            "componentDidMount cb",
+            "componentWillMount setState cb3",
             "ReactDOM cb"
         ];
 

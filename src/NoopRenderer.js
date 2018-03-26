@@ -87,7 +87,11 @@ export let NoopRenderer = {
         }
     },
     emptyElement(fiber) {
-        // [].concat(fiber.children).forEach(NoopRenderer.removeElement);
+        let dom = fiber.stateNode;
+        let children = dom && dom.children;
+        if(dom && Array.isArray(children)){
+            children.forEach(NoopRenderer.removeElement);
+        }
     },
     removeElement(fiber) {
         if (fiber.parent) {
