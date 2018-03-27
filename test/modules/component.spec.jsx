@@ -432,7 +432,7 @@ describe("组件相关", function() {
             />,
             div
         );
-        expect(list.join("\n")).toBe([false, false, false].join("\n"));
+        expect(list.join("\n")).toBe("");
         var list2 = [];
         function New(props) {
             return {

@@ -33,10 +33,10 @@ require("./modules/ReactChildren-test.jsx");
 require("./modules/ReactComponentHook.jsx");
 
 require("./modules/diffProps.spec.jsx");
-/*
+
 
 require("./modules/component.spec.jsx");
-
+/*
 require("./modules/node.spec.jsx");
 
 require("./modules/ref.spec.jsx");

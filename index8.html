@@ -39,55 +39,56 @@
                     },
                 }
             }  
-            class Issue extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    status: "normal"
-                };
-            }
-
-            componentWillUnmount() {
-                console.log("xxxxxxxx")
-                this.setState({ status: "unmount" });
-            }
-
-            render() {
-                const { status } = this.state;
-
-                if (status === "unmount") {
-                    throw new Error("Issue unmounted");
+            
+       var list2 = [];
+        function New(props) {
+            return {
+                componentWillMount() {
+                    list2.push("mount");
+                },
+                componentWillUpdate() {
+                    list2.push("update");
+                },
+                render() {
+                    return <span>{props.aaa}</span>;
                 }
-
-                return <span>Issue status: {status}</span>;
-            }
+            };
         }
-
-        class App extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    showIssue: true
-                };
-            }
-
-            render() {
-                const { showIssue } = this.state;
-console.log(showIssue)
-                return (
-                    <div>
-                        {showIssue && <Issue />}
-                        <b>测试错误</b>
-                    </div>
-                );
-            }
-        }
-        var s = ReactDOM.render(<App />, div);
-
-        expect(div.getElementsByTagName("span").length).toBe(1);
-        s.setState({ showIssue: false });
-
-        expect(div.getElementsByTagName("span").length).toBe(0);
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={111}
+            />,
+            div
+        );
+        ReactDOM.render(
+            <New
+                ref={a => {
+                    list2.push(!!a);
+                }}
+                aaa={222}
+            />,
+            div
+        );
+        expect(list2.join("\n")).toBe(["mount", true, "update",false, true].join("\n"));
+/**
+ * 
+ vs false
+false
+false false
+Inline Babel script (2):11 mount
+true
+update
+false
+true vs mount
+true
+false
+update
+true 
+ * 
+ */
 </script>
 
 

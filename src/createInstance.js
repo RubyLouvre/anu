@@ -1,4 +1,4 @@
-import { returnFalse, Flutter } from "./util";
+import { returnFalse, Flutter, returnTrue } from "./util";
 
 export function createInstance(fiber, context) {
     let updater = {
@@ -47,8 +47,8 @@ export function createInstance(fiber, context) {
                     }
                     lifeCycleHook = false;
                 } else {
+                    instance._isStateless = returnTrue;
                     fiber._willReceive = false;
-                    fiber._isStateless = true;
                 }
                 delete instance.__init__;
             }

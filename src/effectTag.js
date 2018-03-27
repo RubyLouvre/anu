@@ -7,9 +7,10 @@ export const NULLREF = 7; //ref null
 export const HOOK = 11; //componentDidMount/Update/WillUnmount
 export const REF = 13; //ref stateNode
 export const DETACH = 17; //移出DOM树
-export const CALLBACK = 19; //回调
-export const CAPTURE = 23; //出错
-export const effectNames = [ PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE ];
+export const NOUPDATE = 19;//不更新，最多执行回调
+export const CALLBACK = 23; //回调
+export const CAPTURE = 29; //出错
+export const effectNames = [ PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, NOUPDATE, CALLBACK, CAPTURE ];
 export const effectLength = effectNames.length;
 
 // PLACE, CONTENT, DETACH 是基础因子，其他因子只能在它上面相乘

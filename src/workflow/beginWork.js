@@ -2,7 +2,7 @@ import { callLifeCycleHook, pushError } from "./unwindWork";
 import { contextStack, componentStack, emptyObject } from "../share";
 import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
-import { NOWORK, WORKING, PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF } from "../effectTag";
+import { WORKING, PLACE, ATTR, DETACH, NOUPDATE, HOOK, CONTENT, REF, NULLREF } from "../effectTag";
 import { extend, Flutter, get } from "../util";
 
 //用于实例化组件
@@ -52,7 +52,7 @@ function updateHostComponent(fiber) {
 
 function updateClassComponent(fiber) {
 
-    let { type, props: nextProps, stateNode: instance, partialState, isForceUpdate } = fiber;
+    let { type, stateNode: instance, props: nextProps,  partialState:nextState, isForceUpdate } = fiber;
     let nextContext = getMaskedContext(type.contextTypes), c;
     if (instance == null) {
         instance = fiber.stateNode = createInstance(fiber, nextContext);
@@ -64,7 +64,7 @@ function updateClassComponent(fiber) {
     let shouldUpdate = true;
     let updater = instance.updater;
     let propsChange = lastProps !== nextProps;
-    let stateNoChange = !partialState;//;
+    let stateNoChange = !nextState;
 
     fiber.lastProps = lastProps;
     fiber.lastState = lastState;
@@ -90,7 +90,6 @@ function updateClassComponent(fiber) {
             //只要props/context任于一个发生变化，就会触发cWRP
             willReceive = propsChange || instance.context !== nextContext;
             if (willReceive) {
-
                 callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
             }
 
@@ -98,7 +97,7 @@ function updateClassComponent(fiber) {
                 getDerivedStateFromProps(instance, type, nextProps, lastState);
             }
         }
-        let args = [nextProps, fiber.partialState, nextContext];
+        let args = [nextProps, nextState, nextContext];
         if (!isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             shouldUpdate = false;
         } else {
@@ -108,19 +107,20 @@ function updateClassComponent(fiber) {
         getDerivedStateFromProps(instance, type, nextProps, lastState);
         callLifeCycleHook(instance, "componentWillMount", []);
     }
-    fiber.effectTag *= HOOK;
+   
     instance.context = nextContext;
     instance.props = nextProps;
     instance.state = fiber.partialState || lastState;//fiber.partialState可能在钩子里被重写
     updater._hooking = false;
     if (!shouldUpdate) {
-        fiber.effectTag = NOWORK;
+        fiber.effectTag *= NOUPDATE;
         cloneChildren(fiber);
         if (componentStack[0] === instance) {
             componentStack.shift();
         }
         return;
     }
+    fiber.effectTag *= HOOK;
     var rendered;
     updater._hydrating = true;
     if (!isForceUpdate && willReceive === false) {
@@ -228,10 +228,6 @@ function diffChildren(parentFiber, children) {
             if (newFiber.key != null) {
                 oldFiber.key = newFiber.key;
             }
-            if (oldFiber.ref !== newFiber.ref) {
-                oldFiber.effectTag *= NULLREF;
-                effects.push(oldFiber);
-            }
             continue;
         }
         detachFiber(oldFiber, effects);
@@ -248,6 +244,10 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
                 newFiber.alternate = oldFiber;
+                if(oldFiber.ref && (oldFiber.ref !== newFiber.ref)){
+                    oldFiber.effectTag = NULLREF;
+                    effects.push(oldFiber);
+                }
                 if (newFiber.tag === 5) {
                     newFiber.lastProps = oldFiber.props;
                 }

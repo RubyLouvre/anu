@@ -2,8 +2,8 @@ import { topFibers, topNodes } from "./share";
 import { beginWork, detachFiber } from "./workflow/beginWork";
 import { completeWork } from "./workflow/completeWork";
 import { commitWork } from "./workflow/commitWork";
-import { NOWORK, CALLBACK } from "./effectTag";
-import { deprecatedWarn, get, Flutter } from "./util";
+import { NOUPDATE, CALLBACK } from "./effectTag";
+import { deprecatedWarn, get, Flutter, isFn } from "./util";
 let updateQueue = Flutter.mainThread;
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
@@ -151,7 +151,7 @@ function getNextUnitOfWork() {
  */
 function performUnitOfWork(fiber, topWork) {
     beginWork(fiber);
-    if (fiber.child && fiber.effectTag !== NOWORK) {
+    if (fiber.child && fiber.effectTag !== NOUPDATE) {
         return fiber.child;
     }
     let f = fiber;
@@ -171,11 +171,15 @@ function performUnitOfWork(fiber, topWork) {
 function mergeState(fiber, state, isForceUpdate, callback) {
     if (isForceUpdate) {
         fiber.isForceUpdate = isForceUpdate;
-    }   
+    }
     fiber.alternate = fiber;
     if (state) {
-        var oldState = fiber.partialState || fiber.stateNode.state;
-        fiber.partialState = Object.assign({}, fiber.partialState || fiber.stateNode.state || {}, state);
+        var instance = fiber.stateNode;
+        var old = fiber.partialState || instance.state;
+        if (isFn(state)) {
+            state = state.call(instance, old, instance.props);
+        }
+        fiber.partialState = Object.assign({}, old, state);
     }
     if (callback) {
         if (fiber.callback) {
@@ -192,24 +196,21 @@ Flutter.updateComponent = function (instance, state, callback) {
     let fiber = get(instance);
     let isForceUpdate = state === true;
     state = isForceUpdate ? null : state;
-
     if (this._hydrating || Flutter.interactQueue) {
         //如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
-        if (fiber.pendingFiber) {
-            mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
-        } else {
-            fiber.pendingFiber = Object.assign({}, fiber, {
-                stateNode: instance,
+        if (!fiber.pendingFiber) {
+            var target = fiber.pendingFiber = Object.assign({}, fiber, {
                 alternate: fiber,
                 mountOrder: this.mountOrder,
-                effectTag: callback ? CALLBACK : 1,
-                partialState: state,
-                isForceUpdate,
-                callback
+                effectTag: callback ? CALLBACK : 1
             });
+            delete target.partialState;
+            delete target.isForceUpdate;
+            delete target.callback;//它是上个周期的方法回调
             var queue = Flutter.interactQueue || updateQueue;
-            queue.push(fiber.pendingFiber);
+            queue.push(target);
         }
+        mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
     } else {
 
         //如果是在componentWillXXX中，那么直接修改已经fiber及instance

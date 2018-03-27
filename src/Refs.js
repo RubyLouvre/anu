@@ -13,9 +13,6 @@ export let Refs = {
     // doctors: null     //医生节点
     // error: null       //第一个捕捉到的错误
     fireRef(fiber, dom) {
-        if (fiber._isStateless) {
-            dom = null;
-        }
         let ref = fiber.ref;
         let owner = fiber._owner;
         try {

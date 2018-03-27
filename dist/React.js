@@ -1178,6 +1178,21 @@ function createClass(spec) {
     return Constructor;
 }
 
+var NOWORK = 0;
+var WORKING = 1;
+var PLACE = 2;
+var CONTENT = 3;
+var ATTR = 5;
+var NULLREF = 7;
+var HOOK = 11;
+var REF = 13;
+var DETACH = 17;
+var NOUPDATE = 19;
+var CALLBACK = 23;
+var CAPTURE = 29;
+var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, NOUPDATE, CALLBACK, CAPTURE];
+var effectLength = effectNames.length;
+
 var updateQueue = Flutter.mainThread;
 function pushError(instance, hook, error) {
     var names = [],
@@ -1189,9 +1204,10 @@ function pushError(instance, hook, error) {
         catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }, instance];
         delete catchFiber._children;
         delete catchFiber.child;
-        catchFiber.effectTag = 23;
+        catchFiber.effectTag = CALLBACK;
         updateQueue.push(catchFiber);
     } else {
+        console.log(error);
         console.warn(stack);
         if (!Flutter.error) {
             Flutter.error = error;
@@ -1225,7 +1241,7 @@ function disableEffect(fiber) {
     if (fiber.stateNode) {
         fiber.stateNode.render = noop;
     }
-    fiber.effectTag = 0;
+    fiber.effectTag = NOWORK;
     for (var child = fiber.child; child; child = child.sibling) {
         disableEffect(fiber);
     }
@@ -1310,8 +1326,8 @@ function createInstance(fiber, context) {
                     }
                     lifeCycleHook = false;
                 } else {
+                    instance._isStateless = returnTrue;
                     fiber._willReceive = false;
-                    fiber._isStateless = true;
                 }
                 delete instance.__init__;
             }
@@ -1327,20 +1343,6 @@ function createInstance(fiber, context) {
     instance.updater = updater;
     return instance;
 }
-
-var NOWORK = 0;
-var WORKING = 1;
-var PLACE = 2;
-var CONTENT = 3;
-var ATTR = 5;
-var NULLREF = 7;
-var HOOK = 11;
-var REF = 13;
-var DETACH = 17;
-var CALLBACK = 19;
-var CAPTURE = 23;
-var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE];
-var effectLength = effectNames.length;
 
 function beginWork(fiber) {
     if (!fiber.effectTag) {
@@ -1385,9 +1387,9 @@ function updateHostComponent(fiber) {
 }
 function updateClassComponent(fiber) {
     var type = fiber.type,
-        nextProps = fiber.props,
         instance = fiber.stateNode,
-        partialState = fiber.partialState,
+        nextProps = fiber.props,
+        nextState = fiber.partialState,
         isForceUpdate = fiber.isForceUpdate;
     var nextContext = getMaskedContext(type.contextTypes),
         c = void 0;
@@ -1403,7 +1405,7 @@ function updateClassComponent(fiber) {
     var shouldUpdate = true;
     var updater = instance.updater;
     var propsChange = lastProps !== nextProps;
-    var stateNoChange = !partialState;
+    var stateNoChange = !nextState;
     fiber.lastProps = lastProps;
     fiber.lastState = lastState;
     instance._reactInternalFiber = fiber;
@@ -1431,7 +1433,7 @@ function updateClassComponent(fiber) {
                 getDerivedStateFromProps(instance, type, nextProps, lastState);
             }
         }
-        var args = [nextProps, fiber.partialState, nextContext];
+        var args = [nextProps, nextState, nextContext];
         if (!isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             shouldUpdate = false;
         } else {
@@ -1441,19 +1443,19 @@ function updateClassComponent(fiber) {
         getDerivedStateFromProps(instance, type, nextProps, lastState);
         callLifeCycleHook(instance, "componentWillMount", []);
     }
-    fiber.effectTag *= HOOK;
     instance.context = nextContext;
     instance.props = nextProps;
     instance.state = fiber.partialState || lastState;
     updater._hooking = false;
     if (!shouldUpdate) {
-        fiber.effectTag = NOWORK;
+        fiber.effectTag *= NOUPDATE;
         cloneChildren(fiber);
         if (componentStack[0] === instance) {
             componentStack.shift();
         }
         return;
     }
+    fiber.effectTag *= HOOK;
     var rendered;
     updater._hydrating = true;
     if (!isForceUpdate && willReceive === false) {
@@ -1551,10 +1553,6 @@ function diffChildren(parentFiber, children) {
             if (newFiber.key != null) {
                 oldFiber.key = newFiber.key;
             }
-            if (oldFiber.ref !== newFiber.ref) {
-                oldFiber.effectTag *= NULLREF;
-                effects.push(oldFiber);
-            }
             continue;
         }
         detachFiber(oldFiber, effects);
@@ -1570,6 +1568,10 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(_oldFiber, _newFiber)) {
                 _newFiber.stateNode = _oldFiber.stateNode;
                 _newFiber.alternate = _oldFiber;
+                if (_oldFiber.ref && _oldFiber.ref !== _newFiber.ref) {
+                    _oldFiber.effectTag = NULLREF;
+                    effects.push(_oldFiber);
+                }
                 if (_newFiber.tag === 5) {
                     _newFiber.lastProps = _oldFiber.props;
                 }
@@ -1743,7 +1745,7 @@ function completeWork(fiber, topWork) {
             contextStack.pop();
         }
     }
-    if (parentFiber && fiber.effectTag !== NOWORK && fiber !== topWork) {
+    if (parentFiber && fiber !== topWork) {
         var childEffects = fiber.effects || [];
         var thisEffect = fiber.effectTag > 1 ? [fiber] : [];
         var parentEffects = parentFiber.effects || [];
@@ -1756,9 +1758,6 @@ function getDOMNode() {
 }
 var Refs = {
     fireRef: function fireRef(fiber, dom) {
-        if (fiber._isStateless) {
-            dom = null;
-        }
         var ref = fiber.ref;
         var owner = fiber._owner;
         try {
@@ -1831,16 +1830,21 @@ function commitWork(fiber) {
                     Flutter.updateContext(fiber);
                     break;
                 case REF:
-                    Refs.fireRef(fiber, instance);
+                    if (!instance._isStateless) {
+                        Refs.fireRef(fiber, instance);
+                    }
                     break;
                 case NULLREF:
-                    Refs.fireRef(fiber, null);
+                    if (!instance._isStateless) {
+                        Refs.fireRef(fiber, null);
+                    }
                     break;
                 case CALLBACK:
                     var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback];
                     queue.forEach(function (fn) {
                         fn.call(instance);
                     });
+                    delete fiber.callback;
                     break;
                 case CAPTURE:
                     updater._isDoctor = true;
@@ -1978,7 +1982,7 @@ function getNextUnitOfWork() {
 }
 function performUnitOfWork(fiber, topWork) {
     beginWork(fiber);
-    if (fiber.child && fiber.effectTag !== NOWORK) {
+    if (fiber.child && fiber.effectTag !== NOUPDATE) {
         return fiber.child;
     }
     var f = fiber;
@@ -1999,8 +2003,12 @@ function mergeState(fiber, state, isForceUpdate, callback) {
     }
     fiber.alternate = fiber;
     if (state) {
-        var oldState = fiber.partialState || fiber.stateNode.state;
-        fiber.partialState = Object.assign({}, fiber.partialState || fiber.stateNode.state || {}, state);
+        var instance = fiber.stateNode;
+        var old = fiber.partialState || instance.state;
+        if (isFn(state)) {
+            state = state.call(instance, old, instance.props);
+        }
+        fiber.partialState = Object.assign({}, old, state);
     }
     if (callback) {
         if (fiber.callback) {
@@ -2016,21 +2024,19 @@ Flutter.updateComponent = function (instance, state, callback) {
     var isForceUpdate = state === true;
     state = isForceUpdate ? null : state;
     if (this._hydrating || Flutter.interactQueue) {
-        if (fiber.pendingFiber) {
-            mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
-        } else {
-            fiber.pendingFiber = Object.assign({}, fiber, {
-                stateNode: instance,
+        if (!fiber.pendingFiber) {
+            var target = fiber.pendingFiber = Object.assign({}, fiber, {
                 alternate: fiber,
                 mountOrder: this.mountOrder,
-                effectTag: callback ? CALLBACK : 1,
-                partialState: state,
-                isForceUpdate: isForceUpdate,
-                callback: callback
+                effectTag: callback ? CALLBACK : 1
             });
+            delete target.partialState;
+            delete target.isForceUpdate;
+            delete target.callback;
             var queue = Flutter.interactQueue || updateQueue$2;
-            queue.push(fiber.pendingFiber);
+            queue.push(target);
         }
+        mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
     } else {
         mergeState(fiber, state, isForceUpdate, callback);
         if (!fiber.effectTag) {

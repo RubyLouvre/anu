@@ -69,10 +69,15 @@ export function commitWork(fiber) {
                 Flutter.updateContext(fiber);
                 break;
             case REF:
-                Refs.fireRef(fiber, instance);
+                if(!instance._isStateless){
+                    Refs.fireRef(fiber, instance);
+                }
                 break;
             case NULLREF:
-                Refs.fireRef(fiber, null);
+                if(!instance._isStateless){
+                    Refs.fireRef(fiber, null);
+                }
+               
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
@@ -80,6 +85,7 @@ export function commitWork(fiber) {
                 queue.forEach(function (fn) {
                     fn.call(instance);
                 });
+                delete fiber.callback;
                 break;
             case CAPTURE:
                 updater._isDoctor = true;
