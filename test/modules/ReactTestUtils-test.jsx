@@ -1,9 +1,4 @@
 import React from "dist/React";
-import {
-  beforeHook,
-  afterHook,
-  browser
-} from "karma-event-driver-ext/cjs/event-driver-hooks";
 import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
 import ReactShallowRenderer from "lib/ReactShallowRenderer";
@@ -14,22 +9,8 @@ var ReactDOM = window.ReactDOM || React;
 
 describe("ReactTestUtils", function() {
   this.timeout(200000);
-  before(async () => {
-    await beforeHook();
-  });
-  after(async () => {
-    await afterHook(false);
-  });
 
-  var body = document.body,
-    div;
-  beforeEach(function() {
-    div = document.createElement("div");
-    body.appendChild(div);
-  });
-  afterEach(function() {
-    body.removeChild(div);
-  });
+ 
   it("can scryRenderedDOMComponentsWithClass with TextComponent", () => {
     class Wrapper extends React.Component {
       render() {

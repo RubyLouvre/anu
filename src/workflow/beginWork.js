@@ -244,7 +244,7 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
                 newFiber.alternate = oldFiber;
-                if(oldFiber.ref && (oldFiber.ref !== newFiber.ref)){
+                if(oldFiber.ref  && (oldFiber.ref !== newFiber.ref)){
                     oldFiber.effectTag = NULLREF;
                     effects.push(oldFiber);
                 }

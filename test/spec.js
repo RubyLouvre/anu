@@ -16,12 +16,12 @@ require("./modules/ReactDOMSVG-test.jsx");
 require("./modules/ReactDOMTextComponent-test.jsx");
 
 require("./modules/ReactDOMTextarea-test.jsx");
-/*
-require("./modules/ReactDOMSelect-test.jsx");
+
+// require("./modules/ReactDOMSelect-test.jsx");
 require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/ReactDOMInput-test.jsx");
-*/
+
 
 require("./modules/ReactDOMFragment-test.jsx");
 
@@ -36,7 +36,7 @@ require("./modules/diffProps.spec.jsx");
 
 
 require("./modules/component.spec.jsx");
-/*
+
 require("./modules/node.spec.jsx");
 
 require("./modules/ref.spec.jsx");
@@ -48,8 +48,8 @@ require("./modules/ReactTestUtils-test.jsx");
 
 require("./modules/ReactComponent-test.jsx");
 
-require("./modules/ReactMultiChild-test.jsx");
-
+// require("./modules/ReactMultiChild-test.jsx");
+/*
 require("./modules/refs-test.jsx");
 
 require("./modules/ReactUpdates-test.jsx");

@@ -465,7 +465,7 @@ describe("组件相关", function() {
             />,
             div
         );
-        expect(list2.join("\n")).toBe(["mount", true, false, "update", true].join("\n"));
+        expect(list2.join("\n")).toBe(["mount", true, "update",false, true].join("\n"));
     });
 
     it("componentWillUnmount钩子中调用ReactDOM.findDOMNode 应该还能找到元素", () => {
