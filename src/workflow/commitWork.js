@@ -51,7 +51,6 @@ export function commitWork(fiber) {
                 break;
             case HOOK: //只对业务组件
                 delete fiber.before;
-             
                 if (fiber.disposed) {
                     updater._isMounted = updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);
@@ -63,7 +62,7 @@ export function commitWork(fiber) {
                         callLifeCycleHook(instance, "componentDidMount", []);
                     }
                 }
-                delete fiber.pendingState;
+                delete fiber.pendingFiber;
                 delete updater._hydrating;
                 break;
             case CONTENT:

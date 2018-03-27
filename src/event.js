@@ -1,5 +1,5 @@
-import { document, modern, contains } from './browser';
-import { isFn, noop, Flutter, __push } from './util';
+import { document, modern, contains } from "./browser";
+import { isFn, noop, Flutter, __push } from "./util";
 
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -8,9 +8,9 @@ export let eventHooks = {}; //用于在元素上绑定特定的事件
 // onMouseMove --> mousemove
 
 export let eventLowerCache = {
-	onClick: 'click',
-	onChange: 'change',
-	onWheel: 'wheel'
+    onClick: "click",
+    onChange: "change",
+    onWheel: "wheel"
 };
 /**
  * 判定否为与事件相关
@@ -19,123 +19,123 @@ export let eventLowerCache = {
  * @returns
  */
 export function isEventName(name) {
-	return /^on[A-Z]/.test(name);
+    return /^on[A-Z]/.test(name);
 }
 
-export let isTouch = 'ontouchstart' in document;
+export let isTouch = "ontouchstart" in document;
 function mountSorter(u1, u2) {
-	return u1.mountOrder - u2.mountOrder;
+    return u1.mountOrder - u2.mountOrder;
 }
 export function dispatchEvent(e, type, end) {
-	//__type__ 在injectTapEventPlugin里用到
-	e = new SyntheticEvent(e);
-	if (type) {
-		e.type = type;
-	}
-	let bubble = e.type;
-	//let dom = e.target;
-	let hook = eventPropHooks[bubble];
-	if (hook && false === hook(e)) {
-		return;
-	}
-	let paths = collectPaths(e.target, end || document);
-	let captured = bubble + 'capture';
-	var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
+    //__type__ 在injectTapEventPlugin里用到
+    e = new SyntheticEvent(e);
+    if (type) {
+        e.type = type;
+    }
+    let bubble = e.type;
+    //let dom = e.target;
+    let hook = eventPropHooks[bubble];
+    if (hook && false === hook(e)) {
+        return;
+    }
+    let paths = collectPaths(e.target, end || document);
+    let captured = bubble + "capture";
+    var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
 
-	triggerEventFlow(paths, captured, e);
+    triggerEventFlow(paths, captured, e);
 
-	if (!e._stopPropagation) {
-		triggerEventFlow(paths.reverse(), bubble, e);
-	}
+    if (!e._stopPropagation) {
+        triggerEventFlow(paths.reverse(), bubble, e);
+    }
 
-	fibers.sort(mountSorter);
-	__push.apply(Flutter.mainThread, fibers);
-	Flutter.interactQueue = 0;
-	Flutter.scheduleWork();
-	Flutter.controlledCbs.forEach(function(el) {
-		if (el.stateNode) {
-			el.controlledCb({
-				target: el.stateNode
-			});
-		}
-	});
-	Flutter.controlledCbs.length = 0;
+    fibers.sort(mountSorter);
+    __push.apply(Flutter.mainThread, fibers);
+    Flutter.interactQueue = null;
+    Flutter.batchedUpdates();
+    Flutter.controlledCbs.forEach(function(el) {
+        if (el.stateNode) {
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Flutter.controlledCbs.length = 0;
 }
 
 function collectPaths(from, end) {
-	let paths = [];
-	let node = from;
-	while (node && !node.__events) {
-		node = node.parentNode;
-		if (end === from) {
-			return paths;
-		}
-	}
-	if (!node || node.nodeType > 1) {
-		//如果跑到document上
-		return paths;
-	}
-	let mid = node.__events;
-	let vnode = mid.vnode;
-	if (vnode._isPortal) {
-		vnode = vnode.child;
-	}
-	do {
-		if (vnode.tag === 5) {
-			let dom = vnode.stateNode;
-			if (dom === end) {
-				break;
-			}
-			if (!dom) {
-				break;
-			}
-			if (dom.__events) {
-				paths.push({ dom: dom, events: dom.__events });
-			}
-		}
+    let paths = [];
+    let node = from;
+    while (node && !node.__events) {
+        node = node.parentNode;
+        if (end === from) {
+            return paths;
+        }
+    }
+    if (!node || node.nodeType > 1) {
+        //如果跑到document上
+        return paths;
+    }
+    let mid = node.__events;
+    let vnode = mid.vnode;
+    if (vnode._isPortal) {
+        vnode = vnode.child;
+    }
+    do {
+        if (vnode.tag === 5) {
+            let dom = vnode.stateNode;
+            if (dom === end) {
+                break;
+            }
+            if (!dom) {
+                break;
+            }
+            if (dom.__events) {
+                paths.push({ dom: dom, events: dom.__events });
+            }
+        }
 	} while ((vnode = vnode.return)); // eslint-disable-line
-	return paths;
+    return paths;
 }
 
 function triggerEventFlow(paths, prop, e) {
-	for (let i = paths.length; i--; ) {
-		let path = paths[i];
-		let fn = path.events[prop];
-		if (isFn(fn)) {
-			e.currentTarget = path.dom;
-			fn.call(void 666, e);
-			if (e._stopPropagation) {
-				break;
-			}
-		}
-	}
+    for (let i = paths.length; i--; ) {
+        let path = paths[i];
+        let fn = path.events[prop];
+        if (isFn(fn)) {
+            e.currentTarget = path.dom;
+            fn.call(void 666, e);
+            if (e._stopPropagation) {
+                break;
+            }
+        }
+    }
 }
 
 export function addGlobalEvent(name, capture) {
-	if (!globalEvents[name]) {
-		globalEvents[name] = true;
-		addEvent(document, name, dispatchEvent, capture);
-	}
+    if (!globalEvents[name]) {
+        globalEvents[name] = true;
+        addEvent(document, name, dispatchEvent, capture);
+    }
 }
 
 export function addEvent(el, type, fn, bool) {
-	if (el.addEventListener) {
-		el.addEventListener(type, fn, bool || false);
-	} else if (el.attachEvent) {
-		el.attachEvent('on' + type, fn);
-	}
+    if (el.addEventListener) {
+        el.addEventListener(type, fn, bool || false);
+    } else if (el.attachEvent) {
+        el.attachEvent("on" + type, fn);
+    }
 }
 
 let rcapture = /Capture$/;
 export function getBrowserName(onStr) {
-	let lower = eventLowerCache[onStr];
-	if (lower) {
-		return lower;
-	}
-	let camel = onStr.slice(2).replace(rcapture, '');
-	lower = camel.toLowerCase();
-	eventLowerCache[onStr] = lower;
-	return lower;
+    let lower = eventLowerCache[onStr];
+    if (lower) {
+        return lower;
+    }
+    let camel = onStr.slice(2).replace(rcapture, "");
+    lower = camel.toLowerCase();
+    eventLowerCache[onStr] = lower;
+    return lower;
 }
 
 /**
@@ -146,219 +146,219 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
 但fromElement与toElement可能同时都有值
  */
 function getRelatedTarget(e) {
-	if (!e.timeStamp) {
-		e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
-	}
-	return e.relatedTarget;
+    if (!e.timeStamp) {
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+    }
+    return e.relatedTarget;
 }
 
-String('mouseenter,mouseleave').replace(/\w+/g, function(name) {
-	eventHooks[name] = function(dom, type) {
-		let mark = '__' + type;
-		if (!dom[mark]) {
-			dom[mark] = true;
-			let mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
-			addEvent(dom, mask, function(e) {
-				let t = getRelatedTarget(e);
-				if (!t || (t !== dom && !contains(dom, t))) {
-					let common = getLowestCommonAncestor(dom, t);
-					//由于不冒泡，因此paths长度为1
-					dispatchEvent(e, type, common);
-				}
-			});
-		}
-	};
+String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
+    eventHooks[name] = function(dom, type) {
+        let mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            let mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function(e) {
+                let t = getRelatedTarget(e);
+                if (!t || (t !== dom && !contains(dom, t))) {
+                    let common = getLowestCommonAncestor(dom, t);
+                    //由于不冒泡，因此paths长度为1
+                    dispatchEvent(e, type, common);
+                }
+            });
+        }
+    };
 });
 
 function getLowestCommonAncestor(instA, instB) {
-	let depthA = 0;
-	for (let tempA = instA; tempA; tempA = tempA.parentNode) {
-		depthA++;
-	}
-	let depthB = 0;
-	for (let tempB = instB; tempB; tempB = tempB.parentNode) {
-		depthB++;
-	}
+    let depthA = 0;
+    for (let tempA = instA; tempA; tempA = tempA.parentNode) {
+        depthA++;
+    }
+    let depthB = 0;
+    for (let tempB = instB; tempB; tempB = tempB.parentNode) {
+        depthB++;
+    }
 
-	// If A is deeper, crawl up.
-	while (depthA - depthB > 0) {
-		instA = instA.parentNode;
-		depthA--;
-	}
+    // If A is deeper, crawl up.
+    while (depthA - depthB > 0) {
+        instA = instA.parentNode;
+        depthA--;
+    }
 
-	// If B is deeper, crawl up.
-	while (depthB - depthA > 0) {
-		instB = instB.parentNode;
-		depthB--;
-	}
+    // If B is deeper, crawl up.
+    while (depthB - depthA > 0) {
+        instB = instB.parentNode;
+        depthB--;
+    }
 
-	// Walk in lockstep until we find a match.
-	let depth = depthA;
-	while (depth--) {
-		if (instA === instB) {
-			return instA;
-		}
-		instA = instA.parentNode;
-		instB = instB.parentNode;
-	}
-	return null;
+    // Walk in lockstep until we find a match.
+    let depth = depthA;
+    while (depth--) {
+        if (instA === instB) {
+            return instA;
+        }
+        instA = instA.parentNode;
+        instB = instB.parentNode;
+    }
+    return null;
 }
 
 let specialHandles = {};
 export function createHandle(name, fn) {
-	return (specialHandles[name] = function(e) {
-		if (fn && fn(e) === false) {
-			return;
-		}
-		dispatchEvent(e, name);
-	});
+    return (specialHandles[name] = function(e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    });
 }
 
-createHandle('change');
-createHandle('doubleclick');
-createHandle('scroll');
-createHandle('wheel');
+createHandle("change");
+createHandle("doubleclick");
+createHandle("scroll");
+createHandle("wheel");
 globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 
 if (isTouch) {
-	eventHooks.click = eventHooks.clickcapture = function(dom) {
-		dom.onclick = dom.onclick || noop;
-	};
+    eventHooks.click = eventHooks.clickcapture = function(dom) {
+        dom.onclick = dom.onclick || noop;
+    };
 }
 
 eventPropHooks.click = function(e) {
-	return !e.target.disabled;
+    return !e.target.disabled;
 };
 
 const fixWheelType =
-	document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+	document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
 eventHooks.wheel = function(dom) {
-	addEvent(dom, fixWheelType, specialHandles.wheel);
+    addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 
 eventPropHooks.wheel = function(event) {
-	event.deltaX =
-		'deltaX' in event
-			? event.deltaX
-			: // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
-				'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
-	event.deltaY =
-		'deltaY' in event
-			? event.deltaY
-			: // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
-				'wheelDeltaY' in event
-				? -event.wheelDeltaY
-				: // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
-					'wheelDelta' in event ? -event.wheelDelta : 0;
+    event.deltaX =
+		"deltaX" in event
+		    ? event.deltaX
+		    : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
+		    "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
+    event.deltaY =
+		"deltaY" in event
+		    ? event.deltaY
+		    : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
+		    "wheelDeltaY" in event
+		        ? -event.wheelDeltaY
+		        : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
+		        "wheelDelta" in event ? -event.wheelDelta : 0;
 };
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
 eventHooks.changecapture = eventHooks.change = function(dom) {
-	if (/text|password|search/.test(dom.type)) {
-		addEvent(document, 'input', specialHandles.change);
-	}
+    if (/text|password|search/.test(dom.type)) {
+        addEvent(document, "input", specialHandles.change);
+    }
 };
 export let focusMap = {
-	focus: 'focus',
-	blur: 'blur'
+    focus: "focus",
+    blur: "blur"
 };
 
 function blurFocus(e) {
-	let dom = e.target || e.srcElement;
-	let type = focusMap[e.type];
-	let isFocus = type === 'focus';
-	if (isFocus && dom.__inner__) {
-		dom.__inner__ = false;
-		return;
-	}
+    let dom = e.target || e.srcElement;
+    let type = focusMap[e.type];
+    let isFocus = type === "focus";
+    if (isFocus && dom.__inner__) {
+        dom.__inner__ = false;
+        return;
+    }
 
-	if (!isFocus && Flutter.focusNode === dom) {
-		Flutter.focusNode = null;
-	}
-	do {
-		if (dom.nodeType === 1) {
-			if (dom.__events && dom.__events[type]) {
-				dispatchEvent(e, type);
-				break;
-			}
-		} else {
-			break;
-		}
-	} while ((dom = dom.parentNode));
+    if (!isFocus && Flutter.focusNode === dom) {
+        Flutter.focusNode = null;
+    }
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
+                dispatchEvent(e, type);
+                break;
+            }
+        } else {
+            break;
+        }
+    } while ((dom = dom.parentNode));
 }
 
-'blur,focus'.replace(/\w+/g, function(type) {
-	globalEvents[type] = true;
-	if (modern) {
-		let mark = '__' + type;
-		if (!document[mark]) {
-			document[mark] = true;
-			addEvent(document, type, blurFocus, true);
-		}
-	} else {
-		eventHooks[type] = function(dom, name) {
-			addEvent(dom, focusMap[name], blurFocus);
-		};
-	}
+"blur,focus".replace(/\w+/g, function(type) {
+    globalEvents[type] = true;
+    if (modern) {
+        let mark = "__" + type;
+        if (!document[mark]) {
+            document[mark] = true;
+            addEvent(document, type, blurFocus, true);
+        }
+    } else {
+        eventHooks[type] = function(dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    }
 });
 
 eventHooks.scroll = function(dom, name) {
-	addEvent(dom, name, specialHandles[name]);
+    addEvent(dom, name, specialHandles[name]);
 };
 
 eventHooks.doubleclick = function(dom, name) {
-	addEvent(document, 'dblclick', specialHandles[name]);
+    addEvent(document, "dblclick", specialHandles[name]);
 };
 
 export function SyntheticEvent(event) {
-	if (event.nativeEvent) {
-		return event;
-	}
-	for (let i in event) {
-		if (!eventProto[i]) {
-			this[i] = event[i];
-		}
-	}
-	if (!this.target) {
-		this.target = event.srcElement;
-	}
-	this.fixEvent();
-	this.timeStamp = new Date() - 0;
-	this.nativeEvent = event;
+    if (event.nativeEvent) {
+        return event;
+    }
+    for (let i in event) {
+        if (!eventProto[i]) {
+            this[i] = event[i];
+        }
+    }
+    if (!this.target) {
+        this.target = event.srcElement;
+    }
+    this.fixEvent();
+    this.timeStamp = new Date() - 0;
+    this.nativeEvent = event;
 }
 
 let eventProto = (SyntheticEvent.prototype = {
-	fixEvent: noop, //留给以后扩展用
-	fixHooks: noop,
-	persist: noop,
-	preventDefault: function() {
-		let e = this.nativeEvent || {};
-		e.returnValue = this.returnValue = false;
-		if (e.preventDefault) {
-			e.preventDefault();
-		}
-	},
-	stopPropagation: function() {
-		let e = this.nativeEvent || {};
-		e.cancelBubble = this._stopPropagation = true;
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		}
-	},
-	stopImmediatePropagation: function() {
-		this.stopPropagation();
-		this.stopImmediate = true;
-	},
-	toString: function() {
-		return '[object Event]';
-	}
+    fixEvent: noop, //留给以后扩展用
+    fixHooks: noop,
+    persist: noop,
+    preventDefault: function() {
+        let e = this.nativeEvent || {};
+        e.returnValue = this.returnValue = false;
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+    },
+    stopPropagation: function() {
+        let e = this.nativeEvent || {};
+        e.cancelBubble = this._stopPropagation = true;
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+    },
+    stopImmediatePropagation: function() {
+        this.stopPropagation();
+        this.stopImmediate = true;
+    },
+    toString: function() {
+        return "[object Event]";
+    }
 });
 /* istanbul ignore next  */
 //freeze_start
 Object.freeze ||
 	(Object.freeze = function(a) {
-		return a;
+	    return a;
 	});
 //freeze_end

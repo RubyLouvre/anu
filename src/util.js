@@ -27,11 +27,11 @@ export function createRenderer(methods) {
 }
 
 export const Flutter = {
-    interactQueue: [],
+    interactQueue: null,//[]
     mainThread: [],
     controlledCbs: [],
     mountOrder: 1,
-    currentOwner: null
+    currentOwner: null//vnode
 };
 
 export function deprecatedWarn(methodName) {

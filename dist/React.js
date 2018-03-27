@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-03-26
+ * by 司徒正美 Copyright 2018-03-27
  * IE9+
  */
 
@@ -36,7 +36,7 @@ function createRenderer(methods) {
     extend(Flutter, methods);
 }
 var Flutter = {
-    interactQueue: [],
+    interactQueue: null,
     mainThread: [],
     controlledCbs: [],
     mountOrder: 1,
@@ -668,297 +668,297 @@ var globalEvents = {};
 var eventPropHooks = {};
 var eventHooks = {};
 var eventLowerCache = {
-	onClick: 'click',
-	onChange: 'change',
-	onWheel: 'wheel'
+    onClick: "click",
+    onChange: "change",
+    onWheel: "wheel"
 };
 function isEventName(name) {
-	return (/^on[A-Z]/.test(name)
-	);
+    return (/^on[A-Z]/.test(name)
+    );
 }
-var isTouch = 'ontouchstart' in document;
+var isTouch = "ontouchstart" in document;
 function mountSorter(u1, u2) {
-	return u1.mountOrder - u2.mountOrder;
+    return u1.mountOrder - u2.mountOrder;
 }
 function dispatchEvent(e, type, end) {
-	e = new SyntheticEvent(e);
-	if (type) {
-		e.type = type;
-	}
-	var bubble = e.type;
-	var hook = eventPropHooks[bubble];
-	if (hook && false === hook(e)) {
-		return;
-	}
-	var paths = collectPaths(e.target, end || document);
-	var captured = bubble + 'capture';
-	var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
-	triggerEventFlow(paths, captured, e);
-	if (!e._stopPropagation) {
-		triggerEventFlow(paths.reverse(), bubble, e);
-	}
-	fibers.sort(mountSorter);
-	__push.apply(Flutter.mainThread, fibers);
-	Flutter.interactQueue = 0;
-	Flutter.scheduleWork();
-	Flutter.controlledCbs.forEach(function (el) {
-		if (el.stateNode) {
-			el.controlledCb({
-				target: el.stateNode
-			});
-		}
-	});
-	Flutter.controlledCbs.length = 0;
+    e = new SyntheticEvent(e);
+    if (type) {
+        e.type = type;
+    }
+    var bubble = e.type;
+    var hook = eventPropHooks[bubble];
+    if (hook && false === hook(e)) {
+        return;
+    }
+    var paths = collectPaths(e.target, end || document);
+    var captured = bubble + "capture";
+    var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
+    triggerEventFlow(paths, captured, e);
+    if (!e._stopPropagation) {
+        triggerEventFlow(paths.reverse(), bubble, e);
+    }
+    fibers.sort(mountSorter);
+    __push.apply(Flutter.mainThread, fibers);
+    Flutter.interactQueue = null;
+    Flutter.batchedUpdates();
+    Flutter.controlledCbs.forEach(function (el) {
+        if (el.stateNode) {
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Flutter.controlledCbs.length = 0;
 }
 function collectPaths(from, end) {
-	var paths = [];
-	var node = from;
-	while (node && !node.__events) {
-		node = node.parentNode;
-		if (end === from) {
-			return paths;
-		}
-	}
-	if (!node || node.nodeType > 1) {
-		return paths;
-	}
-	var mid = node.__events;
-	var vnode = mid.vnode;
-	if (vnode._isPortal) {
-		vnode = vnode.child;
-	}
-	do {
-		if (vnode.tag === 5) {
-			var dom = vnode.stateNode;
-			if (dom === end) {
-				break;
-			}
-			if (!dom) {
-				break;
-			}
-			if (dom.__events) {
-				paths.push({ dom: dom, events: dom.__events });
-			}
-		}
-	} while (vnode = vnode.return);
-	return paths;
+    var paths = [];
+    var node = from;
+    while (node && !node.__events) {
+        node = node.parentNode;
+        if (end === from) {
+            return paths;
+        }
+    }
+    if (!node || node.nodeType > 1) {
+        return paths;
+    }
+    var mid = node.__events;
+    var vnode = mid.vnode;
+    if (vnode._isPortal) {
+        vnode = vnode.child;
+    }
+    do {
+        if (vnode.tag === 5) {
+            var dom = vnode.stateNode;
+            if (dom === end) {
+                break;
+            }
+            if (!dom) {
+                break;
+            }
+            if (dom.__events) {
+                paths.push({ dom: dom, events: dom.__events });
+            }
+        }
+    } while (vnode = vnode.return);
+    return paths;
 }
 function triggerEventFlow(paths, prop, e) {
-	for (var i = paths.length; i--;) {
-		var path = paths[i];
-		var fn = path.events[prop];
-		if (isFn(fn)) {
-			e.currentTarget = path.dom;
-			fn.call(void 666, e);
-			if (e._stopPropagation) {
-				break;
-			}
-		}
-	}
+    for (var i = paths.length; i--;) {
+        var path = paths[i];
+        var fn = path.events[prop];
+        if (isFn(fn)) {
+            e.currentTarget = path.dom;
+            fn.call(void 666, e);
+            if (e._stopPropagation) {
+                break;
+            }
+        }
+    }
 }
 function addGlobalEvent(name, capture) {
-	if (!globalEvents[name]) {
-		globalEvents[name] = true;
-		addEvent(document, name, dispatchEvent, capture);
-	}
+    if (!globalEvents[name]) {
+        globalEvents[name] = true;
+        addEvent(document, name, dispatchEvent, capture);
+    }
 }
 function addEvent(el, type, fn, bool) {
-	if (el.addEventListener) {
-		el.addEventListener(type, fn, bool || false);
-	} else if (el.attachEvent) {
-		el.attachEvent('on' + type, fn);
-	}
+    if (el.addEventListener) {
+        el.addEventListener(type, fn, bool || false);
+    } else if (el.attachEvent) {
+        el.attachEvent("on" + type, fn);
+    }
 }
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
-	var lower = eventLowerCache[onStr];
-	if (lower) {
-		return lower;
-	}
-	var camel = onStr.slice(2).replace(rcapture, '');
-	lower = camel.toLowerCase();
-	eventLowerCache[onStr] = lower;
-	return lower;
+    var lower = eventLowerCache[onStr];
+    if (lower) {
+        return lower;
+    }
+    var camel = onStr.slice(2).replace(rcapture, "");
+    lower = camel.toLowerCase();
+    eventLowerCache[onStr] = lower;
+    return lower;
 }
 function getRelatedTarget(e) {
-	if (!e.timeStamp) {
-		e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
-	}
-	return e.relatedTarget;
+    if (!e.timeStamp) {
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+    }
+    return e.relatedTarget;
 }
-String('mouseenter,mouseleave').replace(/\w+/g, function (name) {
-	eventHooks[name] = function (dom, type) {
-		var mark = '__' + type;
-		if (!dom[mark]) {
-			dom[mark] = true;
-			var mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
-			addEvent(dom, mask, function (e) {
-				var t = getRelatedTarget(e);
-				if (!t || t !== dom && !contains(dom, t)) {
-					var common = getLowestCommonAncestor(dom, t);
-					dispatchEvent(e, type, common);
-				}
-			});
-		}
-	};
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function (e) {
+                var t = getRelatedTarget(e);
+                if (!t || t !== dom && !contains(dom, t)) {
+                    var common = getLowestCommonAncestor(dom, t);
+                    dispatchEvent(e, type, common);
+                }
+            });
+        }
+    };
 });
 function getLowestCommonAncestor(instA, instB) {
-	var depthA = 0;
-	for (var tempA = instA; tempA; tempA = tempA.parentNode) {
-		depthA++;
-	}
-	var depthB = 0;
-	for (var tempB = instB; tempB; tempB = tempB.parentNode) {
-		depthB++;
-	}
-	while (depthA - depthB > 0) {
-		instA = instA.parentNode;
-		depthA--;
-	}
-	while (depthB - depthA > 0) {
-		instB = instB.parentNode;
-		depthB--;
-	}
-	var depth = depthA;
-	while (depth--) {
-		if (instA === instB) {
-			return instA;
-		}
-		instA = instA.parentNode;
-		instB = instB.parentNode;
-	}
-	return null;
+    var depthA = 0;
+    for (var tempA = instA; tempA; tempA = tempA.parentNode) {
+        depthA++;
+    }
+    var depthB = 0;
+    for (var tempB = instB; tempB; tempB = tempB.parentNode) {
+        depthB++;
+    }
+    while (depthA - depthB > 0) {
+        instA = instA.parentNode;
+        depthA--;
+    }
+    while (depthB - depthA > 0) {
+        instB = instB.parentNode;
+        depthB--;
+    }
+    var depth = depthA;
+    while (depth--) {
+        if (instA === instB) {
+            return instA;
+        }
+        instA = instA.parentNode;
+        instB = instB.parentNode;
+    }
+    return null;
 }
 var specialHandles = {};
 function createHandle(name, fn) {
-	return specialHandles[name] = function (e) {
-		if (fn && fn(e) === false) {
-			return;
-		}
-		dispatchEvent(e, name);
-	};
+    return specialHandles[name] = function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
 }
-createHandle('change');
-createHandle('doubleclick');
-createHandle('scroll');
-createHandle('wheel');
+createHandle("change");
+createHandle("doubleclick");
+createHandle("scroll");
+createHandle("wheel");
 globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 if (isTouch) {
-	eventHooks.click = eventHooks.clickcapture = function (dom) {
-		dom.onclick = dom.onclick || noop;
-	};
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
+        dom.onclick = dom.onclick || noop;
+    };
 }
 eventPropHooks.click = function (e) {
-	return !e.target.disabled;
+    return !e.target.disabled;
 };
-var fixWheelType = document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
 eventHooks.wheel = function (dom) {
-	addEvent(dom, fixWheelType, specialHandles.wheel);
+    addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 eventPropHooks.wheel = function (event) {
-	event.deltaX = 'deltaX' in event ? event.deltaX :
-	'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
-	event.deltaY = 'deltaY' in event ? event.deltaY :
-	'wheelDeltaY' in event ? -event.wheelDeltaY :
-	'wheelDelta' in event ? -event.wheelDelta : 0;
+    event.deltaX = "deltaX" in event ? event.deltaX :
+    "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
+    event.deltaY = "deltaY" in event ? event.deltaY :
+    "wheelDeltaY" in event ? -event.wheelDeltaY :
+    "wheelDelta" in event ? -event.wheelDelta : 0;
 };
 eventHooks.changecapture = eventHooks.change = function (dom) {
-	if (/text|password|search/.test(dom.type)) {
-		addEvent(document, 'input', specialHandles.change);
-	}
+    if (/text|password|search/.test(dom.type)) {
+        addEvent(document, "input", specialHandles.change);
+    }
 };
 var focusMap = {
-	focus: 'focus',
-	blur: 'blur'
+    focus: "focus",
+    blur: "blur"
 };
 function blurFocus(e) {
-	var dom = e.target || e.srcElement;
-	var type = focusMap[e.type];
-	var isFocus = type === 'focus';
-	if (isFocus && dom.__inner__) {
-		dom.__inner__ = false;
-		return;
-	}
-	if (!isFocus && Flutter.focusNode === dom) {
-		Flutter.focusNode = null;
-	}
-	do {
-		if (dom.nodeType === 1) {
-			if (dom.__events && dom.__events[type]) {
-				dispatchEvent(e, type);
-				break;
-			}
-		} else {
-			break;
-		}
-	} while (dom = dom.parentNode);
+    var dom = e.target || e.srcElement;
+    var type = focusMap[e.type];
+    var isFocus = type === "focus";
+    if (isFocus && dom.__inner__) {
+        dom.__inner__ = false;
+        return;
+    }
+    if (!isFocus && Flutter.focusNode === dom) {
+        Flutter.focusNode = null;
+    }
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
+                dispatchEvent(e, type);
+                break;
+            }
+        } else {
+            break;
+        }
+    } while (dom = dom.parentNode);
 }
-'blur,focus'.replace(/\w+/g, function (type) {
-	globalEvents[type] = true;
-	if (modern) {
-		var mark = '__' + type;
-		if (!document[mark]) {
-			document[mark] = true;
-			addEvent(document, type, blurFocus, true);
-		}
-	} else {
-		eventHooks[type] = function (dom, name) {
-			addEvent(dom, focusMap[name], blurFocus);
-		};
-	}
+"blur,focus".replace(/\w+/g, function (type) {
+    globalEvents[type] = true;
+    if (modern) {
+        var mark = "__" + type;
+        if (!document[mark]) {
+            document[mark] = true;
+            addEvent(document, type, blurFocus, true);
+        }
+    } else {
+        eventHooks[type] = function (dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    }
 });
 eventHooks.scroll = function (dom, name) {
-	addEvent(dom, name, specialHandles[name]);
+    addEvent(dom, name, specialHandles[name]);
 };
 eventHooks.doubleclick = function (dom, name) {
-	addEvent(document, 'dblclick', specialHandles[name]);
+    addEvent(document, "dblclick", specialHandles[name]);
 };
 function SyntheticEvent(event) {
-	if (event.nativeEvent) {
-		return event;
-	}
-	for (var i in event) {
-		if (!eventProto[i]) {
-			this[i] = event[i];
-		}
-	}
-	if (!this.target) {
-		this.target = event.srcElement;
-	}
-	this.fixEvent();
-	this.timeStamp = new Date() - 0;
-	this.nativeEvent = event;
+    if (event.nativeEvent) {
+        return event;
+    }
+    for (var i in event) {
+        if (!eventProto[i]) {
+            this[i] = event[i];
+        }
+    }
+    if (!this.target) {
+        this.target = event.srcElement;
+    }
+    this.fixEvent();
+    this.timeStamp = new Date() - 0;
+    this.nativeEvent = event;
 }
 var eventProto = SyntheticEvent.prototype = {
-	fixEvent: noop,
-	fixHooks: noop,
-	persist: noop,
-	preventDefault: function preventDefault() {
-		var e = this.nativeEvent || {};
-		e.returnValue = this.returnValue = false;
-		if (e.preventDefault) {
-			e.preventDefault();
-		}
-	},
-	stopPropagation: function stopPropagation() {
-		var e = this.nativeEvent || {};
-		e.cancelBubble = this._stopPropagation = true;
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		}
-	},
-	stopImmediatePropagation: function stopImmediatePropagation() {
-		this.stopPropagation();
-		this.stopImmediate = true;
-	},
-	toString: function toString() {
-		return '[object Event]';
-	}
+    fixEvent: noop,
+    fixHooks: noop,
+    persist: noop,
+    preventDefault: function preventDefault() {
+        var e = this.nativeEvent || {};
+        e.returnValue = this.returnValue = false;
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+    },
+    stopPropagation: function stopPropagation() {
+        var e = this.nativeEvent || {};
+        e.cancelBubble = this._stopPropagation = true;
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+    },
+    stopImmediatePropagation: function stopImmediatePropagation() {
+        this.stopPropagation();
+        this.stopImmediate = true;
+    },
+    toString: function toString() {
+        return "[object Event]";
+    }
 };
 Object.freeze || (Object.freeze = function (a) {
-	return a;
+    return a;
 });
 
 
@@ -1266,66 +1266,66 @@ var emptyObject = {};
 var contextStack = [emptyObject];
 
 function createInstance(fiber, context) {
-	var updater = {
-		mountOrder: Flutter.mountOrder++,
-		enqueueSetState: returnFalse,
-		_isMounted: returnFalse
-	};
-	var props = fiber.props,
-	    type = fiber.type,
-	    tag = fiber.tag,
-	    isStateless = tag === 1,
-	    lastOwn = Flutter.currentOwner,
-	    instance = void 0,
-	    lifeCycleHook = void 0;
-	try {
-		if (isStateless) {
-			instance = {
-				refs: {},
-				__proto__: type.prototype,
-				__init__: true,
-				props: props,
-				context: context,
-				render: function f() {
-					var a = type(this.props, this.context);
-					if (a && a.render) {
-						lifeCycleHook = a;
-						return this.__init__ ? null : a.render.call(this);
-					}
-					return a;
-				}
-			};
-			Flutter.currentOwner = instance;
-			if (type.isRef) {
-				instance.render = function () {
-					return type(this.props, this.ref);
-				};
-			} else {
-				fiber.child = instance.render();
-				if (lifeCycleHook) {
-					for (var i in lifeCycleHook) {
-						if (i !== 'render') {
-							instance[i] = lifeCycleHook[i];
-						}
-					}
-					lifeCycleHook = false;
-				} else {
-					fiber._willReceive = false;
-					fiber._isStateless = true;
-				}
-				delete instance.__init__;
-			}
-		} else {
-			instance = new type(props, context);
-		}
-	} catch (e) {
-		instance = {};
-	} finally {
-		Flutter.currentOwner = lastOwn;
-	}
-	fiber.stateNode = instance;
-	instance.updater = updater;
-	return instance;
+    var updater = {
+        mountOrder: Flutter.mountOrder++,
+        enqueueSetState: returnFalse,
+        _isMounted: returnFalse
+    };
+    var props = fiber.props,
+        type = fiber.type,
+        tag = fiber.tag,
+        isStateless = tag === 1,
+        lastOwn = Flutter.currentOwner,
+        instance = void 0,
+        lifeCycleHook = void 0;
+    try {
+        if (isStateless) {
+            instance = {
+                refs: {},
+                __proto__: type.prototype,
+                __init__: true,
+                props: props,
+                context: context,
+                render: function f() {
+                    var a = type(this.props, this.context);
+                    if (a && a.render) {
+                        lifeCycleHook = a;
+                        return this.__init__ ? null : a.render.call(this);
+                    }
+                    return a;
+                }
+            };
+            Flutter.currentOwner = instance;
+            if (type.isRef) {
+                instance.render = function () {
+                    return type(this.props, this.ref);
+                };
+            } else {
+                fiber.child = instance.render();
+                if (lifeCycleHook) {
+                    for (var i in lifeCycleHook) {
+                        if (i !== "render") {
+                            instance[i] = lifeCycleHook[i];
+                        }
+                    }
+                    lifeCycleHook = false;
+                } else {
+                    fiber._willReceive = false;
+                    fiber._isStateless = true;
+                }
+                delete instance.__init__;
+            }
+        } else {
+            instance = new type(props, context);
+        }
+    } catch (e) {
+        instance = {};
+    } finally {
+        Flutter.currentOwner = lastOwn;
+    }
+    fiber.stateNode = instance;
+    instance.updater = updater;
+    return instance;
 }
 
 var NOWORK = 0;
@@ -1389,17 +1389,23 @@ function updateClassComponent(fiber) {
         instance = fiber.stateNode,
         partialState = fiber.partialState,
         isForceUpdate = fiber.isForceUpdate;
-    var nextContext = getMaskedContext(type.contextTypes);
+    var nextContext = getMaskedContext(type.contextTypes),
+        c = void 0;
     if (instance == null) {
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Flutter.updateComponent;
+        var willReceive = fiber._willReceive;
+        delete fiber._willReceive;
     }
     var _instance = instance,
         lastProps = _instance.props,
-        lastState = _instance.state,
-        c = void 0;
-    fiber.lastState = lastProps;
-    fiber.lastProps = lastState;
+        lastState = _instance.state;
+    var shouldUpdate = true;
+    var updater = instance.updater;
+    var propsChange = lastProps !== nextProps;
+    var stateNoChange = !partialState;
+    fiber.lastProps = lastProps;
+    fiber.lastState = lastState;
     instance._reactInternalFiber = fiber;
     if (fiber.parent) {
         fiber.mountPoint = fiber.parent.before;
@@ -1413,18 +1419,14 @@ function updateClassComponent(fiber) {
         }
         contextStack.unshift(c);
     }
-    var shouldUpdate = true;
-    var updater = instance.updater;
-    var propsChange = lastProps !== nextProps;
-    var stateNoChange = !partialState;
     updater._hooking = true;
     if (updater._isMounted()) {
+        delete fiber.isForceUpdate;
         if (stateNoChange) {
-            var willReceive = propsChange || instance.context !== nextContext;
+            willReceive = propsChange || instance.context !== nextContext;
             if (willReceive) {
                 callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
             }
-            fiber._willReceive = willReceive;
             if (propsChange) {
                 getDerivedStateFromProps(instance, type, nextProps, lastState);
             }
@@ -1454,7 +1456,7 @@ function updateClassComponent(fiber) {
     }
     var rendered;
     updater._hydrating = true;
-    if (!isForceUpdate && fiber._willReceive === false) {
+    if (!isForceUpdate && willReceive === false) {
         delete fiber._willReceive;
         var a = fiber.child;
         if (a && a.sibling) {
@@ -1568,6 +1570,9 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(_oldFiber, _newFiber)) {
                 _newFiber.stateNode = _oldFiber.stateNode;
                 _newFiber.alternate = _oldFiber;
+                if (_newFiber.tag === 5) {
+                    _newFiber.lastProps = _oldFiber.props;
+                }
             } else {
                 detachFiber(_oldFiber, effects);
             }
@@ -1819,7 +1824,7 @@ function commitWork(fiber) {
                             callLifeCycleHook(instance, "componentDidMount", []);
                         }
                     }
-                    delete fiber.pendingState;
+                    delete fiber.pendingFiber;
                     delete updater._hydrating;
                     break;
                 case CONTENT:
@@ -1851,174 +1856,191 @@ function commitWork(fiber) {
 
 var updateQueue$2 = Flutter.mainThread;
 function isValidElement(vnode) {
-	return vnode && vnode.tag > 0 && vnode.tag !== 6;
+    return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
 function findDOMNode(stateNode) {
-	if (stateNode == null) {
-		return null;
-	}
-	if (stateNode.nodeType) {
-		return stateNode;
-	}
-	if (stateNode.render) {
-		var fiber = get(stateNode);
-		var c = fiber.child;
-		if (c) {
-			return findDOMNode(c.stateNode);
-		} else {
-			return null;
-		}
-	}
+    if (stateNode == null) {
+        return null;
+    }
+    if (stateNode.nodeType) {
+        return stateNode;
+    }
+    if (stateNode.render) {
+        var fiber = get(stateNode);
+        var c = fiber.child;
+        if (c) {
+            return findDOMNode(c.stateNode);
+        } else {
+            return null;
+        }
+    }
 }
 function render(vnode, root, callback) {
-	var hostRoot = Flutter.updateRoot(vnode, root);
-	var instance = null;
-	hostRoot.effectTag = CALLBACK;
-	hostRoot._hydrating = true;
-	hostRoot.callback = function () {
-		instance = hostRoot.child ? hostRoot.child.stateNode : null;
-		callback && callback.call(instance);
-		hostRoot._hydrating = false;
-	};
-	updateQueue$2.push(hostRoot);
-	var prev = hostRoot.alternate;
-	if (prev && prev._hydrating) {
-		return;
-	}
-	Flutter.scheduleWork();
-	return instance;
+    var hostRoot = Flutter.updateRoot(vnode, root);
+    var instance = null;
+    hostRoot.effectTag = CALLBACK;
+    hostRoot._hydrating = true;
+    hostRoot.callback = function () {
+        instance = hostRoot.child ? hostRoot.child.stateNode : null;
+        callback && callback.call(instance);
+        hostRoot._hydrating = false;
+    };
+    updateQueue$2.push(hostRoot);
+    var prev = hostRoot.alternate;
+    if (prev && prev._hydrating) {
+        return;
+    }
+    Flutter.scheduleWork();
+    return instance;
 }
 Flutter.scheduleWork = function () {
-	performWork({
-		timeRemaining: function timeRemaining() {
-			return 2;
-		}
-	});
+    performWork({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
 };
+var isBatchingUpdates = false;
+Flutter.batchedUpdates = function () {
+    var keepbook = isBatchingUpdates;
+    isBatchingUpdates = true;
+    try {
+        Flutter.scheduleWork();
+    } finally {
+        isBatchingUpdates = keepbook;
+        if (!isBatchingUpdates) {
+            commitAllWork();
+        }
+    }
+};
+var effects = [];
+function workLoop(deadline) {
+    var topWork = getNextUnitOfWork();
+    var fiber = topWork;
+    while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
+        fiber = performUnitOfWork(fiber, topWork);
+    }
+    if (topWork) {
+        effects = effects.concat(topWork.effects || [], topWork);
+    }
+    if (!isBatchingUpdates) {
+        commitAllWork();
+    }
+}
+function commitAllWork() {
+    effects.forEach(commitWork);
+    effects.length = 0;
+}
 function performWork(deadline) {
-	workLoop(deadline);
-	if (updateQueue$2.length > 0) {
-		requestIdleCallback(performWork);
-	}
+    workLoop(deadline);
+    if (updateQueue$2.length > 0) {
+        requestIdleCallback(performWork);
+    }
 }
 function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
-	deprecatedWarn('unstable_renderSubtreeIntoContainer');
-	return Flutter.render(vnode, container, callback);
+    deprecatedWarn("unstable_renderSubtreeIntoContainer");
+    return Flutter.render(vnode, container, callback);
 }
 function unmountComponentAtNode(container) {
-	var rootIndex = topNodes.indexOf(container);
-	if (rootIndex > -1) {
-		var lastFiber = topFibers[rootIndex],
-		    effects = [];
-		detachFiber(lastFiber, effects);
-		lastFiber.effects = effects;
-		commitWork(lastFiber);
-		container._reactInternalFiber = null;
-		return true;
-	}
-	return false;
+    var rootIndex = topNodes.indexOf(container);
+    if (rootIndex > -1) {
+        var lastFiber = topFibers[rootIndex],
+            _effects = [];
+        detachFiber(lastFiber, _effects);
+        lastFiber.effects = _effects;
+        commitWork(lastFiber);
+        container._reactInternalFiber = null;
+        return true;
+    }
+    return false;
 }
 var ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
-	fn({
-		timeRemaining: function timeRemaining() {
-			return 2;
-		}
-	});
+    fn({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
 }
 function getNextUnitOfWork() {
-	var fiber = updateQueue$2.shift();
-	if (!fiber) {
-		return;
-	}
-	if (fiber.root) {
-		fiber.stateNode = fiber.stateNode || {};
-		if (!get(fiber.stateNode)) {
-			Flutter.emptyElement(fiber);
-		}
-		fiber.stateNode._reactInternalFiber = fiber;
-	}
-	return fiber;
-}
-function workLoop(deadline) {
-	var topWork = getNextUnitOfWork();
-	var fiber = topWork;
-	while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
-		fiber = performUnitOfWork(fiber, topWork);
-	}
-	if (topWork) {
-		commitAllWork(topWork);
-	}
-}
-function commitAllWork(fiber) {
-	if (fiber.effects) {
-		fiber.effects.concat(fiber).forEach(commitWork);
-	}
+    var fiber = updateQueue$2.shift();
+    if (!fiber) {
+        return;
+    }
+    if (fiber.root) {
+        fiber.stateNode = fiber.stateNode || {};
+        if (!get(fiber.stateNode)) {
+            Flutter.emptyElement(fiber);
+        }
+        fiber.stateNode._reactInternalFiber = fiber;
+    }
+    return fiber;
 }
 function performUnitOfWork(fiber, topWork) {
-	beginWork(fiber);
-	if (fiber.child && fiber.effectTag !== NOWORK) {
-		return fiber.child;
-	}
-	var f = fiber;
-	while (f) {
-		completeWork(f, topWork);
-		if (f === topWork) {
-			break;
-		}
-		if (f.sibling) {
-			return f.sibling;
-		}
-		f = f.return;
-	}
+    beginWork(fiber);
+    if (fiber.child && fiber.effectTag !== NOWORK) {
+        return fiber.child;
+    }
+    var f = fiber;
+    while (f) {
+        completeWork(f, topWork);
+        if (f === topWork) {
+            break;
+        }
+        if (f.sibling) {
+            return f.sibling;
+        }
+        f = f.return;
+    }
 }
 function mergeState(fiber, state, isForceUpdate, callback) {
-	if (isForceUpdate) {
-		fiber.isForceUpdate = isForceUpdate;
-	}
-	fiber.alternate = fiber;
-	if (state) {
-		fiber.partialState = Object.assign(fiber.partialState || {}, state);
-	}
-	if (callback) {
-		if (fiber.callback) {
-			fiber.callback = [].concat(fiber.callback, callback);
-		} else {
-			fiber.callback = callback;
-			fiber.effectTag *= CALLBACK;
-		}
-	}
+    if (isForceUpdate) {
+        fiber.isForceUpdate = isForceUpdate;
+    }
+    fiber.alternate = fiber;
+    if (state) {
+        var oldState = fiber.partialState || fiber.stateNode.state;
+        fiber.partialState = Object.assign({}, fiber.partialState || fiber.stateNode.state || {}, state);
+    }
+    if (callback) {
+        if (fiber.callback) {
+            fiber.callback = [].concat(fiber.callback, callback);
+        } else {
+            fiber.callback = callback;
+            fiber.effectTag *= CALLBACK;
+        }
+    }
 }
 Flutter.updateComponent = function (instance, state, callback) {
-	var fiber = get(instance);
-	var isForceUpdate = state === true;
-	state = isForceUpdate ? null : state;
-	if (this._hydrating || Flutter.interactQueue) {
-		if (fiber.pendingState) {
-			mergeState(fiber.pendingState, state, isForceUpdate, callback);
-		} else {
-			fiber.pendingState = Object.assign({}, fiber, {
-				stateNode: instance,
-				alternate: fiber,
-				mountOrder: this.mountOrder,
-				effectTag: callback ? CALLBACK : 1,
-				partialState: state,
-				isForceUpdate: isForceUpdate,
-				callback: callback
-			});
-			var queue = Flutter.interactQueue || updateQueue$2;
-			queue.push(fiber.pendingState);
-		}
-	} else {
-		mergeState(fiber, state, isForceUpdate, callback);
-		if (!fiber.effectTag) {
-			fiber.effectTag = 1;
-		}
-		if (!this._hooking) {
-			updateQueue$2.push(fiber);
-			Flutter.scheduleWork();
-		}
-	}
+    var fiber = get(instance);
+    var isForceUpdate = state === true;
+    state = isForceUpdate ? null : state;
+    if (this._hydrating || Flutter.interactQueue) {
+        if (fiber.pendingFiber) {
+            mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
+        } else {
+            fiber.pendingFiber = Object.assign({}, fiber, {
+                stateNode: instance,
+                alternate: fiber,
+                mountOrder: this.mountOrder,
+                effectTag: callback ? CALLBACK : 1,
+                partialState: state,
+                isForceUpdate: isForceUpdate,
+                callback: callback
+            });
+            var queue = Flutter.interactQueue || updateQueue$2;
+            queue.push(fiber.pendingFiber);
+        }
+    } else {
+        mergeState(fiber, state, isForceUpdate, callback);
+        if (!fiber.effectTag) {
+            fiber.effectTag = 1;
+        }
+        if (!this._hooking) {
+            updateQueue$2.push(fiber);
+            Flutter.scheduleWork();
+        }
+    }
 };
 
 var formElements = {

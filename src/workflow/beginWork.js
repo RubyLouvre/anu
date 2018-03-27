@@ -51,16 +51,23 @@ function updateHostComponent(fiber) {
 }
 
 function updateClassComponent(fiber) {
+
     let { type, props: nextProps, stateNode: instance, partialState, isForceUpdate } = fiber;
-    let nextContext = getMaskedContext(type.contextTypes);
+    let nextContext = getMaskedContext(type.contextTypes), c;
     if (instance == null) {
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Flutter.updateComponent;
+        var willReceive = fiber._willReceive;
+        delete fiber._willReceive;
     }
-    let { props: lastProps, state: lastState } = instance,
-        c;
-    fiber.lastState = lastProps;
-    fiber.lastProps = lastState;
+    let { props: lastProps, state: lastState } = instance;
+    let shouldUpdate = true;
+    let updater = instance.updater;
+    let propsChange = lastProps !== nextProps;
+    let stateNoChange = !partialState;//;
+
+    fiber.lastProps = lastProps;
+    fiber.lastState = lastState;
     instance._reactInternalFiber = fiber;
     if (fiber.parent) {
         fiber.mountPoint = fiber.parent.before;
@@ -74,19 +81,19 @@ function updateClassComponent(fiber) {
         }
         contextStack.unshift(c);
     }
-    let shouldUpdate = true;
-    let updater = instance.updater;
-    let propsChange = lastProps !== nextProps;
-    let stateNoChange = !partialState;
+
     updater._hooking = true;
+
     if (updater._isMounted()) {
+        delete fiber.isForceUpdate;
         if (stateNoChange) {
             //只要props/context任于一个发生变化，就会触发cWRP
-            let willReceive = propsChange || instance.context !== nextContext;
+            willReceive = propsChange || instance.context !== nextContext;
             if (willReceive) {
+
                 callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
             }
-            fiber._willReceive = willReceive;
+
             if (propsChange) {
                 getDerivedStateFromProps(instance, type, nextProps, lastState);
             }
@@ -116,7 +123,7 @@ function updateClassComponent(fiber) {
     }
     var rendered;
     updater._hydrating = true;
-    if (!isForceUpdate && fiber._willReceive === false) {
+    if (!isForceUpdate && willReceive === false) {
         delete fiber._willReceive;
         let a = fiber.child;
         if (a && a.sibling) {
@@ -240,8 +247,10 @@ function diffChildren(parentFiber, children) {
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
-				newFiber.alternate = oldFiber;
-				
+                newFiber.alternate = oldFiber;
+                if (newFiber.tag === 5) {
+                    newFiber.lastProps = oldFiber.props;
+                }
             } else {
                 detachFiber(oldFiber, effects);
             }
