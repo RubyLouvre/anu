@@ -17,61 +17,63 @@
 
     <pre>应该等于
 
-        </pre>
+    </pre>
     <h1 id='example' class="root">
 
     </h1>
     <script type='text/babel'>
-            var container = document.getElementById("example")
-            var div = container;
-          if(!window.ReactDOM){
-            window. ReactDOM = React
+          var container = document.getElementById('example');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
           }
-           // 
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                }
-            }  
-           // var container = document.createElement("div");
-   var LetterInner = class extends React.Component {
-        render() {
-            return <p>{this.props.char}</p>;
-        }
-    };
-
-    var Letter = class extends React.Component {
-        render() {
-            return <LetterInner char={this.props.char} />;
-        }
-       shouldComponentUpdate() {
-            return false;
-        }
-    };
-
-    var Letters = class extends React.Component {
-        render() {
-            const letters = this.props.letters.split("");
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+          };
+          var LetterInner = class extends React.Component {
+              render() {
+                  return <p title={this.props.char}>{this.props.char}</p>;
+              }
+          };
           
-            return <div>{letters.map(function(c){
-              //  console.log("key",c)
-                return  <Letter key={c} char={c} />
-            })}</div>;
-        }
-    };
-        // Two random strings -- some additions, some removals, some moves
-        ReactDOM.render(<Letters letters="AB" />, container);
-        expect(container.textContent).toBe("AB");
-        console.log("XXXXXXXXXXX")
-      var s =  ReactDOM.render(<Letters letters="aB" />, container);
-        expect(container.textContent).toBe("aB");
-console.log(s)
-
+          var Letter = class extends React.Component {
+              render() {
+                  return <LetterInner char={this.props.char} />;
+              }
+              shouldComponentUpdate() {
+                  return false;
+              }
+          };
+          
+          var Letters = class extends React.Component {
+              render() {
+                  const letters = this.props.letters.split('');
+          
+                  return (
+                      <div>
+                          {letters.map(function(c) {
+                              //  console.log("key",c)
+                              return <Letter key={c} char={c} />;
+                          })}
+                      </div>
+                  );
+              }
+          };
+          // Two random strings -- some additions, some removals, some moves
+          ReactDOM.render(<Letters letters="AB" />, container);
+          expect(container.textContent).toBe('AB');
+          console.log('XXXXXXXXXXX');
+          var s = ReactDOM.render(<Letters letters="aB" />, container);
+          expect(container.textContent).toBe('aB');
+          console.log(s);
+          
 </script>
 
 

@@ -195,11 +195,13 @@ export function insertElement(fiber) {
 	try {
 		if(before == null){
 			if(dom !== parent.firstChild){
+				console.log(dom, "插入最前面")
 				parentNode.insertBefore(dom, parent.firstChild);
 			}
 			
 		}else{
 			if(dom !== parent.lastChild){
+				console.log(" 移动 ", dom,fiber)
 				parentNode.insertBefore(dom, before.nextSibling);
 			}
 		}

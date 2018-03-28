@@ -13,6 +13,7 @@ export let DOMRenderer = {
         }
     },
     updateContext(fiber) {
+        console.log("更新文本")
         fiber.stateNode.nodeValue = fiber.props.children;
     },
     updateRoot(vnode, root) {
@@ -23,6 +24,7 @@ export let DOMRenderer = {
             stateNode: root,
             root: true,
             tag: 5,
+            name: "hostRoot",
             type: root.tagName.toLowerCase(),
             props: {
                 children: vnode
