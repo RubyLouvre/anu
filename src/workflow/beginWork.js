@@ -21,6 +21,7 @@ export function Fiber(vnode) {
     extend(this, vnode);
     let type = vnode.type;
     this.name = type.displayName || type.name || type;
+    this.effectTag = 1;
 }
 
 function updateHostComponent(fiber) {
@@ -35,9 +36,9 @@ function updateHostComponent(fiber) {
         fiber.effectTag *= ATTR;
     }
     if (fiber.parent) {
-        let b = fiber.parent.before;
+        let b = fiber.parent.beforeNode;
         fiber.mountPoint = b;
-        fiber.parent.before = fiber.stateNode;
+        fiber.parent.beforeNode = fiber.stateNode;
     }
     const children = fiber.props && fiber.props.children;
     if (fiber.tag === 6) {
@@ -70,7 +71,7 @@ function updateClassComponent(fiber) {
     fiber.lastState = lastState;
     instance._reactInternalFiber = fiber;
     if (fiber.parent) {
-        fiber.mountPoint = fiber.parent.before;
+        fiber.mountPoint = fiber.parent.beforeNode;
     }
     if (instance.getChildContext) {
         try {
@@ -81,45 +82,46 @@ function updateClassComponent(fiber) {
         }
         contextStack.unshift(c);
     }
+    if(!instance._isStateless){
+        updater._hooking = true;
 
-    updater._hooking = true;
-
-    if (updater._isMounted()) {
-        delete fiber.isForceUpdate;
-        if (stateNoChange) {
+        if (updater._isMounted()) {
+            delete fiber.isForceUpdate;
+            if (stateNoChange) {
             //只要props/context任于一个发生变化，就会触发cWRP
-            willReceive = propsChange || instance.context !== nextContext;
-            if (willReceive) {
-                callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
-            }
+                willReceive = propsChange || instance.context !== nextContext;
+                if (willReceive) {
+                    callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
+                }
 
-            if (propsChange) {
-                getDerivedStateFromProps(instance, type, nextProps, lastState);
+                if (propsChange) {
+                    getDerivedStateFromProps(instance, type, nextProps, lastState);
+                }
             }
-        }
-        let args = [nextProps, nextState, nextContext];
-        if (!isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
-            shouldUpdate = false;
+            let args = [nextProps, nextState, nextContext];
+            if (!isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
+                shouldUpdate = false;
+            } else {
+                callLifeCycleHook(instance, "componentWillUpdate", args);
+            }
         } else {
-            callLifeCycleHook(instance, "componentWillUpdate", args);
+            getDerivedStateFromProps(instance, type, nextProps, lastState);
+            callLifeCycleHook(instance, "componentWillMount", []);
         }
-    } else {
-        getDerivedStateFromProps(instance, type, nextProps, lastState);
-        callLifeCycleHook(instance, "componentWillMount", []);
+        updater._hooking = false;
+        if (!shouldUpdate) {
+            fiber.effectTag *= NOUPDATE;
+            cloneChildren(fiber);
+            if (componentStack[0] === instance) {
+                componentStack.shift();
+            }
+            return;
+        }
     }
-   
     instance.context = nextContext;
     instance.props = nextProps;
     instance.state = fiber.partialState || lastState;//fiber.partialState可能在钩子里被重写
-    updater._hooking = false;
-    if (!shouldUpdate) {
-        fiber.effectTag *= NOUPDATE;
-        cloneChildren(fiber);
-        if (componentStack[0] === instance) {
-            componentStack.shift();
-        }
-        return;
-    }
+    
     fiber.effectTag *= HOOK;
     var rendered;
     updater._hydrating = true;
