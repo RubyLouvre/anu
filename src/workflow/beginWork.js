@@ -10,7 +10,10 @@ export function beginWork(fiber) {
     if (!fiber.effectTag) {
         fiber.effectTag = WORKING;
     }
-    if (fiber.tag > 3) {
+    if (fiber.onlyPlace) {
+        console.log("xxxxxxxxx");
+        shouldUpdateFalse(fiber);
+    } else if (fiber.tag > 3) {
         updateHostComponent(fiber);
     } else {
         updateClassComponent(fiber);
@@ -23,11 +26,28 @@ export function Fiber(vnode) {
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
-
+function shouldUpdateFalse(fiber) {
+    let { parent, stateNode, tag } = fiber;
+    console.log(!!fiber.alternamte, !!fiber._children, "shouldUpdate", stateNode );
+    if (tag > 4) {
+        stateNode._reactInternalFiber = fiber;
+        fiber.mountPoint = parent.beforeNode;
+        fiber.effectTag = PLACE;
+    } else {
+        let b = parent.beforeNode;
+        fiber.mountPoint = b;
+        parent.beforeNode = fiber.stateNode;
+    }
+    if (fiber.child) {
+        cloneChildren(fiber);
+    }
+}
 function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
+
         try {
             fiber.stateNode = Flutter.createElement(fiber);
+            console.log("创建", fiber.stateNode, fiber.name, fiber.effectTag + "x", fiber);
         } catch (e) {
             throw e;
         }
@@ -53,22 +73,27 @@ function updateHostComponent(fiber) {
 
 function updateClassComponent(fiber) {
 
-    let { type, stateNode: instance, props: nextProps,  partialState:nextState, isForceUpdate } = fiber;
+    let { type, stateNode: instance, props: nextProps, partialState: nextState, isForceUpdate } = fiber;
     let nextContext = getMaskedContext(type.contextTypes), c;
+    console.log(fiber.name, "*****");
     if (instance == null) {
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Flutter.updateComponent;
         var willReceive = fiber._willReceive;
         delete fiber._willReceive;
+        var propsChange = false;
+    } else {
+        var { props: lastProps, state: lastState } = instance;
+        fiber.lastProps = lastProps;
+        fiber.lastState = lastState;
+        propsChange = lastProps !== nextProps;
     }
-    let { props: lastProps, state: lastState } = instance;
+
     let shouldUpdate = true;
     let updater = instance.updater;
-    let propsChange = lastProps !== nextProps;
+
     let stateNoChange = !nextState;
 
-    fiber.lastProps = lastProps;
-    fiber.lastState = lastState;
     instance._reactInternalFiber = fiber;
     if (fiber.parent) {
         fiber.mountPoint = fiber.parent.beforeNode;
@@ -82,13 +107,13 @@ function updateClassComponent(fiber) {
         }
         contextStack.unshift(c);
     }
-    if(!instance._isStateless){
+    if (!instance._isStateless) {
         updater._hooking = true;
 
         if (updater._isMounted()) {
             delete fiber.isForceUpdate;
             if (stateNoChange) {
-            //只要props/context任于一个发生变化，就会触发cWRP
+                //只要props/context任于一个发生变化，就会触发cWRP
                 willReceive = propsChange || instance.context !== nextContext;
                 if (willReceive) {
                     callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
@@ -112,6 +137,7 @@ function updateClassComponent(fiber) {
         if (!shouldUpdate) {
             fiber.effectTag *= NOUPDATE;
             cloneChildren(fiber);
+            //  console.log("不更新。。。。。。。");
             if (componentStack[0] === instance) {
                 componentStack.shift();
             }
@@ -121,7 +147,7 @@ function updateClassComponent(fiber) {
     instance.context = nextContext;
     instance.props = nextProps;
     instance.state = fiber.partialState || lastState;//fiber.partialState可能在钩子里被重写
-    
+
     fiber.effectTag *= HOOK;
     var rendered;
     updater._hydrating = true;
@@ -229,6 +255,7 @@ function diffChildren(parentFiber, children) {
             matchFibers[i] = oldFiber;
             if (newFiber.key != null) {
                 oldFiber.key = newFiber.key;
+                console.log("有问题吗", oldFiber.key, newFiber.key);
             }
             continue;
         }
@@ -239,14 +266,16 @@ function diffChildren(parentFiber, children) {
         index = 0;
     for (let i in newFibers) {
         let newFiber = (newFibers[i] = new Fiber(newFibers[i]));
-        newFiber.effectTag = WORKING;
+        // newFiber.effectTag = WORKING;
         newFiber.parent = parent;
         let oldFiber = matchFibers[i];
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
                 newFiber.stateNode = oldFiber.stateNode;
                 newFiber.alternate = oldFiber;
-                if(oldFiber.ref  && (oldFiber.ref !== newFiber.ref)){
+                oldFiber.old = true;
+                //  console.log("命中", newFiber.key, newFiber.name, newFiber.effectTag + "");
+                if (oldFiber.ref && (oldFiber.ref !== newFiber.ref)) {
                     oldFiber.effectTag = NULLREF;
                     effects.push(oldFiber);
                 }
@@ -283,8 +312,36 @@ function cloneChildren(parentFiber) {
     if (!oldFiber) {
         return;
     }
-    parentFiber._children = oldFiber._children;
-    if (oldFiber.child) {
-        parentFiber.child = oldFiber.child;
+  
+    var oldChildren = oldFiber._children;
+    var newChildren = parentFiber._children = {};
+    var prevFiber;
+    
+    for (var i in oldChildren) {
+        var obj = oldChildren[i];
+        var newFiber = newChildren[i] = Object.assign({}, obj);
+        newFiber.parentFiber = parentFiber;
+        newFiber.alternamte = obj;
+        newFiber.onlyPlace = true;
+        if (prevFiber) {
+            prevFiber.sibling = newFiber;
+        } else {
+            parentFiber.child = newFiber;
+        }
+
+        prevFiber = newFiber;
+        // cloneChildren(children[i]);
     }
+    //console.log("复制孩子。。。。。",oldChildren, newChildren);
 }
+
+
+/*
+初始化Fiber
+*  tag > 3 创建实例
+*  tag < 3 创建DOM
+       创建children(纯正的)
+           初始化第一个孩子Fiber
+初始化Fiber.sibling
+
+*/

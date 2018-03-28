@@ -152,7 +152,7 @@ function getNextUnitOfWork() {
  */
 function performUnitOfWork(fiber, topWork) {
     beginWork(fiber);
-    if (fiber.child && fiber.effectTag !== NOUPDATE) {
+    if (fiber.child) {
         return fiber.child;
     }
     let f = fiber;

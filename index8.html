@@ -16,16 +16,7 @@
 <body>
 
     <pre>应该等于
-      
-"static render",
-"static did mount",
-"instance 111",
-"static will update",
-"static render",
-"null 111",
-"static did update"
-"instance 222"
-          
+
         </pre>
     <h1 id='example' class="root">
 
@@ -47,101 +38,40 @@
                     },
                 }
             }  
-            var log = [];
+           // var container = document.createElement("div");
+   var LetterInner = class extends React.Component {
+        render() {
+            return <p>{this.props.char}</p>;
+        }
+    };
 
-            class Inner extends React.Component {
-                render() {
-                    log.push(`inner ${this.props.id} render`);
-                    return <div />;
-                }
-    
-                componentDidMount() {
-                    log.push(`inner ${this.props.id} componentDidMount`);
-                }
-    
-                componentDidUpdate() {
-                    log.push(`inner ${this.props.id} componentDidUpdate`);
-                }
-    
-                componentWillUnmount() {
-                    log.push(`inner ${this.props.id} componentWillUnmount`);
-                }
-            }
-    
-            class Outer extends React.Component {
-                render() {
-                    return (
-                        <div>
-                            <Inner
-                                id={1}
-                                ref={c => {
-                                    log.push(`ref 1 got ${c ? `instance ${c.props.id}` : "null"}`);
-                                }}
-                            />
-                            <Inner
-                                id={2}
-                                ref={c => {
-                                    log.push(`ref 2 got ${c ? `instance ${c.props.id}` : "null"}`);
-                                }}
-                            />
-                        </div>
-                    );
-                }
-    
-                componentDidMount() {
-                    log.push("outer componentDidMount");
-                }
-    
-                componentDidUpdate() {
-                    log.push("outer componentDidUpdate");
-                }
-    
-                componentWillUnmount() {
-                    log.push("outer componentWillUnmount");
-                }
-            }
-    
-            // mount, update, unmount
-            var container = document.createElement("div");
-            log.push("start mount");
-            ReactDOM.render(<Outer />, container);
-            log.push("start update");
-            ReactDOM.render(<Outer />, container);
-            log.push("start unmount");
-            ReactDOM.unmountComponentAtNode(container);
-    var list = ["start mount", "inner 1 render", "inner 2 render", "inner 1 componentDidMount", "ref 1 got instance 1", "inner 2 componentDidMount", "ref 2 got instance 2", "outer componentDidMount", "start update", "inner 1 render", "inner 2 render", "ref 1 got null", "ref 2 got null", "inner 1 componentDidUpdate", "ref 1 got instance 1", "inner 2 componentDidUpdate", "ref 2 got instance 2", "outer componentDidUpdate", "start unmount", "outer componentWillUnmount", "ref 1 got null", "inner 1 componentWillUnmount", "ref 2 got null", "inner 2 componentWillUnmount"]
-            /* eslint-disable indent */
-            expect(log).toEqual(list)
-         /*   expect(log).toEqual([
-                "start mount",
-                "inner 1 render",
-                "inner 2 render",
-                "inner 1 componentDidMount",
-                "ref 1 got instance 1",
-                "inner 2 componentDidMount",
-                "ref 2 got instance 2",
-                "outer componentDidMount",
-                "start update",
-    
-                // Stack resets refs before rendering
-                "ref 1 got null",
-                "inner 1 render",
-                "ref 2 got null",
-                "inner 2 render",
-    
-                "inner 1 componentDidUpdate",
-                "ref 1 got instance 1",
-                "inner 2 componentDidUpdate",
-                "ref 2 got instance 2",
-                "outer componentDidUpdate",
-                "start unmount",
-                "outer componentWillUnmount",
-                "ref 1 got null",
-                "inner 1 componentWillUnmount",
-                "ref 2 got null",
-                "inner 2 componentWillUnmount"
-            ]);
-*/
+    var Letter = class extends React.Component {
+        render() {
+            return <LetterInner char={this.props.char} />;
+        }
+       shouldComponentUpdate() {
+            return false;
+        }
+    };
+
+    var Letters = class extends React.Component {
+        render() {
+            const letters = this.props.letters.split("");
+          
+            return <div>{letters.map(function(c){
+              //  console.log("key",c)
+                return  <Letter key={c} char={c} />
+            })}</div>;
+        }
+    };
+        // Two random strings -- some additions, some removals, some moves
+        ReactDOM.render(<Letters letters="AB" />, container);
+        expect(container.textContent).toBe("AB");
+        console.log("XXXXXXXXXXX")
+      var s =  ReactDOM.render(<Letters letters="aB" />, container);
+        expect(container.textContent).toBe("aB");
+console.log(s)
+
 </script>
 
 

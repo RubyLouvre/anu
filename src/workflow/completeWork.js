@@ -4,14 +4,16 @@ import { contextStack } from "../share";
 export function completeWork(fiber, topWork) {
     //收集effects
     var parentFiber = fiber.return;
-    // var parent = fiber.parent;
     if (fiber.tag < 3) {
         fiber.stateNode._reactInternalFiber = fiber;
         if (fiber.stateNode.getChildContext) {
             contextStack.pop(); // pop context
         }
     }
+    delete fiber.onlyPlace;
     if (parentFiber && fiber !== topWork) {
+       
+        // console.log(fiber.effectTag, !!fiber.alternate, fiber.name, fiber.key, fiber.old);
         const childEffects = fiber.effects || [];
         const thisEffect = fiber.effectTag > 1 ? [ fiber ] : [];
         const parentEffects = parentFiber.effects || [];

@@ -113,5 +113,6 @@ export function commitWork(fiber) {
             }
         }
     }
+    // console.log(fiber.name, "effectTag被设置为null");
     fiber.effectTag = fiber.effects = null;
 }
