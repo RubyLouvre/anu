@@ -10,7 +10,9 @@ export function beginWork(fiber) {
     if (!fiber.effectTag) {
         fiber.effectTag = WORKING;
     }
-    if (fiber.tag > 3) {
+    if (fiber.onlyPlace) {
+        shouldUpdate(fiber);
+    } else if (fiber.tag > 3) {
         updateHostComponent(fiber);
     } else {
         updateClassComponent(fiber);
@@ -26,17 +28,14 @@ export function Fiber(vnode) {
 
 function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
-
         try {
             fiber.stateNode = Flutter.createElement(fiber);
         } catch (e) {
             throw e;
         }
     }
-
-    const { props, tag, onlyPlace, parent, root } = fiber;
-
-    //  console.log("onlyPlace", onlyPlace, fiber.effectTag+"", fiber.name);
+    const { props, tag, parent, root } = fiber;
+    console.log(fiber.name,"新建");
     const children = props && props.children;
     if (parent) {
         let b = parent.beforeNode;
@@ -47,8 +46,6 @@ function updateHostComponent(fiber) {
     if (tag == 5 && !root) {
         fiber.effectTag *= ATTR;
     }
-
-
     if (fiber.tag === 6) {
         const prev = fiber.alternate;
         if (!prev || prev.props.children !== children) {
@@ -115,6 +112,7 @@ function updateClassComponent(fiber) {
             let args = [nextProps, nextState, nextContext];
             if (!isForceUpdate && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
                 shouldUpdate = false;
+
             } else {
                 callLifeCycleHook(instance, "componentWillUpdate", args);
             }
@@ -123,8 +121,7 @@ function updateClassComponent(fiber) {
             callLifeCycleHook(instance, "componentWillMount", []);
         }
         updater._hooking = false;
-        if (!shouldUpdate || fiber.onlyPlace) {
-            console.log("shouldRender", nextProps.char);
+        if (!shouldUpdate) {
             diffChildren(fiber, fiber._children, true);
             if (componentStack[0] === instance) {
                 componentStack.shift();
@@ -245,7 +242,6 @@ function diffChildren(parentFiber, children, isClone) {
     parent = parent.stateNode;
     for (let i in oldFibers) {
         let newFiber = newFibers[i];
-
         let oldFiber = oldFibers[i];
         if (newFiber && newFiber.type === oldFiber.type) {
             matchFibers[i] = oldFiber;
@@ -284,9 +280,13 @@ function diffChildren(parentFiber, children, isClone) {
                 detachFiber(oldFiber, effects);
             }
         }
-        if (newFiber.tag > 3 && (isClone ? newFiber.return.tag !== 5: true) ) {
+        /* if (newFiber.tag > 3 && (isClone ? newFiber.return.tag !== 5: true) ) {
             newFiber.effectTag *= PLACE;
             console.log("让" + newFiber.type + " PLACE");
+        }
+        */
+        if (newFiber.tag > 3) {
+            newFiber.effectTag *= PLACE;
         }
         if (newFiber.ref && !isClone) {
             newFiber.effectTag *= REF;
@@ -305,7 +305,20 @@ function diffChildren(parentFiber, children, isClone) {
         delete prevFiber.sibling;
     }
 }
-
+function shouldUpdate(fiber) {
+    const { tag, parent } = fiber;
+    if (tag > 3) {
+        console.log("设置", fiber._children, fiber);
+        let b = parent.beforeNode;
+        fiber.mountPoint = b;
+        parent.beforeNode = fiber.stateNode;
+    } else {
+        fiber.mountPoint = parent.beforeNode;
+    }
+    if (fiber.tag !== 6) {
+        diffChildren(fiber, fiber._children, true);
+    }
+}
 
 /*
 初始化Fiber
