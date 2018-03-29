@@ -23,11 +23,12 @@ export function commitAppendEffect(fibers) {
         let amount = fiber.effectTag;
         let remainder = amount / PLACE;
         let hasEffect = remainder > 1;
-        if (hasEffect && remainder == ~~remainder) {
-          //  console.log(fiber.stateNode, fiber.mountPoint)
+        /*  if (hasEffect && remainder == ~~remainder) {
+            //  console.log(fiber.stateNode, fiber.mountPoint)
             Flutter.insertElement(fiber);
             fiber.effectTag = remainder;
         }
+        */
         if (hasEffect) {
             ret.push(fiber);
         }
@@ -40,9 +41,11 @@ export function commitAppendEffect(fibers) {
  * @param {Refs} fiber 
  */
 export function commitWork(fiber) {
+   
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
+    console.log("提交",fiber.name, amount,fiber.disposed);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -57,7 +60,8 @@ export function commitWork(fiber) {
                 Flutter.insertElement(fiber);
                 break;
             case ATTR: //只对原生组件
-                delete fiber.stateNode.beforeNode;
+                delete instance.beforeNode;
+              
                 Flutter.updateAttribute(fiber);
                 break;
             case DETACH:
@@ -69,7 +73,7 @@ export function commitWork(fiber) {
                 //	delete fiber.stateNode;
                 break;
             case HOOK: //只对业务组件
-               // delete fiber.beforeNode;
+                // delete fiber.beforeNode;
                 if (fiber.disposed) {
                     updater._isMounted = updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);

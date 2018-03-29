@@ -38,13 +38,16 @@
               };
           };
           var LetterInner = class extends React.Component {
+
               render() {
+              //   console.log("LetterInner", this.props.char)
                   return <p title={this.props.char}>{this.props.char}</p>;
               }
           };
           
           var Letter = class extends React.Component {
               render() {
+                //  console.log("Letter", this.props.char)
                   return <LetterInner char={this.props.char} />;
               }
               shouldComponentUpdate() {
