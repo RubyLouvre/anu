@@ -57,7 +57,6 @@ export function commitWork(fiber) {
                 Flutter.insertElement(fiber);
                 break;
             case ATTR: //只对原生组件
-               // console.log("xxxxxxx",fiber.stateNode)
                 delete fiber.stateNode.beforeNode;
                 Flutter.updateAttribute(fiber);
                 break;

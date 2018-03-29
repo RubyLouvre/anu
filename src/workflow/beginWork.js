@@ -33,6 +33,7 @@ function updateHostComponent(fiber) {
 			throw e;
 		}
 	} 
+	console.log("onlyPlace",fiber.onlyPlace)
 	if (fiber.tag == 5 && !fiber.root) {
 		fiber.effectTag *= ATTR;
 	}
@@ -235,9 +236,7 @@ function diffChildren(parentFiber, children, isClone) {
 	parent = parent.stateNode;
 	for (let i in oldFibers) {
 		let newFiber = newFibers[i];
-		if (isClone) {
-			newFiber.onlyPlace = true;
-		}
+		
 		let oldFiber = oldFibers[i];
 		if (newFiber && newFiber.type === oldFiber.type) {
 			matchFibers[i] = oldFiber;
@@ -255,6 +254,9 @@ function diffChildren(parentFiber, children, isClone) {
 		let newFiber = (newFibers[i] = new Fiber(newFibers[i]));
 		// newFiber.effectTag = WORKING;
 		newFiber.parent = parent;
+		if (isClone) {
+			newFiber.onlyPlace = true;
+		}
 		let oldFiber = matchFibers[i];
 		if (oldFiber) {
 			if (isSameNode(oldFiber, newFiber)) {

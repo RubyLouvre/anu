@@ -13,7 +13,7 @@ export let DOMRenderer = {
         }
     },
     updateContext(fiber) {
-        console.log("更新文本")
+        console.log("更新文本",fiber.stateNode.nodeValue,fiber.props.children)
         fiber.stateNode.nodeValue = fiber.props.children;
     },
     updateRoot(vnode, root) {

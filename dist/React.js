@@ -641,12 +641,12 @@ function insertElement(fiber) {
 	try {
 		if (before == null) {
 			if (dom !== parent.firstChild) {
-				console.log(dom, "插入最前面");
+				console.log(dom, "插入最前面", !!parent.firstChild);
 				parentNode.insertBefore(dom, parent.firstChild);
 			}
 		} else {
 			if (dom !== parent.lastChild) {
-				console.log(" 移动 ", dom, fiber);
+				console.log(" 移动 ", dom === before, dom, before);
 				parentNode.insertBefore(dom, before.nextSibling);
 			}
 		}
@@ -1370,6 +1370,7 @@ function updateHostComponent(fiber) {
 			throw e;
 		}
 	}
+	console.log("onlyPlace", fiber.onlyPlace);
 	if (fiber.tag == 5 && !fiber.root) {
 		fiber.effectTag *= ATTR;
 	}
@@ -1558,9 +1559,6 @@ function diffChildren(parentFiber, children, isClone) {
 	parent = parent.stateNode;
 	for (var i in oldFibers) {
 		var newFiber = newFibers[i];
-		if (isClone) {
-			newFiber.onlyPlace = true;
-		}
 		var oldFiber = oldFibers[i];
 		if (newFiber && newFiber.type === oldFiber.type) {
 			matchFibers[i] = oldFiber;
@@ -1576,6 +1574,9 @@ function diffChildren(parentFiber, children, isClone) {
 	for (var _i in newFibers) {
 		var _newFiber = newFibers[_i] = new Fiber(newFibers[_i]);
 		_newFiber.parent = parent;
+		if (isClone) {
+			_newFiber.onlyPlace = true;
+		}
 		var _oldFiber = matchFibers[_i];
 		if (_oldFiber) {
 			if (isSameNode(_oldFiber, _newFiber)) {
@@ -2615,7 +2616,7 @@ var DOMRenderer = {
         }
     },
     updateContext: function updateContext(fiber) {
-        console.log("更新文本");
+        console.log("更新文本", fiber.stateNode.nodeValue, fiber.props.children);
         fiber.stateNode.nodeValue = fiber.props.children;
     },
     updateRoot: function updateRoot(vnode, root) {

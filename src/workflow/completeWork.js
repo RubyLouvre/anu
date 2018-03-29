@@ -14,7 +14,6 @@ export function completeWork(fiber, topWork) {
 	delete fiber.onlyPlace;
 
 	if (parentFiber && fiber !== topWork) {
-		//  console.log(fiber.effectTag, !!fiber.alternate, fiber.name, fiber.key, fiber.old);
 		const childEffects = fiber.effects || [];
 		const thisEffect = fiber.effectTag > 1 ? [ fiber ] : [];
 		const parentEffects = parentFiber.effects || [];
