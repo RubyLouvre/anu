@@ -40,12 +40,11 @@ export function commitAppendEffect(fibers) {
  * 基于素数的任务系统
  * @param {Refs} fiber 
  */
-export function commitWork(fiber) {
-   
+export function commitEffects(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
-    console.log("提交",fiber.name, amount,fiber.disposed);
+   // console.log("提交",fiber.name, amount,fiber.disposed);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -61,7 +60,7 @@ export function commitWork(fiber) {
                 break;
             case ATTR: //只对原生组件
                 delete instance.beforeNode;
-              
+              console.log("执行ATTR ")
                 Flutter.updateAttribute(fiber);
                 break;
             case DETACH:
@@ -73,7 +72,7 @@ export function commitWork(fiber) {
                 //	delete fiber.stateNode;
                 break;
             case HOOK: //只对业务组件
-                // delete fiber.beforeNode;
+                 delete fiber.beforeNode;
                 if (fiber.disposed) {
                     updater._isMounted = updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);

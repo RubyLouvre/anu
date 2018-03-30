@@ -1,7 +1,7 @@
 import { topFibers, topNodes } from "./share";
-import { beginWork, detachFiber } from "./workflow/beginWork";
-import { completeWork } from "./workflow/completeWork";
-import { commitWork, commitAppendEffect } from "./workflow/commitWork";
+import { updateEffects, detachFiber } from "./workflow/beginWork";
+import { collectEffects } from "./workflow/completeWork";
+import { commitEffects, commitAppendEffect } from "./workflow/commitWork";
 import { NOUPDATE, CALLBACK } from "./effectTag";
 import { deprecatedWarn, get, Flutter, isFn } from "./util";
 let updateQueue = Flutter.mainThread;
@@ -67,7 +67,7 @@ Flutter.batchedUpdates = function() {
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            commitAllWork();
+            commitEffects();
         }
     }
 };
@@ -77,10 +77,14 @@ function workLoop(deadline) {
     let topWork = getNextUnitOfWork();
     let fiber = topWork;
     while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
-        fiber = performUnitOfWork(fiber, topWork);
+        fiber = updateEffects(fiber, topWork);
     }
     if (topWork) {
-        effects = effects.concat(topWork.effects || [], topWork);
+        effects = collectEffects(topWork)
+        if(topWork.effectTag){
+            effects.push(topWork)
+        }
+        console.log(effects.concat())
     }
     if (!isBatchingUpdates) {
         commitAllWork();
@@ -89,7 +93,7 @@ function workLoop(deadline) {
 
 function commitAllWork(a) {
     var arr = commitAppendEffect(a || effects);
-    arr.forEach(commitWork);
+    arr.forEach(commitEffects);
     effects.length = 0;
 }
 function performWork(deadline) {
@@ -150,26 +154,7 @@ function getNextUnitOfWork() {
  * @param {Fiber} fiber 
  * @param {Fiber} topWork 
  */
-function performUnitOfWork(fiber, topWork) {
-    beginWork(fiber); //initComponent
-    //  console.log(fiber.onlyPlace ,fiber.tag);
-    if (fiber.child  ) {
-        
-        return fiber.child;
-    }
-   
-    let f = fiber;
-    while (f) {
-        completeWork(f, topWork); //collectSideEffect
-        if (f === topWork) {
-            break;
-        }
-        if (f.sibling) {
-            return f.sibling;
-        }
-        f = f.return;
-    }
-}
+
 function mergeState(fiber, state, isForceUpdate, callback) {
     if (isForceUpdate) {
         fiber.isForceUpdate = isForceUpdate;

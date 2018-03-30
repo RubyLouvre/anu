@@ -1,55 +1,63 @@
-import { contextStack } from "../share";
+import { contextStack } from '../share';
 //import { NOWORK } from "../effectTag";
+import { __push } from '../util';
 
-export function completeWork(fiber, topWork) {
-    //收集effects
-    var parentFiber = fiber.return;
-    if (fiber.tag < 3) {
-        fiber.stateNode._reactInternalFiber = fiber;
-        if (fiber.stateNode.getChildContext) {
-            contextStack.pop(); // pop context
-        }
-    }
-    console.log("收集副作用", fiber.name, fiber.effectTag, fiber.onlyPlace);
-    // delete fiber.onlyPlace;
+export function collectEffects(fiber, insertHelper, shouldUpdateFalse) {
+	var effects = fiber.effects; //将自己
+	var isHost = fiber.tag > 3,
+		parent;
+	if (fiber.root) {
+		parent = fiber.stateNode;
+	} else if (fiber.parent) {
+		parent = fiber.parent;
+	} else {
+		console.warn('fiber没有parent');
+	}
+	//<p><span></span><span></span><A /></p>
+	if (effects) {
+		delete fiber.effects;
+	} else {
+		effects = [];
+	}
+	var children = fiber._children;
 
-    if (parentFiber && fiber !== topWork) {
-        const childEffects = fiber.effects || [];
-        const thisEffect = fiber.effectTag > 1 ? [fiber] : [];
-        const parentEffects = parentFiber.effects || [];
+	if (!fiber.root && parent !== fiber.stateNode) {
+		if (isHost) {
+			let b = parent.beforeNode;
 
-        parentFiber.effects = parentEffects.concat(childEffects, thisEffect);
-    }
-}
+			fiber.mountPoint = b;
 
+			//	parent.beforeNode = fiber.stateNode;
+			//	console.log(fiber.mountPoint === fiber.stateNode )
+			if (fiber.tag == 5) {
+				parent = fiber.stateNode;
+			}
+		} else {
+			fiber.mountPoint = parent.beforeNode;
+		}
+	}
+	for (var i in children) {
+		var child = children[i];
+		child.parent = parent;
+		child.insertMount = insertHelper.dom;
+		if (shouldUpdateFalse || child.shouldUpdateFalse) {
+			delete child.shouldUpdateFalse;
+			if (child.tag > 3) {
+				child.effectTag = 2;
+				effects.push(child);
+			} else {
+				__push.apply(effects, collectEffects(child, insertHelper, true));
+			}
+		} else {
+			__push.apply(effects, collectEffects(child, insertHelper));
 
-function completeWork(fiber, shouldUpdate) {
-    var effects = fiber.effects;
-    var isHost = fiber.tag > 3;
-    if (effects) {
-        delete fiber.effects;
-    } else {
-        effects = [];
-    }
-    for (var i in fiber._children) {
-        var child = fiber[i];
-        if (!child.onlyPlace) {
-            effects = effects.concat(completeWork(fiber));
-        }else{
-            if(isHost){
-                effects.push(child);
-            }else{
-                effects = effects.concat(completeWork(fiber, true ));
-            }
-         
-            delete child.onlyPlace; 
-        }
-    }
-
-    if (fiber.effectTag) {
-        effects.push(fiber);
-    }
-    
-   
-    return effects;
+			if (child.effectTag) {
+				effects.push(child);
+			}
+		}
+		if (child.tag > 3) {
+			insertHelper.dom = child.stateNode;
+		}
+	}
+	return effects;
 }

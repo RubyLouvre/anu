@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
     <script type="text/babel">
@@ -38,14 +38,19 @@
               };
           };
           var LetterInner = class extends React.Component {
-
+componentWillUnmount(){
+    console.log("LetterInner remove")
+}
               render() {
               //   console.log("LetterInner", this.props.char)
-                  return <p title={this.props.char}>{this.props.char}</p>;
+                  return <p key={this.props.char+"-p"} title={this.props.char}>{this.props.char}</p>;
               }
           };
           
           var Letter = class extends React.Component {
+            componentWillUnmount(){
+    console.log("Letter remove")
+}
               render() {
                 //  console.log("Letter", this.props.char)
                   return <LetterInner char={this.props.char} />;
@@ -70,13 +75,14 @@
               }
           };
           // Two random strings -- some additions, some removals, some moves
-          ReactDOM.render(<Letters letters="AB" />, container);
+          ReactDOM.render(<Letters letters="AB" />, container, function(){
+              console.log("xxxxx")
+          });
           expect(container.textContent).toBe('AB');
           console.log('XXXXXXXXXXX');
-          var s = ReactDOM.render(<Letters letters="aB" />, container);
-          expect(container.textContent).toBe('aB');
-          console.log(s);
-          
+         var s = ReactDOM.render(<Letters letters="aB" />, container);
+        //  expect(container.textContent).toBe('aBb');
+        
 </script>
 
 
