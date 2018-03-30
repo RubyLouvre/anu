@@ -37,51 +37,44 @@
                   }
               };
           };
-          var LetterInner = class extends React.Component {
-componentWillUnmount(){
-    console.log("LetterInner remove")
-}
-              render() {
-              //   console.log("LetterInner", this.props.char)
-                  return <p key={this.props.char+"-p"} title={this.props.char}>{this.props.char}</p>;
-              }
-          };
-          
-          var Letter = class extends React.Component {
-            componentWillUnmount(){
-    console.log("Letter remove")
-}
-              render() {
-                //  console.log("Letter", this.props.char)
-                  return <LetterInner char={this.props.char} />;
-              }
-              shouldComponentUpdate() {
-                  return false;
-              }
-          };
-          
-          var Letters = class extends React.Component {
-              render() {
-                  const letters = this.props.letters.split('');
-          
-                  return (
-                      <div>
-                          {letters.map(function(c) {
-                              //  console.log("key",c)
-                              return <Letter key={c} char={c} />;
-                          })}
-                      </div>
-                  );
-              }
-          };
-          // Two random strings -- some additions, some removals, some moves
-          ReactDOM.render(<Letters letters="AB" />, container, function(){
-              console.log("xxxxx")
-          });
-          expect(container.textContent).toBe('AB');
-          console.log('XXXXXXXXXXX');
-         var s = ReactDOM.render(<Letters letters="aB" />, container);
-        //  expect(container.textContent).toBe('aBb');
+          class Tree extends React.Component{
+            constructor(props){
+                super(props);
+                this.state = {};
+            }
+            renderTreeNode(child){
+                var childProps = {};
+                childProps.checkable = this.props.checkable;
+               
+                return React.cloneElement(child, childProps);
+            }
+            render() {
+                var props = this.props;
+                return React.createElement(
+                    "ul",
+                    {
+                        className: "root",
+                        role: "tree-node",
+                        unselectable: "on"
+                    },
+                    React.Children.map(props.children, this.renderTreeNode, this)
+                );
+            }
+        }
+        class TreeNode extends React.Component{
+            render(){
+                return <li>{this.props.checkable}{this.props.children}</li>;
+            }
+        }
+        var container = document.createElement("div");
+        ReactDOM.render(<Tree checkable={ <input className="checked" type="radio" defaultChecked="true"/>}>
+            <TreeNode>1111</TreeNode>
+            <TreeNode>2222</TreeNode>
+            <TreeNode>3333</TreeNode>
+        </Tree>
+            , container);
+        var inputs =  container.getElementsByTagName("input");
+        expect(inputs.length).toBe(3);
         
 </script>
 

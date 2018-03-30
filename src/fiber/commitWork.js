@@ -17,7 +17,9 @@ import { returnFalse, returnTrue, Flutter } from "../util";
 import { Refs } from "../Refs";
 
 export function commitEffects(a) {
+    console.log(effects.concat());
     var arr = commitPlaceEffects(a || effects);
+    
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;
 }

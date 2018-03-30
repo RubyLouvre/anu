@@ -1,4 +1,6 @@
-import { createElement, win, fakeDoc, DOMElement } from "src/browser";
+import { fakeDoc, DOMElement } from "src/browser";
+import { createElement } from "src/DOMRenderer";
+
 import { getWindow } from "src/util";
 
 describe("browser", function() {

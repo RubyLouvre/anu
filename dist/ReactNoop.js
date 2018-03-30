@@ -772,9 +772,6 @@ function updateHostComponent(fiber) {
         if (!root) {
             fiber.effectTag *= ATTR;
         }
-        if (!prev || prev.props.children !== children) {
-            fiber.effectTag *= CONTENT;
-        }
         diffChildren(fiber, children);
     } else {
         if (!prev || prev.props.children !== children) {
@@ -1198,6 +1195,7 @@ var Refs = {
 };
 
 function commitEffects(a) {
+    console.log(effects.concat());
     var arr = commitPlaceEffects(a || effects);
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;

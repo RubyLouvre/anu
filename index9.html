@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -16,62 +16,48 @@
 <body>
 
     <pre>应该等于
-           
-          
-        </pre>
+
+    </pre>
     <h1 id='example' class="root">
 
     </h1>
     <script type='text/babel'>
-            var container = document.getElementById("example")
-          //  var div = container;
-          if(!window.ReactDOM){
-            window. ReactDOM = React
+          var container = document.getElementById('example');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
           }
-           // 
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                }
-            }  
-            var a = 1
-            function Child() {
-                console.log("只执行一次")
-                return {
-                  state: {
-                     count: ++a
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
                   },
-                  componentWillMount(){
-                      console.log("componentWillMount")
-                  },
-                  componentDidMount(){
-                      console.log("componentDidMount")
-                  },
-                  render(a, b) {
-                     console.log(this.props)
-                     return <div>{`count:${this.state.count}`}</div>;
-                  },
-                };
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+          };
+          var App = class extends React.Component {
+              render() {
+                  return [<A/>,<B/>]
               }
-             
+          };
+          var A = class extends React.Component {
+              render() {
+                  return <p>123</p>
+              }
+          };
+          var B = class extends React.Component {
+              render() {
+                  return <p>456</p>
+              }
+          };
           
-              const el = document.createElement('div');
-          
-              ReactDOM.render(<Child incrementBy={0} />, el);
-              expect(el.textContent).toBe('count:2');
+          // Two random strings -- some additions, some removals, some moves
+        var s =  ReactDOM.render(<App />, container, function(){
+              console.log("xxxxx")
+          });
         
-              ReactDOM.render(<Child incrementBy={2} />, el);
-              expect(el.textContent).toBe('count:2');
-            //  console.log("==========")
-
-           //   React.render(<Child incrementBy={1} />, el);
-            //  expect(el.textContent).toBe('count:4');
-              
 </script>
 
 

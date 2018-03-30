@@ -68,9 +68,7 @@ function updateHostComponent(fiber) {
         if (!root) {
             fiber.effectTag *= ATTR;
         }
-        if (!prev || prev.props.children !== children) {
-            fiber.effectTag *= CONTENT;
-        }
+    
         diffChildren(fiber, children);
     } else { // 文本节点
         if (!prev || prev.props.children !== children) {
@@ -96,7 +94,6 @@ function updateClassComponent(fiber) {
         fiber.lastState = lastState;
         propsChange = lastProps !== nextProps;
     }
-
     let updater = instance.updater;
     let stateNoChange = !nextState;
 
@@ -245,8 +242,8 @@ function getMaskedContext(contextTypes) {
 
 /**
  * 转换vnode为fiber
- * @param {*} parentFiber 
- * @param {*} children 
+ * @param {Fiber} parentFiber 
+ * @param {Any} children 
  */
 function diffChildren(parentFiber, children) {
     let prev = parentFiber.alternate;
