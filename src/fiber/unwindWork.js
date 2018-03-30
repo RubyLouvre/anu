@@ -1,7 +1,6 @@
 
 import { noop, get, Flutter } from "../util";
-import { NOWORK, CALLBACK } from "../effectTag";
-
+import { NOWORK, CALLBACK } from "./effectTag";
 
 let updateQueue = Flutter.mainThread;
 
@@ -18,7 +17,7 @@ export function pushError(instance, hook, error) {
         catchFiber.effectTag = CALLBACK;
         updateQueue.push(catchFiber);
     } else {
-        console.log(error);
+        console.log(error); // eslint-disable-line
 		console.warn(stack); // eslint-disable-line
         //如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Flutter.error) {

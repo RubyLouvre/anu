@@ -1,9 +1,9 @@
-import { topFibers, topNodes } from "./share";
-import { updateEffects, detachFiber } from "./workflow/beginWork";
-import { collectEffects } from "./workflow/completeWork";
-import { commitEffects, commitAppendEffect } from "./workflow/commitWork";
-import { NOUPDATE, CALLBACK } from "./effectTag";
-import { deprecatedWarn, get, Flutter, isFn } from "./util";
+import { topFibers, topNodes, effects } from "./share";
+import { updateEffects, detachFiber } from "./fiber/beginWork";
+import { collectEffects } from "./fiber/completeWork";
+import { commitEffects } from "./fiber/commitWork";
+import { CALLBACK } from "./fiber/effectTag";
+import { deprecatedWarn, __push, get, Flutter, isFn } from "./util";
 let updateQueue = Flutter.mainThread;
 //[Top API] React.isValidElement
 export function isValidElement(vnode) {
@@ -35,7 +35,7 @@ export function render(vnode, root, callback) {
     let instance = null;
     hostRoot.effectTag = CALLBACK;
     hostRoot._hydrating = true; //lock 表示正在渲染
-    hostRoot.callback = function() {
+    hostRoot.callback = function () {
         instance = hostRoot.child ? hostRoot.child.stateNode : null;
         callback && callback.call(instance);
         hostRoot._hydrating = false; //unlock
@@ -51,7 +51,7 @@ export function render(vnode, root, callback) {
     return instance;
 }
 
-Flutter.scheduleWork = function() {
+Flutter.scheduleWork = function () {
     performWork({
         timeRemaining() {
             return 2;
@@ -59,7 +59,7 @@ Flutter.scheduleWork = function() {
     });
 };
 var isBatchingUpdates = false;
-Flutter.batchedUpdates = function() {
+Flutter.batchedUpdates = function () {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
@@ -72,7 +72,7 @@ Flutter.batchedUpdates = function() {
     }
 };
 
-var effects = [];
+
 function workLoop(deadline) {
     let topWork = getNextUnitOfWork();
     let fiber = topWork;
@@ -80,22 +80,18 @@ function workLoop(deadline) {
         fiber = updateEffects(fiber, topWork);
     }
     if (topWork) {
-        effects = collectEffects(topWork)
-        if(topWork.effectTag){
-            effects.push(topWork)
+        __push.apply(effects, collectEffects(topWork, {
+        }));
+        if (topWork.effectTag) {
+            effects.push(topWork);
         }
-        console.log(effects.concat())
     }
     if (!isBatchingUpdates) {
-        commitAllWork();
+        commitEffects();
     }
 }
 
-function commitAllWork(a) {
-    var arr = commitAppendEffect(a || effects);
-    arr.forEach(commitEffects);
-    effects.length = 0;
-}
+
 function performWork(deadline) {
     workLoop(deadline);
     if (updateQueue.length > 0) {
@@ -115,7 +111,7 @@ export function unmountComponentAtNode(container) {
         let lastFiber = topFibers[rootIndex],
             effects = [];
         detachFiber(lastFiber, effects);
-        commitAllWork(effects);
+        commitEffects(effects);
         topNodes.splice(rootIndex, 1);
         topFibers.splice(rootIndex, 1);
         container._reactInternalFiber = null;
@@ -178,7 +174,7 @@ function mergeState(fiber, state, isForceUpdate, callback) {
     }
 }
 
-Flutter.updateComponent = function(instance, state, callback) {
+Flutter.updateComponent = function (instance, state, callback) {
     //setState
     let fiber = get(instance);
     let isForceUpdate = state === true;

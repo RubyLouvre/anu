@@ -10,25 +10,33 @@ import {
     CAPTURE,
     effectLength,
     effectNames
-} from "../effectTag";
+} from "./effectTag";
+import { effects } from "../share";
 import { callLifeCycleHook, pushError } from "./unwindWork";
 import { returnFalse, returnTrue, Flutter } from "../util";
 import { Refs } from "../Refs";
 
-//ref中的元素必须已经插入到DOM树，由于anu是从下往上添加，因此需要提先执行所有PALCE效果
-export function commitAppendEffect(fibers) {
+export function commitEffects(a) {
+    var arr = commitPlaceEffects(a || effects);
+    arr.forEach(commitOtherEffects);
+    arr.length = effects.length = 0;
+}
+
+/**
+ * 提先执行所有RLACE任务
+ * @param {Fiber} fibers 
+ */
+export function commitPlaceEffects(fibers) {
     var ret = [];
     for (let i = 0, n = fibers.length; i < n; i++) {
         let fiber = fibers[i];
         let amount = fiber.effectTag;
         let remainder = amount / PLACE;
         let hasEffect = remainder > 1;
-        /*  if (hasEffect && remainder == ~~remainder) {
-            //  console.log(fiber.stateNode, fiber.mountPoint)
+        if (hasEffect && remainder == ~~remainder) {
             Flutter.insertElement(fiber);
             fiber.effectTag = remainder;
         }
-        */
         if (hasEffect) {
             ret.push(fiber);
         }
@@ -37,14 +45,15 @@ export function commitAppendEffect(fibers) {
 }
 
 /**
- * 基于素数的任务系统
- * @param {Refs} fiber 
+ * 执行其他任务
+ * 
+ * @param {Fiber} fiber 
  */
-export function commitEffects(fiber) {
+export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
-   // console.log("提交",fiber.name, amount,fiber.disposed);
+    // console.log("提交",fiber.name, amount,fiber.disposed);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -59,8 +68,6 @@ export function commitEffects(fiber) {
                 Flutter.insertElement(fiber);
                 break;
             case ATTR: //只对原生组件
-                delete instance.beforeNode;
-              console.log("执行ATTR ")
                 Flutter.updateAttribute(fiber);
                 break;
             case DETACH:
@@ -69,10 +76,8 @@ export function commitEffects(fiber) {
                     Flutter.removeElement(fiber);
                 }
                 //业务 & 原生
-                //	delete fiber.stateNode;
                 break;
             case HOOK: //只对业务组件
-                 delete fiber.beforeNode;
                 if (fiber.disposed) {
                     updater._isMounted = updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);
@@ -102,8 +107,8 @@ export function commitEffects(fiber) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                var queue = Array.isArray(fiber.callback) ? fiber.callback : [ fiber.callback ];
-                queue.forEach(function(fn) {
+                var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback];
+                queue.forEach(function (fn) {
                     fn.call(instance);
                 });
                 delete fiber.callback;

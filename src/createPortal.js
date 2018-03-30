@@ -1,5 +1,5 @@
 import { createVnode, createElement } from "./createElement";
-import { Fiber } from "./workflow/beginWork";
+import { Fiber } from "./fiber/beginWork";
 function AnuPortal(props){
     return props.children;
 }
