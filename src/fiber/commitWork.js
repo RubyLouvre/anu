@@ -32,10 +32,11 @@ export function commitPlaceEffects(fibers) {
         let fiber = fibers[i];
         let amount = fiber.effectTag;
         let remainder = amount / PLACE;
-        let hasEffect = remainder > 1;
+        let hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
             Flutter.insertElement(fiber);
             fiber.effectTag = remainder;
+            hasEffect = remainder > 1;
         }
         if (hasEffect) {
             ret.push(fiber);
@@ -53,7 +54,6 @@ export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
-    // console.log("提交",fiber.name, amount,fiber.disposed);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -122,5 +122,5 @@ export function commitOtherEffects(fiber) {
             }
         }
     }
-    fiber.effectTag = fiber.effects = null;
+    fiber.effectTag = 1;
 }

@@ -21,19 +21,16 @@ export function collectEffects(fiber, insertHelper, shouldUpdateFalse) {
         let child = children[i];
         let isHost = child.tag > 3;
         if (isHost) {
-            if(insertHelper.parent !== child.parent){
-                insertHelper = !insertHelper.parent? {
-                    parent:  child.parent,
+            child.insertPoint = insertHelper.insertPoint;
+            insertHelper.insertPoint = child.stateNode;
+            if (child.parent != insertHelper.parent) {
+                insertHelper = {
+                    parent: child.stateNode,
                     insertPoint: child.insertPoint
-                }: {
-                    parent:  child.parent,
-                    insertPoint: null
                 };
-            }else{
-                child.insertPoint = insertHelper.insertPoint;
             }
         }
-        if (shouldUpdateFalse || child.shouldUpdateFalse) { 
+        if (shouldUpdateFalse || child.shouldUpdateFalse) {
             delete child.shouldUpdateFalse;
             if (isHost) {
                 child.effectTag = PLACE;
@@ -47,9 +44,7 @@ export function collectEffects(fiber, insertHelper, shouldUpdateFalse) {
                 effects.push(child);
             }
         }
-        if (isHost) {
-            insertHelper.insertPoint = child.stateNode;
-        }
+
     }
     return effects;
 }
