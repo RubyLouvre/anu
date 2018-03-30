@@ -107,13 +107,13 @@ function insertElement(fiber) {
     try {
         if(before == null){
             if(dom !== parent.firstChild){
-                //console.log(dom, "插入最前面",!!parent.firstChild)
+                console.log(dom, "插入最前面",!!parent.firstChild)
                 parentNode.insertBefore(dom, parent.firstChild);
             }
 			
         }else{
             if(dom !== parent.lastChild){
-                //console.log(" 移动 ", dom === before, dom, before)
+                console.log(" 移动 ", dom === before, dom, before)
                 parentNode.insertBefore(dom, before.nextSibling);
             }
         }
