@@ -450,7 +450,7 @@ describe("ReactDOMSelect", function() {
     it("should not control defaultValue if readding options", () => {
         //这个逻辑很怪
         return;
-        const container = document.createElement("div");
+        const container2 = document.createElement("div");
 
         const select = ReactDOM.render(
             <select multiple={true} defaultValue={["giraffe"]}>
@@ -464,7 +464,7 @@ describe("ReactDOMSelect", function() {
                     A gorilla!
                 </option>
             </select>,
-            container
+            container2
         );
         const node = ReactDOM.findDOMNode(select);
 
@@ -481,7 +481,7 @@ describe("ReactDOMSelect", function() {
                     A gorilla!
                 </option>
             </select>,
-            container
+            container2
         );
 
         expect(node.options[0].selected).toBe(false); // monkey
@@ -499,7 +499,7 @@ describe("ReactDOMSelect", function() {
                     A gorilla!
                 </option>
             </select>,
-            container
+            container2
         );
 
         expect(node.options[0].selected).toBe(false); // monkey
@@ -578,6 +578,7 @@ describe("ReactDOMSelect", function() {
     });
 
     it("should be able to safely remove select onChange", () => {
+        var container = document.createElement("div")
         function changeView() {
             ReactDOM.unmountComponentAtNode(container);
         }
@@ -591,8 +592,13 @@ describe("ReactDOMSelect", function() {
         );
         stub = ReactDOM.render(stub, container);
         const node = ReactDOM.findDOMNode(stub);
-
-        expect(() => ReactTestUtils.Simulate.change(node)).not.toThrow();
+        var ok = true
+        try{
+            ReactTestUtils.Simulate.change(node)
+        }catch(e){
+            ok = false
+        }
+        expect(ok).toBe(true)
     });
 
     it("should select grandchild options nested inside an optgroup", () => {

@@ -1,5 +1,5 @@
 import { callLifeCycleHook, pushError } from './unwindWork';
-import { contextStack, componentStack, hostStack, emptyObject } from '../share';
+import { contextStack, componentStack, containerStack, emptyObject } from '../share';
 import { fiberizeChildren } from '../createElement';
 import { createInstance } from '../createInstance';
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF } from './effectTag';
@@ -32,7 +32,7 @@ export function updateEffects(fiber, topWork) {
 			contextStack.shift(); // pop context
 		}
 		if (f.tag === 5) {
-			hostStack.shift(); //pop parent
+			containerStack.shift(); //pop parent
 		}
 		if (f === topWork) {
 			break;
@@ -55,19 +55,19 @@ export function Fiber(vnode) {
 function updateHostComponent(fiber) {
 	if (!fiber.stateNode) {
 		try {
-            fiber.stateNode = Flutter.createElement(fiber);
-            fiber.parent = hostStack[0];
+			fiber.stateNode = Flutter.createElement(fiber);
 		} catch (e) {
 			throw e;
 		}
-    }
-  //  console.log(fiber.name, hostStack[0])
-	
+	}
+	fiber.parent = containerStack[0];
+	//  fiber.insertMount = fiber.parent.insertMount =
+
 	const { props, tag, root, alternate: prev } = fiber;
 	const children = props && props.children;
 	if (tag === 5) {
 		//元素节点
-		hostStack.unshift(fiber.stateNode);
+		containerStack.unshift(fiber.stateNode);
 		if (!root) {
 			fiber.effectTag *= ATTR;
 		}
@@ -93,11 +93,12 @@ function updateClassComponent(fiber) {
 		instance.updater.enqueueSetState = Flutter.updateComponent;
 		var willReceive = fiber._willReceive; //stateless组件一开始时是_willReceive＝false
 		delete fiber._willReceive;
-        fiber.partialState = instance.state;
-	} 
+
+		fiber.partialState = instance.state;
+	}
 	let updater = instance.updater;
 	instance._reactInternalFiber = fiber;
-
+	fiber.parent = containerStack[0];
 	if (instance.getChildContext) {
 		try {
 			context = instance.getChildContext();
@@ -110,12 +111,12 @@ function updateClassComponent(fiber) {
 	if (!instance._isStateless) {
 		updater._hooking = true;
 		if (updater._isMounted()) {
-            var { props: lastProps, state: lastState } = instance;
-            fiber.lastProps = lastProps;
-            fiber.lastState = lastState;
-            propsChange = lastProps !== nextProps;
-            delete fiber.isForceUpdate;
-            var stateNoChange = !nextState;
+			var { props: lastProps, state: lastState } = instance;
+			fiber.lastProps = lastProps;
+			fiber.lastState = lastState;
+			propsChange = lastProps !== nextProps;
+			delete fiber.isForceUpdate;
+			var stateNoChange = !nextState;
 			if (stateNoChange) {
 				//只要props/context任于一个发生变化，就会触发cWRP
 				willReceive = propsChange || instance.context !== nextContext;

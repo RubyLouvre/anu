@@ -27,6 +27,7 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
+          var PropTypes = React.PropTypes
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -37,45 +38,22 @@
                   }
               };
           };
-          class Tree extends React.Component{
-            constructor(props){
-                super(props);
-                this.state = {};
-            }
-            renderTreeNode(child){
-                var childProps = {};
-                childProps.checkable = this.props.checkable;
-               
-                return React.cloneElement(child, childProps);
-            }
-            render() {
-                var props = this.props;
-                return React.createElement(
-                    "ul",
-                    {
-                        className: "root",
-                        role: "tree-node",
-                        unselectable: "on"
-                    },
-                    React.Children.map(props.children, this.renderTreeNode, this)
-                );
-            }
+          function changeView() {
+              console.log('444')
+            ReactDOM.unmountComponentAtNode(container);
         }
-        class TreeNode extends React.Component{
-            render(){
-                return <li>{this.props.checkable}{this.props.children}</li>;
-            }
-        }
-        var container = document.createElement("div");
-        ReactDOM.render(<Tree checkable={ <input className="checked" type="radio" defaultChecked="true"/>}>
-            <TreeNode>1111</TreeNode>
-            <TreeNode>2222</TreeNode>
-            <TreeNode>3333</TreeNode>
-        </Tree>
-            , container);
-        var inputs =  container.getElementsByTagName("input");
-        expect(inputs.length).toBe(3);
-        
+
+        let stub = (
+            <select value="giraffe" onClick={changeView}>
+                <option value="monkey">A monkey!</option>
+                <option value="giraffe">A giraffe!</option>
+                <option value="gorilla">A gorilla!</option>
+            </select>
+        );
+        stub = ReactDOM.render(stub, container);
+        const node = ReactDOM.findDOMNode(stub);
+        node.click()
+        var ok = true
 </script>
 
 

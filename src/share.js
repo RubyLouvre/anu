@@ -5,5 +5,5 @@ export const topFibers = [];
 export const topNodes = [];
 export const emptyArray = [];
 export const emptyObject = {};
-export const hostStack = [];
+export const containerStack = [];
 export const contextStack = [emptyObject];

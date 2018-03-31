@@ -107,6 +107,8 @@ console.log(a, a.length)
         expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
         expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
     });
+
+    
     it("should preserve state between top-level fragments", function () {
         const ops = [];
 

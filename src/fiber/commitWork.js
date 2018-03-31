@@ -17,7 +17,6 @@ import { returnFalse, returnTrue, Flutter } from "../util";
 import { Refs } from "../Refs";
 
 export function commitEffects(a) {
-    console.log(effects.concat());
     var arr = commitPlaceEffects(a || effects);
     
     arr.forEach(commitOtherEffects);
@@ -37,6 +36,7 @@ export function commitPlaceEffects(fibers) {
         let hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
             try{
+               fiber.parent.insertPoint = null;
                Flutter.insertElement(fiber);
             }catch(e){
               //  console.log(fiber.name, e)

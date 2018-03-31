@@ -1,6 +1,6 @@
-import { topFibers, topNodes, effects, hostStack } from './share';
+import { topFibers, topNodes, effects, containerStack } from './share';
 import { updateEffects, detachFiber } from './fiber/beginWork';
-import { collectEffects } from './fiber/completeWork';
+import { collectEffects, getContainer } from './fiber/completeWork';
 import { commitEffects } from './fiber/commitWork';
 import { CALLBACK } from './fiber/effectTag';
 import { deprecatedWarn, __push, get, Flutter, isFn } from './util';
@@ -72,38 +72,26 @@ Flutter.batchedUpdates = function() {
 	}
 };
 
-function getParent(fiber) {
-	if (fiber.tag > 3) {
-		if (!fiber.root) {
-            console.log(fiber.parent, "---")
-			hostStack.unshift(fiber.parent);
-		}
-	} else {
-		var p = fiber;
-		do {
-			if (p.tag === 5) {
-                console.log(p.stateNode, "---ggg",fiber)
-				hostStack.unshift(p.stateNode);
-				break;
-			}
-		} while ((p = p.return));
-	}
-}
 function workLoop(deadline) {
 	let topWork = getNextUnitOfWork();
-	let fiber = topWork;
-    getParent(fiber)
-	while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
-		fiber = updateEffects(fiber, topWork);
-	}
 	if (topWork) {
-		__push.apply(effects, collectEffects(topWork, {}));
-		if (topWork.effectTag) {
-			effects.push(topWork);
+		let fiber = topWork;
+		let p = getContainer(fiber);
+		if (p) {
+			containerStack.unshift(p);
 		}
-	}
-	if (!isBatchingUpdates) {
-		commitEffects();
+		while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
+			fiber = updateEffects(fiber, topWork);
+		}
+		if (topWork) {
+			__push.apply(effects, collectEffects(topWork));
+			if (topWork.effectTag) {
+				effects.push(topWork);
+			}
+		}
+		if (!isBatchingUpdates) {
+			commitEffects();
+		}
 	}
 }
 
@@ -192,6 +180,9 @@ function mergeState(fiber, state, isForceUpdate, callback) {
 Flutter.updateComponent = function(instance, state, callback) {
 	//setState
 	let fiber = get(instance);
+	if (fiber.parent) {
+		fiber.parent.insertPoint = fiber.insertPoint;
+	}
 	let isForceUpdate = state === true;
 	state = isForceUpdate ? null : state;
 	if (this._hydrating || Flutter.interactQueue) {
