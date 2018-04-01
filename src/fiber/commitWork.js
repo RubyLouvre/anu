@@ -103,12 +103,12 @@ export function commitOtherEffects(fiber) {
                 Flutter.updateContext(fiber);
                 break;
             case REF:
-                if (!instance._isStateless) {
+                if (!instance.__isStateless) {
                     Refs.fireRef(fiber, instance);
                 }
                 break;
             case NULLREF:
-                if (!instance._isStateless) {
+                if (!instance.__isStateless) {
                     Refs.fireRef(fiber, null);
                 }
                 break;

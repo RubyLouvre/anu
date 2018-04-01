@@ -154,11 +154,9 @@ function getNextUnitOfWork() {
  * @param {Fiber} topWork 
  */
 
-function mergeState(fiber, state, isForceUpdate, callback) {
-	if (isForceUpdate) {
-		fiber.isForceUpdate = isForceUpdate;
-	}
-	//fiber.alternate = fiber;
+function mergeState(fiber, state, isForced, callback) {
+	fiber.isForced = fiber.isForced || isForced;
+	fiber.alternate = fiber;
 	if (state) {
 		var instance = fiber.stateNode;
 		var old = fiber.partialState || instance.state;
@@ -183,8 +181,8 @@ Flutter.updateComponent = function(instance, state, callback) {
 	if (fiber.parent) {
 		fiber.parent.insertPoint = fiber.insertPoint;
 	}
-	let isForceUpdate = state === true;
-	state = isForceUpdate ? null : state;
+	let isForced = state === true;
+	state = isForced ? null : state;
 	if (this._hydrating || Flutter.interactQueue) {
 		//如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
 		if (!fiber.pendingFiber) {
@@ -193,16 +191,16 @@ Flutter.updateComponent = function(instance, state, callback) {
 				mountOrder: this.mountOrder,
 				effectTag: callback ? CALLBACK : 1
 			}));
-			delete target.partialState;
-			delete target.isForceUpdate;
+		//	delete target.partialState;
+			delete target.isForced;
 			delete target.callback; //它是上个周期的方法回调
 			var queue = Flutter.interactQueue || updateQueue;
 			queue.push(target);
 		}
-		mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
+		mergeState(fiber.pendingFiber, state, isForced, callback);
 	} else {
 		//如果是在componentWillXXX中，那么直接修改已经fiber及instance
-		mergeState(fiber, state, isForceUpdate, callback);
+		mergeState(fiber, state, isForced, callback);
 		if (!this._hooking) {
 			//不在生命周期钩子中时，需要立即触发（或异步触发）
 			updateQueue.push(fiber);

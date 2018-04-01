@@ -1160,66 +1160,66 @@ var containerStack = [];
 var contextStack = [emptyObject];
 
 function createInstance(fiber, context) {
-    var updater = {
-        mountOrder: Flutter.mountOrder++,
-        enqueueSetState: returnFalse,
-        _isMounted: returnFalse
-    };
-    var props = fiber.props,
-        type = fiber.type,
-        tag = fiber.tag,
-        isStateless = tag === 1,
-        lastOwn = Flutter.currentOwner,
-        instance = void 0,
-        lifeCycleHook = void 0;
-    try {
-        if (isStateless) {
-            instance = {
-                refs: {},
-                __proto__: type.prototype,
-                __init__: true,
-                props: props,
-                context: context,
-                render: function f() {
-                    var a = type(this.props, this.context);
-                    if (a && a.render) {
-                        lifeCycleHook = a;
-                        return this.__init__ ? null : a.render.call(this);
-                    }
-                    return a;
-                }
-            };
-            Flutter.currentOwner = instance;
-            if (type.isRef) {
-                instance.render = function () {
-                    return type(this.props, this.ref);
-                };
-            } else {
-                fiber.child = instance.render();
-                if (lifeCycleHook) {
-                    for (var i in lifeCycleHook) {
-                        if (i !== "render") {
-                            instance[i] = lifeCycleHook[i];
-                        }
-                    }
-                    lifeCycleHook = false;
-                } else {
-                    instance._isStateless = returnTrue;
-                    fiber._willReceive = false;
-                }
-                delete instance.__init__;
-            }
-        } else {
-            instance = new type(props, context);
-        }
-    } catch (e) {
-        instance = {};
-    } finally {
-        Flutter.currentOwner = lastOwn;
-    }
-    fiber.stateNode = instance;
-    instance.updater = updater;
-    return instance;
+	var updater = {
+		mountOrder: Flutter.mountOrder++,
+		enqueueSetState: returnFalse,
+		_isMounted: returnFalse
+	};
+	var props = fiber.props,
+	    type = fiber.type,
+	    tag = fiber.tag,
+	    isStateless = tag === 1,
+	    lastOwn = Flutter.currentOwner,
+	    instance = void 0,
+	    lifeCycleHook = void 0;
+	try {
+		if (isStateless) {
+			instance = {
+				refs: {},
+				__proto__: type.prototype,
+				props: props,
+				context: context,
+				__init: true,
+				renderImpl: type,
+				render: function f() {
+					var a = this.__keep;
+					if (a) {
+						delete this.__keep;
+						return a;
+					}
+					a = this.renderImpl(this.props, this.context);
+					if (a && a.render) {
+						for (var i in a) {
+							instance[i == 'render' ? 'renderImpl' : i] = a[i];
+						}
+					} else if (this.__init) {
+						this.__isStateless = returnTrue;
+						this.__keep = a;
+					}
+					return a;
+				}
+			};
+			Flutter.currentOwner = instance;
+			if (type.isRef) {
+				instance.render = function () {
+					return type(this.props, this.ref);
+				};
+			} else {
+				instance.render();
+				delete instance.__init;
+			}
+		} else {
+			instance = new type(props, context);
+		}
+	} catch (e) {
+		instance = {};
+	} finally {
+		Flutter.currentOwner = lastOwn;
+	}
+	fiber.stateNode = instance;
+	instance.props = props;
+	instance.updater = updater;
+	return instance;
 }
 
 function updateEffects(fiber, topWork) {
@@ -1265,7 +1265,7 @@ function updateHostComponent(fiber) {
 			throw e;
 		}
 	}
-	fiber.parent = containerStack[0];
+	fiber.parent = fiber._return ? fiber._return.stateNode : containerStack[0];
 	var props = fiber.props,
 	    tag = fiber.tag,
 	    root = fiber.root,
@@ -1286,22 +1286,29 @@ function updateHostComponent(fiber) {
 function updateClassComponent(fiber) {
 	var type = fiber.type,
 	    instance = fiber.stateNode,
-	    nextProps = fiber.props,
-	    nextState = fiber.partialState,
-	    isForceUpdate = fiber.isForceUpdate;
-	var nextContext = getMaskedContext(type.contextTypes),
-	    propsChange = false,
-	    shouldUpdate = true,
-	    context = void 0;
+	    isForced = fiber.isForced,
+	    props = fiber.props,
+	    stage = fiber.stage;
+	var nextContext = getMaskedContext(type.contextTypes);
 	if (instance == null) {
-		instance = fiber.stateNode = createInstance(fiber, nextContext);
+		stage = 'init';
+		instance = fiber.stateNode = createInstance(fiber, props);
 		instance.updater.enqueueSetState = Flutter.updateComponent;
-		var willReceive = fiber._willReceive;
-		delete fiber._willReceive;
 		fiber.partialState = instance.state;
+	} else {
+		stage = isForced === true || isForced === false ? 'update' : 'receive';
+		delete fiber.isForced;
+	}
+	instance._reactInternalFiber = fiber;
+	if (instance.__isStateless) {
+		stage = 'noop';
 	}
 	var updater = instance.updater;
-	instance._reactInternalFiber = fiber;
+	updater._hooking = true;
+	while (stage) {
+		stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
+	}
+	updater._hooking = false;
 	fiber.parent = containerStack[0];
 	if (instance.getChildContext) {
 		try {
@@ -1312,39 +1319,50 @@ function updateClassComponent(fiber) {
 		}
 		contextStack.unshift(context);
 	}
-	if (!instance._isStateless) {
-		updater._hooking = true;
-		if (updater._isMounted()) {
-			var _instance = instance,
-			    lastProps = _instance.props,
-			    lastState = _instance.state;
-			fiber.lastProps = lastProps;
-			fiber.lastState = lastState;
-			propsChange = lastProps !== nextProps;
-			delete fiber.isForceUpdate;
-			var stateNoChange = !nextState;
-			if (stateNoChange) {
-				willReceive = propsChange || instance.context !== nextContext;
-				if (willReceive) {
-					callLifeCycleHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
-				}
-				if (propsChange) {
-					getDerivedStateFromProps(instance, type, nextProps, lastState);
-				}
-			}
-			var args = [nextProps, nextState, nextContext];
-			if (!isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
-				shouldUpdate = false;
-				fiber.shouldUpdateFalse = true;
-			} else {
-				callLifeCycleHook(instance, 'componentWillUpdate', args);
-			}
-		} else {
-			getDerivedStateFromProps(instance, type, nextProps, instance.state);
-			callLifeCycleHook(instance, 'componentWillMount', []);
+	if (fiber.shouldUpdateFalse) {
+		return;
+	}
+	instance.context = nextContext;
+	instance.props = props;
+	instance.state = fiber.partialState;
+	fiber.effectTag *= HOOK;
+	updater._hydrating = true;
+	var lastOwn = Flutter.currentOwner;
+	Flutter.currentOwner = instance;
+	var rendered = callLifeCycleHook(instance, 'render', []);
+	if (componentStack[0] === instance) {
+		componentStack.shift();
+	}
+	if (updater._hasError) {
+		rendered = [];
+	}
+	Flutter.currentOwner = lastOwn;
+	diffChildren(fiber, rendered);
+}
+var stageIteration = {
+	noop: noop,
+	init: function init(fiber, nextProps, nextContext, instance) {
+		getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
+		callLifeCycleHook(instance, 'componentWillMount', []);
+	},
+	receive: function receive(fiber, nextProps, nextContext, instance, isForceUpdate) {
+		var updater = instance.updater;
+		updater.lastProps = instance.props;
+		updater.lastState = instance.state;
+		var propsChange = updater.lastProps !== nextProps;
+		var willReceive = propsChange || instance.context !== nextContext;
+		if (willReceive) {
+			callLifeCycleHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
 		}
-		updater._hooking = false;
-		if (!shouldUpdate) {
+		if (propsChange) {
+			getDerivedStateFromProps(instance, fiber, nextProps, updater.lastState);
+		}
+		return 'update';
+	},
+	update: function update(fiber, nextProps, nextContext, instance, isForced) {
+		var args = [nextProps, fiber.partialState, nextContext];
+		if (!isForced && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
+			fiber.shouldUpdateFalse = true;
 			var prev = fiber.alternate;
 			if (prev && prev.child) {
 				var pc = prev._children;
@@ -1359,40 +1377,12 @@ function updateClassComponent(fiber) {
 			if (componentStack[0] === instance) {
 				componentStack.shift();
 			}
-			return;
-		}
-	}
-	instance.context = nextContext;
-	instance.props = nextProps;
-	instance.state = fiber.partialState;
-	fiber.effectTag *= HOOK;
-	var rendered = void 0;
-	updater._hydrating = true;
-	if (!isForceUpdate && willReceive === false) {
-		delete fiber._willReceive;
-		var _a = fiber.child;
-		if (_a && _a.sibling) {
-			rendered = [];
-			for (; _a; _a = _a.sibling) {
-				rendered.push(_a);
-			}
 		} else {
-			rendered = _a;
+			callLifeCycleHook(instance, 'getSnapshotBeforeUpdate', args);
+			callLifeCycleHook(instance, 'componentWillUpdate', args);
 		}
-	} else {
-		var lastOwn = Flutter.currentOwner;
-		Flutter.currentOwner = instance;
-		rendered = callLifeCycleHook(instance, 'render', []);
-		if (componentStack[0] === instance) {
-			componentStack.shift();
-		}
-		if (updater._hasError) {
-			rendered = [];
-		}
-		Flutter.currentOwner = lastOwn;
 	}
-	diffChildren(fiber, rendered);
-}
+};
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {
 		return true;
@@ -1413,13 +1403,12 @@ function detachFiber(fiber, effects$$1) {
 	}
 }
 var gDSFP = 'getDerivedStateFromProps';
-function getDerivedStateFromProps(instance, type, nextProps, lastState) {
+function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
 	try {
-		var method = type[gDSFP];
+		var method = fiber.type[gDSFP];
 		if (method) {
 			var partialState = method.call(null, nextProps, lastState);
 			if (partialState != null) {
-				var fiber = get(instance);
 				fiber.partialState = Object.assign({}, fiber.partialState, partialState);
 			}
 		}
@@ -1635,16 +1624,30 @@ function collectEffects(fiber, shouldUpdateFalse) {
 	} else {
 		effects = [];
 	}
-	var p = fiber.return;
-	if (fiber.tag > 3 && p && p.tag == 5 && fiber === p.child) {
-		var container = getContainer(fiber);
-		container.insertPoint = null;
+	var a = fiber,
+	    b = fiber.return;
+	console.log(a, '-----');
+	if (a.tag > 3 && b) {
+		do {
+			if (a === b.child) {
+				if (b.tag === 5) {
+					b.stateNode.insertPoint = null;
+					break;
+				} else {
+					a = b;
+				}
+			}
+		} while (b == b.return);
+	}
+	if (fiber.type === "p") {
+		console.log(fiber);
 	}
 	for (var child = fiber.child; child; child = child.sibling) {
 		var isHost = child.tag > 3;
 		if (shouldUpdateFalse || child.shouldUpdateFalse) {
 			if (isHost) {
 				child.effectTag = PLACE;
+				console.log(child, true, 'shouldUpdateFalse下的元素节点');
 				effects.push(child);
 			} else {
 				delete child.shouldUpdateFalse;
@@ -1779,12 +1782,12 @@ function commitOtherEffects(fiber) {
                     Flutter.updateContext(fiber);
                     break;
                 case REF:
-                    if (!instance._isStateless) {
+                    if (!instance.__isStateless) {
                         Refs.fireRef(fiber, instance);
                     }
                     break;
                 case NULLREF:
-                    if (!instance._isStateless) {
+                    if (!instance.__isStateless) {
                         Refs.fireRef(fiber, null);
                     }
                     break;
@@ -1934,10 +1937,8 @@ function getNextUnitOfWork() {
 	}
 	return fiber;
 }
-function mergeState(fiber, state, isForceUpdate, callback) {
-	if (isForceUpdate) {
-		fiber.isForceUpdate = isForceUpdate;
-	}
+function mergeState(fiber, state, isForced, callback) {
+	fiber.isForced = fiber.isForced || isForced;
 	fiber.alternate = fiber;
 	if (state) {
 		var instance = fiber.stateNode;
@@ -1961,8 +1962,8 @@ Flutter.updateComponent = function (instance, state, callback) {
 	if (fiber.parent) {
 		fiber.parent.insertPoint = fiber.insertPoint;
 	}
-	var isForceUpdate = state === true;
-	state = isForceUpdate ? null : state;
+	var isForced = state === true;
+	state = isForced ? null : state;
 	if (this._hydrating || Flutter.interactQueue) {
 		if (!fiber.pendingFiber) {
 			var target = fiber.pendingFiber = Object.assign({}, fiber, {
@@ -1970,15 +1971,14 @@ Flutter.updateComponent = function (instance, state, callback) {
 				mountOrder: this.mountOrder,
 				effectTag: callback ? CALLBACK : 1
 			});
-			delete target.partialState;
-			delete target.isForceUpdate;
+			delete target.isForced;
 			delete target.callback;
 			var queue = Flutter.interactQueue || updateQueue$2;
 			queue.push(target);
 		}
-		mergeState(fiber.pendingFiber, state, isForceUpdate, callback);
+		mergeState(fiber.pendingFiber, state, isForced, callback);
 	} else {
-		mergeState(fiber, state, isForceUpdate, callback);
+		mergeState(fiber, state, isForced, callback);
 		if (!this._hooking) {
 			updateQueue$2.push(fiber);
 			Flutter.scheduleWork();

@@ -16,11 +16,12 @@
 <body>
 
     <pre>应该等于
-
+        CdABf
     </pre>
     <h1 id='example' class="root">
 
     </h1>
+
     <script type='text/babel'>
           var container = document.getElementById('example');
           var div = container;
@@ -38,67 +39,33 @@
                   }
               };
           };
-          var list = [];
-          function logger(e) {
-              list.push(e);
-          }
-          class App extends React.Component {
-              constructor(props) {
-                  super(props);
-                  this.state = {
-                      aaa: "aaa"
-                  };
-              }
-              componentWillMount() {
-                  this.setState(
-                      {
-                          aaa: "bbb"
-                      },
-                      function () {
-                          logger("1111");
-                      }
-                  );
-              }
-              componentDidMount() {
-                  console.log(this)
-                  this.state.aaa = "cccc";
-                  this.forceUpdate(function () {
-                      logger("2222");
-                  });
-                  this.state.aaa = "dddd";
-                  this.forceUpdate(function () {
-                      logger("3333");
-                  });
-                  logger("did mount");
-              }
-              componentWillUpdate() {
-                  logger("app will update");
-              }
-              componentDidUpdate() {
-                  logger("app did update");
-              }
-  
-              render() {
-                  logger("render " + this.state.aaa);
-                  return <div>{this.state.aaa}</div>;
-              }
-          }
-          ReactDOM.render(<App />, div, function () {
-              logger("ReactDOM cb");
-          });
-  
-          var list2 = [
-              "render bbb",
-              "did mount",
-              "1111",
-              "ReactDOM cb",
-              "app will update",
-              "render dddd",
-              "app did update",
-              "2222",
-              "3333"
-          ]
-          expect(list.join("\n")).toBe(list2.join("\n"));
+   var LetterInner = class extends React.Component {
+        render() {
+            return <p>{this.props.char}</p>;
+        }
+    };
+
+    var Letter = class extends React.Component {
+        render() {
+            return <LetterInner char={this.props.char} />;
+        }
+        shouldComponentUpdate() {
+            return false;
+        }
+    };
+
+    var Letters = class extends React.Component {
+        render() {
+            const letters = this.props.letters.split("");
+            return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
+        }
+    };
+
+        // Two random strings -- some additions, some removals, some moves
+        ReactDOM.render(<Letters letters="ABCD" />, container);
+        expect(container.textContent).toBe("ABCD");
+        var s =  ReactDOM.render(<Letters letters="CdABf" />, container);
+        expect(container.textContent).toBe("CdABf");
 
 </script>
 

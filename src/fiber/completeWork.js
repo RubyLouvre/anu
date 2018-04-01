@@ -16,31 +16,53 @@ export function collectEffects(fiber, shouldUpdateFalse) {
 	} else {
 		effects = [];
 	}
-	var p = fiber.return;
-	if (fiber.tag > 3 &&  p && p.tag == 5 && fiber === p.child) {
-		var container = getContainer(fiber);
-		container.insertPoint = null;
-	}
+	var a = fiber, b = fiber.return;
+	if (a.tag > 3 && b) {
 
+		do{
+			if(a === b.child){
+				if(b.tag === 5){
+					b.stateNode.insertPoint = null
+					break
+				}else{
+					a = b;
+				}
+			}
+		}while(b == b.return)
+	//	var container = getContainer(fiber);
+	//	container.insertPoint = null;
+	}
+//	console.log(fiber)
+	if(fiber.type === "p"){
+		console.log(fiber)
+	}
 	for (let child = fiber.child; child; child = child.sibling) {
 		let isHost = child.tag > 3;
 		if (shouldUpdateFalse || child.shouldUpdateFalse) {
+		/*	if(child.shouldUpdateFalse){
+				console.log("这是return false的组件")
+			}*/
 			if (isHost) {
 				child.effectTag = PLACE;
+				console.log(child, true, 'shouldUpdateFalse下的元素节点')
 				effects.push(child);
 			} else {
 				//只有组件虚拟DOM才有钩子
 				delete child.shouldUpdateFalse;
+				//console.log(child, true, '999999')
 				__push.apply(effects, collectEffects(child, true));
 			}
 		} else {
 			__push.apply(effects, collectEffects(child));
+		//	console.log(child, false, '不是false')
 			if (child.effectTag) {
 				effects.push(child);
 			}
 		}
 	}
+	//console.log(!!fiber.parent, fiber.name, fiber.key)
 	if (fiber.parent) {
+		
 		fiber.insertPoint = fiber.parent.insertPoint;
 		if (fiber.tag > 3) {
 			fiber.parent.insertPoint = fiber.stateNode;

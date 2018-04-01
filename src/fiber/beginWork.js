@@ -85,16 +85,17 @@ function updateHostComponent(fiber) {
 //如果是setState是没有alternate
 //如果是receive是有alternate
 function updateClassComponent(fiber) {
-	let { type, stateNode: instance, alternate, props, stage } = fiber;
+	let { type, stateNode: instance, isForced, props, stage } = fiber;
 	let nextContext = getMaskedContext(type.contextTypes);
-	if (!instance && !alternate) {
+	if (instance == null) {
 		//初始化
 		stage = 'init';
 		instance = fiber.stateNode = createInstance(fiber, props);
 		instance.updater.enqueueSetState = Flutter.updateComponent;
 		fiber.partialState = instance.state;
 	} else {
-		stage = alternate ? 'receive' : 'update';
+		stage = isForced === true || isForced === false ? 'update' : 'receive';
+		delete fiber.isForced;
 	}
 	instance._reactInternalFiber = fiber;
 	if (instance.__isStateless) {
@@ -103,7 +104,7 @@ function updateClassComponent(fiber) {
 	var updater = instance.updater;
 	updater._hooking = true;
 	while (stage) {
-		stage = stageIteration[stage](fiber, props, nextContext, instance, updater);
+		stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
 	}
 	updater._hooking = false;
 	fiber.parent = containerStack[0];
@@ -151,11 +152,12 @@ function updateClassComponent(fiber) {
 }
 var stageIteration = {
 	noop: noop,
-	init(fiber, nextProps, nextContext, instance, updater) {
+	init(fiber, nextProps, nextContext, instance) {
 		getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
 		callLifeCycleHook(instance, 'componentWillMount', []);
 	},
-	receive(fiber, nextProps, nextContext, instance, updater) {
+	receive(fiber, nextProps, nextContext, instance, isForceUpdate) {
+		var updater = instance.updater;
 		updater.lastProps = instance.props;
 		updater.lastState = instance.state;
 		let propsChange = updater.lastProps !== nextProps;
@@ -168,9 +170,9 @@ var stageIteration = {
 		}
 		return 'update';
 	},
-	update(fiber, nextProps, nextContext, instance, updater) {
+	update(fiber, nextProps, nextContext, instance, isForced) {
 		let args = [ nextProps, fiber.partialState, nextContext ];
-		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
+		if (!isForced && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
 			fiber.shouldUpdateFalse = true;
 			const prev = fiber.alternate;
 			if (prev && prev.child) {
