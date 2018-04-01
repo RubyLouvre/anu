@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
    <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -23,7 +23,7 @@
     </h1>
     <script type='text/babel'>
           var container = document.getElementById('example');
-          var div = container;
+        //  var div = container;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -37,27 +37,66 @@
                   }
               };
           };
-          var App = class extends React.Component {
-              render() {
-                  return [<A/>,<B/>]
+          const ops = [];
+
+    function span(...children) {
+        return { type: "span", props:null, children: children };
+    }
+    function a(...children) {
+        return { type: "a", props:null, children: children };
+    }
+    function div(...children) {
+        return { type: "div", props:null,  children: children };
+    }
+    var React = ReactNoop
+          class Stateful extends React.Component {
+              componentDidUpdate() {
+                  ops.push("Update Stateful");
               }
-          };
-          var A = class extends React.Component {
+  
               render() {
-                  return <p>123</p>
+                  return <div>Hello</div>;
               }
-          };
-          var B = class extends React.Component {
-              render() {
-                  return <p>456</p>
-              }
-          };
-          
-          // Two random strings -- some additions, some removals, some moves
-        var s =  ReactDOM.render(<App />, container, function(){
-              console.log("xxxxx")
-          });
-        
+          }
+  
+          function Foo({ condition }) {
+              return condition ? (
+                  <React.Fragment>
+                      <React.Fragment>
+                          <React.Fragment>
+                              <Stateful key="a" />
+                          </React.Fragment>
+                      </React.Fragment>
+                  </React.Fragment>
+              ) : (
+                  <React.Fragment>
+                      <React.Fragment>
+                          <React.Fragment>
+                              <div />
+                              <Stateful key="a" />
+                          </React.Fragment>
+                      </React.Fragment>
+                  </React.Fragment>
+              );
+          }
+  
+  
+          ReactNoop.render(<Foo condition={true} />);
+          ReactNoop.flush();
+  
+          ReactNoop.render(<Foo condition={false} />);
+          ReactNoop.flush();
+  
+          expect(ops).toEqual(["Update Stateful"]);
+          console.log(ReactNoop.getRoot())
+          expect(ReactNoop.getChildren()).toEqual([div(),div("Hello")]);
+  
+          ReactNoop.render(<Foo condition={true} />);
+          ReactNoop.flush();
+  
+          expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
+          expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
+       
 </script>
 
 

@@ -25,6 +25,7 @@ if (prevReact && prevReact.isReactNoop) {
         render,
         flush: NoopRenderer.flush,
         reset: NoopRenderer.reset,
+        getRoot: NoopRenderer.getRoot,
         getChildren: NoopRenderer.getChildren,
         options,
         isReactNoop: true,

@@ -17,7 +17,7 @@ export function collectEffects(fiber, shouldUpdateFalse) {
 		effects = [];
 	}
 	var p = fiber.return;
-	if (fiber.tag > 3 && p && fiber === p.child) {
+	if (fiber.tag > 3 &&  p && p.tag == 5 && fiber === p.child) {
 		var container = getContainer(fiber);
 		container.insertPoint = null;
 	}
