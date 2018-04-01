@@ -158,7 +158,7 @@ function mergeState(fiber, state, isForceUpdate, callback) {
 	if (isForceUpdate) {
 		fiber.isForceUpdate = isForceUpdate;
 	}
-	fiber.alternate = fiber;
+	//fiber.alternate = fiber;
 	if (state) {
 		var instance = fiber.stateNode;
 		var old = fiber.partialState || instance.state;

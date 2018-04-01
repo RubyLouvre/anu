@@ -38,22 +38,68 @@
                   }
               };
           };
-          function changeView() {
-              console.log('444')
-            ReactDOM.unmountComponentAtNode(container);
-        }
+          var list = [];
+          function logger(e) {
+              list.push(e);
+          }
+          class App extends React.Component {
+              constructor(props) {
+                  super(props);
+                  this.state = {
+                      aaa: "aaa"
+                  };
+              }
+              componentWillMount() {
+                  this.setState(
+                      {
+                          aaa: "bbb"
+                      },
+                      function () {
+                          logger("1111");
+                      }
+                  );
+              }
+              componentDidMount() {
+                  console.log(this)
+                  this.state.aaa = "cccc";
+                  this.forceUpdate(function () {
+                      logger("2222");
+                  });
+                  this.state.aaa = "dddd";
+                  this.forceUpdate(function () {
+                      logger("3333");
+                  });
+                  logger("did mount");
+              }
+              componentWillUpdate() {
+                  logger("app will update");
+              }
+              componentDidUpdate() {
+                  logger("app did update");
+              }
+  
+              render() {
+                  logger("render " + this.state.aaa);
+                  return <div>{this.state.aaa}</div>;
+              }
+          }
+          ReactDOM.render(<App />, div, function () {
+              logger("ReactDOM cb");
+          });
+  
+          var list2 = [
+              "render bbb",
+              "did mount",
+              "1111",
+              "ReactDOM cb",
+              "app will update",
+              "render dddd",
+              "app did update",
+              "2222",
+              "3333"
+          ]
+          expect(list.join("\n")).toBe(list2.join("\n"));
 
-        let stub = (
-            <select value="giraffe" onClick={changeView}>
-                <option value="monkey">A monkey!</option>
-                <option value="giraffe">A giraffe!</option>
-                <option value="gorilla">A gorilla!</option>
-            </select>
-        );
-        stub = ReactDOM.render(stub, container);
-        const node = ReactDOM.findDOMNode(stub);
-        node.click()
-        var ok = true
 </script>
 
 

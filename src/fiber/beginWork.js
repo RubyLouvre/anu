@@ -3,7 +3,7 @@ import { contextStack, componentStack, containerStack, emptyObject } from '../sh
 import { fiberizeChildren } from '../createElement';
 import { createInstance } from '../createInstance';
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF } from './effectTag';
-import { extend, Flutter, get } from '../util';
+import { extend, Flutter, get, noop } from '../util';
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
@@ -60,7 +60,8 @@ function updateHostComponent(fiber) {
 			throw e;
 		}
 	}
-	fiber.parent = containerStack[0];
+
+	fiber.parent = fiber._return ? fiber._return.stateNode : containerStack[0];
 	//  fiber.insertMount = fiber.parent.insertMount =
 
 	const { props, tag, root, alternate: prev } = fiber;
@@ -80,24 +81,31 @@ function updateHostComponent(fiber) {
 		}
 	}
 }
-
+//第一次是没有alternate 也没有stateNode
+//如果是setState是没有alternate
+//如果是receive是有alternate
 function updateClassComponent(fiber) {
-	let { type, stateNode: instance, props: nextProps, partialState: nextState, isForceUpdate } = fiber;
-	let nextContext = getMaskedContext(type.contextTypes),
-		propsChange = false,
-		shouldUpdate = true,
-		context;
-
-	if (instance == null) {
-		instance = fiber.stateNode = createInstance(fiber, nextContext);
+	let { type, stateNode: instance, alternate, props, stage } = fiber;
+	let nextContext = getMaskedContext(type.contextTypes);
+	if (!instance && !alternate) {
+		//初始化
+		stage = 'init';
+		instance = fiber.stateNode = createInstance(fiber, props);
 		instance.updater.enqueueSetState = Flutter.updateComponent;
-		var willReceive = fiber._willReceive; //stateless组件一开始时是_willReceive＝false
-		delete fiber._willReceive;
-
 		fiber.partialState = instance.state;
+	} else {
+		stage = alternate ? 'receive' : 'update';
 	}
-	let updater = instance.updater;
 	instance._reactInternalFiber = fiber;
+	if (instance.__isStateless) {
+		stage = 'noop';
+	}
+	var updater = instance.updater;
+	updater._hooking = true;
+	while (stage) {
+		stage = stageIteration[stage](fiber, props, nextContext, instance, updater);
+	}
+	updater._hooking = false;
 	fiber.parent = containerStack[0];
 	if (instance.getChildContext) {
 		try {
@@ -108,39 +116,62 @@ function updateClassComponent(fiber) {
 		}
 		contextStack.unshift(context);
 	}
-	if (!instance._isStateless) {
-		updater._hooking = true;
-		if (updater._isMounted()) {
-			var { props: lastProps, state: lastState } = instance;
-			fiber.lastProps = lastProps;
-			fiber.lastState = lastState;
-			propsChange = lastProps !== nextProps;
-			delete fiber.isForceUpdate;
-			var stateNoChange = !nextState;
-			if (stateNoChange) {
-				//只要props/context任于一个发生变化，就会触发cWRP
-				willReceive = propsChange || instance.context !== nextContext;
-				if (willReceive) {
-					callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
-				}
-
-				if (propsChange) {
-					getDerivedStateFromProps(instance, type, nextProps, lastState);
-				}
-			}
-			let args = [ nextProps, nextState, nextContext ];
-			if (!isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
-				shouldUpdate = false;
-				fiber.shouldUpdateFalse = true;
-			} else {
-				callLifeCycleHook(instance, 'componentWillUpdate', args);
+	if (fiber.shouldUpdateFalse) {
+		return;
+	}
+	instance.context = nextContext;
+	instance.props = props;
+	instance.state = fiber.partialState; //fiber.partialState可能在钩子里被重写
+	fiber.effectTag *= HOOK;
+	updater._hydrating = true;
+	/* if (!fiber.isForceUpdate && willReceive === false) {
+		delete fiber._willReceive;
+		let a = fiber.child;
+		if (a && a.sibling) {
+			rendered = [];
+			for (; a; a = a.sibling) {
+				rendered.push(a);
 			}
 		} else {
-			getDerivedStateFromProps(instance, type, nextProps, instance.state);
-			callLifeCycleHook(instance, 'componentWillMount', []);
+			rendered = a;
 		}
-		updater._hooking = false;
-		if (!shouldUpdate) {
+	} else {
+		*/
+	let lastOwn = Flutter.currentOwner;
+	Flutter.currentOwner = instance;
+	let rendered = callLifeCycleHook(instance, 'render', []);
+	if (componentStack[0] === instance) {
+		componentStack.shift();
+	}
+	if (updater._hasError) {
+		rendered = [];
+	}
+	Flutter.currentOwner = lastOwn;
+	diffChildren(fiber, rendered);
+}
+var stageIteration = {
+	noop: noop,
+	init(fiber, nextProps, nextContext, instance, updater) {
+		getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
+		callLifeCycleHook(instance, 'componentWillMount', []);
+	},
+	receive(fiber, nextProps, nextContext, instance, updater) {
+		updater.lastProps = instance.props;
+		updater.lastState = instance.state;
+		let propsChange = updater.lastProps !== nextProps;
+		var willReceive = propsChange || instance.context !== nextContext;
+		if (willReceive) {
+			callLifeCycleHook(instance, 'componentWillReceiveProps', [ nextProps, nextContext ]);
+		}
+		if (propsChange) {
+			getDerivedStateFromProps(instance, fiber, nextProps, updater.lastState);
+		}
+		return 'update';
+	},
+	update(fiber, nextProps, nextContext, instance, updater) {
+		let args = [ nextProps, fiber.partialState, nextContext ];
+		if (!fiber.isForceUpdate && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
+			fiber.shouldUpdateFalse = true;
 			const prev = fiber.alternate;
 			if (prev && prev.child) {
 				var pc = prev._children;
@@ -155,42 +186,12 @@ function updateClassComponent(fiber) {
 			if (componentStack[0] === instance) {
 				componentStack.shift();
 			}
-			return;
-		}
-	}
-
-	instance.context = nextContext;
-	instance.props = nextProps;
-	instance.state = fiber.partialState; //fiber.partialState可能在钩子里被重写
-
-	fiber.effectTag *= HOOK;
-	let rendered;
-	updater._hydrating = true;
-	if (!isForceUpdate && willReceive === false) {
-		delete fiber._willReceive;
-		let a = fiber.child;
-		if (a && a.sibling) {
-			rendered = [];
-			for (; a; a = a.sibling) {
-				rendered.push(a);
-			}
 		} else {
-			rendered = a;
+			callLifeCycleHook(instance, 'getSnapshotBeforeUpdate', args);
+			callLifeCycleHook(instance, 'componentWillUpdate', args);
 		}
-	} else {
-		let lastOwn = Flutter.currentOwner;
-		Flutter.currentOwner = instance;
-		rendered = callLifeCycleHook(instance, 'render', []);
-		if (componentStack[0] === instance) {
-			componentStack.shift();
-		}
-		if (updater._hasError) {
-			rendered = [];
-		}
-		Flutter.currentOwner = lastOwn;
 	}
-	diffChildren(fiber, rendered);
-}
+};
 
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {
@@ -214,13 +215,12 @@ export function detachFiber(fiber, effects) {
 }
 
 var gDSFP = 'getDerivedStateFromProps';
-function getDerivedStateFromProps(instance, type, nextProps, lastState) {
+function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
 	try {
-		var method = type[gDSFP];
+		var method = fiber.type[gDSFP];
 		if (method) {
 			var partialState = method.call(null, nextProps, lastState);
 			if (partialState != null) {
-				var fiber = get(instance);
 				fiber.partialState = Object.assign({}, fiber.partialState, partialState);
 			}
 		}
@@ -278,7 +278,6 @@ function diffChildren(parentFiber, children) {
 		if (oldFiber) {
 			if (isSameNode(oldFiber, newFiber)) {
 				newFiber.stateNode = oldFiber.stateNode;
-				// newFiber.stateNode._reactInternalFiber = newFiber;
 				newFiber.alternate = oldFiber;
 				if (oldFiber.ref && oldFiber.ref !== newFiber.ref) {
 					oldFiber.effectTag = NULLREF;
