@@ -719,274 +719,280 @@ function createInstance(fiber, context) {
 }
 
 function updateEffects(fiber, topWork) {
-    if (fiber.tag > 3) {
-        updateHostComponent(fiber);
+  if (fiber.tag > 3) {
+    updateHostComponent(fiber);
+  } else {
+    updateClassComponent(fiber);
+  }
+  if (fiber.child) {
+    if (fiber.shouldUpdateFalse) {
     } else {
-        updateClassComponent(fiber);
+      return fiber.child;
     }
-    if (fiber.child) {
-        if (fiber.shouldUpdateFalse) {
-        } else {
-            return fiber.child;
-        }
+  }
+  var f = fiber;
+  while (f) {
+    if (f.stateNode.getChildContext) {
+      contextStack.shift();
     }
-    var f = fiber;
-    while (f) {
-        if (f.stateNode.getChildContext) {
-            contextStack.shift();
-        }
-        if (f.tag === 5) {
-            containerStack.shift();
-        }
-        if (f === topWork) {
-            break;
-        }
-        if (f.sibling) {
-            return f.sibling;
-        }
-        f = f.return;
+    if (f.tag === 5) {
+      containerStack.shift();
     }
+    if (f === topWork) {
+      break;
+    }
+    if (f.sibling) {
+      return f.sibling;
+    }
+    f = f.return;
+  }
 }
 function Fiber(vnode) {
-    if (vnode instanceof Fiber) {
-        console.log("本来就是Fiber");
-    }
-    extend(this, vnode);
-    var type = vnode.type;
-    this.name = type.displayName || type.name || type;
-    this.effectTag = 1;
+  if (vnode instanceof Fiber) {
+    console.log('本来就是Fiber');
+  }
+  extend(this, vnode);
+  var type = vnode.type;
+  this.name = type.displayName || type.name || type;
+  this.effectTag = 1;
 }
 function updateHostComponent(fiber) {
-    if (!fiber.stateNode) {
-        try {
-            fiber.stateNode = Flutter.createElement(fiber);
-        } catch (e) {
-            throw e;
-        }
+  if (!fiber.stateNode) {
+    try {
+      fiber.stateNode = Flutter.createElement(fiber);
+    } catch (e) {
+      throw e;
     }
-    fiber.parent = fiber._return ? fiber._return.stateNode : containerStack[0];
-    var props = fiber.props,
-        tag = fiber.tag,
-        root = fiber.root,
-        prev = fiber.alternate;
-    var children = props && props.children;
-    if (tag === 5) {
-        containerStack.unshift(fiber.stateNode);
-        if (!root) {
-            fiber.effectTag *= ATTR;
-        }
-        diffChildren(fiber, children);
-    } else {
-        if (!prev || prev.props.children !== children) {
-            fiber.effectTag *= CONTENT;
-        }
+  }
+  fiber.parent = fiber._return ? fiber._return.stateNode : containerStack[0];
+  var props = fiber.props,
+      tag = fiber.tag,
+      root = fiber.root,
+      prev = fiber.alternate;
+  var children = props && props.children;
+  if (tag === 5) {
+    containerStack.unshift(fiber.stateNode);
+    if (!root) {
+      fiber.effectTag *= ATTR;
     }
+    diffChildren(fiber, children);
+  } else {
+    if (!prev || prev.props.children !== children) {
+      fiber.effectTag *= CONTENT;
+    }
+  }
 }
 function updateClassComponent(fiber) {
-    var type = fiber.type,
-        instance = fiber.stateNode,
-        isForced = fiber.isForced,
-        props = fiber.props,
-        stage = fiber.stage;
-    var nextContext = getMaskedContext(type.contextTypes),
-        context = void 0;
-    if (instance == null) {
-        stage = "init";
-        instance = fiber.stateNode = createInstance(fiber, props);
-        instance.updater.enqueueSetState = Flutter.updateComponent;
-        fiber.partialState = instance.state;
-    } else {
-        stage = isForced === true || isForced === false ? "update" : "receive";
-        delete fiber.isForced;
+  var type = fiber.type,
+      instance = fiber.stateNode,
+      isForced = fiber.isForced,
+      props = fiber.props,
+      stage = fiber.stage;
+  var nextContext = getMaskedContext(type.contextTypes),
+      context = void 0;
+  if (instance == null) {
+    stage = 'init';
+    instance = fiber.stateNode = createInstance(fiber, props);
+    instance.updater.enqueueSetState = Flutter.updateComponent;
+    fiber.partialState = instance.state;
+  } else {
+    stage = isForced === true || isForced === false ? 'update' : 'receive';
+    delete fiber.isForced;
+  }
+  instance._reactInternalFiber = fiber;
+  if (instance.__isStateless) {
+    stage = 'noop';
+  }
+  var updater = instance.updater;
+  updater._hooking = true;
+  while (stage) {
+    stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
+  }
+  updater._hooking = false;
+  fiber.parent = containerStack[0];
+  if (instance.getChildContext) {
+    try {
+      context = instance.getChildContext();
+      context = Object.assign({}, nextContext, context);
+    } catch (e) {
+      context = {};
     }
-    instance._reactInternalFiber = fiber;
-    if (instance.__isStateless) {
-        stage = "noop";
-    }
-    var updater = instance.updater;
-    updater._hooking = true;
-    while (stage) {
-        stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
-    }
-    updater._hooking = false;
-    fiber.parent = containerStack[0];
-    if (instance.getChildContext) {
-        try {
-            context = instance.getChildContext();
-            context = Object.assign({}, nextContext, context);
-        } catch (e) {
-            context = {};
-        }
-        contextStack.unshift(context);
-    }
-    if (fiber.shouldUpdateFalse) {
-        return;
-    }
-    instance.context = nextContext;
-    instance.props = props;
-    instance.state = fiber.partialState;
-    fiber.effectTag *= HOOK;
-    updater._hydrating = true;
-    var lastOwn = Flutter.currentOwner;
-    Flutter.currentOwner = instance;
-    var rendered = callLifeCycleHook(instance, "render", []);
-    if (componentStack[0] === instance) {
-        componentStack.shift();
-    }
-    if (updater._hasError) {
-        rendered = [];
-    }
-    Flutter.currentOwner = lastOwn;
-    diffChildren(fiber, rendered);
+    contextStack.unshift(context);
+  }
+  if (fiber.shouldUpdateFalse) {
+    return;
+  }
+  instance.context = nextContext;
+  instance.props = props;
+  instance.state = fiber.partialState;
+  fiber.effectTag *= HOOK;
+  updater._hydrating = true;
+  var lastOwn = Flutter.currentOwner;
+  Flutter.currentOwner = instance;
+  var rendered = callLifeCycleHook(instance, 'render', []);
+  if (componentStack[0] === instance) {
+    componentStack.shift();
+  }
+  if (updater._hasError) {
+    rendered = [];
+  }
+  Flutter.currentOwner = lastOwn;
+  diffChildren(fiber, rendered);
 }
 var stageIteration = {
-    noop: noop,
-    init: function init(fiber, nextProps, nextContext, instance) {
-        getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
-        callLifeCycleHook(instance, "componentWillMount", []);
-    },
-    receive: function receive(fiber, nextProps, nextContext, instance) {
-        var updater = instance.updater;
-        updater.lastProps = instance.props;
-        updater.lastState = instance.state;
-        var propsChange = updater.lastProps !== nextProps;
-        var willReceive = propsChange || instance.context !== nextContext;
-        if (willReceive) {
-            callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
-        }
-        if (propsChange) {
-            getDerivedStateFromProps(instance, fiber, nextProps, updater.lastState);
-        }
-        return "update";
-    },
-    update: function update(fiber, nextProps, nextContext, instance, isForced) {
-        var args = [nextProps, fiber.partialState, nextContext];
-        if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
-            fiber.shouldUpdateFalse = true;
-            var prev = fiber.alternate;
-            if (prev && prev.child) {
-                var pc = prev._children;
-                var cc = fiber._children = {};
-                fiber.child = prev.child;
-                for (var i in pc) {
-                    var a = pc[i];
-                    a.return = fiber;
-                    cc[i] = a;
-                }
-            }
-            if (componentStack[0] === instance) {
-                componentStack.shift();
-            }
-        } else {
-            callLifeCycleHook(instance, "getSnapshotBeforeUpdate", args);
-            callLifeCycleHook(instance, "componentWillUpdate", args);
-        }
+  noop: noop,
+  init: function init(fiber, nextProps, nextContext, instance) {
+    getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
+    callLifeCycleHook(instance, 'componentWillMount', []);
+  },
+  receive: function receive(fiber, nextProps, nextContext, instance) {
+    var updater = instance.updater;
+    updater.lastProps = instance.props;
+    updater.lastState = instance.state;
+    var propsChange = updater.lastProps !== nextProps;
+    var willReceive = propsChange || instance.context !== nextContext;
+    if (willReceive) {
+      callLifeCycleHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
+    } else {
+      cloneChildren(fiber);
+      return;
     }
+    if (propsChange) {
+      getDerivedStateFromProps(instance, fiber, nextProps, updater.lastState);
+    }
+    return 'update';
+  },
+  update: function update(fiber, nextProps, nextContext, instance, isForced) {
+    var args = [nextProps, fiber.partialState, nextContext];
+    if (!isForced && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
+      cloneChildren(fiber);
+    } else {
+      callLifeCycleHook(instance, 'getSnapshotBeforeUpdate', args);
+      callLifeCycleHook(instance, 'componentWillUpdate', args);
+    }
+  }
 };
 function isSameNode(a, b) {
-    if (a.type === b.type && a.key === b.key) {
-        return true;
-    }
+  if (a.type === b.type && a.key === b.key) {
+    return true;
+  }
 }
 function detachFiber(fiber, effects$$1) {
-    fiber.effectTag = DETACH;
-    if (fiber.ref) {
-        fiber.effectTag *= NULLREF;
-    }
-    fiber.disposed = true;
-    if (fiber.tag < 3) {
-        fiber.effectTag *= HOOK;
-    }
-    effects$$1.push(fiber);
-    for (var child = fiber.child; child; child = child.sibling) {
-        detachFiber(child, effects$$1);
-    }
+  fiber.effectTag = DETACH;
+  if (fiber.ref) {
+    fiber.effectTag *= NULLREF;
+  }
+  fiber.disposed = true;
+  if (fiber.tag < 3) {
+    fiber.effectTag *= HOOK;
+  }
+  effects$$1.push(fiber);
+  for (var child = fiber.child; child; child = child.sibling) {
+    detachFiber(child, effects$$1);
+  }
 }
-var gDSFP = "getDerivedStateFromProps";
+var gDSFP = 'getDerivedStateFromProps';
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
-    try {
-        var method = fiber.type[gDSFP];
-        if (method) {
-            var partialState = method.call(null, nextProps, lastState);
-            if (partialState != null) {
-                fiber.partialState = Object.assign({}, fiber.partialState, partialState);
-            }
-        }
-    } catch (error) {
-        pushError(instance, gDSFP, error);
+  try {
+    var method = fiber.type[gDSFP];
+    if (method) {
+      var partialState = method.call(null, nextProps, lastState);
+      if (partialState != null) {
+        fiber.partialState = Object.assign({}, fiber.partialState, partialState);
+      }
     }
+  } catch (error) {
+    pushError(instance, gDSFP, error);
+  }
+}
+function cloneChildren(fiber) {
+  fiber.shouldUpdateFalse = true;
+  var prev = fiber.alternate;
+  if (prev && prev.child) {
+    var pc = prev._children;
+    var cc = fiber._children = {};
+    fiber.child = prev.child;
+    for (var i in pc) {
+      var a = pc[i];
+      a.return = fiber;
+      cc[i] = a;
+    }
+  }
+  if (componentStack[0] === fiber.stateNode) {
+    componentStack.shift();
+  }
 }
 function getMaskedContext(contextTypes) {
-    var context = {};
-    if (!contextTypes) {
-        return emptyObject;
+  var context = {};
+  if (!contextTypes) {
+    return emptyObject;
+  }
+  var parentContext = contextStack[0],
+      hasKey = void 0;
+  for (var key in contextTypes) {
+    if (contextTypes.hasOwnProperty(key)) {
+      hasKey = true;
+      context[key] = parentContext[key];
     }
-    var parentContext = contextStack[0],
-        hasKey = void 0;
-    for (var key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            hasKey = true;
-            context[key] = parentContext[key];
-        }
-    }
-    return hasKey ? context : emptyObject;
+  }
+  return hasKey ? context : emptyObject;
 }
 function diffChildren(parentFiber, children) {
-    var prev = parentFiber.alternate;
-    var oldFibers = prev ? prev._children : {};
-    var newFibers = fiberizeChildren(children, parentFiber);
-    var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
-    var matchFibers = {};
-    for (var i in oldFibers) {
-        var newFiber = newFibers[i];
-        var oldFiber = oldFibers[i];
-        if (newFiber && newFiber.type === oldFiber.type) {
-            matchFibers[i] = oldFiber;
-            if (newFiber.key != null) {
-                oldFiber.key = newFiber.key;
-            }
-            continue;
-        }
-        detachFiber(oldFiber, effects$$1);
+  var prev = parentFiber.alternate;
+  var oldFibers = prev ? prev._children : {};
+  var newFibers = fiberizeChildren(children, parentFiber);
+  var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
+  var matchFibers = {};
+  for (var i in oldFibers) {
+    var newFiber = newFibers[i];
+    var oldFiber = oldFibers[i];
+    if (newFiber && newFiber.type === oldFiber.type) {
+      matchFibers[i] = oldFiber;
+      if (newFiber.key != null) {
+        oldFiber.key = newFiber.key;
+      }
+      continue;
     }
-    var prevFiber = void 0,
-        index = 0;
-    for (var _i in newFibers) {
-        var _newFiber = newFibers[_i] = new Fiber(newFibers[_i]);
-        var _oldFiber = matchFibers[_i];
-        if (_oldFiber) {
-            if (isSameNode(_oldFiber, _newFiber)) {
-                _newFiber.stateNode = _oldFiber.stateNode;
-                _newFiber.alternate = _oldFiber;
-                if (_oldFiber.ref && _oldFiber.ref !== _newFiber.ref) {
-                    _oldFiber.effectTag = NULLREF;
-                    effects$$1.push(_oldFiber);
-                }
-                if (_newFiber.tag === 5) {
-                    _newFiber.lastProps = _oldFiber.props;
-                }
-            } else {
-                detachFiber(_oldFiber, effects$$1);
-            }
+    detachFiber(oldFiber, effects$$1);
+  }
+  var prevFiber = void 0,
+      index = 0;
+  for (var _i in newFibers) {
+    var _newFiber = newFibers[_i] = new Fiber(newFibers[_i]);
+    var _oldFiber = matchFibers[_i];
+    if (_oldFiber) {
+      if (isSameNode(_oldFiber, _newFiber)) {
+        _newFiber.stateNode = _oldFiber.stateNode;
+        _newFiber.alternate = _oldFiber;
+        if (_oldFiber.ref && _oldFiber.ref !== _newFiber.ref) {
+          _oldFiber.effectTag = NULLREF;
+          effects$$1.push(_oldFiber);
         }
-        if (_newFiber.tag > 3) {
-            _newFiber.effectTag *= PLACE;
+        if (_newFiber.tag === 5) {
+          _newFiber.lastProps = _oldFiber.props;
         }
-        if (_newFiber.ref) {
-            _newFiber.effectTag *= REF;
-        }
-        _newFiber.index = index++;
-        _newFiber.return = parentFiber;
-        if (prevFiber) {
-            prevFiber.sibling = _newFiber;
-        } else {
-            parentFiber.child = _newFiber;
-        }
-        prevFiber = _newFiber;
+      } else {
+        detachFiber(_oldFiber, effects$$1);
+      }
     }
+    if (_newFiber.tag > 3) {
+      _newFiber.effectTag *= PLACE;
+    }
+    if (_newFiber.ref) {
+      _newFiber.effectTag *= REF;
+    }
+    _newFiber.index = index++;
+    _newFiber.return = parentFiber;
     if (prevFiber) {
-        delete prevFiber.sibling;
+      prevFiber.sibling = _newFiber;
+    } else {
+      parentFiber.child = _newFiber;
     }
+    prevFiber = _newFiber;
+  }
+  if (prevFiber) {
+    delete prevFiber.sibling;
+  }
 }
 
 function AnuPortal(props) {

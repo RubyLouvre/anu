@@ -155,7 +155,7 @@ function getNextUnitOfWork() {
  */
 
 function mergeState(fiber, state, isForced, callback) {
-    fiber.isForced = fiber.isForced || isForced;
+	fiber.isForced = fiber.isForced || isForced;
     fiber.alternate = fiber;
     if (state) {
         var instance = fiber.stateNode;
@@ -182,7 +182,8 @@ Flutter.updateComponent = function(instance, state, callback) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
     let isForced = state === true;
-    state = isForced ? null : state;
+	state = isForced ? null : state;
+	
     if (this._hydrating || Flutter.interactQueue) {
         //如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
         if (!fiber.pendingFiber) {
