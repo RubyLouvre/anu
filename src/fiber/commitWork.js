@@ -36,11 +36,11 @@ export function commitPlaceEffects(fibers) {
         let hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
             try{
-               fiber.parent.insertPoint = null;
-               Flutter.insertElement(fiber);
+                fiber.parent.insertPoint = null;
+                Flutter.insertElement(fiber);
             }catch(e){
-              //  console.log(fiber.name, e)
-                throw e
+                //  console.log(fiber.name, e)
+                throw e;
             }
             fiber.effectTag = remainder;
             hasEffect = remainder > 1;

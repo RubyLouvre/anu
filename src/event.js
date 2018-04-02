@@ -24,7 +24,7 @@ export function isEventName(name) {
 
 export let isTouch = "ontouchstart" in document;
 function mountSorter(u1, u2) {
-    return u1.mountOrder - u2.mountOrder;
+    return u1.stateNode.updater.mountOrder - u2.stateNode.updater.mountOrder;
 }
 export function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
