@@ -84,12 +84,14 @@ function updateHostComponent (fiber) {
 // 如果是receive是有alternate
 function updateClassComponent (fiber) {
   let { type, stateNode: instance, isForced, props, stage } = fiber
+  fiber.parent = containerStack[0]//为了让它在出错时collectEffects()还可以用，因此必须放在前面
 
   let nextContext = getMaskedContext(type.contextTypes), context
   if (instance == null) {
     // 初始化
     stage = 'init'
     instance = fiber.stateNode = createInstance(fiber, nextContext)
+   
     instance.updater.enqueueSetState = Flutter.updateComponent
     fiber.partialState = instance.state
   } else {
@@ -107,7 +109,6 @@ function updateClassComponent (fiber) {
   }
   updater._hooking = false
 
-  fiber.parent = containerStack[0]
 
   instance.props = props; // getChildContext可能依赖于props与state
   instance.state = fiber.partialState; // fiber.partialState可能在钩子里被重写

@@ -13,7 +13,7 @@ import {
 } from "./effectTag";
 import { effects } from "../share";
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { returnFalse, returnTrue, Flutter } from "../util";
+import { returnFalse, returnTrue, Flutter ,noop} from "../util";
 import { Refs } from "../Refs";
 
 export function commitEffects(a) {
@@ -90,7 +90,7 @@ export function commitOtherEffects(fiber) {
                     callLifeCycleHook(instance, "componentWillUnmount", []);
                 } else {
                     if (updater._isMounted()) {
-                        callLifeCycleHook(instance, "componentDidUpdate", []);
+                        callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                     } else {
                         updater._isMounted = returnTrue;
                         callLifeCycleHook(instance, "componentDidMount", []);
@@ -114,7 +114,7 @@ export function commitOtherEffects(fiber) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback];
+                var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback||noop];
                 queue.forEach(function (fn) {
                     fn.call(instance);
                 });

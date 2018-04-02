@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -17,25 +17,8 @@
     <pre>应该等于
       
     </pre>
-    <xmp>
-        <testRefsComponent>
-            <div>
-                <div ref="resetDiv" onClick={this.doReset}>
-                    Reset Me By Clicking This.
-                </div>
-                <GeneralContainerComponent ref="myContainer">
-                    <div className="ClickCounter">
-                        <ClickCounter ref="myCounter" initialCount={1} >
-                            <div className="clickIncrementer" onClick={this.handleClick}>
-                                {children}
-                            </div>
-                        </ClickCounter>
-                    </div>
-                </GeneralContainerComponent>
-            </div>
-        </testRefsComponent>
-        "clickIncrementer"的_children有两个孩子
-    </xmp>
+    
+       
     <h1 id='example' class="root">
 
     </h1>
@@ -57,36 +40,24 @@
                   }
               };
           };
-        var numMiddleRenders = 0;
-        var numBottomRenders = 0;
+          [['an array'], 'a string', 1234].forEach(function(state) {
+            var Component = React.createClass({
+              getInitialState: function() {
+                  console.log("cccc",state)
+                return state;
+              },
+              render: function() {
+                return <span />;
+              },
+            });
+            var instance = <Component />;
+            
+              instance = ReactDOM.render(instance, div);
 
-        class Top extends React.Component {
-            render() {
-                return <Middle><Bottom /></Middle>;
-            }
-        }
-
-        class Middle extends React.Component {
-            componentDidMount() {
-                this.forceUpdate();
-            }
-
-            render() {
-                numMiddleRenders++;
-                return React.Children.only(this.props.children);
-            }
-        }
-
-        class Bottom extends React.Component {
-            render() {
-                numBottomRenders++;
-                return null;
-            }
-        }
-
-        ReactDOM.render(<Top />,div);
-        expect(numMiddleRenders).toBe(2);
-        expect(numBottomRenders).toBe(1);
+        })
+          //  }).toThrowError(
+          //    'getInitialState只能返回纯JS对象或者null',
+         //   );
 </script>
 
 

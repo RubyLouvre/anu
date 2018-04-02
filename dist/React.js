@@ -1070,84 +1070,83 @@ var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, NOUPDATE, C
 var effectLength = effectNames.length;
 
 var updateQueue = Flutter.mainThread;
-function pushError(instance, hook, error) {
-    var names = [],
-        fiber = get(instance);
-    var catchFiber = findCatchComponent(fiber, names);
-    var stack = describeError(names, hook);
-    if (catchFiber) {
-        disableEffect(fiber);
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }, instance];
-        delete catchFiber._children;
-        delete catchFiber.child;
-        catchFiber.effectTag = CALLBACK;
-        updateQueue.push(catchFiber);
-    } else {
-        console.log(error);
-        console.warn(stack);
-        if (!Flutter.error) {
-            Flutter.error = error;
-        }
+function pushError(fiber, hook, error) {
+  var names = [];
+  var catchFiber = findCatchComponent(fiber, names);
+  var stack = describeError(names, hook);
+  if (catchFiber) {
+    disableEffect(fiber);
+    catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }];
+    delete catchFiber._children;
+    delete catchFiber.child;
+    catchFiber.effectTag = 29;
+    updateQueue.push(catchFiber);
+  } else {
+    console.log(error);
+    console.warn(stack);
+    if (!Flutter.error) {
+      Flutter.error = error;
     }
+  }
 }
 function callLifeCycleHook(instance, hook, args) {
-    try {
-        var fn = instance[hook];
-        if (fn) {
-            return fn.apply(instance, args);
-        }
-        return true;
-    } catch (error) {
-        if (hook === "componentWillUnmount") {
-            instance[hook] = noop;
-        }
-        pushError(instance, hook, error);
+  try {
+    var fn = instance[hook];
+    if (fn) {
+      return fn.apply(instance, args);
     }
+    return true;
+  } catch (error) {
+    if (hook === 'componentWillUnmount') {
+      instance[hook] = noop;
+    }
+    pushError(get(instance), hook, error);
+  }
 }
 function describeError(names, hook) {
-    var segments = ["**" + hook + "** method occur error "];
-    names.forEach(function (name, i) {
-        if (names[i + 1]) {
-            segments.push("in " + name + " (created By " + names[i + 1] + ")");
-        }
-    });
-    return segments.join("\n").trim();
+  var segments = ['**' + hook + '** method occur error '];
+  names.forEach(function (name, i) {
+    if (names[i + 1]) {
+      segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+    }
+  });
+  return segments.join('\n').trim();
 }
 function disableEffect(fiber) {
-    if (fiber.stateNode) {
-        fiber.stateNode.render = noop;
-    }
-    fiber.effectTag = NOWORK;
-    for (var child = fiber.child; child; child = child.sibling) {
-        disableEffect(fiber);
-    }
+  if (fiber.stateNode) {
+    fiber.stateNode.render = noop;
+  }
+  fiber.effectTag = NOWORK;
+  for (var child = fiber.child; child; child = child.sibling) {
+    disableEffect(fiber);
+  }
 }
 function findCatchComponent(topFiber, names) {
-    var instance = void 0,
-        name = void 0,
-        fiber = topFiber,
-        catchIt = void 0;
-    do {
-        name = fiber.name;
-        if (!fiber.return) {
-            if (catchIt) {
-                return catchIt;
-            }
-            break;
-        } else if (fiber.tag < 4) {
-            names.push(name);
-            instance = fiber.stateNode;
-            if (instance.componentDidCatch) {
-                if (instance.updater._isDoctor) {
-                    disableEffect(fiber);
-                } else if (!catchIt && fiber !== topFiber) {
-                    catchIt = fiber;
-                }
-            }
-        } else if (fiber.tag === 5) {
-            names.push(name);
+  var instance = void 0,
+      name = void 0,
+      fiber = topFiber,
+      catchIt = void 0;
+  do {
+    name = fiber.name;
+    if (!fiber.return) {
+      if (catchIt) {
+        return catchIt;
+      }
+      break;
+    } else if (fiber.tag < 4) {
+      names.push(name);
+      instance = fiber.stateNode;
+      if (instance.componentDidCatch) {
+        if (instance.updater._isDoctor) {
+          disableEffect(fiber);
+        } else if (!catchIt && fiber !== topFiber) {
+          catchIt = fiber;
         }
-    } while (fiber = fiber.return);
+      }
+    } else if (fiber.tag === 5) {
+      names.push(name);
+    }
+  } while (fiber = fiber.return);
 }
 
 var componentStack = [];
@@ -1160,66 +1159,64 @@ var containerStack = [];
 var contextStack = [emptyObject];
 
 function createInstance(fiber, context) {
-	var updater = {
-		mountOrder: Flutter.mountOrder++,
-		enqueueSetState: returnFalse,
-		_isMounted: returnFalse
-	};
-	var props = fiber.props,
-	    type = fiber.type,
-	    tag = fiber.tag,
-	    isStateless = tag === 1,
-	    lastOwn = Flutter.currentOwner,
-	    instance = void 0,
-	    lifeCycleHook = void 0;
-	try {
-		if (isStateless) {
-			instance = {
-				refs: {},
-				__proto__: type.prototype,
-				props: props,
-				context: context,
-				__init: true,
-				renderImpl: type,
-				render: function f() {
-					var a = this.__keep;
-					if (a) {
-						delete this.__keep;
-						return a;
-					}
-					a = this.renderImpl(this.props, this.context);
-					if (a && a.render) {
-						for (var i in a) {
-							instance[i == 'render' ? 'renderImpl' : i] = a[i];
-						}
-					} else if (this.__init) {
-						this.__isStateless = returnTrue;
-						this.__keep = a;
-					}
-					return a;
-				}
-			};
-			Flutter.currentOwner = instance;
-			if (type.isRef) {
-				instance.render = function () {
-					return type(this.props, this.ref);
-				};
-			} else {
-				instance.render();
-				delete instance.__init;
-			}
-		} else {
-			instance = new type(props, context);
-		}
-	} catch (e) {
-		instance = {};
-	} finally {
-		Flutter.currentOwner = lastOwn;
-	}
-	fiber.stateNode = instance;
-	instance.props = props;
-	instance.updater = updater;
-	return instance;
+  var updater = {
+    mountOrder: Flutter.mountOrder++,
+    enqueueSetState: returnFalse,
+    _isMounted: returnFalse
+  };
+  var props = fiber.props,
+      type = fiber.type,
+      tag = fiber.tag,
+      isStateless = tag === 1,
+      lastOwn = Flutter.currentOwner,
+      instance = fiber.stateNode = {};
+  try {
+    if (isStateless) {
+      instance = {
+        refs: {},
+        __proto__: type.prototype,
+        props: props,
+        context: context,
+        __init: true,
+        renderImpl: type,
+        render: function f() {
+          var a = this.__keep;
+          if (a) {
+            delete this.__keep;
+            return a;
+          }
+          a = this.renderImpl(this.props, this.context);
+          if (a && a.render) {
+            for (var i in a) {
+              instance[i == 'render' ? 'renderImpl' : i] = a[i];
+            }
+          } else if (this.__init) {
+            this.__isStateless = returnTrue;
+            this.__keep = a;
+          }
+          return a;
+        }
+      };
+      Flutter.currentOwner = instance;
+      if (type.isRef) {
+        instance.render = function () {
+          return type(this.props, this.ref);
+        };
+      } else {
+        instance.render();
+        delete instance.__init;
+      }
+    } else {
+      instance = new type(props, context);
+    }
+  } catch (e) {
+  } finally {
+    Flutter.currentOwner = lastOwn;
+  }
+  fiber.stateNode = instance;
+  instance.props = props;
+  instance.updater = updater;
+  return instance;
 }
 
 function updateEffects(fiber, topWork) {
@@ -1289,6 +1286,7 @@ function updateClassComponent(fiber) {
       isForced = fiber.isForced,
       props = fiber.props,
       stage = fiber.stage;
+  fiber.parent = containerStack[0];
   var nextContext = getMaskedContext(type.contextTypes),
       context = void 0;
   if (instance == null) {
@@ -1310,7 +1308,6 @@ function updateClassComponent(fiber) {
     stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
   }
   updater._hooking = false;
-  fiber.parent = containerStack[0];
   instance.props = props;
   instance.state = fiber.partialState;
   if (instance.getChildContext) {
@@ -1760,7 +1757,7 @@ function commitOtherEffects(fiber) {
                         callLifeCycleHook(instance, "componentWillUnmount", []);
                     } else {
                         if (updater._isMounted()) {
-                            callLifeCycleHook(instance, "componentDidUpdate", []);
+                            callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                         } else {
                             updater._isMounted = returnTrue;
                             callLifeCycleHook(instance, "componentDidMount", []);
@@ -1783,7 +1780,7 @@ function commitOtherEffects(fiber) {
                     }
                     break;
                 case CALLBACK:
-                    var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback];
+                    var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback || noop];
                     queue.forEach(function (fn) {
                         fn.call(instance);
                     });

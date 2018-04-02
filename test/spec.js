@@ -48,8 +48,8 @@ require("./modules/ReactTestUtils-test.jsx");
 
 require("./modules/ReactComponent-test.jsx");
 
-// require("./modules/ReactMultiChild-test.jsx");
-/*
+ require("./modules/ReactMultiChild-test.jsx");
+
 require("./modules/refs-test.jsx");
 
 require("./modules/ReactUpdates-test.jsx");
@@ -60,16 +60,16 @@ require("./modules/ReactStatelessComponent-test.jsx");
 require("./modules/ReactEmptyComponent-test.jsx");
 
 require("./modules/ReactIdentity-test.jsx");
-
-require("./modules/ReactCompositeComponentNestedState-test.jsx");
-
-require("./modules/ReactComponentLifeCycle-test.jsx");
-
-require("./modules/ReactCompositeComponent-test.jsx");
-
 require("./modules/ReactContextValidator-test.jsx"); 
 
 require("./modules/createReactClassIntegration-test.jsx");
+require("./modules/ReactCompositeComponentNestedState-test.jsx");
+
+require("./modules/ReactComponentLifeCycle-test.jsx");
+/*
+require("./modules/ReactCompositeComponent-test.jsx");
+
+
 
 require("./modules/ReactCompositeComponentDOMMinimalism-test.jsx");
 
