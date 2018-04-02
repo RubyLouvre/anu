@@ -1237,7 +1237,7 @@ function updateEffects(fiber, topWork) {
   var f = fiber;
   while (f) {
     if (f.stateNode.getChildContext) {
-      contextStack.shift();
+      var a = contextStack.shift();
     }
     if (f.tag === 5) {
       containerStack.shift();
@@ -1252,9 +1252,6 @@ function updateEffects(fiber, topWork) {
   }
 }
 function Fiber(vnode) {
-  if (vnode instanceof Fiber) {
-    console.log('本来就是Fiber');
-  }
   extend(this, vnode);
   var type = vnode.type;
   this.name = type.displayName || type.name || type;
@@ -1296,7 +1293,7 @@ function updateClassComponent(fiber) {
       context = void 0;
   if (instance == null) {
     stage = 'init';
-    instance = fiber.stateNode = createInstance(fiber, props);
+    instance = fiber.stateNode = createInstance(fiber, nextContext);
     instance.updater.enqueueSetState = Flutter.updateComponent;
     fiber.partialState = instance.state;
   } else {
@@ -1314,6 +1311,8 @@ function updateClassComponent(fiber) {
   }
   updater._hooking = false;
   fiber.parent = containerStack[0];
+  instance.props = props;
+  instance.state = fiber.partialState;
   if (instance.getChildContext) {
     try {
       context = instance.getChildContext();
@@ -1323,12 +1322,10 @@ function updateClassComponent(fiber) {
     }
     contextStack.unshift(context);
   }
+  instance.context = nextContext;
   if (fiber.shouldUpdateFalse) {
     return;
   }
-  instance.context = nextContext;
-  instance.props = props;
-  instance.state = fiber.partialState;
   fiber.effectTag *= HOOK;
   updater._hydrating = true;
   var lastOwn = Flutter.currentOwner;
@@ -1901,6 +1898,7 @@ function unmountComponentAtNode(container) {
         var lastFiber = topFibers[rootIndex],
             _effects = [];
         detachFiber(lastFiber, _effects);
+        _effects.shift();
         commitEffects(_effects);
         topNodes.splice(rootIndex, 1);
         topFibers.splice(rootIndex, 1);

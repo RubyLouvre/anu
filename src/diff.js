@@ -113,7 +113,8 @@ export function unmountComponentAtNode(container) {
     if (rootIndex > -1) {
         let lastFiber = topFibers[rootIndex],
             effects = [];
-        detachFiber(lastFiber, effects);
+		detachFiber(lastFiber, effects);
+		effects.shift();
         commitEffects(effects);
         topNodes.splice(rootIndex, 1);
         topFibers.splice(rootIndex, 1);

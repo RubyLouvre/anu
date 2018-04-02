@@ -29,7 +29,7 @@ export function updateEffects (fiber, topWork) {
   let f = fiber
   while (f) {
     if (f.stateNode.getChildContext) {
-      contextStack.shift() // shift context
+      var a = contextStack.shift() // shift context
     }
     if (f.tag === 5) {
       containerStack.shift() // shift parent
@@ -84,11 +84,12 @@ function updateHostComponent (fiber) {
 // 如果是receive是有alternate
 function updateClassComponent (fiber) {
   let { type, stateNode: instance, isForced, props, stage } = fiber
+
   let nextContext = getMaskedContext(type.contextTypes), context
   if (instance == null) {
     // 初始化
     stage = 'init'
-    instance = fiber.stateNode = createInstance(fiber, props)
+    instance = fiber.stateNode = createInstance(fiber, nextContext)
     instance.updater.enqueueSetState = Flutter.updateComponent
     fiber.partialState = instance.state
   } else {
@@ -105,7 +106,11 @@ function updateClassComponent (fiber) {
     stage = stageIteration[stage](fiber, props, nextContext, instance, isForced)
   }
   updater._hooking = false
+
   fiber.parent = containerStack[0]
+
+  instance.props = props; // getChildContext可能依赖于props与state
+  instance.state = fiber.partialState; // fiber.partialState可能在钩子里被重写
   if (instance.getChildContext) {
     try {
       context = instance.getChildContext()
@@ -115,27 +120,13 @@ function updateClassComponent (fiber) {
     }
     contextStack.unshift(context)
   }
+  instance.context = nextContext;
   if (fiber.shouldUpdateFalse) {
     return
   }
-  instance.context = nextContext
-  instance.props = props
-  instance.state = fiber.partialState; // fiber.partialState可能在钩子里被重写
   fiber.effectTag *= HOOK
   updater._hydrating = true
-  /* if (!fiber.isForceUpdate && willReceive === false) {
-		delete fiber._willReceive
-		let a = fiber.child
-		if (a && a.sibling) {
-			rendered = []
-			for (; a; a = a.sibling) {
-				rendered.push(a)
-			}
-		} else {
-			rendered = a
-		}
-	} else {
-		*/
+
   let lastOwn = Flutter.currentOwner
   Flutter.currentOwner = instance
   let rendered = callLifeCycleHook(instance, 'render', [])
@@ -174,7 +165,6 @@ var stageIteration = {
   },
   update(fiber, nextProps, nextContext, instance, isForced) {
     let args = [ nextProps, fiber.partialState, nextContext ]
-    // console.log(fiber.name, "===",fiber.props === nextProps ,fiber.stateChange)
 
     if (!isForced && !callLifeCycleHook(instance, 'shouldComponentUpdate', args)) {
       cloneChildren(fiber)
