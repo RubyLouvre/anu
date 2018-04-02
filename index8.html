@@ -5,19 +5,37 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/babel.js"></script>
-    <script type="text/babel">
+   <script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./test/react-dom.js"></script>
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
-      </script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
 <body>
 
     <pre>应该等于
-        CdABf
+      
     </pre>
+    <xmp>
+        <testRefsComponent>
+            <div>
+                <div ref="resetDiv" onClick={this.doReset}>
+                    Reset Me By Clicking This.
+                </div>
+                <GeneralContainerComponent ref="myContainer">
+                    <div className="ClickCounter">
+                        <ClickCounter ref="myCounter" initialCount={1} >
+                            <div className="clickIncrementer" onClick={this.handleClick}>
+                                {children}
+                            </div>
+                        </ClickCounter>
+                    </div>
+                </GeneralContainerComponent>
+            </div>
+        </testRefsComponent>
+        "clickIncrementer"的_children有两个孩子
+    </xmp>
     <h1 id='example' class="root">
 
     </h1>
@@ -39,34 +57,36 @@
                   }
               };
           };
-   var LetterInner = class extends React.Component {
-        render() {
-            return <p>{this.props.char}</p>;
-        }
-    };
+        var numMiddleRenders = 0;
+        var numBottomRenders = 0;
 
-    var Letter = class extends React.Component {
-        render() {
-            return <LetterInner char={this.props.char} />;
+        class Top extends React.Component {
+            render() {
+                return <Middle><Bottom /></Middle>;
+            }
         }
-        shouldComponentUpdate() {
-            return false;
+
+        class Middle extends React.Component {
+            componentDidMount() {
+                this.forceUpdate();
+            }
+
+            render() {
+                numMiddleRenders++;
+                return React.Children.only(this.props.children);
+            }
         }
-    };
 
-    var Letters = class extends React.Component {
-        render() {
-            const letters = this.props.letters.split("");
-            return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
+        class Bottom extends React.Component {
+            render() {
+                numBottomRenders++;
+                return null;
+            }
         }
-    };
 
-        // Two random strings -- some additions, some removals, some moves
-        ReactDOM.render(<Letters letters="ABCD" />, container);
-        expect(container.textContent).toBe("ABCD");
-        var s =  ReactDOM.render(<Letters letters="CdABf" />, container);
-        expect(container.textContent).toBe("CdABf");
-
+        ReactDOM.render(<Top />,div);
+        expect(numMiddleRenders).toBe(2);
+        expect(numBottomRenders).toBe(1);
 </script>
 
 

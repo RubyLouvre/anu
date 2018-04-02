@@ -4,29 +4,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
    <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
-    <script type="text/babel">
-
-      </script>
 </head>
 
 <body>
 
     <pre>应该等于
-
+        CdABf
     </pre>
     <h1 id='example' class="root">
 
     </h1>
+
     <script type='text/babel'>
           var container = document.getElementById('example');
-        //  var div = container;
+          var div = container;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
+          var PropTypes = React.PropTypes
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -37,57 +37,54 @@
                   }
               };
           };
-         
+   /**
+     * Counts clicks and has a renders an item for each click. Each item rendered
+     * has a ref of the form "clickLogN".
+     */
+     class ClickCounter extends React.Component {
+        state = { count: this.props.initialCount };
 
-    function span(...children) {
-        return { type: "span", props:null, children: children };
-    }
-    function a(...children) {
-        return { type: "a", props:null, children: children };
-    }
-    function div(...children) {
-        return { type: "div", props:null,  children: children };
-    }
-    var React = ReactNoop
-    const ops = [];
+        triggerReset = () => {
+            this.setState({ count: this.props.initialCount });
+        };
 
-    class Stateful extends React.Component {
-        componentDidUpdate() {
-            ops.push("Update Stateful");
-        }
+        handleClick = () => {
+            this.setState({ count: this.state.count + 1 });
+        };
 
         render() {
-            return <div>Hello</div>;
+            var children = [];
+            var i;
+            console.log(this.state.count)
+            for (i = 0; i < this.state.count; i++) {
+                children.push(<div className="clickLogDiv" key={"clickLog" + i} ref={"clickLog" + i}>{i}</div>);
+            }
+            return (
+                <div className="clickIncrementer"  onClick={this.handleClick}>
+                    {children}
+                </div>
+            );
         }
     }
 
-    function Foo({ condition }) {
-        console.log(condition, "!!!")
-        return condition ? (
-            <Stateful key="a" />
-        ) : (
-            <React.Fragment>
-                <Stateful key="a" />
-                <div key="b">World</div>
-            </React.Fragment>
-        );
-    }
+ 
+ var expectClickLogsLengthToBe = function(instance, length) {
+        var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(instance, "clickLogDiv");
+        expect(clickLogs.length).toBe(length);
+        expect(Object.keys(instance.refs).length).toBe(length);
+    };
 
-    ReactNoop.render(<Foo condition={true} />);
-    ReactNoop.flush();
-
-    ReactNoop.render(<Foo condition={false} />);
-    ReactNoop.flush();
-
-    expect(ops).toEqual(["Update Stateful"]);
-    expect(ReactNoop.getChildren()).toEqual([div("Hello"),div("World")]);
-/*
-    ReactNoop.render(<Foo condition={true} />);
-    ReactNoop.flush();
-
-    expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
-    expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
- */      
+  
+        var s = ReactDOM.render(<ClickCounter initialCount={1} />, div);
+        expectClickLogsLengthToBe(s, 1)
+        s.handleClick()
+        expectClickLogsLengthToBe(s, 2)
+        s.triggerReset()
+        expectClickLogsLengthToBe(s, 1)
+        s.handleClick()
+        expectClickLogsLengthToBe(s, 2)
+        s.handleClick()
+        expectClickLogsLengthToBe(s, 3)
 </script>
 
 
