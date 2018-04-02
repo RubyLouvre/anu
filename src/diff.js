@@ -63,12 +63,10 @@ Flutter.batchedUpdates = function() {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        console.log("????");
         Flutter.scheduleWork();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            console.log("======");
             commitEffects();
         }
     }

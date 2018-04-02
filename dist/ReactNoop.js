@@ -797,7 +797,6 @@ function updateClassComponent(fiber) {
         fiber.partialState = instance.state;
     } else {
         stage = isForced === true || isForced === false ? "update" : "receive";
-        console.log(fiber.name, stage, fiber.return == fiber.alternate.return);
         delete fiber.isForced;
     }
     instance._reactInternalFiber = fiber;
@@ -839,10 +838,6 @@ function updateClassComponent(fiber) {
     }
     Flutter.currentOwner = lastOwn;
     diffChildren(fiber, rendered);
-    if (fiber.name === "ClickCounter") {
-        console.log(fiber.child._children);
-        console.log(fiber.child);
-    }
 }
 var stageIteration = {
     noop: noop,
@@ -850,7 +845,7 @@ var stageIteration = {
         getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
         callLifeCycleHook(instance, "componentWillMount", []);
     },
-    receive: function receive(fiber, nextProps, nextContext, instance, isForceUpdate) {
+    receive: function receive(fiber, nextProps, nextContext, instance) {
         var updater = instance.updater;
         updater.lastProps = instance.props;
         updater.lastState = instance.state;
@@ -1350,12 +1345,10 @@ Flutter.batchedUpdates = function () {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        console.log("????");
         Flutter.scheduleWork();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            console.log("======");
             commitEffects();
         }
     }
