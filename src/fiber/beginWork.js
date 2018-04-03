@@ -177,7 +177,6 @@ function updateClassComponent(fiber) {
         rendered = [];
     }
     Flutter.currentOwner = lastOwn;
-
     diffChildren(fiber, rendered);
 }
 var stageIteration = {
@@ -243,7 +242,7 @@ function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
         if (method) {
             var partialState = method.call(null, nextProps, lastState);
             if (typeNumber(partialState) === 8) {
-                instance.setState(partialState);
+                instance.updater.enqueueSetState(instance,partialState);
             }
         }
     } catch (error) {
@@ -292,6 +291,7 @@ function getMaskedContext(contextTypes) {
 function diffChildren(parentFiber, children) {
     let prev = parentFiber.alternate;
     let oldFibers = prev ? prev._children : {}; // 旧的
+
     var newFibers = fiberizeChildren(children, parentFiber); // 新的
     var effects = parentFiber.effects || (parentFiber.effects = []);
 
@@ -308,7 +308,6 @@ function diffChildren(parentFiber, children) {
         }
         detachFiber(oldFiber, effects);
     }
-
     let prevFiber,
         index = 0;
     for (let i in newFibers) {

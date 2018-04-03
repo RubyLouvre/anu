@@ -159,8 +159,8 @@ function getNextUnitOfWork(fiber) {
  */
 
 function mergeUpdates(fiber, state, isForced, callback) {
-    fiber.isForced = fiber.isForced || isForced;
-    fiber.alternate = fiber;
+    fiber.isForced = fiber.isForced || isForced; //如果是true就变不回false
+    fiber.alternate = fiber.alternate || fiber;//不要覆盖旧的
     if (state) {
         var ps =  fiber.pendingStates ||  (fiber.pendingStates = []);
         ps.push(state);
@@ -176,10 +176,13 @@ function mergeUpdates(fiber, state, isForced, callback) {
 
 Flutter.updateComponent = function(instance, state, callback) {
     //setState
-    let fiber = get(instance);
+    
+    var fiber = get(instance);
     if (fiber.parent) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
+
+
     let isForced = state === true;
     state = isForced ? null : state;
 	
