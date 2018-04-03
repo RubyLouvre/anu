@@ -396,8 +396,8 @@ describe("ReactCompositeComponent", function () {
                     list.push("did update")
                 },
                 render() {
-                    list.push("render " + props.x)
-                    return <span>{props.x}</span>
+                    list.push("render " + this.props.x)
+                    return <span>{this.props.x}</span>
                 }
             }
 

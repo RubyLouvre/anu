@@ -66,7 +66,7 @@ require("./modules/createReactClassIntegration-test.jsx");
 require("./modules/ReactCompositeComponentNestedState-test.jsx");
 
 require("./modules/ReactComponentLifeCycle-test.jsx");
-/*
+
 require("./modules/ReactCompositeComponent-test.jsx");
 
 
@@ -78,7 +78,7 @@ require("./modules/ReactElementClone-test.jsx");
 
 
 require("./modules/findDOMNode-test.jsx");
-
+/*
 require("./modules/ReactES6Class-test.jsx");
 
 require("./modules/ReactErrorBoundaries-test.jsx");

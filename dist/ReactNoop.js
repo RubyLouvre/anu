@@ -886,6 +886,7 @@ var stageIteration = {
     updater.lastState = instance.state;
     var propsChange = updater.lastProps !== nextProps;
     var willReceive = propsChange || instance.context !== nextContext;
+    console.log(willReceive, fiber.name);
     if (willReceive) {
       callLifeCycleHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
     } else {
@@ -960,7 +961,7 @@ function cloneChildren(fiber) {
 function getMaskedContext(contextTypes) {
   var context = {};
   if (!contextTypes) {
-    return emptyObject;
+    return context;
   }
   var parentContext = contextStack[0],
       hasKey = void 0;
@@ -970,7 +971,7 @@ function getMaskedContext(contextTypes) {
       context[key] = parentContext[key];
     }
   }
-  return hasKey ? context : emptyObject;
+  return context;
 }
 function diffChildren(parentFiber, children) {
   var oldFibers = parentFiber._children || {};
