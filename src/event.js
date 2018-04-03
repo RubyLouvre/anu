@@ -49,6 +49,7 @@ export function dispatchEvent(e, type, end) {
     }
 
     fibers.sort(mountSorter);
+
     __push.apply(Flutter.mainThread, fibers);
     Flutter.interactQueue = null;
     Flutter.batchedUpdates();

@@ -132,28 +132,18 @@ function updateClassComponent (fiber) {
     instance.updater.enqueueSetState = Flutter.updateComponent
     instance.props = props
   } else {
-    var isSetState = isForced === true || isForced === false || fiber.next
+    var isSetState = isForced === true || isForced === false || fiber._updates
     if (isSetState) {
       stage = 'update'
-      if (fiber.next) {
-        extend(fiber, fiber.next)
-        delete fiber.next
+      if (fiber._updates) {
+        extend(fiber, fiber._updates)
+        delete fiber._updates
         isForced = fiber.isForced
       }
       delete fiber.isForced
     }else {
       stage = 'receive'
     }
-
-    /*  if(p){
-          console.log("=====")
-          p.merged = true
-          mergeArray(fiber, p, "pendingStates")
-          mergeArray(fiber, p, "pendingCbs")
-          isForced = isForced || p.isForced
-          delete alternate.pendingFiber
-      }*/
-     
   }
   instance._reactInternalFiber = fiber
   if (instance.__isStateless) {
@@ -335,6 +325,11 @@ function diffChildren (parentFiber, children) {
         newFiber.stateNode = oldFiber.stateNode
         newFiber.alternate = oldFiber; // 保存旧的
         newFiber._children = oldFiber._children
+        if(oldFiber._updates){
+          newFiber._updates = oldFiber._updates
+          delete oldFiber._updates
+          oldFiber.merged = true
+        }       
         if (oldFiber.ref && oldFiber.ref !== newFiber.ref) {
           oldFiber.effectTag = NULLREF
           effects.push(oldFiber)

@@ -819,12 +819,12 @@ function updateClassComponent(fiber) {
     instance.updater.enqueueSetState = Flutter.updateComponent;
     instance.props = props;
   } else {
-    var isSetState = isForced === true || isForced === false || fiber.next;
+    var isSetState = isForced === true || isForced === false || fiber._updates;
     if (isSetState) {
       stage = 'update';
-      if (fiber.next) {
-        extend(fiber, fiber.next);
-        delete fiber.next;
+      if (fiber._updates) {
+        extend(fiber, fiber._updates);
+        delete fiber._updates;
         isForced = fiber.isForced;
       }
       delete fiber.isForced;
@@ -999,6 +999,11 @@ function diffChildren(parentFiber, children) {
         _newFiber.stateNode = _oldFiber.stateNode;
         _newFiber.alternate = _oldFiber;
         _newFiber._children = _oldFiber._children;
+        if (_oldFiber._updates) {
+          _newFiber._updates = _oldFiber._updates;
+          delete _oldFiber._updates;
+          _oldFiber.merged = true;
+        }
         if (_oldFiber.ref && _oldFiber.ref !== _newFiber.ref) {
           _oldFiber.effectTag = NULLREF;
           effects$$1.push(_oldFiber);
@@ -1465,7 +1470,7 @@ function getNextUnitOfWork(fiber) {
   return fiber;
 }
 function mergeUpdates(el, state, isForced, callback) {
-  var fiber = el.next || el;
+  var fiber = el._updates || el;
   fiber.isForced = fiber.isForced || isForced;
   if (state) {
     var ps = fiber.pendingStates || (fiber.pendingStates = []);
@@ -1491,8 +1496,8 @@ Flutter.updateComponent = function (instance, state, callback) {
   var isForced = state === true;
   state = isForced ? null : state;
   if (this._hydrating || Flutter.interactQueue) {
-    if (!fiber.next) {
-      var target = fiber.next = {};
+    if (!fiber._updates) {
+      var target = fiber._updates = {};
       var queue = Flutter.interactQueue || updateQueue$2;
       queue.push(fiber);
     }
