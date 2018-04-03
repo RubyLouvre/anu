@@ -135,8 +135,6 @@ function insertElement(fiber) {
     }
 }
 
-
-
 //其他Renderer也要实现这些方法
 export let DOMRenderer = {
     updateAttribute(fiber) {
@@ -186,3 +184,5 @@ export let DOMRenderer = {
         }
     }
 };
+
+//setState把自己放进列队

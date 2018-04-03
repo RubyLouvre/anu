@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
+    <!--<script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -40,55 +40,37 @@
                   }
               };
           };
-          class Issue extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    status: "normal"
-                };
-            }
+          function filterOutComments(nodeList) {
+        return [].slice.call(nodeList).filter(node => node.nodeType < 8);
+    }
 
-            componentWillUnmount() {
-                console.log(this.updater.enqueueSetState+"")
-                this.setState({ status: "unmount" });
-            }
+          let inst = ReactDOM.render(
+            <div>
+                <span />
+                {"foo"}
+                {"bar"}
+            </div>,
+            div
+        );
+        let nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
 
-            render() {
-                const { status } = this.state;
+        let a = nodes[1];
+        expect(a.data).toBe("foobar");
 
-                if (status === "unmount") {
-                    throw new Error("Issue unmounted");
-                }
+        inst = ReactDOM.render(
+            <div>
+                <span />
+                {"baz"}
+                {"qux"}
+            </div>,
+            div
+        );
+        // After the update, the text nodes should have stayed in place (as opposed
+        // to getting unmounted and remounted)
+        nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
+        expect(nodes[1]).toBe(a);
+        expect(a.data).toBe("bazqux");
 
-                return <span>Issue status: {status}</span>;
-            }
-        }
-
-        class App extends React.PureComponent {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    showIssue: true
-                };
-            }
-
-            render() {
-                const { showIssue } = this.state;
-
-                return (
-                    <div>
-                        {showIssue && <Issue />}
-                        <b>测试错误</b>
-                    </div>
-                );
-            }
-        }
-        var s = ReactDOM.render(<App />, div);
-
-        expect(div.getElementsByTagName("span").length).toBe(1);
-        s.setState({ showIssue: false });
-
-        expect(div.getElementsByTagName("span").length).toBe(0);
 </script>
 
 
