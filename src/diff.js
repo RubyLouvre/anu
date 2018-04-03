@@ -35,11 +35,11 @@ export function render(vnode, root, callback) {
     let instance = null;
     hostRoot.effectTag = CALLBACK;
     hostRoot._hydrating = true; //lock 表示正在渲染
-    hostRoot.callback = function() {
+    hostRoot.pendingCbs = [ function() {
         instance = hostRoot.child ? hostRoot.child.stateNode : null;
         callback && callback.call(instance);
         hostRoot._hydrating = false; //unlock
-    };
+    } ];
     updateQueue.push(hostRoot);
     var prev = hostRoot.alternate;
     //如果之前的还没有执行完，那么等待它执行完再处理,
@@ -113,8 +113,8 @@ export function unmountComponentAtNode(container) {
     if (rootIndex > -1) {
         let lastFiber = topFibers[rootIndex],
             effects = [];
-		detachFiber(lastFiber, effects);
-		effects.shift();
+        detachFiber(lastFiber, effects);
+        effects.shift();
         commitEffects(effects);
         topNodes.splice(rootIndex, 1);
         topFibers.splice(rootIndex, 1);
@@ -133,9 +133,12 @@ function requestIdleCallback(fn) {
     });
 }
 
-function getNextUnitOfWork() {
-    let fiber = updateQueue.shift();
-    if (!fiber) {
+function getNextUnitOfWork(fiber) {
+    fiber = updateQueue.shift();
+    if(!fiber){
+        return;
+    }
+    if(fiber.merged){
         return;
     }
     if (fiber.root) {
@@ -155,24 +158,19 @@ function getNextUnitOfWork() {
  * @param {Fiber} topWork 
  */
 
-function mergeState(fiber, state, isForced, callback) {
-	fiber.isForced = fiber.isForced || isForced;
+function mergeUpdates(fiber, state, isForced, callback) {
+    fiber.isForced = fiber.isForced || isForced;
     fiber.alternate = fiber;
     if (state) {
-        var instance = fiber.stateNode;
-        var old = fiber.partialState || instance.state;
-        if (isFn(state)) {
-            state = state.call(instance, old, instance.props);
-        }
-        fiber.partialState = Object.assign({}, old, state);
+        var ps =  fiber.pendingStates ||  (fiber.pendingStates = []);
+        ps.push(state);
     }
     if (callback) {
-        if (fiber.callback) {
-            fiber.callback = [].concat(fiber.callback, callback);
-        } else {
-            fiber.callback = callback;
+        var cs = fiber.pendingCbs ||  (fiber.pendingCbs = []);
+        if(!cs.length){
             fiber.effectTag *= CALLBACK;
         }
+        cs.push(callback);
     }
 }
 
@@ -183,25 +181,23 @@ Flutter.updateComponent = function(instance, state, callback) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
     let isForced = state === true;
-	state = isForced ? null : state;
+    state = isForced ? null : state;
 	
     if (this._hydrating || Flutter.interactQueue) {
         //如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
         if (!fiber.pendingFiber) {
             var target = (fiber.pendingFiber = Object.assign({}, fiber, {
                 alternate: fiber,
-                // mountOrder: this.mountOrder,
-                effectTag: callback ? CALLBACK : 1
+                effectTag: 1
             }));
             delete target.isForced;
-            delete target.callback; //它是上个周期的方法回调
             var queue = Flutter.interactQueue || updateQueue;
             queue.push(target);
         }
-        mergeState(fiber.pendingFiber, state, isForced, callback);
+        mergeUpdates(fiber.pendingFiber, state, isForced, callback);
     } else {
         //如果是在componentWillXXX中，那么直接修改已经fiber及instance
-        mergeState(fiber, state, isForced, callback);
+        mergeUpdates(fiber, state, isForced, callback);
         if (!this._hooking) {
             //不在生命周期钩子中时，需要立即触发（或异步触发）
             updateQueue.push(fiber);

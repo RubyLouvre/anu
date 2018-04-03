@@ -13,12 +13,12 @@ import {
 } from "./effectTag";
 import { effects } from "../share";
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { returnFalse, returnTrue, Flutter ,noop} from "../util";
+import { returnFalse, returnTrue, Flutter, noop } from "../util";
 import { Refs } from "../Refs";
 
 export function commitEffects(a) {
     var arr = commitPlaceEffects(a || effects);
-    
+
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;
 }
@@ -35,11 +35,10 @@ export function commitPlaceEffects(fibers) {
         let remainder = amount / PLACE;
         let hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
-            try{
+            try {
                 fiber.parent.insertPoint = null;
                 Flutter.insertElement(fiber);
-            }catch(e){
-                //  console.log(fiber.name, e)
+            } catch (e) {
                 throw e;
             }
             fiber.effectTag = remainder;
@@ -86,8 +85,9 @@ export function commitOtherEffects(fiber) {
                 break;
             case HOOK: //只对业务组件
                 if (fiber.disposed) {
-                    updater._isMounted = updater.enqueueSetState = returnFalse;
+                    updater.enqueueSetState = returnFalse;
                     callLifeCycleHook(instance, "componentWillUnmount", []);
+                    updater._isMounted = returnFalse;
                 } else {
                     if (updater._isMounted()) {
                         callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
@@ -114,11 +114,11 @@ export function commitOtherEffects(fiber) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                var queue = Array.isArray(fiber.callback) ? fiber.callback : [fiber.callback||noop];
+                var queue = fiber.pendingCbs;
                 queue.forEach(function (fn) {
                     fn.call(instance);
                 });
-                delete fiber.callback;
+                delete fiber.pendingCbs;
                 break;
             case CAPTURE:
                 updater._isDoctor = true;
