@@ -193,6 +193,9 @@ Flutter.updateComponent = function(instance, state, callback) {
                 alternate: fiber,
                 effectTag: 1
             }));
+            //   target.alternate = fiber;
+            delete target.pendingCbs;
+            delete target.pendingStates;
             delete target.isForced;
             var queue = Flutter.interactQueue || updateQueue;
             queue.push(target);

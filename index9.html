@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
+  <!--  <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -37,54 +37,88 @@
                   }
               };
           };
-   /**
-     * Counts clicks and has a renders an item for each click. Each item rendered
-     * has a ref of the form "clickLogN".
-     */
-     class ClickCounter extends React.Component {
-        state = { count: this.props.initialCount };
+         class ParentComponent extends React.Component {
+            state = { color: "blue" };
 
-        triggerReset = () => {
-            this.setState({ count: this.props.initialCount });
-        };
+            handleColor = color => {
+                this.props.logger("parent-handleColor", this.state.color);
+                this.setState({ color: color }, function() {
+                    this.props.logger("parent-after-setState", this.state.color);
+                });
+            };
 
-        handleClick = () => {
-            this.setState({ count: this.state.count + 1 });
-        };
-
-        render() {
-            var children = [];
-            var i;
-            console.log(this.state.count)
-            for (i = 0; i < this.state.count; i++) {
-                children.push(<div className="clickLogDiv" key={"clickLog" + i} ref={"clickLog" + i}>{i}</div>);
+            render() {
+                this.props.logger("parent-render", this.state.color);
+                return <ChildComponent logger={this.props.logger} color={this.state.color} onSelectColor={this.handleColor} />;
             }
-            return (
-                <div className="clickIncrementer"  onClick={this.handleClick}>
-                    {children}
-                </div>
-            );
         }
-    }
 
- 
- var expectClickLogsLengthToBe = function(instance, length) {
-        var clickLogs = ReactTestUtils.scryRenderedDOMComponentsWithClass(instance, "clickLogDiv");
-        expect(clickLogs.length).toBe(length);
-        expect(Object.keys(instance.refs).length).toBe(length);
-    };
+        class ChildComponent extends React.Component {
+            constructor(props) {
+                super(props);
+                props.logger("getInitialState", props.color);
+                this.state = { hue: "dark " + props.color };
+            }
 
-  
-        var s = ReactDOM.render(<ClickCounter initialCount={1} />, div);
-        expectClickLogsLengthToBe(s, 1)
-        s.handleClick()
-        expectClickLogsLengthToBe(s, 2)
-        s.triggerReset()
-        expectClickLogsLengthToBe(s, 1)
-        s.handleClick()
-        expectClickLogsLengthToBe(s, 2)
-        s.handleClick()
-        expectClickLogsLengthToBe(s, 3)
+            handleHue = (shade, color) => {
+                this.props.logger("handleHue", this.state.hue, this.props.color);
+                this.props.onSelectColor(color);//调用父节点的setState
+                this.setState(
+                    function(state, props) {
+                        this.props.logger("setState-this", this.state.hue, this.props.color);//blue
+                        this.props.logger("setState-args", state.hue, props.color);//green
+                        console.log("child "+ shade + " " + props.color )
+                        return { hue: shade + " " + props.color };
+                    },
+                    function() {
+                        this.props.logger("after-setState", this.state.hue, this.props.color);
+                    }
+                );
+            };
+
+            render() {
+                this.props.logger("render", this.state.hue, this.props.color);
+                return (
+                    <div>
+                        <button onClick={this.handleHue.bind(this, "dark", "blue")}>Dark Blue</button>
+                        <button onClick={this.handleHue.bind(this, "light", "blue")}>Light Blue</button>
+                        <button onClick={this.handleHue.bind(this, "dark", "green")}>Dark Green</button>
+                        <button onClick={this.handleHue.bind(this, "light", "green")}>Light Green</button>
+                    </div>
+                );
+            }
+        }
+
+        var container = document.createElement("div");
+        document.body.appendChild(container);
+        var list = [];
+        function logger() {
+            var s = [].slice.call(arguments, 0).join(" ")
+            console.log("%c"+s,"color:blue")
+            list.push(s);
+        }
+
+        void ReactDOM.render(<ParentComponent logger={logger} />, container);
+
+        // click "light green"
+        container.childNodes[0].childNodes[3].click()
+       // ReactTestUtils.Simulate.click(container.childNodes[0].childNodes[3]);
+        //console.log(JSON.stringify(logger.calls))
+        expect(list.join("\n")).toBe(
+            [
+                "parent-render blue", //parent render
+                "getInitialState blue",//child init 
+                "render dark blue blue",//child render
+                "handleHue dark blue blue", // child click log
+                "parent-handleColor blue",  // 调用父新的方法
+                "parent-render green",      // parent render
+                "setState-this dark blue blue", // child render时执行setState first args
+                "setState-args dark blue green",// child render时执行setState first args
+                "render light green green",
+                "after-setState light green green",
+                "parent-after-setState green"
+            ].join("\n")
+        );
 </script>
 
 

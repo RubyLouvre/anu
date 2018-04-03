@@ -123,11 +123,13 @@ function updateClassComponent(fiber) {
         stage = "init";
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Flutter.updateComponent;
+        instance.props = props;
     } else {
         stage = isForced === true || isForced === false ? "update" : "receive";
         alternate = alternate || emptyObject;
         let p = alternate.pendingFiber;
         if(p){
+            console.log("=====");
             p.merged = true;
             mergeArray(fiber, p, "pendingStates");
             mergeArray(fiber, p, "pendingCbs");
@@ -142,6 +144,7 @@ function updateClassComponent(fiber) {
     }
     var updater = instance.updater;
     updater._hooking = true;
+
     while (stage) {
         stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
     }
@@ -150,6 +153,7 @@ function updateClassComponent(fiber) {
     if (ps && ps.length) {
         mergeStates(fiber, props);
     }
+    console.log(JSON.stringify(instance.state));
     instance.props = props; // getChildContext可能依赖于props与state
     if (instance.getChildContext) {
         try {
@@ -177,6 +181,7 @@ function updateClassComponent(fiber) {
         rendered = [];
     }
     Flutter.currentOwner = lastOwn;
+
     diffChildren(fiber, rendered);
 }
 var stageIteration = {
@@ -291,10 +296,11 @@ function getMaskedContext(contextTypes) {
 function diffChildren(parentFiber, children) {
     let prev = parentFiber.alternate;
     let oldFibers = prev ? prev._children : {}; // 旧的
+    
 
     var newFibers = fiberizeChildren(children, parentFiber); // 新的
     var effects = parentFiber.effects || (parentFiber.effects = []);
-
+    console.log(Object.keys(oldFibers), Object.keys(newFibers), parentFiber.name);
     let matchFibers = {};
     for (let i in oldFibers) {
         let newFiber = newFibers[i];

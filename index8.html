@@ -40,24 +40,55 @@
                   }
               };
           };
-          [['an array'], 'a string', 1234].forEach(function(state) {
-            var Component = React.createClass({
-              getInitialState: function() {
-                  console.log("cccc",state)
-                return state;
-              },
-              render: function() {
-                return <span />;
-              },
-            });
-            var instance = <Component />;
-            
-              instance = ReactDOM.render(instance, div);
+          class Issue extends React.PureComponent {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    status: "normal"
+                };
+            }
 
-        })
-          //  }).toThrowError(
-          //    'getInitialState只能返回纯JS对象或者null',
-         //   );
+            componentWillUnmount() {
+                console.log(this.updater.enqueueSetState+"")
+                this.setState({ status: "unmount" });
+            }
+
+            render() {
+                const { status } = this.state;
+
+                if (status === "unmount") {
+                    throw new Error("Issue unmounted");
+                }
+
+                return <span>Issue status: {status}</span>;
+            }
+        }
+
+        class App extends React.PureComponent {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    showIssue: true
+                };
+            }
+
+            render() {
+                const { showIssue } = this.state;
+
+                return (
+                    <div>
+                        {showIssue && <Issue />}
+                        <b>测试错误</b>
+                    </div>
+                );
+            }
+        }
+        var s = ReactDOM.render(<App />, div);
+
+        expect(div.getElementsByTagName("span").length).toBe(1);
+        s.setState({ showIssue: false });
+
+        expect(div.getElementsByTagName("span").length).toBe(0);
 </script>
 
 
