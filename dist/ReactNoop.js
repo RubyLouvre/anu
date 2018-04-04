@@ -1270,7 +1270,12 @@ var Refs = {
 };
 
 function commitEffects(a) {
-    var arr = commitPlaceEffects(a || effects);
+    var arr = a || effects;
+    console.log(arr.reduce(function (pre, el) {
+        pre.push(el.effectTag, el);
+        return pre;
+    }, []));
+    arr = commitPlaceEffects(arr);
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;
 }
