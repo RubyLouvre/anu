@@ -148,14 +148,12 @@ export let DOMRenderer = {
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
     },
-    updateRoot(vnode, root) {
+    updateRoot(root) {
         if (!(root && root.appendChild)) {
             throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
         }
         var hostRoot = get(root);
-        if (hostRoot) {
-            hostRoot.alternate = new Fiber(hostRoot);//对旧的复制一份
-        } else {
+        if (!hostRoot) {
             hostRoot = new Fiber( {
                 stateNode: root,
                 root: true,
@@ -165,9 +163,6 @@ export let DOMRenderer = {
                 namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
             });
         }
-        hostRoot.props = {
-            children: vnode
-        };
         if (topNodes.indexOf(root) == -1) {
             topNodes.push(root);
             topFibers.push(hostRoot);

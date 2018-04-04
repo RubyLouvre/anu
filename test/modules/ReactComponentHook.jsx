@@ -33,13 +33,13 @@ describe("ReactComponentHook", function () {
 
         const el = document.createElement('div');
 
-        React.render(<Child incrementBy={0} />, el);
+        ReactDOM.render(<Child incrementBy={0} />, el);
         expect(el.textContent).toBe('count:1');
 
-        React.render(<Child incrementBy={2} />, el);
+        ReactDOM.render(<Child incrementBy={2} />, el);
         expect(el.textContent).toBe('count:3');
 
-        React.render(<Child incrementBy={1} />, el);
+        ReactDOM.render(<Child incrementBy={1} />, el);
         expect(el.textContent).toBe('count:4');
     });
     it('does not call static getDerivedStateFromProps for state-only updates', () => {

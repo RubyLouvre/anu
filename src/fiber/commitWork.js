@@ -16,10 +16,9 @@ import { effects } from "../share";
 import { callLifeCycleHook, pushError } from "./unwindWork";
 import { returnFalse, returnTrue, Flutter, noop } from "../util";
 import { Refs } from "../Refs";
-
+var clearUpElements = []
 export function commitEffects(a) {
     var arr = a || effects;
-
     arr = commitPlaceEffects(arr);
     /*
     console.log( arr.reduce(function(pre,el){
@@ -27,10 +26,19 @@ export function commitEffects(a) {
         return pre;
     },[]) );
     */
+    for(var i = 0; i < arr.length; i++){
+        commitOtherEffects(arr[i])
+        
+    }
     arr.forEach(commitOtherEffects);
-    arr.length = effects.length = 0;
+    clearUpElements.forEach(removeStateNode)
+    clearUpElements.length = arr.length = effects.length = 0;
 }
-
+function removeStateNode(el){
+    console.log("要移除",el.name)
+    delete el.alternate;
+    delete el.stateNode;
+}
 /**
  * 提先执行所有RLACE任务
  * @param {Fiber} fibers 
@@ -68,6 +76,7 @@ export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
+    outer:
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -90,12 +99,16 @@ export function commitOtherEffects(fiber) {
                     //只对原生组件
                     Flutter.removeElement(fiber);
                 }
+                console.log("要移除",fiber.name)
+                clearUpElements.push(fiber)
                 //业务 & 原生
                 break;
             case HOOK: //只对业务组件
                 if (fiber.disposed) {
                     updater.enqueueSetState = returnFalse;
-                    callLifeCycleHook(instance, "componentWillUnmount", []);
+                    if(updater._isMounted()){
+                       callLifeCycleHook(instance, "componentWillUnmount", []);
+                    }
                     updater._isMounted = returnFalse;
                 } else {
                     if (updater._isMounted()) {
@@ -105,6 +118,7 @@ export function commitOtherEffects(fiber) {
                         callLifeCycleHook(instance, "componentDidMount", []);
                     }
                 }
+            
                 delete fiber.pendingFiber;
                 delete updater._hydrating;
                 break;

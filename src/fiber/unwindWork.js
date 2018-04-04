@@ -15,6 +15,7 @@ export function pushError (fiber, hook, error) {
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
         updateQueue.push(catchFiber);
+        console.log("进入列队")
     } else {
     console.log(error); // eslint-disable-line
     console.warn(stack); // eslint-disable-line

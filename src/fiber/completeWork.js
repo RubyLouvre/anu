@@ -36,8 +36,10 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
         }
         if (shouldUpdateFalse || child.shouldUpdateFalse) {
             if (isHost) {
-                child.effectTag = PLACE;
-                effects.push(child);
+                if(!child.disposed){
+                    child.effectTag *= PLACE;
+                    effects.push(child);
+                }
             } else {
                 //只有组件虚拟DOM才有钩子
                 delete child.shouldUpdateFalse;

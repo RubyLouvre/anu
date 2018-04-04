@@ -65,7 +65,6 @@ function updateHostComponent (fiber) {
             fiber.effectTag *= ATTR;
         }
         if(prev){
-            //  console.log(fiber.stateNode, "xxxx");
             fiber._children = prev._children;
         }
         diffChildren(fiber, children);
@@ -118,15 +117,20 @@ function updateClassComponent (fiber) {
         instance.updater.enqueueSetState = Flutter.updateComponent;
         instance.props = props;
     } else {
-        var isSetState = isForced === true || isForced === false || fiber._updates;
+        let isSetState = isForced === true || fiber.pendingStates || fiber._updates;
         if (isSetState) {
             stage = "update";
-            if (fiber._updates) {
-                extend(fiber, fiber._updates);
+            let u = fiber._updates
+            if (u) {
+                isForced = fiber.isForced || u.isForced
+                fiber.pendingStates = u.pendingStates
+                let hasCb = fiber.pendingCbs = u.pendingCbs
+                if(hasCb){
+                  fiber.effectTag *= CALLBACK;
+                }
                 delete fiber._updates;
-                isForced = fiber.isForced;
             }
-            delete fiber.isForced;
+           // delete fiber.isForced;
         }else {
           
             stage = "receive";
@@ -136,17 +140,18 @@ function updateClassComponent (fiber) {
     if (instance.__isStateless) {
         stage = "noop";
     }
-    var updater = instance.updater;
+    let updater = instance.updater;
     updater._hooking = true;
 
     while (stage) {
         stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
     }
     updater._hooking = false;
-    var ps = fiber.pendingStates;
+    let ps = fiber.pendingStates;
     if (ps && ps.length) {
         instance.state = mergeStates(fiber, props);
     }
+    delete fiber.isForced;
     instance.props = props; // getChildContext可能依赖于props与state
     if (instance.getChildContext) {
         try {
@@ -330,6 +335,7 @@ function diffChildren (parentFiber, children) {
     for (let i in newFibers) {
         let newFiber = newFibers[i];
         let oldFiber = matchFibers[i];
+
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
                 var alternate = new Fiber(oldFiber);

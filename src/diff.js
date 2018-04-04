@@ -31,22 +31,27 @@ export function findDOMNode (stateNode) {
     }
 }
 export function render (vnode, root, callback) {
-    let hostRoot = Flutter.updateRoot(vnode, root);
+    let hostRoot = Flutter.updateRoot(root);
     let instance = null;
-    hostRoot.effectTag = CALLBACK;
-    hostRoot._hydrating = true; // lock 表示正在渲染
-    hostRoot.pendingCbs = [ function () {
-        instance = hostRoot.child ? hostRoot.child.stateNode : null;
-        callback && callback.call(instance);
-        hostRoot._hydrating = false; // unlock
-    } ];
-    updateQueue.push(hostRoot);
-    var prev = hostRoot.alternate;
     // 如果之前的还没有执行完，那么等待它执行完再处理,
     // 比如在某个组件的cb调用了ReactDOM.render就会遇到这种情况
-    if (prev && prev._hydrating) {
-        return;
+    if (hostRoot._hydrating) {
+      hostRoot.pendingCbs.push(function(){
+        render(vnode, root, callback)
+      })
+      return;
     }
+    hostRoot.props = {
+      children: vnode
+    }
+    hostRoot.pendingCbs = [ function () {
+      instance = hostRoot.child ? hostRoot.child.stateNode : null;
+      callback && callback.call(instance);
+      hostRoot._hydrating = false; // unlock
+    }];
+    hostRoot._hydrating = true; // lock 表示正在渲染
+    hostRoot.effectTag = CALLBACK;
+    updateQueue.push(hostRoot);
     Flutter.scheduleWork();
     return instance;
 }
@@ -160,7 +165,9 @@ function getNextUnitOfWork (fiber) {
 
 function mergeUpdates (el, state, isForced, callback) {
     var fiber = el._updates || el;
-    fiber.isForced = fiber.isForced || isForced; // 如果是true就变不回false
+    if(isForced){
+       fiber.isForced = true; // 如果是true就变不回false
+    }
     //  fiber.alternate = fiber.alternate || fiber;//不要覆盖旧的
     if (state) {
         var ps = fiber.pendingStates || (fiber.pendingStates = []);
