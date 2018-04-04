@@ -5,6 +5,7 @@ import {
     HOOK,
     CONTENT,
     REF,
+    CHANGEREF,
     NULLREF,
     CALLBACK,
     CAPTURE,
@@ -18,7 +19,12 @@ import { Refs } from "../Refs";
 
 export function commitEffects(a) {
     var arr = commitPlaceEffects(a || effects);
-
+    /*
+    console.log( arr.reduce(function(pre,el){
+        pre.push( el.effectTag, el );
+        return pre;
+    },[]) );
+    */
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;
 }
@@ -67,6 +73,7 @@ export function commitOtherEffects(fiber) {
         }
         let remainder = amount / effectNo;
         if (remainder == ~~remainder) {
+
             //如果能整除，下面的分支操作以后要改成注入方法
             amount = remainder;
             switch (effectNo) {
@@ -102,11 +109,13 @@ export function commitOtherEffects(fiber) {
             case CONTENT:
                 Flutter.updateContext(fiber);
                 break;
+  
             case REF:
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, instance);
                 }
                 break;
+            case CHANGEREF:
             case NULLREF:
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, null);

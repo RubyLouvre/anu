@@ -1,9 +1,9 @@
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { contextStack, componentStack, containerStack, hasContextChanged, emptyObject, updateQueue } from "../share";
+import { contextStack, componentStack, containerStack, hasContextChanged,updateQueue } from "../share";
 import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
-import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
-import { extend, Flutter, get, noop, typeNumber } from "../util";
+import { NOWORK, PLACE, ATTR, DETACH, HOOK, CONTENT, CHANGEREF, REF, NULLREF, CALLBACK } from "./effectTag";
+import { extend, Flutter, noop, typeNumber,__push } from "../util";
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
@@ -51,7 +51,7 @@ export function Fiber (vnode) {
     let type = vnode.type;
     this.time = Date.now();
     this.name = type.displayName || type.name || type;
-    this.effectTag = 1;
+    this.effectTag = NOWORK;
 }
 
 function updateHostComponent (fiber) {
@@ -78,8 +78,6 @@ function updateHostComponent (fiber) {
         diffChildren(fiber, children);
     } else {
     // 文本节点
-        // console.log(prev && prev.stateNode && document.contains(prev.stateNode), "yyy");
-        //  console.log(fiber.stateNode, "xxxx");
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }
@@ -111,15 +109,7 @@ function mergeStates (fiber, nextProps, keep) {
     }
     return nextState;
 }
-function mergeArray (fiber, p, name) {
-    var first = fiber[name] || [];
-    var second = p[name] || [];
 
-    fiber[name] = second.concat(first);
-    if (name === "pendingCbs" && fiber[name].length) {
-        fiber.effectTag *= CALLBACK;
-    }
-}
 // 第一次是没有alternate 也没有stateNode
 // 如果是setState是没有alternate
 // 如果是receive是有alternate
@@ -342,7 +332,8 @@ function diffChildren (parentFiber, children) {
     }
  
     let prevFiber,
-        index = 0;
+        index = 0,
+        newEffects = [];
     for (let i in newFibers) {
         let newFiber = newFibers[i] = new Fiber(newFibers[i]);
         let oldFiber = matchFibers[i];
@@ -357,7 +348,7 @@ function diffChildren (parentFiber, children) {
                     oldFiber.merged = true;
                 }       
                 if (oldFiber.ref && oldFiber.ref !== newFiber.ref) {
-                    oldFiber.effectTag = NULLREF;
+                    oldFiber.effectTag *= CHANGEREF;
                     effects.push(oldFiber);
                 }
                 if (newFiber.tag === 5) {
@@ -366,8 +357,10 @@ function diffChildren (parentFiber, children) {
             } else {
                 detachFiber(oldFiber, effects);
             }
+            newEffects.push(newFiber);
         }
         if (newFiber.tag > 3) {
+         
             newFiber.effectTag *= PLACE;
         }
         if (newFiber.ref) {
@@ -386,6 +379,7 @@ function diffChildren (parentFiber, children) {
         }
         prevFiber = newFiber;
     }
+    // __push.apply(effects, newEffects);
     if (prevFiber) {
         delete prevFiber.sibling;
     }
