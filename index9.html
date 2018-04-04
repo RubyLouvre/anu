@@ -37,88 +37,36 @@
                   }
               };
           };
-         class ParentComponent extends React.Component {
-            state = { color: "blue" };
+        var numMiddleRenders = 0;
+        var numBottomRenders = 0;
 
-            handleColor = color => {
-                this.props.logger("parent-handleColor", this.state.color);
-                this.setState({ color: color }, function() {
-                    this.props.logger("parent-after-setState", this.state.color);
-                });
-            };
+        class Top extends React.Component {
+            render() {
+                return <Middle><Bottom /></Middle>;
+            }
+        }
+
+        class Middle extends React.Component {
+            componentDidMount() {
+                this.forceUpdate();
+            }
 
             render() {
-                this.props.logger("parent-render", this.state.color);
-                return <ChildComponent logger={this.props.logger} color={this.state.color} onSelectColor={this.handleColor} />;
+                numMiddleRenders++;
+                return React.Children.only(this.props.children);
             }
         }
 
-        class ChildComponent extends React.Component {
-            constructor(props) {
-                super(props);
-                props.logger("getInitialState", props.color);
-                this.state = { hue: "dark " + props.color };
-            }
-
-            handleHue = (shade, color) => {
-                this.props.logger("handleHue", this.state.hue, this.props.color);
-                this.props.onSelectColor(color);//调用父节点的setState
-                this.setState(
-                    function(state, props) {
-                        this.props.logger("setState-this", this.state.hue, this.props.color);//blue
-                        this.props.logger("setState-args", state.hue, props.color);//green
-                        console.log("child "+ shade + " " + props.color )
-                        return { hue: shade + " " + props.color };
-                    },
-                    function() {
-                        this.props.logger("after-setState", this.state.hue, this.props.color);
-                    }
-                );
-            };
-
+        class Bottom extends React.Component {
             render() {
-                this.props.logger("render", this.state.hue, this.props.color);
-                return (
-                    <div>
-                        <button onClick={this.handleHue.bind(this, "dark", "blue")}>Dark Blue</button>
-                        <button onClick={this.handleHue.bind(this, "light", "blue")}>Light Blue</button>
-                        <button onClick={this.handleHue.bind(this, "dark", "green")}>Dark Green</button>
-                        <button onClick={this.handleHue.bind(this, "light", "green")}>Light Green</button>
-                    </div>
-                );
+                numBottomRenders++;
+                return null;
             }
         }
 
-        var container = document.createElement("div");
-        document.body.appendChild(container);
-        var list = [];
-        function logger() {
-            var s = [].slice.call(arguments, 0).join(" ")
-            console.log("%c"+s,"color:blue")
-            list.push(s);
-        }
-
-        void ReactDOM.render(<ParentComponent logger={logger} />, container);
-
-        // click "light green"
-        container.childNodes[0].childNodes[3].click()
-       // ReactTestUtils.Simulate.click(container.childNodes[0].childNodes[3]);
-        //console.log(JSON.stringify(logger.calls))
-        expect(list.join("\n")).toBe(
-            [
-                "parent-render blue", //parent render
-                "getInitialState blue",//child init 
-                "render dark blue blue",//child render
-                "handleHue dark blue blue", // child click log
-                "parent-handleColor blue",  // 调用父新的方法
-                "parent-render green",      // parent render
-                "setState-this dark blue blue", // child render时执行setState first args
-                "setState-args dark blue green",// child render时执行setState first args
-                "render light green green",
-                "after-setState light green green",
-                "parent-after-setState green"
-            ].join("\n")
-        );
+        ReactDOM.render(<Top />,div);
+        expect(numMiddleRenders).toBe(2);
+        expect(numBottomRenders).toBe(1);
 </script>
 
 

@@ -2,6 +2,7 @@ import { callLifeCycleHook, pushError } from "./unwindWork";
 import { contextStack, componentStack, containerStack, hasContextChanged,updateQueue } from "../share";
 import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
+import { Fiber } from "./Fiber";
 import { NOWORK, PLACE, ATTR, DETACH, HOOK, CONTENT, CHANGEREF, REF, NULLREF, CALLBACK } from "./effectTag";
 import { extend, Flutter, noop, typeNumber,__push } from "../util";
 /**
@@ -45,14 +46,6 @@ export function updateEffects (fiber, topWork) {
     }
 }
 
-// 实例化组件
-export function Fiber (vnode) {
-    extend(this, vnode);
-    let type = vnode.type;
-    this.time = Date.now();
-    this.name = type.displayName || type.name || type;
-    this.effectTag = NOWORK;
-}
 
 function updateHostComponent (fiber) {
     if (!fiber.stateNode) {
@@ -335,36 +328,34 @@ function diffChildren (parentFiber, children) {
         index = 0,
         newEffects = [];
     for (let i in newFibers) {
-        let newFiber = newFibers[i] = new Fiber(newFibers[i]);
+        let newFiber = newFibers[i];
         let oldFiber = matchFibers[i];
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
-                newFiber.stateNode = oldFiber.stateNode;
-                newFiber.alternate = oldFiber; // 保存旧的
-                newFiber._children = oldFiber._children;
-                if(oldFiber._updates){
-                    newFiber._updates = oldFiber._updates;
-                    delete oldFiber._updates;
-                    oldFiber.merged = true;
-                }       
-                if (oldFiber.ref && oldFiber.ref !== newFiber.ref) {
-                    oldFiber.effectTag *= CHANGEREF;
-                    effects.push(oldFiber);
+                var alternate = new Fiber(oldFiber);
+                newFiber = extend(oldFiber, newFiber); //将新属性转换旧对象上
+                newFiber.alternate = alternate;      
+                if (alternate.ref && alternate.ref !== newFiber.ref) {
+                    alternate.effectTag *= NULLREF;
+                    effects.push(alternate);
                 }
                 if (newFiber.tag === 5) {
-                    newFiber.lastProps = oldFiber.props;
+                    newFiber.lastProps = alternate.props;
                 }
             } else {
                 detachFiber(oldFiber, effects);
             }
             newEffects.push(newFiber);
+        }else{
+            newFiber = new Fiber(newFiber);
         }
+        newFibers[i] = newFiber;
         if (newFiber.tag > 3) {
          
             newFiber.effectTag *= PLACE;
         }
         if (newFiber.ref) {
-            newFiber.effectTag *= REF;
+            newFiber.effectTag *= REF;            
         }
         newFiber.index = index++;
         newFiber.return = parentFiber;
@@ -379,7 +370,6 @@ function diffChildren (parentFiber, children) {
         }
         prevFiber = newFiber;
     }
-    // __push.apply(effects, newEffects);
     if (prevFiber) {
         delete prevFiber.sibling;
     }

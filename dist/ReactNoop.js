@@ -550,6 +550,154 @@ function forwardRef(fn) {
     return RefComponent(fn);
 }
 
+function Fiber(vnode) {
+    extend(this, vnode);
+    var type = vnode.type;
+    this.name = type.displayName || type.name || type;
+    this.effectTag = 1;
+}
+
+function AnuPortal(props) {
+    return props.children;
+}
+function createPortal(children, node) {
+    var fiber = void 0,
+        events = node.__events;
+    if (events) {
+        fiber = node.__events.vnode;
+    } else {
+        events = node.__events = {};
+        var vnode = createVnode(node);
+        fiber = new Fiber(vnode);
+        events.vnode = fiber;
+    }
+    fiber._isPortal = true;
+    var child = createElement(AnuPortal, { children: children });
+    child._return = fiber;
+    return child;
+}
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var uuid = 1;
+function gud() {
+    return uuid++;
+}
+var MAX_NUMBER = 1073741823;
+function createEventEmitter(value) {
+    var handlers = [];
+    return {
+        on: function on(handler) {
+            handlers.push(handler);
+        },
+        off: function off(handler) {
+            handlers = handlers.filter(function (h) {
+                return h !== handler;
+            });
+        },
+        get: function get$$1() {
+            return value;
+        },
+        set: function set(newValue, changedBits) {
+            value = newValue;
+            handlers.forEach(function (handler) {
+                return handler(value, changedBits);
+            });
+        }
+    };
+}
+function createContext(defaultValue, calculateChangedBits) {
+    var contextProp = "__create-react-context-" + gud() + "__";
+    function Provider(props, context) {
+        Component.call(this, props, context);
+        this.emitter = createEventEmitter(props.value);
+    }
+    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
+    var fn = inherit(Provider, Component);
+    fn.getChildContext = function () {
+        return _defineProperty({}, contextProp, this.emitter);
+    };
+    fn.componentWillReceiveProps = function (nextProps) {
+        if (this.props.value !== nextProps.value) {
+            var oldValue = this.props.value;
+            var newValue = nextProps.value;
+            var changedBits = void 0;
+            if (Object.is(oldValue, newValue)) {
+                changedBits = 0;
+            } else {
+                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                changedBits |= 0;
+                if (changedBits !== 0) {
+                    this.emitter.set(nextProps.value, changedBits);
+                }
+            }
+        }
+    };
+    fn.render = function () {
+        return this.props.children;
+    };
+    function Consumer(props, context) {
+        var _this = this;
+        Component.call(this, props, context);
+        this.observedBits = 0;
+        this.state = {
+            value: this.getValue()
+        };
+        this.onUpdate = function (newValue, changedBits) {
+            var observedBits = _this.observedBits | 0;
+            if ((observedBits & changedBits) !== 0) {
+                _this.setState({ value: _this.getValue() });
+            }
+        };
+    }
+    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
+    var fn2 = inherit(Consumer, Component);
+    fn2.componentWillReceiveProps = function (nextProps) {
+        var observedBits = nextProps.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.getValue = function () {
+        if (this.context[contextProp]) {
+            return this.context[contextProp].get();
+        } else {
+            return defaultValue;
+        }
+    };
+    fn2.componentDidMount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].on(this.onUpdate);
+        }
+        var observedBits = this.props.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.componentWillUnmount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].off(this.onUpdate);
+        }
+    };
+    fn2.render = function () {
+        return this.props.children(this.state.value);
+    };
+    return {
+        Provider: Provider,
+        Consumer: Consumer
+    };
+}
+
+var componentStack = [];
+var effects = [];
+var topFibers = [];
+var topNodes = [];
+
+var emptyObject = {};
+var containerStack = [];
+var contextStack = [emptyObject];
+
+function hasContextChanged() {
+    return contextStack[0] != emptyObject;
+}
+
 var NOWORK = 1;
 var PLACE = 2;
 var CONTENT = 3;
@@ -564,7 +712,7 @@ var CAPTURE = 29;
 var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
-var updateQueue = Flutter.mainThread;
+var updateQueue$2 = Flutter.mainThread;
 function pushError(fiber, hook, error) {
     var names = [];
     var catchFiber = findCatchComponent(fiber, names);
@@ -575,7 +723,7 @@ function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-        updateQueue.push(catchFiber);
+        updateQueue$2.push(catchFiber);
     } else {
         console.log(error);
         console.warn(stack);
@@ -642,19 +790,6 @@ function findCatchComponent(topFiber, names) {
             names.push(name);
         }
     } while (fiber = fiber.return);
-}
-
-var componentStack = [];
-var effects = [];
-var topFibers = [];
-var topNodes = [];
-
-var emptyObject = {};
-var containerStack = [];
-var contextStack = [emptyObject];
-
-function hasContextChanged() {
-    return contextStack[0] != emptyObject;
 }
 
 function createInstance(fiber, context) {
@@ -745,13 +880,6 @@ function updateEffects(fiber, topWork) {
         }
         f = f.return;
     }
-}
-function Fiber(vnode) {
-    extend(this, vnode);
-    var type = vnode.type;
-    this.time = Date.now();
-    this.name = type.displayName || type.name || type;
-    this.effectTag = NOWORK;
 }
 function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
@@ -1014,35 +1142,34 @@ function diffChildren(parentFiber, children) {
         index = 0,
         newEffects = [];
     for (var _i2 in newFibers) {
-        var _newFiber = newFibers[_i2] = new Fiber(newFibers[_i2]);
+        var _newFiber = newFibers[_i2];
         var _oldFiber = matchFibers[_i2];
         if (_oldFiber) {
             if (isSameNode(_oldFiber, _newFiber)) {
-                _newFiber.stateNode = _oldFiber.stateNode;
-                _newFiber.alternate = _oldFiber;
-                _newFiber._children = _oldFiber._children;
-                if (_oldFiber._updates) {
-                    _newFiber._updates = _oldFiber._updates;
-                    delete _oldFiber._updates;
-                    _oldFiber.merged = true;
-                }
-                if (_oldFiber.ref && _oldFiber.ref !== _newFiber.ref) {
-                    _oldFiber.effectTag *= CHANGEREF;
-                    effects$$1.push(_oldFiber);
+                var alternate = new Fiber(_oldFiber);
+                _newFiber = extend(_oldFiber, _newFiber);
+                _newFiber.alternate = alternate;
+                if (alternate.ref && alternate.ref !== _newFiber.ref) {
+                    alternate.effectTag *= NULLREF;
+                    effects$$1.push(alternate);
                 }
                 if (_newFiber.tag === 5) {
-                    _newFiber.lastProps = _oldFiber.props;
+                    _newFiber.lastProps = alternate.props;
                 }
             } else {
                 detachFiber(_oldFiber, effects$$1);
             }
             newEffects.push(_newFiber);
+        } else {
+            _newFiber = new Fiber(_newFiber);
         }
+        newFibers[_i2] = _newFiber;
         if (_newFiber.tag > 3) {
             _newFiber.effectTag *= PLACE;
         }
         if (_newFiber.ref) {
             _newFiber.effectTag *= REF;
+            console.log("REF", REF, _newFiber.effectTag, _newFiber);
         }
         _newFiber.index = index++;
         _newFiber.return = parentFiber;
@@ -1058,134 +1185,6 @@ function diffChildren(parentFiber, children) {
     if (prevFiber) {
         delete prevFiber.sibling;
     }
-}
-
-function AnuPortal(props) {
-    return props.children;
-}
-function createPortal(children, node) {
-    var fiber = void 0,
-        events = node.__events;
-    if (events) {
-        fiber = node.__events.vnode;
-    } else {
-        events = node.__events = {};
-        var vnode = createVnode(node);
-        fiber = new Fiber(vnode);
-        events.vnode = fiber;
-    }
-    fiber._isPortal = true;
-    var child = createElement(AnuPortal, { children: children });
-    child._return = fiber;
-    return child;
-}
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-var uuid = 1;
-function gud() {
-    return uuid++;
-}
-var MAX_NUMBER = 1073741823;
-function createEventEmitter(value) {
-    var handlers = [];
-    return {
-        on: function on(handler) {
-            handlers.push(handler);
-        },
-        off: function off(handler) {
-            handlers = handlers.filter(function (h) {
-                return h !== handler;
-            });
-        },
-        get: function get$$1() {
-            return value;
-        },
-        set: function set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(function (handler) {
-                return handler(value, changedBits);
-            });
-        }
-    };
-}
-function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
-    function Provider(props, context) {
-        Component.call(this, props, context);
-        this.emitter = createEventEmitter(props.value);
-    }
-    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
-    var fn = inherit(Provider, Component);
-    fn.getChildContext = function () {
-        return _defineProperty({}, contextProp, this.emitter);
-    };
-    fn.componentWillReceiveProps = function (nextProps) {
-        if (this.props.value !== nextProps.value) {
-            var oldValue = this.props.value;
-            var newValue = nextProps.value;
-            var changedBits = void 0;
-            if (Object.is(oldValue, newValue)) {
-                changedBits = 0;
-            } else {
-                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                changedBits |= 0;
-                if (changedBits !== 0) {
-                    this.emitter.set(nextProps.value, changedBits);
-                }
-            }
-        }
-    };
-    fn.render = function () {
-        return this.props.children;
-    };
-    function Consumer(props, context) {
-        var _this = this;
-        Component.call(this, props, context);
-        this.observedBits = 0;
-        this.state = {
-            value: this.getValue()
-        };
-        this.onUpdate = function (newValue, changedBits) {
-            var observedBits = _this.observedBits | 0;
-            if ((observedBits & changedBits) !== 0) {
-                _this.setState({ value: _this.getValue() });
-            }
-        };
-    }
-    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
-    var fn2 = inherit(Consumer, Component);
-    fn2.componentWillReceiveProps = function (nextProps) {
-        var observedBits = nextProps.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.getValue = function () {
-        if (this.context[contextProp]) {
-            return this.context[contextProp].get();
-        } else {
-            return defaultValue;
-        }
-    };
-    fn2.componentDidMount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].on(this.onUpdate);
-        }
-        var observedBits = this.props.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.componentWillUnmount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].off(this.onUpdate);
-        }
-    };
-    fn2.render = function () {
-        return this.props.children(this.state.value);
-    };
-    return {
-        Provider: Provider,
-        Consumer: Consumer
-    };
 }
 
 function collectEffects(fiber, shouldUpdateFalse, isTop) {
@@ -1219,9 +1218,9 @@ function collectEffects(fiber, shouldUpdateFalse, isTop) {
             }
         } else {
             __push.apply(effects, collectEffects(child));
-            if (child.effectTag) {
-                effects.push(child);
-            }
+        }
+        if (child.effectTag) {
+            effects.push(child);
         }
     }
     return effects;
@@ -1375,7 +1374,7 @@ function commitOtherEffects(fiber) {
     fiber.effectTag = 1;
 }
 
-var updateQueue$2 = Flutter.mainThread;
+var updateQueue$$1 = Flutter.mainThread;
 function isValidElement(vnode) {
     return vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
@@ -1406,7 +1405,7 @@ function render(vnode, root, callback) {
         callback && callback.call(instance);
         hostRoot._hydrating = false;
     }];
-    updateQueue$2.push(hostRoot);
+    updateQueue$$1.push(hostRoot);
     var prev = hostRoot.alternate;
     if (prev && prev._hydrating) {
         return;
@@ -1458,7 +1457,7 @@ function workLoop(deadline) {
 }
 function performWork(deadline) {
     workLoop(deadline);
-    if (updateQueue$2.length > 0) {
+    if (updateQueue$$1.length > 0) {
         requestIdleCallback(performWork);
     }
 }
@@ -1487,7 +1486,7 @@ function requestIdleCallback(fn) {
     });
 }
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue$2.shift();
+    fiber = updateQueue$$1.shift();
     if (!fiber) {
         return;
     }
@@ -1532,14 +1531,14 @@ Flutter.updateComponent = function (instance, state, callback) {
     if (this._hydrating || Flutter.interactQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Flutter.interactQueue || updateQueue$2;
+            var queue = Flutter.interactQueue || updateQueue$$1;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
         if (!this._hooking) {
-            updateQueue$2.push(fiber);
+            updateQueue$$1.push(fiber);
             Flutter.scheduleWork();
         }
     }

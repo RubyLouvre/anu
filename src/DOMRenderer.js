@@ -3,6 +3,7 @@ import { diffProps } from "./diffProps";
 import { get, Flutter } from "./util";
 import { emptyObject, topNodes, topFibers } from "./share";
 import { document, NAMESPACE, contains } from "./browser";
+import { Fiber } from "./fiber/Fiber";
 
 
 export function createElement(vnode) {
@@ -53,7 +54,7 @@ export function createElement(vnode) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-	} catch (e) {}
+    } catch (e) { }
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
@@ -84,7 +85,7 @@ export function removeElement(node) {
     if (node.nodeType === 1) {
 
         emptyElement(node);
-        
+
         node.__events = null;
     } else if (node.nodeType === 3) {
         //只回收文本节点
@@ -103,21 +104,21 @@ function insertElement(fiber) {
     //找到可用的父节点
     let dom = fiber.stateNode,
         parentNode = fiber.parent,
-        before =  fiber.insertPoint;
+        before = fiber.insertPoint;
     try {
-        if(before == null){
-            if(dom !== parent.firstChild){
+        if (before == null) {
+            if (dom !== parent.firstChild) {
                 //console.log(dom, "插入最前面",!!parent.firstChild);
                 parentNode.insertBefore(dom, parent.firstChild);
             }
-			
-        }else{
-            if(dom !== parent.lastChild){
+
+        } else {
+            if (dom !== parent.lastChild) {
                 //console.log(" 移动 ", dom === before, dom, before);
                 parentNode.insertBefore(dom, before.nextSibling);
             }
         }
-		
+
     } catch (e) {
         throw e;
     }
@@ -151,17 +152,21 @@ export let DOMRenderer = {
         if (!(root && root.appendChild)) {
             throw `ReactDOM.render的第二个参数错误`; // eslint-disable-line
         }
-        let hostRoot = {
-            stateNode: root,
-            root: true,
-            tag: 5,
-            name: "hostRoot",
-            type: root.tagName.toLowerCase(),
-            props: {
-                children: vnode
-            },
-            namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
-            alternate: get(root)
+        var hostRoot = get(root);
+        if (hostRoot) {
+            hostRoot.alternate = new Fiber(hostRoot);//对旧的复制一份
+        } else {
+            hostRoot = new Fiber( {
+                stateNode: root,
+                root: true,
+                tag: 5,
+                name: "hostRoot",
+                type: root.tagName.toLowerCase(),
+                namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
+            });
+        }
+        hostRoot.props = {
+            children: vnode
         };
         if (topNodes.indexOf(root) == -1) {
             topNodes.push(root);

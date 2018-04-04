@@ -46,9 +46,10 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
         } else {
             //__push.apply(effects, collectEffects(get(child.stateNode) ));
             __push.apply(effects, collectEffects(child));
-            if (child.effectTag) {
-                effects.push(child);
-            }
+           
+        }
+        if (child.effectTag) {//shouldUpdateFalse也会执行REF与CALLBACK
+            effects.push(child);
         }
     }
 
