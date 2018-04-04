@@ -19,10 +19,7 @@ import { Refs } from "../Refs";
 
 export function commitEffects(a) {
     var arr = a || effects;
-    console.log( arr.reduce(function(pre,el){
-        pre.push( el.effectTag, el );
-        return pre;
-    },[]) );
+
     arr = commitPlaceEffects(arr);
     /*
     console.log( arr.reduce(function(pre,el){

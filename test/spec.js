@@ -33,7 +33,7 @@ require("./modules/ReactChildren-test.jsx");
 require("./modules/ReactComponentHook.jsx");
 
 require("./modules/diffProps.spec.jsx");
-
+/*
 
 require("./modules/component.spec.jsx");
 
@@ -78,7 +78,7 @@ require("./modules/ReactElementClone-test.jsx");
 
 
 require("./modules/findDOMNode-test.jsx");
-/*
+
 require("./modules/ReactES6Class-test.jsx");
 
 require("./modules/ReactErrorBoundaries-test.jsx");

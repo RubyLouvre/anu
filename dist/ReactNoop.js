@@ -1169,7 +1169,6 @@ function diffChildren(parentFiber, children) {
         }
         if (_newFiber.ref) {
             _newFiber.effectTag *= REF;
-            console.log("REF", REF, _newFiber.effectTag, _newFiber);
         }
         _newFiber.index = index++;
         _newFiber.return = parentFiber;
@@ -1270,10 +1269,6 @@ var Refs = {
 
 function commitEffects(a) {
     var arr = a || effects;
-    console.log(arr.reduce(function (pre, el) {
-        pre.push(el.effectTag, el);
-        return pre;
-    }, []));
     arr = commitPlaceEffects(arr);
     arr.forEach(commitOtherEffects);
     arr.length = effects.length = 0;
