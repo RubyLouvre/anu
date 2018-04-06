@@ -1,5 +1,4 @@
 import React from 'dist/React';
-import getTestDocument from './getTestDocument';
 import ReactTestUtils from 'lib/ReactTestUtils';
 
 import ReactDOMServer from 'dist/ReactDOMServer';
@@ -370,7 +369,7 @@ describe('ReactComponent', function() {
 		expect(ex).toBeDefined();
 	});
 
-	it('throws if a plain object is used as a child when using SSR', async () => {
+	it('throws if a plain object is used as a child when using SSR',  () => {
 		var children = {
 			x: <span />,
 			y: <span />,
@@ -387,7 +386,7 @@ describe('ReactComponent', function() {
 		expect(ex).toBeDefined();
 	});
 
-	it('throws if a plain object even if it is in an owner when using SSR', async () => {
+	it('throws if a plain object even if it is in an owner when using SSR',  () => {
 		class Foo extends React.Component {
 			render() {
 				var children = {

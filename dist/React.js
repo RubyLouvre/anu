@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-04
+ * by 司徒正美 Copyright 2018-04-06
  * IE9+
  */
 
@@ -1229,8 +1229,6 @@ function pushError(fiber, hook, error) {
         catchFiber.effectTag = CAPTURE;
         updateQueue$2.push(catchFiber);
     } else {
-        console.log(error);
-        console.warn(stack);
         if (!Flutter.error) {
             Flutter.error = error;
         }
@@ -1453,15 +1451,19 @@ function updateClassComponent(fiber) {
         instance.updater.enqueueSetState = Flutter.updateComponent;
         instance.props = props;
     } else {
-        var isSetState = isForced === true || isForced === false || fiber._updates;
+        var isSetState = isForced === true || fiber.pendingStates || fiber._updates;
         if (isSetState) {
             stage = "update";
-            if (fiber._updates) {
-                extend(fiber, fiber._updates);
+            var u = fiber._updates;
+            if (u) {
+                isForced = fiber.isForced || u.isForced;
+                fiber.pendingStates = u.pendingStates;
+                var hasCb = fiber.pendingCbs = u.pendingCbs;
+                if (hasCb) {
+                    fiber.effectTag *= CALLBACK;
+                }
                 delete fiber._updates;
-                isForced = fiber.isForced;
             }
-            delete fiber.isForced;
         } else {
             stage = "receive";
         }
@@ -1480,6 +1482,7 @@ function updateClassComponent(fiber) {
     if (ps && ps.length) {
         instance.state = mergeStates(fiber, props);
     }
+    delete fiber.isForced;
     instance.props = props;
     if (instance.getChildContext) {
         try {
@@ -1713,8 +1716,10 @@ function collectEffects(fiber, shouldUpdateFalse, isTop) {
         }
         if (shouldUpdateFalse || child.shouldUpdateFalse) {
             if (isHost) {
-                child.effectTag = PLACE;
-                effects.push(child);
+                if (!child.disposed) {
+                    child.effectTag *= PLACE;
+                    effects.push(child);
+                }
             } else {
                 delete child.shouldUpdateFalse;
                 __push.apply(effects, collectEffects(child, true));
@@ -1771,11 +1776,29 @@ var Refs = {
     }
 };
 
+var clearUpElements = [];
 function commitEffects(a) {
     var arr = a || effects;
     arr = commitPlaceEffects(arr);
+    for (var i = 0; i < arr.length; i++) {
+        commitOtherEffects(arr[i]);
+        if (Flutter.error) {
+            arr.length = 0;
+            break;
+        }
+    }
     arr.forEach(commitOtherEffects);
-    arr.length = effects.length = 0;
+    clearUpElements.forEach(removeStateNode);
+    clearUpElements.length = arr.length = effects.length = 0;
+    var error = Flutter.error;
+    if (error) {
+        delete Flutter.error;
+        throw error;
+    }
+}
+function removeStateNode(el) {
+    delete el.alternate;
+    delete el.stateNode;
 }
 function commitPlaceEffects(fibers) {
     var ret = [];
@@ -1804,7 +1827,7 @@ function commitOtherEffects(fiber) {
     var instance = fiber.stateNode;
     var amount = fiber.effectTag;
     var updater = instance.updater;
-    for (var i = 0; i < effectLength; i++) {
+    outer: for (var i = 0; i < effectLength; i++) {
         var effectNo = effectNames[i];
         if (effectNo > amount) {
             break;
@@ -1823,11 +1846,14 @@ function commitOtherEffects(fiber) {
                     if (fiber.tag > 3) {
                         Flutter.removeElement(fiber);
                     }
+                    clearUpElements.push(fiber);
                     break;
                 case HOOK:
                     if (fiber.disposed) {
                         updater.enqueueSetState = returnFalse;
-                        callLifeCycleHook(instance, "componentWillUnmount", []);
+                        if (updater._isMounted()) {
+                            callLifeCycleHook(instance, "componentWillUnmount", []);
+                        }
                         updater._isMounted = returnFalse;
                     } else {
                         if (updater._isMounted()) {
@@ -1895,20 +1921,25 @@ function findDOMNode(stateNode) {
     }
 }
 function render(vnode, root, callback) {
-    var hostRoot = Flutter.updateRoot(vnode, root);
+    var hostRoot = Flutter.updateRoot(root);
     var instance = null;
-    hostRoot.effectTag = CALLBACK;
-    hostRoot._hydrating = true;
+    if (hostRoot._hydrating) {
+        hostRoot.pendingCbs.push(function () {
+            render(vnode, root, callback);
+        });
+        return;
+    }
+    hostRoot.props = {
+        children: vnode
+    };
     hostRoot.pendingCbs = [function () {
         instance = hostRoot.child ? hostRoot.child.stateNode : null;
         callback && callback.call(instance);
         hostRoot._hydrating = false;
     }];
+    hostRoot._hydrating = true;
+    hostRoot.effectTag = CALLBACK;
     updateQueue$$1.push(hostRoot);
-    var prev = hostRoot.alternate;
-    if (prev && prev._hydrating) {
-        return;
-    }
     Flutter.scheduleWork();
     return instance;
 }
@@ -2006,7 +2037,9 @@ function getNextUnitOfWork(fiber) {
 }
 function mergeUpdates(el, state, isForced, callback) {
     var fiber = el._updates || el;
-    fiber.isForced = fiber.isForced || isForced;
+    if (isForced) {
+        fiber.isForced = true;
+    }
     if (state) {
         var ps = fiber.pendingStates || (fiber.pendingStates = []);
         ps.push(state);
@@ -2711,14 +2744,12 @@ var DOMRenderer = {
     updateContext: function updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
     },
-    updateRoot: function updateRoot(vnode, root) {
+    updateRoot: function updateRoot(root) {
         if (!(root && root.appendChild)) {
             throw "ReactDOM.render\u7684\u7B2C\u4E8C\u4E2A\u53C2\u6570\u9519\u8BEF";
         }
         var hostRoot = get(root);
-        if (hostRoot) {
-            hostRoot.alternate = new Fiber(hostRoot);
-        } else {
+        if (!hostRoot) {
             hostRoot = new Fiber({
                 stateNode: root,
                 root: true,
@@ -2728,9 +2759,6 @@ var DOMRenderer = {
                 namespaceURI: root.namespaceURI
             });
         }
-        hostRoot.props = {
-            children: vnode
-        };
         if (topNodes.indexOf(root) == -1) {
             topNodes.push(root);
             topFibers.push(hostRoot);

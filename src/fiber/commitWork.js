@@ -28,14 +28,21 @@ export function commitEffects(a) {
     */
     for(var i = 0; i < arr.length; i++){
         commitOtherEffects(arr[i])
-        
+        if(Flutter.error){
+            arr.length = 0;
+            break
+        }
     }
     arr.forEach(commitOtherEffects);
     clearUpElements.forEach(removeStateNode)
     clearUpElements.length = arr.length = effects.length = 0;
+    var error = Flutter.error
+    if(error){
+        delete Flutter.error
+        throw error
+    }
 }
 function removeStateNode(el){
-    console.log("要移除",el.name)
     delete el.alternate;
     delete el.stateNode;
 }
@@ -99,7 +106,6 @@ export function commitOtherEffects(fiber) {
                     //只对原生组件
                     Flutter.removeElement(fiber);
                 }
-                console.log("要移除",fiber.name)
                 clearUpElements.push(fiber)
                 //业务 & 原生
                 break;

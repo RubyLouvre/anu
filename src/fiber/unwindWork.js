@@ -15,10 +15,8 @@ export function pushError (fiber, hook, error) {
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
         updateQueue.push(catchFiber);
-        console.log("进入列队")
     } else {
-    console.log(error); // eslint-disable-line
-    console.warn(stack); // eslint-disable-line
+   //    console.warn(stack); // eslint-disable-line
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Flutter.error) {
             Flutter.error = error;

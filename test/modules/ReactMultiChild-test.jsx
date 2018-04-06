@@ -1,8 +1,6 @@
 import React from "dist/React";
-import getTestDocument from "./getTestDocument";
+//import getTestDocument from "./getTestDocument";
 import ReactTestUtils from "lib/ReactTestUtils";
-import ReactShallowRenderer from "lib/ReactShallowRenderer";
-import ReactDOMServer from "dist/ReactDOMServer";
 
 var createReactClass = React.createClass;
 var PropTypes = React.PropTypes;
