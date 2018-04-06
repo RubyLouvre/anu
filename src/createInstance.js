@@ -55,7 +55,7 @@ export function createInstance (fiber, context) {
             instance = new type(props, context);
         }
     } catch (e) {
-        // pushError(fiber, 'constructor', e)
+         pushError(fiber, 'constructor', e)
     } finally {
         Flutter.currentOwner = lastOwn;
     }

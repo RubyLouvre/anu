@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--<script type='text/javascript' src="./test/react.js"></script>
+  <!--  <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -36,6 +36,47 @@
           var PropTypes = React.PropTypes || {
              string: noop
           }
+          const hasOwn = Object.prototype.hasOwnProperty;
+
+    function is(x, y) {
+        if (x === y) {
+            return x !== 0 || y !== 0 || 1 / x === 1 / y;
+        } else {
+            return x !== x && y !== y;
+        }
+    }
+    //https://github.com/reactjs/react-redux/blob/master/src/utils/shallowEqual.js
+    function shallowEqual(objA, objB) {
+        if (is(objA, objB)) {
+            return true;
+        }
+
+        if (typeof objA !== "object" || objA === null ||
+      typeof objB !== "object" || objB === null) {
+            return false;
+        }
+
+        const keysA = Object.keys(objA);
+        const keysB = Object.keys(objB);
+
+        if (keysA.length !== keysB.length) {
+            return false;
+        }
+
+        for (let i = 0; i < keysA.length; i++) {
+            if (!hasOwn.call(objB, keysA[i]) ||
+        !is(objA[keysA[i]], objB[keysA[i]])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+   function shallowCompare(instance, nextProps, nextState) {
+        var a = shallowEqual(instance.props, nextProps); 
+        var b = shallowEqual(instance.state, nextState);
+        return !a || !b;
+    };
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -45,60 +86,80 @@
                       console.log(a, 'vs', b, a + '' === b + '');
                   }
               };
-          };
-          class Static extends React.Component {
-            shouldComponentUpdate() {
-                return false;
-            }
-            componentDidUpdate() {
-                console.log("updated")
-            }
-            render() {
-                return <div>{this.props.children}</div>;
-            }
-        }
+         };
+        
+         var renderCalls = 0;
+         class PlasticWrap extends React.Component {
+             constructor(props, context) {
+                 super(props, context);
+                 this.state = {
+                     color: "green"
+                 };
+             }
+ 
+             render() {
+                 return <Apple color={this.state.color} ref="apple" />;
+             }
+         }
+ 
+         class Apple extends React.Component {
+             state = {
+                 cut: false,
+                 slices: 1
+             };
+ 
+             shouldComponentUpdate(nextProps, nextState) {
+                 console.log(JSON.stringify(this.state),JSON.stringify(nextState))
+                 var a = shallowCompare(this, nextProps, nextState);
+                 console.log(a)
+                 return a
+             }
+ 
+             cut() {
+                 this.setState({
+                     cut: true,
+                     slices: 10 //?
+                 });
+             }
+ 
+             eatSlice() {
+                 console.log(this.state.slices-1)
+                 this.setState({
+                     slices: this.state.slices - 1
+                 });
+             }
+ 
+             render() {
+                 renderCalls++;
+                 console.log("=====")
 
-        class Component extends React.Component {
-            render() {
-                if (this.props.flipped) {
-                    return (
-                        <div>
-                            <Static ref="static0" key="B">
-                                B (ignored)
-                            </Static>
-                            <Static ref="static1" key="A">
-                                A (ignored)
-                            </Static>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div>
-                            <Static ref="static0" key="A">
-                                A
-                            </Static>
-                            <Static ref="static1" key="B">
-                                B
-                            </Static>
-                        </div>
-                    );
-                }
-            }
-        }
-
-        var container = document.createElement("div");
-        var comp = ReactDOM.render(<Component flipped={false} />, container);
-        //keyA <> instance0  <> static0 <> contentA
-        //keyB <> instance1  <> static1 <> contentB
-        expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("A");
-        expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("B");
-        //keyA <> instance0  <> static1 <> contentA
-        //keyB <> instance1  <> static1 <> contentB
-        // When flipping the order, the refs should update even though the actual
-        // contents do not
-        ReactDOM.render(<Component flipped={true} />, container);
-        expect(ReactDOM.findDOMNode(comp.refs.static0).textContent).toBe("B");
-        expect(ReactDOM.findDOMNode(comp.refs.static1).textContent).toBe("A");
+                 return <div />;
+             }
+         }
+ 
+       //  var container = document.createElement("div");
+         var instance = ReactDOM.render(<PlasticWrap />, container);
+         expect(renderCalls).toBe(1);
+ 
+         // Do not re-render based on props
+         instance.setState({ color: "green" });
+         expect(renderCalls).toBe(1);
+ 
+         // Re-render based on props
+         instance.setState({ color: "red" });
+         expect(renderCalls).toBe(2);
+ 
+         // Re-render base on state
+         instance.refs.apple.cut();//10
+         expect(renderCalls).toBe(3);
+ 
+         // No re-render based on state
+         instance.refs.apple.cut();//10-->10
+         expect(renderCalls).toBe(3);
+ 
+         // Re-render based on state again
+         instance.refs.apple.eatSlice();
+         expect(renderCalls).toBe(4);
 </script>
 
 
