@@ -115,6 +115,39 @@ var Renderer = {
     currentOwner: null
 };
 
+var RESERVED_PROPS = {
+    key: true,
+    ref: true,
+    __self: true,
+    __source: true
+};
+function makeProps(type, config, props, children, len) {
+    var defaultProps = void 0;
+    if (type && type.defaultProps) {
+        defaultProps = type.defaultProps;
+    }
+    for (propName in config) {
+        if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
+            if (config[propName] === undefined && defaultProps !== undefined) {
+                props[propName] = defaultProps[propName];
+            } else {
+                props[propName] = config[propName];
+            }
+        }
+    }
+    if (len === 1) {
+        props.children = children[0];
+    } else if (len > 1) {
+        props.children = children;
+    }
+    return props;
+}
+function hasValidRef(config) {
+    return config.ref !== undefined;
+}
+function hasValidKey(config) {
+    return config.key !== undefined;
+}
 function createElement(type, config) {
     for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         children[_key - 2] = arguments[_key];
@@ -130,43 +163,44 @@ function createElement(type, config) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
     if (config != null) {
-        for (var i in config) {
-            var val = config[i];
-            if (i === "key") {
-                if (val !== void 0) {
-                    key = "" + val;
-                }
-            } else if (i === "ref") {
-                if (val !== void 0) {
-                    ref = val;
-                }
-            } else {
-                props[i] = val;
-            }
+        if (hasValidRef(config)) {
+            ref = config.ref;
+        }
+        if (hasValidKey(config)) {
+            key = '' + config.key;
         }
     }
-    if (argsLen === 1) {
-        props.children = children[0];
-    } else if (argsLen > 1) {
-        props.children = children;
+    props = makeProps(type, configs || {}, props, children, argsLen);
+    return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
+}
+function cloneElement(element, config) {
+    var propName = void 0;
+    var props = Object.assign({}, element.props);
+    var key = element.key;
+    var ref = element.ref;
+    var tag = element.tag;
+    var owner = element._owner;
+    for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        children[_key2 - 2] = arguments[_key2];
     }
-    var defaultProps = type.defaultProps;
-    if (defaultProps) {
-        for (var propName in defaultProps) {
-            if (props[propName] === void 666) {
-                props[propName] = defaultProps[propName];
-            }
+    var argsLen = children.length;
+    if (config != null) {
+        if (hasValidRef(config)) {
+            ref = config.ref;
+            owner = Renderer.currentOwner;
+        }
+        if (hasValidKey(config)) {
+            key = '' + config.key;
         }
     }
-    return Vnode(type, tag, props, key, ref);
+    props = makeProps(type, configs || {}, props, children, length);
+    return ReactElement(element.type, tag, props, key, ref, owner);
 }
 function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(type, text) {
-    var vnode = Vnode(type, 6);
-    delete vnode.$$typeof;
-    vnode.props = { children: text };
+    var vnode = ReactElement(type, 6, { children: text });
     return vnode;
 }
 var lastText = void 0;
@@ -273,17 +307,15 @@ function createFactory(type) {
     factory.type = type;
     return factory;
 }
-function Vnode(type, tag, props, key, ref) {
+function ReactElement(type, tag, props, key, ref, owner) {
     var ret = {
         type: type,
         tag: tag,
-        $$typeof: REACT_ELEMENT_TYPE,
-        key: key || null,
-        ref: null
+        props: props
     };
     if (tag !== 6) {
-        ret.props = props;
-        ret._owner = Renderer.currentOwner;
+        ret.$$typeof = REACT_ELEMENT_TYPE;
+        ret.key = key || null;
         var refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             if (refType < 4) {
@@ -291,46 +323,9 @@ function Vnode(type, tag, props, key, ref) {
             }
             ret.ref = ref;
         }
+        ret._owner = owner;
     }
     options.afterCreate(ret);
-    return ret;
-}
-
-function cloneElement(vnode, props) {
-    if (!vnode.tag === 6) {
-        var clone = extend({}, vnode);
-        delete clone._disposed;
-        return clone;
-    }
-    var owner = vnode._owner,
-        lastOwn = Renderer.currentOwner,
-        old = vnode.props,
-        configs = {};
-    if (props) {
-        extend(extend(configs, old), props);
-        if (!configs.key) {
-            delete configs.key;
-        }
-        if (props.ref !== void 666) {
-            configs.ref = props.ref;
-            owner = lastOwn;
-        } else if (vnode._hasRef) {
-            configs.ref = vnode.ref;
-        }
-    } else {
-        configs = old;
-    }
-    Renderer.currentOwner = owner;
-    var args = [].slice.call(arguments, 0),
-        argsLength = args.length;
-    args[0] = vnode.type;
-    args[1] = configs;
-    if (argsLength === 2 && configs.children) {
-        delete configs.children._disposed;
-        args.push(configs.children);
-    }
-    var ret = createElement.apply(null, args);
-    Renderer.currentOwner = lastOwn;
     return ret;
 }
 

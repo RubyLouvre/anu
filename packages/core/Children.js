@@ -1,5 +1,4 @@
-import { operateChildren, isIterable } from "./createElement";
-import { cloneElement } from "./cloneElement";
+import { operateChildren, isIterable, cloneElement } from "./createElement";
 import { extend } from "./util";
 
 let mapStack = [];
