@@ -1,6 +1,50 @@
-import { typeNumber, hasSymbol, Fragment, options, REACT_ELEMENT_TYPE } from "./util";
+import { typeNumber, hasSymbol, Fragment, options, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
 import { Renderer } from "./createRenderer";
 
+
+const RESERVED_PROPS = {
+    key: true,
+    ref: true,
+    __self: true,
+    __source: true,
+  };
+
+function makeProps(type, config, props, children, len){
+    // Remaining properties override existing props
+    let defaultProps;
+    if (type && type.defaultProps) {
+       defaultProps = type.defaultProps;
+    }
+    for (propName in config) {
+      if (
+        hasOwnProperty.call(config, propName) &&
+        !RESERVED_PROPS.hasOwnProperty(propName)
+      ) {
+        if (config[propName] === undefined && defaultProps !== undefined) {
+          // Resolve default props
+          props[propName] = defaultProps[propName];
+        } else {
+          props[propName] = config[propName];
+        }
+      }
+    }
+
+  if (len === 1) {
+    props.children = children[0];
+  } else if (len > 1) {
+    props.children = children
+  }
+
+  return props
+
+}
+function hasValidRef(config) {
+    return config.ref !== undefined;
+}
+  
+function hasValidKey(config) {
+    return config.key !== undefined;
+}
 /**
  * 虚拟DOM工厂
  *
@@ -22,46 +66,56 @@ export function createElement(type, config, ...children) {
         throw "React.createElement第一个参数只能是函数或字符串";
     }
     if (config != null) {
-        for (let i in config) {
-            let val = config[i];
-            if (i === "key") {
-                if (val !== void 0) {
-                    key = ""+val;
-                }
-            } else if (i === "ref") {
-                if (val !== void 0) {
-                    ref = val;
-                }
-            } else {
-                props[i] = val;
-            }
+        if (hasValidRef(config)) {
+          ref = config.ref;
+        }
+        if (hasValidKey(config)) {
+          key = '' + config.key;
         }
     }
-
-    if (argsLen === 1) {
-        props.children = children[0];
-    } else if (argsLen > 1) {
-        props.children = children;
-    }
-
-    let defaultProps = type.defaultProps;
-    if (defaultProps) {
-        for (let propName in defaultProps) {
-            if (props[propName] === void 666) {
-                props[propName] = defaultProps[propName];
-            }
-        }
-    }
-    return Vnode(type, tag, props, key, ref);
+    props = makeProps(type, configs||{}, props, children, argsLen )
+    
+    return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
 }
 
+
+export function cloneElement(element, config, ...children) {
+    let propName;
+  
+    // Original props are copied
+    const props = Object.assign({}, element.props);
+  
+    // Reserved names are extracted
+    let key = element.key;
+    let ref = element.ref;
+    let tag = element.tag;
+    // Owner will be preserved, unless ref is overridden
+    let owner = element._owner;
+    let argsLen = children.length;
+    if (config != null) {
+      if (hasValidRef(config)) {
+        // Silently steal the ref from the parent.
+        ref = config.ref;
+        owner = Renderer.currentOwner
+      }
+      if (hasValidKey(config)) {
+        key = '' + config.key;
+      }
+    }
+  
+    props = makeProps(type, configs||{}, props, children, length)
+  
+    return ReactElement(element.type, tag, props, key, ref, owner);
+  }
+
+
+
 export function isValidElement(vnode) {
-    return !!vnode && vnode.tag > 0 && vnode.tag !== 6;
+    return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 
 export function createVText(type, text) {
-    let vnode = Vnode(type, 6);
-    vnode.props = { children: text };
+    let vnode = ReactElement(type, 6, { children: text });
     return vnode;
 }
 
@@ -205,20 +259,15 @@ export function createFactory(type) {
       return factory;
   }
 
-function Vnode(type, tag, props, key, ref) {
+function ReactElement(type, tag, props, key, ref, owner) {
     var ret =  {
         type,
         tag,
-        $$typeof: REACT_ELEMENT_TYPE,
-        key: key || null,
-        ref: null
+        props
     }
-   
-    if (tag !== 6) {
-        ret.props = props;
-        ret._owner = Renderer.currentOwner;
-
-
+    if(tag !== 6){
+        ret.$$typeof = REACT_ELEMENT_TYPE;
+        ret.key = key || null;
         let refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             //boolean number, string, function
@@ -227,6 +276,7 @@ function Vnode(type, tag, props, key, ref) {
             }
             ret.ref = ref;
         }
+        ret._owner = owner
     }
     options.afterCreate(ret);
     return ret

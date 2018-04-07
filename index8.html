@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>
+   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
@@ -36,47 +36,8 @@
           var PropTypes = React.PropTypes || {
              string: noop
           }
-          const hasOwn = Object.prototype.hasOwnProperty;
+          
 
-    function is(x, y) {
-        if (x === y) {
-            return x !== 0 || y !== 0 || 1 / x === 1 / y;
-        } else {
-            return x !== x && y !== y;
-        }
-    }
-    //https://github.com/reactjs/react-redux/blob/master/src/utils/shallowEqual.js
-    function shallowEqual(objA, objB) {
-        if (is(objA, objB)) {
-            return true;
-        }
-
-        if (typeof objA !== "object" || objA === null ||
-      typeof objB !== "object" || objB === null) {
-            return false;
-        }
-
-        const keysA = Object.keys(objA);
-        const keysB = Object.keys(objB);
-
-        if (keysA.length !== keysB.length) {
-            return false;
-        }
-
-        for (let i = 0; i < keysA.length; i++) {
-            if (!hasOwn.call(objB, keysA[i]) ||
-        !is(objA[keysA[i]], objB[keysA[i]])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-   function shallowCompare(instance, nextProps, nextState) {
-        var a = shallowEqual(instance.props, nextProps); 
-        var b = shallowEqual(instance.state, nextState);
-        return !a || !b;
-    };
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -87,59 +48,36 @@
                   }
               };
          };
-        
-         let selectNode;
 
-         class Parent extends React.Component {
-             state = {
-                 value: "giraffe"
-             };
- 
-             componentDidMount() {
-                 this._renderNested();
-             }
- 
-             componentDidUpdate() {
-                 this._renderNested();
-             }
- 
-             _handleChange(event) {
-                 this.setState({ value: event.target.value });
-             }
- 
-             _renderNested() {
-                 ReactDOM.render(
-                     <select onChange={this._handleChange.bind(this)} ref={n => (selectNode = n)} value={this.state.value}>
-                         <option value="monkey">A monkey!</option>
-                         <option value="giraffe">A giraffe!</option>
-                         <option value="gorilla">A gorilla!</option>
-                     </select>,
-                     this._nestingContainer
-                 );
-             }
- 
-             render() {
-                 return <div ref={n => (this._nestingContainer = n)} />;
-             }
-         }
- 
-         ReactDOM.render(<Parent />, container);
- 
-         expect(selectNode.value).toBe("giraffe");
- 
-         selectNode.value = "gorilla";
- 
-         let nativeEvent = document.createEvent("Event");
-         nativeEvent.initEvent("input", true, true);
-         selectNode.dispatchEvent(nativeEvent);
- 
-         expect(selectNode.value).toEqual("gorilla");
- 
-         nativeEvent = document.createEvent("Event");
-         nativeEvent.initEvent("change", true, true);
-         selectNode.dispatchEvent(nativeEvent);
- 
-         expect(selectNode.value).toEqual("gorilla");
+         const simpleKid = <span key="simple" />;
+
+    // First pass children into a component to fully simulate what happens when
+    // using structures that arrive from transforms.
+   
+    const context = {};
+    const callback = function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    };
+  
+    const portalContainer = document.createElement('div');
+
+    const simpleChild = <span key="simple" />;
+    const reactPortal = ReactDOM.createPortal(simpleChild, portalContainer);
+
+    const parentInstance = <div>{reactPortal}</div>;
+    React.Children.forEach(parentInstance.props.children, callback, context);
+    //expect(callback).toHaveBeenCalledWith(reactPortal, 0);
+   // callback.calls.reset();
+    const mappedChildren = React.Children.map(
+      parentInstance.props.children,
+      callback,
+      context,
+    );
+    var a = React.cloneElement(reactPortal)
+    console.log(a)
+   // expect(callback).toHaveBeenCalledWith(reactPortal, 0);
+    expect(mappedChildren[0]).toEqual(reactPortal);
 </script>
 
 

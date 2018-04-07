@@ -161,10 +161,11 @@ function createElement(type, config) {
     return Vnode(type, tag, props, key, ref);
 }
 function isValidElement(vnode) {
-    return !!vnode && vnode.tag > 0 && vnode.tag !== 6;
+    return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(type, text) {
     var vnode = Vnode(type, 6);
+    delete vnode.$$typeof;
     vnode.props = { children: text };
     return vnode;
 }
@@ -307,7 +308,9 @@ function cloneElement(vnode, props) {
         configs = {};
     if (props) {
         extend(extend(configs, old), props);
-        configs.key = props.key !== void 666 ? props.key : vnode.key;
+        if (!configs.key) {
+            delete configs.key;
+        }
         if (props.ref !== void 666) {
             configs.ref = props.ref;
             owner = lastOwn;
@@ -407,7 +410,7 @@ function computeKey(old, el, prefix, index) {
     if (prefix) {
         return dot;
     }
-    return curKey ? "." + curKey : "." + index;
+    return curKey ? ".$" + curKey : "." + index;
 }
 
 var check = function check() {
@@ -511,10 +514,8 @@ function forwardRef(fn) {
 function AnuPortal(props) {
     return props.children;
 }
-function createPortal(children, node) {
-    var child = createElement(AnuPortal, { children: children });
-    Renderer.render(vnode, child);
-    child.parent = node;
+function createPortal(children, parent) {
+    var child = createElement(AnuPortal, { children: children, parent: parent });
     return child;
 }
 

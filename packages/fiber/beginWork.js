@@ -1,6 +1,8 @@
 
 import { extend, noop, typeNumber, __push } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
+import {  AnuPortal } from "react-core/createPortal";
+
 import { Renderer } from "react-core/createRenderer";
 
 
@@ -60,7 +62,7 @@ function updateHostComponent (fiber) {
             throw e;
         }
     }
-    fiber.parent = fiber._return ? fiber._return.stateNode : containerStack[0];
+    fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
     const { props, tag, root, alternate: prev } = fiber;
     const children = props && props.children;
     if (tag === 5) {
@@ -112,7 +114,8 @@ function mergeStates (fiber, nextProps, keep) {
 // 如果是receive是有alternate
 function updateClassComponent (fiber) {
     let { type, stateNode: instance, isForced, props, stage } = fiber;
-    fiber.parent = containerStack[0]; // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
+    // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
+    fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
 
     let nextContext = getMaskedContext(type.contextTypes, instance), context;
     if (instance == null) {

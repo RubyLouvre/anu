@@ -86,5 +86,5 @@ function computeKey(old, el, prefix, index) {
     if (prefix) {
         return dot;
     }
-    return curKey ? "." + curKey : "." + index;
+    return curKey ? ".$" + curKey:"." + index;
 }
