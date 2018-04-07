@@ -4,13 +4,13 @@ import { pushError } from "./unwindWork";
 
 export function createInstance (fiber, context) {
     let updater = {
-        mountOrder: Flutter.mountOrder++,
+        mountOrder: Renderer.mountOrder++,
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
     let { props, type, tag } = fiber,
         isStateless = tag === 1,
-        lastOwn = Flutter.currentOwner,
+        lastOwn = Renderer.currentOwner,
         instance = fiber.stateNode = {};
     try {
         if (isStateless) {
@@ -42,7 +42,7 @@ export function createInstance (fiber, context) {
                 }
             };
 
-            Flutter.currentOwner = instance;
+            Renderer.currentOwner = instance;
             if (type.isRef) {
                 instance.render = function () {
                     return type(this.props, this.ref);
@@ -58,7 +58,7 @@ export function createInstance (fiber, context) {
     } catch (e) {
          pushError(fiber, 'constructor', e)
     } finally {
-        Flutter.currentOwner = lastOwn;
+        Renderer.currentOwner = lastOwn;
     }
     fiber.stateNode = instance;
     instance.props = props;

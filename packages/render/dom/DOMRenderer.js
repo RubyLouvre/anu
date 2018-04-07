@@ -8,6 +8,7 @@ import {
     innerHTML, 
     noop,
     extend,
+    emptyObject,
     topNodes,
     topFibers,
     deprecatedWarn

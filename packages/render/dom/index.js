@@ -15,7 +15,7 @@ import * as eventSystem from "./event";
 import { findDOMNode } from "./findDOMNode";
 import { DOMRenderer} from "./DOMRenderer";
 
-let { render, unstable_renderSubtreeIntoContainers, unmountComponentAtNode } = DOMRenderer
+let { render, unstable_renderSubtreeIntoContainer, unmountComponentAtNode } = DOMRenderer
 
 var win = getWindow();
 var prevReact = win.React;

@@ -23,7 +23,7 @@ function get(key) {
 var topFibers = [];
 var topNodes = [];
 
-var emptyObject$1 = {};
+var emptyObject = {};
 var fakeWindow = {};
 function getWindow() {
     try {
@@ -1627,7 +1627,7 @@ var actionStrategy = {
     defaultChecked: uncontrolled,
     children: noop,
     style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyObject$1, val || emptyObject$1);
+        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function autoFocus(dom) {
         if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
@@ -1725,10 +1725,10 @@ function Fiber(vnode) {
 var componentStack = [];
 var effects = [];
 var containerStack = [];
-var contextStack = [emptyObject$1];
+var contextStack = [emptyObject];
 
 function hasContextChanged() {
-    return contextStack[0] != emptyObject$1;
+    return contextStack[0] != emptyObject;
 }
 
 var NOWORK = 1;
@@ -1825,7 +1825,7 @@ function findCatchComponent(topFiber, names) {
 
 function createInstance(fiber, context) {
     var updater = {
-        mountOrder: Flutter.mountOrder++,
+        mountOrder: Renderer.mountOrder++,
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
@@ -1833,7 +1833,7 @@ function createInstance(fiber, context) {
         type = fiber.type,
         tag = fiber.tag,
         isStateless = tag === 1,
-        lastOwn = Flutter.currentOwner,
+        lastOwn = Renderer.currentOwner,
         instance = fiber.stateNode = {};
     try {
         if (isStateless) {
@@ -1862,7 +1862,7 @@ function createInstance(fiber, context) {
                     return a;
                 }
             };
-            Flutter.currentOwner = instance;
+            Renderer.currentOwner = instance;
             if (type.isRef) {
                 instance.render = function () {
                     return type(this.props, this.ref);
@@ -1877,7 +1877,7 @@ function createInstance(fiber, context) {
     } catch (e) {
         pushError(fiber, 'constructor', e);
     } finally {
-        Flutter.currentOwner = lastOwn;
+        Renderer.currentOwner = lastOwn;
     }
     fiber.stateNode = instance;
     instance.props = props;
@@ -2754,6 +2754,7 @@ var DOMRenderer = {
 };
 
 var render = DOMRenderer.render;
+var unstable_renderSubtreeIntoContainer = DOMRenderer.unstable_renderSubtreeIntoContainer;
 var unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
 var win = getWindow();
 var prevReact = win.React;
