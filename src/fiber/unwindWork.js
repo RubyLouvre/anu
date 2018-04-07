@@ -1,5 +1,6 @@
-import { noop, get, Flutter } from "../util";
+import { noop, get } from "../util";
 import { NOWORK, CAPTURE} from "./effectTag";
+import { Flutter } from "./util";
 
 let updateQueue = Flutter.mainThread;
 

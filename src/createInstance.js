@@ -1,5 +1,6 @@
-import { returnFalse, Flutter, returnTrue } from "./util";
+import { returnFalse, returnTrue } from "./util";
 import { pushError } from "./fiber/unwindWork";
+import { Flutter } from "./fiber/util";
 
 export function createInstance (fiber, context) {
     let updater = {

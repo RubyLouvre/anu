@@ -1,4 +1,6 @@
-import { deprecatedWarn, Flutter, returnFalse,returnTrue } from "./util";
+import { deprecatedWarn, returnFalse,returnTrue } from "./util";
+import { Flutter } from "./fiber/util";
+
 /**
  *组件的基类
  *

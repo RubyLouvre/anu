@@ -1,5 +1,6 @@
 import { document, modern, contains } from "./browser";
-import { isFn, noop, Flutter, __push } from "./util";
+import { isFn, noop, __push } from "./util";
+import { Flutter } from "./fiber/util";
 
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行

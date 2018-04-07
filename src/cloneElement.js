@@ -1,5 +1,6 @@
 import { createElement } from "./createElement";
-import { extend, Flutter } from "./util";
+import { extend } from "./util";
+import { Flutter } from "./fiber/util";
 
 export function cloneElement(vnode, props) {
     if (!vnode.tag === 6) {

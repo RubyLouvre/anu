@@ -12,9 +12,9 @@ import {
     effectLength,
     effectNames
 } from "./effectTag";
-import { effects } from "../share";
+import { effects, Flutter } from "./util";
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { returnFalse, returnTrue, Flutter, noop } from "../util";
+import { returnFalse, returnTrue, noop } from "../util";
 import { Refs } from "../Refs";
 var clearUpElements = []
 export function commitEffects(a) {

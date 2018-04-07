@@ -88,73 +88,58 @@
               };
          };
         
-         var renderCalls = 0;
-         class PlasticWrap extends React.Component {
-             constructor(props, context) {
-                 super(props, context);
-                 this.state = {
-                     color: "green"
-                 };
-             }
- 
-             render() {
-                 return <Apple color={this.state.color} ref="apple" />;
-             }
-         }
- 
-         class Apple extends React.Component {
+         let selectNode;
+
+         class Parent extends React.Component {
              state = {
-                 cut: false,
-                 slices: 1
+                 value: "giraffe"
              };
  
-             shouldComponentUpdate(nextProps, nextState) {
-                 var a = shallowCompare(this, nextProps, nextState);
-                 return a
+             componentDidMount() {
+                 this._renderNested();
              }
  
-             cut() {
-                 this.setState({
-                     cut: true,
-                     slices: 10 //?
-                 });
+             componentDidUpdate() {
+                 this._renderNested();
              }
  
-             eatSlice() {
-                 this.setState({
-                     slices: this.state.slices - 1
-                 });
+             _handleChange(event) {
+                 this.setState({ value: event.target.value });
+             }
+ 
+             _renderNested() {
+                 ReactDOM.render(
+                     <select onChange={this._handleChange.bind(this)} ref={n => (selectNode = n)} value={this.state.value}>
+                         <option value="monkey">A monkey!</option>
+                         <option value="giraffe">A giraffe!</option>
+                         <option value="gorilla">A gorilla!</option>
+                     </select>,
+                     this._nestingContainer
+                 );
              }
  
              render() {
-                 renderCalls++;
-                 return <div />;
+                 return <div ref={n => (this._nestingContainer = n)} />;
              }
          }
  
-       //  var container = document.createElement("div");
-         var instance = ReactDOM.render(<PlasticWrap />, container);
-         expect(renderCalls).toBe(1);
+         ReactDOM.render(<Parent />, container);
  
-         // Do not re-render based on props
-         instance.setState({ color: "green" });
-         expect(renderCalls).toBe(1);
+         expect(selectNode.value).toBe("giraffe");
  
-         // Re-render based on props
-         instance.setState({ color: "red" });
-         expect(renderCalls).toBe(2);
+         selectNode.value = "gorilla";
  
-         // Re-render base on state
-         instance.refs.apple.cut();//10
-         expect(renderCalls).toBe(3);
+         let nativeEvent = document.createEvent("Event");
+         nativeEvent.initEvent("input", true, true);
+         selectNode.dispatchEvent(nativeEvent);
  
-         // No re-render based on state
-         instance.refs.apple.cut();//10-->10
-         expect(renderCalls).toBe(3);
+         expect(selectNode.value).toEqual("gorilla");
  
-         // Re-render based on state again
-         instance.refs.apple.eatSlice();
-         expect(renderCalls).toBe(4);
+         nativeEvent = document.createEvent("Event");
+         nativeEvent.initEvent("change", true, true);
+         selectNode.dispatchEvent(nativeEvent);
+ 
+         expect(selectNode.value).toEqual("gorilla");
 </script>
 
 

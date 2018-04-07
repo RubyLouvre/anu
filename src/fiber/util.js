@@ -1,4 +1,3 @@
-export const updateQueue = [];
 export const componentStack = [];
 export const effects = [];
 export const topFibers = [];
@@ -15,3 +14,15 @@ export function resetStack() {
 export function hasContextChanged() {
     return contextStack[0] != emptyObject;
 }
+
+export function createRenderer(methods) {
+    extend(Flutter, methods);
+}
+
+export const Flutter = {
+    interactQueue: null,//[]
+    mainThread: [],
+    controlledCbs: [],
+    mountOrder: 1,
+    currentOwner: null//vnode
+};

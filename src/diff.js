@@ -1,9 +1,9 @@
-import { topFibers, topNodes, effects, containerStack } from "./share";
+import { topFibers, topNodes, effects,Flutter, containerStack } from "./share";
 import { updateEffects, detachFiber } from "./fiber/beginWork";
 import { collectEffects, getContainer } from "./fiber/completeWork";
 import { commitEffects } from "./fiber/commitWork";
 import { CALLBACK } from "./fiber/effectTag";
-import { deprecatedWarn, __push, get, Flutter, isFn } from "./util";
+import { deprecatedWarn, __push, get, isFn } from "./util";
 let updateQueue = Flutter.mainThread;
 // [Top API] React.isValidElement
 export function isValidElement (vnode) {

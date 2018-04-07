@@ -1,10 +1,10 @@
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { contextStack, componentStack, containerStack, hasContextChanged,updateQueue } from "../share";
+import { contextStack, componentStack, containerStack, hasContextChanged, Flutter } from "./util";
 import { fiberizeChildren } from "../createElement";
 import { createInstance } from "../createInstance";
 import { Fiber } from "./Fiber";
 import { NOWORK, PLACE, ATTR, DETACH, HOOK, CONTENT, CHANGEREF, REF, NULLREF, CALLBACK } from "./effectTag";
-import { extend, Flutter, noop, typeNumber,__push } from "../util";
+import { extend, noop, typeNumber, __push } from "../util";
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈

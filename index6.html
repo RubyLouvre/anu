@@ -4,82 +4,110 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
-   <!--<script type='text/javascript' src="./test/react.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+  <!--  <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
-
-    <script src="test/babel.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
-<body><h1 id="ee"></h1><h1 id='app-root' className="root">
+<body>
+
+    <pre>应该等于
+      
+    </pre>
+    
+       
+    <h1 id='example' class="root">
 
     </h1>
+
     <script type='text/babel'>
-           
-         
-            var container = document.getElementById("app-root")
-           // var div = container;
-           var React = ReactNoop
-           function span(...children) {
-        return { type: "span", props:null, children: children };
-    }
-    function div(...children) {
-        return { type: "div", props:null,  children: children };
-    }
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                }
-            }  
-            const ops = [];
+          var container = document.getElementById('example');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var noop = function(){
+              return noop
+          }
+          noop.isRequired = noop
+          var PropTypes = React.PropTypes || {
+             string: noop
+          }
 
-        class Stateful extends React.Component {
-            componentDidUpdate() {
-                ops.push("Update Stateful");
-            }
 
-            render() {
-                return <div>Hello</div>;
-            }
-        }
-
-        function Foo({ condition }) {
-            return condition ? (
-                <Stateful key="a" />
-            ) : (
-                <React.Fragment>
-                    <Stateful key="a" />
-                    <div key="b">World</div>
-                </React.Fragment>
-            );
-        }
-
-        ReactNoop.render(<Foo condition={true} />);
-        ReactNoop.flush();
-
-        ReactNoop.render(<Foo condition={false} />);
-        ReactNoop.flush();
-
-        expect(ops).toEqual(["Update Stateful"]);
-        expect(ReactNoop.getChildren()).toEqual([div("Hello"),div("World")]);
-
-        ReactNoop.render(<Foo condition={true} />);
-        ReactNoop.flush();
-
-        expect(ops).toEqual(["Update Stateful", "Update Stateful"]);
-        expect(ReactNoop.getChildren()).toEqual([div("Hello")]);
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+         };
         
-     </script>
-     <div>
-         <span>xxx</span><span>xxx</span><span>xxx</span>
-     </div>
+         let selectNode;
 
-</body>
+         class Parent extends React.Component {
+             state = {
+                 value: "giraffe"
+             };
+ 
+             componentDidMount() {
+                 console.log("didMount")
+                 this._renderNested();
+             }
+ 
+             componentDidUpdate() {
+                 console.log("didUpdate")
+                 this._renderNested();
+             }
+ 
+             _handleChange(event) {
+                 console.log("change")
+                 this.setState({ value: event.target.value });
+             }
+ 
+             _renderNested() {
+                 ReactDOM.render(
+                     <select onChange={this._handleChange.bind(this)} ref={n => {
+                         console.log(n)
+                         selectNode = n
+                        }} value={this.state.value}>
+                         <option value="monkey">A monkey!</option>
+                         <option value="giraffe">A giraffe!</option>
+                         <option value="gorilla">A gorilla!</option>
+                     </select>,
+                     this._nestingContainer
+                 );
+             }
+ 
+             render() {
+                 return <div ref={n => (this._nestingContainer = n)} />;
+             }
+         }
+ 
+         ReactDOM.render(<Parent />, container);
+ console.log("=====")
+      /*   expect(selectNode.value).toBe("giraffe");
+ 
+         selectNode.value = "gorilla";
+ 
+         let nativeEvent = document.createEvent("Event");
+         nativeEvent.initEvent("input", true, true);
+         selectNode.dispatchEvent(nativeEvent);
+ 
+         expect(selectNode.value).toEqual("gorilla");
+ 
+         nativeEvent = document.createEvent("Event");
+         nativeEvent.initEvent("change", true, true);
+         selectNode.dispatchEvent(nativeEvent);
+ 
+         expect(selectNode.value).toEqual("gorilla");*/
+</script>
+
 
 </html>
