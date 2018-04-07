@@ -65,43 +65,6 @@ export function createVText(type, text) {
     return vnode;
 }
 
-// 用于辅助XML元素的生成（svg, math),
-// 它们需要根据父节点的tagName与namespaceURI,知道自己是存在什么文档中
-export function createVnode(node) {
-    let type = node.nodeName,
-        vnode;
-    if (node.nodeType === 1) {
-        vnode = Vnode(type, 5);
-        let ns = node.namespaceURI;
-        if (!ns || ns.indexOf("html") >= 22) {
-            vnode.type = type.toLowerCase(); //HTML的虚拟DOM的type需要小写化
-        } else {
-            //非HTML需要加上命名空间
-            vnode.namespaceURI = ns;
-        }
-        vnode.props = getProps(node);
-    } else {
-        vnode = createVText(type, node.nodeValue);
-    }
-    vnode.stateNode = node;
-    return vnode;
-}
-
-export function getProps(node) {
-    let attrs = node.attributes,
-        props = {};
-    for (let i = 0, attr; (attr = attrs[i++]);) {
-        if (attr.specified) {
-            let name = attr.name;
-            if (name === "class") {
-                name = "className";
-            }
-            props[name] = attr.value;
-        }
-    }
-    return props;
-}
-
 let lastText, flattenIndex, flattenObject;
 function flattenCb(child, key, childType) {
     let textType = childType === 3 || childType === 4;

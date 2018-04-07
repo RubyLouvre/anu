@@ -39,14 +39,6 @@ export function createElement(vnode) {
     case "math":
         ns = NAMESPACE.math;
         break;
-    case "div":
-    case "span":
-    case "p":
-    case "tr":
-    case "td":
-    case "li":
-        ns = "";
-        break;
     default:
         if (!ns) {
             do {

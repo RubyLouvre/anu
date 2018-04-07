@@ -168,8 +168,6 @@ function createVText(type, text) {
     vnode.props = { children: text };
     return vnode;
 }
-
-
 var lastText = void 0;
 var flattenIndex = void 0;
 var flattenObject = void 0;

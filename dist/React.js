@@ -184,8 +184,6 @@ function createVText(type, text) {
     vnode.props = { children: text };
     return vnode;
 }
-
-
 var lastText = void 0;
 var flattenIndex = void 0;
 var flattenObject = void 0;
@@ -2595,14 +2593,6 @@ function createElement$1(vnode) {
             break;
         case "math":
             ns = NAMESPACE.math;
-            break;
-        case "div":
-        case "span":
-        case "p":
-        case "tr":
-        case "td":
-        case "li":
-            ns = "";
             break;
         default:
             if (!ns) {
