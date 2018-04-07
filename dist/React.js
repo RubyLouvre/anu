@@ -20,6 +20,10 @@ function Fragment(props) {
 function get(key) {
     return key._reactInternalFiber;
 }
+var topFibers = [];
+var topNodes = [];
+
+var emptyObject$1 = {};
 var fakeWindow = {};
 function getWindow() {
     try {
@@ -32,16 +36,6 @@ function getWindow() {
         }
     }
 }
-function createRenderer(methods) {
-    extend(Flutter, methods);
-}
-var Flutter = {
-    interactQueue: null,
-    mainThread: [],
-    controlledCbs: [],
-    mountOrder: 1,
-    currentOwner: null
-};
 function deprecatedWarn(methodName) {
     if (!deprecatedWarn[methodName]) {
         console.warn(methodName + ' is deprecated');
@@ -126,31 +120,15 @@ function typeNumber(data) {
     return a || 8;
 }
 
-function Vnode(type, tag, props, key, ref) {
-    this.type = type;
-    this.tag = tag;
-    if (tag !== 6) {
-        this.props = props;
-        this._owner = Flutter.currentOwner;
-        if (key) {
-            this.key = key;
-        }
-        var refType = typeNumber(ref);
-        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
-            if (refType < 4) {
-                ref += "";
-            }
-            this._hasRef = true;
-            this.ref = ref;
-        }
-    }
-    options.afterCreate(this);
+function createRenderer(methods) {
+    extend(Renderer, methods);
 }
-Vnode.prototype = {
-    getDOMNode: function getDOMNode() {
-        return this.stateNode || null;
-    },
-    $$typeof: REACT_ELEMENT_TYPE
+var Renderer = {
+    interactQueue: null,
+    mainThread: [],
+    controlledCbs: [],
+    mountOrder: 1,
+    currentOwner: null
 };
 
 function createElement(type, config) {
@@ -172,7 +150,7 @@ function createElement(type, config) {
             var val = config[i];
             if (i === "key") {
                 if (val !== void 0) {
-                    key = val + "";
+                    key = "" + val;
                 }
             } else if (i === "ref") {
                 if (val !== void 0) {
@@ -196,50 +174,22 @@ function createElement(type, config) {
             }
         }
     }
-    return new Vnode(type, tag, props, key, ref);
+    return Vnode(type, tag, props, key, ref);
+}
+function isValidElement(vnode) {
+    return !!vnode && vnode.tag > 0 && vnode.tag !== 6;
 }
 function createVText(type, text) {
-    var vnode = new Vnode(type, 6);
+    var vnode = Vnode(type, 6);
     vnode.props = { children: text };
     return vnode;
 }
-function createVnode(node) {
-    var type = node.nodeName,
-        vnode = void 0;
-    if (node.nodeType === 1) {
-        vnode = new Vnode(type, 5);
-        var ns = node.namespaceURI;
-        if (!ns || ns.indexOf("html") >= 22) {
-            vnode.type = type.toLowerCase();
-        } else {
-            vnode.namespaceURI = ns;
-        }
-        vnode.props = getProps(node);
-    } else {
-        vnode = createVText(type, node.nodeValue);
-    }
-    vnode.stateNode = node;
-    return vnode;
-}
-function getProps(node) {
-    var attrs = node.attributes,
-        props = {};
-    for (var i = 0, attr; attr = attrs[i++];) {
-        if (attr.specified) {
-            var name = attr.name;
-            if (name === "class") {
-                name = "className";
-            }
-            props[name] = attr.value;
-        }
-    }
-    return props;
-}
+
+
 var lastText = void 0;
 var flattenIndex = void 0;
 var flattenObject = void 0;
-function flattenCb(child, key) {
-    var childType = typeNumber(child);
+function flattenCb(child, key, childType) {
     var textType = childType === 3 || childType === 4;
     if (textType) {
         if (lastText) {
@@ -266,7 +216,7 @@ function fiberizeChildren(c, fiber) {
     flattenIndex = 0;
     if (c !== void 666) {
         lastText = null;
-        operateChildren(c, "", flattenCb, isIterable(c), true);
+        operateChildren(c, "", flattenCb, typeNumber(c), true);
     }
     flattenIndex = 0;
     return fiber._children = flattenObject;
@@ -300,43 +250,60 @@ function isIterable(el) {
     }
     return 0;
 }
-function operateChildren(children, prefix, callback, iterableType, isTop) {
+function operateArray(children, prefix, isTop, callback) {
+    children.forEach(function (el, i) {
+        operateChildren(el, computeName(el, i, prefix, isTop), callback, typeNumber(el), false);
+    });
+}
+function operateChildren(children, prefix, callback, number, isTop) {
     var key = void 0,
         el = void 0,
-        t = void 0,
         iterator = void 0;
-    switch (iterableType) {
+    switch (number) {
         case 0:
-            if (Object(children) === children && !children.call && !children.type) {
-                throw "children中存在非法的对象";
-            }
-            key = prefix || (children && children.key ? "$" + children.key : "0");
-            callback(children, key);
-            break;
         case 1:
-            children.forEach(function (el, i) {
-                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
-            });
-            break;
         case 2:
-            key = children && children.key ? "$" + children.key : "";
-            key = isTop ? key : prefix ? prefix + ":0" : key || "0";
-            el = children.props.children;
-            t = isIterable(el);
-            if (!t) {
-                el = [el];
-                t = 1;
-            }
-            operateChildren(el, key, callback, t, false);
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            callback(children, key, number);
             break;
-        default:
-            iterator = iterableType.call(children);
-            var ii = 0,
-                step;
-            while (!(step = iterator.next()).done) {
-                el = step.value;
-                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
-                ii++;
+        case 7:
+            operateArray(children, prefix, isTop, callback);
+            break;
+        case 8:
+            if (children.forEach) {
+                operateArray(children, prefix, isTop, callback);
+                return;
+            } else if (children.type === Fragment) {
+                key = children.key ? "$" + children.key : "";
+                key = isTop ? key : prefix ? prefix + ":0" : key || "0";
+                el = children.props.children;
+                var innerNumber = typeNumber(el);
+                if (innerNumber < 7 || !isIterable(el)) {
+                    el = [el];
+                    innerNumber = 7;
+                }
+                operateChildren(el, key, callback, innerNumber, false);
+                return;
+            }
+            var cursor = getIteractor(children);
+            if (cursor) {
+                iterator = cursor.call(children);
+                var ii = 0,
+                    step;
+                while (!(step = iterator.next()).done) {
+                    el = step.value;
+                    operateChildren(el, computeName(el, ii, prefix, isTop), callback, typeNumber(el), false);
+                    ii++;
+                }
+            } else {
+                if (Object(children) === children && !children.call && !children.type) {
+                    throw "children中存在非法的对象";
+                }
+                key = prefix || children.key ? "$" + children.key : "0";
+                callback(children, key, number);
             }
             break;
     }
@@ -349,6 +316,33 @@ function getIteractor(a) {
         return iteratorFn;
     }
 }
+function createFactory(type) {
+    var factory = createElement.bind(null, type);
+    factory.type = type;
+    return factory;
+}
+function Vnode(type, tag, props, key, ref) {
+    var ret = {
+        type: type,
+        tag: tag,
+        $$typeof: REACT_ELEMENT_TYPE,
+        key: key || null,
+        ref: null
+    };
+    if (tag !== 6) {
+        ret.props = props;
+        ret._owner = Renderer.currentOwner;
+        var refType = typeNumber(ref);
+        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
+            if (refType < 4) {
+                ref += "";
+            }
+            ret.ref = ref;
+        }
+    }
+    options.afterCreate(ret);
+    return ret;
+}
 
 function cloneElement(vnode, props) {
     if (!vnode.tag === 6) {
@@ -357,7 +351,7 @@ function cloneElement(vnode, props) {
         return clone;
     }
     var owner = vnode._owner,
-        lastOwn = Flutter.currentOwner,
+        lastOwn = Renderer.currentOwner,
         old = vnode.props,
         configs = {};
     if (props) {
@@ -372,7 +366,7 @@ function cloneElement(vnode, props) {
     } else {
         configs = old;
     }
-    Flutter.currentOwner = owner;
+    Renderer.currentOwner = owner;
     var args = [].slice.call(arguments, 0),
         argsLength = args.length;
     args[0] = vnode.type;
@@ -382,7 +376,7 @@ function cloneElement(vnode, props) {
         args.push(configs.children);
     }
     var ret = createElement.apply(null, args);
-    Flutter.currentOwner = lastOwn;
+    Renderer.currentOwner = lastOwn;
     return ret;
 }
 
@@ -465,6 +459,325 @@ function computeKey(old, el, prefix, index) {
     return curKey ? "." + curKey : "." + index;
 }
 
+var check = function check() {
+    return check;
+};
+check.isRequired = check;
+var PropTypes = {
+    array: check,
+    bool: check,
+    func: check,
+    number: check,
+    object: check,
+    string: check,
+    any: check,
+    arrayOf: check,
+    element: check,
+    instanceOf: check,
+    node: check,
+    objectOf: check,
+    oneOf: check,
+    oneOfType: check,
+    shape: check
+};
+
+function Component(props, context) {
+    Renderer.currentOwner = this;
+    this.context = context;
+    this.props = props;
+    this.refs = {};
+    this.state = null;
+}
+var fakeObject = {
+    enqueueSetState: returnFalse,
+    _isMounted: returnFalse
+};
+Component.prototype = {
+    constructor: Component,
+    replaceState: function replaceState() {
+        deprecatedWarn("replaceState");
+    },
+    isReactComponent: returnTrue,
+    isMounted: function isMounted() {
+        return (this.updater || fakeObject)._isMounted(this);
+    },
+    setState: function setState(state, cb) {
+        (this.updater || fakeObject).enqueueSetState(this, state, cb);
+    },
+    forceUpdate: function forceUpdate(cb) {
+        (this.updater || fakeObject).enqueueSetState(this, true, cb);
+    },
+    render: function render() {}
+};
+
+function shallowEqual(objA, objB) {
+    if (Object.is(objA, objB)) {
+        return true;
+    }
+    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
+        return false;
+    }
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function PureComponent(props, context) {
+    Component.call(this, props, context);
+}
+var fn = inherit(PureComponent, Component);
+fn.shouldComponentUpdate = function (nextProps, nextState) {
+    var a = shallowEqual(this.props, nextProps);
+    var b = shallowEqual(this.state, nextState);
+    return !a || !b;
+};
+fn.isPureComponent = true;
+
+function createRef() {
+    return {
+        current: null
+    };
+}
+function RefComponent(fn) {
+    function RefProvider(props, ref) {
+        return fn(props, ref);
+    }
+    RefProvider.isRef = true;
+    return RefProvider;
+}
+function forwardRef(fn) {
+    return RefComponent(fn);
+}
+
+function AnuPortal(props) {
+    return props.children;
+}
+function createPortal(children, node) {
+    var child = createElement(AnuPortal, { children: children });
+    Renderer.render(vnode, child);
+    child.parent = node;
+    return child;
+}
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var uuid = 1;
+function gud() {
+    return uuid++;
+}
+var MAX_NUMBER = 1073741823;
+function createEventEmitter(value) {
+    var handlers = [];
+    return {
+        on: function on(handler) {
+            handlers.push(handler);
+        },
+        off: function off(handler) {
+            handlers = handlers.filter(function (h) {
+                return h !== handler;
+            });
+        },
+        get: function get$$1() {
+            return value;
+        },
+        set: function set(newValue, changedBits) {
+            value = newValue;
+            handlers.forEach(function (handler) {
+                return handler(value, changedBits);
+            });
+        }
+    };
+}
+function createContext(defaultValue, calculateChangedBits) {
+    var contextProp = "__create-react-context-" + gud() + "__";
+    function Provider(props, context) {
+        Component.call(this, props, context);
+        this.emitter = createEventEmitter(props.value);
+    }
+    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
+    var fn = inherit(Provider, Component);
+    fn.getChildContext = function () {
+        return _defineProperty({}, contextProp, this.emitter);
+    };
+    fn.componentWillReceiveProps = function (nextProps) {
+        if (this.props.value !== nextProps.value) {
+            var oldValue = this.props.value;
+            var newValue = nextProps.value;
+            var changedBits = void 0;
+            if (Object.is(oldValue, newValue)) {
+                changedBits = 0;
+            } else {
+                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                changedBits |= 0;
+                if (changedBits !== 0) {
+                    this.emitter.set(nextProps.value, changedBits);
+                }
+            }
+        }
+    };
+    fn.render = function () {
+        return this.props.children;
+    };
+    function Consumer(props, context) {
+        var _this = this;
+        Component.call(this, props, context);
+        this.observedBits = 0;
+        this.state = {
+            value: this.getValue()
+        };
+        this.onUpdate = function (newValue, changedBits) {
+            var observedBits = _this.observedBits | 0;
+            if ((observedBits & changedBits) !== 0) {
+                _this.setState({ value: _this.getValue() });
+            }
+        };
+    }
+    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
+    var fn2 = inherit(Consumer, Component);
+    fn2.componentWillReceiveProps = function (nextProps) {
+        var observedBits = nextProps.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.getValue = function () {
+        if (this.context[contextProp]) {
+            return this.context[contextProp].get();
+        } else {
+            return defaultValue;
+        }
+    };
+    fn2.componentDidMount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].on(this.onUpdate);
+        }
+        var observedBits = this.props.observedBits;
+        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
+        : observedBits;
+    };
+    fn2.componentWillUnmount = function () {
+        if (this.context[contextProp]) {
+            this.context[contextProp].off(this.onUpdate);
+        }
+    };
+    fn2.render = function () {
+        return this.props.children(this.state.value);
+    };
+    return {
+        Provider: Provider,
+        Consumer: Consumer
+    };
+}
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var NOBIND = {
+    render: 1,
+    shouldComponentUpdate: 1,
+    componentWillReceiveProps: 1,
+    componentWillUpdate: 1,
+    componentDidUpdate: 1,
+    componentWillMount: 1,
+    componentDidMount: 1,
+    componentWillUnmount: 1,
+    componentDidUnmount: 1
+};
+function collectMixins(mixins) {
+    var keyed = {};
+    for (var i = 0; i < mixins.length; i++) {
+        var mixin = mixins[i];
+        if (mixin.mixins) {
+            applyMixins(mixin, collectMixins(mixin.mixins));
+        }
+        for (var key in mixin) {
+            if (mixin.hasOwnProperty(key) && key !== "mixins") {
+                (keyed[key] || (keyed[key] = [])).push(mixin[key]);
+            }
+        }
+    }
+    return keyed;
+}
+var MANY_MERGED = {
+    getInitialState: 1,
+    getDefaultProps: 1,
+    getChildContext: 1
+};
+function flattenHooks(key, hooks) {
+    var hookType = _typeof(hooks[0]);
+    if (hookType === "object") {
+        var ret = {};
+        for (var i = 0; i < hooks.length; i++) {
+            extend(ret, hooks[i]);
+        }
+        return ret;
+    } else if (hookType === "function" && hooks.length > 1) {
+        return function () {
+            var ret = {},
+                r = void 0,
+                hasReturn = MANY_MERGED[key];
+            for (var _i = 0; _i < hooks.length; _i++) {
+                r = hooks[_i].apply(this, arguments);
+                if (hasReturn && r) {
+                    extend(ret, r);
+                }
+            }
+            if (hasReturn) {
+                return ret;
+            }
+            return r;
+        };
+    } else {
+        return hooks[0];
+    }
+}
+function applyMixins(proto, mixins) {
+    for (var key in mixins) {
+        if (mixins.hasOwnProperty(key)) {
+            proto[key] = flattenHooks(key, mixins[key].concat(proto[key] || []));
+        }
+    }
+}
+function newCtor(className, spec) {
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n  };");
+    return curry(Component, NOBIND, spec);
+}
+function createClass(spec) {
+    deprecatedWarn("createClass");
+    if (!isFn(spec.render)) {
+        throw "请实现render方法";
+    }
+    var Constructor = newCtor(spec.displayName || "Component", spec);
+    var proto = inherit(Constructor, Component);
+    if (spec.mixins) {
+        applyMixins(spec, collectMixins(spec.mixins));
+    }
+    extend(proto, spec);
+    if (spec.statics) {
+        extend(Constructor, spec.statics);
+    }
+    "propTypes,contextTypes,childContextTypes,displayName".replace(/\w+/g, function (name) {
+        if (spec[name]) {
+            var props = Constructor[name] = spec[name];
+            if (name !== "displayName") {
+                for (var i in props) {
+                    if (!isFn(props[i])) {
+                        console.error(i + " in " + name + " must be a function");
+                    }
+                }
+            }
+        }
+    });
+    if (isFn(spec.getDefaultProps)) {
+        Constructor.defaultProps = spec.getDefaultProps();
+    }
+    return Constructor;
+}
+
 function DOMElement(type) {
     this.nodeName = type;
     this.style = {};
@@ -476,11 +789,11 @@ var NAMESPACE = {
     xlink: "http://www.w3.org/1999/xlink",
     math: "http://www.w3.org/1998/Math/MathML"
 };
-var fn = DOMElement.prototype = {
+var fn$1 = DOMElement.prototype = {
     contains: Boolean
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
-    fn[name] = function () {
+    fn$1[name] = function () {
         console.log('fire ' + name);
     };
 });
@@ -568,23 +881,23 @@ function dispatchEvent(e, type, end) {
     }
     var paths = collectPaths(e.target, end || document);
     var captured = bubble + "capture";
-    var fibers = Flutter.interactQueue || (Flutter.interactQueue = []);
+    var fibers = Renderer.interactQueue || (Renderer.interactQueue = []);
     triggerEventFlow(paths, captured, e);
     if (!e._stopPropagation) {
         triggerEventFlow(paths.reverse(), bubble, e);
     }
     fibers.sort(mountSorter);
-    __push.apply(Flutter.mainThread, fibers);
-    Flutter.interactQueue = null;
-    Flutter.batchedUpdates();
-    Flutter.controlledCbs.forEach(function (el) {
+    __push.apply(Renderer.mainThread, fibers);
+    Renderer.interactQueue = null;
+    Renderer.batchedUpdates();
+    Renderer.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
                 target: el.stateNode
             });
         }
     });
-    Flutter.controlledCbs.length = 0;
+    Renderer.controlledCbs.length = 0;
 }
 function collectPaths(from, end) {
     var paths = [];
@@ -757,8 +1070,8 @@ function blurFocus(e) {
         dom.__inner__ = false;
         return;
     }
-    if (!isFocus && Flutter.focusNode === dom) {
-        Flutter.focusNode = null;
+    if (!isFocus && Renderer.focusNode === dom) {
+        Renderer.focusNode = null;
     }
     do {
         if (dom.nodeType === 1) {
@@ -853,206 +1166,556 @@ var eventSystem = Object.freeze({
 	SyntheticEvent: SyntheticEvent
 });
 
-var check = function check() {
-    return check;
-};
-check.isRequired = check;
-var PropTypes = {
-    array: check,
-    bool: check,
-    func: check,
-    number: check,
-    object: check,
-    string: check,
-    any: check,
-    arrayOf: check,
-    element: check,
-    instanceOf: check,
-    node: check,
-    objectOf: check,
-    oneOf: check,
-    oneOfType: check,
-    shape: check
-};
-
-function Component(props, context) {
-    Flutter.currentOwner = this;
-    this.context = context;
-    this.props = props;
-    this.refs = {};
-    this.state = null;
-}
-var fakeObject = {
-    enqueueSetState: returnFalse,
-    _isMounted: returnFalse
-};
-Component.prototype = {
-    constructor: Component,
-    replaceState: function replaceState() {
-        deprecatedWarn("replaceState");
-    },
-    isReactComponent: returnTrue,
-    isMounted: function isMounted() {
-        return (this.updater || fakeObject)._isMounted(this);
-    },
-    setState: function setState(state, cb) {
-        (this.updater || fakeObject).enqueueSetState(this, state, cb);
-    },
-    forceUpdate: function forceUpdate(cb) {
-        (this.updater || fakeObject).enqueueSetState(this, true, cb);
-    },
-    render: function render() {}
-};
-
-function shallowEqual(objA, objB) {
-    if (Object.is(objA, objB)) {
-        return true;
+function findDOMNode(stateNode) {
+    if (stateNode == null) {
+        return null;
     }
-    if (typeNumber(objA) < 7 || typeNumber(objB) < 7) {
-        return false;
+    if (stateNode.nodeType) {
+        return stateNode;
     }
-    var keysA = Object.keys(objA);
-    var keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) {
-        return false;
-    }
-    for (var i = 0; i < keysA.length; i++) {
-        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
-            return false;
+    if (stateNode.render) {
+        var fiber = get(stateNode);
+        var c = fiber.child;
+        if (c) {
+            return findDOMNode(c.stateNode);
+        } else {
+            return null;
         }
     }
-    return true;
 }
 
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-var fn$1 = inherit(PureComponent, Component);
-fn$1.shouldComponentUpdate = function shallowCompare(nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
+var formElements = {
+    select: 1,
+    textarea: 1,
+    input: 1,
+    option: 1
 };
-fn$1.isPureComponent = true;
+var duplexData = {
+    1: ["value", {
+        onChange: 1,
+        onInput: 1,
+        readOnly: 1,
+        disabled: 1
+    }, function (a) {
+        return a == null ? null : a + "";
+    }, function (dom, value, vnode) {
+        if (value == null) {
+            return;
+        }
+        if (vnode.type === "input") {
+            dom.__anuSetValue = true;
+            dom.setAttribute("value", value);
+            dom.__anuSetValue = false;
+            if (dom.type === "number") {
+                var valueAsNumber = parseFloat(dom.value) || 0;
+                if (
+                value != valueAsNumber ||
+                value == valueAsNumber && dom.value != value) {
+                    value += "";
+                } else {
+                    return;
+                }
+            }
+        }
+        if (dom._persistValue !== value) {
+            dom.__anuSetValue = true;
+            dom._persistValue = dom.value = value;
+            dom.__anuSetValue = false;
+        }
+    }, keepPersistValue, "change", "input"],
+    2: ["checked", {
+        onChange: 1,
+        onClick: 1,
+        readOnly: 1,
+        disabled: 1
+    }, function (a) {
+        return !!a;
+    }, function (dom, value, vnode) {
+        if (vnode.props.value != null) {
+            dom.value = vnode.props.value;
+        }
+        if (dom._persistValue !== value) {
+            dom._persistValue = dom.checked = value;
+        }
+    }, keepPersistValue, "change", "click"],
+    3: ["value", {
+        onChange: 1,
+        disabled: 1
+    }, function (a) {
+        return a;
+    }, function (dom, value, vnode, isUncontrolled) {
+        if (isUncontrolled) {
+            if (!dom.multiple && dom.value !== dom._persistValue) {
+                dom._persistValue = dom.value;
+                dom._setValue = false;
+            }
+        } else {
+            if ("value" in vnode.props) {
+                dom._persistValue = value;
+            }
+        }
+        syncOptions({
+            target: dom
+        });
+    }, syncOptions, "change"]
+};
+function inputControll(vnode, dom, props) {
+    var domType = dom.type;
+    var duplexType = duplexMap[domType];
+    var isUncontrolled = dom._uncontrolled;
+    if (duplexType) {
+        var data = duplexData[duplexType];
+        var duplexProp = data[0];
+        var keys = data[1];
+        var converter = data[2];
+        var sideEffect = data[3];
+        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
+        sideEffect(dom, value, vnode, isUncontrolled);
+        if (isUncontrolled) {
+            return;
+        }
+        var handle = data[4];
+        var event1 = data[5];
+        var event2 = data[6];
+        if (!hasOtherControllProperty(props, keys)) {
+            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
+            dom["on" + event1] = handle;
+            dom["on" + event2] = handle;
+        } else {
+            vnode.controlledCb = handle;
+            Renderer.controlledCbs.push(vnode);
+        }
+    } else {
+        var arr = dom.children || [];
+        for (var i = 0, el; el = arr[i]; i++) {
+            dom.removeChild(el);
+            i--;
+        }
+        if ("value" in props) {
+            dom.duplexValue = dom.value = props.value;
+        } else {
+            dom.duplexValue = dom.text;
+        }
+    }
+}
+function hasOtherControllProperty(props, keys) {
+    for (var key in keys) {
+        if (props[key]) {
+            return true;
+        }
+    }
+}
+function keepPersistValue(e) {
+    var dom = e.target;
+    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
+    var v = dom._persistValue;
+    var noNull = v != null;
+    var noEqual = dom[name] !== v;
+    if (noNull && noEqual) {
+        dom[name] = v;
+    }
+}
+function syncOptions(e) {
+    var target = e.target,
+        value = target._persistValue,
+        options = target.options;
+    if (target.multiple) {
+        updateOptionsMore(options, options.length, value);
+    } else {
+        updateOptionsOne(options, options.length, value);
+    }
+    target._setSelected = true;
+}
+function updateOptionsOne(options, n, propValue) {
+    var stringValues = {},
+        noDisableds = [];
+    for (var i = 0; i < n; i++) {
+        var option = options[i];
+        var value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
+        if (value === propValue) {
+            return setOptionSelected(option, true);
+        }
+        stringValues[value] = option;
+    }
+    var match = stringValues[propValue];
+    if (match) {
+        return setOptionSelected(match, true);
+    }
+    if (n && noDisableds[0]) {
+        setOptionSelected(noDisableds[0], true);
+    }
+}
+function updateOptionsMore(options, n, propValue) {
+    var selectedValue = {};
+    try {
+        for (var i = 0; i < propValue.length; i++) {
+            selectedValue["&" + propValue[i]] = true;
+        }
+    } catch (e) {
+        console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
+    }
+    for (var _i = 0; _i < n; _i++) {
+        var option = options[_i];
+        var value = option.duplexValue;
+        var selected = selectedValue.hasOwnProperty("&" + value);
+        setOptionSelected(option, selected);
+    }
+}
+function setOptionSelected(dom, selected) {
+    dom.selected = selected;
+}
 
-function createRef() {
-    return {
-        current: null
+var rnumber = /^-?\d+(\.\d+)?$/;
+function patchStyle(dom, lastStyle, nextStyle) {
+    if (lastStyle === nextStyle) {
+        return;
+    }
+    for (var name in nextStyle) {
+        var val = nextStyle[name];
+        if (lastStyle[name] !== val) {
+            name = cssName(name, dom);
+            if (val !== 0 && !val) {
+                val = "";
+            } else if (rnumber.test(val) && !cssNumber[name]) {
+                val = val + "px";
+            }
+            try {
+                dom.style[name] = val;
+            } catch (e) {
+                console.log("dom.style[" + name + "] = " + val + "throw error");
+            }
+        }
+    }
+    for (var _name in lastStyle) {
+        if (!(_name in nextStyle)) {
+            _name = cssName(_name, dom);
+            dom.style[_name] = "";
+        }
+    }
+}
+var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
+var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
+var cssMap = oneObject("float", "cssFloat");
+function cssName(name, dom) {
+    if (cssMap[name]) {
+        return cssMap[name];
+    }
+    var host = dom && dom.style || {};
+    for (var i = 0, n = prefixes.length; i < n; i++) {
+        var camelCase = camelize(prefixes[i] + name);
+        if (camelCase in host) {
+            return cssMap[name] = camelCase;
+        }
+    }
+    return null;
+}
+
+var inputMonitor = {};
+var rcheck = /checked|radio/;
+var describe = {
+    set: function set(value) {
+        var controllProp = rcheck.test(this.type) ? "checked" : "value";
+        if (this.type === "textarea") {
+            this.innerHTML = value;
+        }
+        if (!this._observing) {
+            if (!this._setValue) {
+                var parsedValue = this[controllProp] = value;
+                this._persistValue = Array.isArray(value) ? value : parsedValue;
+                this._setValue = true;
+            }
+        } else {
+            this._setValue = value == null ? false : true;
+        }
+        this._defaultValue = value;
+    },
+    get: function get() {
+        return this._defaultValue;
+    },
+    configurable: true
+};
+inputMonitor.observe = function (dom, name) {
+    try {
+        if ("_persistValue" in dom) {
+            dom._setValue = true;
+        }
+        Object.defineProperty(dom, name, describe);
+    } catch (e) {        }
+};
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+var controlled = {
+    value: 1,
+    checked: 1
+};
+var isSpecialAttr = {
+    style: 1,
+    autoFocus: 1,
+    defaultValue: 1,
+    defaultChecked: 1,
+    children: 1,
+    innerHTML: 1,
+    dangerouslySetInnerHTML: 1
+};
+var svgCache = {};
+var strategyCache = {};
+var svgCamelCase = {
+    w: { r: 1, b: 1, t: 1 },
+    e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
+    o: { r: 1 },
+    c: { m: 1 },
+    p: { p: 1 },
+    t: { s: 2, t: 1, u: 1, c: 1, d: 1, o: 1, x: 1, y: 1, l: 1 },
+    l: { r: 1, m: 1, u: 1, b: -1, l: -1, s: -1 },
+    r: { r: 1, u: 2, h: 1, w: 1, c: 1, e: 1 },
+    h: { r: 1, a: 1, l: 1, t: 1 },
+    y: { p: 1, s: 1, t: 1, c: 1 },
+    g: { c: 1 },
+    k: { a: -1, h: -1, r: -1, s: -1, t: -1, c: 1, u: 1 },
+    m: { o: 1, l: 1, a: 1 },
+    n: { c: 1, t: 1, u: 1 },
+    s: { a: 3 },
+    f: { x: 1, y: 1 },
+    d: { e: 1, f: 1, m: 1, d: 1 },
+    x: { c: 1 }
+};
+var specialSVGPropertyName = {
+    "overline-thickness": 2,
+    "underline-thickness": 2,
+    "overline-position": 2,
+    "underline-position": 2,
+    "stroke-miterlimit": 2,
+    "baseline-shift": 2,
+    "clip-path": 2,
+    "font-size": 2,
+    "font-size-adjust": 2,
+    "font-stretch": 2,
+    "font-style": 2,
+    "text-decoration": 2,
+    "vert-origin-x": 2,
+    "vert-origin-y": 2,
+    "paint-order": 2,
+    "fill-rule": 2,
+    "color-rendering": 2,
+    "marker-end": 2,
+    "pointer-events": 2,
+    "units-per-em": 2,
+    "strikethrough-thickness": 2,
+    "lighting-color": 2
+};
+var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
+function createRepaceFn(split) {
+    return function (match) {
+        return match.slice(0, 1) + split + match.slice(1).toLowerCase();
     };
 }
-function RefComponent(fn) {
-    function RefProvider(props, ref) {
-        return fn(props, ref);
+var rhump = /[a-z][A-Z]/;
+var toHyphen = createRepaceFn("-");
+var toColon = createRepaceFn(":");
+function getSVGAttributeName(name) {
+    if (svgCache[name]) {
+        return svgCache[name];
     }
-    RefProvider.isRef = true;
-    return RefProvider;
-}
-function forwardRef(fn) {
-    return RefComponent(fn);
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var NOBIND = {
-    render: 1,
-    shouldComponentUpdate: 1,
-    componentWillReceiveProps: 1,
-    componentWillUpdate: 1,
-    componentDidUpdate: 1,
-    componentWillMount: 1,
-    componentDidMount: 1,
-    componentWillUnmount: 1,
-    componentDidUnmount: 1
-};
-function collectMixins(mixins) {
-    var keyed = {};
-    for (var i = 0; i < mixins.length; i++) {
-        var mixin = mixins[i];
-        if (mixin.mixins) {
-            applyMixins(mixin, collectMixins(mixin.mixins));
-        }
-        for (var key in mixin) {
-            if (mixin.hasOwnProperty(key) && key !== "mixins") {
-                (keyed[key] || (keyed[key] = [])).push(mixin[key]);
-            }
-        }
+    var key = name.match(rhump);
+    if (!key) {
+        return svgCache[name] = name;
     }
-    return keyed;
-}
-var MANY_MERGED = {
-    getInitialState: 1,
-    getDefaultProps: 1,
-    getChildContext: 1
-};
-function flattenHooks(key, hooks) {
-    var hookType = _typeof(hooks[0]);
-    if (hookType === "object") {
-        var ret = {};
-        for (var i = 0; i < hooks.length; i++) {
-            extend(ret, hooks[i]);
+    var _ref = [].concat(_toConsumableArray(key[0].toLowerCase())),
+        prefix = _ref[0],
+        postfix = _ref[1];
+    var orig = name;
+    if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
+        var count = svgCamelCase[prefix][postfix];
+        if (count === -1) {
+            return svgCache[orig] = {
+                name: name.replace(rhump, toColon),
+                ifSpecial: true
+            };
         }
-        return ret;
-    } else if (hookType === "function" && hooks.length > 1) {
-        return function () {
-            var ret = {},
-                r = void 0,
-                hasReturn = MANY_MERGED[key];
-            for (var _i = 0; _i < hooks.length; _i++) {
-                r = hooks[_i].apply(this, arguments);
-                if (hasReturn && r) {
-                    extend(ret, r);
-                }
+        if (~repeatedKey.indexOf(prefix + postfix)) {
+            var dashName = name.replace(rhump, toHyphen);
+            if (specialSVGPropertyName[dashName]) {
+                name = dashName;
             }
-            if (hasReturn) {
-                return ret;
-            }
-            return r;
-        };
+        }
     } else {
-        return hooks[0];
+        name = name.replace(rhump, toHyphen);
     }
+    return svgCache[orig] = name;
 }
-function applyMixins(proto, mixins) {
-    for (var key in mixins) {
-        if (mixins.hasOwnProperty(key)) {
-            proto[key] = flattenHooks(key, mixins[key].concat(proto[key] || []));
+function diffProps(dom, lastProps, nextProps, fiber) {
+    options.beforeProps(fiber);
+    var isSVG = fiber.namespaceURI === NAMESPACE.svg;
+    var tag = fiber.type;
+    for (var name in nextProps) {
+        var val = nextProps[name];
+        if (val !== lastProps[name]) {
+            var which = tag + isSVG + name;
+            var action = strategyCache[which];
+            if (!action) {
+                action = strategyCache[which] = getPropAction(dom, name, isSVG);
+            }
+            actionStrategy[action](dom, name, val, lastProps, fiber);
+        }
+    }
+    for (var _name in lastProps) {
+        if (!nextProps.hasOwnProperty(_name)) {
+            var _which = tag + isSVG + _name;
+            var _action = strategyCache[_which];
+            if (!_action) {
+                continue;
+            }
+            actionStrategy[_action](dom, _name, false, lastProps, fiber);
         }
     }
 }
-function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n  };");
-    return curry(Component, NOBIND, spec);
+function isBooleanAttr(dom, name) {
+    var val = dom[name];
+    return val === true || val === false;
 }
-function createClass(spec) {
-    deprecatedWarn("createClass");
-    if (!isFn(spec.render)) {
-        throw "请实现render方法";
+function getPropAction(dom, name, isSVG) {
+    if (isSVG && name === "className") {
+        return "svgClass";
     }
-    var Constructor = newCtor(spec.displayName || "Component", spec);
-    var proto = inherit(Constructor, Component);
-    if (spec.mixins) {
-        applyMixins(spec, collectMixins(spec.mixins));
+    if (isSpecialAttr[name]) {
+        return name;
     }
-    extend(proto, spec);
-    if (spec.statics) {
-        extend(Constructor, spec.statics);
+    if (isEventName(name)) {
+        return "event";
     }
-    "propTypes,contextTypes,childContextTypes,displayName".replace(/\w+/g, function (name) {
-        if (spec[name]) {
-            var props = Constructor[name] = spec[name];
-            if (name !== "displayName") {
-                for (var i in props) {
-                    if (!isFn(props[i])) {
-                        console.error(i + " in " + name + " must be a function");
-                    }
+    if (isSVG) {
+        return "svgAttr";
+    }
+    if (name === "width" || name === "height") {
+        return "attribute";
+    }
+    if (isBooleanAttr(dom, name)) {
+        return "booleanAttr";
+    }
+    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
+}
+var builtinStringProps = {
+    className: 1,
+    title: 1,
+    name: 1,
+    type: 1,
+    alt: 1,
+    lang: 1
+};
+var rform = /textarea|input|select/i;
+function uncontrolled(dom, name, val, lastProps, fiber) {
+    if (rform.test(dom.nodeName)) {
+        if (!dom._uncontrolled) {
+            dom._uncontrolled = true;
+            inputMonitor.observe(dom, name);
+        }
+        dom._observing = false;
+        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
+            dom.selectedIndex = dom.selectedIndex;
+            dom._setValue = false;
+        }
+        dom[name] = val;
+        dom._observing = true;
+    } else {
+        dom.setAttribute(name, val);
+    }
+}
+var actionStrategy = {
+    innerHTML: noop,
+    defaultValue: uncontrolled,
+    defaultChecked: uncontrolled,
+    children: noop,
+    style: function style(dom, _, val, lastProps) {
+        patchStyle(dom, lastProps.style || emptyObject$1, val || emptyObject$1);
+    },
+    autoFocus: function autoFocus(dom) {
+        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+            dom.focus();
+        }
+    },
+    svgClass: function svgClass(dom, name, val) {
+        if (!val) {
+            dom.removeAttribute("class");
+        } else {
+            dom.setAttribute("class", val);
+        }
+    },
+    svgAttr: function svgAttr(dom, name, val) {
+        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        var nameRes = getSVGAttributeName(name);
+        if (nameRes.ifSpecial) {
+            var prefix = nameRes.name.split(":")[0];
+            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
+        } else {
+            dom[method](nameRes, val || "");
+        }
+    },
+    booleanAttr: function booleanAttr(dom, name, val) {
+        dom[name] = !!val;
+        if (dom[name] === false) {
+            dom.removeAttribute(name);
+        } else if (dom[name] === "false") {
+            dom[name] = "";
+        }
+    },
+    attribute: function attribute(dom, name, val) {
+        if (val == null || val === false) {
+            return dom.removeAttribute(name);
+        }
+        try {
+            dom.setAttribute(name, val);
+        } catch (e) {
+            console.warn("setAttribute error", name, val);
+        }
+    },
+    property: function property(dom, name, val) {
+        if (controlled[name]) {
+            return;
+        }
+        try {
+            if (!val && val !== 0) {
+                if (builtinStringProps[name]) {
+                    dom[name] = "";
+                }
+                dom.removeAttribute(name);
+            } else {
+                dom[name] = val;
+            }
+        } catch (e) {
+            try {
+                dom.setAttribute(name, val);
+            } catch (e) {          }
+        }
+    },
+    event: function event(dom, name, val, lastProps, fiber) {
+        var events = dom.__events || (dom.__events = {});
+        events.vnode = fiber;
+        var refName = toLowerCase(name.slice(2));
+        if (val === false) {
+            delete events[refName];
+        } else {
+            if (!lastProps[name]) {
+                var eventName = getBrowserName(name);
+                var hook = eventHooks[eventName];
+                addGlobalEvent(eventName);
+                if (hook) {
+                    hook(dom, eventName);
                 }
             }
+            events[refName] = val;
         }
-    });
-    if (isFn(spec.getDefaultProps)) {
-        Constructor.defaultProps = spec.getDefaultProps();
+    },
+    dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
+        var oldhtml = lastProps[name] && lastProps[name].__html;
+        var html = val && val.__html;
+        if (html !== oldhtml) {
+            dom.innerHTML = html;
+        }
     }
-    return Constructor;
-}
+};
 
 function Fiber(vnode) {
     extend(this, vnode);
@@ -1061,145 +1724,13 @@ function Fiber(vnode) {
     this.effectTag = 1;
 }
 
-function AnuPortal(props) {
-    return props.children;
-}
-function createPortal(children, node) {
-    var fiber = void 0,
-        events = node.__events;
-    if (events) {
-        fiber = node.__events.vnode;
-    } else {
-        events = node.__events = {};
-        var vnode = createVnode(node);
-        fiber = new Fiber(vnode);
-        events.vnode = fiber;
-    }
-    fiber._isPortal = true;
-    var child = createElement(AnuPortal, { children: children });
-    child._return = fiber;
-    return child;
-}
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-var uuid = 1;
-function gud() {
-    return uuid++;
-}
-var MAX_NUMBER = 1073741823;
-function createEventEmitter(value) {
-    var handlers = [];
-    return {
-        on: function on(handler) {
-            handlers.push(handler);
-        },
-        off: function off(handler) {
-            handlers = handlers.filter(function (h) {
-                return h !== handler;
-            });
-        },
-        get: function get$$1() {
-            return value;
-        },
-        set: function set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(function (handler) {
-                return handler(value, changedBits);
-            });
-        }
-    };
-}
-function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
-    function Provider(props, context) {
-        Component.call(this, props, context);
-        this.emitter = createEventEmitter(props.value);
-    }
-    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
-    var fn = inherit(Provider, Component);
-    fn.getChildContext = function () {
-        return _defineProperty({}, contextProp, this.emitter);
-    };
-    fn.componentWillReceiveProps = function (nextProps) {
-        if (this.props.value !== nextProps.value) {
-            var oldValue = this.props.value;
-            var newValue = nextProps.value;
-            var changedBits = void 0;
-            if (Object.is(oldValue, newValue)) {
-                changedBits = 0;
-            } else {
-                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                changedBits |= 0;
-                if (changedBits !== 0) {
-                    this.emitter.set(nextProps.value, changedBits);
-                }
-            }
-        }
-    };
-    fn.render = function () {
-        return this.props.children;
-    };
-    function Consumer(props, context) {
-        var _this = this;
-        Component.call(this, props, context);
-        this.observedBits = 0;
-        this.state = {
-            value: this.getValue()
-        };
-        this.onUpdate = function (newValue, changedBits) {
-            var observedBits = _this.observedBits | 0;
-            if ((observedBits & changedBits) !== 0) {
-                _this.setState({ value: _this.getValue() });
-            }
-        };
-    }
-    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
-    var fn2 = inherit(Consumer, Component);
-    fn2.componentWillReceiveProps = function (nextProps) {
-        var observedBits = nextProps.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.getValue = function () {
-        if (this.context[contextProp]) {
-            return this.context[contextProp].get();
-        } else {
-            return defaultValue;
-        }
-    };
-    fn2.componentDidMount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].on(this.onUpdate);
-        }
-        var observedBits = this.props.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.componentWillUnmount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].off(this.onUpdate);
-        }
-    };
-    fn2.render = function () {
-        return this.props.children(this.state.value);
-    };
-    return {
-        Provider: Provider,
-        Consumer: Consumer
-    };
-}
-
 var componentStack = [];
 var effects = [];
-var topFibers = [];
-var topNodes = [];
-
-var emptyObject = {};
 var containerStack = [];
-var contextStack = [emptyObject];
+var contextStack = [emptyObject$1];
 
 function hasContextChanged() {
-    return contextStack[0] != emptyObject;
+    return contextStack[0] != emptyObject$1;
 }
 
 var NOWORK = 1;
@@ -1216,7 +1747,7 @@ var CAPTURE = 29;
 var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
-var updateQueue$2 = Flutter.mainThread;
+var updateQueue$1 = Renderer.mainThread;
 function pushError(fiber, hook, error) {
     var names = [];
     var catchFiber = findCatchComponent(fiber, names);
@@ -1227,10 +1758,10 @@ function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-        updateQueue$2.push(catchFiber);
+        updateQueue$1.push(catchFiber);
     } else {
-        if (!Flutter.error) {
-            Flutter.error = error;
+        if (!Renderer.error) {
+            Renderer.error = error;
         }
     }
 }
@@ -1387,7 +1918,7 @@ function updateEffects(fiber, topWork) {
 function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
         try {
-            fiber.stateNode = Flutter.createElement(fiber);
+            fiber.stateNode = Renderer.createElement(fiber);
         } catch (e) {
             throw e;
         }
@@ -1449,7 +1980,7 @@ function updateClassComponent(fiber) {
     if (instance == null) {
         stage = "init";
         instance = fiber.stateNode = createInstance(fiber, nextContext);
-        instance.updater.enqueueSetState = Flutter.updateComponent;
+        instance.updater.enqueueSetState = Renderer.updateComponent;
         instance.props = props;
     } else {
         var isSetState = isForced === true || fiber.pendingStates || fiber._updates;
@@ -1501,8 +2032,8 @@ function updateClassComponent(fiber) {
     }
     fiber.effectTag *= HOOK;
     updater._hydrating = true;
-    var lastOwn = Flutter.currentOwner;
-    Flutter.currentOwner = instance;
+    var lastOwn = Renderer.currentOwner;
+    Renderer.currentOwner = instance;
     var rendered = callLifeCycleHook(instance, "render", []);
     if (componentStack[0] === instance) {
         componentStack.shift();
@@ -1510,7 +2041,7 @@ function updateClassComponent(fiber) {
     if (updater._hasError) {
         rendered = [];
     }
-    Flutter.currentOwner = lastOwn;
+    Renderer.currentOwner = lastOwn;
     diffChildren(fiber, rendered);
 }
 var stageIteration = {
@@ -1785,7 +2316,7 @@ function commitEffects(a) {
     arr = commitPlaceEffects(arr);
     for (var i = 0; i < arr.length; i++) {
         commitOtherEffects(arr[i]);
-        if (Flutter.error) {
+        if (Renderer.error) {
             arr.length = 0;
             break;
         }
@@ -1793,9 +2324,9 @@ function commitEffects(a) {
     arr.forEach(commitOtherEffects);
     clearUpElements.forEach(removeStateNode);
     clearUpElements.length = arr.length = effects.length = 0;
-    var error = Flutter.error;
+    var error = Renderer.error;
     if (error) {
-        delete Flutter.error;
+        delete Renderer.error;
         throw error;
     }
 }
@@ -1813,7 +2344,7 @@ function commitPlaceEffects(fibers) {
         if (hasEffect && remainder == ~~remainder) {
             try {
                 fiber.parent.insertPoint = null;
-                Flutter.insertElement(fiber);
+                Renderer.insertElement(fiber);
             } catch (e) {
                 throw e;
             }
@@ -1840,14 +2371,14 @@ function commitOtherEffects(fiber) {
             amount = remainder;
             switch (effectNo) {
                 case PLACE:
-                    Flutter.insertElement(fiber);
+                    Renderer.insertElement(fiber);
                     break;
                 case ATTR:
-                    Flutter.updateAttribute(fiber);
+                    Renderer.updateAttribute(fiber);
                     break;
                 case DETACH:
                     if (fiber.tag > 3) {
-                        Flutter.removeElement(fiber);
+                        Renderer.removeElement(fiber);
                     }
                     clearUpElements.push(fiber);
                     break;
@@ -1870,7 +2401,7 @@ function commitOtherEffects(fiber) {
                     delete updater._hydrating;
                     break;
                 case CONTENT:
-                    Flutter.updateContext(fiber);
+                    Renderer.updateContext(fiber);
                     break;
                 case REF:
                     if (!instance.__isStateless) {
@@ -1902,33 +2433,13 @@ function commitOtherEffects(fiber) {
     fiber.effectTag = 1;
 }
 
-var updateQueue$$1 = Flutter.mainThread;
-function isValidElement(vnode) {
-    return vnode && vnode.tag > 0 && vnode.tag !== 6;
-}
-function findDOMNode(stateNode) {
-    if (stateNode == null) {
-        return null;
-    }
-    if (stateNode.nodeType) {
-        return stateNode;
-    }
-    if (stateNode.render) {
-        var fiber = get(stateNode);
-        var c = fiber.child;
-        if (c) {
-            return findDOMNode(c.stateNode);
-        } else {
-            return null;
-        }
-    }
-}
-function render(vnode, root, callback) {
-    var hostRoot = Flutter.updateRoot(root);
+var updateQueue = Renderer.mainThread;
+function render$1(vnode, root, callback) {
+    var hostRoot = Renderer.updateRoot(root);
     var instance = null;
     if (hostRoot._hydrating) {
         hostRoot.pendingCbs.push(function () {
-            render(vnode, root, callback);
+            render$1(vnode, root, callback);
         });
         return;
     }
@@ -1942,11 +2453,11 @@ function render(vnode, root, callback) {
     }];
     hostRoot._hydrating = true;
     hostRoot.effectTag = CALLBACK;
-    updateQueue$$1.push(hostRoot);
-    Flutter.scheduleWork();
+    updateQueue.push(hostRoot);
+    Renderer.scheduleWork();
     return instance;
 }
-Flutter.scheduleWork = function () {
+Renderer.scheduleWork = function () {
     performWork({
         timeRemaining: function timeRemaining() {
             return 2;
@@ -1954,11 +2465,11 @@ Flutter.scheduleWork = function () {
     });
 };
 var isBatchingUpdates = false;
-Flutter.batchedUpdates = function () {
+Renderer.batchedUpdates = function () {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        Flutter.scheduleWork();
+        Renderer.scheduleWork();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
@@ -1990,28 +2501,9 @@ function workLoop(deadline) {
 }
 function performWork(deadline) {
     workLoop(deadline);
-    if (updateQueue$$1.length > 0) {
+    if (updateQueue.length > 0) {
         requestIdleCallback(performWork);
     }
-}
-function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
-    deprecatedWarn("unstable_renderSubtreeIntoContainer");
-    return Flutter.render(vnode, container, callback);
-}
-function unmountComponentAtNode(container) {
-    var rootIndex = topNodes.indexOf(container);
-    if (rootIndex > -1) {
-        var lastFiber = topFibers[rootIndex],
-            _effects = [];
-        detachFiber(lastFiber, _effects);
-        _effects.shift();
-        commitEffects(_effects);
-        topNodes.splice(rootIndex, 1);
-        topFibers.splice(rootIndex, 1);
-        container._reactInternalFiber = null;
-        return true;
-    }
-    return false;
 }
 var ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
@@ -2022,7 +2514,7 @@ function requestIdleCallback(fn) {
     });
 }
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue$$1.shift();
+    fiber = updateQueue.shift();
     if (!fiber) {
         return;
     }
@@ -2032,7 +2524,7 @@ function getNextUnitOfWork(fiber) {
     if (fiber.root) {
         fiber.stateNode = fiber.stateNode || {};
         if (!get(fiber.stateNode)) {
-            Flutter.emptyElement(fiber);
+            Renderer.emptyElement(fiber);
         }
         fiber.stateNode._reactInternalFiber = fiber;
     }
@@ -2059,558 +2551,25 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
-Flutter.updateComponent = function (instance, state, callback) {
+Renderer.updateComponent = function (instance, state, callback) {
     var fiber = get(instance);
     if (fiber.parent) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
     var isForced = state === true;
     state = isForced ? null : state;
-    if (this._hydrating || Flutter.interactQueue) {
+    if (this._hydrating || Renderer.interactQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Flutter.interactQueue || updateQueue$$1;
+            var queue = Renderer.interactQueue || updateQueue;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
         if (!this._hooking) {
-            updateQueue$$1.push(fiber);
-            Flutter.scheduleWork();
-        }
-    }
-};
-
-var formElements = {
-    select: 1,
-    textarea: 1,
-    input: 1,
-    option: 1
-};
-var duplexData = {
-    1: ["value", {
-        onChange: 1,
-        onInput: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return a == null ? null : a + "";
-    }, function (dom, value, vnode) {
-        if (value == null) {
-            return;
-        }
-        if (vnode.type === "input") {
-            dom.__anuSetValue = true;
-            dom.setAttribute("value", value);
-            dom.__anuSetValue = false;
-            if (dom.type === "number") {
-                var valueAsNumber = parseFloat(dom.value) || 0;
-                if (
-                value != valueAsNumber ||
-                value == valueAsNumber && dom.value != value) {
-                    value += "";
-                } else {
-                    return;
-                }
-            }
-        }
-        if (dom._persistValue !== value) {
-            dom.__anuSetValue = true;
-            dom._persistValue = dom.value = value;
-            dom.__anuSetValue = false;
-        }
-    }, keepPersistValue, "change", "input"],
-    2: ["checked", {
-        onChange: 1,
-        onClick: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return !!a;
-    }, function (dom, value, vnode) {
-        if (vnode.props.value != null) {
-            dom.value = vnode.props.value;
-        }
-        if (dom._persistValue !== value) {
-            dom._persistValue = dom.checked = value;
-        }
-    }, keepPersistValue, "change", "click"],
-    3: ["value", {
-        onChange: 1,
-        disabled: 1
-    }, function (a) {
-        return a;
-    }, function (dom, value, vnode, isUncontrolled) {
-        if (isUncontrolled) {
-            if (!dom.multiple && dom.value !== dom._persistValue) {
-                dom._persistValue = dom.value;
-                dom._setValue = false;
-            }
-        } else {
-            if ("value" in vnode.props) {
-                dom._persistValue = value;
-            }
-        }
-        syncOptions({
-            target: dom
-        });
-    }, syncOptions, "change"]
-};
-function inputControll(vnode, dom, props) {
-    var domType = dom.type;
-    var duplexType = duplexMap[domType];
-    var isUncontrolled = dom._uncontrolled;
-    if (duplexType) {
-        var data = duplexData[duplexType];
-        var duplexProp = data[0];
-        var keys = data[1];
-        var converter = data[2];
-        var sideEffect = data[3];
-        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
-        sideEffect(dom, value, vnode, isUncontrolled);
-        if (isUncontrolled) {
-            return;
-        }
-        var handle = data[4];
-        var event1 = data[5];
-        var event2 = data[6];
-        if (!hasOtherControllProperty(props, keys)) {
-            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
-            dom["on" + event1] = handle;
-            dom["on" + event2] = handle;
-        } else {
-            vnode.controlledCb = handle;
-            Flutter.controlledCbs.push(vnode);
-        }
-    } else {
-        var arr = dom.children || [];
-        for (var i = 0, el; el = arr[i]; i++) {
-            dom.removeChild(el);
-            i--;
-        }
-        if ("value" in props) {
-            dom.duplexValue = dom.value = props.value;
-        } else {
-            dom.duplexValue = dom.text;
-        }
-    }
-}
-function hasOtherControllProperty(props, keys) {
-    for (var key in keys) {
-        if (props[key]) {
-            return true;
-        }
-    }
-}
-function keepPersistValue(e) {
-    var dom = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
-    var v = dom._persistValue;
-    var noNull = v != null;
-    var noEqual = dom[name] !== v;
-    if (noNull && noEqual) {
-        dom[name] = v;
-    }
-}
-function syncOptions(e) {
-    var target = e.target,
-        value = target._persistValue,
-        options$$1 = target.options;
-    if (target.multiple) {
-        updateOptionsMore(options$$1, options$$1.length, value);
-    } else {
-        updateOptionsOne(options$$1, options$$1.length, value);
-    }
-    target._setSelected = true;
-}
-function updateOptionsOne(options$$1, n, propValue) {
-    var stringValues = {},
-        noDisableds = [];
-    for (var i = 0; i < n; i++) {
-        var option = options$$1[i];
-        var value = option.duplexValue;
-        if (!option.disabled) {
-            noDisableds.push(option);
-        }
-        if (value === propValue) {
-            return setOptionSelected(option, true);
-        }
-        stringValues[value] = option;
-    }
-    var match = stringValues[propValue];
-    if (match) {
-        return setOptionSelected(match, true);
-    }
-    if (n && noDisableds[0]) {
-        setOptionSelected(noDisableds[0], true);
-    }
-}
-function updateOptionsMore(options$$1, n, propValue) {
-    var selectedValue = {};
-    try {
-        for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
-        }
-    } catch (e) {
-        console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
-    }
-    for (var _i = 0; _i < n; _i++) {
-        var option = options$$1[_i];
-        var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
-        setOptionSelected(option, selected);
-    }
-}
-function setOptionSelected(dom, selected) {
-    dom.selected = selected;
-}
-
-var rnumber = /^-?\d+(\.\d+)?$/;
-function patchStyle(dom, lastStyle, nextStyle) {
-    if (lastStyle === nextStyle) {
-        return;
-    }
-    for (var name in nextStyle) {
-        var val = nextStyle[name];
-        if (lastStyle[name] !== val) {
-            name = cssName(name, dom);
-            if (val !== 0 && !val) {
-                val = "";
-            } else if (rnumber.test(val) && !cssNumber[name]) {
-                val = val + "px";
-            }
-            try {
-                dom.style[name] = val;
-            } catch (e) {
-                console.log("dom.style[" + name + "] = " + val + "throw error");
-            }
-        }
-    }
-    for (var _name in lastStyle) {
-        if (!(_name in nextStyle)) {
-            _name = cssName(_name, dom);
-            dom.style[_name] = "";
-        }
-    }
-}
-var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-var cssMap = oneObject("float", "cssFloat");
-function cssName(name, dom) {
-    if (cssMap[name]) {
-        return cssMap[name];
-    }
-    var host = dom && dom.style || {};
-    for (var i = 0, n = prefixes.length; i < n; i++) {
-        var camelCase = camelize(prefixes[i] + name);
-        if (camelCase in host) {
-            return cssMap[name] = camelCase;
-        }
-    }
-    return null;
-}
-
-var inputMonitor = {};
-var rcheck = /checked|radio/;
-var describe = {
-    set: function set(value) {
-        var controllProp = rcheck.test(this.type) ? "checked" : "value";
-        if (this.type === "textarea") {
-            this.innerHTML = value;
-        }
-        if (!this._observing) {
-            if (!this._setValue) {
-                var parsedValue = this[controllProp] = value;
-                this._persistValue = Array.isArray(value) ? value : parsedValue;
-                this._setValue = true;
-            }
-        } else {
-            this._setValue = value == null ? false : true;
-        }
-        this._defaultValue = value;
-    },
-    get: function get() {
-        return this._defaultValue;
-    },
-    configurable: true
-};
-inputMonitor.observe = function (dom, name) {
-    try {
-        if ("_persistValue" in dom) {
-            dom._setValue = true;
-        }
-        Object.defineProperty(dom, name, describe);
-    } catch (e) {        }
-};
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-var controlled = {
-    value: 1,
-    checked: 1
-};
-var isSpecialAttr = {
-    style: 1,
-    autoFocus: 1,
-    defaultValue: 1,
-    defaultChecked: 1,
-    children: 1,
-    innerHTML: 1,
-    dangerouslySetInnerHTML: 1
-};
-var svgCache = {};
-var strategyCache = {};
-var svgCamelCase = {
-    w: { r: 1, b: 1, t: 1 },
-    e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
-    o: { r: 1 },
-    c: { m: 1 },
-    p: { p: 1 },
-    t: { s: 2, t: 1, u: 1, c: 1, d: 1, o: 1, x: 1, y: 1, l: 1 },
-    l: { r: 1, m: 1, u: 1, b: -1, l: -1, s: -1 },
-    r: { r: 1, u: 2, h: 1, w: 1, c: 1, e: 1 },
-    h: { r: 1, a: 1, l: 1, t: 1 },
-    y: { p: 1, s: 1, t: 1, c: 1 },
-    g: { c: 1 },
-    k: { a: -1, h: -1, r: -1, s: -1, t: -1, c: 1, u: 1 },
-    m: { o: 1, l: 1, a: 1 },
-    n: { c: 1, t: 1, u: 1 },
-    s: { a: 3 },
-    f: { x: 1, y: 1 },
-    d: { e: 1, f: 1, m: 1, d: 1 },
-    x: { c: 1 }
-};
-var specialSVGPropertyName = {
-    "overline-thickness": 2,
-    "underline-thickness": 2,
-    "overline-position": 2,
-    "underline-position": 2,
-    "stroke-miterlimit": 2,
-    "baseline-shift": 2,
-    "clip-path": 2,
-    "font-size": 2,
-    "font-size-adjust": 2,
-    "font-stretch": 2,
-    "font-style": 2,
-    "text-decoration": 2,
-    "vert-origin-x": 2,
-    "vert-origin-y": 2,
-    "paint-order": 2,
-    "fill-rule": 2,
-    "color-rendering": 2,
-    "marker-end": 2,
-    "pointer-events": 2,
-    "units-per-em": 2,
-    "strikethrough-thickness": 2,
-    "lighting-color": 2
-};
-var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
-function createRepaceFn(split) {
-    return function (match) {
-        return match.slice(0, 1) + split + match.slice(1).toLowerCase();
-    };
-}
-var rhump = /[a-z][A-Z]/;
-var toHyphen = createRepaceFn("-");
-var toColon = createRepaceFn(":");
-function getSVGAttributeName(name) {
-    if (svgCache[name]) {
-        return svgCache[name];
-    }
-    var key = name.match(rhump);
-    if (!key) {
-        return svgCache[name] = name;
-    }
-    var _ref = [].concat(_toConsumableArray(key[0].toLowerCase())),
-        prefix = _ref[0],
-        postfix = _ref[1];
-    var orig = name;
-    if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
-        var count = svgCamelCase[prefix][postfix];
-        if (count === -1) {
-            return svgCache[orig] = {
-                name: name.replace(rhump, toColon),
-                ifSpecial: true
-            };
-        }
-        if (~repeatedKey.indexOf(prefix + postfix)) {
-            var dashName = name.replace(rhump, toHyphen);
-            if (specialSVGPropertyName[dashName]) {
-                name = dashName;
-            }
-        }
-    } else {
-        name = name.replace(rhump, toHyphen);
-    }
-    return svgCache[orig] = name;
-}
-function diffProps(dom, lastProps, nextProps, fiber) {
-    options.beforeProps(fiber);
-    var isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    var tag = fiber.type;
-    for (var name in nextProps) {
-        var val = nextProps[name];
-        if (val !== lastProps[name]) {
-            var which = tag + isSVG + name;
-            var action = strategyCache[which];
-            if (!action) {
-                action = strategyCache[which] = getPropAction(dom, name, isSVG);
-            }
-            actionStrategy[action](dom, name, val, lastProps, fiber);
-        }
-    }
-    for (var _name in lastProps) {
-        if (!nextProps.hasOwnProperty(_name)) {
-            var _which = tag + isSVG + _name;
-            var _action = strategyCache[_which];
-            if (!_action) {
-                continue;
-            }
-            actionStrategy[_action](dom, _name, false, lastProps, fiber);
-        }
-    }
-}
-function isBooleanAttr(dom, name) {
-    var val = dom[name];
-    return val === true || val === false;
-}
-function getPropAction(dom, name, isSVG) {
-    if (isSVG && name === "className") {
-        return "svgClass";
-    }
-    if (isSpecialAttr[name]) {
-        return name;
-    }
-    if (isEventName(name)) {
-        return "event";
-    }
-    if (isSVG) {
-        return "svgAttr";
-    }
-    if (name === "width" || name === "height") {
-        return "attribute";
-    }
-    if (isBooleanAttr(dom, name)) {
-        return "booleanAttr";
-    }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
-}
-var builtinStringProps = {
-    className: 1,
-    title: 1,
-    name: 1,
-    type: 1,
-    alt: 1,
-    lang: 1
-};
-var rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, fiber) {
-    if (rform.test(dom.nodeName)) {
-        if (!dom._uncontrolled) {
-            dom._uncontrolled = true;
-            inputMonitor.observe(dom, name);
-        }
-        dom._observing = false;
-        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
-            dom.selectedIndex = dom.selectedIndex;
-            dom._setValue = false;
-        }
-        dom[name] = val;
-        dom._observing = true;
-    } else {
-        dom.setAttribute(name, val);
-    }
-}
-var actionStrategy = {
-    innerHTML: noop,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    children: noop,
-    style: function style(dom, _, val, lastProps) {
-        patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
-    },
-    autoFocus: function autoFocus(dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
-            dom.focus();
-        }
-    },
-    svgClass: function svgClass(dom, name, val) {
-        if (!val) {
-            dom.removeAttribute("class");
-        } else {
-            dom.setAttribute("class", val);
-        }
-    },
-    svgAttr: function svgAttr(dom, name, val) {
-        var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-        var nameRes = getSVGAttributeName(name);
-        if (nameRes.ifSpecial) {
-            var prefix = nameRes.name.split(":")[0];
-            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
-        } else {
-            dom[method](nameRes, val || "");
-        }
-    },
-    booleanAttr: function booleanAttr(dom, name, val) {
-        dom[name] = !!val;
-        if (dom[name] === false) {
-            dom.removeAttribute(name);
-        } else if (dom[name] === "false") {
-            dom[name] = "";
-        }
-    },
-    attribute: function attribute(dom, name, val) {
-        if (val == null || val === false) {
-            return dom.removeAttribute(name);
-        }
-        try {
-            dom.setAttribute(name, val);
-        } catch (e) {
-            console.warn("setAttribute error", name, val);
-        }
-    },
-    property: function property(dom, name, val) {
-        if (controlled[name]) {
-            return;
-        }
-        try {
-            if (!val && val !== 0) {
-                if (builtinStringProps[name]) {
-                    dom[name] = "";
-                }
-                dom.removeAttribute(name);
-            } else {
-                dom[name] = val;
-            }
-        } catch (e) {
-            try {
-                dom.setAttribute(name, val);
-            } catch (e) {          }
-        }
-    },
-    event: function event(dom, name, val, lastProps, fiber) {
-        var events = dom.__events || (dom.__events = {});
-        events.vnode = fiber;
-        var refName = toLowerCase(name.slice(2));
-        if (val === false) {
-            delete events[refName];
-        } else {
-            if (!lastProps[name]) {
-                var eventName = getBrowserName(name);
-                var hook = eventHooks[eventName];
-                addGlobalEvent(eventName);
-                if (hook) {
-                    hook(dom, eventName);
-                }
-            }
-            events[refName] = val;
-        }
-    },
-    dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
-        var oldhtml = lastProps[name] && lastProps[name].__html;
-        var html = val && val.__html;
-        if (html !== oldhtml) {
-            dom.innerHTML = html;
+            updateQueue.push(fiber);
+            Renderer.scheduleWork();
         }
     }
 };
@@ -2677,8 +2636,8 @@ function _emptyElement(node) {
     var child = void 0;
     while (child = node.firstChild) {
         _emptyElement(child);
-        if (child === Flutter.focusNode) {
-            Flutter.focusNode = false;
+        if (child === Renderer.focusNode) {
+            Renderer.focusNode = false;
         }
         node.removeChild(child);
     }
@@ -2698,8 +2657,8 @@ function _removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-    if (node === Flutter.focusNode) {
-        Flutter.focusNode = false;
+    if (node === Renderer.focusNode) {
+        Renderer.focusNode = false;
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
@@ -2725,7 +2684,7 @@ function insertElement(fiber) {
     var prevFocus = isElement && document.activeElement;
     if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
         try {
-            Flutter.focusNode = prevFocus;
+            Renderer.focusNode = prevFocus;
             prevFocus.__inner__ = true;
             prevFocus.focus();
         } catch (e) {
@@ -2734,6 +2693,7 @@ function insertElement(fiber) {
     }
 }
 var DOMRenderer = {
+    render: render$1,
     updateAttribute: function updateAttribute(fiber) {
         var type = fiber.type,
             props = fiber.props,
@@ -2773,6 +2733,25 @@ var DOMRenderer = {
     emptyElement: function emptyElement(fiber) {
         _emptyElement(fiber.stateNode);
     },
+    unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
+        deprecatedWarn("unstable_renderSubtreeIntoContainer");
+        return Renderer.render(vnode, container, callback);
+    },
+    unmountComponentAtNode: function unmountComponentAtNode(container) {
+        var rootIndex = topNodes.indexOf(container);
+        if (rootIndex > -1) {
+            var lastFiber = topFibers[rootIndex],
+                effects = [];
+            detachFiber(lastFiber, effects);
+            effects.shift();
+            commitEffects(effects);
+            topNodes.splice(rootIndex, 1);
+            topFibers.splice(rootIndex, 1);
+            container._reactInternalFiber = null;
+            return true;
+        }
+        return false;
+    },
     removeElement: function removeElement(fiber) {
         var instance = fiber.stateNode;
         _removeElement(instance);
@@ -2784,6 +2763,8 @@ var DOMRenderer = {
     }
 };
 
+var render = DOMRenderer.render;
+var unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
@@ -2813,12 +2794,7 @@ if (prevReact && prevReact.options) {
         isValidElement: isValidElement,
         unmountComponentAtNode: unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-        createFactory: function createFactory(type) {
-            console.warn('createFactory is deprecated');
-            var factory = createElement.bind(null, type);
-            factory.type = type;
-            return factory;
-        }
+        createFactory: createFactory
     };
 }
 var React$1 = React;

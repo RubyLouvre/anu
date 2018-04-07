@@ -8,6 +8,17 @@
              "transform-es2015-classes", {
                  "loose": true
              }
-         ]
+         ],
+         ["transform-object-rest-spread", { "useBuiltIns": true }],
+         ["module-resolver", {
+            "root": ["."],
+            "alias": {
+              "react-core":"./packages/core",
+              "react-fiber": "./packages/fiber",
+              "react": "./dist/React",
+              "react-dom": "./dist/React",
+              "test-utils": "./lib/ReactTestUtils"
+            }
+          }]
      ]
  }

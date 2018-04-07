@@ -5,18 +5,25 @@ import cleanup from 'rollup-plugin-cleanup';
 
 const license = require("rollup-plugin-license");
 const json = require("../package.json");
+var importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    entry: "./src/React.js",
+    entry: "./packages/render/dom/index.js",
     format: "umd",
     exports: "default",
     dest: "./dist/React.js",
     plugins: [
-  
+        importAlias({
+            Paths: {
+                "react-dom": 'packages/core',
+                "react-fiber": 'packages/fiber'					
+            },
+            Extensions: ['js']
+        }),
         babel({
             //  plugins: ['external-helpers'],
             // externalHelpers: true,
-            babelrc: false,
+          //  babelrc: false,
             presets: [
                 [
                     "env",
