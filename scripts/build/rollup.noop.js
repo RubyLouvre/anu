@@ -4,28 +4,16 @@ import filesize from "rollup-plugin-filesize";
 import cleanup from "rollup-plugin-cleanup";
 
 const license = require("rollup-plugin-license");
-const json = require("../package.json");
+const json = require("../../package.json");
 
 export default {
-    entry: "./src/ReactNoop.js",
+    entry: "./packages/render/noop/index.js",
     format: "umd",
     exports: "default",
     dest: "./dist/ReactNoop.js",
     plugins: [
-  
-        babel({
-            //  plugins: ['external-helpers'],
-            // externalHelpers: true,
-            babelrc: false,
-            presets: [
-                [
-                    "env",
-                    {
-                        modules: false
-                    }
-                ]
-            ]
-        }),
+
+        babel(),
 
         license({
             banner: `此个版本专门用于测试\nby 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,"")}

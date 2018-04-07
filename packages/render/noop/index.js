@@ -1,3 +1,4 @@
+
 import { Children } from "react-core/Children";
 import { PropTypes } from "react-core/PropTypes";
 import { Component } from "react-core/Component";
@@ -11,44 +12,37 @@ import { createElement, isValidElement, createFactory } from "react-core/createE
 import { createClass } from "react-core/createClass"; //deprecated
 import { options, Fragment, getWindow } from "react-core/util";
 
-import * as eventSystem from "./event";
-import { findDOMNode } from "./findDOMNode";
-import { DOMRenderer} from "./DOMRenderer";
-
-let { render, unstable_renderSubtreeIntoContainers, unmountComponentAtNode } = DOMRenderer
+import { NoopRenderer} from "./NoopRenderer";
 
 var win = getWindow();
-var prevReact = win.React;
-let React;
-if (prevReact && prevReact.options) {
-    React = prevReact; //解决引入多个
+var prevReact = win.ReactNoop;
+let ReactNoop;
+if (prevReact && prevReact.isReactNoop) {
+    ReactNoop = prevReact; //解决引入多个
 } else {
-    createRenderer(DOMRenderer);
-
-
-    React = win.React = win.ReactDOM = {
+    createRenderer(NoopRenderer);
+    ReactNoop = win.ReactNoop = { //放出全局的ReactNoop
         version: "VERSION",
-        render,
-        hydrate: render,
+        render: NoopRenderer.render,
+        flush: NoopRenderer.flush,
+        reset: NoopRenderer.reset,
+        getRoot: NoopRenderer.getRoot,
+        getChildren: NoopRenderer.getChildren,
         options,
+        isReactNoop: true,
         Fragment,
         PropTypes,
         Children,
         createPortal,
         createContext,
         Component,
-        eventSystem,
-        findDOMNode,
         createRef,
         forwardRef,
-        createClass,
         createElement,
         cloneElement,
         PureComponent,
         isValidElement,
-        unmountComponentAtNode,
-        unstable_renderSubtreeIntoContainer,
         createFactory
     };
 }
-export default React;
+export default ReactNoop;

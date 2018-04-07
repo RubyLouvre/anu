@@ -4,11 +4,11 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c build/rollup.js",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.noop.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
-    "devtools": "rollup -c build/rollup.tools.js",
+    "devtools": "rollup -c ./scripts/build/rollup.tools.js",
     "webpack": "^1.14.0",
-    "sync": "node ./build/sync.js"
+    "sync": "node ./script/build/sync.js"
   },
   "repository": {
     "type": "git",
@@ -71,7 +71,6 @@
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-cleanup": "^2.0.0",
     "rollup-plugin-filesize": "^1.4.2",
-    "rollup-plugin-import-alias": "^1.0.4",
     "rollup-plugin-istanbul": "^1.1.0",
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",

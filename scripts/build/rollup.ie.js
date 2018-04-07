@@ -4,7 +4,7 @@ import filesize from "rollup-plugin-filesize";
 import cleanup from 'rollup-plugin-cleanup';
 
 const license = require("rollup-plugin-license");
-const json = require("../package.json");
+const json = require("../../package.json");
 
 export default {
     entry: "./src/ReactIE.js",

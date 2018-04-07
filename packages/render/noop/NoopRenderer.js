@@ -1,4 +1,4 @@
-import { get } from './util';
+import { get } from 'react-core/util';
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
