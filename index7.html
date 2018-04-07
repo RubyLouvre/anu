@@ -24,68 +24,17 @@
              x: "司徒正美"
          }
       }
-      componentWillMount(){
-          console.log("App componentWillMount")
-      }
-      componentDidMount(){
-          console.log("App componentDidMount")
-      }
-      componentWillUpdate(){
-          console.log("App componentWillUpdate")
-      }
-      componentDidUpdate(){
-          console.log("App componentDidUpdate")
-      }
-      getChildContext(){
-          return {
-              child: 333
-          }
+      componentWillUnmount(){
+          console.log("xxxxx")
       }
       render(){
           console.log(new Date-0)
-          return <div ref={true} class="app"><p ref={(a)=>{console.log(a, "p")}}>{this.state.x}</p><A dd={new Date-0}/></div>
+          return <div ref={(a=>{console.log("1111")})}>xxx</div>
       }
   }
-  class A extends React.Component{
-      static contextTypes = {
-          child: true
-      }
-      componentDidUpdate(){
-          console.log("A componentDidUpdate")
-      }
-      componentDidMount(){
-          console.log("A componentDidMount")
-      }
-      componentWillReceiveProps(p, c){
-          console.log(p, c)
-          console.log("A componentWillReceiveProps")
-      }
-      shouldComponentUpdate(){
-          console.log("A shouldComponentUpdate")
-      }
-      constructor(a,b){
-         super(a, b)
-         this.state = {
-             x: "司徒正美"
-         }
-      }
-      render(){
-          return <strong >{this.context.child}{this.props.dd}</strong>
-      }
-  }
-
-var b
-   var a = ReactDOM.render(<App />,container, function(){
-       console.log(this, '执行ReactDOM.render回调')
-       b = this
-       console.log("准备setState")
-       b.setState({
-           x: "xxx"
-       }, function(){
-          console.log(this, '执行setState回调')
-       })
-   });
-
+  
+   var a = ReactDOM.render(<App />,container)
+   ReactDOM.render(<span />,container)
 </script>
 
 </html>

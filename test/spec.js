@@ -17,7 +17,7 @@ require("./modules/ReactDOMTextComponent-test.jsx");
 
 require("./modules/ReactDOMTextarea-test.jsx");
 
-// require("./modules/ReactDOMSelect-test.jsx");
+require("./modules/ReactDOMSelect-test.jsx");
 require("./modules/ReactDOMOption-test.jsx");
 
 require("./modules/ReactDOMInput-test.jsx");
@@ -33,7 +33,7 @@ require("./modules/ReactChildren-test.jsx");
 require("./modules/ReactComponentHook.jsx");
 
 require("./modules/diffProps.spec.jsx");
-/*
+
 
 require("./modules/component.spec.jsx");
 
@@ -55,7 +55,6 @@ require("./modules/refs-test.jsx");
 require("./modules/ReactUpdates-test.jsx");
 
 require("./modules/ReactStatelessComponent-test.jsx");
-
 
 require("./modules/ReactEmptyComponent-test.jsx");
 
@@ -81,16 +80,16 @@ require("./modules/findDOMNode-test.jsx");
 
 require("./modules/ReactES6Class-test.jsx");
 
+require("./modules/insert.spec.jsx");
+require("./modules/ReactDOM-test.jsx");
+/*
 require("./modules/ReactErrorBoundaries-test.jsx");
 
-require("./modules/insert.spec.jsx");
 
 require("./modules/createPortal.spec.jsx");
 
 require("./modules/event.spec.jsx");
 
-
-require("./modules/ReactDOM-test.jsx");
 
 require("./modules/ReactNewContext-test.jsx");
 

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./test/react.js"></script>
+   <!-- <script type='text/javascript' src="./test/react.js"></script>
     <script type='text/javascript' src="./test/react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -109,9 +109,7 @@
              };
  
              shouldComponentUpdate(nextProps, nextState) {
-                 console.log(JSON.stringify(this.state),JSON.stringify(nextState))
                  var a = shallowCompare(this, nextProps, nextState);
-                 console.log(a)
                  return a
              }
  
@@ -123,7 +121,6 @@
              }
  
              eatSlice() {
-                 console.log(this.state.slices-1)
                  this.setState({
                      slices: this.state.slices - 1
                  });
@@ -131,8 +128,6 @@
  
              render() {
                  renderCalls++;
-                 console.log("=====")
-
                  return <div />;
              }
          }
