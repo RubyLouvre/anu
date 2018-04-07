@@ -35,6 +35,7 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
             child.insertPoint = child.parent.insertPoint;
         }
         if (shouldUpdateFalse || child.shouldUpdateFalse) {
+           
             if (isHost) {
                 if(!child.disposed){
                     child.effectTag *= PLACE;

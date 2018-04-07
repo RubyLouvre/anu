@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-06
+ * by 司徒正美 Copyright 2018-04-07
  * IE9+
  */
 
@@ -842,6 +842,7 @@ function createInstance(fiber, context) {
             instance = new type(props, context);
         }
     } catch (e) {
+        pushError(fiber, 'constructor', e);
     } finally {
         Flutter.currentOwner = lastOwn;
     }
@@ -960,6 +961,7 @@ function updateClassComponent(fiber) {
                 }
                 delete fiber._updates;
             }
+            delete fiber.isForced;
         } else {
             stage = "receive";
         }
@@ -1032,6 +1034,7 @@ var stageIteration = {
     },
     update: function update(fiber, nextProps, nextContext, instance, isForced) {
         var args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
+        delete fiber.shouldUpdateFalse;
         if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else {

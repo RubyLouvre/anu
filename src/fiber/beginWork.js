@@ -130,7 +130,7 @@ function updateClassComponent (fiber) {
                 }
                 delete fiber._updates;
             }
-           // delete fiber.isForced;
+            delete fiber.isForced;
         }else {
           
             stage = "receive";
@@ -166,6 +166,7 @@ function updateClassComponent (fiber) {
     if (fiber.shouldUpdateFalse) {
         return;
     }
+   
     fiber.effectTag *= HOOK;
     updater._hydrating = true;
 
@@ -208,6 +209,7 @@ var stageIteration = {
     },
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
+        delete fiber.shouldUpdateFalse
         if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else {
