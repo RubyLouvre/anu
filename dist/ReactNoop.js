@@ -522,8 +522,8 @@ function createRef() {
     };
 }
 function forwardRef(fn) {
-    fn.isRef = true;
-    return fn;
+    createRef.render = fn;
+    return createRef;
 }
 
 function AnuPortal(props) {
@@ -760,10 +760,11 @@ function createInstance(fiber, context) {
         if (isStateless) {
             instance = {
                 refs: {},
-                __proto__: type.prototype,
                 props: props,
                 context: context,
                 ref: ref,
+                __proto__: type.prototype,
+                __isStateless: returnTrue,
                 __init: true,
                 renderImpl: type,
                 render: function f() {
@@ -774,21 +775,29 @@ function createInstance(fiber, context) {
                     }
                     a = this.renderImpl(this.props, this.context);
                     if (a && a.render) {
+                        delete this.__isStateless;
                         for (var i in a) {
                             instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
-                        this.__isStateless = returnTrue;
                         this.__keep = a;
                     }
                     return a;
                 }
             };
             Renderer.currentOwner = instance;
-            if (type.isRef) {
-                instance.__isStateless = returnTrue;
+            if (type.render) {
+                instance.oneRef = function (a) {
+                    var ref = instance.ref;
+                    if (isFn(ref)) {
+                        ref(a);
+                        instance.ref = noop;
+                    } else if (ref && "current" in ref) {
+                        ref.current = a;
+                    }
+                };
                 instance.render = function () {
-                    return type(this.props, this.ref);
+                    return type.render(this.props, this.oneRef);
                 };
             } else {
                 instance.render();
@@ -1142,7 +1151,6 @@ function diffChildren(parentFiber, children) {
         }
         if (_newFiber.ref) {
             _newFiber.effectTag *= REF;
-            console.log(_newFiber, "设置REF");
         }
         _newFiber.index = index++;
         _newFiber.return = parentFiber;
@@ -1221,11 +1229,6 @@ var Refs = {
         try {
             if (isFn(ref)) {
                 return ref(dom);
-            }
-            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
-                console.log(dom, "这是DOM");
-                ref.current = dom;
-                return;
             }
             if (!owner) {
                 throw "Element ref was specified as a string (" + ref + ") but no owner was set";

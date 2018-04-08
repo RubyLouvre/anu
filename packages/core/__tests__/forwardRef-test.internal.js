@@ -5,7 +5,6 @@ describe('forwardRef', () => {
   let ReactFeatureFlags;
   let ReactNoop;
   ReactNoop = require('react-noop-renderer');
-  console.log(ReactNoop+"")
   beforeEach(() => {
     jest.resetModules();
    // ReactFeatureFlags = require('shared/ReactFeatureFlags');

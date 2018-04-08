@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
    <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
@@ -26,6 +26,7 @@
     <script type='text/babel'>
           var container = document.getElementById('example');
           var div = container;
+          var React = ReactNoop
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -48,8 +49,29 @@
                   }
               };
             }
-var Foo= void 666
-         ReactDOM.render( <Foo>{[<div />]}</Foo>, div)
+
+            function FunctionalComponent({forwardedRef, setRefOnDiv}) {
+                return (
+                  <section>
+                    <div ref={setRefOnDiv ? forwardedRef : null}>First</div>
+                    <span ref={setRefOnDiv ? null : forwardedRef}>Second</span>
+                  </section>
+                );
+              }
+          
+              const RefForwardingComponent = React.forwardRef((props, ref) => (
+                <FunctionalComponent {...props} forwardedRef={ref} />
+              ));
+          
+              const ref = React.createRef();
+          
+              ReactNoop.render(<RefForwardingComponent ref={ref} setRefOnDiv={true} />);
+              ReactNoop.flush();
+              expect(ref.current.type).toBe('div');
+          
+              ReactNoop.render(<RefForwardingComponent ref={ref} setRefOnDiv={false} />);
+              ReactNoop.flush();
+              expect(ref.current.type).toBe('span');
   
 </script>
 

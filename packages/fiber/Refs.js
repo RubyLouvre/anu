@@ -1,5 +1,5 @@
 import { pushError } from "./unwindWork";
-import { isFn } from "react-core/util";
+import { isFn, noop } from "react-core/util";
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 
@@ -16,15 +16,9 @@ export let Refs = {
         let ref = fiber.ref;
         let owner = fiber._owner;
         try {
-            if (isFn(ref)) {
+            if (isFn(ref) ) {
                 return ref(dom);
             }
-            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
-                console.log(dom, "这是DOM");
-                ref.current = dom;
-                return;
-            }
-
             if (!owner) {
                 throw `Element ref was specified as a string (${ref}) but no owner was set`;
             }
