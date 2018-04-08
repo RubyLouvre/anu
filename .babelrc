@@ -15,6 +15,7 @@
             "alias": {
               "react-core":"./packages/core",
               "react-fiber": "./packages/fiber",
+              "prop-types": "./lib/ReactPropTypes",
               "react": "./dist/React",
               "react-dom": "./dist/React",
               "test-utils": "./lib/ReactTestUtils"

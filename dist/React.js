@@ -38,8 +38,7 @@ function getWindow() {
 }
 function toWarnDev(msg, deprecated) {
     msg = deprecated ? msg + " is deprecated" : msg;
-    if (!toWarnDev[msg] && typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
-        toWarnDev[msg] = 1;
+    if (!typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
         throw msg;
     }
 }
@@ -179,7 +178,7 @@ function createElement(type, config) {
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type + "" !== type) {
-        throw "React.createElement第一个参数只能是函数或字符串";
+        toWarnDev("React.createElement: type is invalid,", typeNumber());
     }
     if (config != null) {
         if (hasValidRef(config)) {
@@ -494,7 +493,7 @@ Component.prototype = {
         (this.updater || fakeObject).enqueueSetState(this, true, cb);
     },
     render: function render() {
-        toWarnDev("必须被重写");
+        throw "must implement render";
     }
 };
 
@@ -735,7 +734,7 @@ function newCtor(className, spec) {
 function createClass(spec) {
     toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
-        throw "请实现render方法";
+        throw "must implement render";
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);

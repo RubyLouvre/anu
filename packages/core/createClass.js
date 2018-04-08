@@ -108,7 +108,7 @@ function newCtor(className, spec) {
 export function createClass(spec) {
     toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
-        throw "请实现render方法";
+        throw "must implement render";
     }
     let Constructor = newCtor(spec.displayName || "Component", spec);
     let proto = inherit(Constructor, Component);

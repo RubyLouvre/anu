@@ -1,4 +1,4 @@
-import { typeNumber, hasSymbol, Fragment, options, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
+import { typeNumber, toWarnDev, hasSymbol, Fragment, options, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
 import { Renderer } from "./createRenderer";
 
 
@@ -62,7 +62,7 @@ export function createElement(type, config, ...children) {
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type + "" !== type) {
-        throw "React.createElement第一个参数只能是函数或字符串";
+        toWarnDev("React.createElement: type is invalid,", typeNumber());
     }
     if (config != null) {
         if (hasValidRef(config)) {

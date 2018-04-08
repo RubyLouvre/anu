@@ -39,7 +39,7 @@ Component.prototype = {
         (this.updater || fakeObject).enqueueSetState(this, true, cb);
     },
     render() {
-        toWarnDev("必须被重写");
+        throw "must implement render";
     }
 };
 
