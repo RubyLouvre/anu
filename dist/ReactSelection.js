@@ -2772,7 +2772,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.3.1",
+        version: "1.3.2",
         render: render,
         hydrate: render,
         options: options,
