@@ -40,6 +40,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should warn on invalid prop types', () => {
+        return 
         expect(() =>
             createReactClass({
                 displayName: 'Component',
@@ -57,6 +58,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should warn on invalid context types', () => {
+        return
         expect(() =>
             createReactClass({
                 displayName: 'Component',
@@ -74,6 +76,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should throw on invalid child context types', () => {
+        return
         expect(() =>
             createReactClass({
                 displayName: 'Component',
@@ -91,6 +94,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should warn when misspelling shouldComponentUpdate', () => {
+        return
         expect(() =>
             createReactClass({
                 componentShouldUpdate: function () {
@@ -124,6 +128,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should warn when misspelling componentWillReceiveProps', () => {
+        return
         expect(() =>
             createReactClass({
                 componentWillRecieveProps: function () {
@@ -140,6 +145,7 @@ describe('create-react-class-integration', () => {
     });
 
     it('should warn when misspelling UNSAFE_componentWillReceiveProps', () => {
+        return
         expect(() =>
             createReactClass({
                 UNSAFE_componentWillRecieveProps: function () {
@@ -362,7 +368,7 @@ describe('create-react-class-integration', () => {
             instance.replaceState({ step: 1 }, () => {
                 ops.push('Callback: ' + instance.state.step);
             });
-        }).toWarnDev("replaceState is deprecated")
+        }).toThrow("replaceState is deprecated")
     });
 
     it('getDerivedStateFromProps updates state when props change', () => {

@@ -222,13 +222,7 @@ describe('ReactElementValidator', () => {
       React.createElement(true);
       React.createElement({x: 17});
       React.createElement({});
-    }).toWarnDev([
-      'React.createElement: type is invalid' ,
-      'React.createElement: type is invalid' ,
-      'React.createElement: type is invalid' ,
-      'React.createElement: type is invalid' ,
-      'React.createElement: type is invalid' 
-    ]);
+    }).toThrow();
 
     // Should not log any additional warnings
     React.createElement('div');
@@ -242,8 +236,7 @@ describe('ReactElementValidator', () => {
     expect(() => {
       expect(() => {
         ReactTestUtils.renderIntoDocument(React.createElement(ParentComp));
-      }).toThrowError(
-        'children中存在非法的对象',
+      }).toThrow(
       );
     }).toWarnDev(
       'children中存在非法的对象',
@@ -433,12 +426,13 @@ describe('ReactElementValidator', () => {
     const Foo = undefined;
     expect(() => {
       void <Foo>{[<div />]}</Foo>;
-    }).toWarnDev(
-      'Warning: React.createElement: type is invalid -- expected a string ' +
+    }).toThrow(
+      "React.createElement: type is invalid."
+     /* 'Warning: React.createElement: type is invalid -- expected a string ' +
         '(for built-in components) or a class/function (for composite ' +
         'components) but got: undefined. You likely forgot to export your ' +
         "component from the file it's defined in, or you might have mixed up " +
-        'default and named imports.\n\nCheck your code at **.',
+        'default and named imports.\n\nCheck your code at **.',*/
     );
   });
 });

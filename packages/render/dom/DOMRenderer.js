@@ -2,18 +2,18 @@ import { inputControll, formElements } from "./inputControll";
 import { diffProps } from "./diffProps";
 import { document, NAMESPACE, contains } from "./browser";
 
-import { 
+import {
     get,
     emptyObject,
     topNodes,
     topFibers,
     toWarnDev
 } from "react-core/util";
-import { Renderer } from "react-core/createRenderer";
+import { Renderer, createRenderer } from "react-core/createRenderer";
 import { Fiber } from "react-fiber/Fiber";
-import { render } from "react-fiber/diff";
 import { detachFiber } from "react-fiber/beginWork";
 import { commitEffects } from "react-fiber/commitWork";
+import { render } from "react-fiber/diff";
 
 
 export function createElement(vnode) {
@@ -60,7 +60,10 @@ export function createElement(vnode) {
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
-        elem.type = inputType;
+        try{
+            elem = document.createElement("<"+type+" type='"+inputType+"'/>" );
+        }catch(err){
+        }
     }
     return elem;
 }
@@ -137,8 +140,8 @@ function insertElement(fiber) {
 }
 
 //其他Renderer也要实现这些方法
-export let DOMRenderer = {
-    render: render,
+export let DOMRenderer = createRenderer({
+    render,
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
@@ -155,7 +158,7 @@ export let DOMRenderer = {
         }
         var hostRoot = get(root);
         if (!hostRoot) {
-            hostRoot = new Fiber( {
+            hostRoot = new Fiber({
                 stateNode: root,
                 root: true,
                 tag: 5,
@@ -175,12 +178,12 @@ export let DOMRenderer = {
     emptyElement(fiber) {
         emptyElement(fiber.stateNode);
     },
-    unstable_renderSubtreeIntoContainer (instance, vnode, container, callback) {
-        toWarnDev("unstable_renderSubtreeIntoContainer",true);
+    unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
+        toWarnDev("unstable_renderSubtreeIntoContainer", true);
         return Renderer.render(vnode, container, callback);
     },
     // [Top API] ReactDOM.unmountComponentAtNode
-    unmountComponentAtNode (container) {
+    unmountComponentAtNode(container) {
         let rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {
             let lastFiber = topFibers[rootIndex],
@@ -204,6 +207,6 @@ export let DOMRenderer = {
             topNodes.splice(j, 1);
         }
     }
-};
+});
 
 //setState把自己放进列队

@@ -38,7 +38,8 @@ function getWindow() {
 }
 function toWarnDev(msg, deprecated) {
     msg = deprecated ? msg + " is deprecated" : msg;
-    if (!typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
+    var process = getWindow().process;
+    if (process && process.env.NODE_ENV === "development") {
         throw msg;
     }
 }
@@ -121,7 +122,7 @@ function typeNumber(data) {
 }
 
 function createRenderer(methods) {
-    extend(Renderer, methods);
+    return extend(Renderer, methods);
 }
 var Renderer = {
     interactQueue: null,
@@ -178,7 +179,7 @@ function createElement(type, config) {
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid,", typeNumber());
+        toWarnDev("React.createElement: type is invalid.");
     }
     if (config != null) {
         if (hasValidRef(config)) {
@@ -322,7 +323,7 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
-                throw "children中存在非法的对象";
+                throw "React.createElement: type is invalid.";
             }
             key = prefix || (children && children.key ? "$" + children.key : "0");
             callback(children, key);
@@ -732,7 +733,6 @@ function newCtor(className, spec) {
     return curry(Component, NOBIND, spec);
 }
 function createClass(spec) {
-    toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
@@ -1735,7 +1735,7 @@ var CAPTURE = 29;
 var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE];
 var effectLength = effectNames.length;
 
-var updateQueue$1 = Renderer.mainThread;
+var updateQueue = Renderer.mainThread;
 function pushError(fiber, hook, error) {
     var names = [];
     var catchFiber = findCatchComponent(fiber, names);
@@ -1746,7 +1746,7 @@ function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-        updateQueue$1.push(catchFiber);
+        updateQueue.push(catchFiber);
     } else {
         if (!Renderer.error) {
             Renderer.error = error;
@@ -2219,57 +2219,6 @@ function diffChildren(parentFiber, children) {
     }
 }
 
-function collectEffects(fiber, shouldUpdateFalse, isTop) {
-    if (!fiber) {
-        return [];
-    }
-    var effects = fiber.effects;
-    if (effects) {
-        delete fiber.effects;
-    } else {
-        effects = [];
-    }
-    if (isTop && fiber.tag == 5) {
-        fiber.stateNode.insertPoint = null;
-    }
-    for (var child = fiber.child; child; child = child.sibling) {
-        var isHost = child.tag > 3;
-        if (isHost) {
-            child.insertPoint = child.parent.insertPoint;
-            child.parent.insertPoint = child.stateNode;
-        } else {
-            child.insertPoint = child.parent.insertPoint;
-        }
-        if (shouldUpdateFalse || child.shouldUpdateFalse) {
-            if (isHost) {
-                if (!child.disposed) {
-                    child.effectTag *= PLACE;
-                    effects.push(child);
-                }
-            } else {
-                delete child.shouldUpdateFalse;
-                __push.apply(effects, collectEffects(child, true));
-            }
-        } else {
-            __push.apply(effects, collectEffects(child));
-        }
-        if (child.effectTag) {
-            effects.push(child);
-        }
-    }
-    return effects;
-}
-function getContainer(p) {
-    if (p.parent) {
-        return p.parent;
-    }
-    while (p = p.return) {
-        if (p.tag === 5) {
-            return p.stateNode;
-        }
-    }
-}
-
 function getDOMNode() {
     return this;
 }
@@ -2425,7 +2374,58 @@ function commitOtherEffects(fiber) {
     fiber.effectTag = 1;
 }
 
-var updateQueue = Renderer.mainThread;
+function collectEffects(fiber, shouldUpdateFalse, isTop) {
+    if (!fiber) {
+        return [];
+    }
+    var effects = fiber.effects;
+    if (effects) {
+        delete fiber.effects;
+    } else {
+        effects = [];
+    }
+    if (isTop && fiber.tag == 5) {
+        fiber.stateNode.insertPoint = null;
+    }
+    for (var child = fiber.child; child; child = child.sibling) {
+        var isHost = child.tag > 3;
+        if (isHost) {
+            child.insertPoint = child.parent.insertPoint;
+            child.parent.insertPoint = child.stateNode;
+        } else {
+            child.insertPoint = child.parent.insertPoint;
+        }
+        if (shouldUpdateFalse || child.shouldUpdateFalse) {
+            if (isHost) {
+                if (!child.disposed) {
+                    child.effectTag *= PLACE;
+                    effects.push(child);
+                }
+            } else {
+                delete child.shouldUpdateFalse;
+                __push.apply(effects, collectEffects(child, true));
+            }
+        } else {
+            __push.apply(effects, collectEffects(child));
+        }
+        if (child.effectTag) {
+            effects.push(child);
+        }
+    }
+    return effects;
+}
+function getContainer(p) {
+    if (p.parent) {
+        return p.parent;
+    }
+    while (p = p.return) {
+        if (p.tag === 5) {
+            return p.stateNode;
+        }
+    }
+}
+
+var updateQueue$1 = Renderer.mainThread;
 function render$1(vnode, root, callback) {
     var hostRoot = Renderer.updateRoot(root);
     var instance = null;
@@ -2445,7 +2445,7 @@ function render$1(vnode, root, callback) {
     }];
     hostRoot._hydrating = true;
     hostRoot.effectTag = CALLBACK;
-    updateQueue.push(hostRoot);
+    updateQueue$1.push(hostRoot);
     Renderer.scheduleWork();
     return instance;
 }
@@ -2493,7 +2493,7 @@ function workLoop(deadline) {
 }
 function performWork(deadline) {
     workLoop(deadline);
-    if (updateQueue.length > 0) {
+    if (updateQueue$1.length > 0) {
         requestIdleCallback(performWork);
     }
 }
@@ -2506,7 +2506,7 @@ function requestIdleCallback(fn) {
     });
 }
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue.shift();
+    fiber = updateQueue$1.shift();
     if (!fiber) {
         return;
     }
@@ -2553,14 +2553,14 @@ Renderer.updateComponent = function (instance, state, callback) {
     if (this._hydrating || Renderer.interactQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Renderer.interactQueue || updateQueue;
+            var queue = Renderer.interactQueue || updateQueue$1;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
         if (!this._hooking) {
-            updateQueue.push(fiber);
+            updateQueue$1.push(fiber);
             Renderer.scheduleWork();
         }
     }
@@ -2611,7 +2611,9 @@ function createElement$1(vnode) {
     var elem = document.createElement(type);
     var inputType = props && props.type;
     if (inputType) {
-        elem.type = inputType;
+        try {
+            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+        } catch (err) {}
     }
     return elem;
 }
@@ -2676,7 +2678,7 @@ function insertElement(fiber) {
         }
     }
 }
-var DOMRenderer = {
+var DOMRenderer = createRenderer({
     render: render$1,
     updateAttribute: function updateAttribute(fiber) {
         var type = fiber.type,
@@ -2745,18 +2747,17 @@ var DOMRenderer = {
             topNodes.splice(j, 1);
         }
     }
-};
+});
 
-var render = DOMRenderer.render;
-var unstable_renderSubtreeIntoContainer = DOMRenderer.unstable_renderSubtreeIntoContainer;
-var unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
 if (prevReact && prevReact.options) {
     React = prevReact;
 } else {
-    createRenderer(DOMRenderer);
+    var render = DOMRenderer.render,
+        unstable_renderSubtreeIntoContainer = DOMRenderer.unstable_renderSubtreeIntoContainer,
+        unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
     React = win.React = win.ReactDOM = {
         version: "1.3.1",
         render: render,

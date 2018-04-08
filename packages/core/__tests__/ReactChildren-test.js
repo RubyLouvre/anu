@@ -1239,7 +1239,7 @@ describe("ReactChildren", () => {
         // 'array instead.',
         expect(function () {
             React.Children.forEach({ a: 1, b: 2 }, function () { }, null);
-        }).toThrowError("children中存在非法的对象");
+        }).toThrow("React.createElement: type is invalid.");
     });
 
     it("should throw on regex", () => {
@@ -1247,7 +1247,7 @@ describe("ReactChildren", () => {
         // serialization (timezones) so let's test a regex instead:
         expect(function () {
             React.Children.forEach(/abc/, function () { }, null);
-        }).toThrowError("children中存在非法的对象");
+        }).toThrow("React.createElement: type is invalid.");
     });
 
     it("复杂的孩子转换", function () {

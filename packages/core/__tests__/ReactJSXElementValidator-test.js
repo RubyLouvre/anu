@@ -204,25 +204,14 @@ describe('ReactJSXElementValidator', () => {
     const Null = null;
     const True = true;
     const Div = 'div';
-    expect(() => void <Undefined />).toWarnDev(
-      'Warning: React.createElement: type is invalid -- expected a string ' +
-        '(for built-in components) or a class/function (for composite ' +
-        'components) but got: undefined. You likely forgot to export your ' +
-        "component from the file it's defined in, or you might have mixed up " +
-        'default and named imports.' +
-        '\n\nCheck your code at **.',
+    expect(() => void <Undefined />).toThrow(
+     
     );
-    expect(() => void <Null />).toWarnDev(
-      'Warning: React.createElement: type is invalid -- expected a string ' +
-        '(for built-in components) or a class/function (for composite ' +
-        'components) but got: null.' +
-        '\n\nCheck your code at **.',
+    expect(() => void <Null />).toThrow(
+      
     );
-    expect(() => void <True />).toWarnDev(
-      'Warning: React.createElement: type is invalid -- expected a string ' +
-        '(for built-in components) or a class/function (for composite ' +
-        'components) but got: boolean.' +
-        '\n\nCheck your code at **.',
+    expect(() => void <True />).toThrow(
+      
     );
     // No error expected
     void <Div />;

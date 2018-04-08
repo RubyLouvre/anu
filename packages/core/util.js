@@ -31,7 +31,8 @@ export function getWindow() {
 
 export function toWarnDev(msg, deprecated) {
     msg = deprecated ? msg + " is deprecated" : msg;
-    if (!typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
+    let process = getWindow().process;
+    if (process && process.env.NODE_ENV === "development") {
         throw msg;
     }
 }

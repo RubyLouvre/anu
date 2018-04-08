@@ -1,6 +1,6 @@
 import { extend } from "./util";
 export function createRenderer(methods) {
-    extend(Renderer, methods);
+    return  extend(Renderer, methods);
 }
 
 export const Renderer = {

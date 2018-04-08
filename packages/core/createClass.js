@@ -108,7 +108,6 @@ function newCtor(className, spec) {
 }
 
 export function createClass(spec) {
-    toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }

@@ -62,7 +62,7 @@ export function createElement(type, config, ...children) {
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
     } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid,", typeNumber());
+        toWarnDev("React.createElement: type is invalid.");
     }
     if (config != null) {
         if (hasValidRef(config)) {
@@ -222,7 +222,7 @@ export function operateChildren(children, prefix, callback, iterableType, isTop)
     switch (iterableType) {
     case 0:
         if (Object(children) === children && !children.call && !children.type) {
-            throw "children中存在非法的对象";
+            throw "React.createElement: type is invalid.";
         }
         key = prefix || (children && children.key ? "$" + children.key : "0");
         callback(children, key);

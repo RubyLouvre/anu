@@ -510,13 +510,11 @@ describe('ReactES6Class', () => {
     const instance = test(<Inner name="foo" />, 'DIV', 'foo');
     expect(() =>
       instance.replaceState({})
-    ).toLowPriorityWarnDev(
-      'replaceState(...) is deprecated in plain JavaScript React classes',
+    ).toThrow(
     )
     expect(() =>
       instance.isMounted()
-    ).toLowPriorityWarnDev(
-      'isMounted(...) is deprecated in plain JavaScript React classes',
+    ).toThrow(
     );
   });
 
