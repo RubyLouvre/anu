@@ -138,16 +138,18 @@ var RESERVED_PROPS = {
     __source: true
 };
 function makeProps(type, config, props, children, len) {
-    var defaultProps = void 0;
-    if (type && type.defaultProps) {
-        defaultProps = type.defaultProps;
-    }
+    var defaultProps = void 0,
+        propName = void 0;
     for (propName in config) {
         if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
-            if (config[propName] === undefined && defaultProps !== undefined) {
+            props[propName] = config[propName];
+        }
+    }
+    if (type && type.defaultProps) {
+        defaultProps = type.defaultProps;
+        for (propName in defaultProps) {
+            if (props[propName] === undefined) {
                 props[propName] = defaultProps[propName];
-            } else {
-                props[propName] = config[propName];
             }
         }
     }
@@ -183,14 +185,13 @@ function createElement(type, config) {
             ref = config.ref;
         }
         if (hasValidKey(config)) {
-            key = '' + config.key;
+            key = "" + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
 }
 function cloneElement(element, config) {
-    var propName = void 0;
     var props = Object.assign({}, element.props);
     var type = element.type;
     var key = element.key;
@@ -207,10 +208,10 @@ function cloneElement(element, config) {
             owner = Renderer.currentOwner;
         }
         if (hasValidKey(config)) {
-            key = '' + config.key;
+            key = "" + config.key;
         }
     }
-    props = makeProps(type, config || {}, props, children, length);
+    props = makeProps(type, config || {}, props, children, argsLen);
     return ReactElement(type, tag, props, key, ref, owner);
 }
 function createFactory(type) {
@@ -233,6 +234,8 @@ function ReactElement(type, tag, props, key, ref, owner) {
                 ref += "";
             }
             ret.ref = ref;
+        } else {
+            ret.ref = null;
         }
         ret._owner = owner;
     }
@@ -428,16 +431,16 @@ var Children = {
     }
 };
 function computeKey(old, el, prefix, index) {
+    var curKey = el && el.key != null ? el.key : null;
+    var oldKey = old && old.key != null ? old.key : null;
     var dot = "." + prefix;
-    var curKey = el.key;
-    console.log("prefix", prefix);
-    if (curKey) {
-        if (!old || old.Key !== curKey) return curKey + "/" + dot;
+    if (oldKey && curKey && oldKey !== curKey) {
+        return curKey + "/" + dot;
     }
     if (prefix) {
         return dot;
     }
-    return curKey ? ".$" + curKey : void 66;
+    return curKey ? "." + curKey : "." + index;
 }
 
 var check = function check() {

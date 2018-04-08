@@ -7,41 +7,40 @@ const RESERVED_PROPS = {
     ref: true,
     __self: true,
     __source: true,
-  };
+};
 
-function makeProps(type, config, props, children, len){
+function makeProps(type, config, props, children, len) {
     // Remaining properties override existing props
-    let defaultProps;
-    if (type && type.defaultProps) {
-       defaultProps = type.defaultProps;
-    }
+    let defaultProps, propName;
     for (propName in config) {
-      if (
-        hasOwnProperty.call(config, propName) &&
-        !RESERVED_PROPS.hasOwnProperty(propName)
-      ) {
-        if (config[propName] === undefined && defaultProps !== undefined) {
-          // Resolve default props
-          props[propName] = defaultProps[propName];
-        } else {
-          props[propName] = config[propName];
+        if (
+            hasOwnProperty.call(config, propName) &&
+            !RESERVED_PROPS.hasOwnProperty(propName)
+        ) {
+            props[propName] = config[propName];
         }
-      }
+    }
+    if (type && type.defaultProps) {
+        defaultProps = type.defaultProps;
+        for (propName in defaultProps) {
+            if (props[propName] === undefined) {
+                props[propName] = defaultProps[propName];
+            }
+        }
+    }
+    if (len === 1) {
+        props.children = children[0];
+    } else if (len > 1) {
+        props.children = children;
     }
 
-  if (len === 1) {
-    props.children = children[0];
-  } else if (len > 1) {
-    props.children = children
-  }
-
-  return props
+    return props;
 
 }
 function hasValidRef(config) {
     return config.ref !== undefined;
 }
-  
+
 function hasValidKey(config) {
     return config.key !== undefined;
 }
@@ -67,24 +66,22 @@ export function createElement(type, config, ...children) {
     }
     if (config != null) {
         if (hasValidRef(config)) {
-          ref = config.ref;
+            ref = config.ref;
         }
         if (hasValidKey(config)) {
-          key = '' + config.key;
+            key = "" + config.key;
         }
     }
-    props = makeProps(type, config||{}, props, children, argsLen )
-    
+    props = makeProps(type, config || {}, props, children, argsLen);
+
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
 }
 
 
 export function cloneElement(element, config, ...children) {
-    let propName;
-  
     // Original props are copied
     let props = Object.assign({}, element.props);
-  
+
     // Reserved names are extracted
     let type = element.type;
     let key = element.key;
@@ -94,36 +91,36 @@ export function cloneElement(element, config, ...children) {
     let owner = element._owner;
     let argsLen = children.length;
     if (config != null) {
-      if (hasValidRef(config)) {
-        // Silently steal the ref from the parent.
-        ref = config.ref;
-        owner = Renderer.currentOwner
-      }
-      if (hasValidKey(config)) {
-        key = '' + config.key;
-      }
+        if (hasValidRef(config)) {
+            // Silently steal the ref from the parent.
+            ref = config.ref;
+            owner = Renderer.currentOwner;
+        }
+        if (hasValidKey(config)) {
+            key = "" + config.key;
+        }
     }
-  
-    props = makeProps(type, config||{}, props, children, length)
-  
+
+    props = makeProps(type, config || {}, props, children, argsLen);
+
     return ReactElement(type, tag, props, key, ref, owner);
-  }
+}
 
 
-  export function createFactory(type) {
+export function createFactory(type) {
     //  console.warn('createFactory is deprecated');
-      var factory = createElement.bind(null, type);
-      factory.type = type;
-      return factory;
-  }
+    var factory = createElement.bind(null, type);
+    factory.type = type;
+    return factory;
+}
 
 function ReactElement(type, tag, props, key, ref, owner) {
-    var ret =  {
+    var ret = {
         type,
         tag,
         props
-    }
-    if(tag !== 6){
+    };
+    if (tag !== 6) {
         ret.$$typeof = REACT_ELEMENT_TYPE;
         ret.key = key || null;
         let refType = typeNumber(ref);
@@ -133,11 +130,13 @@ function ReactElement(type, tag, props, key, ref, owner) {
                 ref += "";
             }
             ret.ref = ref;
+        } else {
+            ret.ref = null;
         }
-        ret._owner = owner
+        ret._owner = owner;
     }
     options.afterCreate(ret);
-    return ret
+    return ret;
 }
 
 
@@ -187,20 +186,7 @@ export function fiberizeChildren(c, fiber) {
     flattenIndex = 0;
     return (fiber._children = flattenObject);
 }
-function getComponentKey(component, index) {
-    // Do some typechecking here since we call this blindly. We want to ensure
-    // that we don't block potential future ES APIs.
-    if (
-      typeof component === 'object' &&
-      component !== null &&
-      component.key != null
-    ) {
-      // Explicit key
-      return component.key;
-    }
-    // Implicit key determined by the index in the set
-    return index.toString(36);
-  }
+
 function computeName(el, i, prefix, isTop) {
     let k = i + "";
     if (el) {
@@ -230,50 +216,40 @@ export function isIterable(el) {
     }
     return 0;
 }
-const SEPARATOR = '.';
-const SUBSEPARATOR = ':';
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
-export function operateChildren(children, nameSoFar, callback, iterableType, isTop) {
+export function operateChildren(children, prefix, callback, iterableType, isTop) {
     let key, el, t, iterator;
     switch (iterableType) {
     case 0:
         if (Object(children) === children && !children.call && !children.type) {
             throw "children中存在非法的对象";
         }
-        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,
-      //  key = prefix || (children && children.key ? "$" + children.key : "0");
-        callback(children, nameSoFar);
+        key = prefix || (children && children.key ? "$" + children.key : "0");
+        callback(children, key);
         break;
     case 1: //数组，Map, Set
-    const nextNamePrefix =
-    nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
         children.forEach(function (el, i) {
-            nextName = nextNamePrefix + getComponentKey(el, i);
-            operateChildren(el, nextName, callback, isIterable(el), false);
+            operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
         });
         break;
     case 2: //React.Fragment
-      //  key = children && children.key ? "$" + children.key : "";
-     //   key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
-        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,
-
+        key = children && children.key ? "$" + children.key : "";
+        key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
         el = children.props.children;
         t = isIterable(el);
         if (!t) {
             el = [el];
             t = 1;
         }
-        operateChildren(el, nameSoFar, callback, t, false);
+        operateChildren(el, key, callback, t, false);
         break;
     default:
         iterator = iterableType.call(children);
-        const nextNamePrefix =
-    nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
         var ii = 0,
             step;
         while (!(step = iterator.next()).done) {
             el = step.value;
-            operateChildren(el,  nextNamePrefix + getComponentKey(el, ii), callback, isIterable(el), false);
+            operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
             ii++;
         }
         break;
