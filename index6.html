@@ -49,64 +49,22 @@
               };
          };
         
-         let selectNode;
-
-         class Parent extends React.Component {
-             state = {
-                 value: "giraffe"
-             };
- 
-             componentDidMount() {
-                 console.log("didMount")
-                 this._renderNested();
-             }
- 
-             componentDidUpdate() {
-                 console.log("didUpdate")
-                 this._renderNested();
-             }
- 
-             _handleChange(event) {
-                 console.log("change")
-                 this.setState({ value: event.target.value });
-             }
- 
-             _renderNested() {
-                 ReactDOM.render(
-                     <select onChange={this._handleChange.bind(this)} ref={n => {
-                         console.log(n)
-                         selectNode = n
-                        }} value={this.state.value}>
-                         <option value="monkey">A monkey!</option>
-                         <option value="giraffe">A giraffe!</option>
-                         <option value="gorilla">A gorilla!</option>
-                     </select>,
-                     this._nestingContainer
-                 );
-             }
- 
-             render() {
-                 return <div ref={n => (this._nestingContainer = n)} />;
-             }
-         }
- 
-         ReactDOM.render(<Parent />, container);
- console.log("=====")
-      /*   expect(selectNode.value).toBe("giraffe");
- 
-         selectNode.value = "gorilla";
- 
-         let nativeEvent = document.createEvent("Event");
-         nativeEvent.initEvent("input", true, true);
-         selectNode.dispatchEvent(nativeEvent);
- 
-         expect(selectNode.value).toEqual("gorilla");
- 
-         nativeEvent = document.createEvent("Event");
-         nativeEvent.initEvent("change", true, true);
-         selectNode.dispatchEvent(nativeEvent);
- 
-         expect(selectNode.value).toEqual("gorilla");*/
+         const context = {};
+         const callback = function(kid, index) {
+            expect(this).toBe(context);
+            return kid;
+          };
+    const simpleKid = <span key="simple" />;
+    const instance = <div>{[simpleKid]}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
+  
+    const mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+   // expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
 </script>
 
 

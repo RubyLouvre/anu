@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -49,7 +49,6 @@
               };
          };
 
-         const simpleKid = <span key="simple" />;
 
     // First pass children into a component to fully simulate what happens when
     // using structures that arrive from transforms.
@@ -66,7 +65,7 @@
     const reactPortal = ReactDOM.createPortal(simpleChild, portalContainer);
 
     const parentInstance = <div>{reactPortal}</div>;
-    React.Children.forEach(parentInstance.props.children, callback, context);
+   
     //expect(callback).toHaveBeenCalledWith(reactPortal, 0);
    // callback.calls.reset();
     const mappedChildren = React.Children.map(
@@ -74,8 +73,7 @@
       callback,
       context,
     );
-    var a = React.cloneElement(reactPortal)
-    console.log(a)
+   
    // expect(callback).toHaveBeenCalledWith(reactPortal, 0);
     expect(mappedChildren[0]).toEqual(reactPortal);
 </script>

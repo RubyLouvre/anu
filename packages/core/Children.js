@@ -76,14 +76,17 @@ export const Children = {
 };
 
 function computeKey(old, el, prefix, index) {
-    let curKey = el && el.key != null ? el.key : null;
-    let oldKey = old && old.key != null ? old.key : null;
+  
     let dot = "." + prefix;
-    if (oldKey && curKey && oldKey !== curKey) {
+    let curKey = el.key
+    console.log("prefix",prefix)
+    if ( curKey ) {
+        if(!old || old.Key !== curKey)
         return curKey + "/" + dot;
     }
+    
     if (prefix) {
         return dot;
     }
-    return curKey ? ".$" + curKey:"." + index;
+    return curKey ? ".$" + curKey: void 66
 }

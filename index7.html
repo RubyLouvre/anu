@@ -1,40 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script type='text/javascript' src="./test/react.js"></script>
-  <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script src="test/babel.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
+   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+
+    <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
 <body>
-    <div id="test"></div>
-    <div id="content"></div>
-</body>
-<script type="text/babel">
-    var container = document.getElementById("test");
- 
-  class App extends React.Component{
-      constructor(a,b){
-         super(a, b)
-         this.state = {
-             x: "司徒正美"
-         }
-      }
-      componentWillUnmount(){
-          console.log("xxxxx")
-      }
-      render(){
-          console.log(new Date-0)
-          return <div ref={(a=>{console.log("1111")})}>xxx</div>
-      }
-  }
+
+    <pre>应该等于
+      
+    </pre>
+    
+       
+    <h1 id='example' class="root">
+
+    </h1>
+
+    <script type='text/babel'>
+          var container = document.getElementById('example');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var noop = function(){
+              return noop
+          }
+          noop.isRequired = noop
+          var PropTypes = React.PropTypes || {
+             string: noop
+          }
+          
+
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+         };
+
+
+    // First pass children into a component to fully simulate what happens when
+    // using structures that arrive from transforms.
+   
+    const context = {};
+    const callback = function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    };
   
-   var a = ReactDOM.render(<App />,container)
-   ReactDOM.render(<span />,container)
+
+
+    const simpleKid = <span />;
+    const instance = <div>{simpleKid}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
+
+    const mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    expect(mappedChildren[0]).toEqual(<span key=".0" />);;
 </script>
+
 
 </html>

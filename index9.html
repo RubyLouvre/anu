@@ -5,17 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
+   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
 <body>
 
     <pre>应该等于
-        CdABf
+      
     </pre>
+    
+       
     <h1 id='example' class="root">
 
     </h1>
@@ -26,7 +29,15 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
-          var PropTypes = React.PropTypes
+          var noop = function(){
+              return noop
+          }
+          noop.isRequired = noop
+          var PropTypes = React.PropTypes || {
+             string: noop
+          }
+          
+
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -36,37 +47,33 @@
                       console.log(a, 'vs', b, a + '' === b + '');
                   }
               };
-          };
-        var numMiddleRenders = 0;
-        var numBottomRenders = 0;
+         };
 
-        class Top extends React.Component {
-            render() {
-                return <Middle><Bottom /></Middle>;
-            }
-        }
 
-        class Middle extends React.Component {
-            componentDidMount() {
-                this.forceUpdate();
-            }
+    // First pass children into a component to fully simulate what happens when
+    // using structures that arrive from transforms.
+   
+    const context = {};
+    const callback = function(kid, index) {
+      expect(this).toBe(context);
+      return kid;
+    };
+  
+    const simpleKid = <span key="simple" />;
 
-            render() {
-                numMiddleRenders++;
-                return React.Children.only(this.props.children);
-            }
-        }
+    // First pass children into a component to fully simulate what happens when
+    // using structures that arrive from transforms.
 
-        class Bottom extends React.Component {
-            render() {
-                numBottomRenders++;
-                return null;
-            }
-        }
+    const instance = <div>{simpleKid}</div>;
+    React.Children.forEach(instance.props.children, callback, context);
 
-        ReactDOM.render(<Top />,div);
-        expect(numMiddleRenders).toBe(2);
-        expect(numBottomRenders).toBe(1);
+    const mappedChildren = React.Children.map(
+      instance.props.children,
+      callback,
+      context,
+    );
+    //expect(callback).toHaveBeenCalledWith(simpleKid, 0);
+    expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
 </script>
 
 

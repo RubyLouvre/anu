@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-07
+ * by 司徒正美 Copyright 2018-04-08
  * IE9+
  */
 
@@ -170,12 +170,13 @@ function createElement(type, config) {
             key = '' + config.key;
         }
     }
-    props = makeProps(type, configs || {}, props, children, argsLen);
+    props = makeProps(type, config || {}, props, children, argsLen);
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
 }
 function cloneElement(element, config) {
     var propName = void 0;
     var props = Object.assign({}, element.props);
+    var type = element.type;
     var key = element.key;
     var ref = element.ref;
     var tag = element.tag;
@@ -193,8 +194,34 @@ function cloneElement(element, config) {
             key = '' + config.key;
         }
     }
-    props = makeProps(type, configs || {}, props, children, length);
-    return ReactElement(element.type, tag, props, key, ref, owner);
+    props = makeProps(type, config || {}, props, children, length);
+    return ReactElement(type, tag, props, key, ref, owner);
+}
+function createFactory(type) {
+    var factory = createElement.bind(null, type);
+    factory.type = type;
+    return factory;
+}
+function ReactElement(type, tag, props, key, ref, owner) {
+    var ret = {
+        type: type,
+        tag: tag,
+        props: props
+    };
+    if (tag !== 6) {
+        ret.$$typeof = REACT_ELEMENT_TYPE;
+        ret.key = key || null;
+        var refType = typeNumber(ref);
+        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
+            if (refType < 4) {
+                ref += "";
+            }
+            ret.ref = ref;
+        }
+        ret._owner = owner;
+    }
+    options.afterCreate(ret);
+    return ret;
 }
 function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
@@ -236,60 +263,43 @@ function isIterable(el) {
     }
     return 0;
 }
-function operateArray(children, prefix, isTop, callback) {
-    children.forEach(function (el, i) {
-        operateChildren(el, computeName(el, i, prefix, isTop), callback, typeNumber(el), false);
-    });
-}
-function operateChildren(children, prefix, callback, number, isTop) {
+function operateChildren(children, prefix, callback, iterableType, isTop) {
     var key = void 0,
         el = void 0,
+        t = void 0,
         iterator = void 0;
-    switch (number) {
+    switch (iterableType) {
         case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-            callback(children, key, number);
-            break;
-        case 7:
-            operateArray(children, prefix, isTop, callback);
-            break;
-        case 8:
-            if (children.forEach) {
-                operateArray(children, prefix, isTop, callback);
-                return;
-            } else if (children.type === Fragment) {
-                key = children.key ? "$" + children.key : "";
-                key = isTop ? key : prefix ? prefix + ":0" : key || "0";
-                el = children.props.children;
-                var innerNumber = typeNumber(el);
-                if (innerNumber < 7 || !isIterable(el)) {
-                    el = [el];
-                    innerNumber = 7;
-                }
-                operateChildren(el, key, callback, innerNumber, false);
-                return;
+            if (Object(children) === children && !children.call && !children.type) {
+                throw "children中存在非法的对象";
             }
-            var cursor = getIteractor(children);
-            if (cursor) {
-                iterator = cursor.call(children);
-                var ii = 0,
-                    step;
-                while (!(step = iterator.next()).done) {
-                    el = step.value;
-                    operateChildren(el, computeName(el, ii, prefix, isTop), callback, typeNumber(el), false);
-                    ii++;
-                }
-            } else {
-                if (Object(children) === children && !children.call && !children.type) {
-                    throw "children中存在非法的对象";
-                }
-                key = prefix || children.key ? "$" + children.key : "0";
-                callback(children, key, number);
+            key = prefix || (children && children.key ? "$" + children.key : "0");
+            callback(children, key);
+            break;
+        case 1:
+            children.forEach(function (el, i) {
+                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
+            });
+            break;
+        case 2:
+            key = children && children.key ? "$" + children.key : "";
+            key = isTop ? key : prefix ? prefix + ":0" : key || "0";
+            el = children.props.children;
+            t = isIterable(el);
+            if (!t) {
+                el = [el];
+                t = 1;
+            }
+            operateChildren(el, key, callback, t, false);
+            break;
+        default:
+            iterator = iterableType.call(children);
+            var ii = 0,
+                step;
+            while (!(step = iterator.next()).done) {
+                el = step.value;
+                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
+                ii++;
             }
             break;
     }
@@ -301,32 +311,6 @@ function getIteractor(a) {
     if (iteratorFn && iteratorFn.call) {
         return iteratorFn;
     }
-}
-function createFactory(type) {
-    var factory = createElement.bind(null, type);
-    factory.type = type;
-    return factory;
-}
-function ReactElement(type, tag, props, key, ref, owner) {
-    var ret = {
-        type: type,
-        tag: tag,
-        props: props
-    };
-    if (tag !== 6) {
-        ret.$$typeof = REACT_ELEMENT_TYPE;
-        ret.key = key || null;
-        var refType = typeNumber(ref);
-        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
-            if (refType < 4) {
-                ref += "";
-            }
-            ret.ref = ref;
-        }
-        ret._owner = owner;
-    }
-    options.afterCreate(ret);
-    return ret;
 }
 
 var mapStack = [];
@@ -396,16 +380,16 @@ var Children = {
     }
 };
 function computeKey(old, el, prefix, index) {
-    var curKey = el && el.key != null ? el.key : null;
-    var oldKey = old && old.key != null ? old.key : null;
     var dot = "." + prefix;
-    if (oldKey && curKey && oldKey !== curKey) {
-        return curKey + "/" + dot;
+    var curKey = el.key;
+    console.log("prefix", prefix);
+    if (curKey) {
+        if (!old || old.Key !== curKey) return curKey + "/" + dot;
     }
     if (prefix) {
         return dot;
     }
-    return curKey ? ".$" + curKey : "." + index;
+    return curKey ? ".$" + curKey : void 66;
 }
 
 var check = function check() {
