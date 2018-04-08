@@ -16,6 +16,7 @@
               "react-core":"./packages/core",
               "react-fiber": "./packages/fiber",
               "prop-types": "./lib/ReactPropTypes",
+              "react-noop-renderer": "./dist/ReactNoop",
               "react": "./dist/React",
               "react-dom": "./dist/React",
               "test-utils": "./lib/ReactTestUtils"

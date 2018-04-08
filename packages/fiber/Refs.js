@@ -20,6 +20,7 @@ export let Refs = {
                 return ref(dom);
             }
             if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                console.log(dom, "这是DOM");
                 ref.current = dom;
                 return;
             }

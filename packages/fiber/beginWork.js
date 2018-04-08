@@ -375,6 +375,7 @@ function diffChildren(parentFiber, children) {
         }
         if (newFiber.ref) {
             newFiber.effectTag *= REF;
+            console.log(newFiber, "设置REF");
         }
         newFiber.index = index++;
         newFiber.return = parentFiber;

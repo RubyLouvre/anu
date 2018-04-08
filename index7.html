@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/ReactNoop.js"></script>
-   <!-- <script type='text/javascript' src="./react.js"></script>
+  <!--  <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
@@ -55,12 +55,16 @@ class Child extends React.Component {
       return <Child {...props} ref={props.forwardedRef} />;
     }
 
-    const RefForwardingComponent = React.forwardRef((props, ref) => (
-      <Wrapper {...props} forwardedRef={ref} />
-    ));
+    const RefForwardingComponent = React.forwardRef(function(props, ref){
+      return <Wrapper {...props} forwardedRef={ref} />
+    });
 
-    ReactNoop.render(<RefForwardingComponent value={123} />);
+    const ref = React.createRef();
+
+    ReactNoop.render(<RefForwardingComponent ref={ref} value={123} />);
     expect(ReactNoop.flush()).toEqual([123]);
+    expect(ref.current instanceof Child).toBe(true);
+    console.log(ref.current)
       
 </script>
 

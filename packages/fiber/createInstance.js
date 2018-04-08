@@ -8,7 +8,7 @@ export function createInstance (fiber, context) {
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
-    let { props, type, tag } = fiber,
+    let { props, type, tag ,ref } = fiber,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = fiber.stateNode = {};
@@ -19,6 +19,8 @@ export function createInstance (fiber, context) {
                 __proto__: type.prototype,
                 props,
                 context,
+                ref,
+                __isStateless: returnTrue,
                 __init: true,
                 renderImpl: type,
                 render: function f () {
@@ -29,13 +31,14 @@ export function createInstance (fiber, context) {
                     }
                     a = this.renderImpl(this.props, this.context);
                     if (a && a.render) {
+                        delete this.__isStateless;
                         // 返回一带render方法的纯对象，说明这是带lifycycle hook的无狀态组件
                         // 需要对象里的hook复制到instance中
                         for (let i in a) {
                             instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
-                        this.__isStateless = returnTrue;
+                        // this.__isStateless = returnTrue;
                         this.__keep = a;
                     }
                     return a;
@@ -44,6 +47,7 @@ export function createInstance (fiber, context) {
 
             Renderer.currentOwner = instance;
             if (type.isRef) {
+                instance.__isStateless = returnTrue;
                 instance.render = function () {
                     return type(this.props, this.ref);
                 };
@@ -54,9 +58,10 @@ export function createInstance (fiber, context) {
         } else {
             // 有狀态组件
             instance = new type(props, context);
+          
         }
     } catch (e) {
-         pushError(fiber, 'constructor', e)
+        pushError(fiber, "constructor", e);
     } finally {
         Renderer.currentOwner = lastOwn;
     }

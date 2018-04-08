@@ -521,15 +521,9 @@ function createRef() {
         current: null
     };
 }
-function RefComponent(fn) {
-    function RefProvider(props, ref) {
-        return fn(props, ref);
-    }
-    RefProvider.isRef = true;
-    return RefProvider;
-}
 function forwardRef(fn) {
-    return RefComponent(fn);
+    fn.isRef = true;
+    return fn;
 }
 
 function AnuPortal(props) {
@@ -758,6 +752,7 @@ function createInstance(fiber, context) {
     var props = fiber.props,
         type = fiber.type,
         tag = fiber.tag,
+        ref = fiber.ref,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = fiber.stateNode = {};
@@ -768,6 +763,7 @@ function createInstance(fiber, context) {
                 __proto__: type.prototype,
                 props: props,
                 context: context,
+                ref: ref,
                 __init: true,
                 renderImpl: type,
                 render: function f() {
@@ -790,6 +786,7 @@ function createInstance(fiber, context) {
             };
             Renderer.currentOwner = instance;
             if (type.isRef) {
+                instance.__isStateless = returnTrue;
                 instance.render = function () {
                     return type(this.props, this.ref);
                 };
@@ -801,7 +798,7 @@ function createInstance(fiber, context) {
             instance = new type(props, context);
         }
     } catch (e) {
-        pushError(fiber, 'constructor', e);
+        pushError(fiber, "constructor", e);
     } finally {
         Renderer.currentOwner = lastOwn;
     }
@@ -1145,6 +1142,7 @@ function diffChildren(parentFiber, children) {
         }
         if (_newFiber.ref) {
             _newFiber.effectTag *= REF;
+            console.log(_newFiber, "设置REF");
         }
         _newFiber.index = index++;
         _newFiber.return = parentFiber;
@@ -1225,6 +1223,7 @@ var Refs = {
                 return ref(dom);
             }
             if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                console.log(dom, "这是DOM");
                 ref.current = dom;
                 return;
             }

@@ -3,7 +3,7 @@ export function createRef() {
         current: null,
     };
 }
-
+/*
 function RefComponent(fn){
     function RefProvider(props, ref){
         return fn(props, ref);
@@ -11,6 +11,10 @@ function RefComponent(fn){
     RefProvider.isRef = true;
     return RefProvider;
 }
+*/
 export function forwardRef(fn){
-    return RefComponent(fn);
+    fn.isRef = true;
+    // var vnode = createElement(fn);
+    // vnode.render = fn;
+    return fn;
 }
