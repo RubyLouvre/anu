@@ -86,7 +86,9 @@ function newCtor(className, spec) {
         "spec",
         `return function ${className}(props, context) {
       ReactComponent.call(this, props, context);
-
+     if(!(this instanceof ReactComponent)){
+         throw "muse new Component(...)"
+     }
      for (var methodName in this) {
         var method = this[methodName];
         if (typeof method  === "function"&& !blacklist[methodName]) {
@@ -97,7 +99,7 @@ function newCtor(className, spec) {
       if (spec.getInitialState) {
         var test = this.state = spec.getInitialState.call(this);
         if(!(test === null || ({}).toString.call(test) == "[object Object]")){
-          throw "getInitialState只能返回纯JS对象或者null"
+          throw "Component.getInitialState(): must return an object or null"
         }
       }
   };`
@@ -108,7 +110,7 @@ function newCtor(className, spec) {
 export function createClass(spec) {
     toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
-        throw "must implement render";
+        throw "createClass(...): Class specification must implement a `render` method.";
     }
     let Constructor = newCtor(spec.displayName || "Component", spec);
     let proto = inherit(Constructor, Component);
@@ -121,7 +123,11 @@ export function createClass(spec) {
 
     if (spec.statics) {
         extend(Constructor, spec.statics);
+        if(spec.statics.getDefaultProps){
+            throw "getDefaultProps is not statics";
+        }
     }
+
     "propTypes,contextTypes,childContextTypes,displayName".replace(
         /\w+/g,
         function (name) {

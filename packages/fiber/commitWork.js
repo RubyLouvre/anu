@@ -17,7 +17,7 @@ import { callLifeCycleHook, pushError } from "./unwindWork";
 import { returnFalse, returnTrue, noop } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
-var clearUpElements = []
+var clearUpElements = [];
 export function commitEffects(a) {
     var arr = a || effects;
     arr = commitPlaceEffects(arr);
@@ -28,19 +28,19 @@ export function commitEffects(a) {
     },[]) );
     */
     for(var i = 0; i < arr.length; i++){
-        commitOtherEffects(arr[i])
+        commitOtherEffects(arr[i]);
         if(Renderer.error){
             arr.length = 0;
-            break
+            break;
         }
     }
     arr.forEach(commitOtherEffects);
-    clearUpElements.forEach(removeStateNode)
+    clearUpElements.forEach(removeStateNode);
     clearUpElements.length = arr.length = effects.length = 0;
-    var error = Renderer.error
+    var error = Renderer.error;
     if(error){
-        delete Renderer.error
-        throw error
+        delete Renderer.error;
+        throw error;
     }
 }
 function removeStateNode(el){
@@ -84,7 +84,6 @@ export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode;
     let amount = fiber.effectTag;
     let updater = instance.updater;
-    outer:
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -107,14 +106,14 @@ export function commitOtherEffects(fiber) {
                     //只对原生组件
                     Renderer.removeElement(fiber);
                 }
-                clearUpElements.push(fiber)
+                clearUpElements.push(fiber);
                 //业务 & 原生
                 break;
             case HOOK: //只对业务组件
                 if (fiber.disposed) {
                     updater.enqueueSetState = returnFalse;
                     if(updater._isMounted()){
-                       callLifeCycleHook(instance, "componentWillUnmount", []);
+                        callLifeCycleHook(instance, "componentWillUnmount", []);
                     }
                     updater._isMounted = returnFalse;
                 } else {

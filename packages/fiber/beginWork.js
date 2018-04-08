@@ -1,7 +1,7 @@
 
 import { extend, noop, typeNumber, __push } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
-import {  AnuPortal } from "react-core/createPortal";
+import { AnuPortal } from "react-core/createPortal";
 
 import { Renderer } from "react-core/createRenderer";
 
@@ -21,7 +21,7 @@ import { callLifeCycleHook, pushError } from "./unwindWork";
  * @param {Fiber} fiber 
  * @param {Fiber} topWork 
  */
-export function updateEffects (fiber, topWork) {
+export function updateEffects(fiber, topWork) {
     if (fiber.tag > 3) {
         updateHostComponent(fiber); // unshift context
     } else {
@@ -54,7 +54,7 @@ export function updateEffects (fiber, topWork) {
 }
 
 
-function updateHostComponent (fiber) {
+function updateHostComponent(fiber) {
     if (!fiber.stateNode) {
         try {
             fiber.stateNode = Renderer.createElement(fiber);
@@ -66,24 +66,24 @@ function updateHostComponent (fiber) {
     const { props, tag, root, alternate: prev } = fiber;
     const children = props && props.children;
     if (tag === 5) {
-    // 元素节点
+        // 元素节点
         containerStack.unshift(fiber.stateNode);
         if (!root) {
             fiber.effectTag *= ATTR;
         }
-        if(prev){
+        if (prev) {
             fiber._children = prev._children;
         }
         diffChildren(fiber, children);
     } else {
-    // 文本节点
+        // 文本节点
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }
     }
 }
 
-function mergeStates (fiber, nextProps, keep) {
+function mergeStates(fiber, nextProps, keep) {
     let instance = fiber.stateNode,
         pendings = fiber.pendingStates || [],
         n = pendings.length,
@@ -103,7 +103,7 @@ function mergeStates (fiber, nextProps, keep) {
     if (keep) {
         pendings.length = 0;
         pendings.push(nextState);
-    }else {
+    } else {
         delete fiber.pendingStates;
     }
     return nextState;
@@ -112,14 +112,14 @@ function mergeStates (fiber, nextProps, keep) {
 // 第一次是没有alternate 也没有stateNode
 // 如果是setState是没有alternate
 // 如果是receive是有alternate
-function updateClassComponent (fiber) {
+function updateClassComponent(fiber) {
     let { type, stateNode: instance, isForced, props, stage } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
 
     let nextContext = getMaskedContext(type.contextTypes, instance), context;
     if (instance == null) {
-    // 初始化
+        // 初始化
         stage = "init";
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Renderer.updateComponent;
@@ -128,19 +128,19 @@ function updateClassComponent (fiber) {
         let isSetState = isForced === true || fiber.pendingStates || fiber._updates;
         if (isSetState) {
             stage = "update";
-            let u = fiber._updates
+            let u = fiber._updates;
             if (u) {
-                isForced = fiber.isForced || u.isForced
-                fiber.pendingStates = u.pendingStates
-                let hasCb = fiber.pendingCbs = u.pendingCbs
-                if(hasCb){
-                  fiber.effectTag *= CALLBACK;
+                isForced = fiber.isForced || u.isForced;
+                fiber.pendingStates = u.pendingStates;
+                let hasCb = fiber.pendingCbs = u.pendingCbs;
+                if (hasCb) {
+                    fiber.effectTag *= CALLBACK;
                 }
                 delete fiber._updates;
             }
             delete fiber.isForced;
-        }else {
-          
+        } else {
+
             stage = "receive";
         }
     }
@@ -174,7 +174,7 @@ function updateClassComponent (fiber) {
     if (fiber.shouldUpdateFalse) {
         return;
     }
-   
+
     fiber.effectTag *= HOOK;
     updater._hydrating = true;
 
@@ -195,7 +195,7 @@ var stageIteration = {
     noop: noop,
     init(fiber, nextProps, nextContext, instance) {
         getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
-        callLifeCycleHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, "componentWillMount", []);
     },
     receive(fiber, nextProps, nextContext, instance) {
 
@@ -205,7 +205,7 @@ var stageIteration = {
         let propsChange = updater.lastProps !== nextProps;
         var willReceive = propsChange || (hasContextChanged() || instance.context !== nextContext);
         if (willReceive) {
-            callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
+            callUnsafeHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
         } else {
             cloneChildren(fiber);
             return;
@@ -217,23 +217,26 @@ var stageIteration = {
     },
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
-        delete fiber.shouldUpdateFalse
+        delete fiber.shouldUpdateFalse;
         if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else {
             callLifeCycleHook(instance, "getSnapshotBeforeUpdate", args);
-            callLifeCycleHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, "componentWillUpdate", args);
         }
     }
 };
-
-function isSameNode (a, b) {
+function callUnsafeHook(a, b, c) {
+    callLifeCycleHook(a, b, c);
+    callLifeCycleHook(a, "UNSAFE_" + b, c);
+}
+function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
         return true;
     }
 }
 
-export function detachFiber (fiber, effects) {
+export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
     if (fiber.ref) {
         fiber.effectTag *= NULLREF;
@@ -249,7 +252,7 @@ export function detachFiber (fiber, effects) {
 }
 
 var gDSFP = "getDerivedStateFromProps";
-function getDerivedStateFromProps (instance, fiber, nextProps, lastState) {
+function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
     try {
         var method = fiber.type[gDSFP];
         if (method) {
@@ -263,7 +266,7 @@ function getDerivedStateFromProps (instance, fiber, nextProps, lastState) {
     }
 }
 
-function cloneChildren (fiber) {
+function cloneChildren(fiber) {
     fiber.shouldUpdateFalse = true;
     const prev = fiber.alternate;
     if (prev && prev.child) {
@@ -280,8 +283,8 @@ function cloneChildren (fiber) {
         componentStack.shift();
     }
 }
-function getMaskedContext (contextTypes, instance) {
-    if(instance && !contextTypes){
+function getMaskedContext(contextTypes, instance) {
+    if (instance && !contextTypes) {
         return instance.context;
     }
     let context = {};
@@ -294,7 +297,7 @@ function getMaskedContext (contextTypes, instance) {
             context[key] = parentContext[key];
         }
     }
-    return context; 
+    return context;
 }
 
 /**
@@ -302,7 +305,7 @@ function getMaskedContext (contextTypes, instance) {
  * @param {Fiber} parentFiber 
  * @param {Any} children 
  */
-function diffChildren (parentFiber, children) {
+function diffChildren(parentFiber, children) {
     let oldFibers = parentFiber._children || {}; // 旧的
     var newFibers = fiberizeChildren(children, parentFiber); // 新的
     var effects = parentFiber.effects || (parentFiber.effects = []);
@@ -338,7 +341,7 @@ function diffChildren (parentFiber, children) {
             }
         }
     }
- 
+
     let prevFiber,
         index = 0,
         newEffects = [];
@@ -350,7 +353,7 @@ function diffChildren (parentFiber, children) {
             if (isSameNode(oldFiber, newFiber)) {
                 var alternate = new Fiber(oldFiber);
                 newFiber = extend(oldFiber, newFiber); //将新属性转换旧对象上
-                newFiber.alternate = alternate;      
+                newFiber.alternate = alternate;
                 if (alternate.ref && alternate.ref !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;
                     effects.push(alternate);
@@ -362,16 +365,16 @@ function diffChildren (parentFiber, children) {
                 detachFiber(oldFiber, effects);
             }
             newEffects.push(newFiber);
-        }else{
+        } else {
             newFiber = new Fiber(newFiber);
         }
         newFibers[i] = newFiber;
         if (newFiber.tag > 3) {
-         
+
             newFiber.effectTag *= PLACE;
         }
         if (newFiber.ref) {
-            newFiber.effectTag *= REF;            
+            newFiber.effectTag *= REF;
         }
         newFiber.index = index++;
         newFiber.return = parentFiber;
@@ -380,7 +383,7 @@ function diffChildren (parentFiber, children) {
             prevFiber.sibling = newFiber;
         } else {
             parentFiber.child = newFiber;
-            if(newFiber.tag > 3 && newFiber.alternate){
+            if (newFiber.tag > 3 && newFiber.alternate) {
                 // newFiber.stateNode = newFiber.alternate.parent.firstChild;
             }
         }

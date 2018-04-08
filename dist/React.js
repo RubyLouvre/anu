@@ -728,13 +728,13 @@ function applyMixins(proto, mixins) {
     }
 }
 function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"getInitialState\u53EA\u80FD\u8FD4\u56DE\u7EAFJS\u5BF9\u8C61\u6216\u8005null\"\n        }\n      }\n  };");
+    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n     if(!(this instanceof ReactComponent)){\n         throw \"muse new Component(...)\"\n     }\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"Component.getInitialState(): must return an object or null\"\n        }\n      }\n  };");
     return curry(Component, NOBIND, spec);
 }
 function createClass(spec) {
     toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
-        throw "must implement render";
+        throw "createClass(...): Class specification must implement a `render` method.";
     }
     var Constructor = newCtor(spec.displayName || "Component", spec);
     var proto = inherit(Constructor, Component);
@@ -744,6 +744,9 @@ function createClass(spec) {
     extend(proto, spec);
     if (spec.statics) {
         extend(Constructor, spec.statics);
+        if (spec.statics.getDefaultProps) {
+            throw "getDefaultProps is not statics";
+        }
     }
     "propTypes,contextTypes,childContextTypes,displayName".replace(/\w+/g, function (name) {
         if (spec[name]) {
@@ -1750,11 +1753,9 @@ function pushError(fiber, hook, error) {
         }
     }
 }
-var rHook = /ill(M|R|Up)/;
 function callLifeCycleHook(instance, hook, args) {
     try {
-        var unsafe = rHook.test(hook) ? "UNSAFE_" + hook : hook;
-        var fn = instance[hook] || instance[unsafe];
+        var fn = instance[hook];
         if (fn) {
             return fn.apply(instance, args);
         }
@@ -2035,7 +2036,7 @@ var stageIteration = {
     noop: noop,
     init: function init(fiber, nextProps, nextContext, instance) {
         getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
-        callLifeCycleHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, "componentWillMount", []);
     },
     receive: function receive(fiber, nextProps, nextContext, instance) {
         var updater = instance.updater;
@@ -2044,7 +2045,7 @@ var stageIteration = {
         var propsChange = updater.lastProps !== nextProps;
         var willReceive = propsChange || hasContextChanged() || instance.context !== nextContext;
         if (willReceive) {
-            callLifeCycleHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
+            callUnsafeHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
         } else {
             cloneChildren(fiber);
             return;
@@ -2061,10 +2062,14 @@ var stageIteration = {
             cloneChildren(fiber);
         } else {
             callLifeCycleHook(instance, "getSnapshotBeforeUpdate", args);
-            callLifeCycleHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, "componentWillUpdate", args);
         }
     }
 };
+function callUnsafeHook(a, b, c) {
+    callLifeCycleHook(a, b, c);
+    callLifeCycleHook(a, "UNSAFE_" + b, c);
+}
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
         return true;
@@ -2348,7 +2353,7 @@ function commitOtherEffects(fiber) {
     var instance = fiber.stateNode;
     var amount = fiber.effectTag;
     var updater = instance.updater;
-    outer: for (var i = 0; i < effectLength; i++) {
+    for (var i = 0; i < effectLength; i++) {
         var effectNo = effectNames[i];
         if (effectNo > amount) {
             break;
