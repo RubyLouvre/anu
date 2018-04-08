@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2018-03-18
+ * 此版本带有selection by 司徒正美 Copyright 2018-04-08
  * IE9+
  */
 
@@ -637,7 +637,10 @@ function createElement$1(vnode, p) {
     var elem = document$1.createElement(type);
     var inputType = props && props.type;
     if (inputType) {
-        elem.type = inputType;
+        try {
+            elem = document$1.createElement("<" + type + " type='" + inputType + "'/>");
+        } catch (err) {
+        }
     }
     return elem;
 }

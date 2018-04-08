@@ -176,7 +176,10 @@ export function createElement(vnode, p) {
     let elem = document.createElement(type);
     let inputType = props && props.type;//IE6-8下立即设置type属性
     if (inputType) {
-        elem.type = inputType;
+        try{
+            elem = document.createElement("<"+type+" type='"+inputType+"'/>" );
+        }catch(err){//fix ie
+        }
     }
     return elem;
 }

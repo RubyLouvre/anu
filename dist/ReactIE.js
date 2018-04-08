@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-18
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-04-08
  */
 
 (function (global, factory) {
@@ -636,7 +636,10 @@ function createElement$1(vnode, p) {
     var elem = document.createElement(type);
     var inputType = props && props.type;
     if (inputType) {
-        elem.type = inputType;
+        try {
+            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+        } catch (err) {
+        }
     }
     return elem;
 }
