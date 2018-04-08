@@ -47,35 +47,10 @@
                       console.log(a, 'vs', b, a + '' === b + '');
                   }
               };
-         };
-
-
-    // First pass children into a component to fully simulate what happens when
-    // using structures that arrive from transforms.
-   
-    const context = {};
-    const callback = function(kid, index) {
-      expect(this).toBe(context);
-      return kid;
-    };
+            }
+var Foo= void 666
+         ReactDOM.render( <Foo>{[<div />]}</Foo>, div)
   
-    const portalContainer = document.createElement('div');
-
-    const simpleChild = <span key="simple" />;
-    const reactPortal = ReactDOM.createPortal(simpleChild, portalContainer);
-
-    const parentInstance = <div>{reactPortal}</div>;
-   
-    //expect(callback).toHaveBeenCalledWith(reactPortal, 0);
-   // callback.calls.reset();
-    const mappedChildren = React.Children.map(
-      parentInstance.props.children,
-      callback,
-      context,
-    );
-   
-   // expect(callback).toHaveBeenCalledWith(reactPortal, 0);
-    expect(mappedChildren[0]).toEqual(reactPortal);
 </script>
 
 
