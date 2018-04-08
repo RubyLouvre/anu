@@ -8,6 +8,7 @@ export function findDOMNode(stateNode) {
         // 如果是null
         return null;
     }
+
     if (stateNode.nodeType) {
         // 如果本身是元素节点
         return stateNode;
@@ -15,6 +16,9 @@ export function findDOMNode(stateNode) {
     // 实例必然拥有updater与render
     if (stateNode.render) {
         let fiber = get(stateNode);
+        if(fiber.disposed){
+            throw "findDOMNode:disposed component"
+        }
         let c = fiber.child;
         if (c) {
             return findDOMNode(c.stateNode);
@@ -22,4 +26,5 @@ export function findDOMNode(stateNode) {
             return null;
         }
     }
+    throw "findDOMNode:invalid type"
 }

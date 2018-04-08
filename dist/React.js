@@ -1157,6 +1157,9 @@ function findDOMNode(stateNode) {
     }
     if (stateNode.render) {
         var fiber = get(stateNode);
+        if (fiber.disposed) {
+            throw "findDOMNode:disposed component";
+        }
         var c = fiber.child;
         if (c) {
             return findDOMNode(c.stateNode);
@@ -1164,6 +1167,7 @@ function findDOMNode(stateNode) {
             return null;
         }
     }
+    throw "findDOMNode:invalid type";
 }
 
 var formElements = {

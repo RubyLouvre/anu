@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
-   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
+  <!--  <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
@@ -26,7 +26,6 @@
     <script type='text/babel'>
           var container = document.getElementById('example');
           var div = container;
-          var React = ReactNoop
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -49,30 +48,38 @@
                   }
               };
             }
+    var list = []
+    function log(a){
+        list.push(a)
+    }
+    var  TogglingComponent = class extends React.Component {
+        state = {component: this.props.firstComponent};
+        componentDidMount() {
+            console.log("componentDidMount")
+            log(ReactDOM.findDOMNode(this));
+            this.setState({component: this.props.secondComponent});
+        }
+    
+        componentDidUpdate() {
+            console.log("componentDidUpdate")
+            log(ReactDOM.findDOMNode(this));
+        }
+    
+        render() {
+            const Component = this.state.component;
+            return Component ? <Component /> : null;
+        }
+    }
+   const instance1 = (
+      <TogglingComponent firstComponent={null} secondComponent={'div'} />
+    );
+    const instance2 = (
+      <TogglingComponent firstComponent={'div'} secondComponent={null} />
+    );
 
-            function FunctionalComponent({forwardedRef, setRefOnDiv}) {
-                return (
-                  <section>
-                    <div ref={setRefOnDiv ? forwardedRef : null}>First</div>
-                    <span ref={setRefOnDiv ? null : forwardedRef}>Second</span>
-                  </section>
-                );
-              }
-          
-              const RefForwardingComponent = React.forwardRef((props, ref) => (
-                <FunctionalComponent {...props} forwardedRef={ref} />
-              ));
-          
-              const ref = React.createRef();
-          
-              ReactNoop.render(<RefForwardingComponent ref={ref} setRefOnDiv={true} />);
-              ReactNoop.flush();
-              expect(ref.current.type).toBe('div');
-          
-              ReactNoop.render(<RefForwardingComponent ref={ref} setRefOnDiv={false} />);
-              ReactNoop.flush();
-              expect(ref.current.type).toBe('span');
-  
+    ReactDOM.render(instance1, div)
+    ReactDOM.render(instance2, div)
+
 </script>
 
 
