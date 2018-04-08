@@ -1,4 +1,4 @@
-import { extend, isFn, inherit, deprecatedWarn } from "./util";
+import { extend, isFn, inherit, toWarnDev } from "./util";
 import { Component } from "./Component";
 
 /**
@@ -106,7 +106,7 @@ function newCtor(className, spec) {
 }
 
 export function createClass(spec) {
-    deprecatedWarn("createClass");
+    toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
         throw "请实现render方法";
     }
@@ -130,7 +130,7 @@ export function createClass(spec) {
                 if (name !== "displayName") {
                     for (let i in props) {
                         if (!isFn(props[i])) {
-                            console.error(`${i} in ${name} must be a function`); // eslint-disable-line
+                            toWarnDev(`${i} in ${name} must be a function`); // eslint-disable-line
                         }
                     }
                 }

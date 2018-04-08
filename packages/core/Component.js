@@ -1,4 +1,4 @@
-import { deprecatedWarn, returnFalse,returnTrue } from "./util";
+import { toWarnDev, returnFalse,returnTrue } from "./util";
 import { Renderer } from "./createRenderer";
 
 /**
@@ -25,10 +25,11 @@ const fakeObject = {
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {
-        deprecatedWarn("replaceState");
+        toWarnDev("replaceState", true);
     },
     isReactComponent:returnTrue,
     isMounted() {
+        toWarnDev("isMounted", true);
         return (this.updater || fakeObject)._isMounted(this);
     },
     setState(state, cb) {
@@ -37,6 +38,8 @@ Component.prototype = {
     forceUpdate(cb) {
         (this.updater || fakeObject).enqueueSetState(this, true, cb);
     },
-    render() {}
+    render() {
+        toWarnDev("必须被重写");
+    }
 };
 

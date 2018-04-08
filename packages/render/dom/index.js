@@ -2,7 +2,7 @@ import { Children } from "react-core/Children";
 import { PropTypes } from "react-core/PropTypes";
 import { Component } from "react-core/Component";
 import { PureComponent } from "react-core/PureComponent";
-import { createRenderer,Renderer } from "react-core/createRenderer";
+import { createRenderer } from "react-core/createRenderer";
 import { createRef, forwardRef } from "react-core/createRef";
 import { createPortal } from "react-core/createPortal";
 import { createContext } from "react-core/createContext";
@@ -14,7 +14,7 @@ import * as eventSystem from "./event";
 import { findDOMNode } from "./findDOMNode";
 import { DOMRenderer} from "./DOMRenderer";
 
-let { render, unstable_renderSubtreeIntoContainer, unmountComponentAtNode } = DOMRenderer
+let { render, unstable_renderSubtreeIntoContainer, unmountComponentAtNode } = DOMRenderer;
 
 var win = getWindow();
 var prevReact = win.React;

@@ -17,16 +17,18 @@ export function pushError (fiber, hook, error) {
         catchFiber.effectTag = CAPTURE;
         updateQueue.push(catchFiber);
     } else {
-   //    console.warn(stack); // eslint-disable-line
+        //    console.warn(stack); // eslint-disable-line
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {
             Renderer.error = error;
         }
     }
 }
+var rHook = /ill(M|R|Up)/;
 export function callLifeCycleHook (instance, hook, args) {
     try {
-        let fn = instance[hook];
+        var unsafe =  rHook.test(hook) ? "UNSAFE_" + hook: hook;
+        let fn = instance[hook] || instance[unsafe];
         if (fn) {
             return fn.apply(instance, args);
         }

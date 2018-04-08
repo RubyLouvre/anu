@@ -4,14 +4,10 @@ import { document, NAMESPACE, contains } from "./browser";
 
 import { 
     get,
-    oneObject, 
-    innerHTML, 
-    noop,
-    extend,
     emptyObject,
     topNodes,
     topFibers,
-    deprecatedWarn
+    toWarnDev
 } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Fiber } from "react-fiber/Fiber";
@@ -180,10 +176,10 @@ export let DOMRenderer = {
         emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer (instance, vnode, container, callback) {
-        deprecatedWarn("unstable_renderSubtreeIntoContainer");
+        toWarnDev("unstable_renderSubtreeIntoContainer",true);
         return Renderer.render(vnode, container, callback);
     },
-// [Top API] ReactDOM.unmountComponentAtNode
+    // [Top API] ReactDOM.unmountComponentAtNode
     unmountComponentAtNode (container) {
         let rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {

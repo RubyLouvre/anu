@@ -36,10 +36,11 @@ function getWindow() {
         }
     }
 }
-function deprecatedWarn(methodName) {
-    if (!deprecatedWarn[methodName]) {
-        console.warn(methodName + ' is deprecated');
-        deprecatedWarn[methodName] = 1;
+function toWarnDev(msg, deprecated) {
+    msg = deprecated ? msg + " is deprecated" : msg;
+    if (!toWarnDev[msg] && typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
+        toWarnDev[msg] = 1;
+        throw msg;
     }
 }
 function extend(obj, props) {
@@ -479,10 +480,11 @@ var fakeObject = {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        deprecatedWarn("replaceState");
+        toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted() {
+        toWarnDev("isMounted", true);
         return (this.updater || fakeObject)._isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -491,7 +493,9 @@ Component.prototype = {
     forceUpdate: function forceUpdate(cb) {
         (this.updater || fakeObject).enqueueSetState(this, true, cb);
     },
-    render: function render() {}
+    render: function render() {
+        toWarnDev("必须被重写");
+    }
 };
 
 function shallowEqual(objA, objB) {
@@ -729,7 +733,7 @@ function newCtor(className, spec) {
     return curry(Component, NOBIND, spec);
 }
 function createClass(spec) {
-    deprecatedWarn("createClass");
+    toWarnDev("createClass", true);
     if (!isFn(spec.render)) {
         throw "请实现render方法";
     }
@@ -748,7 +752,7 @@ function createClass(spec) {
             if (name !== "displayName") {
                 for (var i in props) {
                     if (!isFn(props[i])) {
-                        console.error(i + " in " + name + " must be a function");
+                        toWarnDev(i + " in " + name + " must be a function");
                     }
                 }
             }
@@ -776,7 +780,7 @@ var fn$1 = DOMElement.prototype = {
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
     fn$1[name] = function () {
-        console.log('fire ' + name);
+        toWarnDev('need implement ' + name);
     };
 });
 var fakeDoc = new DOMElement();
@@ -1747,9 +1751,11 @@ function pushError(fiber, hook, error) {
         }
     }
 }
+var rHook = /ill(M|R|Up)/;
 function callLifeCycleHook(instance, hook, args) {
     try {
-        var fn = instance[hook];
+        var unsafe = rHook.test(hook) ? "UNSAFE_" + hook : hook;
+        var fn = instance[hook] || instance[unsafe];
         if (fn) {
             return fn.apply(instance, args);
         }
@@ -2708,7 +2714,7 @@ var DOMRenderer = {
         _emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
-        deprecatedWarn("unstable_renderSubtreeIntoContainer");
+        toWarnDev("unstable_renderSubtreeIntoContainer", true);
         return Renderer.render(vnode, container, callback);
     },
     unmountComponentAtNode: function unmountComponentAtNode(container) {

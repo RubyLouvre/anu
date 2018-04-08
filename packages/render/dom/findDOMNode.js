@@ -3,13 +3,13 @@
 import { get } from "react-core/util";
 
 // [Top API] ReactDOM.findDOMNode
-export function findDOMNode (stateNode) {
+export function findDOMNode(stateNode) {
     if (stateNode == null) {
-    // 如果是null
+        // 如果是null
         return null;
     }
     if (stateNode.nodeType) {
-    // 如果本身是元素节点
+        // 如果本身是元素节点
         return stateNode;
     }
     // 实例必然拥有updater与render

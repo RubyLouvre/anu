@@ -1,4 +1,4 @@
-import { typeNumber, getWindow } from "react-core/util";
+import { typeNumber, getWindow, toWarnDev } from "react-core/util";
 //用于后端的元素节点
 export function DOMElement(type) {
     this.nodeName = type;
@@ -22,7 +22,7 @@ String(
 		",detachEvent"
 ).replace(/\w+/g, function(name) {
     fn[name] = function() {
-		console.log('fire ' + name); // eslint-disable-line
+		toWarnDev('need implement ' + name); // eslint-disable-line
     };
 });
 

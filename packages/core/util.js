@@ -29,11 +29,11 @@ export function getWindow() {
 }
 
 
-export function deprecatedWarn(methodName) {
-    if (!deprecatedWarn[methodName]) {
-        //eslint-disable-next-line
-		console.warn(methodName + ' is deprecated');
-        deprecatedWarn[methodName] = 1;
+export function toWarnDev(msg, deprecated) {
+    msg = deprecated ? msg + " is deprecated" : msg;
+    if (!toWarnDev[msg] && typeNumber(getWindow().process) && process.env.NODE_ENV === "development") {
+        toWarnDev[msg] = 1;
+        throw msg;
     }
 }
 
@@ -108,7 +108,7 @@ export function oneObject(array, val) {
     }
     let result = {},
         //eslint-disable-next-line
-		value = val !== void 666 ? val : 1;
+        value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
@@ -170,11 +170,11 @@ export function typeNumber(data) {
 }
 
 export let toArray =
-	Array.from ||
-	function (a) {
-	    let ret = [];
-	    for (let i = 0, n = a.length; i < n; i++) {
-	        ret[i] = a[i];
-	    }
-	    return ret;
-	};
+    Array.from ||
+    function (a) {
+        let ret = [];
+        for (let i = 0, n = a.length; i < n; i++) {
+            ret[i] = a[i];
+        }
+        return ret;
+    };
