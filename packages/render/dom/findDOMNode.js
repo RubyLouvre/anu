@@ -1,6 +1,6 @@
 
 
-import { get } from "react-core/util";
+import { get, toWarnDev } from "react-core/util";
 
 // [Top API] ReactDOM.findDOMNode
 export function findDOMNode(stateNode) {
@@ -17,10 +17,10 @@ export function findDOMNode(stateNode) {
     if (stateNode.render) {
         let fiber = get(stateNode);
         if(fiber.disposed){
-            throw "findDOMNode:disposed component"
+            toWarnDev("findDOMNode:disposed component")
         }
         let c = fiber.child;
-        if (c) {
+        if (c && !c.disposed) {
             return findDOMNode(c.stateNode);
         } else {
             return null;

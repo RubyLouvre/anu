@@ -70,6 +70,7 @@
             return Component ? <Component /> : null;
         }
     }
+    var div2 = document.createElement("div")
    const instance1 = (
       <TogglingComponent firstComponent={null} secondComponent={'div'} />
     );
@@ -78,7 +79,8 @@
     );
 
     ReactDOM.render(instance1, div)
-    ReactDOM.render(instance2, div)
+    ReactDOM.render(instance2, div2)
+    console.log(list)
 
 </script>
 

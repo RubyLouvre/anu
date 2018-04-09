@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-08
+ * by 司徒正美 Copyright 2018-04-09
  * IE9+
  */
 
@@ -1158,10 +1158,10 @@ function findDOMNode(stateNode) {
     if (stateNode.render) {
         var fiber = get(stateNode);
         if (fiber.disposed) {
-            throw "findDOMNode:disposed component";
+            toWarnDev("findDOMNode:disposed component");
         }
         var c = fiber.child;
-        if (c) {
+        if (c && !c.disposed) {
             return findDOMNode(c.stateNode);
         } else {
             return null;
