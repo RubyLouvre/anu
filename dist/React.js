@@ -1206,7 +1206,6 @@ var duplexData = {
     }, keepPersistValue, "change", "input"],
     2: ["checked", {
         onChange: 1,
-        onClick: 1,
         readOnly: 1,
         disabled: 1
     }, function (a) {
@@ -1259,7 +1258,6 @@ function inputControll(vnode, dom, props) {
         var event1 = data[5];
         var event2 = data[6];
         if (!hasOtherControllProperty(props, keys)) {
-            console.warn("\u4F60\u4E3A" + vnode.type + "[type=" + domType + "]\u5143\u7D20\u6307\u5B9A\u4E86**\u53D7\u63A7\u5C5E\u6027**" + duplexProp + "\uFF0C\n\u4F46\u662F\u6CA1\u6709\u63D0\u4F9B\u53E6\u5916\u7684" + Object.keys(keys) + "\n\u6765\u64CD\u4F5C" + duplexProp + "\u7684\u503C\uFF0C\b\u6846\u67B6\u5C06\u4E0D\u5141\u8BB8\u4F60\u901A\u8FC7\u8F93\u5165\u6539\u53D8\u8BE5\u503C");
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
         } else {
@@ -1691,6 +1689,7 @@ var actionStrategy = {
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
+        html = html == null ? "" : html;
         if (html !== oldhtml) {
             dom.innerHTML = html;
         }

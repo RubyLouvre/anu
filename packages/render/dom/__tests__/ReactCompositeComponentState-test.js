@@ -208,7 +208,7 @@ describe('ReactCompositeComponent-state', () => {
   });
 
   it('should call componentDidUpdate of children first', () => {
-    console.log("暂不测试unstable API")
+     // "暂不测试unstable API"
     return 
     const container = document.createElement('div');
 

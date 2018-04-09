@@ -316,6 +316,7 @@ export let actionStrategy = {
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
         let html = val && val.__html;
+        html = html == null ? "": html;
         if (html !== oldhtml) {
             dom.innerHTML = html;
         }

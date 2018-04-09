@@ -841,7 +841,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('should pass context when re-rendered', () => {
-        console.log("暂不测试unstable API")
+        // "暂不测试unstable API"
         return
         let parentInstance = null;
         let childInstance = null;
@@ -1122,7 +1122,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('only renders once if updated in componentWillReceiveProps when batching', () => {
-        console.log("暂不测试unstable API")
+        // "暂不测试unstable API"
         return
         let renders = 0;
 
@@ -1268,7 +1268,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('should replace state', () => {
-        console.log("不再支持replaceState")
+        // 不测试replaceState"
         return 
         class Moo extends React.Component {
             state = { x: 1 };
@@ -1286,7 +1286,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('should support objects with prototypes as state', () => {
-        console.log("暂不测试unstable API")
+        // "暂不测试unstable API"
         return
         const NotActuallyImmutable = function (str) {
             this.str = str;
