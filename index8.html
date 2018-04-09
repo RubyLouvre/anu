@@ -56,15 +56,23 @@
                   }
               };
             }
-           // const container = document.createElement('div');
-                class ClassWithRenderNotExtended {
-                    render() {
-                        return <div>333</div>;
-                    }
-                }
-   
-                ReactDOM.render(<ClassWithRenderNotExtended />, container);
+     const el = (
+      <select defaultValue="giraffe">
+        <option value="monkey">A monkey!</option>
+        <option value="giraffe">A giraffe!</option>
+        <option value="gorilla">A gorilla!</option>
+      </select>
+    );
+    const container = document.createElement('div');
+    const stub = ReactDOM.render(el, container);
+    const node = ReactDOM.findDOMNode(stub);
 
+    expect(node.value).toBe('giraffe');
+
+    node.value = 'monkey';
+    ReactDOM.render(el, container);
+    // Uncontrolled selects shouldn't change the value after first mounting
+    expect(node.value).toEqual('monkey');
 </script>
 
 

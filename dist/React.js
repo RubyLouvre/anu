@@ -1243,6 +1243,7 @@ function inputControll(vnode, dom, props) {
     var domType = dom.type;
     var duplexType = duplexMap[domType];
     var isUncontrolled = dom._uncontrolled;
+    console.log("XXXX");
     if (duplexType) {
         var data = duplexData[duplexType];
         var duplexProp = data[0];
@@ -2566,7 +2567,7 @@ function createElement$1(vnode) {
     var p = vnode.return;
     var type = vnode.type,
         props = vnode.props,
-        ns = vnode.namespaceURI,
+        ns = vnode.ns,
         text = vnode.text;
     switch (type) {
         case "#text":
@@ -2585,17 +2586,15 @@ function createElement$1(vnode) {
             ns = NAMESPACE.math;
             break;
         default:
-            if (!ns) {
-                do {
-                    if (p.tag === 5) {
-                        ns = p.namespaceURI;
-                        if (p.type === "foreignObject") {
-                            ns = "";
-                        }
-                        break;
+            do {
+                if (p.tag === 5) {
+                    ns = p.stateNode.namespaceURI;
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
                     }
-                } while (p = p.return);
-            }
+                    break;
+                }
+            } while (p = p.return);
             break;
     }
     try {
@@ -2609,7 +2608,8 @@ function createElement$1(vnode) {
     if (inputType) {
         try {
             elem = document.createElement("<" + type + " type='" + inputType + "'/>");
-        } catch (err) {}
+        } catch (err) {
+        }
     }
     return elem;
 }
@@ -2695,13 +2695,15 @@ var DOMRenderer = createRenderer({
         }
         var hostRoot = get(root);
         if (!hostRoot) {
+            var ns = root.namespaceURI;
+            ns = !ns || ns === NAMESPACE.xhtml ? "" : ns;
             hostRoot = new Fiber({
                 stateNode: root,
                 root: true,
                 tag: 5,
                 name: "hostRoot",
-                type: root.tagName.toLowerCase(),
-                namespaceURI: root.namespaceURI
+                type: ns ? root.tagName : root.tagName.toLowerCase(),
+                namespaceURI: ns
             });
         }
         if (topNodes.indexOf(root) == -1) {

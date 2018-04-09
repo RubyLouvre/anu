@@ -18,7 +18,7 @@ import { render } from "react-fiber/diff";
 
 export function createElement(vnode) {
     let p = vnode.return;
-    let { type, props, namespaceURI: ns, text } = vnode;
+    let { type, props, ns, text } = vnode;
     switch (type) {
     case "#text":
         //只重复利用文本节点
@@ -30,24 +30,25 @@ export function createElement(vnode) {
         return document.createTextNode(text);
     case "#comment":
         return document.createComment(text);
+
     case "svg":
         ns = NAMESPACE.svg;
         break;
     case "math":
         ns = NAMESPACE.math;
         break;
+     
     default:
-        if (!ns) {
-            do {
-                if (p.tag === 5) {
-                    ns = p.namespaceURI;
-                    if (p.type === "foreignObject") {
-                        ns = "";
-                    }
-                    break;
+        do {
+            if (p.tag === 5) {
+                ns = p.stateNode.namespaceURI;
+                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                    ns = "";
                 }
-            } while ((p = p.return));
-        }
+                break;
+            }
+        } while ((p = p.return));
+        
         break;
     }
     try {
@@ -60,9 +61,10 @@ export function createElement(vnode) {
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
-        try{
-            elem = document.createElement("<"+type+" type='"+inputType+"'/>" );
-        }catch(err){
+        try {
+            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+        } catch (err) {
+            //xxx
         }
     }
     return elem;
@@ -158,13 +160,15 @@ export let DOMRenderer = createRenderer({
         }
         var hostRoot = get(root);
         if (!hostRoot) {
+            let ns = root.namespaceURI;
+            ns = !ns || ns === NAMESPACE.xhtml ? "" : ns;
             hostRoot = new Fiber({
                 stateNode: root,
                 root: true,
                 tag: 5,
                 name: "hostRoot",
-                type: root.tagName.toLowerCase(),
-                namespaceURI: root.namespaceURI, //必须知道第一个元素的文档类型
+                type: ns ? root.tagName : root.tagName.toLowerCase(),
+                namespaceURI: ns, //必须知道第一个元素的文档类型
             });
         }
         if (topNodes.indexOf(root) == -1) {

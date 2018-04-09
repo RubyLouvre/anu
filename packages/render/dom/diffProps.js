@@ -122,12 +122,26 @@ function getSVGAttributeName(name) {
 
     return (svgCache[orig] = name);
 }
-
+function getFormValue(dom, props) {
+    var type = dom.type || dom.tagName.toLowerCase();
+    var number = duplexMap[type];
+    if (number === 1 || number === 2) {
+        return "value" in props ? "value" : "defaultValue" in props ? "defaultValue" : null;
+    } else if (number === 3) {
+        return "checked" in props ? "checked" : "defaultChecked" in props ? "defaultChecked" : null;
+    }
+    return null;
+}
 export function diffProps(dom, lastProps, nextProps, fiber) {
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
     let tag = fiber.type;
+    let controlled = !isSVG && rform.test(fiber.type) && getFormValue(dom, nextProps);
+
     //eslint-disable-next-line
     for (let name in nextProps) {
+        if (name == controlled) {
+            continue;
+        }
         let val = nextProps[name];
         if (val !== lastProps[name]) {
             let which = tag + isSVG + name;
@@ -140,6 +154,9 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
+        if (name == controlled) {
+            continue;
+        }
         if (!nextProps.hasOwnProperty(name)) {
             let which = tag + isSVG + name;
             let action = strategyCache[which];
@@ -149,6 +166,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
+    controlled && actionStrategy[controlled](dom, name, false, lastProps, fiber);
 }
 
 function isBooleanAttr(dom, name) {
@@ -167,13 +185,9 @@ function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
         return "svgClass";
     }
-    if (isSpecialAttr[name]) {
-        return name;
-    }
     if (isEventName(name)) {
         return "event";
     }
-
     if (isSVG) {
         return "svgAttr";
     }
@@ -197,6 +211,11 @@ let builtinStringProps = {
 
 let rform = /textarea|input|select/i;
 function uncontrolled(dom, name, val, lastProps, fiber) {
+    if(lastProps === emptyObject){
+        dom[name] = dom[name.replace("default","").toLowerCase()] = val;
+    }
+
+    /*
     if (rform.test(dom.nodeName)) {
         if (!dom._uncontrolled) {
             dom._uncontrolled = true;
@@ -213,12 +232,15 @@ function uncontrolled(dom, name, val, lastProps, fiber) {
     } else {
         dom.setAttribute(name, val);
     }
+    */
 }
 
 export let actionStrategy = {
     innerHTML: noop,
     defaultValue: uncontrolled,
     defaultChecked: uncontrolled,
+    value: controlled,
+    checked: controlled,
     children: noop,
     style: function (dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
@@ -274,9 +296,6 @@ export let actionStrategy = {
     property: function (dom, name, val) {
         // 尝试直接赋值，部分情况下会失败，如给 input 元素的 size 属性赋值 0 或字符串
         // 这时如果用 setAttribute 则会静默失败
-        if (controlled[name]) {
-            return;
-        }
         try {
             if (!val && val !== 0) {
                 //如果它是字符串属性，并且不等于""，清空
@@ -316,7 +335,7 @@ export let actionStrategy = {
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
         let html = val && val.__html;
-        html = html == null ? "": html;
+        html = html == null ? "" : html;
         if (html !== oldhtml) {
             dom.innerHTML = html;
         }

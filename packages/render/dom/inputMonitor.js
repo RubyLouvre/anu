@@ -36,3 +36,4 @@ inputMonitor.observe = function (dom, name) {
         Object.defineProperty(dom, name, describe);
     } catch (e) { /*fix */}
 };
+
