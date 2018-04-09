@@ -656,13 +656,15 @@ var PLACE = 2;
 var CONTENT = 3;
 var ATTR = 5;
 var NULLREF = 7;
-var HOOK = 11;
-var CHANGEREF = 13;
-var REF = 17;
-var DETACH = 19;
+var DETACH = 11;
+var HOOK = 13;
+var CHANGEREF = 17;
+var REF = 19;
 var CALLBACK = 23;
 var CAPTURE = 29;
-var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE];
+var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+    return a - b;
+});
 var effectLength = effectNames.length;
 
 var updateQueue$1 = Renderer.mainThread;
@@ -1030,9 +1032,6 @@ function detachFiber(fiber, effects$$1) {
         fiber.effectTag *= NULLREF;
     }
     fiber.disposed = true;
-    if (fiber.tag < 3) {
-        fiber.effectTag *= HOOK;
-    }
     effects$$1.push(fiber);
     for (var child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects$$1);
@@ -1247,7 +1246,6 @@ var Refs = {
     }
 };
 
-var clearUpElements = [];
 function commitEffects(a) {
     var arr = a || effects;
     arr = commitPlaceEffects(arr);
@@ -1259,17 +1257,12 @@ function commitEffects(a) {
         }
     }
     arr.forEach(commitOtherEffects);
-    clearUpElements.forEach(removeStateNode);
-    clearUpElements.length = arr.length = effects.length = 0;
+    arr.length = effects.length = 0;
     var error = Renderer.error;
     if (error) {
         delete Renderer.error;
         throw error;
     }
-}
-function removeStateNode(el) {
-    delete el.alternate;
-    delete el.stateNode;
 }
 function commitPlaceEffects(fibers) {
     var ret = [];
@@ -1295,7 +1288,7 @@ function commitPlaceEffects(fibers) {
     return ret;
 }
 function commitOtherEffects(fiber) {
-    var instance = fiber.stateNode;
+    var instance = fiber.stateNode || emptyObject;
     var amount = fiber.effectTag;
     var updater = instance.updater;
     for (var i = 0; i < effectLength; i++) {
@@ -1303,52 +1296,47 @@ function commitOtherEffects(fiber) {
         if (effectNo > amount) {
             break;
         }
-        var remainder = amount / effectNo;
-        if (remainder == ~~remainder) {
-            amount = remainder;
+        if (amount % effectNo === 0) {
+            amount /= effectNo;
             switch (effectNo) {
                 case PLACE:
                     Renderer.insertElement(fiber);
                     break;
+                case CONTENT:
+                    Renderer.updateContext(fiber);
+                    break;
                 case ATTR:
                     Renderer.updateAttribute(fiber);
+                    break;
+                case NULLREF:
+                    if (!instance.__isStateless) {
+                        Refs.fireRef(fiber, null);
+                    }
                     break;
                 case DETACH:
                     if (fiber.tag > 3) {
                         Renderer.removeElement(fiber);
+                    } else {
+                        updater.enqueueSetState = returnFalse;
+                        callLifeCycleHook(instance, "componentWillUnmount", []);
+                        updater._isMounted = returnFalse;
                     }
-                    clearUpElements.push(fiber);
+                    delete fiber.stateNode;
+                    delete fiber.alternate;
                     break;
                 case HOOK:
-                    if (fiber.disposed) {
-                        updater.enqueueSetState = returnFalse;
-                        if (updater._isMounted()) {
-                            callLifeCycleHook(instance, "componentWillUnmount", []);
-                        }
-                        updater._isMounted = returnFalse;
+                    if (updater._isMounted()) {
+                        callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                     } else {
-                        if (updater._isMounted()) {
-                            callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
-                        } else {
-                            updater._isMounted = returnTrue;
-                            callLifeCycleHook(instance, "componentDidMount", []);
-                        }
+                        updater._isMounted = returnTrue;
+                        callLifeCycleHook(instance, "componentDidMount", []);
                     }
                     delete fiber.pendingFiber;
                     delete updater._hydrating;
                     break;
-                case CONTENT:
-                    Renderer.updateContext(fiber);
-                    break;
                 case REF:
                     if (!instance.__isStateless) {
                         Refs.fireRef(fiber, instance);
-                    }
-                    break;
-                case CHANGEREF:
-                case NULLREF:
-                    if (!instance.__isStateless) {
-                        Refs.fireRef(fiber, null);
                     }
                     break;
                 case CALLBACK:

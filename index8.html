@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./react.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
@@ -45,42 +45,63 @@
                   },
                   toEqual(b) {
                       console.log(a, 'vs', b, a + '' === b + '');
+                  },
+                  not: {
+                    toBe: function(b) {
+                      console.log(a, 'vs', b, a !== b);
+                    },
+                    toEqual(b) {
+                        console.log(a, 'vs', b, a + '' !== b + '');
+                    },
                   }
               };
             }
-    var list = []
-    function log(a){
-        list.push(a)
-    }
-    var  TogglingComponent = class extends React.Component {
-        state = {component: this.props.firstComponent};
-        componentDidMount() {
-            console.log("componentDidMount")
-            log(ReactDOM.findDOMNode(this));
-            this.setState({component: this.props.secondComponent});
-        }
-    
-        componentDidUpdate() {
-            console.log("componentDidUpdate")
-            log(ReactDOM.findDOMNode(this));
-        }
-    
-        render() {
-            const Component = this.state.component;
-            return Component ? <Component /> : null;
-        }
-    }
-    var div2 = document.createElement("div")
-   const instance1 = (
-      <TogglingComponent firstComponent={null} secondComponent={'div'} />
-    );
-    const instance2 = (
-      <TogglingComponent firstComponent={'div'} secondComponent={null} />
-    );
+            let assertions = 0;
 
-    ReactDOM.render(instance1, div)
-    ReactDOM.render(instance2, div2)
-    console.log(list)
+            class Inner extends React.Component {
+            render() {
+                return <span />;
+            }
+
+            componentDidMount() {
+                // Make sure the DOM node resolves properly even if we're replacing a
+                // `null` component
+                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
+                //第一次有东西, span
+                assertions++;
+            }
+
+            componentWillUnmount() {
+                // Even though we're getting replaced by `null`, we haven't been
+                // replaced yet!
+                console.log(ReactDOM.findDOMNode(this))
+                expect(ReactDOM.findDOMNode(this)).not.toBe(null);//有东西
+                assertions++;
+            }
+            }
+
+            class Wrapper extends React.Component {
+            render() {
+                return this.props.showInner ? <Inner /> : null;
+            }
+            }
+
+            const el = document.createElement('div');
+            let component;
+
+            // Render the <Inner /> component...
+            component = ReactDOM.render(<Wrapper showInner={true} />, el);
+            expect(ReactDOM.findDOMNode(component)).not.toBe(null);//有东西
+
+            // Switch to null...
+            component = ReactDOM.render(<Wrapper showInner={false} />, el);
+            expect(ReactDOM.findDOMNode(component)).toBe(null);
+
+            // ...then switch back.
+            component = ReactDOM.render(<Wrapper showInner={true} />, el);
+            expect(ReactDOM.findDOMNode(component)).not.toBe(null);
+
+            expect(assertions).toBe(3);
 
 </script>
 

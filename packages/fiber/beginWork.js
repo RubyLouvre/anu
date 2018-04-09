@@ -1,5 +1,5 @@
 
-import { extend, noop, typeNumber, __push } from "react-core/util";
+import { extend, noop, typeNumber } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
 import { AnuPortal } from "react-core/createPortal";
 
@@ -9,7 +9,7 @@ import { Renderer } from "react-core/createRenderer";
 import { contextStack, componentStack, containerStack, hasContextChanged } from "./util";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
-import { NOWORK, PLACE, ATTR, DETACH, HOOK, CONTENT, CHANGEREF, REF, NULLREF, CALLBACK } from "./effectTag";
+import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
 import { callLifeCycleHook, pushError } from "./unwindWork";
 
 /**
@@ -242,9 +242,6 @@ export function detachFiber(fiber, effects) {
         fiber.effectTag *= NULLREF;
     }
     fiber.disposed = true;
-    if (fiber.tag < 3) {
-        fiber.effectTag *= HOOK;
-    }
     effects.push(fiber);
     for (let child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects);

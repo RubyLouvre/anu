@@ -1,12 +1,11 @@
 import {
     PLACE,
-    ATTR,
-    DETACH,
-    HOOK,
     CONTENT,
-    REF,
-    CHANGEREF,
+    ATTR,//UPDATE
     NULLREF,
+    DETACH,//DELETION
+    HOOK,
+    REF,
     CALLBACK,
     CAPTURE,
     effectLength,
@@ -14,38 +13,32 @@ import {
 } from "./effectTag";
 import { effects } from "./util";
 import { callLifeCycleHook, pushError } from "./unwindWork";
-import { returnFalse, returnTrue, noop } from "react-core/util";
+import { returnFalse, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
-var clearUpElements = [];
 export function commitEffects(a) {
     var arr = a || effects;
     arr = commitPlaceEffects(arr);
     /*
-    console.log( arr.reduce(function(pre,el){
-        pre.push( el.effectTag, el );
+    console.log(arr.reduce(function (pre, el) {
+        pre.push(el.effectTag, el);
         return pre;
-    },[]) );
-    */
-    for(var i = 0; i < arr.length; i++){
+    }, []));
+*/
+    for (var i = 0; i < arr.length; i++) {
         commitOtherEffects(arr[i]);
-        if(Renderer.error){
+        if (Renderer.error) {
             arr.length = 0;
             break;
         }
     }
     arr.forEach(commitOtherEffects);
-    clearUpElements.forEach(removeStateNode);
-    clearUpElements.length = arr.length = effects.length = 0;
+    arr.length = effects.length = 0;
     var error = Renderer.error;
-    if(error){
+    if (error) {
         delete Renderer.error;
         throw error;
     }
-}
-function removeStateNode(el){
-    delete el.alternate;
-    delete el.stateNode;
 }
 /**
  * 提先执行所有RLACE任务
@@ -81,7 +74,7 @@ export function commitPlaceEffects(fibers) {
  * @param {Fiber} fiber 
  */
 export function commitOtherEffects(fiber) {
-    let instance = fiber.stateNode;
+    let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
     let updater = instance.updater;
     for (let i = 0; i < effectLength; i++) {
@@ -89,61 +82,53 @@ export function commitOtherEffects(fiber) {
         if (effectNo > amount) {
             break;
         }
-        let remainder = amount / effectNo;
-        if (remainder == ~~remainder) {
-
+        if (amount % effectNo === 0) {
+            amount /=  effectNo;
             //如果能整除，下面的分支操作以后要改成注入方法
-            amount = remainder;
             switch (effectNo) {
-            case PLACE: //只对原生组件
+            case PLACE: //2. 只对原生组件
                 Renderer.insertElement(fiber);
                 break;
-            case ATTR: //只对原生组件
-                Renderer.updateAttribute(fiber);
-                break;
-            case DETACH:
-                if (fiber.tag > 3) {
-                    //只对原生组件
-                    Renderer.removeElement(fiber);
-                }
-                clearUpElements.push(fiber);
-                //业务 & 原生
-                break;
-            case HOOK: //只对业务组件
-                if (fiber.disposed) {
-                    updater.enqueueSetState = returnFalse;
-                    if(updater._isMounted()){
-                        callLifeCycleHook(instance, "componentWillUnmount", []);
-                    }
-                    updater._isMounted = returnFalse;
-                } else {
-                    if (updater._isMounted()) {
-                        callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
-                    } else {
-                        updater._isMounted = returnTrue;
-                        callLifeCycleHook(instance, "componentDidMount", []);
-                    }
-                }
-            
-                delete fiber.pendingFiber;
-                delete updater._hydrating;
-                break;
-            case CONTENT:
+            case CONTENT: //3.
                 Renderer.updateContext(fiber);
                 break;
-  
-            case REF:
-                if (!instance.__isStateless) {
-                    Refs.fireRef(fiber, instance);
-                }
-                break;
-            case CHANGEREF:
-            case NULLREF:
+            case ATTR: //5. 只对原生组件
+                Renderer.updateAttribute(fiber);
+                break; 
+            case NULLREF://7
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, null);
                 }
                 break;
-            case CALLBACK:
+            case DETACH: //11
+                if (fiber.tag > 3) {
+                    //只对原生组件
+                    Renderer.removeElement(fiber);
+                } else {
+                    updater.enqueueSetState = returnFalse;
+                    callLifeCycleHook(instance, "componentWillUnmount", []);
+                    updater._isMounted = returnFalse;
+                }
+                delete fiber.stateNode;
+                delete fiber.alternate;
+                //业务 & 原生
+                break;
+            case HOOK: //13 只对业务组件
+                if (updater._isMounted()) {
+                    callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
+                } else {
+                    updater._isMounted = returnTrue;
+                    callLifeCycleHook(instance, "componentDidMount", []);
+                }
+                delete fiber.pendingFiber;
+                delete updater._hydrating;
+                break;
+            case REF://19 
+                if (!instance.__isStateless) {
+                    Refs.fireRef(fiber, instance);
+                }
+                break;
+            case CALLBACK:// 23
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
                 queue.forEach(function (fn) {
@@ -151,7 +136,7 @@ export function commitOtherEffects(fiber) {
                 });
                 delete fiber.pendingCbs;
                 break;
-            case CAPTURE:
+            case CAPTURE:// 29
                 updater._isDoctor = true;
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);
                 fiber.errorInfo = null;

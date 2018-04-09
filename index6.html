@@ -54,6 +54,7 @@
             expect(this).toBe(context);
             return kid;
           };
+          
     const simpleKid = <span key="simple" />;
     const instance = <div>{[simpleKid]}</div>;
     React.Children.forEach(instance.props.children, callback, context);

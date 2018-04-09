@@ -1,6 +1,6 @@
 
 
-import { get, toWarnDev } from "react-core/util";
+import { get } from "react-core/util";
 
 // [Top API] ReactDOM.findDOMNode
 export function findDOMNode(stateNode) {
@@ -16,15 +16,12 @@ export function findDOMNode(stateNode) {
     // 实例必然拥有updater与render
     if (stateNode.render) {
         let fiber = get(stateNode);
-        if(fiber.disposed){
-            toWarnDev("findDOMNode:disposed component")
-        }
         let c = fiber.child;
-        if (c && !c.disposed) {
+        if (c) {
             return findDOMNode(c.stateNode);
         } else {
             return null;
         }
     }
-    throw "findDOMNode:invalid type"
+    throw "findDOMNode:invalid type";
 }

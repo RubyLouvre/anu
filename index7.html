@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
   <!--  <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
@@ -26,7 +26,7 @@
     <script type='text/babel'>
           var container = document.getElementById('example');
           var div = container;
-          var React = ReactNoop
+        
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -43,29 +43,46 @@
                   }
               };
          };
+    var list = []
+    function log(a){
+        list.push(a)
+    }
+    var   TogglingComponent = class extends React.Component {
+      state = {component: this.props.firstComponent};
 
-class Child extends React.Component {
-      render() {
-        ReactNoop.yield(this.props.value);
-        return null;
+      componentDidMount() {
+        console.log("---mount")
+        log(ReactDOM.findDOMNode(this));
+        this.setState({component: this.props.secondComponent});
       }
-    }
 
-    function Wrapper(props) {
-      return <Child {...props} ref={props.forwardedRef} />;
-    }
+      componentDidUpdate() {
+        console.log("---update")
+        log(ReactDOM.findDOMNode(this));
+      }
 
-    const RefForwardingComponent = React.forwardRef(function(props, ref){
-      return <Wrapper {...props} forwardedRef={ref} />
-    });
+      render() {
+        const Component = this.state.component;
+        return Component ? <Component /> : null;
+      }
+    };   
+   const instance1 = (
+      <TogglingComponent firstComponent={null} secondComponent={'div'} />
+    );
+    const instance2 = (
+      <TogglingComponent firstComponent={'div'} secondComponent={null} />
+    );
 
-    const ref = React.createRef();
-
-    ReactNoop.render(<RefForwardingComponent ref={ref} value={123} />);
-    expect(ReactNoop.flush()).toEqual([123]);
-    expect(ref.current instanceof Child).toBe(true);
-    console.log(ref.current)
-      
+    ReactTestUtils.renderIntoDocument(instance1);
+    ReactTestUtils.renderIntoDocument(instance2);
+/*
+    expect(log.calls.count()).toBe(4);
+    expect(log.calls.argsFor(0)[0]).toBe(null);
+    expect(log.calls.argsFor(1)[0].tagName).toBe('DIV');
+    expect(log.calls.argsFor(2)[0].tagName).toBe('DIV');
+    expect(log.calls.argsFor(3)[0]).toBe(null);
+*/
+console.log(list)   
 </script>
 
 
