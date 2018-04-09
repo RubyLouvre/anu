@@ -74,21 +74,9 @@ function inherit(SubClass, SupClass) {
 function isFn(obj) {
     return __type.call(obj) === "[object Function]";
 }
-var rword = /[^, ]+/g;
-function oneObject(array, val) {
-    if (array + "" === array) {
-        array = array.match(rword) || [];
-    }
-    var result = {},
-    value = val !== void 666 ? val : 1;
-    for (var i = 0, n = array.length; i < n; i++) {
-        result[array[i]] = value;
-    }
-    return result;
-}
 
 
-var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
+
 var numberMap = {
     "[object Boolean]": 2,
     "[object Number]": 3,
@@ -227,7 +215,6 @@ function ReactElement(type, tag, props, key, ref, owner) {
         }
         ret._owner = owner;
     }
-    options.afterCreate(ret);
     return ret;
 }
 function isValidElement(vnode) {
@@ -722,6 +709,9 @@ function findCatchComponent(topFiber, names) {
         name = void 0,
         fiber = topFiber,
         catchIt = void 0;
+    if (!topFiber) {
+        return;
+    }
     do {
         name = fiber.name;
         if (!fiber.return) {
@@ -807,6 +797,9 @@ function createInstance(fiber, context) {
             }
         } else {
             instance = new type(props, context);
+            if (!(instance instanceof Component)) {
+                throw type.name + " doesn't extend React.Component";
+            }
         }
     } catch (e) {
         pushError(fiber, "constructor", e);
@@ -1229,6 +1222,10 @@ var Refs = {
             if (isFn(ref)) {
                 return ref(dom);
             }
+            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                ref.current = dom;
+                return;
+            }
             if (!owner) {
                 throw "Element ref was specified as a string (" + ref + ") but no owner was set";
             }
@@ -1331,7 +1328,6 @@ function commitOtherEffects(fiber) {
                         updater._isMounted = returnTrue;
                         callLifeCycleHook(instance, "componentDidMount", []);
                     }
-                    delete fiber.pendingFiber;
                     delete updater._hydrating;
                     break;
                 case REF:
@@ -1630,7 +1626,6 @@ if (prevReact && prevReact.isReactNoop) {
         yield: NoopRenderer.yield,
         getRoot: getRoot,
         getChildren: getChildren,
-        options: options,
         isReactNoop: true,
         Fragment: Fragment,
         PropTypes: PropTypes,

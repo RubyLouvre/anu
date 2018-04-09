@@ -17,7 +17,6 @@ export function pushError(fiber, hook, error) {
         catchFiber.effectTag = CAPTURE;
         updateQueue.push(catchFiber);
     } else {
-        //    console.warn(stack); // eslint-disable-line
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {
             Renderer.error = error;
@@ -68,6 +67,9 @@ function findCatchComponent(topFiber, names) {
         name,
         fiber = topFiber,
         catchIt;
+    if(!topFiber){
+        return;
+    }
     do {
         name = fiber.name;
         if (!fiber.return) {

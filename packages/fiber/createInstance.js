@@ -1,4 +1,6 @@
 import { returnFalse, returnTrue, isFn, noop } from "react-core/util";
+import { Component } from "react-core/Component";
+
 import { Renderer } from "react-core/createRenderer";
 import { pushError } from "./unwindWork";
 
@@ -49,27 +51,30 @@ export function createInstance (fiber, context) {
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
                 instance.oneRef = function(a){
-                    let ref = instance.ref
+                    let ref = instance.ref;
                     if(isFn(ref)){
-                        ref(a)
-                        instance.ref = noop
+                        ref(a);
+                        instance.ref = noop;
                     }else if(ref && ("current" in ref)){
-                        ref.current = a
+                        ref.current = a;
                     }
-                   // delete instance.__init;
-                }
+                    // delete instance.__init;
+                };
                 instance.render = function () {
                     return type.render(this.props, this.oneRef);
                 };
             } else {
                 instance.render();
+
                 delete instance.__init;
             }
            
         } else {
             // 有狀态组件
             instance = new type(props, context);
-          
+            if(!(instance instanceof Component)){
+                throw `${type.name} doesn't extend React.Component`;
+            }
         }
     } catch (e) {
         pushError(fiber, "constructor", e);

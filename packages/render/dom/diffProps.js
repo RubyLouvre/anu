@@ -2,7 +2,7 @@ import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { inputMonitor } from "./inputMonitor";
-import { toLowerCase, noop, typeNumber, options, emptyObject } from "react-core/util";
+import { toLowerCase, noop, typeNumber, emptyObject } from "react-core/util";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -124,7 +124,6 @@ function getSVGAttributeName(name) {
 }
 
 export function diffProps(dom, lastProps, nextProps, fiber) {
-    options.beforeProps(fiber);
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
     let tag = fiber.type;
     //eslint-disable-next-line

@@ -84,25 +84,24 @@ export function commitOtherEffects(fiber) {
         }
         if (amount % effectNo === 0) {
             amount /=  effectNo;
-            //如果能整除，下面的分支操作以后要改成注入方法
+            //如果能整除
             switch (effectNo) {
-            case PLACE: //2. 只对原生组件
+            case PLACE: 
                 Renderer.insertElement(fiber);
                 break;
-            case CONTENT: //3.
+            case CONTENT: 
                 Renderer.updateContext(fiber);
                 break;
-            case ATTR: //5. 只对原生组件
+            case ATTR: 
                 Renderer.updateAttribute(fiber);
                 break; 
-            case NULLREF://7
+            case NULLREF:
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, null);
                 }
                 break;
-            case DETACH: //11
+            case DETACH: 
                 if (fiber.tag > 3) {
-                    //只对原生组件
                     Renderer.removeElement(fiber);
                 } else {
                     updater.enqueueSetState = returnFalse;
@@ -111,24 +110,22 @@ export function commitOtherEffects(fiber) {
                 }
                 delete fiber.stateNode;
                 delete fiber.alternate;
-                //业务 & 原生
                 break;
-            case HOOK: //13 只对业务组件
+            case HOOK: 
                 if (updater._isMounted()) {
                     callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
                     callLifeCycleHook(instance, "componentDidMount", []);
                 }
-                delete fiber.pendingFiber;
                 delete updater._hydrating;
                 break;
-            case REF://19 
+            case REF:
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, instance);
                 }
                 break;
-            case CALLBACK:// 23
+            case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
                 queue.forEach(function (fn) {

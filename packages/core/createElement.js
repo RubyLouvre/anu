@@ -1,4 +1,4 @@
-import { typeNumber, toWarnDev, hasSymbol, Fragment, options, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
+import { typeNumber, toWarnDev, hasSymbol, Fragment, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
 import { Renderer } from "./createRenderer";
 
 
@@ -135,7 +135,6 @@ function ReactElement(type, tag, props, key, ref, owner) {
         }
         ret._owner = owner;
     }
-    options.afterCreate(ret);
     return ret;
 }
 

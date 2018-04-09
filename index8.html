@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!-- <script type='text/javascript' src="./react.js"></script>
+  <!--  <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+  <!--  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
 
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
@@ -56,52 +56,14 @@
                   }
               };
             }
-            let assertions = 0;
-
-            class Inner extends React.Component {
-            render() {
-                return <span />;
-            }
-
-            componentDidMount() {
-                // Make sure the DOM node resolves properly even if we're replacing a
-                // `null` component
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);
-                //第一次有东西, span
-                assertions++;
-            }
-
-            componentWillUnmount() {
-                // Even though we're getting replaced by `null`, we haven't been
-                // replaced yet!
-                console.log(ReactDOM.findDOMNode(this))
-                expect(ReactDOM.findDOMNode(this)).not.toBe(null);//有东西
-                assertions++;
-            }
-            }
-
-            class Wrapper extends React.Component {
-            render() {
-                return this.props.showInner ? <Inner /> : null;
-            }
-            }
-
-            const el = document.createElement('div');
-            let component;
-
-            // Render the <Inner /> component...
-            component = ReactDOM.render(<Wrapper showInner={true} />, el);
-            expect(ReactDOM.findDOMNode(component)).not.toBe(null);//有东西
-
-            // Switch to null...
-            component = ReactDOM.render(<Wrapper showInner={false} />, el);
-            expect(ReactDOM.findDOMNode(component)).toBe(null);
-
-            // ...then switch back.
-            component = ReactDOM.render(<Wrapper showInner={true} />, el);
-            expect(ReactDOM.findDOMNode(component)).not.toBe(null);
-
-            expect(assertions).toBe(3);
+           // const container = document.createElement('div');
+                class ClassWithRenderNotExtended {
+                    render() {
+                        return <div>333</div>;
+                    }
+                }
+   
+                ReactDOM.render(<ClassWithRenderNotExtended />, container);
 
 </script>
 

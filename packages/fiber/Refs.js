@@ -19,6 +19,10 @@ export let Refs = {
             if (isFn(ref) ) {
                 return ref(dom);
             }
+            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                ref.current = dom;
+                return;
+            }
             if (!owner) {
                 throw `Element ref was specified as a string (${ref}) but no owner was set`;
             }

@@ -101,7 +101,6 @@ function camelize(target) {
 function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-var options = oneObject(["beforeProps", "afterCreate", "beforeInsert", "beforeDelete", "beforeUpdate", "afterUpdate", "beforePatch", "afterPatch", "beforeUnmount", "afterMount"], noop);
 var numberMap = {
     "[object Boolean]": 2,
     "[object Number]": 3,
@@ -240,7 +239,6 @@ function ReactElement(type, tag, props, key, ref, owner) {
         }
         ret._owner = owner;
     }
-    options.afterCreate(ret);
     return ret;
 }
 function isValidElement(vnode) {
@@ -1530,7 +1528,6 @@ function getSVGAttributeName(name) {
     return svgCache[orig] = name;
 }
 function diffProps(dom, lastProps, nextProps, fiber) {
-    options.beforeProps(fiber);
     var isSVG = fiber.namespaceURI === NAMESPACE.svg;
     var tag = fiber.type;
     for (var name in nextProps) {
@@ -1787,6 +1784,9 @@ function findCatchComponent(topFiber, names) {
         name = void 0,
         fiber = topFiber,
         catchIt = void 0;
+    if (!topFiber) {
+        return;
+    }
     do {
         name = fiber.name;
         if (!fiber.return) {
@@ -1872,6 +1872,9 @@ function createInstance(fiber, context) {
             }
         } else {
             instance = new type(props, context);
+            if (!(instance instanceof Component)) {
+                throw type.name + " doesn't extend React.Component";
+            }
         }
     } catch (e) {
         pushError(fiber, "constructor", e);
@@ -2236,6 +2239,10 @@ var Refs = {
             if (isFn(ref)) {
                 return ref(dom);
             }
+            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
+                ref.current = dom;
+                return;
+            }
             if (!owner) {
                 throw "Element ref was specified as a string (" + ref + ") but no owner was set";
             }
@@ -2338,7 +2345,6 @@ function commitOtherEffects(fiber) {
                         updater._isMounted = returnTrue;
                         callLifeCycleHook(instance, "componentDidMount", []);
                     }
-                    delete fiber.pendingFiber;
                     delete updater._hydrating;
                     break;
                 case REF:
@@ -2743,7 +2749,7 @@ var DOMRenderer = createRenderer({
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
-if (prevReact && prevReact.options) {
+if (prevReact && prevReact.eventSystem) {
     React = prevReact;
 } else {
     var render = DOMRenderer.render,
@@ -2753,7 +2759,6 @@ if (prevReact && prevReact.options) {
         version: "1.3.1",
         render: render,
         hydrate: render,
-        options: options,
         Fragment: Fragment,
         PropTypes: PropTypes,
         Children: Children,

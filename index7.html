@@ -43,46 +43,24 @@
                   }
               };
          };
-    var list = []
-    function log(a){
-        list.push(a)
-    }
-    var   TogglingComponent = class extends React.Component {
-      state = {component: this.props.firstComponent};
-
-      componentDidMount() {
-        console.log("---mount")
-        log(ReactDOM.findDOMNode(this));
-        this.setState({component: this.props.secondComponent});
-      }
-
-      componentDidUpdate() {
-        console.log("---update")
-        log(ReactDOM.findDOMNode(this));
-      }
-
+         class Foo extends React.Component {
       render() {
-        const Component = this.state.component;
-        return Component ? <Component /> : null;
+        const children = {
+          a: <span />,
+          b: <span />,
+          c: <span />,
+        };
+        return <div>{[children]}</div>;
       }
-    };   
-   const instance1 = (
-      <TogglingComponent firstComponent={null} secondComponent={'div'} />
-    );
-    const instance2 = (
-      <TogglingComponent firstComponent={'div'} secondComponent={null} />
-    );
-
-    ReactTestUtils.renderIntoDocument(instance1);
-    ReactTestUtils.renderIntoDocument(instance2);
-/*
-    expect(log.calls.count()).toBe(4);
-    expect(log.calls.argsFor(0)[0]).toBe(null);
-    expect(log.calls.argsFor(1)[0].tagName).toBe('DIV');
-    expect(log.calls.argsFor(2)[0].tagName).toBe('DIV');
-    expect(log.calls.argsFor(3)[0]).toBe(null);
-*/
-console.log(list)   
+    }
+   // const container = document.createElement('div');
+    let ex;
+    try {
+      ReactDOM.render(<Foo />, container);
+    } catch (e) {
+      ex = e;
+      console.log("=====")
+    }
 </script>
 
 

@@ -7,7 +7,7 @@ import { createRef, forwardRef } from "react-core/createRef";
 import { createPortal } from "react-core/createPortal";
 import { createContext } from "react-core/createContext";
 import { createElement,cloneElement, isValidElement, createFactory } from "react-core/createElement";
-import { options, Fragment, getWindow } from "react-core/util";
+import { Fragment, getWindow } from "react-core/util";
 
 import { NoopRenderer} from "./NoopRenderer";
 
@@ -26,7 +26,6 @@ if (prevReact && prevReact.isReactNoop) {
         yield: NoopRenderer.yield,
         getRoot,
         getChildren,
-        options,
         isReactNoop: true,
         Fragment,
         PropTypes,

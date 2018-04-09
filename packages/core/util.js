@@ -132,21 +132,6 @@ export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
-export let options = oneObject(
-    [
-        "beforeProps",
-        "afterCreate",
-        "beforeInsert",
-        "beforeDelete",
-        "beforeUpdate",
-        "afterUpdate",
-        "beforePatch",
-        "afterPatch",
-        "beforeUnmount",
-        "afterMount"
-    ],
-    noop
-);
 
 let numberMap = {
     //null undefined IE6-8这里会返回[object Object]
