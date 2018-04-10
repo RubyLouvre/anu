@@ -5,13 +5,12 @@ export const ATTR = 5; //更新属性
 export const NULLREF = 7; //delete null
 export const DETACH = 11; //移出DOM树 componentWillUnmount
 export const HOOK = 13; //componentDidMount/Update/
-export const CHANGEREF = 17;//change ref
-export const REF = 19; //init ref
-export const CALLBACK = 23; //回调
-export const CAPTURE = 29; //出错
+export const REF = 17; // ref 总在钩子之后
+export const CALLBACK = 19; //回调
+export const CAPTURE = 23; //出错
 //上面的副作用的功能与位置可能变化频繁，我们需确保它们从小到大排列
 export const effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK,
-    CHANGEREF, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+    REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 export const effectLength = effectNames.length;

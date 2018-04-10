@@ -144,13 +144,12 @@ export let DOMRenderer = createRenderer({
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (type === 'option') {
+        if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;
             } else {
                 stateNode.duplexValue = stateNode.text;
             }
-          //  inputControll(fiber, stateNode, props);
         }
     },
     updateContext(fiber) {
@@ -168,6 +167,7 @@ export let DOMRenderer = createRenderer({
                 stateNode: root,
                 root: true,
                 tag: 5,
+                className: root.className,
                 name: "hostRoot",
                 type: ns ? root.tagName : root.tagName.toLowerCase(),
                 namespaceURI: ns, //必须知道第一个元素的文档类型

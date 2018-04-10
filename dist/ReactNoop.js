@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-09
+ * by 司徒正美 Copyright 2018-04-10
  * IE9+
  */
 
@@ -645,11 +645,10 @@ var ATTR = 5;
 var NULLREF = 7;
 var DETACH = 11;
 var HOOK = 13;
-var CHANGEREF = 17;
-var REF = 19;
-var CALLBACK = 23;
-var CAPTURE = 29;
-var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, CHANGEREF, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+var REF = 17;
+var CALLBACK = 19;
+var CAPTURE = 23;
+var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1244,27 +1243,28 @@ var Refs = {
 };
 
 function commitEffects(a) {
-    var arr = a || effects;
-    arr = commitPlaceEffects(arr);
-    for (var i = 0; i < arr.length; i++) {
-        commitOtherEffects(arr[i]);
+    var tasks = a || effects;
+    tasks = commitPlaceEffects(tasks);
+    Renderer.isRendering = true;
+    for (var i = 0, n = tasks.length; i < n; i++) {
+        commitOtherEffects(tasks[i]);
         if (Renderer.error) {
-            arr.length = 0;
+            tasks.length = 0;
             break;
         }
     }
-    arr.forEach(commitOtherEffects);
-    arr.length = effects.length = 0;
+    effects.length = 0;
     var error = Renderer.error;
+    Renderer.isRendering = false;
     if (error) {
         delete Renderer.error;
         throw error;
     }
 }
-function commitPlaceEffects(fibers) {
+function commitPlaceEffects(tasks) {
     var ret = [];
-    for (var i = 0, n = fibers.length; i < n; i++) {
-        var fiber = fibers[i];
+    for (var i = 0, n = tasks.length; i < n; i++) {
+        var fiber = tasks[i];
         var amount = fiber.effectTag;
         var remainder = amount / PLACE;
         var hasEffect = amount > 1;
@@ -1355,6 +1355,7 @@ function commitOtherEffects(fiber) {
 }
 
 var updateQueue = Renderer.mainThread;
+window.Renderer = Renderer;
 function render$1(vnode, root, callback) {
     var hostRoot = Renderer.updateRoot(root);
     var instance = null;
@@ -1375,7 +1376,9 @@ function render$1(vnode, root, callback) {
     hostRoot._hydrating = true;
     hostRoot.effectTag = CALLBACK;
     updateQueue.push(hostRoot);
-    Renderer.scheduleWork();
+    if (!Renderer.isRendering) {
+        Renderer.scheduleWork();
+    }
     return instance;
 }
 Renderer.scheduleWork = function () {
@@ -1395,6 +1398,9 @@ Renderer.batchedUpdates = function () {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
             commitEffects();
+            if (updateQueue.length) {
+                Renderer.scheduleWork();
+            }
         }
     }
 };

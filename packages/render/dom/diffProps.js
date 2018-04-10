@@ -122,7 +122,7 @@ function getFormValue(dom, props) {
     if (number) {
         for(let i in controlledStrategy){
             if(props.hasOwnProperty(i)){
-                return i 
+                return i; 
             }
         }
     }
@@ -130,10 +130,10 @@ function getFormValue(dom, props) {
 }
 export function diffProps(dom, lastProps, nextProps, fiber) {
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    let tag = fiber.type, number = 0
-    let controlled = "children"
+    let tag = fiber.type;
+    let controlled = "children";
     if( !isSVG && rform.test(fiber.type)){
-        controlled = getFormValue(dom, nextProps)
+        controlled = getFormValue(dom, nextProps);
     }
     //eslint-disable-next-line
     for (let name in nextProps) {
@@ -212,19 +212,19 @@ let builtinStringProps = {
 
 let rform = /textarea|input|select/i;
 function controlled(dom, name, nextProps, lastProps, fiber){
-    uncontrolled(dom, name, nextProps, lastProps, fiber, true)
+    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
 }
 function uncontrolled(dom, name, nextProps, lastProps, fiber, ok) {
-    let value = nextProps[name]
-    let isSelect = fiber.type === "select"
-    ok = ok || (isSelect && nextProps.multiple != lastProps. multiple)
+    let value = nextProps[name];
+    let isSelect = fiber.type === "select";
+    ok = ok || (isSelect && nextProps.multiple != lastProps. multiple);
     if(ok || lastProps === emptyObject){
-        name = fiber.type === "textarea" ? "innerHTML" : name
+        name = fiber.type === "textarea" ? "innerHTML" : name;
         dom[name] = dom._persistValue = value;
         if(isSelect){
             syncOptions({
                 target: dom
-            })
+            });
         }
     }
 }

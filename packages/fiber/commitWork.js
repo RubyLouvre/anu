@@ -17,24 +17,26 @@ import { returnFalse, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 export function commitEffects(a) {
-    var arr = a || effects;
-    arr = commitPlaceEffects(arr);
+   
+    let tasks = a || effects;
+    tasks = commitPlaceEffects(tasks);
+    Renderer.isRendering = true;
     /*
-    console.log(arr.reduce(function (pre, el) {
+    console.log(tasks.reduce(function (pre, el) {
         pre.push(el.effectTag, el);
         return pre;
     }, []));
-*/
-    for (var i = 0; i < arr.length; i++) {
-        commitOtherEffects(arr[i]);
+    */
+    for(let i = 0, n = tasks.length; i < n; i++){
+        commitOtherEffects(tasks[i]);
         if (Renderer.error) {
-            arr.length = 0;
+            tasks.length = 0;
             break;
         }
     }
-    arr.forEach(commitOtherEffects);
-    arr.length = effects.length = 0;
+    effects.length = 0;
     var error = Renderer.error;
+    Renderer.isRendering = false;
     if (error) {
         delete Renderer.error;
         throw error;
@@ -42,12 +44,12 @@ export function commitEffects(a) {
 }
 /**
  * 提先执行所有RLACE任务
- * @param {Fiber} fibers 
+ * @param {Fiber} tasks 
  */
-export function commitPlaceEffects(fibers) {
+export function commitPlaceEffects(tasks) {
     var ret = [];
-    for (let i = 0, n = fibers.length; i < n; i++) {
-        let fiber = fibers[i];
+    for (let i = 0, n = tasks.length; i < n; i++) {
+        let fiber = tasks[i];
         let amount = fiber.effectTag;
         let remainder = amount / PLACE;
         let hasEffect = amount > 1;

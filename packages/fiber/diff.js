@@ -6,7 +6,7 @@ import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
 import { __push, get } from "react-core/util";
 let updateQueue = Renderer.mainThread;
-
+window.Renderer = Renderer;
 export function render(vnode, root, callback) {
     let hostRoot = Renderer.updateRoot(root);
     let instance = null;
@@ -29,11 +29,14 @@ export function render(vnode, root, callback) {
     hostRoot._hydrating = true; // lock 表示正在渲染
     hostRoot.effectTag = CALLBACK;
     updateQueue.push(hostRoot);
-    Renderer.scheduleWork();
+    if(!Renderer.isRendering){      
+        Renderer.scheduleWork();     
+    }   
     return instance;
 }
 
 Renderer.scheduleWork = function () {
+   
     performWork({
         timeRemaining() {
             return 2;
@@ -51,6 +54,9 @@ Renderer.batchedUpdates = function () {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
             commitEffects();
+            if(updateQueue.length){
+                Renderer.scheduleWork();
+            }
         }
     }
 };
