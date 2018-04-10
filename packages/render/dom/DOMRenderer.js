@@ -3,6 +3,7 @@ import { document, NAMESPACE, contains } from "./browser";
 
 import {
     get,
+    innerHTML,
     emptyObject,
     topNodes,
     topFibers,
@@ -13,6 +14,7 @@ import { Fiber } from "react-fiber/Fiber";
 import { detachFiber } from "react-fiber/beginWork";
 import { commitEffects } from "react-fiber/commitWork";
 import { render } from "react-fiber/diff";
+import { textStack } from "react-fiber/util";
 
 
 export function createElement(vnode) {
@@ -137,9 +139,28 @@ function insertElement(fiber) {
 //其他Renderer也要实现这些方法
 export let DOMRenderer = createRenderer({
     render,
+    onlyRenderText(fiber){
+        switch(fiber.type){
+            case "option":
+            case "noscript":
+            case "textarea":
+            case "style":
+            case "script":
+               return true
+            default:
+               return false
+        }
+    },
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        if(this.onlyRenderText(fiber) && !props[innerHTML]){
+            var arr = textStack.shift() || []
+            var text = arr.reduce(function(a, b){
+                return a + b.props.children
+            }, "")
+            stateNode.innerHTML = text;
+        }
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;

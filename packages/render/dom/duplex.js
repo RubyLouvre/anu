@@ -44,16 +44,16 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     let multipleChange = isControlled || (isSelect && nextProps.multiple != lastProps.multiple);
     if (multipleChange || lastProps === emptyObject) {
         dom._persistValue = value;//非受控的情况下只更新一次，除非multiple发生变化
-        syncValue({ target: dom }); //设置value/check
+        syncValue({ target: dom }); //set value/checked
         var duplexType = "select";
         if (isSelect) {
-            syncOptions({
+            syncOptions({//set selected
                 target: dom
             });
         } else {
             duplexType = rchecked.test(dom.type) ? "checked" : "value";
         }
-        if (isControlled) {
+        if (isControlled) { // add event for controlled 
             var arr = duplexData[duplexType];
             arr[0].forEach(function (name) {
                 eventAction(dom, name, nextProps[name] || noop, lastProps, fiber);

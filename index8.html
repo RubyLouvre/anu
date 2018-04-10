@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -61,17 +61,18 @@
     node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
   }
 
+
+  const el = (
+        <option>
+          {1} <div>33</div> {2}
+        </option>
+      );
+      
     ReactDOM.render(
-      <input type="radio" value="" onChange={function() {}} />,
-      container,
+      el,
+      container
     );
-    expect(container.firstChild.value).toBe('');
-    ReactDOM.render(
-      <input type="radio" value={0} onChange={function() {}} />,
-      container,
-    );
-    expect(container.firstChild.value).toBe('0');
-    expect(container.firstChild.getAttribute('value')).toBe('0');
+  
    // });
 </script>
 

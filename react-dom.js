@@ -113,7 +113,8 @@
 
         // Check that the browser supports the APIs we need to implement our special
         // DEV version of invokeGuardedCallback
-        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function" && typeof document !== "undefined" && typeof document.createEvent === "function") {
+        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function" && typeof document !== "undefined" && 
+        typeof document.createEvent === "function") {
             var fakeNode = document.createElement("react");
 
             var invokeGuardedCallbackDev = function (name, func, context, a, b, c, d, e, f) {

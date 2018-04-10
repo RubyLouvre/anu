@@ -11,7 +11,7 @@
 
 var __push = Array.prototype.push;
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
-
+var innerHTML = "dangerouslySetInnerHTML";
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function Fragment(props) {
@@ -128,6 +128,9 @@ var Renderer = {
     mainThread: [],
     controlledCbs: [],
     mountOrder: 1,
+    onlyRenderText: function onlyRenderText() {
+        return false;
+    },
     currentOwner: null
 };
 
@@ -1615,8 +1618,9 @@ function Fiber(vnode) {
     this.effectTag = 1;
 }
 
-var componentStack = [];
+var ownerStack = [];
 var effects = [];
+var textStack = [];
 var containerStack = [];
 var contextStack = [emptyObject];
 
@@ -1646,7 +1650,7 @@ function pushError(fiber, hook, error) {
     var stack = describeError(names, hook);
     if (catchFiber) {
         disableEffect(fiber);
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }];
+        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
@@ -1840,6 +1844,9 @@ function updateHostComponent(fiber) {
         prev = fiber.alternate;
     var children = props && props.children;
     if (tag === 5) {
+        if (Renderer.onlyRenderText(fiber)) {
+            textStack.unshift([]);
+        }
         containerStack.unshift(fiber.stateNode);
         if (!root) {
             fiber.effectTag *= ATTR;
@@ -1849,6 +1856,9 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
+        if (textStack[0]) {
+            textStack[0].push(fiber);
+        }
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }
@@ -1945,8 +1955,8 @@ function updateClassComponent(fiber) {
     var lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
     var rendered = callLifeCycleHook(instance, "render", []);
-    if (componentStack[0] === instance) {
-        componentStack.shift();
+    if (ownerStack[0] === instance) {
+        ownerStack.shift();
     }
     if (updater._hasError) {
         rendered = [];
@@ -2035,8 +2045,8 @@ function cloneChildren(fiber) {
             cc[i] = a;
         }
     }
-    if (componentStack[0] === fiber.stateNode) {
-        componentStack.shift();
+    if (ownerStack[0] === fiber.stateNode) {
+        ownerStack.shift();
     }
 }
 function getMaskedContext(contextTypes, instance) {
@@ -2593,12 +2603,31 @@ function insertElement(fiber) {
 }
 var DOMRenderer = createRenderer({
     render: render$1,
+    onlyRenderText: function onlyRenderText(fiber) {
+        switch (fiber.type) {
+            case "option":
+            case "noscript":
+            case "textarea":
+            case "style":
+            case "script":
+                return true;
+            default:
+                return false;
+        }
+    },
     updateAttribute: function updateAttribute(fiber) {
         var type = fiber.type,
             props = fiber.props,
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        if (this.onlyRenderText(fiber) && !props[innerHTML]) {
+            var arr = textStack.shift() || [];
+            var text = arr.reduce(function (a, b) {
+                return a + b.props.children;
+            }, "");
+            stateNode.innerHTML = text;
+        }
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;
@@ -2647,10 +2676,10 @@ var DOMRenderer = createRenderer({
         var rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {
             var lastFiber = topFibers[rootIndex],
-                effects = [];
-            detachFiber(lastFiber, effects);
-            effects.shift();
-            commitEffects(effects);
+                effects$$1 = [];
+            detachFiber(lastFiber, effects$$1);
+            effects$$1.shift();
+            commitEffects(effects$$1);
             topNodes.splice(rootIndex, 1);
             topFibers.splice(rootIndex, 1);
             container._reactInternalFiber = null;

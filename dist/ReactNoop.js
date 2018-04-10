@@ -104,6 +104,9 @@ var Renderer = {
     mainThread: [],
     controlledCbs: [],
     mountOrder: 1,
+    onlyRenderText: function onlyRenderText() {
+        return false;
+    },
     currentOwner: null
 };
 
@@ -629,8 +632,9 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 }
 
-var componentStack = [];
+var ownerStack = [];
 var effects = [];
+var textStack = [];
 var containerStack = [];
 var contextStack = [emptyObject];
 
@@ -660,7 +664,7 @@ function pushError(fiber, hook, error) {
     var stack = describeError(names, hook);
     if (catchFiber) {
         disableEffect(fiber);
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }];
+        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
@@ -861,6 +865,9 @@ function updateHostComponent(fiber) {
         prev = fiber.alternate;
     var children = props && props.children;
     if (tag === 5) {
+        if (Renderer.onlyRenderText(fiber)) {
+            textStack.unshift([]);
+        }
         containerStack.unshift(fiber.stateNode);
         if (!root) {
             fiber.effectTag *= ATTR;
@@ -870,6 +877,9 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
+        if (textStack[0]) {
+            textStack[0].push(fiber);
+        }
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }
@@ -966,8 +976,8 @@ function updateClassComponent(fiber) {
     var lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
     var rendered = callLifeCycleHook(instance, "render", []);
-    if (componentStack[0] === instance) {
-        componentStack.shift();
+    if (ownerStack[0] === instance) {
+        ownerStack.shift();
     }
     if (updater._hasError) {
         rendered = [];
@@ -1056,8 +1066,8 @@ function cloneChildren(fiber) {
             cc[i] = a;
         }
     }
-    if (componentStack[0] === fiber.stateNode) {
-        componentStack.shift();
+    if (ownerStack[0] === fiber.stateNode) {
+        ownerStack.shift();
     }
 }
 function getMaskedContext(contextTypes, instance) {

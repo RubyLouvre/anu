@@ -1,13 +1,12 @@
 import { emptyObject } from "react-core/util";
 
-export const componentStack = [];
+export const ownerStack = [];
 export const effects = [];
-
+export const textStack = []
 export const containerStack = [];
 export const contextStack = [emptyObject];
 export function resetStack() {
-    containerStack.length = 0;
-    contextStack.length = 0;
+    containerStack.length = contextStack.length = textStack.length = 0;
     contextStack.push(emptyObject);
 }
 export function hasContextChanged() {

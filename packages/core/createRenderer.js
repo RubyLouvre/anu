@@ -8,5 +8,8 @@ export const Renderer = {
     mainThread: [],
     controlledCbs: [],
     mountOrder: 1,
+    onlyRenderText(){
+        return false
+    },
     currentOwner: null//vnode
 };

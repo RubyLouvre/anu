@@ -11,7 +11,7 @@ export function pushError(fiber, hook, error) {
     let stack = describeError(names, hook);
     if (catchFiber) {
         disableEffect(fiber); // 禁止患者节点执行钩子
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { componentStack: stack }];
+        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;

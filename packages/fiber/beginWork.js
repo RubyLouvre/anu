@@ -5,7 +5,7 @@ import { AnuPortal } from "react-core/createPortal";
 
 import { Renderer } from "react-core/createRenderer";
 
-import { contextStack, componentStack, containerStack, hasContextChanged } from "./util";
+import { contextStack, textStack, ownerStack, containerStack, hasContextChanged } from "./util";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
@@ -65,6 +65,9 @@ function updateHostComponent(fiber) {
     const { props, tag, root, alternate: prev } = fiber;
     const children = props && props.children;
     if (tag === 5) {
+        if(Renderer.onlyRenderText(fiber)){
+            textStack.unshift([])
+        }
         // 元素节点
         containerStack.unshift(fiber.stateNode);
         if (!root) {
@@ -75,6 +78,9 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
+        if(textStack[0]){
+           textStack[0].push(fiber)
+        }
         // 文本节点
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
@@ -180,8 +186,8 @@ function updateClassComponent(fiber) {
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
     let rendered = callLifeCycleHook(instance, "render", []);
-    if (componentStack[0] === instance) {
-        componentStack.shift();
+    if (ownerStack[0] === instance) {
+        ownerStack.shift();
     }
     if (updater._hasError) {
         rendered = [];
@@ -275,8 +281,8 @@ function cloneChildren(fiber) {
             cc[i] = a;
         }
     }
-    if (componentStack[0] === fiber.stateNode) {
-        componentStack.shift();
+    if (ownerStack[0] === fiber.stateNode) {
+        ownerStack.shift();
     }
 }
 function getMaskedContext(contextTypes, instance) {
