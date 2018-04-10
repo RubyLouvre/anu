@@ -841,9 +841,23 @@ var eventLowerCache = {
     onChange: "change",
     onWheel: "wheel"
 };
-function isEventName(name) {
-    return (/^on[A-Z]/.test(name)
-    );
+function eventAction(dom, name, val, lastProps, fiber) {
+    var events = dom.__events || (dom.__events = {});
+    events.vnode = fiber;
+    var refName = toLowerCase(name.slice(2));
+    if (val === false) {
+        delete events[refName];
+    } else {
+        if (!lastProps[name]) {
+            var eventName = getBrowserName(name);
+            var hook = eventHooks[eventName];
+            addGlobalEvent(eventName);
+            if (hook) {
+                hook(dom, eventName);
+            }
+        }
+        events[refName] = val;
+    }
 }
 var isTouch = "ontouchstart" in document;
 function mountSorter(u1, u2) {
@@ -1134,9 +1148,7 @@ Object.freeze || (Object.freeze = function (a) {
 var eventSystem = Object.freeze({
 	eventPropHooks: eventPropHooks,
 	eventHooks: eventHooks,
-	eventLowerCache: eventLowerCache,
-	isEventName: isEventName,
-	isTouch: isTouch,
+	eventAction: eventAction,
 	dispatchEvent: dispatchEvent,
 	addGlobalEvent: addGlobalEvent,
 	addEvent: addEvent,
@@ -1210,7 +1222,154 @@ function cssName(name, dom) {
     return null;
 }
 
+function getDuplexProps(dom, props) {
+    var type = dom.type || dom.tagName.toLowerCase();
+    var number = duplexMap[type];
+    if (number) {
+        for (var i in controlledStrategy) {
+            if (props.hasOwnProperty(i)) {
+                return i;
+            }
+        }
+    }
+    return "children";
+}
+var controlledStrategy = {
+    value: controlled,
+    checked: controlled,
+    defaultValue: uncontrolled,
+    defaultChecked: uncontrolled,
+    children: noop
+};
+var rchecked = /checkbox|radio/;
+function controlled(dom, name, nextProps, lastProps, fiber) {
+    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
+}
+function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
+    var isControlled = !!six;
+    var isSelect = fiber.type === "select";
+    var value = nextProps[name];
+    if (!isSelect) {
+        if (name.indexOf("alue") !== -1) {
+            var canSetVal = true;
+            value = toString(value);
+        } else {
+            value = !!value;
+        }
+    }
+    var multipleChange = isControlled || isSelect && nextProps.multiple != lastProps.multiple;
+    if (multipleChange || lastProps === emptyObject) {
+        dom._persistValue = value;
+        syncValue({ target: dom });
+        var duplexType = "select";
+        if (isSelect) {
+            syncOptions({
+                target: dom
+            });
+        } else {
+            duplexType = rchecked.test(dom.type) ? "checked" : "value";
+        }
+        if (isControlled) {
+            var arr = duplexData[duplexType];
+            arr[0].forEach(function (name) {
+                eventAction(dom, name, nextProps[name] || noop, lastProps, fiber);
+            });
+            fiber.controlledCb = arr[1];
+            Renderer.controlledCbs.push(fiber);
+        }
+    }
+    if (canSetVal) {
+        if (rchecked.test(dom.type)) {
+            value = "value" in nextProps ? nextProps.value : "on";
+        }
+        dom.__anuSetValue = true;
+        dom.setAttribute("value", value);
+        dom.__anuSetValue = false;
+    }
+}
+function syncOptions(e) {
+    var target = e.target,
+        value = target._persistValue,
+        options = target.options;
+    if (target.multiple) {
+        updateOptionsMore(options, options.length, value);
+    } else {
+        updateOptionsOne(options, options.length, value);
+    }
+    target._setSelected = true;
+}
+function syncValue(_ref) {
+    var dom = _ref.target;
+    var name = rchecked.test(dom.type) ? "checked" : "value";
+    var value = dom._persistValue;
+    if (dom[name] + "" !== value + "") {
+        dom.__anuSetValue = true;
+        dom[name] = dom._persistValue = value;
+        if (dom.type === "textarea") {
+            dom.innerHTML = value;
+        }
+        dom.__anuSetValue = false;
+    }
+}
+var duplexData = {
+    select: [["onChange"], syncOptions],
+    value: [["onChange", "onInput"], syncValue],
+    checked: [["onChange", "onClick"], syncValue]
+};
+function toString(a) {
+    var t = typeNumber(a);
+    if (t < 2 || t > 4) {
+        if (t === 8 && a.hasOwnProperty("toString")) {
+            return a.toString();
+        }
+        return "";
+    }
+    return a + "";
+}
+function updateOptionsOne(options, n, propValue) {
+    var stringValues = {},
+        noDisableds = [];
+    for (var i = 0; i < n; i++) {
+        var option = options[i];
+        var value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
+        if (value === propValue) {
+            return setOptionSelected(option, true);
+        }
+        stringValues["&" + value] = option;
+    }
+    var match = stringValues["&" + propValue];
+    if (match) {
+        return setOptionSelected(match, true);
+    }
+    if (n && noDisableds[0]) {
+        setOptionSelected(noDisableds[0], true);
+    }
+}
+function updateOptionsMore(options, n, propValue) {
+    var selectedValue = {};
+    try {
+        for (var i = 0; i < propValue.length; i++) {
+            selectedValue["&" + propValue[i]] = true;
+        }
+    } catch (e) {
+        console.log('the value of multiple select should be an array');
+    }
+    for (var _i = 0; _i < n; _i++) {
+        var option = options[_i];
+        var value = option.duplexValue;
+        var selected = selectedValue.hasOwnProperty("&" + value);
+        setOptionSelected(option, selected);
+    }
+}
+function setOptionSelected(dom, selected) {
+    dom.selected = selected;
+}
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+var rform = /textarea|input|select/i;
 var isSpecialAttr = {
     style: 1,
     autoFocus: 1,
@@ -1343,6 +1502,10 @@ function isBooleanAttr(dom, name) {
     var val = dom[name];
     return val === true || val === false;
 }
+function isEventName(name) {
+    return (/^on[A-Z]/.test(name)
+    );
+}
 function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
         return "svgClass";
@@ -1434,24 +1597,7 @@ var actionStrategy = {
             } catch (e) {          }
         }
     },
-    event: function event(dom, name, val, lastProps, fiber) {
-        var events = dom.__events || (dom.__events = {});
-        events.vnode = fiber;
-        var refName = toLowerCase(name.slice(2));
-        if (val === false) {
-            delete events[refName];
-        } else {
-            if (!lastProps[name]) {
-                var eventName = getBrowserName(name);
-                var hook = eventHooks[eventName];
-                addGlobalEvent(eventName);
-                if (hook) {
-                    hook(dom, eventName);
-                }
-            }
-            events[refName] = val;
-        }
-    },
+    event: eventAction,
     dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
@@ -1461,152 +1607,6 @@ var actionStrategy = {
         }
     }
 };
-function getDuplexProps(dom, props) {
-    var type = dom.type || dom.tagName.toLowerCase();
-    var number = duplexMap[type];
-    if (number) {
-        for (var i in controlledStrategy) {
-            if (props.hasOwnProperty(i)) {
-                return i;
-            }
-        }
-    }
-    return "children";
-}
-var controlledStrategy = {
-    value: controlled,
-    checked: controlled,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    children: noop
-};
-var rform = /textarea|input|select/i;
-var rchecked = /checkbox|radio/;
-function controlled(dom, name, nextProps, lastProps, fiber) {
-    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
-}
-function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
-    var isControlled = !!six;
-    var isSelect = fiber.type === "select";
-    var value = nextProps[name];
-    if (!isSelect) {
-        if (name.indexOf("alue") !== -1) {
-            var canSetVal = true;
-            value = toString(value);
-        } else {
-            value = !!value;
-        }
-    }
-    var multipleChange = isControlled || isSelect && nextProps.multiple != lastProps.multiple;
-    if (multipleChange || lastProps === emptyObject) {
-        dom._persistValue = value;
-        syncValue({ target: dom });
-        var duplexType = "select";
-        if (isSelect) {
-            syncOptions({
-                target: dom
-            });
-        } else {
-            duplexType = rchecked.test(dom.type) ? "checked" : "value";
-        }
-        if (isControlled) {
-            var arr = duplexData[duplexType];
-            arr[0].forEach(function (name) {
-                actionStrategy.event(dom, name, nextProps[name] || noop, lastProps, fiber);
-            });
-            fiber.controlledCb = arr[1];
-            Renderer.controlledCbs.push(fiber);
-        }
-    }
-    if (canSetVal) {
-        if (rchecked.test(dom.type)) {
-            value = "value" in nextProps ? nextProps.value : "on";
-        }
-        dom.__anuSetValue = true;
-        dom.setAttribute("value", value);
-        dom.__anuSetValue = false;
-    }
-}
-function syncOptions(e) {
-    var target = e.target,
-        value = target._persistValue,
-        options = target.options;
-    if (target.multiple) {
-        updateOptionsMore(options, options.length, value);
-    } else {
-        updateOptionsOne(options, options.length, value);
-    }
-    target._setSelected = true;
-}
-function syncValue(_ref2) {
-    var dom = _ref2.target;
-    var name = rchecked.test(dom.type) ? "checked" : "value";
-    var value = dom._persistValue;
-    if (dom[name] + "" !== value + "") {
-        dom.__anuSetValue = true;
-        dom[name] = dom._persistValue = value;
-        if (dom.type === "textarea") {
-            dom.innerHTML = value;
-        }
-        dom.__anuSetValue = false;
-    }
-}
-var duplexData = {
-    select: [["onChange"], syncOptions],
-    value: [["onChange", "onInput"], syncValue],
-    checked: [["onChange", "onClick"], syncValue]
-};
-function toString(a) {
-    var t = typeNumber(a);
-    if (t < 2 || t > 4) {
-        if (t === 8 && a.hasOwnProperty("toString")) {
-            return a.toString();
-        }
-        return "";
-    }
-    return a + "";
-}
-function updateOptionsOne(options, n, propValue) {
-    var stringValues = {},
-        noDisableds = [];
-    for (var i = 0; i < n; i++) {
-        var option = options[i];
-        var value = option.duplexValue;
-        if (!option.disabled) {
-            noDisableds.push(option);
-        }
-        if (value === propValue) {
-            return setOptionSelected(option, true);
-        }
-        stringValues["&" + value] = option;
-    }
-    var match = stringValues["&" + propValue];
-    if (match) {
-        return setOptionSelected(match, true);
-    }
-    if (n && noDisableds[0]) {
-        setOptionSelected(noDisableds[0], true);
-    }
-}
-function updateOptionsMore(options, n, propValue) {
-    var selectedValue = {};
-    try {
-        for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
-        }
-    } catch (e) {
-        console.log('the value of multiple select should be an array');
-    }
-    for (var _i = 0; _i < n; _i++) {
-        var option = options[_i];
-        var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
-        setOptionSelected(option, selected);
-    }
-}
-function setOptionSelected(dom, selected) {
-    dom.selected = selected;
-}
 
 function Fiber(vnode) {
     extend(this, vnode);

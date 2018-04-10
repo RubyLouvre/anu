@@ -1,5 +1,5 @@
 import { document, modern, contains } from "./browser";
-import { isFn, noop, __push } from "react-core/util";
+import { isFn, noop, __push, toLowerCase } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 
 let globalEvents = {};
@@ -8,22 +8,35 @@ export let eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
 // onMouseMove --> mousemove
 
-export let eventLowerCache = {
+let eventLowerCache = {
     onClick: "click",
     onChange: "change",
     onWheel: "wheel"
 };
-/**
- * 判定否为与事件相关
- *
- * @param {any} name
- * @returns
- */
-export function isEventName(name) {
-    return /^on[A-Z]/.test(name);
+
+export function eventAction (dom, name, val, lastProps, fiber) {
+    let events = dom.__events || (dom.__events = {});
+    events.vnode = fiber;
+    let refName = toLowerCase(name.slice(2));
+    if (val === false) {
+        delete events[refName];
+    } else {
+        if (!lastProps[name]) {
+            //添加全局监听事件
+            let eventName = getBrowserName(name);
+            let hook = eventHooks[eventName];
+            addGlobalEvent(eventName);
+            if (hook) {
+                hook(dom, eventName);
+            }
+        }
+        //onClick --> click, onClickCapture --> clickcapture
+        events[refName] = val;
+    }
 }
 
-export let isTouch = "ontouchstart" in document;
+let isTouch = "ontouchstart" in document;
+
 function mountSorter(u1, u2) {
     return u1.stateNode.updater.mountOrder - u2.stateNode.updater.mountOrder;
 }
