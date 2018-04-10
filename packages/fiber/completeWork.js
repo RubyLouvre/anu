@@ -13,14 +13,14 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
     if(!fiber){
         return [];
     }
-    let effects = fiber.effects ; //将自己
+    let effects = fiber.effects ; 
     if (effects) {
         delete fiber.effects;
 
     } else {
         effects = [];
     }
-    //一开始
+  
     if (isTop && fiber.tag == 5) { //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
     }
@@ -47,7 +47,6 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
                 __push.apply(effects, collectEffects(child, true));
             }
         } else {
-            //__push.apply(effects, collectEffects(get(child.stateNode) ));
             __push.apply(effects, collectEffects(child));
            
         }
