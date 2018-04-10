@@ -135,7 +135,9 @@ export function inputControll(vnode, dom, props) {
         let event2 = data[6];
         if (!hasOtherControllProperty(props, keys)) {
             // eslint-disable-next-line
-          //  toWarnDev(`你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，\n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，框架将不允许你通过输入改变该值`);
+          /*  toWarnDev(`你为${vnode.type}[type=${domType}]元素指定了**受控属性**${duplexProp}，
+          \n但是没有提供另外的${Object.keys(keys)}\n来操作${duplexProp}的值，框架将不允许你通过输入改变该值`);
+          */
             dom["on" + event1] = handle;
             dom["on" + event2] = handle;
         } else {

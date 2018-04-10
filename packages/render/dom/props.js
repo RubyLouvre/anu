@@ -1,7 +1,7 @@
 import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { toLowerCase, noop, typeNumber, emptyObject } from "react-core/util";
+import { toLowerCase, noop, typeNumber, emptyObject, hasSymbol } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 
 //布尔属性的值末必为true,false
@@ -116,24 +116,13 @@ function getSVGAttributeName(name) {
 
     return (svgCache[orig] = name);
 }
-function getFormValue(dom, props) {
-    let type = dom.type || dom.tagName.toLowerCase();
-    let number = duplexMap[type];
-    if (number) {
-        for(let i in controlledStrategy){
-            if(props.hasOwnProperty(i)){
-                return i; 
-            }
-        }
-    }
-    return "children";
-}
+
 export function diffProps(dom, lastProps, nextProps, fiber) {
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
     let tag = fiber.type;
     let controlled = "children";
-    if( !isSVG && rform.test(fiber.type)){
-        controlled = getFormValue(dom, nextProps);
+    if (!isSVG && rform.test(fiber.type)) {
+        controlled = getDuplexProps(dom, nextProps);
     }
     //eslint-disable-next-line
     for (let name in nextProps) {
@@ -164,7 +153,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
-    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber );
+    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber);
 }
 
 function isBooleanAttr(dom, name) {
@@ -209,40 +198,6 @@ let builtinStringProps = {
     alt: 1,
     lang: 1
 };
-
-let rform = /textarea|input|select/i;
-function controlled(dom, name, nextProps, lastProps, fiber){
-    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
-}
-function uncontrolled(dom, name, nextProps, lastProps, fiber, ok) {
-    let value = nextProps[name];
-    let isSelect = fiber.type === "select";
-    ok = ok || (isSelect && nextProps.multiple != lastProps. multiple);
-    if(ok || lastProps === emptyObject){
-        dom._persistValue = value;
-        syncValue({target: dom}); //设置value/check
-        var duplexType = "select";
-        if(isSelect){
-            syncOptions({
-                target: dom
-            });
-        }else {
-            duplexType = dom.type === "checkebox" || dom.type === "radio" ? "checked": "value";
-        }
-        var arr = duplexData[duplexType];
-        fiber.controlledCb = arr[1];
-        Renderer.controlledCbs.push(fiber);
-    }
-}
-
-let controlledStrategy = {
-    value: controlled,
-    checked: controlled,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    children: noop
-};
-
 
 export let actionStrategy = {
     innerHTML: noop,
@@ -347,17 +302,75 @@ export let actionStrategy = {
     }
 };
 
-
-
-function syncValue({target: dom}){
-    let name = dom.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
-    let value = dom._persistValue;
-    if (dom[name] !== value) {
-        dom.__anuSetValue = true;//抑制onpropertychange
-        dom[name] = dom._persistValue = value;
+//=============duplex==========
+function getDuplexProps(dom, props) {
+    let type = dom.type || dom.tagName.toLowerCase();
+    let number = duplexMap[type];
+    if (number) {
+        for (let i in controlledStrategy) {
+            if (props.hasOwnProperty(i)) {
+                return i;
+            }
+        }
+    }
+    return "children";
+}
+export let controlledStrategy = {
+    value: controlled,
+    checked: controlled,
+    defaultValue: uncontrolled,
+    defaultChecked: uncontrolled,
+    children: noop
+};
+let rform = /textarea|input|select/i;
+let rchecked = /checkbox|radio/;
+function controlled(dom, name, nextProps, lastProps, fiber) {
+    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
+}
+function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
+    let isControlled = !!six;
+    let isSelect = fiber.type === "select";
+    let value = nextProps[name];
+    if(!isSelect){
+        if(name.indexOf("alue") !== -1){
+            var canSetVal = true;
+            value = toString(value);
+        }else{
+            value = !!value;
+        }
+    }
+    let multipleChange = isControlled || (isSelect && nextProps.multiple != lastProps.multiple);
+    if (multipleChange || lastProps === emptyObject) {
+        dom._persistValue = value;//非受控的情况下只更新一次，除非multiple发生变化
+        syncValue({ target: dom }); //设置value/check
+        var duplexType = "select";
+        if (isSelect) {
+            syncOptions({
+                target: dom
+            });
+        } else {
+            duplexType = rchecked.test(dom.type) ? "checked" : "value";
+        }
+        if (isControlled) {
+            var arr = duplexData[duplexType];
+            arr[0].forEach(function (name) {
+                actionStrategy.event(dom, name, nextProps[name] || noop, lastProps, fiber);
+            });
+            fiber.controlledCb = arr[1];
+            Renderer.controlledCbs.push(fiber);
+        }
+    }
+    //必须设置完dom.value=yyy后才能设置dom.setAttribute("value",xxx)
+    if (canSetVal) {
+        if(rchecked.test(dom.type)  ){
+            value = "value" in nextProps ? nextProps.value: "on";
+        }
+        dom.__anuSetValue = true;
+        dom.setAttribute("value", value);
         dom.__anuSetValue = false;
     }
 }
+
 function syncOptions(e) {
     let target = e.target,
         value = target._persistValue,
@@ -370,11 +383,36 @@ function syncOptions(e) {
     target._setSelected = true;
 }
 
+function syncValue({ target: dom }) {
+    let name = rchecked.test(dom.type) ? "checked" : "value";
+   
+    let value = dom._persistValue;
+    if (dom[name]+"" !== value + "") { //全部转数字再比较
+        dom.__anuSetValue = true;//抑制onpropertychange
+        dom[name] = dom._persistValue = value;
+        if (dom.type === "textarea") {
+            dom.innerHTML = value;
+        }
+        dom.__anuSetValue = false;
+    }
+}
+
 var duplexData = {
-    select: [["change"],syncOptions],
-    value:[["change","input"],syncValue],
-    checked:[["change","click"],syncValue]
+    select: [["onChange"], syncOptions],
+    value: [["onChange", "onInput"], syncValue],
+    checked: [["onChange", "onClick"], syncValue]
 };
+
+function toString(a) {
+    var t = typeNumber(a);
+    if (t < 2 || t > 4) {
+        if (t === 8 && a.hasOwnProperty("toString")){
+            return a.toString();
+        }
+        return "";
+    }
+    return a + "";
+}
 
 function updateOptionsOne(options, n, propValue) {
     let stringValues = {},
@@ -389,9 +427,9 @@ function updateOptionsOne(options, n, propValue) {
             //精确匹配
             return setOptionSelected(option, true);
         }
-        stringValues["&"+value] = option;
+        stringValues["&" + value] = option;
     }
-    let match = stringValues["&"+propValue];
+    let match = stringValues["&" + propValue];
     if (match) {
         //字符串模糊匹配
         return setOptionSelected(match, true);

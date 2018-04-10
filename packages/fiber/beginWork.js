@@ -5,7 +5,6 @@ import { AnuPortal } from "react-core/createPortal";
 
 import { Renderer } from "react-core/createRenderer";
 
-
 import { contextStack, componentStack, containerStack, hasContextChanged } from "./util";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";

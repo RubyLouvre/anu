@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>-->
-  <!--  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+   <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>
+   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
@@ -50,10 +50,9 @@
                   }
               };
             }
-            const log = [];
-            let stub;
+           
 
-          setUntrackedValue = Object.getOwnPropertyDescriptor(
+   setUntrackedValue = Object.getOwnPropertyDescriptor(
       HTMLInputElement.prototype,
       'value',
     ).set;
@@ -61,32 +60,19 @@
     function dispatchEventOnNode(node, type) {
     node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
   }
-class Input extends React.Component{
-   state = {
-     value: 222
-   }
-   onChange = (e)=>{
-     this.setState({value: e.target.value})
-   }
-   render(){
-      return <input type="text" value={this.state.value} onChange={this.onChange} />
-   }
-}
-             stub = ReactDOM.render(<Input />, container);
-           
-          
 
-            const node = ReactDOM.findDOMNode(stub);
-
-            setUntrackedValue.call(node, 'giraffe');
-
-            // This must use the native event dispatching. If we simulate, we will
-            // bypass the lazy event attachment system so we won't actually test this.
-            dispatchEventOnNode(node, 'change');
-
-            expect(node.value).toBe('lion');
-
-           // document.body.removeChild(container);
+    ReactDOM.render(
+      <input type="radio" value="" onChange={function() {}} />,
+      container,
+    );
+    expect(container.firstChild.value).toBe('');
+    ReactDOM.render(
+      <input type="radio" value={0} onChange={function() {}} />,
+      container,
+    );
+    expect(container.firstChild.value).toBe('0');
+    expect(container.firstChild.getAttribute('value')).toBe('0');
+   // });
 </script>
 
 

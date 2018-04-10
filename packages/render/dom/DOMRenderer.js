@@ -1,4 +1,4 @@
-import { diffProps } from "./diffProps";
+import { diffProps } from "./props";
 import { document, NAMESPACE, contains } from "./browser";
 
 import {
