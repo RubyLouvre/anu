@@ -131,6 +131,7 @@ function updateOptionsOne(options, n, propValue) {
         }
         stringValues["&" + value] = option;
     }
+
     let match = stringValues["&" + propValue];
     if (match) {
         //字符串模糊匹配

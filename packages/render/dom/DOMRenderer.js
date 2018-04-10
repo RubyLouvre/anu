@@ -154,11 +154,11 @@ export let DOMRenderer = createRenderer({
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if(this.onlyRenderText(fiber) && !props[innerHTML]){
-            var arr = textStack.shift() || []
-            var text = arr.reduce(function(a, b){
+        if(fiber.textNodes && !props[innerHTML]){
+            var text = fiber.textNodes.reduce(function(a, b){
                 return a + b.props.children
             }, "")
+            delete fiber.textNodes
             stateNode.innerHTML = text;
         }
         if (type === "option") {

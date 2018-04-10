@@ -866,7 +866,12 @@ function updateHostComponent(fiber) {
     var children = props && props.children;
     if (tag === 5) {
         if (Renderer.onlyRenderText(fiber)) {
-            textStack.unshift([]);
+            if (fiber.textNodes) {
+                textStack.shift();
+            } else {
+                var t = fiber.textNodes = [];
+                textStack.unshift(t);
+            }
         }
         containerStack.unshift(fiber.stateNode);
         if (!root) {

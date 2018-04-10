@@ -66,7 +66,12 @@ function updateHostComponent(fiber) {
     const children = props && props.children;
     if (tag === 5) {
         if(Renderer.onlyRenderText(fiber)){
-            textStack.unshift([])
+            if(fiber.textNodes){
+                textStack.shift()
+            }else{
+               var t = fiber.textNodes = []
+               textStack.unshift(t)
+            }
         }
         // 元素节点
         containerStack.unshift(fiber.stateNode);

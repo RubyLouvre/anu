@@ -1845,7 +1845,12 @@ function updateHostComponent(fiber) {
     var children = props && props.children;
     if (tag === 5) {
         if (Renderer.onlyRenderText(fiber)) {
-            textStack.unshift([]);
+            if (fiber.textNodes) {
+                textStack.shift();
+            } else {
+                var t = fiber.textNodes = [];
+                textStack.unshift(t);
+            }
         }
         containerStack.unshift(fiber.stateNode);
         if (!root) {
@@ -2621,11 +2626,11 @@ var DOMRenderer = createRenderer({
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (this.onlyRenderText(fiber) && !props[innerHTML]) {
-            var arr = textStack.shift() || [];
-            var text = arr.reduce(function (a, b) {
+        if (fiber.textNodes && !props[innerHTML]) {
+            var text = fiber.textNodes.reduce(function (a, b) {
                 return a + b.props.children;
             }, "");
+            delete fiber.textNodes;
             stateNode.innerHTML = text;
         }
         if (type === "option") {

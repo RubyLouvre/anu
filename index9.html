@@ -49,11 +49,23 @@
               };
          };
 
-         let stub = <option dangerouslySetInnerHTML={{__html: 'foobar'}} />;
-         stub = ReactTestUtils.renderIntoDocument(stub);
-     
+         const a = 'a';
+         let stub = (
+           <select value="giraffe" onChange={() => {}}>
+             <option>monkey</option>
+             <option>gir{a}ffe</option>
+             <option>gorill{a}</option>
+           </select>
+         );
+         const options = stub.props.children;
+        // const container = document.createElement('div');
+         stub = ReactDOM.render(stub, container);
          const node = ReactDOM.findDOMNode(stub);
-         expect(node.innerHTML).toBe('foobar');
+     
+         expect(node.selectedIndex).toBe(1);
+     console.log(options)
+         ReactDOM.render(<select value="gorilla">{options}</select>, container);
+         expect(node.selectedIndex).toEqual(2);
          
 </script>
 
