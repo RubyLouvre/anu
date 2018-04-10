@@ -50,38 +50,43 @@
                   }
               };
             }
-            const nonReactElemID = 'aID';
-      const innerHTML = {__html: `<div id="${nonReactElemID}"></div>`};
-      const closestInstanceID = 'closestInstance';
-      let currentTargetID = null;
-  
-      class ClosestInstance extends React.Component {
-        _onClick = e => {
-          currentTargetID = e.currentTarget.id;
-        };
-        render() {
-          return (
-            <div
-              id={closestInstanceID}
-              onClick={this._onClick}
-              dangerouslySetInnerHTML={innerHTML}
-            />
-          );
-        }
-      }
-  
-      function simulateClick(elem) {
-        const event = new MouseEvent('click', {
-          bubbles: true,
-        });
-        elem.dispatchEvent(event);
-      }
-  
-      const component = <ClosestInstance />;
-      ReactDOM.render(<section>{component}</section>, container);
-      expect(currentTargetID).toBe(null);
-      simulateClick(document.getElementById(nonReactElemID));
-      expect(currentTargetID).toBe(closestInstanceID);
+            const log = [];
+            let stub;
+
+          setUntrackedValue = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value',
+    ).set;
+
+    function dispatchEventOnNode(node, type) {
+    node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
+  }
+class Input extends React.Component{
+   state = {
+     value: 222
+   }
+   onChange = (e)=>{
+     this.setState({value: e.target.value})
+   }
+   render(){
+      return <input type="text" value={this.state.value} onChange={this.onChange} />
+   }
+}
+             stub = ReactDOM.render(<Input />, container);
+           
+          
+
+            const node = ReactDOM.findDOMNode(stub);
+
+            setUntrackedValue.call(node, 'giraffe');
+
+            // This must use the native event dispatching. If we simulate, we will
+            // bypass the lazy event attachment system so we won't actually test this.
+            dispatchEventOnNode(node, 'change');
+
+            expect(node.value).toBe('lion');
+
+           // document.body.removeChild(container);
 </script>
 
 

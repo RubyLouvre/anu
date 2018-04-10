@@ -57,14 +57,17 @@
            };
      
            componentDidMount() {
+             console.log("componentDidMount")
              this._renderNested();
            }
      
            componentDidUpdate() {
+            console.log("componentDidUpdate")
              this._renderNested();
            }
      
            _handleChange(event) {
+             console.log(event.type, "_handleChange")
              this.setState({value: event.target.value});
            }
      
@@ -72,7 +75,7 @@
              ReactDOM.render(
                <select
                  onChange={this._handleChange.bind(this)}
-                 ref={n => (selectNode = n)}
+                 ref={n => (console.log(n), selectNode = n)}
                  value={this.state.value}>
                  <option value="monkey">A monkey!</option>
                  <option value="giraffe">A giraffe!</option>
@@ -83,7 +86,7 @@
            }
      
            render() {
-             return <div ref={n => (this._nestingContainer = n)} />;
+             return <div className="内部DIV" ref={n => (console.log(n),this._nestingContainer = n)} />;
            }
          }
      
@@ -96,13 +99,13 @@
          expect(selectNode.value).toBe('giraffe');
      
          selectNode.value = 'gorilla';
-     
+         console.log("触发input事件")
          let nativeEvent = document.createEvent('Event');
          nativeEvent.initEvent('input', true, true);
          selectNode.dispatchEvent(nativeEvent);
      
          expect(selectNode.value).toEqual('gorilla');
-     
+         console.log("触发change事件")
          nativeEvent = document.createEvent('Event');
          nativeEvent.initEvent('change', true, true);
          selectNode.dispatchEvent(nativeEvent);
@@ -110,6 +113,7 @@
          expect(selectNode.value).toEqual('gorilla');
      
          document.body.removeChild(container);
+         
 </script>
 
 

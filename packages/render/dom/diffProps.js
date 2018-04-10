@@ -1,8 +1,8 @@
 import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
-import { inputMonitor } from "./inputMonitor";
-import { toLowerCase, noop, typeNumber,toWarnDev, emptyObject } from "react-core/util";
+import { toLowerCase, noop, typeNumber, emptyObject } from "react-core/util";
+import { Renderer } from "react-core/createRenderer";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
@@ -219,15 +219,22 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, ok) {
     let isSelect = fiber.type === "select";
     ok = ok || (isSelect && nextProps.multiple != lastProps. multiple);
     if(ok || lastProps === emptyObject){
-        name = fiber.type === "textarea" ? "innerHTML" : name;
-        dom[name] = dom._persistValue = value;
+        dom._persistValue = value;
+        syncValue({target: dom}); //设置value/check
+        var duplexType = "select";
         if(isSelect){
             syncOptions({
                 target: dom
             });
+        }else {
+            duplexType = dom.type === "checkebox" || dom.type === "radio" ? "checked": "value";
         }
+        var arr = duplexData[duplexType];
+        fiber.controlledCb = arr[1];
+        Renderer.controlledCbs.push(fiber);
     }
 }
+
 let controlledStrategy = {
     value: controlled,
     checked: controlled,
@@ -342,6 +349,15 @@ export let actionStrategy = {
 
 
 
+function syncValue({target: dom}){
+    let name = dom.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
+    let value = dom._persistValue;
+    if (dom[name] !== value) {
+        dom.__anuSetValue = true;//抑制onpropertychange
+        dom[name] = dom._persistValue = value;
+        dom.__anuSetValue = false;
+    }
+}
 function syncOptions(e) {
     let target = e.target,
         value = target._persistValue,
@@ -353,6 +369,12 @@ function syncOptions(e) {
     }
     target._setSelected = true;
 }
+
+var duplexData = {
+    select: [["change"],syncOptions],
+    value:[["change","input"],syncValue],
+    checked:[["change","click"],syncValue]
+};
 
 function updateOptionsOne(options, n, propValue) {
     let stringValues = {},

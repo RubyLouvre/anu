@@ -1,4 +1,3 @@
-import { inputControll, formElements } from "./inputControll";
 import { diffProps } from "./diffProps";
 import { document, NAMESPACE, contains } from "./browser";
 
@@ -37,7 +36,7 @@ export function createElement(vnode) {
     case "math":
         ns = NAMESPACE.math;
         break;
-     
+
     default:
         do {
             if (p.tag === 5) {
@@ -48,7 +47,7 @@ export function createElement(vnode) {
                 break;
             }
         } while ((p = p.return));
-        
+
         break;
     }
     try {
@@ -106,18 +105,15 @@ export function removeElement(node) {
 }
 
 function insertElement(fiber) {
-    let dom = fiber.stateNode,
-        parentNode = fiber.parent,
-        before = fiber.insertPoint;
+    let { stateNode: dom, parent, insertPoint } = fiber;
     try {
-        if (before == null) {
+        if (insertPoint == null) {
             if (dom !== parent.firstChild) {
-                parentNode.insertBefore(dom, parent.firstChild);
+                parent.insertBefore(dom, parent.firstChild);
             }
-
         } else {
             if (dom !== parent.lastChild) {
-                parentNode.insertBefore(dom, before.nextSibling);
+                parent.insertBefore(dom, insertPoint.nextSibling);
             }
         }
 
