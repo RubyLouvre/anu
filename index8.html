@@ -29,13 +29,7 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
-          var noop = function(){
-              return noop
-          }
-          noop.isRequired = noop
-          var PropTypes = React.PropTypes || {
-             string: noop
-          }
+        
           
 
           var expect = function(a) {
@@ -56,23 +50,38 @@
                   }
               };
             }
-     const el = (
-      <select defaultValue="giraffe">
-        <option value="monkey">A monkey!</option>
-        <option value="giraffe">A giraffe!</option>
-        <option value="gorilla">A gorilla!</option>
-      </select>
-    );
-    const container = document.createElement('div');
-    const stub = ReactDOM.render(el, container);
-    const node = ReactDOM.findDOMNode(stub);
-
-    expect(node.value).toBe('giraffe');
-
-    node.value = 'monkey';
-    ReactDOM.render(el, container);
-    // Uncontrolled selects shouldn't change the value after first mounting
-    expect(node.value).toEqual('monkey');
+            const nonReactElemID = 'aID';
+      const innerHTML = {__html: `<div id="${nonReactElemID}"></div>`};
+      const closestInstanceID = 'closestInstance';
+      let currentTargetID = null;
+  
+      class ClosestInstance extends React.Component {
+        _onClick = e => {
+          currentTargetID = e.currentTarget.id;
+        };
+        render() {
+          return (
+            <div
+              id={closestInstanceID}
+              onClick={this._onClick}
+              dangerouslySetInnerHTML={innerHTML}
+            />
+          );
+        }
+      }
+  
+      function simulateClick(elem) {
+        const event = new MouseEvent('click', {
+          bubbles: true,
+        });
+        elem.dispatchEvent(event);
+      }
+  
+      const component = <ClosestInstance />;
+      ReactDOM.render(<section>{component}</section>, container);
+      expect(currentTargetID).toBe(null);
+      simulateClick(document.getElementById(nonReactElemID));
+      expect(currentTargetID).toBe(closestInstanceID);
 </script>
 
 

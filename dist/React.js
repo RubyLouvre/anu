@@ -1165,189 +1165,6 @@ function findDOMNode(stateNode) {
     throw "findDOMNode:invalid type";
 }
 
-var formElements = {
-    select: 1,
-    textarea: 1,
-    input: 1,
-    option: 1
-};
-var duplexData = {
-    1: ["value", {
-        onChange: 1,
-        onInput: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return a == null ? null : a + "";
-    }, function (dom, value, vnode) {
-        if (value == null) {
-            return;
-        }
-        if (vnode.type === "input") {
-            dom.__anuSetValue = true;
-            dom.setAttribute("value", value);
-            dom.__anuSetValue = false;
-            if (dom.type === "number") {
-                var valueAsNumber = parseFloat(dom.value) || 0;
-                if (
-                value != valueAsNumber ||
-                value == valueAsNumber && dom.value != value) {
-                    value += "";
-                } else {
-                    return;
-                }
-            }
-        }
-        if (dom._persistValue !== value) {
-            dom.__anuSetValue = true;
-            dom._persistValue = dom.value = value;
-            dom.__anuSetValue = false;
-        }
-    }, keepPersistValue, "change", "input"],
-    2: ["checked", {
-        onChange: 1,
-        readOnly: 1,
-        disabled: 1
-    }, function (a) {
-        return !!a;
-    }, function (dom, value, vnode) {
-        if (vnode.props.value != null) {
-            dom.value = vnode.props.value;
-        }
-        if (dom._persistValue !== value) {
-            dom._persistValue = dom.checked = value;
-        }
-    }, keepPersistValue, "change", "click"],
-    3: ["value", {
-        onChange: 1,
-        disabled: 1
-    }, function (a) {
-        return a;
-    }, function (dom, value, vnode, isUncontrolled) {
-        if (isUncontrolled) {
-            if (!dom.multiple && dom.value !== dom._persistValue) {
-                dom._persistValue = dom.value;
-                dom._setValue = false;
-            }
-        } else {
-            if ("value" in vnode.props) {
-                dom._persistValue = value;
-            }
-        }
-        syncOptions({
-            target: dom
-        });
-    }, syncOptions, "change"]
-};
-function inputControll(vnode, dom, props) {
-    var domType = dom.type;
-    var duplexType = duplexMap[domType];
-    var isUncontrolled = dom._uncontrolled;
-    console.log("XXXX");
-    if (duplexType) {
-        var data = duplexData[duplexType];
-        var duplexProp = data[0];
-        var keys = data[1];
-        var converter = data[2];
-        var sideEffect = data[3];
-        var value = converter(isUncontrolled ? dom._persistValue : props[duplexProp]);
-        sideEffect(dom, value, vnode, isUncontrolled);
-        if (isUncontrolled) {
-            return;
-        }
-        var handle = data[4];
-        var event1 = data[5];
-        var event2 = data[6];
-        if (!hasOtherControllProperty(props, keys)) {
-            dom["on" + event1] = handle;
-            dom["on" + event2] = handle;
-        } else {
-            vnode.controlledCb = handle;
-            Renderer.controlledCbs.push(vnode);
-        }
-    } else {
-        var arr = dom.children || [];
-        for (var i = 0, el; el = arr[i]; i++) {
-            dom.removeChild(el);
-            i--;
-        }
-        if ("value" in props) {
-            dom.duplexValue = dom.value = props.value;
-        } else {
-            dom.duplexValue = dom.text;
-        }
-    }
-}
-function hasOtherControllProperty(props, keys) {
-    for (var key in keys) {
-        if (props[key]) {
-            return true;
-        }
-    }
-}
-function keepPersistValue(e) {
-    var dom = e.target;
-    var name = e.type === "textarea" ? "innerHTML" : /check|radio/.test(dom.type) ? "checked" : "value";
-    var v = dom._persistValue;
-    var noNull = v != null;
-    var noEqual = dom[name] !== v;
-    if (noNull && noEqual) {
-        dom[name] = v;
-    }
-}
-function syncOptions(e) {
-    var target = e.target,
-        value = target._persistValue,
-        options = target.options;
-    if (target.multiple) {
-        updateOptionsMore(options, options.length, value);
-    } else {
-        updateOptionsOne(options, options.length, value);
-    }
-    target._setSelected = true;
-}
-function updateOptionsOne(options, n, propValue) {
-    var stringValues = {},
-        noDisableds = [];
-    for (var i = 0; i < n; i++) {
-        var option = options[i];
-        var value = option.duplexValue;
-        if (!option.disabled) {
-            noDisableds.push(option);
-        }
-        if (value === propValue) {
-            return setOptionSelected(option, true);
-        }
-        stringValues[value] = option;
-    }
-    var match = stringValues[propValue];
-    if (match) {
-        return setOptionSelected(match, true);
-    }
-    if (n && noDisableds[0]) {
-        setOptionSelected(noDisableds[0], true);
-    }
-}
-function updateOptionsMore(options, n, propValue) {
-    var selectedValue = {};
-    try {
-        for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
-        }
-    } catch (e) {
-        console.warn('<select multiple="true"> 的value应该对应一个字符串数组');
-    }
-    for (var _i = 0; _i < n; _i++) {
-        var option = options[_i];
-        var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
-        setOptionSelected(option, selected);
-    }
-}
-function setOptionSelected(dom, selected) {
-    dom.selected = selected;
-}
-
 var rnumber = /^-?\d+(\.\d+)?$/;
 function patchStyle(dom, lastStyle, nextStyle) {
     if (lastStyle === nextStyle) {
@@ -1393,50 +1210,10 @@ function cssName(name, dom) {
     return null;
 }
 
-var inputMonitor = {};
-var rcheck = /checked|radio/;
-var describe = {
-    set: function set(value) {
-        var controllProp = rcheck.test(this.type) ? "checked" : "value";
-        if (this.type === "textarea") {
-            this.innerHTML = value;
-        }
-        if (!this._observing) {
-            if (!this._setValue) {
-                var parsedValue = this[controllProp] = value;
-                this._persistValue = Array.isArray(value) ? value : parsedValue;
-                this._setValue = true;
-            }
-        } else {
-            this._setValue = value == null ? false : true;
-        }
-        this._defaultValue = value;
-    },
-    get: function get() {
-        return this._defaultValue;
-    },
-    configurable: true
-};
-inputMonitor.observe = function (dom, name) {
-    try {
-        if ("_persistValue" in dom) {
-            dom._setValue = true;
-        }
-        Object.defineProperty(dom, name, describe);
-    } catch (e) {        }
-};
-
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-var controlled = {
-    value: 1,
-    checked: 1
-};
 var isSpecialAttr = {
     style: 1,
     autoFocus: 1,
-    defaultValue: 1,
-    defaultChecked: 1,
-    children: 1,
     innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
@@ -1526,10 +1303,30 @@ function getSVGAttributeName(name) {
     }
     return svgCache[orig] = name;
 }
+function getFormValue(dom, props) {
+    var type = dom.type || dom.tagName.toLowerCase();
+    var number = duplexMap[type];
+    if (number) {
+        for (var i in controlledStrategy) {
+            if (props.hasOwnProperty(i)) {
+                return i;
+            }
+        }
+    }
+    return "children";
+}
 function diffProps(dom, lastProps, nextProps, fiber) {
     var isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    var tag = fiber.type;
+    var tag = fiber.type,
+        number = 0;
+    var controlled = "children";
+    if (!isSVG && rform.test(fiber.type)) {
+        controlled = getFormValue(dom, nextProps);
+    }
     for (var name in nextProps) {
+        if (name === controlled) {
+            continue;
+        }
         var val = nextProps[name];
         if (val !== lastProps[name]) {
             var which = tag + isSVG + name;
@@ -1541,6 +1338,9 @@ function diffProps(dom, lastProps, nextProps, fiber) {
         }
     }
     for (var _name in lastProps) {
+        if (_name === controlled) {
+            continue;
+        }
         if (!nextProps.hasOwnProperty(_name)) {
             var _which = tag + isSVG + _name;
             var _action = strategyCache[_which];
@@ -1550,6 +1350,7 @@ function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[_action](dom, _name, false, lastProps, fiber);
         }
     }
+    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber);
 }
 function isBooleanAttr(dom, name) {
     var val = dom[name];
@@ -1585,27 +1386,32 @@ var builtinStringProps = {
     lang: 1
 };
 var rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, fiber) {
-    if (rform.test(dom.nodeName)) {
-        if (!dom._uncontrolled) {
-            dom._uncontrolled = true;
-            inputMonitor.observe(dom, name);
+function controlled(dom, name, nextProps, lastProps, fiber) {
+    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
+}
+function uncontrolled(dom, name, nextProps, lastProps, fiber, ok) {
+    var value = nextProps[name];
+    var isSelect = fiber.type === "select";
+    ok = ok || isSelect && nextProps.multiple != lastProps.multiple;
+    if (ok || lastProps === emptyObject) {
+        name = fiber.type === "textarea" ? "innerHTML" : name;
+        dom[name] = dom._persistValue = value;
+        if (isSelect) {
+            syncOptions$1({
+                target: dom
+            });
         }
-        dom._observing = false;
-        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
-            dom.selectedIndex = dom.selectedIndex;
-            dom._setValue = false;
-        }
-        dom[name] = val;
-        dom._observing = true;
-    } else {
-        dom.setAttribute(name, val);
     }
 }
-var actionStrategy = {
-    innerHTML: noop,
+var controlledStrategy = {
+    value: controlled,
+    checked: controlled,
     defaultValue: uncontrolled,
     defaultChecked: uncontrolled,
+    children: noop
+};
+var actionStrategy = {
+    innerHTML: noop,
     children: noop,
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
@@ -1651,9 +1457,6 @@ var actionStrategy = {
         }
     },
     property: function property(dom, name, val) {
-        if (controlled[name]) {
-            return;
-        }
         try {
             if (!val && val !== 0) {
                 if (builtinStringProps[name]) {
@@ -1696,6 +1499,58 @@ var actionStrategy = {
         }
     }
 };
+function syncOptions$1(e) {
+    var target = e.target,
+        value = target._persistValue,
+        options = target.options;
+    if (target.multiple) {
+        updateOptionsMore$1(options, options.length, value);
+    } else {
+        updateOptionsOne$1(options, options.length, value);
+    }
+    target._setSelected = true;
+}
+function updateOptionsOne$1(options, n, propValue) {
+    var stringValues = {},
+        noDisableds = [];
+    for (var i = 0; i < n; i++) {
+        var option = options[i];
+        var value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
+        if (value === propValue) {
+            return setOptionSelected$1(option, true);
+        }
+        stringValues["&" + value] = option;
+    }
+    var match = stringValues["&" + propValue];
+    if (match) {
+        return setOptionSelected$1(match, true);
+    }
+    if (n && noDisableds[0]) {
+        setOptionSelected$1(noDisableds[0], true);
+    }
+}
+function updateOptionsMore$1(options, n, propValue) {
+    var selectedValue = {};
+    try {
+        for (var i = 0; i < propValue.length; i++) {
+            selectedValue["&" + propValue[i]] = true;
+        }
+    } catch (e) {
+        console.log('the value of multiple select should be an array');
+    }
+    for (var _i = 0; _i < n; _i++) {
+        var option = options[_i];
+        var value = option.duplexValue;
+        var selected = selectedValue.hasOwnProperty("&" + value);
+        setOptionSelected$1(option, selected);
+    }
+}
+function setOptionSelected$1(dom, selected) {
+    dom.selected = selected;
+}
 
 function Fiber(vnode) {
     extend(this, vnode);
@@ -2682,8 +2537,12 @@ var DOMRenderer = createRenderer({
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (formElements[type]) {
-            inputControll(fiber, stateNode, props);
+        if (type === 'option') {
+            if ("value" in props) {
+                stateNode.duplexValue = stateNode.value = props.value;
+            } else {
+                stateNode.duplexValue = stateNode.text;
+            }
         }
     },
     updateContext: function updateContext(fiber) {

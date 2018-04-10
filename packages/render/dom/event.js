@@ -50,7 +50,6 @@ export function dispatchEvent(e, type, end) {
     }
 
     fibers.sort(mountSorter);
-
     __push.apply(Renderer.mainThread, fibers);
     Renderer.interactQueue = null;
     Renderer.batchedUpdates();

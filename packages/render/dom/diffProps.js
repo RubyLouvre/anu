@@ -2,21 +2,15 @@ import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
 import { addGlobalEvent, getBrowserName, isEventName, eventHooks } from "./event";
 import { inputMonitor } from "./inputMonitor";
-import { toLowerCase, noop, typeNumber, emptyObject } from "react-core/util";
+import { toLowerCase, noop, typeNumber,toWarnDev, emptyObject } from "react-core/util";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
-let controlled = {
-    value: 1,
-    checked: 1
-};
+
 
 let isSpecialAttr = {
     style: 1,
     autoFocus: 1,
-    defaultValue: 1,
-    defaultChecked: 1,
-    children: 1,
     innerHTML: 1,
     dangerouslySetInnerHTML: 1
 };
@@ -123,23 +117,27 @@ function getSVGAttributeName(name) {
     return (svgCache[orig] = name);
 }
 function getFormValue(dom, props) {
-    var type = dom.type || dom.tagName.toLowerCase();
-    var number = duplexMap[type];
-    if (number === 1 || number === 2) {
-        return "value" in props ? "value" : "defaultValue" in props ? "defaultValue" : null;
-    } else if (number === 3) {
-        return "checked" in props ? "checked" : "defaultChecked" in props ? "defaultChecked" : null;
+    let type = dom.type || dom.tagName.toLowerCase();
+    let number = duplexMap[type];
+    if (number) {
+        for(let i in controlledStrategy){
+            if(props.hasOwnProperty(i)){
+                return i 
+            }
+        }
     }
-    return null;
+    return "children";
 }
 export function diffProps(dom, lastProps, nextProps, fiber) {
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
-    let tag = fiber.type;
-    let controlled = !isSVG && rform.test(fiber.type) && getFormValue(dom, nextProps);
-
+    let tag = fiber.type, number = 0
+    let controlled = "children"
+    if( !isSVG && rform.test(fiber.type)){
+        controlled = getFormValue(dom, nextProps)
+    }
     //eslint-disable-next-line
     for (let name in nextProps) {
-        if (name == controlled) {
+        if (name === controlled) {
             continue;
         }
         let val = nextProps[name];
@@ -154,7 +152,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
-        if (name == controlled) {
+        if (name === controlled) {
             continue;
         }
         if (!nextProps.hasOwnProperty(name)) {
@@ -166,7 +164,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
-    controlled && actionStrategy[controlled](dom, name, false, lastProps, fiber);
+    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber );
 }
 
 function isBooleanAttr(dom, name) {
@@ -184,6 +182,9 @@ function isBooleanAttr(dom, name) {
 function getPropAction(dom, name, isSVG) {
     if (isSVG && name === "className") {
         return "svgClass";
+    }
+    if (isSpecialAttr[name]) {
+        return name;
     }
     if (isEventName(name)) {
         return "event";
@@ -210,37 +211,34 @@ let builtinStringProps = {
 };
 
 let rform = /textarea|input|select/i;
-function uncontrolled(dom, name, val, lastProps, fiber) {
-    if(lastProps === emptyObject){
-        dom[name] = dom[name.replace("default","").toLowerCase()] = val;
-    }
-
-    /*
-    if (rform.test(dom.nodeName)) {
-        if (!dom._uncontrolled) {
-            dom._uncontrolled = true;
-            inputMonitor.observe(dom, name); //重写defaultXXX的setter/getter
-        }
-        dom._observing = false;
-        if (fiber.type === "select" && dom._setValue && !lastProps.multiple !== !fiber.props.multiple) {
-            //当select的multiple发生变化，需要重置selectedIndex，让底下的selected生效
-            dom.selectedIndex = dom.selectedIndex;
-            dom._setValue = false;
-        }
-        dom[name] = val;
-        dom._observing = true;
-    } else {
-        dom.setAttribute(name, val);
-    }
-    */
+function controlled(dom, name, nextProps, lastProps, fiber){
+    uncontrolled(dom, name, nextProps, lastProps, fiber, true)
 }
+function uncontrolled(dom, name, nextProps, lastProps, fiber, ok) {
+    let value = nextProps[name]
+    let isSelect = fiber.type === "select"
+    ok = ok || (isSelect && nextProps.multiple != lastProps. multiple)
+    if(ok || lastProps === emptyObject){
+        name = fiber.type === "textarea" ? "innerHTML" : name
+        dom[name] = dom._persistValue = value;
+        if(isSelect){
+            syncOptions({
+                target: dom
+            })
+        }
+    }
+}
+let controlledStrategy = {
+    value: controlled,
+    checked: controlled,
+    defaultValue: uncontrolled,
+    defaultChecked: uncontrolled,
+    children: noop
+};
+
 
 export let actionStrategy = {
     innerHTML: noop,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    value: controlled,
-    checked: controlled,
     children: noop,
     style: function (dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
@@ -341,3 +339,65 @@ export let actionStrategy = {
         }
     }
 };
+
+
+
+function syncOptions(e) {
+    let target = e.target,
+        value = target._persistValue,
+        options = target.options;
+    if (target.multiple) {
+        updateOptionsMore(options, options.length, value);
+    } else {
+        updateOptionsOne(options, options.length, value);
+    }
+    target._setSelected = true;
+}
+
+function updateOptionsOne(options, n, propValue) {
+    let stringValues = {},
+        noDisableds = [];
+    for (let i = 0; i < n; i++) {
+        let option = options[i];
+        let value = option.duplexValue;
+        if (!option.disabled) {
+            noDisableds.push(option);
+        }
+        if (value === propValue) {
+            //精确匹配
+            return setOptionSelected(option, true);
+        }
+        stringValues["&"+value] = option;
+    }
+    let match = stringValues["&"+propValue];
+    if (match) {
+        //字符串模糊匹配
+        return setOptionSelected(match, true);
+    }
+    if (n && noDisableds[0]) {
+        //选中第一个没有变disable的元素
+        setOptionSelected(noDisableds[0], true);
+    }
+}
+
+function updateOptionsMore(options, n, propValue) {
+    let selectedValue = {};
+    try {
+        for (let i = 0; i < propValue.length; i++) {
+            selectedValue["&" + propValue[i]] = true;
+        }
+    } catch (e) {
+        /* istanbul ignore next */
+        console.log('the value of multiple select should be an array'); // eslint-disable-line
+    }
+    for (let i = 0; i < n; i++) {
+        let option = options[i];
+        let value = option.duplexValue;
+        let selected = selectedValue.hasOwnProperty("&" + value);
+        setOptionSelected(option, selected);
+    }
+}
+
+function setOptionSelected(dom, selected) {
+    dom.selected = selected;
+}

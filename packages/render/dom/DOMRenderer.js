@@ -106,20 +106,17 @@ export function removeElement(node) {
 }
 
 function insertElement(fiber) {
-    //找到可用的父节点
     let dom = fiber.stateNode,
         parentNode = fiber.parent,
         before = fiber.insertPoint;
     try {
         if (before == null) {
             if (dom !== parent.firstChild) {
-                //console.log(dom, "插入最前面",!!parent.firstChild);
                 parentNode.insertBefore(dom, parent.firstChild);
             }
 
         } else {
             if (dom !== parent.lastChild) {
-                //console.log(" 移动 ", dom === before, dom, before);
                 parentNode.insertBefore(dom, before.nextSibling);
             }
         }
@@ -147,8 +144,13 @@ export let DOMRenderer = createRenderer({
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (formElements[type]) {
-            inputControll(fiber, stateNode, props);
+        if (type === 'option') {
+            if ("value" in props) {
+                stateNode.duplexValue = stateNode.value = props.value;
+            } else {
+                stateNode.duplexValue = stateNode.text;
+            }
+          //  inputControll(fiber, stateNode, props);
         }
     },
     updateContext(fiber) {
