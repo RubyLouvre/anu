@@ -228,7 +228,9 @@ export function createHandle(name, fn) {
     });
 }
 
-createHandle("change");
+createHandle("change", function(e){
+    return !e.target.compositionLock;
+});
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -269,8 +271,17 @@ eventPropHooks.wheel = function (event) {
 };
 
 //react将text,textarea,password元素中的onChange事件当成onInput事件
+function lockChange(e){
+    e.target.compositionLock = true;
+}
+function unlockChange(e){
+    e.target.compositionLock = false;
+}
+//https://segmentfault.com/a/1190000008023476
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password|search/.test(dom.type)) {
+        addEvent(dom, "compositionstart", lockChange);
+        addEvent(dom, "compositionend", unlockChange);
         addEvent(document, "input", specialHandles.change);
     }
 };
