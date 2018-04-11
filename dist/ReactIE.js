@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-04-08
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-04-11
  */
 
 (function (global, factory) {
@@ -1015,7 +1015,9 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-createHandle("change");
+createHandle("change", function (e) {
+    return !e.target.compositionLock;
+});
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1041,8 +1043,16 @@ eventPropHooks.wheel = function (event) {
     "wheelDeltaY" in event ? -event.wheelDeltaY :
     "wheelDelta" in event ? -event.wheelDelta : 0;
 };
+function lockChange(e) {
+    e.target.compositionLock = true;
+}
+function unlockChange(e) {
+    e.target.compositionLock = false;
+}
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password|search/.test(dom.type)) {
+        addEvent(dom, "compositionstart", lockChange);
+        addEvent(dom, "compositionend", unlockChange);
         addEvent(document, "input", specialHandles.change);
     }
 };
