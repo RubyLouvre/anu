@@ -4,77 +4,43 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>-->
-   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
-    <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
 
 <body>
 
-    <pre>应该等于
-      
-    </pre>
-    
-       
-    <h1 id='example' class="root">
+    <pre>React 15 </pre>
 
-    </h1>
 
-    <script type='text/babel'>
-          var container = document.getElementById('example');
-          var div = container;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-          }
-        
-          
+    <div id='root' class="root">
 
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  },
-                  not: {
-                    toBe: function(b) {
-                      console.log(a, 'vs', b, a !== b);
-                    },
-                    toEqual(b) {
-                        console.log(a, 'vs', b, a + '' !== b + '');
-                    },
-                  }
-              };
+    </div>
+    <script>
+        function randomHexColor() { //随机生成十六进制颜色
+            return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
+        }
+        setTimeout(function () {
+            var k = 0
+            var root = document.getElementById("root")
+            for (var i = 0; i < 10000; i++) {
+                k += new Date - 0
+                var el = document.createElement("div");
+                el.innerHTML = k
+                root.appendChild(el)
+                el.style.cssText = "background:" + randomHexColor() + ";height:30px;"
             }
-           
-
-   setUntrackedValue = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype,
-      'value',
-    ).set;
-
-    function dispatchEventOnNode(node, type) {
-    node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
-  }
+        }, 3000)
+        setTimeout(function () {
+            var el = document.createElement("div");
+            el.innerHTML = "结束"
+            root.appendChild(el)
+        }, 4000)
 
 
-  const el = (
-        <option>
-          {1} <div>33</div> {2}
-        </option>
-      );
-      
-    ReactDOM.render(
-      el,
-      container
-    );
-  
+
    // });
-</script>
+    </script>
 
 
 </html>

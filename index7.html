@@ -4,64 +4,53 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>－－》
-   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
-    <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
 
 <body>
 
-    <pre>应该等于
-      
-    </pre>
-    
-       
-    <h1 id='example' class="root">
+    <pre>React 15 </pre>
 
-    </h1>
 
-    <script type='text/babel'>
-          var container = document.getElementById('example');
-          var div = container;
-        
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-          }
-        
-          
+    <div id='root' class="root">
 
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  }
-              };
-         };
-         class Foo extends React.Component {
-      render() {
-        const children = {
-          a: <span />,
-          b: <span />,
-          c: <span />,
-        };
-        return <div>{[children]}</div>;
-      }
-    }
-   // const container = document.createElement('div');
-    let ex;
-    try {
-      ReactDOM.render(<Foo />, container);
-    } catch (e) {
-      ex = e;
-      console.log("=====")
-    }
-</script>
+    </div>
+    <script>
+
+        var root = document.getElementById("root")
+        function randomHexColor() { //随机生成十六进制颜色
+            return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
+        }
+        setTimeout(function () {
+            function loop(n) {
+                console.log("调动",n)
+                var k = 0
+                for (var i = 0; i < 100; i++) {
+                    k += new Date - 0
+                    var el = document.createElement("div");
+                    el.innerHTML = k
+                    root.appendChild(el)
+                    el.style.cssText = "background:" + randomHexColor() + ";height:30px;"
+                }
+                if (n) {
+                    setTimeout(function () {
+                        loop(n-1)
+                    }, 40)
+                }
+            }
+            loop(100);
+        }, 3000)
+
+        setTimeout(function () {
+            var el = document.createElement("div");
+            el.innerHTML = "结束"
+            root.appendChild(el)
+        }, 4000)
+
+
+   // });
+    </script>
 
 
 </html>

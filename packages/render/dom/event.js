@@ -276,6 +276,9 @@ function lockChange(e){
 }
 function unlockChange(e){
     e.target.compositionLock = false;
+    setTimeout(function(){
+        dispatchEvent(e, name);
+    },0);
 }
 //https://segmentfault.com/a/1190000008023476
 eventHooks.changecapture = eventHooks.change = function (dom) {
@@ -387,3 +390,5 @@ Object.freeze ||
         return a;
     });
 //freeze_end
+
+
