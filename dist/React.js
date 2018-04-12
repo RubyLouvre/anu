@@ -1028,7 +1028,9 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-createHandle("change");
+createHandle("change", function (e) {
+    return !e.target.compositionLock;
+});
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1054,8 +1056,16 @@ eventPropHooks.wheel = function (event) {
     "wheelDeltaY" in event ? -event.wheelDeltaY :
     "wheelDelta" in event ? -event.wheelDelta : 0;
 };
+function lockChange(e) {
+    e.target.compositionLock = true;
+}
+function unlockChange(e) {
+    e.target.compositionLock = false;
+}
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password|search/.test(dom.type)) {
+        addEvent(dom, "compositionstart", lockChange);
+        addEvent(dom, "compositionend", unlockChange);
         addEvent(document, "input", specialHandles.change);
     }
 };
@@ -2614,6 +2624,16 @@ function insertElement(fiber) {
         }
     }
 }
+function useTextNodes(fiber, cb) {
+    if (fiber.textNodes && fiber.textNodes.length && !fiber.props[innerHTML]) {
+        var text = fiber.textNodes.reduce(function (a, b) {
+            return a + b.props.children;
+        }, "");
+        if (cb(text) !== false) {
+            delete fiber.textNodes;
+        }
+    }
+}
 var DOMRenderer = createRenderer({
     render: render$1,
     onlyRenderText: function onlyRenderText(fiber) {
@@ -2633,14 +2653,16 @@ var DOMRenderer = createRenderer({
             props = fiber.props,
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
-        diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (fiber.textNodes && fiber.textNodes.length && !props[innerHTML]) {
-            var text = fiber.textNodes.reduce(function (a, b) {
-                return a + b.props.children;
-            }, "");
-            delete fiber.textNodes;
-            stateNode.innerHTML = text;
+        if (type === "textarea" && !("value" in props) && !("defaultValue" in props)) {
+            useTextNodes(fiber, function (text) {
+                console.log("text:", text);
+                fiber.props.defaultValue = text;
+            });
         }
+        diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        useTextNodes(fiber, function (text) {
+            stateNode.innerHTML = text;
+        });
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;
