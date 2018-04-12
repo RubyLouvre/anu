@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-10
+ * by 司徒正美 Copyright 2018-04-12
  * IE9+
  */
 
@@ -324,7 +324,11 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
-                throw "React.createElement: type is invalid.";
+                if (children.hasOwnProperty("toString")) {
+                    children = children + "";
+                } else {
+                    throw "React.createElement: type is invalid.";
+                }
             }
             key = prefix || (children && children.key ? "$" + children.key : "0");
             callback(children, key);
@@ -1251,6 +1255,7 @@ function controlled(dom, name, nextProps, lastProps, fiber) {
 function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     var isControlled = !!six;
     var isSelect = fiber.type === "select";
+    var isTextArea = fiber.type === "textarea";
     var value = nextProps[name];
     if (!isSelect) {
         if (name.indexOf("alue") !== -1) {
@@ -1262,6 +1267,7 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     }
     var multipleChange = isControlled || isSelect && nextProps.multiple != lastProps.multiple;
     if (multipleChange || lastProps === emptyObject) {
+        dom._persistName = name;
         dom._persistValue = value;
         syncValue({ target: dom });
         var duplexType = "select";
@@ -1286,7 +1292,11 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
             value = "value" in nextProps ? nextProps.value : "on";
         }
         dom.__anuSetValue = true;
-        dom.setAttribute("value", value);
+        if (dom.type === "textarea") {
+            dom.innerHTML = value;
+        } else {
+            dom.setAttribute("value", value);
+        }
         dom.__anuSetValue = false;
     }
 }
@@ -1303,14 +1313,12 @@ function syncOptions(e) {
 }
 function syncValue(_ref) {
     var dom = _ref.target;
+    var name2 = dom._persistName;
     var name = rchecked.test(dom.type) ? "checked" : "value";
     var value = dom._persistValue;
     if (dom[name] + "" !== value + "") {
         dom.__anuSetValue = true;
-        dom[name] = dom._persistValue = value;
-        if (dom.type === "textarea") {
-            dom.innerHTML = value;
-        }
+        dom[name] = value;
         dom.__anuSetValue = false;
     }
 }
@@ -2626,7 +2634,7 @@ var DOMRenderer = createRenderer({
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (fiber.textNodes && !props[innerHTML]) {
+        if (fiber.textNodes && fiber.textNodes.length && !props[innerHTML]) {
             var text = fiber.textNodes.reduce(function (a, b) {
                 return a + b.props.children;
             }, "");

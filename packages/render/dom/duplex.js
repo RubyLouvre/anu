@@ -32,6 +32,7 @@ function controlled(dom, name, nextProps, lastProps, fiber) {
 function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     let isControlled = !!six;
     let isSelect = fiber.type === "select";
+    let isTextArea = fiber.type === "textarea"
     let value = nextProps[name];
     if(!isSelect){
         if(name.indexOf("alue") !== -1){
@@ -41,8 +42,9 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
             value = !!value;
         }
     }
-    let multipleChange = isControlled || (isSelect && nextProps.multiple != lastProps.multiple);
+    let multipleChange = isControlled  || (isSelect && nextProps.multiple != lastProps.multiple);
     if (multipleChange || lastProps === emptyObject) {
+        dom._persistName = name;
         dom._persistValue = value;//非受控的情况下只更新一次，除非multiple发生变化
         syncValue({ target: dom }); //set value/checked
         var duplexType = "select";
@@ -51,9 +53,11 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
                 target: dom
             });
         } else {
+            
             duplexType = rchecked.test(dom.type) ? "checked" : "value";
         }
         if (isControlled) { // add event for controlled 
+           
             var arr = duplexData[duplexType];
             arr[0].forEach(function (name) {
                 eventAction(dom, name, nextProps[name] || noop, lastProps, fiber);
@@ -63,12 +67,18 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
         }
     }
     //必须设置完dom.value=yyy后才能设置dom.setAttribute("value",xxx)
-    if (canSetVal) {
+    if (canSetVal  ) {
         if(rchecked.test(dom.type)  ){
             value = "value" in nextProps ? nextProps.value: "on";
         }
         dom.__anuSetValue = true;
-        dom.setAttribute("value", value);
+       // console.log("setValue3",value)
+        if(dom.type === "textarea"){
+            dom.innerHTML = value
+        }else{
+            dom.setAttribute("value", value);
+        }
+      
         dom.__anuSetValue = false;
     }
 }
@@ -86,15 +96,14 @@ function syncOptions(e) {
 }
 
 function syncValue({ target: dom }) {
+     var name2 = dom._persistName //= name
     let name = rchecked.test(dom.type) ? "checked" : "value";
    
     let value = dom._persistValue;
     if (dom[name]+"" !== value + "") { //全部转数字再比较
         dom.__anuSetValue = true;//抑制onpropertychange
-        dom[name] = dom._persistValue = value;
-        if (dom.type === "textarea") {
-            dom.innerHTML = value;
-        }
+       //  dom[name] =
+        dom[name] = value;
         dom.__anuSetValue = false;
     }
 }

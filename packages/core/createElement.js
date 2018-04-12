@@ -221,7 +221,11 @@ export function operateChildren(children, prefix, callback, iterableType, isTop)
     switch (iterableType) {
     case 0:
         if (Object(children) === children && !children.call && !children.type) {
-            throw "React.createElement: type is invalid.";
+            if(children.hasOwnProperty("toString")){
+                children = children+""
+            }else{
+                throw "React.createElement: type is invalid.";
+            }
         }
         key = prefix || (children && children.key ? "$" + children.key : "0");
         callback(children, key);

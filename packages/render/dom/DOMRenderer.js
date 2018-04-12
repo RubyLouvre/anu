@@ -154,7 +154,7 @@ export let DOMRenderer = createRenderer({
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if(fiber.textNodes && !props[innerHTML]){
+        if(fiber.textNodes && fiber.textNodes.length && !props[innerHTML]){
             var text = fiber.textNodes.reduce(function(a, b){
                 return a + b.props.children
             }, "")
