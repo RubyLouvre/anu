@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-10
+ * by 司徒正美 Copyright 2018-04-12
  * IE9+
  */
 
@@ -300,7 +300,11 @@ function operateChildren(children, prefix, callback, iterableType, isTop) {
     switch (iterableType) {
         case 0:
             if (Object(children) === children && !children.call && !children.type) {
-                throw "React.createElement: type is invalid.";
+                if (children.hasOwnProperty("toString")) {
+                    children = children + "";
+                } else {
+                    throw "React.createElement: type is invalid.";
+                }
             }
             key = prefix || (children && children.key ? "$" + children.key : "0");
             callback(children, key);

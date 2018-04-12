@@ -53,13 +53,20 @@ function renderVNode(vnode, context) {
                 var fakeUpdater = {
                     _reactInternalFiber: vnode
                 };
+                var cstr = ""
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
                     child.return = vnode;
-                    str += renderVNode(child, context);
+                    cstr += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
+                if(vnode.type === "textarea" && !cstr){
+                    str += vnode.props.value || vnode.props.defaultValue || ""
+                }else{
+                    str += cstr
+                }
+              
             }
             return str + "</" + type + ">\n";
         } else if (tag < 3) {
@@ -130,12 +137,18 @@ function* renderVNodeGen(vnode, context) {
                     vnode
                 };
                 var children = fiberizeChildren(props.children, fakeUpdater);
+                var cstr = ""
                 for (var i in children) {
                     var child = children[i];
                     child.return = vnode;
-                    str += renderVNode(child, context);
+                    cstr += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
+                if(vnode.type === "textarea" && !cstr){
+                    str += vnode.props.value || vnode.props.defaultValue || ""
+                }else {
+                    str += cstr
+                }
             }
             yield str + "</" + type + ">\n";
         } else if (tag < 3) {

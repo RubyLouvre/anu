@@ -135,6 +135,17 @@ function insertElement(fiber) {
         }
     }
 }
+function useTextNodes(fiber, cb){
+    if(fiber.textNodes && fiber.textNodes.length && !fiber.props[innerHTML]){
+        var text = fiber.textNodes.reduce(function(a, b){
+            return a + b.props.children
+        }, "")
+        if(cb(text) !== false){
+            delete fiber.textNodes
+        }
+    }
+
+}
 
 //其他Renderer也要实现这些方法
 export let DOMRenderer = createRenderer({
@@ -153,14 +164,15 @@ export let DOMRenderer = createRenderer({
     },
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
-        diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if(fiber.textNodes && !props[innerHTML]){
-            var text = fiber.textNodes.reduce(function(a, b){
-                return a + b.props.children
-            }, "")
-            delete fiber.textNodes
-            stateNode.innerHTML = text;
+        if(type === "textarea" && !("value" in props) && !("defaultValue" in props)){
+            useTextNodes(fiber, function(text){
+                fiber.props.defaultValue = text;
+            })
         }
+        diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        useTextNodes(fiber, function(text){
+            stateNode.innerHTML = text;
+        })
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;

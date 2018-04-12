@@ -472,7 +472,7 @@ function stringifyAttributes(props, type) {
     return attrs.length ? " " + attrs.join(" ") : "";
 }
 
-var _marked =              regeneratorRuntime.mark(renderVNodeGen);
+var _marked =  regeneratorRuntime.mark(renderVNodeGen);
 function renderVNode(vnode, context) {
     var _vnode = vnode,
         tag = _vnode.tag,
@@ -513,8 +513,10 @@ function renderVNode(vnode, context) {
                 }
                 str += ">";
                 if (innerHTML$$1) {
+
                     str += innerHTML$$1;
                 } else {
+                    var cstr = ""
                     var fakeUpdater = {
                         _reactInternalFiber: vnode
                     };
@@ -522,9 +524,14 @@ function renderVNode(vnode, context) {
                     for (var i in children) {
                         var child = children[i];
                         child.return = vnode;
-                        str += renderVNode(child, context);
+                        cstr += renderVNode(child, context);
                     }
                     vnode.updater = fakeUpdater;
+                }
+                if(vnode.type === "textarea" && !cstr){
+                    str += vnode.props.value || vnode.props.defaultValue || ""
+                }else{
+                    str += cstr
                 }
                 return str + "</" + type + ">\n";
             } else if (tag < 3) {
