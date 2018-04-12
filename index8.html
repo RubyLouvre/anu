@@ -17,6 +17,7 @@
 
     </div>
     <script>
+        
         function randomHexColor() { //随机生成十六进制颜色
             return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
         }
@@ -37,7 +38,7 @@
             root.appendChild(el)
         }, 4000)
 
-
+/*
  var renderTextarea = function(component, container) {
       if (!container) {
         container = document.createElement('div');
@@ -64,8 +65,7 @@
       stub = ReactDOM.render(<textarea>gorilla</textarea>, container);
       expect(node.value).toEqual('giraffe');
   
-
-   // });
+*/
     </script>
 
 

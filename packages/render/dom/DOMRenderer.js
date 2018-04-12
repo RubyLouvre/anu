@@ -14,7 +14,6 @@ import { Fiber } from "react-fiber/Fiber";
 import { detachFiber } from "react-fiber/beginWork";
 import { commitEffects } from "react-fiber/commitWork";
 import { render } from "react-fiber/diff";
-import { textStack } from "react-fiber/util";
 
 
 export function createElement(vnode) {
@@ -135,44 +134,58 @@ function insertElement(fiber) {
         }
     }
 }
-function useTextNodes(fiber, cb){
-    if(fiber.textNodes && fiber.textNodes.length && !fiber.props[innerHTML]){
-        var text = fiber.textNodes.reduce(function(a, b){
-            return a + b.props.children
-        }, "")
-        if(cb(text) !== false){
-            delete fiber.textNodes
+
+function collectText(fiber, ret){
+    for(var c = fiber.child; c ; c = c.sibling){
+        if(c.tag === 5){
+            collectText(c, ret);
+        }else if(c.tag === 6){
+            ret.push(c.props.children);
+        }else {
+            collectText(c, ret);
         }
     }
-
 }
-
+function isTextContainer(fiber){
+    switch(fiber.type){
+    case "option":
+    case "noscript":
+    case "textarea":
+    case "style":
+    case "script":
+        return true;
+    default:
+        return false;
+    }
+}
 //其他Renderer也要实现这些方法
 export let DOMRenderer = createRenderer({
     render,
-    onlyRenderText(fiber){
-        switch(fiber.type){
-            case "option":
-            case "noscript":
-            case "textarea":
-            case "style":
-            case "script":
-               return true
-            default:
-               return false
-        }
-    },
+   
     updateAttribute(fiber) {
         let { type, props, lastProps, stateNode } = fiber;
-        if(type === "textarea" && !("value" in props) && !("defaultValue" in props)){
-            useTextNodes(fiber, function(text){
-                fiber.props.defaultValue = text;
-            })
+        if(isTextContainer(fiber)){
+            var texts = [];
+            collectText(fiber, texts);
+            var text = texts.reduce(function(a, b){
+                return a + b;
+            }, "");
+            switch(fiber.type){
+            case "textarea":
+                if( !("value" in props) && !("defaultValue" in props)){
+                    props.defaultValue = text;
+                }
+                break;
+            case "option":
+                stateNode.text = text;
+                //   stateNode.duplexValue = "value" in props ? props.value: stateNode.text;
+                break;
+            default:
+                stateNode.innerHTML = text;
+                break;
+            }
         }
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        useTextNodes(fiber, function(text){
-            stateNode.innerHTML = text;
-        })
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;
@@ -180,6 +193,7 @@ export let DOMRenderer = createRenderer({
                 stateNode.duplexValue = stateNode.text;
             }
         }
+        
     },
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;

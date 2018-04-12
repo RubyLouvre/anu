@@ -32,7 +32,6 @@ function controlled(dom, name, nextProps, lastProps, fiber) {
 function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     let isControlled = !!six;
     let isSelect = fiber.type === "select";
-    let isTextArea = fiber.type === "textarea"
     let value = nextProps[name];
     if(!isSelect){
         if(name.indexOf("alue") !== -1){
@@ -44,7 +43,6 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     }
     let multipleChange = isControlled  || (isSelect && nextProps.multiple != lastProps.multiple);
     if (multipleChange || lastProps === emptyObject) {
-        dom._persistName = name;
         dom._persistValue = value;//非受控的情况下只更新一次，除非multiple发生变化
         syncValue({ target: dom }); //set value/checked
         var duplexType = "select";
@@ -72,9 +70,8 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
             value = "value" in nextProps ? nextProps.value: "on";
         }
         dom.__anuSetValue = true;
-       // console.log("setValue3",value)
         if(dom.type === "textarea"){
-            dom.innerHTML = value
+            dom.innerHTML = value;
         }else{
             dom.setAttribute("value", value);
         }
@@ -96,13 +93,11 @@ function syncOptions(e) {
 }
 
 function syncValue({ target: dom }) {
-     var name2 = dom._persistName //= name
     let name = rchecked.test(dom.type) ? "checked" : "value";
    
     let value = dom._persistValue;
     if (dom[name]+"" !== value + "") { //全部转数字再比较
         dom.__anuSetValue = true;//抑制onpropertychange
-       //  dom[name] =
         dom[name] = value;
         dom.__anuSetValue = false;
     }

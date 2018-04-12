@@ -638,7 +638,6 @@ function createContext(defaultValue, calculateChangedBits) {
 
 var ownerStack = [];
 var effects = [];
-var textStack = [];
 var containerStack = [];
 var contextStack = [emptyObject];
 
@@ -869,14 +868,6 @@ function updateHostComponent(fiber) {
         prev = fiber.alternate;
     var children = props && props.children;
     if (tag === 5) {
-        if (Renderer.onlyRenderText(fiber)) {
-            if (fiber.textNodes) {
-                textStack.shift();
-            } else {
-                var t = fiber.textNodes = [];
-                textStack.unshift(t);
-            }
-        }
         containerStack.unshift(fiber.stateNode);
         if (!root) {
             fiber.effectTag *= ATTR;
@@ -886,9 +877,6 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
-        if (textStack[0]) {
-            textStack[0].push(fiber);
-        }
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }

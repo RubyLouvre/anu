@@ -11,7 +11,7 @@
 
 var __push = Array.prototype.push;
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
-var innerHTML = "dangerouslySetInnerHTML";
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function Fragment(props) {
@@ -1028,9 +1028,7 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-createHandle("change", function (e) {
-    return !e.target.compositionLock;
-});
+createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1056,16 +1054,8 @@ eventPropHooks.wheel = function (event) {
     "wheelDeltaY" in event ? -event.wheelDeltaY :
     "wheelDelta" in event ? -event.wheelDelta : 0;
 };
-function lockChange(e) {
-    e.target.compositionLock = true;
-}
-function unlockChange(e) {
-    e.target.compositionLock = false;
-}
 eventHooks.changecapture = eventHooks.change = function (dom) {
     if (/text|password|search/.test(dom.type)) {
-        addEvent(dom, "compositionstart", lockChange);
-        addEvent(dom, "compositionend", unlockChange);
         addEvent(document, "input", specialHandles.change);
     }
 };
@@ -1265,7 +1255,6 @@ function controlled(dom, name, nextProps, lastProps, fiber) {
 function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     var isControlled = !!six;
     var isSelect = fiber.type === "select";
-    var isTextArea = fiber.type === "textarea";
     var value = nextProps[name];
     if (!isSelect) {
         if (name.indexOf("alue") !== -1) {
@@ -1277,7 +1266,6 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     }
     var multipleChange = isControlled || isSelect && nextProps.multiple != lastProps.multiple;
     if (multipleChange || lastProps === emptyObject) {
-        dom._persistName = name;
         dom._persistValue = value;
         syncValue({ target: dom });
         var duplexType = "select";
@@ -1323,7 +1311,6 @@ function syncOptions(e) {
 }
 function syncValue(_ref) {
     var dom = _ref.target;
-    var name2 = dom._persistName;
     var name = rchecked.test(dom.type) ? "checked" : "value";
     var value = dom._persistValue;
     if (dom[name] + "" !== value + "") {
@@ -1638,7 +1625,6 @@ function Fiber(vnode) {
 
 var ownerStack = [];
 var effects = [];
-var textStack = [];
 var containerStack = [];
 var contextStack = [emptyObject];
 
@@ -1862,14 +1848,6 @@ function updateHostComponent(fiber) {
         prev = fiber.alternate;
     var children = props && props.children;
     if (tag === 5) {
-        if (Renderer.onlyRenderText(fiber)) {
-            if (fiber.textNodes) {
-                textStack.shift();
-            } else {
-                var t = fiber.textNodes = [];
-                textStack.unshift(t);
-            }
-        }
         containerStack.unshift(fiber.stateNode);
         if (!root) {
             fiber.effectTag *= ATTR;
@@ -1879,9 +1857,6 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
-        if (textStack[0]) {
-            textStack[0].push(fiber);
-        }
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }
@@ -2624,45 +2599,57 @@ function insertElement(fiber) {
         }
     }
 }
-function useTextNodes(fiber, cb) {
-    if (fiber.textNodes && fiber.textNodes.length && !fiber.props[innerHTML]) {
-        var text = fiber.textNodes.reduce(function (a, b) {
-            return a + b.props.children;
-        }, "");
-        if (cb(text) !== false) {
-            delete fiber.textNodes;
+function collectText(fiber, ret) {
+    for (var c = fiber.child; c; c = c.sibling) {
+        if (c.tag === 5) {
+            collectText(c, ret);
+        } else if (c.tag === 6) {
+            ret.push(c.props.children);
+        } else {
+            collectText(c, ret);
         }
+    }
+}
+function isTextContainer(fiber) {
+    switch (fiber.type) {
+        case "option":
+        case "noscript":
+        case "textarea":
+        case "style":
+        case "script":
+            return true;
+        default:
+            return false;
     }
 }
 var DOMRenderer = createRenderer({
     render: render$1,
-    onlyRenderText: function onlyRenderText(fiber) {
-        switch (fiber.type) {
-            case "option":
-            case "noscript":
-            case "textarea":
-            case "style":
-            case "script":
-                return true;
-            default:
-                return false;
-        }
-    },
     updateAttribute: function updateAttribute(fiber) {
         var type = fiber.type,
             props = fiber.props,
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
-        if (type === "textarea" && !("value" in props) && !("defaultValue" in props)) {
-            useTextNodes(fiber, function (text) {
-                console.log("text:", text);
-                fiber.props.defaultValue = text;
-            });
+        if (isTextContainer(fiber)) {
+            var texts = [];
+            collectText(fiber, texts);
+            var text = texts.reduce(function (a, b) {
+                return a + b;
+            }, "");
+            switch (fiber.type) {
+                case "textarea":
+                    if (!("value" in props) && !("defaultValue" in props)) {
+                        props.defaultValue = text;
+                    }
+                    break;
+                case "option":
+                    stateNode.text = text;
+                    break;
+                default:
+                    stateNode.innerHTML = text;
+                    break;
+            }
         }
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        useTextNodes(fiber, function (text) {
-            stateNode.innerHTML = text;
-        });
         if (type === "option") {
             if ("value" in props) {
                 stateNode.duplexValue = stateNode.value = props.value;
@@ -2711,10 +2698,10 @@ var DOMRenderer = createRenderer({
         var rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {
             var lastFiber = topFibers[rootIndex],
-                effects$$1 = [];
-            detachFiber(lastFiber, effects$$1);
-            effects$$1.shift();
-            commitEffects(effects$$1);
+                effects = [];
+            detachFiber(lastFiber, effects);
+            effects.shift();
+            commitEffects(effects);
             topNodes.splice(rootIndex, 1);
             topFibers.splice(rootIndex, 1);
             container._reactInternalFiber = null;

@@ -5,7 +5,7 @@ import { AnuPortal } from "react-core/createPortal";
 
 import { Renderer } from "react-core/createRenderer";
 
-import { contextStack, textStack, ownerStack, containerStack, hasContextChanged } from "./util";
+import { contextStack, ownerStack, containerStack, hasContextChanged } from "./util";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
@@ -65,14 +65,6 @@ function updateHostComponent(fiber) {
     const { props, tag, root, alternate: prev } = fiber;
     const children = props && props.children;
     if (tag === 5) {
-        if(Renderer.onlyRenderText(fiber)){
-            if(fiber.textNodes){
-                textStack.shift()
-            }else{
-               var t = fiber.textNodes = []
-               textStack.unshift(t)
-            }
-        }
         // 元素节点
         containerStack.unshift(fiber.stateNode);
         if (!root) {
@@ -83,10 +75,6 @@ function updateHostComponent(fiber) {
         }
         diffChildren(fiber, children);
     } else {
-        if(textStack[0]){
-           textStack[0].push(fiber)
-        }
-        // 文本节点
         if (!prev || prev.props.children !== children) {
             fiber.effectTag *= CONTENT;
         }

@@ -37,9 +37,7 @@ describe('ReactDOMSelect', () => {
     const container = document.createElement('div');
     stub = ReactDOM.render(stub, container);
     const node = ReactDOM.findDOMNode(stub);
-console.log("node.value",node.value+'--', node.tagName)
     expect(node.value).toBe('giraffe');
-
     // Changing `defaultValue` should do nothing.
     ReactDOM.render(
       <select defaultValue="gorilla">{options}</select>,

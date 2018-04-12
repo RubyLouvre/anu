@@ -55,17 +55,16 @@
             return kid;
           };
           
-    const simpleKid = <span key="simple" />;
-    const instance = <div>{[simpleKid]}</div>;
-    React.Children.forEach(instance.props.children, callback, context);
+       
+    var node = ReactDOM.render(<textarea defaultValue="111"></textarea>, container);
+
+    
+
+      expect(node.value).toBe('111');
   
-    const mappedChildren = React.Children.map(
-      instance.props.children,
-      callback,
-      context,
-    );
-   // expect(callback).toHaveBeenCalledWith(simpleKid, 0);
-    expect(mappedChildren[0]).toEqual(<span key=".$simple" />);
+      // Changing children should do nothing, it functions like `defaultValue`.
+      node = ReactDOM.render(<textarea>222</textarea>, container);
+      expect(node.value).toEqual('111');
 </script>
 
 

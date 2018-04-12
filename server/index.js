@@ -35,7 +35,7 @@ function renderVNode(vnode, context) {
                 if (selectValue != null) {
                     var values = [].concat(selectValue),
                         valuesSet = {};
-                    values.forEach(function(el) {
+                    values.forEach(function (el) {
                         valuesSet["&" + el] = true;
                     });
                     vnode.valuesSet = valuesSet;
@@ -53,7 +53,7 @@ function renderVNode(vnode, context) {
                 var fakeUpdater = {
                     _reactInternalFiber: vnode
                 };
-                var cstr = ""
+                var cstr = "";
                 var children = fiberizeChildren(props.children, fakeUpdater);
                 for (var i in children) {
                     var child = children[i];
@@ -61,12 +61,12 @@ function renderVNode(vnode, context) {
                     cstr += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
-                if(vnode.type === "textarea" && !cstr){
-                    str += vnode.props.value || vnode.props.defaultValue || ""
-                }else{
-                    str += cstr
+                if (vnode.type === "textarea" && !cstr) {
+                    str += vnode.props.value || vnode.props.defaultValue || "";
+                } else {
+                    str += cstr;
                 }
-              
+
             }
             return str + "</" + type + ">\n";
         } else if (tag < 3) {
@@ -78,7 +78,7 @@ function renderVNode(vnode, context) {
             return renderVNode(vnode, context);
         } else if (Array.isArray(vnode)) {
             var multiChild = "";
-            vnode.forEach(function(el) {
+            vnode.forEach(function (el) {
                 multiChild += renderVNode(el, context);
             });
             return multiChild;
@@ -118,7 +118,7 @@ function* renderVNodeGen(vnode, context) {
                 if (selectValue != null) {
                     var values = [].concat(selectValue),
                         valuesSet = {};
-                    values.forEach(function(el) {
+                    values.forEach(function (el) {
                         valuesSet["&" + el] = true;
                     });
                     vnode.valuesSet = valuesSet;
@@ -137,17 +137,17 @@ function* renderVNodeGen(vnode, context) {
                     vnode
                 };
                 var children = fiberizeChildren(props.children, fakeUpdater);
-                var cstr = ""
+                var cstr = "";
                 for (var i in children) {
                     var child = children[i];
                     child.return = vnode;
                     cstr += renderVNode(child, context);
                 }
                 vnode.updater = fakeUpdater;
-                if(vnode.type === "textarea" && !cstr){
-                    str += vnode.props.value || vnode.props.defaultValue || ""
-                }else {
-                    str += cstr
+                if (vnode.type === "textarea" && !cstr) {
+                    str += vnode.props.value || vnode.props.defaultValue || "";
+                } else {
+                    str += cstr;
                 }
             }
             yield str + "</" + type + ">\n";
@@ -160,7 +160,7 @@ function* renderVNodeGen(vnode, context) {
             yield renderVNode(vnode, context);
         } else if (Array.isArray(vnode)) {
             var multiChild = "";
-            vnode.forEach(function(el) {
+            vnode.forEach(function (el) {
                 multiChild += renderVNode(el, context);
             });
             yield multiChild;
@@ -249,7 +249,7 @@ function toVnode(vnode, data) {
             data.context = getUnmaskedContext(instance, parentContext); //将context往下传
         }
         if (Array.isArray(rendered)) {
-            return rendered.map(function(el) {
+            return rendered.map(function (el) {
                 return toVnode(el, data, instance);
             });
         } else {
@@ -265,14 +265,14 @@ function toVnode(vnode, data) {
 function fixVnode(vnode) {
     var number = typeNumber(vnode);
     if (number < 3) {
-    // 0, 1, 2
+        // 0, 1, 2
         return {
             tag: 6,
             text: "",
             type: "#text"
         };
     } else if (number < 5) {
-    //3, 4
+        //3, 4
         return {
             tag: 6,
             text: vnode + "",
@@ -291,7 +291,7 @@ function renderToNodeStream(vnode, context) {
     const rs = new Readable();
     const it = renderVNodeGen(vnode, context || {});
 
-    rs._read = function() {
+    rs._read = function () {
         const v = it.next();
 
         if (!v.done) {
@@ -310,3 +310,4 @@ export default {
     renderToNodeStream,
     renderToStaticNodeStream: renderToNodeStream
 };
+
