@@ -139,6 +139,7 @@ function collectText(fiber, ret){
     for(var c = fiber.child; c ; c = c.sibling){
         if(c.tag === 5){
             collectText(c, ret);
+            removeElement(c.stateNode)
         }else if(c.tag === 6){
             ret.push(c.props.children);
         }else {
@@ -172,7 +173,8 @@ export let DOMRenderer = createRenderer({
             }, "");
             switch(fiber.type){
             case "textarea":
-                if( !("value" in props) && !("defaultValue" in props)){
+                if( lastProps == emptyObject && !("value" in props) && !("defaultValue" in props)){
+                  //  stateNode.innerHTML = text;
                     props.defaultValue = text;
                 }
                 break;

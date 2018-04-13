@@ -71,7 +71,7 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
         }
         dom.__anuSetValue = true;
         if(dom.type === "textarea"){
-            dom.innerHTML = value;
+            dom.defaultValue = value;
         }else{
             dom.setAttribute("value", value);
         }
@@ -98,6 +98,7 @@ function syncValue({ target: dom }) {
     let value = dom._persistValue;
     if (dom[name]+"" !== value + "") { //全部转数字再比较
         dom.__anuSetValue = true;//抑制onpropertychange
+      //  console.log("syncValue",name,value)
         dom[name] = value;
         dom.__anuSetValue = false;
     }

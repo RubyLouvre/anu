@@ -4,7 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--  <script type='text/javascript' src="./test/react.js"></script>
+      <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
@@ -16,39 +21,33 @@
     <div id='root' class="root">
 
     </div>
-    <script>
+    <script type='text/babel'>
         
-        function randomHexColor() { //随机生成十六进制颜色
-            return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
+        var container = document.getElementById('root');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+         };
+    var renderTextarea = function(component, container) {
+        if (!container) {
+            container = document.createElement('div');
         }
-        setTimeout(function () {
-            var k = 0
-            var root = document.getElementById("root")
-            for (var i = 0; i < 10000; i++) {
-                k += new Date - 0
-                var el = document.createElement("div");
-                el.innerHTML = k
-                root.appendChild(el)
-                el.style.cssText = "background:" + randomHexColor() + ";height:30px;"
-            }
-        }, 3000)
-        setTimeout(function () {
-            var el = document.createElement("div");
-            el.innerHTML = "结束"
-            root.appendChild(el)
-        }, 4000)
+        const node = ReactDOM.render(component, container);
 
-/*
- var renderTextarea = function(component, container) {
-      if (!container) {
-        container = document.createElement('div');
-      }
-      const node = ReactDOM.render(component, container);
-
-      // Fixing jsdom's quirky behavior -- in reality, the parser should strip
-      // off the leading newline but we need to do it by hand here.
-      node.defaultValue = node.innerHTML.replace(/^\n/, '');
-      return node;
+        // Fixing jsdom's quirky behavior -- in reality, the parser should strip
+        // off the leading newline but we need to do it by hand here.
+        node.defaultValue = node.innerHTML.replace(/^\n/, '');
+        return node;
     };
       
     //  const container = document.createElement('div');
@@ -65,7 +64,7 @@
       stub = ReactDOM.render(<textarea>gorilla</textarea>, container);
       expect(node.value).toEqual('giraffe');
   
-*/
+
     </script>
 
 
