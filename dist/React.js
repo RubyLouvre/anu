@@ -2336,13 +2336,19 @@ function getContainer(p) {
 }
 
 var updateQueue$1 = Renderer.mainThread;
-window.Renderer = Renderer;
 var batchedCbs = [];
+var roots = [];
 function render$1(vnode, root, callback) {
     var hostRoot = Renderer.updateRoot(root),
         instance = null;
     if (hostRoot._hydrating) {
         hostRoot.pendingCbs.push(function () {
+            render$1(vnode, root, callback);
+        });
+        return;
+    }
+    if (isBatchingUpdates && get(root)) {
+        batchedCbs.push(function () {
             render$1(vnode, root, callback);
         });
         return;
@@ -2356,68 +2362,12 @@ function render$1(vnode, root, callback) {
         hostRoot._hydrating = false;
     }];
     hostRoot.effectTag = CALLBACK;
-    if (isBatchingUpdates) {
-        if (get(root)) {
-            batchedCbs.push(function () {
-                render$1(vnode, root, callback);
-            });
-            return;
-        }
-    }
     hostRoot._hydrating = true;
     updateQueue$1.push(hostRoot);
     if (!Renderer.isRendering) {
         Renderer.scheduleWork();
     }
     return instance;
-}
-Renderer.scheduleWork = function () {
-    performWork({
-        timeRemaining: function timeRemaining() {
-            return 2;
-        }
-    });
-};
-var isBatchingUpdates = false;
-Renderer.batchedUpdates = function (cb) {
-    var keepbook = isBatchingUpdates;
-    isBatchingUpdates = true;
-    try {
-        cb();
-    } finally {
-        isBatchingUpdates = keepbook;
-        if (!isBatchingUpdates) {
-            batchedCbs.forEach(function (fn) {
-                return fn();
-            });
-            batchedCbs.length = 0;
-            Renderer.scheduleWork();
-        }
-    }
-};
-function workLoop(deadline) {
-    var topWork = getNextUnitOfWork();
-    if (topWork) {
-        var fiber = topWork;
-        var p = getContainer(fiber);
-        if (p) {
-            containerStack.unshift(p);
-        }
-        while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
-            fiber = updateEffects(fiber, topWork);
-        }
-        if (topWork) {
-            __push.apply(effects, collectEffects(topWork, null, true));
-            if (topWork.effectTag) {
-                effects.push(topWork);
-            }
-        }
-        if (deadline.timeRemaining() > ENOUGH_TIME && updateQueue$1.length) {
-            workLoop(deadline);
-        } else {
-            commitEffects();
-        }
-    }
 }
 function performWork(deadline) {
     workLoop(deadline);
@@ -2433,7 +2383,54 @@ function requestIdleCallback(fn) {
         }
     });
 }
-var roots = [];
+Renderer.scheduleWork = function () {
+    performWork({
+        timeRemaining: function timeRemaining() {
+            return 2;
+        }
+    });
+};
+var isBatchingUpdates = false;
+Renderer.batchedUpdates = function (callback) {
+    var keepbook = isBatchingUpdates;
+    isBatchingUpdates = true;
+    try {
+        callback();
+    } finally {
+        isBatchingUpdates = keepbook;
+        if (!isBatchingUpdates) {
+            batchedCbs.forEach(function (fn) {
+                return fn();
+            });
+            batchedCbs.length = 0;
+            Renderer.scheduleWork();
+        }
+    }
+};
+function workLoop(deadline) {
+    var topWork = getNextUnitOfWork();
+    if (topWork) {
+        var fiber = topWork;
+        var c = getContainer(fiber);
+        if (c) {
+            containerStack.unshift(c);
+        }
+        while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
+            fiber = updateEffects(fiber, topWork);
+        }
+        if (topWork) {
+            __push.apply(effects, collectEffects(topWork, null, true));
+            if (topWork.effectTag) {
+                effects.push(topWork);
+            }
+        }
+        if (updateQueue$1.length && deadline.timeRemaining() > ENOUGH_TIME) {
+            workLoop(deadline);
+        } else {
+            commitEffects();
+        }
+    }
+}
 function getNextUnitOfWork(fiber) {
     while (roots.length) {
         var el = roots.shift();
@@ -2505,7 +2502,7 @@ Renderer.updateComponent = function (instance, state, callback) {
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking && !isBatchingUpdates) {
+        if (!this._hooking) {
             updateQueue$1.push(fiber);
             Renderer.scheduleWork();
         }
