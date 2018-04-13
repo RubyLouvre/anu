@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-12
+ * by 司徒正美 Copyright 2018-04-13
  * IE9+
  */
 
@@ -867,30 +867,24 @@ function eventAction(dom, name, val, lastProps, fiber) {
     }
 }
 var isTouch = "ontouchstart" in document;
-function mountSorter(u1, u2) {
-    return u1.stateNode.updater.mountOrder - u2.stateNode.updater.mountOrder;
-}
 function dispatchEvent(e, type, end) {
     e = new SyntheticEvent(e);
     if (type) {
         e.type = type;
     }
     var bubble = e.type;
-    var hook = eventPropHooks[bubble];
+    var hook = eventPropHooks[e.type];
     if (hook && false === hook(e)) {
         return;
     }
-    var paths = collectPaths(e.target, end || document);
-    var captured = bubble + "capture";
-    var fibers = Renderer.interactQueue || (Renderer.interactQueue = []);
-    triggerEventFlow(paths, captured, e);
-    if (!e._stopPropagation) {
-        triggerEventFlow(paths.reverse(), bubble, e);
-    }
-    fibers.sort(mountSorter);
-    __push.apply(Renderer.mainThread, fibers);
-    Renderer.interactQueue = null;
-    Renderer.batchedUpdates();
+    Renderer.batchedUpdates(function () {
+        var paths = collectPaths(e.target, end || document);
+        var captured = bubble + "capture";
+        triggerEventFlow(paths, captured, e);
+        if (!e._stopPropagation) {
+            triggerEventFlow(paths.reverse(), bubble, e);
+        }
+    });
     Renderer.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
@@ -1291,7 +1285,7 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
         }
         dom.__anuSetValue = true;
         if (dom.type === "textarea") {
-            dom.innerHTML = value;
+            dom.defaultValue = value;
         } else {
             dom.setAttribute("value", value);
         }
@@ -2343,9 +2337,10 @@ function getContainer(p) {
 
 var updateQueue$1 = Renderer.mainThread;
 window.Renderer = Renderer;
+var batchedCbs = [];
 function render$1(vnode, root, callback) {
-    var hostRoot = Renderer.updateRoot(root);
-    var instance = null;
+    var hostRoot = Renderer.updateRoot(root),
+        instance = null;
     if (hostRoot._hydrating) {
         hostRoot.pendingCbs.push(function () {
             render$1(vnode, root, callback);
@@ -2360,8 +2355,16 @@ function render$1(vnode, root, callback) {
         callback && callback.call(instance);
         hostRoot._hydrating = false;
     }];
-    hostRoot._hydrating = true;
     hostRoot.effectTag = CALLBACK;
+    if (isBatchingUpdates) {
+        if (get(root)) {
+            batchedCbs.push(function () {
+                render$1(vnode, root, callback);
+            });
+            return;
+        }
+    }
+    hostRoot._hydrating = true;
     updateQueue$1.push(hostRoot);
     if (!Renderer.isRendering) {
         Renderer.scheduleWork();
@@ -2376,18 +2379,19 @@ Renderer.scheduleWork = function () {
     });
 };
 var isBatchingUpdates = false;
-Renderer.batchedUpdates = function () {
+Renderer.batchedUpdates = function (cb) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        Renderer.scheduleWork();
+        cb();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            commitEffects();
-            if (updateQueue$1.length) {
-                Renderer.scheduleWork();
-            }
+            batchedCbs.forEach(function (fn) {
+                return fn();
+            });
+            batchedCbs.length = 0;
+            Renderer.scheduleWork();
         }
     }
 };
@@ -2408,7 +2412,9 @@ function workLoop(deadline) {
                 effects.push(topWork);
             }
         }
-        if (!isBatchingUpdates) {
+        if (deadline.timeRemaining() > ENOUGH_TIME && updateQueue$1.length) {
+            workLoop(deadline);
+        } else {
             commitEffects();
         }
     }
@@ -2427,12 +2433,15 @@ function requestIdleCallback(fn) {
         }
     });
 }
+var roots = [];
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue$1.shift();
-    if (!fiber) {
-        return;
+    while (roots.length) {
+        var el = roots.shift();
+        __push.apply(updateQueue$1, el.batchedQueue);
+        delete el.batchedQueue;
     }
-    if (fiber.merged) {
+    fiber = updateQueue$1.shift();
+    if (!fiber || fiber.merged) {
         return;
     }
     if (fiber.root) {
@@ -2465,6 +2474,12 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
+function getRoot(el) {
+    while (el.return) {
+        el = el.return;
+    }
+    return el;
+}
 Renderer.updateComponent = function (instance, state, callback) {
     var fiber = get(instance);
     if (fiber.parent) {
@@ -2472,16 +2487,25 @@ Renderer.updateComponent = function (instance, state, callback) {
     }
     var isForced = state === true;
     state = isForced ? null : state;
-    if (this._hydrating || Renderer.interactQueue) {
+    var updater = instance.updater,
+        batchedQueue = void 0;
+    if (isBatchingUpdates) {
+        var root = updater.root || (updater.root = getRoot(fiber));
+        if (!root.batchedQueue) {
+            roots.push(root);
+        }
+        batchedQueue = root.batchedQueue || (root.batchedQueue = []);
+    }
+    if (this._hydrating || batchedQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Renderer.interactQueue || updateQueue$1;
+            var queue = batchedQueue || updateQueue$1;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!this._hooking && !isBatchingUpdates) {
             updateQueue$1.push(fiber);
             Renderer.scheduleWork();
         }
@@ -2603,6 +2627,7 @@ function collectText(fiber, ret) {
     for (var c = fiber.child; c; c = c.sibling) {
         if (c.tag === 5) {
             collectText(c, ret);
+            _removeElement(c.stateNode);
         } else if (c.tag === 6) {
             ret.push(c.props.children);
         } else {
@@ -2638,7 +2663,11 @@ var DOMRenderer = createRenderer({
             switch (fiber.type) {
                 case "textarea":
                     if (!("value" in props) && !("defaultValue" in props)) {
-                        props.defaultValue = text;
+                        if (!lastProps) {
+                            props.defaultValue = text;
+                        } else {
+                            props.defaultValue = lastProps.defaultValue;
+                        }
                     }
                     break;
                 case "option":
@@ -2695,6 +2724,9 @@ var DOMRenderer = createRenderer({
         return Renderer.render(vnode, container, callback);
     },
     unmountComponentAtNode: function unmountComponentAtNode(container) {
+        if (!container || container.nodeType !== 1) {
+            throw "container is not a element";
+        }
         var rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {
             var lastFiber = topFibers[rootIndex],
@@ -2733,6 +2765,7 @@ if (prevReact && prevReact.eventSystem) {
         version: "1.3.1",
         render: render,
         hydrate: render,
+        unstable_batchedUpdates: DOMRenderer.batchedUpdates,
         Fragment: Fragment,
         PropTypes: PropTypes,
         Children: Children,

@@ -10,6 +10,7 @@ export function getDuplexProps(dom, props) {
     if (number) {
         for (let i in controlledStrategy) {
             if (props.hasOwnProperty(i)) {
+                //  delete props[i];
                 return i;
             }
         }
@@ -33,6 +34,7 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     let isControlled = !!six;
     let isSelect = fiber.type === "select";
     let value = nextProps[name];
+    
     if(!isSelect){
         if(name.indexOf("alue") !== -1){
             var canSetVal = true;
@@ -51,11 +53,9 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
                 target: dom
             });
         } else {
-            
             duplexType = rchecked.test(dom.type) ? "checked" : "value";
         }
         if (isControlled) { // add event for controlled 
-           
             var arr = duplexData[duplexType];
             arr[0].forEach(function (name) {
                 eventAction(dom, name, nextProps[name] || noop, lastProps, fiber);
@@ -64,8 +64,8 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
             Renderer.controlledCbs.push(fiber);
         }
     }
-    //必须设置完dom.value=yyy后才能设置dom.setAttribute("value",xxx)
-    if (canSetVal  ) {
+    //设置默认值
+    if (canSetVal) {
         if(rchecked.test(dom.type)  ){
             value = "value" in nextProps ? nextProps.value: "on";
         }
@@ -75,7 +75,6 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
         }else{
             dom.setAttribute("value", value);
         }
-      
         dom.__anuSetValue = false;
     }
 }
@@ -98,11 +97,12 @@ function syncValue({ target: dom }) {
     let value = dom._persistValue;
     if (dom[name]+"" !== value + "") { //全部转数字再比较
         dom.__anuSetValue = true;//抑制onpropertychange
-      //  console.log("syncValue",name,value)
         dom[name] = value;
         dom.__anuSetValue = false;
     }
 }
+
+
 
 var duplexData = {
     select: [["onChange"], syncOptions],

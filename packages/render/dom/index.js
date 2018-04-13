@@ -26,6 +26,7 @@ if (prevReact && prevReact.eventSystem) {
         version: "VERSION",
         render: render,
         hydrate: render,
+        unstable_batchedUpdates: DOMRenderer.batchedUpdates,
         //  options,
         Fragment,
         PropTypes,

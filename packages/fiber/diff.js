@@ -7,11 +7,10 @@ import { Renderer } from "react-core/createRenderer";
 import { __push, get } from "react-core/util";
 let updateQueue = Renderer.mainThread;
 window.Renderer = Renderer;
+let batchedCbs = [];
 export function render(vnode, root, callback) {
-    let hostRoot = Renderer.updateRoot(root);
-    let instance = null;
-    // 如果之前的还没有执行完，那么等待它执行完再处理,
-    // 比如在某个组件的cb调用了ReactDOM.render就会遇到这种情况
+    let hostRoot = Renderer.updateRoot(root), instance = null;
+    // 如果组件的componentDidMount/Update中调用ReactDOM.render
     if (hostRoot._hydrating) {
         hostRoot.pendingCbs.push(function () {
             render(vnode, root, callback);
@@ -26,17 +25,26 @@ export function render(vnode, root, callback) {
         callback && callback.call(instance);
         hostRoot._hydrating = false; // unlock
     }];
-    hostRoot._hydrating = true; // lock 表示正在渲染
+
     hostRoot.effectTag = CALLBACK;
+    //如果在ReactDOM.batchedUpdates中调用ReactDOM.render
+    if (isBatchingUpdates) {
+        if (get(root)) { //如果是旧节点
+            batchedCbs.push(function () {
+                render(vnode, root, callback);
+            });
+            return;
+        }
+    }
+    hostRoot._hydrating = true; // lock 表示正在渲染
     updateQueue.push(hostRoot);
-    if(!Renderer.isRendering){      
-        Renderer.scheduleWork();     
-    }   
+    if (!Renderer.isRendering) {
+        Renderer.scheduleWork();
+    }
     return instance;
 }
 
 Renderer.scheduleWork = function () {
-   
     performWork({
         timeRemaining() {
             return 2;
@@ -45,18 +53,17 @@ Renderer.scheduleWork = function () {
 };
 
 var isBatchingUpdates = false;
-Renderer.batchedUpdates = function () {
+Renderer.batchedUpdates = function (cb) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        Renderer.scheduleWork();
+        cb();       
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            commitEffects();
-            if(updateQueue.length){
-                Renderer.scheduleWork();
-            }
+            batchedCbs.forEach(fn => fn());
+            batchedCbs.length = 0;
+            Renderer.scheduleWork();
         }
     }
 };
@@ -78,7 +85,9 @@ function workLoop(deadline) {
                 effects.push(topWork);
             }
         }
-        if (!isBatchingUpdates) {
+        if (deadline.timeRemaining() > ENOUGH_TIME && updateQueue.length) {
+            workLoop(deadline);
+        } else {
             commitEffects();
         }
     }
@@ -101,13 +110,15 @@ function requestIdleCallback(fn) {
         }
     });
 }
-
+let roots = [];
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue.shift();
-    if (!fiber) {
-        return;
+    while (roots.length) {
+        var el = roots.shift();
+        __push.apply(updateQueue, el.batchedQueue);
+        delete el.batchedQueue;
     }
-    if (fiber.merged) {
+    fiber = updateQueue.shift();
+    if (!fiber || fiber.merged) {
         return;
     }
     if (fiber.root) {
@@ -132,7 +143,6 @@ function mergeUpdates(el, state, isForced, callback) {
     if (isForced) {
         fiber.isForced = true; // 如果是true就变不回false
     }
-    //  fiber.alternate = fiber.alternate || fiber;//不要覆盖旧的
     if (state) {
         var ps = fiber.pendingStates || (fiber.pendingStates = []);
         ps.push(state);
@@ -150,29 +160,41 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
+function getRoot(el) {
+    while (el.return) {
+        el = el.return;
+    }
+    return el;
+}
 
 Renderer.updateComponent = function (instance, state, callback) {
     // setState
-    var fiber = get(instance);
+    let fiber = get(instance);
     if (fiber.parent) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
-
     let isForced = state === true;
     state = isForced ? null : state;
-
-    if (this._hydrating || Renderer.interactQueue) {
+    let updater = instance.updater, batchedQueue;
+    if (isBatchingUpdates) {
+        let root = updater.root || (updater.root = getRoot(fiber));
+        if (!root.batchedQueue) {
+            roots.push(root);
+        }
+        batchedQueue = root.batchedQueue || (root.batchedQueue = []);
+    }
+    if (this._hydrating || batchedQueue) {
         // 如果正在render过程中，那么要新建一个fiber,将状态添加到新fiber
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Renderer.interactQueue || updateQueue;
+            var queue = batchedQueue || updateQueue;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         // 如果是在componentWillXXX中，那么直接修改已经fiber及instance
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!this._hooking && !isBatchingUpdates) {
             // 不在生命周期钩子中时，需要立即触发（或异步触发）
             updateQueue.push(fiber);
             Renderer.scheduleWork();

@@ -89,7 +89,7 @@ function mergeStates(fiber, nextProps, keep) {
     if (n === 0) {
         return state;
     }
-
+   
     let nextState = extend({}, state); // 每次都返回新的state
     for (let i = 0; i < n; i++) {
         let pending = pendings[i];

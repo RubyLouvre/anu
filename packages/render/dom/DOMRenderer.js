@@ -139,7 +139,7 @@ function collectText(fiber, ret){
     for(var c = fiber.child; c ; c = c.sibling){
         if(c.tag === 5){
             collectText(c, ret);
-            removeElement(c.stateNode)
+            removeElement(c.stateNode);
         }else if(c.tag === 6){
             ret.push(c.props.children);
         }else {
@@ -173,14 +173,16 @@ export let DOMRenderer = createRenderer({
             }, "");
             switch(fiber.type){
             case "textarea":
-                if( lastProps == emptyObject && !("value" in props) && !("defaultValue" in props)){
-                  //  stateNode.innerHTML = text;
-                    props.defaultValue = text;
+                if( !("value" in props) && !("defaultValue" in props)){
+                    if(!lastProps){
+                        props.defaultValue = text;
+                    }else{
+                        props.defaultValue = lastProps.defaultValue;
+                    }
                 }
                 break;
             case "option":
                 stateNode.text = text;
-                //   stateNode.duplexValue = "value" in props ? props.value: stateNode.text;
                 break;
             default:
                 stateNode.innerHTML = text;
@@ -235,6 +237,9 @@ export let DOMRenderer = createRenderer({
     },
     // [Top API] ReactDOM.unmountComponentAtNode
     unmountComponentAtNode(container) {
+        if(!container || container.nodeType !== 1 ){
+            throw "container is not a element";
+        }
         let rootIndex = topNodes.indexOf(container);
         if (rootIndex > -1) {
             let lastFiber = topFibers[rootIndex],

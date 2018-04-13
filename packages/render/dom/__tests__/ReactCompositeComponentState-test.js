@@ -209,7 +209,7 @@ describe('ReactCompositeComponent-state', () => {
 
   it('should call componentDidUpdate of children first', () => {
      // "暂不测试unstable API"
-    return 
+   
     const container = document.createElement('div');
 
     let ops = [];

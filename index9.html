@@ -46,20 +46,68 @@
                   }
               };
          };
-         /*
-var el = document.createElement("textarea")
-container.appendChild(el)
-el.defaultValue = "foo"
-el.defaultValue = "bar"
-el.defaultValue = "noise"
-*/
-       //  const container = document.createElement('div');
-         ReactDOM.render(<textarea defaultValue="foo" />, container);
-         ReactDOM.render(<textarea defaultValue="bar" />, container);
-         ReactDOM.render(<textarea defaultValue="noise" />, container);
-         
-        console.log(container.firstChild)
-         expect(container.firstChild.defaultValue).toBe('noise');
+         let ops = [];
+
+    let child = null;
+    let parent = null;
+
+    class Child extends React.Component {
+      state = {bar: false};
+      componentDidMount() {
+        child = this;
+      }
+      componentDidUpdate() {
+        ops.push('child did update');
+      }
+      render() {
+        return <div />;
+      }
+    }
+
+    let shouldUpdate = true;
+
+    class Intermediate extends React.Component {
+      shouldComponentUpdate() {
+        return shouldUpdate;
+      }
+      render() {
+        return <Child />;
+      }
+    }
+
+    class Parent extends React.Component {
+      state = {foo: false};
+      componentDidMount() {
+        parent = this;
+      }
+      componentDidUpdate() {
+        ops.push('parent did update');
+      }
+      render() {
+        return <Intermediate />;
+      }
+    }
+
+    ReactDOM.render(<Parent />, container);
+
+    ReactDOM.unstable_batchedUpdates(() => {
+      parent.setState({foo: true});
+      child.setState({bar: true});
+    });
+    // When we render changes top-down in a batch, children's componentDidUpdate
+    // happens before the parent.
+    expect(ops).toEqual(['child did update', 'parent did update']);
+
+    shouldUpdate = false;
+
+    ops = [];
+
+    ReactDOM.unstable_batchedUpdates(() => {
+      parent.setState({foo: false});
+      child.setState({bar: false});
+    });
+    // We expect the same thing to happen if we bail out in the middle.
+    expect(ops).toEqual(['child did update', 'parent did update']);
 </script>
 
 

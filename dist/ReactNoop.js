@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-12
+ * by 司徒正美 Copyright 2018-04-13
  * IE9+
  */
 
@@ -1363,9 +1363,10 @@ function commitOtherEffects(fiber) {
 
 var updateQueue = Renderer.mainThread;
 window.Renderer = Renderer;
+var batchedCbs = [];
 function render$1(vnode, root, callback) {
-    var hostRoot = Renderer.updateRoot(root);
-    var instance = null;
+    var hostRoot = Renderer.updateRoot(root),
+        instance = null;
     if (hostRoot._hydrating) {
         hostRoot.pendingCbs.push(function () {
             render$1(vnode, root, callback);
@@ -1380,8 +1381,16 @@ function render$1(vnode, root, callback) {
         callback && callback.call(instance);
         hostRoot._hydrating = false;
     }];
-    hostRoot._hydrating = true;
     hostRoot.effectTag = CALLBACK;
+    if (isBatchingUpdates) {
+        if (get(root)) {
+            batchedCbs.push(function () {
+                render$1(vnode, root, callback);
+            });
+            return;
+        }
+    }
+    hostRoot._hydrating = true;
     updateQueue.push(hostRoot);
     if (!Renderer.isRendering) {
         Renderer.scheduleWork();
@@ -1396,18 +1405,19 @@ Renderer.scheduleWork = function () {
     });
 };
 var isBatchingUpdates = false;
-Renderer.batchedUpdates = function () {
+Renderer.batchedUpdates = function (cb) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        Renderer.scheduleWork();
+        cb();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
-            commitEffects();
-            if (updateQueue.length) {
-                Renderer.scheduleWork();
-            }
+            batchedCbs.forEach(function (fn) {
+                return fn();
+            });
+            batchedCbs.length = 0;
+            Renderer.scheduleWork();
         }
     }
 };
@@ -1428,7 +1438,9 @@ function workLoop(deadline) {
                 effects.push(topWork);
             }
         }
-        if (!isBatchingUpdates) {
+        if (deadline.timeRemaining() > ENOUGH_TIME && updateQueue.length) {
+            workLoop(deadline);
+        } else {
             commitEffects();
         }
     }
@@ -1447,12 +1459,15 @@ function requestIdleCallback(fn) {
         }
     });
 }
+var roots = [];
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue.shift();
-    if (!fiber) {
-        return;
+    while (roots.length) {
+        var el = roots.shift();
+        __push.apply(updateQueue, el.batchedQueue);
+        delete el.batchedQueue;
     }
-    if (fiber.merged) {
+    fiber = updateQueue.shift();
+    if (!fiber || fiber.merged) {
         return;
     }
     if (fiber.root) {
@@ -1485,6 +1500,12 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
+function getRoot$1(el) {
+    while (el.return) {
+        el = el.return;
+    }
+    return el;
+}
 Renderer.updateComponent = function (instance, state, callback) {
     var fiber = get(instance);
     if (fiber.parent) {
@@ -1492,16 +1513,25 @@ Renderer.updateComponent = function (instance, state, callback) {
     }
     var isForced = state === true;
     state = isForced ? null : state;
-    if (this._hydrating || Renderer.interactQueue) {
+    var updater = instance.updater,
+        batchedQueue = void 0;
+    if (isBatchingUpdates) {
+        var root = updater.root || (updater.root = getRoot$1(fiber));
+        if (!root.batchedQueue) {
+            roots.push(root);
+        }
+        batchedQueue = root.batchedQueue || (root.batchedQueue = []);
+    }
+    if (this._hydrating || batchedQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = Renderer.interactQueue || updateQueue;
+            var queue = batchedQueue || updateQueue;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!this._hooking && !isBatchingUpdates) {
             updateQueue.push(fiber);
             Renderer.scheduleWork();
         }

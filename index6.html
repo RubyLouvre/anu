@@ -56,15 +56,12 @@
           };
           
        
-    var node = ReactDOM.render(<textarea defaultValue="111"></textarea>, container);
-
-    
-
-      expect(node.value).toBe('111');
-  
-      // Changing children should do nothing, it functions like `defaultValue`.
-      node = ReactDOM.render(<textarea>222</textarea>, container);
-      expect(node.value).toEqual('111');
+        
+    try{
+        ReactDOM.unmountComponentAtNode(nodeArray);
+    }catch(e){
+        console.log(e)
+    }
 </script>
 
 

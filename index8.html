@@ -5,10 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--  <script type='text/javascript' src="./test/react.js"></script>
-      <script type='text/javascript' src="./test/react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-
+    <!--  <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -38,33 +37,43 @@
                   }
               };
          };
-    var renderTextarea = function(component, container) {
-        if (!container) {
-            container = document.createElement('div');
-        }
-        const node = ReactDOM.render(component, container);
+        
+    const container1 = document.createElement('div');
+    const container2 = document.createElement('p');
+    
+    class Foo extends React.Component {
+      state = {active: false};
+      componentDidMount() {
+        this.setState({active: true});
+      }
+      render() {
+        return (
+          <div>{this.props.children + (this.state.active ? '!' : '')}</div>
+        );
+      }
+    }
 
-        // Fixing jsdom's quirky behavior -- in reality, the parser should strip
-        // off the leading newline but we need to do it by hand here.
-        node.defaultValue = node.innerHTML.replace(/^\n/, '');
-        return node;
-    };
-      
-    //  const container = document.createElement('div');
-      let stub = <textarea>giraffe</textarea>;
-      let node;
-  
-  
-      node = renderTextarea(stub, container);
-   
-  
-      expect(node.value).toBe('giraffe');
-  
-      // Changing children should do nothing, it functions like `defaultValue`.
-      stub = ReactDOM.render(<textarea>gorilla</textarea>, container);
-      expect(node.value).toEqual('giraffe');
-  
+    ReactDOM.render(<div>1</div>, container1);
+    console.log("开始批量更新")
+    ReactDOM.unstable_batchedUpdates(() => {
+      // Update. Does not flush yet.
+      console.log("更新旧节点")
+      ReactDOM.render(<div>2</div>, container1);
+     
+      expect(container1.textContent).toEqual('1');
 
+      // Initial mount on another root. Should flush immediately.
+      console.log("更新新节点")
+      ReactDOM.render(<Foo>a</Foo>, container2);
+      // The update did not flush yet.
+      expect(container1.textContent).toEqual('1');
+      // The initial mount flushed, but not the update scheduled in cDU.
+      expect(container2.textContent).toEqual('a');
+    });
+    console.log("批量更新完毕")
+    // All updates have flushed.
+    expect(container1.textContent).toEqual('2');
+    expect(container2.textContent).toEqual('a!');
     </script>
 
 

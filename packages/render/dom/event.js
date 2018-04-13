@@ -14,7 +14,7 @@ let eventLowerCache = {
     onWheel: "wheel"
 };
 
-export function eventAction (dom, name, val, lastProps, fiber) {
+export function eventAction(dom, name, val, lastProps, fiber) {
     let events = dom.__events || (dom.__events = {});
     events.vnode = fiber;
     let refName = toLowerCase(name.slice(2));
@@ -48,24 +48,28 @@ export function dispatchEvent(e, type, end) {
     }
     let bubble = e.type;
     //let dom = e.target;
-    let hook = eventPropHooks[bubble];
+    let hook = eventPropHooks[e.type];
     if (hook && false === hook(e)) {
         return;
     }
-    let paths = collectPaths(e.target, end || document);
-    let captured = bubble + "capture";
-    var fibers = Renderer.interactQueue || (Renderer.interactQueue = []);
+    Renderer.batchedUpdates(function () {
 
-    triggerEventFlow(paths, captured, e);
+        let paths = collectPaths(e.target, end || document);
+        let captured = bubble + "capture";
+        //  var fibers = Renderer.interactQueue || (Renderer.interactQueue = []);
 
-    if (!e._stopPropagation) {
-        triggerEventFlow(paths.reverse(), bubble, e);
-    }
+        triggerEventFlow(paths, captured, e);
 
-    fibers.sort(mountSorter);
-    __push.apply(Renderer.mainThread, fibers);
-    Renderer.interactQueue = null;
-    Renderer.batchedUpdates();
+        if (!e._stopPropagation) {
+            triggerEventFlow(paths.reverse(), bubble, e);
+        }
+    });
+
+
+    //  fibers.sort(mountSorter);
+    //  __push.apply(Renderer.mainThread, fibers);
+    //  Renderer.interactQueue = null;
+    //  Renderer.batchedUpdates();
     Renderer.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({

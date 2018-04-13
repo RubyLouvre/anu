@@ -842,7 +842,7 @@ describe('ReactCompositeComponent', () => {
 
     it('should pass context when re-rendered', () => {
         // "暂不测试unstable API"
-        return
+      
         let parentInstance = null;
         let childInstance = null;
 

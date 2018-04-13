@@ -4,7 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!--  <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
@@ -16,40 +20,85 @@
     <div id='root' class="root">
 
     </div>
-    <script>
+    <script type='text/babel'>
+        
+        var container = document.getElementById('root');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+         };
+       
+         let selectNode;
 
-        var root = document.getElementById("root")
-        function randomHexColor() { //随机生成十六进制颜色
-            return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).substr(-6);
-        }
-        setTimeout(function () {
-            function loop(n) {
-                console.log("调动",n)
-                var k = 0
-                for (var i = 0; i < 100; i++) {
-                    k += new Date - 0
-                    var el = document.createElement("div");
-                    el.innerHTML = k
-                    root.appendChild(el)
-                    el.style.cssText = "background:" + randomHexColor() + ";height:30px;"
-                }
-                if (n) {
-                    setTimeout(function () {
-                        loop(n-1)
-                    }, 40)
-                }
-            }
-            loop(100);
-        }, 3000)
+class Parent extends React.Component {
+  state = {
+    value: 'giraffe',
+  };
 
-        setTimeout(function () {
-            var el = document.createElement("div");
-            el.innerHTML = "结束"
-            root.appendChild(el)
-        }, 4000)
+  componentDidMount() {
+    this._renderNested();
+  }
+
+  componentDidUpdate() {
+    this._renderNested();
+  }
+
+  _handleChange(event) {
+     
+    this.setState({value: event.target.value});
+  }
+
+  _renderNested() {
+    ReactDOM.render(
+      <select
+        onChange={this._handleChange.bind(this)}
+        ref={n => (selectNode = n)}
+        value={this.state.value}>
+        <option value="monkey">A monkey!</option>
+        <option value="giraffe">A giraffe!</option>
+        <option value="gorilla">A gorilla!</option>
+      </select>,
+      this._nestingContainer,
+    );
+  }
+
+  render() {
+    return <div ref={n => (this._nestingContainer = n)} />;
+  }
+}
 
 
-   // });
+document.body.appendChild(container);
+
+var ins = ReactDOM.render(<Parent />, container);
+//ref问题
+expect(selectNode.value).toBe('giraffe');
+
+selectNode.value = 'gorilla';
+
+let nativeEvent = document.createEvent('Event');
+nativeEvent.initEvent('input', true, true);
+selectNode.dispatchEvent(nativeEvent);
+
+expect(selectNode.value).toEqual('gorilla');
+
+nativeEvent = document.createEvent('Event');
+nativeEvent.initEvent('change', true, true);
+selectNode.dispatchEvent(nativeEvent);
+
+expect(selectNode.value).toEqual('gorilla');
+
+
     </script>
 
 
