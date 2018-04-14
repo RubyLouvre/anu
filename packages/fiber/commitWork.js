@@ -115,6 +115,16 @@ export function commitOtherEffects(fiber) {
                 break;
             case HOOK: 
                 if (updater._isMounted()) {
+                    var fn = instance.componentDidUpdate;
+                    if(fn){
+                        instance.componentDidUpdate = function(){
+                            Renderer.batchedUpdates(function(){
+                                fn.call(instance);
+                            });
+                            instance.componentDidUpdate = fn;
+                        };
+                        // batchedUpdates.bind
+                    }
                     callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
@@ -131,7 +141,16 @@ export function commitOtherEffects(fiber) {
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
                 queue.forEach(function (fn) {
-                    fn.call(instance);
+                    console.log(!fiber.root,fn+"");
+                    if(!fiber.root){
+                        
+                        Renderer.batchedUpdates(function(){
+                            fn.call(instance);
+                        });
+                    }else{
+                        fn.call(instance);
+                    }
+                   
                 });
                 delete fiber.pendingCbs;
                 break;

@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--  <script type='text/javascript' src="./react.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -37,68 +37,91 @@
                   }
               };
          };
-       
-         let selectNode;
+         const updates = [];
 
-class Parent extends React.Component {
-  state = {
-    value: 'giraffe',
-  };
+    class Outer extends React.Component {
+      state = {x: 0};
 
-  componentDidMount() {
-    this._renderNested();
-  }
+      render() {
+        updates.push('Outer-render-' + this.state.x);
+        return (
+          <div>
+            <Inner x={this.state.x} ref="inner" />
+          </div>
+        );
+      }
 
-  componentDidUpdate() {
-    this._renderNested();
-  }
+      componentDidUpdate() {
 
-  _handleChange(event) {
+        const x = this.state.x;
+
+        updates.push('Outer-didUpdate-' + x);
+        updates.push('Inner-setState-' + x);
+        console.log(this.refs.inner)
+        this.refs.inner.setState({x: x}, function() {
+          updates.push('Inner-callback-' + x);
+        });
+        
+      }
+    }
+
+    class Inner extends React.Component {
+      state = {x: 0};
+
+      render() {
+        updates.push('Inner-render-' + this.props.x + '-' + this.state.x);
+        return <div />;
+      }
+
+      componentDidUpdate() {
+        updates.push('Inner-didUpdate-' + this.props.x + '-' + this.state.x);
+      }
+    }
+
+    const instance = ReactTestUtils.renderIntoDocument(<Outer />);
+
+    updates.push('Outer-setState-1');
+    instance.setState({x: 1}, function() {
+      updates.push('Outer-callback-1');
+      updates.push('Outer-setState-2');
+      //setState cb中setState
+     instance.setState({x: 2}, function() {
+        updates.push('Outer-callback-2');
+      
+      })
      
-    this.setState({value: event.target.value});
-  }
+      
+    });
 
-  _renderNested() {
-    ReactDOM.render(
-      <select
-        onChange={this._handleChange.bind(this)}
-        ref={n => (selectNode = n)}
-        value={this.state.value}>
-        <option value="monkey">A monkey!</option>
-        <option value="giraffe">A giraffe!</option>
-        <option value="gorilla">A gorilla!</option>
-      </select>,
-      this._nestingContainer,
-    );
-  }
+    /* eslint-disable indent */
+    expect(updates).toEqual([
+      'Outer-render-0',
+      'Inner-render-0-0',
 
-  render() {
-    return <div ref={n => (this._nestingContainer = n)} />;
-  }
-}
+      'Outer-setState-1',
+      'Outer-render-1', 
+      'Inner-render-1-0',
+      'Inner-didUpdate-1-0',
+      'Outer-didUpdate-1',
+      // Happens in a batch, so don't re-render yet
+      'Inner-setState-1',//在componentDidUpdate中setState
+      'Outer-callback-1',
 
+      // Happens in a batch
+      'Outer-setState-2',
 
-document.body.appendChild(container);
-
-var ins = ReactDOM.render(<Parent />, container);
-//ref问题
-expect(selectNode.value).toBe('giraffe');
-
-selectNode.value = 'gorilla';
-
-let nativeEvent = document.createEvent('Event');
-nativeEvent.initEvent('input', true, true);
-selectNode.dispatchEvent(nativeEvent);
-
-expect(selectNode.value).toEqual('gorilla');
-
-nativeEvent = document.createEvent('Event');
-nativeEvent.initEvent('change', true, true);
-selectNode.dispatchEvent(nativeEvent);
-
-expect(selectNode.value).toEqual('gorilla');
-
-
+      // Flush batched updates all at once
+      'Outer-render-2',
+      'Inner-render-2-1',
+      'Inner-didUpdate-2-1',
+      'Inner-callback-1',
+      'Outer-didUpdate-2',
+      'Inner-setState-2',
+      'Outer-callback-2',
+      'Inner-render-2-2',
+      'Inner-didUpdate-2-2',
+      'Inner-callback-2',
+    ]);
     </script>
 
 

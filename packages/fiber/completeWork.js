@@ -25,7 +25,6 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
         fiber.stateNode.insertPoint = null;
     }
 
-
     for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
         if (isHost) {
@@ -54,7 +53,6 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
             effects.push(child);
         }
     }
-
 
     return effects;
 }

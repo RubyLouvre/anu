@@ -148,7 +148,6 @@ function updateClassComponent(fiber) {
     }
     let updater = instance.updater;
     updater._hooking = true;
-
     while (stage) {
         stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
     }
@@ -216,6 +215,7 @@ var stageIteration = {
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
         delete fiber.shouldUpdateFalse;
+        // instance.updater._hooking = false;//SCU/CWU中setState会易死循环
         if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else {

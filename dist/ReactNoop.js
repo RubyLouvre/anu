@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-13
+ * by 司徒正美 Copyright 2018-04-14
  * IE9+
  */
 
@@ -1330,6 +1330,15 @@ function commitOtherEffects(fiber) {
                     break;
                 case HOOK:
                     if (updater._isMounted()) {
+                        var fn = instance.componentDidUpdate;
+                        if (fn) {
+                            instance.componentDidUpdate = function () {
+                                Renderer.batchedUpdates(function () {
+                                    fn.call(instance);
+                                });
+                                instance.componentDidUpdate = fn;
+                            };
+                        }
                         callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                     } else {
                         updater._isMounted = returnTrue;
@@ -1345,7 +1354,14 @@ function commitOtherEffects(fiber) {
                 case CALLBACK:
                     var queue = fiber.pendingCbs;
                     queue.forEach(function (fn) {
-                        fn.call(instance);
+                        console.log(!fiber.root, fn + "");
+                        if (!fiber.root) {
+                            Renderer.batchedUpdates(function () {
+                                fn.call(instance);
+                            });
+                        } else {
+                            fn.call(instance);
+                        }
                     });
                     delete fiber.pendingCbs;
                     break;
@@ -1513,6 +1529,7 @@ Renderer.updateComponent = function (instance, state, callback) {
     var updater = instance.updater,
         batchedQueue = void 0;
     if (isBatchingUpdates) {
+        console.log("isBatchingUpdates");
         var root = updater.root || (updater.root = getRoot$1(fiber));
         if (!root.batchedQueue) {
             roots.push(root);
@@ -1528,7 +1545,14 @@ Renderer.updateComponent = function (instance, state, callback) {
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!this._hooking && !isBatchingUpdates) {
+            var p = fiber;
+            while (p.return) {
+                p = p.return;
+                if (p.tag < 3 && p.stateNode && p.stateNode.updater._hydrating) {
+                    return;
+                }
+            }
             updateQueue.push(fiber);
             Renderer.scheduleWork();
         }

@@ -174,7 +174,10 @@ Renderer.updateComponent = function (instance, state, callback) {
     let isForced = state === true;
     state = isForced ? null : state;
     let updater = instance.updater, batchedQueue;
+
+
     if (isBatchingUpdates) {
+        console.log("isBatchingUpdates");
         //如果是批量更新中
         let root = updater.root || (updater.root = getRoot(fiber));
         if (!root.batchedQueue) {
@@ -193,7 +196,18 @@ Renderer.updateComponent = function (instance, state, callback) {
     } else {
         // 如果是在willXXX钩子中使用setState，那么直接修改fiber及instance
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!this._hooking && !isBatchingUpdates) {
+
+            var p = fiber;
+            while(p.return){
+                p = p.return;
+                if(p.tag < 3 && p.stateNode && p.stateNode.updater._hydrating){
+                 
+
+                    //  updateQueue.push(fiber);
+                    return;
+                }
+            }
             //如果在hook外使用setState，需要立即更新视图
             updateQueue.push(fiber);
             Renderer.scheduleWork();
