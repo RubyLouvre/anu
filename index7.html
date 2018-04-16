@@ -2,25 +2,25 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
   <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
-    <pre>React 15 </pre>
+  <pre>React 15 </pre>
 
 
-    <div id='root' class="root">
+  <div id='root' class="root">
 
-    </div>
-    <script type='text/babel'>
+  </div>
+  <script type='text/babel'>
         
         var container = document.getElementById('root');
           var div = container;
@@ -37,92 +37,46 @@
                   }
               };
          };
-    var updates = [];
-       
+         let updateCount = 0;
+         let renderCount = 0;
+    let componentB = null;
 
-    class Outer extends React.Component {
-      state = {x: 0};
+    class B extends React.Component {
+      state = {updates: 0};
 
-      render() {
-        updates.push('Outer-render-' + this.state.x);
-        return (
-          <div>
-            <Inner x={this.state.x} ref="inner" />
-          </div>
-        );
+      componentDidMount() {
+        console.log("componentDidMount")
+        componentB = this;
       }
 
-      componentDidUpdate() {
-
-        const x = this.state.x;
-
-        updates.push('Outer-didUpdate-' + x);
-        updates.push('Inner-setState-' + x);
-        console.log("执行它")
-       this.refs.inner.setState({x: x}, function() {// 这里先不执行，
-          updates.push('Inner-callback-' + x+"!");
-        });
-      
-      }
-    }
-
-    class Inner extends React.Component {
-      state = {x: 0};
-
       render() {
-        updates.push('Inner-render-' + this.props.x + '-' + this.state.x);
+        console.log("render", renderCount)
+        renderCount++;
         return <div />;
       }
+    }
 
-      componentDidUpdate() {
-        updates.push('Inner-didUpdate-' + this.props.x + '-' + this.state.x);
+    class A extends React.Component {
+      state = {showB: true};
+
+      render() {
+        console.log("this.state.showB",this.state.showB)
+        return this.state.showB ? <B /> : <div />;
       }
     }
 
-    const instance = ReactTestUtils.renderIntoDocument(<Outer />);
+    const component = ReactTestUtils.renderIntoDocument(<A />);
 
-    updates.push('Outer-setState-1');
-    instance.setState({x: 1}, function() {
-      updates.push('Outer-callback-1');
-      updates.push('Outer-setState-2'); //XX
-      //setState cb中setState
-     instance.setState({x: 2,e:2}, function() {
-        updates.push('Outer-callback-2');
-      
-      })
+    ReactDOM.unstable_batchedUpdates(function() {
+      // B will have scheduled an update but the batching should ensure that its
+      // update never fires.
+     componentB.setState({updates: 1});
+
+      component.setState({showB: false});
      
-      
     });
 
-    /* eslint-disable indent */
-    expect(updates).toEqual([
-      'Outer-render-0',
-      'Inner-render-0-0',
-
-      'Outer-setState-1',//在外界执行setState
-      'Outer-render-1', 
-      'Inner-render-1-0',
-      'Inner-didUpdate-1-0',
-      'Outer-didUpdate-1',//在componentDidUpdate中setState
-      // Happens in a batch, so don't re-render yet
-      'Inner-setState-1', //在componentDidUpdate中setState
-      'Outer-callback-1', //回调内部
-
-      // Happens in a batch
-      'Outer-setState-2',//回调内部
-
-      // Flush batched updates all at once
-      'Outer-render-2',
-      'Inner-render-2-1',
-      'Inner-didUpdate-2-1',
-      'Inner-callback-1!',
-      'Outer-didUpdate-2',
-      'Inner-setState-2',//didComponent
-      'Outer-callback-2',
-      'Inner-render-2-2',
-      'Inner-didUpdate-2-2',
-      'Inner-callback-2!',
-    ]);
+    expect(renderCount).toBe(1);
     </script>
 
 

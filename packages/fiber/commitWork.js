@@ -12,7 +12,7 @@ import {
     effectNames
 } from "./effectTag";
 import { effects } from "./util";
-import { callLifeCycleHook, pushError } from "./unwindWork";
+import { guardCallback } from "./unwindWork";
 import { returnFalse, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
@@ -109,7 +109,7 @@ export function commitOtherEffects(fiber) {
                     Renderer.removeElement(fiber);
                 } else {
                     updater.enqueueSetState = returnFalse;
-                    callLifeCycleHook(instance, "componentWillUnmount", []);
+                    guardCallback(instance, "componentWillUnmount", []);
                     updater._isMounted = returnFalse;
                 }
                 delete fiber.stateNode;
@@ -117,10 +117,10 @@ export function commitOtherEffects(fiber) {
                 break;
             case HOOK: 
                 if (updater._isMounted()) {
-                    callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
+                    guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
-                    callLifeCycleHook(instance, "componentDidMount", []);
+                    guardCallback(instance, "componentDidMount", []);
                 }
                 delete fiber._hydrating;
                 break;

@@ -4,12 +4,8 @@ export function createRenderer(methods) {
 }
 
 export const Renderer = {
-    interactQueue: null,//[]
-    mainThread: [],
+    macrotasks: [],
     controlledCbs: [],
     mountOrder: 1,
-    onlyRenderText(){
-        return false
-    },
     currentOwner: null//vnode
 };

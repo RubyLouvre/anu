@@ -1,5 +1,5 @@
 import { document, modern, contains } from "./browser";
-import { isFn, noop, __push, toLowerCase } from "react-core/util";
+import { isFn, noop, toLowerCase } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 
 let globalEvents = {};
@@ -37,9 +37,7 @@ export function eventAction(dom, name, val, lastProps, fiber) {
 
 let isTouch = "ontouchstart" in document;
 
-function mountSorter(u1, u2) {
-    return u1.stateNode.updater.mountOrder - u2.stateNode.updater.mountOrder;
-}
+
 export function dispatchEvent(e, type, end) {
     //__type__ 在injectTapEventPlugin里用到
     e = new SyntheticEvent(e);
@@ -47,17 +45,13 @@ export function dispatchEvent(e, type, end) {
         e.type = type;
     }
     let bubble = e.type;
-    //let dom = e.target;
     let hook = eventPropHooks[e.type];
     if (hook && false === hook(e)) {
         return;
     }
     Renderer.batchedUpdates(function () {
-
         let paths = collectPaths(e.target, end || document);
         let captured = bubble + "capture";
-        //  var fibers = Renderer.interactQueue || (Renderer.interactQueue = []);
-
         triggerEventFlow(paths, captured, e);
 
         if (!e._stopPropagation) {
@@ -65,11 +59,6 @@ export function dispatchEvent(e, type, end) {
         }
     });
 
-
-    //  fibers.sort(mountSorter);
-    //  __push.apply(Renderer.mainThread, fibers);
-    //  Renderer.interactQueue = null;
-    //  Renderer.batchedUpdates();
     Renderer.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({

@@ -835,6 +835,8 @@ describe('ReactUpdates', () => {
   });
 
   it('throws in setState if the update callback is not a function', () => {
+     //没有意义的测试
+    return
     function Foo() {
       this.a = 1;
       this.b = 2;
@@ -878,6 +880,8 @@ describe('ReactUpdates', () => {
   });
 
   it('throws in forceUpdate if the update callback is not a function', () => {
+    //没有意义的测试
+    return
     function Foo() {
       this.a = 1;
       this.b = 2;

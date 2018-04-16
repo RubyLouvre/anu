@@ -9,7 +9,7 @@ import { contextStack, ownerStack, containerStack, hasContextChanged } from "./u
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
-import { callLifeCycleHook, pushError } from "./unwindWork";
+import { guardCallback } from "./unwindWork";
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -110,11 +110,14 @@ function mergeStates(fiber, nextProps, keep) {
 // 如果是setState是没有alternate
 // 如果是receive是有alternate
 function updateClassComponent(fiber) {
+    if(fiber.disposed){
+        return;
+    }
     let { type, stateNode: instance, isForced, props, stage } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
-
     let nextContext = getMaskedContext(type.contextTypes, instance), context;
+   
     if (instance == null) {
         // 初始化
         stage = "init";
@@ -146,11 +149,11 @@ function updateClassComponent(fiber) {
         stage = "noop";
     }
     let updater = instance.updater;
-    updater._hooking = true;
+    fiber._hooking = true;
     while (stage) {
         stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
     }
-    updater._hooking = false;
+    fiber._hooking = false;
     let ps = fiber.pendingStates;
     if (ps && ps.length) {
         instance.state = mergeStates(fiber, props);
@@ -176,7 +179,7 @@ function updateClassComponent(fiber) {
 
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
-    let rendered = callLifeCycleHook(instance, "render", []);
+    let rendered = guardCallback(instance, "render", []);
     if (ownerStack[0] === instance) {
         ownerStack.shift();
     }
@@ -214,18 +217,18 @@ var stageIteration = {
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
         delete fiber.shouldUpdateFalse;
-        // instance.updater._hooking = false;//SCU/CWU中setState会易死循环
-        if (!isForced && !callLifeCycleHook(instance, "shouldComponentUpdate", args)) {
+        fiber._hooking = false;//SCU/CWU中setState会易死循环
+        if (!isForced && !guardCallback(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else {
-            callLifeCycleHook(instance, "getSnapshotBeforeUpdate", args);
+            guardCallback(instance, "getSnapshotBeforeUpdate", args);
             callUnsafeHook(instance, "componentWillUpdate", args);
         }
     }
 };
 function callUnsafeHook(a, b, c) {
-    callLifeCycleHook(a, b, c);
-    callLifeCycleHook(a, "UNSAFE_" + b, c);
+    guardCallback(a, b, c);
+    guardCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -246,17 +249,11 @@ export function detachFiber(fiber, effects) {
 }
 
 var gDSFP = "getDerivedStateFromProps";
+
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
-    try {
-        var method = fiber.type[gDSFP];
-        if (method) {
-            var partialState = method.call(null, nextProps, lastState);
-            if (typeNumber(partialState) === 8) {
-                instance.updater.enqueueSetState(instance, partialState);
-            }
-        }
-    } catch (error) {
-        pushError(instance, gDSFP, error);
+    var partialState = guardCallback(fiber.type, gDSFP,[nextProps, lastState], instance);
+    if (typeNumber(partialState) === 8) {
+        Renderer.updateComponent(instance, partialState);
     }
 }
 

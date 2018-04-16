@@ -2,7 +2,7 @@ import { noop, get } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { NOWORK, CAPTURE } from "./effectTag";
 
-let updateQueue = Renderer.mainThread;
+let macrotasks = Renderer.macrotasks;
 
 export function pushError(fiber, hook, error) {
     let names = [];
@@ -15,7 +15,7 @@ export function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-        updateQueue.push(catchFiber);
+        macrotasks.push(catchFiber);
     } else {
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {
@@ -24,21 +24,22 @@ export function pushError(fiber, hook, error) {
     }
 }
 
-export function callLifeCycleHook(instance, hook, args) {
+export function guardCallback(host, hook, args, four){
     try {
-
-        let fn = instance[hook];
+        let fn = host[hook];
         if (fn) {
-            return fn.apply(instance, args);
+            return fn.apply(host, args);
         }
         return true;
     } catch (error) {
+        let instance = four || host;
         if (hook === "componentWillUnmount") {
             instance[hook] = noop;
         }
         pushError(get(instance), hook, error);
     }
 }
+
 function describeError(names, hook) {
     let segments = [`**${hook}** method occur error `];
     names.forEach(function (name, i) {

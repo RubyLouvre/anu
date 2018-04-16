@@ -1,5 +1,5 @@
 import { PLACE } from "./effectTag";
-import { __push, get } from "react-core/util";
+import { __push } from "react-core/util";
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
  * 如果Fiber存在shouldUpdateFalse＝true属性，那么只收集它的元素虚拟DOM，并且它只有

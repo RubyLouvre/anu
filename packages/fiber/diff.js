@@ -4,10 +4,10 @@ import { collectEffects, getContainer } from "./completeWork";
 import { commitEffects } from "./commitWork";
 import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
-import { __push, get } from "react-core/util";
+import { __push, get, isFn } from "react-core/util";
 
-const updateQueue = Renderer.mainThread;
-const batchedCbs = [];
+const macrotasks = Renderer.macrotasks;
+const batchedCbs = [], microtasks = [];
 //const roots = [];
 
 export function render(vnode, root, callback) {
@@ -37,7 +37,7 @@ export function render(vnode, root, callback) {
     }];
     hostRoot.effectTag = CALLBACK;
     hostRoot._hydrating = true; // lock 表示正在渲染
-    updateQueue.push(hostRoot);
+    macrotasks.push(hostRoot);
     if (!Renderer.isRendering) {
         Renderer.scheduleWork();
     }
@@ -46,7 +46,7 @@ export function render(vnode, root, callback) {
 
 function performWork(deadline) {
     workLoop(deadline);
-    if (updateQueue.length > 0) {
+    if (macrotasks.length || microtasks.length) {
         requestIdleCallback(performWork);
     }
 }
@@ -73,12 +73,13 @@ Renderer.batchedUpdates = function (callback) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
-        callback();
+        return callback();
     } finally {
         isBatchingUpdates = keepbook;
         if (!isBatchingUpdates) {
             batchedCbs.forEach(fn => fn());
             batchedCbs.length = 0;
+
             Renderer.scheduleWork();
         }
     }
@@ -101,22 +102,25 @@ function workLoop(deadline) {
                 effects.push(topWork);
             }
         }
-        if (updateQueue.length && deadline.timeRemaining() > ENOUGH_TIME) {
-            workLoop(deadline);
+        if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
+            workLoop(deadline); //收集任务
         } else {
-            commitEffects();
-            if (Renderer.nextCycleQueue) {
-                __push.apply(updateQueue, Renderer.nextCycleQueue);
-                delete Renderer.nextCycleQueue;
-                // workLoop(deadline);
-            }
+            commitEffects(); //执行任务
+
         }
 
     }
 }
-
+function mountSorter(u1, u2) {
+    return u1.stateNode.updater.mountOrder - u2.stateNode.updater.mountOrder;
+}
 function getNextUnitOfWork(fiber) {
-    fiber = updateQueue.shift();
+    if (microtasks.length) {
+        microtasks.sort(mountSorter);
+        __push.apply(macrotasks, microtasks);
+        microtasks.length = 0;
+    }
+    fiber = macrotasks.shift();
     if (!fiber || fiber.merged) {
         return;
     }
@@ -146,7 +150,7 @@ function mergeUpdates(el, state, isForced, callback) {
         var ps = fiber.pendingStates || (fiber.pendingStates = []);
         ps.push(state);
     }
-    if (callback) {
+    if (isFn(callback)) {
         var cs = fiber.pendingCbs || (fiber.pendingCbs = []);
         if (!cs.length) {
             if (!fiber.effectTag) {
@@ -166,29 +170,36 @@ Renderer.updateComponent = function (instance, state, callback) {
     }
     let isForced = state === true;
     state = isForced ? null : state;
-    let p = fiber, nextCycleQueue;
-
-    while (p.return) {
-        p = p.return;
-        if (p.tag < 3 && p._hydrating) {
-            nextCycleQueue = Renderer.nextCycleQueue || (Renderer.nextCycleQueue = []);
+    let p = fiber, inBatchedUpdate;
+    if (isBatchingUpdates) {
+        inBatchedUpdate = true;
+    } else {//如果在setState中setState
+        while (p.return) {
+            p = p.return;
+            if (p.tag < 3 && p._hydrating) {
+                inBatchedUpdate = true;
+                break;
+            }
         }
     }
 
-    if (fiber._hydrating || nextCycleQueue) {
+    if (fiber._hydrating || inBatchedUpdate) {
         // 如果是render及didXXX中使用setState,那么需要在下一个周期更新
+        var tasks = macrotasks;
+        if (inBatchedUpdate) {
+            tasks = microtasks;
+        }
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = nextCycleQueue || updateQueue;
-            queue.push(fiber);
+            tasks.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         // 如果是在willXXX钩子中使用setState，那么直接修改fiber及instance
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking) {
+        if (!fiber._hooking) {
             //如果在hook外使用setState，需要立即更新视图
-            updateQueue.push(fiber);
+            macrotasks.push(fiber);
             Renderer.scheduleWork();
         }
     }
