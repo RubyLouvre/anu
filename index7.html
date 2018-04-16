@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -37,7 +37,8 @@
                   }
               };
          };
-         const updates = [];
+    var updates = [];
+       
 
     class Outer extends React.Component {
       state = {x: 0};
@@ -57,11 +58,12 @@
 
         updates.push('Outer-didUpdate-' + x);
         updates.push('Inner-setState-' + x);
-        console.log(this.refs.inner)
-        this.refs.inner.setState({x: x}, function() {
-          updates.push('Inner-callback-' + x);
+        console.log("outer.componentDidUpdate setState",x)
+     /*   this.refs.inner.setState({x: x}, function() {// 这里先不执行，
+          console.log("=====")
+          updates.push('Inner-callback-' + x+"!");
         });
-        
+     */   
       }
     }
 
@@ -83,7 +85,7 @@
     updates.push('Outer-setState-1');
     instance.setState({x: 1}, function() {
       updates.push('Outer-callback-1');
-      updates.push('Outer-setState-2');
+      updates.push('Outer-setState-2'); //XX
       //setState cb中setState
      instance.setState({x: 2}, function() {
         updates.push('Outer-callback-2');
@@ -98,29 +100,29 @@
       'Outer-render-0',
       'Inner-render-0-0',
 
-      'Outer-setState-1',
+      'Outer-setState-1',//在外界执行setState
       'Outer-render-1', 
       'Inner-render-1-0',
       'Inner-didUpdate-1-0',
-      'Outer-didUpdate-1',
+      'Outer-didUpdate-1',//在componentDidUpdate中setState
       // Happens in a batch, so don't re-render yet
-      'Inner-setState-1',//在componentDidUpdate中setState
-      'Outer-callback-1',
+      'Inner-setState-1', //在componentDidUpdate中setState
+      'Outer-callback-1', //回调内部
 
       // Happens in a batch
-      'Outer-setState-2',
+      'Outer-setState-2',//回调内部
 
       // Flush batched updates all at once
       'Outer-render-2',
       'Inner-render-2-1',
       'Inner-didUpdate-2-1',
-      'Inner-callback-1',
+      'Inner-callback-1!',
       'Outer-didUpdate-2',
-      'Inner-setState-2',
+      'Inner-setState-2',//didComponent
       'Outer-callback-2',
       'Inner-render-2-2',
       'Inner-didUpdate-2-2',
-      'Inner-callback-2',
+      'Inner-callback-2!',
     ]);
     </script>
 
