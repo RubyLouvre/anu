@@ -122,7 +122,7 @@ export function commitOtherEffects(fiber) {
                     updater._isMounted = returnTrue;
                     callLifeCycleHook(instance, "componentDidMount", []);
                 }
-                delete updater._hydrating;
+                delete fiber._hydrating;
                 break;
             case REF:
                 if (!instance.__isStateless) {
@@ -132,11 +132,11 @@ export function commitOtherEffects(fiber) {
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
-                updater._hydrating = true;//setState回调里再执行setState
+                fiber._hydrating = true;//setState回调里再执行setState
                 queue.forEach(function (fn) {
                     fn.call(instance);                   
                 });
-                updater._hydrating = false;
+                fiber._hydrating = false;
                 delete fiber.pendingCbs;
                 break;
             case CAPTURE:// 29

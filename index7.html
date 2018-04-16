@@ -59,10 +59,10 @@
         updates.push('Outer-didUpdate-' + x);
         updates.push('Inner-setState-' + x);
         console.log("执行它")
-     /*   this.refs.inner.setState({x: x}, function() {// 这里先不执行，
+       this.refs.inner.setState({x: x}, function() {// 这里先不执行，
           updates.push('Inner-callback-' + x+"!");
         });
-      */
+      
       }
     }
 
@@ -86,7 +86,7 @@
       updates.push('Outer-callback-1');
       updates.push('Outer-setState-2'); //XX
       //setState cb中setState
-     instance.setState({x: 2}, function() {
+     instance.setState({x: 2,e:2}, function() {
         updates.push('Outer-callback-2');
       
       })

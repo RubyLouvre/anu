@@ -8,7 +8,7 @@ import { __push, get } from "react-core/util";
 
 const updateQueue = Renderer.mainThread;
 const batchedCbs = [];
-const roots = [];
+//const roots = [];
 
 export function render(vnode, root, callback) {
     let hostRoot = Renderer.updateRoot(root), instance = null;
@@ -105,16 +105,17 @@ function workLoop(deadline) {
             workLoop(deadline);
         } else {
             commitEffects();
+            if (Renderer.nextCycleQueue) {
+                __push.apply(updateQueue, Renderer.nextCycleQueue);
+                delete Renderer.nextCycleQueue;
+                // workLoop(deadline);
+            }
         }
+
     }
 }
 
 function getNextUnitOfWork(fiber) {
-    while (roots.length) {
-        var el = roots.shift();
-        __push.apply(updateQueue, el.batchedQueue);
-        delete el.batchedQueue;
-    }
     fiber = updateQueue.shift();
     if (!fiber || fiber.merged) {
         return;
@@ -158,13 +159,6 @@ function mergeUpdates(el, state, isForced, callback) {
     }
 }
 
-function getRoot(el) {
-    while (el.return) {
-        el = el.return;
-    }
-    return el;
-}
-
 Renderer.updateComponent = function (instance, state, callback) {
     let fiber = get(instance);
     if (fiber.parent) {
@@ -172,21 +166,20 @@ Renderer.updateComponent = function (instance, state, callback) {
     }
     let isForced = state === true;
     state = isForced ? null : state;
-    let updater = instance.updater, batchedQueue;
-    if (isBatchingUpdates) {
-       
-        //如果是批量更新中
-        let root = updater.root || (updater.root = getRoot(fiber));
-        if (!root.batchedQueue) {
-            roots.push(root);
+    let p = fiber, nextCycleQueue;
+
+    while (p.return) {
+        p = p.return;
+        if (p.tag < 3 && p._hydrating) {
+            nextCycleQueue = Renderer.nextCycleQueue || (Renderer.nextCycleQueue = []);
         }
-        batchedQueue = root.batchedQueue || (root.batchedQueue = []);
     }
-    if (this._hydrating || batchedQueue) {
+
+    if (fiber._hydrating || nextCycleQueue) {
         // 如果是render及didXXX中使用setState,那么需要在下一个周期更新
         if (!fiber._updates) {
             fiber._updates = {};
-            var queue = batchedQueue || updateQueue;
+            var queue = nextCycleQueue || updateQueue;
             queue.push(fiber);
         }
         mergeUpdates(fiber, state, isForced, callback);
@@ -200,14 +193,3 @@ Renderer.updateComponent = function (instance, state, callback) {
         }
     }
 };
-/*
- while(p.return){
-                p = p.return;
-                if(p.tag < 3 && p.stateNode && p.stateNode.updater._hydrating){
-                    console.log("XXXXXX",fiber.effectTag,fiber.name,!!fiber._updates);
-
-                    //  updateQueue.push(fiber);
-                    return;
-                }
-            }
-*/

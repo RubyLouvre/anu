@@ -1813,7 +1813,7 @@ function updateEffects(fiber, topWork) {
     var f = fiber;
     while (f) {
         if (f.stateNode.getChildContext) {
-            var useTest = contextStack.shift();
+            contextStack.shift();
         }
         if (f.tag === 5) {
             containerStack.shift();
@@ -1943,7 +1943,7 @@ function updateClassComponent(fiber) {
         return;
     }
     fiber.effectTag *= HOOK;
-    updater._hydrating = true;
+    fiber._hydrating = true;
     var lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
     var rendered = callLifeCycleHook(instance, "render", []);
@@ -2260,7 +2260,7 @@ function commitOtherEffects(fiber) {
                         updater._isMounted = returnTrue;
                         callLifeCycleHook(instance, "componentDidMount", []);
                     }
-                    delete updater._hydrating;
+                    delete fiber._hydrating;
                     break;
                 case REF:
                     if (!instance.__isStateless) {
@@ -2269,11 +2269,11 @@ function commitOtherEffects(fiber) {
                     break;
                 case CALLBACK:
                     var queue = fiber.pendingCbs;
-                    updater._hydrating = true;
+                    fiber._hydrating = true;
                     queue.forEach(function (fn) {
                         fn.call(instance);
                     });
-                    updater._hydrating = false;
+                    fiber._hydrating = false;
                     delete fiber.pendingCbs;
                     break;
                 case CAPTURE:
@@ -2341,7 +2341,6 @@ function getContainer(p) {
 
 var updateQueue$1 = Renderer.mainThread;
 var batchedCbs = [];
-var roots = [];
 function render$1(vnode, root, callback) {
     var hostRoot = Renderer.updateRoot(root),
         instance = null;
@@ -2432,15 +2431,14 @@ function workLoop(deadline) {
             workLoop(deadline);
         } else {
             commitEffects();
+            if (Renderer.batchedQueue) {
+                __push.apply(updateQueue$1, Renderer.batchedQueue);
+                delete Renderer.batchedQueue;
+            }
         }
     }
 }
 function getNextUnitOfWork(fiber) {
-    while (roots.length) {
-        var el = roots.shift();
-        __push.apply(updateQueue$1, el.batchedQueue);
-        delete el.batchedQueue;
-    }
     fiber = updateQueue$1.shift();
     if (!fiber || fiber.merged) {
         return;
@@ -2475,12 +2473,6 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
-function getRoot(el) {
-    while (el.return) {
-        el = el.return;
-    }
-    return el;
-}
 Renderer.updateComponent = function (instance, state, callback) {
     var fiber = get(instance);
     if (fiber.parent) {
@@ -2488,16 +2480,15 @@ Renderer.updateComponent = function (instance, state, callback) {
     }
     var isForced = state === true;
     state = isForced ? null : state;
-    var updater = instance.updater,
+    var p = fiber,
         batchedQueue = void 0;
-    if (isBatchingUpdates) {
-        var root = updater.root || (updater.root = getRoot(fiber));
-        if (!root.batchedQueue) {
-            roots.push(root);
+    while (p.return) {
+        p = p.return;
+        if (p.tag < 3 && p._hydrating) {
+            batchedQueue = Renderer.batchedQueue || (Renderer.batchedQueue = []);
         }
-        batchedQueue = root.batchedQueue || (root.batchedQueue = []);
     }
-    if (this._hydrating || batchedQueue) {
+    if (fiber._hydrating || batchedQueue) {
         if (!fiber._updates) {
             fiber._updates = {};
             var queue = batchedQueue || updateQueue$1;

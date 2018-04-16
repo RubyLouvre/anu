@@ -36,8 +36,7 @@ export function updateEffects(fiber, topWork) {
     let f = fiber;
     while (f) {
         if (f.stateNode.getChildContext) {
-            var useTest = contextStack.shift(); // shift context
-            // console.log(useTest)
+            contextStack.shift(); // shift context
         }
         if (f.tag === 5) {
             containerStack.shift(); // shift parent
@@ -173,7 +172,7 @@ function updateClassComponent(fiber) {
     }
 
     fiber.effectTag *= HOOK;
-    updater._hydrating = true;
+    fiber._hydrating = true;
 
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
