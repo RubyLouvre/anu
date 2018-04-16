@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-14
+ * by 司徒正美 Copyright 2018-04-16
  * IE9+
  */
 
@@ -2217,7 +2217,7 @@ function commitPlaceEffects(tasks) {
 function commitOtherEffects(fiber) {
     var instance = fiber.stateNode || emptyObject;
     var amount = fiber.effectTag;
-    var updater = instance.updater;
+    var updater = instance.updater || {};
     for (var i = 0; i < effectLength; i++) {
         var effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -2227,7 +2227,9 @@ function commitOtherEffects(fiber) {
             amount /= effectNo;
             switch (effectNo) {
                 case PLACE:
-                    Renderer.insertElement(fiber);
+                    if (fiber.tag > 3) {
+                        Renderer.insertElement(fiber);
+                    }
                     break;
                 case CONTENT:
                     Renderer.updateContext(fiber);
@@ -2253,15 +2255,6 @@ function commitOtherEffects(fiber) {
                     break;
                 case HOOK:
                     if (updater._isMounted()) {
-                        var fn = instance.componentDidUpdate;
-                        if (fn) {
-                            instance.componentDidUpdate = function () {
-                                Renderer.batchedUpdates(function () {
-                                    fn.call(instance);
-                                });
-                                instance.componentDidUpdate = fn;
-                            };
-                        }
                         callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                     } else {
                         updater._isMounted = returnTrue;
@@ -2276,16 +2269,11 @@ function commitOtherEffects(fiber) {
                     break;
                 case CALLBACK:
                     var queue = fiber.pendingCbs;
+                    updater._hydrating = true;
                     queue.forEach(function (fn) {
-                        console.log(!fiber.root, fn + "");
-                        if (!fiber.root) {
-                            Renderer.batchedUpdates(function () {
-                                fn.call(instance);
-                            });
-                        } else {
-                            fn.call(instance);
-                        }
+                        fn.call(instance);
                     });
+                    updater._hydrating = false;
                     delete fiber.pendingCbs;
                     break;
                 case CAPTURE:
@@ -2503,7 +2491,6 @@ Renderer.updateComponent = function (instance, state, callback) {
     var updater = instance.updater,
         batchedQueue = void 0;
     if (isBatchingUpdates) {
-        console.log("isBatchingUpdates");
         var root = updater.root || (updater.root = getRoot(fiber));
         if (!root.batchedQueue) {
             roots.push(root);
@@ -2519,14 +2506,7 @@ Renderer.updateComponent = function (instance, state, callback) {
         mergeUpdates(fiber, state, isForced, callback);
     } else {
         mergeUpdates(fiber, state, isForced, callback);
-        if (!this._hooking && !isBatchingUpdates) {
-            var p = fiber;
-            while (p.return) {
-                p = p.return;
-                if (p.tag < 3 && p.stateNode && p.stateNode.updater._hydrating) {
-                    return;
-                }
-            }
+        if (!this._hooking) {
             updateQueue$1.push(fiber);
             Renderer.scheduleWork();
         }

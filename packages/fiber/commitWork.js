@@ -78,7 +78,7 @@ export function commitPlaceEffects(tasks) {
 export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
-    let updater = instance.updater;
+    let updater = instance.updater || {} ;
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -89,7 +89,9 @@ export function commitOtherEffects(fiber) {
             //如果能整除
             switch (effectNo) {
             case PLACE: 
-                Renderer.insertElement(fiber);
+                if(fiber.tag > 3){
+                    Renderer.insertElement(fiber);
+                }
                 break;
             case CONTENT: 
                 Renderer.updateContext(fiber);
@@ -115,16 +117,6 @@ export function commitOtherEffects(fiber) {
                 break;
             case HOOK: 
                 if (updater._isMounted()) {
-                    var fn = instance.componentDidUpdate;
-                    if(fn){
-                        instance.componentDidUpdate = function(){
-                            Renderer.batchedUpdates(function(){
-                                fn.call(instance);
-                            });
-                            instance.componentDidUpdate = fn;
-                        };
-                        // batchedUpdates.bind
-                    }
                     callLifeCycleHook(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
@@ -140,18 +132,11 @@ export function commitOtherEffects(fiber) {
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
+                updater._hydrating = true;//setState回调里再执行setState
                 queue.forEach(function (fn) {
-                    console.log(!fiber.root,fn+"");
-                    if(!fiber.root){
-                        
-                        Renderer.batchedUpdates(function(){
-                            fn.call(instance);
-                        });
-                    }else{
-                        fn.call(instance);
-                    }
-                   
+                    fn.call(instance);                   
                 });
+                updater._hydrating = false;
                 delete fiber.pendingCbs;
                 break;
             case CAPTURE:// 29

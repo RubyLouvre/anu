@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!--  <script type='text/javascript' src="./react.js"></script>
+   <!--<script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -37,43 +37,38 @@
                   }
               };
          };
-        
-    const container1 = document.createElement('div');
-    const container2 = document.createElement('p');
-    
-    class Foo extends React.Component {
-      state = {active: false};
-      componentDidMount() {
-        this.setState({active: true});
-      }
+    var updates = [];
+       
+
+    class Outer extends React.Component {
+      state = {x: 0};
+
       render() {
+        updates.push('Outer-render-' + this.state.x);
         return (
-          <div>{this.props.children + (this.state.active ? '!' : '')}</div>
+          <div>{this.state.x}</div>
         );
       }
     }
+    var instance = ReactDOM.render(<Outer />, document.querySelector('#root'))
 
-    ReactDOM.render(<div>1</div>, container1);
-    console.log("开始批量更新")
-    ReactDOM.unstable_batchedUpdates(() => {
-      // Update. Does not flush yet.
-      console.log("更新旧节点")
-      ReactDOM.render(<div>2</div>, container1);
-     
-      expect(container1.textContent).toEqual('1');
 
-      // Initial mount on another root. Should flush immediately.
-      console.log("更新新节点")
-      ReactDOM.render(<Foo>a</Foo>, container2);
-      // The update did not flush yet.
-      expect(container1.textContent).toEqual('1');
-      // The initial mount flushed, but not the update scheduled in cDU.
-      expect(container2.textContent).toEqual('a');
+    instance.setState({x: 1}, function() {
+      updates.push('Outer-callback-1');
+      updates.push('Outer-setState-2'); //XX
+      //setState cb中setState
+     instance.setState({x: 2}, function() {
+        updates.push('Outer-callback-2');
+      
+      })
+      instance.setState({x: 3}, function() {
+        updates.push('Outer-callback-3');
+      
+      })
+      
     });
-    console.log("批量更新完毕")
-    // All updates have flushed.
-    expect(container1.textContent).toEqual('2');
-    expect(container2.textContent).toEqual('a!');
+console.log(updates)
+   
     </script>
 
 
