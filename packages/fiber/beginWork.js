@@ -27,7 +27,7 @@ export function updateEffects(fiber, topWork) {
         updateClassComponent(fiber); // unshift parent
     }
 
-    if (!fiber.shouldUpdateFalse) {
+    if (!fiber.shouldUpdateFalse && !fiber.disposed) {
         if (fiber.child) {
             return fiber.child;
         }
@@ -35,7 +35,7 @@ export function updateEffects(fiber, topWork) {
 
     let f = fiber;
     while (f) {
-        if (f.stateNode.getChildContext) {
+        if ( f.stateNode && f.stateNode.getChildContext) {
             contextStack.shift(); // shift context
         }
         if (f.tag === 5) {
@@ -106,18 +106,30 @@ function mergeStates(fiber, nextProps, keep) {
     return nextState;
 }
 
-// 第一次是没有alternate 也没有stateNode
-// 如果是setState是没有alternate
-// 如果是receive是有alternate
+
 function updateClassComponent(fiber) {
-    if(fiber.disposed){
+    if (fiber.disposed) {
         return;
     }
-    let { type, stateNode: instance, isForced, props, stage } = fiber;
+    let { type, stateNode: instance, isForced, props, stage, name } = fiber;
+    let batch = Renderer.batch;
+    if (batch) {
+        //在批量更新中，每个组件只能更新一次，在一次diff中，每个组件会被访问两次
+        if (!batch[name]) {
+            batch[name] = 1;
+        } else {
+            batch[name]++;
+            if (batch[name] > 2) {
+                fiber.shouldUpdateFalse = true;
+                return;
+            }
+        }
+    }
+
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
     let nextContext = getMaskedContext(type.contextTypes, instance), context;
-   
+
     if (instance == null) {
         // 初始化
         stage = "init";
@@ -131,6 +143,7 @@ function updateClassComponent(fiber) {
             let u = fiber._updates;
             if (u) {
                 isForced = fiber.isForced || u.isForced;
+
                 fiber.pendingStates = u.pendingStates;
                 let hasCb = fiber.pendingCbs = u.pendingCbs;
                 if (hasCb) {
@@ -140,10 +153,10 @@ function updateClassComponent(fiber) {
             }
             delete fiber.isForced;
         } else {
-
             stage = "receive";
         }
     }
+
     instance._reactInternalFiber = fiber;
     if (instance.__isStateless) {
         stage = "noop";
@@ -251,7 +264,7 @@ export function detachFiber(fiber, effects) {
 var gDSFP = "getDerivedStateFromProps";
 
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
-    var partialState = guardCallback(fiber.type, gDSFP,[nextProps, lastState], instance);
+    var partialState = guardCallback(fiber.type, gDSFP, [nextProps, lastState], instance);
     if (typeNumber(partialState) === 8) {
         Renderer.updateComponent(instance, partialState);
     }

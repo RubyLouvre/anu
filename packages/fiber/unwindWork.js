@@ -27,15 +27,15 @@ export function pushError(fiber, hook, error) {
 export function guardCallback(host, hook, args, four){
     try {
         let fn = host[hook];
+        if(hook == "componentWillUnmount"){
+            host[hook] = noop;
+        }
         if (fn) {
             return fn.apply(host, args);
         }
         return true;
     } catch (error) {
         let instance = four || host;
-        if (hook === "componentWillUnmount") {
-            instance[hook] = noop;
-        }
         pushError(get(instance), hook, error);
     }
 }
@@ -81,7 +81,7 @@ function findCatchComponent(topFiber, names) {
         } else if (fiber.tag < 4) {
             // 1,2
             names.push(name);
-            instance = fiber.stateNode;
+            instance = fiber.stateNode || {};
             if (instance.componentDidCatch) {
                 if (instance.updater._isDoctor) {
                     disableEffect(fiber);
