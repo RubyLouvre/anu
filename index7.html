@@ -37,46 +37,45 @@
                   }
               };
          };
-         let updateCount = 0;
-         let renderCount = 0;
-    let componentB = null;
-
-    class B extends React.Component {
-      state = {updates: 0};
-
-      componentDidMount() {
-        console.log("componentDidMount")
-        componentB = this;
+      let ops = [];
+      class Foo extends React.Component {
+        state = {a: false, b: false};
+        componentWillUpdate(_, nextState) {
+          console.log("componentWillUpdate....")
+          if (!nextState.a) {
+            this.setState({a: true});
+          }
+        }
+        componentDidUpdate() {
+          console.log("componentDidUpdate....")
+          ops.push('Foo updated');
+          if (!this.state.b) {
+            this.setState({b: true});
+          }
+        }
+        render() {
+          ops.push(`a: ${this.state.a}, b: ${this.state.b}`);
+          return null;
+        }
       }
 
-      render() {
-        console.log("render", renderCount)
-        renderCount++;
-        return <div />;
-      }
-    }
-
-    class A extends React.Component {
-      state = {showB: true};
-
-      render() {
-        console.log("this.state.showB",this.state.showB)
-        return this.state.showB ? <B /> : <div />;
-      }
-    }
-
-    const component = ReactTestUtils.renderIntoDocument(<A />);
-
-    ReactDOM.unstable_batchedUpdates(function() {
-      // B will have scheduled an update but the batching should ensure that its
-      // update never fires.
-     componentB.setState({updates: 1});
-
-      component.setState({showB: false});
-     
-    });
-
-    expect(renderCount).toBe(1);
+      const container = document.createElement('div');
+      // Mount
+      ReactDOM.render(<Foo />, container);
+      console.log("再次 ReactDOM.render")
+      // Root update
+      ReactDOM.render(<Foo />, container);
+      expect(ops).toEqual([
+        // Mount
+        'a: false, b: false',
+        // Root update
+        'a: false, b: false',
+        'Foo updated',
+        // Subsequent update (both a and b should have flushed)
+        'a: true, b: true',
+        'Foo updated',
+        // There should not be any additional updates
+      ]);
     </script>
 
 

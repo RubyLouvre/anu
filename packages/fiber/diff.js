@@ -8,8 +8,6 @@ import { __push, get, isFn } from "react-core/util";
 
 const macrotasks = Renderer.macrotasks;
 const batchedCbs = [], microtasks = [];
-//const roots = [];
-
 export function render(vnode, root, callback) {
     let hostRoot = Renderer.updateRoot(root), instance = null;
     // 如果组件的componentDidMount/Update中调用ReactDOM.render
@@ -20,11 +18,15 @@ export function render(vnode, root, callback) {
         return;
     }
     //如果在ReactDOM.batchedUpdates中调用ReactDOM.render
-    if (isBatchingUpdates && get(root)) { //如果是旧节点
-        batchedCbs.push(function () {
-            render(vnode, root, callback);
-        });
-        return;
+    if (isBatchingUpdates) {
+        if (get(root)) {
+            batchedCbs.push(function () {
+                render(vnode, root, callback);
+            });
+            return;
+        } else {
+            root.isOther = true;
+        }
     }
 
     hostRoot.props = {
@@ -72,6 +74,8 @@ var isBatchingUpdates = false;
 Renderer.batchedUpdates = function (callback) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
+    //  console.log("isBatchingUpdates = true");
+    Renderer.batch = {};
     try {
         return callback();
     } finally {
@@ -79,12 +83,18 @@ Renderer.batchedUpdates = function (callback) {
         if (!isBatchingUpdates) {
             batchedCbs.forEach(fn => fn());
             batchedCbs.length = 0;
-
             Renderer.scheduleWork();
+            Renderer.batch = false;
+            //  console.log("isBatchingUpdates = false");
         }
     }
 };
-
+function getRoot(fiber) {
+    while (fiber.return) {
+        fiber = fiber.return;
+    }
+    return fiber;
+}
 function workLoop(deadline) {
     let topWork = getNextUnitOfWork();
     if (topWork) {
@@ -142,16 +152,16 @@ function getNextUnitOfWork(fiber) {
  */
 
 function mergeUpdates(el, state, isForced, callback) {
-    var fiber = el._updates || el;
+    let fiber = el._updates || el;
     if (isForced) {
         fiber.isForced = true; // 如果是true就变不回false
     }
     if (state) {
-        var ps = fiber.pendingStates || (fiber.pendingStates = []);
+        let ps = fiber.pendingStates || (fiber.pendingStates = []);
         ps.push(state);
     }
     if (isFn(callback)) {
-        var cs = fiber.pendingCbs || (fiber.pendingCbs = []);
+        let cs = fiber.pendingCbs || (fiber.pendingCbs = []);
         if (!cs.length) {
             if (!fiber.effectTag) {
                 fiber.effectTag = CALLBACK;
@@ -162,15 +172,100 @@ function mergeUpdates(el, state, isForced, callback) {
         cs.push(callback);
     }
 }
+function fiberContains(parent, son){
+    while (son) {
+        if(son === parent){
+            son.isForced = true
+            return true;
+        }
+        son = son.return;
+    }
+}
+function parentIsHydrating(fiber, nextRendering){
+    var p = fiber, batching = false;
+    while (p.return) {
+        p = p.return;
+        if (p.tag < 3 && p._hydrating && !p.root) {
+            batching = true;
+            break;
+        }
+    }
+    if(nextRendering){
+        //如果当前fiber不在一个hydrating树中，那么将它放到列队
+        for (var i =  microtasks.length, el; el = microtasks[--i]; ) {
+            if(fiberContains(el, fiber ))
+               microtasks.splice(i, 1);
+            }
+        }
+        if(batching == false){
+            microtasks.push(fiber);
+        }
+   
 
+    }else{
+
+    }
+
+}
 Renderer.updateComponent = function (instance, state, callback) {
     let fiber = get(instance);
     if (fiber.parent) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
+    let root = getRoot(fiber), rootNode = root.stateNode;
+    if (rootNode && rootNode.isOther) {
+        delete rootNode.isOther;
+        batchedCbs.push(Renderer.updateComponent.bind(null, instance, state, callback));
+        return;
+    }
+    let isForced = state === true;
+    state = isForced ? null : state;
+    let p = fiber, inBatchedUpdate, batching = false;
+
+    if (fiber.willing) {
+        mergeUpdates(fiber, state, isForced, callback);
+    } else {
+        if (isBatchingUpdates) {
+            fiber._hydrating = true;
+            batching = parentIsHydrating(fiber, microtasks, true);
+
+        } else {
+            batching = parentIsHydrating(fiber, microtasks); 
+        }
+        var tasks = macrotasks;
+        if (fiber._hydrating) {
+            tasks = microtasks;
+            if (!fiber._updates) {
+                fiber._updates = {};
+                tasks.push(fiber);
+            }
+            mergeUpdates(fiber, state, isForced, callback);
+        } else {
+
+            mergeUpdates(fiber, state, isForced, callback);
+            macrotasks.push(fiber);
+            Renderer.scheduleWork();
+        }
+
+    }
+};
+/*
+Renderer.updateComponent = function (instance, state, callback) {
+    let fiber = get(instance);
+    if (fiber.parent) {
+        fiber.parent.insertPoint = fiber.insertPoint;
+    }
+    let root = getRoot(fiber), rootNode = root.stateNode;
+    if( rootNode && rootNode.isOther){
+        delete rootNode.isOther;
+        batchedCbs.push(Renderer.updateComponent.bind(null, instance, state, callback));
+        return;
+    }
+    
     let isForced = state === true;
     state = isForced ? null : state;
     let p = fiber, inBatchedUpdate;
+    // if(!isForced){
     if (isBatchingUpdates) {
         inBatchedUpdate = true;
     } else {//如果在setState中setState
@@ -178,17 +273,19 @@ Renderer.updateComponent = function (instance, state, callback) {
             p = p.return;
             if (p.tag < 3 && p._hydrating) {
                 inBatchedUpdate = true;
+               
                 break;
             }
         }
     }
-
+    //  }
     if (fiber._hydrating || inBatchedUpdate) {
         // 如果是render及didXXX中使用setState,那么需要在下一个周期更新
-        var tasks = macrotasks;
-        if (inBatchedUpdate) {
+        var tasks = microtasks;
+          if (inBatchedUpdate) {
             tasks = microtasks;
         }
+      
         if (!fiber._updates) {
             fiber._updates = {};
             tasks.push(fiber);
@@ -204,3 +301,7 @@ Renderer.updateComponent = function (instance, state, callback) {
         }
     }
 };
+*/
+//在批量更新中，如果祖先组件正在更新，
+//有两个渲染列队
+//第一个叫marcotasks,当前渲染的

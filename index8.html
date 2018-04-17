@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script type='text/javascript' src="./react.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -36,39 +36,47 @@
                       console.log(a, 'vs', b, a + '' === b + '');
                   }
               };
-         };
-    var updates = [];
-       
+         }; 
+         let shouldUpdateCount = 0;
+    let updateCount = 0;
 
-    class Outer extends React.Component {
+    class Component extends React.Component {
       state = {x: 0};
 
+      shouldComponentUpdate() {
+        shouldUpdateCount++;
+        return false
+      }
+
+      componentDidUpdate() {
+        updateCount++;
+      }
+
       render() {
-        updates.push('Outer-render-' + this.state.x);
-        return (
-          <div>{this.state.x}</div>
-        );
+        return <div>{this.state.x}</div>;
       }
     }
-    var instance = ReactDOM.render(<Outer />, document.querySelector('#root'))
 
+    const instance = ReactTestUtils.renderIntoDocument(<Component />);
+    expect(instance.state.x).toBe(0);//因为sCU已经return false
 
-    instance.setState({x: 1}, function() {
-      updates.push('Outer-callback-1');
-      updates.push('Outer-setState-2'); //XX
-      //setState cb中setState
-     instance.setState({x: 2}, function() {
-        updates.push('Outer-callback-2');
-      
-      })
-      instance.setState({x: 3}, function() {
-        updates.push('Outer-callback-3');
-      
-      })
-      
+    let callbacksRun = 0;
+    ReactDOM.unstable_batchedUpdates(function() {
+      instance.setState({x: 1}, function() {
+        callbacksRun++;
+      });
+      instance.forceUpdate(function() {
+        callbacksRun++;
+      });
+      expect(instance.state.x).toBe(0);
+      expect(updateCount).toBe(0);
     });
-console.log(updates)
-   
+
+    expect(callbacksRun).toBe(2); //忽略了
+    // shouldComponentUpdate shouldn't be called since we're forcing
+    expect(shouldUpdateCount).toBe(0);
+    expect(instance.state.x).toBe(1);
+    expect(updateCount).toBe(1);
     </script>
 
 

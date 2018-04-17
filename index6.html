@@ -49,19 +49,54 @@
               };
          };
         
-         const context = {};
-         const callback = function(kid, index) {
-            expect(this).toBe(context);
-            return kid;
-          };
-          
-       
-        
-    try{
-        ReactDOM.unmountComponentAtNode(nodeArray);
-    }catch(e){
-        console.log(e)
+         class Parent extends React.Component {
+      getChild = () => {
+        return this.refs.child;
+      };
+
+      render() {
+        return <Child ref="child" />;
+      }
     }
+
+    let renderCount = 0;
+    let postRenderCount = 0;
+    let once = false;
+
+    class Child extends React.Component {
+      state = {updated: false};
+
+      UNSAFE_componentWillUpdate() {
+        if (!once) {
+          once = true;
+          this.setState({updated: true});
+        }
+      }
+
+      componentDidMount() {
+        expect(renderCount).toBe(postRenderCount + 1);
+        postRenderCount++;
+      }
+
+      componentDidUpdate() {
+        expect(renderCount).toBe(postRenderCount + 1);
+        postRenderCount++;
+      }
+
+      render() {
+        expect(renderCount).toBe(postRenderCount);
+        renderCount++;
+        return <div />;
+      }
+    }
+
+    const parent = ReactTestUtils.renderIntoDocument(<Parent />);
+    const child = parent.getChild();
+    console.log("======")
+    ReactDOM.unstable_batchedUpdates(function() {
+      parent.forceUpdate();
+     // child.forceUpdate();
+    });
 </script>
 
 

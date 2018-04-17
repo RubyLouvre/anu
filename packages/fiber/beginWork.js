@@ -156,7 +156,6 @@ function updateClassComponent(fiber) {
             stage = "receive";
         }
     }
-
     instance._reactInternalFiber = fiber;
     if (instance.__isStateless) {
         stage = "noop";
@@ -203,21 +202,25 @@ function updateClassComponent(fiber) {
 
     diffChildren(fiber, rendered);
 }
-var stageIteration = {
+const stageIteration = {
     noop: noop,
     init(fiber, nextProps, nextContext, instance) {
         getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
+        fiber.willing = true;
         callUnsafeHook(instance, "componentWillMount", []);
+        fiber.willing = false;
     },
     receive(fiber, nextProps, nextContext, instance) {
 
-        var updater = instance.updater;
+        let updater = instance.updater;
         updater.lastProps = instance.props;
         updater.lastState = instance.state;
         let propsChange = updater.lastProps !== nextProps;
-        var willReceive = propsChange || (hasContextChanged() || instance.context !== nextContext);
+        let willReceive = propsChange || (hasContextChanged() || instance.context !== nextContext);
         if (willReceive) {
+            fiber.willing = true;
             callUnsafeHook(instance, "componentWillReceiveProps", [nextProps, nextContext]);
+            fiber.willing = false;
         } else {
             cloneChildren(fiber);
             return;
@@ -230,6 +233,8 @@ var stageIteration = {
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
         delete fiber.shouldUpdateFalse;
+        //早期React的设计失误
+        fiber._hydrating = true;
         fiber._hooking = false;//SCU/CWU中setState会易死循环
         if (!isForced && !guardCallback(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
@@ -261,10 +266,10 @@ export function detachFiber(fiber, effects) {
     }
 }
 
-var gDSFP = "getDerivedStateFromProps";
+const gDSFP = "getDerivedStateFromProps";
 
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
-    var partialState = guardCallback(fiber.type, gDSFP, [nextProps, lastState], instance);
+    let partialState = guardCallback(fiber.type, gDSFP, [nextProps, lastState], instance);
     if (typeNumber(partialState) === 8) {
         Renderer.updateComponent(instance, partialState);
     }
@@ -274,8 +279,8 @@ function cloneChildren(fiber) {
     fiber.shouldUpdateFalse = true;
     const prev = fiber.alternate;
     if (prev && prev.child) {
-        var pc = prev._children;
-        var cc = (fiber._children = {});
+        let pc = prev._children;
+        let cc = (fiber._children = {});
         fiber.child = prev.child;
         for (let i in pc) {
             let a = pc[i];
@@ -357,7 +362,7 @@ function diffChildren(parentFiber, children) {
 
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
-                var alternate = new Fiber(oldFiber);
+                let alternate = new Fiber(oldFiber);
                 newFiber = extend(oldFiber, newFiber); //将新属性转换旧对象上
                 newFiber.alternate = alternate;
                 if (alternate.ref && alternate.ref !== newFiber.ref) {
