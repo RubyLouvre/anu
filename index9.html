@@ -46,43 +46,41 @@
                   }
               };
          };
-    const instances = [];
-    const updates = [];
-
-    class MockComponent extends React.Component {
-      render() {
-        updates.push(this.props.depth);
-        return <div />;
-      }
-
-      componentDidMount() {
-        instances.push(this);
-        if (this.props.depth < this.props.count) {
-          ReactDOM.render(
-            <MockComponent
-              depth={this.props.depth + 1}
-              count={this.props.count}
-            />,
-            ReactDOM.findDOMNode(this),
-          );
-        }
-      }
-    }
-
-    ReactTestUtils.renderIntoDocument(<MockComponent depth={0} count={2} />);
-
-    expect(updates).toEqual([0, 1, 2]);
-    console.log(instances.length)
-
-    ReactDOM.unstable_batchedUpdates(function() {
-      // Simulate update on each component from top to bottom.
-      instances.forEach(function(instance) {
-        instance.forceUpdate();
-      });
-    });
-
-    expect(updates).toEqual([0, 1, 2, 0, 1, 2]);
-    
+         const instances = [];
+         const updates = [];
+     
+         class MockComponent extends React.Component {
+           render() {
+             updates.push(this.props.depth);
+             return <div />;
+           }
+     
+           componentDidMount() {
+             instances.push(this);
+             if (this.props.depth < this.props.count) {
+               ReactDOM.render(
+                 <MockComponent
+                   depth={this.props.depth + 1}
+                   count={this.props.count}
+                 />,
+                 ReactDOM.findDOMNode(this),
+               );
+             }
+           }
+         }
+     
+         ReactTestUtils.renderIntoDocument(<MockComponent depth={0} count={2} />);
+     
+         expect(updates).toEqual([0, 1, 2]);
+     
+         ReactDOM.unstable_batchedUpdates(function() {
+           // Simulate update on each component from top to bottom.
+           instances.forEach(function(instance) {
+             instance.forceUpdate();
+           });
+         });
+     
+         expect(updates).toEqual([0, 1, 2, 0, 1, 2]);
 </script>
 
 
