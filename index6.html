@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-  <!--  <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>-->
+    <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -29,14 +29,7 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
-          var noop = function(){
-              return noop
-          }
-          noop.isRequired = noop
-          var PropTypes = React.PropTypes || {
-             string: noop
-          }
-
+        
 
           var expect = function(a) {
               return {
@@ -48,40 +41,27 @@
                   }
               };
          };
-        
-         const container1 = document.createElement('div');
-         const container2 = document.createElement('div');
-     
-         class Foo extends React.Component {
-           state = {active: false};
-           componentDidMount() {
-             this.setState({active: true});
-           }
-           render() {
-             return (
-               <div>{this.props.children + (this.state.active ? '!' : '')}</div>
-             );
-           }
-         }
-     
-         ReactDOM.render(<div>1</div>, container1);
-     
-         ReactDOM.unstable_batchedUpdates(() => {
-           // Update. Does not flush yet.
-           ReactDOM.render(<div>2</div>, container1);
-           expect(container1.textContent).toEqual('1');
-     
-           // Initial mount on another root. Should flush immediately.
-           ReactDOM.render(<Foo>a</Foo>, container2);
-           // The update did not flush yet.
-           expect(container1.textContent).toEqual('1');
-           // The initial mount flushed, but not the update scheduled in cDU.
-           expect(container2.textContent).toEqual('a');
-         });
-         // All updates have flushed.
-         expect(container1.textContent).toEqual('2');
-         expect(container2.textContent).toEqual('a!');
-         
+
+ class Wrapper extends React.Component{
+    constructor(props, context){
+        super(props, context);
+        this.state = {
+            children: props.child
+        };
+    } 
+    componentWillReceiveProps(p){
+       this.setState({
+         children: p.child
+       })
+    }
+    render(){
+        return this.state.children;
+    }
+}
+ReactDOM.render(<Wrapper child={ <div>xxxx</div>} />, container)
+ReactDOM.render(<Wrapper child={ <p>yyy</p>} />, container)
+
+      
 </script>
 
 

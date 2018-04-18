@@ -83,9 +83,10 @@ const updates = [];
     instance.setState({x: 1}, function() {
       updates.push('Outer-callback-1');
       updates.push('Outer-setState-2');
-      instance.setState({x: 2}, function() {
+    /*  instance.setState({x: 2}, function() {
         updates.push('Outer-callback-2');
       });
+      */
     });
 
     /* eslint-disable indent */
