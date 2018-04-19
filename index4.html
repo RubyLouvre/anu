@@ -35,15 +35,10 @@
                   }
               };
          };
-         const ops = [];
-   // const container = document.createElement('div');
-    ReactDOM.unstable_batchedUpdates(() => {
-      ReactDOM.render(<div>Hello</div>, container);
-      ops.push(container.textContent);
-      ReactDOM.unmountComponentAtNode(container);
-      ops.push(container.textContent);
-    });
-    expect(ops).toEqual(['Hello', '']);
+       
+  //  const container = document.createElement('div');
+    ReactDOM.render(<p>xxx</p>, container);
+   
     </script>
 
 

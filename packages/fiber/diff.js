@@ -1,11 +1,11 @@
 import { effects, containerStack } from "./util";
-import { updateEffects } from "./beginWork";
+import { updateEffects, updateClassComponent } from "./beginWork";
 import { collectEffects, getContainer } from "./completeWork";
 import { commitEffects } from "./commitWork";
 import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
-import { __push, get, isFn, inherit } from "react-core/util";
-import { Component } from "react-core/Component";
+import { __push, get, isFn } from "react-core/util";
+import { Unbatch } from "./unbatch";
 //import { createElement } from "react-core/createElement";
 import { Fiber } from "./Fiber";
 
@@ -15,21 +15,11 @@ const batchedtasks = [], microtasks = [];
 window.microtasks = microtasks;
 window.batchedtasks = batchedtasks;
 
-export function Unbatch(props, context) {
-    Component.call(this, props, context);
-    this.state = {
-        child: props.child,
-    };
-}
 
-let fn = inherit(Unbatch, Component);
-fn.render = function () {
-    return this.state.child;
-};
 const publicRoot = {};
 
 export function render(vnode, root, callback) {
-    let hostRoot = Renderer.updateRoot(root);
+    let hostRoot = Renderer.updateRoot(root), immediateUpdate = false;
     if (!hostRoot.wrapperInstance) {
         var w = new Fiber({
             type: Unbatch,
@@ -37,17 +27,20 @@ export function render(vnode, root, callback) {
             props: {},
             return: hostRoot
         });
+        // w.name = "Unbatch" + Math.random();
         hostRoot.child = w;
-        macrotasks.push(w);
-        Renderer.scheduleWork();
+        updateClassComponent(w);
+        delete w._hydrating;
         hostRoot.wrapperInstance = w.stateNode;
+        immediateUpdate = true;
     }
     Renderer.updateComponent(
         hostRoot.wrapperInstance,
         {
             child: vnode,
         },
-        wrapCb(callback)
+        wrapCb(callback),
+        immediateUpdate
     );
     return publicRoot.instance;
 }
@@ -191,63 +184,77 @@ function fiberContains(p, son) {
 
 function pushChildQueue(fiber, queue) {
     var p = fiber,
-        inQueue = false;
+        inQueue = false;   
+    var hackSCU = [];
     while (p.return) {
         p = p.return;
         //判定它的父节点是否已经在列队中
-        if (p.tag < 3 && (p._updates || p._hydrating) && p.type !== Unbatch) {
-            inQueue = true; //在列队中就不会立即触发
+        if (p.tag < 3 && p.type !== Unbatch) {
+            if (p._updates) {
+                inQueue = true; //在列队中就不会立即触发
+                hackSCU.push(p);
+            } else if (p.tag === 2) {
+                hackSCU.push(p);
+            }
             break;
         }
     }
+    
+    inQueue && hackSCU.forEach(function (el) {
+        //如果是批量更新，必须强制更新，防止进入SCU
+        if (el._updates) {
+            el._updates.batching = true;
+        }
+        el.batching = true;
+    });
     //判定当前节点是否包含已进队的节点
     for (var i = queue.length, el; (el = queue[--i]);) {
         if (fiberContains(fiber, el)) {//不包含自身
             queue.splice(i, 1);
         }
     }
-    fiber._updates = fiber._updates || {};
     if (!inQueue) {
-        //如果是批量更新，必须强制更新，防止进入SCU
-        fiber._updates.batching = true;
+        fiber._updates = fiber._updates || {};
         queue.push(fiber);
     }
 }
 
-
-
 //setState的实现
-Renderer.updateComponent = function (instance, state, callback) {
+Renderer.updateComponent = function (instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
     if (fiber.parent) {
         fiber.parent.insertPoint = fiber.insertPoint;
     }
     let parent = Renderer._hydratingParent;
-    let isForced = state === true,
-        immediate = false;
+    let isForced = state === true;
     state = isForced ? null : state;
 
     if (fiber.willing) {
         //情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
-        console.log("setState 1");
-        immediate = false;
+        //  console.log("setState 1");
+        immediateUpdate = false;
     } else if (parent && fiberContains(parent, fiber)) {
         //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
-        console.log("setState 2");
+        // console.log("setState 2");
         microtasks.push(fiber);
-    } else if (isBatchingUpdates && fiber.type != Unbatch) {
-        console.log("setState 3");
+    } else if (isBatchingUpdates && !immediateUpdate) {
+        // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
+        // console.log("setState 3");
         //情况3， 在batchedUpdates中setState，可能放进batchedtasks
         pushChildQueue(fiber, batchedtasks);
     } else {
         //情况4，在componentDidMount/Update中setState，可能放进microtasks
         //情况5，在钩子外setState, 需要立即触发
-        immediate = !fiber._hydrating;
-        console.log(fiber.name + " setState " + (immediate ? 4 : 5));
+        immediateUpdate = immediateUpdate || !fiber._hydrating;
+        // console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5));
         pushChildQueue(fiber, microtasks);
     }
+
     mergeUpdates(fiber, state, isForced, callback);
-    if (immediate) {
+    if (immediateUpdate) {
         Renderer.scheduleWork();
     }
 };
+
+
+//不是529100

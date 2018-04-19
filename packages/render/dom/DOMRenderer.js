@@ -229,20 +229,22 @@ export let DOMRenderer = createRenderer({
     },
 
     // [Top API] ReactDOM.unmountComponentAtNode
-    unmountComponentAtNode(container) {
+    unmountComponentAtNode(root) {
         let hostRoot = Renderer.updateRoot(root, true);
         let instance = hostRoot && hostRoot.wrapperInstance;
         if (instance) {
+            console.log("unmountComponentAtNode");
             Renderer.updateComponent(
                 instance,
                 {
                     child: null
                 },
                 function () {
-                    let rootIndex = topNodes.indexOf(container);
+                    let rootIndex = topNodes.indexOf(root);
                     topNodes.splice(rootIndex, 1);
                     topFibers.splice(rootIndex, 1);
-                }
+                },
+                true
             );
             return true;
         }

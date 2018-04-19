@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./react.js"></script>
+ <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
@@ -37,14 +37,68 @@
                   }
               };
          };
-         const container = document.createElement('div');
-  var a =  ReactDOM.render(<span>a</span>, container);
- /*   ReactDOM.unstable_batchedUpdates(function() {
-      ReactDOM.unmountComponentAtNode(container);
-      ReactDOM.render(<span>b</span>, container);
-    });
-    expect(container.textContent).toBe('b');
-*/
+         var PropTypes = React.PropTypes
+         class Leaf extends React.Component {
+            static contextTypes = {
+                foo: PropTypes.string.isRequired,
+            };
+
+            UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
+                expect('foo' in nextContext).toBe(true);
+            }
+
+            shouldComponentUpdate(nextProps, nextState, nextContext) {
+                expect('foo' in nextContext).toBe(true);
+                return true;
+            }
+
+            render() {
+                return <span>{this.context.foo}</span>;
+            }
+        }
+
+        class Intermediary extends React.Component {
+            UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
+                expect('foo' in nextContext).toBe(false);
+            }
+
+            shouldComponentUpdate(nextProps, nextState, nextContext) {
+                expect('foo' in nextContext).toBe(false);
+                return true;
+            }
+
+            render() {
+                return <Leaf />;
+            }
+        }
+
+        class Parent extends React.Component {
+            static childContextTypes = {
+                foo: PropTypes.string,
+            };
+
+            getChildContext() {
+                return {
+                    foo: this.props.cntxt,
+                };
+            }
+
+            render() {
+                return <Intermediary />;
+            }
+        }
+
+        const div = document.createElement('div');
+        ReactDOM.render(<Parent cntxt="noise" />, div);
+        expect(div.children[0].innerHTML).toBe('noise');
+        div.children[0].innerHTML = 'aliens';
+        div.children[0].id = 'aliens';
+        expect(div.children[0].innerHTML).toBe('aliens');
+        expect(div.children[0].id).toBe('aliens');
+        ReactDOM.render(<Parent cntxt="bar" />, div);
+        expect(div.children[0].innerHTML).toBe('bar');
+        expect(div.children[0].id).toBe('aliens');
+
     </script>
 
 

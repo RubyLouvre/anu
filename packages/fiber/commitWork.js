@@ -16,8 +16,10 @@ import { guardCallback } from "./unwindWork";
 import { returnFalse, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
+import { Unbatch } from "./unbatch";
+
 export function commitEffects(a) {
-   
+
     let tasks = a || effects;
     tasks = commitPlaceEffects(tasks);
     Renderer.isRendering = true;
@@ -27,7 +29,7 @@ export function commitEffects(a) {
         return pre;
     }, []));
     */
-    for(let i = 0, n = tasks.length; i < n; i++){
+    for (let i = 0, n = tasks.length; i < n; i++) {
         commitOtherEffects(tasks[i]);
         if (Renderer.error) {
             tasks.length = 0;
@@ -78,33 +80,33 @@ export function commitPlaceEffects(tasks) {
 export function commitOtherEffects(fiber) {
     let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
-    let updater = instance.updater || {} ;
+    let updater = instance.updater || {};
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
             break;
         }
         if (amount % effectNo === 0) {
-            amount /=  effectNo;
+            amount /= effectNo;
             //如果能整除
             switch (effectNo) {
-            case PLACE: 
-                if(fiber.tag > 3){
+            case PLACE:
+                if (fiber.tag > 3) {
                     Renderer.insertElement(fiber);
                 }
                 break;
-            case CONTENT: 
+            case CONTENT:
                 Renderer.updateContext(fiber);
                 break;
-            case ATTR: 
+            case ATTR:
                 Renderer.updateAttribute(fiber);
-                break; 
+                break;
             case NULLREF:
                 if (!instance.__isStateless) {
                     Refs.fireRef(fiber, null);
                 }
                 break;
-            case DETACH: 
+            case DETACH:
                 if (fiber.tag > 3) {
                     Renderer.removeElement(fiber);
                 } else {
@@ -115,9 +117,9 @@ export function commitOtherEffects(fiber) {
                 delete fiber.stateNode;
                 delete fiber.alternate;
                 break;
-            case HOOK: 
-                fiber._hydrating = true;
+            case HOOK:
                 Renderer._hydratingParent = fiber;
+                // console.log("HOOK",fiber.name);
                 if (updater._isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
@@ -137,7 +139,7 @@ export function commitOtherEffects(fiber) {
                 var queue = fiber.pendingCbs || [];
                 fiber._hydrating = true;//setState回调里再执行setState
                 queue.forEach(function (fn) {
-                    fn.call(instance);                   
+                    fn.call(instance);
                 });
                 fiber._hydrating = false;
                 delete fiber.pendingCbs;

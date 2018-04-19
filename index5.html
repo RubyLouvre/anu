@@ -40,87 +40,70 @@ var expect = function(a) {
 		},
 	};
 };
-const updates = [];
+let selectNode;
 
-    class Outer extends React.Component {
-      state = {x: 0};
+class Parent extends React.Component {
+  state = {
+    value: 'giraffe',
+  };
 
-      render() {
-        updates.push('Outer-render-' + this.state.x);
-        return (
-          <div>
-            <Inner x={this.state.x} ref="inner" />
-          </div>
-        );
-      }
+  componentDidMount() {
+    console.log("componentDidMount")
+    this._renderNested();//true
+  }
 
-      componentDidUpdate() {
-        const x = this.state.x;
-        updates.push('Outer-didUpdate-' + x);
-		updates.push('Inner-setState-' + x);
-		//如果子组件在父组件的didXXX中setState，那么它会延迟到父组件的cb中执行
-        this.refs.inner.setState({x: x}, function() {
-          updates.push('Inner-callback-' + x+"!");
-		});
-		
-      }
-    }
+  componentDidUpdate() {
+    console.log("componentDidUpdate")
+    this._renderNested();
+  }
 
-    class Inner extends React.Component {
-      state = {x: 0};
+  _handleChange(event) {
+    this.setState({value: event.target.value});
+  }
 
-      render() {
-        updates.push('Inner-render-' + this.props.x + '-' + this.state.x);
-        return <div />;
-      }
+  _renderNested() {
+    ReactDOM.render(
+      <select
+        onChange={this._handleChange.bind(this)}
+        ref={n => (selectNode = n)}
+        value={this.state.value}>
+        <option value="monkey">A monkey!</option>
+        <option value="giraffe">A giraffe!</option>
+        <option value="gorilla">A gorilla!</option>
+      </select>,
+      this._nestingContainer,
+    );
+  }
 
-      componentDidUpdate() {
-        updates.push('Inner-didUpdate-' + this.props.x + '-' + this.state.x);
-      }
-    }
+  render() {
+    return <div ref={n => (this._nestingContainer = n)} />;
+  }
+}
 
-    const instance = ReactTestUtils.renderIntoDocument(<Outer />);
+//const container = document.createElement('div');
 
-    updates.push('Outer-setState-1');
-    instance.setState({x: 1}, function() {
-      updates.push('Outer-callback-1');
-      updates.push('Outer-setState-2');
-     instance.setState({x: 2}, function() {
-        updates.push('Outer-callback-2');
-      });
-     
-    });
+//document.body.appendChild(container);
 
-    /* eslint-disable indent */
-    expect(updates).toEqual([
-      'Outer-render-0',
-      'Inner-render-0-0',
+ReactDOM.render(<Parent />, container);//true
+//ref问题
+console.log(selectNode)
+expect(selectNode.value).toBe('giraffe');
 
-      'Outer-setState-1',
-      'Outer-render-1',
-      'Inner-render-1-0',
-      'Inner-didUpdate-1-0',
-      'Outer-didUpdate-1',
-      // Happens in a batch, so don't re-render yet
-      'Inner-setState-1',
-      'Outer-callback-1',
+selectNode.value = 'gorilla';
 
-      // Happens in a batch
-      'Outer-setState-2',
+let nativeEvent = document.createEvent('Event');
+nativeEvent.initEvent('input', true, true);
+selectNode.dispatchEvent(nativeEvent);
 
-      // Flush batched updates all at once
-      'Outer-render-2',
-      'Inner-render-2-1',
-      'Inner-didUpdate-2-1',
-      'Inner-callback-1!',
-      'Outer-didUpdate-2',
-      'Inner-setState-2',
-      'Outer-callback-2',
-      'Inner-render-2-2',
-      'Inner-didUpdate-2-2',
-      'Inner-callback-2!',
-    ]);
+expect(selectNode.value).toEqual('gorilla');
 
+nativeEvent = document.createEvent('Event');
+nativeEvent.initEvent('change', true, true);
+selectNode.dispatchEvent(nativeEvent);
+
+expect(selectNode.value).toEqual('gorilla');
+
+//document.body.removeChild(container);
    </script>
 </body>
 

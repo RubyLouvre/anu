@@ -71,7 +71,7 @@
      
          ReactTestUtils.renderIntoDocument(<MockComponent depth={0} count={2} />);
      
-         expect(updates).toEqual([0, 1, 2]);
+         expect(updates.concat()).toEqual([0, 1, 2]);
      
          ReactDOM.unstable_batchedUpdates(function() {
            // Simulate update on each component from top to bottom.

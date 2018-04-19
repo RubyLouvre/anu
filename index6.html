@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./react.js"></script>
-    <script type='text/javascript' src="./react-dom.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -41,30 +41,69 @@
                   }
               };
          };
-         let callbackCount = 0;
+         let ops = [];
 
-         class A extends React.Component {
-           state = {x: this.props.x};
-     
-           UNSAFE_componentWillReceiveProps(nextProps) {
-             const newX = nextProps.x;
-             this.setState({x: newX}, function() {
-               // State should have updated by the time this callback gets called
-               expect(this.state.x).toBe(newX);
-               callbackCount++;
-             });
-           }
-     
-           render() {
-             return <div>{this.state.x}</div>;
-           }
-         }
-     
-         const container = document.createElement('div');
-         ReactDOM.render(<A x={1} />, container);
-         ReactDOM.render(<A x={2} />, container);
-         expect(callbackCount).toBe(1);
-      
+let child = null;
+let parent = null;
+
+class Child extends React.Component {
+  state = {bar: false};
+  componentDidMount() {
+    child = this;
+  }
+  componentDidUpdate() {
+    ops.push('child did update');
+  }
+  render() {
+    return <div />;
+  }
+}
+
+let shouldUpdate = true;
+
+class Intermediate extends React.Component {
+  shouldComponentUpdate() {
+    return shouldUpdate;
+  }
+  render() {
+    return <Child />;
+  }
+}
+
+class Parent extends React.Component {
+  state = {foo: false};
+  componentDidMount() {
+    parent = this;
+  }
+  componentDidUpdate() {
+    ops.push('parent did update');
+  }
+  render() {
+    return <Intermediate />;
+  }
+}
+
+ReactDOM.render(<Parent />, container);
+
+ReactDOM.unstable_batchedUpdates(() => {
+  parent.setState({foo: true});
+  child.setState({bar: true});
+});
+// When we render changes top-down in a batch, children's componentDidUpdate
+// happens before the parent.
+expect(ops).toEqual(['child did update', 'parent did update']);
+
+shouldUpdate = false;
+
+ops = [];
+
+ReactDOM.unstable_batchedUpdates(() => {
+  parent.setState({foo: false});
+  child.setState({bar: false});
+});
+// We expect the same thing to happen if we bail out in the middle.
+expect(ops).toEqual(['child did update', 'parent did update']);
+
 </script>
 
 

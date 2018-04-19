@@ -25,7 +25,9 @@ export function updateEffects(fiber, topWork) {
     } else {
         updateClassComponent(fiber); // unshift parent
     }
+
     if(fiber.batching){
+
         delete fiber.shouldUpdateFalse;
         delete fiber.batching;
     }
@@ -118,8 +120,9 @@ function mergeStates(fiber, nextProps, keep) {
     return nextState;
 }
 
-function updateClassComponent(fiber) {
+export function updateClassComponent(fiber) {
     if (fiber.disposed) {
+        //console.log("有这种情况吗");
         return;
     }
     let { type, stateNode: instance, isForced, props, stage } = fiber;
@@ -142,6 +145,7 @@ function updateClassComponent(fiber) {
             stage = "update";
             let u = fiber._updates;
             if (u) {
+                
                 isForced = fiber.isForced || u.isForced;
                 fiber.batching = u.batching;
                 fiber.pendingStates = u.pendingStates;
