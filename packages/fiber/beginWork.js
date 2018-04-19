@@ -118,7 +118,7 @@ function mergeStates(fiber, nextProps, keep) {
     return nextState;
 }
 
-export function updateClassComponent(fiber) {
+function updateClassComponent(fiber) {
     if (fiber.disposed) {
         return;
     }

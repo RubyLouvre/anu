@@ -4,14 +4,14 @@ import { Component } from "react-core/Component";
 import { Renderer } from "react-core/createRenderer";
 import { pushError } from "./unwindWork";
 
-export function createInstance (fiber, context) {
-   
+export function createInstance(fiber, context) {
+
     let updater = {
         mountOrder: Renderer.mountOrder++,
         enqueueSetState: returnFalse,
         _isMounted: returnFalse
     };
-    let { props, type, tag ,ref } = fiber,
+    let { props, type, tag, ref } = fiber,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = fiber.stateNode = {};
@@ -26,7 +26,7 @@ export function createInstance (fiber, context) {
                 __isStateless: returnTrue,
                 __init: true,
                 renderImpl: type,
-                render: function f () {
+                render: function f() {
                     let a = this.__keep;
                     if (a) {
                         delete this.__keep;
@@ -50,12 +50,12 @@ export function createInstance (fiber, context) {
             Renderer.currentOwner = instance;
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.oneRef = function(a){
+                instance.oneRef = function (a) {
                     let ref = instance.ref;
-                    if(isFn(ref)){
+                    if (isFn(ref)) {
                         ref(a);
                         instance.ref = noop;
-                    }else if(ref && ("current" in ref)){
+                    } else if (ref && ("current" in ref)) {
                         ref.current = a;
                     }
                     // delete instance.__init;
@@ -68,11 +68,11 @@ export function createInstance (fiber, context) {
 
                 delete instance.__init;
             }
-           
+
         } else {
             // 有狀态组件
             instance = new type(props, context);
-            if(!(instance instanceof Component)){
+            if (!(instance instanceof Component)) {
                 throw `${type.name} doesn't extend React.Component`;
             }
         }

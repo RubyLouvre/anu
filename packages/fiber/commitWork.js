@@ -116,15 +116,15 @@ export function commitOtherEffects(fiber) {
                 delete fiber.alternate;
                 break;
             case HOOK: 
-                fiber._hydrating = true
-                Renderer._hydratingParent = fiber
+                fiber._hydrating = true;
+                Renderer._hydratingParent = fiber;
                 if (updater._isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
                     guardCallback(instance, "componentDidMount", []);
                 }
-                Renderer._hydratingParent = null
+                Renderer._hydratingParent = null;
                 delete fiber._hydrating;
                 break;
             case REF:

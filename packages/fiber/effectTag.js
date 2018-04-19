@@ -16,3 +16,4 @@ export const effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK,
 export const effectLength = effectNames.length;
 
 // PLACE, CONTENT, DETACH 是基础因子，其他因子只能在它上面相乘
+
