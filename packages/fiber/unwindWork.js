@@ -15,7 +15,7 @@ export function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-        macrotasks.push(catchFiber);
+     //   macrotasks.push(catchFiber);
     } else {
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {
@@ -83,7 +83,7 @@ function findCatchComponent(topFiber, names) {
             names.push(name);
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch) {
-                if (instance.updater._isDoctor) {
+                if (fiber._isDoctor) {
                     disableEffect(fiber);
                 } else if (!catchIt && fiber !== topFiber) {
                     catchIt = fiber;
