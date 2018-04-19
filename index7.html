@@ -38,10 +38,44 @@
               };
          };
       
-      ReactDOM.render(<p>111</p>, container, function(){
-        console.log(this, "xxxx")
-      });
-      
+         let ops = [];
+         class Foo extends React.Component {
+           state = {a: false, b: false};
+           UNSAFE_componentWillUpdate(_, nextState) {
+               console.log("xxxxxxxxxxx")
+            if (!nextState.a) {
+              this.setState({a: true});
+            }
+          }
+           componentDidUpdate() {
+             ops.push('Foo updated');
+             if (!this.state.b) {
+               this.setState({b: true});
+             }
+           }
+           render() {
+             ops.push(`a: ${this.state.a}, b: ${this.state.b}`);
+             return 111;
+           }
+         }
+   
+       //  const container = document.createElement('div');
+         // Mount
+         ReactDOM.render(<Foo />, container);
+         // Root update
+       var a =  ReactDOM.render(<Foo />, container);
+         expect(ops).toEqual([
+           // Mount
+           'a: false, b: false',
+           // Root update
+           'a: false, b: false',
+           'Foo updated',
+           // Subsequent update (both a and b should have flushed)
+           'a: true, b: true',
+           'Foo updated',
+           // There should not be any additional updates
+         ]);
+
     </script>
 
 

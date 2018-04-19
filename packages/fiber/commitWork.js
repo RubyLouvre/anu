@@ -116,12 +116,15 @@ export function commitOtherEffects(fiber) {
                 delete fiber.alternate;
                 break;
             case HOOK: 
+                fiber._hydrating = true
+                Renderer._hydratingParent = fiber
                 if (updater._isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
                     updater._isMounted = returnTrue;
                     guardCallback(instance, "componentDidMount", []);
                 }
+                Renderer._hydratingParent = null
                 delete fiber._hydrating;
                 break;
             case REF:
@@ -131,7 +134,7 @@ export function commitOtherEffects(fiber) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                var queue = fiber.pendingCbs;
+                var queue = fiber.pendingCbs || [];
                 fiber._hydrating = true;//setState回调里再执行setState
                 queue.forEach(function (fn) {
                     fn.call(instance);                   

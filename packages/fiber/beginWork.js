@@ -313,7 +313,6 @@ function getMaskedContext(contextTypes, instance) {
  */
 function diffChildren(parentFiber, children) {
     let oldFibers = parentFiber._children || {}; // 旧的
-
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};

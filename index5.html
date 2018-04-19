@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--  <script type='text/javascript' src="./react.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -57,10 +57,12 @@ const updates = [];
       componentDidUpdate() {
         const x = this.state.x;
         updates.push('Outer-didUpdate-' + x);
-        updates.push('Inner-setState-' + x);
+		updates.push('Inner-setState-' + x);
+		//如果子组件在父组件的didXXX中setState，那么它会延迟到父组件的cb中执行
         this.refs.inner.setState({x: x}, function() {
           updates.push('Inner-callback-' + x+"!");
-        });
+		});
+		
       }
     }
 
@@ -83,10 +85,10 @@ const updates = [];
     instance.setState({x: 1}, function() {
       updates.push('Outer-callback-1');
       updates.push('Outer-setState-2');
-    /*  instance.setState({x: 2}, function() {
+     instance.setState({x: 2}, function() {
         updates.push('Outer-callback-2');
       });
-      */
+     
     });
 
     /* eslint-disable indent */

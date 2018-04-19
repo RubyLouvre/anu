@@ -41,26 +41,29 @@
                   }
               };
          };
+         let callbackCount = 0;
 
- class Wrapper extends React.Component{
-    constructor(props, context){
-        super(props, context);
-        this.state = {
-            children: props.child
-        };
-    } 
-    componentWillReceiveProps(p){
-       this.setState({
-         children: p.child
-       })
-    }
-    render(){
-        return this.state.children;
-    }
-}
-ReactDOM.render(<Wrapper child={ <div>xxxx</div>} />, container)
-ReactDOM.render(<Wrapper child={ <p>yyy</p>} />, container)
-
+         class A extends React.Component {
+           state = {x: this.props.x};
+     
+           UNSAFE_componentWillReceiveProps(nextProps) {
+             const newX = nextProps.x;
+             this.setState({x: newX}, function() {
+               // State should have updated by the time this callback gets called
+               expect(this.state.x).toBe(newX);
+               callbackCount++;
+             });
+           }
+     
+           render() {
+             return <div>{this.state.x}</div>;
+           }
+         }
+     
+         const container = document.createElement('div');
+         ReactDOM.render(<A x={1} />, container);
+         ReactDOM.render(<A x={2} />, container);
+         expect(callbackCount).toBe(1);
       
 </script>
 
