@@ -5,11 +5,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
+  
+
+   <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
-
+  <!--<script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
 </head>
 
 <body>
@@ -24,6 +26,8 @@
         
         var container = document.getElementById('root');
           var div = container;
+          var el = div
+        //  var React = ReactNoop
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -38,40 +42,42 @@
                   toWarnDev(){}
               };
          };
-         const container = document.createElement('div');
-    let ops = [];
+function filterOutComments(nodeList) {
+  return [].slice.call(nodeList).filter(node => !(node instanceof Comment));
+}
+  //const el = document.createElement('div');
+  /*
+    let inst = ReactDOM.render(
+      <div>
+        <span />
+        {'foo'}
+        {'bar'}
+      </div>,
+      el,
+    );
+    let nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
 
-    function Baz() {
-      ops.push('Baz');
-      return null;
-    }
-
-    function Bar() {
-      ops.push('Bar');
-      return null;
-    }
-
-    function Foo() {
-      ops.push('Foo');
-      return (
-        <div>
-          <div hidden={true}>
-            <Bar />
-          </div>
-          <Baz />
-        </div>
-      );
-    }
-
-    // Mount
-    ReactDOM.render(<Foo />, container);
-    expect(ops).toEqual(['Foo', 'Bar', 'Baz']);
-    ops = [];
-
-    // Update
-  /* ReactDOM.render(<Foo />, container);
-    expect(ops).toEqual(['Foo', 'Bar', 'Baz']);
+    let foo = nodes[1];
+    let bar = nodes[2];
+    expect(foo.data).toBe('foobar');
     */
+   // expect(bar.data).toBe('bar');
+
+    inst = ReactDOM.hydrate(
+      <div>
+        <span />
+        {'baz'}
+        {'qux'}
+      </div>,
+      el,
+    );
+    // After the update, the text nodes should have stayed in place (as opposed
+    // to getting unmounted and remounted)
+    nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
+    expect(nodes[1]).toBe(foo);
+   // expect(nodes[2]).toBe(bar);
+    expect(foo.data).toBe('bazqux');
+  //  expect(bar.data).toBe('qux');
     </script>
 
 
