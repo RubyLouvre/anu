@@ -2,8 +2,6 @@ import { noop, get } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { NOWORK, CAPTURE } from "./effectTag";
 
-let macrotasks = Renderer.macrotasks;
-
 export function pushError(fiber, hook, error) {
     let names = [];
 
@@ -15,7 +13,6 @@ export function pushError(fiber, hook, error) {
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag = CAPTURE;
-     //   macrotasks.push(catchFiber);
     } else {
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {

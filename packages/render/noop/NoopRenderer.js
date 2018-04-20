@@ -20,34 +20,34 @@ function cleanChildren(array) {
 		}
 	});
 }
-var rootContainer = {
-    type: 'root',
-    appendChild: noop,
+var autoContainer = {
+	type: 'root',
+	appendChild: noop,
 	props: null,
-	children: [],
+	children: []
 };
 var yieldData = [];
 export let NoopRenderer = createRenderer({
 	render(vnode) {
-		return render(vnode, rootContainer);
+		return render(vnode, autoContainer);
 	},
 	updateAttribute() {},
 	updateContext(fiber) {
 		fiber.stateNode.children = fiber.props.children;
 	},
 	reset() {
-		var index = topNodes.indexOf(rootContainer);
+		var index = topNodes.indexOf(autoContainer);
 		if (index !== -1) {
 			topNodes.splice(index, 1);
 			topFibers.splice(index, 1);
 		}
-		rootContainer = extend({}, rootContainer)
+		autoContainer = extend({}, autoContainer)
 	},
 	getRoot() {
-		return rootContainer;
+		return autoContainer;
 	},
 	getChildren() {
-		return cleanChildren(rootContainer.children || []);
+		return cleanChildren(autoContainer.children || []);
 	},
 	yield(a) {
 		yieldData.push(a);

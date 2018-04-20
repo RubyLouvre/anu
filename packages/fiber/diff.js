@@ -18,27 +18,30 @@ window.batchedtasks = batchedtasks;
 const publicRoot = {};
 
 export function render(vnode, root, callback) {
-	let hostRoot = createContainer(root),
+	let container = createContainer(root),
 		immediateUpdate = false;
-	if (!hostRoot.wrapperInstance) {
-		var fiber = new Fiber({
+
+	if (!container.hostRoot) {
+		if (root.className === 'XXXXX') {
+			console.log('!container.hostRoot');
+		}
+		let fiber = new Fiber({
 			type: Unbatch,
 			tag: 2,
 			props: {},
-			return: hostRoot,
+			return: container,
 		});
-		// w.name = "Unbatch" + Math.random();
-		hostRoot.child = fiber;
+		container.child = fiber;
 		//将updateClassComponent部分逻辑放到这里，我们只需要实例化它
-		var instance = (fiber.stateNode = createInstance(fiber, {}));
+		let instance = (fiber.stateNode = createInstance(fiber, {}));
 		instance.updater.enqueueSetState = updateComponent;
 		instance._reactInternalFiber = fiber;
-		hostRoot.wrapperInstance = instance;
+		container.hostRoot = instance;
 		immediateUpdate = true;
 	}
-	var carrier = {};
+	let carrier = {};
 	updateComponent(
-		hostRoot.wrapperInstance,
+		container.hostRoot,
 		{
 			child: vnode,
 		},
@@ -145,33 +148,6 @@ function getNextUnitOfWork(fiber) {
 	}
 	return fiber;
 }
-function validateTag(el) {
-	return el && el.appendChild;
-}
-
-export function createContainer(root, onlyGet, validate) {
-	validate = validate || validateTag;
-	if (!validate(root)) {
-		throw `container is not a element`; // eslint-disable-line
-	}
-	var index = topNodes.indexOf(root);
-	if (index !== -1) {
-		return topFibers[index];
-	}
-	if (onlyGet) {
-		return null;
-	}
-	var hostRoot = new Fiber({
-		stateNode: root,
-		root: true,
-		tag: 5,
-		name: 'hostRoot',
-		type: root.type || root.tagName,
-	});
-	topNodes.push(root);
-	topFibers.push(hostRoot);
-	return hostRoot;
-}
 
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
@@ -245,7 +221,9 @@ function pushChildQueue(fiber, queue) {
 		}
 	}
 	if (!inQueue) {
-		fiber._updates = fiber._updates || {};
+        if(fiber._hydrating){
+           fiber._updates = fiber._updates || {};
+        }
 		queue.push(fiber);
 	}
 }
@@ -255,10 +233,25 @@ function updateComponent(instance, state, callback, immediateUpdate) {
 	let fiber = get(instance);
 	if (fiber.parent) {
 		fiber.parent.insertPoint = fiber.insertPoint;
+    }
+    let isForced = state === true;
+	state = isForced ? null : state;
+	let { updater } = instance;
+	if (updater.rendering) {
+        //如果用户在render里面调用setState，那么只让它执行一次
+		if (updater.oneChance ==1 ) {
+           
+          //  delete fiber._updates
+           
+            console.log(state)
+          //  fiber._updates = a;
+            return
+		} else {
+			updater.oneChance = 1;
+		}
 	}
 	let parent = Renderer._hydratingParent;
-	let isForced = state === true;
-	state = isForced ? null : state;
+	
 
 	if (fiber.willing) {
 		//情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
@@ -287,4 +280,32 @@ function updateComponent(instance, state, callback, immediateUpdate) {
 	}
 }
 Renderer.updateComponent = updateComponent;
+
+function validateTag(el) {
+	return el && el.appendChild;
+}
+
+export function createContainer(root, onlyGet, validate) {
+	validate = validate || validateTag;
+	if (!validate(root)) {
+		throw `container is not a element`; // eslint-disable-line
+	}
+	var index = topNodes.indexOf(root);
+	if (index !== -1) {
+		return topFibers[index];
+	}
+	if (onlyGet) {
+		return null;
+	}
+	var container = new Fiber({
+		stateNode: root,
+		root: true,
+		tag: 5,
+		name: 'hostRoot',
+		type: root.tagName || root.type,
+	});
+	topNodes.push(root);
+	topFibers.push(container);
+	return container;
+}
 //不是529100

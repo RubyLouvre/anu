@@ -195,7 +195,9 @@ export function updateClassComponent(fiber) {
 
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
+    updater.rendering = true
     let rendered = guardCallback(instance, "render", []);
+    updater.rendering = false
     if (ownerStack[0] === instance) {
         ownerStack.shift();
     }

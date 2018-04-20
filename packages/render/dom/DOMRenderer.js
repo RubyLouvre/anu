@@ -201,11 +201,11 @@ export let DOMRenderer = createRenderer({
 
 	// [Top API] ReactDOM.unmountComponentAtNode
 	unmountComponentAtNode(root) {
-		let hostRoot = createContainer(
+		let container = createContainer(
 			root,
 			true
 		);
-		let instance = hostRoot && hostRoot.wrapperInstance;
+		let instance = container && container.hostRoot;
 		if (instance) {
 			Renderer.updateComponent(
 				instance,

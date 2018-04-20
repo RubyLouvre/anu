@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
     <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
@@ -24,11 +24,14 @@
     </h1>
 
     <script type='text/babel'>
+    var React = ReactNoop;
 var container = document.getElementById('example');
 var div = container;
 if (!window.ReactDOM) {
-	window.ReactDOM = React;
+  window.ReactDOM = React;
+ 
 }
+var PropTypes = React.PropTypes
 
 var expect = function(a) {
 	return {
@@ -40,70 +43,60 @@ var expect = function(a) {
 		},
 	};
 };
-let selectNode;
 
-class Parent extends React.Component {
-  state = {
-    value: 'giraffe',
-  };
-
-  componentDidMount() {
-    console.log("componentDidMount")
-    this._renderNested();//true
+class ControlledInputs extends React.Component {
+  state = {value: 'lion'};
+  a = null;
+  b = null;
+  switchedFocus = false;
+  change(newValue) {
+    this.setState({value: newValue});
+    // Calling focus here will blur the text box which causes a native
+    // change event. Ideally we shouldn't have to fire this ourselves.
+    // Don't remove unless you've verified the fix in #8240 is still covered.
+    dispatchEventOnNode(this.a, 'change');
+    this.b.focus();
   }
-
-  componentDidUpdate() {
-    console.log("componentDidUpdate")
-    this._renderNested();
+  blur(currentValue) {
+    this.switchedFocus = true;
+    // currentValue should be 'giraffe' here because we should not have
+    // restored it on the target yet.
+    this.setState({value: currentValue});
   }
-
-  _handleChange(event) {
-    this.setState({value: event.target.value});
-  }
-
-  _renderNested() {
-    ReactDOM.render(
-      <select
-        onChange={this._handleChange.bind(this)}
-        ref={n => (selectNode = n)}
-        value={this.state.value}>
-        <option value="monkey">A monkey!</option>
-        <option value="giraffe">A giraffe!</option>
-        <option value="gorilla">A gorilla!</option>
-      </select>,
-      this._nestingContainer,
-    );
-  }
-
   render() {
-    return <div ref={n => (this._nestingContainer = n)} />;
+    return (
+      <div>
+        <input
+          type="text"
+          ref={n => (this.a = n)}
+          value={this.state.value}
+          onChange={e => this.change(e.target.value)}
+          onBlur={e => this.blur(e.target.value)}
+        />
+        <input type="text" ref={n => (this.b = n)} />
+      </div>
+    );
   }
 }
 
-//const container = document.createElement('div');
+const container = document.createElement('div');
+const instance = ReactDOM.render(<ControlledInputs />, container);
 
-//document.body.appendChild(container);
+// We need it to be in the body to test native event dispatching.
+document.body.appendChild(container);
 
-ReactDOM.render(<Parent />, container);//true
-//ref问题
-console.log(selectNode)
-expect(selectNode.value).toBe('giraffe');
+// Focus the field so we can later blur it.
+// Don't remove unless you've verified the fix in #8240 is still covered.
+instance.a.focus();
+setUntrackedValue.call(instance.a, 'giraffe');
+// This must use the native event dispatching. If we simulate, we will
+// bypass the lazy event attachment system so we won't actually test this.
+dispatchEventOnNode(instance.a, 'change');
+dispatchEventOnNode(instance.a, 'blur');
 
-selectNode.value = 'gorilla';
+expect(instance.a.value).toBe('giraffe');
+expect(instance.switchedFocus).toBe(true);
 
-let nativeEvent = document.createEvent('Event');
-nativeEvent.initEvent('input', true, true);
-selectNode.dispatchEvent(nativeEvent);
-
-expect(selectNode.value).toEqual('gorilla');
-
-nativeEvent = document.createEvent('Event');
-nativeEvent.initEvent('change', true, true);
-selectNode.dispatchEvent(nativeEvent);
-
-expect(selectNode.value).toEqual('gorilla');
-
-//document.body.removeChild(container);
    </script>
 </body>
 
