@@ -1412,6 +1412,7 @@ function render$1(vnode, root, callback) {
         instance._reactInternalFiber = fiber;
         container.hostRoot = instance;
         immediateUpdate = true;
+        Renderer.emptyElement(container);
     }
     var carrier = {};
     updateComponent(container.hostRoot, {
@@ -1500,13 +1501,6 @@ function getNextUnitOfWork(fiber) {
     fiber = macrotasks.shift();
     if (!fiber || fiber.merged) {
         return;
-    }
-    if (fiber.root) {
-        fiber.stateNode = fiber.stateNode || {};
-        if (!get(fiber.stateNode)) {
-            Renderer.emptyElement(fiber);
-        }
-        fiber.stateNode._reactInternalFiber = fiber;
     }
     return fiber;
 }
@@ -1612,9 +1606,22 @@ function createContainer(root, onlyGet, validate) {
     if (!validate(root)) {
         throw "container is not a element";
     }
-    var index = topNodes.indexOf(root);
-    if (index !== -1) {
-        return topFibers[index];
+    var canAdd = false;
+    try {
+        root.randomProps = 1;
+        if (root.randomProps === 1) {
+            canAdd = true;
+        }
+    } catch (e) {}
+    if (canAdd) {
+        if (get(root)) {
+            return get(root);
+        }
+    } else {
+        var index = topNodes.indexOf(root);
+        if (index !== -1) {
+            return topFibers[index];
+        }
     }
     if (onlyGet) {
         return null;
@@ -1624,115 +1631,124 @@ function createContainer(root, onlyGet, validate) {
         root: true,
         tag: 5,
         name: "hostRoot",
-        type: root.tagName || root.type
+        type: root.nodeName || root.type
     });
-    topNodes.push(root);
-    topFibers.push(container);
+    if (canAdd) {
+        root._reactInternalFiber = container;
+    } else {
+        topNodes.push(root);
+        topFibers.push(container);
+    }
     return container;
 }
 
 function cleanChildren(array) {
-	if (!Array.isArray(array)) {
-		return array;
-	}
-	return array.map(function (el) {
-		if (el.type == '#text') {
-			return el.children;
-		} else {
-			return {
-				type: el.type,
-				props: el.props,
-				children: cleanChildren(el.children)
-			};
-		}
-	});
+    if (!Array.isArray(array)) {
+        return array;
+    }
+    return array.map(function (el) {
+        if (el.type == "#text") {
+            return el.children;
+        } else {
+            return {
+                type: el.type,
+                props: el.props,
+                children: cleanChildren(el.children)
+            };
+        }
+    });
 }
 var autoContainer = {
-	type: 'root',
-	appendChild: noop,
-	props: null,
-	children: []
+    type: "root",
+    appendChild: noop,
+    props: null,
+    children: []
 };
 var yieldData = [];
 var NoopRenderer = createRenderer({
-	render: function render$$1(vnode) {
-		return render$1(vnode, autoContainer);
-	},
-	updateAttribute: function updateAttribute() {},
-	updateContext: function updateContext(fiber) {
-		fiber.stateNode.children = fiber.props.children;
-	},
-	reset: function reset() {
-		var index = topNodes.indexOf(autoContainer);
-		if (index !== -1) {
-			topNodes.splice(index, 1);
-			topFibers.splice(index, 1);
-		}
-		autoContainer = extend({}, autoContainer);
-	},
-	getRoot: function getRoot() {
-		return autoContainer;
-	},
-	getChildren: function getChildren() {
-		return cleanChildren(autoContainer.children || []);
-	},
-	yield: function _yield(a) {
-		yieldData.push(a);
-	},
-	flush: function flush() {
-		var ret = yieldData.concat();
-		yieldData.length = 0;
-		return ret;
-	},
-	createElement: function createElement(fiber) {
-		return {
-			type: fiber.type,
-			props: null,
-			children: fiber.tag === 6 ? fiber.props.children : []
-		};
-	},
-	insertElement: function insertElement(fiber) {
-		var dom = fiber.stateNode,
-		    parentNode = fiber.parent,
-		    before = fiber.insertPoint,
-		    children = parentNode.children;
-		try {
-			if (before == null) {
-				if (dom !== children[0]) {
-					remove(children, dom);
-					children.unshift(dom);
-				}
-			} else {
-				if (dom !== children[children.length - 1]) {
-					remove(children, dom);
-					var i = children.indexOf(before);
-					children.splice(i + 1, 0, dom);
-				}
-			}
-		} catch (e) {
-			throw e;
-		}
-	},
-	emptyElement: function emptyElement(fiber) {
-		var dom = fiber.stateNode;
-		var children = dom && dom.children;
-		if (dom && Array.isArray(children)) {
-			children.forEach(NoopRenderer.removeElement);
-		}
-	},
-	removeElement: function removeElement(fiber) {
-		if (fiber.parent) {
-			var parent = fiber.parent;
-			var node = fiber.stateNode;
-			remove(parent.children, node);
-		}
-	}
+    render: function render$$1(vnode) {
+        return render$1(vnode, autoContainer);
+    },
+    updateAttribute: function updateAttribute() {},
+    updateContext: function updateContext(fiber) {
+        fiber.stateNode.children = fiber.props.children;
+    },
+    reset: function reset() {
+        var index = topNodes.indexOf(autoContainer);
+        if (index !== -1) {
+            topNodes.splice(index, 1);
+            topFibers.splice(index, 1);
+        }
+        autoContainer = {
+            type: "root",
+            appendChild: noop,
+            props: null,
+            children: []
+        };
+    },
+    getRoot: function getRoot() {
+        return autoContainer;
+    },
+    getChildren: function getChildren() {
+        return cleanChildren(autoContainer.children || []);
+    },
+    yield: function _yield(a) {
+        yieldData.push(a);
+    },
+    flush: function flush() {
+        var ret = yieldData.concat();
+        yieldData.length = 0;
+        return ret;
+    },
+    createElement: function createElement(fiber) {
+        return {
+            type: fiber.type,
+            props: null,
+            children: fiber.tag === 6 ? fiber.props.children : []
+        };
+    },
+    insertElement: function insertElement(fiber) {
+        var dom = fiber.stateNode,
+            parentNode = fiber.parent,
+            before = fiber.insertPoint,
+            children = parentNode.children;
+        try {
+            if (before == null) {
+                if (dom !== children[0]) {
+                    remove(children, dom);
+                    children.unshift(dom);
+                }
+            } else {
+                if (dom !== children[children.length - 1]) {
+                    remove(children, dom);
+                    var i = children.indexOf(before);
+                    children.splice(i + 1, 0, dom);
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    },
+    emptyElement: function emptyElement(fiber) {
+        var dom = fiber.stateNode;
+        var children = dom && dom.children;
+        if (dom && Array.isArray(children)) {
+            children.forEach(NoopRenderer.removeElement);
+        }
+    },
+    removeElement: function removeElement(fiber) {
+        if (fiber.parent) {
+            var parent = fiber.parent;
+            var node = fiber.stateNode;
+            remove(parent.children, node);
+        }
+    }
 });
 function remove(children, node) {
-	var index = children.indexOf(node);
-	if (index !== -1) {
-		children.splice(index, 1);
-	}
+    var index = children.indexOf(node);
+    if (index !== -1) {
+        children.splice(index, 1);
+    }
 }
 
 var win = getWindow();

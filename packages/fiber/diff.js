@@ -34,6 +34,7 @@ export function render(vnode, root, callback) {
         instance._reactInternalFiber = fiber;
         container.hostRoot = instance;
         immediateUpdate = true;
+        Renderer.emptyElement(container);
     }
     let carrier = {};
     updateComponent(
@@ -135,13 +136,6 @@ function getNextUnitOfWork(fiber) {
     if (!fiber || fiber.merged) {
         return;
     }
-    if (fiber.root) {
-        fiber.stateNode = fiber.stateNode || {};
-        if (!get(fiber.stateNode)) {
-            Renderer.emptyElement(fiber);
-        }
-        fiber.stateNode._reactInternalFiber = fiber;
-    }
     return fiber;
 }
 
@@ -182,48 +176,6 @@ function fiberContains(p, son) {
         son = son.return;
     }
 }
-/*
-function pushChildQueue(fiber, queue) {
-    var p = fiber,
-        inQueue = false;
-    var hackSCU = [];
-    while (p.return) {
-        p = p.return;
-        //判定它的父节点是否已经在列队中
-        if (p.tag < 3 && p.type !== Unbatch) {
-            if (p._updates || p._hydrating) {
-                console.log(p.name, p._updates ? "有_updates" : "有_hydrating");
-                inQueue = true; //在列队中就不会立即触发
-                hackSCU.push(p);
-            } else if (p.tag === 2) {
-                hackSCU.push(p);
-            }
-            break;
-        }
-    }
-    inQueue &&
-        hackSCU.forEach(function (el) {
-            //如果是批量更新，必须强制更新，防止进入SCU
-            if (el._updates) {
-                el._updates.batching = true;
-            }
-            el.batching = true;
-        });
-    //判定当前节点是否包含已进队的节点
-    for (var i = queue.length, el; (el = queue[--i]);) {
-        if (fiberContains(fiber, el)) {
-            //不包含自身
-            queue.splice(i, 1);
-        }
-    }
-    if (!inQueue) {
-        if (fiber._hydrating) {
-            fiber._updates = fiber._updates || {};
-        }
-        queue.push(fiber);
-    }
-}
-*/
 
 function pushChildQueue(fiber, queue) {
     //判定当前节点是否包含已进队的节点
@@ -311,15 +263,27 @@ Renderer.updateComponent = updateComponent;
 function validateTag(el) {
     return el && el.appendChild;
 }
-
 export function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
         throw `container is not a element`; // eslint-disable-line
     }
-    var index = topNodes.indexOf(root);
-    if (index !== -1) {
-        return topFibers[index];
+    var canAdd = false;
+    try {
+        root.randomProps = 1;
+        if (root.randomProps === 1) {
+            canAdd = true;
+        }
+    }catch(e){}
+    if(canAdd){
+        if( get(root) ){
+            return get(root);
+        }
+    }else{
+        var index = topNodes.indexOf(root);
+        if (index !== -1) {
+            return topFibers[index];
+        }
     }
     if (onlyGet) {
         return null;
@@ -329,10 +293,14 @@ export function createContainer(root, onlyGet, validate) {
         root: true,
         tag: 5,
         name: "hostRoot",
-        type: root.tagName || root.type,
+        type: root.nodeName || root.type,
     });
-    topNodes.push(root);
-    topFibers.push(container);
+    if(canAdd){
+        root._reactInternalFiber = container;
+    }else{
+        topNodes.push(root);
+        topFibers.push(container);
+    }
     return container;
 }
 //不是529100

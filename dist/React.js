@@ -2386,6 +2386,7 @@ function render$1(vnode, root, callback) {
         instance._reactInternalFiber = fiber;
         container.hostRoot = instance;
         immediateUpdate = true;
+        Renderer.emptyElement(container);
     }
     var carrier = {};
     updateComponent(container.hostRoot, {
@@ -2474,13 +2475,6 @@ function getNextUnitOfWork(fiber) {
     fiber = macrotasks.shift();
     if (!fiber || fiber.merged) {
         return;
-    }
-    if (fiber.root) {
-        fiber.stateNode = fiber.stateNode || {};
-        if (!get(fiber.stateNode)) {
-            Renderer.emptyElement(fiber);
-        }
-        fiber.stateNode._reactInternalFiber = fiber;
     }
     return fiber;
 }
@@ -2586,9 +2580,22 @@ function createContainer(root, onlyGet, validate) {
     if (!validate(root)) {
         throw "container is not a element";
     }
-    var index = topNodes.indexOf(root);
-    if (index !== -1) {
-        return topFibers[index];
+    var canAdd = false;
+    try {
+        root.randomProps = 1;
+        if (root.randomProps === 1) {
+            canAdd = true;
+        }
+    } catch (e) {}
+    if (canAdd) {
+        if (get(root)) {
+            return get(root);
+        }
+    } else {
+        var index = topNodes.indexOf(root);
+        if (index !== -1) {
+            return topFibers[index];
+        }
     }
     if (onlyGet) {
         return null;
@@ -2598,10 +2605,14 @@ function createContainer(root, onlyGet, validate) {
         root: true,
         tag: 5,
         name: "hostRoot",
-        type: root.tagName || root.type
+        type: root.nodeName || root.type
     });
-    topNodes.push(root);
-    topFibers.push(container);
+    if (canAdd) {
+        root._reactInternalFiber = container;
+    } else {
+        topNodes.push(root);
+        topFibers.push(container);
+    }
     return container;
 }
 
@@ -2799,9 +2810,12 @@ var DOMRenderer = createRenderer({
             Renderer.updateComponent(instance, {
                 child: null
             }, function () {
-                var rootIndex = topNodes.indexOf(root);
-                topNodes.splice(rootIndex, 1);
-                topFibers.splice(rootIndex, 1);
+                var i = topNodes.indexOf(root);
+                if (i !== -1) {
+                    topNodes.splice(i, 1);
+                    topFibers.splice(i, 1);
+                }
+                root._reactInternalFiber = null;
             }, true);
             return true;
         }

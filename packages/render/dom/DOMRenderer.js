@@ -213,9 +213,12 @@ export let DOMRenderer = createRenderer({
                     child: null,
                 },
                 function() {
-                    let rootIndex = topNodes.indexOf(root);
-                    topNodes.splice(rootIndex, 1);
-                    topFibers.splice(rootIndex, 1);
+                    let i = topNodes.indexOf(root);
+                    if(i !== -1){
+                        topNodes.splice(i, 1);
+                        topFibers.splice(i, 1);
+                    }
+                    root._reactInternalFiber = null;
                 },
                 true
             );

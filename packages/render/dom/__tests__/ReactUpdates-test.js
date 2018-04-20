@@ -975,8 +975,7 @@ describe('ReactUpdates', () => {
   });
 
   it('does not update one component twice in a batch (#6371)', () => {
-    console.log("这个太难")
-    return
+
     let callbacks = [];
     function emitChange() {
       callbacks.forEach(c => c());
@@ -1230,8 +1229,6 @@ describe('ReactUpdates', () => {
   });
 
   it('does not re-render if state update is null', () => {
-    console.log("setState null")
-    return 
     let container = document.createElement('div');
 
     let instance;

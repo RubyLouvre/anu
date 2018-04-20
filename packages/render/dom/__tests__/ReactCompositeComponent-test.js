@@ -643,6 +643,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('should skip update when rerendering element in container', () => {
+   
         class Parent extends React.Component {
             render() {
                 return <div>{this.props.children}</div>;
