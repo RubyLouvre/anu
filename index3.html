@@ -38,40 +38,40 @@
                   toWarnDev(){}
               };
          };
-         let numMiddleRenders = 0;
-    let numBottomRenders = 0;
+         const container = document.createElement('div');
+    let ops = [];
 
-    class Top extends React.Component {
-      render() {
-        return (
-          <Middle>
-            <Bottom />
-          </Middle>
-        );
-      }
+    function Baz() {
+      ops.push('Baz');
+      return null;
     }
 
-    class Middle extends React.Component {
-      componentDidMount() {
-        this.forceUpdate();
-      }
-
-      render() {
-        numMiddleRenders++;
-        return React.Children.only(this.props.children);
-      }
+    function Bar() {
+      ops.push('Bar');
+      return null;
     }
 
-    class Bottom extends React.Component {
-      render() {
-        numBottomRenders++;
-        return null;
-      }
+    function Foo() {
+      ops.push('Foo');
+      return (
+        <div>
+          <div hidden={true}>
+            <Bar />
+          </div>
+          <Baz />
+        </div>
+      );
     }
 
-    ReactTestUtils.renderIntoDocument(<Top />);
-    expect(numMiddleRenders).toBe(2);
-    expect(numBottomRenders).toBe(1);
+    // Mount
+    ReactDOM.render(<Foo />, container);
+    expect(ops).toEqual(['Foo', 'Bar', 'Baz']);
+    ops = [];
+
+    // Update
+  /* ReactDOM.render(<Foo />, container);
+    expect(ops).toEqual(['Foo', 'Bar', 'Baz']);
+    */
     </script>
 
 

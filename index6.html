@@ -41,33 +41,28 @@
                   }
               };
          };
-         let ops = [];
+         class Parent extends React.Component {
+            render() {
+                return <div>{this.props.children}</div>;
+            }
+        }
 
-         class Foo extends React.Component {
-           state = {step: 0};
-          
-           render() {
-             const memoizedStep = this.state.step;
-             this.setState(baseState => {
-               const baseStep = baseState.step;
-               ops.push(`base: ${baseStep}, memoized: ${memoizedStep}`);
-               return baseStep === 0 ? {step: 1} :null
-             });
-            // ops.push(`render `+this.state.step);
-             return memoizedStep;
-            
-           }
-         }
-     
-       //  const container = document.createElement('div');
-      var instance =  ReactDOM.render(<Foo />, container)
-    //  instance.setState("xxx")
-      /*
-      ).toWarnDev(
-           'Cannot update during an existing state transition',
-         );
-         */
-         expect(ops).toEqual(['base: 0, memoized: 0', 'base: 1, memoized: 1']);
+        let childRenders = 0;
+
+        class Child extends React.Component {
+            render() {
+                childRenders++;
+                return <div />;
+            }
+        }
+
+        const container = document.createElement('div');
+        const child = <Child />;
+
+        ReactDOM.render(<Parent>{child}</Parent>, container);
+        ReactDOM.render(<Parent>{child}</Parent>, container);
+        expect(childRenders).toBe(1);
+        
 </script>
 
 

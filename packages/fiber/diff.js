@@ -4,7 +4,7 @@ import { collectEffects, getContainer } from "./completeWork";
 import { commitEffects } from "./commitWork";
 import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
-import { __push, get, isFn, topNodes,typeNumber, topFibers } from "react-core/util";
+import { __push, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
 import { createInstance } from "./createInstance";
@@ -182,7 +182,7 @@ function fiberContains(p, son) {
         son = son.return;
     }
 }
-
+/*
 function pushChildQueue(fiber, queue) {
     var p = fiber,
         inQueue = false;
@@ -192,7 +192,7 @@ function pushChildQueue(fiber, queue) {
         //判定它的父节点是否已经在列队中
         if (p.tag < 3 && p.type !== Unbatch) {
             if (p._updates || p._hydrating) {
-                // console.log(p.name, p._updates ? "有_updates":"有_hydrating");
+                console.log(p.name, p._updates ? "有_updates" : "有_hydrating");
                 inQueue = true; //在列队中就不会立即触发
                 hackSCU.push(p);
             } else if (p.tag === 2) {
@@ -204,7 +204,7 @@ function pushChildQueue(fiber, queue) {
     inQueue &&
         hackSCU.forEach(function (el) {
             //如果是批量更新，必须强制更新，防止进入SCU
-            if (el._updates ) {
+            if (el._updates) {
                 el._updates.batching = true;
             }
             el.batching = true;
@@ -223,7 +223,51 @@ function pushChildQueue(fiber, queue) {
         queue.push(fiber);
     }
 }
+*/
 
+function pushChildQueue(fiber, queue) {
+    //判定当前节点是否包含已进队的节点
+    let maps = {};
+    for (let i = queue.length, el; (el = queue[--i]);) {
+        //移除列队中比它小的组件
+        if (fiber === el) {
+            queue.splice(i, 1);//已经放进过，去掉
+            continue;
+        } else if (fiberContains(fiber, el)) {
+            //不包含自身
+            queue.splice(i, 1);
+            continue;
+        }
+        maps[el.stateNode.updater.mountOrder] = true;
+    }
+    let enqueue = true, p = fiber, hackSCU = [];
+    while (p.return) {
+        p = p.return;
+        var instance = p.stateNode;
+        if (instance.refs && !instance.__isStateless && p.type !== Unbatch) {
+            hackSCU.push(p);
+            var u = instance.updater;
+            if (maps[u.mountOrder]) {
+                //它是已经在列队的某个组件的孩子
+                enqueue = false;
+                break;
+            }
+        }
+    }
+    hackSCU.forEach(function (el) {
+        //如果是批量更新，必须强制更新，防止进入SCU
+        if (el._updates) {
+            el._updates.batching = true;
+        }
+        el.batching = true;
+    });
+    if (enqueue) {
+        if (fiber._hydrating) {
+            fiber._updates = fiber._updates || {};
+        }
+        queue.push(fiber);
+    }
+}
 //setState的实现
 function updateComponent(instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
@@ -232,7 +276,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     }
     let sn = typeNumber(state);
     let isForced = state === true;
-    state = isForced ? null : sn === 5 || sn === 8? state : null;
+    state = isForced ? null : sn === 5 || sn === 8 ? state : null;
     let parent = Renderer._hydratingParent;
 
 
@@ -242,18 +286,18 @@ function updateComponent(instance, state, callback, immediateUpdate) {
         immediateUpdate = false;
     } else if (parent && fiberContains(parent, fiber)) {
         //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
-        // console.log("setState 2");
+        //  console.log("setState 2");
         microtasks.push(fiber);
     } else if (isBatchingUpdates && !immediateUpdate) {
         // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
-        // console.log("setState 3");
+        //  console.log("setState 3");
         //情况3， 在batchedUpdates中setState，可能放进batchedtasks
         pushChildQueue(fiber, batchedtasks);
     } else {
         //情况4，在componentDidMount/Update中setState，可能放进microtasks
         //情况5，在钩子外setState, 需要立即触发
         immediateUpdate = immediateUpdate || !fiber._hydrating;
-        // console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5));
+        //  console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5), fiber._hydrating);
         pushChildQueue(fiber, microtasks);
     }
 

@@ -30,7 +30,7 @@ export function createInstance(fiber, context) {
                     let a = this.__keep;
                     if (a) {
                         delete this.__keep;
-                        return a;
+                        return a.value;
                     }
                     a = this.renderImpl(this.props, this.context);
                     if (a && a.render) {
@@ -41,7 +41,9 @@ export function createInstance(fiber, context) {
                             instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
-                        this.__keep = a;
+                        this.__keep = {//可能返回一个对象
+                            value: a
+                        }; 
                     }
                     return a;
                 }

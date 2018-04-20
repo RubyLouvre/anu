@@ -118,7 +118,6 @@ export function commitOtherEffects(fiber) {
                 break;
             case HOOK:
                 Renderer._hydratingParent = fiber;
-                // console.log("HOOK",fiber.name);
                 if (updater._isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {

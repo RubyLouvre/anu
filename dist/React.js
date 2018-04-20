@@ -1740,7 +1740,7 @@ function createInstance(fiber, context) {
                     var a = this.__keep;
                     if (a) {
                         delete this.__keep;
-                        return a;
+                        return a.value;
                     }
                     a = this.renderImpl(this.props, this.context);
                     if (a && a.render) {
@@ -1749,7 +1749,9 @@ function createInstance(fiber, context) {
                             instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
-                        this.__keep = a;
+                        this.__keep = {
+                            value: a
+                        };
                     }
                     return a;
                 }
@@ -2512,33 +2514,39 @@ function fiberContains(p, son) {
     }
 }
 function pushChildQueue(fiber, queue) {
-    var p = fiber,
-        inQueue = false;
-    var hackSCU = [];
+    var maps = {};
+    for (var i = queue.length, el; el = queue[--i];) {
+        if (fiber === el) {
+            queue.splice(i, 1);
+            continue;
+        } else if (fiberContains(fiber, el)) {
+            queue.splice(i, 1);
+            continue;
+        }
+        maps[el.stateNode.updater.mountOrder] = true;
+    }
+    var enqueue = true,
+        p = fiber,
+        hackSCU = [];
     while (p.return) {
         p = p.return;
-        if (p.tag < 3 && p.type !== Unbatch) {
-            if (p._updates || p._hydrating) {
-                inQueue = true;
-                hackSCU.push(p);
-            } else if (p.tag === 2) {
-                hackSCU.push(p);
+        var instance = p.stateNode;
+        if (instance.refs && !instance.__isStateless && p.type !== Unbatch) {
+            hackSCU.push(p);
+            var u = instance.updater;
+            if (maps[u.mountOrder]) {
+                enqueue = false;
+                break;
             }
-            break;
         }
     }
-    inQueue && hackSCU.forEach(function (el) {
+    hackSCU.forEach(function (el) {
         if (el._updates) {
             el._updates.batching = true;
         }
         el.batching = true;
     });
-    for (var i = queue.length, el; el = queue[--i];) {
-        if (fiberContains(fiber, el)) {
-            queue.splice(i, 1);
-        }
-    }
-    if (!inQueue) {
+    if (enqueue) {
         if (fiber._hydrating) {
             fiber._updates = fiber._updates || {};
         }
