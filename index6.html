@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -45,12 +45,7 @@
 
          class Foo extends React.Component {
            state = {step: 0};
-           componentDidMount(){
-              ops.push("mount")
-           }
-           componentDidUpdate(){
-               ops.push("update")
-           }
+          
            render() {
              const memoizedStep = this.state.step;
              this.setState(baseState => {
@@ -58,13 +53,15 @@
                ops.push(`base: ${baseStep}, memoized: ${memoizedStep}`);
                return baseStep === 0 ? {step: 1} :null
              });
-             ops.push(`render `+this.state.step);
+            // ops.push(`render `+this.state.step);
              return memoizedStep;
+            
            }
          }
      
        //  const container = document.createElement('div');
-        ReactDOM.render(<Foo />, container)
+      var instance =  ReactDOM.render(<Foo />, container)
+    //  instance.setState("xxx")
       /*
       ).toWarnDev(
            'Cannot update during an existing state transition',

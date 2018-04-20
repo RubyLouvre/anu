@@ -2,14 +2,14 @@ import { PLACE } from "./effectTag";
 import { __push } from "react-core/util";
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
- * 如果Fiber存在shouldUpdateFalse＝true属性，那么只收集它的元素虚拟DOM，并且它只有
+ * 如果Fiber存在updateFail＝true属性，那么只收集它的元素虚拟DOM，并且它只有
  * Place特效
  * 
  * @param {Fiber} fiber 
  * @param {Object} insertHelper 
- * @param {Boolean} shouldUpdateFalse 
+ * @param {Boolean} updateFail 
  */
-export function collectEffects(fiber, shouldUpdateFalse, isTop) {
+export function collectEffects(fiber, updateFail, isTop) {
     if(!fiber){
         return [];
     }
@@ -33,7 +33,7 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
         } else {
             child.insertPoint = child.parent.insertPoint;
         }
-        if (shouldUpdateFalse || child.shouldUpdateFalse) {
+        if (updateFail || child.updateFail) {
            
             if (isHost) {
                 if(!child.disposed){
@@ -42,14 +42,14 @@ export function collectEffects(fiber, shouldUpdateFalse, isTop) {
                 }
             } else {
                 //只有组件虚拟DOM才有钩子
-                delete child.shouldUpdateFalse;
+                delete child.updateFail;
                 __push.apply(effects, collectEffects(child, true));
             }
         } else {
             __push.apply(effects, collectEffects(child));
            
         }
-        if (child.effectTag) {//shouldUpdateFalse也会执行REF与CALLBACK
+        if (child.effectTag) {//updateFail也会执行REF与CALLBACK
             effects.push(child);
         }
     }

@@ -14,7 +14,7 @@ import { guardCallback } from "./unwindWork";
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
  * 使用再路过此节点时，再弹出栈
- * 它需要对shouldUpdateFalse的情况进行优化
+ * 它需要对updateFail的情况进行优化
  *
  * @param {Fiber} fiber
  * @param {Fiber} topWork
@@ -26,13 +26,13 @@ export function updateEffects(fiber, topWork) {
         updateClassComponent(fiber); // unshift parent
     }
 
-    if(fiber.batching){
+    if (fiber.batching) {
 
-        delete fiber.shouldUpdateFalse;
+        delete fiber.updateFail;
         delete fiber.batching;
     }
 
-    if (!fiber.shouldUpdateFalse && !fiber.disposed) {
+    if (!fiber.updateFail && !fiber.disposed) {
         if (fiber.child) {
             return fiber.child;
         }
@@ -94,7 +94,7 @@ function mergeStates(fiber, nextProps, keep) {
     }
 
     let nextState = extend({}, state); // 每次都返回新的state
-    // let suppress = true;
+    let fail = true;
     for (let i = 0; i < n; i++) {
         let pending = pendings[i];
         if (pending) {
@@ -106,13 +106,15 @@ function mergeStates(fiber, nextProps, keep) {
                     pending = a;
                 }
             }
-            //	suppress = false;
+            fail = false;
             extend(nextState, pending);
         }
     }
     if (keep) {
         pendings.length = 0;
-        pendings.push(nextState);
+        if (!fail) {
+            pendings.push(nextState);
+        }
     } else {
         delete fiber.pendingStates;
     }
@@ -126,55 +128,53 @@ export function updateClassComponent(fiber) {
         return;
     }
     let { type, stateNode: instance, isForced, props, stage } = fiber;
-   
-
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
     let nextContext = getMaskedContext(type.contextTypes, instance),
-        context;
-
+        context, updateFail = false;
     if (instance == null) {
-        // 初始化
-        stage = "init";
+        stage = "mount";
         instance = fiber.stateNode = createInstance(fiber, nextContext);
         instance.updater.enqueueSetState = Renderer.updateComponent;
         instance.props = props;
-    } else {
-        let isSetState = isForced === true || fiber.pendingStates || fiber._updates;
-        if (isSetState) {
-            stage = "update";
-            let u = fiber._updates;
-            if (u) {
-                
-                isForced = fiber.isForced || u.isForced;
-                fiber.batching = u.batching;
-                fiber.pendingStates = u.pendingStates;
-                let hasCb = (fiber.pendingCbs = u.pendingCbs);
-                if (hasCb) {
-                    fiber.effectTag *= CALLBACK;
-                }
-                delete fiber._updates;
-            }
-            delete fiber.isForced;
-        } else {
-            stage = "receive";
-        }
     }
     instance._reactInternalFiber = fiber;
-    if (instance.__isStateless) {
-        stage = "noop";
-    }
     let updater = instance.updater;
-    while (stage) {
-        stage = stageIteration[stage](fiber, props, nextContext, instance, isForced);
-        fiber.willing = false;
+    if (!instance.__isStateless) { //必须带生命周期
+        if(updater._isMounted()){ //如果是更新阶段
+            let hasSetState = isForced === true || fiber.pendingStates || fiber._updates;
+            if (hasSetState) {
+                stage = "update";
+                let u = fiber._updates;
+                if (u) {
+                    isForced = fiber.isForced || u.isForced;
+                    fiber.batching = u.batching;
+                    fiber.pendingStates = u.pendingStates;
+                    let hasCb = (fiber.pendingCbs = u.pendingCbs);
+                    if (hasCb) {
+                        fiber.effectTag *= CALLBACK;
+                    }
+                    delete fiber._updates;
+                }
+                delete fiber.isForced;
+            } else {
+                stage = "receive";
+            }
+        }
+        let istage = stage;
+        while (istage) {
+            istage = stageIteration[istage](fiber, props, nextContext, instance, isForced);
+            fiber.willing = false;
+        }
+        let ps = fiber.pendingStates;
+        if (ps && ps.length) {
+            instance.state = mergeStates(fiber, props);
+        } else {
+            updateFail = stage == "update" && !isForced;
+        }
+        delete fiber.isForced;
     }
-    let ps = fiber.pendingStates;
-    if (ps && ps.length) {
-        instance.state = mergeStates(fiber, props);
-    }
-    delete fiber.isForced;
-    instance.props = props; // getChildContext可能依赖于props与state
+    instance.props = props; //设置新props
     if (instance.getChildContext) {
         try {
             context = instance.getChildContext();
@@ -184,20 +184,16 @@ export function updateClassComponent(fiber) {
         }
         contextStack.unshift(context);
     }
-    instance.context = nextContext;
-    if (fiber.shouldUpdateFalse) {
+    instance.context = nextContext;//设置新context
+    if (fiber.updateFail || updateFail) {
         fiber._hydrating = false;
         return;
     }
-
     fiber.effectTag *= HOOK;
     fiber._hydrating = true;
-
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
-    updater.rendering = true
     let rendered = guardCallback(instance, "render", []);
-    updater.rendering = false
     if (ownerStack[0] === instance) {
         ownerStack.shift();
     }
@@ -209,8 +205,7 @@ export function updateClassComponent(fiber) {
     diffChildren(fiber, rendered);
 }
 const stageIteration = {
-    noop: noop,
-    init(fiber, nextProps, nextContext, instance) {
+    mount(fiber, nextProps, nextContext, instance) {
         getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
         fiber.willing = true;
         callUnsafeHook(instance, "componentWillMount", []);
@@ -235,7 +230,7 @@ const stageIteration = {
     },
     update(fiber, nextProps, nextContext, instance, isForced) {
         let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
-        delete fiber.shouldUpdateFalse;
+        delete fiber.updateFail;
         //早期React的设计失误, SCU/CWU/CDU中setState会易死循环
         fiber._hydrating = true;
         if (!isForced && !guardCallback(instance, "shouldComponentUpdate", args)) {
@@ -278,7 +273,7 @@ function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
 }
 
 function cloneChildren(fiber) {
-    fiber.shouldUpdateFalse = true;
+    fiber.updateFail = true;
     const prev = fiber.alternate;
     if (prev && prev.child) {
         let pc = prev._children;

@@ -90,11 +90,12 @@
 
         const div = document.createElement('div');
         ReactDOM.render(<Parent cntxt="noise" />, div);
-        expect(div.children[0].innerHTML).toBe('noise');
+       expect(div.children[0].innerHTML).toBe('noise');
         div.children[0].innerHTML = 'aliens';
         div.children[0].id = 'aliens';
         expect(div.children[0].innerHTML).toBe('aliens');
         expect(div.children[0].id).toBe('aliens');
+        console.log("更换context")
         ReactDOM.render(<Parent cntxt="bar" />, div);
         expect(div.children[0].innerHTML).toBe('bar');
         expect(div.children[0].id).toBe('aliens');

@@ -35,9 +35,13 @@
                   }
               };
          };
-       
-  //  const container = document.createElement('div');
-    ReactDOM.render(<p>xxx</p>, container);
+        
+    ReactDOM.render(<span>a</span>, container);
+    ReactDOM.unstable_batchedUpdates(function() {
+      ReactDOM.unmountComponentAtNode(container);
+      ReactDOM.render(<span>b</span>, container);
+    });
+    expect(container.textContent).toBe('b');
    
     </script>
 

@@ -21,10 +21,10 @@ export function pushError(fiber, hook, error) {
     }
 }
 
-export function guardCallback(host, hook, args, four){
+export function guardCallback(host, hook, args, four) {
     try {
         let fn = host[hook];
-        if(hook == "componentWillUnmount"){
+        if (hook == "componentWillUnmount") {
             host[hook] = noop;
         }
         if (fn) {
@@ -63,31 +63,25 @@ function disableEffect(fiber) {
 function findCatchComponent(topFiber, names) {
     let instance,
         name,
-        fiber = topFiber,
-        catchIt;
-    if(!topFiber){
+        fiber = topFiber;
+    if (!topFiber) {
         return;
     }
-    do {
+    while (fiber.return) {
         name = fiber.name;
-        if (!fiber.return) {
-            if (catchIt) {
-                return catchIt;
-            }
-            break;
-        } else if (fiber.tag < 4) {
-            // 1,2
+        if (fiber.tag < 4) {
             names.push(name);
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch) {
                 if (fiber._isDoctor) {
                     disableEffect(fiber);
-                } else if (!catchIt && fiber !== topFiber) {
-                    catchIt = fiber;
+                } else if ( fiber !== topFiber) {
+                    return fiber;
                 }
             }
         } else if (fiber.tag === 5) {
             names.push(name);
         }
-    } while ((fiber = fiber.return));
+        fiber = fiber.return;
+    }
 }

@@ -38,30 +38,42 @@
                   toWarnDev(){}
               };
          };
-         class Parent extends React.Component {
-            render() {
-                return <div>{this.props.children}</div>;
-            }
-        }
+         let numMiddleRenders = 0;
+    let numBottomRenders = 0;
 
-        let childRenders = 0;
+    class Top extends React.Component {
+      render() {
+        return (
+          <Middle>
+            <Bottom />
+          </Middle>
+        );
+      }
+    }
 
-        class Child extends React.Component {
-            render() {
-                childRenders++;
-                return <div />;
-            }
-        }
+    class Middle extends React.Component {
+      componentDidMount() {
+        this.forceUpdate();
+      }
 
-        const container = document.createElement('div');
-        const child = <Child />;
+      render() {
+        numMiddleRenders++;
+        return React.Children.only(this.props.children);
+      }
+    }
 
-        ReactDOM.render(<Parent>{child}</Parent>, container);
-        ReactDOM.render(<Parent>{child}</Parent>, container);
-        expect(childRenders).toBe(1);
-    // Check deduplication; (no additional warnings are expected)
-   // ReactDOM.render(<Test />, container);
+    class Bottom extends React.Component {
+      render() {
+        numBottomRenders++;
+        return null;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Top />);
+    expect(numMiddleRenders).toBe(2);
+    expect(numBottomRenders).toBe(1);
     </script>
 
 
 </html>
+
