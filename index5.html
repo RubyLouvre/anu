@@ -43,16 +43,21 @@ var expect = function(a) {
 		},
 	};
 };
-const container = document.createElement('div');
-document.body.appendChild(container);
-const portal = document.createElement('div');
+
+//const container = document.createElement('div');
+//document.body.appendChild(container);
+const portal1 = document.createElement('div');
+const portal2 = document.createElement('div');
 
 class Parent extends React.Component {
   render() {
-    return <Middle />;
+    return null;
   }
   getChildContext() {
     return {value: this.props.value};
+  }
+  componentDidMount() {
+    renderSubtreeIntoContainer(this, <Middle />, portal1);
   }
   static childContextTypes = {
     value: PropTypes.string.isRequired,
@@ -64,7 +69,7 @@ class Middle extends React.Component {
     return null;
   }
   componentDidMount() {
-    renderSubtreeIntoContainer(this, <Child />, portal);
+    renderSubtreeIntoContainer(this, <Child />, portal2);
   }
 }
 
@@ -78,7 +83,7 @@ class Child extends React.Component {
 }
 
 ReactDOM.render(<Parent value="foo" />, container);
-expect(portal.textContent).toBe('foo');
+expect(portal2.textContent).toBe('foo');
 
    </script>
 </body>

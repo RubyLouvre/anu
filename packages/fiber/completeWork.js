@@ -60,14 +60,3 @@ export function collectEffects(fiber, updateFail, isTop) {
 
     return effects;
 }
-
-export function getContainer(p) {
-    if (p.parent) {
-        return p.parent;
-    }
-    while ((p = p.return)) {
-        if (p.tag === 5) {
-            return p.stateNode;
-        }
-    }
-}

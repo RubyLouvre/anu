@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./dist/React.js"></script>
-   <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>
+ <!--  <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -25,6 +25,8 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
+          var PropTypes = React.PropTypes
+
           var expect = function(a) {
               return {
                   toBe: function(b) {
@@ -35,29 +37,115 @@
                   }
               };
          };
-        
-         let node;
-         function aa(c){
-               console.log(c)
-               node = c
-           }
-         const Component = props => (
-           <div ref={function aa(c){
-               console.log(c)
-               node = c
-           }}>
-             <div key={props.swap ? 'banana' : 'apple'} >1</div>
-             <div key={props.swap ? 'apple' : 'banana'} >2</div>
-           </div>
+         let contextChanges = 0;
+         let propChanges = 0;
+ 
+         class GrandChild extends React.Component {
+             static contextTypes = {
+                 foo: PropTypes.string.isRequired,
+             };
+ 
+             UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
+                 expect('foo' in nextContext).toBe(true);
+ 
+                 if (nextProps !== this.props) {
+                     propChanges++;
+                 }
+ 
+                 if (nextContext !== this.context) {
+                     contextChanges++;
+                 }
+             }
+ 
+             render() {
+                 return <span className="grand-child">{this.props.children}</span>;
+             }
+         }
+ 
+         class ChildWithContext extends React.Component {
+             static contextTypes = {
+                 foo: PropTypes.string.isRequired,
+             };
+ 
+             UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
+                 expect('foo' in nextContext).toBe(true);
+ 
+                 if (nextProps !== this.props) {
+                     propChanges++;
+                 }
+ 
+                 if (nextContext !== this.context) {
+                     contextChanges++;
+                 }
+             }
+ 
+             render() {
+                 return <div className="child-with">{this.props.children}</div>;
+             }
+         }
+ 
+         class ChildWithoutContext extends React.Component {
+             UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
+                 expect('foo' in nextContext).toBe(false);
+ 
+                 if (nextProps !== this.props) {
+                     propChanges++;
+                 }
+ 
+                 if (nextContext !== this.context) {
+                     contextChanges++;
+                 }
+             }
+ 
+             render() {
+                 return <div className="child-without">{this.props.children}</div>;
+             }
+         }
+ 
+         class Parent extends React.Component {
+             static childContextTypes = {
+                 foo: PropTypes.string,
+             };
+ 
+             state = {
+                 foo: 'abc',
+             };
+ 
+             getChildContext() {
+                 return {
+                     foo: this.state.foo,
+                 };
+             }
+ 
+             render() {
+                 return <div className="parent">{this.props.children}</div>;
+             }
+         }
+ 
+         const div = document.createElement('div');
+ 
+         let parentInstance = null;
+         ReactDOM.render(
+             <Parent ref={inst => (parentInstance = inst)}>
+                 <ChildWithoutContext>
+                     A1
+           <GrandChild>A2</GrandChild>
+                 </ChildWithoutContext>
+ 
+                 <ChildWithContext>
+                     B1
+           <GrandChild>B2</GrandChild>
+                 </ChildWithContext>
+             </Parent>,
+             div,
          );
-     
-       //  const container = document.createElement('div');
-         ReactDOM.render(<Component />, container);
-         const origChildren = Array.from(node.childNodes);
-         ReactDOM.render(<Component swap={true} />, container);
-         const newChildren = Array.from(node.childNodes);
-         expect(origChildren[0]).toBe(newChildren[1]);
-         expect(origChildren[1]).toBe(newChildren[0]);
+ 
+         parentInstance.setState({
+             foo: 'def',
+         });
+ 
+         expect(propChanges).toBe(0);
+         expect(contextChanges).toBe(3); // ChildWithContext, GrandChild x 2
    
     </script>
 

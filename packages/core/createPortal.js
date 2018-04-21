@@ -1,5 +1,4 @@
 import { createElement } from "./createElement";
-import { Renderer } from "./createRenderer";
 
 export function AnuPortal(props){
     return props.children;

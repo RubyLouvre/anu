@@ -1,9 +1,9 @@
 import { diffProps } from './props';
 import { document, NAMESPACE, contains } from './browser';
-import { get, emptyObject, topNodes, topFibers, toWarnDev } from 'react-core/util';
+import { get, extend, emptyObject, topNodes, topFibers, toWarnDev } from 'react-core/util';
 import { Renderer, createRenderer } from 'react-core/createRenderer';
 import { render, createContainer } from 'react-fiber/diff';
-import { contextStack } from 'react-fiber/util';
+//import { contextStack } from 'react-fiber/util';
 
 export function createElement(vnode) {
 	let p = vnode.return;
@@ -29,8 +29,9 @@ export function createElement(vnode) {
 
 		default:
 			do {
-				if (p.tag === 5) {
-					ns = p.stateNode.namespaceURI;
+				var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+				if (s) {
+					ns = s.namespaceURI;
 					if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
 						ns = '';
 					}
@@ -194,24 +195,25 @@ export let DOMRenderer = createRenderer({
 	emptyElement(fiber) {
 		emptyElement(fiber.stateNode);
 	},
-	unstable_renderSubtreeIntoContainer(instance, vnode, container, callback) {
-        var el = get(instance), c
-        while(el.return){
-            var inst = el.stateNode
-            if(inst && inst.getChildContext){
-                c = inst.getChildContext();
-                contextStack.unshift(c);
-                break
-            }
-            el = el.return
-        }
-		return Renderer.render(vnode, container, function() {
-			callback && callback.call(this);
-			var i = contextStack.indexOf(c);
-			if (i !== -1) {
-				contextStack.splice(i, 1);
+	unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
+		let container = createContainer(root),
+			context = container.contextStack[0],
+			fiber = get(instance),
+			getTopContext = true,
+			childContext;
+		while (fiber.return) {
+			var inst = fiber.stateNode;
+			if (inst && inst.getChildContext) {
+				childContext = inst.getChildContext();
+				extend(context, childContext);
+				break;
 			}
-		});
+			fiber = fiber.return;
+		}
+		if (!childContext && fiber.contextStack) {
+			extend(context, fiber.contextStack[0]);
+		}
+		return Renderer.render(vnode, root, callback);
 	},
 
 	// [Top API] ReactDOM.unmountComponentAtNode

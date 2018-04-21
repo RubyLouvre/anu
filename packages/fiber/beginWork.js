@@ -3,8 +3,6 @@ import { fiberizeChildren } from 'react-core/createElement';
 import { AnuPortal } from 'react-core/createPortal';
 
 import { Renderer } from 'react-core/createRenderer';
-
-import { contextStack, ownerStack, containerStack, hasContextChanged } from './util';
 import { createInstance } from './createInstance';
 import { Fiber } from './Fiber';
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from './effectTag';
@@ -19,11 +17,11 @@ import { guardCallback } from './unwindWork';
  * @param {Fiber} fiber
  * @param {Fiber} topWork
  */
-export function updateEffects(fiber, topWork) {
+export function updateEffects(fiber, topWork, info) {
 	if (fiber.tag > 3) {
-		updateHostComponent(fiber); // unshift context
+		updateHostComponent(fiber, info); // unshift context
 	} else {
-		updateClassComponent(fiber); // unshift parent
+		updateClassComponent(fiber, info); // unshift parent
 	}
 
 	if (fiber.batching) {
@@ -40,10 +38,10 @@ export function updateEffects(fiber, topWork) {
 	let f = fiber;
 	while (f) {
 		if (f.stateNode && f.stateNode.getChildContext) {
-			contextStack.shift(); // shift context
+			info.contextStack.shift(); // shift context
 		}
-		if (f.tag === 5) {
-			containerStack.shift(); // shift parent
+		if (f.tag === 5 || f.type == AnuPortal) {
+			info.containerStack.shift(); // shift parent
 		}
 		if (f === topWork) {
 			break;
@@ -55,20 +53,20 @@ export function updateEffects(fiber, topWork) {
 	}
 }
 
-function updateHostComponent(fiber) {
+function updateHostComponent(fiber, info) {
+	const { props, tag, root, alternate: prev } = fiber;
 	if (!fiber.stateNode) {
+		fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : info.containerStack[0];
 		try {
 			fiber.stateNode = Renderer.createElement(fiber);
 		} catch (e) {
 			throw e;
 		}
 	}
-	fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
-	const { props, tag, root, alternate: prev } = fiber;
 	const children = props && props.children;
 	if (tag === 5) {
 		// 元素节点
-		containerStack.unshift(fiber.stateNode);
+		info.containerStack.unshift(fiber.stateNode);
 		if (!root) {
 			fiber.effectTag *= ATTR;
 		}
@@ -121,15 +119,15 @@ function mergeStates(fiber, nextProps, keep) {
 	return nextState;
 }
 
-export function updateClassComponent(fiber) {
+export function updateClassComponent(fiber, info) {
 	if (fiber.disposed) {
 		//console.log("有这种情况吗");
 		return;
 	}
 	let { type, stateNode: instance, isForced, props, stage } = fiber;
 	// 为了让它在出错时collectEffects()还可以用，因此必须放在前面
-	fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : containerStack[0];
-	let nextContext = getMaskedContext(type.contextTypes, instance),
+    let {contextStack, containerStack} = info;
+	let nextContext = getMaskedContext(type.contextTypes, instance, contextStack),
 		context,
 		updateFail = false;
 	if (instance == null) {
@@ -137,6 +135,12 @@ export function updateClassComponent(fiber) {
 		instance = fiber.stateNode = createInstance(fiber, nextContext);
 		instance.updater.enqueueSetState = Renderer.updateComponent;
 		instance.props = props;
+		if (type === AnuPortal) {
+			fiber.parent = props.parent;
+			containerStack.unshift(fiber.parent);
+		} else {
+			fiber.parent = containerStack[0];
+		}
 	}
 	instance._reactInternalFiber = fiber;
 	let updater = instance.updater;
@@ -149,7 +153,7 @@ export function updateClassComponent(fiber) {
 				stage = 'update';
 				let u = fiber._updates;
 				if (u) {
-					isForced = fiber.isForced || u.isForced;
+					fiber.isForced = isForced || u.isForced;
 					fiber.batching = u.batching;
 					fiber.pendingStates = u.pendingStates;
 					let hasCb = (fiber.pendingCbs = u.pendingCbs);
@@ -158,21 +162,20 @@ export function updateClassComponent(fiber) {
 					}
 					delete fiber._updates;
 				}
-				delete fiber.isForced;
 			} else {
 				stage = 'receive';
 			}
 		}
 		let istage = stage;
 		while (istage) {
-			istage = stageIteration[istage](fiber, props, nextContext, instance, isForced);
+			istage = stageIteration[istage](fiber, props, nextContext, instance, contextStack);
 			fiber.willing = false;
 		}
 		let ps = fiber.pendingStates;
 		if (ps && ps.length) {
 			instance.state = mergeStates(fiber, props);
 		} else {
-			updateFail = stage == 'update' && !isForced;
+			updateFail = stage == 'update' && !fiber.isForced;
 		}
 		delete fiber.isForced;
 	}
@@ -196,9 +199,6 @@ export function updateClassComponent(fiber) {
 	let lastOwn = Renderer.currentOwner;
 	Renderer.currentOwner = instance;
 	let rendered = guardCallback(instance, 'render', []);
-	if (ownerStack[0] === instance) {
-		ownerStack.shift();
-	}
 	if (updater._hasError) {
 		rendered = [];
 	}
@@ -212,12 +212,12 @@ const stageIteration = {
 		fiber.willing = true;
 		callUnsafeHook(instance, 'componentWillMount', []);
 	},
-	receive(fiber, nextProps, nextContext, instance) {
+	receive(fiber, nextProps, nextContext, instance, contextStack) {
 		let updater = instance.updater;
 		updater.lastProps = instance.props;
 		updater.lastState = instance.state;
 		let propsChange = updater.lastProps !== nextProps;
-		let willReceive = propsChange || (hasContextChanged() || instance.context !== nextContext);
+		let willReceive = propsChange || contextStack.length > 1 || instance.context !== nextContext;
 		if (willReceive) {
 			fiber.willing = true;
 			callUnsafeHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
@@ -230,12 +230,12 @@ const stageIteration = {
 		}
 		return 'update';
 	},
-	update(fiber, nextProps, nextContext, instance, isForced) {
+	update(fiber, nextProps, nextContext, instance) {
 		let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
 		delete fiber.updateFail;
 		//早期React的设计失误, SCU/CWU/CDU中setState会易死循环
 		fiber._hydrating = true;
-		if (!isForced && !guardCallback(instance, 'shouldComponentUpdate', args)) {
+		if (!fiber.isForced && !guardCallback(instance, 'shouldComponentUpdate', args)) {
 			cloneChildren(fiber);
 		} else {
 			guardCallback(instance, 'getSnapshotBeforeUpdate', args);
@@ -287,12 +287,9 @@ function cloneChildren(fiber) {
 			cc[i] = a;
 		}
 	}
-	if (ownerStack[0] === fiber.stateNode) {
-		ownerStack.shift();
-	}
 }
 
-function getMaskedContext(contextTypes, instance) {
+function getMaskedContext(contextTypes, instance, contextStack) {
 	if (instance && !contextTypes) {
 		return instance.context;
 	}
@@ -402,3 +399,4 @@ function diffChildren(parentFiber, children) {
 		delete prevFiber.sibling;
 	}
 }
+
