@@ -847,7 +847,7 @@ function updateHostComponent(fiber, info) {
 	    root = fiber.root,
 	    prev = fiber.alternate;
 	if (!fiber.stateNode) {
-		fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : info.containerStack[0];
+		fiber.parent = info.containerStack[0];
 		try {
 			fiber.stateNode = Renderer.createElement(fiber);
 		} catch (e) {
@@ -924,12 +924,12 @@ function updateClassComponent(fiber, info) {
 		instance = fiber.stateNode = createInstance(fiber, nextContext);
 		instance.updater.enqueueSetState = Renderer.updateComponent;
 		instance.props = props;
-		if (type === AnuPortal) {
-			fiber.parent = props.parent;
-			containerStack.unshift(fiber.parent);
-		} else {
-			fiber.parent = containerStack[0];
-		}
+	}
+	if (type === AnuPortal) {
+		fiber.parent = props.parent;
+		containerStack.unshift(fiber.parent);
+	} else {
+		fiber.parent = containerStack[0];
 	}
 	instance._reactInternalFiber = fiber;
 	var updater = instance.updater;
@@ -1102,30 +1102,12 @@ function diffChildren(parentFiber, children) {
 		}
 		detachFiber(oldFiber, effects);
 	}
-	if (parentFiber.tag === 5) {
-		var firstChild = parentFiber.stateNode.firstChild;
-		if (firstChild) {
-			for (var _i in oldFibers) {
-				var child = oldFibers[_i];
-				do {
-					if (child._return) {
-						break;
-					}
-					if (child.tag > 4) {
-						child.stateNode = firstChild;
-						break;
-					}
-				} while (child = child.child);
-				break;
-			}
-		}
-	}
 	var prevFiber = void 0,
 	    index = 0,
 	    newEffects = [];
-	for (var _i2 in newFibers) {
-		var _newFiber = newFibers[_i2];
-		var _oldFiber = matchFibers[_i2];
+	for (var _i in newFibers) {
+		var _newFiber = newFibers[_i];
+		var _oldFiber = matchFibers[_i];
 		var alternate = null;
 		if (_oldFiber) {
 			if (isSameNode(_oldFiber, _newFiber)) {
@@ -1147,7 +1129,7 @@ function diffChildren(parentFiber, children) {
 		} else {
 			_newFiber = new Fiber(_newFiber);
 		}
-		newFibers[_i2] = _newFiber;
+		newFibers[_i] = _newFiber;
 		if (_newFiber.tag > 3) {
 			_newFiber.effectTag *= PLACE;
 		}
@@ -1160,8 +1142,6 @@ function diffChildren(parentFiber, children) {
 			prevFiber.sibling = _newFiber;
 		} else {
 			parentFiber.child = _newFiber;
-			if (_newFiber.tag > 3 && _newFiber.alternate) {
-			}
 		}
 		prevFiber = _newFiber;
 	}

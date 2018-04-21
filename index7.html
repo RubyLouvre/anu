@@ -23,6 +23,8 @@
   <script type='text/babel'>
         
         var container = document.getElementById('root');
+        var PropTypes = React.PropTypes
+
           var div = container;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
@@ -37,26 +39,63 @@
                   }
               };
          };
-         function ref(a){
-             console.log(a)
-         }
-         function ref2(a){
-             console.log(a)
-         }
-       /*  class A extends React.Component{
-             render(){
-                return <p ref={this.props.a}>xxxx</p>
+         let parentInstance = null;
+         let childInstance = null;
+ 
+         class Parent extends React.Component {
+             static childContextTypes = {
+                 foo: PropTypes.string,
+                 flag: PropTypes.bool,
+             };
+ 
+             state = {
+                 flag: false,
+             };
+ 
+             getChildContext() {
+                 return {
+                     foo: 'bar',
+                     flag: this.state.flag,
+                 };
              }
-         }*/
-         function A(props){
-            return <div><p ref={props.a}>xxxx</p><strong ref={props.a}>xxxx</strong></div>
+ 
+             render() {
+                 return React.Children.only(this.props.children);
+             }
          }
-
-       
-        const div = document.createElement('div');
-        ReactDOM.render(<A a={ref} />, div);
-    
-        ReactDOM.render(<A a={ref}/>, div);
+ 
+         class Middle extends React.Component {
+             render() {
+                 return this.props.children;
+             }
+         }
+ 
+         class Child extends React.Component {
+             static contextTypes = {
+                 foo: PropTypes.string,
+                 flag: PropTypes.bool,
+             };
+ 
+             render() {
+                 childInstance = this;
+                 return <span>Child</span>;
+             }
+         }
+ 
+         parentInstance = ReactTestUtils.renderIntoDocument(
+             <Parent>
+                 <Middle>
+                     <Child />
+                 </Middle>
+             </Parent>,
+         );
+ 
+         expect(parentInstance.state.flag).toBe(false);
+         expect(childInstance.context).toEqual({ foo: 'bar', flag: false });
+ 
+         parentInstance.setState({ flag: true });
+         expect(parentInstance.state.flag).toBe(true);
+         expect(childInstance.context).toEqual({ foo: 'bar', flag: true });
        
 
     </script>

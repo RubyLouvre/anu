@@ -44,46 +44,49 @@ var expect = function(a) {
 	};
 };
 
-//const container = document.createElement('div');
-//document.body.appendChild(container);
-const portal1 = document.createElement('div');
-const portal2 = document.createElement('div');
+const portalContainer = document.createElement('div');
 
-class Parent extends React.Component {
-  render() {
-    return null;
-  }
-  getChildContext() {
-    return {value: this.props.value};
-  }
-  componentDidMount() {
-    renderSubtreeIntoContainer(this, <Middle />, portal1);
-  }
-  static childContextTypes = {
-    value: PropTypes.string.isRequired,
-  };
-}
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(<div>portal:1</div>, portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('<div>portal:1</div>');
+expect(container.innerHTML).toBe('<div></div>');
 
-class Middle extends React.Component {
-  render() {
-    return null;
-  }
-  componentDidMount() {
-    renderSubtreeIntoContainer(this, <Child />, portal2);
-  }
-}
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(<div>portal:2</div>, portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('<div>portal:2</div>');
+expect(container.innerHTML).toBe('<div></div>');
 
-class Child extends React.Component {
-  static contextTypes = {
-    value: PropTypes.string.isRequired,
-  };
-  render() {
-    return <div>{this.context.value}</div>;
-  }
-}
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(<p>portal:3</p>, portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('<p>portal:3</p>');
+expect(container.innerHTML).toBe('<div></div>');
 
-ReactDOM.render(<Parent value="foo" />, container);
-expect(portal2.textContent).toBe('foo');
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(['Hi', 'Bye'], portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('HiBye');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(['Bye', 'Hi'], portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('ByeHi');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(
+  <div>{ReactDOM.createPortal(null, portalContainer)}</div>,
+  container,
+);
+expect(portalContainer.innerHTML).toBe('');
+expect(container.innerHTML).toBe('<div></div>');
 
    </script>
 </body>

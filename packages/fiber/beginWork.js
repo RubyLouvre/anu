@@ -56,7 +56,7 @@ export function updateEffects(fiber, topWork, info) {
 function updateHostComponent(fiber, info) {
 	const { props, tag, root, alternate: prev } = fiber;
 	if (!fiber.stateNode) {
-		fiber.parent = fiber.type === AnuPortal ? fiber.props.parent : info.containerStack[0];
+		fiber.parent = info.containerStack[0];
 		try {
 			fiber.stateNode = Renderer.createElement(fiber);
 		} catch (e) {
@@ -121,7 +121,7 @@ function mergeStates(fiber, nextProps, keep) {
 
 export function updateClassComponent(fiber, info) {
 	if (fiber.disposed) {
-		//console.log("有这种情况吗");
+		//console.warn("有这种情况吗");
 		return;
 	}
 	let { type, stateNode: instance, isForced, props, stage } = fiber;
@@ -135,12 +135,13 @@ export function updateClassComponent(fiber, info) {
 		instance = fiber.stateNode = createInstance(fiber, nextContext);
 		instance.updater.enqueueSetState = Renderer.updateComponent;
 		instance.props = props;
-		if (type === AnuPortal) {
-			fiber.parent = props.parent;
-			containerStack.unshift(fiber.parent);
-		} else {
-			fiber.parent = containerStack[0];
-		}
+		
+	}
+	if (type === AnuPortal) {
+		fiber.parent = props.parent;
+		containerStack.unshift(fiber.parent);
+	} else {
+		fiber.parent = containerStack[0];
 	}
 	instance._reactInternalFiber = fiber;
 	let updater = instance.updater;
@@ -203,7 +204,6 @@ export function updateClassComponent(fiber, info) {
 		rendered = [];
 	}
 	Renderer.currentOwner = lastOwn;
-
 	diffChildren(fiber, rendered);
 }
 const stageIteration = {
@@ -328,6 +328,7 @@ function diffChildren(parentFiber, children) {
 		}
 		detachFiber(oldFiber, effects);
 	}
+	/*
 	if (parentFiber.tag === 5) {
 		var firstChild = parentFiber.stateNode.firstChild;
 		if (firstChild) {
@@ -347,7 +348,7 @@ function diffChildren(parentFiber, children) {
 			}
 		}
 	}
-
+*/
 	let prevFiber,
 		index = 0,
 		newEffects = [];
@@ -389,9 +390,6 @@ function diffChildren(parentFiber, children) {
 			prevFiber.sibling = newFiber;
 		} else {
 			parentFiber.child = newFiber;
-			if (newFiber.tag > 3 && newFiber.alternate) {
-				// newFiber.stateNode = newFiber.alternate.parent.firstChild;
-			}
 		}
 		prevFiber = newFiber;
 	}

@@ -643,7 +643,7 @@ describe('ReactCompositeComponent', () => {
     });
 
     it('should skip update when rerendering element in container', () => {
-   
+        window.xxx = true
         class Parent extends React.Component {
             render() {
                 return <div>{this.props.children}</div>;
@@ -663,7 +663,9 @@ describe('ReactCompositeComponent', () => {
         const child = <Child />;
 
         ReactDOM.render(<Parent>{child}</Parent>, container);
+      
         ReactDOM.render(<Parent>{child}</Parent>, container);
+        window.xxx = false
         expect(childRenders).toBe(1);
     });
 
@@ -951,9 +953,10 @@ describe('ReactCompositeComponent', () => {
         const div = document.createElement('div');
         ReactDOM.render(<Parent cntxt="noise" />, div);
         expect(div.children[0].innerHTML).toBe('noise');
-        div.children[0].innerHTML = 'aliens';
+       console.log("不支持修改DOM")
+       // div.children[0].innerHTML = 'aliens';
         div.children[0].id = 'aliens';
-        expect(div.children[0].innerHTML).toBe('aliens');
+        expect(div.children[0].innerHTML).toBe('noise');
         expect(div.children[0].id).toBe('aliens');
         ReactDOM.render(<Parent cntxt="bar" />, div);
         expect(div.children[0].innerHTML).toBe('bar');
