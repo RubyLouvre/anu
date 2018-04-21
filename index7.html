@@ -37,68 +37,27 @@
                   }
               };
          };
-         var PropTypes = React.PropTypes
-         class Leaf extends React.Component {
-            static contextTypes = {
-                foo: PropTypes.string.isRequired,
-            };
+         function ref(a){
+             console.log(a)
+         }
+         function ref2(a){
+             console.log(a)
+         }
+       /*  class A extends React.Component{
+             render(){
+                return <p ref={this.props.a}>xxxx</p>
+             }
+         }*/
+         function A(props){
+            return <div><p ref={props.a}>xxxx</p><strong ref={props.a}>xxxx</strong></div>
+         }
 
-            UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
-                expect('foo' in nextContext).toBe(true);
-            }
-
-            shouldComponentUpdate(nextProps, nextState, nextContext) {
-                expect('foo' in nextContext).toBe(true);
-                return true;
-            }
-
-            render() {
-                return <span>{this.context.foo}</span>;
-            }
-        }
-
-        class Intermediary extends React.Component {
-            UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
-                expect('foo' in nextContext).toBe(false);
-            }
-
-            shouldComponentUpdate(nextProps, nextState, nextContext) {
-                expect('foo' in nextContext).toBe(false);
-                return true;
-            }
-
-            render() {
-                return <Leaf />;
-            }
-        }
-
-        class Parent extends React.Component {
-            static childContextTypes = {
-                foo: PropTypes.string,
-            };
-
-            getChildContext() {
-                return {
-                    foo: this.props.cntxt,
-                };
-            }
-
-            render() {
-                return <Intermediary />;
-            }
-        }
-
+       
         const div = document.createElement('div');
-        ReactDOM.render(<Parent cntxt="noise" />, div);
-       expect(div.children[0].innerHTML).toBe('noise');
-        div.children[0].innerHTML = 'aliens';
-        div.children[0].id = 'aliens';
-        expect(div.children[0].innerHTML).toBe('aliens');
-        expect(div.children[0].id).toBe('aliens');
-        console.log("更换context")
-        ReactDOM.render(<Parent cntxt="bar" />, div);
-        expect(div.children[0].innerHTML).toBe('bar');
-        expect(div.children[0].id).toBe('aliens');
+        ReactDOM.render(<A a={ref} />, div);
+    
+        ReactDOM.render(<A a={ref}/>, div);
+       
 
     </script>
 

@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./dist/React.js"></script>
-  <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
+   <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -36,12 +36,28 @@
               };
          };
         
-    ReactDOM.render(<span>a</span>, container);
-    ReactDOM.unstable_batchedUpdates(function() {
-      ReactDOM.unmountComponentAtNode(container);
-      ReactDOM.render(<span>b</span>, container);
-    });
-    expect(container.textContent).toBe('b');
+         let node;
+         function aa(c){
+               console.log(c)
+               node = c
+           }
+         const Component = props => (
+           <div ref={function aa(c){
+               console.log(c)
+               node = c
+           }}>
+             <div key={props.swap ? 'banana' : 'apple'} >1</div>
+             <div key={props.swap ? 'apple' : 'banana'} >2</div>
+           </div>
+         );
+     
+       //  const container = document.createElement('div');
+         ReactDOM.render(<Component />, container);
+         const origChildren = Array.from(node.childNodes);
+         ReactDOM.render(<Component swap={true} />, container);
+         const newChildren = Array.from(node.childNodes);
+         expect(origChildren[0]).toBe(newChildren[1]);
+         expect(origChildren[1]).toBe(newChildren[0]);
    
     </script>
 

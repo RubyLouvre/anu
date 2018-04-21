@@ -37,46 +37,46 @@
                   }
               };
          }; 
-         let shouldUpdateCount = 0;
-    let updateCount = 0;
+         var log = []
+         class Child extends React.Component {
+          constructor(props) {
+            super(props);
+          }
+          render() {
+            log.push(this.props.value);
+            return null;
+          }
+        }
+    
+        function Wrapper(props) {
+          return <Child {...props} ref={props.forwardedRef} />;
+        }
+    
+        const RefForwardingComponent = React.forwardRef((props, ref) => (
+          <Wrapper {...props} forwardedRef={ref} />
+        ));
+    
+        let setRefCount = 0;
+        let ref;
+    
+        const setRef = r => {
+          setRefCount++;
+          ref = r;
+        };
+    
+        ReactDOM.render(<RefForwardingComponent ref={setRef} value={123} />, div);
+        expect(log).toEqual([123]);
+        expect(ref instanceof Child).toBe(true);
+        expect(setRefCount).toBe(1);
+         log = []
+        ReactDOM.render(<RefForwardingComponent ref={setRef} value={456} />, div);
+       
+        expect(log).toEqual([456]);
+        expect(ref instanceof Child).toBe(true);
+        expect(setRefCount).toBe(1);
 
-    class Component extends React.Component {
-      state = {x: 0};
 
-      shouldComponentUpdate() {
-        shouldUpdateCount++;
-        return false
-      }
 
-      componentDidUpdate() {
-        updateCount++;
-      }
-
-      render() {
-        return <div>{this.state.x}</div>;
-      }
-    }
-
-    const instance = ReactTestUtils.renderIntoDocument(<Component />);
-    expect(instance.state.x).toBe(0);//因为sCU已经return false
-
-    let callbacksRun = 0;
-    ReactDOM.unstable_batchedUpdates(function() {
-      instance.setState({x: 1}, function() {
-        callbacksRun++;
-      });
-      instance.forceUpdate(function() {
-        callbacksRun++;
-      });
-      expect(instance.state.x).toBe(0);
-      expect(updateCount).toBe(0);
-    });
-
-    expect(callbacksRun).toBe(2); //忽略了
-    // shouldComponentUpdate shouldn't be called since we're forcing
-    expect(shouldUpdateCount).toBe(0);
-    expect(instance.state.x).toBe(1);
-    expect(updateCount).toBe(1);
     </script>
 
 

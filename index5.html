@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
     <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
@@ -24,13 +24,13 @@
     </h1>
 
     <script type='text/babel'>
-    var React = ReactNoop;
 var container = document.getElementById('example');
 var div = container;
 if (!window.ReactDOM) {
   window.ReactDOM = React;
  
 }
+var renderSubtreeIntoContainer = React.unstable_renderSubtreeIntoContainer;
 var PropTypes = React.PropTypes
 
 var expect = function(a) {
@@ -43,53 +43,42 @@ var expect = function(a) {
 		},
 	};
 };
-let callbacks = [];
-    function emitChange() {
-      callbacks.forEach(c => c());
-    }
+const container = document.createElement('div');
+document.body.appendChild(container);
+const portal = document.createElement('div');
 
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {showChild: true};
-      }
-      componentDidMount() {
-        this.setState({showChild: false});
-      }
-      render() {
-        return (
-          <div>
-            <ForceUpdatesOnChange />
-            {this.state.showChild && <EmitsChangeOnUnmount />}
-          </div>
-        );
-      }
-    }
+class Parent extends React.Component {
+  render() {
+    return <Middle />;
+  }
+  getChildContext() {
+    return {value: this.props.value};
+  }
+  static childContextTypes = {
+    value: PropTypes.string.isRequired,
+  };
+}
 
-    class EmitsChangeOnUnmount extends React.Component {
-      componentWillUnmount() {
-        emitChange();
-      }
-      render() {
-        return null;
-      }
-    }
+class Middle extends React.Component {
+  render() {
+    return null;
+  }
+  componentDidMount() {
+    renderSubtreeIntoContainer(this, <Child />, portal);
+  }
+}
 
-    class ForceUpdatesOnChange extends React.Component {
-      componentDidMount() {
-        this.onChange = () => this.forceUpdate();
-        this.onChange();
-        callbacks.push(this.onChange);
-      }
-      componentWillUnmount() {
-        callbacks = callbacks.filter(c => c !== this.onChange);
-      }
-      render() {
-        return <div key={Math.random()} onClick={function() {}} />;
-      }
-    }
+class Child extends React.Component {
+  static contextTypes = {
+    value: PropTypes.string.isRequired,
+  };
+  render() {
+    return <div>{this.context.value}</div>;
+  }
+}
 
-    ReactDOM.render(<App />, document.createElement('div'));
+ReactDOM.render(<Parent value="foo" />, container);
+expect(portal.textContent).toBe('foo');
 
    </script>
 </body>

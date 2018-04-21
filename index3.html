@@ -7,8 +7,8 @@
   <script type='text/javascript' src="./dist/React.js"></script>
   
 
-   <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
   <!--<script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
@@ -42,42 +42,58 @@
                   toWarnDev(){}
               };
          };
-function filterOutComments(nodeList) {
-  return [].slice.call(nodeList).filter(node => !(node instanceof Comment));
-}
-  //const el = document.createElement('div');
-  /*
-    let inst = ReactDOM.render(
-      <div>
-        <span />
-        {'foo'}
-        {'bar'}
-      </div>,
-      el,
-    );
-    let nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
+      var   RefHopsAround = class extends React.Component {
+			state = { count: 0 };
 
-    let foo = nodes[1];
-    let bar = nodes[2];
-    expect(foo.data).toBe('foobar');
-    */
-   // expect(bar.data).toBe('bar');
+			moveRef = () => {
+				this.setState({ count: this.state.count + 1 });
+			};
 
-    inst = ReactDOM.hydrate(
-      <div>
-        <span />
-        {'baz'}
-        {'qux'}
-      </div>,
-      el,
-    );
-    // After the update, the text nodes should have stayed in place (as opposed
-    // to getting unmounted and remounted)
-    nodes = filterOutComments(ReactDOM.findDOMNode(inst).childNodes);
-    expect(nodes[1]).toBe(foo);
-   // expect(nodes[2]).toBe(bar);
-    expect(foo.data).toBe('bazqux');
-  //  expect(bar.data).toBe('qux');
+			render() {
+				const count = this.state.count;
+				/**
+				 * What we have here, is three divs with refs (div1/2/3), but a single
+				 * moving cursor ref `hopRef` that "hops" around the three. We'll call the
+				 * `moveRef()` function several times and make sure that the hop ref
+				 * points to the correct divs.
+				 */
+				return (
+					<div>
+						<div className="first" ref={count % 3 === 0 ? 'hopRef' : 'divOneRef'} />
+						<div className="second" ref={count % 3 === 1 ? 'hopRef' : 'divTwoRef'} />
+						<div className="third" ref={count % 3 === 2 ? 'hopRef' : 'divThreeRef'} />
+					</div>
+				);
+			}
+		};
+         const refHopsAround = ReactTestUtils.renderIntoDocument(<RefHopsAround />);
+
+         const firstDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'first');
+         const secondDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'second');
+         const thirdDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'third');
+     
+         expect(refHopsAround.refs.hopRef).toEqual(firstDiv);
+         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
+         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
+     
+         refHopsAround.moveRef();
+         expect(refHopsAround.refs.divOneRef).toEqual(firstDiv);
+         expect(refHopsAround.refs.hopRef).toEqual(secondDiv);
+         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
+     
+         refHopsAround.moveRef();
+         expect(refHopsAround.refs.divOneRef).toEqual(firstDiv);
+         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
+         expect(refHopsAround.refs.hopRef).toEqual(thirdDiv);
+     
+         /**
+          * Make sure that after the third, we're back to where we started and the
+          * refs are completely restored.
+          */
+         refHopsAround.moveRef();
+         expect(refHopsAround.refs.hopRef).toEqual(firstDiv);
+         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
+         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
     </script>
 
 
