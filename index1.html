@@ -37,30 +37,34 @@
                   }
               };
          };
-         const portalContainer = document.createElement('div');
+         var list = []
+         const onMouseOut = function(e){
+              list.push(e.currentTarget)
+         }
 
-		const ops = [];
-		let portal = null;
-
-		ReactDOM.render(
-			<div onClick={() => ops.push('parent clicked')}>
-				{ReactDOM.createPortal(
-					<div onClick={() => ops.push('portal clicked')} ref={n => (portal = n)}>
-						portal
-					</div>,
-					portalContainer
-				)}
-			</div>,
-			container
-		);
-
-		expect(portal.tagName).toBe('DIV');
-
-		const fakeNativeEvent = {};
-		ReactTestUtils.simulateNativeEventOnNode('topClick', portal, fakeNativeEvent);
-
-		expect(ops).toEqual(['portal clicked', 'parent clicked']);
-         
+         const childContainer = document.createElement('div');
+         const parentContainer = document.createElement('div');
+         const childNode = ReactDOM.render(
+           <div onMouseOut={onMouseOut}>Child</div>,
+           childContainer,
+         );
+         const parentNode = ReactDOM.render(
+           <div onMouseOut={onMouseOut}>div</div>,
+           parentContainer,
+         );
+         parentNode.appendChild(childContainer);
+         document.body.appendChild(parentContainer);
+   
+         const nativeEvent = document.createEvent('Event');
+         nativeEvent.initEvent('mouseout', true, true);
+         childNode.dispatchEvent(nativeEvent);
+   
+       /*  expect(mouseOut).toBeCalled();
+         expect(mouseOut.mock.calls.length).toBe(2);
+         expect(mouseOut.mock.calls[0][0]).toEqual(childNode);
+         expect(mouseOut.mock.calls[1][0]).toEqual(parentNode);
+       */
+      console.log(list)
     </script>
 
 

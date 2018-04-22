@@ -622,39 +622,442 @@ describe('ReactDOMFiber', () => {
 		);
 	});
 
-
-
 	it('should pass portal context when rendering subtree elsewhere', () => {
 		const portalContainer = document.createElement('div');
-	
+
 		class Component extends React.Component {
-		  static contextTypes = {
-			foo: PropTypes.string.isRequired,
-		  };
-	
-		  render() {
-			return <div>{this.context.foo}</div>;
-		  }
-		}
-	
-		class Parent extends React.Component {
-		  static childContextTypes = {
-			foo: PropTypes.string.isRequired,
-		  };
-	
-		  getChildContext() {
-			return {
-			  foo: 'bar',
+			static contextTypes = {
+				foo: PropTypes.string.isRequired,
 			};
-		  }
-	
-		  render() {
-			return ReactDOM.createPortal(<Component />, portalContainer);
-		  }
+
+			render() {
+				return <div>{this.context.foo}</div>;
+			}
 		}
-	
+
+		class Parent extends React.Component {
+			static childContextTypes = {
+				foo: PropTypes.string.isRequired,
+			};
+
+			getChildContext() {
+				return {
+					foo: 'bar',
+				};
+			}
+
+			render() {
+				return ReactDOM.createPortal(<Component />, portalContainer);
+			}
+		}
+
 		ReactDOM.render(<Parent />, container);
 		expect(container.innerHTML).toBe('');
 		expect(portalContainer.innerHTML).toBe('<div>bar</div>');
-	  });
+	});
+
+	it('should update portal context if it changes due to setState', () => {
+		const portalContainer = document.createElement('div');
+
+		class Component extends React.Component {
+			static contextTypes = {
+				foo: PropTypes.string.isRequired,
+				getFoo: PropTypes.func.isRequired,
+			};
+
+			render() {
+				return <div>{this.context.foo + '-' + this.context.getFoo()}</div>;
+			}
+		}
+
+		class Parent extends React.Component {
+			static childContextTypes = {
+				foo: PropTypes.string.isRequired,
+				getFoo: PropTypes.func.isRequired,
+			};
+
+			state = {
+				bar: 'initial',
+			};
+
+			getChildContext() {
+				return {
+					foo: this.state.bar,
+					getFoo: () => this.state.bar,
+				};
+			}
+
+			render() {
+				return ReactDOM.createPortal(<Component />, portalContainer);
+			}
+		}
+
+		const instance = ReactDOM.render(<Parent />, container);
+		expect(portalContainer.innerHTML).toBe('<div>initial-initial</div>');
+		expect(container.innerHTML).toBe('');
+		instance.setState({ bar: 'changed' });
+		expect(portalContainer.innerHTML).toBe('<div>changed-changed</div>');
+		expect(container.innerHTML).toBe('');
+	});
+
+	it('should update portal context if it changes due to re-render', () => {
+		const portalContainer = document.createElement('div');
+
+		class Component extends React.Component {
+			static contextTypes = {
+				foo: PropTypes.string.isRequired,
+				getFoo: PropTypes.func.isRequired,
+			};
+
+			render() {
+				return <div>{this.context.foo + '-' + this.context.getFoo()}</div>;
+			}
+		}
+
+		class Parent extends React.Component {
+			static childContextTypes = {
+				foo: PropTypes.string.isRequired,
+				getFoo: PropTypes.func.isRequired,
+			};
+
+			getChildContext() {
+				return {
+					foo: this.props.bar,
+					getFoo: () => this.props.bar,
+				};
+			}
+
+			render() {
+				return ReactDOM.createPortal(<Component />, portalContainer);
+			}
+		}
+
+		ReactDOM.render(<Parent bar="initial" />, container);
+		expect(portalContainer.innerHTML).toBe('<div>initial-initial</div>');
+		expect(container.innerHTML).toBe('');
+		ReactDOM.render(<Parent bar="changed" />, container);
+		expect(portalContainer.innerHTML).toBe('<div>changed-changed</div>');
+		expect(container.innerHTML).toBe('');
+	});
+
+	it('findDOMNode should find dom element after expanding a fragment', () => {
+		class MyNode extends React.Component {
+			render() {
+				return !this.props.flag ? [<div key="a" />] : [<span key="b" />, <div key="a" />];
+			}
+		}
+
+		const myNodeA = ReactDOM.render(<MyNode />, container);
+		const a = ReactDOM.findDOMNode(myNodeA);
+		expect(a.tagName).toBe('DIV');
+
+		const myNodeB = ReactDOM.render(<MyNode flag={true} />, container);
+		expect(myNodeA === myNodeB).toBe(true);
+
+		const b = ReactDOM.findDOMNode(myNodeB);
+		expect(b.tagName).toBe('SPAN');
+	});
+
+	it('should bubble events from the portal to the parent', () => {
+		const portalContainer = document.createElement('div');
+
+		const ops = [];
+		let portal = null;
+
+		ReactDOM.render(
+			<div onClick={() => ops.push('parent clicked')}>
+				{ReactDOM.createPortal(
+					<div onClick={() => ops.push('portal clicked')} ref={n => (portal = n)}>
+						portal
+					</div>,
+					portalContainer
+				)}
+			</div>,
+			container
+		);
+
+		expect(portal.tagName).toBe('DIV');
+
+		const fakeNativeEvent = {};
+		ReactTestUtils.simulateNativeEventOnNode('topClick', portal, fakeNativeEvent);
+
+		expect(ops).toEqual(['portal clicked', 'parent clicked']);
+	});
+
+	it('should not onMouseLeave when staying in the portal', () => {
+		console.log('现在无法模仿onMouseLeave');
+		return;
+		const portalContainer = document.createElement('div');
+
+		let ops = [];
+		let firstTarget = null;
+		let secondTarget = null;
+		let thirdTarget = null;
+
+		function simulateMouseMove(from, to) {
+			if (from) {
+				ReactTestUtils.simulateNativeEventOnNode('topMouseOut', from, {
+					target: from,
+					relatedTarget: to,
+				});
+			}
+			if (to) {
+				ReactTestUtils.simulateNativeEventOnNode('topMouseOver', to, {
+					target: to,
+					relatedTarget: from,
+				});
+			}
+		}
+
+		ReactDOM.render(
+			<div>
+				<div onMouseEnter={() => ops.push('enter parent')} onMouseLeave={() => ops.push('leave parent')}>
+					<div ref={n => (firstTarget = n)} />
+					{ReactDOM.createPortal(
+						<div
+							onMouseEnter={() => ops.push('enter portal')}
+							onMouseLeave={() => ops.push('leave portal')}
+							ref={n => (secondTarget = n)}
+						>
+							portal
+						</div>,
+						portalContainer
+					)}
+				</div>
+				<div ref={n => (thirdTarget = n)} />
+			</div>,
+			container
+		);
+
+		simulateMouseMove(null, firstTarget);
+		expect(ops).toEqual(['enter parent']);
+
+		ops = [];
+
+		simulateMouseMove(firstTarget, secondTarget);
+		expect(ops).toEqual([
+			// Parent did not invoke leave because we're still inside the portal.
+			'enter portal',
+		]);
+
+		ops = [];
+
+		simulateMouseMove(secondTarget, thirdTarget);
+		expect(ops).toEqual([
+			'leave portal',
+			'leave parent', // Only when we leave the portal does onMouseLeave fire.
+		]);
+	});
+
+	it('should throw on bad createPortal argument', () => {
+		ReactDOM.createPortal(<div>portal</div>, document.createElement('div'));
+		/*
+    expect(() => {
+      ReactDOM.createPortal(<div>portal</div>, null);
+    }).toThrow('Target container is not a DOM element.');
+    expect(() => {
+      ReactDOM.createPortal(<div>portal</div>, document.createTextNode('hi'));
+    }).toThrow('Target container is not a DOM element.');
+    */
+	});
+
+	it('should warn for non-functional event listeners', () => {
+		class Example extends React.Component {
+			render() {
+				return <div onClick="woops" />;
+			}
+		}
+		expect(() => ReactDOM.render(<Example />, container)).toWarnDev(
+			'Expected `onClick` listener to be a function, instead got a value of `string` type.\n' +
+				'    in div (at **)\n' +
+				'    in Example (at **)'
+		);
+	});
+
+	it('should warn with a special message for `false` event listeners', () => {
+		class Example extends React.Component {
+			render() {
+				return <div onClick={false} />;
+			}
+		}
+		expect(() => ReactDOM.render(<Example />, container)).toWarnDev(
+			'Expected `onClick` listener to be a function, instead got `false`.\n\n' +
+				'If you used to conditionally omit it with onClick={condition && value}, ' +
+				'pass onClick={condition ? value : undefined} instead.\n',
+			'    in div (at **)\n' + '    in Example (at **)'
+		);
+	});
+
+	it('should not update event handlers until commit', () => {
+		let ops = [];
+		const handlerA = () => ops.push('A');
+		const handlerB = () => ops.push('B');
+
+		class Example extends React.Component {
+			state = { flip: false, count: 0 };
+			flip() {
+				this.setState({ flip: true, count: this.state.count + 1 });
+			}
+			tick() {
+				this.setState({ count: this.state.count + 1 });
+			}
+			render() {
+				const useB = !this.props.forceA && this.state.flip;
+				return <div onClick={useB ? handlerB : handlerA} />;
+			}
+		}
+
+		class Click extends React.Component {
+			constructor() {
+				super();
+				click(node);
+			}
+			render() {
+				return null;
+			}
+		}
+
+		let inst;
+		ReactDOM.render([<Example key="a" ref={n => (inst = n)} />], container);
+		const node = container.firstChild;
+		expect(node.tagName).toEqual('DIV');
+
+		function click(target) {
+			const fakeNativeEvent = {};
+			ReactTestUtils.simulateNativeEventOnNode('topClick', target, fakeNativeEvent);
+		}
+
+		click(node);
+
+		expect(ops).toEqual(['A']);
+		ops = [];
+
+		// Render with the other event handler.
+		inst.flip();
+
+		click(node);
+
+		expect(ops).toEqual(['B']);
+		ops = [];
+
+		// Rerender without changing any props.
+		inst.tick();
+
+		click(node);
+
+		expect(ops).toEqual(['B']);
+		ops = [];
+
+		// Render a flip back to the A handler. The second component invokes the
+		// click handler during render to simulate a click during an aborted
+		// render. I use this hack because at current time we don't have a way to
+		// test aborted ReactDOM renders.
+		ReactDOM.render([<Example key="a" forceA={true} />, <Click key="b" />], container);
+
+		// Because the new click handler has not yet committed, we should still
+		// invoke B.
+		expect(ops).toEqual(['B']);
+		ops = [];
+
+		// Any click that happens after commit, should invoke A.
+		click(node);
+		expect(ops).toEqual(['A']);
+	});
+
+	it('should not crash encountering low-priority tree', () => {
+		ReactDOM.render(
+			<div hidden={true}>
+				<div />
+			</div>,
+			container
+		);
+	});
+
+	it('should not warn when rendering into an empty container', () => {
+		ReactDOM.render(<div>foo</div>, container);
+		expect(container.innerHTML).toBe('<div>foo</div>');
+		ReactDOM.render(null, container);
+		expect(container.innerHTML).toBe('');
+		ReactDOM.render(<div>bar</div>, container);
+		expect(container.innerHTML).toBe('<div>bar</div>');
+	});
+	
+
+	it('should warn when doing an update to a container manually updated outside of React', () => {
+		// when not messing with the DOM outside of React
+		ReactDOM.render(<div>foo</div>, container);
+		ReactDOM.render(<div>bar</div>, container);
+		expect(container.innerHTML).toBe('<div>bar</div>');
+		// then we mess with the DOM before an update
+		container.innerHTML = '<div>MEOW.</div>';
+		// expect(() => ReactDOM.render(<div>baz</div>, container)).toWarnDev(
+		//   'render(...): ' +
+		//     'It looks like the React-rendered content of this container was ' +
+		//     'removed without using React. This is not supported and will ' +
+		//     'cause errors. Instead, call ReactDOM.unmountComponentAtNode ' +
+		//     'to empty a container.',
+		// );
+	});
+
+	it('should warn when doing an update to a container manually cleared outside of React', () => {
+		// when not messing with the DOM outside of React
+		ReactDOM.render(<div>foo</div>, container);
+		ReactDOM.render(<div>bar</div>, container);
+		expect(container.innerHTML).toBe('<div>bar</div>');
+		// then we mess with the DOM before an update
+		container.innerHTML = '';
+		// expect(() => ReactDOM.render(<div>baz</div>, container)).toWarnDev(
+		//   'render(...): ' +
+		//     'It looks like the React-rendered content of this container was ' +
+		//     'removed without using React. This is not supported and will ' +
+		//     'cause errors. Instead, call ReactDOM.unmountComponentAtNode ' +
+		//     'to empty a container.',
+		// );
+	});
+
+	it('should render a text component with a text DOM node on the same document as the container', () => {
+		console.log("这不测试有问题，iframe无法跨域")
+		return
+		// 1. Create a new document through the use of iframe
+		// 2. Set up the spy to make asserts when a text component
+		//    is rendered inside the iframe container
+		const textContent = 'Hello world';
+		const iframe = document.createElement('iframe');
+	
+		document.body.appendChild(iframe);
+		const iframeDocument = iframe.contentDocument;
+		iframeDocument.domain = document.domain;
+		iframeDocument.write('<!DOCTYPE html><html><head></head><body><div></div></body></html>');
+		iframeDocument.close();
+		const iframeContainer = iframeDocument.body.firstChild;
+
+		let actualDocument;
+		let textNode;
+		//anu只使用insertBefore
+		var oldInsertBefore = iframeContainer.insertBefore;
+		iframeContainer.insertBefore = function(node, insertPoint) {
+			actualDocument = node.ownerDocument;
+			textNode = node;
+			return oldInsertBefore.call(this, node, insertPoint);
+		};
+		// spyOnDevAndProd(iframeContainer, 'appendChild').and.callFake(node => {
+		//   actualDocument = node.ownerDocument;
+		//   textNode = node;
+		// });
+
+		ReactDOM.render(textContent, iframeContainer);
+
+		expect(textNode.textContent).toBe(textContent);
+		// expect(actualDocument).not.toBe(document);
+		expect(actualDocument).toBe(iframeDocument);
+		expect(iframeContainer.appendChild).toHaveBeenCalledTimes(1);
+	});
+
+	it('should mount into a document fragment', () => {
+		const fragment = document.createDocumentFragment();
+		ReactDOM.render(<div>foo</div>, fragment);
+		expect(container.innerHTML.trim()).toBe('');
+		container.appendChild(fragment);
+		expect(container.innerHTML.trim()).toBe('<div>foo</div>');
+	});
 });

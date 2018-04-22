@@ -42,58 +42,22 @@
                   toWarnDev(){}
               };
          };
-      var   RefHopsAround = class extends React.Component {
-			state = { count: 0 };
-
-			moveRef = () => {
-				this.setState({ count: this.state.count + 1 });
-			};
-
-			render() {
-				const count = this.state.count;
-				/**
-				 * What we have here, is three divs with refs (div1/2/3), but a single
-				 * moving cursor ref `hopRef` that "hops" around the three. We'll call the
-				 * `moveRef()` function several times and make sure that the hop ref
-				 * points to the correct divs.
-				 */
-				return (
-					<div>
-						<div className="first" ref={count % 3 === 0 ? 'hopRef' : 'divOneRef'} />
-						<div className="second" ref={count % 3 === 1 ? 'hopRef' : 'divTwoRef'} />
-						<div className="third" ref={count % 3 === 2 ? 'hopRef' : 'divThreeRef'} />
-					</div>
-				);
-			}
-		};
-         const refHopsAround = ReactTestUtils.renderIntoDocument(<RefHopsAround />);
-
-         const firstDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'first');
-         const secondDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'second');
-         const thirdDiv = ReactTestUtils.findRenderedDOMComponentWithClass(refHopsAround, 'third');
-     
-         expect(refHopsAround.refs.hopRef).toEqual(firstDiv);
-         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
-         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
-     
-         refHopsAround.moveRef();
-         expect(refHopsAround.refs.divOneRef).toEqual(firstDiv);
-         expect(refHopsAround.refs.hopRef).toEqual(secondDiv);
-         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
-     
-         refHopsAround.moveRef();
-         expect(refHopsAround.refs.divOneRef).toEqual(firstDiv);
-         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
-         expect(refHopsAround.refs.hopRef).toEqual(thirdDiv);
-     
-         /**
-          * Make sure that after the third, we're back to where we started and the
-          * refs are completely restored.
-          */
-         refHopsAround.moveRef();
-         expect(refHopsAround.refs.hopRef).toEqual(firstDiv);
-         expect(refHopsAround.refs.divTwoRef).toEqual(secondDiv);
-         expect(refHopsAround.refs.divThreeRef).toEqual(thirdDiv);
+   const container = document.createElement('div');
+    const node = ReactDOM.render(<div onMouseEnter={function(){
+        console.log("xxxx")
+    }} />, container);
+    const otherNode = document.createElement('h1');
+    document.body.appendChild(container);
+    document.body.appendChild(otherNode);
+    var e =  new MouseEvent('mouseout', {
+        bubbles: true,
+        cancelable: true,
+        relatedTarget: node,
+      })
+      console.log(!!e.relatedTarget)
+      console.log(e.relatedTarget)
+    otherNode.dispatchEvent(e);
+   // expect(mock).toBeCalled();
     </script>
 
 
