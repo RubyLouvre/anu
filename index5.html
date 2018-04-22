@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
+   <!--<script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
@@ -52,28 +52,64 @@ var expect = function(a) {
         }
 	};
 };
-class Component extends React.Component {
-    state = {};
-    static getDerivedStateFromProps() {
-      return null;
-    }
-    UNSAFE_componentWillMount() {
-      throw Error('unexpected');
-    }
-    UNSAFE_componentWillReceiveProps() {
-      throw Error('unexpected');
-    }
-    UNSAFE_componentWillUpdate() {
-      throw Error('unexpected');
-    }
-    render() {
-      return null;
-    }
-  }
+const divRef = React.createRef();
+    let childInstance;
 
-  const container = document.createElement('div');
- ReactDOM.render(<Component value={1} />, container)
-  ReactDOM.render(<Component value={2} />, container);
+    class Child extends React.Component {
+      state = {local: 0};
+      //local:0  remote 0
+      static getDerivedStateFromProps(nextProps, prevState) {
+        console.log("getDerivedStateFromProps", JSON.stringify(nextProps), JSON.stringify(prevState))
+        return {...prevState, remote: nextProps.remote};
+      }
+      updateState = () => {
+          // 1  2
+       // console.log("updateState")
+        this.setState(function(state){
+          console.log("setStateFn local", state.local + 1)
+           return {local: state.local + 1}
+        });
+        // console.log("onChange remote ",this.state.remote + 1)
+        this.props.onChange(this.state.remote + 1);
+      }; 
+      shouldComponentUpdate(){
+          console.log("shouldComponentUpdate")
+        return true
+      }
+      render() {
+        childInstance = this;
+        return (
+          <div onClick={this.updateState} ref={divRef}>{`remote:${
+            this.state.remote
+          }, local:${this.state.local}`}</div>
+        );
+      }
+    }
+//should not override state with stale values if prevState is spread within getDerivedStateFromProps
+
+    class Parent extends React.Component {
+      state = {value: 0};
+      handleChange = value => {
+       // console.log("handleChange remote",value)
+        this.setState({value});
+      };
+      render() {
+          // 0
+        return <Child remote={this.state.value} onChange={this.handleChange} />;
+      }
+    }
+    console.log("========")
+    ReactDOM.render(<Parent />,container);
+    expect(divRef.current.textContent).toBe('remote:0, local:0');
+    console.log("updateState.........")
+    // Trigger setState() calls
+    childInstance.updateState();
+    expect(divRef.current.textContent).toBe('remote:1, local:1');
+   // console.log("触发事件。。。。。。")
+    // Trigger batched setState() calls
+    divRef.current.click()
+    expect(divRef.current.textContent).toBe('remote:2, local:2');
+
    </script>
 </body>
 

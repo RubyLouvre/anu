@@ -146,7 +146,7 @@ export function updateClassComponent(fiber, info) {
 		instance.updater.enqueueSetState = Renderer.updateComponent;
 		instance.props = props;
 		if (type[gDSFP] || instance[gSBU]) {
-			instance.__skipDeprecated = true;
+			instance.__useNewHooks = true;
 		}
 	}
 	if (type === AnuPortal) {
@@ -221,46 +221,55 @@ export function updateClassComponent(fiber, info) {
 }
 const stageIteration = {
 	mount(fiber, nextProps, nextContext, instance) {
-		getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
 		fiber.willing = true;
-		callUnsafeHook(instance, 'componentWillMount', []);
+		if (instance.__useNewHooks) {
+			getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
+		} else {
+			callUnsafeHook(instance, 'componentWillMount', []);
+		}
 	},
 	receive(fiber, nextProps, nextContext, instance, contextStack) {
 		let updater = instance.updater;
 		updater.lastProps = instance.props;
 		updater.lastState = instance.state;
 		let propsChange = updater.lastProps !== nextProps;
-		let willReceive = propsChange || contextStack.length > 1 || instance.context !== nextContext;
-		if (willReceive) {
-			fiber.willing = true;
-			callUnsafeHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
+		if (instance.__useNewHooks) {
+			return 'update';
 		} else {
-			cloneChildren(fiber);
-			return;
+			let willReceive = propsChange || contextStack.length > 1 || instance.context !== nextContext;
+			if (willReceive) {
+				fiber.willing = true;
+				callUnsafeHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
+				return 'update';
+			} else {
+				cloneChildren(fiber);
+				return false;
+			}
 		}
-		if (propsChange) {
-			getDerivedStateFromProps(instance, fiber, nextProps, updater.lastState);
-		}
-		return 'update';
 	},
 	update(fiber, nextProps, nextContext, instance) {
+		let updater = instance.updater;
 		let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
+		if (updater.lastProps !== nextProps) {
+			fiber.willing = true;
+			getDerivedStateFromProps(instance, fiber, nextProps, args[1]);
+		}
+		fiber.willing = false;
+
 		delete fiber.updateFail;
 		//早期React的设计失误, SCU/CWU/CDU中setState会易死循环
 		fiber._hydrating = true;
 		if (!fiber.isForced && !guardCallback(instance, 'shouldComponentUpdate', args)) {
 			cloneChildren(fiber);
-		} else {
+		} else if (!instance.__useNewHooks) {
 			callUnsafeHook(instance, 'componentWillUpdate', args);
 		}
 	},
 };
+
 function callUnsafeHook(a, b, c) {
-	if (!a.__skipDeprecated) {
-		guardCallback(a, b, c);
-		guardCallback(a, 'UNSAFE_' + b, c);
-	}
-	
+	guardCallback(a, b, c);
+	guardCallback(a, 'UNSAFE_' + b, c);
 }
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {

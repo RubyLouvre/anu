@@ -40,7 +40,6 @@ let isTouch = 'ontouchstart' in document;
 
 export function dispatchEvent(e, type, endpoint) {
     //__type__ 在injectTapEventPlugin里用到
-    
 	e = new SyntheticEvent(e);
 	if (type) {
 		e.type = type;
