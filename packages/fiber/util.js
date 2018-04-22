@@ -1,3 +1,5 @@
+export const gSBU = "getSnapshotBeforeUpdate"
+export const gDSFP = 'getDerivedStateFromProps';
 
 export const effects = [];
 export function resetStack(info) {

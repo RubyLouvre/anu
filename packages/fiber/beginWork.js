@@ -7,6 +7,7 @@ import { createInstance } from './createInstance';
 import { Fiber } from './Fiber';
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from './effectTag';
 import { guardCallback } from './unwindWork';
+import { gDSFP, gSBU } from './util';
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -37,12 +38,20 @@ export function updateEffects(fiber, topWork, info) {
 
 	let f = fiber;
 	while (f) {
-		if (f.stateNode && f.stateNode.getChildContext) {
-			info.contextStack.shift(); // shift context
-		}
-		if (f.tag === 5 || f.type == AnuPortal) {
+		let instance = f.stateNode;
+		let updater = instance && instance.updater;
+		if (f.shiftContainer) {
+			//元素节点与AnuPortal
 			info.containerStack.shift(); // shift parent
+		} else if (updater) {
+			if (instance.getChildContext) {
+				info.contextStack.shift(); // shift context
+			}
+			if (updater.isMounted() && !f.disposed) {
+				guardCallback(instance, gSBU, []);
+			}
 		}
+
 		if (f === topWork) {
 			break;
 		}
@@ -67,6 +76,7 @@ function updateHostComponent(fiber, info) {
 	if (tag === 5) {
 		// 元素节点
 		info.containerStack.unshift(fiber.stateNode);
+		fiber.shiftContainer = true;
 		if (!root) {
 			fiber.effectTag *= ATTR;
 		}
@@ -126,7 +136,7 @@ export function updateClassComponent(fiber, info) {
 	}
 	let { type, stateNode: instance, isForced, props, stage } = fiber;
 	// 为了让它在出错时collectEffects()还可以用，因此必须放在前面
-    let {contextStack, containerStack} = info;
+	let { contextStack, containerStack } = info;
 	let nextContext = getMaskedContext(type.contextTypes, instance, contextStack),
 		context,
 		updateFail = false;
@@ -135,11 +145,14 @@ export function updateClassComponent(fiber, info) {
 		instance = fiber.stateNode = createInstance(fiber, nextContext);
 		instance.updater.enqueueSetState = Renderer.updateComponent;
 		instance.props = props;
-		
+		if (type[gDSFP] || instance[gSBU]) {
+			instance.__skipDeprecated = true;
+		}
 	}
 	if (type === AnuPortal) {
 		fiber.parent = props.parent;
 		containerStack.unshift(fiber.parent);
+		fiber.shiftContainer = true;
 	} else {
 		fiber.parent = containerStack[0];
 	}
@@ -238,14 +251,16 @@ const stageIteration = {
 		if (!fiber.isForced && !guardCallback(instance, 'shouldComponentUpdate', args)) {
 			cloneChildren(fiber);
 		} else {
-			guardCallback(instance, 'getSnapshotBeforeUpdate', args);
 			callUnsafeHook(instance, 'componentWillUpdate', args);
 		}
 	},
 };
 function callUnsafeHook(a, b, c) {
-	guardCallback(a, b, c);
-	guardCallback(a, 'UNSAFE_' + b, c);
+	if (!a.__skipDeprecated) {
+		guardCallback(a, b, c);
+		guardCallback(a, 'UNSAFE_' + b, c);
+	}
+	
 }
 function isSameNode(a, b) {
 	if (a.type === b.type && a.key === b.key) {
@@ -264,8 +279,6 @@ export function detachFiber(fiber, effects) {
 		detachFiber(child, effects);
 	}
 }
-
-const gDSFP = 'getDerivedStateFromProps';
 
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
 	let partialState = guardCallback(fiber.type, gDSFP, [nextProps, lastState], instance);
@@ -397,4 +410,3 @@ function diffChildren(parentFiber, children) {
 		delete prevFiber.sibling;
 	}
 }
-

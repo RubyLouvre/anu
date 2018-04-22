@@ -40,54 +40,40 @@ var expect = function(a) {
 		},
 		toEqual(b) {
 			console.log(a, 'vs', b, a + '' === b + '');
-		},
+        },
+        toWarnDev(){
+            a()
+        },
+        toBeTruthy(){
+            console.log(a, 'vs', true, !!a === true);
+        },
+        toBeFalsy(){
+            console.log(a, 'vs', false, !!a === false);
+        }
 	};
 };
+class Component extends React.Component {
+    state = {};
+    static getDerivedStateFromProps() {
+      return null;
+    }
+    UNSAFE_componentWillMount() {
+      throw Error('unexpected');
+    }
+    UNSAFE_componentWillReceiveProps() {
+      throw Error('unexpected');
+    }
+    UNSAFE_componentWillUpdate() {
+      throw Error('unexpected');
+    }
+    render() {
+      return null;
+    }
+  }
 
-const portalContainer = document.createElement('div');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(<div>portal:1</div>, portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('<div>portal:1</div>');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(<div>portal:2</div>, portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('<div>portal:2</div>');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(<p>portal:3</p>, portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('<p>portal:3</p>');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(['Hi', 'Bye'], portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('HiBye');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(['Bye', 'Hi'], portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('ByeHi');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(
-  <div>{ReactDOM.createPortal(null, portalContainer)}</div>,
-  container,
-);
-expect(portalContainer.innerHTML).toBe('');
-expect(container.innerHTML).toBe('<div></div>');
-
+  const container = document.createElement('div');
+ ReactDOM.render(<Component value={1} />, container)
+  ReactDOM.render(<Component value={2} />, container);
    </script>
 </body>
 
