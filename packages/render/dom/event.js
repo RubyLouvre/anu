@@ -52,7 +52,7 @@ export function dispatchEvent(e, type, endpoint) {
 		return;
     }
 	Renderer.batchedUpdates(function() {
-		let paths = collectPaths(e.relatedTarget || e.target, terminal, {});
+		let paths = collectPaths(e.target, terminal, {});
 		let captured = bubble + 'capture';
 		triggerEventFlow(paths, captured, e);
 

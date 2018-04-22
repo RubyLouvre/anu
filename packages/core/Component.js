@@ -14,11 +14,12 @@ export function Component(props, context) {
     this.context = context;
     this.props = props;
     this.refs = {};
+    this.updater = fakeObject
     this.state = null;
 }
 const fakeObject = {
     enqueueSetState: returnFalse,
-    _isMounted: returnFalse
+    isMounted: returnFalse
 };
 
 
@@ -30,13 +31,13 @@ Component.prototype = {
     isReactComponent:returnTrue,
     isMounted() {
         toWarnDev("isMounted", true);
-        return (this.updater || fakeObject)._isMounted(this);
+        return this.updater.isMounted(this);
     },
     setState(state, cb) {
-        (this.updater || fakeObject).enqueueSetState(this, state, cb);
+        this.updater.enqueueSetState(this, state, cb);
     },
     forceUpdate(cb) {
-        (this.updater || fakeObject).enqueueSetState(this, true, cb);
+        this.updater.enqueueSetState(this, true, cb);
     },
     render() {
         throw "must implement render";

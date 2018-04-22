@@ -111,17 +111,17 @@ export function commitOtherEffects(fiber) {
                 } else {
                     updater.enqueueSetState = returnFalse;
                     guardCallback(instance, "componentWillUnmount", []);
-                    updater._isMounted = returnFalse;
+                    updater.isMounted = returnFalse;
                 }
                 delete fiber.stateNode;
                 delete fiber.alternate;
                 break;
             case HOOK:
                 Renderer._hydratingParent = fiber;
-                if (updater._isMounted()) {
+                if (updater.isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
                 } else {
-                    updater._isMounted = returnTrue;
+                    updater.isMounted = returnTrue;
                     guardCallback(instance, "componentDidMount", []);
                 }
                 Renderer._hydratingParent = null;

@@ -147,7 +147,7 @@ export function updateClassComponent(fiber, info) {
 	let updater = instance.updater;
 	if (!instance.__isStateless) {
 		//必须带生命周期
-		if (updater._isMounted()) {
+		if (updater.isMounted()) {
 			//如果是更新阶段
 			let hasSetState = isForced === true || fiber.pendingStates || fiber._updates;
 			if (hasSetState) {

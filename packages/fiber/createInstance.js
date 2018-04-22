@@ -8,7 +8,7 @@ export function createInstance(fiber, context) {
 	let updater = {
 		mountOrder: Renderer.mountOrder++,
 		enqueueSetState: returnFalse,
-		_isMounted: returnFalse,
+		isMounted: returnFalse,
 	};
 	let { props, type, tag, ref } = fiber,
 		isStateless = tag === 1,
