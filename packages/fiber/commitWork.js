@@ -119,7 +119,7 @@ export function commitOtherEffects(fiber) {
             case HOOK:
                 Renderer._hydratingParent = fiber;
                 if (updater.isMounted()) {
-                    guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState]);
+                    guardCallback(instance, "componentDidUpdate", [updater.lastProps, updater.lastState, updater.snapshot]);
                 } else {
                     updater.isMounted = returnTrue;
                     guardCallback(instance, "componentDidMount", []);

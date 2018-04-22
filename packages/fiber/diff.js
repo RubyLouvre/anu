@@ -12,11 +12,11 @@ import { createInstance } from './createInstance';
 const macrotasks = Renderer.macrotasks;
 const batchedtasks = [],
 	microtasks = [];
-
+/*
 window.microtasks = microtasks;
 window.macrotasks = macrotasks;
 window.batchedtasks = batchedtasks;
-
+*/
 export function render(vnode, root, callback) {
 	let container = createContainer(root),
 		immediateUpdate = false;
@@ -237,7 +237,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
 	state = isForced ? null : sn === 5 || sn === 8 ? state : null;
 	let parent = Renderer._hydratingParent;
 
-	if (fiber.willing) {
+	if (fiber.setout) {
 		//情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
 		//  console.log("setState 1");
 		immediateUpdate = false;
@@ -295,7 +295,6 @@ export function createContainer(root, onlyGet, validate) {
 	}
 	var container = new Fiber({
 		stateNode: root,
-		root: true,
 		tag: 5,
 		name: 'hostRoot',
 		contextStack: [{}],

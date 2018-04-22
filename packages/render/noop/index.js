@@ -19,14 +19,16 @@ if (prevReact && prevReact.isReactNoop) {
 } else {
     let {render, flush, reset, getRoot, getChildren} = NoopRenderer;
     ReactNoop = win.ReactNoop = { //放出全局的ReactNoop
-        version: "VERSION",
-        render,
+        //平台相关API
+        yield: NoopRenderer.yield,
         flush,
         reset,
-        yield: NoopRenderer.yield,
         getRoot,
         getChildren,
         isReactNoop: true,
+        //ReactFiber API
+        version: "VERSION",
+        render,
         Fragment,
         PropTypes,
         Children,

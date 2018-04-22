@@ -39,7 +39,7 @@ export function eventAction(dom, name, val, lastProps, fiber) {
 let isTouch = 'ontouchstart' in document;
 
 export function dispatchEvent(e, type, endpoint) {
-    //__type__ 在injectTapEventPlugin里用到
+	//__type__ 在injectTapEventPlugin里用到
 	e = new SyntheticEvent(e);
 	if (type) {
 		e.type = type;
@@ -49,7 +49,7 @@ export function dispatchEvent(e, type, endpoint) {
 		hook = eventPropHooks[e.type];
 	if (hook && false === hook(e)) {
 		return;
-    }
+	}
 	Renderer.batchedUpdates(function() {
 		let paths = collectPaths(e.target, terminal, {});
 		let captured = bubble + 'capture';
@@ -107,9 +107,9 @@ function collectPaths(from, end) {
 	return paths;
 }
 */
-let nodeID  =1
+let nodeID = 1;
 function collectPaths(begin, end, unique) {
-    let paths = [];
+	let paths = [];
 	let node = begin;
 	//先判定路径上有绑定事件没有
 	while (node && node.nodeType == 1) {
@@ -118,7 +118,7 @@ function collectPaths(begin, end, unique) {
 			let vnode = node.__events.vnode;
 			inner: while (vnode.return) {
 				//ReactDOM.render有Unbatch, container,
-                //ReactDOM.createPortal有AnuPortal
+				//ReactDOM.createPortal有AnuPortal
 				if (vnode.tag === 5) {
 					node = vnode.stateNode;
 					if (node === end) {
@@ -126,10 +126,10 @@ function collectPaths(begin, end, unique) {
 					}
 					if (!node) {
 						break inner;
-                    }
-                    var uid = node.uniqueID || (node.uniqueID = ++nodeID)
+					}
+					var uid = node.uniqueID || (node.uniqueID = ++nodeID);
 					if (node.__events && !unique[uid]) {
-                        unique[uid] = 1
+						unique[uid] = 1;
 						paths.push({ node, events: node.__events });
 					}
 				}
@@ -172,6 +172,7 @@ export function addEvent(el, type, fn, bool) {
 	}
 }
 
+
 let rcapture = /Capture$/;
 export function getBrowserName(onStr) {
 	let lower = eventLowerCache[onStr];
@@ -205,7 +206,7 @@ String('mouseenter,mouseleave').replace(/\w+/g, function(name) {
 			dom[mark] = true;
 			let mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
 			addEvent(dom, mask, function(e) {
-                let t = getRelatedTarget(e);
+				let t = getRelatedTarget(e);
 				if (!t || (t !== dom && !contains(dom, t))) {
 					let common = getLowestCommonAncestor(dom, t);
 					//由于不冒泡，因此paths长度为1
@@ -406,10 +407,10 @@ let eventProto = (SyntheticEvent.prototype = {
 		return '[object Event]';
 	},
 });
-/* istanbul ignore next  */
-//freeze_start
-Object.freeze ||
-	(Object.freeze = function(a) {
-		return a;
-	});
-//freeze_end
+
+Renderer.eventSystem = {
+	eventPropHooks,
+	addEvent,
+	dispatchEvent,
+	SyntheticEvent
+};

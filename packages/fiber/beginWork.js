@@ -48,7 +48,7 @@ export function updateEffects(fiber, topWork, info) {
 				info.contextStack.shift(); // shift context
 			}
 			if (updater.isMounted() && !f.disposed) {
-				guardCallback(instance, gSBU, []);
+				updater.snapshot = guardCallback(instance, gSBU, [updater.lastProps || {}, updater.lastState || {}]);
 			}
 		}
 
@@ -63,7 +63,7 @@ export function updateEffects(fiber, topWork, info) {
 }
 
 function updateHostComponent(fiber, info) {
-	const { props, tag, root, alternate: prev } = fiber;
+	const { props, tag, alternate: prev } = fiber;
 	if (!fiber.stateNode) {
 		fiber.parent = info.containerStack[0];
 		try {
@@ -77,9 +77,7 @@ function updateHostComponent(fiber, info) {
 		// 元素节点
 		info.containerStack.unshift(fiber.stateNode);
 		fiber.shiftContainer = true;
-		if (!root) {
-			fiber.effectTag *= ATTR;
-		}
+		fiber.effectTag *= ATTR;
 		if (prev) {
 			fiber._children = prev._children;
 		}
@@ -183,7 +181,7 @@ export function updateClassComponent(fiber, info) {
 		let istage = stage;
 		while (istage) {
 			istage = stageIteration[istage](fiber, props, nextContext, instance, contextStack);
-			fiber.willing = false;
+			fiber.setout = false;
 		}
 		let ps = fiber.pendingStates;
 		if (ps && ps.length) {
@@ -221,7 +219,7 @@ export function updateClassComponent(fiber, info) {
 }
 const stageIteration = {
 	mount(fiber, nextProps, nextContext, instance) {
-		fiber.willing = true;
+		fiber.setout = true;
 		if (instance.__useNewHooks) {
 			getDerivedStateFromProps(instance, fiber, nextProps, instance.state);
 		} else {
@@ -238,7 +236,7 @@ const stageIteration = {
 		} else {
 			let willReceive = propsChange || contextStack.length > 1 || instance.context !== nextContext;
 			if (willReceive) {
-				fiber.willing = true;
+				fiber.setout = true;
 				callUnsafeHook(instance, 'componentWillReceiveProps', [nextProps, nextContext]);
 				return 'update';
 			} else {
@@ -251,11 +249,10 @@ const stageIteration = {
 		let updater = instance.updater;
 		let args = [nextProps, mergeStates(fiber, nextProps, true), nextContext];
 		if (updater.lastProps !== nextProps) {
-			fiber.willing = true;
+			fiber.setout = true;
 			getDerivedStateFromProps(instance, fiber, nextProps, args[1]);
 		}
-		fiber.willing = false;
-
+		delete fiber.setout;
 		delete fiber.updateFail;
 		//早期React的设计失误, SCU/CWU/CDU中setState会易死循环
 		fiber._hydrating = true;
