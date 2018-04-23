@@ -239,7 +239,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
 
     if (fiber.setout) {
         //情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
-        //  console.log("setState 1");
+        // console.log("setState 1");
         immediateUpdate = false;
     } else if (parent && fiberContains(parent, fiber)) {
         //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
@@ -247,14 +247,14 @@ function updateComponent(instance, state, callback, immediateUpdate) {
         microtasks.push(fiber);
     } else if (isBatchingUpdates && !immediateUpdate) {
         // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
-        //  console.log("setState 3");
+        // console.log("setState 3");
         //情况3， 在batchedUpdates中setState，可能放进batchedtasks
         pushChildQueue(fiber, batchedtasks);
     } else {
         //情况4，在componentDidMount/Update中setState，可能放进microtasks
         //情况5，在钩子外setState, 需要立即触发
         immediateUpdate = immediateUpdate || !fiber._hydrating;
-        //  console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5), fiber._hydrating);
+        // console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5), fiber._hydrating);
         pushChildQueue(fiber, microtasks);
     }
 

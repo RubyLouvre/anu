@@ -12,11 +12,10 @@ import {
     effectNames,
 } from "./effectTag";
 import { effects } from "./util";
-import { guardCallback } from "./unwindWork";
+import { guardCallback } from "./ErrorBoundary";
 import { returnFalse, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
-import { Unbatch } from "./unbatch";
 
 export function commitEffects(a) {
     let tasks = a || effects;

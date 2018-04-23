@@ -12,8 +12,23 @@ export function pushError(fiber, hook, error) {
         catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
         delete catchFiber._children;
         delete catchFiber.child;
-        catchFiber.effectTag = CAPTURE;
+
+        catchFiber.effectTag *= CAPTURE;
     } else {
+
+        var p = fiber.return;
+       
+        for(var i in p._children){
+            if(p._children[i] == fiber){
+                fiber.type = noop;
+            }
+        }
+        
+        while(p){
+            p._hydrating = false;
+            p = p.return;
+        }
+       
         // 如果同时发生多个错误，那么只收集第一个错误，并延迟到afterPatch后执行
         if (!Renderer.error) {
             Renderer.error = error;
