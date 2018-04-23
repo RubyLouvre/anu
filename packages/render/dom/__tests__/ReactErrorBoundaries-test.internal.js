@@ -558,4 +558,41 @@ describe('ReactErrorBoundaries', () => {
 			ReactDOM.unmountComponentAtNode(container);
 		}).toThrow('Hello');
 	});
+
+	it('prevents errors from leaking into other roots', () => {
+		const container1 = document.createElement('div');
+		const container2 = document.createElement('div');
+		const container3 = document.createElement('div');
+	
+		ReactDOM.render(<span>Before 1</span>, container1);
+		expect(() => {
+		  ReactDOM.render(<BrokenRender />, container2);
+		}).toThrow('Hello');
+		ReactDOM.render(
+		  <ErrorBoundary>
+			<BrokenRender />
+		  </ErrorBoundary>,
+		  container3,
+		);
+		expect(container1.firstChild.textContent).toBe('Before 1');
+		expect(container2.firstChild).toBe(null);
+		expect(container3.firstChild.textContent).toBe('Caught an error: Hello.');
+	
+		ReactDOM.render(<span>After 1</span>, container1);
+		ReactDOM.render(<span>After 2</span>, container2);
+		ReactDOM.render(
+		  <ErrorBoundary forceRetry={true}>After 3</ErrorBoundary>,
+		  container3,
+		);
+		expect(container1.firstChild.textContent).toBe('After 1');
+		expect(container2.firstChild.textContent).toBe('After 2');
+		expect(container3.firstChild.textContent).toBe('After 3');
+	
+		ReactDOM.unmountComponentAtNode(container1);
+		ReactDOM.unmountComponentAtNode(container2);
+		ReactDOM.unmountComponentAtNode(container3);
+		expect(container1.firstChild).toBe(null);
+		expect(container2.firstChild).toBe(null);
+		expect(container3.firstChild).toBe(null);
+	  });
 });

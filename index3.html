@@ -42,22 +42,8 @@
                   toWarnDev(){}
               };
          };
-   const container = document.createElement('div');
-    const node = ReactDOM.render(<div onMouseEnter={function(){
-        console.log("xxxx")
-    }} />, container);
-    const otherNode = document.createElement('h1');
-    document.body.appendChild(container);
-    document.body.appendChild(otherNode);
-    var e =  new MouseEvent('mouseout', {
-        bubbles: true,
-        cancelable: true,
-        relatedTarget: node,
-      })
-      console.log(!!e.relatedTarget)
-      console.log(e.relatedTarget)
-    otherNode.dispatchEvent(e);
-   // expect(mock).toBeCalled();
+    const node = ReactDOM.render(<div  />, container);
+
     </script>
 
 
