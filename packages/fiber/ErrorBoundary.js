@@ -1,6 +1,6 @@
 import { noop, get } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
-import { NOWORK, CAPTURE } from "./effectTag";
+import { NOWORK, CAPTURE, DETACH } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
     let names = [];
@@ -8,16 +8,29 @@ export function pushError(fiber, hook, error) {
     let catchFiber = findCatchComponent(fiber, names);
     let stack = describeError(names, hook);
     if (catchFiber) {
-        disableEffect(fiber); // 禁止患者节点执行钩子
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
+        fiber.effectTag = NOWORK;
+        fiber._hydrating = false;
         delete catchFiber._children;
         delete catchFiber.child;
-
         catchFiber.effectTag *= CAPTURE;
+        //  disableEffect(fiber); // 禁止患者节点执行钩子
+        catchFiber = Object.assign({}, catchFiber);
+        catchFiber.effectTag = 1;
+        catchFiber.stateNode.updater.enqueueSetState = function(a){
+            console.log("=====",catchFiber.name);
+            catchFiber._updates = {
+                // pendingStates:[a]
+            };
+            catchFiber.stateNode.updater.enqueueSetState = Renderer.updateComponent;
+        };
+        Renderer.errors.push(catchFiber);
+        
+        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
+        // catchFiber.effectTag *= CAPTURE;
+        Renderer.catchError = true;
     } else {
 
         var p = fiber.return;
-       
         for(var i in p._children){
             if(p._children[i] == fiber){
                 fiber.type = noop;
@@ -67,7 +80,7 @@ function disableEffect(fiber) {
     if (fiber.stateNode) {
         fiber.stateNode.render = noop;
     }
-    fiber.effectTag = NOWORK;
+    fiber.effectTag = 1;
     for (var child = fiber.child; child; child = child.sibling) {
         disableEffect(fiber);
     }
@@ -89,8 +102,11 @@ function findCatchComponent(topFiber, names) {
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch) {
                 if (fiber._isDoctor) {
-                    disableEffect(fiber);
+                    fiber.effectTag = DETACH;
+                    console.log("它已经处理过一次了",fiber.effectTag);
+                    //disableEffect(fiber);
                 } else if ( fiber !== topFiber) {
+                    console.log("又找了一个",fiber.name);
                     return fiber;
                 }
             }

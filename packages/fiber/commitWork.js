@@ -21,12 +21,12 @@ export function commitEffects(a) {
     let tasks = a || effects;
     tasks = commitPlaceEffects(tasks);
     Renderer.isRendering = true;
-    /*
-    console.log(tasks.reduce(function (pre, el) {
-        pre.push(el.effectTag, el);
+    
+    /*  console.log(tasks.reduce(function (pre, el) {
+        pre.push(el.effectTag, el.name);
         return pre;
     }, []));
-    */
+ */   
     for (let i = 0, n = tasks.length; i < n; i++) {
         commitOtherEffects(tasks[i]);
         if (Renderer.error) {
@@ -34,7 +34,9 @@ export function commitEffects(a) {
             break;
         }
     }
-    effects.length = 0;
+   
+    effects.length = 0;  
+
     var error = Renderer.error;
     Renderer.isRendering = false;
     if (error) {
@@ -143,11 +145,15 @@ export function commitOtherEffects(fiber) {
                 break;
             case CAPTURE: // 29
                 fiber._isDoctor = true;
+
                 fiber.effectTag = 1; //清空其它
-                delete fiber._hydrating;
+                //  fiber._hydrating = false;
+                Renderer.hasError = true;
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);
                 delete fiber.errorInfo;
                 delete fiber._isDoctor;
+                
+              
                 break;
             }
         }

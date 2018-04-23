@@ -125,6 +125,7 @@ function createRenderer(methods) {
 }
 var Renderer = {
     macrotasks: [],
+    errors: [],
     controlledCbs: [],
     mountOrder: 1,
     currentOwner: null
@@ -1627,11 +1628,23 @@ function pushError(fiber, hook, error) {
     var catchFiber = findCatchComponent(fiber, names);
     var stack = describeError(names, hook);
     if (catchFiber) {
-        disableEffect(fiber);
-        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
+        fiber.effectTag = NOWORK;
+        fiber._hydrating = false;
         delete catchFiber._children;
         delete catchFiber.child;
         catchFiber.effectTag *= CAPTURE;
+        catchFiber = Object.assign({}, catchFiber);
+        catchFiber.effectTag = 1;
+        catchFiber.stateNode.updater.enqueueSetState = function (a) {
+            console.log("=====", catchFiber.name);
+            catchFiber._updates = {
+                pendingStates: [a]
+            };
+            catchFiber.stateNode.updater.enqueueSetState = Renderer.updateComponent;
+        };
+        Renderer.errors.push(catchFiber);
+        catchFiber.errorInfo = catchFiber.errorInfo || [error, { ownerStack: stack }];
+        Renderer.catchError = true;
     } else {
         var p = fiber.return;
         for (var i in p._children) {
@@ -1672,15 +1685,6 @@ function describeError(names, hook) {
     });
     return segments.join("\n").trim();
 }
-function disableEffect(fiber) {
-    if (fiber.stateNode) {
-        fiber.stateNode.render = noop;
-    }
-    fiber.effectTag = NOWORK;
-    for (var child = fiber.child; child; child = child.sibling) {
-        disableEffect(fiber);
-    }
-}
 function findCatchComponent(topFiber, names) {
     var instance = void 0,
         name = void 0,
@@ -1695,8 +1699,10 @@ function findCatchComponent(topFiber, names) {
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch) {
                 if (fiber._isDoctor) {
-                    disableEffect(fiber);
+                    fiber.effectTag = DETACH;
+                    console.log("它已经处理过一次了", fiber.effectTag);
                 } else if (fiber !== topFiber) {
+                    console.log("又找了一个", fiber.name);
                     return fiber;
                 }
             }
@@ -2327,7 +2333,7 @@ function commitOtherEffects(fiber) {
                 case CAPTURE:
                     fiber._isDoctor = true;
                     fiber.effectTag = 1;
-                    delete fiber._hydrating;
+                    Renderer.hasError = true;
                     instance.componentDidCatch.apply(instance, fiber.errorInfo);
                     delete fiber.errorInfo;
                     delete fiber._isDoctor;
@@ -2352,6 +2358,7 @@ fn$2.render = function () {
 var macrotasks = Renderer.macrotasks;
 var batchedtasks = [];
 var microtasks = [];
+window.microtasks = microtasks;
 function render$1(vnode, root, callback) {
     var container = createContainer(root),
         immediateUpdate = false;
@@ -2388,7 +2395,7 @@ function performWork(deadline, el) {
     workLoop(deadline);
     if (macrotasks.length || microtasks.length) {
         while (el = microtasks.shift()) {
-            if (!el.disabled) {
+            if (!el.disposed) {
                 macrotasks.push(el);
             }
         }
@@ -2453,6 +2460,16 @@ function workLoop(deadline) {
         } else {
             resetStack(info);
             commitEffects();
+            if (Renderer.hasError) {
+                console.log(" Renderer.errors", Renderer.errors);
+                var el;
+                while (el = Renderer.errors.shift()) {
+                    if (!el.disposed) {
+                        macrotasks.push(el);
+                    }
+                }
+                Renderer.scheduleWork();
+            }
         }
     }
 }

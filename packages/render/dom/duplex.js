@@ -155,7 +155,7 @@ function updateOptionsMore(options, n, propValue) {
         }
     } catch (e) {
         /* istanbul ignore next */
-       // console.log('the value of multiple select should be an array'); // eslint-disable-line
+        // console.log('the value of multiple select should be an array'); // eslint-disable-line
     }
     for (let i = 0; i < n; i++) {
         let option = options[i];

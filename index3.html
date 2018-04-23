@@ -2,32 +2,28 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/React.js"></script>
-  
-
-  <!-- <script type='text/javascript' src="./react.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-  <script type='text/javascript' src="./lib/babel.js"></script>
-  <!--<script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
 
 <body>
 
-  <pre>React 15 </pre>
+    <pre>React 15 </pre>
 
 
-  <div id='root' class="root">
+    <div id='root' class="root">
 
-  </div>
-  <script type='text/babel'>
+    </div>
+    <script type='text/babel'>
         
         var container = document.getElementById('root');
           var div = container;
-          var el = div
-        //  var React = ReactNoop
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -39,13 +35,162 @@
                   toEqual(b) {
                       console.log(a, 'vs', b, a + '' === b + '');
                   },
-                  toWarnDev(){}
+                  toThrow(){
+                      try{
+                          a()
+                      }catch(e){
+                          console.log(e,"catch")
+                      }
+                  }
               };
-         };
-    const node = ReactDOM.render(<div  />, container);
+		 };
+	/*	var log = {
+			push(a){
+				console.log(a)
+			}
+		}*/
+        var log = []
+        var BrokenRender = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('BrokenRender constructor');
+			}
+			render() {
+				log.push('BrokenRender render [!]');
+				throw new Error('Hello');
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenRender componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenRender componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenRender componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenRender componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenRender componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenRender componentWillUnmount');
+			}
+        };
+        var ErrorMessage = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('ErrorMessage constructor');
+			}
+			UNSAFE_componentWillMount() {
+				log.push('ErrorMessage componentWillMount');
+			}
+			componentDidMount() {
+				log.push('ErrorMessage componentDidMount');
+			}
+			componentWillUnmount() {
+				log.push('ErrorMessage componentWillUnmount');
+			}
+			render() {
+				log.push('ErrorMessage render');
+				return <div>Caught an error: {this.props.message}.</div>;
+			}
+		};
+        var ErrorBoundary = class extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = { error: null };
+				log.push(`${this.props.logName} constructor`);
+			}
+			render() {
+				if (this.state.error && !this.props.forceRetry) {
+					log.push(`${this.props.logName} render error`);
+					return this.props.renderError(this.state.error, this.props);
+				}
+				log.push(`${this.props.logName} render success`);
+				return <div>{this.props.children}</div>;
+			}
+			componentDidCatch(error) {
+				log.push(`${this.props.logName} componentDidCatch`);
+				this.setState({ error });
+			}
+			UNSAFE_componentWillMount() {
+				log.push(`${this.props.logName} componentWillMount`);
+			}
+			componentDidMount() {
+				log.push(`${this.props.logName} componentDidMount`);
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push(`${this.props.logName} componentWillReceiveProps`);
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push(`${this.props.logName} componentWillUpdate`);
+			}
+			componentDidUpdate() {
+				log.push(`${this.props.logName} componentDidUpdate`);
+			}
+			componentWillUnmount() {
+				log.push(`${this.props.logName} componentWillUnmount`);
+			}
+		};
+		ErrorBoundary.defaultProps = {
+			logName: 'ErrorBoundary',
+			renderError(error, props) {
+				return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
+			},
+		};
+	RetryErrorBoundary = class extends React.Component {
+      constructor(props) {
+        super(props);
+        log.push('RetryErrorBoundary constructor');
+      }
+      render() {
+        log.push('RetryErrorBoundary render');
+        return <BrokenRender />;
+      }
+      UNSAFE_componentWillMount() {
+        log.push('RetryErrorBoundary componentWillMount');
+      }
+      componentDidMount() {
+        log.push('RetryErrorBoundary componentDidMount');
+      }
+      componentWillUnmount() {
+        log.push('RetryErrorBoundary componentWillUnmount');
+      }
+      componentDidCatch(error) {
+        log.push('RetryErrorBoundary componentDidCatch [!]');
+        // In Fiber, calling setState() (and failing) is treated as a rethrow.
+        this.setState({});
+      }
+    };
 
+    const container = document.createElement('div');
+    ReactDOM.render(
+      <ErrorBoundary>
+        <BrokenRender />
+      </ErrorBoundary>,
+      container,
+    );
+    expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
+    expect(log).toEqual([
+      'ErrorBoundary constructor',
+      'ErrorBoundary componentWillMount',
+      'ErrorBoundary render success',
+      'BrokenRender constructor',
+      'BrokenRender componentWillMount',
+      'BrokenRender render [!]',
+      // Fiber mounts with null children before capturing error
+      'ErrorBoundary componentDidMount',
+      // Catch and render an error message
+      'ErrorBoundary componentDidCatch',
+      'ErrorBoundary componentWillUpdate',
+      'ErrorBoundary render error',
+      'ErrorBoundary componentDidUpdate',
+    ]);
+
+	
     </script>
 
 
 </html>
-

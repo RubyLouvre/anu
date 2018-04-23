@@ -4,14 +4,17 @@ import { collectEffects } from "./completeWork";
 import { commitEffects } from "./commitWork";
 import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
-import { __push, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
+import { __push, extend, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
 import { createInstance } from "./createInstance";
 
 const macrotasks = Renderer.macrotasks;
+const errors = Renderer.errors;
 const batchedtasks = [],
     microtasks = [];
+window.microtasks = microtasks;
+
 /*
 window.microtasks = microtasks;
 window.macrotasks = macrotasks;
@@ -49,7 +52,7 @@ export function render(vnode, root, callback) {
 }
 
 function wrapCb(fn, carrier) {
-    return function() {
+    return function () {
         var fiber = get(this);
         var target = fiber.child ? fiber.child.stateNode : null;
         fn && fn.call(target);
@@ -59,9 +62,9 @@ function wrapCb(fn, carrier) {
 
 function performWork(deadline, el) {
     workLoop(deadline);
-    if (macrotasks.length || microtasks.length) {
+    if (macrotasks.length || microtasks.length ) {
         while ((el = microtasks.shift())) {
-            if (!el.disabled) {
+            if (!el.disposed) {
                 macrotasks.push(el);
             }
         }
@@ -78,7 +81,7 @@ function requestIdleCallback(fn) {
     });
 }
 
-Renderer.scheduleWork = function() {
+Renderer.scheduleWork = function () {
     performWork({
         timeRemaining() {
             return 2;
@@ -87,7 +90,7 @@ Renderer.scheduleWork = function() {
 };
 
 var isBatchingUpdates = false;
-Renderer.batchedUpdates = function(callback) {
+Renderer.batchedUpdates = function (callback) {
     var keepbook = isBatchingUpdates;
     isBatchingUpdates = true;
     try {
@@ -131,6 +134,17 @@ function workLoop(deadline) {
         } else {
             resetStack(info);
             commitEffects(); //执行任务
+            if(Renderer.hasError){
+                console.log(" Renderer.errors", Renderer.errors);
+                var el;
+                while ((el = Renderer.errors.shift())) {
+                    if (!el.disposed) {
+                        macrotasks.push(el);
+                    }
+                }
+                Renderer.scheduleWork();
+        
+            }
         }
     }
 }
@@ -184,7 +198,7 @@ function fiberContains(p, son) {
 function pushChildQueue(fiber, queue) {
     //判定当前节点是否包含已进队的节点
     let maps = {};
-    for (let i = queue.length, el; (el = queue[--i]); ) {
+    for (let i = queue.length, el; (el = queue[--i]);) {
         //移除列队中比它小的组件
         if (fiber === el) {
             queue.splice(i, 1); //已经放进过，去掉
@@ -212,7 +226,7 @@ function pushChildQueue(fiber, queue) {
             }
         }
     }
-    hackSCU.forEach(function(el) {
+    hackSCU.forEach(function (el) {
         //如果是批量更新，必须强制更新，防止进入SCU
         if (el._updates) {
             el._updates.batching = true;
@@ -236,7 +250,6 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     let isForced = state === true;
     state = isForced ? null : sn === 5 || sn === 8 ? state : null;
     let parent = Renderer._hydratingParent;
-
     if (fiber.setout) {
         //情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
         // console.log("setState 1");
@@ -271,7 +284,7 @@ function validateTag(el) {
 export function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-		throw `container is not a element`; // eslint-disable-line
+        throw `container is not a element`; // eslint-disable-line
     }
     var canAdd = false;
     try {
@@ -279,7 +292,7 @@ export function createContainer(root, onlyGet, validate) {
         if (root.randomProps === 1) {
             canAdd = true;
         }
-    } catch (e) {}
+    } catch (e) { }
     if (canAdd) {
         if (get(root)) {
             return get(root);

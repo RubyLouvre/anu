@@ -26,15 +26,15 @@ export function collectEffects(fiber, updateFail, isTop) {
     if (isTop && fiber.tag == 5) { //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
     }
-
     for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
+       
         if (isHost) {
             child.insertPoint = child.parent.insertPoint;
             child.parent.insertPoint = child.stateNode;
         } else {
             if(child.type != AnuPortal ){
-               child.insertPoint = child.parent.insertPoint;
+                child.insertPoint = child.parent.insertPoint;
             }
         }
         if (updateFail || child.updateFail) {
