@@ -67,8 +67,7 @@ function typeNumber(data) {
 function getDOMNode() {
     return this;
 }
-var pendingRefs = [];
-window.pendingRefs = pendingRefs;
+
 var Refs = {
     mountOrder: 1,
     currentOwner: null,

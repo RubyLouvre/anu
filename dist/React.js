@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-12
+ * by 司徒正美 Copyright 2018-04-24
  * IE9+
  */
 
@@ -107,8 +107,7 @@ function typeNumber(data) {
 function getDOMNode() {
     return this;
 }
-var pendingRefs = [];
-window.pendingRefs = pendingRefs;
+
 var Refs = {
     mountOrder: 1,
     currentOwner: null,
@@ -851,186 +850,180 @@ var globalEvents = {};
 var eventPropHooks = {};
 var eventHooks = {};
 var eventLowerCache = {
-  onClick: "click",
-  onChange: "change",
-  onWheel: "wheel"
+    onClick: "click",
+    onChange: "change",
+    onWheel: "wheel"
 };
 function isEventName(name) {
-  return (/^on[A-Z]/.test(name)
-  );
+    return (/^on[A-Z]/.test(name)
+    );
 }
 var isTouch = "ontouchstart" in document;
 function dispatchEvent(e, type, end) {
-  e = new SyntheticEvent(e);
-  if (type) {
-    e.type = type;
-  }
-  var bubble = e.type;
-  var hook = eventPropHooks[bubble];
-  if (hook && false === hook(e)) {
-    return;
-  }
-  var paths = collectPaths(e.target, end || document);
-  var captured = bubble + "capture";
-  document.__async = true;
-  triggerEventFlow(paths, captured, e);
-  if (!e._stopPropagation) {
-    triggerEventFlow(paths.reverse(), bubble, e);
-  }
-  document.__async = false;
-  flushUpdaters();
-  Refs.controlledCbs.forEach(function (el) {
-    if (el.stateNode) {
-      el.controlledCb({
-        target: el.stateNode
-      });
+    e = new SyntheticEvent(e);
+    if (type) {
+        e.type = type;
     }
-  });
-  Refs.controlledCbs.length = 0;
+    var bubble = e.type;
+    var hook = eventPropHooks[bubble];
+    if (hook && false === hook(e)) {
+        return;
+    }
+    var paths = collectPaths(e.target, end || document);
+    var captured = bubble + "capture";
+    document.__async = true;
+    triggerEventFlow(paths, captured, e);
+    if (!e._stopPropagation) {
+        triggerEventFlow(paths.reverse(), bubble, e);
+    }
+    document.__async = false;
+    flushUpdaters();
+    Refs.controlledCbs.forEach(function (el) {
+        if (el.stateNode) {
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Refs.controlledCbs.length = 0;
 }
 function collectPaths(from, end) {
-  var paths = [];
-  var node = from;
-  while (node && !node.__events) {
-    node = node.parentNode;
-    if (end === from) {
-      return paths;
+    var paths = [];
+    var node = from;
+    while (node && !node.__events) {
+        node = node.parentNode;
+        if (end === from) {
+            return paths;
+        }
     }
-  }
-  if (!node || node.nodeType > 1) {
+    if (!node || node.nodeType > 1) {
+        return paths;
+    }
+    var mid = node.__events;
+    var vnode = mid.vnode;
+    if (vnode._isPortal) {
+        vnode = vnode.child;
+    }
+    do {
+        if (vnode.tag === 5) {
+            var dom = vnode.stateNode;
+            if (dom === end) {
+                break;
+            }
+            if (!dom) {
+                break;
+            }
+            if (dom.__events) {
+                paths.push({ dom: dom, events: dom.__events });
+            }
+        }
+    } while (vnode = vnode.return);
     return paths;
-  }
-  var mid = node.__events;
-  var vnode = mid.vnode;
-  if (vnode._isPortal) {
-    vnode = vnode.child;
-  }
-  do {
-    if (vnode.tag === 5) {
-      var dom = vnode.stateNode;
-      if (dom === end) {
-        break;
-      }
-      if (!dom) {
-        break;
-      }
-      if (dom.__events) {
-        paths.push({ dom: dom, events: dom.__events });
-      }
-    }
-  } while (vnode = vnode.return);
-  return paths;
 }
 function triggerEventFlow(paths, prop, e) {
-  for (var i = paths.length; i--;) {
-    var path = paths[i];
-    var fn = path.events[prop];
-    if (isFn(fn)) {
-      e.currentTarget = path.dom;
-      fn.call(void 666, e);
-      if (e._stopPropagation) {
-        break;
-      }
+    for (var i = paths.length; i--;) {
+        var path = paths[i];
+        var fn = path.events[prop];
+        if (isFn(fn)) {
+            e.currentTarget = path.dom;
+            fn.call(void 666, e);
+            if (e._stopPropagation) {
+                break;
+            }
+        }
     }
-  }
 }
 function addGlobalEvent(name, capture) {
-  if (!globalEvents[name]) {
-    globalEvents[name] = true;
-    addEvent(document, name, dispatchEvent, capture);
-  }
+    if (!globalEvents[name]) {
+        globalEvents[name] = true;
+        addEvent(document, name, dispatchEvent, capture);
+    }
 }
 function addEvent(el, type, fn, bool) {
-  if (el.addEventListener) {
-    el.addEventListener(type, fn, bool || false);
-  } else if (el.attachEvent) {
-    el.attachEvent("on" + type, fn);
-  }
+    if (el.addEventListener) {
+        el.addEventListener(type, fn, bool || false);
+    } else if (el.attachEvent) {
+        el.attachEvent("on" + type, fn);
+    }
 }
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
-  var lower = eventLowerCache[onStr];
-  if (lower) {
+    var lower = eventLowerCache[onStr];
+    if (lower) {
+        return lower;
+    }
+    var camel = onStr.slice(2).replace(rcapture, "");
+    lower = camel.toLowerCase();
+    eventLowerCache[onStr] = lower;
     return lower;
-  }
-  var camel = onStr.slice(2).replace(rcapture, "");
-  lower = camel.toLowerCase();
-  eventLowerCache[onStr] = lower;
-  return lower;
 }
 function getRelatedTarget(e) {
-  if (!e.timeStamp) {
-    e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
-  }
-  return e.relatedTarget;
+    if (!e.timeStamp) {
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+    }
+    return e.relatedTarget;
 }
 String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
-  eventHooks[name] = function (dom, type) {
-    var mark = "__" + type;
-    if (!dom[mark]) {
-      dom[mark] = true;
-      var mask = type === "mouseenter" ? "mouseover" : "mouseout";
-      addEvent(dom, mask, function (e) {
-        var t = getRelatedTarget(e);
-        if (!t || t !== dom && !contains(dom, t)) {
-          var common = getLowestCommonAncestor(dom, t);
-          dispatchEvent(e, type, common);
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function (e) {
+                var t = getRelatedTarget(e);
+                if (!t || t !== dom && !contains(dom, t)) {
+                    var common = getLowestCommonAncestor(dom, t);
+                    dispatchEvent(e, type, common);
+                }
+            });
         }
-      });
-    }
-  };
+    };
 });
 function getLowestCommonAncestor(instA, instB) {
-  var depthA = 0;
-  for (var tempA = instA; tempA; tempA = tempA.parentNode) {
-    depthA++;
-  }
-  var depthB = 0;
-  for (var tempB = instB; tempB; tempB = tempB.parentNode) {
-    depthB++;
-  }
-  while (depthA - depthB > 0) {
-    instA = instA.parentNode;
-    depthA--;
-  }
-  while (depthB - depthA > 0) {
-    instB = instB.parentNode;
-    depthB--;
-  }
-  var depth = depthA;
-  while (depth--) {
-    if (instA === instB) {
-      return instA;
+    var depthA = 0;
+    for (var tempA = instA; tempA; tempA = tempA.parentNode) {
+        depthA++;
     }
-    instA = instA.parentNode;
-    instB = instB.parentNode;
-  }
-  return null;
+    var depthB = 0;
+    for (var tempB = instB; tempB; tempB = tempB.parentNode) {
+        depthB++;
+    }
+    while (depthA - depthB > 0) {
+        instA = instA.parentNode;
+        depthA--;
+    }
+    while (depthB - depthA > 0) {
+        instB = instB.parentNode;
+        depthB--;
+    }
+    var depth = depthA;
+    while (depth--) {
+        if (instA === instB) {
+            return instA;
+        }
+        instA = instA.parentNode;
+        instB = instB.parentNode;
+    }
+    return null;
 }
 var specialHandles = {};
 function createHandle(name, fn) {
-  return specialHandles[name] = function (e) {
-    if (fn && fn(e) === false) {
-      return;
-    }
-    dispatchEvent(e, name);
-  };
-}
-function dispatchEventOnNode(node, type) {
-  node.dispatchEvent(new Event(type, {
-    bubbles: true,
-    cancelable: true
-  }));
+    return specialHandles[name] = function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
 }
 function onCompositionStart(e) {
-  e.target.__onComposition = true;
+    e.target.__onComposition = true;
 }
 function onCompositionEnd(e) {
-  e.target.__onComposition = false;
-  dispatchEventOnNode(e.target, "change");
+    e.target.__onComposition = false;
+    dispatchEvent(e, "change");
 }
 function isInCompositionMode(e) {
-  return !e.target.__onComposition;
+    return !e.target.__onComposition;
 }
 createHandle("doubleclick");
 createHandle("scroll");
@@ -1039,129 +1032,129 @@ globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 if (isTouch) {
-  eventHooks.click = eventHooks.clickcapture = function (dom) {
-    dom.onclick = dom.onclick || noop;
-  };
-  createHandle("change", isInCompositionMode);
-  eventHooks.changecapture = eventHooks.change = function (dom) {
-    if (/text|password|search/.test(dom.type)) {
-      addEvent(dom, "compositionstart", onCompositionStart);
-      addEvent(dom, "compositionend", onCompositionEnd);
-      addEvent(document, "input", specialHandles.change);
-    }
-  };
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
+        dom.onclick = dom.onclick || noop;
+    };
+    createHandle("change", isInCompositionMode);
+    eventHooks.changecapture = eventHooks.change = function (dom) {
+        if (/text|password|search/.test(dom.type)) {
+            addEvent(dom, "compositionstart", onCompositionStart);
+            addEvent(dom, "compositionend", onCompositionEnd);
+            addEvent(document, "input", specialHandles.change);
+        }
+    };
 } else {
-  createHandle("change");
-  eventHooks.changecapture = eventHooks.change = function (dom) {
-    if (/text|password|search/.test(dom.type)) {
-      addEvent(document, "input", specialHandles.change);
-    }
-  };
+    createHandle("change");
+    eventHooks.changecapture = eventHooks.change = function (dom) {
+        if (/text|password|search/.test(dom.type)) {
+            addEvent(document, "input", specialHandles.change);
+        }
+    };
 }
 eventPropHooks.click = function (e) {
-  return !e.target.disabled;
+    return !e.target.disabled;
 };
 var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
 eventHooks.wheel = function (dom) {
-  addEvent(dom, fixWheelType, specialHandles.wheel);
+    addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 eventPropHooks.wheel = function (event) {
-  event.deltaX = "deltaX" in event ? event.deltaX :
-  "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
-  event.deltaY = "deltaY" in event ? event.deltaY :
-  "wheelDeltaY" in event ? -event.wheelDeltaY :
-  "wheelDelta" in event ? -event.wheelDelta : 0;
+    event.deltaX = "deltaX" in event ? event.deltaX :
+    "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
+    event.deltaY = "deltaY" in event ? event.deltaY :
+    "wheelDeltaY" in event ? -event.wheelDeltaY :
+    "wheelDelta" in event ? -event.wheelDelta : 0;
 };
 var focusMap = {
-  focus: "focus",
-  blur: "blur"
+    focus: "focus",
+    blur: "blur"
 };
 function blurFocus(e) {
-  var dom = e.target || e.srcElement;
-  var type = focusMap[e.type];
-  var isFocus = type === "focus";
-  if (isFocus && dom.__inner__) {
-    dom.__inner__ = false;
-    return;
-  }
-  if (!isFocus && Refs.focusNode === dom) {
-    Refs.focusNode = null;
-  }
-  do {
-    if (dom.nodeType === 1) {
-      if (dom.__events && dom.__events[type]) {
-        dispatchEvent(e, type);
-        break;
-      }
-    } else {
-      break;
+    var dom = e.target || e.srcElement;
+    var type = focusMap[e.type];
+    var isFocus = type === "focus";
+    if (isFocus && dom.__inner__) {
+        dom.__inner__ = false;
+        return;
     }
-  } while (dom = dom.parentNode);
+    if (!isFocus && Refs.focusNode === dom) {
+        Refs.focusNode = null;
+    }
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
+                dispatchEvent(e, type);
+                break;
+            }
+        } else {
+            break;
+        }
+    } while (dom = dom.parentNode);
 }
 "blur,focus".replace(/\w+/g, function (type) {
-  globalEvents[type] = true;
-  if (modern) {
-    var mark = "__" + type;
-    if (!document[mark]) {
-      document[mark] = true;
-      addEvent(document, type, blurFocus, true);
+    globalEvents[type] = true;
+    if (modern) {
+        var mark = "__" + type;
+        if (!document[mark]) {
+            document[mark] = true;
+            addEvent(document, type, blurFocus, true);
+        }
+    } else {
+        eventHooks[type] = function (dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
     }
-  } else {
-    eventHooks[type] = function (dom, name) {
-      addEvent(dom, focusMap[name], blurFocus);
-    };
-  }
 });
 eventHooks.scroll = function (dom, name) {
-  addEvent(dom, name, specialHandles[name]);
+    addEvent(dom, name, specialHandles[name]);
 };
 eventHooks.doubleclick = function (dom, name) {
-  addEvent(document, "dblclick", specialHandles[name]);
+    addEvent(document, "dblclick", specialHandles[name]);
 };
 function SyntheticEvent(event) {
-  if (event.nativeEvent) {
-    return event;
-  }
-  for (var i in event) {
-    if (!eventProto[i]) {
-      this[i] = event[i];
+    if (event.nativeEvent) {
+        return event;
     }
-  }
-  if (!this.target) {
-    this.target = event.srcElement;
-  }
-  this.fixEvent();
-  this.timeStamp = new Date() - 0;
-  this.nativeEvent = event;
+    for (var i in event) {
+        if (!eventProto[i]) {
+            this[i] = event[i];
+        }
+    }
+    if (!this.target) {
+        this.target = event.srcElement;
+    }
+    this.fixEvent();
+    this.timeStamp = new Date() - 0;
+    this.nativeEvent = event;
 }
 var eventProto = SyntheticEvent.prototype = {
-  fixEvent: noop,
-  fixHooks: noop,
-  persist: noop,
-  preventDefault: function preventDefault() {
-    var e = this.nativeEvent || {};
-    e.returnValue = this.returnValue = false;
-    if (e.preventDefault) {
-      e.preventDefault();
+    fixEvent: noop,
+    fixHooks: noop,
+    persist: noop,
+    preventDefault: function preventDefault() {
+        var e = this.nativeEvent || {};
+        e.returnValue = this.returnValue = false;
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+    },
+    stopPropagation: function stopPropagation() {
+        var e = this.nativeEvent || {};
+        e.cancelBubble = this._stopPropagation = true;
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+    },
+    stopImmediatePropagation: function stopImmediatePropagation() {
+        this.stopPropagation();
+        this.stopImmediate = true;
+    },
+    toString: function toString() {
+        return "[object Event]";
     }
-  },
-  stopPropagation: function stopPropagation() {
-    var e = this.nativeEvent || {};
-    e.cancelBubble = this._stopPropagation = true;
-    if (e.stopPropagation) {
-      e.stopPropagation();
-    }
-  },
-  stopImmediatePropagation: function stopImmediatePropagation() {
-    this.stopPropagation();
-    this.stopImmediate = true;
-  },
-  toString: function toString() {
-    return "[object Event]";
-  }
 };
 extend || (extend = function (a) {
-  return a;
+    return a;
 });
 
 

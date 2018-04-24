@@ -1,3 +1,8 @@
+## 1.3.2(2018.04.24)
+
+1.  处理后渲渲染时,window的调试信息导致的BUG
+2. 	修复移动浏览器下输入法导致的 change 事件问题
+
 ## 1.3.1(2018.03.18)
 
 1. React.Fragment支持key属性
@@ -12,7 +17,7 @@
 2. 添加大量React.Fragment测试，修正一些边缘的BUG
 3. 升级diff机制，由新旧vnode进行比较，改成fiber与新vnode进行比较，用新vnode的数据更新fiber与视图
 4. 添加input[type=search]的onChange事件支持
-5. 修正传送门在antd3.0的一个边缘BUG（重复插入两次，导致文本节点消失）
+5. 修正传送门在antd3.0的一个边缘BUG（重复插入两次，导致文本节点消失）
 6. 属性名与方法名大改动，与React16的Fiber靠近
    * `vnode.vtype` --> fiber.tag
    * `instance.__isStateless` --> fiber._isStateless
