@@ -92,15 +92,15 @@ Renderer.scheduleWork = function () {
     performWork(ricObj);
 };
 
-var isBatchingUpdates = false;
+var isBatching = false;
 Renderer.batchedUpdates = function (callback) {
-    var keepbook = isBatchingUpdates;
-    isBatchingUpdates = true;
+    var keepbook = isBatching;
+    isBatching = true;
     try {
         return callback();
     } finally {
-        isBatchingUpdates = keepbook;
-        if (!isBatchingUpdates) {
+        isBatching = keepbook;
+        if (!isBatching) {
             var el;
             while ((el = batchedtasks.shift())) {
                 if (!el.disabled) {
@@ -255,7 +255,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
         //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
         // console.log("setState 2");
         microtasks.push(fiber);
-    } else if (isBatchingUpdates && !immediateUpdate) {
+    } else if (isBatching && !immediateUpdate) {
         // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
         //  console.log("setState 3");
         //情况3， 在batchedUpdates中setState，可能放进batchedtasks

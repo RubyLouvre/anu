@@ -2426,15 +2426,15 @@ function requestIdleCallback(fn) {
 Renderer.scheduleWork = function () {
     performWork(ricObj);
 };
-var isBatchingUpdates = false;
+var isBatching = false;
 Renderer.batchedUpdates = function (callback) {
-    var keepbook = isBatchingUpdates;
-    isBatchingUpdates = true;
+    var keepbook = isBatching;
+    isBatching = true;
     try {
         return callback();
     } finally {
-        isBatchingUpdates = keepbook;
-        if (!isBatchingUpdates) {
+        isBatching = keepbook;
+        if (!isBatching) {
             var el;
             while (el = batchedtasks.shift()) {
                 if (!el.disabled) {
@@ -2565,7 +2565,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
         immediateUpdate = false;
     } else if (parent && fiberContains(parent, fiber)) {
         microtasks.push(fiber);
-    } else if (isBatchingUpdates && !immediateUpdate) {
+    } else if (isBatching && !immediateUpdate) {
         pushChildQueue(fiber, batchedtasks);
     } else {
         immediateUpdate = immediateUpdate || !fiber._hydrating;
