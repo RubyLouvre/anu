@@ -22,7 +22,6 @@ const fakeObject = {
     isMounted: returnFalse
 };
 
-
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类
     replaceState() {

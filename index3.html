@@ -78,6 +78,35 @@
 				log.push('BrokenRender componentWillUnmount');
 			}
         };
+        var BrokenComponentWillMount = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentWillMount constructor');
+			}
+			render() {
+				log.push('BrokenComponentWillMount render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentWillMount componentWillMount [!]');
+				throw new Error('Hello');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentWillMount componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentWillMount componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentWillMount componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentWillMount componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentWillMount componentWillUnmount');
+			}
+		};
         var ErrorMessage = class extends React.Component {
 			constructor(props) {
 				super(props);
@@ -165,28 +194,29 @@
       }
     };
 
+    function renderError(error) {
+        return <ErrorMessage message={error.message} />;
+    }
+
     const container = document.createElement('div');
     ReactDOM.render(
-      <ErrorBoundary>
-        <BrokenRender />
-      </ErrorBoundary>,
-      container,
+        <ErrorBoundary>
+            <BrokenComponentWillMount />
+        </ErrorBoundary>,
+        container
     );
     expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
     expect(log).toEqual([
-      'ErrorBoundary constructor',
-      'ErrorBoundary componentWillMount',
-      'ErrorBoundary render success',
-      'BrokenRender constructor',
-      'BrokenRender componentWillMount',
-      'BrokenRender render [!]',
-      // Fiber mounts with null children before capturing error
-      'ErrorBoundary componentDidMount',
-      // Catch and render an error message
-      'ErrorBoundary componentDidCatch',
-      'ErrorBoundary componentWillUpdate',
-      'ErrorBoundary render error',
-      'ErrorBoundary componentDidUpdate',
+        'ErrorBoundary constructor',
+        'ErrorBoundary componentWillMount',
+        'ErrorBoundary render success',
+        'BrokenComponentWillMount constructor',
+        'BrokenComponentWillMount componentWillMount [!]',
+        'ErrorBoundary componentDidMount',
+        'ErrorBoundary componentDidCatch',
+        'ErrorBoundary componentWillUpdate',
+        'ErrorBoundary render error',
+        'ErrorBoundary componentDidUpdate',
     ]);
 
 	

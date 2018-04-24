@@ -5,7 +5,6 @@ export function createRenderer(methods) {
 
 export const Renderer = {
     macrotasks: [],
-    errors: [],
     controlledCbs: [],
     mountOrder: 1,
     currentOwner: null//vnode
