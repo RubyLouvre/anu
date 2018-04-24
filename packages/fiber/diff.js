@@ -7,6 +7,7 @@ import { Renderer } from "react-core/createRenderer";
 import { __push, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
+
 import { createInstance } from "./createInstance";
 
 const macrotasks = Renderer.macrotasks;
@@ -69,6 +70,8 @@ function performWork(deadline, el) {
             }
         }
         if (boundary) {
+            //  boundary.effectTag *= CAPTURE;
+            //   boundary.effects = effects;
             delete Renderer.catchBoundary;
             delete Renderer.hasError;
             macrotasks.push(boundary);

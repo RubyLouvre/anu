@@ -15,9 +15,10 @@ import { effects } from "./util";
 import { guardCallback } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 
-import { returnFalse, get, __push, returnTrue, emptyObject } from "react-core/util";
+import { returnFalse, __push, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
+import { detachFiber } from "./ErrorBoundary";
 
 export function commitEffects() {
     commitPlaceEffects(effects);
@@ -157,6 +158,7 @@ export function commitOtherEffects(fiber, tasks) {
             case CAPTURE: // 23
                 fiber._isDoctor = true;
                 fiber.effectTag = amount;
+                //  fiber._children = fiber.child = null;
                 //根据观察，componentDidCatch里面的setState不会中断流程，它还会继续往上一个个执行钩子
                 //最后才执行它的render
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);

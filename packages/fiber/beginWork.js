@@ -5,8 +5,8 @@ import { AnuPortal } from "react-core/createPortal";
 import { Renderer } from "react-core/createRenderer";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
-import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
-import { guardCallback, pushError, applyCallback } from "./ErrorBoundary";
+import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
+import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
 import { gDSFP, gSBU } from "./util";
 
 /**
@@ -283,17 +283,7 @@ function isSameNode(a, b) {
     }
 }
 
-export function detachFiber(fiber, effects) {
-    fiber.effectTag = DETACH;
-    if (fiber.ref) {
-        fiber.effectTag *= NULLREF;
-    }
-    fiber.disposed = true;
-    effects.push(fiber);
-    for (let child = fiber.child; child; child = child.sibling) {
-        detachFiber(child, effects);
-    }
-}
+
 
 function getDerivedStateFromProps(instance, fiber, nextProps, lastState) {
 
