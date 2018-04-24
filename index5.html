@@ -2,28 +2,28 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script type='text/javascript' src="./react.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
 </head>
 
 <body>
 
-    <pre>应该等于
+  <pre>应该等于
       
     </pre>
 
 
-    <h1 id='example' class="root">
+  <h1 id='example' class="root">
 
-    </h1>
+  </h1>
 
-    <script type='text/babel'>
+  <script type='text/babel'>
 var container = document.getElementById('example');
 var div = container;
 if (!window.ReactDOM) {
@@ -35,11 +35,11 @@ var PropTypes = React.PropTypes
 
 var expect = function(a) {
 	return {
-		toBe: function(b) {
-			console.log(a, 'vs', b, a === b);
-		},
-		toEqual(b) {
-			console.log(a, 'vs', b, a + '' === b + '');
+        toBe: function(b) {
+            console.log(a, 'vs', b, a === b);
+        },
+        toEqual(b) {
+		      	console.log(a, 'vs', b, a + '' === b + '');
         },
         toWarnDev(){
             a()
@@ -49,66 +49,41 @@ var expect = function(a) {
         },
         toBeFalsy(){
             console.log(a, 'vs', false, !!a === false);
+        },
+        toThrow(e){
+          try{
+             a()
+          }catch(e){
+            console.log(e, "catch")
+          }
         }
 	};
 };
-const divRef = React.createRef();
-    let childInstance;
+const portalContainer = document.createElement('div');
 
-    class Child extends React.Component {
-      state = {local: 0};
-      //local:0  remote 0
-      static getDerivedStateFromProps(nextProps, prevState) {
-        console.log("getDerivedStateFromProps", JSON.stringify(nextProps), JSON.stringify(prevState))
-        return {...prevState, remote: nextProps.remote};
-      }
-      updateState = () => {
-          // 1  2
-       // console.log("updateState")
-        this.setState(function(state){
-          console.log("setStateFn local", state.local + 1)
-           return {local: state.local + 1}
-        });
-        // console.log("onChange remote ",this.state.remote + 1)
-        this.props.onChange(this.state.remote + 1);
-      }; 
-      shouldComponentUpdate(){
-          console.log("shouldComponentUpdate")
-        return true
-      }
-      render() {
-        childInstance = this;
-        return (
-          <div onClick={this.updateState} ref={divRef}>{`remote:${
-            this.state.remote
-          }, local:${this.state.local}`}</div>
-        );
-      }
-    }
-//should not override state with stale values if prevState is spread within getDerivedStateFromProps
+ReactDOM.render(<div>{ReactDOM.createPortal(<div>portal:1</div>, portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('<div>portal:1</div>');
+expect(container.innerHTML).toBe('<div></div>');
 
-    class Parent extends React.Component {
-      state = {value: 0};
-      handleChange = value => {
-       // console.log("handleChange remote",value)
-        this.setState({value});
-      };
-      render() {
-          // 0
-        return <Child remote={this.state.value} onChange={this.handleChange} />;
-      }
-    }
-    console.log("========")
-    ReactDOM.render(<Parent />,container);
-    expect(divRef.current.textContent).toBe('remote:0, local:0');
-    console.log("updateState.........")
-    // Trigger setState() calls
-    childInstance.updateState();
-    expect(divRef.current.textContent).toBe('remote:1, local:1');
-   // console.log("触发事件。。。。。。")
-    // Trigger batched setState() calls
-    divRef.current.click()
-    expect(divRef.current.textContent).toBe('remote:2, local:2');
+ReactDOM.render(<div>{ReactDOM.createPortal(<div>portal:2</div>, portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('<div>portal:2</div>');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(<div>{ReactDOM.createPortal(<p>portal:3</p>, portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('<p>portal:3</p>');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(<div>{ReactDOM.createPortal(['Hi', 'Bye'], portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('HiBye');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(<div>{ReactDOM.createPortal(['Bye', 'Hi'], portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('ByeHi');
+expect(container.innerHTML).toBe('<div></div>');
+
+ReactDOM.render(<div>{ReactDOM.createPortal(null, portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('');
+expect(container.innerHTML).toBe('<div></div>');
 
    </script>
 </body>

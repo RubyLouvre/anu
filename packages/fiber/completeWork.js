@@ -28,7 +28,6 @@ export function collectEffects(fiber, updateFail, isTop) {
     }
     for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
-       
         if (isHost) {
             child.insertPoint = child.parent.insertPoint;
             child.parent.insertPoint = child.stateNode;

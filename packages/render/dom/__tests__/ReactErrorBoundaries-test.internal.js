@@ -825,7 +825,7 @@ describe('ReactErrorBoundaries', () => {
 			'ErrorBoundary render error',
 			'ErrorBoundary componentDidUpdate',
 		];
-		expect(log).toEqual(anujs);
+		expect(log).toEqual(official);
 
 		log.length = 0;
 		ReactDOM.unmountComponentAtNode(container);

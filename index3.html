@@ -193,31 +193,117 @@
         this.setState({});
       }
     };
+   var  BrokenComponentWillUpdate = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentWillUpdate constructor');
+			}
+			render() {
+				log.push('BrokenComponentWillUpdate render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentWillUpdate componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentWillUpdate componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentWillUpdate componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentWillUpdate componentWillUpdate [!]');
+				throw new Error('Hello');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentWillUpdate componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentWillUpdate componentWillUnmount');
+			}
+		};
 
-    function renderError(error) {
-        return <ErrorMessage message={error.message} />;
-    }
+var BrokenComponentDidUpdate = class extends React.Component {
+			static defaultProps = {
+				errorText: 'Hello',
+			};
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentDidUpdate constructor');
+			}
+			render() {
+				log.push('BrokenComponentDidUpdate render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentDidUpdate componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentDidUpdate componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentDidUpdate componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentDidUpdate componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentDidUpdate componentDidUpdate [!]');
+				throw new Error(this.props.errorText);
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentDidUpdate componentWillUnmount');
+			}
+        };
+        
+      var  BrokenComponentWillReceiveProps = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentWillReceiveProps constructor');
+			}
+			render() {
+				log.push('BrokenComponentWillReceiveProps render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentWillReceiveProps componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentWillReceiveProps componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentWillReceiveProps componentWillReceiveProps [!]');
+				throw new Error('Hello');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentWillReceiveProps componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentWillReceiveProps componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentWillReceiveProps componentWillUnmount');
+			}
+		};
 
-    const container = document.createElement('div');
-    ReactDOM.render(
-        <ErrorBoundary>
-            <BrokenComponentWillMount />
-        </ErrorBoundary>,
-        container
-    );
-    expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-    expect(log).toEqual([
-        'ErrorBoundary constructor',
-        'ErrorBoundary componentWillMount',
-        'ErrorBoundary render success',
-        'BrokenComponentWillMount constructor',
-        'BrokenComponentWillMount componentWillMount [!]',
-        'ErrorBoundary componentDidMount',
-        'ErrorBoundary componentDidCatch',
-        'ErrorBoundary componentWillUpdate',
-        'ErrorBoundary render error',
-        'ErrorBoundary componentDidUpdate',
-    ]);
+    // let container = document.createElement('div');
+    ReactDOM.render(<BrokenComponentWillUpdate />, container);
+    expect(() => {
+      ReactDOM.render(<BrokenComponentWillUpdate />, container);
+    }).toThrow('Hello');
+
+    container = document.createElement('div');
+    ReactDOM.render(<BrokenComponentWillReceiveProps />, container);
+    expect(() => {
+      ReactDOM.render(<BrokenComponentWillReceiveProps />, container);
+    }).toThrow('Hello');
+
+    container = document.createElement('div');
+    ReactDOM.render(<BrokenComponentDidUpdate />, container);
+    expect(() => {
+      ReactDOM.render(<BrokenComponentDidUpdate />, container);
+    }).toThrow('Hello');
+
 
 	
     </script>

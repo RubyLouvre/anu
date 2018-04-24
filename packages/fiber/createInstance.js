@@ -2,7 +2,7 @@ import { returnFalse, returnTrue } from "react-core/util";
 import { Component } from "react-core/Component";
 
 import { Renderer } from "react-core/createRenderer";
-import { pushError } from "./ErrorBoundary";
+//import { pushError } from "./ErrorBoundary";
 
 export function createInstance(fiber, context) {
     let updater = {
@@ -14,6 +14,7 @@ export function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = (fiber.stateNode = {});
+    fiber.errorHook = "constructor";
     try {
         if (isStateless) {
             instance = {
@@ -66,8 +67,8 @@ export function createInstance(fiber, context) {
                 throw `${type.name} doesn't extend React.Component`;
             }
         }
-    } catch (e) {
-        pushError(fiber, "constructor", e);
+    // }catch (e) {
+    //   pushError(fiber, "constructor", e);
     } finally {
         Renderer.currentOwner = lastOwn;
     }
