@@ -2,25 +2,25 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
-    <pre>React 15 </pre>
+  <pre>React 15 </pre>
 
 
-    <div id='root' class="root">
+  <div id='root' class="root">
 
-    </div>
-    <script type='text/babel'>
+  </div>
+  <script type='text/babel'>
         
         var container = document.getElementById('root');
           var div = container;
@@ -223,45 +223,61 @@
       }
     };
 
-    function renderError(error) {
-        return <ErrorMessage message={error.message} />;
-    }
-    const container = document.createElement('div');
-    ReactDOM.render(
-      <ErrorBoundary>
-        <BrokenRenderErrorBoundary>
-          <BrokenRender />
-        </BrokenRenderErrorBoundary>
-      </ErrorBoundary>,
-      container,
-    );
-    expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-    expect(log).toEqual([
-      'ErrorBoundary constructor',
-      'ErrorBoundary componentWillMount',
-      'ErrorBoundary render success',
-      'BrokenRenderErrorBoundary constructor',
-      'BrokenRenderErrorBoundary componentWillMount',
-      'BrokenRenderErrorBoundary render success',
-      'BrokenRender constructor',
-      'BrokenRender componentWillMount',
-      'BrokenRender render [!]',
-      // The first error boundary catches the error
-      // It adjusts state but throws displaying the message
-      // Finish mounting with null children
-      'BrokenRenderErrorBoundary componentDidMount',
-      // Attempt to handle the error
-      'BrokenRenderErrorBoundary componentDidCatch',
-      'ErrorBoundary componentDidMount',
-      'BrokenRenderErrorBoundary render error [!]',
-      // Boundary fails with new error, propagate to next boundary
-      'BrokenRenderErrorBoundary componentWillUnmount',
-      // Attempt to handle the error again
-      'ErrorBoundary componentDidCatch',
-      'ErrorBoundary componentWillUpdate',
-      'ErrorBoundary render error',
-      'ErrorBoundary componentDidUpdate',
-    ]);
+    function child1Ref(x) {
+		  log.push('Child1 ref is set to ' + x);
+		}
+		function child2Ref(x) {
+		  log.push('Child2 ref is set to ' + x);
+		}
+		function errorMessageRef(x) {
+		  log.push('Error message ref is set to ' + x);
+		}
+	
+		const container = document.createElement('div');
+		ReactDOM.render(
+		  <ErrorBoundary errorMessageRef={errorMessageRef}>
+			<div ref={child1Ref} />
+		  </ErrorBoundary>,
+		  container,
+		);
+		expect(log).toEqual([
+		  'ErrorBoundary constructor',
+		  'ErrorBoundary componentWillMount',
+		  'ErrorBoundary render success',
+		  'Child1 ref is set to [object HTMLDivElement]',
+		  'ErrorBoundary componentDidMount',
+		]);
+	
+		log.length = 0;
+		ReactDOM.render(
+		  <ErrorBoundary errorMessageRef={errorMessageRef}>
+			<div ref={child1Ref} />
+			<div ref={child2Ref} />
+			<BrokenRender />
+		  </ErrorBoundary>,
+		  container,
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+		  'ErrorBoundary componentWillReceiveProps',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render success',
+		  // BrokenRender will abort rendering:
+		  'BrokenRender constructor',
+		  'BrokenRender componentWillMount',
+		  'BrokenRender render [!]',
+		  // Finish updating with null children
+		  'Child1 ref is set to null',
+		  'ErrorBoundary componentDidUpdate',
+		  // Handle the error
+		  'ErrorBoundary componentDidCatch',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render error',
+		  'Error message ref is set to [object HTMLDivElement]',
+		  // Child2 ref is never set because its mounting aborted
+		  'ErrorBoundary componentDidUpdate',
+		]);
+	
 
 	
     </script>

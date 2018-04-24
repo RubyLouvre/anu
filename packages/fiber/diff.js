@@ -70,8 +70,6 @@ function performWork(deadline, el) {
             }
         }
         if (boundary) {
-            //  boundary.effectTag *= CAPTURE;
-            //   boundary.effects = effects;
             delete Renderer.catchBoundary;
             delete Renderer.hasError;
             macrotasks.push(boundary);
