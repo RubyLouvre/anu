@@ -59,30 +59,26 @@ var expect = function(a) {
         }
 	};
 };
-const portalContainer = document.createElement('div');
 
-ReactDOM.render(<div>{ReactDOM.createPortal(<div>portal:1</div>, portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('<div>portal:1</div>');
-expect(container.innerHTML).toBe('<div></div>');
+class Text extends React.Component {
+			render() {
+				return this.props.value;
+			}
+		}
 
-ReactDOM.render(<div>{ReactDOM.createPortal(<div>portal:2</div>, portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('<div>portal:2</div>');
-expect(container.innerHTML).toBe('<div></div>');
+		let instance = null;
+		ReactDOM.render(<Text value="foo" ref={ref => (instance = ref)} />, container);
 
-ReactDOM.render(<div>{ReactDOM.createPortal(<p>portal:3</p>, portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('<p>portal:3</p>');
-expect(container.innerHTML).toBe('<div></div>');
+		const textNode = ReactDOM.findDOMNode(instance);
+		expect(textNode).toBe(container.firstChild);
+		expect(textNode.nodeType).toBe(3);
+    expect(textNode.nodeValue).toBe('foo');
+    
 
-ReactDOM.render(<div>{ReactDOM.createPortal(['Hi', 'Bye'], portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('HiBye');
-expect(container.innerHTML).toBe('<div></div>');
+	const portalContainer = document.createElement('div');
 
-ReactDOM.render(<div>{ReactDOM.createPortal(['Bye', 'Hi'], portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('ByeHi');
-expect(container.innerHTML).toBe('<div></div>');
-
-ReactDOM.render(<div>{ReactDOM.createPortal(null, portalContainer)}</div>, container);
-expect(portalContainer.innerHTML).toBe('');
+ReactDOM.render(<div>{ReactDOM.createPortal(<div>portal</div>, portalContainer)}</div>, container);
+expect(portalContainer.innerHTML).toBe('<div>portal</div>');
 expect(container.innerHTML).toBe('<div></div>');
 
    </script>

@@ -777,7 +777,7 @@ function guardCallback(host, hook, args) {
         pushError(get(host), hook, error);
     }
 }
-function guardCallback2(host, hook, args) {
+function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
@@ -844,7 +844,7 @@ function updateEffects(fiber, topWork, info) {
     } else {
         updateHostComponent(fiber, info);
     }
-    if (!fiber.updateFail && !fiber.disposed && !Renderer.hasError) {
+    if (!fiber.updateFail && !Renderer.hasError) {
         if (fiber.child) {
             return fiber.child;
         }
@@ -861,7 +861,7 @@ function updateEffects(fiber, topWork, info) {
                 delete fiber.shiftContext;
                 info.contextStack.shift();
             }
-            if (updater.isMounted() && !f.disposed) {
+            if (updater.isMounted()) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.lastProps || {}, updater.lastState || {}]);
             }
         }
@@ -933,9 +933,6 @@ function mergeStates(fiber, nextProps, keep) {
     return nextState;
 }
 function updateClassComponent(fiber, info) {
-    if (fiber.disposed) {
-        return;
-    }
     var type = fiber.type,
         instance = fiber.stateNode,
         isForced = fiber.isForced,
@@ -1017,7 +1014,7 @@ function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     var lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
-    var rendered = guardCallback2(instance, "render", []);
+    var rendered = applyCallback(instance, "render", []);
     Renderer.currentOwner = lastOwn;
     if (Renderer.hasError) {
         return;
@@ -1059,7 +1056,7 @@ var stageIteration = {
         delete fiber.setout;
         delete fiber.updateFail;
         fiber._hydrating = true;
-        if (!fiber.isForced && !guardCallback2(instance, "shouldComponentUpdate", args)) {
+        if (!fiber.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else if (!instance.__useNewHooks) {
             callUnsafeHook(instance, "componentWillUpdate", args);
@@ -1067,8 +1064,8 @@ var stageIteration = {
     }
 };
 function callUnsafeHook(a, b, c) {
-    guardCallback2(a, b, c);
-    guardCallback2(a, "UNSAFE_" + b, c);
+    applyCallback(a, b, c);
+    applyCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -1501,7 +1498,7 @@ function workLoop(deadline) {
                 contextStack: [{}]
             };
         }
-        while (fiber && deadline.timeRemaining() > ENOUGH_TIME) {
+        while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
         __push.apply(effects, collectEffects(topWork, null, true));
@@ -1797,7 +1794,7 @@ if (prevReact && prevReact.isReactNoop) {
         getRoot: getRoot,
         getChildren: getChildren,
         isReactNoop: true,
-        version: "1.3.1",
+        version: "1.4.0",
         render: render,
         Fragment: Fragment,
         PropTypes: PropTypes,

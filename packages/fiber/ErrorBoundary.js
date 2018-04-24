@@ -1,7 +1,6 @@
 import { noop, get, returnFalse } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
-import { NOWORK, CAPTURE, DETACH } from "./effectTag";
-import { effects } from "./util";
+import { NOWORK, CAPTURE } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
     let names = [];
@@ -46,7 +45,7 @@ export function guardCallback(host, hook, args) {
         pushError(get(host), hook, error);
     }
 }
-export function guardCallback2(host, hook, args) {
+export function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     let fn = host[hook];
@@ -87,7 +86,7 @@ function findCatchComponent(topFiber, names) {
             if (instance.componentDidCatch) {
                 if (fiber._isDoctor) {
                     var updater = instance.updater;
-                    fiber.effectTag = NOWORK;
+                    fiber.effectTag = NOWORK;//不要触发其他任务
                     updater.enqueueSetState = returnFalse;
                     guardCallback(instance, "componentWillUnmount", []);
                     updater.isMounted = returnFalse;

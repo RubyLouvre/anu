@@ -6,7 +6,7 @@ import { Renderer } from "react-core/createRenderer";
 import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, DETACH, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
-import { guardCallback, pushError, guardCallback2 } from "./ErrorBoundary";
+import { guardCallback, pushError, applyCallback } from "./ErrorBoundary";
 import { gDSFP, gSBU } from "./util";
 
 /**
@@ -34,13 +34,13 @@ export function updateEffects(fiber, topWork, info) {
             delete fiber.updateFail;
             delete fiber.batching;
         }
+
     } else {
         updateHostComponent(fiber, info); // unshift parent
     }
 
- 
-
-    if (!fiber.updateFail && !fiber.disposed && !Renderer.hasError) {
+    //如果没有阻断更新，没有出错
+    if (!fiber.updateFail && !Renderer.hasError) {
         if (fiber.child) {
             return fiber.child;
         }
@@ -59,7 +59,7 @@ export function updateEffects(fiber, topWork, info) {
                 delete fiber.shiftContext;
                 info.contextStack.shift(); // shift context
             }
-            if (updater.isMounted() && !f.disposed) {
+            if (updater.isMounted()) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.lastProps || {}, updater.lastState || {}]);
             }
         }
@@ -137,18 +137,12 @@ function mergeStates(fiber, nextProps, keep) {
 }
 
 export function updateClassComponent(fiber, info) {
-    if (fiber.disposed) {
-        //console.warn("有这种情况吗");
-        return;
-    }
     let { type, stateNode: instance, isForced, props, stage } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     let { contextStack, containerStack } = info;
     let nextContext = getMaskedContext(type.contextTypes, instance, contextStack),
         context,
         updateFail = false;
-
-  
     if (instance == null) {
         if (type === AnuPortal) {
             fiber.parent = props.parent;
@@ -224,7 +218,7 @@ export function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     let lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
-    let rendered = guardCallback2(instance, "render", []);
+    let rendered = applyCallback(instance, "render", []);
     Renderer.currentOwner = lastOwn;
     if (Renderer.hasError) {
         return;
@@ -270,7 +264,7 @@ const stageIteration = {
         delete fiber.updateFail;
         //早期React的设计失误, SCU/CWU/CDU中setState会易死循环
         fiber._hydrating = true;
-        if (!fiber.isForced && !guardCallback2(instance, "shouldComponentUpdate", args)) {
+        if (!fiber.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             cloneChildren(fiber);
         } else if (!instance.__useNewHooks) {
             callUnsafeHook(instance, "componentWillUpdate", args);
@@ -279,8 +273,8 @@ const stageIteration = {
 };
 
 function callUnsafeHook(a, b, c) {
-    guardCallback2(a, b, c);
-    guardCallback2(a, "UNSAFE_" + b, c);
+    applyCallback(a, b, c);
+    applyCallback(a, "UNSAFE_" + b, c);
 }
 
 function isSameNode(a, b) {
@@ -380,7 +374,9 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(oldFiber, newFiber)) {
                 alternate = new Fiber(oldFiber);
                 let oldRef = oldFiber.ref;
-                newFiber = extend(oldFiber, newFiber); //将新属性转换旧对象上
+               
+                newFiber = extend(oldFiber, newFiber); 
+                //将新属性转换旧对象上
                 newFiber.alternate = alternate;
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;
