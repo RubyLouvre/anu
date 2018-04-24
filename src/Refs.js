@@ -3,7 +3,6 @@ function getDOMNode() {
     return this;
 }
 export const pendingRefs = [];
-window.pendingRefs = pendingRefs;
 export let Refs = {
     mountOrder: 1,
     currentOwner: null,
