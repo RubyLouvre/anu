@@ -467,6 +467,10 @@ var PropTypes = {
     shape: check
 };
 
+var fakeObject = {
+    enqueueSetState: returnFalse,
+    isMounted: returnFalse
+};
 function Component(props, context) {
     Renderer.currentOwner = this;
     this.context = context;
@@ -475,10 +479,6 @@ function Component(props, context) {
     this.updater = fakeObject;
     this.state = null;
 }
-var fakeObject = {
-    enqueueSetState: returnFalse,
-    isMounted: returnFalse
-};
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
@@ -2275,7 +2275,7 @@ function commitPlaceEffects(tasks) {
 function commitOtherEffects(fiber, tasks) {
     var instance = fiber.stateNode || emptyObject;
     var amount = fiber.effectTag;
-    var updater = instance.updater || {};
+    var updater = instance.updater || fakeObject;
     for (var i = 0; i < effectLength; i++) {
         var effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -2304,9 +2304,11 @@ function commitOtherEffects(fiber, tasks) {
                     if (fiber.tag > 3) {
                         Renderer.removeElement(fiber);
                     } else {
-                        updater.enqueueSetState = returnFalse;
-                        guardCallback(instance, "componentWillUnmount", []);
-                        updater.isMounted = returnFalse;
+                        if (updater.isMounted()) {
+                            updater.enqueueSetState = returnFalse;
+                            guardCallback(instance, "componentWillUnmount", []);
+                            updater.isMounted = returnFalse;
+                        }
                     }
                     delete fiber.stateNode;
                     delete fiber.alternate;
@@ -2412,20 +2414,17 @@ function performWork(deadline, el) {
         requestIdleCallback(performWork);
     }
 }
+var ricObj = {
+    timeRemaining: function timeRemaining() {
+        return 2;
+    }
+};
 var ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
-    fn({
-        timeRemaining: function timeRemaining() {
-            return 2;
-        }
-    });
+    fn(ricObj);
 }
 Renderer.scheduleWork = function () {
-    performWork({
-        timeRemaining: function timeRemaining() {
-            return 2;
-        }
-    });
+    performWork(ricObj);
 };
 var isBatchingUpdates = false;
 Renderer.batchedUpdates = function (callback) {

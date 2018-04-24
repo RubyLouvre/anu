@@ -13,7 +13,9 @@ import {
 } from "./effectTag";
 import { effects } from "./util";
 import { guardCallback } from "./ErrorBoundary";
-import { returnFalse, __push, returnTrue, emptyObject } from "react-core/util";
+import { fakeObject } from "react-core/Component";
+
+import { returnFalse, get, __push, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 
@@ -83,7 +85,7 @@ export function commitPlaceEffects(tasks) {
 export function commitOtherEffects(fiber, tasks) {
     let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
-    let updater = instance.updater || {};
+    let updater = instance.updater || fakeObject;
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -112,10 +114,12 @@ export function commitOtherEffects(fiber, tasks) {
             case DETACH:
                 if (fiber.tag > 3) {
                     Renderer.removeElement(fiber);
-                } else {
-                    updater.enqueueSetState = returnFalse;
-                    guardCallback(instance, "componentWillUnmount", []);
-                    updater.isMounted = returnFalse;
+                } else {  
+                    if(updater.isMounted()){
+                        updater.enqueueSetState = returnFalse;
+                        guardCallback(instance, "componentWillUnmount", []);
+                        updater.isMounted = returnFalse;
+                    } 
                 }
                 delete fiber.stateNode;
                 delete fiber.alternate;

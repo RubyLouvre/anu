@@ -1,6 +1,11 @@
 import { toWarnDev, returnFalse,returnTrue } from "./util";
 import { Renderer } from "./createRenderer";
 
+
+export const fakeObject = {
+    enqueueSetState: returnFalse,
+    isMounted: returnFalse
+};
 /**
  *组件的基类
  *
@@ -14,13 +19,10 @@ export function Component(props, context) {
     this.context = context;
     this.props = props;
     this.refs = {};
-    this.updater = fakeObject
+    this.updater = fakeObject;
     this.state = null;
 }
-const fakeObject = {
-    enqueueSetState: returnFalse,
-    isMounted: returnFalse
-};
+
 
 Component.prototype = {
     constructor: Component, //必须重写constructor,防止别人在子类中使用Object.getPrototypeOf时找不到正确的基类

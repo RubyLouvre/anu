@@ -77,21 +77,19 @@ function performWork(deadline, el) {
     }
 }
 
+
+let ricObj = {
+    timeRemaining() {
+        return 2;
+    }
+};
 let ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
-    fn({
-        timeRemaining() {
-            return 2;
-        },
-    });
+    fn(ricObj);
 }
 
 Renderer.scheduleWork = function () {
-    performWork({
-        timeRemaining() {
-            return 2;
-        },
-    });
+    performWork(ricObj);
 };
 
 var isBatchingUpdates = false;
