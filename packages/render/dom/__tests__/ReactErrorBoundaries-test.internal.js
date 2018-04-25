@@ -1373,4 +1373,134 @@ describe('ReactErrorBoundaries', () => {
 		ReactDOM.unmountComponentAtNode(container);
 		expect(log).toEqual(['ErrorBoundary componentWillUnmount']);
 	});
+
+	it('recovers from nested componentWillUnmount errors on update', () => {
+		const container = document.createElement('div');
+		ReactDOM.render(
+		  <ErrorBoundary>
+			<Normal>
+			  <BrokenComponentWillUnmount />
+			</Normal>
+			<BrokenComponentWillUnmount />
+		  </ErrorBoundary>,
+		  container,
+		);
+	
+		log.length = 0;
+		ReactDOM.render(
+		  <ErrorBoundary>
+			<Normal>
+			  <BrokenComponentWillUnmount />
+			</Normal>
+		  </ErrorBoundary>,
+		  container,
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+		  'ErrorBoundary componentWillReceiveProps',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render success',
+		  // Update existing children:
+		  'Normal componentWillReceiveProps',
+		  'Normal componentWillUpdate',
+		  'Normal render',
+		  'BrokenComponentWillUnmount componentWillReceiveProps',
+		  'BrokenComponentWillUnmount componentWillUpdate',
+		  'BrokenComponentWillUnmount render',
+		  // Unmounting throws:
+		  'BrokenComponentWillUnmount componentWillUnmount [!]',
+		  // Fiber proceeds with lifecycles despite errors
+		  'BrokenComponentWillUnmount componentDidUpdate',
+		  'Normal componentDidUpdate',
+		  'ErrorBoundary componentDidUpdate',
+		  'Normal componentWillUnmount',
+		  'BrokenComponentWillUnmount componentWillUnmount [!]',
+		  // Now that commit phase is done, Fiber handles errors
+		  'ErrorBoundary componentDidCatch',
+		  // The initial render was aborted, so
+		  // Fiber retries from the root.
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary componentDidUpdate',
+		  // The second willUnmount error should be captured and logged, too.
+		  'ErrorBoundary componentDidCatch',
+		  'ErrorBoundary componentWillUpdate',
+		  // Render an error now (stack will do it later)
+		  'ErrorBoundary render error',
+		  // Done
+		  'ErrorBoundary componentDidUpdate',
+		]);
+	
+		log.length = 0;
+		ReactDOM.unmountComponentAtNode(container);
+		expect(log).toEqual(['ErrorBoundary componentWillUnmount']);
+	  });
+	
+	  it('picks the right boundary when handling unmounting errors', () => {
+		function renderInnerError(error) {
+		  return <div>Caught an inner error: {error.message}.</div>;
+		}
+		function renderOuterError(error) {
+		  return <div>Caught an outer error: {error.message}.</div>;
+		}
+	
+		const container = document.createElement('div');
+		ReactDOM.render(
+		  <ErrorBoundary
+			logName="OuterErrorBoundary"
+			renderError={renderOuterError}>
+			<ErrorBoundary
+			  logName="InnerErrorBoundary"
+			  renderError={renderInnerError}>
+			  <BrokenComponentWillUnmount />
+			</ErrorBoundary>
+		  </ErrorBoundary>,
+		  container,
+		);
+	
+		log.length = 0;
+		ReactDOM.render(
+		  <ErrorBoundary
+			logName="OuterErrorBoundary"
+			renderError={renderOuterError}>
+			<ErrorBoundary
+			  logName="InnerErrorBoundary"
+			  renderError={renderInnerError}
+			/>
+		  </ErrorBoundary>,
+		  container,
+		);
+		expect(container.textContent).toBe('Caught an inner error: Hello.');
+		expect(log).toEqual([
+		  // Update outer boundary
+		  'OuterErrorBoundary componentWillReceiveProps',
+		  'OuterErrorBoundary componentWillUpdate',
+		  'OuterErrorBoundary render success',
+		  // Update inner boundary
+		  'InnerErrorBoundary componentWillReceiveProps',
+		  'InnerErrorBoundary componentWillUpdate',
+		  'InnerErrorBoundary render success',
+		  // Try unmounting child
+		  'BrokenComponentWillUnmount componentWillUnmount [!]',
+		  // Fiber proceeds with lifecycles despite errors
+		  // Inner and outer boundaries have updated in this phase
+		  'InnerErrorBoundary componentDidUpdate',
+		  'OuterErrorBoundary componentDidUpdate',
+		  // Now that commit phase is done, Fiber handles errors
+		  // Only inner boundary receives the error:
+		  'InnerErrorBoundary componentDidCatch',
+		  'InnerErrorBoundary componentWillUpdate',
+		  // Render an error now
+		  'InnerErrorBoundary render error',
+		  // In Fiber, this was a local update to the
+		  // inner boundary so only its hook fires
+		  'InnerErrorBoundary componentDidUpdate',
+		]);
+	
+		log.length = 0;
+		ReactDOM.unmountComponentAtNode(container);
+		expect(log).toEqual([
+		  'OuterErrorBoundary componentWillUnmount',
+		  'InnerErrorBoundary componentWillUnmount',
+		]);
+	  });
 });
