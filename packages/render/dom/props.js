@@ -263,11 +263,12 @@ export let actionStrategy = {
         // 这时如果用 setAttribute 则会静默失败
         try {
             if (!val && val !== 0) {
-                //如果它是字符串属性，并且不等于""，清空
+                //如果是假值但不是0，就改成“”,alt不能removeAttribute
                 if (builtinStringProps[name]) {
                     dom[name] = "";
+                }else{
+                    dom.removeAttribute(name);
                 }
-                dom.removeAttribute(name);
             } else {
                 dom[name] = val;
             }

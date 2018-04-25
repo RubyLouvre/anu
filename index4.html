@@ -194,25 +194,54 @@
       }
     };
 
-    function renderError(error) {
-        return <ErrorMessage message={error.message} />;
-    }
+    ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
+				<BrokenComponentWillUnmount />
+				<Normal />
+			</ErrorBoundary>,
+			container
+		);
 
-    const children = {
-      x: <span />,
-      y: <span />,
-      z: <span />,
-    };
-    const element = <div>{[children]}</div>;
-    const container = document.createElement('div');
-    let ex;
-    try {
-      ReactDOM.render(element, container);
-    } catch (e) {
-      ex = e;
-      console.log(e)
-    }
-   // expect(ex).toBeDefined();
+		log.length = 0;
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+			'ErrorBoundary componentWillReceiveProps',
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary render success',
+			// Update existing child:
+			'BrokenComponentWillUnmount componentWillReceiveProps',
+			'BrokenComponentWillUnmount componentWillUpdate',
+			'BrokenComponentWillUnmount render',
+			// Unmounting throws:
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			// Fiber proceeds with lifecycles despite errors
+			'Normal componentWillUnmount',
+			// The components have updated in this phase
+			'BrokenComponentWillUnmount componentDidUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// Now that commit phase is done, Fiber unmounts the boundary's children
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			'ErrorBoundary componentDidCatch',
+			// The initial render was aborted, so
+			// Fiber retries from the root.
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// The second willUnmount error should be captured and logged, too.
+			'ErrorBoundary componentDidCatch',
+			'ErrorBoundary componentWillUpdate',
+			// Render an error now (stack will do it later)
+			'ErrorBoundary render error',
+			// Attempt to unmount previous child:
+			// Done
+			'ErrorBoundary componentDidUpdate',
+		]);
 	
     </script>
 

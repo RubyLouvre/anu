@@ -2,25 +2,25 @@
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<script type='text/javascript' src="./dist/React.js"></script>
-	<!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
-	<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-	<script type='text/javascript' src="./lib/babel.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+     <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
-	<pre>React 15 </pre>
+    <pre>React 15 </pre>
 
 
-	<div id='root' class="root">
+    <div id='root' class="root">
 
-	</div>
-	<script type='text/babel'>
+    </div>
+    <script type='text/babel'>
         
         var container = document.getElementById('root');
           var div = container;
@@ -44,12 +44,12 @@
                   }
               };
 		 };
-	/*	var log = {
+		var log = {
 			push(a){
 				console.log(a)
 			}
-		}*/
-        var log = []
+		}
+       // var log = []
         var BrokenRender = class extends React.Component {
 			constructor(props) {
 				super(props);
@@ -133,6 +133,7 @@
 				log.push(`${this.props.logName} constructor`);
 			}
 			render() {
+				console.log("ErrorBoundary render")
 				if (this.state.error && !this.props.forceRetry) {
 					log.push(`${this.props.logName} render error`);
 					return this.props.renderError(this.state.error, this.props);
@@ -169,101 +170,144 @@
 				return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
 			},
 		};
-		var BrokenConstructor = class extends React.Component {
-			constructor(props) {
-				super(props);
-				log.push('BrokenConstructor constructor [!]');
-				throw new Error('Hello');
-			}
-			render() {
-				log.push('BrokenConstructor render');
-				return <div>{this.props.children}</div>;
-			}
-			UNSAFE_componentWillMount() {
-				log.push('BrokenConstructor componentWillMount');
-			}
-			componentDidMount() {
-				log.push('BrokenConstructor componentDidMount');
-			}
-			UNSAFE_componentWillReceiveProps() {
-				log.push('BrokenConstructor componentWillReceiveProps');
-			}
-			UNSAFE_componentWillUpdate() {
-				log.push('BrokenConstructor componentWillUpdate');
-			}
-			componentDidUpdate() {
-				log.push('BrokenConstructor componentDidUpdate');
-			}
-			componentWillUnmount() {
-				log.push('BrokenConstructor componentWillUnmount');
-			}
-		};
-
-        
-		var RetryErrorBoundary = class extends React.Component {
-			constructor(props) {
-				super(props);
-				log.push('RetryErrorBoundary constructor');
-			}
-			render() {
-				log.push('RetryErrorBoundary render');
-				return <BrokenRender />;
-			}
-			UNSAFE_componentWillMount() {
-				log.push('RetryErrorBoundary componentWillMount');
-			}
-			componentDidMount() {
-				log.push('RetryErrorBoundary componentDidMount');
-			}
-			componentWillUnmount() {
-				log.push('RetryErrorBoundary componentWillUnmount');
-			}
-			componentDidCatch(error) {
-				log.push('RetryErrorBoundary componentDidCatch [!]');
-				// In Fiber, calling setState() (and failing) is treated as a rethrow.
-				this.setState({});
-			}
-		};
-
-	
-		ReactDOM.render(
+	var RetryErrorBoundary = class extends React.Component {
+      constructor(props) {
+        super(props);
+        log.push('RetryErrorBoundary constructor');
+      }
+      render() {
+        log.push('RetryErrorBoundary render');
+        return <BrokenRender />;
+      }
+      UNSAFE_componentWillMount() {
+        log.push('RetryErrorBoundary componentWillMount');
+      }
+      componentDidMount() {
+        log.push('RetryErrorBoundary componentDidMount');
+      }
+      componentWillUnmount() {
+        log.push('RetryErrorBoundary componentWillUnmount');
+      }
+      componentDidCatch(error) {
+        log.push('RetryErrorBoundary componentDidCatch [!]');
+        // In Fiber, calling setState() (and failing) is treated as a rethrow.
+        this.setState({});
+      }
+	};
+	var Normal = class extends React.Component {
+      static defaultProps = {
+        logName: 'Normal',
+      };
+      constructor(props) {
+        super(props);
+        log.push(`${this.props.logName} constructor`);
+      }
+      render() {
+        log.push(`${this.props.logName} render`);
+        return <div>{this.props.children}</div>;
+      }
+      UNSAFE_componentWillMount() {
+        log.push(`${this.props.logName} componentWillMount`);
+      }
+      componentDidMount() {
+        log.push(`${this.props.logName} componentDidMount`);
+      }
+      UNSAFE_componentWillReceiveProps() {
+        log.push(`${this.props.logName} componentWillReceiveProps`);
+      }
+      UNSAFE_componentWillUpdate() {
+        log.push(`${this.props.logName} componentWillUpdate`);
+      }
+      componentDidUpdate() {
+        log.push(`${this.props.logName} componentDidUpdate`);
+      }
+      componentWillUnmount() {
+        log.push(`${this.props.logName} componentWillUnmount`);
+      }
+    };
+    var BrokenComponentWillUnmount = class extends React.Component {
+      static defaultProps = {
+        errorText: 'Hello',
+      };
+      constructor(props) {
+        super(props);
+        log.push(this.props.logName+'BrokenComponentWillUnmount constructor');
+      }
+      render() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount render');
+        return <div>{this.props.children}</div>;
+      }
+      UNSAFE_componentWillMount() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillMount');
+      }
+      componentDidMount() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentDidMount');
+      }
+      UNSAFE_componentWillReceiveProps() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillReceiveProps');
+      }
+      UNSAFE_componentWillUpdate() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillUpdate');
+      }
+      componentDidUpdate() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentDidUpdate');
+      }
+      componentWillUnmount() {
+        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillUnmount [!]');
+        throw new Error(this.props.errorText);
+      }
+    };
+    ReactDOM.render(
 			<ErrorBoundary>
-				<RetryErrorBoundary>
-					<BrokenRender />
-				</RetryErrorBoundary>
+				<BrokenComponentWillUnmount logName={"xxx"} />
+				<BrokenComponentWillUnmount logName={"yyy"} />
+				<Normal />
 			</ErrorBoundary>,
 			container
 		);
-		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-		var official = [
-			'ErrorBoundary constructor',
-			'ErrorBoundary componentWillMount',
-			'ErrorBoundary render success',
-			'RetryErrorBoundary constructor',
-			'RetryErrorBoundary componentWillMount',
-			'RetryErrorBoundary render',
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// In Fiber, failed error boundaries render null before attempting to recover
-			'RetryErrorBoundary componentDidMount',
-			'RetryErrorBoundary componentDidCatch [!]',
-			'ErrorBoundary componentDidMount',
-			// Retry
-			'RetryErrorBoundary render',
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// This time, the error propagates to the higher boundary
-			'RetryErrorBoundary componentWillUnmount',
-			'ErrorBoundary componentDidCatch',
-			// Render the error
+// 移除，移除， 更新
+		log.length = 0;
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount logName={"xxx"} />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+			'ErrorBoundary componentWillReceiveProps',
 			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary render error',
+			'ErrorBoundary render success',
+			// Update existing child:
+			'BrokenComponentWillUnmount componentWillReceiveProps',
+			'BrokenComponentWillUnmount componentWillUpdate',
+			'BrokenComponentWillUnmount render',
+			// Unmounting throws:
+			'BrokenComponentWillUnmount componentWillUnmount [!]',//移除后面的组件出错
+			// Fiber proceeds with lifecycles despite errors
+			'Normal componentWillUnmount',
+			// The components have updated in this phase
+			'BrokenComponentWillUnmount componentDidUpdate',
 			'ErrorBoundary componentDidUpdate',
-		];
-		expect(log).toEqual(official);
+			// Now that commit phase is done, Fiber unmounts the boundary's children
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			'ErrorBoundary componentDidCatch',
+			// The initial render was aborted, so
+			// Fiber retries from the root.
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// The second willUnmount error should be captured and logged, too.
+			'ErrorBoundary componentDidCatch',
+			'ErrorBoundary componentWillUpdate',
+			// Render an error now (stack will do it later)
+			'ErrorBoundary render error',
+			// Attempt to unmount previous child:
+			// Done
+			'ErrorBoundary componentDidUpdate',
+		]);
+	
     </script>
 
 
 </html>
+

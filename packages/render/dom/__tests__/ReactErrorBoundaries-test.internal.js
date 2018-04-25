@@ -1301,7 +1301,7 @@ describe('ReactErrorBoundaries', () => {
 			'BrokenRender constructor',
 			'BrokenRender componentWillMount',
 			'BrokenRender render [!]',
-			// Finish updating with null children
+			// Finish updating with null children render及render之前的抛错在didUpdate中清空？
 			'Child1 ref is set to null',
 			'ErrorBoundary componentDidUpdate',
 			// Handle the error
