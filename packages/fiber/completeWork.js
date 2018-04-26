@@ -1,7 +1,6 @@
 import { PLACE } from "./effectTag";
 import { __push } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
-import { detachFiber } from "./ErrorBoundary";
 import { Renderer } from "react-core/createRenderer";
 
 /**
@@ -14,15 +13,13 @@ import { Renderer } from "react-core/createRenderer";
  * @param {Boolean} updateFail 
  */
 export function collectEffects(fiber, updateFail, isTop) {
-    if(!fiber){
+    if(!fiber ){
         return [];
     }
-    if(fiber === Renderer.catchBoundary){
+    if(fiber === Renderer.catchBoundary ){
         delete Renderer.hasError;
-        //不要立即删掉Renderer.catchBoundary，还要用到cDC中setState
-       // delete Renderer.catchBoundary
-        Renderer.diffChildren(fiber, [])
-        console.log(" Fiber mounts with null children before capturing error" )
+        //不要立即删掉Renderer.catchBoundary，因为要在boundary中使用
+        Renderer.diffChildren(fiber, []);
     }
     let effects = fiber.effects ; 
     if (effects) {
@@ -31,7 +28,6 @@ export function collectEffects(fiber, updateFail, isTop) {
         effects = [];
     }
    
-  
     if (isTop && fiber.tag == 5) { //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
     }
@@ -61,8 +57,7 @@ export function collectEffects(fiber, updateFail, isTop) {
             __push.apply(effects, collectEffects(child));
            
         }
-        if (child.effectTag) {//updateFail也会执行REF与CALLBACK
-            
+        if (child.effectTag && !child.hasTry) {//updateFail也会执行REF与CALLBACK
             effects.push(child);
         }
     }

@@ -20,6 +20,7 @@ import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 
 export function commitEffects() {
+    Renderer.effects = effects;
     commitPlaceEffects(effects);
     /*
 	  console.log(effects.reduce(function (pre, el) {
@@ -27,19 +28,16 @@ export function commitEffects() {
         return pre;
     }, []));
  */
-   
-    Renderer.batchedUpdates(function(){
-        var tasks = effects,
-            task;
-        while ((task = tasks.shift())) {
-            commitOtherEffects(task, tasks);
-            if (Renderer.catchError) {
-                tasks.length = 0;
-                break;
-            }
+    var tasks = effects,
+        task;
+    while ((task = tasks.shift())) {
+        commitOtherEffects(task, tasks);
+        if (Renderer.catchError) {
+            tasks.length = 0;
+            break;
         }
-    });
-   
+    }
+    delete  Renderer.effects;
     var error = Renderer.catchError;
 
     if (error) {
@@ -97,7 +95,9 @@ export function commitOtherEffects(fiber, tasks) {
             //如果能整除
             switch (effectNo) {
             case PLACE:
+
                 if (fiber.tag > 3) {
+                    console.log(fiber.name, "插入");
                     Renderer.insertElement(fiber);
                 }
                 break;
@@ -126,6 +126,11 @@ export function commitOtherEffects(fiber, tasks) {
                 delete fiber.alternate;
                 break;
             case HOOK:
+                if (Renderer.retry) {
+                    console.log("存在末处理的有边界", fiber.name, Renderer.catchBoundary.name);
+                    guardCallback(Renderer.retry.stateNode, "componentWillUnmount", []);
+                    delete Renderer.retry;
+                }
                 Renderer._hydratingParent = fiber;
                 if (updater.isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [
@@ -159,10 +164,10 @@ export function commitOtherEffects(fiber, tasks) {
                 delete fiber.pendingCbs;
                 break;
             case CAPTURE: // 23
-                fiber.effectTag = amount;
                 fiber.hasTry = true;
-                // console.log("tasks.length",amount, tasks.length, tasks.concat());
-                fiber._children = fiber.child = null;
+                fiber.effectTag = amount;
+                console.log("tasks.length", tasks.length, tasks.concat());
+                //  fiber._children = fiber.child = null;
                 //根据观察，componentDidCatch里面的setState不会中断流程，它还会继续往上一个个执行钩子
                 //最后才执行它的render
                 instance.componentDidCatch.apply(instance, fiber.errorInfo);

@@ -185,7 +185,6 @@ export function updateClassComponent(fiber, info) {
                 updater.lastProps = instance.props;
                 updater.lastState = instance.state;
                 stage = "receive";
-
             }
         }
         let istage = stage;
@@ -219,11 +218,13 @@ export function updateClassComponent(fiber, info) {
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
     Renderer.currentOwner = lastOwn;
+    //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
     if (Renderer.hasError) {
-        console.log("不往下找")
+        //  console.log("不渲染子节点",fiber.name);
         return;
     }
     diffChildren(fiber, rendered);
+    // console.log(fiber, fiber.name);
 }
 const stageIteration = {
     mount(fiber, nextProps, nextContext, instance) {
@@ -235,9 +236,6 @@ const stageIteration = {
         }
     },
     receive(fiber, nextProps, nextContext, instance, contextStack) {
-        //  let updater = instance.updater;
-        //  updater.lastProps = instance.props;
-        //  updater.lastState = instance.state;
         let propsChange = instance.props !== nextProps;
         if (instance.__useNewHooks) {
             return "update";
@@ -340,6 +338,7 @@ function diffChildren(parentFiber, children) {
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
+    delete parentFiber.child;
     for (let i in oldFibers) {
         let newFiber = newFibers[i];
         let oldFiber = oldFibers[i];
@@ -404,4 +403,4 @@ function diffChildren(parentFiber, children) {
     }
 }
 
-Renderer.diffChildren = diffChildren
+Renderer.diffChildren = diffChildren;

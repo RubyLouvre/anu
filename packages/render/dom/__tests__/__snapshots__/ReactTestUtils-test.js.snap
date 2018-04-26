@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReactTestUtils Simulate should have locally attached media events 1`] = `
+Array [
+  "KeyPress",
+  "blur",
+  "change",
+  "click",
+  "focus",
+  "input",
+  "keyDown",
+  "keyUp",
+  "mouseDown",
+  "mouseMove",
+  "mouseUp",
+]
+`;
+
+exports[`ReactTestUtils SimulateNative should have locally attached media events 1`] = `
+Array [
+  "KeyPress",
+  "blur",
+  "change",
+  "click",
+  "focus",
+  "input",
+  "keyDown",
+  "keyUp",
+  "mouseDown",
+  "mouseMove",
+  "mouseUp",
+]
+`;

@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-     <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -49,7 +49,7 @@
 				console.log(a)
 			}
 		}
-       // var log = []
+        var log = []
         var BrokenRender = class extends React.Component {
 			constructor(props) {
 				super(props);
@@ -231,36 +231,36 @@
       };
       constructor(props) {
         super(props);
-        log.push(this.props.logName+'BrokenComponentWillUnmount constructor');
+        log.push('BrokenComponentWillUnmount constructor');
       }
       render() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount render');
+        log.push('BrokenComponentWillUnmount render');
         return <div>{this.props.children}</div>;
       }
       UNSAFE_componentWillMount() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillMount');
+        log.push('BrokenComponentWillUnmount componentWillMount');
       }
       componentDidMount() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentDidMount');
+        log.push('BrokenComponentWillUnmount componentDidMount');
       }
       UNSAFE_componentWillReceiveProps() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillReceiveProps');
+        log.push('BrokenComponentWillUnmount componentWillReceiveProps');
       }
       UNSAFE_componentWillUpdate() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillUpdate');
+        log.push('BrokenComponentWillUnmount componentWillUpdate');
       }
       componentDidUpdate() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentDidUpdate');
+        log.push('BrokenComponentWillUnmount componentDidUpdate');
       }
       componentWillUnmount() {
-        log.push(this.props.logName+'BrokenComponentWillUnmount componentWillUnmount [!]');
+        log.push('BrokenComponentWillUnmount componentWillUnmount [!]');
         throw new Error(this.props.errorText);
       }
     };
     ReactDOM.render(
 			<ErrorBoundary>
-				<BrokenComponentWillUnmount logName={"xxx"} />
-				<BrokenComponentWillUnmount logName={"yyy"} />
+				<BrokenComponentWillUnmount />
+				<BrokenComponentWillUnmount  />
 				<Normal />
 			</ErrorBoundary>,
 			container
@@ -269,7 +269,7 @@
 		log.length = 0;
 		ReactDOM.render(
 			<ErrorBoundary>
-				<BrokenComponentWillUnmount logName={"xxx"} />
+				<BrokenComponentWillUnmount />
 			</ErrorBoundary>,
 			container
 		);

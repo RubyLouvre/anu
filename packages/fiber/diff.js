@@ -2,7 +2,7 @@ import { effects, resetStack } from "./util";
 import { updateEffects } from "./beginWork";
 import { collectEffects } from "./completeWork";
 import { commitEffects } from "./commitWork";
-import { CALLBACK } from "./effectTag";
+import { CALLBACK, DETACH } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
 import { __push, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
@@ -62,17 +62,11 @@ function wrapCb(fn, carrier) {
 
 function performWork(deadline, el) {
     workLoop(deadline);
-    var boundary = Renderer.catchBoundary;
-    if (macrotasks.length || microtasks.length || boundary) {
+    if (macrotasks.length || microtasks.length) {
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
                 macrotasks.push(el);
             }
-        }
-        if (boundary) {
-            delete Renderer.catchBoundary;
-            delete Renderer.hasError;
-            macrotasks.push(boundary);
         }
         requestIdleCallback(performWork);
     }
@@ -108,6 +102,22 @@ Renderer.batchedUpdates = function (callback) {
                     macrotasks.push(el);
                 }
             }
+            var retry = Renderer.catchTry;
+            var boundary = Renderer.catchBoundary;
+            if (retry) {
+                retry.effectTag = DETACH;
+                // console.log("有Try", retry.name,  retry.hasTry);
+                macrotasks.push(retry);
+                delete Renderer.catchTry;
+            }
+
+            if (boundary) {
+                //  console.log("有Boundary", boundary.name,boundary.hasTry );
+                macrotasks.push(boundary);
+
+                delete Renderer.hasError;
+                delete Renderer.catchBoundary;
+            }
             Renderer.scheduleWork();
         }
     }
@@ -130,11 +140,12 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-       
-        __push.apply(effects, collectEffects(topWork, null, true));
-        console.log("收集任务",effects.concat())
-        effects.push(topWork);
 
+        __push.apply(effects, collectEffects(topWork, null, true));
+        effects.push(topWork);
+        //  console.log(effects.map((a)=>{
+        //      return a.name;
+        //  }));
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
@@ -245,12 +256,13 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     let sn = typeNumber(state);
     let isForced = state === true;
     state = isForced ? null : sn === 5 || sn === 8 ? state : null;
-    if (Renderer.catchBoundary == fiber) {
-     console.log("componentDidCatch setState", fiber.name)
-    // delete Renderer.catchBoundary
-        mergeUpdates(fiber, state, isForced, callback);
-        return;
-    }
+    // if (Renderer.catchBoundary == fiber) {
+    //     console.log("componentDidCatch setState", fiber.name);
+    //     // delete Renderer.catchBoundary
+    //     mergeUpdates(fiber, state, isForced, callback);
+    //     return;
+    // }
+    console.log(isBatching,"isBatching");
     let parent = Renderer._hydratingParent;
     if (fiber.setout) {
         //情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
@@ -259,13 +271,17 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     } else if (parent && fiberContains(parent, fiber)) {
         //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
         // console.log("setState 2");
+        console.log("=====");
         microtasks.push(fiber);
-    } else if (isBatching && !immediateUpdate) {
+    } else if (isBatching || fiber._hydrating ) { //&& !immediateUpdate
         // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
         //  console.log("setState 3");
         //情况3， 在batchedUpdates中setState，可能放进batchedtasks
+        immediateUpdate = false;
         pushChildQueue(fiber, batchedtasks);
+        console.log(batchedtasks.concat());
     } else {
+
         //情况4，在componentDidMount/Update中setState，可能放进microtasks
         //情况5，在钩子外setState, 需要立即触发
         immediateUpdate = immediateUpdate || !fiber._hydrating;
@@ -274,10 +290,15 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     }
 
     mergeUpdates(fiber, state, isForced, callback);
+
     if (immediateUpdate) {
+        console.log("----");
         Renderer.scheduleWork();
     }
 }
+
+
+
 Renderer.updateComponent = updateComponent;
 
 function validateTag(el) {
@@ -322,7 +343,6 @@ export function createContainer(root, onlyGet, validate) {
     }
     return container;
 }
-//不是529100
 
 export function getContainer(p) {
     if (p.parent) {

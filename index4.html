@@ -425,9 +425,11 @@
 			}
 			render() {
 				if (this.state.error && !this.props.forceRetry) {
+					console.log("有时间插入吗")
 					log.push(`${this.props.logName} render error`);
 					return this.props.renderError(this.state.error, this.props);
 				}
+				console.log("有时间插入吗")
 				log.push(`${this.props.logName} render success`);
 				return <div>{this.props.children}</div>;
 			}
@@ -457,7 +459,7 @@
 		ErrorBoundary.defaultProps = {
 			logName: 'ErrorBoundary',
 			renderError(error, props) {
-				
+				console.log("renderError")
 				return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
 			},
 		};
@@ -503,6 +505,7 @@
 			}
 			render() {
 				log.push('ErrorMessage render');
+				
 				return <div>Caught an error: {this.props.message}.</div>;
 			}
 		};

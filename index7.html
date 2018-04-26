@@ -39,63 +39,47 @@
                   }
               };
          };
-         let parentInstance = null;
-         let childInstance = null;
+       
  
          class Parent extends React.Component {
-             static childContextTypes = {
-                 foo: PropTypes.string,
-                 flag: PropTypes.bool,
-             };
+           
  
              state = {
-                 flag: false,
+                 flag: 111,
              };
  
-             getChildContext() {
-                 return {
-                     foo: 'bar',
-                     flag: this.state.flag,
-                 };
-             }
+           
  
              render() {
-                 return React.Children.only(this.props.children);
+                 return <p>{this.state.flag}<Son ref="son" /></p>
+             }
+             componentDidMount(){
+                 this.setState({
+                     flag: 222
+                 })
+                 this.refs.son.setState({
+                     flag:444
+                 })
              }
          }
  
-         class Middle extends React.Component {
-             render() {
-                 return this.props.children;
-             }
-         }
+         class Son extends React.Component {
+           
  
-         class Child extends React.Component {
-             static contextTypes = {
-                 foo: PropTypes.string,
-                 flag: PropTypes.bool,
-             };
- 
-             render() {
-                 childInstance = this;
-                 return <span>Child</span>;
-             }
-         }
- 
-         parentInstance = ReactTestUtils.renderIntoDocument(
-             <Parent>
-                 <Middle>
-                     <Child />
-                 </Middle>
-             </Parent>,
-         );
- 
-         expect(parentInstance.state.flag).toBe(false);
-         expect(childInstance.context).toEqual({ foo: 'bar', flag: false });
- 
-         parentInstance.setState({ flag: true });
-         expect(parentInstance.state.flag).toBe(true);
-         expect(childInstance.context).toEqual({ foo: 'bar', flag: true });
+           state = {
+               flag: 333,
+           };
+
+         
+
+           render() {
+               return <p>{this.state.flag}</p>
+           }
+           componentDidMount(){
+             
+           }
+       }
+       ReactDOM.render(<Parent />, container )
        
 
     </script>

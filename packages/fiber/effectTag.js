@@ -16,11 +16,3 @@ export const effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK,
 export const effectLength = effectNames.length;
 
 // PLACE, CONTENT, DETACH 是基础因子，其他因子只能在它上面相乘
-
-/** 
- * 
- Ref是基于Fiber的，当Fiber插入DOM树后，就会执行一次，Fiber的生命周期与渲染周期一致
- 在receive阶段，新旧Fiber的类型与key一致时，旧Fiber的实例就会移动到新Fiber上，这时如果新旧Fiber的ref的引用不一致时，
- （只会在函数的情况出现），就会为旧ref传入null, 新ref继续在hook后执行
-
-*/
