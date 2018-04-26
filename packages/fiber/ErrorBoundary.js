@@ -1,7 +1,6 @@
 import { noop, get } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 import { fakeObject } from 'react-core/Component';
-
 import { NOWORK, CAPTURE, DETACH, NULLREF } from './effectTag';
 
 export function pushError(fiber, hook, error) {
