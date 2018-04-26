@@ -130,7 +130,9 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
+       
         __push.apply(effects, collectEffects(topWork, null, true));
+        console.log("收集任务",effects.concat())
         effects.push(topWork);
 
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
@@ -244,6 +246,8 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     let isForced = state === true;
     state = isForced ? null : sn === 5 || sn === 8 ? state : null;
     if (Renderer.catchBoundary == fiber) {
+     console.log("componentDidCatch setState", fiber.name)
+    // delete Renderer.catchBoundary
         mergeUpdates(fiber, state, isForced, callback);
         return;
     }

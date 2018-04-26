@@ -7,5 +7,9 @@ export const Renderer = {
     macrotasks: [],
     controlledCbs: [],
     mountOrder: 1,
+    //catchError
+    //catchBoundary
+    //catchTry
+    //hasError
     currentOwner: null//vnode
 };

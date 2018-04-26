@@ -1,6 +1,8 @@
 import { PLACE } from "./effectTag";
 import { __push } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
+import { detachFiber } from "./ErrorBoundary";
+import { Renderer } from "react-core/createRenderer";
 
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
@@ -15,13 +17,20 @@ export function collectEffects(fiber, updateFail, isTop) {
     if(!fiber){
         return [];
     }
+    if(fiber === Renderer.catchBoundary){
+        delete Renderer.hasError;
+        //不要立即删掉Renderer.catchBoundary，还要用到cDC中setState
+       // delete Renderer.catchBoundary
+        Renderer.diffChildren(fiber, [])
+        console.log(" Fiber mounts with null children before capturing error" )
+    }
     let effects = fiber.effects ; 
     if (effects) {
         delete fiber.effects;
-
     } else {
         effects = [];
     }
+   
   
     if (isTop && fiber.tag == 5) { //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
@@ -53,9 +62,9 @@ export function collectEffects(fiber, updateFail, isTop) {
            
         }
         if (child.effectTag) {//updateFail也会执行REF与CALLBACK
+            
             effects.push(child);
         }
     }
-
     return effects;
 }

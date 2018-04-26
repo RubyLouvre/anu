@@ -27,8 +27,7 @@ export function updateEffects(fiber, topWork, info) {
             updateClassComponent(fiber, info); // unshift context
         } catch (e) {
             pushError(fiber, fiber.errorHook, e);
-            fiber._children = {};
-            delete fiber.child;
+           
         }
         if (fiber.batching) {
             delete fiber.updateFail;
@@ -221,6 +220,7 @@ export function updateClassComponent(fiber, info) {
     let rendered = applyCallback(instance, "render", []);
     Renderer.currentOwner = lastOwn;
     if (Renderer.hasError) {
+        console.log("不往下找")
         return;
     }
     diffChildren(fiber, rendered);
@@ -403,3 +403,5 @@ function diffChildren(parentFiber, children) {
         delete prevFiber.sibling;
     }
 }
+
+Renderer.diffChildren = diffChildren
