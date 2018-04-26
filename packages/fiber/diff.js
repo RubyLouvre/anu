@@ -265,7 +265,6 @@ function updateComponent(instance, state, callback, immediateUpdate) {
 	}
 	let sn = typeNumber(state);
 	let isForced = state === true;
-
 	let microtasks = getQueue(fiber);
 
 	state = isForced ? null : sn === 5 || sn === 8 ? state : null;
@@ -347,3 +346,4 @@ export function getContainer(p) {
 		}
 	}
 }
+// https://github.com/215566435/react-wechat

@@ -2204,37 +2204,37 @@ function collectEffects(fiber, updateFail, isTop) {
 }
 
 function getDOMNode() {
-    return this;
+	return this;
 }
 var Refs = {
-    fireRef: function fireRef(fiber, dom) {
-        var ref = fiber.ref;
-        var canCall = isFn(ref);
-        var owner = fiber._owner;
-        try {
-            if (canCall) {
-                ref(dom);
-                return;
-            }
-            if (ref && Object.prototype.hasOwnProperty.call(ref, "current")) {
-                ref.current = dom;
-                return;
-            }
-            if (!owner) {
-                throw "Element ref was specified as a string (" + ref + ") but no owner was set";
-            }
-            if (dom) {
-                if (dom.nodeType) {
-                    dom.getDOMNode = getDOMNode;
-                }
-                owner.refs[ref] = dom;
-            } else {
-                delete owner.refs[ref];
-            }
-        } catch (e) {
-            pushError(fiber, "ref", e);
-        }
-    }
+	fireRef: function fireRef(fiber, dom) {
+		var ref = fiber.ref;
+		var owner = fiber._owner;
+		try {
+			var number = typeNumber(ref);
+			refStrategy[number](owner, ref, dom);
+		} catch (e) {
+			pushError(fiber, 'ref', e);
+		}
+	}
+};
+var refStrategy = {
+	4: function _(owner, ref, dom) {
+		if (dom === null) {
+			delete owner.refs[ref];
+		} else {
+			if (dom.nodeType) {
+				dom.getDOMNode = getDOMNode;
+			}
+			owner.refs[ref] = dom;
+		}
+	},
+	5: function _(owner, ref, dom) {
+		ref(dom);
+	},
+	8: function _(owner, ref, dom) {
+		ref.current = dom;
+	}
 };
 
 function commitEffects() {
