@@ -10,7 +10,7 @@ import { Fiber } from './Fiber';
 
 import { createInstance } from './createInstance';
 
-const macrotasks = Renderer.macrotasks;
+const macrotasks = [];
 const batchedtasks = [];
 
 /*

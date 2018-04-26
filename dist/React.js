@@ -124,7 +124,6 @@ function createRenderer(methods) {
 	return extend(Renderer, methods);
 }
 var Renderer = {
-	macrotasks: [],
 	controlledCbs: [],
 	mountOrder: 1,
 	currentOwner: null
@@ -2372,7 +2371,7 @@ fn$2.render = function () {
     return this.state.child;
 };
 
-var macrotasks = Renderer.macrotasks;
+var macrotasks = [];
 var batchedtasks = [];
 function render$1(vnode, root, callback) {
 	var container = createContainer(root),

@@ -4,7 +4,6 @@ export function createRenderer(methods) {
 }
 
 export const Renderer = {
-	macrotasks: [],
 	controlledCbs: [],
 	mountOrder: 1,
 	//catchError
