@@ -51,15 +51,13 @@
            
  
              render() {
-                 return <p>{this.state.flag}<Son ref="son" /></p>
+                 return <p>{this.state.flag}</p>
              }
              componentDidMount(){
                  this.setState({
                      flag: 222
                  })
-                 this.refs.son.setState({
-                     flag:444
-                 })
+               
              }
          }
  
