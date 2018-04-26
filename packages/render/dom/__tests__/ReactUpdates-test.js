@@ -223,7 +223,7 @@ describe('ReactUpdates', () => {
   });
 
   it('should support chained state updates', () => {
-    return
+    
     let updateCount = 0;
 
     class Component extends React.Component {

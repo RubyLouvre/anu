@@ -1,166 +1,167 @@
-import { effects, resetStack } from "./util";
-import { updateEffects } from "./beginWork";
-import { collectEffects } from "./completeWork";
-import { commitEffects } from "./commitWork";
-import { CALLBACK, DETACH } from "./effectTag";
-import { Renderer } from "react-core/createRenderer";
-import { __push, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
-import { Unbatch } from "./unbatch";
-import { Fiber } from "./Fiber";
+import { effects, resetStack } from './util';
+import { updateEffects } from './beginWork';
+import { collectEffects } from './completeWork';
+import { commitEffects } from './commitWork';
+import { CALLBACK, DETACH } from './effectTag';
+import { Renderer } from 'react-core/createRenderer';
+import { __push, get, isFn, topNodes, typeNumber, topFibers } from 'react-core/util';
+import { Unbatch } from './unbatch';
+import { Fiber } from './Fiber';
 
-import { createInstance } from "./createInstance";
+import { createInstance } from './createInstance';
 
 const macrotasks = Renderer.macrotasks;
-const batchedtasks = [],
-    microtasks = [];
-window.microtasks = microtasks;
+const batchedtasks = [];
 
 /*
-window.microtasks = microtasks;
-window.macrotasks = macrotasks;
-window.batchedtasks = batchedtasks;
-*/
+    window.microtasks = microtasks;
+    window.macrotasks = macrotasks;
+    window.batchedtasks = batchedtasks;
+    */
 export function render(vnode, root, callback) {
-    let container = createContainer(root),
-        immediateUpdate = false;
-    if (!container.hostRoot) {
-        let fiber = new Fiber({
-            type: Unbatch,
-            tag: 2,
-            props: {},
-            return: container,
-        });
-        container.child = fiber;
-        //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
-        let instance = (fiber.stateNode = createInstance(fiber, {}));
-        instance.updater.enqueueSetState = updateComponent;
-        instance._reactInternalFiber = fiber;
-        container.hostRoot = instance;
-        immediateUpdate = true;
-        Renderer.emptyElement(container);
-    }
-    let carrier = {};
-    updateComponent(
-        container.hostRoot,
-        {
-            child: vnode,
-        },
-        wrapCb(callback, carrier),
-        immediateUpdate
-    );
-    return carrier.instance;
+	let container = createContainer(root),
+		immediateUpdate = false;
+	if (!container.hostRoot) {
+		let fiber = new Fiber({
+			type: Unbatch,
+			tag: 2,
+			props: {},
+			return: container,
+		});
+		container.child = fiber;
+		//将updateClassComponent部分逻辑放到这里，我们只需要实例化它
+		let instance = (fiber.stateNode = createInstance(fiber, {}));
+		instance.updater.enqueueSetState = updateComponent;
+		instance._reactInternalFiber = fiber;
+		container.hostRoot = instance;
+		immediateUpdate = true;
+		Renderer.emptyElement(container);
+	}
+	let carrier = {};
+	updateComponent(
+		container.hostRoot,
+		{
+			child: vnode,
+		},
+		wrapCb(callback, carrier),
+		immediateUpdate
+	);
+	return carrier.instance;
 }
 
 function wrapCb(fn, carrier) {
-    return function () {
-        var fiber = get(this);
-        var target = fiber.child ? fiber.child.stateNode : null;
-        fn && fn.call(target);
-        carrier.instance = target;
-    };
+	return function() {
+		var fiber = get(this);
+		var target = fiber.child ? fiber.child.stateNode : null;
+		fn && fn.call(target);
+		carrier.instance = target;
+	};
 }
 
 function performWork(deadline, el) {
-    workLoop(deadline);
-    if (macrotasks.length || microtasks.length) {
-        while ((el = microtasks.shift())) {
-            if (!el.disposed) {
-                macrotasks.push(el);
-            }
-        }
-        requestIdleCallback(performWork);
-    }
+	workLoop(deadline);
+	topFibers.forEach(function(el) {
+		var microtasks = el.microtasks;
+		while ((el = microtasks.shift())) {
+			if (!el.disposed) {
+				macrotasks.push(el);
+			}
+		}
+	});
+	if (macrotasks.length) {
+		requestIdleCallback(performWork);
+	}
 }
-
 
 let ricObj = {
-    timeRemaining() {
-        return 2;
-    }
+	timeRemaining() {
+		return 2;
+	},
 };
 let ENOUGH_TIME = 1;
+
 function requestIdleCallback(fn) {
-    fn(ricObj);
+	fn(ricObj);
 }
 
-Renderer.scheduleWork = function () {
-    performWork(ricObj);
+Renderer.scheduleWork = function() {
+	performWork(ricObj);
 };
 
 var isBatching = false;
-Renderer.batchedUpdates = function (callback) {
-    var keepbook = isBatching;
-    isBatching = true;
-    try {
-        return callback();
-    } finally {
-        isBatching = keepbook;
-        if (!isBatching) {
-            var el;
-            while ((el = batchedtasks.shift())) {
-                if (!el.disabled) {
-                    macrotasks.push(el);
-                }
-            }
-            var retry = Renderer.catchTry;
-            var boundary = Renderer.catchBoundary;
-            if (retry) {
-                retry.effectTag = DETACH;
-                // console.log("有Try", retry.name,  retry.hasTry);
-                macrotasks.push(retry);
-                delete Renderer.catchTry;
-            }
+Renderer.batchedUpdates = function(callback) {
+	var keepbook = isBatching;
+	isBatching = true;
+	try {
+		return callback();
+	} finally {
+		isBatching = keepbook;
+		if (!isBatching) {
+			var el;
+			while ((el = batchedtasks.shift())) {
+				if (!el.disabled) {
+					macrotasks.push(el);
+				}
+			}
+			var retry = Renderer.catchTry;
+			var boundary = Renderer.catchBoundary;
+			if (retry) {
+				retry.effectTag = DETACH;
+				// console.log("有Try", retry.name,  retry.hasTry);
+				macrotasks.push(retry);
+				delete Renderer.catchTry;
+			}
 
-            if (boundary) {
-                //  console.log("有Boundary", boundary.name,boundary.hasTry );
-                macrotasks.push(boundary);
+			if (boundary) {
+				//  console.log("有Boundary", boundary.name,boundary.hasTry );
+				macrotasks.push(boundary);
 
-                delete Renderer.hasError;
-                delete Renderer.catchBoundary;
-            }
-            Renderer.scheduleWork();
-        }
-    }
+				delete Renderer.hasError;
+				delete Renderer.catchBoundary;
+			}
+			Renderer.scheduleWork();
+		}
+	}
 };
 
 function workLoop(deadline) {
-    let topWork = getNextUnitOfWork();
-    if (topWork) {
-        let fiber = topWork,
-            info;
-        if (topWork.type === Unbatch) {
-            info = topWork.return;
-        } else {
-            let dom = getContainer(fiber);
-            info = {
-                containerStack: [dom],
-                contextStack: [{}],
-            };
-        }
-        while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
-            fiber = updateEffects(fiber, topWork, info);
-        }
+	let topWork = getNextUnitOfWork();
+	if (topWork) {
+		let fiber = topWork,
+			info;
+		if (topWork.type === Unbatch) {
+			info = topWork.return;
+		} else {
+			let dom = getContainer(fiber);
+			info = {
+				containerStack: [dom],
+				contextStack: [{}],
+			};
+		}
+		while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
+			fiber = updateEffects(fiber, topWork, info);
+		}
 
-        __push.apply(effects, collectEffects(topWork, null, true));
-        effects.push(topWork);
-        //  console.log(effects.map((a)=>{
-        //      return a.name;
-        //  }));
-        if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
-            workLoop(deadline); //收集任务
-        } else {
-            resetStack(info);
-            commitEffects(); //执行任务
-        }
-    }
+		__push.apply(effects, collectEffects(topWork, null, true));
+		effects.push(topWork);
+		//  console.log(effects.map((a)=>{
+		//      return a.name;
+		//  }));
+		if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
+			workLoop(deadline); //收集任务
+		} else {
+			resetStack(info);
+			commitEffects(); //执行任务
+		}
+	}
 }
 
 function getNextUnitOfWork(fiber) {
-    fiber = macrotasks.shift();
-    if (!fiber || fiber.merged) {
-        return;
-    }
-    return fiber;
+	fiber = macrotasks.shift();
+	if (!fiber || fiber.merged) {
+		return;
+	}
+	return fiber;
 }
 
 /**
@@ -171,186 +172,182 @@ function getNextUnitOfWork(fiber) {
  */
 
 function mergeUpdates(el, state, isForced, callback) {
-    let fiber = el._updates || el;
-    if (isForced) {
-        fiber.isForced = true; // 如果是true就变不回false
-    }
-    if (state) {
-        let ps = fiber.pendingStates || (fiber.pendingStates = []);
-        ps.push(state);
-    }
-    if (isFn(callback)) {
-        let cs = fiber.pendingCbs || (fiber.pendingCbs = []);
-        if (!cs.length) {
-            if (!fiber.effectTag) {
-                fiber.effectTag = CALLBACK;
-            } else {
-                fiber.effectTag *= CALLBACK;
-            }
-        }
-        cs.push(callback);
-    }
+	let fiber = el._updates || el;
+	if (isForced) {
+		fiber.isForced = true; // 如果是true就变不回false
+	}
+	if (state) {
+		let ps = fiber.pendingStates || (fiber.pendingStates = []);
+		ps.push(state);
+	}
+	if (isFn(callback)) {
+		let cs = fiber.pendingCbs || (fiber.pendingCbs = []);
+		if (!cs.length) {
+			if (!fiber.effectTag) {
+				fiber.effectTag = CALLBACK;
+			} else {
+				fiber.effectTag *= CALLBACK;
+			}
+		}
+		cs.push(callback);
+	}
 }
 
 function fiberContains(p, son) {
-    while (son.return) {
-        if (son.return === p) {
-            return true;
-        }
-        son = son.return;
-    }
+	while (son.return) {
+		if (son.return === p) {
+			return true;
+		}
+		son = son.return;
+	}
+}
+
+function getQueue(fiber) {
+	while (fiber) {
+		if (fiber.microtasks) {
+			return fiber.microtasks;
+		}
+		fiber = fiber.return;
+	}
 }
 
 function pushChildQueue(fiber, queue) {
-    //判定当前节点是否包含已进队的节点
-    let maps = {};
-    for (let i = queue.length, el; (el = queue[--i]);) {
-        //移除列队中比它小的组件
-        if (fiber === el) {
-            queue.splice(i, 1); //已经放进过，去掉
-            continue;
-        } else if (fiberContains(fiber, el)) {
-            //不包含自身
-            queue.splice(i, 1);
-            continue;
-        }
-        maps[el.stateNode.updater.mountOrder] = true;
-    }
-    let enqueue = true,
-        p = fiber,
-        hackSCU = [];
-    while (p.return) {
-        p = p.return;
-        var instance = p.stateNode;
-        if (instance.refs && !instance.__isStateless && p.type !== Unbatch) {
-            hackSCU.push(p);
-            var u = instance.updater;
-            if (maps[u.mountOrder]) {
-                //它是已经在列队的某个组件的孩子
-                enqueue = false;
-                break;
-            }
-        }
-    }
-    hackSCU.forEach(function (el) {
-        //如果是批量更新，必须强制更新，防止进入SCU
-        if (el._updates) {
-            el._updates.batching = true;
-        }
-        el.batching = true;
-    });
-    if (enqueue) {
-        if (fiber._hydrating) {
-            fiber._updates = fiber._updates || {};
-        }
-        queue.push(fiber);
-    }
+	//判定当前节点是否包含已进队的节点
+	let maps = {};
+	for (let i = queue.length, el; (el = queue[--i]); ) {
+		//移除列队中比它小的组件
+		if (fiber === el) {
+			queue.splice(i, 1); //已经放进过，去掉
+			continue;
+		} else if (fiberContains(fiber, el)) {
+			//不包含自身
+			queue.splice(i, 1);
+			continue;
+		}
+		maps[el.stateNode.updater.mountOrder] = true;
+	}
+	let enqueue = true,
+		p = fiber,
+		hackSCU = [];
+	while (p.return) {
+		p = p.return;
+		var instance = p.stateNode;
+		if (instance.refs && !instance.__isStateless && p.type !== Unbatch) {
+			hackSCU.push(p);
+			var u = instance.updater;
+			if (maps[u.mountOrder]) {
+				//它是已经在列队的某个组件的孩子
+				enqueue = false;
+				break;
+			}
+		}
+	}
+	hackSCU.forEach(function(el) {
+		//如果是批量更新，必须强制更新，防止进入SCU
+		if (el._updates) {
+			el._updates.batching = true;
+		}
+		el.batching = true;
+	});
+	if (enqueue) {
+		if (fiber._hydrating) {
+			fiber._updates = fiber._updates || {};
+		}
+		queue.push(fiber);
+	}
 }
 //setState的实现
 
 function updateComponent(instance, state, callback, immediateUpdate) {
-    let fiber = get(instance);
-    if (fiber.parent) {
-        fiber.parent.insertPoint = fiber.insertPoint;
-    }
-    let sn = typeNumber(state);
-    let isForced = state === true;
-    state = isForced ? null : sn === 5 || sn === 8 ? state : null;
-    // if (Renderer.catchBoundary == fiber) {
-    //     console.log("componentDidCatch setState", fiber.name);
-    //     // delete Renderer.catchBoundary
-    //     mergeUpdates(fiber, state, isForced, callback);
-    //     return;
-    // }
-    console.log(isBatching,"isBatching");
-    let parent = Renderer._hydratingParent;
-    if (fiber.setout) {
-        //情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
-        // console.log("setState 1");
-        immediateUpdate = false;
-    } else if (parent && fiberContains(parent, fiber)) {
-        //情况2，在componentDidMount/Update中，子组件setState， 放进microtasks
-        // console.log("setState 2");
-        console.log("=====");
-        microtasks.push(fiber);
-    } else if (isBatching || fiber._hydrating ) { //&& !immediateUpdate
-        // ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
-        //  console.log("setState 3");
-        //情况3， 在batchedUpdates中setState，可能放进batchedtasks
-        immediateUpdate = false;
-        pushChildQueue(fiber, batchedtasks);
-        console.log(batchedtasks.concat());
-    } else {
+	let fiber = get(instance);
+	if (fiber.parent) {
+		fiber.parent.insertPoint = fiber.insertPoint;
+	}
+	let sn = typeNumber(state);
+	let isForced = state === true;
 
-        //情况4，在componentDidMount/Update中setState，可能放进microtasks
-        //情况5，在钩子外setState, 需要立即触发
-        immediateUpdate = immediateUpdate || !fiber._hydrating;
-        // console.log(fiber.name + " setState " + (immediateUpdate ? 4 : 5), fiber._hydrating);
-        pushChildQueue(fiber, microtasks);
-    }
+	let microtasks = getQueue(fiber);
 
-    mergeUpdates(fiber, state, isForced, callback);
+	state = isForced ? null : sn === 5 || sn === 8 ? state : null;
+	// console.log(isBatching,"isBatching");
+	if (fiber.setout) {
+		//情况1，在componentWillMount/ReceiveProps中setState， 不放进列队
+		// console.log("setState 1");
+		immediateUpdate = false;
+	} else if ((isBatching && !immediateUpdate) || fiber._hydrating) {
+		//&& !immediateUpdate
+		// ReactDOM.render(vnode, container)，只对更新时批处理，创建时走情况5
+		//  console.log("setState 2");
+		//情况3， 在batchedUpdates中setState，可能放进batchedtasks
+		pushChildQueue(fiber, batchedtasks);
+	} else {
+		//情况4，在componentDidMount/Update中setState，可能放进microtasks
+		//情况5，在钩子外setState, 需要立即触发
+		immediateUpdate = immediateUpdate || !fiber._hydrating;
+		// console.log(fiber.name + " setState " + (immediateUpdate ? 3 : 4), fiber._hydrating);
+		pushChildQueue(fiber, microtasks);
+	}
 
-    if (immediateUpdate) {
-        console.log("----");
-        Renderer.scheduleWork();
-    }
+	mergeUpdates(fiber, state, isForced, callback);
+
+	if (immediateUpdate) {
+		Renderer.scheduleWork();
+	}
 }
-
-
 
 Renderer.updateComponent = updateComponent;
 
 function validateTag(el) {
-    return el && el.appendChild;
+	return el && el.appendChild;
 }
 export function createContainer(root, onlyGet, validate) {
-    validate = validate || validateTag;
-    if (!validate(root)) {
-        throw `container is not a element`; // eslint-disable-line
-    }
+	validate = validate || validateTag;
+	if (!validate(root)) {
+		throw `container is not a element`; // eslint-disable-line
+	}
 
-    root.anuProp = 2018;
-    let useProp = root.anuProp === 2018;
-    //像IE6-8，文本节点不能添加属性
-    if (useProp) {
-        root.anuProps = void 0;
-        if (get(root)) {
-            return get(root);
-        }
-    } else {
-        var index = topNodes.indexOf(root);
-        if (index !== -1) {
-            return topFibers[index];
-        }
-    }
-    if (onlyGet) {
-        return null;
-    }
-    var container = new Fiber({
-        stateNode: root,
-        tag: 5,
-        name: "hostRoot",
-        contextStack: [{}],
-        containerStack: [root],
-        type: root.nodeName || root.type,
-    });
-    if (useProp) {
-        root._reactInternalFiber = container;
-    } else {
-        topNodes.push(root);
-        topFibers.push(container);
-    }
-    return container;
+	root.anuProp = 2018;
+	let useProp = root.anuProp === 2018;
+	//像IE6-8，文本节点不能添加属性
+	if (useProp) {
+		root.anuProps = void 0;
+		if (get(root)) {
+			return get(root);
+		}
+	} else {
+		var index = topNodes.indexOf(root);
+		if (index !== -1) {
+			return topFibers[index];
+		}
+	}
+	if (onlyGet) {
+		return null;
+	}
+	var container = new Fiber({
+		stateNode: root,
+		tag: 5,
+		name: 'hostRoot',
+		contextStack: [{}],
+		containerStack: [root],
+		microtasks: [],
+		type: root.nodeName || root.type,
+	});
+	if (useProp) {
+		root._reactInternalFiber = container;
+	}
+	topNodes.push(root);
+	topFibers.push(container);
+
+	return container;
 }
 
 export function getContainer(p) {
-    if (p.parent) {
-        return p.parent;
-    }
-    while ((p = p.return)) {
-        if (p.tag === 5) {
-            return p.stateNode;
-        }
-    }
+	if (p.parent) {
+		return p.parent;
+	}
+	while ((p = p.return)) {
+		if (p.tag === 5) {
+			return p.stateNode;
+		}
+	}
 }
