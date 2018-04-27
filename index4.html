@@ -425,11 +425,10 @@
 			}
 			render() {
 				if (this.state.error && !this.props.forceRetry) {
-					console.log("有时间插入吗")
 					log.push(`${this.props.logName} render error`);
+					console.log( "ErrorBoundary renderError")
 					return this.props.renderError(this.state.error, this.props);
 				}
-				console.log("有时间插入吗")
 				log.push(`${this.props.logName} render success`);
 				return <div>{this.props.children}</div>;
 			}
@@ -459,8 +458,7 @@
 		ErrorBoundary.defaultProps = {
 			logName: 'ErrorBoundary',
 			renderError(error, props) {
-				console.log("renderError")
-				return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
+				return <div className="hasRef" ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
 			},
 		};
 
@@ -538,43 +536,67 @@
 			}
 		}
         var log = []
-       
-	   ReactDOM.render(
-      <ErrorBoundary>
-        <RetryErrorBoundary>
-          <BrokenRender />
-        </RetryErrorBoundary>
-      </ErrorBoundary>,
-      container,
-    );
-    expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-    expect(log).toEqual([
-      'ErrorBoundary constructor',
-      'ErrorBoundary componentWillMount',
-      'ErrorBoundary render success',
-      'RetryErrorBoundary constructor',
-      'RetryErrorBoundary componentWillMount',
-      'RetryErrorBoundary render',
-      'BrokenRender constructor',
-      'BrokenRender componentWillMount',
-      'BrokenRender render [!]',
-      // In Fiber, failed error boundaries render null before attempting to recover
-      'RetryErrorBoundary componentDidMount',
-      'RetryErrorBoundary componentDidCatch [!]',
-      'ErrorBoundary componentDidMount',
-      // Retry
-      'RetryErrorBoundary render',
-      'BrokenRender constructor',
-      'BrokenRender componentWillMount',
-      'BrokenRender render [!]',
-      // This time, the error propagates to the higher boundary
-      'RetryErrorBoundary componentWillUnmount',
-      'ErrorBoundary componentDidCatch',
-      // Render the error
-      'ErrorBoundary componentWillUpdate',
-      'ErrorBoundary render error',
-      'ErrorBoundary componentDidUpdate',
-    ]);
+		function child1Ref(x) {
+			log.push('Child1 ref is set to ' + x);
+		}
+		function child2Ref(x) {
+			log.push('Child2 ref is set to ' + x);
+		}
+		function errorMessageRef(x) {
+			log.push('Error message ref is set to ' + x);
+		}
+
+	//	const container = document.createElement('div');
+		ReactDOM.render(
+			<ErrorBoundary errorMessageRef={errorMessageRef}>
+				<div ref={child1Ref} />
+			</ErrorBoundary>,
+			container
+		);
+		expect(log).toEqual([
+			'ErrorBoundary constructor',
+			'ErrorBoundary componentWillMount',
+			'ErrorBoundary render success',
+			'Child1 ref is set to [object HTMLDivElement]',
+			'ErrorBoundary componentDidMount',
+		]);
+
+		log.length = 0;
+		console.log("--------------")
+		var inst = ReactDOM.render(
+			<ErrorBoundary errorMessageRef={errorMessageRef}>
+				<div ref={child1Ref} />
+				<div ref={child2Ref} />
+				<BrokenRender />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+			'ErrorBoundary componentWillReceiveProps',
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary render success',
+			// BrokenRender will abort rendering:
+			'BrokenRender constructor',
+			'BrokenRender componentWillMount',
+			'BrokenRender render [!]',
+			// Finish updating with null children render及render之前的抛错在didUpdate中清空？
+			'Child1 ref is set to null',
+			'ErrorBoundary componentDidUpdate',
+			// Handle the error
+			'ErrorBoundary componentDidCatch',
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary render error',
+			'Error message ref is set to [object HTMLDivElement]',
+			// Child2 ref is never set because its mounting aborted
+			'ErrorBoundary componentDidUpdate',
+		]);
+
+	//	log.length = 0;
+	//	console.log("移除")
+	//	ReactDOM.unmountComponentAtNode(container);
+	// 	expect(log).toEqual(['ErrorBoundary componentWillUnmount', 'Error message ref is set to null']);
+	
 
   
     </script>
