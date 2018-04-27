@@ -34,7 +34,14 @@ export function disposeVnode(fiber, updateQueue, silent) {
     }
 }
 function remove(){
+    let sibling = this.vnode.return.sibling;
+
     this.vnode._disposed = true;
+
+    if (sibling && sibling._mountPoint && sibling._mountPoint.previousSibling === sibling._mountCarrier.dom) {
+        sibling._mountPoint = this.vnode.stateNode.previousSibling;
+    }
+    
     delete this.vnode.stateNode;
     removeElement(this.node);
 }
