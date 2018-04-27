@@ -168,7 +168,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
     };
 });
 
-String("load", "error").replace(/\w+/g, function(name) {
+String("load,error").replace(/\w+/g, function(name) {
     eventHooks[name] = function(dom, type) {
         let mark = "__" + type;
 

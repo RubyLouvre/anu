@@ -983,7 +983,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
         }
     };
 });
-String("load", "error").replace(/\w+/g, function (name) {
+String("load,error").replace(/\w+/g, function (name) {
     eventHooks[name] = function (dom, type) {
         var mark = "__" + type;
         if (!dom[mark]) {
