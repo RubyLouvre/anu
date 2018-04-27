@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-04-24
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-04-27
  */
 
 (function (global, factory) {
@@ -718,7 +718,11 @@ function disposeVnode(fiber, updateQueue, silent) {
     }
 }
 function remove() {
+    var sibling = this.vnode.return.sibling;
     this.vnode._disposed = true;
+    if (sibling && sibling._mountPoint && sibling._mountPoint.previousSibling === sibling._mountCarrier.dom) {
+        sibling._mountPoint = this.vnode.stateNode.previousSibling;
+    }
     delete this.vnode.stateNode;
     removeElement(this.node);
 }
@@ -974,6 +978,17 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
                     var common = getLowestCommonAncestor(dom, t);
                     dispatchEvent(e, type, common);
                 }
+            });
+        }
+    };
+});
+String("load", "error").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            addEvent(dom, type, function (e) {
+                dispatchEvent(e, type);
             });
         }
     };
@@ -1869,8 +1884,9 @@ var actionStrategy = {
             if (!val && val !== 0) {
                 if (builtinStringProps[name]) {
                     dom[name] = "";
+                } else {
+                    dom.removeAttribute(name);
                 }
-                dom.removeAttribute(name);
             } else {
                 dom[name] = val;
             }

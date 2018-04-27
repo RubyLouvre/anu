@@ -168,6 +168,19 @@ String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
     };
 });
 
+String("load", "error").replace(/\w+/g, function(name) {
+    eventHooks[name] = function(dom, type) {
+        let mark = "__" + type;
+
+        if (!dom[mark]) {
+            dom[mark] = true;
+            addEvent(dom, type, function(e) {
+                dispatchEvent(e, type);
+            });
+        }
+    };
+});
+
 function getLowestCommonAncestor(instA, instB) {
     let depthA = 0;
     for (let tempA = instA; tempA; tempA = tempA.parentNode) {
