@@ -231,41 +231,69 @@
 			}
 		};
 
-   const container = document.createElement('div');
-		ReactDOM.render(
+	var	RetryErrorBoundary = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('RetryErrorBoundary constructor');
+			}
+			render() {
+				log.push('RetryErrorBoundary render');
+				return <BrokenRender />;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('RetryErrorBoundary componentWillMount');
+			}
+			componentDidMount() {
+				log.push('RetryErrorBoundary componentDidMount');
+			}
+			componentWillUnmount() {
+				log.push('RetryErrorBoundary componentWillUnmount');
+			}
+			componentDidCatch(error) {
+				log.push('RetryErrorBoundary componentDidCatch [!]');
+				// In Fiber, calling setState() (and failing) is treated as a rethrow.
+				this.setState({});
+			}
+		};
+
+   ReactDOM.render(
 			<ErrorBoundary>
-				<Normal />
-				<BrokenRender />
-				<Normal />
+				<RetryErrorBoundary>
+					<BrokenRender />
+				</RetryErrorBoundary>
 			</ErrorBoundary>,
-			container,
+			container
 		);
 		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-		expect(log).toEqual([
+
+		var official = [
 			'ErrorBoundary constructor',
 			'ErrorBoundary componentWillMount',
 			'ErrorBoundary render success',
-			// Render first child
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
-			// Render second child (it throws)
+			'RetryErrorBoundary constructor',
+			'RetryErrorBoundary componentWillMount',
+			'RetryErrorBoundary render',
 			'BrokenRender constructor',
 			'BrokenRender componentWillMount',
 			'BrokenRender render [!]',
-			// Render third child, even though an earlier sibling threw.
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
-			// Finish mounting with null children
+			// In Fiber, failed error boundaries render null before attempting to recover
+			'RetryErrorBoundary componentDidMount',
+			'RetryErrorBoundary componentDidCatch [!]',
 			'ErrorBoundary componentDidMount',
-			// Handle the error
+			// Retry
+			'RetryErrorBoundary render',
+			'BrokenRender constructor',
+			'BrokenRender componentWillMount',
+			'BrokenRender render [!]',
+			// This time, the error propagates to the higher boundary
+			'RetryErrorBoundary componentWillUnmount',
 			'ErrorBoundary componentDidCatch',
-			// Render the error message
+			// Render the error
 			'ErrorBoundary componentWillUpdate',
 			'ErrorBoundary render error',
 			'ErrorBoundary componentDidUpdate',
-		]);
+		];
+		expect(log).toEqual(official);
 
 	
     </script>
