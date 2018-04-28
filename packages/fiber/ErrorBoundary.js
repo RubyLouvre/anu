@@ -24,7 +24,9 @@ export function pushError(fiber, hook, error) {
         }
 
         boundary.effectTag *= CAPTURE;
-        root.capturedValues.push(error, { componentStack: stack });
+        root.capturedValues.push(error, {
+            componentStack: stack
+        });
 
     } else {
 

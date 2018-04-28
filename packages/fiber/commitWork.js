@@ -158,7 +158,7 @@ export function commitOtherEffects(fiber, tasks) {
                     tasks.push(n);
                     return;
                     // tasks.push(n);
-                } 
+                }
 
                 break;
             case REF:
@@ -181,11 +181,11 @@ export function commitOtherEffects(fiber, tasks) {
                 while (root.return) {
                     root = root.return;
                 }
-                var capturedValues = root.capturedValues;
+                var values = root.capturedValues;
                 fiber.effectTag = amount;
-                instance.componentDidCatch(capturedValues.shift(), capturedValues.shift());
+                instance.componentDidCatch(values.shift(), values.shift());
 
-                if (!capturedValues.length) {
+                if (!values.length) {
                     delete root.catchBoundary;
                 }
                 break;
