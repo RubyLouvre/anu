@@ -155,7 +155,7 @@
 		  container,
 		);
 		expect(container.textContent).toBe('Caught an inner error: Hello.');
-		expect(log).toEqual([
+		expect(log.concat()).toEqual([
 		  // Update outer boundary
 		  'OuterErrorBoundary componentWillReceiveProps',
 		  'OuterErrorBoundary componentWillUpdate',

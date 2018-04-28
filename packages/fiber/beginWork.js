@@ -210,6 +210,8 @@ export function updateClassComponent(fiber, info) {
         return;
     }
     fiber.effectTag *= HOOK;
+    // 需要统一fiber.clearChildren与fiber.capturedCount
+    //  console.log("fiber.clearChildren",fiber.clearChildren,capturedValues.length);
     if (fiber.clearChildren) {
         delete fiber.clearChildren;
         delete fiber.capturedCount;

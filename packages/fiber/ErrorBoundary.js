@@ -18,8 +18,7 @@ export function pushError(fiber, hook, error) {
                 updater: fakeObject,
             };
         }
-        fiber._children = {};
-        delete fiber.child;
+
         if (!boundary.capturedCount) {
             boundary.capturedCount = 1;
         }
