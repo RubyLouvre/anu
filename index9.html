@@ -84,6 +84,46 @@
     expect(container.textContent).toBe('goodbye');
     expect(mounts).toBe(1);
 </script>
+beginWork 主要是两个方法updateClassComponent, updateHostComponent
 
+updateClassComponent实例化组件及执行轻量的钩子（cWD.cWU,cWRP,sCU, gDSFP）,它们会抛错，给外面的try catch接住
+updateHostComponent创建DOM
+
+updateClassComponent可能会产生context，放进contextStack里
+updateClassComponent会产生parent，放进containerStack里
+
+第二次访问时，会shift context, parent
+
+beginWork位于updateEffects中，
+updateEffects用于处理fiber及其孩子
+
+updateEffects位于workLoop中
+
+workLoop用于处理macrotasks中所有fiber
+这些fiber都是根节点或被setState的fiber
+
+workLoop位于performWork中，
+每次执行完
+workLoop,它会检查所有根节点的microtask列队有没有产生新的任务，然后将新任务放到microtask中
+setState会产一个新任务，可能会放到根节点的microtasks列队，也可能放到batchedtasks列队。
+
+如果microtask不为空，那么它会递归执行performWork
+
+
+
+
+performWork位于scheduleWork方法中，scheduleWork决定这个递归操作是同步还是异步的。
+
+ReactDOM.render, setState都会调用scheduleWork
+
+因此思路很明显，ReactDOM.render, setState都会产生一个任务（fiber），然后调用scheduleWork
+
+scheduleWork一直跑到beginWork，实现整个树的diff
+
+diff完呢，workLoop其实还有两步。
+
+workLoop三步曲，updateEffects, collectEffecs, commitEffects
+
+collectEffecs是收集所有任务，commitEffects根据任务类型执行它们
 
 </html>

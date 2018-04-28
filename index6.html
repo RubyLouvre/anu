@@ -49,8 +49,8 @@
 				console.log(a)
 			}
 		}
-        var log = []
-        var BrokenRender = class extends React.Component {
+    var log = []
+    var BrokenRender = class extends React.Component {
 			constructor(props) {
 				super(props);
 				log.push('BrokenRender constructor');
@@ -133,7 +133,6 @@
 				log.push(`${this.props.logName} constructor`);
 			}
 			render() {
-				console.log("ErrorBoundary render")
 				if (this.state.error && !this.props.forceRetry) {
 					log.push(`${this.props.logName} render error`);
 					return this.props.renderError(this.state.error, this.props);

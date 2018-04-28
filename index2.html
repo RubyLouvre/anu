@@ -44,11 +44,11 @@
                   }
               };
 		 };
-	/*	var log = {
+		var log = {
 			push(a){
 				console.log(a)
 			}
-		}*/
+		}
         var log = []
         var BrokenRender = class extends React.Component {
 			constructor(props) {
@@ -231,7 +231,7 @@
 			}
 		};
 
-	var	RetryErrorBoundary = class extends React.Component {
+	    var	RetryErrorBoundary = class extends React.Component {
 			constructor(props) {
 				super(props);
 				log.push('RetryErrorBoundary constructor');
@@ -256,7 +256,7 @@
 			}
 		};
 
-   ReactDOM.render(
+        ReactDOM.render(
 			<ErrorBoundary>
 				<RetryErrorBoundary>
 					<BrokenRender />

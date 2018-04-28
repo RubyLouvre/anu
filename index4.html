@@ -27,6 +27,12 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
+		/*  var log = {
+			push(a){
+				console.log(a)
+			}
+		}*/
+        var log = []
 		  var PropTypes = React.PropTypes;
 		  BrokenConstructor = class extends React.Component {
 			constructor(props) {
@@ -530,44 +536,20 @@
 //================================
 //================================
 
-	    var log = {
-			push(a){
-				console.log(a)
-			}
-		}
-        var log = []
-		function child1Ref(x) {
-			log.push('Child1 ref is set to ' + x);
-		}
-		function child2Ref(x) {
-			log.push('Child2 ref is set to ' + x);
-		}
-		function errorMessageRef(x) {
-			log.push('Error message ref is set to ' + x);
-		}
-
-	//	const container = document.createElement('div');
+	   // const container = document.createElement('div');
 		ReactDOM.render(
-			<ErrorBoundary errorMessageRef={errorMessageRef}>
-				<div ref={child1Ref} />
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
+				<BrokenComponentWillUnmount />
+				<Normal />
 			</ErrorBoundary>,
 			container
 		);
-		expect(log).toEqual([
-			'ErrorBoundary constructor',
-			'ErrorBoundary componentWillMount',
-			'ErrorBoundary render success',
-			'Child1 ref is set to [object HTMLDivElement]',
-			'ErrorBoundary componentDidMount',
-		]);
 
 		log.length = 0;
-		console.log("--------------")
-		var inst = ReactDOM.render(
-			<ErrorBoundary errorMessageRef={errorMessageRef}>
-				<div ref={child1Ref} />
-				<div ref={child2Ref} />
-				<BrokenRender />
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
 			</ErrorBoundary>,
 			container
 		);
@@ -576,27 +558,33 @@
 			'ErrorBoundary componentWillReceiveProps',
 			'ErrorBoundary componentWillUpdate',
 			'ErrorBoundary render success',
-			// BrokenRender will abort rendering:
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// Finish updating with null children render及render之前的抛错在didUpdate中清空？
-			'Child1 ref is set to null',
+			// Update existing child:
+			'BrokenComponentWillUnmount componentWillReceiveProps',
+			'BrokenComponentWillUnmount componentWillUpdate',
+			'BrokenComponentWillUnmount render',
+			// Unmounting throws:
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			// Fiber proceeds with lifecycles despite errors
+			'Normal componentWillUnmount',
+			// The components have updated in this phase
+			'BrokenComponentWillUnmount componentDidUpdate',
 			'ErrorBoundary componentDidUpdate',
-			// Handle the error
+			// Now that commit phase is done, Fiber unmounts the boundary's children
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			'ErrorBoundary componentDidCatch',
+			// The initial render was aborted, so
+			// Fiber retries from the root.
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// The second willUnmount error should be captured and logged, too.
 			'ErrorBoundary componentDidCatch',
 			'ErrorBoundary componentWillUpdate',
+			// Render an error now (stack will do it later)
 			'ErrorBoundary render error',
-			'Error message ref is set to [object HTMLDivElement]',
-			// Child2 ref is never set because its mounting aborted
+			// Attempt to unmount previous child:
+			// Done
 			'ErrorBoundary componentDidUpdate',
 		]);
-
-	//	log.length = 0;
-	//	console.log("移除")
-	//	ReactDOM.unmountComponentAtNode(container);
-	// 	expect(log).toEqual(['ErrorBoundary componentWillUnmount', 'Error message ref is set to null']);
-	
 
   
     </script>
