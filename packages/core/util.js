@@ -1,10 +1,22 @@
-export let __push = Array.prototype.push;
+export let arrayPush = Array.prototype.push;
 export let hasSymbol = typeof Symbol === "function" && Symbol["for"];
 export let innerHTML = "dangerouslySetInnerHTML";
 export let hasOwnProperty = Object.prototype.hasOwnProperty;
 export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 export function Fragment(props) {
     return props.children;
+}
+export const gSBU = "getSnapshotBeforeUpdate";
+export const gDSFP = "getDerivedStateFromProps";
+
+export let effects = [];
+export function resetStack(info) {
+    keepLast(info.containerStack);
+    keepLast(info.containerStack);
+}
+function keepLast(list) {
+    var n = list.length;
+    list.splice(0, n - 1);
 }
 
 export function get(key) {

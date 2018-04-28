@@ -1,5 +1,5 @@
 import { PLACE } from "./effectTag";
-import { __push } from "react-core/util";
+import { arrayPush } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
 import { Renderer } from "react-core/createRenderer";
 
@@ -54,10 +54,10 @@ export function collectEffects(fiber, updateFail, isTop) {
             } else {
                 //只有组件虚拟DOM才有钩子
                 delete child.updateFail;
-                __push.apply(effects, collectEffects(child, true));
+                arrayPush.apply(effects, collectEffects(child, true));
             }
         } else {
-            __push.apply(effects, collectEffects(child));
+            arrayPush.apply(effects, collectEffects(child));
         }
         if (child.effectTag ) {
             //updateFail也会执行REF与CALLBACK

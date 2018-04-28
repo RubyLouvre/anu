@@ -11,11 +11,10 @@ import {
     effectLength,
     effectNames,
 } from "./effectTag";
-import { effects } from "./util";
 import { guardCallback, detachFiber } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 
-import { returnFalse, __push, returnTrue, emptyObject } from "react-core/util";
+import { returnFalse,effects, arrayPush, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 
@@ -73,7 +72,7 @@ export function commitPlaceEffects(tasks) {
         }
     }
     tasks.length = 0;
-    __push.apply(tasks, ret);
+    arrayPush.apply(tasks, ret);
     return ret;
 }
 

@@ -1,4 +1,4 @@
-import { extend, typeNumber, isFn } from "react-core/util";
+import { extend, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
 import { AnuPortal } from "react-core/createPortal";
 
@@ -7,7 +7,6 @@ import { createInstance } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
 import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
-import { gDSFP, gSBU } from "./util";
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点

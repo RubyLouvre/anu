@@ -9,13 +9,24 @@
 	(global.React = factory());
 }(this, (function () {
 
-var __push = Array.prototype.push;
+var arrayPush = Array.prototype.push;
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function Fragment(props) {
     return props.children;
+}
+var gSBU = "getSnapshotBeforeUpdate";
+var gDSFP = "getDerivedStateFromProps";
+var effects = [];
+function resetStack(info) {
+    keepLast(info.containerStack);
+    keepLast(info.containerStack);
+}
+function keepLast(list) {
+    var n = list.length;
+    list.splice(0, n - 1);
 }
 function get(key) {
     return key._reactInternalFiber;
@@ -1595,18 +1606,6 @@ var actionStrategy = {
     }
 };
 
-var gSBU = "getSnapshotBeforeUpdate";
-var gDSFP = "getDerivedStateFromProps";
-var effects = [];
-function resetStack(info) {
-    keepLast(info.containerStack);
-    keepLast(info.containerStack);
-}
-function keepLast(list) {
-    var n = list.length;
-    list.splice(0, n - 1);
-}
-
 function createInstance(fiber, context) {
     var updater = {
         mountOrder: Renderer.mountOrder++,
@@ -1712,13 +1711,13 @@ function pushError(fiber, hook, error) {
                 updater: fakeObject
             };
         }
-        fiber._children = {};
-        delete fiber.child;
         if (!boundary.capturedCount) {
             boundary.capturedCount = 1;
         }
         boundary.effectTag *= CAPTURE;
-        root.capturedValues.push(error, { componentStack: stack });
+        root.capturedValues.push(error, {
+            componentStack: stack
+        });
     } else {
         var p = fiber.return;
         for (var i in p._children) {
@@ -1794,15 +1793,15 @@ function findCatchComponent(fiber, names) {
         }
     }
 }
-function detachFiber(fiber, effects) {
+function detachFiber(fiber, effects$$1) {
     fiber.effectTag = DETACH;
     fiber.disposed = true;
-    effects.push(fiber);
+    effects$$1.push(fiber);
     if (fiber.ref && fiber.stateNode && fiber.stateNode.parentNode) {
         fiber.effectTag *= NULLREF;
     }
     for (var child = fiber.child; child; child = child.sibling) {
-        detachFiber(child, effects);
+        detachFiber(child, effects$$1);
     }
 }
 
@@ -2166,11 +2165,11 @@ function collectEffects(fiber, updateFail, isTop) {
         fiber.capturedCount++;
         Renderer.diffChildren(fiber, []);
     }
-    var effects = fiber.effects;
-    if (effects) {
+    var effects$$1 = fiber.effects;
+    if (effects$$1) {
         delete fiber.effects;
     } else {
-        effects = [];
+        effects$$1 = [];
     }
     if (isTop && fiber.tag == 5) {
         fiber.stateNode.insertPoint = null;
@@ -2189,20 +2188,20 @@ function collectEffects(fiber, updateFail, isTop) {
             if (isHost) {
                 if (!child.disposed) {
                     child.effectTag *= PLACE;
-                    effects.push(child);
+                    effects$$1.push(child);
                 }
             } else {
                 delete child.updateFail;
-                __push.apply(effects, collectEffects(child, true));
+                arrayPush.apply(effects$$1, collectEffects(child, true));
             }
         } else {
-            __push.apply(effects, collectEffects(child));
+            arrayPush.apply(effects$$1, collectEffects(child));
         }
         if (child.effectTag) {
-            effects.push(child);
+            effects$$1.push(child);
         }
     }
-    return effects;
+    return effects$$1;
 }
 
 function getDOMNode() {
@@ -2280,7 +2279,7 @@ function commitPlaceEffects(tasks) {
         }
     }
     tasks.length = 0;
-    __push.apply(tasks, ret);
+    arrayPush.apply(tasks, ret);
     return ret;
 }
 function commitOtherEffects(fiber, tasks) {
@@ -2368,10 +2367,10 @@ function commitOtherEffects(fiber, tasks) {
                     while (root.return) {
                         root = root.return;
                     }
-                    var capturedValues = root.capturedValues;
+                    var values = root.capturedValues;
                     fiber.effectTag = amount;
-                    instance.componentDidCatch(capturedValues.shift(), capturedValues.shift());
-                    if (!capturedValues.length) {
+                    instance.componentDidCatch(values.shift(), values.shift());
+                    if (!values.length) {
                         delete root.catchBoundary;
                     }
                     break;
@@ -2493,7 +2492,7 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-        __push.apply(effects, collectEffects(topWork, null, true));
+        arrayPush.apply(effects, collectEffects(topWork, null, true));
         effects.push(topWork);
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline);
