@@ -19,15 +19,18 @@ import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBou
  */
 export function updateEffects(fiber, topWork, info) {
     if (fiber.tag < 3) {
+        let keepbook = Renderer.currentOwner;
         try {
             // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
             // getChildContext都可能 throw Exception，因此不逐一try catch
             // 通过fiber.errorHook得知出错的方法
+
             updateClassComponent(fiber, info); // unshift context
         } catch (e) {
             pushError(fiber, fiber.errorHook, e);
 
         }
+        Renderer.currentOwner = keepbook;
         if (fiber.batching) {
             delete fiber.updateFail;
             delete fiber.batching;
@@ -219,14 +222,12 @@ export function updateClassComponent(fiber, info) {
     }
     fiber._hydrating = true;
 
-    let lastOwn = Renderer.currentOwner;
+  
     Renderer.currentOwner = instance;
 
     let rendered = applyCallback(instance, "render", []);
-    Renderer.currentOwner = lastOwn;
     //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
     if (capturedValues.length) {
-        //console.log("返回", fiber.name);
         return;
     }
     diffChildren(fiber, rendered);

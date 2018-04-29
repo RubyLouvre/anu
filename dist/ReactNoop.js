@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-04-28
+ * by 司徒正美 Copyright 2018-04-29
  * IE9+
  */
 
@@ -844,11 +844,13 @@ function detachFiber(fiber, effects$$1) {
 
 function updateEffects(fiber, topWork, info) {
     if (fiber.tag < 3) {
+        var keepbook = Renderer.currentOwner;
         try {
             updateClassComponent(fiber, info);
         } catch (e) {
             pushError(fiber, fiber.errorHook, e);
         }
+        Renderer.currentOwner = keepbook;
         if (fiber.batching) {
             delete fiber.updateFail;
             delete fiber.batching;
@@ -1028,10 +1030,8 @@ function updateClassComponent(fiber, info) {
         return;
     }
     fiber._hydrating = true;
-    var lastOwn = Renderer.currentOwner;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, "render", []);
-    Renderer.currentOwner = lastOwn;
     if (capturedValues.length) {
         return;
     }
