@@ -826,8 +826,8 @@ function findCatchComponent(fiber, names) {
             if (boundary) {
                 fiber.catchBoundary = boundary;
                 if (retry && retry !== boundary) {
-                    var a = boundary.effects || (boundary.effects = []);
-                    a.push(retry);
+                    var arr = boundary.effects || (boundary.effects = []);
+                    arr.push(retry);
                 }
             }
             return fiber;
@@ -1264,7 +1264,7 @@ function collectDeletion(fiber) {
     }
     for (var child = fiber.child; child; child = child.sibling) {
         if (child.disposed) {
-            return;
+            continue;
         }
         markDeletion(child);
         arrayPush.apply(effects$$1, collectDeletion(child));
@@ -1307,16 +1307,12 @@ var refStrategy = {
 };
 
 function commitEffects() {
-    commitPlaceEffects(effects);
     Renderer.batchedUpdates(function () {
+        commitPlaceEffects(effects);
         var tasks = effects,
             task;
         while (task = tasks.shift()) {
             commitOtherEffects(task, tasks);
-            if (Renderer.catchError) {
-                tasks.length = 0;
-                break;
-            }
         }
     });
     var error = Renderer.catchError;
@@ -1333,12 +1329,8 @@ function commitPlaceEffects(tasks) {
         var remainder = amount / PLACE;
         var hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
-            try {
-                fiber.parent.insertPoint = null;
-                Renderer.insertElement(fiber);
-            } catch (e) {
-                throw e;
-            }
+            fiber.parent.insertPoint = null;
+            Renderer.insertElement(fiber);
             fiber.effectTag = remainder;
             hasEffect = remainder > 1;
         }
@@ -1362,11 +1354,6 @@ function commitOtherEffects(fiber, tasks) {
         if (amount % effectNo === 0) {
             amount /= effectNo;
             switch (effectNo) {
-                case PLACE:
-                    if (fiber.tag > 3) {
-                        Renderer.insertElement(fiber);
-                    }
-                    break;
                 case CONTENT:
                     Renderer.updateContext(fiber);
                     break;
@@ -1402,7 +1389,6 @@ function commitOtherEffects(fiber, tasks) {
                     delete fiber._hydrating;
                     if (fiber.capturedCount == 1 && fiber.child) {
                         delete fiber.capturedCount;
-                        console.log("清空节点");
                         var r = [];
                         detachFiber(fiber, r);
                         r.shift();

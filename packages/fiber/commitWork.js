@@ -18,23 +18,12 @@ import { returnFalse, effects, arrayPush, returnTrue, emptyObject } from "react-
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 export function commitEffects() {
-    commitPlaceEffects(effects);
-    /*
-	  console.log(effects.reduce(function (pre, el) {
-        pre.push(el.effectTag, el.name);
-        return pre;
-    }, []));
- */
-
     Renderer.batchedUpdates(function () {
+        commitPlaceEffects(effects);
         var tasks = effects,
             task;
         while ((task = tasks.shift())) {
             commitOtherEffects(task, tasks);
-            if (Renderer.catchError) {
-                tasks.length = 0;
-                break;
-            }
         }
     });
 
@@ -57,12 +46,8 @@ export function commitPlaceEffects(tasks) {
         let remainder = amount / PLACE;
         let hasEffect = amount > 1;
         if (hasEffect && remainder == ~~remainder) {
-            try {
-                fiber.parent.insertPoint = null;
-                Renderer.insertElement(fiber);
-            } catch (e) {
-                throw e;
-            }
+            fiber.parent.insertPoint = null;
+            Renderer.insertElement(fiber);
             fiber.effectTag = remainder;
             hasEffect = remainder > 1;
         }
@@ -93,11 +78,6 @@ export function commitOtherEffects(fiber, tasks) {
             amount /= effectNo;
             //如果能整除
             switch (effectNo) {
-            case PLACE:
-                if (fiber.tag > 3) {
-                    Renderer.insertElement(fiber);
-                }
-                break;
             case CONTENT:
                 Renderer.updateContext(fiber);
                 break;
@@ -140,7 +120,7 @@ export function commitOtherEffects(fiber, tasks) {
 
                 if (fiber.capturedCount == 1 && fiber.child) {
                     delete fiber.capturedCount;
-                    console.log("清空节点");
+                    //console.log("清空节点");
                     //清空它的下方节点
                     var r = [];
                     detachFiber(fiber, r);
@@ -154,7 +134,6 @@ export function commitOtherEffects(fiber, tasks) {
                     n.effectTag = amount;
                     tasks.push(n);
                     return;
-                    // tasks.push(n);
                 }
 
                 break;

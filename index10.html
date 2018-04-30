@@ -536,13 +536,12 @@
 //================================
 //================================
 
-	   // const container = document.createElement('div');
-	 //  const container = document.createElement('div');
+	
 		ReactDOM.render(
 			<ErrorBoundary>
-				<Normal />
-				<BrokenRender />
-				<Normal />
+				<BrokenRenderErrorBoundary>
+					<BrokenRender />
+				</BrokenRenderErrorBoundary>
 			</ErrorBoundary>,
 			container
 		);
@@ -551,23 +550,24 @@
 			'ErrorBoundary constructor',
 			'ErrorBoundary componentWillMount',
 			'ErrorBoundary render success',
-			// Render first child
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
-			// Render second child (it throws)
+			'BrokenRenderErrorBoundary constructor',
+			'BrokenRenderErrorBoundary componentWillMount',
+			'BrokenRenderErrorBoundary render success',
 			'BrokenRender constructor',
 			'BrokenRender componentWillMount',
 			'BrokenRender render [!]',
-			// Render third child, even though an earlier sibling threw.
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
+			// The first error boundary catches the error
+			// It adjusts state but throws displaying the message
 			// Finish mounting with null children
+			'BrokenRenderErrorBoundary componentDidMount',
+			// Attempt to handle the error
+			'BrokenRenderErrorBoundary componentDidCatch',
 			'ErrorBoundary componentDidMount',
-			// Handle the error
+			'BrokenRenderErrorBoundary render error [!]',
+			// Boundary fails with new error, propagate to next boundary
+			'BrokenRenderErrorBoundary componentWillUnmount',
+			// Attempt to handle the error again
 			'ErrorBoundary componentDidCatch',
-			// Render the error message
 			'ErrorBoundary componentWillUpdate',
 			'ErrorBoundary render error',
 			'ErrorBoundary componentDidUpdate',
