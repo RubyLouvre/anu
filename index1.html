@@ -49,8 +49,8 @@
 				console.log(a)
 			}
 		}
-      var log = []
-        var BrokenRender = class extends React.Component {
+    var log = []
+    var BrokenRender = class extends React.Component {
 			constructor(props) {
 				super(props);
 				log.push('BrokenRender constructor');
@@ -236,7 +236,7 @@
 	
 		ReactDOM.render(
 		  <ErrorBoundary errorMessageRef={errorMessageRef}>
-			<div ref={child1Ref} />
+			<div ref={child1Ref} ><br /></div>
 		  </ErrorBoundary>,
 		  container,
 		);
@@ -251,7 +251,7 @@
 		log.length = 0;
 		ReactDOM.render(
 		  <ErrorBoundary errorMessageRef={errorMessageRef}>
-			<div ref={child1Ref} />
+			<div ref={child1Ref} ><span>333</span></div>
 			<div ref={child2Ref} />
 			<BrokenRender />
 		  </ErrorBoundary>,

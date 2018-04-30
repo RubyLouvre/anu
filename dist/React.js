@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-29
+ * by 司徒正美 Copyright 2018-04-30
  * IE9+
  */
 
@@ -1987,9 +1987,8 @@ function updateClassComponent(fiber, info) {
         return;
     }
     fiber.effectTag *= HOOK;
-    if (fiber.clearChildren) {
-        delete fiber.clearChildren;
-        delete fiber.capturedCount;
+    if (fiber.capturedCount == 1) {
+        fiber.capturedCount = 2;
         return;
     }
     fiber._hydrating = true;
@@ -2120,6 +2119,7 @@ function diffChildren(parentFiber, children) {
                 alternate = new Fiber(_oldFiber);
                 var oldRef = _oldFiber.ref;
                 _newFiber = extend(_oldFiber, _newFiber);
+                effects$$1.push(alternate);
                 _newFiber.alternate = alternate;
                 if (oldRef && oldRef !== _newFiber.ref) {
                     alternate.effectTag *= NULLREF;
@@ -2163,7 +2163,10 @@ function collectEffects(fiber, updateFail, isTop) {
     }
     if (fiber.capturedCount == 1) {
         fiber.capturedCount++;
-        Renderer.diffChildren(fiber, []);
+        var a = collectDeletion(fiber);
+        fiber._children = {};
+        delete fiber.child;
+        return a;
     }
     var effects$$1 = fiber.effects;
     if (effects$$1) {
@@ -2200,6 +2203,30 @@ function collectEffects(fiber, updateFail, isTop) {
         if (child.effectTag) {
             effects$$1.push(child);
         }
+    }
+    return effects$$1;
+}
+function markDeletion(el) {
+    el.disposed = true;
+    if (el.ref) {
+        el.effectTag = NULLREF;
+    }
+    el.effectTag *= DETACH;
+}
+function collectDeletion(fiber) {
+    var effects$$1 = fiber.effects;
+    if (effects$$1) {
+        effects$$1.forEach(markDeletion);
+        delete fiber.effects;
+    } else {
+        effects$$1 = [];
+    }
+    for (var child = fiber.child; child; child = child.sibling) {
+        if (child.disposed) {
+            return;
+        }
+        markDeletion(child);
+        arrayPush.apply(effects$$1, collectDeletion(child));
     }
     return effects$$1;
 }
@@ -2334,14 +2361,15 @@ function commitOtherEffects(fiber, tasks) {
                     delete fiber._hydrating;
                     if (fiber.capturedCount == 1 && fiber.child) {
                         delete fiber.capturedCount;
+                        console.log("清空节点");
                         var r = [];
-                        var n = Object.assign({}, fiber);
-                        detachFiber(n, r);
-                        fiber.clearChildren = true;
+                        detachFiber(fiber, r);
                         r.shift();
+                        tasks.push.apply(tasks, r);
                         delete fiber.child;
                         delete fiber._children;
-                        tasks.push.apply(tasks, r);
+                        delete fiber.disposed;
+                        var n = Object.assign({}, fiber);
                         fiber.effectTag = 1;
                         n.effectTag = amount;
                         tasks.push(n);

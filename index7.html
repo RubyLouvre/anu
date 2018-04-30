@@ -39,12 +39,15 @@
                   }
               };
          };
-       /*  var log = {
+  var log = {
 			push(a){
 				console.log(a)
+			},
+			concat(){
+				return 
 			}
-		}*/
-        var log = []
+		}
+       var log = []
 		var BrokenComponentWillUnmount = class extends React.Component {
 			static defaultProps = {
 				errorText: 'Hello',
@@ -155,7 +158,7 @@
 		  container,
 		);
 		expect(container.textContent).toBe('Caught an inner error: Hello.');
-		expect(log.concat()).toEqual([
+		expect(log).toEqual([
 		  // Update outer boundary
 		  'OuterErrorBoundary componentWillReceiveProps',
 		  'OuterErrorBoundary componentWillUpdate',

@@ -212,17 +212,14 @@ export function updateClassComponent(fiber, info) {
         return;
     }
     fiber.effectTag *= HOOK;
-    // 需要统一fiber.clearChildren与fiber.capturedCount
-    //  console.log("fiber.clearChildren",fiber.clearChildren,capturedValues.length);
-    if (fiber.clearChildren) {
-        delete fiber.clearChildren;
-        delete fiber.capturedCount;
-        //console.log("处理一次");
+    if (fiber.capturedCount == 1) {
+        fiber.capturedCount = 2;
+        // console.log("处理一次");
         return;
     }
     fiber._hydrating = true;
 
-  
+
     Renderer.currentOwner = instance;
 
     let rendered = applyCallback(instance, "render", []);
@@ -368,6 +365,7 @@ function diffChildren(parentFiber, children) {
 
                 newFiber = extend(oldFiber, newFiber);
                 //将新属性转换旧对象上
+                effects.push(alternate);
                 newFiber.alternate = alternate;
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;

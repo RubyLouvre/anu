@@ -14,16 +14,16 @@
         typeof define === "function" && define.amd ? define(["react"], factory) :
             (global.ReactDOM = factory(global.React));
 }(this, (function (React) {
- "use strict";
+    "use strict";
 
-/**
+    /**
  * WARNING: DO NOT manually require this module.
  * This is a replacement for `invariant(...)` used by the error code system
  * and will _only_ be required by the corresponding babel pass.
  * It always throws.
  */
 
-/**
+    /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
  * This source code is licensed under the MIT license found in the
@@ -33,7 +33,7 @@
 
 
 
-/**
+    /**
  * Use invariant() to assert state which your program assumes to be true.
  *
  * Provide sprintf-style format (only %s is supported) and arguments
@@ -4636,8 +4636,8 @@
 
     var ReactDOMEventListener = Object.freeze({
         get _enabled () {
- return _enabled; 
-},
+            return _enabled; 
+        },
         setEnabled: setEnabled,
         isEnabled: isEnabled,
         trapBubbledEvent: trapBubbledEvent,
@@ -10061,7 +10061,8 @@
             // errorBoundaryFound check is sufficient; errorBoundaryName check is to satisfy Flow.
             if (errorBoundaryFound && errorBoundaryName) {
                 if (willRetry) {
-                    errorBoundaryMessage = "React will try to recreate this component tree from scratch " + ("using the error boundary you provided, " + errorBoundaryName + ".");
+                    errorBoundaryMessage = "React will try to recreate this component tree from scratch " + 
+                    ("using the error boundary you provided, " + errorBoundaryName + ".");
                 } else {
                     errorBoundaryMessage = "This error was initially handled by the error boundary " + errorBoundaryName + ".\n" + "Recreating the tree from scratch failed so React will unmount the tree.";
                 }
