@@ -19,7 +19,7 @@ export function collectEffects(fiber, updateFail, isTop) {
     if (fiber.capturedCount == 1) {
         //这里是子组件render时引发的错误
         fiber.capturedCount++;
-        //  console.log("collectEffects清空节点");
+        //console.log("collectEffects清空节点");
         var a = collectDeletion(fiber);
         /* console.log(a.map(function (el) {
             return el.name + " " + el.effectTag;
@@ -92,7 +92,7 @@ export function collectDeletion(fiber) {
     }
     for (let child = fiber.child; child; child = child.sibling) {
         if (child.disposed) {
-            return;
+            continue;
         }
         markDeletion(child);
         arrayPush.apply(effects, collectDeletion(child));

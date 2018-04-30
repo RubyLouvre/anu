@@ -14,7 +14,7 @@ import {
 import { guardCallback, detachFiber } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 
-import { returnFalse,effects, arrayPush, returnTrue, emptyObject } from "react-core/util";
+import { returnFalse, effects, arrayPush, returnTrue, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 export function commitEffects() {
@@ -137,7 +137,7 @@ export function commitOtherEffects(fiber, tasks) {
                 }
 
                 delete fiber._hydrating;
-            
+
                 if (fiber.capturedCount == 1 && fiber.child) {
                     delete fiber.capturedCount;
                     console.log("清空节点");

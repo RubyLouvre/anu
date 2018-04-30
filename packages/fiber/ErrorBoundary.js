@@ -8,6 +8,7 @@ export function pushError(fiber, hook, error) {
     let root = findCatchComponent(fiber, names);
     let stack = describeError(names, hook);
     let boundary = root.catchBoundary;
+    
     if (boundary) {
         fiber.effectTag = NOWORK;
         var inst = fiber.stateNode;
@@ -81,7 +82,7 @@ function describeError(names, hook) {
 function findCatchComponent(fiber, names) {
     let instance,
         name,
-        topFiber = fiber,
+        topFiber = fiber, retry,
         boundary;
     while (fiber) {
         name = fiber.name;
@@ -93,8 +94,7 @@ function findCatchComponent(fiber, names) {
                 if (!fiber.capturedCount && topFiber !== fiber) {
                     boundary = fiber;
                 } else if (fiber.capturedCount) {
-                    fiber.effectTag = DETACH;
-                    fiber.disposed = true; //防止再次实例化
+                    retry = fiber;
                 }
             }
         } else if (fiber.tag === 5) {
@@ -105,6 +105,10 @@ function findCatchComponent(fiber, names) {
         } else {
             if (boundary) {
                 fiber.catchBoundary = boundary;
+                if (retry && retry !== boundary) {
+                    let arr = boundary.effects || (boundary.effects = []);
+                    arr.push(retry);
+                }
             }
             return fiber;
         }

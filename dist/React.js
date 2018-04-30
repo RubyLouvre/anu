@@ -1766,6 +1766,7 @@ function findCatchComponent(fiber, names) {
     var instance = void 0,
         name = void 0,
         topFiber = fiber,
+        retry = void 0,
         boundary = void 0;
     while (fiber) {
         name = fiber.name;
@@ -1776,8 +1777,7 @@ function findCatchComponent(fiber, names) {
                 if (!fiber.capturedCount && topFiber !== fiber) {
                     boundary = fiber;
                 } else if (fiber.capturedCount) {
-                    fiber.effectTag = DETACH;
-                    fiber.disposed = true;
+                    retry = fiber;
                 }
             }
         } else if (fiber.tag === 5) {
@@ -1788,6 +1788,10 @@ function findCatchComponent(fiber, names) {
         } else {
             if (boundary) {
                 fiber.catchBoundary = boundary;
+                if (retry && retry !== boundary) {
+                    var a = boundary.effects || (boundary.effects = []);
+                    a.push(retry);
+                }
             }
             return fiber;
         }
