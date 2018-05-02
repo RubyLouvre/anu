@@ -52,8 +52,8 @@ describe('ReactMount', () => {
 
     expect(() => ReactTestUtils.renderIntoDocument(Component)).toWarnDev(
       'Functions are not valid as a React child. ' +
-        'This may happen if you return a Component instead of <Component /> from render. ' +
-        'Or maybe you meant to call this function rather than return it.',
+      'This may happen if you return a Component instead of <Component /> from render. ' +
+      'Or maybe you meant to call this function rather than return it.',
     );
   });
 
@@ -161,7 +161,7 @@ describe('ReactMount', () => {
       ),
     ).toWarnDev(
       'Server: "This markup contains an nbsp entity:   server text" ' +
-        'Client: "This markup contains an nbsp entity:   client text"',
+      'Client: "This markup contains an nbsp entity:   client text"',
     );
   });
 
@@ -185,9 +185,9 @@ describe('ReactMount', () => {
 
     expect(() => ReactDOM.render(<span />, rootNode)).toWarnDev(
       'Warning: render(...): Replacing React-rendered children with a new ' +
-        'root component. If you intended to update the children of this node, ' +
-        'you should instead have the existing children update their state and ' +
-        'render the new components instead of calling ReactDOM.render.',
+      'root component. If you intended to update the children of this node, ' +
+      'you should instead have the existing children update their state and ' +
+      'render the new components instead of calling ReactDOM.render.',
     );
   });
 
@@ -208,11 +208,11 @@ describe('ReactMount', () => {
 
     ReactDOM.render(<Component />, container);
     // Make sure ReactDOM and ReactDOMOther are different copies
-  //  expect(ReactDOM).not.toEqual(ReactDOMOther);
+    //  expect(ReactDOM).not.toEqual(ReactDOMOther);
 
     expect(() => ReactDOMOther.unmountComponentAtNode(container)).toWarnDev(
       "Warning: unmountComponentAtNode(): The node you're attempting to unmount " +
-        'was rendered by another copy of React.',
+      'was rendered by another copy of React.',
     );
 
     // Don't throw a warning if the correct React copy unmounts the node
@@ -223,34 +223,34 @@ describe('ReactMount', () => {
     const container = document.createElement('div');
     let calls = 0;
 
-    ReactDOM.render(<div />, container, function() {
+    ReactDOM.render(<div />, container, function () {
       expect(this.nodeName).toBe('DIV');
       calls++;
     });
 
     // Update, no type change
-    ReactDOM.render(<div />, container, function() {
+    ReactDOM.render(<div />, container, function () {
       expect(this.nodeName).toBe('DIV');
       calls++;
     });
 
     // Update, type change
-    ReactDOM.render(<span />, container, function() {
+    ReactDOM.render(<span />, container, function () {
       expect(this.nodeName).toBe('SPAN');
       calls++;
     });
 
     // Batched update, no type change
-    ReactDOM.unstable_batchedUpdates(function() {
-      ReactDOM.render(<span />, container, function() {
+    ReactDOM.unstable_batchedUpdates(function () {
+      ReactDOM.render(<span />, container, function () {
         expect(this.nodeName).toBe('SPAN');
         calls++;
       });
     });
 
     // Batched update, type change
-    ReactDOM.unstable_batchedUpdates(function() {
-      ReactDOM.render(<article />, container, function() {
+    ReactDOM.unstable_batchedUpdates(function () {
+      ReactDOM.render(<article />, container, function () {
         expect(this.nodeName).toBe('ARTICLE');
         calls++;
       });
@@ -258,48 +258,48 @@ describe('ReactMount', () => {
 
     expect(calls).toBe(5);
 
-    
+
   });
 
-  it(`initial mount is sync inside batchedUpdates, but task work is deferred until `+
+  it(`initial mount is sync inside batchedUpdates, but task work is deferred until ` +
     `the end of the batch`, () => {
-    const container1 = document.createElement('div');
-    const container2 = document.createElement('div');
+      const container1 = document.createElement('div');
+      const container2 = document.createElement('div');
 
-    class Foo extends React.Component {
-      state = {active: false};
-      componentDidMount() {
-        this.setState({active: true});
+      class Foo extends React.Component {
+        state = { active: false };
+        componentDidMount() {
+          this.setState({ active: true });
+        }
+        render() {
+          return (
+            <div>{this.props.children + (this.state.active ? '!' : '')}</div>
+          );
+        }
       }
-      render() {
-        return (
-          <div>{this.props.children + (this.state.active ? '!' : '')}</div>
-        );
-      }
-    }
 
-    ReactDOM.render(<div>1</div>, container1);
+      ReactDOM.render(<div>1</div>, container1);
 
-    ReactDOM.unstable_batchedUpdates(() => {
-      // Update. Does not flush yet.
-      ReactDOM.render(<div>2</div>, container1);
-      expect(container1.textContent).toEqual('1');
+      ReactDOM.unstable_batchedUpdates(() => {
+        // Update. Does not flush yet.
+        ReactDOM.render(<div>2</div>, container1);
+        expect(container1.textContent).toEqual('1');
 
-      // Initial mount on another root. Should flush immediately.
-      ReactDOM.render(<Foo>a</Foo>, container2);
-      // The update did not flush yet.
-      expect(container1.textContent).toEqual('1');
-      // The initial mount flushed, but not the update scheduled in cDU.
-      expect(container2.textContent).toEqual('a');
+        // Initial mount on another root. Should flush immediately.
+        ReactDOM.render(<Foo>a</Foo>, container2);
+        // The update did not flush yet.
+        expect(container1.textContent).toEqual('1');
+        // The initial mount flushed, but not the update scheduled in cDU.
+        expect(container2.textContent).toEqual('a');
+      });
+      // All updates have flushed.
+      expect(container1.textContent).toEqual('2');
+      expect(container2.textContent).toEqual('a!');
+
     });
-    // All updates have flushed.
-    expect(container1.textContent).toEqual('2');
-    expect(container2.textContent).toEqual('a!');
-    
-  });
 
   describe('mount point is a comment node', () => {
-      return
+    return
     let containerDiv;
     let mountPoint;
 
@@ -333,5 +333,180 @@ describe('ReactMount', () => {
         'A<!-- react-mount-point-unstable -->B',
       );
     });
+  });
+  it("存在空组件", () => {
+    const container = document.createElement('container');
+    class B extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return <b>bbb</b>;
+      }
+    }
+    class C extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return <b>ccc</b>;
+      }
+    }
+    function Empty() {
+      return false;
+    }
+    ReactDOM.render(
+      <div>
+        <strong>111</strong>
+        <strong>222</strong>
+        <Empty />
+        <Empty />
+        <B />
+        <C />
+      </div>, container
+    );
+    expect(container.textContent).toBe("111222bbbccc");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+  it("存在返回数组的组件", () => {
+    const container = document.createElement('container');
+
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return <div className="root">{this.props.children}</div>;
+      }
+    }
+    class A extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return [<a>aaa</a>, <a>bbb</a>, <a>ccc</a>, <a>ddd</a>];
+      }
+    }
+    function Last() {
+      return <span>last</span>;
+    }
+    function Empty() {
+      return false;
+    }
+    ReactDOM.render(
+      <div>
+        <strong>111</strong>
+        <App>
+          <A />
+        </App>
+        <Empty />
+        <Empty />
+        <Last />
+      </div>,
+      container
+    );
+    expect(container.textContent).toBe("111aaabbbcccdddlast");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+  it("返回false的组件不生成节点", () => {
+    const container = document.createElement('container');
+    class Empty1 extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return false;
+      }
+    }
+
+    ReactDOM.render(<Empty1 />, container);
+    expect(container.textContent).toBe("");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+  it("返回null的组件不生成节点", () => {
+    const container = document.createElement('container');
+    class Empty2 extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return null;
+      }
+    }
+
+    ReactDOM.render(<Empty2 />, container);
+    expect(container.textContent).toBe("");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+  it("返回true的组件不生成节点", () => {
+    const container = document.createElement('container');
+    class Empty2 extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      render() {
+        return true;
+      }
+    }
+
+    ReactDOM.render(<Empty2 />, container);
+    expect(container.textContent).toBe("");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+
+  it("对有key的元素进行重排", () => {
+    const container = document.createElement('container');
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          a: 1
+        };
+      }
+      render() {
+        return (<div>{this.state.a ?
+          [<a key="a">111</a>, <a key="b">222</a>, <a key="c">333</a>] :
+          [<a key="c">333</a>, <a key="b">444</a>, <a key="a">111</a>]}</div>);
+      }
+    }
+    var s = ReactDOM.render(<App />, container);
+    expect(container.textContent).toBe("111222333");
+    s.setState({ a: 0 });
+    expect(container.textContent).toBe("333444111");
+    ReactDOM.unmountComponentAtNode(container)
+  });
+  it("对有key的组件进行重排", () => {
+    const container = document.createElement('container');
+
+    function A(props) {
+      return <span>{props.value}</span>;
+    }
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          a: 1
+        };
+      }
+      render() {
+        return (<div>{this.state.a ?
+          [<A key="a" value="1" />, <A key="b" value="2" />, <A key="c" value="3" />] :
+          [<A key="c" value="3" />, <A key="b" value="2" />, <A key="a" value="1" />]}</div>);
+      }
+    }
+    var s = ReactDOM.render(<App />, container);
+    expect(container.textContent).toBe("123");
+    s.setState({ a: 0 });
+    expect(container.textContent).toBe("321");
+    ReactDOM.unmountComponentAtNode(container);
+    
+
   });
 });

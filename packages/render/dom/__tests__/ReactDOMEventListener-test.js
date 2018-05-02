@@ -1,13 +1,13 @@
 'use strict';
 
 describe('ReactDOMEventListener', () => {
-  let React;
-  let ReactDOM;
 
+  let React = require('react');
+  let ReactDOM = require('react-dom');
+  let ReactTestUtils = require('test-utils');
   beforeEach(() => {
     jest.resetModules();
-    React = require('react');
-    ReactDOM = require('react-dom');
+
   });
 
   it('should dispatch events from outside React tree', () => {
@@ -30,6 +30,16 @@ describe('ReactDOMEventListener', () => {
   });
 
   describe('Propagation', () => {
+    let container
+    beforeEach(() => {
+      jest.resetModules();
+      container = document.createElement("div")
+      document.body.appendChild(container)
+    });
+    afterEach(() => {
+      document.body.removeChild(container);
+
+    });
     it('should propagate events one level down', () => {
       const mouseOut = jest.fn();
       const onMouseOut = event => mouseOut(event.currentTarget);
@@ -98,12 +108,11 @@ describe('ReactDOMEventListener', () => {
 
     // Regression test for https://github.com/facebook/react/issues/1105
     it('should not get confused by disappearing elements', () => {
-      const container = document.createElement('div');
-      document.body.appendChild(container);
+
       class MyComponent extends React.Component {
-        state = {clicked: false};
+        state = { clicked: false };
         handleClick = () => {
-          this.setState({clicked: true});
+          this.setState({ clicked: true });
         };
         componentDidMount() {
           expect(ReactDOM.findDOMNode(this)).toBe(container.firstChild);
@@ -126,7 +135,7 @@ describe('ReactDOMEventListener', () => {
         }),
       );
       expect(container.firstChild.textContent).toBe('clicked!');
-      document.body.removeChild(container);
+
     });
 
     it('should batch between handlers from different roots', () => {
@@ -171,41 +180,263 @@ describe('ReactDOMEventListener', () => {
       expect(childNode.textContent).toBe('2');
       document.body.removeChild(parentContainer);
     });
-  });
 
-  it('should not fire duplicate events for a React DOM tree', () => {
-    const mouseOut = jest.fn();
-    const onMouseOut = event => mouseOut(event.target);
 
-    class Wrapper extends React.Component {
-      getInner = () => {
-        return this.refs.inner;
-      };
+    it('should not fire duplicate events for a React DOM tree', () => {
+      const mouseOut = jest.fn();
+      const onMouseOut = event => mouseOut(event.target);
 
-      render() {
-        const inner = <div ref="inner">Inner</div>;
-        return (
-          <div>
-            <div onMouseOut={onMouseOut} id="outer">
-              {inner}
+      class Wrapper extends React.Component {
+        getInner = () => {
+          return this.refs.inner;
+        };
+
+        render() {
+          const inner = <div ref="inner">Inner</div>;
+          return (
+            <div>
+              <div onMouseOut={onMouseOut} id="outer">
+                {inner}
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       }
-    }
 
-    const container = document.createElement('div');
-    const instance = ReactDOM.render(<Wrapper />, container);
+      const instance = ReactDOM.render(<Wrapper />, container);
 
-    document.body.appendChild(container);
 
-    const nativeEvent = document.createEvent('Event');
-    nativeEvent.initEvent('mouseout', true, true);
-    instance.getInner().dispatchEvent(nativeEvent);
+      const nativeEvent = document.createEvent('Event');
+      nativeEvent.initEvent('mouseout', true, true);
+      instance.getInner().dispatchEvent(nativeEvent);
 
-    expect(mouseOut).toBeCalled();
-    expect(mouseOut.mock.calls.length).toBe(1);
-    expect(mouseOut.mock.calls[0][0]).toEqual(instance.getInner());
-    document.body.removeChild(container);
+      expect(mouseOut).toBeCalled();
+      expect(mouseOut.mock.calls.length).toBe(1);
+      expect(mouseOut.mock.calls[0][0]).toEqual(instance.getInner());
+
+      ReactDOM.unmountComponentAtNode(container);
+    });
+
+    it("冒泡", function () {
+
+      var aaa = "";
+      class App extends React.PureComponent {
+        constructor(props) {
+          super(props);
+          this.state = {
+            aaa: {
+              a: 7
+            }
+          };
+        }
+
+        click() {
+          aaa += "aaa ";
+        }
+        click2(e) {
+          aaa += "bbb ";
+          e.stopPropagation();
+        }
+        click3(e) {
+          aaa += "ccc ";
+        }
+        render() {
+          return (
+            <div onClick={this.click}>
+              <p>=========</p>
+              <div onClick={this.click2}>
+                <p>=====</p>
+                <div ref="bubble" onClick={this.click3}>
+                  {this.state.aaa.a}
+                </div>
+              </div>
+            </div>
+          );
+        }
+      }
+
+      var s = ReactDOM.render(<App />, container);
+      ReactTestUtils.Simulate.click(s.refs.bubble);
+
+      expect(aaa.trim()).toBe("ccc bbb");
+
+      ReactDOM.unmountComponentAtNode(container);
+
+    });
+    it("捕获", function () {
+      var aaa = "";
+      class App extends React.PureComponent {
+        constructor(props) {
+          super(props);
+          this.state = {
+            aaa: {
+              a: 7
+            }
+          };
+        }
+
+        click() {
+          aaa += "aaa ";
+        }
+        click2(e) {
+          aaa += "bbb ";
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        click3(e) {
+          aaa += "ccc ";
+        }
+        render() {
+          return (
+            <div onClickCapture={this.click}>
+              <p>=========</p>
+              <div onClickCapture={this.click2}>
+                <p>=====</p>
+                <div ref="capture" onClickCapture={this.click3}>
+                  {this.state.aaa.a}
+                </div>
+              </div>
+            </div>
+          );
+        }
+      }
+
+      var s = ReactDOM.render(<App />, container);
+
+      ReactTestUtils.Simulate.click(s.refs.capture);
+      expect(aaa.trim()).toBe("aaa bbb");
+      ReactDOM.unmountComponentAtNode(container);
+    });
+    it("1.1.2checkbox绑定onChange事件会触发两次", async () => {
+      var logIndex = 0;
+      function refFn(e) {
+        logIndex++;
+      }
+
+      var dom = ReactDOM.render(<input type="checkbox" onChange={refFn} />, container);
+      dom.click()
+
+
+      expect(logIndex).toBe(1);
+      ReactDOM.unmountComponentAtNode(container);
+    });
+    it("让focus能冒泡", () => {
+      var aaa = "";
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            aaa: {
+              a: 7
+            }
+          };
+        }
+
+        onFocus1() {
+          console.log("focus 1")
+          aaa += "aaa ";
+        }
+        onFocus2(e) {
+          console.log("focus 2")
+          aaa += "bbb ";
+        }
+
+        render() {
+          return (
+            <div
+              onFocus={this.onFocus2}
+              style={{
+                width: 200,
+                height: 200
+              }}
+            >
+              <div
+                ref="focus2"
+                tabIndex={-1}
+                onFocus={this.onFocus1}
+                style={{
+                  width: 100,
+                  height: 100
+                }}
+              >
+                222
+                      </div>
+            </div>
+          );
+        }
+      }
+
+      var s = ReactDOM.render(<App />, container);
+      s.refs.focus2.focus()
+      console.log("得到焦点")
+      expect(aaa.trim()).toBe("aaa bbb");
+      ReactDOM.unmountComponentAtNode(container);
+    });
+
+
+    it("合并点击事件中的setState", async () => {
+      var list = [];
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.__merge = true
+          this.state = {
+            path: "111"
+          };
+        }
+
+        render() {
+          list.push("render " + this.state.path);
+          return (
+            <div>
+              <span ref="click2time" onClick={this.onClick.bind(this)}>
+                {this.state.path}
+              </span>
+            </div>
+          );
+        }
+
+        onClick() {
+          this.setState(
+            {
+              path: "click"
+            },
+            function () {
+              list.push("click....");
+            }
+          );
+          this.setState(
+            {
+              path: "click2"
+            },
+            function () {
+              list.push("click2....");
+            }
+          );
+        }
+        componentWillUpdate() {
+          list.push("will update");
+        }
+        componentDidUpdate() {
+          list.push("did update");
+        }
+      }
+
+      var s = ReactDOM.render(<App />, container, function () {
+        list.push("ReactDOM cb");
+      });
+      var list2 = ["render 111", "ReactDOM cb", "will update", "render click2", "did update", "click....", "click2...."];
+      ReactTestUtils.Simulate.click(s.refs.click2time);
+      expect(list).toEqual(list2);
+
+      ReactDOM.unmountComponentAtNode(container);
+
+
+    });
+
+
+
+
   });
+
 });

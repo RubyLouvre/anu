@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-04-30
+ * by 司徒正美 Copyright 2018-05-01
  * IE9+
  */
 
@@ -915,308 +915,319 @@ var globalEvents = {};
 var eventPropHooks = {};
 var eventHooks = {};
 var eventLowerCache = {
-	onClick: 'click',
-	onChange: 'change',
-	onWheel: 'wheel'
+    onClick: "click",
+    onChange: "change",
+    onWheel: "wheel"
 };
 function eventAction(dom, name, val, lastProps, fiber) {
-	var events = dom.__events || (dom.__events = {});
-	events.vnode = fiber;
-	var refName = toLowerCase(name.slice(2));
-	if (val === false) {
-		delete events[refName];
-	} else {
-		if (!lastProps[name]) {
-			var eventName = getBrowserName(name);
-			var hook = eventHooks[eventName];
-			addGlobalEvent(eventName);
-			if (hook) {
-				hook(dom, eventName);
-			}
-		}
-		events[refName] = val;
-	}
+    var events = dom.__events || (dom.__events = {});
+    events.vnode = fiber;
+    var refName = toLowerCase(name.slice(2));
+    if (val === false) {
+        delete events[refName];
+    } else {
+        if (!lastProps[name]) {
+            var eventName = getBrowserName(name);
+            var hook = eventHooks[eventName];
+            addGlobalEvent(eventName);
+            if (hook) {
+                hook(dom, eventName);
+            }
+        }
+        events[refName] = val;
+    }
 }
-var isTouch = 'ontouchstart' in document;
+var isTouch = "ontouchstart" in document;
 function dispatchEvent(e, type, endpoint) {
-	e = new SyntheticEvent(e);
-	if (type) {
-		e.type = type;
-	}
-	var bubble = e.type,
-	    terminal = endpoint || document,
-	    hook = eventPropHooks[e.type];
-	if (hook && false === hook(e)) {
-		return;
-	}
-	Renderer.batchedUpdates(function () {
-		var paths = collectPaths(e.target, terminal, {});
-		var captured = bubble + 'capture';
-		triggerEventFlow(paths, captured, e);
-		if (!e._stopPropagation) {
-			triggerEventFlow(paths.reverse(), bubble, e);
-		}
-	});
-	Renderer.controlledCbs.forEach(function (el) {
-		if (el.stateNode) {
-			el.controlledCb({
-				target: el.stateNode
-			});
-		}
-	});
-	Renderer.controlledCbs.length = 0;
+    e = new SyntheticEvent(e);
+    if (type) {
+        e.type = type;
+    }
+    var bubble = e.type,
+        terminal = endpoint || document,
+        hook = eventPropHooks[e.type];
+    if (hook && false === hook(e)) {
+        return;
+    }
+    Renderer.batchedUpdates(function () {
+        var paths = collectPaths(e.target, terminal, {});
+        var captured = bubble + "capture";
+        triggerEventFlow(paths, captured, e);
+        if (!e._stopPropagation) {
+            triggerEventFlow(paths.reverse(), bubble, e);
+        }
+    });
+    Renderer.controlledCbs.forEach(function (el) {
+        if (el.stateNode) {
+            el.controlledCb({
+                target: el.stateNode
+            });
+        }
+    });
+    Renderer.controlledCbs.length = 0;
 }
 var nodeID = 1;
 function collectPaths(begin, end, unique) {
-	var paths = [];
-	var node = begin;
-	while (node && node.nodeType == 1) {
-		var checkChange = node;
-		if (node.__events) {
-			var vnode = node.__events.vnode;
-			inner: while (vnode.return) {
-				if (vnode.tag === 5) {
-					node = vnode.stateNode;
-					if (node === end) {
-						return paths;
-					}
-					if (!node) {
-						break inner;
-					}
-					var uid = node.uniqueID || (node.uniqueID = ++nodeID);
-					if (node.__events && !unique[uid]) {
-						unique[uid] = 1;
-						paths.push({ node: node, events: node.__events });
-					}
-				}
-				vnode = vnode.return;
-			}
-		}
-		if (node === checkChange) {
-			node = node.parentNode;
-		}
-	}
-	return paths;
+    var paths = [];
+    var node = begin;
+    while (node && node.nodeType == 1) {
+        var checkChange = node;
+        if (node.__events) {
+            var vnode = node.__events.vnode;
+            inner: while (vnode.return) {
+                if (vnode.tag === 5) {
+                    node = vnode.stateNode;
+                    if (node === end) {
+                        return paths;
+                    }
+                    if (!node) {
+                        break inner;
+                    }
+                    var uid = node.uniqueID || (node.uniqueID = ++nodeID);
+                    if (node.__events && !unique[uid]) {
+                        unique[uid] = 1;
+                        paths.push({ node: node, events: node.__events });
+                    }
+                }
+                vnode = vnode.return;
+            }
+        }
+        if (node === checkChange) {
+            node = node.parentNode;
+        }
+    }
+    return paths;
 }
 function triggerEventFlow(paths, prop, e) {
-	for (var i = paths.length; i--;) {
-		var path = paths[i];
-		var fn = path.events[prop];
-		if (isFn(fn)) {
-			e.currentTarget = path.node;
-			fn.call(void 666, e);
-			if (e._stopPropagation) {
-				break;
-			}
-		}
-	}
+    for (var i = paths.length; i--;) {
+        var path = paths[i];
+        var fn = path.events[prop];
+        if (isFn(fn)) {
+            e.currentTarget = path.node;
+            fn.call(void 666, e);
+            if (e._stopPropagation) {
+                break;
+            }
+        }
+    }
 }
 function addGlobalEvent(name, capture) {
-	if (!globalEvents[name]) {
-		globalEvents[name] = true;
-		addEvent(document, name, dispatchEvent, capture);
-	}
+    if (!globalEvents[name]) {
+        globalEvents[name] = true;
+        addEvent(document, name, dispatchEvent, capture);
+    }
 }
 function addEvent(el, type, fn, bool) {
-	if (el.addEventListener) {
-		el.addEventListener(type, fn, bool || false);
-	} else if (el.attachEvent) {
-		el.attachEvent('on' + type, fn);
-	}
+    if (el.addEventListener) {
+        el.addEventListener(type, fn, bool || false);
+    } else if (el.attachEvent) {
+        el.attachEvent("on" + type, fn);
+    }
 }
 var rcapture = /Capture$/;
 function getBrowserName(onStr) {
-	var lower = eventLowerCache[onStr];
-	if (lower) {
-		return lower;
-	}
-	var camel = onStr.slice(2).replace(rcapture, '');
-	lower = camel.toLowerCase();
-	eventLowerCache[onStr] = lower;
-	return lower;
+    var lower = eventLowerCache[onStr];
+    if (lower) {
+        return lower;
+    }
+    var camel = onStr.slice(2).replace(rcapture, "");
+    lower = camel.toLowerCase();
+    eventLowerCache[onStr] = lower;
+    return lower;
 }
 function getRelatedTarget(e) {
-	if (!e.timeStamp) {
-		e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
-	}
-	return e.relatedTarget;
+    if (!e.timeStamp) {
+        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+    }
+    return e.relatedTarget;
 }
-String('mouseenter,mouseleave').replace(/\w+/g, function (name) {
-	eventHooks[name] = function (dom, type) {
-		var mark = '__' + type;
-		if (!dom[mark]) {
-			dom[mark] = true;
-			var mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
-			addEvent(dom, mask, function (e) {
-				var t = getRelatedTarget(e);
-				if (!t || t !== dom && !contains(dom, t)) {
-					var common = getLowestCommonAncestor(dom, t);
-					dispatchEvent(e, type, common);
-				}
-			});
-		}
-	};
+String("load,error").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            addEvent(dom, type, function (e) {
+                dispatchEvent(e, type);
+            });
+        }
+    };
+});
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function (e) {
+                var t = getRelatedTarget(e);
+                if (!t || t !== dom && !contains(dom, t)) {
+                    var common = getLowestCommonAncestor(dom, t);
+                    dispatchEvent(e, type, common);
+                }
+            });
+        }
+    };
 });
 function getLowestCommonAncestor(instA, instB) {
-	var depthA = 0;
-	for (var tempA = instA; tempA; tempA = tempA.parentNode) {
-		depthA++;
-	}
-	var depthB = 0;
-	for (var tempB = instB; tempB; tempB = tempB.parentNode) {
-		depthB++;
-	}
-	while (depthA - depthB > 0) {
-		instA = instA.parentNode;
-		depthA--;
-	}
-	while (depthB - depthA > 0) {
-		instB = instB.parentNode;
-		depthB--;
-	}
-	var depth = depthA;
-	while (depth--) {
-		if (instA === instB) {
-			return instA;
-		}
-		instA = instA.parentNode;
-		instB = instB.parentNode;
-	}
-	return null;
+    var depthA = 0;
+    for (var tempA = instA; tempA; tempA = tempA.parentNode) {
+        depthA++;
+    }
+    var depthB = 0;
+    for (var tempB = instB; tempB; tempB = tempB.parentNode) {
+        depthB++;
+    }
+    while (depthA - depthB > 0) {
+        instA = instA.parentNode;
+        depthA--;
+    }
+    while (depthB - depthA > 0) {
+        instB = instB.parentNode;
+        depthB--;
+    }
+    var depth = depthA;
+    while (depth--) {
+        if (instA === instB) {
+            return instA;
+        }
+        instA = instA.parentNode;
+        instB = instB.parentNode;
+    }
+    return null;
 }
 var specialHandles = {};
 function createHandle(name, fn) {
-	return specialHandles[name] = function (e) {
-		if (fn && fn(e) === false) {
-			return;
-		}
-		dispatchEvent(e, name);
-	};
+    return specialHandles[name] = function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
 }
-createHandle('change');
-createHandle('doubleclick');
-createHandle('scroll');
-createHandle('wheel');
+createHandle("change");
+createHandle("doubleclick");
+createHandle("scroll");
+createHandle("wheel");
 globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 if (isTouch) {
-	eventHooks.click = eventHooks.clickcapture = function (dom) {
-		dom.onclick = dom.onclick || noop;
-	};
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
+        dom.onclick = dom.onclick || noop;
+    };
 }
 eventPropHooks.click = function (e) {
-	return !e.target.disabled;
+    return !e.target.disabled;
 };
-var fixWheelType = document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
 eventHooks.wheel = function (dom) {
-	addEvent(dom, fixWheelType, specialHandles.wheel);
+    addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 eventPropHooks.wheel = function (event) {
-	event.deltaX = 'deltaX' in event ? event.deltaX :
-	'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
-	event.deltaY = 'deltaY' in event ? event.deltaY :
-	'wheelDeltaY' in event ? -event.wheelDeltaY :
-	'wheelDelta' in event ? -event.wheelDelta : 0;
+    event.deltaX = "deltaX" in event ? event.deltaX :
+    "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
+    event.deltaY = "deltaY" in event ? event.deltaY :
+    "wheelDeltaY" in event ? -event.wheelDeltaY :
+    "wheelDelta" in event ? -event.wheelDelta : 0;
 };
 eventHooks.changecapture = eventHooks.change = function (dom) {
-	if (/text|password|search/.test(dom.type)) {
-		addEvent(document, 'input', specialHandles.change);
-	}
+    if (/text|password|search/.test(dom.type)) {
+        addEvent(document, "input", specialHandles.change);
+    }
 };
 var focusMap = {
-	focus: 'focus',
-	blur: 'blur'
+    focus: "focus",
+    blur: "blur"
 };
 function blurFocus(e) {
-	var dom = e.target || e.srcElement;
-	var type = focusMap[e.type];
-	var isFocus = type === 'focus';
-	if (isFocus && dom.__inner__) {
-		dom.__inner__ = false;
-		return;
-	}
-	if (!isFocus && Renderer.focusNode === dom) {
-		Renderer.focusNode = null;
-	}
-	do {
-		if (dom.nodeType === 1) {
-			if (dom.__events && dom.__events[type]) {
-				dispatchEvent(e, type);
-				break;
-			}
-		} else {
-			break;
-		}
-	} while (dom = dom.parentNode);
+    var dom = e.target || e.srcElement;
+    var type = focusMap[e.type];
+    var isFocus = type === "focus";
+    if (isFocus && dom.__inner__) {
+        dom.__inner__ = false;
+        return;
+    }
+    if (!isFocus && Renderer.focusNode === dom) {
+        Renderer.focusNode = null;
+    }
+    do {
+        if (dom.nodeType === 1) {
+            if (dom.__events && dom.__events[type]) {
+                dispatchEvent(e, type);
+                break;
+            }
+        } else {
+            break;
+        }
+    } while (dom = dom.parentNode);
 }
-'blur,focus'.replace(/\w+/g, function (type) {
-	globalEvents[type] = true;
-	if (modern) {
-		var mark = '__' + type;
-		if (!document[mark]) {
-			document[mark] = true;
-			addEvent(document, type, blurFocus, true);
-		}
-	} else {
-		eventHooks[type] = function (dom, name) {
-			addEvent(dom, focusMap[name], blurFocus);
-		};
-	}
+"blur,focus".replace(/\w+/g, function (type) {
+    globalEvents[type] = true;
+    if (modern) {
+        var mark = "__" + type;
+        if (!document[mark]) {
+            document[mark] = true;
+            addEvent(document, type, blurFocus, true);
+        }
+    } else {
+        eventHooks[type] = function (dom, name) {
+            addEvent(dom, focusMap[name], blurFocus);
+        };
+    }
 });
 eventHooks.scroll = function (dom, name) {
-	addEvent(dom, name, specialHandles[name]);
+    addEvent(dom, name, specialHandles[name]);
 };
 eventHooks.doubleclick = function (dom, name) {
-	addEvent(document, 'dblclick', specialHandles[name]);
+    addEvent(document, "dblclick", specialHandles[name]);
 };
 function SyntheticEvent(event) {
-	if (event.nativeEvent) {
-		return event;
-	}
-	for (var i in event) {
-		if (!eventProto[i]) {
-			this[i] = event[i];
-		}
-	}
-	if (!this.target) {
-		this.target = event.srcElement;
-	}
-	this.fixEvent();
-	this.timeStamp = new Date() - 0;
-	this.nativeEvent = event;
+    if (event.nativeEvent) {
+        return event;
+    }
+    for (var i in event) {
+        if (!eventProto[i]) {
+            this[i] = event[i];
+        }
+    }
+    if (!this.target) {
+        this.target = event.srcElement;
+    }
+    this.fixEvent();
+    this.timeStamp = new Date() - 0;
+    this.nativeEvent = event;
 }
 var eventProto = SyntheticEvent.prototype = {
-	fixEvent: noop,
-	fixHooks: noop,
-	persist: noop,
-	preventDefault: function preventDefault() {
-		var e = this.nativeEvent || {};
-		e.returnValue = this.returnValue = false;
-		if (e.preventDefault) {
-			e.preventDefault();
-		}
-	},
-	stopPropagation: function stopPropagation() {
-		var e = this.nativeEvent || {};
-		e.cancelBubble = this._stopPropagation = true;
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		}
-	},
-	stopImmediatePropagation: function stopImmediatePropagation() {
-		this.stopPropagation();
-		this.stopImmediate = true;
-	},
-	toString: function toString() {
-		return '[object Event]';
-	}
+    fixEvent: noop,
+    fixHooks: noop,
+    persist: noop,
+    preventDefault: function preventDefault() {
+        var e = this.nativeEvent || {};
+        e.returnValue = this.returnValue = false;
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+    },
+    stopPropagation: function stopPropagation() {
+        var e = this.nativeEvent || {};
+        e.cancelBubble = this._stopPropagation = true;
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+    },
+    stopImmediatePropagation: function stopImmediatePropagation() {
+        this.stopPropagation();
+        this.stopImmediate = true;
+    },
+    toString: function toString() {
+        return "[object Event]";
+    }
 };
 Renderer.eventSystem = {
-	eventPropHooks: eventPropHooks,
-	addEvent: addEvent,
-	dispatchEvent: dispatchEvent,
-	SyntheticEvent: SyntheticEvent
+    eventPropHooks: eventPropHooks,
+    addEvent: addEvent,
+    dispatchEvent: dispatchEvent,
+    SyntheticEvent: SyntheticEvent
 };
 
 function getDuplexProps(dom, props) {
@@ -2686,242 +2697,242 @@ function getContainer(p) {
 }
 
 function createElement$1(vnode) {
-	var p = vnode.return;
-	var type = vnode.type,
-	    props = vnode.props,
-	    ns = vnode.ns,
-	    text = vnode.text;
-	switch (type) {
-		case '#text':
-			var node = recyclables[type].pop();
-			if (node) {
-				node.nodeValue = text;
-				return node;
-			}
-			return document.createTextNode(text);
-		case '#comment':
-			return document.createComment(text);
-		case 'svg':
-			ns = NAMESPACE.svg;
-			break;
-		case 'math':
-			ns = NAMESPACE.math;
-			break;
-		default:
-			do {
-				var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-				if (s) {
-					ns = s.namespaceURI;
-					if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
-						ns = '';
-					}
-					break;
-				}
-			} while (p = p.return);
-			break;
-	}
-	try {
-		if (ns) {
-			vnode.namespaceURI = ns;
-			return document.createElementNS(ns, type);
-		}
-	} catch (e) {}
-	var elem = document.createElement(type);
-	var inputType = props && props.type;
-	if (inputType) {
-		try {
-			elem = document.createElement('<' + type + " type='" + inputType + "'/>");
-		} catch (err) {
-		}
-	}
-	return elem;
+    var p = vnode.return;
+    var type = vnode.type,
+        props = vnode.props,
+        ns = vnode.ns,
+        text = vnode.text;
+    switch (type) {
+        case "#text":
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = text;
+                return node;
+            }
+            return document.createTextNode(text);
+        case "#comment":
+            return document.createComment(text);
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+        default:
+            do {
+                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                if (s) {
+                    ns = s.namespaceURI;
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
+                    }
+                    break;
+                }
+            } while (p = p.return);
+            break;
+    }
+    try {
+        if (ns) {
+            vnode.namespaceURI = ns;
+            return document.createElementNS(ns, type);
+        }
+    } catch (e) {}
+    var elem = document.createElement(type);
+    var inputType = props && props.type;
+    if (inputType) {
+        try {
+            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+        } catch (err) {
+        }
+    }
+    return elem;
 }
 var fragment = document.createDocumentFragment();
 function _emptyElement(node) {
-	var child = void 0;
-	while (child = node.firstChild) {
-		_emptyElement(child);
-		if (child === Renderer.focusNode) {
-			Renderer.focusNode = false;
-		}
-		node.removeChild(child);
-	}
+    var child = void 0;
+    while (child = node.firstChild) {
+        _emptyElement(child);
+        if (child === Renderer.focusNode) {
+            Renderer.focusNode = null;
+        }
+        node.removeChild(child);
+    }
 }
 var recyclables = {
-	'#text': []
+    "#text": []
 };
 function _removeElement(node) {
-	if (!node) {
-		return;
-	}
-	if (node.nodeType === 1) {
-		_emptyElement(node);
-		if (node._reactInternalFiber) {
-			var i = topFibers.indexOf(node._reactInternalFiber);
-			if (i !== -1) {
-				topFibers.splice(i, -1);
-				topNodes.splice(i, -1);
-			}
-		}
-		node.__events = null;
-	} else if (node.nodeType === 3) {
-		if (recyclables['#text'].length < 100) {
-			recyclables['#text'].push(node);
-		}
-	}
-	if (node === Renderer.focusNode) {
-		Renderer.focusNode = false;
-	}
-	fragment.appendChild(node);
-	fragment.removeChild(node);
+    if (!node) {
+        return;
+    }
+    if (node.nodeType === 1) {
+        _emptyElement(node);
+        if (node._reactInternalFiber) {
+            var i = topFibers.indexOf(node._reactInternalFiber);
+            if (i !== -1) {
+                topFibers.splice(i, -1);
+                topNodes.splice(i, -1);
+            }
+        }
+        node.__events = null;
+    } else if (node.nodeType === 3) {
+        if (recyclables["#text"].length < 100) {
+            recyclables["#text"].push(node);
+        }
+    }
+    if (node === Renderer.focusNode) {
+        Renderer.focusNode = null;
+    }
+    fragment.appendChild(node);
+    fragment.removeChild(node);
 }
 function insertElement(fiber) {
-	var dom = fiber.stateNode,
-	    parent = fiber.parent,
-	    insertPoint = fiber.insertPoint;
-	try {
-		if (insertPoint == null) {
-			if (dom !== parent.firstChild) {
-				parent.insertBefore(dom, parent.firstChild);
-			}
-		} else {
-			if (dom !== parent.lastChild) {
-				parent.insertBefore(dom, insertPoint.nextSibling);
-			}
-		}
-	} catch (e) {
-		throw e;
-	}
-	var isElement = fiber.tag === 5;
-	var prevFocus = isElement && document.activeElement;
-	if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
-		try {
-			Renderer.focusNode = prevFocus;
-			prevFocus.__inner__ = true;
-			prevFocus.focus();
-		} catch (e) {
-			prevFocus.__inner__ = false;
-		}
-	}
+    var dom = fiber.stateNode,
+        parent = fiber.parent,
+        insertPoint = fiber.insertPoint;
+    try {
+        if (insertPoint == null) {
+            if (dom !== parent.firstChild) {
+                parent.insertBefore(dom, parent.firstChild);
+            }
+        } else {
+            if (dom !== parent.lastChild) {
+                parent.insertBefore(dom, insertPoint.nextSibling);
+            }
+        }
+    } catch (e) {
+        throw e;
+    }
+    var isElement = fiber.tag === 5;
+    var prevFocus = isElement && document.activeElement;
+    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
+        try {
+            Renderer.focusNode = prevFocus;
+            prevFocus.__inner__ = true;
+            prevFocus.focus();
+        } catch (e) {
+            prevFocus.__inner__ = false;
+        }
+    }
 }
 function collectText(fiber, ret) {
-	for (var c = fiber.child; c; c = c.sibling) {
-		if (c.tag === 5) {
-			collectText(c, ret);
-			_removeElement(c.stateNode);
-		} else if (c.tag === 6) {
-			ret.push(c.props.children);
-		} else {
-			collectText(c, ret);
-		}
-	}
+    for (var c = fiber.child; c; c = c.sibling) {
+        if (c.tag === 5) {
+            collectText(c, ret);
+            _removeElement(c.stateNode);
+        } else if (c.tag === 6) {
+            ret.push(c.props.children);
+        } else {
+            collectText(c, ret);
+        }
+    }
 }
 function isTextContainer(fiber) {
-	switch (fiber.type) {
-		case 'option':
-		case 'noscript':
-		case 'textarea':
-		case 'style':
-		case 'script':
-			return true;
-		default:
-			return false;
-	}
+    switch (fiber.type) {
+        case "option":
+        case "noscript":
+        case "textarea":
+        case "style":
+        case "script":
+            return true;
+        default:
+            return false;
+    }
 }
 var DOMRenderer = createRenderer({
-	render: render$1,
-	updateAttribute: function updateAttribute(fiber) {
-		var type = fiber.type,
-		    props = fiber.props,
-		    lastProps = fiber.lastProps,
-		    stateNode = fiber.stateNode;
-		if (isTextContainer(fiber)) {
-			var texts = [];
-			collectText(fiber, texts);
-			var text = texts.reduce(function (a, b) {
-				return a + b;
-			}, '');
-			switch (fiber.type) {
-				case 'textarea':
-					if (!('value' in props) && !('defaultValue' in props)) {
-						if (!lastProps) {
-							props.defaultValue = text;
-						} else {
-							props.defaultValue = lastProps.defaultValue;
-						}
-					}
-					break;
-				case 'option':
-					stateNode.text = text;
-					break;
-				default:
-					stateNode.innerHTML = text;
-					break;
-			}
-		}
-		diffProps(stateNode, lastProps || emptyObject, props, fiber);
-		if (type === 'option') {
-			if ('value' in props) {
-				stateNode.duplexValue = stateNode.value = props.value;
-			} else {
-				stateNode.duplexValue = stateNode.text;
-			}
-		}
-	},
-	updateContext: function updateContext(fiber) {
-		fiber.stateNode.nodeValue = fiber.props.children;
-	},
-	createElement: createElement$1,
-	insertElement: insertElement,
-	emptyElement: function emptyElement(fiber) {
-		_emptyElement(fiber.stateNode);
-	},
-	unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
-		var container = createContainer(root),
-		    context = container.contextStack[0],
-		    fiber = get(instance),
-		    childContext = void 0;
-		while (fiber.return) {
-			var inst = fiber.stateNode;
-			if (inst && inst.getChildContext) {
-				childContext = inst.getChildContext();
-				extend(context, childContext);
-				break;
-			}
-			fiber = fiber.return;
-		}
-		if (!childContext && fiber.contextStack) {
-			extend(context, fiber.contextStack[0]);
-		}
-		return Renderer.render(vnode, root, callback);
-	},
-	unmountComponentAtNode: function unmountComponentAtNode(root) {
-		var container = createContainer(root, true);
-		var instance = container && container.hostRoot;
-		if (instance) {
-			Renderer.updateComponent(instance, {
-				child: null
-			}, function () {
-				var i = topNodes.indexOf(root);
-				if (i !== -1) {
-					topNodes.splice(i, 1);
-					topFibers.splice(i, 1);
-				}
-				root._reactInternalFiber = null;
-			}, true);
-			return true;
-		}
-		return false;
-	},
-	removeElement: function removeElement(fiber) {
-		var instance = fiber.stateNode;
-		_removeElement(instance);
-		var j = topNodes.indexOf(instance);
-		if (j !== -1) {
-			topFibers.splice(j, 1);
-			topNodes.splice(j, 1);
-		}
-	}
+    render: render$1,
+    updateAttribute: function updateAttribute(fiber) {
+        var type = fiber.type,
+            props = fiber.props,
+            lastProps = fiber.lastProps,
+            stateNode = fiber.stateNode;
+        if (isTextContainer(fiber)) {
+            var texts = [];
+            collectText(fiber, texts);
+            var text = texts.reduce(function (a, b) {
+                return a + b;
+            }, "");
+            switch (fiber.type) {
+                case "textarea":
+                    if (!("value" in props) && !("defaultValue" in props)) {
+                        if (!lastProps) {
+                            props.defaultValue = text;
+                        } else {
+                            props.defaultValue = lastProps.defaultValue;
+                        }
+                    }
+                    break;
+                case "option":
+                    stateNode.text = text;
+                    break;
+                default:
+                    stateNode.innerHTML = text;
+                    break;
+            }
+        }
+        diffProps(stateNode, lastProps || emptyObject, props, fiber);
+        if (type === "option") {
+            if ("value" in props) {
+                stateNode.duplexValue = stateNode.value = props.value;
+            } else {
+                stateNode.duplexValue = stateNode.text;
+            }
+        }
+    },
+    updateContext: function updateContext(fiber) {
+        fiber.stateNode.nodeValue = fiber.props.children;
+    },
+    createElement: createElement$1,
+    insertElement: insertElement,
+    emptyElement: function emptyElement(fiber) {
+        _emptyElement(fiber.stateNode);
+    },
+    unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
+        var container = createContainer(root),
+            context = container.contextStack[0],
+            fiber = get(instance),
+            childContext = void 0;
+        while (fiber.return) {
+            var inst = fiber.stateNode;
+            if (inst && inst.getChildContext) {
+                childContext = inst.getChildContext();
+                extend(context, childContext);
+                break;
+            }
+            fiber = fiber.return;
+        }
+        if (!childContext && fiber.contextStack) {
+            extend(context, fiber.contextStack[0]);
+        }
+        return Renderer.render(vnode, root, callback);
+    },
+    unmountComponentAtNode: function unmountComponentAtNode(root) {
+        var container = createContainer(root, true);
+        var instance = container && container.hostRoot;
+        if (instance) {
+            Renderer.updateComponent(instance, {
+                child: null
+            }, function () {
+                var i = topNodes.indexOf(root);
+                if (i !== -1) {
+                    topNodes.splice(i, 1);
+                    topFibers.splice(i, 1);
+                }
+                root._reactInternalFiber = null;
+            }, true);
+            return true;
+        }
+        return false;
+    },
+    removeElement: function removeElement(fiber) {
+        var instance = fiber.stateNode;
+        _removeElement(instance);
+        var j = topNodes.indexOf(instance);
+        if (j !== -1) {
+            topFibers.splice(j, 1);
+            topNodes.splice(j, 1);
+        }
+    }
 });
 
 var win = getWindow();
