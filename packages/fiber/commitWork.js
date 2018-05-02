@@ -105,8 +105,8 @@ export function commitOtherEffects(fiber, tasks) {
             case HOOK:
                 if (updater.isMounted()) {
                     guardCallback(instance, "componentDidUpdate", [
-                        updater.lastProps,
-                        updater.lastState,
+                        updater.prevProps,
+                        updater.prevState,
                         updater.snapshot,
                     ]);
                 } else {
@@ -144,12 +144,12 @@ export function commitOtherEffects(fiber, tasks) {
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
-                var queue = fiber.pendingCbs || [];
+                var queue = fiber.pendingCbs; 
                 fiber._hydrating = true; //setState回调里再执行setState
                 queue.forEach(function (fn) {
                     fn.call(instance);
                 });
-                fiber._hydrating = false;
+                delete fiber._hydrating;
                 delete fiber.pendingCbs;
                 break;
             case CAPTURE: // 23

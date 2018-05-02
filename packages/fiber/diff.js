@@ -1,9 +1,8 @@
 import { updateEffects } from "./beginWork";
 import { collectEffects } from "./completeWork";
 import { commitEffects } from "./commitWork";
-import { CALLBACK } from "./effectTag";
 import { Renderer } from "react-core/createRenderer";
-import { effects, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
+import { effects, returnTrue, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
 
@@ -25,26 +24,27 @@ export function render(vnode, root, callback) {
             type: Unbatch,
             tag: 2,
             props: {},
+            memoizedState: {},
             return: container,
         });
         container.child = fiber;
         //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
-        let instance = (fiber.stateNode = createInstance(fiber, {}));
-        instance.updater.enqueueSetState = updateComponent;
-        instance._reactInternalFiber = fiber;
+        let instance = createInstance(fiber, {});
+        instance.updater.isMounted = returnTrue;
+        //  instance._reactInternalFiber = fiber;
         container.hostRoot = instance;
         immediateUpdate = true;
         Renderer.emptyElement(container);
     }
     let carrier = {};
     updateComponent(
-        container.hostRoot,
-        {
+        container.hostRoot, {
             child: vnode,
         },
         wrapCb(callback, carrier),
         immediateUpdate
     );
+    
     return carrier.instance;
 }
 
@@ -163,25 +163,16 @@ function getRoot(fiber) {
  * @param {Fiber} topWork
  */
 
-function mergeUpdates(el, state, isForced, callback) {
-    let fiber = el._updates || el;
+function mergeUpdates(fiber, state, isForced, callback) {
+    let updateQueue = fiber.updateQueue;
     if (isForced) {
-        fiber.isForced = true; // 如果是true就变不回false
+        updateQueue.isForced = true; // 如果是true就变不回false
     }
     if (state) {
-        let ps = fiber.pendingStates || (fiber.pendingStates = []);
-        ps.push(state);
+        updateQueue.pendingStates.push(state);
     }
     if (isFn(callback)) {
-        let cs = fiber.pendingCbs || (fiber.pendingCbs = []);
-        if (!cs.length) {
-            if (!fiber.effectTag) {
-                fiber.effectTag = CALLBACK;
-            } else {
-                fiber.effectTag *= CALLBACK;
-            }
-        }
-        cs.push(callback);
+        updateQueue.pendingCbs.push(callback);
     }
 }
 
@@ -236,15 +227,15 @@ function pushChildQueue(fiber, queue) {
     }
     hackSCU.forEach(function (el) {
         //如果是批量更新，必须强制更新，防止进入SCU
-        if (el._updates) {
-            el._updates.batching = true;
-        }
-        el.batching = true;
+        //  if (el.updateQueue) {
+        el.updateQueue.batching = true;
+        //  }
+        //  el.batching = true;
     });
     if (enqueue) {
-        if (fiber._hydrating) {
-            fiber._updates = fiber._updates || {};
-        }
+        // if (fiber._hydrating) {
+        //     fiber.updateQueue = fiber.updateQueue || {};
+        //  }
         queue.push(fiber);
     }
 }

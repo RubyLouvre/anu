@@ -1,9 +1,14 @@
-import { returnFalse, returnTrue } from "react-core/util";
+import { returnFalse, returnTrue, extend, gDSFP, gSBU } from "react-core/util";
 import { Component } from "react-core/Component";
 
 import { Renderer } from "react-core/createRenderer";
 //import { pushError } from "./ErrorBoundary";
-
+export function UpdateQueue() {
+    return {
+        pendingStates: [],
+        pendingCbs: []
+    };
+}
 export function createInstance(fiber, context) {
     let updater = {
         mountOrder: Renderer.mountOrder++,
@@ -13,16 +18,17 @@ export function createInstance(fiber, context) {
     let { props, type, tag, ref } = fiber,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
-        instance = (fiber.stateNode = {});
+        instance = {
+            refs: {},
+            props,
+            context,
+            ref,
+            __proto__: type.prototype
+        };
     fiber.errorHook = "constructor";
     try {
         if (isStateless) {
-            instance = {
-                refs: {},
-                props,
-                context,
-                ref,
-                __proto__: type.prototype,
+            extend(instance, {
                 __isStateless: returnTrue,
                 __init: true,
                 renderImpl: type,
@@ -48,12 +54,11 @@ export function createInstance(fiber, context) {
                     }
                     return a;
                 },
-            };
-
+            });
             Renderer.currentOwner = instance;
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.render = function() {
+                instance.render = function () {
                     return type.render(this.props, this.ref);
                 };
             } else {
@@ -67,13 +72,18 @@ export function createInstance(fiber, context) {
                 throw `${type.name} doesn't extend React.Component`;
             }
         }
-        // }catch (e) {
-        //   pushError(fiber, "constructor", e);
     } finally {
         Renderer.currentOwner = lastOwn;
+        fiber.stateNode = instance;
+        fiber.updateQueue = UpdateQueue();
+        instance._reactInternalFiber = fiber;
+        instance.updater = updater;
+        updater.enqueueSetState = Renderer.updateComponent;
+        if (type[gDSFP] || instance[gSBU]) {
+            instance.__useNewHooks = true;
+        }
     }
-    fiber.stateNode = instance;
-    instance.props = props;
-    instance.updater = updater;
+
+
     return instance;
 }
