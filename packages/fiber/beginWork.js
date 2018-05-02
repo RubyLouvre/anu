@@ -177,6 +177,7 @@ export function updateClassComponent(fiber, info) {
         fiber._hydrating = false;
         return;
     }
+    instance.context = newContext; //设置新context
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state; 
     if (instance.getChildContext) {
@@ -185,7 +186,7 @@ export function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    instance.context = newContext; //设置新context
+    
     fiber.effectTag *= HOOK;
     if (fiber.capturedCount == 1) {
         fiber.capturedCount = 2;
