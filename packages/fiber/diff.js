@@ -8,7 +8,7 @@ import { Fiber } from "./Fiber";
 
 import { createInstance } from "./createInstance";
 
-const macrotasks = [];
+const macrotasks = Renderer.macrotasks;
 const batchedtasks = [];
 
 /*
@@ -63,10 +63,13 @@ function performWork(deadline) {
     //我们需要再做一次收集，不为空时，递归调用
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
-        if (el.catchBoundary) {
+        var boundaries = el.boundaries;
+
+        console.log(boundaries.length, "?????");
+        if (boundaries.length) {
             //优先处理异常边界的setState
-            macrotasks.push(el.catchBoundary);
-            delete el.catchBoundary;
+            macrotasks.push(boundaries.pop());
+            // delete el.catchBoundary;
         }
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
@@ -300,6 +303,7 @@ export function createContainer(root, onlyGet, validate) {
         stateNode: root,
         tag: 5,
         name: "hostRoot",
+        boundaries: [],
         capturedValues: [],
         contextStack: [{}],
         containerStack: [root],

@@ -11,7 +11,7 @@ import {
     effectLength,
     effectNames,
 } from "./effectTag";
-import { guardCallback, detachFiber } from "./ErrorBoundary";
+import { guardCallback, removeFormBoundaries, detachFiber } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 
 import { returnFalse, effects, arrayPush, returnTrue, emptyObject } from "react-core/util";
@@ -117,14 +117,15 @@ export function commitOtherEffects(fiber, tasks) {
                 }
 
                 delete fiber._hydrating;
-
-                if (fiber.capturedCount == 1 && fiber.child) {
-                    delete fiber.capturedCount;
-                    //console.log("清空节点");
+                //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
+                if (fiber._boundaries) {
+                    removeFormBoundaries(fiber);
+                    console.log("commitEffects中的清空操作");
                     //清空它的下方节点
                     var r = [];
                     detachFiber(fiber, r);
                     r.shift();
+                    //console.log(r.length, "清空节点");
                     tasks.push.apply(tasks, r);
                     delete fiber.child;
                     delete fiber._children;
@@ -159,6 +160,7 @@ export function commitOtherEffects(fiber, tasks) {
                 }
                 var values = root.capturedValues;
                 fiber.effectTag = amount;
+                fiber.hasCatch = true;
                 instance.componentDidCatch(values.shift(), values.shift());
 
                 if (!values.length) {

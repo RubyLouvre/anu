@@ -2542,6 +2542,7 @@ function createContainer(root, onlyGet, validate) {
         stateNode: root,
         tag: 5,
         name: "hostRoot",
+        boundaries: [],
         capturedValues: [],
         contextStack: [{}],
         containerStack: [root],

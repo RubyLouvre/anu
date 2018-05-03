@@ -171,7 +171,6 @@ export function updateClassComponent(fiber, info) {
         fiber.pendingCbs = cbs;
         fiber.effectTag *= CALLBACK;
     }
-   
     if (fiber.updateFail) {
         cloneChildren(fiber);
         fiber._hydrating = false;
@@ -188,8 +187,8 @@ export function updateClassComponent(fiber, info) {
     }
     
     fiber.effectTag *= HOOK;
-    if (fiber.capturedCount == 1) {
-        fiber.capturedCount = 2;
+    if (fiber._boundaries ) {
+        console.log("beginWork中的返回操作");
         return;
     }
     fiber._hydrating = true;

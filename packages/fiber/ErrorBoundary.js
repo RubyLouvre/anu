@@ -7,9 +7,9 @@ export function pushError(fiber, hook, error) {
     let names = [];
     let root = findCatchComponent(fiber, names);
     let stack = describeError(names, hook);
-    let boundary = root.catchBoundary;
+    // let boundary = root.catchBoundary;
     
-    if (boundary) {
+    if (root.boundaries.length) {
         fiber.effectTag = NOWORK;
         var inst = fiber.stateNode;
         if (inst && inst.updater && inst.updater.isMounted()) {
@@ -20,11 +20,7 @@ export function pushError(fiber, hook, error) {
             };
         }
 
-        if (!boundary.capturedCount) {
-            boundary.capturedCount = 1;
-        }
-
-        boundary.effectTag *= CAPTURE;
+        // boundary.effectTag *= CAPTURE;
         root.capturedValues.push(error, {
             componentStack: stack
         });
@@ -91,9 +87,9 @@ function findCatchComponent(fiber, names) {
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch && !boundary) {
                 //boundary不能等于出错组件，不能已经处理过错误
-                if (!fiber.capturedCount && topFiber !== fiber) {
+                if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
-                } else if (fiber.capturedCount) {
+                } else if (fiber.hasCatch) {
                     retry = fiber;
                 }
             }
@@ -104,7 +100,12 @@ function findCatchComponent(fiber, names) {
             fiber = fiber.return;
         } else {
             if (boundary) {
-                fiber.catchBoundary = boundary;
+                var boundaries = fiber.boundaries;
+                boundary._boundaries = boundaries;
+                boundary.no = nos.shift();
+                boundary.effectTag *= CAPTURE;
+                boundaries.unshift(boundary);
+                // fiber.catchBoundary = boundary;
                 if (retry && retry !== boundary) {
                     let arr = boundary.effects || (boundary.effects = []);
                     arr.push(retry);
@@ -115,7 +116,16 @@ function findCatchComponent(fiber, names) {
 
     }
 }
+var nos = ["aaa","bbb"];
 
+export function removeFormBoundaries(fiber){
+    var arr = fiber._boundaries;
+    delete fiber._boundaries;
+    var index = arr.indexOf(fiber);
+    if (index !== -1) {
+        arr.splice(index, 1);
+    }
+}
 
 export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;

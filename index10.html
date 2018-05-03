@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-     <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>
+     <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -27,12 +27,12 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
-		/*  var log = {
+	    var log = {
 			push(a){
 				console.log(a)
 			}
-		}*/
-        var log = []
+		}
+       // var log = []
 		  var PropTypes = React.PropTypes;
 		  BrokenConstructor = class extends React.Component {
 			constructor(props) {
@@ -213,7 +213,7 @@
 				throw new Error(this.props.errorText);
 			}
 			componentWillUnmount() {
-				log.push('BrokenComponentDidUpdate componentWillUnmount');
+				log.push(this.props.errorText +' BrokenComponentDidUpdate componentWillUnmount');
 			}
 		};
 
@@ -614,8 +614,8 @@
 		  'OuterErrorBoundary componentDidUpdate',
 		  // After the commit phase, attempt to recover from any errors that
 		  // were captured
-		  'BrokenComponentDidUpdate componentWillUnmount',
-		  'BrokenComponentDidUpdate componentWillUnmount',
+		  'E3 BrokenComponentDidUpdate componentWillUnmount',
+		  'E4 BrokenComponentDidUpdate componentWillUnmount',
 		  'InnerUnmountBoundary componentDidCatch',
 		  'InnerUnmountBoundary componentDidCatch',
 		  'InnerUpdateBoundary componentDidCatch',
