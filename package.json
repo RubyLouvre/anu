@@ -4,7 +4,7 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.noop.js",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.noop.js &&  rollup -c ./scripts/build/shallowCompare.js &&  rollup -c ./scripts/build/create-class.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "devtools": "rollup -c ./scripts/build/rollup.tools.js",
     "webpack": "^1.14.0",

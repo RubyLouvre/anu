@@ -13,7 +13,7 @@ describe('create-react-class-integration', () => {
         React = require('react');
         ReactDOM = require('react-dom');
         ReactTestUtils = require('test-utils');
-        createReactClass = React.createClass
+        createReactClass = require("create-react-class")
     });
 
     it('should throw when `render` is not specified', () => {

@@ -476,7 +476,7 @@ describe('ReactMount', () => {
           [<a key="c">333</a>, <a key="b">444</a>, <a key="a">111</a>]}</div>);
       }
     }
-    var s = ReactDOM.render(<App />, container);
+    let s = ReactDOM.render(<App />, container);
     expect(container.textContent).toBe("111222333");
     s.setState({ a: 0 });
     expect(container.textContent).toBe("333444111");

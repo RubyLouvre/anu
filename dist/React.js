@@ -10,15 +10,15 @@
 }(this, (function () {
 
 var arrayPush = Array.prototype.push;
-var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function Fragment(props) {
     return props.children;
 }
 var gSBU = "getSnapshotBeforeUpdate";
 var gDSFP = "getDerivedStateFromProps";
+var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
 function resetStack(info) {
     keepLast(info.containerStack);
@@ -665,111 +665,6 @@ function createContext(defaultValue, calculateChangedBits) {
         Provider: Provider,
         Consumer: Consumer
     };
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var NOBIND = {
-    render: 1,
-    shouldComponentUpdate: 1,
-    componentWillReceiveProps: 1,
-    componentWillUpdate: 1,
-    componentDidUpdate: 1,
-    componentWillMount: 1,
-    componentDidMount: 1,
-    componentWillUnmount: 1,
-    componentDidUnmount: 1
-};
-function collectMixins(mixins) {
-    var keyed = {};
-    for (var i = 0; i < mixins.length; i++) {
-        var mixin = mixins[i];
-        if (mixin.mixins) {
-            applyMixins(mixin, collectMixins(mixin.mixins));
-        }
-        for (var key in mixin) {
-            if (mixin.hasOwnProperty(key) && key !== "mixins") {
-                (keyed[key] || (keyed[key] = [])).push(mixin[key]);
-            }
-        }
-    }
-    return keyed;
-}
-var MANY_MERGED = {
-    getInitialState: 1,
-    getDefaultProps: 1,
-    getChildContext: 1
-};
-function flattenHooks(key, hooks) {
-    var hookType = _typeof(hooks[0]);
-    if (hookType === "object") {
-        var ret = {};
-        for (var i = 0; i < hooks.length; i++) {
-            extend(ret, hooks[i]);
-        }
-        return ret;
-    } else if (hookType === "function" && hooks.length > 1) {
-        return function () {
-            var ret = {},
-                r = void 0,
-                hasReturn = MANY_MERGED[key];
-            for (var _i = 0; _i < hooks.length; _i++) {
-                r = hooks[_i].apply(this, arguments);
-                if (hasReturn && r) {
-                    extend(ret, r);
-                }
-            }
-            if (hasReturn) {
-                return ret;
-            }
-            return r;
-        };
-    } else {
-        return hooks[0];
-    }
-}
-function applyMixins(proto, mixins) {
-    for (var key in mixins) {
-        if (mixins.hasOwnProperty(key)) {
-            proto[key] = flattenHooks(key, mixins[key].concat(proto[key] || []));
-        }
-    }
-}
-function newCtor(className, spec) {
-    var curry = Function("ReactComponent", "blacklist", "spec", "return function " + className + "(props, context) {\n      ReactComponent.call(this, props, context);\n     if(!(this instanceof ReactComponent)){\n         throw \"muse new Component(...)\"\n     }\n     for (var methodName in this) {\n        var method = this[methodName];\n        if (typeof method  === \"function\"&& !blacklist[methodName]) {\n          this[methodName] = method.bind(this);\n        }\n      }\n\n      if (spec.getInitialState) {\n        var test = this.state = spec.getInitialState.call(this);\n        if(!(test === null || ({}).toString.call(test) == \"[object Object]\")){\n          throw \"Component.getInitialState(): must return an object or null\"\n        }\n      }\n  };");
-    return curry(Component, NOBIND, spec);
-}
-function createClass(spec) {
-    if (!isFn(spec.render)) {
-        throw "createClass(...): Class specification must implement a `render` method.";
-    }
-    var Constructor = newCtor(spec.displayName || "Component", spec);
-    var proto = inherit(Constructor, Component);
-    if (spec.mixins) {
-        applyMixins(spec, collectMixins(spec.mixins));
-    }
-    extend(proto, spec);
-    if (spec.statics) {
-        extend(Constructor, spec.statics);
-        if (spec.statics.getDefaultProps) {
-            throw "getDefaultProps is not statics";
-        }
-    }
-    "propTypes,contextTypes,childContextTypes,displayName".replace(/\w+/g, function (name) {
-        if (spec[name]) {
-            var props = Constructor[name] = spec[name];
-            if (name !== "displayName") {
-                for (var i in props) {
-                    if (!isFn(props[i])) {
-                        toWarnDev(i + " in " + name + " must be a function");
-                    }
-                }
-            }
-        }
-    });
-    if (isFn(spec.getDefaultProps)) {
-        Constructor.defaultProps = spec.getDefaultProps();
-    }
-    return Constructor;
 }
 
 function findDOMNode(stateNode) {
@@ -2766,15 +2661,14 @@ function insertElement(fiber) {
         parent = fiber.parent,
         insertPoint = fiber.insertPoint;
     try {
-        if (insertPoint == null) {
-            if (dom !== parent.firstChild) {
-                parent.insertBefore(dom, parent.firstChild);
-            }
-        } else {
-            if (dom !== parent.lastChild) {
-                parent.insertBefore(dom, insertPoint.nextSibling);
-            }
+        var after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
+        if (after === dom) {
+            return;
         }
+        if (after === null && dom === parent.lastChild) {
+            return;
+        }
+        parent.insertBefore(dom, after);
     } catch (e) {
         throw e;
     }
@@ -2937,7 +2831,6 @@ if (prevReact && prevReact.eventSystem) {
         Component: Component,
         createRef: createRef,
         forwardRef: forwardRef,
-        createClass: createClass,
         createElement: createElement,
         cloneElement: cloneElement,
         PureComponent: PureComponent,

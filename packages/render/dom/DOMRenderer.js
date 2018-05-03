@@ -105,15 +105,25 @@ export function removeElement(node) {
 function insertElement(fiber) {
     let { stateNode: dom, parent, insertPoint } = fiber;
     try {
-        if (insertPoint == null) {
+        let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
+        if (after === dom) {
+            return;
+        }
+        if (after === null && dom === parent.lastChild) {
+            return;
+        }
+        parent.insertBefore(dom, after);
+        /*  if (insertPoint == null) {
             if (dom !== parent.firstChild) {
+                console.log("insert",dom);
                 parent.insertBefore(dom, parent.firstChild);
             }
         } else {
             if (dom !== parent.lastChild) {
+                console.log("insert2",dom);
                 parent.insertBefore(dom, insertPoint.nextSibling);
             }
-        }
+        }*/
     } catch (e) {
         throw e;
     }

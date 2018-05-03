@@ -776,7 +776,7 @@ describe('ReactErrorBoundaries', () => {
 		);
 		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
 
-		var official = [
+		let official = [
 			'ErrorBoundary constructor',
 			'ErrorBoundary componentWillMount',
 			'ErrorBoundary render success',

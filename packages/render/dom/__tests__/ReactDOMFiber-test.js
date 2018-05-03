@@ -1034,7 +1034,7 @@ describe('ReactDOMFiber', () => {
 		let actualDocument;
 		let textNode;
 		//anu只使用insertBefore
-		var oldInsertBefore = iframeContainer.insertBefore;
+		let oldInsertBefore = iframeContainer.insertBefore;
 		iframeContainer.insertBefore = function(node, insertPoint) {
 			actualDocument = node.ownerDocument;
 			textNode = node;

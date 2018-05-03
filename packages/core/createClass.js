@@ -1,5 +1,4 @@
-import { extend, isFn, inherit, toWarnDev } from "./util";
-import { Component } from "./Component";
+import { extend, isFn, getWindow, inherit, toWarnDev, __type } from "./util";
 
 /**
  * 为了兼容0.13之前的版本
@@ -41,15 +40,15 @@ const MANY_MERGED = {
 };
 
 function flattenHooks(key, hooks) {
-    let hookType = typeof hooks[0];
-    if (hookType === "object") {
+    let hookType = __type.call(hooks[0]).slice(8, -1);
+    if (hookType === "Object") {
         // Merge objects
         let ret = {};
         for (let i = 0; i < hooks.length; i++) {
             extend(ret, hooks[i]);
         }
         return ret;
-    } else if (hookType === "function" && hooks.length > 1) {
+    } else if (hookType === "Function" && hooks.length > 1) {
         return function () {
             let ret = {},
                 r,
@@ -69,7 +68,13 @@ function flattenHooks(key, hooks) {
         return hooks[0];
     }
 }
-
+function getComponent() {
+    let window = getWindow();
+    if (!window.React || !window.React.Component) {
+        throw "Please load the React first.";
+    }
+    return window.React.Component;
+}
 function applyMixins(proto, mixins) {
     for (let key in mixins) {
         if (mixins.hasOwnProperty(key)) {
@@ -104,15 +109,17 @@ function newCtor(className, spec) {
       }
   };`
     );
-    return curry(Component, NOBIND, spec);
+
+
+    return curry(getComponent(), NOBIND, spec);
 }
 
-export function createClass(spec) {
+export default function createClass(spec) {
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
     let Constructor = newCtor(spec.displayName || "Component", spec);
-    let proto = inherit(Constructor, Component);
+    let proto = inherit(Constructor, getComponent());
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
@@ -122,7 +129,7 @@ export function createClass(spec) {
 
     if (spec.statics) {
         extend(Constructor, spec.statics);
-        if(spec.statics.getDefaultProps){
+        if (spec.statics.getDefaultProps) {
             throw "getDefaultProps is not statics";
         }
     }

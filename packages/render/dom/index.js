@@ -6,7 +6,7 @@ import { createRef, forwardRef } from "react-core/createRef";
 import { createPortal } from "react-core/createPortal";
 import { createContext } from "react-core/createContext";
 import { createElement, cloneElement, isValidElement, createFactory } from "react-core/createElement";
-import { createClass } from "react-core/createClass"; //deprecated
+// import createClass  from "react-core/createClass"; //deprecated
 import { Fragment, getWindow } from "react-core/util";
 
 import { findDOMNode } from "./findDOMNode";
@@ -39,7 +39,7 @@ if (prevReact && prevReact.eventSystem) {
         Component,
         createRef,
         forwardRef,
-        createClass,
+        // createClass,
         createElement,
         cloneElement,
         PureComponent,

@@ -11,15 +11,15 @@
 }(this, (function () {
 
 var arrayPush = Array.prototype.push;
-var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function Fragment(props) {
     return props.children;
 }
 var gSBU = "getSnapshotBeforeUpdate";
 var gDSFP = "getDerivedStateFromProps";
+var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
 function resetStack(info) {
     keepLast(info.containerStack);

@@ -37,8 +37,8 @@ fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
 
-var win = getWindow();
-export var inBrowser = !!win.alert;
+let win = getWindow();
+export let inBrowser = !!win.alert;
 
 if (!inBrowser) {
     win.document = fakeDoc;
