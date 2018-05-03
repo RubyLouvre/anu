@@ -20,18 +20,14 @@ export function collectEffects(fiber, updateFail, isTop) {
     if (!fiber) {
         return [];
     }
-    // console.log(fiber.name, "collectEffects");
     if (fiber._boundaries) {
         removeFormBoundaries(fiber);
-        console.log("collectEffects中的清空操作");
+        // console.log("collectEffects中的清空操作");
         //这里是子组件render时引发的错误
         let ret = collectDeletion(fiber);
         fiber._children = {};
         delete fiber.child;
         return ret;
-        // 这里不能设置clearChildren = true;
-        // fiber.clearChildren = true;
-        // Renderer.diffChildren(fiber, []);
     }
     let effects = fiber.effects;
     if (effects) {

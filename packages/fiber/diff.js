@@ -43,7 +43,7 @@ export function render(vnode, root, callback) {
         wrapCb(callback, carrier),
         immediateUpdate
     );
-    
+
     return carrier.instance;
 }
 
@@ -64,12 +64,9 @@ function performWork(deadline) {
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
         var boundaries = el.boundaries;
-
-        console.log(boundaries.length, "?????");
         if (boundaries.length) {
             //优先处理异常边界的setState
             macrotasks.push(boundaries.pop());
-            // delete el.catchBoundary;
         }
         while ((el = microtasks.shift())) {
             if (!el.disposed) {

@@ -99,7 +99,7 @@ function updateHostComponent(fiber, info) {
 
 function mergeStates(fiber, nextProps) {
     let instance = fiber.stateNode,
-        pendings = fiber.updateQueue.pendingStates, 
+        pendings = fiber.updateQueue.pendingStates,
         n = pendings.length,
         state = fiber.memoizedState || instance.state;
     if (n === 0) {
@@ -126,7 +126,7 @@ function mergeStates(fiber, nextProps) {
 
     if (fail) {
         return state;
-    }else{
+    } else {
         return fiber.memoizedState = nextState;
     }
 }
@@ -145,7 +145,7 @@ export function updateClassComponent(fiber, info) {
         }
         instance = createInstance(fiber, newContext);
     }
-   
+
     instance._reactInternalFiber = fiber; //更新rIF
     if (type === AnuPortal) {
         containerStack.unshift(fiber.parent);
@@ -178,16 +178,16 @@ export function updateClassComponent(fiber, info) {
     }
     instance.context = newContext; //设置新context
     fiber.memoizedProps = instance.props = props;
-    fiber.memoizedState = instance.state; 
+    fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         let context = instance.getChildContext();
         context = Object.assign({}, newContext, context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    
+
     fiber.effectTag *= HOOK;
-    if (fiber._boundaries ) {
+    if (fiber._boundaries) {
         console.log("beginWork中的返回操作");
         return;
     }
@@ -222,13 +222,13 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     let propsChanged = oldProps !== newProps;
     let contextChanged = instance.context !== newContext;
     fiber.setout = true;
-   
+
     if (!instance.__useNewHooks) {
-        if (propsChanged || contextChanged ) {
+        if (propsChanged || contextChanged) {
             let prevState = instance.state;
             callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
-            if(prevState !== instance.state){//模拟replaceState
-                fiber.memoizedState = instance.state; 
+            if (prevState !== instance.state) {//模拟replaceState
+                fiber.memoizedState = instance.state;
             }
         }
     }
@@ -236,7 +236,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     let updateQueue = fiber.updateQueue;
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
-  
+
     setStateByProps(instance, fiber, newProps, newState);
     newState = fiber.memoizedState;
 
@@ -247,10 +247,10 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         let args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-      
+
         if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             fiber.updateFail = true;
-         
+
         } else if (!instance.__useNewHooks) {
             callUnsafeHook(instance, "componentWillUpdate", args);
         }

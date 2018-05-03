@@ -8,7 +8,6 @@ export function pushError(fiber, hook, error) {
     let root = findCatchComponent(fiber, names);
     let stack = describeError(names, hook);
     // let boundary = root.catchBoundary;
-    
     if (root.boundaries.length) {
         fiber.effectTag = NOWORK;
         var inst = fiber.stateNode;
@@ -19,7 +18,6 @@ export function pushError(fiber, hook, error) {
                 updater: fakeObject,
             };
         }
-
         // boundary.effectTag *= CAPTURE;
         root.capturedValues.push(error, {
             componentStack: stack
@@ -64,6 +62,7 @@ export function applyCallback(host, hook, args) {
     }
     return true;
 }
+
 function describeError(names, hook) {
     let segments = [`**${hook}** method occur error `];
     names.forEach(function (name, i) {
@@ -102,10 +101,8 @@ function findCatchComponent(fiber, names) {
             if (boundary) {
                 var boundaries = fiber.boundaries;
                 boundary._boundaries = boundaries;
-                boundary.no = nos.shift();
                 boundary.effectTag *= CAPTURE;
                 boundaries.unshift(boundary);
-                // fiber.catchBoundary = boundary;
                 if (retry && retry !== boundary) {
                     let arr = boundary.effects || (boundary.effects = []);
                     arr.push(retry);
@@ -116,9 +113,8 @@ function findCatchComponent(fiber, names) {
 
     }
 }
-var nos = ["aaa","bbb"];
 
-export function removeFormBoundaries(fiber){
+export function removeFormBoundaries(fiber) {
     var arr = fiber._boundaries;
     delete fiber._boundaries;
     var index = arr.indexOf(fiber);
