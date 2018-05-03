@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-02
+ * by 司徒正美 Copyright 2018-05-03
  * IE9+
  */
 
@@ -1001,6 +1001,7 @@ function updateClassComponent(fiber, info) {
         fiber._hydrating = false;
         return;
     }
+    instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
@@ -1009,7 +1010,6 @@ function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    instance.context = newContext;
     fiber.effectTag *= HOOK;
     if (fiber.capturedCount == 1) {
         fiber.capturedCount = 2;

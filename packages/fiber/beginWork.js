@@ -248,6 +248,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         let args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
+      
         if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             fiber.updateFail = true;
          

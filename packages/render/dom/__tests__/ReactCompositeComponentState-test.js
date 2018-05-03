@@ -15,7 +15,7 @@ describe('ReactCompositeComponent-state', () => {
       constructor(props) {
         super(props);
         this.peekAtState('getInitialState', undefined, props);
-        this.state = {color: 'red'};
+        this.state = { color: 'red' };
       }
 
       peekAtState = (from, state = this.state, props = this.props) => {
@@ -28,7 +28,7 @@ describe('ReactCompositeComponent-state', () => {
 
       setFavoriteColor(nextColor) {
         this.setState(
-          {color: nextColor},
+          { color: nextColor },
           this.peekAtCallback('setFavoriteColor'),
         );
       }
@@ -40,22 +40,22 @@ describe('ReactCompositeComponent-state', () => {
 
       UNSAFE_componentWillMount() {
         this.peekAtState('componentWillMount-start');
-        this.setState(function(state) {
+        this.setState(function (state) {
           this.peekAtState('before-setState-sunrise', state);
         });
         this.setState(
-          {color: 'sunrise'},
+          { color: 'sunrise' },
           this.peekAtCallback('setState-sunrise'),
         );
-        this.setState(function(state) {
+        this.setState(function (state) {
           this.peekAtState('after-setState-sunrise', state);
         });
         this.peekAtState('componentWillMount-after-sunrise');
         this.setState(
-          {color: 'orange'},
+          { color: 'orange' },
           this.peekAtCallback('setState-orange'),
         );
-        this.setState(function(state) {
+        this.setState(function (state) {
           this.peekAtState('after-setState-orange', state);
         });
         this.peekAtState('componentWillMount-end');
@@ -64,7 +64,7 @@ describe('ReactCompositeComponent-state', () => {
       componentDidMount() {
         this.peekAtState('componentDidMount-start');
         this.setState(
-          {color: 'yellow'},
+          { color: 'yellow' },
           this.peekAtCallback('setState-yellow'),
         );
         this.peekAtState('componentDidMount-end');
@@ -73,18 +73,18 @@ describe('ReactCompositeComponent-state', () => {
       UNSAFE_componentWillReceiveProps(newProps) {
         this.peekAtState('componentWillReceiveProps-start');
         if (newProps.nextColor) {
-          this.setState(function(state) {
+          this.setState(function (state) {
             this.peekAtState('before-setState-receiveProps', state);
-            return {color: newProps.nextColor};
+            return { color: newProps.nextColor };
           });
           // No longer a public API, but we can test that it works internally by
           // reaching into the updater.
-        //  this.updater.enqueueReplaceState(this, {color: undefined});
-          this.setState(function(state) {
+          //  this.updater.enqueueReplaceState(this, {color: undefined});
+          this.setState(function (state) {
             this.peekAtState('before-setState-again-receiveProps', state);
-            return {color: newProps.nextColor};
+            return { color: newProps.nextColor };
           }, this.peekAtCallback('setState-receiveProps'));
-          this.setState(function(state) {
+          this.setState(function (state) {
             this.peekAtState('after-setState-receiveProps', state);
           });
         }
@@ -163,7 +163,8 @@ describe('ReactCompositeComponent-state', () => {
       ['componentWillUpdate-nextState', 'yellow'],
       ['render', 'yellow'],
       ['componentDidUpdate-currentState', 'yellow'],
-      ['componentDidUpdate-prevState', 'yellow'],
+      ['componentDidUpdate-prevState', 'orange'],
+      //** ['componentDidUpdate-prevState', 'yellow'],
       ['setState-yellow', 'yellow'],
       ['componentWillReceiveProps-start', 'yellow'],
       // setState({color:'green'}) only enqueues a pending state.
@@ -190,14 +191,16 @@ describe('ReactCompositeComponent-state', () => {
       ['componentWillUpdate-nextState', 'blue'],
       ['render', 'blue'],
       ['componentDidUpdate-currentState', 'blue'],
-      ['componentDidUpdate-prevState', 'yellow'],
+      //** ['componentDidUpdate-prevState', 'yellow'],
+      ['componentDidUpdate-prevState', 'green'],
       ['setFavoriteColor', 'blue'],
       // forceUpdate()
       ['componentWillUpdate-currentState', 'blue'],
       ['componentWillUpdate-nextState', 'blue'],
       ['render', 'blue'],
       ['componentDidUpdate-currentState', 'blue'],
-      ['componentDidUpdate-prevState', 'yellow'],
+      ['componentDidUpdate-prevState', 'blue'],
+      //**  ['componentDidUpdate-prevState', 'yellow'],
       ['forceUpdate', 'blue'],
       // unmountComponent()
       // state is available within `componentWillUnmount()`
@@ -208,8 +211,8 @@ describe('ReactCompositeComponent-state', () => {
   });
 
   it('should call componentDidUpdate of children first', () => {
-     // "暂不测试unstable API"
-   
+    // "暂不测试unstable API"
+
     const container = document.createElement('div');
 
     let ops = [];
@@ -218,7 +221,7 @@ describe('ReactCompositeComponent-state', () => {
     let parent = null;
 
     class Child extends React.Component {
-      state = {bar: false};
+      state = { bar: false };
       componentDidMount() {
         child = this;
       }
@@ -242,7 +245,7 @@ describe('ReactCompositeComponent-state', () => {
     }
 
     class Parent extends React.Component {
-      state = {foo: false};
+      state = { foo: false };
       componentDidMount() {
         parent = this;
       }
@@ -257,8 +260,8 @@ describe('ReactCompositeComponent-state', () => {
     ReactDOM.render(<Parent />, container);
 
     ReactDOM.unstable_batchedUpdates(() => {
-      parent.setState({foo: true});
-      child.setState({bar: true});
+      parent.setState({ foo: true });
+      child.setState({ bar: true });
     });
     // When we render changes top-down in a batch, children's componentDidUpdate
     // happens before the parent.
@@ -269,8 +272,8 @@ describe('ReactCompositeComponent-state', () => {
     ops = [];
 
     ReactDOM.unstable_batchedUpdates(() => {
-      parent.setState({foo: false});
-      child.setState({bar: false});
+      parent.setState({ foo: false });
+      child.setState({ bar: false });
     });
     // We expect the same thing to happen if we bail out in the middle.
     expect(ops).toEqual(['child did update', 'parent did update']);
@@ -287,12 +290,12 @@ describe('ReactCompositeComponent-state', () => {
       componentWillUnmount() {
         // This should get silently ignored (maybe with a warning), but it
         // shouldn't break React.
-        outer.setState({showInner: false});
+        outer.setState({ showInner: false });
       }
     }
 
     class Outer extends React.Component {
-      state = {showInner: true};
+      state = { showInner: true };
 
       render() {
         return <div>{this.state.showInner && <Inner />}</div>;
@@ -306,10 +309,10 @@ describe('ReactCompositeComponent-state', () => {
     }).not.toThrow();
   });
 
-  it('should update state when called from child cWRP', function() {
+  it('should update state when called from child cWRP', function () {
     const log = [];
     class Parent extends React.Component {
-      state = {value: 'one'};
+      state = { value: 'one' };
       render() {
         log.push('parent render ' + this.state.value);
         return <Child parent={this} value={this.state.value} />;
@@ -322,7 +325,7 @@ describe('ReactCompositeComponent-state', () => {
           return;
         }
         log.push('child componentWillReceiveProps ' + this.props.value);
-        this.props.parent.setState({value: 'two'});
+        this.props.parent.setState({ value: 'two' });
         log.push('child componentWillReceiveProps done ' + this.props.value);
         updated = true;
       }
@@ -346,19 +349,19 @@ describe('ReactCompositeComponent-state', () => {
     ]);
   });
 
-  it('should merge state when sCU returns false', function() {
+  it('should merge state when sCU returns false', function () {
     const log = [];
     class Test extends React.Component {
-      state = {a: 0};
+      state = { a: 0 };
       render() {
         return null;
       }
       shouldComponentUpdate(nextProps, nextState) {
         log.push(
           'scu from ' +
-            Object.keys(this.state) +
-            ' to ' +
-            Object.keys(nextState),
+          Object.keys(this.state) +
+          ' to ' +
+          Object.keys(nextState),
         );
         return false;
       }
@@ -366,9 +369,9 @@ describe('ReactCompositeComponent-state', () => {
 
     const container = document.createElement('div');
     const test = ReactDOM.render(<Test />, container);
-    test.setState({b: 0});
+    test.setState({ b: 0 });
     expect(log.length).toBe(1);
-    test.setState({c: 0});
+    test.setState({ c: 0 });
     expect(log.length).toBe(2);
     expect(log).toEqual(['scu from a to a,b', 'scu from a,b to a,b,c']);
   });
@@ -376,9 +379,9 @@ describe('ReactCompositeComponent-state', () => {
   it('should treat assigning to this.state inside cWRP as a replaceState, with a warning', () => {
     let ops = [];
     class Test extends React.Component {
-      state = {step: 1, extra: true};
+      state = { step: 1, extra: true };
       UNSAFE_componentWillReceiveProps() {
-        this.setState({step: 2}, () => {
+        this.setState({ step: 2 }, () => {
           // Tests that earlier setState callbacks are not dropped
           ops.push(
             `callback -- step: ${this.state.step}, extra: ${!!this.state
@@ -386,7 +389,7 @@ describe('ReactCompositeComponent-state', () => {
           );
         });
         // Treat like replaceState
-        this.state = {step: 3};
+        this.state = { step: 3 };
       }
       render() {
         ops.push(
@@ -402,8 +405,8 @@ describe('ReactCompositeComponent-state', () => {
     // Update
     expect(() => ReactDOM.render(<Test />, container)).toWarnDev(
       'Warning: Test.componentWillReceiveProps(): Assigning directly to ' +
-        "this.state is deprecated (except inside a component's constructor). " +
-        'Use setState instead.',
+      "this.state is deprecated (except inside a component's constructor). " +
+      'Use setState instead.',
     );
 
     expect(ops).toEqual([
@@ -419,9 +422,9 @@ describe('ReactCompositeComponent-state', () => {
   it('should treat assigning to this.state inside cWM as a replaceState, with a warning', () => {
     let ops = [];
     class Test extends React.Component {
-      state = {step: 1, extra: true};
+      state = { step: 1, extra: true };
       UNSAFE_componentWillMount() {
-        this.setState({step: 2}, () => {
+        this.setState({ step: 2 }, () => {
           // Tests that earlier setState callbacks are not dropped
           ops.push(
             `callback -- step: ${this.state.step}, extra: ${!!this.state
@@ -429,7 +432,7 @@ describe('ReactCompositeComponent-state', () => {
           );
         });
         // Treat like replaceState
-        this.state = {step: 3};
+        this.state = { step: 3 };
       }
       render() {
         ops.push(
@@ -443,8 +446,8 @@ describe('ReactCompositeComponent-state', () => {
     const container = document.createElement('div');
     expect(() => ReactDOM.render(<Test />, container)).toWarnDev(
       'Warning: Test.componentWillMount(): Assigning directly to ' +
-        "this.state is deprecated (except inside a component's constructor). " +
-        'Use setState instead.',
+      "this.state is deprecated (except inside a component's constructor). " +
+      'Use setState instead.',
     );
 
     expect(ops).toEqual([

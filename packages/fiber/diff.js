@@ -31,7 +31,6 @@ export function render(vnode, root, callback) {
         //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
         let instance = createInstance(fiber, {});
         instance.updater.isMounted = returnTrue;
-        //  instance._reactInternalFiber = fiber;
         container.hostRoot = instance;
         immediateUpdate = true;
         Renderer.emptyElement(container);
@@ -58,10 +57,14 @@ function wrapCb(fn, carrier) {
 }
 
 function performWork(deadline) {
+    //执行当前的所有任务，更新虚拟DOM与真实环境
     workLoop(deadline);
+    //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
+    //我们需要再做一次收集，不为空时，递归调用
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
         if (el.catchBoundary) {
+            //优先处理异常边界的setState
             macrotasks.push(el.catchBoundary);
             delete el.catchBoundary;
         }
@@ -227,15 +230,9 @@ function pushChildQueue(fiber, queue) {
     }
     hackSCU.forEach(function (el) {
         //如果是批量更新，必须强制更新，防止进入SCU
-        //  if (el.updateQueue) {
         el.updateQueue.batching = true;
-        //  }
-        //  el.batching = true;
     });
     if (enqueue) {
-        // if (fiber._hydrating) {
-        //     fiber.updateQueue = fiber.updateQueue || {};
-        //  }
         queue.push(fiber);
     }
 }
@@ -265,9 +262,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
         // console.log(fiber.name + " setState " + (immediateUpdate ? 3 : 4), fiber._hydrating);
         pushChildQueue(fiber, microtasks);
     }
-
     mergeUpdates(fiber, state, isForced, callback);
-
     if (immediateUpdate) {
         Renderer.scheduleWork();
     }
