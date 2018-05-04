@@ -43,34 +43,26 @@
                   }
               };
          }; 
- var InputControlES5 = createReactClass({
-  
-    defaultProps: { //组件默认的props对象
-        initialValue: ''
-    },
-    // 设置 initial state
-    getInitialState: function() {//组件相关的状态对象
-        return {
-            text: this.props.initialValue || 'placeholder'
-        };
-    },
-    handleChange: function(event) {
-        this.setState({ //this represents react component instance
-            text: event.target.value
-        });
-    },
-    render: function() {
-        return (
-            <div>
-                Type something:
-                <input onChange={this.handleChange} value={this.state.text} />
-                <p>{this.state.text}</p>
-            </div>
-        );
-    }
-});
-var a = ReactDOM.render(<InputControlES5 />, container)
-console.log(a)
+         class NullComponent extends React.Component {
+			render() {
+				return null;
+			}
+		}
+
+		class Fragment extends React.Component {
+			render() {
+				return [<NullComponent key="a" />, <div key="b" />, <span key="c" />];
+			}
+		}
+
+		let instance = null;
+		ReactDOM.render(<Fragment ref={ref => (instance = ref)} />, container);
+
+		expect(container.childNodes.length).toBe(2);
+
+		const firstNode = ReactDOM.findDOMNode(instance);
+		expect(firstNode).toBe(container.firstChild);
+		expect(firstNode.tagName).toBe('DIV');
     </script>
 
 

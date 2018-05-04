@@ -1,31 +1,7 @@
-import { operateChildren, isIterable, cloneElement } from "./createElement";
-import { extend } from "./util";
+import { traverseAllChildren, isValidElement } from "./createElement";
+import { extend, noop, typeNumber } from "./util";
 
-let mapStack = [];
-function mapWrapperCb(old, prefix) {
-    if (old === void 0 || old === false || old === true) {
-        old = null;
-    }
-    let cur = mapStack[0];
-    let el = cur.callback.call(cur.context, old, cur.index);
-    let index = cur.index;
-    cur.index++;
-    if (cur.isEach || el == null) {
-        return;
-    }
-    if (el.tag < 6) {
-        //如果返回的el等于old,还需要使用原来的key, _prefix
-        let key = computeKey(old, el, prefix, index);
-        cur.arr.push(cloneElement(el, { key: key }));
-    } else if (el.type) {
-        cur.arr.push(extend({}, el));
-    } else {
-        cur.arr.push(el);
-    }
-}
-function K(el) {
-    return el;
-}
+
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -38,52 +14,73 @@ export const Children = {
         if (children == null) {
             return 0;
         }
-        let index = 0;
-        Children.map(
-            children,
-            function () {
-                index++;
-            },
-            null,
-            true
-        );
-        return index;
+        return traverseAllChildren(children, "", noop);
     },
-    map(children, callback, context, isEach) {
-        if (children == null) {
-            return children;
-        }
-        mapStack.unshift({
-            index: 0,
-            callback,
-            context,
-            isEach,
-            arr: []
-        });
-        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
-        let top = mapStack.shift();
-        return top.arr;
+    map(children, func, context) {
+        return proxyIt(children, func, [], context)
     },
-    forEach(children, callback, context) {
-        Children.map(children, callback, context, true);
+    forEach(children, func, context) {
+        return proxyIt(children, func, null, context)
     },
     toArray: function (children) {
-        if (children == null) {
-            return [];
-        }
-        return Children.map(children, K);
+        return proxyIt(children, K, [])
     }
 };
 
-function computeKey(old, el, prefix, index) {
-    let curKey = el && el.key != null ? el.key : null;
-    let oldKey = old && old.key != null ? old.key : null;
-    let dot = "." + prefix;
-    if (oldKey && curKey && oldKey !== curKey) {
-        return curKey + "/" + dot;
+function proxyIt(children, func, result, context) {
+    if (children == null) {
+        return [];
     }
-    if (prefix) {
-        return dot;
+    mapChildren(children, null, func, result, context);
+    return result
+}
+
+function K(el) {
+    return el;
+}
+
+function mapChildren(children, prefix, func, result, context) {
+    let keyPrefix = '';
+    if (prefix != null) {
+        keyPrefix = escapeUserProvidedKey(prefix) + '/';
     }
-    return curKey ? "." + curKey : "." + index;
+    traverseAllChildren(children, "", traverseCallback, {
+        context,
+        keyPrefix,
+        func,
+        result,
+        count: 0
+    });
+}
+const userProvidedKeyEscapeRegex = /\/+/g;
+function escapeUserProvidedKey(text) {
+    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+}
+
+function traverseCallback(bookKeeping, child, childKey) {
+    const { result, keyPrefix, func, context } = bookKeeping;
+
+    let mappedChild = func.call(context, child, bookKeeping.count++);
+    if (!result) {
+        return
+    }
+    if (Array.isArray(mappedChild)) {
+        mapChildren(
+            mappedChild,
+            childKey,
+            K,
+            result
+        );
+    } else if (mappedChild != null) {
+        if (isValidElement(mappedChild)) {
+            mappedChild = extend({}, mappedChild)
+            mappedChild.key = keyPrefix +
+                (mappedChild.key && (!child || child.key !== mappedChild.key)
+                    ? escapeUserProvidedKey(mappedChild.key) + '/'
+                    : '') +
+                childKey
+
+        }
+        result.push(mappedChild);
+    }
 }

@@ -1229,7 +1229,7 @@ describe("ReactChildren", () => {
         );
         expect(mappedChildren).toEqual([
             <div key=".$1" />,
-            <div key=".$1=::=2" />,
+            <div key=".$1=0=2=2=02" />,
         ]);
     });
 

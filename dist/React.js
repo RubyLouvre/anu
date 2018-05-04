@@ -141,6 +141,7 @@ var Renderer = {
     currentOwner: null
 };
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -254,119 +255,116 @@ function ReactElement(type, tag, props, key, ref, owner) {
 function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
-function createVText(type, text) {
-    var vnode = ReactElement(type, 6, { children: text });
-    return vnode;
+function createVText(text) {
+    return ReactElement("#text", 6, { children: text + "" });
+}
+function escape(key) {
+    var escapeRegex = /[=:]/g;
+    var escaperLookup = {
+        '=': '=0',
+        ':': '=2'
+    };
+    var escapedString = ('' + key).replace(escapeRegex, function (match) {
+        return escaperLookup[match];
+    });
+    return '$' + escapedString;
 }
 var lastText = void 0;
 var flattenIndex = void 0;
 var flattenObject = void 0;
-function flattenCb(child, key) {
-    var childType = typeNumber(child);
-    var textType = childType === 3 || childType === 4;
-    if (textType) {
+function flattenCb(context, child, key, childType) {
+    if (child === null) {
+        lastText = null;
+        return;
+    }
+    if (childType === 3 || childType === 4) {
         if (lastText) {
             lastText.props.children += child;
             return;
         }
-        lastText = child = createVText("#text", child + "");
-    } else if (childType < 7) {
-        lastText = null;
-        return;
+        lastText = child = createVText(child);
     } else {
         lastText = null;
     }
-    if (!flattenObject["." + key]) {
-        flattenObject["." + key] = child;
+    if (!flattenObject[key]) {
+        flattenObject[key] = child;
     } else {
         key = "." + flattenIndex;
         flattenObject[key] = child;
     }
     flattenIndex++;
 }
-function fiberizeChildren(c, fiber) {
+function fiberizeChildren(children, fiber) {
     flattenObject = {};
     flattenIndex = 0;
-    if (c !== void 666) {
+    if (children !== void 666) {
         lastText = null;
-        operateChildren(c, "", flattenCb, isIterable(c), true);
+        traverseAllChildren(children, "", flattenCb);
     }
     flattenIndex = 0;
     return fiber._children = flattenObject;
 }
-function computeName(el, i, prefix, isTop) {
-    var k = i + "";
-    if (el) {
-        if (el.type == Fragment) {
-            k = el.key ? "" : k;
-        } else {
-            k = el.key ? "$" + el.key : k;
-        }
+function getComponentKey(component, index) {
+    if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        return escape(component.key);
     }
-    if (!isTop && prefix) {
-        return prefix + ":" + k;
-    }
-    return k;
+    return index.toString(36);
 }
-function isIterable(el) {
-    if (el instanceof Object) {
-        if (el.forEach) {
-            return 1;
-        }
-        if (el.type === Fragment) {
-            return 2;
-        }
-        var t = getIteractor(el);
-        if (t) {
-            return t;
-        }
-    }
-    return 0;
-}
-function operateChildren(children, prefix, callback, iterableType, isTop) {
-    var key = void 0,
-        el = void 0,
-        t = void 0,
-        iterator = void 0;
-    switch (iterableType) {
+var SEPARATOR = ".";
+var SUBSEPARATOR = ':';
+function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
+    var childType = typeNumber(children);
+    var invokeCallback = false;
+    switch (childType) {
         case 0:
-            if (Object(children) === children && !children.call && !children.type) {
-                if (children.hasOwnProperty("toString")) {
-                    children = children + "";
-                } else {
-                    throw "React.createElement: type is invalid.";
-                }
-            }
-            key = prefix || (children && children.key ? "$" + children.key : "0");
-            callback(children, key);
-            break;
         case 1:
-            children.forEach(function (el, i) {
-                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
-            });
-            break;
         case 2:
-            key = children && children.key ? "$" + children.key : "";
-            key = isTop ? key : prefix ? prefix + ":0" : key || "0";
-            el = children.props.children;
-            t = isIterable(el);
-            if (!t) {
-                el = [el];
-                t = 1;
-            }
-            operateChildren(el, key, callback, t, false);
+        case 5:
+        case 6:
+            children = null;
+            invokeCallback = true;
             break;
-        default:
-            iterator = iterableType.call(children);
-            var ii = 0,
-                step;
-            while (!(step = iterator.next()).done) {
-                el = step.value;
-                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
-                ii++;
+        case 3:
+        case 4:
+            invokeCallback = true;
+            break;
+        case 8:
+            if (children.$$typeof) {
+                invokeCallback = true;
+            } else if (children.hasOwnProperty("toString")) {
+                children = children + "";
+                invokeCallback = true;
+                childType = 3;
             }
             break;
     }
+    if (invokeCallback) {
+        callback(bookKeeping, children,
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        return 1;
+    }
+    var subtreeCount = 0;
+    var nextNamePrefix = nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
+    if (children.forEach) {
+        children.forEach(function (child, i) {
+            var nextName = nextNamePrefix + getComponentKey(child, i);
+            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
+        });
+        return subtreeCount;
+    }
+    var iteratorFn = getIteractor(children);
+    if (iteratorFn) {
+        iterator = iteratorFn.call(children);
+        var ii = 0,
+            step;
+        while (!(step = iterator.next()).done) {
+            child = step.value;
+            nextName = nextNamePrefix + getComponentKey(child, ii++);
+            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
+        }
+        return subtreeCount;
+    }
+    throw "React.createElement: type is invalid.";
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = "@@iterator";
@@ -377,30 +375,6 @@ function getIteractor(a) {
     }
 }
 
-var mapStack = [];
-function mapWrapperCb(old, prefix) {
-    if (old === void 0 || old === false || old === true) {
-        old = null;
-    }
-    var cur = mapStack[0];
-    var el = cur.callback.call(cur.context, old, cur.index);
-    var index = cur.index;
-    cur.index++;
-    if (cur.isEach || el == null) {
-        return;
-    }
-    if (el.tag < 6) {
-        var key = computeKey(old, el, prefix, index);
-        cur.arr.push(cloneElement(el, { key: key }));
-    } else if (el.type) {
-        cur.arr.push(extend({}, el));
-    } else {
-        cur.arr.push(el);
-    }
-}
-function K(el) {
-    return el;
-}
 var Children = {
     only: function only(children) {
         if (children && children.tag) {
@@ -412,48 +386,63 @@ var Children = {
         if (children == null) {
             return 0;
         }
-        var index = 0;
-        Children.map(children, function () {
-            index++;
-        }, null, true);
-        return index;
+        return traverseAllChildren(children, "", noop);
     },
-    map: function map(children, callback, context, isEach) {
-        if (children == null) {
-            return children;
-        }
-        mapStack.unshift({
-            index: 0,
-            callback: callback,
-            context: context,
-            isEach: isEach,
-            arr: []
-        });
-        operateChildren(children, "", mapWrapperCb, isIterable(children), true);
-        var top = mapStack.shift();
-        return top.arr;
+    map: function map(children, func, context) {
+        return proxyIt(children, func, [], context);
     },
-    forEach: function forEach(children, callback, context) {
-        Children.map(children, callback, context, true);
+    forEach: function forEach(children, func, context) {
+        return proxyIt(children, func, null, context);
     },
     toArray: function toArray$$1(children) {
-        if (children == null) {
-            return [];
-        }
-        return Children.map(children, K);
+        return proxyIt(children, K, []);
     }
 };
-function computeKey(old, el, prefix, index) {
-    var curKey = el && el.key != null ? el.key : null;
-    var oldKey = old && old.key != null ? old.key : null;
-    var dot = "." + prefix;
-    if (oldKey && curKey && oldKey !== curKey) {
-        return curKey + "/" + dot;
+function proxyIt(children, func, result, context) {
+    if (children == null) {
+        return [];
     }
-    if (prefix) {
-        return dot;
+    mapChildren(children, null, func, result, context);
+    return result;
+}
+function K(el) {
+    return el;
+}
+function mapChildren(children, prefix, func, result, context) {
+    var keyPrefix = '';
+    if (prefix != null) {
+        keyPrefix = escapeUserProvidedKey(prefix) + '/';
     }
-    return curKey ? "." + curKey : "." + index;
+    traverseAllChildren(children, "", traverseCallback, {
+        context: context,
+        keyPrefix: keyPrefix,
+        func: func,
+        result: result,
+        count: 0
+    });
+}
+var userProvidedKeyEscapeRegex = /\/+/g;
+function escapeUserProvidedKey(text) {
+    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+}
+function traverseCallback(bookKeeping, child, childKey) {
+    var result = bookKeeping.result,
+        keyPrefix = bookKeeping.keyPrefix,
+        func = bookKeeping.func,
+        context = bookKeeping.context;
+    var mappedChild = func.call(context, child, bookKeeping.count++);
+    if (!result) {
+        return;
+    }
+    if (Array.isArray(mappedChild)) {
+        mapChildren(mappedChild, childKey, K, result);
+    } else if (mappedChild != null) {
+        if (isValidElement(mappedChild)) {
+            mappedChild = extend({}, mappedChild);
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
+        }
+        result.push(mappedChild);
+    }
 }
 
 var check = function check() {

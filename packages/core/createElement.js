@@ -143,31 +143,40 @@ export function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 
-export function createVText(type, text) {
-    let vnode = ReactElement(type, 6, { children: text });
-    return vnode;
+export function createVText(text) {
+    return ReactElement("#text", 6, { children: text + "" });
 }
 
+function escape(key) {
+    const escapeRegex = /[=:]/g;
+    const escaperLookup = {
+        '=': '=0',
+        ':': '=2',
+    };
+    const escapedString = ('' + key).replace(escapeRegex, function (match) {
+        return escaperLookup[match];
+    });
+
+    return '$' + escapedString;
+}
 
 let lastText, flattenIndex, flattenObject;
-function flattenCb(child, key) {
-    let childType = typeNumber(child);
-    let textType = childType === 3 || childType === 4;
-    if (textType) {
-        //number string
+function flattenCb(context, child, key, childType) {
+    if (child === null) {
+        lastText = null;
+        return
+    }
+    if (childType === 3 || childType === 4) {
         if (lastText) {
             lastText.props.children += child;
             return;
         }
-        lastText = child = createVText("#text", child + "");
-    } else if (childType < 7) {
-        lastText = null;//undefined, null, boolean, X, Y, function, symbol
-        return;
+        lastText = child = createVText(child);
     } else {
         lastText = null;
     }
-    if (!flattenObject["." + key]) {
-        flattenObject["." + key] = child;
+    if (!flattenObject[key]) {
+        flattenObject[key] = child;
     } else {
         key = "." + flattenIndex;
         flattenObject[key] = child;
@@ -175,88 +184,105 @@ function flattenCb(child, key) {
     flattenIndex++;
 }
 
-export function fiberizeChildren(c, fiber) {
+export function fiberizeChildren(children, fiber) {
     flattenObject = {};
     flattenIndex = 0;
-    if (c !== void 666) {
+    if (children !== void 666) {
         lastText = null;//c 为fiber.props.children
-        operateChildren(c, "", flattenCb, isIterable(c), true);
+        traverseAllChildren(children, "", flattenCb);
     }
     flattenIndex = 0;
     return (fiber._children = flattenObject);
 }
 
-function computeName(el, i, prefix, isTop) {
-    let k = i + "";
-    if (el) {
-        if (el.type == Fragment) {
-            k = el.key ? "" : k;
-        } else {
-            k = el.key ? "$" + el.key : k;
-        }
+function getComponentKey(component, index) {
+    // Do some typechecking here since we call this blindly. We want to ensure
+    // that we don't block potential future ES APIs.
+    if (
+        typeof component === 'object' &&
+        component !== null &&
+        component.key != null
+    ) {
+        // Explicit key
+        return escape(component.key);
     }
-    if (!isTop && prefix) {
-        return prefix + ":" + k;
-    }
-    return k;
+    // Implicit key determined by the index in the set
+    return index.toString(36);
 }
-export function isIterable(el) {
-    if (el instanceof Object) {
-        if (el.forEach) {
-            return 1;
-        }
-        if (el.type === Fragment) {
-            return 2;
-        }
-        let t = getIteractor(el);
-        if (t) {
-            return t;
-        }
-    }
-    return 0;
-}
+
+const SEPARATOR = "."
+const SUBSEPARATOR = ':';
+
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
-export function operateChildren(children, prefix, callback, iterableType, isTop) {
-    let key, el, t, iterator;
-    switch (iterableType) {
-    case 0:
-        if (Object(children) === children && !children.call && !children.type) {
-            if(children.hasOwnProperty("toString")){
-                children = children+""
-            }else{
-                throw "React.createElement: type is invalid.";
+export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
+    let childType = typeNumber(children)
+    let invokeCallback = false;
+    switch (childType) {
+        case 0://undefined
+        case 1://null
+        case 2://boolean
+        case 5://function
+        case 6://symbol
+            children = null
+            invokeCallback = true
+            break
+        case 3://string 
+        case 4://number
+            invokeCallback = true
+            break
+        // 7 array
+        case 8://object
+            if (children.$$typeof) {
+                invokeCallback = true
+            } else if (children.hasOwnProperty("toString")) {
+                children = children + ""
+                invokeCallback = true
+                childType = 3;
             }
-        }
-        key = prefix || (children && children.key ? "$" + children.key : "0");
-        callback(children, key);
-        break;
-    case 1: //数组，Map, Set
-        children.forEach(function (el, i) {
-            operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
+            break
+    }
+
+    if (invokeCallback) {
+        callback(
+            bookKeeping,
+            children,
+            // If it's the only child, treat the name as if it was wrapped in an array
+            // so that it's consistent if the number of children grows.
+            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,
+            childType
+        );
+        return 1;
+    }
+
+    let subtreeCount = 0; // Count of children found in the current subtree.
+    const nextNamePrefix =
+        nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
+    if (children.forEach) {
+        //数组，Map, Set
+        children.forEach(function (child, i) {
+            let nextName = nextNamePrefix + getComponentKey(child, i);
+            subtreeCount += traverseAllChildren(
+                child,
+                nextName,
+                callback,
+                bookKeeping
+            );
         });
-        break;
-    case 2: //React.Fragment
-        key = children && children.key ? "$" + children.key : "";
-        key = isTop ? key : (prefix ? prefix + ":0" : key || "0");
-        el = children.props.children;
-        t = isIterable(el);
-        if (!t) {
-            el = [el];
-            t = 1;
-        }
-        operateChildren(el, key, callback, t, false);
-        break;
-    default:
-        iterator = iterableType.call(children);
+        return subtreeCount
+    }
+    const iteratorFn = getIteractor(children)
+    if (iteratorFn) {
+        iterator = iteratorFn.call(children);
         var ii = 0,
             step;
         while (!(step = iterator.next()).done) {
-            el = step.value;
-            operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
-            ii++;
+            child = step.value;
+            nextName = nextNamePrefix + getComponentKey(child, ii++);
+            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
         }
-        break;
+        return subtreeCount
     }
+    throw "React.createElement: type is invalid.";
 }
 let REAL_SYMBOL = hasSymbol && Symbol.iterator;
 let FAKE_SYMBOL = "@@iterator";
