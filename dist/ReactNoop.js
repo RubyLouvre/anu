@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-03
+ * by 司徒正美 Copyright 2018-05-04
  * IE9+
  */
 
@@ -108,12 +108,13 @@ function typeNumber(data) {
 }
 
 function createRenderer(methods) {
-	return extend(Renderer, methods);
+    return extend(Renderer, methods);
 }
 var Renderer = {
-	controlledCbs: [],
-	mountOrder: 1,
-	currentOwner: null
+    controlledCbs: [],
+    mountOrder: 1,
+    macrotasks: [],
+    currentOwner: null
 };
 
 var RESERVED_PROPS = {
@@ -750,8 +751,7 @@ function pushError(fiber, hook, error) {
     var names = [];
     var root = findCatchComponent(fiber, names);
     var stack = describeError(names, hook);
-    var boundary = root.catchBoundary;
-    if (boundary) {
+    if (root.boundaries.length) {
         fiber.effectTag = NOWORK;
         var inst = fiber.stateNode;
         if (inst && inst.updater && inst.updater.isMounted()) {
@@ -760,10 +760,6 @@ function pushError(fiber, hook, error) {
                 updater: fakeObject
             };
         }
-        if (!boundary.capturedCount) {
-            boundary.capturedCount = 1;
-        }
-        boundary.effectTag *= CAPTURE;
         root.capturedValues.push(error, {
             componentStack: stack
         });
@@ -823,9 +819,9 @@ function findCatchComponent(fiber, names) {
             names.push(name);
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch && !boundary) {
-                if (!fiber.capturedCount && topFiber !== fiber) {
+                if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
-                } else if (fiber.capturedCount) {
+                } else if (fiber.hasCatch) {
                     retry = fiber;
                 }
             }
@@ -836,7 +832,10 @@ function findCatchComponent(fiber, names) {
             fiber = fiber.return;
         } else {
             if (boundary) {
-                fiber.catchBoundary = boundary;
+                var boundaries = fiber.boundaries;
+                boundary._boundaries = boundaries;
+                boundary.effectTag *= CAPTURE;
+                boundaries.unshift(boundary);
                 if (retry && retry !== boundary) {
                     var arr = boundary.effects || (boundary.effects = []);
                     arr.push(retry);
@@ -844,6 +843,14 @@ function findCatchComponent(fiber, names) {
             }
             return fiber;
         }
+    }
+}
+function removeFormBoundaries(fiber) {
+    var arr = fiber._boundaries;
+    delete fiber._boundaries;
+    var index = arr.indexOf(fiber);
+    if (index !== -1) {
+        arr.splice(index, 1);
     }
 }
 function detachFiber(fiber, effects$$1) {
@@ -1011,8 +1018,7 @@ function updateClassComponent(fiber, info) {
         contextStack.unshift(context);
     }
     fiber.effectTag *= HOOK;
-    if (fiber.capturedCount == 1) {
-        fiber.capturedCount = 2;
+    if (fiber._boundaries) {
         return;
     }
     fiber._hydrating = true;
@@ -1192,12 +1198,12 @@ function collectEffects(fiber, updateFail, isTop) {
     if (!fiber) {
         return [];
     }
-    if (fiber.capturedCount == 1) {
-        fiber.capturedCount++;
-        var a = collectDeletion(fiber);
+    if (fiber._boundaries) {
+        removeFormBoundaries(fiber);
+        var ret = collectDeletion(fiber);
         fiber._children = {};
         delete fiber.child;
-        return a;
+        return ret;
     }
     var effects$$1 = fiber.effects;
     if (effects$$1) {
@@ -1377,8 +1383,8 @@ function commitOtherEffects(fiber, tasks) {
                         guardCallback(instance, "componentDidMount", []);
                     }
                     delete fiber._hydrating;
-                    if (fiber.capturedCount == 1 && fiber.child) {
-                        delete fiber.capturedCount;
+                    if (fiber._boundaries) {
+                        removeFormBoundaries(fiber);
                         var r = [];
                         detachFiber(fiber, r);
                         r.shift();
@@ -1414,6 +1420,7 @@ function commitOtherEffects(fiber, tasks) {
                     }
                     var values = root.capturedValues;
                     fiber.effectTag = amount;
+                    fiber.hasCatch = true;
                     instance.componentDidCatch(values.shift(), values.shift());
                     if (!values.length) {
                         delete root.catchBoundary;
@@ -1436,7 +1443,7 @@ fn$1.render = function () {
     return this.state.child;
 };
 
-var macrotasks = [];
+var macrotasks = Renderer.macrotasks;
 var batchedtasks = [];
 function render$1(vnode, root, callback) {
     var container = createContainer(root),
@@ -1474,9 +1481,9 @@ function performWork(deadline) {
     workLoop(deadline);
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
-        if (el.catchBoundary) {
-            macrotasks.push(el.catchBoundary);
-            delete el.catchBoundary;
+        var boundaries = el.boundaries;
+        if (boundaries.length) {
+            macrotasks.push(boundaries.pop());
         }
         while (el = microtasks.shift()) {
             if (!el.disposed) {

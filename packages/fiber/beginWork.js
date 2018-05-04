@@ -188,7 +188,6 @@ export function updateClassComponent(fiber, info) {
 
     fiber.effectTag *= HOOK;
     if (fiber._boundaries) {
-        console.log("beginWork中的返回操作");
         return;
     }
     fiber._hydrating = true;
