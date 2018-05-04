@@ -535,72 +535,55 @@
 //================================
 //================================
 //================================
-function renderInnerError(error) {
-      return <div>Caught an inner error: {error.message}.</div>;
-    }
-    function renderOuterError(error) {
-      return <div>Caught an outer error: {error.message}.</div>;
-    }
+const container = document.createElement('div');
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
+				<BrokenComponentWillUnmount />
+				<Normal />
+			</ErrorBoundary>,
+			container
+		);
 
-    ReactDOM.render(
-      <ErrorBoundary
-        logName="OuterErrorBoundary"
-        renderError={renderOuterError}>
-        <ErrorBoundary
-          logName="InnerErrorBoundary"
-          renderError={renderInnerError}>
-          <BrokenComponentWillUnmount />
-        </ErrorBoundary>
-      </ErrorBoundary>,
-      container,
-    );
-
-    log.length = 0;
-    ReactDOM.render(
-      <ErrorBoundary
-        logName="OuterErrorBoundary"
-        renderError={renderOuterError}>
-        <ErrorBoundary
-          logName="InnerErrorBoundary"
-          renderError={renderInnerError}
-        />
-      </ErrorBoundary>,
-      container,
-    );
-    expect(container.textContent).toBe('Caught an inner error: Hello.');
-    expect(log).toEqual([
-      // Update outer boundary
-      'OuterErrorBoundary componentWillReceiveProps',
-      'OuterErrorBoundary componentWillUpdate',
-      'OuterErrorBoundary render success',
-      // Update inner boundary
-      'InnerErrorBoundary componentWillReceiveProps',
-      'InnerErrorBoundary componentWillUpdate',
-      'InnerErrorBoundary render success',
-      // Try unmounting child
-      'BrokenComponentWillUnmount componentWillUnmount [!]',
-      // Fiber proceeds with lifecycles despite errors
-      // Inner and outer boundaries have updated in this phase
-      'InnerErrorBoundary componentDidUpdate',
-      'OuterErrorBoundary componentDidUpdate',
-      // Now that commit phase is done, Fiber handles errors
-      // Only inner boundary receives the error:
-      'InnerErrorBoundary componentDidCatch',
-      'InnerErrorBoundary componentWillUpdate',
-      // Render an error now
-      'InnerErrorBoundary render error',
-      // In Fiber, this was a local update to the
-      // inner boundary so only its hook fires
-      'InnerErrorBoundary componentDidUpdate',
-    ]);
-
-    log.length = 0;
-    ReactDOM.unmountComponentAtNode(container);
-    expect(log).toEqual([
-      'OuterErrorBoundary componentWillUnmount',
-      'InnerErrorBoundary componentWillUnmount',
-    ]);
-
+		log.length = 0;
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentWillUnmount />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+			'ErrorBoundary componentWillReceiveProps',
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary render success',
+			// Update existing child:
+			'BrokenComponentWillUnmount componentWillReceiveProps',
+			'BrokenComponentWillUnmount componentWillUpdate',
+			'BrokenComponentWillUnmount render',
+			// Unmounting throws:
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			// Fiber proceeds with lifecycles despite errors
+			'Normal componentWillUnmount',
+			// The components have updated in this phase
+			'BrokenComponentWillUnmount componentDidUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// Now that commit phase is done, Fiber unmounts the boundary's children
+			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			'ErrorBoundary componentDidCatch',
+			// The initial render was aborted, so
+			// Fiber retries from the root.
+			'ErrorBoundary componentWillUpdate',
+			'ErrorBoundary componentDidUpdate',
+			// The second willUnmount error should be captured and logged, too.
+			'ErrorBoundary componentDidCatch',
+			'ErrorBoundary componentWillUpdate',
+			// Render an error now (stack will do it later)
+			'ErrorBoundary render error',
+			// Attempt to unmount previous child:
+			// Done
+			'ErrorBoundary componentDidUpdate',
+		]);
     </script>
 
 一个问题是如何将不经过performWork的边界组件，从它所在的集合中拉出来呢
