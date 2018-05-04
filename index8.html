@@ -43,31 +43,59 @@
                   }
               };
          }; 
- class InputControl extends React.Component{
-    constructor(a, b){
-        super(a, b)
-        this.state = {
-            text:"placeholder"
-        }
-        this.handleChange = this.handleChange.bind(this)
-    }
-    handleChange(event) {
-        this.setState({ //this represents react component instance
-            text: event.target.value
-        });
-    }
-    render() {
-        return (
-            <div>
-                Type something:
-                <input onChange={this.handleChange} value={this.state.text} />
-                <p>{this.state.text}</p>
-            </div>
-        );
-    }
+         class CourseItem extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { data: [1, 2, 3], isExpend: false };
+  }
+
+  toggle() {
+    this.setState({ isExpend: !this.state.isExpend });
+  }
+
+  render() {
+    return (
+      <React.Fragment key={this.props._key}>
+        <tr>
+          <td>{this.props.data}</td>
+          <td>
+            <a href="javascript:void(0)" onClick={this.toggle.bind(this)}>
+              {this.state.isExpend ? "关闭" : "展开"}
+            </a>
+          </td>
+        </tr>
+
+        {this.state.isExpend
+          ? this.state.data.map(item => (
+              <tr>
+                <td colSpan={2}>{item}</td>
+              </tr>
+            ))
+          : ""}
+      </React.Fragment>
+    );
+  }
 }
-var a = ReactDOM.render(<InputControl />, container)
-console.log(a)
+
+class CourseList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { data: [1, 2, 3] };
+  }
+
+  render() {
+    return (
+      <table>
+        {this.state.data.map((item, index) => (
+          <CourseItem data={item} key={item} _key={item}/>
+        ))}
+      </table>
+    );
+  }
+}
+
+ReactDOM.render(<CourseList />, document.getElementById("root"));
+
     </script>
 
 

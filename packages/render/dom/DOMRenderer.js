@@ -7,7 +7,8 @@ import { render, createContainer } from "react-fiber/diff";
 
 export function createElement(vnode) {
     let p = vnode.return;
-    let { type, props, ns, text } = vnode;
+    let { type, props, ns } = vnode;
+    let text = props ? props.children : "";
     switch (type) {
     case "#text":
         //只重复利用文本节点
@@ -258,11 +259,14 @@ export let DOMRenderer = createRenderer({
     },
     removeElement(fiber) {
         let instance = fiber.stateNode;
+
         removeElement(instance);
-        let j = topNodes.indexOf(instance);
-        if (j !== -1) {
-            topFibers.splice(j, 1);
-            topNodes.splice(j, 1);
+        if(instance._reactInternalFiber){
+            let j = topNodes.indexOf(instance);
+            if (j !== -1) {
+                topFibers.splice(j, 1);
+                topNodes.splice(j, 1);
+            }
         }
     },
 });
