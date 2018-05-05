@@ -5,7 +5,7 @@ import { extend, noop, typeNumber } from "./util";
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
-        if (children && children.tag) {
+        if (isValidElement(children)) {
             return children;
         }
         throw new Error("expect only one child");

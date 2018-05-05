@@ -353,7 +353,7 @@ function getIteractor(a) {
 
 var Children = {
     only: function only(children) {
-        if (children && children.tag) {
+        if (isValidElement(children)) {
             return children;
         }
         throw new Error("expect only one child");

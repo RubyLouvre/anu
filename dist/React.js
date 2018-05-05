@@ -377,7 +377,7 @@ function getIteractor(a) {
 
 var Children = {
     only: function only(children) {
-        if (children && children.tag) {
+        if (isValidElement(children)) {
             return children;
         }
         throw new Error("expect only one child");
@@ -657,12 +657,6 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 }
 
-function findDOMNode(fiber) {
-    if (fiber !== null && !fiber.nodeType && !fiber.render && !fiber.refs) {
-        throw "findDOMNode:invalid type";
-    }
-    return findHostInstance(fiber);
-}
 function findHostInstance(fiber) {
     if (!fiber) {
         return null;
@@ -685,6 +679,13 @@ function findHostInstance(fiber) {
         }
     }
     return null;
+}
+
+function findDOMNode(fiber) {
+    if (fiber !== null && !fiber.nodeType && !fiber.render && !fiber.refs) {
+        throw "findDOMNode:invalid type";
+    }
+    return findHostInstance(fiber);
 }
 
 function DOMElement(type) {
