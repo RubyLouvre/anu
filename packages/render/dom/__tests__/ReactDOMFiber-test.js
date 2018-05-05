@@ -140,8 +140,6 @@ describe('ReactDOMFiber', () => {
 	});
 
 	it('finds the first child even when first child renders null', () => {
-		console.log('Fragment不会产生实例');
-		return;
 		class NullComponent extends React.Component {
 			render() {
 				return null;

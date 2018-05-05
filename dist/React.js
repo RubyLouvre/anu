@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-04
+ * by 司徒正美 Copyright 2018-05-05
  * IE9+
  */
 
@@ -657,23 +657,34 @@ function createContext(defaultValue, calculateChangedBits) {
     };
 }
 
-function findDOMNode(stateNode) {
-    if (stateNode == null) {
+function findDOMNode(fiber) {
+    if (fiber !== null && !fiber.nodeType && !fiber.render && !fiber.refs) {
+        throw "findDOMNode:invalid type";
+    }
+    return findHostInstance(fiber);
+}
+function findHostInstance(fiber) {
+    if (!fiber) {
         return null;
-    }
-    if (stateNode.nodeType) {
-        return stateNode;
-    }
-    if (stateNode.render) {
-        var fiber = get(stateNode);
-        var c = fiber.child;
-        if (c) {
-            return findDOMNode(c.stateNode);
-        } else {
-            return null;
+    } else if (fiber.nodeType) {
+        return fiber;
+    } else if (fiber.tag > 3) {
+        return fiber.stateNode;
+    } else if (fiber.tag < 3) {
+        return findHostInstance(fiber.stateNode);
+    } else if (fiber.refs && fiber.render) {
+        fiber = get(fiber);
+        var childrenMap = fiber._children;
+        if (childrenMap) {
+            for (var i in childrenMap) {
+                var dom = findHostInstance(childrenMap[i]);
+                if (dom) {
+                    return dom;
+                }
+            }
         }
     }
-    throw "findDOMNode:invalid type";
+    return null;
 }
 
 function DOMElement(type) {
