@@ -2,6 +2,7 @@ import { PLACE, HOOK, DETACH, NULLREF } from "./effectTag";
 import { arrayPush } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
 import { removeFormBoundaries } from "./ErrorBoundary";
+import { findHostInstance } from "./findHostInstance";
 
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
@@ -43,7 +44,13 @@ export function collectEffects(fiber, updateFail, isTop) {
     for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
         if (isHost) {
-            child.insertPoint = child.parent.insertPoint;
+            if (child.framentParent) {//全局搜索它
+                let arr = getChildren(child.parent)
+                let index = arr.indexOf(child.stateNode)
+                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1]
+            } else {
+                child.insertPoint = child.parent.insertPoint;
+            }
             child.parent.insertPoint = child.stateNode;
         } else {
             if (child.type != AnuPortal) {
@@ -70,6 +77,9 @@ export function collectEffects(fiber, updateFail, isTop) {
         }
     }
     return effects;
+}
+function getChildren(parent) {
+    return Array.from(parent.childNodes || parent.children)
 }
 function markDeletion(el) {
     el.disposed = true;

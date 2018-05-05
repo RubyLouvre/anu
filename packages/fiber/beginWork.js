@@ -1,4 +1,4 @@
-import { extend, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
+import { extend,Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
 import { AnuPortal } from "react-core/createPortal";
 
@@ -79,6 +79,10 @@ function updateHostComponent(fiber, info) {
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
+        if (framentParent) {
+            fiber.framentParent = framentParent
+            framentParent = null
+        }
     }
     const children = props && props.children;
     if (tag === 5) {
@@ -131,7 +135,7 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-
+var framentParent = null
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
@@ -139,12 +143,17 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
+            framentParent = null
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
+        if (type === Fragment) {
+            framentParent = fiber
+        }
     }
+
 
     instance._reactInternalFiber = fiber; //更新rIF
     if (type === AnuPortal) {

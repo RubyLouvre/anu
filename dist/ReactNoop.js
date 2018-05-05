@@ -905,6 +905,10 @@ function updateHostComponent(fiber, info) {
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
+        if (framentParent) {
+            fiber.framentParent = framentParent;
+            framentParent = null;
+        }
     }
     var children = props && props.children;
     if (tag === 5) {
@@ -952,6 +956,7 @@ function mergeStates(fiber, nextProps) {
         return fiber.memoizedState = nextState;
     }
 }
+var framentParent = null;
 function updateClassComponent(fiber, info) {
     var type = fiber.type,
         instance = fiber.stateNode,
@@ -962,11 +967,15 @@ function updateClassComponent(fiber, info) {
     var newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
+            framentParent = null;
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
+        if (type === Fragment) {
+            framentParent = fiber;
+        }
     }
     instance._reactInternalFiber = fiber;
     if (type === AnuPortal) {
@@ -1206,7 +1215,13 @@ function collectEffects(fiber, updateFail, isTop) {
     for (var child = fiber.child; child; child = child.sibling) {
         var isHost = child.tag > 3;
         if (isHost) {
-            child.insertPoint = child.parent.insertPoint;
+            if (child.framentParent) {
+                var arr = getChildren$1(child.parent);
+                var index = arr.indexOf(child.stateNode);
+                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];
+            } else {
+                child.insertPoint = child.parent.insertPoint;
+            }
             child.parent.insertPoint = child.stateNode;
         } else {
             if (child.type != AnuPortal) {
@@ -1231,6 +1246,9 @@ function collectEffects(fiber, updateFail, isTop) {
         }
     }
     return effects$$1;
+}
+function getChildren$1(parent) {
+    return Array.from(parent.childNodes || parent.children);
 }
 function markDeletion(el) {
     el.disposed = true;
