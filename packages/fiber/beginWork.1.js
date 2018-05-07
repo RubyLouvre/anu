@@ -80,8 +80,8 @@ function updateHostComponent(fiber, info) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
         if (framentParent) {
-            fiber.framentParent = framentParent;
-            framentParent = null;
+            fiber.framentParent = framentParent
+            framentParent = null
         }
     }
     const children = props && props.children;
@@ -135,7 +135,7 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-var framentParent = null;
+var framentParent = null
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
@@ -143,14 +143,14 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
-            framentParent = null;
+            framentParent = null
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
         if (type === Fragment) {
-            framentParent = fiber;
+            framentParent = fiber
         }
     }
 
@@ -326,19 +326,13 @@ function getMaskedContext(contextTypes, instance, contextStack) {
  */
 function diffChildren(parentFiber, children) {
     let oldFibers = parentFiber._children || {}; // 旧的
-    if(parentFiber.tag < 3){
-        bifurcate(parentFiber, true);//不影响旧的    
-    }
-   
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
     delete parentFiber.child;
     for (let i in oldFibers) {
         let newFiber = newFibers[i];
-        let alternate = oldFibers[i];
-        let oldFiber = bifurcate(alternate);//不影响旧的
-        oldFiber.alternate = alternate;
+        let oldFiber = oldFibers[i];
         if (newFiber && newFiber.type === oldFiber.type) {
             matchFibers[i] = oldFiber;
             if (newFiber.key != null) {
@@ -350,33 +344,32 @@ function diffChildren(parentFiber, children) {
     }
 
     let prevFiber,
-        index = 0;
-      
+        index = 0,
+        newEffects = [];
     for (let i in newFibers) {
         let newFiber = newFibers[i];
         let oldFiber = matchFibers[i];
-        // let alternate = null;
+        let alternate = null;
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
-                // alternate = new Fiber(oldFiber);
+                alternate = new Fiber(oldFiber);
                 let oldRef = oldFiber.ref;
-                let oldProps = oldFiber.props;
-                
+
                 newFiber = extend(oldFiber, newFiber);
                 //将新属性转换旧对象上
-                // effects.push(alternate);
-                // newFiber.alternate = alternate;
+                effects.push(alternate);
+                newFiber.alternate = alternate;
                 if (oldRef && oldRef !== newFiber.ref) {
-                    oldFiber.effectTag *= NULLREF;
-                    effects.push(oldFiber);
+                    alternate.effectTag *= NULLREF;
+                    effects.push(alternate);
                 }
                 if (newFiber.tag === 5) {
-                    newFiber.lastProps = oldProps;
+                    newFiber.lastProps = alternate.props;
                 }
             } else {
                 detachFiber(oldFiber, effects);
             }
-          
+            newEffects.push(newFiber);
         } else {
             newFiber = new Fiber(newFiber);
         }
@@ -403,18 +396,3 @@ function diffChildren(parentFiber, children) {
 }
 
 Renderer.diffChildren = diffChildren;
-
-
-function bifurcate(fiber, deep){
-    var alternate =  Object.assign({}, fiber);
-    fiber.effectTag = 1;
-    delete fiber._boundaries;
-    fiber.effects = null;
-    fiber.alternate = alternate;
-    var c = fiber._children;
-    if(deep && c){
-        alternate._children = Object.assign({}, c);
-    }
-    return bifurcate;
-   
-}

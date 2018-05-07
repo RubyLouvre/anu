@@ -22,7 +22,7 @@ export function collectEffects(fiber, updateFail, isTop) {
         return [];
     }
     if (fiber._boundaries) {
-        removeFormBoundaries(fiber);
+        removeFormBoundaries(fiber.alternate);
         // console.log("collectEffects中的清空操作");
         //这里是子组件render时引发的错误
         let ret = collectDeletion(fiber);
@@ -45,9 +45,9 @@ export function collectEffects(fiber, updateFail, isTop) {
         let isHost = child.tag > 3;
         if (isHost) {
             if (child.framentParent) {//全局搜索它
-                let arr = getChildren(child.parent)
-                let index = arr.indexOf(child.stateNode)
-                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1]
+                let arr = getChildren(child.parent);
+                let index = arr.indexOf(child.stateNode);
+                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];
             } else {
                 child.insertPoint = child.parent.insertPoint;
             }
@@ -79,7 +79,7 @@ export function collectEffects(fiber, updateFail, isTop) {
     return effects;
 }
 function getChildren(parent) {
-    return Array.from(parent.childNodes || parent.children)
+    return Array.from(parent.childNodes || parent.children);
 }
 function markDeletion(el) {
     el.disposed = true;
@@ -101,6 +101,7 @@ export function collectDeletion(fiber) {
         if (child.disposed) {
             continue;
         }
+     
         markDeletion(child);
         arrayPush.apply(effects, collectDeletion(child));
     }
