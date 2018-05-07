@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width">
    <script type='text/javascript' src="./dist/React.js"></script>
    <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
-    <!--<script type='text/javascript' src="./react.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -43,58 +43,89 @@
                   }
               };
          }; 
-         class CourseItem extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { data: [1, 2, 3], isExpend: false };
-  }
+         const styles = {
+          fontFamily: "sans-serif",
+          textAlign: "center"
+        };
+      function Hello({ name }){
+         return  <h1>Hello {name}!</h1>;
+      }
 
-  toggle() {
-    this.setState({ isExpend: !this.state.isExpend });
-  }
-
-  render() {
-    return (
-      <React.Fragment key={this.props._key}>
-        <tr>
-          <td>{this.props.data}</td>
-          <td>
-            <a href="javascript:void(0)" onClick={this.toggle.bind(this)}>
-              {this.state.isExpend ? "关闭" : "展开"}
-            </a>
-          </td>
-        </tr>
-
-        {this.state.isExpend
-          ? this.state.data.map(item => (
-              <tr>
-                <td colSpan={2}>{item}</td>
-              </tr>
-            ))
-          : ""}
-      </React.Fragment>
-    );
-  }
-}
-
-class CourseList extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { data: [1, 2, 3] };
-  }
-
-  render() {
-    return (
-      <table>
-        {this.state.data.map((item, index) => (
-          <CourseItem data={item} key={item} _key={item}/>
-        ))}
-      </table>
-    );
-  }
-}
-
-ReactDOM.render(<CourseList />, document.getElementById("root"));
+        
+        const A1 = () => {
+          return "A1~";
+        };
+        
+        class A2 extends React.Component {
+          constructor(props) {
+            super(props);
+            throw Error("I am mess");
+          }
+          componentDidMount() {}
+          render() {
+            return <h2> A2 </h2>;
+          }
+        }
+        class A extends React.Component {
+          // 这一段会使 A 及 之后的组件无法渲染
+          componentDidCatch(e) {
+            console.log("===")
+          }
+          render() {
+            return (
+              <div className="A">
+                <A1 />
+                <A2 />
+              </div>
+            );
+          }
+        }
+        const B1 = () => {
+          return "~B1";
+        };
+        
+        class B2 extends React.Component {
+          state = {
+            count: 1
+          };
+          componentDidMount() {
+            setInterval(() => {
+              this.setState({ count: this.state.count + 1 });
+            }, 2000);
+          }
+          render() {
+            return <h2> B2 {this.state.count}</h2>;
+          }
+        }
+        class B extends React.Component {
+          render() {
+            return (
+              <div className="B">
+                <B1 />
+                <B2 />
+              </div>
+            );
+          }
+        }
+        class Main extends React.Component {
+          render() {
+            return (
+              <div className="main">
+                <A /> <B />{" "}
+              </div>
+            );
+          }
+        }
+        
+        const App = () => (
+          <div style={styles}>
+            <Hello name="CodeSandbox" />
+            <h2>Start editing to see some magic happen {"\u2728"}</h2>
+            <Main />
+          </div>
+        );
+        
+        ReactDOM.render(<App />, document.getElementById("root"));
 
     </script>
 

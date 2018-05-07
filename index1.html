@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-     <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
+    <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -27,12 +27,12 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
-   var log = {
+        var log = {
 				push(a){
 					console.log(a)
 				}
 		}
-        var log = []
+       // var log = []
 		  var PropTypes = React.PropTypes;
 		  BrokenConstructor = class extends React.Component {
 			constructor(props) {
@@ -535,7 +535,7 @@
 //================================
 //================================
 //================================
-const container = document.createElement('div');
+   /*const container = document.createElement('div');
 		ReactDOM.render(
 			<ErrorBoundary>
 				<BrokenComponentWillUnmount />
@@ -584,6 +584,31 @@ const container = document.createElement('div');
 			// Done
 			'ErrorBoundary componentDidUpdate',
 		]);
+		*/
+
+	var a =	ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenComponentDidMount />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+		 "ErrorBoundary constructor", 
+		"ErrorBoundary componentWillMount", 
+		"ErrorBoundary render success", 
+		"BrokenComponentDidMount constructor", 
+		"BrokenComponentDidMount componentWillMount",
+	    "BrokenComponentDidMount render",
+		"BrokenComponentDidMount componentDidMount [!]",
+		"ErrorBoundary componentDidMount", 
+		"BrokenComponentDidMount componentWillUnmount", 
+		"ErrorBoundary componentDidCatch", 
+		"ErrorBoundary componentWillUpdate", 
+		"ErrorBoundary render error", 
+		"ErrorBoundary componentDidUpdate"
+		]);
+
     </script>
 
 一个问题是如何将不经过performWork的边界组件，从它所在的集合中拉出来呢
