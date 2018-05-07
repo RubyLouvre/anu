@@ -49,10 +49,10 @@ function stringifyStyleObject(obj) {
         var val = obj[i];
         if (obj != null) {
             var unit = "";
-            if (rnumber.test(val) && !cssNumber[name]) {
+            if (rnumber.test(val) && !cssNumber[i]) {
                 unit = "px";
             }
-            arr.push(cssName(name) + ": " + val + unit);
+            arr.push(cssName(i) + ": " + val + unit);
         }
     }
     return arr.join("; ");
