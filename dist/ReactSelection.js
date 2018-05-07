@@ -1,5 +1,5 @@
 /**
- * 此版本带有selection by 司徒正美 Copyright 2018-04-27
+ * 此版本带有selection by 司徒正美 Copyright 2018-05-07
  * IE9+
  */
 

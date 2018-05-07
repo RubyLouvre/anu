@@ -417,10 +417,10 @@ function stringifyStyleObject(obj) {
         var val = obj[i];
         if (obj != null) {
             var unit = "";
-            if (rnumber.test(val) && !cssNumber[name]) {
+            if (rnumber.test(val) && !cssNumber[i]) {
                 unit = "px";
             }
-            arr.push(cssName$$1(name) + ": " + val + unit);
+            arr.push(cssName$$1(i) + ": " + val + unit);
         }
     }
     return arr.join("; ");
@@ -432,40 +432,40 @@ var forElement = {
 };
 function stringifyAttributes(props, type) {
     var attrs = [];
-    for (var _name in props) {
-        var v = props[_name];
-        if (skipAttributes[_name]) {
+    for (var name in props) {
+        var v = props[name];
+        if (skipAttributes[name]) {
             continue;
         }
         var checkType = false;
-        if (_name === "className" || _name === "class") {
-            _name = "class";
+        if (name === "className" || name === "class") {
+            name = "class";
             if (v && (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object") {
                 v = stringifyClassName(v);
                 checkType = true;
             }
-        } else if (_name === "style") {
+        } else if (name === "style") {
             if (Object(v) == v) {
                 v = stringifyStyleObject(v);
                 checkType = true;
             } else {
                 continue;
             }
-        } else if (_name === "defaultValue") {
+        } else if (name === "defaultValue") {
             if (forElement[type]) {
-                _name = "value";
+                name = "value";
             }
-        } else if (_name === "defaultChecked") {
+        } else if (name === "defaultChecked") {
             if (forElement[type]) {
-                _name = "checked";
+                name = "checked";
                 v = "";
                 checkType = true;
             }
-        } else if (_name.match(rXlink)) {
-            _name = _name.toLowerCase().replace(rXlink, "xlink:$1");
+        } else if (name.match(rXlink)) {
+            name = name.toLowerCase().replace(rXlink, "xlink:$1");
         }
         if (checkType || skipFalseAndFunction(v)) {
-            attrs.push(_name + "=" + encodeAttributes(v + ""));
+            attrs.push(name + "=" + encodeAttributes(v + ""));
         }
     }
     return attrs.length ? " " + attrs.join(" ") : "";
