@@ -46,8 +46,7 @@
 		 }
 		 render(){
 				return <div>
-					      {this.state.a}
-			      		{this.state.a ? <A ref="a" />: null}
+					      {this.state.a}<A ref="a" />
 					    </div>
 		 }
 	 }
@@ -61,7 +60,9 @@
 		 }
 	 }
 	 var s = ReactDOM.render(<App />, container)
-//	 s.refs.a.setState({a: 333})
+	 console.log("============")
+	 s.setState({a: 334})
+	 s.refs.a.setState({a: 333})
     </script>
 
 一个问题是如何将不经过performWork的边界组件，从它所在的集合中拉出来呢

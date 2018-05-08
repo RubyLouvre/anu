@@ -115,7 +115,7 @@ export function commitOtherEffects(fiber, tasks) {
                     updater.isMounted = returnTrue;
                     guardCallback(instance, "componentDidMount", []);
                 }
-
+console.log("HOOK",fiber.name)
                 delete fiber._hydrating;
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
                 if (fiber._boundaries) {

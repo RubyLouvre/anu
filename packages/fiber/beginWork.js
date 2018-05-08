@@ -1,4 +1,4 @@
-import { extend,Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
+import { extend, Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
 import { AnuPortal } from "react-core/createPortal";
 
@@ -160,14 +160,16 @@ export function updateClassComponent(fiber, info) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
     }
-    let updateQueue = fiber.updateQueue;
+    let updateQueue = fiber.updateQueue, stage
     if (!instance.__isStateless) {
         //必须带生命周期
         delete fiber.updateFail;
         let updater = instance.updater;
         if (updater.isMounted()) {
+            stage = "update"
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
+            stage = "mount"
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
         if (fiber.memoizedState) {
@@ -206,7 +208,7 @@ export function updateClassComponent(fiber, info) {
     if (capturedValues.length) {
         return;
     }
-    diffChildren(fiber, rendered);
+    diffChildren(fiber, rendered, stage);
 }
 
 function applybeforeMountHooks(fiber, instance, newProps) {
@@ -324,21 +326,20 @@ function getMaskedContext(contextTypes, instance, contextStack) {
  * @param {Fiber} parentFiber
  * @param {Any} children
  */
-function diffChildren(parentFiber, children) {
+function diffChildren(parentFiber, children, stage) {
     let oldFibers = parentFiber._children || {}; // 旧的
-    if(parentFiber.tag < 3){
-        bifurcate(parentFiber, true);//不影响旧的    
+    if (parentFiber.tag < 3) {
+        bifurcate(parentFiber, stage);//不影响旧的    
     }
-   
+
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
     delete parentFiber.child;
     for (let i in oldFibers) {
         let newFiber = newFibers[i];
-        let alternate = oldFibers[i];
-        let oldFiber = bifurcate(alternate);//不影响旧的
-        oldFiber.alternate = alternate;
+        let oldFiber = bifurcate(oldFibers[i]);//复制旧Fiber, 得到一个新对象，它会添加新属性
+
         if (newFiber && newFiber.type === oldFiber.type) {
             matchFibers[i] = oldFiber;
             if (newFiber.key != null) {
@@ -351,17 +352,16 @@ function diffChildren(parentFiber, children) {
 
     let prevFiber,
         index = 0;
-      
+
     for (let i in newFibers) {
         let newFiber = newFibers[i];
         let oldFiber = matchFibers[i];
-        // let alternate = null;
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber)) {
                 // alternate = new Fiber(oldFiber);
                 let oldRef = oldFiber.ref;
                 let oldProps = oldFiber.props;
-                
+
                 newFiber = extend(oldFiber, newFiber);
                 //将新属性转换旧对象上
                 // effects.push(alternate);
@@ -376,7 +376,7 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(oldFiber, effects);
             }
-          
+
         } else {
             newFiber = new Fiber(newFiber);
         }
@@ -405,16 +405,29 @@ function diffChildren(parentFiber, children) {
 Renderer.diffChildren = diffChildren;
 
 
-function bifurcate(fiber, deep){
-    var alternate =  Object.assign({}, fiber);
-    fiber.effectTag = 1;
-    delete fiber._boundaries;
-    fiber.effects = null;
-    fiber.alternate = alternate;
-    var c = fiber._children;
-    if(deep && c){
-        alternate._children = Object.assign({}, c);
-    }
-    return bifurcate;
+function bifurcate(fiber, stage) {
    
+    var c = fiber._children || {}
+    var alternate = fiber.alternate || []
+    fiber._boundaries = fiber.effects =  null;
+    if (stage) {
+        if (stage == "mount") {
+            console.log("mount", fiber.name)
+            Object.assign(alternate, fiber);
+            
+        } else {
+            console.log("update", fiber.name)
+           
+        }
+        alternate._hydrating = null;
+        fiber.alternate = alternate;
+        alternate.effectTag = 1;
+        alternate._children = Object.assign({}, c );
+    } else {
+        console.log("receive", fiber.name)
+        Object.assign(alternate, fiber);
+    }
+
+    return alternate;
+
 }
