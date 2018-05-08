@@ -107,6 +107,7 @@ function insertElement(fiber) {
     let { stateNode: dom, parent, insertPoint } = fiber;
     try {
         let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
+      
         if (after === dom) {
             return;
         }

@@ -22,11 +22,11 @@ export function collectEffects(fiber, updateFail, isTop) {
         return [];
     }
     if (fiber._boundaries) {
-        removeFormBoundaries(fiber.alternate);
+        removeFormBoundaries(fiber);
         // console.log("collectEffects中的清空操作");
         //这里是子组件render时引发的错误
         let ret = collectDeletion(fiber);
-        fiber._children = {};
+        fiber.children = {};
         delete fiber.child;
         return ret;
     }

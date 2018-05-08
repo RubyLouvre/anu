@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-05
+ * by 司徒正美 Copyright 2018-05-08
  * IE9+
  */
 
@@ -278,7 +278,7 @@ function fiberizeChildren(children, fiber) {
         traverseAllChildren(children, "", flattenCb);
     }
     flattenIndex = 0;
-    return fiber._children = flattenObject;
+    return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
     if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
@@ -754,8 +754,8 @@ function pushError(fiber, hook, error) {
         });
     } else {
         var p = fiber.return;
-        for (var i in p._children) {
-            if (p._children[i] == fiber) {
+        for (var i in p.children) {
+            if (p.children[i] == fiber) {
                 fiber.type = noop;
             }
         }
@@ -916,7 +916,7 @@ function updateHostComponent(fiber, info) {
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
         if (prev) {
-            fiber._children = prev._children;
+            fiber.children = prev.children;
         }
         diffChildren(fiber, children);
     } else {
@@ -1098,8 +1098,8 @@ function setStateByProps(instance, fiber, nextProps, prevState) {
 function cloneChildren(fiber) {
     var prev = fiber.alternate;
     if (prev && prev.child) {
-        var pc = prev._children;
-        var cc = fiber._children = {};
+        var pc = prev.children;
+        var cc = fiber.children = {};
         fiber.child = prev.child;
         for (var i in pc) {
             var a = pc[i];
@@ -1125,7 +1125,7 @@ function getMaskedContext(contextTypes, instance, contextStack) {
     return context;
 }
 function diffChildren(parentFiber, children) {
-    var oldFibers = parentFiber._children || {};
+    var oldFibers = parentFiber.children || {};
     var newFibers = fiberizeChildren(children, parentFiber);
     var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
     var matchFibers = {};
@@ -1199,7 +1199,7 @@ function collectEffects(fiber, updateFail, isTop) {
     if (fiber._boundaries) {
         removeFormBoundaries(fiber);
         var ret = collectDeletion(fiber);
-        fiber._children = {};
+        fiber.children = {};
         delete fiber.child;
         return ret;
     }
@@ -1276,37 +1276,37 @@ function collectDeletion(fiber) {
 }
 
 function getDOMNode() {
-	return this;
+    return this;
 }
 var Refs = {
-	fireRef: function fireRef(fiber, dom) {
-		var ref = fiber.ref;
-		var owner = fiber._owner;
-		try {
-			var number = typeNumber(ref);
-			refStrategy[number](owner, ref, dom);
-		} catch (e) {
-			pushError(fiber, 'ref', e);
-		}
-	}
+    fireRef: function fireRef(fiber, dom) {
+        var ref = fiber.ref;
+        var owner = fiber._owner;
+        try {
+            var number = typeNumber(ref);
+            refStrategy[number](owner, ref, dom);
+        } catch (e) {
+            pushError(fiber, "ref", e);
+        }
+    }
 };
 var refStrategy = {
-	4: function _(owner, ref, dom) {
-		if (dom === null) {
-			delete owner.refs[ref];
-		} else {
-			if (dom.nodeType) {
-				dom.getDOMNode = getDOMNode;
-			}
-			owner.refs[ref] = dom;
-		}
-	},
-	5: function _(owner, ref, dom) {
-		ref(dom);
-	},
-	8: function _(owner, ref, dom) {
-		ref.current = dom;
-	}
+    4: function _(owner, ref, dom) {
+        if (dom === null) {
+            delete owner.refs[ref];
+        } else {
+            if (dom.nodeType) {
+                dom.getDOMNode = getDOMNode;
+            }
+            owner.refs[ref] = dom;
+        }
+    },
+    5: function _(owner, ref, dom) {
+        ref(dom);
+    },
+    8: function _(owner, ref, dom) {
+        ref.current = dom;
+    }
 };
 
 function commitEffects() {
@@ -1397,7 +1397,7 @@ function commitOtherEffects(fiber, tasks) {
                         r.shift();
                         tasks.push.apply(tasks, r);
                         delete fiber.child;
-                        delete fiber._children;
+                        delete fiber.children;
                         delete fiber.disposed;
                         var n = Object.assign({}, fiber);
                         fiber.effectTag = 1;

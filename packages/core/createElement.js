@@ -192,7 +192,7 @@ export function fiberizeChildren(children, fiber) {
         traverseAllChildren(children, "", flattenCb);
     }
     flattenIndex = 0;
-    return (fiber._children = flattenObject);
+    return (fiber.children = flattenObject);
 }
 
 function getComponentKey(component, index) {

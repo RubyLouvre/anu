@@ -26,8 +26,8 @@ export function pushError(fiber, hook, error) {
     } else {
 
         var p = fiber.return;
-        for (var i in p._children) {
-            if (p._children[i] == fiber) {
+        for (var i in p.children) {
+            if (p.children[i] == fiber) {
                 fiber.type = noop;
             }
         }

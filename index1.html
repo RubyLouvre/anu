@@ -45,8 +45,9 @@
 			 })
 		 }
 		 render(){
+			console.log("App render")
 				return <div>
-					      {this.state.a}<A ref="a" />
+					      {this.state.a}<A title="a" ref="a" />
 					    </div>
 		 }
 	 }
@@ -54,15 +55,21 @@
 		 state = {
 			 a: 222
 		 }
-		 render(){
-			//  throw "xxxx"
-        return <p>{this.state.a}</p>
+		 render(){	
+			 console.log("A render")
+            return <p>{this.state.a}!!</p>
+		 }
+		 componentDidMount(){	
+		    console.log("A mount")
+		 }
+		 componentDidUpdate(){	
+		    console.log("A update")
 		 }
 	 }
 	 var s = ReactDOM.render(<App />, container)
-	 console.log("============")
+	 console.log("============",s)
 	 s.setState({a: 334})
-	 s.refs.a.setState({a: 333})
+	// s.refs.a.setState({a: 333})
     </script>
 
 一个问题是如何将不经过performWork的边界组件，从它所在的集合中拉出来呢

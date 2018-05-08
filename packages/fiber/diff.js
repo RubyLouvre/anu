@@ -50,7 +50,6 @@ export function render(vnode, root, callback) {
 function wrapCb(fn, carrier) {
     return function () {
         var fiber = get(this);
-        console.log("ReactDOM.render",fiber)
         var target = fiber.child ? fiber.child.stateNode : null;
         fn && fn.call(target);
         carrier.instance = target;
