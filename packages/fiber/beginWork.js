@@ -325,7 +325,12 @@ function getMaskedContext(contextTypes, instance, contextStack) {
  * @param {Any} children
  */
 function diffChildren(parentFiber, children) {
-    let oldFibers = parentFiber.children || {}; // 旧的
+    let oldFibers = parentFiber.children; // 旧的
+    if(oldFibers){
+        parentFiber.oldChildren = oldFibers;
+    }else{
+        oldFibers = {};
+    }
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
@@ -344,8 +349,7 @@ function diffChildren(parentFiber, children) {
     }
 
     let prevFiber,
-        index = 0,
-        newEffects = [];
+        index = 0;
     for (let i in newFibers) {
         let newFiber = newFibers[i];
         let oldFiber = matchFibers[i];
@@ -354,10 +358,7 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(oldFiber, newFiber)) {
                 alternate = new Fiber(oldFiber);
                 let oldRef = oldFiber.ref;
-
                 newFiber = extend(oldFiber, newFiber);
-                //将新属性转换旧对象上
-                effects.push(alternate);
                 newFiber.alternate = alternate;
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;
@@ -369,7 +370,6 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(oldFiber, effects);
             }
-            newEffects.push(newFiber);
         } else {
             newFiber = new Fiber(newFiber);
         }

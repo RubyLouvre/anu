@@ -2084,4 +2084,80 @@ describe('ReactErrorBoundaries', () => {
 		// Error should be the first thrown
 		expect(caughtError.message).toBe('child sad');
 	  });
+
+	  /*
+var a = 1
+	  BrokenRender = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('BrokenRender constructor');
+			}
+			render() {
+				if(a === 1){
+                  log.push('BrokenRender render');
+                   return <p>xxxx</p>
+				}else{
+					log.push('BrokenRender render [!]');
+			      	throw new Error('Hello');
+				}
+				
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenRender componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenRender componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenRender componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenRender componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenRender componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenRender componentWillUnmount');
+			}
+		};
+
+ ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenRender />
+			</ErrorBoundary>,
+			container
+		);
+		a = 0
+		ReactDOM.render(
+			<ErrorBoundary>
+				<BrokenRender />
+			</ErrorBoundary>,
+			container
+		);
+		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
+		expect(log).toEqual([
+		"ErrorBoundary constructor", 
+		"ErrorBoundary componentWillMount",
+		"ErrorBoundary render success",
+		"BrokenRender constructor", 
+		"BrokenRender componentWillMount",
+		"BrokenRender render",
+		"BrokenRender componentDidMount", 
+		"ErrorBoundary componentDidMount",
+		"ErrorBoundary componentWillReceiveProps",
+		"ErrorBoundary componentWillUpdate", 
+		"ErrorBoundary render success",
+		"BrokenRender componentWillReceiveProps", 
+		"BrokenRender componentWillUpdate",
+		"BrokenRender render [!]", 
+		"ErrorBoundary componentDidUpdate",
+		"ErrorBoundary componentDidCatch",
+		"ErrorBoundary componentWillUpdate",
+		"ErrorBoundary render error",
+		"BrokenRender componentWillUnmount",
+		"ErrorBoundary componentDidUpdate"
+		]);
+
+	  */
 });

@@ -89,7 +89,10 @@ function findCatchComponent(fiber, names) {
                 if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
                 } else if (fiber.hasCatch) {
-                    retry = fiber;
+                    //防止被去重
+                    retry = Object.assign({},fiber);
+                    retry.effectTag = DETACH;
+                    retry.disposed = true;
                 }
             }
         } else if (fiber.tag === 5) {
@@ -105,6 +108,7 @@ function findCatchComponent(fiber, names) {
                 boundaries.unshift(boundary);
                 if (retry && retry !== boundary) {
                     let arr = boundary.effects || (boundary.effects = []);
+                    // console.log("push进effects",boundary.name, retry.name);
                     arr.push(retry);
                 }
             }

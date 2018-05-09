@@ -69,6 +69,7 @@ export function commitOtherEffects(fiber, tasks) {
     let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
     let updater = instance.updater || fakeObject;
+    //console.log(fiber.name, fiber.effectTag);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
@@ -119,7 +120,7 @@ export function commitOtherEffects(fiber, tasks) {
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
                 if (fiber._boundaries) {
                     removeFormBoundaries(fiber);
-                    //console.log("commitEffects中的清空操作");
+                    // console.log("commitEffects中的清空操作");
                     //清空它的下方节点
                     var r = [];
                     detachFiber(fiber, r);

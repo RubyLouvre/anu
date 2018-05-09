@@ -1,5 +1,5 @@
 import { updateEffects } from "./beginWork";
-import { collectEffects } from "./completeWork";
+import { collectEffects } from "./collectWork";
 import { commitEffects } from "./commitWork";
 import { Renderer } from "react-core/createRenderer";
 import { effects, returnTrue, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";

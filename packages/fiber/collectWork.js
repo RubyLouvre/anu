@@ -2,7 +2,7 @@ import { PLACE, HOOK, DETACH, NULLREF } from "./effectTag";
 import { arrayPush } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
 import { removeFormBoundaries } from "./ErrorBoundary";
-import { findHostInstance } from "./findHostInstance";
+//import { findHostInstance } from "./findHostInstance";
 
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
@@ -23,11 +23,12 @@ export function collectEffects(fiber, updateFail, isTop) {
     }
     if (fiber._boundaries) {
         removeFormBoundaries(fiber);
-        // console.log("collectEffects中的清空操作");
+
+        // console.log("collectEffects中的清空操作",!!fiber.effects , fiber.name, fiber.oldChildren );
         //这里是子组件render时引发的错误
-        let ret = collectDeletion(fiber);
-        fiber.children = {};
+        var ret = collectDeletion(fiber);
         delete fiber.child;
+        fiber.oldChildren = fiber.children = {};
         return ret;
     }
     let effects = fiber.effects;
@@ -41,7 +42,10 @@ export function collectEffects(fiber, updateFail, isTop) {
         //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
     }
-    for (let child = fiber.child; child; child = child.sibling) {
+    var c = fiber.children || {};
+    for(let i in  c){
+        let child = c[i];
+        // for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
         if (isHost) {
             if (child.framentParent) {//全局搜索它
@@ -83,27 +87,28 @@ function getChildren(parent) {
 }
 function markDeletion(el) {
     el.disposed = true;
+    el.effectTag = DETACH;
     if (el.ref) {
-        el.effectTag = NULLREF;
+        el.effectTag *= NULLREF;
     }
-    el.effectTag *= DETACH;
 }
 export function collectDeletion(fiber) {
     let effects = fiber.effects;
     if (effects) {
         effects.forEach(markDeletion);
-
         delete fiber.effects;
     } else {
         effects = [];
     }
-    for (let child = fiber.child; child; child = child.sibling) {
-        if (child.disposed) {
+    var c =  fiber.oldChildren|| {};
+    for(let i in c){
+        let child = c[i];
+        if(child.disposed){
             continue;
         }
-     
         markDeletion(child);
         arrayPush.apply(effects, collectDeletion(child));
+        effects.push(child);
     }
     return effects;
 }
