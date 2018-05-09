@@ -1,8 +1,7 @@
 import { returnFalse, returnTrue, extend, gDSFP, gSBU } from "react-core/util";
 import { Component } from "react-core/Component";
-
 import { Renderer } from "react-core/createRenderer";
-//import { pushError } from "./ErrorBoundary";
+
 export function UpdateQueue() {
     return {
         pendingStates: [],

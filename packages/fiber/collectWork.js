@@ -1,5 +1,5 @@
 import { PLACE, HOOK, DETACH, NULLREF } from "./effectTag";
-import { arrayPush } from "react-core/util";
+import { arrayPush, emptyObject } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
 import { removeFormBoundaries } from "./ErrorBoundary";
 //import { findHostInstance } from "./findHostInstance";
@@ -100,7 +100,7 @@ export function collectDeletion(fiber) {
     } else {
         effects = [];
     }
-    var c =  fiber.oldChildren|| {};
+    var c =  fiber.oldChildren|| emptyObject;
     for(let i in c){
         let child = c[i];
         if(child.disposed){
