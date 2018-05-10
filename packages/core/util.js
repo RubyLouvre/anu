@@ -41,7 +41,10 @@ export function getWindow() {
         }
     }
 }
-
+export function isMounted(instance) {
+    var fiber = get(instance);
+    return !!(fiber && fiber.hasMounted);
+}
 
 export function toWarnDev(msg, deprecated) {
     msg = deprecated ? msg + " is deprecated" : msg;

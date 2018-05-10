@@ -27,7 +27,7 @@ export function commitEffects() {
         }
     });
 
-    var error = Renderer.catchError;
+    let error = Renderer.catchError;
 
     if (error) {
         delete Renderer.catchError;
@@ -39,7 +39,7 @@ export function commitEffects() {
  * @param {Fiber} tasks
  */
 export function commitPlaceEffects(tasks) {
-    var ret = [];
+    let ret = [];
     for (let i = 0, n = tasks.length; i < n; i++) {
         let fiber = tasks[i];
         let amount = fiber.effectTag;
@@ -48,6 +48,7 @@ export function commitPlaceEffects(tasks) {
         if (hasEffect && remainder == ~~remainder) {
             fiber.parent.insertPoint = null;
             Renderer.insertElement(fiber);
+            fiber.hasMounted = true;
             fiber.effectTag = remainder;
             hasEffect = remainder > 1;
         }
@@ -91,29 +92,29 @@ export function commitOtherEffects(fiber, tasks) {
                 }
                 break;
             case DETACH:
+              
                 if (fiber.tag > 3) {
+                  
                     Renderer.removeElement(fiber);
                 } else {
-                    if (updater.isMounted()) {
+                    if (fiber.hasMounted) {
                         updater.enqueueSetState = returnFalse;
                         guardCallback(instance, "componentWillUnmount", []);
-                        updater.isMounted = returnFalse;
                     }
                 }
+                delete fiber.hasMounted;
                 delete fiber.stateNode;
                 delete fiber.alternate;
                 break;
             case HOOK:
-                if (updater.isMounted()) {
+                if (fiber.hasMounted) {
                     guardCallback(instance, "componentDidUpdate", [
                         updater.prevProps,
                         updater.prevState,
                         updater.snapshot,
                     ]);
                 } else {
-                    //一个hack
-                    instance.parentNode = instance.parentNode || true;
-                    updater.isMounted = returnTrue;
+                    fiber.hasMounted = true;
                     guardCallback(instance, "componentDidMount", []);
                 }
                 delete fiber._hydrating;
@@ -123,7 +124,7 @@ export function commitOtherEffects(fiber, tasks) {
                     Renderer.diffChildren(fiber, []);                       
                     tasks.push.apply(tasks, fiber.effects);
                     delete fiber.effects;
-                    var n = Object.assign({}, fiber);
+                    let n = Object.assign({}, fiber);
                     fiber.effectTag = 1;
                     n.effectTag = amount;
                     tasks.push(n);
@@ -156,8 +157,6 @@ export function commitOtherEffects(fiber, tasks) {
                     delete fiber.capturedValues;
                 }
                 instance.componentDidCatch(a, b);
-
-              
                 break;
             }
         }

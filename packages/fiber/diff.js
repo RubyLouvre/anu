@@ -2,7 +2,7 @@ import { updateEffects } from "./beginWork";
 import { collectEffects } from "./collectWork";
 import { commitEffects } from "./commitWork";
 import { Renderer } from "react-core/createRenderer";
-import { effects, returnTrue, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
+import { effects, isMounted, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
 
@@ -23,13 +23,14 @@ export function render(vnode, root, callback) {
             type: Unbatch,
             tag: 2,
             props: {},
+            hasMounted: true,
             memoizedState: {},
             return: container,
         });
         container.child = fiber;
         //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
         let instance = createInstance(fiber, {});
-        instance.updater.isMounted = returnTrue;
+        instance.updater.isMounted = isMounted;
         container.hostRoot = instance;
         immediateUpdate = true;
         Renderer.emptyElement(container);
@@ -48,8 +49,8 @@ export function render(vnode, root, callback) {
 
 function wrapCb(fn, carrier) {
     return function () {
-        var fiber = get(this);
-        var target = fiber.child ? fiber.child.stateNode : null;
+        let fiber = get(this);
+        let target = fiber.child ? fiber.child.stateNode : null;
         fn && fn.call(target);
         carrier.instance = target;
     };
@@ -60,14 +61,14 @@ function performWork(deadline) {
     workLoop(deadline);
     //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
     //我们需要再做一次收集，不为空时，递归调用
-    var boundaries = Renderer.boundaries;
+    let boundaries = Renderer.boundaries;
     if (boundaries.length) {
-        var elem = boundaries.pop();
+        let elem = boundaries.pop();
         //优先处理异常边界的setState
         macrotasks.push(elem);
     }
     topFibers.forEach(function (el) {
-        var microtasks = el.microtasks;
+        let microtasks = el.microtasks;
        
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
@@ -95,16 +96,16 @@ Renderer.scheduleWork = function () {
     performWork(ricObj);
 };
 
-var isBatching = false;
+let isBatching = false;
 Renderer.batchedUpdates = function (callback) {
-    var keepbook = isBatching;
+    let keepbook = isBatching;
     isBatching = true;
     try {
         return callback();
     } finally {
         isBatching = keepbook;
         if (!isBatching) {
-            var el;
+            let el;
             while ((el = batchedtasks.shift())) {
                 if (!el.disabled) {
                     macrotasks.push(el);
@@ -126,7 +127,6 @@ function workLoop(deadline) {
         } else {
             let dom = getContainer(fiber);
             info = {
-                capturedValues: getRoot(fiber).capturedValues,
                 containerStack: [dom],
                 contextStack: [{}],
             };
@@ -154,12 +154,7 @@ function getNextUnitOfWork(fiber) {
     }
     return fiber;
 }
-function getRoot(fiber) {
-    while (fiber.return) {
-        fiber = fiber.return;
-    }
-    return fiber;
-}
+
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
  * 没有，则找其父节点的孩子
@@ -289,7 +284,7 @@ export function createContainer(root, onlyGet, validate) {
             return get(root);
         }
     } else {
-        var index = topNodes.indexOf(root);
+        let index = topNodes.indexOf(root);
         if (index !== -1) {
             return topFibers[index];
         }
@@ -297,12 +292,10 @@ export function createContainer(root, onlyGet, validate) {
     if (onlyGet) {
         return null;
     }
-    var container = new Fiber({
+    let container = new Fiber({
         stateNode: root,
         tag: 5,
         name: "hostRoot",
-        boundaries: [],
-        capturedValues: [],
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],

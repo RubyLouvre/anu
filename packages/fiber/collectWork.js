@@ -25,7 +25,7 @@ export function collectEffects(fiber, updateFail, isTop) {
       
         removeFormBoundaries(fiber);
         //这里是子组件render时引发的错误
-        var ret = collectDeletion(fiber);
+        let ret = collectDeletion(fiber);
         delete fiber.child;
         fiber.oldChildren = fiber.children = {};
         return ret;
@@ -41,7 +41,7 @@ export function collectEffects(fiber, updateFail, isTop) {
         //根节点肯定元素节点
         fiber.stateNode.insertPoint = null;
     }
-    var c = fiber.children || {};
+    let  c = fiber.children || {};
     for (let i in c) {
         let child = c[i];
         // for (let child = fiber.child; child; child = child.sibling) {
@@ -100,7 +100,7 @@ export function collectDeletion(fiber) {
     } else {
         effects = [];
     }
-    var c = fiber.oldChildren || emptyObject;
+    let c = fiber.oldChildren || emptyObject;
     for (let i in c) {
         let child = c[i];
         if (child.disposed) {

@@ -58,7 +58,7 @@ export function updateEffects(fiber, topWork, info) {
                 delete fiber.shiftContext;
                 info.contextStack.shift(); // shift context
             }
-            if (updater.isMounted() && instance[gSBU]) {
+            if (fiber.hasMounted && instance[gSBU]) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
             }
         }
@@ -135,11 +135,11 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-var framentParent = null;
+let framentParent = null;
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
-    let { contextStack, containerStack, capturedValues } = info;
+    let { contextStack, containerStack } = info;
     let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
@@ -164,8 +164,7 @@ export function updateClassComponent(fiber, info) {
     if (!instance.__isStateless) {
         //必须带生命周期
         delete fiber.updateFail;
-        let updater = instance.updater;
-        if (updater.isMounted()) {
+        if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
@@ -175,7 +174,7 @@ export function updateClassComponent(fiber, info) {
         }
     }
     fiber.batching = updateQueue.batching;
-    var cbs = updateQueue.pendingCbs;
+    let cbs = updateQueue.pendingCbs;
     if (cbs.length) {
         fiber.pendingCbs = cbs;
         fiber.effectTag *= CALLBACK;
@@ -204,7 +203,6 @@ export function updateClassComponent(fiber, info) {
     let rendered = applyCallback(instance, "render", []);
     //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
     if (fiber.hasError) {
-     
         return;
     }
     diffChildren(fiber, rendered);

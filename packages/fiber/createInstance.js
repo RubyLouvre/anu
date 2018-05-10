@@ -1,4 +1,4 @@
-import { returnFalse, returnTrue, extend, gDSFP, gSBU } from "react-core/util";
+import { returnFalse, isMounted, extend, gDSFP, gSBU } from "react-core/util";
 import { Component } from "react-core/Component";
 import { Renderer } from "react-core/createRenderer";
 
@@ -12,7 +12,7 @@ export function createInstance(fiber, context) {
     let updater = {
         mountOrder: Renderer.mountOrder++,
         enqueueSetState: returnFalse,
-        isMounted: returnFalse,
+        isMounted: isMounted,
     };
     let { props, type, tag, ref } = fiber,
         isStateless = tag === 1,
@@ -28,7 +28,7 @@ export function createInstance(fiber, context) {
     try {
         if (isStateless) {
             extend(instance, {
-                __isStateless: returnTrue,
+                __isStateless: true,
                 __init: true,
                 renderImpl: type,
                 render: function f() {

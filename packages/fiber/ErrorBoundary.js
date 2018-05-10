@@ -7,8 +7,8 @@ export function pushError(fiber, hook, error) {
     let boundary = findCatchComponent(fiber, hook, error);
     if (boundary) {
         fiber.effectTag = NOWORK;
-        let inst = fiber.stateNode;
-        if (inst && inst.updater && inst.updater.isMounted()) {
+        // let inst = fiber.stateNode;
+        if (fiber.hasMounted) {
             //已经插入
         } else {
             fiber.stateNode = {
@@ -17,9 +17,8 @@ export function pushError(fiber, hook, error) {
         }
 
     } else {
-
-        var p = fiber.return;
-        for (var i in p.children) {
+        let p = fiber.return;
+        for (let i in p.children) {
             if (p.children[i] == fiber) {
                 fiber.type = noop;
             }
@@ -44,7 +43,7 @@ export function guardCallback(host, hook, args) {
 }
 
 export function applyCallback(host, hook, args) {
-    var fiber = host._reactInternalFiber;
+    let fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     let fn = host[hook];
     if (hook == "componentWillUnmount") {
@@ -117,8 +116,8 @@ function findCatchComponent(fiber, hook, error) {
 
 export function removeFormBoundaries(fiber) {
     delete fiber.hasError;
-    var arr = Renderer.boundaries;
-    var index = arr.indexOf(fiber);
+    let arr = Renderer.boundaries;
+    let index = arr.indexOf(fiber);
     if (index !== -1) {
         arr.splice(index, 1);
     }
@@ -126,11 +125,12 @@ export function removeFormBoundaries(fiber) {
 
 export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
-    fiber.disposed = true;
+  
     effects.push(fiber);
-    if (fiber.ref && fiber.stateNode && fiber.stateNode.parentNode) {
+    if (fiber.ref && fiber.hasMounted) {
         fiber.effectTag *= NULLREF;
     }
+    fiber.disposed = true;
     for (let child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects);
     }

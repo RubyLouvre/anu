@@ -1,5 +1,5 @@
 import { traverseAllChildren, isValidElement } from "./createElement";
-import { extend, noop, typeNumber } from "./util";
+import { extend, noop } from "./util";
 
 
 export const Children = {
@@ -17,13 +17,13 @@ export const Children = {
         return traverseAllChildren(children, "", noop);
     },
     map(children, func, context) {
-        return proxyIt(children, func, [], context)
+        return proxyIt(children, func, [], context);
     },
     forEach(children, func, context) {
-        return proxyIt(children, func, null, context)
+        return proxyIt(children, func, null, context);
     },
     toArray: function (children) {
-        return proxyIt(children, K, [])
+        return proxyIt(children, K, []);
     }
 };
 
@@ -32,7 +32,7 @@ function proxyIt(children, func, result, context) {
         return [];
     }
     mapChildren(children, null, func, result, context);
-    return result
+    return result;
 }
 
 function K(el) {
@@ -40,9 +40,9 @@ function K(el) {
 }
 
 function mapChildren(children, prefix, func, result, context) {
-    let keyPrefix = '';
+    let keyPrefix = "";
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + '/';
+        keyPrefix = escapeUserProvidedKey(prefix) + "/";
     }
     traverseAllChildren(children, "", traverseCallback, {
         context,
@@ -54,7 +54,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 const userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
 }
 
 function traverseCallback(bookKeeping, child, childKey) {
@@ -62,7 +62,7 @@ function traverseCallback(bookKeeping, child, childKey) {
 
     let mappedChild = func.call(context, child, bookKeeping.count++);
     if (!result) {
-        return
+        return;
     }
     if (Array.isArray(mappedChild)) {
         mapChildren(
@@ -73,12 +73,12 @@ function traverseCallback(bookKeeping, child, childKey) {
         );
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
-            mappedChild = extend({}, mappedChild)
+            mappedChild = extend({}, mappedChild);
             mappedChild.key = keyPrefix +
                 (mappedChild.key && (!child || child.key !== mappedChild.key)
-                    ? escapeUserProvidedKey(mappedChild.key) + '/'
-                    : '') +
-                childKey
+                    ? escapeUserProvidedKey(mappedChild.key) + "/"
+                    : "") +
+                childKey;
 
         }
         result.push(mappedChild);
