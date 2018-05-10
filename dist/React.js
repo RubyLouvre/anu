@@ -1592,6 +1592,7 @@ function createInstance(fiber, context) {
         fiber.updateQueue = UpdateQueue();
         instance._reactInternalFiber = fiber;
         instance.updater = updater;
+        instance.context = context;
         updater.enqueueSetState = Renderer.updateComponent;
         if (type[gDSFP] || instance[gSBU]) {
             instance.__useNewHooks = true;

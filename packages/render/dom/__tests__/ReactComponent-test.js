@@ -20,18 +20,18 @@ describe('ReactComponent', () => {
   it('should throw on invalid render targets', () => {
     const container = document.createElement('div');
     // jQuery objects are basically arrays; people often pass them in by mistake
-    expect(function() {
+    expect(function () {
       ReactDOM.render(<div />, [container]);
     }).toThrowError();
 
-    expect(function() {
+    expect(function () {
       ReactDOM.render(<div />, null);
     }).toThrowError();
   });
 
   it('should throw when supplying a ref outside of render method', () => {
     let instance = <div ref="badDiv" />;
-    expect(function() {
+    expect(function () {
       instance = ReactTestUtils.renderIntoDocument(instance);
     }).toThrow();
   });
@@ -390,34 +390,34 @@ describe('ReactComponent', () => {
     expect(() => {
       expect(() => ReactTestUtils.renderIntoDocument(<X />)).toWarnDev(
         "React.createElement: type is invalid"
-       // 'React.createElement: type is invalid -- expected a string (for built-in components) ' +
-       //   'or a class/function (for composite components) but got: undefined.',
+        // 'React.createElement: type is invalid -- expected a string (for built-in components) ' +
+        //   'or a class/function (for composite components) but got: undefined.',
       );
     }).toThrowError(
-        "React.createElement: type is invalid"
-        /*
-      'Element type is invalid: expected a string (for built-in components) ' +
-        'or a class/function (for composite components) but got: undefined.' +
-        (__DEV__
-          ? " You likely forgot to export your component from the file it's " +
-            'defined in, or you might have mixed up default and named imports.'
-          : ''),
-          */
+      "React.createElement: type is invalid"
+      /*
+    'Element type is invalid: expected a string (for built-in components) ' +
+      'or a class/function (for composite components) but got: undefined.' +
+      (__DEV__
+        ? " You likely forgot to export your component from the file it's " +
+          'defined in, or you might have mixed up default and named imports.'
+        : ''),
+        */
     );
 
     const Y = null;
     expect(() => {
       expect(() => ReactTestUtils.renderIntoDocument(<Y />)).toWarnDev(
-      /*  'React.createElement: type is invalid -- expected a string (for built-in components) ' +
-          'or a class/function (for composite components) but got: null.',
-          */
-         "React.createElement: type is invalid"
+        /*  'React.createElement: type is invalid -- expected a string (for built-in components) ' +
+            'or a class/function (for composite components) but got: null.',
+            */
+        "React.createElement: type is invalid"
       );
     }).toThrowError(
-     /* 'Element type is invalid: expected a string (for built-in components) ' +
-        'or a class/function (for composite components) but got: null.',
-        */
-       "React.createElement: type is invalid"
+      /* 'Element type is invalid: expected a string (for built-in components) ' +
+         'or a class/function (for composite components) but got: null.',
+         */
+      "React.createElement: type is invalid"
     );
   });
 
@@ -445,7 +445,7 @@ describe('ReactComponent', () => {
         /*'React.createElement: type is invalid -- expected a string (for built-in components) ' +
           'or a class/function (for composite components) but got: undefined.',
           */
-         "React.createElement: type is invalid"
+        "React.createElement: type is invalid"
       );
     }).toThrowError(
       /*'Element type is invalid: expected a string (for built-in components) ' +
@@ -456,7 +456,7 @@ describe('ReactComponent', () => {
             '\n\nCheck the render method of `Bar`.'
           : ''),
           */
-         "React.createElement: type is invalid"
+      "React.createElement: type is invalid"
     );
   });
 
@@ -475,15 +475,15 @@ describe('ReactComponent', () => {
       ex = e;
     }
     expect(ex).toBeDefined();
-  /*  expect(normalizeCodeLocInfo(ex.message)).toBe(
-      'Objects are not valid as a React child (found: object with keys {x, y, z}).' +
-        (__DEV__
-          ? ' If you meant to render a collection of children, use ' +
-            'an array instead.' +
-            '\n    in div (at **)'
-          : ''),
-    );
-    */
+    /*  expect(normalizeCodeLocInfo(ex.message)).toBe(
+        'Objects are not valid as a React child (found: object with keys {x, y, z}).' +
+          (__DEV__
+            ? ' If you meant to render a collection of children, use ' +
+              'an array instead.' +
+              '\n    in div (at **)'
+            : ''),
+      );
+      */
   });
 
   it('throws if a plain object even if it is in an owner', () => {
@@ -545,8 +545,8 @@ describe('ReactComponent', () => {
   });
 
   it('throws if a plain object even if it is in an owner when using SSR', async () => {
-      console.log("以后要处理这个")
-      return
+    console.log("以后要处理这个")
+    return
     class Foo extends React.Component {
       render() {
         const children = {
@@ -586,9 +586,9 @@ describe('ReactComponent', () => {
       const container = document.createElement('div');
       expect(() => ReactDOM.render(<Foo />, container)).toWarnDev(
         'Warning: Functions are not valid as a React child. This may happen if ' +
-          'you return a Component instead of <Component /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '    in Foo (at **)',
+        'you return a Component instead of <Component /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '    in Foo (at **)',
       );
     });
 
@@ -601,9 +601,9 @@ describe('ReactComponent', () => {
       const container = document.createElement('div');
       expect(() => ReactDOM.render(<Foo />, container)).toWarnDev(
         'Warning: Functions are not valid as a React child. This may happen if ' +
-          'you return a Component instead of <Component /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '    in Foo (at **)',
+        'you return a Component instead of <Component /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '    in Foo (at **)',
       );
     });
 
@@ -618,11 +618,11 @@ describe('ReactComponent', () => {
       const container = document.createElement('div');
       expect(() => ReactDOM.render(<Foo />, container)).toWarnDev(
         'Warning: Functions are not valid as a React child. This may happen if ' +
-          'you return a Component instead of <Component /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '    in span (at **)\n' +
-          '    in div (at **)\n' +
-          '    in Foo (at **)',
+        'you return a Component instead of <Component /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '    in span (at **)\n' +
+        '    in div (at **)\n' +
+        '    in Foo (at **)',
       );
     });
 
@@ -642,7 +642,7 @@ describe('ReactComponent', () => {
       class Foo extends React.PureComponent {
         constructor() {
           super();
-          this.state = {type: 'mushrooms'};
+          this.state = { type: 'mushrooms' };
         }
         render() {
           return (
@@ -663,18 +663,33 @@ describe('ReactComponent', () => {
         component = ReactDOM.render(<Foo />, container);
       }).toWarnDev([
         'Warning: Functions are not valid as a React child. This may happen if ' +
-          'you return a Component instead of <Component /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '    in div (at **)\n' +
-          '    in Foo (at **)',
+        'you return a Component instead of <Component /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '    in div (at **)\n' +
+        '    in Foo (at **)',
         'Warning: Functions are not valid as a React child. This may happen if ' +
-          'you return a Component instead of <Component /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '    in span (at **)\n' +
-          '    in div (at **)\n' +
-          '    in Foo (at **)',
+        'you return a Component instead of <Component /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '    in span (at **)\n' +
+        '    in div (at **)\n' +
+        '    in Foo (at **)',
       ]);
-      component.setState({type: 'portobello mushrooms'});
+      component.setState({ type: 'portobello mushrooms' });
     });
+
   });
+  it("确保context对象存在", () => {
+    class Foo extends React.Component {
+      constructor() {
+        super();
+        this.state = { type: 'mushrooms' };
+      }
+      render() {
+        return <p>xxx</p>
+      }
+    }
+    const container = document.createElement('div');
+    var instance = ReactDOM.render(<Foo />, container);
+    expect(!!instance.context).toBe(true);
+  })
 });
