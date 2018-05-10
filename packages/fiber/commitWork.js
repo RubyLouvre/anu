@@ -11,10 +11,10 @@ import {
     effectLength,
     effectNames,
 } from "./effectTag";
-import { guardCallback, removeFormBoundaries, detachFiber } from "./ErrorBoundary";
+import { guardCallback, removeFormBoundaries } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 
-import { returnFalse, effects, arrayPush, returnTrue, emptyObject } from "react-core/util";
+import { returnFalse, effects, arrayPush, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
 export function commitEffects() {

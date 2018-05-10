@@ -89,6 +89,7 @@
             count: 1
           };
           componentDidMount() {
+            console.log(this.context, "XXX")
             setInterval(() => {
               this.setState({ count: this.state.count + 1 });
             }, 2000);

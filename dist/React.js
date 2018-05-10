@@ -687,7 +687,7 @@ function findHostInstance(fiber) {
 }
 
 function findDOMNode(fiber) {
-    if (fiber !== null && !fiber.nodeType && !fiber.render && !fiber.refs) {
+    if (!fiber && !fiber.nodeType && !fiber.render && !fiber.refs) {
         throw "findDOMNode:invalid type";
     }
     return findHostInstance(fiber);
