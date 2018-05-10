@@ -541,11 +541,11 @@ ReactDOM.render(
 		<Normal>
 			<BrokenComponentWillUnmount />
 		</Normal>
-		<BrokenComponentWillUnmount />
+		<BrokenComponentWillUnmount a="11" />
 	</ErrorBoundary>,
 	container,
 );
-
+//第二出错，
 log.length = 0;
 ReactDOM.render(
 	<ErrorBoundary>

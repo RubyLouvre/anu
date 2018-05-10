@@ -2,7 +2,7 @@ import { PLACE, HOOK, DETACH, NULLREF } from "./effectTag";
 import { arrayPush, emptyObject } from "react-core/util";
 import { AnuPortal } from "react-core/createPortal";
 import { removeFormBoundaries } from "./ErrorBoundary";
-//import { findHostInstance } from "./findHostInstance";
+
 
 /**
  * 此方法主要是用于收集虚拟DOM上的各种任务（sideEffect）,并且为元素虚拟DOM指定插入点
@@ -23,8 +23,6 @@ export function collectEffects(fiber, updateFail, isTop) {
     }
     if (fiber._boundaries) {
         removeFormBoundaries(fiber);
-
-        // console.log("collectEffects中的清空操作",!!fiber.effects , fiber.name, fiber.oldChildren );
         //这里是子组件render时引发的错误
         var ret = collectDeletion(fiber);
         delete fiber.child;
@@ -43,7 +41,7 @@ export function collectEffects(fiber, updateFail, isTop) {
         fiber.stateNode.insertPoint = null;
     }
     var c = fiber.children || {};
-    for(let i in  c){
+    for (let i in c) {
         let child = c[i];
         // for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
@@ -92,6 +90,7 @@ function markDeletion(el) {
         el.effectTag *= NULLREF;
     }
 }
+
 export function collectDeletion(fiber) {
     let effects = fiber.effects;
     if (effects) {
@@ -100,10 +99,10 @@ export function collectDeletion(fiber) {
     } else {
         effects = [];
     }
-    var c =  fiber.oldChildren|| emptyObject;
-    for(let i in c){
+    var c = fiber.oldChildren || emptyObject;
+    for (let i in c) {
         let child = c[i];
-        if(child.disposed){
+        if (child.disposed) {
             continue;
         }
         markDeletion(child);
@@ -112,3 +111,4 @@ export function collectDeletion(fiber) {
     }
     return effects;
 }
+

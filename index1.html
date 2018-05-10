@@ -374,10 +374,54 @@
 			'ErrorBoundary componentDidUpdate',
 		]);
 
-	//	log.length = 0;
-	//	ReactDOM.unmountComponentAtNode(container);
-	// expect(log).toEqual(['ErrorBoundary componentWillUnmount', 'Error message ref is set to null']);
-	
+function getChild(fiber){
+	var c = fiber.oldChildren, prev
+	if(c){
+        for(var i in c ){
+			var a = c[i]
+			if(prev){
+				prev.sibling = a
+			}else{
+				fiber.child = a
+			}
+			a.return = fiber
+			prev = a
+		}
+	}
+	return fiber.child
+}
+
+function dfs(fiber) {
+	var node = getChild(fiber)
+    while (node !== null) {
+	  if(node.effects){
+		  arrayPush.apply(ret, node.effects )
+		  delete node.effects
+	  }
+      if (getChild(node) ) {
+        node = node.child;
+        continue;
+	  }
+	  console.log("没有孩子")
+	  ret.push(node)
+      if (node === fiber) {
+        return;
+	  }
+	  
+      while (node.sibling === null) {
+        if (node['return'] === null || node['return'] === fiber) {
+          return;
+		}
+		console.log("往上找")
+		ret.push(node)
+        node = node['return'];
+      }
+	  console.log("往右找")
+      node = node.sibling;
+	}
+	return ret
+  }
+
     </script>
 
 
