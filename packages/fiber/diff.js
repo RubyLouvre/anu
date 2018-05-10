@@ -97,11 +97,11 @@ Renderer.scheduleWork = function () {
 };
 
 let isBatching = false;
-Renderer.batchedUpdates = function (callback) {
+Renderer.batchedUpdates = function (callback, event) {
     let keepbook = isBatching;
     isBatching = true;
     try {
-        return callback();
+        return callback(event);
     } finally {
         isBatching = keepbook;
         if (!isBatching) {

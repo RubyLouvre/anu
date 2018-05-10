@@ -2402,11 +2402,11 @@ Renderer.scheduleWork = function () {
     performWork(ricObj);
 };
 var isBatching = false;
-Renderer.batchedUpdates = function (callback) {
+Renderer.batchedUpdates = function (callback, event) {
     var keepbook = isBatching;
     isBatching = true;
     try {
-        return callback();
+        return callback(event);
     } finally {
         isBatching = keepbook;
         if (!isBatching) {
