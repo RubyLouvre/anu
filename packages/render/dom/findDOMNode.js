@@ -4,8 +4,12 @@ import { findHostInstance } from "react-fiber/findHostInstance";
 
 // [Top API] ReactDOM.findDOMNode
 export function findDOMNode(fiber) {
-    if (!fiber && !fiber.nodeType && !fiber.render && !fiber.refs ) {
+    if (fiber === null || (fiber && fiber.nodeType)) {
+        return fiber;
+    }
+    if (!fiber || !fiber.render) {
         throw "findDOMNode:invalid type";
     }
+
     return findHostInstance(fiber);
 }

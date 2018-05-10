@@ -1669,7 +1669,7 @@ function createContainer(root, onlyGet, validate) {
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
     if (useProp) {
-        root.anuProps = void 0;
+        root.anuProp = void 0;
         if (get(root)) {
             return get(root);
         }

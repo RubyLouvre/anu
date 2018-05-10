@@ -34,7 +34,6 @@ describe('ReactErrorBoundaries', () => {
 		React = require('react');
 
 		log = [];
-console.log("************", NO++)
 		BrokenConstructor = class extends React.Component {
 			constructor(props) {
 				super(props);

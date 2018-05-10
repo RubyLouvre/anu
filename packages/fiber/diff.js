@@ -279,7 +279,7 @@ export function createContainer(root, onlyGet, validate) {
     let useProp = root.anuProp === 2018;
     //像IE6-8，文本节点不能添加属性
     if (useProp) {
-        root.anuProps = void 0;
+        root.anuProp = void 0;
         if (get(root)) {
             return get(root);
         }

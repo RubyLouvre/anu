@@ -1657,6 +1657,23 @@ describe('ReactDOMInput', () => {
 
       expect(node.value).toBe('on');
       expect(node.hasAttribute('value')).toBe(false);
+      ReactDOM.unmountComponentAtNode(container)
+    });
+
+
+    it('只执行一次', function() {
+      const container = document.createElement('div');
+      document.body.appendChild(container)
+      var logIndex = 0;
+        function refFn(e) {
+            logIndex++;
+        }
+
+        var dom = ReactDOM.render(<input type="checkbox" onChange={refFn} />, container);
+        dom.click()
+        expect(logIndex).toBe(1)
+        ReactDOM.unmountComponentAtNode(container)
+        document.body.removeChild(container)
     });
   });
 });

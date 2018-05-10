@@ -687,7 +687,10 @@ function findHostInstance(fiber) {
 }
 
 function findDOMNode(fiber) {
-    if (!fiber && !fiber.nodeType && !fiber.render && !fiber.refs) {
+    if (fiber === null || fiber && fiber.nodeType) {
+        return fiber;
+    }
+    if (!fiber || !fiber.render) {
         throw "findDOMNode:invalid type";
     }
     return findHostInstance(fiber);
@@ -2550,7 +2553,7 @@ function createContainer(root, onlyGet, validate) {
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
     if (useProp) {
-        root.anuProps = void 0;
+        root.anuProp = void 0;
         if (get(root)) {
             return get(root);
         }
