@@ -7,7 +7,6 @@ import { Unbatch } from "./unbatch";
 import { Fiber } from "./Fiber";
 
 import { createInstance } from "./createInstance";
-
 const macrotasks = Renderer.macrotasks;
 const batchedtasks = [];
 
@@ -61,13 +60,15 @@ function performWork(deadline) {
     workLoop(deadline);
     //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
     //我们需要再做一次收集，不为空时，递归调用
+    var boundaries = Renderer.boundaries;
+    if (boundaries.length) {
+        var elem = boundaries.pop();
+        //优先处理异常边界的setState
+        macrotasks.push(elem);
+    }
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
-        var boundaries = el.boundaries;
-        if (boundaries.length) {
-            //优先处理异常边界的setState
-            macrotasks.push(boundaries.pop());
-        }
+       
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
                 macrotasks.push(el);

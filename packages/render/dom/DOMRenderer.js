@@ -157,6 +157,7 @@ function isTextContainer(fiber) {
     }
 }
 //其他Renderer也要实现这些方法
+render.boundaries = Renderer.boundaries;
 export let DOMRenderer = createRenderer({
     render,
     updateAttribute(fiber) {
@@ -249,15 +250,17 @@ export let DOMRenderer = createRenderer({
     },
     removeElement(fiber) {
         let instance = fiber.stateNode;
-
-        removeElement(instance);
-        if(instance._reactInternalFiber){
-            let j = topNodes.indexOf(instance);
-            if (j !== -1) {
-                topFibers.splice(j, 1);
-                topNodes.splice(j, 1);
+        if(instance){
+            removeElement(instance);
+            if(instance._reactInternalFiber){
+                let j = topNodes.indexOf(instance);
+                if (j !== -1) {
+                    topFibers.splice(j, 1);
+                    topNodes.splice(j, 1);
+                }
             }
         }
+        
     },
 });
 

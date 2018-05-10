@@ -535,61 +535,23 @@
 //================================
 //================================
 //================================
+		ReactDOM.render(<BrokenComponentWillUpdate />, container);
+		expect(() => {
+			ReactDOM.render(<BrokenComponentWillUpdate />, container);
+		}).toThrow('Hello');
 
-ReactDOM.render(
-	<ErrorBoundary>
-		<Normal>
-			<BrokenComponentWillUnmount />
-		</Normal>
-		<BrokenComponentWillUnmount a="11" />
-	</ErrorBoundary>,
-	container,
-);
-//第二出错，
-log.length = 0;
-ReactDOM.render(
-	<ErrorBoundary>
-		<Normal>
-			<BrokenComponentWillUnmount />
-		</Normal>
-	</ErrorBoundary>,
-	container,
-);
-expect(container.textContent).toBe('Caught an error: Hello.');
-expect(log).toEqual([
-	'ErrorBoundary componentWillReceiveProps',
-	'ErrorBoundary componentWillUpdate',
-	'ErrorBoundary render success',
-	// Update existing children:
-	'Normal componentWillReceiveProps',
-	'Normal componentWillUpdate',
-	'Normal render',
-	'BrokenComponentWillUnmount componentWillReceiveProps',
-	'BrokenComponentWillUnmount componentWillUpdate',
-	'BrokenComponentWillUnmount render',
-	// Unmounting throws:
-	'BrokenComponentWillUnmount componentWillUnmount [!]',
-	// Fiber proceeds with lifecycles despite errors
-	'BrokenComponentWillUnmount componentDidUpdate',
-	'Normal componentDidUpdate',
-	'ErrorBoundary componentDidUpdate',
-	'Normal componentWillUnmount',
-	'BrokenComponentWillUnmount componentWillUnmount [!]',
-	// Now that commit phase is done, Fiber handles errors
-	'ErrorBoundary componentDidCatch',
-	// The initial render was aborted, so
-	// Fiber retries from the root.
-	'ErrorBoundary componentWillUpdate',
-	'ErrorBoundary componentDidUpdate',
-	// The second willUnmount error should be captured and logged, too.
-	'ErrorBoundary componentDidCatch',
-	'ErrorBoundary componentWillUpdate',
-	// Render an error now (stack will do it later)
-	'ErrorBoundary render error',
-	// Done
-	'ErrorBoundary componentDidUpdate',
-]);
+	/*	container = document.createElement('div');
+		ReactDOM.render(<BrokenComponentWillReceiveProps />, container);
+		expect(() => {
+			ReactDOM.render(<BrokenComponentWillReceiveProps />, container);
+		}).toThrow('Hello');
 
+		container = document.createElement('div');
+		ReactDOM.render(<BrokenComponentDidUpdate />, container);
+		expect(() => {
+			ReactDOM.render(<BrokenComponentDidUpdate />, container);
+		}).toThrow('Hello');
+	*/
     </script>
 
 

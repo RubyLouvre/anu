@@ -21,7 +21,8 @@ export function collectEffects(fiber, updateFail, isTop) {
     if (!fiber) {
         return [];
     }
-    if (fiber._boundaries) {
+    if (fiber.hasError) {
+      
         removeFormBoundaries(fiber);
         //这里是子组件render时引发的错误
         var ret = collectDeletion(fiber);

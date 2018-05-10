@@ -7,6 +7,7 @@ export const Renderer = {
     controlledCbs: [],
     mountOrder: 1,
     macrotasks:[],
+    boundaries: [],
     //catchError
     //catchBoundary
     //catchTry

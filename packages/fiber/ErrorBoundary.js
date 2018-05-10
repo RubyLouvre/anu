@@ -4,13 +4,10 @@ import { fakeObject } from "react-core/Component";
 import { NOWORK, CAPTURE, DETACH, NULLREF } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
-    let names = [];
-    let root = findCatchComponent(fiber, names);
-    let stack = describeError(names, hook);
-    // let boundary = root.catchBoundary;
-    if (root.boundaries.length) {
+    let boundary = findCatchComponent(fiber, hook, error);
+    if (boundary) {
         fiber.effectTag = NOWORK;
-        var inst = fiber.stateNode;
+        let inst = fiber.stateNode;
         if (inst && inst.updater && inst.updater.isMounted()) {
             //已经插入
         } else {
@@ -18,10 +15,6 @@ export function pushError(fiber, hook, error) {
                 updater: fakeObject,
             };
         }
-        // boundary.effectTag *= CAPTURE;
-        root.capturedValues.push(error, {
-            componentStack: stack
-        });
 
     } else {
 
@@ -74,9 +67,10 @@ function describeError(names, hook) {
 }
 
 
-function findCatchComponent(fiber, names) {
+function findCatchComponent(fiber, hook, error) {
     let instance,
         name,
+        names = [],
         topFiber = fiber, retry,
         boundary;
     while (fiber) {
@@ -90,7 +84,8 @@ function findCatchComponent(fiber, names) {
                     boundary = fiber;
                 } else if (fiber.hasCatch) {
                     //防止被去重
-                    retry = Object.assign({},fiber);
+                    retry = Object.assign({}, fiber);
+
                     retry.effectTag = DETACH;
                     retry.disposed = true;
                 }
@@ -98,29 +93,31 @@ function findCatchComponent(fiber, names) {
         } else if (fiber.tag === 5) {
             names.push(name);
         }
-        if (fiber.return) {
-            fiber = fiber.return;
-        } else {
-            if (boundary) {
-                var boundaries = fiber.boundaries;
-                boundary._boundaries = boundaries;
-                boundary.effectTag *= CAPTURE;
-                boundaries.unshift(boundary);
-                if (retry && retry !== boundary) {
-                    let arr = boundary.effects || (boundary.effects = []);
-                    // console.log("push进effects",boundary.name, retry.name);
-                    arr.push(retry);
-                }
-            }
-            return fiber;
-        }
 
+        fiber = fiber.return;
+
+        if (boundary) {
+            let boundaries = Renderer.boundaries;
+            let stack = describeError(names, hook);
+            let values = boundary.capturedValues || (boundary.capturedValues = []);
+            values.push(error, {
+                componentStack: stack
+            });
+            boundary.hasError = true;
+            boundary.effectTag *= CAPTURE;
+            boundaries.unshift(boundary);
+            if (retry && retry !== boundary) {
+                let arr = boundary.effects || (boundary.effects = []);
+                arr.push(retry);
+            }
+            return boundary;
+        }
     }
 }
 
 export function removeFormBoundaries(fiber) {
-    var arr = fiber._boundaries;
-    delete fiber._boundaries;
+    delete fiber.hasError;
+    var arr = Renderer.boundaries;
     var index = arr.indexOf(fiber);
     if (index !== -1) {
         arr.splice(index, 1);
