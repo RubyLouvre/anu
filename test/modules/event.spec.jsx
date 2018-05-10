@@ -17,9 +17,11 @@ describe("事件系统模块", function() {
         div;
     beforeEach(function() {
         div = document.createElement("div");
+       
         body.appendChild(div);
     });
     afterEach(function() {
+        ReactDOM.unmountComponentAtNode(div)
         body.removeChild(div);
     });
     it("事件与样式", function() {
@@ -154,7 +156,7 @@ describe("事件系统模块", function() {
         function refFn(e) {
             logIndex++;
         }
-
+      
         var dom = ReactDOM.render(<input type="checkbox" onChange={refFn} />, div);
         await browser
             .click(dom)
