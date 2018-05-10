@@ -255,56 +255,78 @@
         log.push('BrokenComponentWillUnmount componentWillUnmount [!]');
         throw new Error(this.props.errorText);
       }
-    };
-    ReactDOM.render(
-			<ErrorBoundary>
-				<BrokenComponentWillUnmount />
-				<BrokenComponentWillUnmount  />
-				<Normal />
-			</ErrorBoundary>,
-			container
-		);
-// 移除，移除， 更新
-		log.length = 0;
+		};
+		
+	var	BrokenRenderErrorBoundary = class extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = { error: null };
+				log.push('BrokenRenderErrorBoundary constructor');
+			}
+			render() {
+				if (this.state.error) {
+					log.push('BrokenRenderErrorBoundary render error [!]');
+					throw new Error('Hello');
+				}
+				log.push('BrokenRenderErrorBoundary render success');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenRenderErrorBoundary componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenRenderErrorBoundary componentDidMount');
+			}
+			componentWillUnmount() {
+				log.push('BrokenRenderErrorBoundary componentWillUnmount');
+			}
+			componentDidCatch(error) {
+				log.push('BrokenRenderErrorBoundary componentDidCatch');
+				this.setState({ error });
+			}
+		};
 		ReactDOM.render(
 			<ErrorBoundary>
-				<BrokenComponentWillUnmount />
+				<RetryErrorBoundary>
+					<BrokenRender />
+				</RetryErrorBoundary>
 			</ErrorBoundary>,
 			container
 		);
-		expect(container.textContent).toBe('Caught an error: Hello.');
-		expect(log).toEqual([
-			'ErrorBoundary componentWillReceiveProps',
-			'ErrorBoundary componentWillUpdate',
+		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
+
+		let official = [
+			'ErrorBoundary constructor',
+			'ErrorBoundary componentWillMount',
 			'ErrorBoundary render success',
-			// Update existing child:
-			'BrokenComponentWillUnmount componentWillReceiveProps',
-			'BrokenComponentWillUnmount componentWillUpdate',
-			'BrokenComponentWillUnmount render',
-			// Unmounting throws:
-			'BrokenComponentWillUnmount componentWillUnmount [!]',//移除后面的组件出错
-			// Fiber proceeds with lifecycles despite errors
-			'Normal componentWillUnmount',
-			// The components have updated in this phase
-			'BrokenComponentWillUnmount componentDidUpdate',
-			'ErrorBoundary componentDidUpdate',
-			// Now that commit phase is done, Fiber unmounts the boundary's children
-			'BrokenComponentWillUnmount componentWillUnmount [!]',
+			'RetryErrorBoundary constructor',
+			'RetryErrorBoundary componentWillMount',
+			'RetryErrorBoundary render',
+			'BrokenRender constructor',
+			'BrokenRender componentWillMount',
+			'BrokenRender render [!]',
+			// In Fiber, failed error boundaries render null before attempting to recover
+			'RetryErrorBoundary componentDidMount',
+			'RetryErrorBoundary componentDidCatch [!]',
+			'ErrorBoundary componentDidMount',
+			// Retry
+			'RetryErrorBoundary render',
+			'BrokenRender constructor',
+			'BrokenRender componentWillMount',
+			'BrokenRender render [!]',
+			// This time, the error propagates to the higher boundary
+			'RetryErrorBoundary componentWillUnmount',
 			'ErrorBoundary componentDidCatch',
-			// The initial render was aborted, so
-			// Fiber retries from the root.
+			// Render the error
 			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary componentDidUpdate',
-			// The second willUnmount error should be captured and logged, too.
-			'ErrorBoundary componentDidCatch',
-			'ErrorBoundary componentWillUpdate',
-			// Render an error now (stack will do it later)
 			'ErrorBoundary render error',
-			// Attempt to unmount previous child:
-			// Done
 			'ErrorBoundary componentDidUpdate',
-		]);
-	
+		];
+		expect(log).toEqual(official);
+
+		log.length = 0;
+		ReactDOM.unmountComponentAtNode(container);
+		expect(log).toEqual(['ErrorBoundary componentWillUnmount']);
     </script>
 
 
