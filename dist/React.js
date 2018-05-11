@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-10
+ * by 司徒正美 Copyright 2018-05-11
  * IE9+
  */
 
@@ -1009,7 +1009,21 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-createHandle("change");
+var rselect = /select/;
+var input2change = /text|password|search/;
+if (!document["__input"]) {
+    globalEvents.input = document["__input"] = true;
+    addEvent(document, "input", function (e) {
+        var dom = e.target || e.srcElement;
+        if (input2change.test(dom.type)) {
+            dispatchEvent(e, "change");
+        }
+        if (rselect.test(dom.type)) {
+            dom._persistValue = dom.value;
+        }
+        dispatchEvent(e);
+    });
+}
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1034,11 +1048,6 @@ eventPropHooks.wheel = function (event) {
     event.deltaY = "deltaY" in event ? event.deltaY :
     "wheelDeltaY" in event ? -event.wheelDeltaY :
     "wheelDelta" in event ? -event.wheelDelta : 0;
-};
-eventHooks.changecapture = eventHooks.change = function (dom) {
-    if (/text|password|search/.test(dom.type)) {
-        addEvent(document, "input", specialHandles.change);
-    }
 };
 var focusMap = {
     focus: "focus",

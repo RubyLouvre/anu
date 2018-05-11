@@ -1,7 +1,6 @@
 import { document, modern, contains } from "./browser";
 import { isFn, noop, toLowerCase } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
-import { AnuPortal } from "react-core/createPortal";
 
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -50,7 +49,8 @@ export function dispatchEvent(e, type, endpoint) {
     if (hook && false === hook(e)) {
         return;
     }
-    Renderer.batchedUpdates(function() {
+
+    Renderer.batchedUpdates(function () {
         let paths = collectPaths(e.target, terminal, {});
         let captured = bubble + "capture";
         triggerEventFlow(paths, captured, e);
@@ -60,7 +60,7 @@ export function dispatchEvent(e, type, endpoint) {
         }
     });
 
-    Renderer.controlledCbs.forEach(function(el) {
+    Renderer.controlledCbs.forEach(function (el) {
         if (el.stateNode) {
             el.controlledCb({
                 target: el.stateNode,
@@ -68,6 +68,7 @@ export function dispatchEvent(e, type, endpoint) {
         }
     });
     Renderer.controlledCbs.length = 0;
+
 }
 
 let nodeID = 1;
@@ -107,7 +108,7 @@ function collectPaths(begin, end, unique) {
 }
 
 function triggerEventFlow(paths, prop, e) {
-    for (let i = paths.length; i--; ) {
+    for (let i = paths.length; i--;) {
         let path = paths[i];
         let fn = path.events[prop];
         if (isFn(fn)) {
@@ -161,25 +162,25 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
-String("load,error").replace(/\w+/g, function(name) {
-    eventHooks[name] = function(dom, type) {
+String("load,error").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
         let mark = "__" + type;
 
         if (!dom[mark]) {
             dom[mark] = true;
-            addEvent(dom, type, function(e) {
+            addEvent(dom, type, function (e) {
                 dispatchEvent(e, type);
             });
         }
     };
 });
-String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
-    eventHooks[name] = function(dom, type) {
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
         let mark = "__" + type;
         if (!dom[mark]) {
             dom[mark] = true;
             let mask = type === "mouseenter" ? "mouseover" : "mouseout";
-            addEvent(dom, mask, function(e) {
+            addEvent(dom, mask, function (e) {
                 let t = getRelatedTarget(e);
                 if (!t || (t !== dom && !contains(dom, t))) {
                     let common = getLowestCommonAncestor(dom, t);
@@ -190,6 +191,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
         }
     };
 });
+
 
 function getLowestCommonAncestor(instA, instB) {
     let depthA = 0;
@@ -227,15 +229,32 @@ function getLowestCommonAncestor(instA, instB) {
 
 let specialHandles = {};
 export function createHandle(name, fn) {
-    return (specialHandles[name] = function(e) {
+    return (specialHandles[name] = function (e) {
         if (fn && fn(e) === false) {
             return;
         }
         dispatchEvent(e, name);
     });
 }
+const rselect = /select/;
+const input2change = /text|password|search/;
+//react中，text,textarea,password元素的change事件实质上是input事件
+//https://segmentfault.com/a/1190000008023476
+if (!document["__input"]) {
+    globalEvents.input = document["__input"] = true;
+    addEvent(document, "input", function (e) {
+        var dom = e.target || e.srcElement;
+        if (input2change.test(dom.type)) {
+            dispatchEvent(e, "change");
+        }
+        if (rselect.test(dom.type)) {
+            dom._persistValue = dom.value;
+        }
+        
+        dispatchEvent(e);
+    });
+}
 
-createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -244,48 +263,41 @@ globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 
 if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = function(dom) {
+    eventHooks.click = eventHooks.clickcapture = function (dom) {
         dom.onclick = dom.onclick || noop;
     };
 }
 
-eventPropHooks.click = function(e) {
+eventPropHooks.click = function (e) {
     return !e.target.disabled;
 };
 
 const fixWheelType =
-	document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
-eventHooks.wheel = function(dom) {
+    document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
+eventHooks.wheel = function (dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 
-eventPropHooks.wheel = function(event) {
+eventPropHooks.wheel = function (event) {
     event.deltaX =
-		"deltaX" in event
-		    ? event.deltaX
-		    : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
-			  "wheelDeltaX" in event
-		        ? -event.wheelDeltaX
-		        : 0;
+        "deltaX" in event
+            ? event.deltaX
+            : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
+            "wheelDeltaX" in event
+                ? -event.wheelDeltaX
+                : 0;
     event.deltaY =
-		"deltaY" in event
-		    ? event.deltaY
-		    : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
-			  "wheelDeltaY" in event
-		        ? -event.wheelDeltaY
-		        : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
-				  "wheelDelta" in event
-		            ? -event.wheelDelta
-		            : 0;
+        "deltaY" in event
+            ? event.deltaY
+            : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
+            "wheelDeltaY" in event
+                ? -event.wheelDeltaY
+                : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
+                "wheelDelta" in event
+                    ? -event.wheelDelta
+                    : 0;
 };
 
-//react将text,textarea,password元素中的onChange事件当成onInput事件
-//https://segmentfault.com/a/1190000008023476
-eventHooks.changecapture = eventHooks.change = function(dom) {
-    if (/text|password|search/.test(dom.type)) {
-        addEvent(document, "input", specialHandles.change);
-    }
-};
 export let focusMap = {
     focus: "focus",
     blur: "blur",
@@ -315,7 +327,7 @@ function blurFocus(e) {
     } while ((dom = dom.parentNode));
 }
 
-"blur,focus".replace(/\w+/g, function(type) {
+"blur,focus".replace(/\w+/g, function (type) {
     globalEvents[type] = true;
     if (modern) {
         let mark = "__" + type;
@@ -324,17 +336,17 @@ function blurFocus(e) {
             addEvent(document, type, blurFocus, true);
         }
     } else {
-        eventHooks[type] = function(dom, name) {
+        eventHooks[type] = function (dom, name) {
             addEvent(dom, focusMap[name], blurFocus);
         };
     }
 });
 
-eventHooks.scroll = function(dom, name) {
+eventHooks.scroll = function (dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
-eventHooks.doubleclick = function(dom, name) {
+eventHooks.doubleclick = function (dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };
 
@@ -359,25 +371,25 @@ let eventProto = (SyntheticEvent.prototype = {
     fixEvent: noop, //留给以后扩展用
     fixHooks: noop,
     persist: noop,
-    preventDefault: function() {
+    preventDefault: function () {
         let e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
         if (e.preventDefault) {
             e.preventDefault();
         }
     },
-    stopPropagation: function() {
+    stopPropagation: function () {
         let e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;
         if (e.stopPropagation) {
             e.stopPropagation();
         }
     },
-    stopImmediatePropagation: function() {
+    stopImmediatePropagation: function () {
         this.stopPropagation();
         this.stopImmediate = true;
     },
-    toString: function() {
+    toString: function () {
         return "[object Event]";
     },
 });

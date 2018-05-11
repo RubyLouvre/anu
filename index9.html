@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-     <!-- <script type='text/javascript' src="./react.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -75,107 +75,84 @@ function dispatchEventOnNode(node, type) {
 		b()
 	}
 
-  it('should properly control a value even if no event listener exists', () => {
+ it('should properly control a value even if no event listener exists', () => {
     const container = document.createElement('div');
     let stub;
+	document.body.appendChild(container);
+  
+      stub = ReactDOM.render(<input type="text" value="lion" onInput={
+		  ()=>{
+			  console.log("***")
+		  }
+	  } />, container);
+  
 
-    expect(() => {
-      stub = ReactDOM.render(<input type="text" value="lion" />, container);
-    }).toWarnDev(
-      'Failed prop type: You provided a `value` prop to a form field without an `onChange` handler.',
-    );
+   
+ 
+   
+  });
+  it('should allow controlling `value` in a nested render', () => {
+    let selectNode;
+
+    class Parent extends React.Component {
+      state = {
+        value: 'giraffe',
+      };
+
+      componentDidMount() {
+        this._renderNested();
+      }
+
+      componentDidUpdate() {
+        this._renderNested();
+      }
+
+      _handleChange(event) {
+        this.setState({value: event.target.value});
+      }
+
+      _renderNested() {
+        ReactDOM.render(
+          <select
+            onChange={this._handleChange.bind(this)}
+            ref={n => (selectNode = n)}
+            value={this.state.value}>
+            <option value="monkey">A monkey!</option>
+            <option value="giraffe">A giraffe!</option>
+            <option value="gorilla">A gorilla!</option>
+          </select>,
+          this._nestingContainer,
+        );
+      }
+
+      render() {
+        return <div ref={n => (this._nestingContainer = n)} />;
+      }
+    }
+
+    const container = document.createElement('div');
 
     document.body.appendChild(container);
 
-    const node = ReactDOM.findDOMNode(stub);
+    ReactDOM.render(<Parent />, container);
+//ref问题
+    expect(selectNode.value).toBe('giraffe');
+    console.log("==============")
+    selectNode.value = 'gorilla';
 
-    setUntrackedValue.call(node, 'giraffe');
+   /* let nativeEvent = document.createEvent('Event');
+    nativeEvent.initEvent('input', true, true);
+    selectNode.dispatchEvent(nativeEvent);
 
-    // This must use the native event dispatching. If we simulate, we will
-    // bypass the lazy event attachment system so we won't actually test this.
-    dispatchEventOnNode(node, 'change');
+    expect(selectNode.value).toEqual('gorilla');
+*/
+    nativeEvent = document.createEvent('Event');
+    nativeEvent.initEvent('change', true, true);
+    selectNode.dispatchEvent(nativeEvent);
 
-    expect(node.value).toBe('lion');
+    expect(selectNode.value).toEqual('gorilla');
 
-    document.body.removeChild(container);
-  });
-
-
-
-  it('treats initial function value as an empty string', function () {
-    const container = document.createElement('div');
-
-    ReactDOM.render(
-      <input value={() => { }} onChange={() => { }} />,
-      container,
-    )
-
-    const node = container.firstChild;
-
-    expect(node.value).toBe('');
-    expect(node.getAttribute('value')).toBe('');
-  });
-
-  it('treats updated function value as an empty string', function () {
-    const container = document.createElement('div');
-    ReactDOM.render(<input value="foo" onChange={() => { }} />, container);
-    expect(() =>
-      ReactDOM.render(
-        <input value={() => { }} onChange={() => { }} />,
-        container,
-      ),
-    ).toWarnDev('Invalid value for prop `value`');
-    const node = container.firstChild;
-
-    expect(node.value).toBe('');
-    expect(node.getAttribute('value')).toBe('');
-  });
-
-  it('treats initial function defaultValue as an empty string', function () {
-    const container = document.createElement('div');
-    ReactDOM.render(<input defaultValue={() => { }} />, container);
-    const node = container.firstChild;
-
-    expect(node.value).toBe('');
-    expect(node.getAttribute('value')).toBe('');
-    // TODO: we should warn here.
-  });
-
-  it('treats updated function defaultValue as an empty string', function () {
-    const container = document.createElement('div');
-    ReactDOM.render(<input defaultValue="foo" />, container);
-    ReactDOM.render(<input defaultValue={() => { }} />, container);
-    const node = container.firstChild;
-
-    expect(node.value).toBe('foo');
-    expect(node.getAttribute('value')).toBe('');
-    // TODO: we should warn here.
-  });
-
-  // In absence of a value, radio and checkboxes report a value of "on".
-  // Between 16 and 16.2, we assigned a node's value to it's current
-  // value in order to "dettach" it from defaultValue. This had the unfortunate
-  // side-effect of assigning value="on" to radio and checkboxes
-  it('does not add "on" in absence of value on a checkbox', function () {
-    const container = document.createElement('div');
-    ReactDOM.render(
-      <input type="checkbox" defaultChecked={true} />,
-      container,
-    );
-    const node = container.firstChild;
-
-    expect(node.value).toBe('on');
-    expect(node.hasAttribute('value')).toBe(false);
-  });
-
-  it('does not add "on" in absence of value on a radio', function () {
-    const container = document.createElement('div');
-    ReactDOM.render(<input type="radio" defaultChecked={true} />, container);
-    const node = container.firstChild;
-
-    expect(node.value).toBe('on');
-    expect(node.hasAttribute('value')).toBe(false);
-    ReactDOM.unmountComponentAtNode(container)
+  //  document.body.removeChild(container);
   });
 
 
@@ -185,12 +162,15 @@ function dispatchEventOnNode(node, type) {
     document.body.appendChild(container)
     var logIndex = 0;
     function refFn(e) {
-      logIndex++;
+	  logIndex++;
+	  console.log("==========")
     }
 
     var dom = ReactDOM.render(<input className={new Date+""} type="checkbox" onChange={refFn} />, container);
+    dom = ReactDOM.render(<input className={new Date+""} type="checkbox" onChange={refFn} />, container);
+
 	console.log("click......")
-	dom.click()
+    dom.click()
     expect(logIndex).toBe(1)
     console.log("-------END-------------",dom)
    // ReactDOM.unmountComponentAtNode(container)

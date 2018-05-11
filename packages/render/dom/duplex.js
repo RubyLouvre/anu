@@ -33,16 +33,16 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     let isControlled = !!six;
     let isSelect = fiber.type === "select";
     let value = nextProps[name];
-    
-    if(!isSelect){
-        if(name.indexOf("alue") !== -1){
+
+    if (!isSelect) {
+        if (name.indexOf("alue") !== -1) {
             var canSetVal = true;
             value = toString(value);
-        }else{
+        } else {
             value = !!value;
         }
     }
-    let multipleChange = isControlled  || (isSelect && nextProps.multiple != lastProps.multiple);
+    let multipleChange = isControlled || (isSelect && nextProps.multiple != lastProps.multiple);
     if (multipleChange || lastProps === emptyObject) {
         dom._persistValue = value;//非受控的情况下只更新一次，除非multiple发生变化
         syncValue({ target: dom }); //set value/checked
@@ -65,13 +65,13 @@ function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
     }
     //设置默认值
     if (canSetVal) {
-        if(rchecked.test(dom.type)  ){
-            value = "value" in nextProps ? nextProps.value: "on";
+        if (rchecked.test(dom.type)) {
+            value = "value" in nextProps ? nextProps.value : "on";
         }
         dom.__anuSetValue = true;
-        if(dom.type === "textarea"){
+        if (dom.type === "textarea") {
             dom.defaultValue = value;
-        }else{
+        } else {
             dom.setAttribute("value", value);
         }
         dom.__anuSetValue = false;
@@ -92,9 +92,8 @@ function syncOptions(e) {
 
 function syncValue({ target: dom }) {
     let name = rchecked.test(dom.type) ? "checked" : "value";
-   
     let value = dom._persistValue;
-    if (dom[name]+"" !== value + "") { //全部转数字再比较
+    if (dom[name] + "" !== value + "") { //全部转数字再比较
         dom.__anuSetValue = true;//抑制onpropertychange
         dom[name] = value;
         dom.__anuSetValue = false;
@@ -112,7 +111,7 @@ var duplexData = {
 function toString(a) {
     var t = typeNumber(a);
     if (t < 2 || t > 4) {
-        if (t === 8 && a.hasOwnProperty("toString")){
+        if (t === 8 && a.hasOwnProperty("toString")) {
             return a.toString();
         }
         return "";
