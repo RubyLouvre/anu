@@ -2,7 +2,7 @@ import { diffProps } from "./props";
 import { document, NAMESPACE, contains } from "./browser";
 import { get, extend, emptyObject, topNodes, topFibers } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
-import { render, createContainer } from "react-fiber/diff";
+import { render, createContainer } from "react-fiber/scheduleWork";
 //import { contextStack } from 'react-fiber/util';
 
 export function createElement(vnode) {

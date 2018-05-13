@@ -17,7 +17,7 @@ import { fakeObject } from "react-core/Component";
 import { returnFalse, effects, arrayPush, emptyObject } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
 import { Refs } from "./Refs";
-export function commitEffects() {
+export function commitWork() {
     Renderer.batchedUpdates(function () {
         commitPlaceEffects(effects);
         var tasks = effects,

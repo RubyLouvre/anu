@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-11
+ * by 司徒正美 Copyright 2018-05-13
  * IE9+
  */
 
@@ -1084,9 +1084,10 @@ function callUnsafeHook(a, b, c) {
     applyCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
-    if (a.type === b.type && a.key === b.key) {
-        return true;
-    }
+    if (a.type === b.type && a.key === b.key
+                                                                              ) {
+            return true;
+        }
 }
 function setStateByProps(instance, fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
@@ -1172,6 +1173,7 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(_oldFiber, effects$$1);
             }
+            _newFiber.effectTag = NOWORK;
         } else {
             _newFiber = new Fiber(_newFiber);
         }
@@ -1197,7 +1199,7 @@ function diffChildren(parentFiber, children) {
 }
 Renderer.diffChildren = diffChildren;
 
-function collectEffects(fiber, updateFail, isTop) {
+function collectWork(fiber, updateFail, isTop) {
     if (!fiber) {
         return [];
     }
@@ -1243,10 +1245,10 @@ function collectEffects(fiber, updateFail, isTop) {
                 }
             } else {
                 delete child.updateFail;
-                arrayPush.apply(effects$$1, collectEffects(child, true));
+                arrayPush.apply(effects$$1, collectWork(child, true));
             }
         } else {
-            arrayPush.apply(effects$$1, collectEffects(child));
+            arrayPush.apply(effects$$1, collectWork(child));
         }
         if (child.effectTag) {
             effects$$1.push(child);
@@ -1319,7 +1321,7 @@ var refStrategy = {
     }
 };
 
-function commitEffects() {
+function commitWork() {
     Renderer.batchedUpdates(function () {
         commitPlaceEffects(effects);
         var tasks = effects,
@@ -1556,13 +1558,13 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-        arrayPush.apply(effects, collectEffects(topWork, null, true));
+        arrayPush.apply(effects, collectWork(topWork, null, true));
         effects.push(topWork);
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline);
         } else {
             resetStack(info);
-            commitEffects();
+            commitWork();
         }
     }
 }

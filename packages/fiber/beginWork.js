@@ -5,7 +5,7 @@ import { AnuPortal } from "react-core/createPortal";
 import { Renderer } from "react-core/createRenderer";
 import { createInstance, UpdateQueue } from "./createInstance";
 import { Fiber } from "./Fiber";
-import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK } from "./effectTag";
+import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK, NOWORK } from "./effectTag";
 import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
 
 
@@ -370,6 +370,7 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(oldFiber, effects);
             }
+            newFiber.effectTag = NOWORK;
         } else {
             newFiber = new Fiber(newFiber);
         }

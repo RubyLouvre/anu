@@ -17,7 +17,7 @@ import { removeFormBoundaries } from "./ErrorBoundary";
  */
 
 
-export function collectEffects(fiber, updateFail, isTop) {
+export function collectWork(fiber, updateFail, isTop) {
     if (!fiber) {
         return [];
     }
@@ -69,10 +69,10 @@ export function collectEffects(fiber, updateFail, isTop) {
             } else {
                 //只有组件虚拟DOM才有钩子
                 delete child.updateFail;
-                arrayPush.apply(effects, collectEffects(child, true));
+                arrayPush.apply(effects, collectWork(child, true));
             }
         } else {
-            arrayPush.apply(effects, collectEffects(child));
+            arrayPush.apply(effects, collectWork(child));
         }
         if (child.effectTag) {
             //updateFail也会执行REF与CALLBACK

@@ -1,6 +1,6 @@
 import { noop, topNodes, topFibers } from "react-core/util";
 import { createRenderer } from "react-core/createRenderer";
-import { render } from "react-fiber/diff";
+import { render } from "react-fiber/scheduleWork";
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {

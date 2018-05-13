@@ -1,6 +1,6 @@
 import { updateEffects } from "./beginWork";
-import { collectEffects } from "./collectWork";
-import { commitEffects } from "./commitWork";
+import { collectWork } from "./collectWork";
+import { commitWork } from "./commitWork";
 import { Renderer } from "react-core/createRenderer";
 import { effects, isMounted, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
@@ -135,14 +135,14 @@ function workLoop(deadline) {
             fiber = updateEffects(fiber, topWork, info);
         }
 
-        arrayPush.apply(effects, collectEffects(topWork, null, true));
+        arrayPush.apply(effects, collectWork(topWork, null, true));
         effects.push(topWork);
 
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
             resetStack(info);
-            commitEffects(); //执行任务
+            commitWork(); //执行任务
         }
     }
 }
