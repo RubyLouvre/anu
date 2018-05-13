@@ -271,7 +271,8 @@ function callUnsafeHook(a, b, c) {
 }
 
 function isSameNode(a, b) {
-    if (a.type === b.type && a.key === b.key) {
+    if (a.type === b.type && a.key === b.key /*&& (a.type !=="input" || a.tag !== 5 || 
+a.props.type === b.props.type) */) {
         return true;
     }
 }
