@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-05-10
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-05-13
  */
 
 (function (global, factory) {
@@ -2973,7 +2973,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.3.3",
+        version: "1.3.4",
         render: render,
         hydrate: render,
         Fragment: Fragment,
