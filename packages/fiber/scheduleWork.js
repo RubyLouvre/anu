@@ -236,9 +236,7 @@ function pushChildQueue(fiber, queue) {
 
 function updateComponent(instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
-    if (fiber.parent) {
-        fiber.parent.insertPoint = fiber.insertPoint;
-    }
+    fiber.dirty = true;
     let sn = typeNumber(state);
     let isForced = state === true;
     let microtasks = getQueue(fiber);

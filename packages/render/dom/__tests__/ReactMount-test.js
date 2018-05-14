@@ -506,7 +506,46 @@ describe('ReactMount', () => {
     s.setState({ a: 0 });
     expect(container.textContent).toBe("321");
     ReactDOM.unmountComponentAtNode(container);
-    
+
 
   });
+  it("同一个元素节点中两个组件更新", () => {
+    const container = document.createElement('container');
+
+    var values = [111, 222, 333, 444]
+    class App extends React.Component {
+      state = {
+        text: 111
+      }
+      render() {
+
+        return <div ref="div"><TextArea id="text1" value={values.shift()} /><div id="div">{this.state.text}</div>
+          <TextArea id="text2" value={values.shift()} /></div>
+      }
+    }
+    class TextArea extends React.Component {
+      state = {
+        text: 222
+      }
+      componentDidMount() {
+
+        this.setState({
+          text: 222
+        })
+      }
+      render() {
+
+        return <textarea id={this.props.id} value={this.props.value}></textarea>
+      }
+    }
+
+
+
+    var instance = ReactDOM.render(<App id="app" />, container);
+
+    expect(Array.from(instance.refs.div.children).map(function (el) {
+      return el.id
+    })).toEqual(["text1", "div", "text2"])
+
+  })
 });

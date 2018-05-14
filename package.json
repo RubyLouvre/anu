@@ -8,7 +8,9 @@
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "devtools": "rollup -c ./scripts/build/rollup.tools.js",
     "webpack": "^1.14.0",
-    "sync": "node ./script/build/sync.js"
+    "sync": "node ./scripts/build/sync.js",
+    "sync2": "node ./scripts/build/shim.script.js"
+
   },
   "repository": {
     "type": "git",

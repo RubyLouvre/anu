@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-13
+ * by 司徒正美 Copyright 2018-05-14
  * IE9+
  */
 
@@ -2112,6 +2112,12 @@ function collectWork(fiber, updateFail, isTop) {
     if (isTop && fiber.tag == 5) {
         fiber.stateNode.insertPoint = null;
     }
+    if (fiber.dirty) {
+        delete fiber.dirty;
+        if (fiber.parent) {
+            fiber.parent.insertPoint = fiber.insertPoint;
+        }
+    }
     var c = fiber.children || {};
     for (var i in c) {
         var child = c[i];
@@ -2532,9 +2538,7 @@ function pushChildQueue(fiber, queue) {
 }
 function updateComponent(instance, state, callback, immediateUpdate) {
     var fiber = get(instance);
-    if (fiber.parent) {
-        fiber.parent.insertPoint = fiber.insertPoint;
-    }
+    fiber.dirty = true;
     var sn = typeNumber(state);
     var isForced = state === true;
     var microtasks = getQueue(fiber);
