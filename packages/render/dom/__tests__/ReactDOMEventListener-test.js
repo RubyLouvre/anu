@@ -333,11 +333,9 @@ describe('ReactDOMEventListener', () => {
         }
 
         onFocus1() {
-          console.log("focus 1")
           aaa += "aaa ";
         }
         onFocus2(e) {
-          console.log("focus 2")
           aaa += "bbb ";
         }
 
@@ -368,7 +366,6 @@ describe('ReactDOMEventListener', () => {
 
       var s = ReactDOM.render(<App />, container);
       s.refs.focus2.focus()
-      console.log("得到焦点")
       expect(aaa.trim()).toBe("aaa bbb");
       ReactDOM.unmountComponentAtNode(container);
     });
