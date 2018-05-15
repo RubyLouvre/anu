@@ -37,14 +37,15 @@ export function createContext(defaultValue, calculateChangedBits) {
         Component.call(this, props, context);
         this.emitter = createEventEmitter(props.value);
     }
-    Provider.childContextTypes = {
-        [contextProp]: PropTypes.object.isRequired
-    };
+    function create(obj, value) {
+        obj[contextProp] = value;
+        return obj;
+    }
+    Provider.childContextTypes = create({}, PropTypes.object.isRequired);
+
     let fn = inherit(Provider, Component);
     fn.getChildContext = function () {
-        return {
-            [contextProp]: this.emitter
-        };
+        return create({}, this.emitter);
     };
     fn.componentWillReceiveProps = function (nextProps) {
         if (this.props.value !== nextProps.value) {
@@ -84,9 +85,7 @@ export function createContext(defaultValue, calculateChangedBits) {
             }
         };
     }
-    Consumer.contextTypes = {
-        [contextProp]: PropTypes.object
-    };
+    Consumer.contextTypes = create({}, PropTypes.object);
     let fn2 = inherit(Consumer, Component);
     fn2.componentWillReceiveProps = function (nextProps) {
         let { observedBits } = nextProps;

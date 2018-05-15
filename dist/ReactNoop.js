@@ -530,7 +530,6 @@ function createPortal(children, parent) {
     return child;
 }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 var uuid = 1;
 function gud() {
     return uuid++;
@@ -564,10 +563,14 @@ function createContext(defaultValue, calculateChangedBits) {
         Component.call(this, props, context);
         this.emitter = createEventEmitter(props.value);
     }
-    Provider.childContextTypes = _defineProperty({}, contextProp, PropTypes.object.isRequired);
+    function create(obj, value) {
+        obj[contextProp] = value;
+        return obj;
+    }
+    Provider.childContextTypes = create({}, PropTypes.object.isRequired);
     var fn = inherit(Provider, Component);
     fn.getChildContext = function () {
-        return _defineProperty({}, contextProp, this.emitter);
+        return create({}, this.emitter);
     };
     fn.componentWillReceiveProps = function (nextProps) {
         if (this.props.value !== nextProps.value) {
@@ -602,7 +605,7 @@ function createContext(defaultValue, calculateChangedBits) {
             }
         };
     }
-    Consumer.contextTypes = _defineProperty({}, contextProp, PropTypes.object);
+    Consumer.contextTypes = create({}, PropTypes.object);
     var fn2 = inherit(Consumer, Component);
     fn2.componentWillReceiveProps = function (nextProps) {
         var observedBits = nextProps.observedBits;
