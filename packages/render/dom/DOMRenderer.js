@@ -157,7 +157,7 @@ function isTextContainer(fiber) {
     }
 }
 //其他Renderer也要实现这些方法
-render.boundaries = Renderer.boundaries;
+render.Render = Renderer;
 export let DOMRenderer = createRenderer({
     render,
     updateAttribute(fiber) {

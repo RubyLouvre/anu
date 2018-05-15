@@ -746,7 +746,9 @@ var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, C
 var effectLength = effectNames.length;
 
 function pushError(fiber, hook, error) {
-    var boundary = findCatchComponent(fiber, hook, error);
+    var names = [];
+    var boundary = findCatchComponent(fiber, names);
+    var stack = describeError(names, hook);
     if (boundary) {
         fiber.effectTag = NOWORK;
         if (fiber.hasMounted) {
@@ -755,6 +757,10 @@ function pushError(fiber, hook, error) {
                 updater: fakeObject
             };
         }
+        var values = boundary.capturedValues || (boundary.capturedValues = []);
+        values.push(error, {
+            componentStack: stack
+        });
     } else {
         var p = fiber.return;
         for (var i in p.children) {
@@ -767,6 +773,7 @@ function pushError(fiber, hook, error) {
             p = p.return;
         }
         if (!Renderer.catchError) {
+            Renderer.catchStack = stack;
             Renderer.catchError = error;
         }
     }
@@ -799,10 +806,9 @@ function describeError(names, hook) {
     });
     return segments.join("\n").trim();
 }
-function findCatchComponent(fiber, hook, error) {
+function findCatchComponent(fiber, names) {
     var instance = void 0,
         name = void 0,
-        names = [],
         topFiber = fiber,
         retry = void 0,
         boundary = void 0;
@@ -826,11 +832,6 @@ function findCatchComponent(fiber, hook, error) {
         fiber = fiber.return;
         if (boundary) {
             var boundaries = Renderer.boundaries;
-            var stack = describeError(names, hook);
-            var values = boundary.capturedValues || (boundary.capturedValues = []);
-            values.push(error, {
-                componentStack: stack
-            });
             boundary.hasError = true;
             boundary.effectTag *= CAPTURE;
             boundaries.unshift(boundary);

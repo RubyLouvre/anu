@@ -4,7 +4,9 @@ import { fakeObject } from "react-core/Component";
 import { NOWORK, CAPTURE, DETACH, NULLREF } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
-    let boundary = findCatchComponent(fiber, hook, error);
+    let names = [];
+    let boundary = findCatchComponent(fiber, names);
+    let stack = describeError(names, hook);
     if (boundary) {
         fiber.effectTag = NOWORK;
         // let inst = fiber.stateNode;
@@ -15,7 +17,11 @@ export function pushError(fiber, hook, error) {
                 updater: fakeObject,
             };
         }
-
+      
+        let values = boundary.capturedValues || (boundary.capturedValues = []);
+        values.push(error, {
+            componentStack: stack
+        });
     } else {
         let p = fiber.return;
         for (let i in p.children) {
@@ -27,7 +33,9 @@ export function pushError(fiber, hook, error) {
             p._hydrating = false;
             p = p.return;
         }
+        
         if (!Renderer.catchError) {
+            Renderer.catchStack = stack;
             Renderer.catchError = error;
         }
     }
@@ -66,10 +74,9 @@ function describeError(names, hook) {
 }
 
 
-function findCatchComponent(fiber, hook, error) {
+function findCatchComponent(fiber, names) {
     let instance,
         name,
-        names = [],
         topFiber = fiber, retry,
         boundary;
     while (fiber) {
@@ -97,11 +104,6 @@ function findCatchComponent(fiber, hook, error) {
 
         if (boundary) {
             let boundaries = Renderer.boundaries;
-            let stack = describeError(names, hook);
-            let values = boundary.capturedValues || (boundary.capturedValues = []);
-            values.push(error, {
-                componentStack: stack
-            });
             boundary.hasError = true;
             boundary.effectTag *= CAPTURE;
             boundaries.unshift(boundary);

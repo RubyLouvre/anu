@@ -28,7 +28,6 @@ export function commitWork() {
     });
 
     let error = Renderer.catchError;
-
     if (error) {
         delete Renderer.catchError;
         throw error;

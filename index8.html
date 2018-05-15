@@ -23,7 +23,28 @@
     </div>
     <script type='text/babel'>
           var container = document.getElementById("root")
-          var PropTypes = React.PropTypes
+          let check = function () {
+    return check;
+};
+check.isRequired = check;
+ let PropTypes = {
+    array: check,
+    bool: check,
+    func: check,
+    number: check,
+    object: check,
+    string: check,
+    any: check,
+    arrayOf: check,
+    element: check,
+    instanceOf: check,
+    node: check,
+    objectOf: check,
+    oneOf: check,
+    oneOfType: check,
+    shape: check
+};
+
           if (!window.ReactDOM) {
               window.ReactDOM = React;
           }
@@ -43,90 +64,54 @@
                   }
               };
          }; 
-         const styles = {
-          fontFamily: "sans-serif",
-          textAlign: "center"
-        };
-      function Hello({ name }){
-         return  <h1>Hello {name}!</h1>;
-      }
+ 
+      
+        class App extends React.Component{
+          state = {
+            text: 111
+          }
+          getChildContext(){
+            return {
+              table: {
+                title: "xxxx"
+              }
+            }
+          }
+          static childContextTypes = {
+            table: function(){
+              return null
+            }
+          }
+          render(){
+            return <div><Head className="xxx" /></div>
+          }
+        }
+
+        function Head(props, context){
+          console.log(props, context, "----")
+           return <div className={props.className}>{context.table.title}
+            <Footer />
+            </div>
+        }
+        Head.contextTypes = {
+          table:function(){
+              return null
+            }
+        }
+        function Foot(props, context){
+          console.log(props, context, "----")
+           return <p>{context.table.title} </p>
+        }
+        Head.contextTypes = {
+          table:function(){
+              return null
+            }
+        }
+     
+        
 
         
-        const A1 = () => {
-          return "A1~";
-        };
-        
-        class A2 extends React.Component {
-          constructor(props) {
-            super(props);
-            throw Error("I am mess");
-          }
-          componentDidMount() {}
-          render() {
-            return <h2> A2 </h2>;
-          }
-        }
-        class A extends React.Component {
-          // 这一段会使 A 及 之后的组件无法渲染
-          componentDidCatch(e) {
-            console.log("===")
-          }
-          render() {
-            return (
-              <div className="A">
-                <A1 />
-                <A2 />
-              </div>
-            );
-          }
-        }
-        const B1 = () => {
-          return "~B1";
-        };
-        
-        class B2 extends React.Component {
-          state = {
-            count: 1
-          };
-          componentDidMount() {
-            console.log(this.context, "XXX")
-            setInterval(() => {
-              this.setState({ count: this.state.count + 1 });
-            }, 2000);
-          }
-          render() {
-            return <h2> B2 {this.state.count}</h2>;
-          }
-        }
-        class B extends React.Component {
-          render() {
-            return (
-              <div className="B">
-                <B1 />
-                <B2 />
-              </div>
-            );
-          }
-        }
-        class Main extends React.Component {
-          render() {
-            return (
-              <div className="main">
-                <A /> <B />{" "}
-              </div>
-            );
-          }
-        }
-        
-        const App = () => (
-          <div style={styles}>
-            <Hello name="CodeSandbox" />
-            <h2>Start editing to see some magic happen {"\u2728"}</h2>
-            <Main />
-          </div>
-        );
-        
-        ReactDOM.render(<App />, document.getElementById("root"));
+      var a =  ReactDOM.render(<App id="app" />, document.getElementById("root"));
 
     </script>
 

@@ -4,9 +4,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/React.js"></script>
- <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
+ <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
+ <!-- <script type='text/javascript' src="./react.js"></script>-->
+			<script type='text/javascript' src="./react-dom.js"></script>
+	<script type='text/javascript' src="./lib/ReactProxy.js"></script>
+
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -47,150 +49,36 @@
 				return 
 			}
 		}
-       var log = []
-		var BrokenComponentWillUnmount = class extends React.Component {
-			static defaultProps = {
-				errorText: 'Hello',
-			};
-			constructor(props) {
-				super(props);
-				log.push('BrokenComponentWillUnmount constructor');
-			}
-			render() {
-				log.push('BrokenComponentWillUnmount render');
-				return <div>{this.props.children}</div>;
-			}
-			UNSAFE_componentWillMount() {
-				log.push('BrokenComponentWillUnmount componentWillMount');
-			}
-			componentDidMount() {
-				log.push('BrokenComponentWillUnmount componentDidMount');
-			}
-			UNSAFE_componentWillReceiveProps() {
-				log.push('BrokenComponentWillUnmount componentWillReceiveProps');
-			}
-			UNSAFE_componentWillUpdate() {
-				log.push('BrokenComponentWillUnmount componentWillUpdate');
-			}
-			componentDidUpdate() {
-				log.push('BrokenComponentWillUnmount componentDidUpdate');
-			}
-			componentWillUnmount() {
-				log.push('BrokenComponentWillUnmount componentWillUnmount [!]');
-				throw new Error(this.props.errorText);
-			}
-		};
-        var ErrorBoundary = class extends React.Component {
-			constructor(props) {
-				super(props);
-				this.state = { error: null };
-				log.push(`${this.props.logName} constructor`);
-			}
-			render() {
-				if (this.state.error && !this.props.forceRetry) {
-					log.push(`${this.props.logName} render error`);
-					return this.props.renderError(this.state.error, this.props);
-				}
-				log.push(`${this.props.logName} render success`);
-				return <div>{this.props.children}</div>;
-			}
-			componentDidCatch(error) {
-				log.push(`${this.props.logName} componentDidCatch`);
-				this.setState({ error });
-			}
-			UNSAFE_componentWillMount() {
-				log.push(`${this.props.logName} componentWillMount`);
-			}
-			componentDidMount() {
-				log.push(`${this.props.logName} componentDidMount`);
-			}
-			UNSAFE_componentWillReceiveProps() {
-				log.push(`${this.props.logName} componentWillReceiveProps`);
-			}
-			UNSAFE_componentWillUpdate() {
-				log.push(`${this.props.logName} componentWillUpdate`);
-			}
-			componentDidUpdate() {
-				log.push(`${this.props.logName} componentDidUpdate`);
-			}
-			componentWillUnmount() {
-				log.push(`${this.props.logName} componentWillUnmount`);
-			}
-		};
-		ErrorBoundary.defaultProps = {
-			logName: 'ErrorBoundary',
-			renderError(error, props) {
-				return <div ref={props.errorMessageRef}>Caught an error: {error.message}.</div>;
-			},
-        };
-        
-         function renderInnerError(error) {
-		  return <div>Caught an inner error: {error.message}.</div>;
-		}
-		function renderOuterError(error) {
-		  return <div>Caught an outer error: {error.message}.</div>;
-		}
-	
-		const container = document.createElement('div');
-		ReactDOM.render(
-		  <ErrorBoundary
-			logName="OuterErrorBoundary"
-			renderError={renderOuterError}>
-			<ErrorBoundary
-			  logName="InnerErrorBoundary"
-			  renderError={renderInnerError}>
-			  <BrokenComponentWillUnmount />
-			</ErrorBoundary>
-		  </ErrorBoundary>,
-		  container,
-		);
-	
-		log.length = 0;
-		ReactDOM.render(
-		  <ErrorBoundary
-			logName="OuterErrorBoundary"
-			renderError={renderOuterError}>
-			<ErrorBoundary
-			  logName="InnerErrorBoundary"
-			  renderError={renderInnerError}
-			/>
-		  </ErrorBoundary>,
-		  container,
-		);
-		expect(container.textContent).toBe('Caught an inner error: Hello.');
-		expect(log).toEqual([
-		  // Update outer boundary
-		  'OuterErrorBoundary componentWillReceiveProps',
-		  'OuterErrorBoundary componentWillUpdate',
-		  'OuterErrorBoundary render success',
-		  // Update inner boundary
-		  'InnerErrorBoundary componentWillReceiveProps',
-		  'InnerErrorBoundary componentWillUpdate',
-		  'InnerErrorBoundary render success',
-		  // Try unmounting child
-		  'BrokenComponentWillUnmount componentWillUnmount [!]',
-		  // Fiber proceeds with lifecycles despite errors
-		  // Inner and outer boundaries have updated in this phase
-		  'InnerErrorBoundary componentDidUpdate',
-		  'OuterErrorBoundary componentDidUpdate',
-		  // Now that commit phase is done, Fiber handles errors
-		  // Only inner boundary receives the error:
-		  'InnerErrorBoundary componentDidCatch',
-		  'InnerErrorBoundary componentWillUpdate',
-		  // Render an error now
-		  'InnerErrorBoundary render error',
-		  // In Fiber, this was a local update to the
-		  // inner boundary so only its hook fires
-		  'InnerErrorBoundary componentDidUpdate',
-		]);
-	
-		log.length = 0;
-		ReactDOM.unmountComponentAtNode(container);
-		expect(log).toEqual([
-		  'OuterErrorBoundary componentWillUnmount',
-		  'InnerErrorBoundary componentWillUnmount',
-		]);
+class ComponentVersion1 extends React.Component {
+  render() {
+    return <div>Before hot update.</div>;
+  }
+}
 
+class ComponentVersion2 extends React.Component {
+  render() {
+    return <div>After hot update!.</div>;
+  }
+}
+console.log(ReactProxy)
+const createProxy = ReactProxy["default"]
+// Create a proxy object, given the initial React component class.
+const proxy = createProxy(ComponentVersion1);
+
+// Obtain a React class that acts exactly like the initial version.
+// This is what we'll use in our app instead of the real component class.
+const Proxy = proxy.get();
+
+// Render the component (proxy, really).
+const rootInstance = ReactDOM.render(<Proxy />, container);
+
+// Point the proxy to the new React component class by calling update().
+// Instances will stay mounted and their state will be intact, but their methods will be updated.
+proxy.update(ComponentVersion2);
+
+
+
+	
     </script>
 
 
