@@ -690,10 +690,13 @@ function findHostInstance(fiber) {
 }
 
 function findDOMNode(fiber) {
-    if (fiber === null || fiber && fiber.nodeType) {
+    if (fiber == null) {
+        return null;
+    }
+    if (fiber.nodeType === 1) {
         return fiber;
     }
-    if (!fiber || !fiber.render) {
+    if (!fiber.render) {
         throw "findDOMNode:invalid type";
     }
     return findHostInstance(fiber);
@@ -1779,14 +1782,14 @@ function updateEffects(fiber, topWork, info) {
         var instance = f.stateNode;
         var updater = instance && instance.updater;
         if (f.shiftContainer) {
-            delete fiber.shiftContainer;
+            delete f.shiftContainer;
             info.containerStack.shift();
         } else if (updater) {
-            if (fiber.shiftContext) {
-                delete fiber.shiftContext;
+            if (f.shiftContext) {
+                delete f.shiftContext;
                 info.contextStack.shift();
             }
-            if (fiber.hasMounted && instance[gSBU]) {
+            if (f.hasMounted && instance[gSBU]) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
             }
         }
@@ -1910,7 +1913,7 @@ function updateClassComponent(fiber, info) {
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         var context = instance.getChildContext();
-        context = Object.assign({}, newContext, context);
+        context = Object.assign({}, contextStack[0], context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }

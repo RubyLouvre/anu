@@ -8,6 +8,9 @@ describe("findDOMNode", () => {
     it("findDOMNode should return null if passed null", () => {
         expect(ReactDOM.findDOMNode(null)).toBe(null);
     });
+    it("findDOMNode should return null if passed undefined", () => {
+        expect(ReactDOM.findDOMNode(void 666)).toBe(null);
+    });
 
     it("findDOMNode should find dom element", () => {
         class MyNode extends React.Component {

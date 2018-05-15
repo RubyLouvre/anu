@@ -51,14 +51,15 @@ export function updateEffects(fiber, topWork, info) {
         let updater = instance && instance.updater;
         if (f.shiftContainer) {
             //元素节点与AnuPortal
-            delete fiber.shiftContainer;
+            delete f.shiftContainer;
             info.containerStack.shift(); // shift parent
         } else if (updater) {
-            if (fiber.shiftContext) {
-                delete fiber.shiftContext;
+          
+            if (f.shiftContext) {
+                delete f.shiftContext;
                 info.contextStack.shift(); // shift context
             }
-            if (fiber.hasMounted && instance[gSBU]) {
+            if (f.hasMounted && instance[gSBU]) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
             }
         }
@@ -189,7 +190,7 @@ export function updateClassComponent(fiber, info) {
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         let context = instance.getChildContext();
-        context = Object.assign({}, newContext, context);
+        context = Object.assign({}, contextStack[0], context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
