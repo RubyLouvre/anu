@@ -5,11 +5,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
  <!-- <script type='text/javascript' src="./dist/React.js"></script>-->
- <!-- <script type='text/javascript' src="./react.js"></script>-->
+ <script type='text/javascript' src="./react.js"></script>
 			<script type='text/javascript' src="./react-dom.js"></script>
 	<script type='text/javascript' src="./lib/ReactProxy.js"></script>
+	<script type='text/javascript' src="./lib/deepForceUpdate.js"></script>
 
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+
+  
   <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -61,7 +64,7 @@ class ComponentVersion2 extends React.Component {
   }
 }
 console.log(ReactProxy)
-const createProxy = ReactProxy["default"]
+const createProxy = ReactProxy
 // Create a proxy object, given the initial React component class.
 const proxy = createProxy(ComponentVersion1);
 
@@ -76,7 +79,7 @@ const rootInstance = ReactDOM.render(<Proxy />, container);
 // Instances will stay mounted and their state will be intact, but their methods will be updated.
 proxy.update(ComponentVersion2);
 
-
+deepForceUpdate(rootInstance)
 
 	
     </script>
