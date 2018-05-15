@@ -27,6 +27,7 @@ QQ交流学习群：  370262116
 ### 官方脚手架 
 
 https://github.com/RubyLouvre/create-anu-app
+https://github.com/132yse/idanmu-admin
 
 ### IE8脚手架 
 
