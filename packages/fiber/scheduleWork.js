@@ -292,6 +292,7 @@ export function createContainer(root, onlyGet, validate) {
         stateNode: root,
         tag: 5,
         name: "hostRoot",
+        //contextStack的对象 总是它的后面的元素的并集 ［dUcUbUa, cUbUa, bUa, a, {}］
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
