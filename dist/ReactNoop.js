@@ -973,6 +973,7 @@ function updateClassComponent(fiber, info) {
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
     if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
+        contextStack.unshift(instance.unmaskedContext);
     }
     var newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
