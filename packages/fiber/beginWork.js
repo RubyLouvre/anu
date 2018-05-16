@@ -138,7 +138,7 @@ export function updateClassComponent(fiber, info) {
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     let { contextStack, containerStack } = info;
     if(fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext ){
-        // contextStack.unshift(instance.unmaskedContext);
+        contextStack.unshift(instance.unmaskedContext);//setState需要还原contextStack
     }
     let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
@@ -174,7 +174,7 @@ export function updateClassComponent(fiber, info) {
             instance.state = fiber.memoizedState;
         }
     }
-    instance.unmaskedContext = contextStack[0];
+    instance.unmaskedContext = contextStack[0];//存放它上面的所有context的并集
     fiber.batching = updateQueue.batching;
     let cbs = updateQueue.pendingCbs;
     if (cbs.length) {
