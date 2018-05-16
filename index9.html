@@ -60,124 +60,41 @@
                   }
               };
 		 };
-//================================
-function dispatchEventOnNode(node, type) {
-    node.dispatchEvent(new Event(type, {bubbles: true, cancelable: true}));
-  }
 
-   
-   var setUntrackedValue = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype,
-      'value',
-    ).set;
-	function it(a, b){
-		console.log(a)
-		b()
-	}
+ let numMiddleRenders = 0;
+    let numBottomRenders = 0;
 
- it('should properly control a value even if no event listener exists', () => {
-    const container = document.createElement('div');
-    let stub;
-	document.body.appendChild(container);
-  
-      stub = ReactDOM.render(<input type="text" value="lion" onInput={
-		  ()=>{
-			  console.log("***")
-		  }
-	  } />, container);
-  
-
-   
- 
-   
-  });
-  it('should allow controlling `value` in a nested render', () => {
-    let selectNode;
-
-    class Parent extends React.Component {
-      state = {
-        value: 'giraffe',
-      };
-
-      componentDidMount() {
-        this._renderNested();
-      }
-
-      componentDidUpdate() {
-        this._renderNested();
-      }
-
-      _handleChange(event) {
-        this.setState({value: event.target.value});
-      }
-
-      _renderNested() {
-        ReactDOM.render(
-          <select
-            onChange={this._handleChange.bind(this)}
-            ref={n => (selectNode = n)}
-            value={this.state.value}>
-            <option value="monkey">A monkey!</option>
-            <option value="giraffe">A giraffe!</option>
-            <option value="gorilla">A gorilla!</option>
-          </select>,
-          this._nestingContainer,
+    class Top extends React.Component {
+      render() {
+        return (
+          <Middle>
+            <Bottom />
+          </Middle>
         );
+      }
+    }
+
+    class Middle extends React.Component {
+      componentDidMount() {
+        this.forceUpdate();
       }
 
       render() {
-        return <div ref={n => (this._nestingContainer = n)} />;
+        numMiddleRenders++;
+        return React.Children.only(this.props.children);
       }
     }
 
-    const container = document.createElement('div');
-
-    document.body.appendChild(container);
-
-    ReactDOM.render(<Parent />, container);
-//ref问题
-    expect(selectNode.value).toBe('giraffe');
-    console.log("==============")
-    selectNode.value = 'gorilla';
-
-   /* let nativeEvent = document.createEvent('Event');
-    nativeEvent.initEvent('input', true, true);
-    selectNode.dispatchEvent(nativeEvent);
-
-    expect(selectNode.value).toEqual('gorilla');
-*/
-    nativeEvent = document.createEvent('Event');
-    nativeEvent.initEvent('change', true, true);
-    selectNode.dispatchEvent(nativeEvent);
-
-    expect(selectNode.value).toEqual('gorilla');
-
-  //  document.body.removeChild(container);
-  });
-
-
-  it('只执行一次', function () {
-    console.log('--------BEGIN----------')
-    const container = document.createElement('div');
-    document.body.appendChild(container)
-    var logIndex = 0;
-    function refFn(e) {
-	  logIndex++;
-	  console.log("==========")
+    class Bottom extends React.Component {
+      render() {
+        numBottomRenders++;
+        return null;
+      }
     }
 
-    var dom = ReactDOM.render(<input className={new Date+""} type="checkbox" onChange={refFn} />, container);
-    dom = ReactDOM.render(<input className={new Date+""} type="checkbox" onChange={refFn} />, container);
-
-	console.log("click......")
-    dom.click()
-    expect(logIndex).toBe(1)
-    console.log("-------END-------------",dom)
-   // ReactDOM.unmountComponentAtNode(container)
-  // document.body.removeChild(container)
-  
-  });
-
+    ReactTestUtils.renderIntoDocument(<Top />);
+    expect(numMiddleRenders).toBe(2);
+    expect(numBottomRenders).toBe(1);
     </script>
 
 

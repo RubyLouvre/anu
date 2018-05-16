@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-15
+ * by 司徒正美 Copyright 2018-05-16
  * IE9+
  */
 
@@ -804,7 +804,7 @@ function describeError(names, hook) {
             segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join("\n").trim();
+    return segments.join("\n\r").trim();
 }
 function findCatchComponent(fiber, names) {
     var instance = void 0,
@@ -972,6 +972,8 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
+    if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
+    }
     var newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
@@ -1002,6 +1004,7 @@ function updateClassComponent(fiber, info) {
             instance.state = fiber.memoizedState;
         }
     }
+    instance.unmaskedContext = contextStack[0];
     fiber.batching = updateQueue.batching;
     var cbs = updateQueue.pendingCbs;
     if (cbs.length) {
@@ -1088,10 +1091,9 @@ function callUnsafeHook(a, b, c) {
     applyCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
-    if (a.type === b.type && a.key === b.key
-                                                                              ) {
-            return true;
-        }
+    if (a.type === b.type && a.key === b.key) {
+        return true;
+    }
 }
 function setStateByProps(instance, fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
@@ -1562,7 +1564,7 @@ function workLoop(deadline) {
             var dom = getContainer(fiber);
             info = {
                 containerStack: [dom],
-                contextStack: [{}]
+                contextStack: [fiber.stateNode.unmaskedContext]
             };
         }
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {

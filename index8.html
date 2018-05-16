@@ -73,7 +73,7 @@ check.isRequired = check;
           getChildContext(){
             return {
               table: {
-                title: "xxxx"
+                title: "title"
               }
             }
           }
@@ -83,25 +83,23 @@ check.isRequired = check;
             }
           }
           render(){
-            return <div><Head className="xxx" /></div>
+            return <div><Head ref="head" className="xxx" /></div>
           }
         }
 
-        function Head(props, context){
-          console.log(props, context, "----")
-           return <div className={props.className}>{context.table.title}
-            <Footer />
-            </div>
+        class Head extends React.Component{
+           constructor(a, b){
+              super(a, b)
+              this.state = {
+                a:  "xxxx"
+              }
+           }
+           render(){
+             return <strong>{this.state.a}<b>{this.context.table.title}</b></strong>
+           }
+
         }
-        Head.contextTypes = {
-          table:function(){
-              return null
-            }
-        }
-        function Foot(props, context){
-          console.log(props, context, "----")
-           return <p>{context.table.title} </p>
-        }
+
         Head.contextTypes = {
           table:function(){
               return null
@@ -112,7 +110,9 @@ check.isRequired = check;
 
         
       var a =  ReactDOM.render(<App id="app" />, document.getElementById("root"));
-
+a.refs.head.setState({
+  a: 4444
+})
     </script>
 
 

@@ -128,7 +128,7 @@ function workLoop(deadline) {
             let dom = getContainer(fiber);
             info = {
                 containerStack: [dom],
-                contextStack: [{}],
+                contextStack: [fiber.stateNode.unmaskedContext],
             };
         }
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
@@ -237,6 +237,7 @@ function pushChildQueue(fiber, queue) {
 function updateComponent(instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
     fiber.dirty = true;
+    
     let sn = typeNumber(state);
     let isForced = state === true;
     let microtasks = getQueue(fiber);
@@ -244,16 +245,13 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     state = isForced ? null : sn === 5 || sn === 8 ? state : null;
     if (fiber.setout) {
         // cWM/cWRP中setState， 不放进列队
-        // console.log("setState 1");
         immediateUpdate = false;
     } else if ((isBatching && !immediateUpdate) || fiber._hydrating) {
         //事件回调，batchedUpdates, 错误边界, cDM/cDU中setState
-        // console.log("setState 2");
         pushChildQueue(fiber, batchedtasks);
     } else {
         //情况4，在钩子外setState或batchedUpdates中ReactDOM.render一棵新树
         immediateUpdate = immediateUpdate || !fiber._hydrating;
-        // console.log(fiber.name + " setState " + (immediateUpdate ? 3 : 4), fiber._hydrating);
         pushChildQueue(fiber, microtasks);
     }
     mergeUpdates(fiber, state, isForced, callback);

@@ -70,7 +70,7 @@ function describeError(names, hook) {
             segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join("\n").trim();
+    return segments.join("\n\r").trim();
 }
 
 

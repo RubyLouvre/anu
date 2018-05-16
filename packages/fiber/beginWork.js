@@ -8,7 +8,6 @@ import { Fiber } from "./Fiber";
 import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK, NOWORK } from "./effectTag";
 import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
 
-
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
@@ -25,7 +24,6 @@ export function updateEffects(fiber, topWork, info) {
             // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
             // getChildContext都可能 throw Exception，因此不逐一try catch
             // 通过fiber.errorHook得知出错的方法
-
             updateClassComponent(fiber, info); // unshift context
         } catch (e) {
             pushError(fiber, fiber.errorHook, e);
@@ -44,7 +42,6 @@ export function updateEffects(fiber, topWork, info) {
         return fiber.child;
     }
 
-
     let f = fiber;
     while (f) {
         let instance = f.stateNode;
@@ -54,7 +51,6 @@ export function updateEffects(fiber, topWork, info) {
             delete f.shiftContainer;
             info.containerStack.shift(); // shift parent
         } else if (updater) {
-          
             if (f.shiftContext) {
                 delete f.shiftContext;
                 info.contextStack.shift(); // shift context
@@ -141,6 +137,9 @@ export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     let { contextStack, containerStack } = info;
+    if(fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext ){
+        // contextStack.unshift(instance.unmaskedContext);
+    }
     let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
@@ -161,6 +160,7 @@ export function updateClassComponent(fiber, info) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
     }
+    
     let updateQueue = fiber.updateQueue;
     if (!instance.__isStateless) {
         //必须带生命周期
@@ -174,6 +174,7 @@ export function updateClassComponent(fiber, info) {
             instance.state = fiber.memoizedState;
         }
     }
+    instance.unmaskedContext = contextStack[0];
     fiber.batching = updateQueue.batching;
     let cbs = updateQueue.pendingCbs;
     if (cbs.length) {
@@ -185,7 +186,7 @@ export function updateClassComponent(fiber, info) {
         fiber._hydrating = false;
         return;
     }
-    instance.context = newContext; //设置新context
+    instance.context = newContext; //设置新context    
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
@@ -272,8 +273,7 @@ function callUnsafeHook(a, b, c) {
 }
 
 function isSameNode(a, b) {
-    if (a.type === b.type && a.key === b.key /*&& (a.type !=="input" || a.tag !== 5 || 
-a.props.type === b.props.type) */) {
+    if (a.type === b.type && a.key === b.key) {
         return true;
     }
 }

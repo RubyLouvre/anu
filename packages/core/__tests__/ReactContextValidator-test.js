@@ -54,7 +54,7 @@ describe('ReactContextValidator', () => {
     const instance = ReactTestUtils.renderIntoDocument(
       <ComponentInFooBarContext />,
     );
-    expect(instance.refs.child.context).toEqual({foo: 'abc'});
+    expect(instance.refs.child.context).toEqual({ foo: 'abc' });
   });
 
   it('should pass next context to lifecycles', () => {
@@ -105,9 +105,9 @@ describe('ReactContextValidator', () => {
     const container = document.createElement('div');
     ReactDOM.render(<Parent foo="abc" />, container);
     ReactDOM.render(<Parent foo="def" />, container);
-    expect(actualComponentWillReceiveProps).toEqual({foo: 'def'});
-    expect(actualShouldComponentUpdate).toEqual({foo: 'def'});
-    expect(actualComponentWillUpdate).toEqual({foo: 'def'});
+    expect(actualComponentWillReceiveProps).toEqual({ foo: 'def' });
+    expect(actualShouldComponentUpdate).toEqual({ foo: 'def' });
+    expect(actualComponentWillUpdate).toEqual({ foo: 'def' });
   });
 
   it('should check context types', () => {
@@ -122,9 +122,9 @@ describe('ReactContextValidator', () => {
 
     expect(() => ReactTestUtils.renderIntoDocument(<Component />)).toWarnDev(
       'Warning: Failed context type: ' +
-        'The context `foo` is marked as required in `Component`, but its value ' +
-        'is `undefined`.\n' +
-        '    in Component (at **)',
+      'The context `foo` is marked as required in `Component`, but its value ' +
+      'is `undefined`.\n' +
+      '    in Component (at **)',
     );
 
     class ComponentInFooStringContext extends React.Component {
@@ -168,10 +168,10 @@ describe('ReactContextValidator', () => {
       ),
     ).toWarnDev(
       'Warning: Failed context type: ' +
-        'Invalid context `foo` of type `number` supplied ' +
-        'to `Component`, expected `string`.\n' +
-        '    in Component (at **)\n' +
-        '    in ComponentInFooNumberContext (at **)',
+      'Invalid context `foo` of type `number` supplied ' +
+      'to `Component`, expected `string`.\n' +
+      '    in Component (at **)\n' +
+      '    in ComponentInFooNumberContext (at **)',
     );
   });
 
@@ -191,29 +191,29 @@ describe('ReactContextValidator', () => {
     };
 
     expect(() =>
-      ReactTestUtils.renderIntoDocument(<Component testContext={{bar: 123}} />),
+      ReactTestUtils.renderIntoDocument(<Component testContext={{ bar: 123 }} />),
     ).toWarnDev(
       'Warning: Failed child context type: ' +
-        'The child context `foo` is marked as required in `Component`, but its ' +
-        'value is `undefined`.\n' +
-        '    in Component (at **)',
+      'The child context `foo` is marked as required in `Component`, but its ' +
+      'value is `undefined`.\n' +
+      '    in Component (at **)',
     );
 
     expect(() =>
-      ReactTestUtils.renderIntoDocument(<Component testContext={{foo: 123}} />),
+      ReactTestUtils.renderIntoDocument(<Component testContext={{ foo: 123 }} />),
     ).toWarnDev(
       'Warning: Failed child context type: ' +
-        'Invalid child context `foo` of type `number` ' +
-        'supplied to `Component`, expected `string`.\n' +
-        '    in Component (at **)',
+      'Invalid child context `foo` of type `number` ' +
+      'supplied to `Component`, expected `string`.\n' +
+      '    in Component (at **)',
     );
 
     // No additional errors expected
     ReactTestUtils.renderIntoDocument(
-      <Component testContext={{foo: 'foo', bar: 123}} />,
+      <Component testContext={{ foo: 'foo', bar: 123 }} />,
     );
 
-    ReactTestUtils.renderIntoDocument(<Component testContext={{foo: 'foo'}} />);
+    ReactTestUtils.renderIntoDocument(<Component testContext={{ foo: 'foo' }} />);
   });
 
   // TODO (bvaughn) Remove this test and the associated behavior in the future.
@@ -238,8 +238,8 @@ describe('ReactContextValidator', () => {
 
     expect(() => ReactTestUtils.renderIntoDocument(<ComponentA />)).toWarnDev(
       'Warning: ComponentA.childContextTypes is specified but there is no ' +
-        'getChildContext() method on the instance. You can either define ' +
-        'getChildContext() on ComponentA or remove childContextTypes from it.',
+      'getChildContext() method on the instance. You can either define ' +
+      'getChildContext() on ComponentA or remove childContextTypes from it.',
     );
 
     // Warnings should be deduped by component type
@@ -247,8 +247,8 @@ describe('ReactContextValidator', () => {
 
     expect(() => ReactTestUtils.renderIntoDocument(<ComponentB />)).toWarnDev(
       'Warning: ComponentB.childContextTypes is specified but there is no ' +
-        'getChildContext() method on the instance. You can either define ' +
-        'getChildContext() on ComponentB or remove childContextTypes from it.',
+      'getChildContext() method on the instance. You can either define ' +
+      'getChildContext() on ComponentB or remove childContextTypes from it.',
     );
   });
 
@@ -294,12 +294,64 @@ describe('ReactContextValidator', () => {
       ReactTestUtils.renderIntoDocument(<ParentContextProvider />),
     ).toWarnDev([
       'Warning: MiddleMissingContext.childContextTypes is specified but there is no getChildContext() method on the ' +
-        'instance. You can either define getChildContext() on MiddleMissingContext or remove childContextTypes from ' +
-        'it.',
+      'instance. You can either define getChildContext() on MiddleMissingContext or remove childContextTypes from ' +
+      'it.',
       'Warning: Failed context type: The context `bar` is marked as required in `ChildContextConsumer`, but its ' +
-        'value is `undefined`.',
+      'value is `undefined`.',
     ]);
     expect(childContext.bar).toBeUndefined();
     expect(childContext.foo).toBe('FOO');
   });
+  it("setState后子组件的context处理", () => {
+    const container = document.createElement('div');
+
+    class App extends React.Component {
+      state = {
+        text: 111
+      }
+      getChildContext() {
+        return {
+          table: {
+            title: "title"
+          }
+        }
+      }
+      static childContextTypes = {
+        table: function () {
+          return null
+        }
+      }
+      render() {
+        return <div><Head ref="head" className="xxx" /></div>
+      }
+    }
+
+    class Head extends React.Component {
+      constructor(a, b) {
+        super(a, b)
+        this.state = {
+          a: 3333
+        }
+      }
+      render() {
+        return <strong>{this.state.a}<b>{this.context.table.title}</b></strong>
+      }
+
+    }
+
+    Head.contextTypes = {
+      table: function () {
+        return null
+      }
+    }
+
+    var a = ReactDOM.render(<App id="app" />, container);
+    expect(container.textContent.trim()).toBe("3333title")
+    a.refs.head.setState({
+      a: 4444
+    })
+
+    expect(container.textContent.trim()).toBe("4444title")
+
+  })
 });
