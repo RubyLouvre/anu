@@ -9,7 +9,6 @@ export function pushError(fiber, hook, error) {
     let stack = describeError(names, hook);
     if (boundary) {
         fiber.effectTag = NOWORK;
-        // let inst = fiber.stateNode;
         if (fiber.hasMounted) {
             //已经插入
         } else {

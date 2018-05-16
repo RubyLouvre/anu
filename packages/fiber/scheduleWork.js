@@ -233,7 +233,6 @@ function pushChildQueue(fiber, queue) {
     }
 }
 //setState的实现
-
 function updateComponent(instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
     fiber.dirty = true;
