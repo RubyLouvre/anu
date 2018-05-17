@@ -26,8 +26,6 @@ export var duplexMap = {
         },
         mount(node, props, state) {
             if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
-                // Do not assign value if it is already set. This prevents user text input
-                // from being lost during SSR hydration.
                 let stateValue = "" + state.initialValue;
                 if (node.value === "") {
                     syncValue(node, "value", stateValue);
@@ -92,8 +90,7 @@ export var duplexMap = {
             }
         },
         update(node, props) {
-            // After the initial mount, we control selected-ness manually so don't pass
-            // this value down
+            // mount后这个属性没用
             node._wrapperState.initialValue = void 666;
 
             var wasMultiple = node._wrapperState.wasMultiple;
@@ -103,7 +100,7 @@ export var duplexMap = {
             if (value != null) {
                 updateOptions(node, !!props.multiple, value, false);
             } else if (wasMultiple !== !!props.multiple) {
-                // For simplicity, reapply `defaultValue` if `multiple` is toggled.
+                // 切换multiple后，需要重新计算
                 if (props.defaultValue != null) {
                     updateOptions(node, !!props.multiple, props.defaultValue, true);
                 } else {
@@ -116,10 +113,8 @@ export var duplexMap = {
     textarea: {
         init(node, props) {
             var initialValue = props.value;
-            // Only bother fetching default value if we're going to use it
             if (initialValue == null) {
                 var defaultValue = props.defaultValue;
-                // TODO (yungsters): Remove support for children content in <textarea>.
                 var children = props.children;
                 if (children != null) {
                     //移除元素节点
@@ -131,7 +126,7 @@ export var duplexMap = {
                 }
                 initialValue = defaultValue;
             }
-            // value || children || defaultValue || ""
+            // 优先级：value > children(textContent) > defaultValue > ""
             return node._wrapperState = {
                 initialValue: "" + initialValue
             };
@@ -147,11 +142,7 @@ export var duplexMap = {
         update(node, props) {
             var value = props.value;
             if (value != null) {
-                // Cast `value` to a string to ensure the value is set correctly. While
-                // browsers typically do this as necessary, jsdom doesn't.
                 var newValue = "" + value;
-
-                // To avoid side effects (such as losing text selection), only set value if changed
                 if (newValue !== node.value) {
                     syncValue(node, "value", newValue);
                 }
@@ -228,7 +219,7 @@ export function updateOptions(node, multiple, propValue, setDefaultSelected) {
                 return;
             }
             if (defaultSelected === null && !options[i].disabled) {
-                defaultSelected = options[i];
+                defaultSelected = options[i];//存放第一个不为disabled的option
             }
         }
         if (defaultSelected !== null) {
