@@ -1,4 +1,5 @@
 import { typeNumber, emptyObject } from "react-core/util";
+import { Renderer } from "react-core/createRenderer";
 
 function getSafeValue(value) {
     switch (typeNumber(value)) {
@@ -121,12 +122,9 @@ export var duplexMap = {
                 // TODO (yungsters): Remove support for children content in <textarea>.
                 var children = props.children;
                 if (children != null) {
-
-                    if (Array.isArray(children)) {
-                        children = children[0];
-                    }
-
-                    defaultValue = "" + children;
+                    //移除元素节点
+                    defaultValue = node.textContent || node.innerText;
+                    node.innerHTML = "";
                 }
                 if (defaultValue == null) {
                     defaultValue = "";
@@ -173,6 +171,9 @@ export var duplexMap = {
             duplexMap.option.mount(node, props);
         },
         mount(node, props) {
+            if (node.text !== node.textContent.trim()) {
+                node.innerHTML = node.textContent;
+            }
             if ("value" in props) {
                 node.duplexValue = node.value = props.value;
             } else {
@@ -298,7 +299,7 @@ function collectNamedCousins(rootNode, name) {
     let group = queryRoot.getElementsByTagName("input");
     for (let i = 0; i < group.length; i++) {
         let otherNode = group[i];
-        if (otherNode === rootNode || otherNode.name !== name || 
+        if (otherNode === rootNode || otherNode.name !== name ||
             otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
             continue;
         }

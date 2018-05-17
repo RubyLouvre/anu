@@ -926,10 +926,8 @@ var duplexMap$1 = {
                 var defaultValue = props.defaultValue;
                 var children = props.children;
                 if (children != null) {
-                    if (Array.isArray(children)) {
-                        children = children[0];
-                    }
-                    defaultValue = "" + children;
+                    defaultValue = node.textContent || node.innerText;
+                    node.innerHTML = "";
                 }
                 if (defaultValue == null) {
                     defaultValue = "";
@@ -969,6 +967,9 @@ var duplexMap$1 = {
             duplexMap$1.option.mount(node, props);
         },
         mount: function mount(node, props) {
+            if (node.text !== node.textContent.trim()) {
+                node.innerHTML = node.textContent;
+            }
             if ("value" in props) {
                 node.duplexValue = node.value = props.value;
             } else {
@@ -2866,70 +2867,14 @@ function insertElement(fiber) {
         }
     }
 }
-function collectText(fiber, ret) {
-    for (var c = fiber.child; c; c = c.sibling) {
-        if (c.tag === 5) {
-            collectText(c, ret);
-            _removeElement(c.stateNode);
-        } else if (c.tag === 6) {
-            ret.push(c.props.children);
-        } else {
-            collectText(c, ret);
-        }
-    }
-}
-function isTextContainer(fiber) {
-    switch (fiber.type) {
-        case "option":
-        case "noscript":
-        case "textarea":
-        case "style":
-        case "script":
-            return true;
-        default:
-            return false;
-    }
-}
 render$1.Render = Renderer;
 var DOMRenderer = createRenderer({
     render: render$1,
     updateAttribute: function updateAttribute(fiber) {
-        var type = fiber.type,
-            props = fiber.props,
+        var props = fiber.props,
             lastProps = fiber.lastProps,
             stateNode = fiber.stateNode;
-        if (isTextContainer(fiber)) {
-            var texts = [];
-            collectText(fiber, texts);
-            var text = texts.reduce(function (a, b) {
-                return a + b;
-            }, "");
-            switch (fiber.type) {
-                case "textarea":
-                    if (!("value" in props) && !("defaultValue" in props)) {
-                        if (!lastProps) {
-                            props.defaultValue = text;
-                        } else {
-                            props.defaultValue = lastProps.defaultValue;
-                        }
-                    }
-                    break;
-                case "option":
-                    stateNode.text = text;
-                    break;
-                default:
-                    stateNode.innerHTML = text;
-                    break;
-            }
-        }
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (type === "option") {
-            if ("value" in props) {
-                stateNode.duplexValue = stateNode.value = props.value;
-            } else {
-                stateNode.duplexValue = stateNode.text;
-            }
-        }
     },
     updateContext: function updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;

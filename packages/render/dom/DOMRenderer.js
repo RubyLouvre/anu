@@ -10,37 +10,37 @@ export function createElement(vnode) {
     let { type, props, ns } = vnode;
     let text = props ? props.children : "";
     switch (type) {
-    case "#text":
-        //只重复利用文本节点
-        var node = recyclables[type].pop();
-        if (node) {
-            node.nodeValue = text;
-            return node;
-        }
-        return document.createTextNode(text);
-    case "#comment":
-        return document.createComment(text);
-
-    case "svg":
-        ns = NAMESPACE.svg;
-        break;
-    case "math":
-        ns = NAMESPACE.math;
-        break;
-
-    default:
-        do {
-            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-            if (s) {
-                ns = s.namespaceURI;
-                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                    ns = "";
-                }
-                break;
+        case "#text":
+            //只重复利用文本节点
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = text;
+                return node;
             }
-        } while ((p = p.return));
+            return document.createTextNode(text);
+        case "#comment":
+            return document.createComment(text);
 
-        break;
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+
+        default:
+            do {
+                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                if (s) {
+                    ns = s.namespaceURI;
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
+                    }
+                    break;
+                }
+            } while ((p = p.return));
+
+            break;
     }
     try {
         if (ns) {
@@ -48,7 +48,7 @@ export function createElement(vnode) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-	} catch (e) {}
+    } catch (e) { }
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
@@ -107,7 +107,7 @@ function insertElement(fiber) {
     let { stateNode: dom, parent, insertPoint } = fiber;
     try {
         let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
-      
+
         if (after === dom) {
             return;
         }
@@ -132,68 +132,13 @@ function insertElement(fiber) {
     }
 }
 
-function collectText(fiber, ret) {
-    for (var c = fiber.child; c; c = c.sibling) {
-        if (c.tag === 5) {
-            collectText(c, ret);
-            removeElement(c.stateNode);
-        } else if (c.tag === 6) {
-            ret.push(c.props.children);
-        } else {
-            collectText(c, ret);
-        }
-    }
-}
-function isTextContainer(fiber) {
-    switch (fiber.type) {
-    case "option":
-    case "noscript":
-    case "textarea":
-    case "style":
-    case "script":
-        return true;
-    default:
-        return false;
-    }
-}
 //其他Renderer也要实现这些方法
 render.Render = Renderer;
 export let DOMRenderer = createRenderer({
     render,
     updateAttribute(fiber) {
-        let { type, props, lastProps, stateNode } = fiber;
-        if (isTextContainer(fiber)) {
-            var texts = [];
-            collectText(fiber, texts);
-            var text = texts.reduce(function(a, b) {
-                return a + b;
-            }, "");
-            switch (fiber.type) {
-            case "textarea":
-                if (!("value" in props) && !("defaultValue" in props)) {
-                    if (!lastProps) {
-                        props.defaultValue = text;
-                    } else {
-                        props.defaultValue = lastProps.defaultValue;
-                    }
-                }
-                break;
-            case "option":
-                stateNode.text = text;
-                break;
-            default:
-                stateNode.innerHTML = text;
-                break;
-            }
-        }
+        let { props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
-        if (type === "option") {
-            if ("value" in props) {
-                stateNode.duplexValue = stateNode.value = props.value;
-            } else {
-                stateNode.duplexValue = stateNode.text;
-            }
-        }
     },
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props.children;
@@ -234,7 +179,7 @@ export let DOMRenderer = createRenderer({
                 {
                     child: null,
                 },
-                function() {
+                function () {
                     let i = topNodes.indexOf(root);
                     if (i !== -1) {
                         topNodes.splice(i, 1);
@@ -250,9 +195,9 @@ export let DOMRenderer = createRenderer({
     },
     removeElement(fiber) {
         let instance = fiber.stateNode;
-        if(instance){
+        if (instance) {
             removeElement(instance);
-            if(instance._reactInternalFiber){
+            if (instance._reactInternalFiber) {
                 let j = topNodes.indexOf(instance);
                 if (j !== -1) {
                     topFibers.splice(j, 1);
@@ -260,7 +205,7 @@ export let DOMRenderer = createRenderer({
                 }
             }
         }
-        
+
     },
 });
 
