@@ -54,8 +54,7 @@ describe('ReactDOMInput', () => {
   });
 
   it('should control a value in reentrant events', () => {
-    console.log("以后再搞它")
-    return
+  
     class ControlledInputs extends React.Component {
       state = {value: 'lion'};
       a = null;
@@ -607,13 +606,14 @@ describe('ReactDOMInput', () => {
   });
 
   it('should properly control 0.0 for a number input', () => {
-    return
     let stub = <input type="number" value={0} onChange={emptyFunction} />;
     stub = ReactTestUtils.renderIntoDocument(stub);
     const node = ReactDOM.findDOMNode(stub);
 
     node.value = '0.0';
-    ReactTestUtils.Simulate.change(node, {target: {value: '0.0'}});
+    //hack
+    node.__events.vnode.props.value = "0.0"
+    ReactTestUtils.Simulate.change(node);
     expect(node.value).toBe('0.0');
     
   });
