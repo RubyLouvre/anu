@@ -215,7 +215,7 @@ var duplexProps = {
     value: 1,
     defaultValue: 1,
     checked: 1,
-    defaultChecked: 1,
+    //  defaultChecked: 1,
     innerHTML: 1,
     children: 1,
 };

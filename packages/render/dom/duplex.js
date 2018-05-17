@@ -3,36 +3,36 @@ import { Renderer } from "react-core/createRenderer";
 
 function getSafeValue(value) {
     switch (typeNumber(value)) {
-        case 2:
-        case 3:
-        case 8:
-        case 4:
-        case 0:
-            return value;
-        default:
-            // function, symbol are assigned as empty strings
-            return "";
+    case 2:
+    case 3:
+    case 8:
+    case 4:
+    case 0:
+        return value;
+    default:
+        // function, symbol are assigned as empty strings
+        return "";
     }
 }
 
 export var duplexMap = {
     input: {
         init(node, props) {
-            var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
-            node._wrapperState = {
-                initialChecked: props.checked != null ? props.checked : props.defaultChecked,
+            let defaultValue = props.defaultValue == null ? "" : props.defaultValue;
+            return node._wrapperState = {
+                // initialChecked: props.checked != null ? props.checked : props.defaultChecked,
                 initialValue: getSafeValue(props.value != null ? props.value : defaultValue),
-                // controlled: isControlled(props)
             };
         },
-        mount(node, props) {
+        mount(node, props, state) {
             if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
                 // Do not assign value if it is already set. This prevents user text input
                 // from being lost during SSR hydration.
+                let stateValue = "" + state.initialValue;
                 if (node.value === "") {
-                    syncValue(node, "value", "" + node._wrapperState.initialValue);
+                    syncValue(node, "value", stateValue);
                 }
-                node.defaultValue = "" + node._wrapperState.initialValue;
+                node.defaultValue = stateValue;
             }
             var name = node.name;
             if (name !== "") {
@@ -75,8 +75,8 @@ export var duplexMap = {
     },
     select: {
         init(node, props) {//select
-            var value = props.value;
-            node._wrapperState = {
+            let value = props.value;
+            return node._wrapperState = {
                 initialValue: value != null ? value : props.defaultValue,
                 wasMultiple: !!props.multiple
             };
@@ -94,7 +94,7 @@ export var duplexMap = {
         update(node, props) {
             // After the initial mount, we control selected-ness manually so don't pass
             // this value down
-            node._wrapperState.initialValue = undefined;
+            node._wrapperState.initialValue = void 666;
 
             var wasMultiple = node._wrapperState.wasMultiple;
             node._wrapperState.wasMultiple = !!props.multiple;
@@ -132,15 +132,15 @@ export var duplexMap = {
                 initialValue = defaultValue;
             }
             // value || children || defaultValue || ""
-            node._wrapperState = {
+            return node._wrapperState = {
                 initialValue: "" + initialValue
             };
         },
         //textarea
-        mount(node) {
+        mount(node, props, state) {
             var textContent = node.textContent;
-            var stateValue = node._wrapperState.initialValue;
-            if (textContent != stateValue) {
+            var stateValue = "" + state.initialValue;
+            if (textContent !== stateValue) {
                 syncValue(node, "value", stateValue);
             }
         },
@@ -249,8 +249,8 @@ export function duplexAction(dom, fiber, nextProps, lastProps) {
         enqueueDuplex(dom);
     }
     if (lastProps == emptyObject) {
-        fns.init(dom, nextProps);
-        fns.mount(dom, nextProps);
+        var state = fns.init(dom, nextProps);
+        fns.mount(dom, nextProps, state);
     } else {
         fns.update(dom, nextProps);
     }

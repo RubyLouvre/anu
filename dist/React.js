@@ -839,17 +839,17 @@ var duplexMap$1 = {
     input: {
         init: function init(node, props) {
             var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
-            node._wrapperState = {
-                initialChecked: props.checked != null ? props.checked : props.defaultChecked,
+            return node._wrapperState = {
                 initialValue: getSafeValue(props.value != null ? props.value : defaultValue)
             };
         },
-        mount: function mount(node, props) {
+        mount: function mount(node, props, state) {
             if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
+                var stateValue = "" + state.initialValue;
                 if (node.value === "") {
-                    syncValue(node, "value", "" + node._wrapperState.initialValue);
+                    syncValue(node, "value", stateValue);
                 }
-                node.defaultValue = "" + node._wrapperState.initialValue;
+                node.defaultValue = stateValue;
             }
             var name = node.name;
             if (name !== "") {
@@ -889,7 +889,7 @@ var duplexMap$1 = {
     select: {
         init: function init(node, props) {
             var value = props.value;
-            node._wrapperState = {
+            return node._wrapperState = {
                 initialValue: value != null ? value : props.defaultValue,
                 wasMultiple: !!props.multiple
             };
@@ -904,7 +904,7 @@ var duplexMap$1 = {
             }
         },
         update: function update(node, props) {
-            node._wrapperState.initialValue = undefined;
+            node._wrapperState.initialValue = void 666;
             var wasMultiple = node._wrapperState.wasMultiple;
             node._wrapperState.wasMultiple = !!props.multiple;
             var value = props.value;
@@ -934,14 +934,14 @@ var duplexMap$1 = {
                 }
                 initialValue = defaultValue;
             }
-            node._wrapperState = {
+            return node._wrapperState = {
                 initialValue: "" + initialValue
             };
         },
-        mount: function mount(node) {
+        mount: function mount(node, props, state) {
             var textContent = node.textContent;
-            var stateValue = node._wrapperState.initialValue;
-            if (textContent != stateValue) {
+            var stateValue = "" + state.initialValue;
+            if (textContent !== stateValue) {
                 syncValue(node, "value", stateValue);
             }
         },
@@ -1037,8 +1037,8 @@ function duplexAction(dom, fiber, nextProps, lastProps) {
         enqueueDuplex(dom);
     }
     if (lastProps == emptyObject) {
-        fns.init(dom, nextProps);
-        fns.mount(dom, nextProps);
+        var state = fns.init(dom, nextProps);
+        fns.mount(dom, nextProps, state);
     } else {
         fns.update(dom, nextProps);
     }
@@ -1591,7 +1591,6 @@ var duplexProps = {
     value: 1,
     defaultValue: 1,
     checked: 1,
-    defaultChecked: 1,
     innerHTML: 1,
     children: 1
 };
