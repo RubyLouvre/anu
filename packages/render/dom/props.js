@@ -1,12 +1,11 @@
 import { NAMESPACE, duplexMap } from "./browser";
 import { patchStyle } from "./style";
-import { eventAction } from "./event";
-import { noop, typeNumber, emptyObject } from "react-core/util";
-import { getDuplexProps, controlledStrategy } from "./duplex";
+import { eventAction, rform } from "./event";
+import { typeNumber, emptyObject, noop } from "react-core/util";
+import { duplexAction } from "./duplex";
 
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
-let rform = /textarea|input|select|option/i;
 
 let isSpecialAttr = {
     style: 1,
@@ -120,13 +119,16 @@ function getSVGAttributeName(name) {
 export function diffProps(dom, lastProps, nextProps, fiber) {
     let isSVG = fiber.namespaceURI === NAMESPACE.svg;
     let tag = fiber.type;
-    let controlled = "children";
+    let continueProps = skipProps;
     if (!isSVG && rform.test(fiber.type)) {
-        controlled = getDuplexProps(dom, nextProps);
+        continueProps = duplexProps;
+        if (!("onChange" in nextProps)) {
+            eventAction(dom, "onChange", noop, lastProps, fiber);
+        }
     }
     //eslint-disable-next-line
     for (let name in nextProps) {
-        if (name === controlled) {
+        if (continueProps[name]) {
             continue;
         }
         let val = nextProps[name];
@@ -141,7 +143,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
     }
     //如果旧属性在新属性对象不存在，那么移除DOM eslint-disable-next-line
     for (let name in lastProps) {
-        if (name === controlled) {
+        if (continueProps[name]) {
             continue;
         }
         if (!nextProps.hasOwnProperty(name)) {
@@ -153,7 +155,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
-    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber);
+    continueProps.onDuplex(dom, fiber, nextProps, lastProps);
 }
 
 function isBooleanAttr(dom, name) {
@@ -203,10 +205,21 @@ let builtinStringProps = {
     alt: 1,
     lang: 1
 };
-
+var skipProps = {
+    innerHTML: 1,
+    children: 1,
+    onDuplex: noop
+};
+var duplexProps = {
+    onDuplex: duplexAction,
+    value: 1,
+    defaultValue: 1,
+    checked: 1,
+    defaultChecked: 1,
+    innerHTML: 1,
+    children: 1,
+};
 export let actionStrategy = {
-    innerHTML: noop,
-    children: noop,
     style: function (dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
@@ -266,7 +279,7 @@ export let actionStrategy = {
                 //如果是假值但不是0，就改成“”,alt不能removeAttribute
                 if (builtinStringProps[name]) {
                     dom[name] = "";
-                }else{
+                } else {
                     dom.removeAttribute(name);
                 }
             } else {
@@ -289,4 +302,3 @@ export let actionStrategy = {
     }
 };
 
-//=============duplex==========

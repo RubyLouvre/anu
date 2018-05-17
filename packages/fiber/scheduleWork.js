@@ -111,7 +111,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
-
+            Renderer. fireDuplex();
             Renderer.scheduleWork();
         }
     }

@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-16
+ * by 司徒正美 Copyright 2018-05-17
  * IE9+
  */
 
@@ -143,6 +143,7 @@ var Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
+    fireDuplex: noop,
     currentOwner: null
 };
 
@@ -822,9 +823,278 @@ function cssName(name, dom) {
     return null;
 }
 
+function getSafeValue(value) {
+    switch (typeNumber(value)) {
+        case 2:
+        case 3:
+        case 8:
+        case 4:
+        case 0:
+            return value;
+        default:
+            return "";
+    }
+}
+var duplexMap$1 = {
+    input: {
+        init: function init(node, props) {
+            var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
+            node._wrapperState = {
+                initialChecked: props.checked != null ? props.checked : props.defaultChecked,
+                initialValue: getSafeValue(props.value != null ? props.value : defaultValue)
+            };
+        },
+        mount: function mount(node, props) {
+            if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
+                if (node.value === "") {
+                    syncValue(node, "value", "" + node._wrapperState.initialValue);
+                }
+                node.defaultValue = "" + node._wrapperState.initialValue;
+            }
+            var name = node.name;
+            if (name !== "") {
+                node.name = "";
+            }
+            node.defaultChecked = !node.defaultChecked;
+            node.defaultChecked = !node.defaultChecked;
+            if (name !== "") {
+                node.name = name;
+            }
+        },
+        update: function update(node, props) {
+            if (props.checked != null) {
+                syncValue(node, "checked", !!props.checked);
+            }
+            var value = getSafeValue(props.value);
+            if (value != null) {
+                if (props.type === "number") {
+                    if (value === 0 && node.value === "" ||
+                    node.value != value) {
+                        syncValue(node, "value", "" + value);
+                    }
+                } else if (node.value !== "" + value) {
+                    syncValue(node, "value", "" + value);
+                }
+            }
+            if (props.hasOwnProperty("value")) {
+                setDefaultValue(node, props.type, value);
+            } else if (props.hasOwnProperty("defaultValue")) {
+                setDefaultValue(node, props.type, getSafeValue(props.defaultValue));
+            }
+            if (props.checked == null && props.defaultChecked != null) {
+                node.defaultChecked = !!props.defaultChecked;
+            }
+        }
+    },
+    select: {
+        init: function init(node, props) {
+            var value = props.value;
+            node._wrapperState = {
+                initialValue: value != null ? value : props.defaultValue,
+                wasMultiple: !!props.multiple
+            };
+        },
+        mount: function mount(node, props) {
+            node.multiple = !!props.multiple;
+            var value = props.value;
+            if (value != null) {
+                updateOptions(node, !!props.multiple, value, false);
+            } else if (props.defaultValue != null) {
+                updateOptions(node, !!props.multiple, props.defaultValue, true);
+            }
+        },
+        update: function update(node, props) {
+            node._wrapperState.initialValue = undefined;
+            var wasMultiple = node._wrapperState.wasMultiple;
+            node._wrapperState.wasMultiple = !!props.multiple;
+            var value = props.value;
+            if (value != null) {
+                updateOptions(node, !!props.multiple, value, false);
+            } else if (wasMultiple !== !!props.multiple) {
+                if (props.defaultValue != null) {
+                    updateOptions(node, !!props.multiple, props.defaultValue, true);
+                } else {
+                    updateOptions(node, !!props.multiple, props.multiple ? [] : "", false);
+                }
+            }
+        }
+    },
+    textarea: {
+        init: function init(node, props) {
+            var initialValue = props.value;
+            if (initialValue == null) {
+                var defaultValue = props.defaultValue;
+                var children = props.children;
+                if (children != null) {
+                    if (Array.isArray(children)) {
+                        children = children[0];
+                    }
+                    defaultValue = "" + children;
+                }
+                if (defaultValue == null) {
+                    defaultValue = "";
+                }
+                initialValue = defaultValue;
+            }
+            node._wrapperState = {
+                initialValue: "" + initialValue
+            };
+        },
+        mount: function mount(node) {
+            var textContent = node.textContent;
+            var stateValue = node._wrapperState.initialValue;
+            if (textContent != stateValue) {
+                syncValue(node, "value", stateValue);
+            }
+        },
+        update: function update(node, props) {
+            var value = props.value;
+            if (value != null) {
+                var newValue = "" + value;
+                if (newValue !== node.value) {
+                    syncValue(node, "value", newValue);
+                }
+                if (props.defaultValue == null) {
+                    node.defaultValue = newValue;
+                }
+            }
+            if (props.defaultValue != null) {
+                node.defaultValue = props.defaultValue;
+            }
+        }
+    },
+    option: {
+        init: function init() {},
+        update: function update(node, props) {
+            duplexMap$1.option.mount(node, props);
+        },
+        mount: function mount(node, props) {
+            if ("value" in props) {
+                node.duplexValue = node.value = props.value;
+            } else {
+                node.duplexValue = node.text;
+            }
+        }
+    }
+};
+function setDefaultValue(node, type, value) {
+    if (
+    type !== "number" || node.ownerDocument.activeElement !== node) {
+        if (value == null) {
+            node.defaultValue = "" + node._wrapperState.initialValue;
+        } else if (node.defaultValue !== "" + value) {
+            node.defaultValue = "" + value;
+        }
+    }
+}
+function updateOptions(node, multiple, propValue, setDefaultSelected) {
+    var options = node.options;
+    if (multiple) {
+        var selectedValues = propValue;
+        var selectedValue = {};
+        for (var i = 0; i < selectedValues.length; i++) {
+            selectedValue["$" + selectedValues[i]] = true;
+        }
+        for (var _i = 0; _i < options.length; _i++) {
+            var selected = selectedValue.hasOwnProperty("$" + options[_i].duplexValue);
+            if (options[_i].selected !== selected) {
+                options[_i].selected = selected;
+            }
+            if (selected && setDefaultSelected) {
+                options[_i].defaultSelected = true;
+            }
+        }
+    } else {
+        var _selectedValue = "" + propValue;
+        var defaultSelected = null;
+        for (var _i2 = 0; _i2 < options.length; _i2++) {
+            if (options[_i2].duplexValue === _selectedValue) {
+                options[_i2].selected = true;
+                if (setDefaultSelected) {
+                    options[_i2].defaultSelected = true;
+                }
+                return;
+            }
+            if (defaultSelected === null && !options[_i2].disabled) {
+                defaultSelected = options[_i2];
+            }
+        }
+        if (defaultSelected !== null) {
+            defaultSelected.selected = true;
+        }
+    }
+}
+function syncValue(dom, name, value) {
+    dom.__anuSetValue = true;
+    dom[name] = value;
+    dom.__anuSetValue = false;
+}
+function duplexAction(dom, fiber, nextProps, lastProps) {
+    var tag = fiber.name,
+        fns = duplexMap$1[tag];
+    if (tag !== "option") {
+        enqueueDuplex(dom);
+    }
+    if (lastProps == emptyObject) {
+        fns.init(dom, nextProps);
+        fns.mount(dom, nextProps);
+    } else {
+        fns.update(dom, nextProps);
+    }
+}
+var duplexNodes = [];
+function enqueueDuplex(dom) {
+    if (duplexNodes.indexOf(dom) == -1) {
+        duplexNodes.push(dom);
+    }
+}
+function fireDuplex() {
+    var radioMap = {};
+    if (duplexNodes.length) {
+        do {
+            var dom = duplexNodes.shift();
+            var e = dom.__events;
+            var fiber = e && e.vnode;
+            if (fiber && !fiber.disposed) {
+                var props = fiber.props;
+                var tag = fiber.name;
+                if (name === "select") {
+                    var value = props.value;
+                    if (value != null) {
+                        updateOptions(dom, !!props.multiple, value, false);
+                    }
+                } else {
+                    duplexMap$1[tag].update(dom, props);
+                    var _name = props.name;
+                    if (props.type === "radio" && _name != null && !radioMap[_name]) {
+                        radioMap[_name] = 1;
+                        collectNamedCousins(dom, _name);
+                    }
+                }
+            }
+        } while (duplexNodes.length);
+    }
+}
+function collectNamedCousins(rootNode, name) {
+    var queryRoot = rootNode;
+    while (queryRoot.parentNode) {
+        queryRoot = queryRoot.parentNode;
+    }
+    var group = queryRoot.getElementsByTagName("input");
+    for (var i = 0; i < group.length; i++) {
+        var otherNode = group[i];
+        if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
+            continue;
+        }
+        enqueueDuplex(otherNode);
+    }
+}
+
+var rform = /textarea|input|select|option/i;
 var globalEvents = {};
 var eventPropHooks = {};
 var eventHooks = {};
+Renderer.fireDuplex = fireDuplex;
 var eventLowerCache = {
     onClick: "click",
     onChange: "change",
@@ -868,14 +1138,6 @@ function dispatchEvent(e, type, endpoint) {
             triggerEventFlow(paths.reverse(), bubble, e);
         }
     });
-    Renderer.controlledCbs.forEach(function (el) {
-        if (el.stateNode) {
-            el.controlledCb({
-                target: el.stateNode
-            });
-        }
-    });
-    Renderer.controlledCbs.length = 0;
 }
 var nodeID = 1;
 function collectPaths(begin, end, unique) {
@@ -1015,8 +1277,7 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-var rselect = /select/;
-var input2change = /text|password|search/;
+var input2change = /text|password|search/i;
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
     addEvent(document, "input", function (e) {
@@ -1024,12 +1285,12 @@ if (!document["__input"]) {
         if (input2change.test(dom.type)) {
             dispatchEvent(e, "change");
         }
-        if (rselect.test(dom.type)) {
-            dom._persistValue = dom.value;
-        }
         dispatchEvent(e);
     });
 }
+eventPropHooks.change = function (e) {
+    enqueueDuplex(e.target);
+};
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1150,154 +1411,7 @@ Renderer.eventSystem = {
     SyntheticEvent: SyntheticEvent
 };
 
-function getDuplexProps(dom, props) {
-    var type = dom.type || dom.tagName.toLowerCase();
-    var number = duplexMap[type];
-    if (number) {
-        for (var i in controlledStrategy) {
-            if (props.hasOwnProperty(i)) {
-                return i;
-            }
-        }
-    }
-    return "children";
-}
-var controlledStrategy = {
-    value: controlled,
-    checked: controlled,
-    defaultValue: uncontrolled,
-    defaultChecked: uncontrolled,
-    children: noop
-};
-var rchecked = /checkbox|radio/;
-function controlled(dom, name, nextProps, lastProps, fiber) {
-    uncontrolled(dom, name, nextProps, lastProps, fiber, true);
-}
-function uncontrolled(dom, name, nextProps, lastProps, fiber, six) {
-    var isControlled = !!six;
-    var isSelect = fiber.type === "select";
-    var value = nextProps[name];
-    if (!isSelect) {
-        if (name.indexOf("alue") !== -1) {
-            var canSetVal = true;
-            value = toString(value);
-        } else {
-            value = !!value;
-        }
-    }
-    var multipleChange = isControlled || isSelect && nextProps.multiple != lastProps.multiple;
-    if (multipleChange || lastProps === emptyObject) {
-        dom._persistValue = value;
-        syncValue({ target: dom });
-        var duplexType = "select";
-        if (isSelect) {
-            syncOptions({
-                target: dom
-            });
-        } else {
-            duplexType = rchecked.test(dom.type) ? "checked" : "value";
-        }
-        if (isControlled) {
-            var arr = duplexData[duplexType];
-            arr[0].forEach(function (name) {
-                eventAction(dom, name, nextProps[name] || noop, lastProps, fiber);
-            });
-            fiber.controlledCb = arr[1];
-            Renderer.controlledCbs.push(fiber);
-        }
-    }
-    if (canSetVal) {
-        if (rchecked.test(dom.type)) {
-            value = "value" in nextProps ? nextProps.value : "on";
-        }
-        dom.__anuSetValue = true;
-        if (dom.type === "textarea") {
-            dom.defaultValue = value;
-        } else {
-            dom.setAttribute("value", value);
-        }
-        dom.__anuSetValue = false;
-    }
-}
-function syncOptions(e) {
-    var target = e.target,
-        value = target._persistValue,
-        options = target.options;
-    if (target.multiple) {
-        updateOptionsMore(options, options.length, value);
-    } else {
-        updateOptionsOne(options, options.length, value);
-    }
-    target._setSelected = true;
-}
-function syncValue(_ref) {
-    var dom = _ref.target;
-    var name = rchecked.test(dom.type) ? "checked" : "value";
-    var value = dom._persistValue;
-    if (dom[name] + "" !== value + "") {
-        dom.__anuSetValue = true;
-        dom[name] = value;
-        dom.__anuSetValue = false;
-    }
-}
-var duplexData = {
-    select: [["onChange"], syncOptions],
-    value: [["onChange", "onInput"], syncValue],
-    checked: [["onChange", "onClick"], syncValue]
-};
-function toString(a) {
-    var t = typeNumber(a);
-    if (t < 2 || t > 4) {
-        if (t === 8 && a.hasOwnProperty("toString")) {
-            return a.toString();
-        }
-        return "";
-    }
-    return a + "";
-}
-function updateOptionsOne(options, n, propValue) {
-    var stringValues = {},
-        noDisableds = [];
-    for (var i = 0; i < n; i++) {
-        var option = options[i];
-        var value = option.duplexValue;
-        if (!option.disabled) {
-            noDisableds.push(option);
-        }
-        if (value === propValue) {
-            return setOptionSelected(option, true);
-        }
-        stringValues["&" + value] = option;
-    }
-    var match = stringValues["&" + propValue];
-    if (match) {
-        return setOptionSelected(match, true);
-    }
-    if (n && noDisableds[0]) {
-        setOptionSelected(noDisableds[0], true);
-    }
-}
-function updateOptionsMore(options, n, propValue) {
-    var selectedValue = {};
-    try {
-        for (var i = 0; i < propValue.length; i++) {
-            selectedValue["&" + propValue[i]] = true;
-        }
-    } catch (e) {
-    }
-    for (var _i = 0; _i < n; _i++) {
-        var option = options[_i];
-        var value = option.duplexValue;
-        var selected = selectedValue.hasOwnProperty("&" + value);
-        setOptionSelected(option, selected);
-    }
-}
-function setOptionSelected(dom, selected) {
-    dom.selected = selected;
-}
-
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-var rform = /textarea|input|select/i;
 var isSpecialAttr = {
     style: 1,
     autoFocus: 1,
@@ -1393,12 +1507,15 @@ function getSVGAttributeName(name) {
 function diffProps(dom, lastProps, nextProps, fiber) {
     var isSVG = fiber.namespaceURI === NAMESPACE.svg;
     var tag = fiber.type;
-    var controlled = "children";
+    var continueProps = skipProps;
     if (!isSVG && rform.test(fiber.type)) {
-        controlled = getDuplexProps(dom, nextProps);
+        continueProps = duplexProps;
+        if (!("onChange" in nextProps)) {
+            eventAction(dom, "onChange", noop, lastProps, fiber);
+        }
     }
     for (var name in nextProps) {
-        if (name === controlled) {
+        if (continueProps[name]) {
             continue;
         }
         var val = nextProps[name];
@@ -1412,7 +1529,7 @@ function diffProps(dom, lastProps, nextProps, fiber) {
         }
     }
     for (var _name in lastProps) {
-        if (_name === controlled) {
+        if (continueProps[_name]) {
             continue;
         }
         if (!nextProps.hasOwnProperty(_name)) {
@@ -1424,7 +1541,7 @@ function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[_action](dom, _name, false, lastProps, fiber);
         }
     }
-    controlledStrategy[controlled](dom, controlled, nextProps, lastProps, fiber);
+    continueProps.onDuplex(dom, fiber, nextProps, lastProps);
 }
 function isBooleanAttr(dom, name) {
     var val = dom[name];
@@ -1463,9 +1580,21 @@ var builtinStringProps = {
     alt: 1,
     lang: 1
 };
+var skipProps = {
+    innerHTML: 1,
+    children: 1,
+    onDuplex: noop
+};
+var duplexProps = {
+    onDuplex: duplexAction,
+    value: 1,
+    defaultValue: 1,
+    checked: 1,
+    defaultChecked: 1,
+    innerHTML: 1,
+    children: 1
+};
 var actionStrategy = {
-    innerHTML: noop,
-    children: noop,
     style: function style(dom, _, val, lastProps) {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
@@ -2446,6 +2575,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
+            Renderer.fireDuplex();
             Renderer.scheduleWork();
         }
     }

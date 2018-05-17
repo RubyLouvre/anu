@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-16
+ * by 司徒正美 Copyright 2018-05-17
  * IE9+
  */
 
@@ -119,6 +119,7 @@ var Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
+    fireDuplex: noop,
     currentOwner: null
 };
 
@@ -1550,6 +1551,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
+            Renderer.fireDuplex();
             Renderer.scheduleWork();
         }
     }

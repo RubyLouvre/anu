@@ -1,13 +1,14 @@
 import { document, modern, contains } from "./browser";
 import { isFn, noop, toLowerCase } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
-
+import { fireDuplex, enqueueDuplex } from "./duplex";
+export let rform = /textarea|input|select|option/i;
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
 export let eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
 // onMouseMove --> mousemove
-
+Renderer.fireDuplex = fireDuplex;
 let eventLowerCache = {
     onClick: "click",
     onChange: "change",
@@ -59,16 +60,6 @@ export function dispatchEvent(e, type, endpoint) {
             triggerEventFlow(paths.reverse(), bubble, e);
         }
     });
-
-    Renderer.controlledCbs.forEach(function (el) {
-        if (el.stateNode) {
-            el.controlledCb({
-                target: el.stateNode,
-            });
-        }
-    });
-    Renderer.controlledCbs.length = 0;
-
 }
 
 let nodeID = 1;
@@ -236,8 +227,7 @@ export function createHandle(name, fn) {
         dispatchEvent(e, name);
     });
 }
-const rselect = /select/;
-const input2change = /text|password|search/;
+const input2change = /text|password|search/i;
 //react中，text,textarea,password元素的change事件实质上是input事件
 //https://segmentfault.com/a/1190000008023476
 if (!document["__input"]) {
@@ -247,12 +237,11 @@ if (!document["__input"]) {
         if (input2change.test(dom.type)) {
             dispatchEvent(e, "change");
         }
-        if (rselect.test(dom.type)) {
-            dom._persistValue = dom.value;
-        }
-        
         dispatchEvent(e);
     });
+}
+eventPropHooks.change = function(e){
+    enqueueDuplex(e.target);
 }
 
 createHandle("doubleclick");
@@ -261,6 +250,7 @@ createHandle("wheel");
 globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
+
 
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function (dom) {
