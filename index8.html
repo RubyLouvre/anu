@@ -2,26 +2,26 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-   <script type='text/javascript' src="./dist/React.js"></script>
-   <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
-   <!-- <script type='text/javascript' src="./react.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
+  <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
-    <pre>React 15 </pre>
+  <pre>React 15 </pre>
 
 
-    <div id='root' class="root">
+  <div id='root' class="root">
 
-    </div>
-    <script type='text/babel'>
+  </div>
+  <script type='text/babel'>
           var container = document.getElementById("root")
           let check = function () {
     return check;
@@ -64,57 +64,28 @@ check.isRequired = check;
                   }
               };
          }; 
- 
-      
-        class App extends React.Component{
-          state = {
-            text: 111
-          }
-          getChildContext(){
-            return {
-              table: {
-                title: "title"
-              }
-            }
-          }
-          static childContextTypes = {
-            table: function(){
-              return null
-            }
-          }
-          render(){
-            return <div><Head ref="head" className="xxx" /></div>
-          }
-        }
 
-        class Head extends React.Component{
-           constructor(a, b){
-              super(a, b)
-              this.state = {
-                a:  "xxxx"
-              }
-           }
-           render(){
-             return <strong>{this.state.a}<b>{this.context.table.title}</b></strong>
-           }
+       //  const container = document.createElement('div');
+function emptyFunction(){}
+   var renderTextarea = function(component, container) {
+      if (!container) {
+        container = document.createElement('div');
+      }
+      const node = ReactDOM.render(component, container);
 
-        }
+      // Fixing jsdom's quirky behavior -- in reality, the parser should strip
+      // off the leading newline but we need to do it by hand here.
+      node.defaultValue = node.innerHTML.replace(/^\n/, '');
+      return node;
+    };
+    const stub = <textarea value={0} onChange={emptyFunction} />;
+    const node = renderTextarea(stub);
 
-        Head.contextTypes = {
-          table:function(){
-              return null
-            }
-        }
-     
-        
+    node.value = 'giraffe';
+    ReactTestUtils.Simulate.change(node);
+    expect(node.value).toBe('0');
 
-        
-      var a =  ReactDOM.render(<App id="app" />, document.getElementById("root"));
-a.refs.head.setState({
-  a: 4444
-})
     </script>
 
 
 </html>
-

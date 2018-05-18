@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="./dist/React.js"></script>
+  <!--<script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
+
+</head>
+
+<body>
+
+  <pre>
+            
+    </pre>
+  <div id='example'></div>
+  <div id='console'></div>
+  <script type='text/babel'>
+        var expect = function(a) {
+            return {
+                toBe: function(b) {
+                    console.log(a, b, a === b)
+                }
+            }
+        }
+        var PropTypes = React.PropTypes
+
+        var container = document.getElementById("example")
+      
+        class Container extends React.Component {
+          constructor(props) {
+            super(props);
+            this.state = {
+              show: false,
+              xxx: 1
+            }
+          }
+          componentWillUnmount(){
+            console.log("Container被移除")
+          }
+          
+          render() {            
+            return (
+                <div className="Container" >
+                  <p>3333</p>
+               <Portal>
+                11111
+                </Portal>
+              </div>
+            )
+          }
+        }
+        
+        class Portal extends React.Component{
+          constructor(props) {
+            super(props);
+            this.node = document.createElement('div');
+            this.node.className = "dynamic"
+            document.body.appendChild(this.node);
+          }
+          componentWillUnmount(){
+            console.log(!!this.node.parentNode)
+            console.log("Portal被移除")
+          }
+          
+          render() {
+            return ReactDOM.createPortal(this.props.children, this.node);
+          }
+        }
+        ReactDOM.render(<Container />, document.getElementById('example'));
+       var s = ReactDOM.render(<span>xxxx</span>, document.getElementById('example'));
+        
+        
+               </script>
+</body>
+
+</html>

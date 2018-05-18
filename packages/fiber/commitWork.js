@@ -93,7 +93,6 @@ export function commitOtherEffects(fiber, tasks) {
             case DETACH:
               
                 if (fiber.tag > 3) {
-                  
                     Renderer.removeElement(fiber);
                 } else {
                     if (fiber.hasMounted) {

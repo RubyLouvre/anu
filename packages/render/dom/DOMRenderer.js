@@ -3,44 +3,43 @@ import { document, NAMESPACE, contains } from "./browser";
 import { get, extend, emptyObject, topNodes, topFibers } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
-//import { contextStack } from 'react-fiber/util';
 
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     let text = props ? props.children : "";
     switch (type) {
-        case "#text":
-            //只重复利用文本节点
-            var node = recyclables[type].pop();
-            if (node) {
-                node.nodeValue = text;
-                return node;
-            }
-            return document.createTextNode(text);
-        case "#comment":
-            return document.createComment(text);
+    case "#text":
+        //只重复利用文本节点
+        var node = recyclables[type].pop();
+        if (node) {
+            node.nodeValue = text;
+            return node;
+        }
+        return document.createTextNode(text);
+    case "#comment":
+        return document.createComment(text);
 
-        case "svg":
-            ns = NAMESPACE.svg;
-            break;
-        case "math":
-            ns = NAMESPACE.math;
-            break;
+    case "svg":
+        ns = NAMESPACE.svg;
+        break;
+    case "math":
+        ns = NAMESPACE.math;
+        break;
 
-        default:
-            do {
-                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-                if (s) {
-                    ns = s.namespaceURI;
-                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                        ns = "";
-                    }
-                    break;
+    default:
+        do {
+            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+            if (s) {
+                ns = s.namespaceURI;
+                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                    ns = "";
                 }
-            } while ((p = p.return));
+                break;
+            }
+        } while ((p = p.return));
 
-            break;
+        break;
     }
     try {
         if (ns) {
@@ -63,12 +62,8 @@ export function createElement(vnode) {
 
 let fragment = document.createDocumentFragment();
 function emptyElement(node) {
-    let child;
-    while ((child = node.firstChild)) {
-        emptyElement(child);
-        if (child === Renderer.focusNode) {
-            Renderer.focusNode = null;
-        }
+    let children = node.childNodes;
+    for (let i = 0, child; (child = children[i++]);) {
         node.removeChild(child);
     }
 }
@@ -99,7 +94,9 @@ export function removeElement(node) {
     if (node === Renderer.focusNode) {
         Renderer.focusNode = null;
     }
+
     fragment.appendChild(node);
+
     fragment.removeChild(node);
 }
 
@@ -147,6 +144,7 @@ export let DOMRenderer = createRenderer({
     createElement,
     insertElement,
     emptyElement(fiber) {
+        fiber.stateNode.innerHTML = "";
         emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {

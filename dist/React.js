@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-17
+ * by 司徒正美 Copyright 2018-05-18
  * IE9+
  */
 
@@ -2801,12 +2801,8 @@ function createElement$1(vnode) {
 }
 var fragment = document.createDocumentFragment();
 function _emptyElement(node) {
-    var child = void 0;
-    while (child = node.firstChild) {
-        _emptyElement(child);
-        if (child === Renderer.focusNode) {
-            Renderer.focusNode = null;
-        }
+    var children = node.childNodes;
+    for (var i = 0, child; child = children[i++];) {
         node.removeChild(child);
     }
 }
@@ -2881,6 +2877,7 @@ var DOMRenderer = createRenderer({
     createElement: createElement$1,
     insertElement: insertElement,
     emptyElement: function emptyElement(fiber) {
+        fiber.stateNode.innerHTML = "";
         _emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
