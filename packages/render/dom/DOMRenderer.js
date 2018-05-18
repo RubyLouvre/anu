@@ -1,5 +1,5 @@
 import { diffProps } from "./props";
-import { document, NAMESPACE, contains } from "./browser";
+import { document, NAMESPACE } from "./browser";
 import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
@@ -95,13 +95,14 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-   
+
     fragment.appendChild(node);
     fragment.removeChild(node);
 }
 
 function insertElement(fiber) {
     let { stateNode: dom, parent, insertPoint } = fiber;
+
     try {
         let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
         if (after === dom) {
@@ -110,10 +111,14 @@ function insertElement(fiber) {
         if (after === null && dom === parent.lastChild) {
             return;
         }
+        //插入会引发焦点丢失，触发body focus事件，我们需要忽略它
+        Renderer.inserting = document.activeElement;
         parent.insertBefore(dom, after);
+        Renderer.inserting = null;
     } catch (e) {
         throw e;
     }
+
 }
 
 //其他Renderer也要实现这些方法

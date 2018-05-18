@@ -293,31 +293,22 @@ export let focusMap = {
     focus: "focus",
     blur: "blur",
 };
-var focusNode;
-Renderer.middleware({
-    begin(){
-        var a = document.activeElement;
-        if(a == document.body){
-            //  return;
-        }
-        focusNode = document.activeElement;
-        // console.log("收集active",priorFocusedElem);
-    },
-    end(){
-        // console.log("还原active");
-        var a = document.activeElement;
-        if (a !== focusNode && contains(document.body, focusNode)) {
-            try{
-                focusNode.focus();
-            }catch(e){}
-        }
-    }
-});
-
+let innerFocus;
 function blurFocus(e) {
     let dom = e.target || e.srcElement;
     let type = focusMap[e.type];
-    //let isFocus = type === "focus";
+    if (Renderer.inserting) {
+        if (type == "blur") {
+            innerFocus = true;
+            Renderer.inserting.focus();
+            return;
+        }
+        //return放这里会导致浮层无法关闭
+    }
+    if (innerFocus) {
+        innerFocus = false;
+        return;
+    }
     do {
         if (dom.nodeType === 1) {
             if (dom.__events && dom.__events[type]) {

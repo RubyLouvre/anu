@@ -565,7 +565,7 @@ describe('ReactComponentLifeCycle', () => {
     class Outer extends React.Component {
       state = {};
       static getDerivedStateFromProps(props, prevState) {
-        log.push('outer getDerivedStateFromProps');
+        logger('outer getDerivedStateFromProps')();
         return null;
       }
       componentDidMount = logger('outer componentDidMount');
@@ -585,7 +585,7 @@ describe('ReactComponentLifeCycle', () => {
     class Inner extends React.Component {
       state = {};
       static getDerivedStateFromProps(props, prevState) {
-        log.push('inner getDerivedStateFromProps');
+        logger('inner getDerivedStateFromProps')();
         return null;
       }
       componentDidMount = logger('inner componentDidMount');

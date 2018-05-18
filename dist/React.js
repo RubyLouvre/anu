@@ -1335,26 +1335,21 @@ var focusMap = {
     focus: "focus",
     blur: "blur"
 };
-var focusNode;
-Renderer.middleware({
-    begin: function begin() {
-        var a = document.activeElement;
-        if (a == document.body) {
-        }
-        focusNode = document.activeElement;
-    },
-    end: function end() {
-        var a = document.activeElement;
-        if (a !== focusNode && contains(document.body, focusNode)) {
-            try {
-                focusNode.focus();
-            } catch (e) {}
-        }
-    }
-});
+var innerFocus = void 0;
 function blurFocus(e) {
     var dom = e.target || e.srcElement;
     var type = focusMap[e.type];
+    if (Renderer.inserting) {
+        if (type == "blur") {
+            innerFocus = true;
+            Renderer.inserting.focus();
+            return;
+        }
+    }
+    if (innerFocus) {
+        innerFocus = false;
+        return;
+    }
     do {
         if (dom.nodeType === 1) {
             if (dom.__events && dom.__events[type]) {
@@ -2871,7 +2866,9 @@ function insertElement(fiber) {
         if (after === null && dom === parent.lastChild) {
             return;
         }
+        Renderer.inserting = document.activeElement;
         parent.insertBefore(dom, after);
+        Renderer.inserting = null;
     } catch (e) {
         throw e;
     }
