@@ -10,11 +10,6 @@ import { createInstance } from "./createInstance";
 const macrotasks = Renderer.macrotasks;
 const batchedtasks = [];
 
-/*
-    window.microtasks = microtasks;
-    window.macrotasks = macrotasks;
-    window.batchedtasks = batchedtasks;
-    */
 export function render(vnode, root, callback) {
     let container = createContainer(root),
         immediateUpdate = false;
@@ -69,7 +64,6 @@ function performWork(deadline) {
     }
     topFibers.forEach(function (el) {
         let microtasks = el.microtasks;
-       
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
                 macrotasks.push(el);
@@ -91,16 +85,17 @@ let ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
     fn(ricObj);
 }
-
 Renderer.scheduleWork = function () {
     performWork(ricObj);
 };
 
 let isBatching = false;
+
 Renderer.batchedUpdates = function (callback, event) {
     let keepbook = isBatching;
     isBatching = true;
     try {
+        event && Renderer.fireMiddlewares(true);
         return callback(event);
     } finally {
         isBatching = keepbook;
@@ -111,7 +106,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
-            Renderer. fireDuplex();
+            event && Renderer.fireMiddlewares();
             Renderer.scheduleWork();
         }
     }
@@ -236,7 +231,7 @@ function pushChildQueue(fiber, queue) {
 function updateComponent(instance, state, callback, immediateUpdate) {
     let fiber = get(instance);
     fiber.dirty = true;
-    
+
     let sn = typeNumber(state);
     let isForced = state === true;
     let microtasks = getQueue(fiber);

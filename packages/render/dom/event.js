@@ -1,14 +1,13 @@
 import { document, modern, contains } from "./browser";
 import { isFn, noop, toLowerCase } from "react-core/util";
 import { Renderer } from "react-core/createRenderer";
-import { fireDuplex, enqueueDuplex } from "./duplex";
+import { enqueueDuplex } from "./duplex";
 export let rform = /textarea|input|select|option/i;
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
 export let eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
 // onMouseMove --> mousemove
-Renderer.fireDuplex = fireDuplex;
 let eventLowerCache = {
     onClick: "click",
     onChange: "change",
@@ -59,7 +58,7 @@ export function dispatchEvent(e, type, endpoint) {
         if (!e._stopPropagation) {
             triggerEventFlow(paths.reverse(), bubble, e);
         }
-    });
+    }, e);
 }
 
 let nodeID = 1;
@@ -240,9 +239,9 @@ if (!document["__input"]) {
         dispatchEvent(e);
     });
 }
-eventPropHooks.change = function(e){
+eventPropHooks.change = function (e) {
     enqueueDuplex(e.target);
-}
+};
 
 createHandle("doubleclick");
 createHandle("scroll");
@@ -257,6 +256,8 @@ if (isTouch) {
         dom.onclick = dom.onclick || noop;
     };
 }
+
+
 
 eventPropHooks.click = function (e) {
     return !e.target.disabled;
@@ -292,19 +293,31 @@ export let focusMap = {
     focus: "focus",
     blur: "blur",
 };
+var focusNode;
+Renderer.middleware({
+    begin(){
+        var a = document.activeElement;
+        if(a == document.body){
+            //  return;
+        }
+        focusNode = document.activeElement;
+        // console.log("收集active",priorFocusedElem);
+    },
+    end(){
+        // console.log("还原active");
+        var a = document.activeElement;
+        if (a !== focusNode && contains(document.body, focusNode)) {
+            try{
+                focusNode.focus();
+            }catch(e){}
+        }
+    }
+});
 
 function blurFocus(e) {
     let dom = e.target || e.srcElement;
     let type = focusMap[e.type];
-    let isFocus = type === "focus";
-    if (isFocus && dom.__inner__) {
-        dom.__inner__ = false;
-        return;
-    }
-
-    if (!isFocus && Renderer.focusNode === dom) {
-        Renderer.focusNode = null;
-    }
+    //let isFocus = type === "focus";
     do {
         if (dom.nodeType === 1) {
             if (dom.__events && dom.__events[type]) {

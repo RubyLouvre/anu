@@ -7,6 +7,7 @@
 6. 将createClass移出核心库
 7. 重构错误边界，去掉根节点上的capturedValues， 本节点上的catchBoundary， capturedCount，而是使用全局的boundaries
 8. 重构contextStack，保证setStack后，从当前组件的unmaskedContext中还原之前的栈
+9. batchedUpdates时支持洋葱结构
 
 ## 1.3.2(2018.04.16)
 处理移动端下中文输入法的onChange事件BUG

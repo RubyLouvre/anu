@@ -1,5 +1,4 @@
 import { typeNumber, emptyObject } from "react-core/util";
-import { Renderer } from "react-core/createRenderer";
 
 function getSafeValue(value) {
     switch (typeNumber(value)) {

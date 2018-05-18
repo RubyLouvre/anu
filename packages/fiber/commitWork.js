@@ -25,7 +25,7 @@ export function commitWork() {
         while ((task = tasks.shift())) {
             commitOtherEffects(task, tasks);
         }
-    });
+    }, {});
 
     let error = Renderer.catchError;
     if (error) {
@@ -91,7 +91,6 @@ export function commitOtherEffects(fiber, tasks) {
                 }
                 break;
             case DETACH:
-              
                 if (fiber.tag > 3) {
                     Renderer.removeElement(fiber);
                 } else {

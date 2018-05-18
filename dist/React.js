@@ -138,12 +138,27 @@ function typeNumber(data) {
 function createRenderer(methods) {
     return extend(Renderer, methods);
 }
+var middlewares = [];
 var Renderer = {
     controlledCbs: [],
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
-    fireDuplex: noop,
+    middleware: function middleware(obj) {
+        if (obj.begin && obj.end) {
+            middlewares.push(obj);
+        }
+    },
+    fireMiddlewares: function fireMiddlewares(begin) {
+        var index = begin ? middlewares.length - 1 : 0,
+            delta = begin ? -1 : 1,
+            method = begin ? "begin" : "end",
+            obj = void 0;
+        while (obj = middlewares[index]) {
+            obj[method]();
+            index += delta;
+        }
+    },
     currentOwner: null
 };
 
@@ -1095,7 +1110,6 @@ var rform = /textarea|input|select|option/i;
 var globalEvents = {};
 var eventPropHooks = {};
 var eventHooks = {};
-Renderer.fireDuplex = fireDuplex;
 var eventLowerCache = {
     onClick: "click",
     onChange: "change",
@@ -1138,7 +1152,7 @@ function dispatchEvent(e, type, endpoint) {
         if (!e._stopPropagation) {
             triggerEventFlow(paths.reverse(), bubble, e);
         }
-    });
+    }, e);
 }
 var nodeID = 1;
 function collectPaths(begin, end, unique) {
@@ -1321,17 +1335,26 @@ var focusMap = {
     focus: "focus",
     blur: "blur"
 };
+var focusNode;
+Renderer.middleware({
+    begin: function begin() {
+        var a = document.activeElement;
+        if (a == document.body) {
+        }
+        focusNode = document.activeElement;
+    },
+    end: function end() {
+        var a = document.activeElement;
+        if (a !== focusNode && contains(document.body, focusNode)) {
+            try {
+                focusNode.focus();
+            } catch (e) {}
+        }
+    }
+});
 function blurFocus(e) {
     var dom = e.target || e.srcElement;
     var type = focusMap[e.type];
-    var isFocus = type === "focus";
-    if (isFocus && dom.__inner__) {
-        dom.__inner__ = false;
-        return;
-    }
-    if (!isFocus && Renderer.focusNode === dom) {
-        Renderer.focusNode = null;
-    }
     do {
         if (dom.nodeType === 1) {
             if (dom.__events && dom.__events[type]) {
@@ -2000,7 +2023,7 @@ function updateClassComponent(fiber, info) {
     if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
         contextStack.unshift(instance.unmaskedContext);
     }
-    var newContext = getMaskedContext(type.contextTypes, instance, contextStack);
+    var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
             framentParent = null;
@@ -2037,11 +2060,6 @@ function updateClassComponent(fiber, info) {
         fiber.pendingCbs = cbs;
         fiber.effectTag *= CALLBACK;
     }
-    if (fiber.updateFail) {
-        cloneChildren(fiber);
-        fiber._hydrating = false;
-        return;
-    }
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
@@ -2050,6 +2068,11 @@ function updateClassComponent(fiber, info) {
         context = Object.assign({}, contextStack[0], context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
+    }
+    if (fiber.updateFail) {
+        cloneChildren(fiber);
+        fiber._hydrating = false;
+        return;
     }
     fiber.effectTag *= HOOK;
     if (fiber.hasError) {
@@ -2144,7 +2167,7 @@ function cloneChildren(fiber) {
         }
     }
 }
-function getMaskedContext(contextTypes, instance, contextStack) {
+function getMaskedContext(instance, contextTypes, contextStack) {
     if (instance && !contextTypes) {
         return instance.context;
     }
@@ -2367,7 +2390,7 @@ function commitWork() {
         while (task = tasks.shift()) {
             commitOtherEffects(task, tasks);
         }
-    });
+    }, {});
     var error = Renderer.catchError;
     if (error) {
         delete Renderer.catchError;
@@ -2565,6 +2588,7 @@ Renderer.batchedUpdates = function (callback, event) {
     var keepbook = isBatching;
     isBatching = true;
     try {
+        event && Renderer.fireMiddlewares(true);
         return callback(event);
     } finally {
         isBatching = keepbook;
@@ -2575,7 +2599,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
-            Renderer.fireDuplex();
+            event && Renderer.fireMiddlewares();
             Renderer.scheduleWork();
         }
     }
@@ -2809,6 +2833,10 @@ function _emptyElement(node) {
 var recyclables = {
     "#text": []
 };
+Renderer.middleware({
+    begin: noop,
+    end: fireDuplex
+});
 function _removeElement(node) {
     if (!node) {
         return;
@@ -2828,9 +2856,6 @@ function _removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-    if (node === Renderer.focusNode) {
-        Renderer.focusNode = null;
-    }
     fragment.appendChild(node);
     fragment.removeChild(node);
 }
@@ -2849,17 +2874,6 @@ function insertElement(fiber) {
         parent.insertBefore(dom, after);
     } catch (e) {
         throw e;
-    }
-    var isElement = fiber.tag === 5;
-    var prevFocus = isElement && document.activeElement;
-    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
-        try {
-            Renderer.focusNode = prevFocus;
-            prevFocus.__inner__ = true;
-            prevFocus.focus();
-        } catch (e) {
-            prevFocus.__inner__ = false;
-        }
     }
 }
 render$1.Render = Renderer;

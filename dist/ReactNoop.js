@@ -114,12 +114,27 @@ function typeNumber(data) {
 function createRenderer(methods) {
     return extend(Renderer, methods);
 }
+var middlewares = [];
 var Renderer = {
     controlledCbs: [],
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
-    fireDuplex: noop,
+    middleware: function middleware(obj) {
+        if (obj.begin && obj.end) {
+            middlewares.push(obj);
+        }
+    },
+    fireMiddlewares: function fireMiddlewares(begin) {
+        var index = begin ? middlewares.length - 1 : 0,
+            delta = begin ? -1 : 1,
+            method = begin ? "begin" : "end",
+            obj = void 0;
+        while (obj = middlewares[index]) {
+            obj[method]();
+            index += delta;
+        }
+    },
     currentOwner: null
 };
 
@@ -976,7 +991,7 @@ function updateClassComponent(fiber, info) {
     if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
         contextStack.unshift(instance.unmaskedContext);
     }
-    var newContext = getMaskedContext(type.contextTypes, instance, contextStack);
+    var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
             framentParent = null;
@@ -1013,11 +1028,6 @@ function updateClassComponent(fiber, info) {
         fiber.pendingCbs = cbs;
         fiber.effectTag *= CALLBACK;
     }
-    if (fiber.updateFail) {
-        cloneChildren(fiber);
-        fiber._hydrating = false;
-        return;
-    }
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
@@ -1026,6 +1036,11 @@ function updateClassComponent(fiber, info) {
         context = Object.assign({}, contextStack[0], context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
+    }
+    if (fiber.updateFail) {
+        cloneChildren(fiber);
+        fiber._hydrating = false;
+        return;
     }
     fiber.effectTag *= HOOK;
     if (fiber.hasError) {
@@ -1120,7 +1135,7 @@ function cloneChildren(fiber) {
         }
     }
 }
-function getMaskedContext(contextTypes, instance, contextStack) {
+function getMaskedContext(instance, contextTypes, contextStack) {
     if (instance && !contextTypes) {
         return instance.context;
     }
@@ -1343,7 +1358,7 @@ function commitWork() {
         while (task = tasks.shift()) {
             commitOtherEffects(task, tasks);
         }
-    });
+    }, {});
     var error = Renderer.catchError;
     if (error) {
         delete Renderer.catchError;
@@ -1541,6 +1556,7 @@ Renderer.batchedUpdates = function (callback, event) {
     var keepbook = isBatching;
     isBatching = true;
     try {
+        event && Renderer.fireMiddlewares(true);
         return callback(event);
     } finally {
         isBatching = keepbook;
@@ -1551,7 +1567,7 @@ Renderer.batchedUpdates = function (callback, event) {
                     macrotasks.push(el);
                 }
             }
-            Renderer.fireDuplex();
+            event && Renderer.fireMiddlewares();
             Renderer.scheduleWork();
         }
     }

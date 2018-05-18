@@ -1,8 +1,9 @@
 import { diffProps } from "./props";
 import { document, NAMESPACE, contains } from "./browser";
-import { get, extend, emptyObject, topNodes, topFibers } from "react-core/util";
+import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
+import { fireDuplex } from "./duplex";
 
 export function createElement(vnode) {
     let p = vnode.return;
@@ -67,10 +68,13 @@ function emptyElement(node) {
         node.removeChild(child);
     }
 }
-
 const recyclables = {
     "#text": [],
 };
+Renderer.middleware({
+    begin: noop,
+    end: fireDuplex
+});
 export function removeElement(node) {
     if (!node) {
         return;
@@ -91,12 +95,8 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-    if (node === Renderer.focusNode) {
-        Renderer.focusNode = null;
-    }
    
     fragment.appendChild(node);
-
     fragment.removeChild(node);
 }
 
@@ -104,7 +104,6 @@ function insertElement(fiber) {
     let { stateNode: dom, parent, insertPoint } = fiber;
     try {
         let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
-
         if (after === dom) {
             return;
         }
@@ -114,18 +113,6 @@ function insertElement(fiber) {
         parent.insertBefore(dom, after);
     } catch (e) {
         throw e;
-    }
-    let isElement = fiber.tag === 5;
-    let prevFocus = isElement && document.activeElement;
-
-    if (isElement && prevFocus !== document.activeElement && contains(document.body, prevFocus)) {
-        try {
-            Renderer.focusNode = prevFocus;
-            prevFocus.__inner__ = true;
-            prevFocus.focus();
-        } catch (e) {
-            prevFocus.__inner__ = false;
-        }
     }
 }
 
@@ -206,5 +193,3 @@ export let DOMRenderer = createRenderer({
 
     },
 });
-
-//setState把自己放进列队
