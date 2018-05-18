@@ -94,7 +94,7 @@ export function removeElement(node) {
     if (node === Renderer.focusNode) {
         Renderer.focusNode = null;
     }
-
+   
     fragment.appendChild(node);
 
     fragment.removeChild(node);

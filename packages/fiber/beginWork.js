@@ -1,4 +1,4 @@
-import { extend,Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
+import { extend, Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
 import { fiberizeChildren } from "react-core/createElement";
 import { AnuPortal } from "react-core/createPortal";
 
@@ -137,10 +137,11 @@ export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     let { contextStack, containerStack } = info;
-    if(fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext ){
+
+    if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
         contextStack.unshift(instance.unmaskedContext);//setState需要还原contextStack
     }
-    let newContext = getMaskedContext(type.contextTypes, instance, contextStack);
+    let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
             framentParent = null;
@@ -160,7 +161,7 @@ export function updateClassComponent(fiber, info) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
     }
-    
+
     let updateQueue = fiber.updateQueue;
     if (!instance.__isStateless) {
         //必须带生命周期
@@ -181,12 +182,7 @@ export function updateClassComponent(fiber, info) {
         fiber.pendingCbs = cbs;
         fiber.effectTag *= CALLBACK;
     }
-    if (fiber.updateFail) {
-        cloneChildren(fiber);
-        fiber._hydrating = false;
-        return;
-    }
-    instance.context = newContext; //设置新context    
+    instance.context = newContext; //设置新context   
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
@@ -194,6 +190,11 @@ export function updateClassComponent(fiber, info) {
         context = Object.assign({}, contextStack[0], context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
+    }
+    if (fiber.updateFail) {
+        cloneChildren(fiber);
+        fiber._hydrating = false;
+        return;
     }
 
     fiber.effectTag *= HOOK;
@@ -235,6 +236,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
+          
             callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
             if (prevState !== instance.state) {//模拟replaceState
                 fiber.memoizedState = instance.state;
@@ -253,6 +255,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     fiber._hydrating = true;
     if (!propsChanged && newState === oldState && contextStack.length == 1 && !updateQueue.isForced) {
         fiber.updateFail = true;
+       
     } else {
         let args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
@@ -303,7 +306,7 @@ function cloneChildren(fiber) {
     }
 }
 
-function getMaskedContext(contextTypes, instance, contextStack) {
+function getMaskedContext(instance, contextTypes, contextStack) {
     if (instance && !contextTypes) {
         return instance.context;
     }
@@ -327,9 +330,9 @@ function getMaskedContext(contextTypes, instance, contextStack) {
  */
 function diffChildren(parentFiber, children) {
     let oldFibers = parentFiber.children; // 旧的
-    if(oldFibers){
+    if (oldFibers) {
         parentFiber.oldChildren = oldFibers;
-    }else{
+    } else {
         oldFibers = {};
     }
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
