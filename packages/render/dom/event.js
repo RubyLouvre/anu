@@ -298,7 +298,7 @@ function blurFocus(e) {
     let dom = e.target || e.srcElement;
     let type = focusMap[e.type];
     if (Renderer.inserting) {
-        if (type == "blur") {
+        if (type === "blur") {
             innerFocus = true;
             Renderer.inserting.focus();
             return;

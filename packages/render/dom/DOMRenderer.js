@@ -111,8 +111,8 @@ function insertElement(fiber) {
         if (after === null && dom === parent.lastChild) {
             return;
         }
-        //插入会引发焦点丢失，触发body focus事件，我们需要忽略它
-        Renderer.inserting = document.activeElement;
+        //插入**元素节点**会引发焦点丢失，触发body focus事件
+        Renderer.inserting = fiber.tag === 5 && document.activeElement;
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {

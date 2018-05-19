@@ -20,61 +20,91 @@
   <div id='example'></div>
   <div id='console'></div>
   <script type='text/babel'>
-        var expect = function(a) {
-            return {
-                toBe: function(b) {
-                    console.log(a, b, a === b)
-                }
-            }
-        }
+       var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+         };
         var PropTypes = React.PropTypes
 
         var container = document.getElementById("example")
       
-        class Container extends React.Component {
-          constructor(props) {
-            super(props);
-            this.state = {
-              show: false,
-              xxx: 1
-            }
-          }
-          componentWillUnmount(){
-            console.log("Container被移除")
-          }
-          
-          render() {            
-            return (
-                <div className="Container" >
-                  <p>3333</p>
-               <Portal>
-                11111
-                </Portal>
-              </div>
-            )
-          }
-        }
-        
-        class Portal extends React.Component{
-          constructor(props) {
-            super(props);
-            this.node = document.createElement('div');
-            this.node.className = "dynamic"
-            document.body.appendChild(this.node);
-          }
-          componentWillUnmount(){
-            console.log(!!this.node.parentNode)
-            console.log("Portal被移除")
-          }
-          
-          render() {
-            return ReactDOM.createPortal(this.props.children, this.node);
-          }
-        }
-        ReactDOM.render(<Container />, document.getElementById('example'));
-       var s = ReactDOM.render(<span>xxxx</span>, document.getElementById('example'));
-        
-        
+        let log;
+    const logger = function(msg) {
+      return function() {
+        // return true for shouldComponentUpdate
+        log.push(msg);
+        return true;
+      };
+    };
+    class Outer extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        logger('outer getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('outer componentDidMount');
+      shouldComponentUpdate = logger('outer shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('outer getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('outer componentDidUpdate');
+      componentWillUnmount = logger('outer componentWillUnmount');
+      render() {
+        return (
+          <div>
+            <Inner x={this.props.x} />
+          </div>
+        );
+      }
+    }
+
+    class Inner extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        console.log("inner !!!")
+        logger('inner getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('inner componentDidMount');
+      shouldComponentUpdate = logger('inner shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('inner getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('inner componentDidUpdate');
+      componentWillUnmount = logger('inner componentWillUnmount');
+      render() {
+        return <span>{this.props.x}</span>;
+      }
+    }
+
+    const container = document.createElement('div');
+    log = [];
+    ReactDOM.render(<Outer x={1} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'inner getDerivedStateFromProps',
+      'inner componentDidMount',
+      'outer componentDidMount',
+    ]);
+
+    // Dedup warnings
+    console.log("重写")
+    log = [];
+    ReactDOM.render(<Outer x={2} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'outer shouldComponentUpdate',
+      'inner getDerivedStateFromProps',
+      'inner shouldComponentUpdate',
+      'inner getSnapshotBeforeUpdate',
+      'outer getSnapshotBeforeUpdate',
+      'inner componentDidUpdate',
+      'outer componentDidUpdate',
+    ]);
+
+   
                </script>
 </body>
 
