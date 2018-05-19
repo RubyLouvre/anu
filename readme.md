@@ -1,13 +1,5 @@
 # anu
 
-<p align="center">
-<a href="https://badge.fury.io/js/anujs">
-<img src="https://badge.fury.io/js/anujs.svg" alt="npm version" height="18">
-</a>
-<a href="https://travis-ci.org/RubyLouvre/anu">
-<img src="https://travis-ci.org/RubyLouvre/anu.svg?branch=master" alt="Travis CI Status"/>
-</a>
-</p>
 
 ```bash
 npm install anujs
@@ -67,7 +59,8 @@ resolve: {
 
 详细用法与示例见  [wiki](https://github.com/RubyLouvre/anu/wiki) 
 
+### 测试
 
-
-
-
+```
+npm test
+```

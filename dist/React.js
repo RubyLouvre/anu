@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-18
+ * by 司徒正美 Copyright 2018-05-19
  * IE9+
  */
 
@@ -1340,7 +1340,7 @@ function blurFocus(e) {
     var dom = e.target || e.srcElement;
     var type = focusMap[e.type];
     if (Renderer.inserting) {
-        if (type == "blur") {
+        if (type === "blur") {
             innerFocus = true;
             Renderer.inserting.focus();
             return;
@@ -2866,7 +2866,7 @@ function insertElement(fiber) {
         if (after === null && dom === parent.lastChild) {
             return;
         }
-        Renderer.inserting = document.activeElement;
+        Renderer.inserting = fiber.tag === 5 && document.activeElement;
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
