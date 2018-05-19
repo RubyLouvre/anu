@@ -10,6 +10,7 @@ import { Fragment, getWindow } from "react-core/util";
 
 import { findDOMNode } from "./findDOMNode";
 import { DOMRenderer } from "./DOMRenderer";
+import "./compat";
 let win = getWindow();
 let prevReact = win.React;
 let React;

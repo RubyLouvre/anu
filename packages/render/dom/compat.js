@@ -1,6 +1,6 @@
 import { document, msie } from "./browser";
 import { actionStrategy } from "./props";
-import { oneObject, innerHTML, extend } from "react-core/util";
+import { oneObject, innerHTML, extend } from  "react-core/util";
 import { eventHooks, addEvent, eventPropHooks, createHandle, dispatchEvent, focusMap } from "./event";
 
 //IE8中select.value不会在onchange事件中随用户的选中而改变其value值，也不让用户直接修改value 只能通过这个hack改变
