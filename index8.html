@@ -2,60 +2,90 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-     <script type='text/javascript' src="./test/react.js"></script>
-    <script type='text/javascript' src="./test/react-dom.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
-    <script type="text/babel">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
+  <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
 
-      </script>
 </head>
 
 <body>
 
-    <pre>应该等于
-           
-          
-        </pre>
-    <h1 id='example' class="root">
+  <pre>React 15 </pre>
 
-    </h1>
-    <script type='text/babel'>
-            var container = document.getElementById("example")
-            var div = container;
-            var PropTypes = React.PropTypes
-            if(!window.ReactDOM){
-              window.ReactDOM = React
-            }
-            var expect = function(a) {
-                return {
-                    toBe: function(b) {
-                        console.log(a,"vs", b, a === b)
-                    },
-                    toEqual(b){
-                        console.log(a,"vs", b, a +""=== b+"")
-                    },
-                }
-            }  
 
-     var logIndex = 0;
-        function refFn(e) {
-            logIndex++;
-            console.log("xxxx")
-        }
+  <div id='root' class="root">
 
-        var dom = ReactDOM.render(<input type="checkbox" onChange={refFn} />, div);
-      /*  await browser
-            .click(dom)
-            .pause(100)
-            .$apply();
+  </div>
+  <script type='text/babel'>
+          var container = document.getElementById("root")
+          let check = function () {
+    return check;
+};
+check.isRequired = check;
+ let PropTypes = {
+    array: check,
+    bool: check,
+    func: check,
+    number: check,
+    object: check,
+    string: check,
+    any: check,
+    arrayOf: check,
+    element: check,
+    instanceOf: check,
+    node: check,
+    objectOf: check,
+    oneOf: check,
+    oneOfType: check,
+    shape: check
+};
 
-        expect(logIndex).toBe(1);
-        */
-</script>
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs\n', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs\n', b, a + '' === b + '');
+                  },
+                  toMatch(reg){
+                    console.log(a, 'vs', reg, reg.test(a)); 
+                  },
+                  toWarnDev(b){
+                    throw b
+                  }
+              };
+         }; 
+
+       //  const container = document.createElement('div');
+function emptyFunction(){}
+   var renderTextarea = function(component, container) {
+      if (!container) {
+        container = document.createElement('div');
+      }
+      const node = ReactDOM.render(component, container);
+
+      // Fixing jsdom's quirky behavior -- in reality, the parser should strip
+      // off the leading newline but we need to do it by hand here.
+      node.defaultValue = node.innerHTML.replace(/^\n/, '');
+      return node;
+    };
+    const stub = <textarea value={0} onChange={emptyFunction} />;
+    const node = renderTextarea(stub);
+
+    node.value = 'giraffe';
+    ReactTestUtils.Simulate.change(node);
+    expect(node.value).toBe('0');
+
+    </script>
 
 
 </html>

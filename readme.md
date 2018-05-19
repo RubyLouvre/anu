@@ -15,6 +15,10 @@ npm install anujs
 读作 安努 ，苏美尔的主神，开天辟地。一个高级兼容官方React16的迷你React框架，用于上线时无痛替换React，压缩整个项目的体积。
 QQ交流学习群：  370262116
 
+[体积变化](https://wx1.sinaimg.cn/mw690/7109e87fly1frfqw50lduj21kw0rzk0h.jpg)
+
+数据来源： https://bundlephobia.com/
+
 ### 特点：
 
 1. 支持React16的各种**新功能**，Fragment, componentDidCatch, creactContext, createRef, forwardRef...
@@ -27,7 +31,6 @@ QQ交流学习群：  370262116
 ### 官方脚手架 
 
 https://github.com/RubyLouvre/create-anu-app
-https://github.com/132yse/idanmu-admin
 
 ### IE8脚手架 
 

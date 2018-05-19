@@ -4,30 +4,98 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
+
 </head>
 
 <body>
 
-    <script>
-        var d = {};
-        function s(a) {
-            switch(a){
-               case 1:
-                return 1;
-               case 2:
-                return 2;
-               case d:
-                return 3;
-              default:
-                return 4
-            }
-        }
-        console.log(s(1))
-        console.log(s(2))
-        console.log(s(d))
-        console.log(s(6))
+    <pre>React 15 </pre>
+
+
+    <div id='root' class="root">
+
+    </div>
+    <script type='text/babel'>
+        
+        var container = document.getElementById('root');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+		  }
+	    var log = {
+			push(a){
+				console.log(a)
+			}
+		}
+        var log = []
+		  var PropTypes = React.PropTypes;
+		
+		
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+				  },
+				  toWarnDev(b){
+					try{
+                          a()
+                      }catch(e){
+                          console.log(e,"warn")
+                      }
+				  },
+                  toThrow(){
+                      try{
+                          a()
+                      }catch(e){
+                          console.log(e,"catch")
+                      }
+                  }
+              };
+		 };
+
+ let numMiddleRenders = 0;
+    let numBottomRenders = 0;
+
+    class Top extends React.Component {
+      render() {
+        return (
+          <Middle>
+            <Bottom />
+          </Middle>
+        );
+      }
+    }
+
+    class Middle extends React.Component {
+      componentDidMount() {
+        this.forceUpdate();
+      }
+
+      render() {
+        numMiddleRenders++;
+        return React.Children.only(this.props.children);
+      }
+    }
+
+    class Bottom extends React.Component {
+      render() {
+        numBottomRenders++;
+        return null;
+      }
+    }
+
+    ReactTestUtils.renderIntoDocument(<Top />);
+    expect(numMiddleRenders).toBe(2);
+    expect(numBottomRenders).toBe(1);
     </script>
 
-</body>
 
 </html>

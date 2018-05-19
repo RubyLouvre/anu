@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-05-13
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-03-18
  */
 
 (function (global, factory) {
@@ -106,7 +106,8 @@ function typeNumber(data) {
 function getDOMNode() {
     return this;
 }
-
+var pendingRefs = [];
+window.pendingRefs = pendingRefs;
 var Refs = {
     mountOrder: 1,
     currentOwner: null,
@@ -635,10 +636,7 @@ function createElement$1(vnode, p) {
     var elem = document.createElement(type);
     var inputType = props && props.type;
     if (inputType) {
-        try {
-            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
-        } catch (err) {
-        }
+        elem.type = inputType;
     }
     return elem;
 }
@@ -718,11 +716,7 @@ function disposeVnode(fiber, updateQueue, silent) {
     }
 }
 function remove() {
-    var sibling = this.vnode.return.sibling;
     this.vnode._disposed = true;
-    if (sibling && sibling._mountPoint && sibling._mountPoint.previousSibling === sibling._mountCarrier.dom) {
-        sibling._mountPoint = this.vnode.stateNode.previousSibling;
-    }
     delete this.vnode.stateNode;
     removeElement(this.node);
 }
@@ -982,17 +976,6 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
         }
     };
 });
-String("load,error").replace(/\w+/g, function (name) {
-    eventHooks[name] = function (dom, type) {
-        var mark = "__" + type;
-        if (!dom[mark]) {
-            dom[mark] = true;
-            addEvent(dom, type, function (e) {
-                dispatchEvent(e, type);
-            });
-        }
-    };
-});
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
     for (var tempA = instA; tempA; tempA = tempA.parentNode) {
@@ -1029,16 +1012,7 @@ function createHandle(name, fn) {
         dispatchEvent(e, name);
     };
 }
-function onCompositionStart(e) {
-    e.target.__onComposition = true;
-}
-function onCompositionEnd(e) {
-    e.target.__onComposition = false;
-    dispatchEvent(e, "change");
-}
-function isInCompositionMode(e) {
-    return !e.target.__onComposition;
-}
+createHandle("change");
 createHandle("doubleclick");
 createHandle("scroll");
 createHandle("wheel");
@@ -1048,21 +1022,6 @@ globalEvents.doubleclick = true;
 if (isTouch) {
     eventHooks.click = eventHooks.clickcapture = function (dom) {
         dom.onclick = dom.onclick || noop;
-    };
-    createHandle("change", isInCompositionMode);
-    eventHooks.changecapture = eventHooks.change = function (dom) {
-        if (/text|password|search/.test(dom.type)) {
-            addEvent(dom, "compositionstart", onCompositionStart);
-            addEvent(dom, "compositionend", onCompositionEnd);
-            addEvent(document, "input", specialHandles.change);
-        }
-    };
-} else {
-    createHandle("change");
-    eventHooks.changecapture = eventHooks.change = function (dom) {
-        if (/text|password|search/.test(dom.type)) {
-            addEvent(document, "input", specialHandles.change);
-        }
     };
 }
 eventPropHooks.click = function (e) {
@@ -1079,9 +1038,14 @@ eventPropHooks.wheel = function (event) {
     "wheelDeltaY" in event ? -event.wheelDeltaY :
     "wheelDelta" in event ? -event.wheelDelta : 0;
 };
+eventHooks.changecapture = eventHooks.change = function (dom) {
+    if (/text|password|search/.test(dom.type)) {
+        addEvent(document, "input", specialHandles.change);
+    }
+};
 var focusMap = {
-    focus: "focus",
-    blur: "blur"
+    "focus": "focus",
+    "blur": "blur"
 };
 function blurFocus(e) {
     var dom = e.target || e.srcElement;
@@ -1884,9 +1848,8 @@ var actionStrategy = {
             if (!val && val !== 0) {
                 if (builtinStringProps[name]) {
                     dom[name] = "";
-                } else {
-                    dom.removeAttribute(name);
                 }
+                dom.removeAttribute(name);
             } else {
                 dom[name] = val;
             }
@@ -2973,7 +2936,7 @@ if (win.React && win.React.options) {
     React = win.React;
 } else {
     React = win.React = win.ReactDOM = {
-        version: "1.3.4",
+        version: "1.3.1",
         render: render,
         hydrate: render,
         Fragment: Fragment,
