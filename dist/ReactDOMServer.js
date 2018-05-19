@@ -68,7 +68,6 @@
         return this;
     }
     var pendingRefs = [];
-    window.pendingRefs = pendingRefs;
     var Refs = {
         mountOrder: 1,
         currentOwner: null,
