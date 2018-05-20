@@ -84,7 +84,27 @@ function emptyFunction(){}
     node.value = 'giraffe';
     ReactTestUtils.Simulate.change(node);
     expect(node.value).toBe('0');
+    let refCalled = 0;
+		function Inner(props) {
+			return <a ref={props.saveA} />;
+		}
 
+		class Outer extends React.Component {
+			saveA = () => {
+				refCalled++;
+			};
+
+			componentDidMount() {
+				this.setState({});
+			}
+
+			render() {
+				return <Inner saveA={this.saveA} />;
+			}
+		}
+
+		ReactTestUtils.renderIntoDocument(<Outer />);
+		expect(refCalled).toBe(1);
     </script>
 
 

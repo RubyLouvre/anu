@@ -11,7 +11,7 @@ export default {
     entry: "./packages/render/dom/index.ie8.js",
     format: "umd",
     exports: "default",
-    dest: "./dist/ReactIE8.js",
+    dest: "./dist/ReactIE.js",
     plugins: [
 
         babel(),

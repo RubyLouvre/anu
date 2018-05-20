@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-19
+ * by 司徒正美 Copyright 2018-05-20
  * IE9+
  */
 
@@ -1229,6 +1229,9 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
+function getTarget(e) {
+    return e.target || e.srcElement;
+}
 String("load,error").replace(/\w+/g, function (name) {
     eventHooks[name] = function (dom, type) {
         var mark = "__" + type;
@@ -1241,21 +1244,38 @@ String("load,error").replace(/\w+/g, function (name) {
     };
 });
 String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
-    eventHooks[name] = function (dom, type) {
-        var mark = "__" + type;
-        if (!dom[mark]) {
-            dom[mark] = true;
-            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
-            addEvent(dom, mask, function (e) {
-                var t = getRelatedTarget(e);
-                if (!t || t !== dom && !contains(dom, t)) {
-                    var common = getLowestCommonAncestor(dom, t);
-                    dispatchEvent(e, type, common);
-                }
-            });
-        }
-    };
+    var mark = "__" + name;
+    if (!document[mark]) {
+        document[mark] = globalEvents[name] = true;
+        addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
+            var from = getTarget(e);
+            var to = getRelatedTarget(e);
+            var ev1 = new SyntheticEvent(e);
+            ev1.target = from;
+            ev1.relatedTarget = to;
+            ev1.type = "mouseleave";
+            var ev2 = new SyntheticEvent(e);
+            ev2.target = to;
+            ev2.relatedTarget = from;
+            ev2.type = "mouseenter";
+            if (!to || to !== from && !contains(from, to)) {
+                var common = getLowestCommonAncestor(from, to);
+                dispatchEvent(ev1, null, common);
+                dispatchEvent(ev2, null, common);
+            }
+        });
+    }
 });
+if (!document["__input"]) {
+    globalEvents.input = document["__input"] = true;
+    addEvent(document, "input", function (e) {
+        var dom = getTarget(e);
+        if (input2change.test(dom.type)) {
+            dispatchEvent(e, "change");
+        }
+        dispatchEvent(e);
+    });
+}
 function getLowestCommonAncestor(instA, instB) {
     var depthA = 0;
     for (var tempA = instA; tempA; tempA = tempA.parentNode) {
@@ -1296,7 +1316,7 @@ var input2change = /text|password|search/i;
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
     addEvent(document, "input", function (e) {
-        var dom = e.target || e.srcElement;
+        var dom = getTarget(e);
         if (input2change.test(dom.type)) {
             dispatchEvent(e, "change");
         }
@@ -1337,7 +1357,7 @@ var focusMap = {
 };
 var innerFocus = void 0;
 function blurFocus(e) {
-    var dom = e.target || e.srcElement;
+    var dom = getTarget(e);
     var type = focusMap[e.type];
     if (Renderer.inserting) {
         if (type === "blur") {
