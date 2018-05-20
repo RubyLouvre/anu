@@ -39,7 +39,7 @@ https://gitee.com/menhal/React_IE8_boilerplate
 
 
 ### 开源协议 
-Apache Licene 2.0
+MIT
 
 ### 轻松切换已有的React项目
 
