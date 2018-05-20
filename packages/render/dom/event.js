@@ -152,6 +152,9 @@ function getRelatedTarget(e) {
     }
     return e.relatedTarget;
 }
+function getTarget(e) {
+    return e.target || e.srcElement;
+}
 String("load,error").replace(/\w+/g, function (name) {
     eventHooks[name] = function (dom, type) {
         let mark = "__" + type;
@@ -164,24 +167,43 @@ String("load,error").replace(/\w+/g, function (name) {
         }
     };
 });
-String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
-    eventHooks[name] = function (dom, type) {
-        let mark = "__" + type;
-        if (!dom[mark]) {
-            dom[mark] = true;
-            let mask = type === "mouseenter" ? "mouseover" : "mouseout";
-            addEvent(dom, mask, function (e) {
-                let t = getRelatedTarget(e);
-                if (!t || (t !== dom && !contains(dom, t))) {
-                    let common = getLowestCommonAncestor(dom, t);
-                    //由于不冒泡，因此paths长度为1
-                    dispatchEvent(e, type, common);
-                }
-            });
-        }
-    };
-});
 
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    let mark = "__" + name;
+    if (!document[mark]) {
+        document[mark] = globalEvents[name] = true;
+        addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
+
+            let from = getTarget(e);
+            let to = getRelatedTarget(e);
+            var ev1 = new SyntheticEvent(e);
+            ev1.target = from;
+            ev1.relatedTarget = to;
+            ev1.type = "mouseleave";
+            var ev2 = new SyntheticEvent(e);
+            ev2.target = to;
+            ev2.relatedTarget = from;
+            ev2.type = "mouseenter";
+
+            if (!to || (to !== from && !contains(from, to))) {
+                let common = getLowestCommonAncestor(from, to);
+                //由于不冒泡，因此paths长度为1
+                dispatchEvent(ev1, null, common);
+                dispatchEvent(ev2, null, common);
+            }
+        });
+    }
+});
+if (!document["__input"]) {
+    globalEvents.input = document["__input"] = true;
+    addEvent(document, "input", function (e) {
+        var dom = getTarget(e);
+        if (input2change.test(dom.type)) {
+            dispatchEvent(e, "change");
+        }
+        dispatchEvent(e);
+    });
+}
 
 function getLowestCommonAncestor(instA, instB) {
     let depthA = 0;
@@ -232,7 +254,7 @@ const input2change = /text|password|search/i;
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
     addEvent(document, "input", function (e) {
-        var dom = e.target || e.srcElement;
+        var dom = getTarget(e);
         if (input2change.test(dom.type)) {
             dispatchEvent(e, "change");
         }
@@ -295,7 +317,7 @@ export let focusMap = {
 };
 let innerFocus;
 function blurFocus(e) {
-    let dom = e.target || e.srcElement;
+    let dom = getTarget(e);
     let type = focusMap[e.type];
     if (Renderer.inserting) {
         if (type === "blur") {
