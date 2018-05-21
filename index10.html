@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<script type='text/javascript' src="./dist/React.js"></script>
+	<!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>-->
+	<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+	<script type='text/javascript' src="./lib/babel.js"></script>
+
+</head>
+
+<body>
+
+	<pre>React 15 </pre>
+
+
+	<div id='root' class="root">
+
+	</div>
+	<script type='text/babel'>
+        
+        var container = document.getElementById('root');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+		  }
+	    var log = {
+			push(a){
+				console.log(a)
+			}
+		}
+class Select extends React.Component{
+    constructor(props){
+        super(props)
+        this.state ={
+            value: props.value
+        }
+    }
+    onChange(e){
+        this.props.onChange(e.target.value)
+         this.setState({
+            value: e.target.value
+        })
+        
+    }
+    render(){
+        var portal ;
+        if(this.state.value.length >= 2){
+            if( !this.container){
+                this.container = document.createElement("div");
+                document.body.appendChild(this.container)
+            }
+            portal =  ReactDOM.createPortal(<h1 className="portal">{this.state.value}</h1>,  this.container)
+        }
+        return [<Input> value={this.state.value} onChange={this.onChange.bind(this)} />, portal];
+    }
+}
+]
+ReactDOM.render(<App />, container)
+
+
+
+    </script>
+
+
+</html>

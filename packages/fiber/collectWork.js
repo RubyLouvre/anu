@@ -55,7 +55,7 @@ export function collectWork(fiber, updateFail, isTop) {
         // for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
         if (isHost) {
-            if (child.framentParent) {//全局搜索它
+            if (child.fragmentParent) {//全局搜索它
                 let arr = getChildren(child.parent);
                 let index = arr.indexOf(child.stateNode);
                 child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];

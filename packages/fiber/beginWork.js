@@ -76,9 +76,9 @@ function updateHostComponent(fiber, info) {
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
-        if (framentParent) {
-            fiber.framentParent = framentParent;
-            framentParent = null;
+        if (fragmentParent) {
+            fiber.fragmentParent = fragmentParent;
+            fragmentParent = null;
         }
     }
     const children = props && props.children;
@@ -132,7 +132,7 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-let framentParent = null;
+let fragmentParent = null;
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
@@ -144,14 +144,14 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
-            framentParent = null;
+            fragmentParent = null;
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
         if (type === Fragment) {
-            framentParent = fiber;
+            fragmentParent = fiber;
         }
     }
 
