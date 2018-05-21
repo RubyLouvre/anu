@@ -161,9 +161,7 @@ String("load,error").replace(/\w+/g, function (name) {
 
         if (!dom[mark]) {
             dom[mark] = true;
-            addEvent(dom, type, function (e) {
-                dispatchEvent(e, type);
-            });
+            addEvent(dom, type, dispatchEvent);
         }
     };
 });

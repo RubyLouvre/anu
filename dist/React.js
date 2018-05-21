@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-20
+ * by 司徒正美 Copyright 2018-05-21
  * IE9+
  */
 
@@ -1237,9 +1237,7 @@ String("load,error").replace(/\w+/g, function (name) {
         var mark = "__" + type;
         if (!dom[mark]) {
             dom[mark] = true;
-            addEvent(dom, type, function (e) {
-                dispatchEvent(e, type);
-            });
+            addEvent(dom, type, dispatchEvent);
         }
     };
 });

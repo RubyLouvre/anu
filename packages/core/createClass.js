@@ -68,13 +68,7 @@ function flattenHooks(key, hooks) {
         return hooks[0];
     }
 }
-function getComponent() {
-    let window = getWindow();
-    if (!window.React || !window.React.Component) {
-        throw "Please load the React first.";
-    }
-    return window.React.Component;
-}
+
 function applyMixins(proto, mixins) {
     for (let key in mixins) {
         if (mixins.hasOwnProperty(key)) {
@@ -84,7 +78,7 @@ function applyMixins(proto, mixins) {
 }
 
 //创建一个构造器
-function newCtor(className, spec) {
+function newCtor(className, spec, Component) {
     let curry = Function(
         "ReactComponent",
         "blacklist",
@@ -111,15 +105,21 @@ function newCtor(className, spec) {
     );
 
 
-    return curry(getComponent(), NOBIND, spec);
+    return curry(Component, NOBIND, spec);
 }
 
 export default function createClass(spec) {
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
-    let Constructor = newCtor(spec.displayName || "Component", spec);
-    let proto = inherit(Constructor, getComponent());
+    let window = getWindow();
+    if (!window.React || !window.React.Component) {
+        throw "Please load the React first.";
+    }
+    window.React.createClass = createClass;
+    let Component =  window.React.Component;
+    let Constructor = newCtor(spec.displayName || "Component", spec, Component );
+    let proto = inherit(Constructor, Component);
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));

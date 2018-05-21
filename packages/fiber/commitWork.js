@@ -69,7 +69,6 @@ export function commitOtherEffects(fiber, tasks) {
     let instance = fiber.stateNode || emptyObject;
     let amount = fiber.effectTag;
     let updater = instance.updater || fakeObject;
-    //console.log(fiber.name, fiber.effectTag);
     for (let i = 0; i < effectLength; i++) {
         let effectNo = effectNames[i];
         if (effectNo > amount) {
