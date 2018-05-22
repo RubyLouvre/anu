@@ -31,35 +31,30 @@
 			push(a){
 				console.log(a)
 			}
-		}
-class Select extends React.Component{
-    constructor(props){
-        super(props)
-        this.state ={
-            value: props.value
         }
-    }
-    onChange(e){
-        this.props.onChange(e.target.value)
-         this.setState({
-            value: e.target.value
-        })
-        
-    }
-    render(){
-        var portal ;
-        if(this.state.value.length >= 2){
-            if( !this.container){
-                this.container = document.createElement("div");
-                document.body.appendChild(this.container)
+        var Fragment = React.Fragment
+        class App extends React.Component {
+
+            render() {
+
+                return <Fragment><span>111</span><A /><span>222</span></Fragment>
             }
-            portal =  ReactDOM.createPortal(<h1 className="portal">{this.state.value}</h1>,  this.container)
         }
-        return [<Input> value={this.state.value} onChange={this.onChange.bind(this)} />, portal];
-    }
-}
-]
-ReactDOM.render(<App />, container)
+        class A extends React.Component {
+            state = {
+                value: "xxx"
+            }
+            onChange(e) {
+                this.setState({
+                    value: e.target.value
+                })
+            }
+            render() {
+
+                return <strong>{this.state.value}<input value={this.state.value} onChange={this.onChange.bind(this)} /></strong>
+            }
+        }
+        ReactDOM.render(<App />, container)
 
 
 

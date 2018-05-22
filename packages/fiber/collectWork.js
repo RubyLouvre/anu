@@ -57,6 +57,7 @@ export function collectWork(fiber, updateFail, isTop) {
         if (isHost) {
             if (child.fragmentParent) {//全局搜索它
                 let arr = getChildren(child.parent);
+                console.log(arr)
                 let index = arr.indexOf(child.stateNode);
                 child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];
             } else {
