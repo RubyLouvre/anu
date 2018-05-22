@@ -61,40 +61,27 @@
               };
 		 };
 
- let numMiddleRenders = 0;
-    let numBottomRenders = 0;
+
 
     class Top extends React.Component {
       render() {
-        return (
-          <Middle>
-            <Bottom />
-          </Middle>
-        );
+        return <div><A /><span>x</span><A /></div>
       }
     }
 
-    class Middle extends React.Component {
-      componentDidMount() {
-        this.forceUpdate();
-      }
+    class A extends React.Component {
 
       render() {
-        numMiddleRenders++;
-        return React.Children.only(this.props.children);
+       
+        return <strong >A</strong>
       }
     }
 
-    class Bottom extends React.Component {
-      render() {
-        numBottomRenders++;
-        return null;
-      }
-    }
+    ReactDOM.render(<Top />, container)
 
-    ReactTestUtils.renderIntoDocument(<Top />);
-    expect(numMiddleRenders).toBe(2);
-    expect(numBottomRenders).toBe(1);
+
+
+
     </script>
 
 

@@ -33,16 +33,10 @@
 			}
         }
         var Fragment = React.Fragment
+        var instances = {}
         class App extends React.Component {
-
-            render() {
-
-                return <Fragment><span>111</span><A /><span>222</span></Fragment>
-            }
-        }
-        class A extends React.Component {
             state = {
-                value: "xxx"
+                value: ""
             }
             onChange(e) {
                 this.setState({
@@ -50,12 +44,44 @@
                 })
             }
             render() {
-
-                return <strong>{this.state.value}<input value={this.state.value} onChange={this.onChange.bind(this)} /></strong>
+                return (
+                    <div id="root">
+                        <h1>基本使用</h1>
+                        <p>通过 dataSource 设置自动完成的数据源</p>
+                        <AutoComplete value={this.state.value} onChange={this.onChange.bind(this)} />
+                    </div>
+                    );
             }
         }
-        ReactDOM.render(<App />, container)
-
+        class Portal extends React.Component{
+            constructor(props){
+                super(props)
+                this.container = document.createElement("div")
+                document.body.appendChild(this.container)
+            }
+            render(){
+                return ReactDOM.createPortal(<strong>{this.props.value}</strong>, this.container)
+            }
+        }
+        class AutoComplete extends React.Component {
+            constructor(props){
+                super(props)
+            }
+            render() {
+                console.log(this)
+                var portal
+                if(this.props.value){
+                    portal = <Portal value={this.props.value} />
+                }
+                return [<div>
+                        <input value={this.props.value} onChange={this.props.onChange} />
+                    </div>,
+                 portal ]
+            }
+        }
+       
+        ReactDOM.render(<App id="a2"/>, container)
+console.log(instances)
 
 
     </script>

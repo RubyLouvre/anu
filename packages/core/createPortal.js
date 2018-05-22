@@ -6,5 +6,6 @@ export function AnuPortal(props){
 
 export function createPortal(children, parent) {
     let child = createElement(AnuPortal, { children, parent });
+    child.isPortal = true;
     return child;
 }
