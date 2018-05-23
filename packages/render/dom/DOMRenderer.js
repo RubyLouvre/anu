@@ -95,6 +95,7 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
+
     fragment.appendChild(node);
     fragment.removeChild(node);
 }
@@ -105,9 +106,9 @@ function insertElement(fiber) {
     
     try {
         var after =  findNext(fiber);
-       
+        console.log(after, "=====",parent, dom)
         // let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
-        if (after && after.nextSibling === dom) {
+        if (after === dom) {
             return;
         }
         if (after === null && dom === parent.lastChild) {

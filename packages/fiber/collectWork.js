@@ -37,20 +37,45 @@ export function collectWork(fiber, updateFail, isTop) {
         effects = [];
     }
 
+    if (isTop && fiber.tag == 5) {
+        //根节点肯定元素节点
+        fiber.stateNode.insertPoint = null;
+    }
     if (fiber.dirty) {
         delete fiber.dirty; 
         //根节点肯定元素节点
+        if (fiber.parent) {
+           // fiber.parent.insertPoint = fiber.insertPoint;
+        }
     }
     let  c = fiber.children || {};
     for (let i in c) {
        
         let child = c[i];
+        // for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
-       
+        if (isHost) {
+         /*   if (child.fragmentParent) {//全局搜索它
+                let arr = getChildren(child.parent);
+                let index = arr.indexOf(child.stateNode);
+                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];
+            } else {
+                child.insertPoint = child.parent.insertPoint;
+            }
+            child.parent.insertPoint = child.stateNode;
+            */
+        } else {
+          /* 
+           if (child.type != AnuPortal) {
+                child.insertPoint = child.parent.insertPoint;
+            }
+
+            */
+        }
         if (updateFail || child.updateFail) {
             if (isHost) {
                 if (!child.disposed) {
-                  //  child.effectTag *= PLACE;
+                    child.effectTag *= PLACE;
                     effects.push(child);
                 }
             } else {
@@ -68,7 +93,9 @@ export function collectWork(fiber, updateFail, isTop) {
     }
     return effects;
 }
-
+function getChildren(parent) {
+    return Array.from(parent.childNodes || parent.children);
+}
 function markDeletion(el) {
     el.disposed = true;
     el.effectTag = DETACH;
