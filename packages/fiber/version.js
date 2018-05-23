@@ -46,6 +46,7 @@ export function removeVersion(fiber) {
     var parent = fiber.parent;
     var head = parent._link;
     if (head) {
+        fiber._link = null;
         if (head.stateNode == fiber.stateNode) {
             parent._link = head._link;
             return;
