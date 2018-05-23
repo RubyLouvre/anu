@@ -65,21 +65,25 @@
 
     class Top extends React.Component {
       render() {
-        return <div><A /><span>x</span><A /></div>
+        return <A />
       }
     }
-
+   var index = 0;
     class A extends React.Component {
 
       render() {
-       
-        return <strong >A</strong>
+       if(index){
+          return [<h1>h1</h1>, <strong >xxx</strong>, <span />, <b>777</b> ]
+       }
+        return [<strong >xxx</strong>, <span />, <b>777</b> ]
       }
     }
 
     ReactDOM.render(<Top />, container)
 
+   index = 1;
 
+    ReactDOM.render(<Top />, container)
 
 
     </script>

@@ -4,43 +4,43 @@ import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
 import { fireDuplex } from "./duplex";
-
+import { findNext} from "react-fiber/version";
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     let text = props ? props.children : "";
     switch (type) {
-    case "#text":
-        //只重复利用文本节点
-        var node = recyclables[type].pop();
-        if (node) {
-            node.nodeValue = text;
-            return node;
-        }
-        return document.createTextNode(text);
-    case "#comment":
-        return document.createComment(text);
-
-    case "svg":
-        ns = NAMESPACE.svg;
-        break;
-    case "math":
-        ns = NAMESPACE.math;
-        break;
-
-    default:
-        do {
-            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-            if (s) {
-                ns = s.namespaceURI;
-                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                    ns = "";
-                }
-                break;
+        case "#text":
+            //只重复利用文本节点
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = text;
+                return node;
             }
-        } while ((p = p.return));
+            return document.createTextNode(text);
+        case "#comment":
+            return document.createComment(text);
 
-        break;
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+
+        default:
+            do {
+                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                if (s) {
+                    ns = s.namespaceURI;
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
+                    }
+                    break;
+                }
+            } while ((p = p.return));
+
+            break;
     }
     try {
         if (ns) {
@@ -101,10 +101,13 @@ export function removeElement(node) {
 }
 
 function insertElement(fiber) {
-    let { stateNode: dom, parent, insertPoint } = fiber;
-
+    let { stateNode: dom, parent } = fiber;
+   
+    
     try {
-        let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
+        var after =  findNext(fiber);
+        console.log(after, "=====",parent, dom)
+        // let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
         if (after === dom) {
             return;
         }

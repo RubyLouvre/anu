@@ -7,7 +7,7 @@ import { createInstance, UpdateQueue } from "./createInstance";
 import { Fiber } from "./Fiber";
 import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK, NOWORK } from "./effectTag";
 import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
-
+import { insertVersion } from "./version"
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
@@ -76,12 +76,12 @@ function updateHostComponent(fiber, info) {
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
-        if (fragmentParent) {
-            fiber.fragmentParent = fragmentParent;
-            fragmentParent = null;
-        }
     }
     const children = props && props.children;
+    if (fiber.effectTag % PLACE === 0) {
+        insertVersion(fiber, prev);
+    }
+
     if (tag === 5) {
         // 元素节点
         info.containerStack.unshift(fiber.stateNode);
@@ -132,7 +132,7 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-let fragmentParent = null;
+
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
@@ -144,15 +144,11 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
-            fragmentParent = null;
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
-        if (type === Fragment) {
-            fragmentParent = fiber;
-        }
     }
 
 
@@ -236,7 +232,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
-          
+
             callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
             if (prevState !== instance.state) {//模拟replaceState
                 fiber.memoizedState = instance.state;
@@ -255,7 +251,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     fiber._hydrating = true;
     if (!propsChanged && newState === oldState && contextStack.length == 1 && !updateQueue.isForced) {
         fiber.updateFail = true;
-       
+
     } else {
         let args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
@@ -329,13 +325,26 @@ function getMaskedContext(instance, contextTypes, contextStack) {
  * @param {Any} children
  */
 function diffChildren(parentFiber, children) {
-    let oldFibers = parentFiber.children; // 旧的
+    let oldFibers = parentFiber.children;
     if (oldFibers) {
         parentFiber.oldChildren = oldFibers;
     } else {
         oldFibers = {};
     }
-    let newFibers = fiberizeChildren(children, parentFiber); // 新的
+    let newFibers = fiberizeChildren(children, parentFiber);
+    //元素虚拟DOM 直接使用index; 组件需要使用版本号
+    let version = "";
+    if (parentFiber.nodeType < 3) {
+        //从下而上，合并index
+        let t = parentFiber;
+        while (t) {
+            if (t.tag < 3) {
+                version = version ? t.index + "." + version : t.index;
+            }
+            t = t.return;
+        }
+    }
+
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
     delete parentFiber.child;
@@ -364,6 +373,14 @@ function diffChildren(parentFiber, children) {
                 let oldRef = oldFiber.ref;
                 newFiber = extend(oldFiber, newFiber);
                 newFiber.alternate = alternate;
+                if (newFiber.tag > 3) {
+                    var curVersion = version ? index + "." + version : "" + index;
+                    if (curVersion != newFiber.version) {
+
+                        newFiber.version = curVersion;
+                        newFiber.effectTag = PLACE;
+                    }
+                }
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;
                     effects.push(alternate);
@@ -377,11 +394,13 @@ function diffChildren(parentFiber, children) {
             newFiber.effectTag = NOWORK;
         } else {
             newFiber = new Fiber(newFiber);
+            if (newFiber.tag > 3) {
+                newFiber.version = version ? index + "." + version : "" + index;
+                newFiber.effectTag = PLACE;
+            }
         }
         newFibers[i] = newFiber;
-        if (newFiber.tag > 3) {
-            newFiber.effectTag *= PLACE;
-        }
+
         if (newFiber.ref) {
             newFiber.effectTag *= REF;
         }

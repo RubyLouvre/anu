@@ -18,10 +18,12 @@ export function render(vnode, root, callback) {
             type: Unbatch,
             tag: 2,
             props: {},
+           
             hasMounted: true,
             memoizedState: {},
             return: container,
         });
+        fiber.index = 0;
         container.child = fiber;
         //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
         let instance = createInstance(fiber, {});

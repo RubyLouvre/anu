@@ -1,71 +1,75 @@
 
-export function insertList(a) {
-    var v = a.version, parent = a.parent;
-    var list = [], b = a;
-    while (a) {
-        list.unshift(a.index);
-        if (a.return && a.return.tag < 3) {
-            a = a.return;
-        } else {
-            break;
-        }
+
+export function insertVersion(fiber, remove) {
+    var parent = fiber.parent;
+    if (remove) {
+        removeVersion(fiber);
     }
-    var nv = list.join(".");
-    if (nv !== v) {
-        b.version = nv;
-        var head = parent.__head;
-        if (!head) {
-            parent.__head = b;
-        } else {
-            _insertList(parent, head, b);
-        }
+    var head = parent._link;
+    if (!head) {
+        parent._link = fiber;
+    } else {
+        _insertList(parent, head, fiber);
     }
 }
-export function _insertList(parent, head, fiber) {
-    //如果fiber在head的前面
+
+export function findNext(fiber) {
+    for (var head = fiber.parent._link; head; head = head._link) {
+        if (head.stateNode === fiber.stateNode) {
+            return head.next ? head.next.stateNode : null;
+        }
+    }
+    return null;
+}
+function _insertList(parent, head, fiber) {
+    // 0， 1， 2， 3， 5 插入 4
     if (versionCompare(head, fiber) == 1) {
-        fiber.next = head;
-        parent.__head = fiber;
+        fiber._link = head;
+        parent._link = fiber;
         return;
     }
-    while (head.next) {
-        //fiber在head.next前面，在head后面
-        if (versionCompare(head.next, fiber) == 1) {
-            var b = head.next;
-            head.next = fiber;
-            fiber.next = b;
-            break;
-        }
-    }
-}
-export function removeList(fiber) {
-    var parent = fiber.parent;
-    var head = parent.__head;
-    if (head) {
-        if (head.stateNode == fiber.stateNode) {
-            parent.__head = head.next;
+    while (head) {
+        if (!head._link) {
+            head._link = fiber;
             return;
         }
-        while (head.next) {
-            if (head.next.stateNode == fiber.stateNode) {
-                head.next = head.next.next;
+        if (versionCompare(head._link, fiber) == 1) {
+            var b = head._link;
+            head._link = fiber;
+            fiber._link = b;
+            break;
+        }
+        head = head._link;
+    }
+}
+export function removeVersion(fiber) {
+    var parent = fiber.parent;
+    var head = parent._link;
+    if (head) {
+        if (head.stateNode == fiber.stateNode) {
+            parent._link = head._link;
+            return;
+        }
+        while (head._link) {
+            if (head._link.stateNode == fiber.stateNode) {
+                head._link = head._link._link;
                 break;
             }
         }
     }
 }
-
-export function versionCompare(stra, strb) {
-    var straArr = stra.split(".");
-    var strbArr = strb.split(".");
+//versionCompare(a, b) = -1时， b在a的后面， = 1时相反
+export function versionCompare(a, b) {
+    var straArr = a.version.split(".");
+    var strbArr = b.version.split(".");
     var maxLen = Math.max(straArr.length, strbArr.length);
     var result, sa, sb;
     for (var i = 0; i < maxLen; i++) {
         sa = ~~straArr[i];
         sb = ~~strbArr[i];
-        if (sa > sb) {
+        if (sa > sb) {//2，1
             result = 1;
-        } else if (sa < sb) {
+        } else if (sa < sb) {// 1， 2
             result = -1;
         } else {
             result = 0;
