@@ -19,17 +19,20 @@ export function findNext(fiber) {
             return head.next ? head.next.stateNode : null;
         }
     }
-    return null;
+    return null;//insertBefore在firefox中第二个参数必须是节点或null
 }
+
 function _insertList(parent, head, fiber) {
-    // 0， 1， 2， 3， 5 插入 4
+   
     if (versionCompare(head, fiber) == 1) {
+        //如果它比head更少，直接取而代之
         fiber._link = head;
         parent._link = fiber;
         return;
     }
+    // 0， 1， 2， 3， 5 插入 4
     while (head) {
-        if (!head._link) {
+        if (!head._link) { //如果到最后一个
             head._link = fiber;
             return;
         }
