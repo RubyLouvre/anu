@@ -29,7 +29,6 @@ export function updateEffects(fiber, topWork, info) {
             updateClassComponent(fiber, info); // unshift context
         } catch (e) {
             pushError(fiber, fiber.errorHook, e);
-
         }
         Renderer.currentOwner = keepbook;
         if (fiber.batching) {
