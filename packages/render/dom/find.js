@@ -1,9 +1,9 @@
 
 //查找它后面的节点
-function getHostSibling(fiber) {
+export function getHostSibling(fiber) {
     let parent = fiber.parent;
     while(fiber){
-        if(fiber.stateNode === parent || fiber.isPortal ){
+        if(fiber.stateNode === parent || fiber.isPortal  ){
             return null;
         }
         //首先往右找，找不到找这的父亲的右边
@@ -21,7 +21,8 @@ function searchSibling(fiber) {
     while (fiber.sibling) {
         fiber = fiber.sibling;
         //如果这已经被销毁或者是传送门
-        if(fiber.disposed || fiber.isPortal){
+        if(fiber.disposed || fiber.isPortal ){
+           
             continue;
         }
         if (fiber.tag > 3) {
@@ -40,7 +41,7 @@ function searchChild(fiber) {
     var found;
     while(fiber.child){
         fiber = fiber.child;
-        if(fiber.disposed || fiber.isPortal){
+        if(fiber.disposed || fiber.isPortal ){
             return;
         }
         if (fiber.tag > 3) {

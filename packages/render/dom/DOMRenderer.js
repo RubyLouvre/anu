@@ -4,42 +4,43 @@ import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
 import { fireDuplex } from "./duplex";
+// import { getHostSibling } from "./find"
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     let text = props ? props.children : "";
     switch (type) {
-    case "#text":
-        //只重复利用文本节点
-        var node = recyclables[type].pop();
-        if (node) {
-            node.nodeValue = text;
-            return node;
-        }
-        return document.createTextNode(text);
-    case "#comment":
-        return document.createComment(text);
-
-    case "svg":
-        ns = NAMESPACE.svg;
-        break;
-    case "math":
-        ns = NAMESPACE.math;
-        break;
-
-    default:
-        do {
-            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-            if (s) {
-                ns = s.namespaceURI;
-                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                    ns = "";
-                }
-                break;
+        case "#text":
+            //只重复利用文本节点
+            var node = recyclables[type].pop();
+            if (node) {
+                node.nodeValue = text;
+                return node;
             }
-        } while ((p = p.return));
+            return document.createTextNode(text);
+        case "#comment":
+            return document.createComment(text);
 
-        break;
+        case "svg":
+            ns = NAMESPACE.svg;
+            break;
+        case "math":
+            ns = NAMESPACE.math;
+            break;
+
+        default:
+            do {
+                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                if (s) {
+                    ns = s.namespaceURI;
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
+                    }
+                    break;
+                }
+            } while ((p = p.return));
+
+            break;
     }
     try {
         if (ns) {
@@ -94,21 +95,72 @@ export function removeElement(node) {
             recyclables["#text"].push(node);
         }
     }
-
     fragment.appendChild(node);
     fragment.removeChild(node);
 }
 
+   
+
+/*
 function insertElement(fiber) {
-    let { stateNode: dom, parent , insertPoint} = fiber;
+    let { stateNode: dom, parent } = fiber;
+    let insertPoint = getHostSibling(fiber);//getHostBefore
+
+    try {
+        // var after =  findNext(fiber);
+
+        if (!insertPoint) {//null
+            if (parent.lastChild === dom) {
+                console.log(dom, "last")
+               
+            }else{
+                if(dom.nodeType == 1){
+                  console.log("append", dom)
+                }
+                parent.appendChild(dom);
+                
+            }
+            return;
+        }
+
+        if (insertPoint.previousSibling === dom) {
+            console.log(dom, "return", insertPoint)
+            return;
+        }
+        if (!parent.contains(insertPoint)) {
+            parent.appendChild(dom);
+            parent.appendChild(insertPoint);
+           console.log(dom, null, parent.textContent, "它末插入",insertPoint);
+        } else {
+            parent.insertBefore(dom, insertPoint);
+            console.log(dom, insertPoint,parent.textContent, "insertBefore");
+        }
+       
+
+        //插入**元素节点**会引发焦点丢失，触发body focus事件
+        // Renderer.inserting = fiber.tag === 5 && document.activeElement;
+        // Renderer.inserting = null;
+    } catch (e) {
+        throw e;
+    }
+}
+*/
+
+
+function insertElement(fiber) {
+    let { stateNode: dom, parent } = fiber;
+    let insertPoint = fiber.beforeHostFiber ?fiber.beforeHostFiber.stateNode : null
    
     
     try {
-        // var after =  findNext(fiber);
-        let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
-        if (after === dom) {
-            return;
+        if(insertPoint == null ){
+            console.log(dom, insertPoint);
+            if(dom !== parent.firstChild){
+                parent.insertBefore(dom, parent.firstChild);
+            }
+            return
         }
+        let after = insertPoint.nextSibling ;
         if (after === null && dom === parent.lastChild) {
             return;
         }

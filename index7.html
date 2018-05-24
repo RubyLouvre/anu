@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
  <script type='text/javascript' src="./dist/React.js"></script>
- <!--<script type='text/javascript' src="./react.js"></script>
-			<script type='text/javascript' src="./react-dom.js"></script>-->
+<!--<script type='text/javascript' src="./react.js"></script>
+<script type='text/javascript' src="./react-dom.js"></script>-->
 
 
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
@@ -18,7 +18,7 @@
 
 <body>
 
-  <pre>React 15 </pre>
+  <pre>EHCjpdTUuiybDvhRJwZt </pre>
 
 
   <div id='root' class="root">
@@ -51,23 +51,40 @@
 				return 
 			}
 		}
-    const mock = function(){
-      console.log("======")
+        class LetterInner extends React.Component {
+      render() {
+        return <div>{this.props.char}</div>;
+      }
     }
 
-const container = document.createElement('div');
-const node = ReactDOM.render(<div onMouseEnter={mock} />, container);
-const otherNode = document.createElement('h1');
-document.body.appendChild(container);
-document.body.appendChild(otherNode);
+    class Letter extends React.Component {
+      render() {
+        return <LetterInner char={this.props.char} />;
+      }
+    
+      componentDidMount(){
+          console.log(this.props.char+" did mount")
+      }
+      shouldComponentUpdate() {
+        return false;
+      }
+    }
 
-otherNode.dispatchEvent(
-  new MouseEvent('mouseout', {
-    bubbles: true,
-    cancelable: true,
-    relatedTarget: node,
-  }),
-);
+    class Letters extends React.Component {
+      render() {
+        const letters = this.props.letters.split('');
+        return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
+      }
+    }
+
+    //const container = document.createElement('div');
+
+    // Two random strings -- some additions, some removals, some moves
+    ReactDOM.render(<Letters letters="XKwHomsNjIkBcQWFbiZU" />, container);
+    expect(container.textContent).toBe('XKwHomsNjIkBcQWFbiZU');
+    console.log('=====')
+    ReactDOM.render(<Letters letters="EHCjpdTUuiybDvhRJwZt" />, container);
+    expect(container.textContent).toBe('EHCjpdTUuiybDvhRJwZt');
 
 	
     </script>

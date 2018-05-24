@@ -53,12 +53,9 @@ export function collectWork(fiber, updateFail, isTop) {
     } else {
         effects = [];
     }
-    
+
     if (isTop && fiber.tag == 5) {
         //根节点肯定元素节点
-
-        fiber.stateNode.insertPoint = null;
-       
     }
     if (fiber.dirty) {
         delete fiber.dirty; 
@@ -74,21 +71,10 @@ export function collectWork(fiber, updateFail, isTop) {
         // for (let child = fiber.child; child; child = child.sibling) {
         let isHost = child.tag > 3;
         if (isHost) {
-            if (child.fragmentParent) {//全局搜索它
-                let arr = getChildren(child.parent);
-                let index = arr.indexOf(child.stateNode);
-                child.insertPoint = index < 1 ? child.parent.insertPoint : arr[index - 1];
-            } else {
-                child.insertPoint = child.parent.insertPoint;
-            }
-            child.parent.insertPoint = child.stateNode;
-            
+
+           
         } else {
           
-            if (child.type != AnuPortal) {
-                child.insertPoint = child.parent.insertPoint;
-            }
-
         
         }
         if (updateFail || child.updateFail) {

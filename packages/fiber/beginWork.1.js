@@ -59,7 +59,7 @@ export function updateEffects(fiber, topWork, info) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
             }
         }
-        if (instance.beforeHostFiber) {
+        if(instance.beforeHostFiber){
             instance.beforeHostFiber = null;
         }
 
@@ -77,20 +77,22 @@ function updateHostComponent(fiber, info) {
     const { props, tag, alternate: prev } = fiber;
 
     if (!fiber.stateNode) {
-        fiber.parent = info.containerStack[0];
+         fiber.parent = info.containerStack[0];
+
         fiber.stateNode = Renderer.createElement(fiber);
+   
         if (fragmentParent) {
             fiber.fragmentParent = fragmentParent;
             fragmentParent = null;
         }
     }
-    const children = props && props.children;
     var p = fiber.parent;
-
-    // p.beforeHostFiber.nextHostFiber = fiber;
-    fiber.beforeHostFiber = p.beforeHostFiber;
-
-    p.beforeHostFiber = fiber;
+    if(p.beforeHostFiber){
+       // p.beforeHostFiber.nextHostFiber = fiber;
+        fiber.beforeHostFiber =  p.beforeHostFiber;
+        p.beforeHostFiber = fiber;
+    }
+    const children = props && props.children;
     if (tag === 5) {
         // 元素节点
         info.containerStack.unshift(fiber.stateNode);
@@ -245,7 +247,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
-
+          
             callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
             if (prevState !== instance.state) {//模拟replaceState
                 fiber.memoizedState = instance.state;
@@ -264,7 +266,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     fiber._hydrating = true;
     if (!propsChanged && newState === oldState && contextStack.length == 1 && !updateQueue.isForced) {
         fiber.updateFail = true;
-
+       
     } else {
         let args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
@@ -312,7 +314,6 @@ function cloneChildren(fiber) {
             a.return = fiber; // 只改父引用不复制
             cc[i] = a;
         }
-        linkHostFibers(cc)
     }
 }
 
@@ -411,23 +412,3 @@ function diffChildren(parentFiber, children) {
 }
 
 Renderer.diffChildren = diffChildren;
-
-
-export function linkHostFibers(children) {
-    for (let i in children) {
-        let child = children[i];
-        if (child.disposed) {
-            continue;
-        }
-        if (child.tag > 4) {
-            var p = child.parent;
-            child.beforeHostFiber = p.beforeHostFiber;
-            p.beforeHostFiber = child;
-        } else {
-            if (child.child) {
-                linkHostFibers(child.children);
-            }
-        }
-    }
-}
-//明天测试ref,与tests

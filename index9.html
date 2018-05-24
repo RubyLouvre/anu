@@ -73,14 +73,14 @@
 
       render() {
        if(index){
-          return [<h1>h1</h1>, <strong >xxx</strong>, <span />, <b>777</b> ]
+          return [<h1>h1</h1>, <strong >前面</strong>, <span />, <b>后面</b> ]
        }
-        return [<strong >xxx</strong>, <span />, <b>777</b> ]
+        return [<strong >前面</strong>, <span />, <b>后面</b> ]
       }
     }
 
     ReactDOM.render(<Top />, container)
-
+console.log("re-render")
    index = 1;
 
     ReactDOM.render(<Top />, container)
