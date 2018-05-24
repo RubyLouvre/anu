@@ -4,7 +4,6 @@ import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
 import { fireDuplex } from "./duplex";
-// import { getHostSibling } from "./find"
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
