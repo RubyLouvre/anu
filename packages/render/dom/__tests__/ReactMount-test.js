@@ -511,7 +511,11 @@ describe('ReactMount', () => {
   });
   it("同一个元素节点中两个组件更新", () => {
     const container = document.createElement('container');
-
+    class Wrap extends React.Component {
+      render(){
+          return this.props.children
+      }
+   }
     var values = [111, 222, 333, 444]
     class App extends React.Component {
       state = {
@@ -520,7 +524,7 @@ describe('ReactMount', () => {
       render() {
 
         return <div ref="div"><TextArea id="text1" value={values.shift()} /><div id="div">{this.state.text}</div>
-          <TextArea id="text2" value={values.shift()} /></div>
+          <Wrap><TextArea id="text2" value={values.shift()} /></Wrap></div>
       }
     }
     class TextArea extends React.Component {

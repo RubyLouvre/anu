@@ -8,6 +8,8 @@ import { Fiber } from "./Fiber";
 import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK, NOWORK } from "./effectTag";
 import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
 
+import { getInsertPoint, setInsertPoints } from "./insertPoint";
+
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
  * 为instance/fiber添加context与parent, 并压入栈
@@ -59,8 +61,9 @@ export function updateEffects(fiber, topWork, info) {
                 updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
             }
         }
-        if (instance.beforeHostFiber) {
-            instance.beforeHostFiber = null;
+        //instance为元素节点
+        if (instance.insertPoint) {
+            instance.insertPoint = null;
         }
 
         if (f === topWork) {
@@ -79,18 +82,16 @@ function updateHostComponent(fiber, info) {
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
-        if (fragmentParent) {
-            fiber.fragmentParent = fragmentParent;
-            fragmentParent = null;
-        }
     }
     const children = props && props.children;
-    var p = fiber.parent;
+    const parent = fiber.parent;
+    if (!parent.insertPoint && fiber.hasMounted) {
+        fiber.forwardFiber = parent.insertPoint = getInsertPoint(fiber);
+    } else {
+        fiber.forwardFiber = parent.insertPoint;
+    }
+    parent.insertPoint = fiber;
 
-    // p.beforeHostFiber.nextHostFiber = fiber;
-    fiber.beforeHostFiber = p.beforeHostFiber;
-
-    p.beforeHostFiber = fiber;
     if (tag === 5) {
         // 元素节点
         info.containerStack.unshift(fiber.stateNode);
@@ -141,7 +142,6 @@ function mergeStates(fiber, nextProps) {
     }
 }
 
-let fragmentParent = null;
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
@@ -153,17 +153,15 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
-            fragmentParent = null;
             fiber.parent = props.parent;
         } else {
             fiber.parent = containerStack[0];
         }
         instance = createInstance(fiber, newContext);
-        if (type === Fragment) {
-            fragmentParent = fiber;
-        }
     }
-
+    if(fiber.hasMounted && fiber.dirty && fiber.parent){
+        fiber.parent.insertPoint = null;
+    }
 
     instance._reactInternalFiber = fiber; //更新rIF
     if (type === AnuPortal) {
@@ -307,12 +305,13 @@ function cloneChildren(fiber) {
         let pc = prev.children;
         let cc = (fiber.children = {});
         fiber.child = prev.child;
+        fiber.lastChild = prev.lastChild;
         for (let i in pc) {
             let a = pc[i];
             a.return = fiber; // 只改父引用不复制
             cc[i] = a;
         }
-        linkHostFibers(cc)
+        setInsertPoints(cc);
     }
 }
 
@@ -400,34 +399,21 @@ function diffChildren(parentFiber, children) {
 
         if (prevFiber) {
             prevFiber.sibling = newFiber;
+            newFiber.forward = prevFiber;
         } else {
             parentFiber.child = newFiber;
+            newFiber.forward = null;
         }
         prevFiber = newFiber;
     }
+    parentFiber.lastChild = prevFiber;
     if (prevFiber) {
-        delete prevFiber.sibling;
+        prevFiber.sibling = null;
     }
 }
 
 Renderer.diffChildren = diffChildren;
 
 
-export function linkHostFibers(children) {
-    for (let i in children) {
-        let child = children[i];
-        if (child.disposed) {
-            continue;
-        }
-        if (child.tag > 4) {
-            var p = child.parent;
-            child.beforeHostFiber = p.beforeHostFiber;
-            p.beforeHostFiber = child;
-        } else {
-            if (child.child) {
-                linkHostFibers(child.children);
-            }
-        }
-    }
-}
+
 //明天测试ref,与tests

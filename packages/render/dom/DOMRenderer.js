@@ -10,37 +10,37 @@ export function createElement(vnode) {
     let { type, props, ns } = vnode;
     let text = props ? props.children : "";
     switch (type) {
-        case "#text":
-            //只重复利用文本节点
-            var node = recyclables[type].pop();
-            if (node) {
-                node.nodeValue = text;
-                return node;
-            }
-            return document.createTextNode(text);
-        case "#comment":
-            return document.createComment(text);
+    case "#text":
+        //只重复利用文本节点
+        var node = recyclables[type].pop();
+        if (node) {
+            node.nodeValue = text;
+            return node;
+        }
+        return document.createTextNode(text);
+    case "#comment":
+        return document.createComment(text);
 
-        case "svg":
-            ns = NAMESPACE.svg;
-            break;
-        case "math":
-            ns = NAMESPACE.math;
-            break;
+    case "svg":
+        ns = NAMESPACE.svg;
+        break;
+    case "math":
+        ns = NAMESPACE.math;
+        break;
 
-        default:
-            do {
-                var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-                if (s) {
-                    ns = s.namespaceURI;
-                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                        ns = "";
-                    }
-                    break;
+    default:
+        do {
+            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+            if (s) {
+                ns = s.namespaceURI;
+                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                    ns = "";
                 }
-            } while ((p = p.return));
+                break;
+            }
+        } while ((p = p.return));
 
-            break;
+        break;
     }
     try {
         if (ns) {
@@ -99,79 +99,35 @@ export function removeElement(node) {
     fragment.removeChild(node);
 }
 
-   
-
-/*
-function insertElement(fiber) {
-    let { stateNode: dom, parent } = fiber;
-    let insertPoint = getHostSibling(fiber);//getHostBefore
-
-    try {
-        // var after =  findNext(fiber);
-
-        if (!insertPoint) {//null
-            if (parent.lastChild === dom) {
-                console.log(dom, "last")
-               
-            }else{
-                if(dom.nodeType == 1){
-                  console.log("append", dom)
-                }
-                parent.appendChild(dom);
-                
-            }
-            return;
-        }
-
-        if (insertPoint.previousSibling === dom) {
-            console.log(dom, "return", insertPoint)
-            return;
-        }
-        if (!parent.contains(insertPoint)) {
-            parent.appendChild(dom);
-            parent.appendChild(insertPoint);
-           console.log(dom, null, parent.textContent, "它末插入",insertPoint);
-        } else {
-            parent.insertBefore(dom, insertPoint);
-            console.log(dom, insertPoint,parent.textContent, "insertBefore");
-        }
-       
-
-        //插入**元素节点**会引发焦点丢失，触发body focus事件
-        // Renderer.inserting = fiber.tag === 5 && document.activeElement;
-        // Renderer.inserting = null;
-    } catch (e) {
-        throw e;
-    }
-}
-*/
 
 
-function insertElement(fiber) {
-    let { stateNode: dom, parent } = fiber;
-    let insertPoint = fiber.beforeHostFiber ?fiber.beforeHostFiber.stateNode : null
-   
-    
-    try {
-        if(insertPoint == null ){
-            console.log(dom, insertPoint);
-            if(dom !== parent.firstChild){
+/**
+ *  if (insertPoint == null) {
+            if (dom !== parent.firstChild) {
                 parent.insertBefore(dom, parent.firstChild);
             }
-            return
+            return;
         }
-        let after = insertPoint.nextSibling ;
+ * 
+ */
+function insertElement(fiber) {
+    let { stateNode: dom, parent } = fiber;
+
+    try {
+        let insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
+        let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
+        if (after == dom) {
+            return;
+        }
         if (after === null && dom === parent.lastChild) {
             return;
         }
-       
-        console.log(dom, after, insertPoint);
-        
         //插入**元素节点**会引发焦点丢失，触发body focus事件
         Renderer.inserting = fiber.tag === 5 && document.activeElement;
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
+
         throw e;
     }
 

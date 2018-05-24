@@ -71,7 +71,8 @@ export let NoopRenderer = createRenderer({
     insertElement(fiber) {
         let dom = fiber.stateNode,
             parentNode = fiber.parent,
-            before = fiber.insertPoint,
+            forwardFiber = fiber.forwardFiber,
+            before = forwardFiber ? forwardFiber.stateNode : null,
             children = parentNode.children;
         try {
             if (before == null) {
