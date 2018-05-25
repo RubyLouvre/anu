@@ -1,6 +1,22 @@
-import { updateClassComponent, updateHostComponent } from "./beginWork";
-import { gSBU } from "react-core/util";
-
+// import { updateClassComponent, updateHostComponent } from "./beginWork";
+import { gSBU, effects, emptyObject, returnFalse } from "react-core/util";
+import {
+    PLACE,
+    CONTENT,
+    ATTR, //UPDATE
+    NOWORK,
+    DETACH, //DELETION
+    HOOK,
+    REF,
+    CALLBACK,
+    CAPTURE,
+    effectLength,
+    effectNames,
+} from "./effectTag";
+import { guardCallback, removeFormBoundaries } from "./ErrorBoundary";
+import { fakeObject } from "react-core/Component";
+import { Renderer } from "react-core/createRenderer";
+import { Refs } from "./Refs";
 
 /**
  * COMMIT阶段也做成深度调先遍历
@@ -8,54 +24,224 @@ import { gSBU } from "react-core/util";
  * @param {*} topFiber 
  */
 
-function commitDFS(fiber, topFiber) {
-    do {
+function commitDFS(fiber, tasks) {
+    var topFiber = fiber, scu = false;
+    while (true) {
         //确保先删除后添加
-        if (fiber.effects || fiber.hasError) {
-
+        if (fiber.effects && fiber.effects.length) {
+            //fiber里面是被重用的旧节点与无法重用的旧节点
+            fiber.effects.forEach(disposeFiber);
+            delete fiber.effects;
             //NULLREF, DETACH
         }
+        if (fiber.hasError) {
+            //这是一个边界组件，需要清空下方所有节点
+            removeFormBoundaries(fiber);
+            disposeFibers(fiber);
+        }
+        if (fiber.updateFail) {
+            scu = true;
+        }
 
-        if (fiber.effectTag & PLACE === 0) {
-            //PlACE
+        // 插入或移动DOM节点
+        if (fiber.effectTag % PLACE == 0) {
+            Renderer.insertElement(fiber);
+            fiber.hasMounted = true;
+            fiber.effectTag /= PLACE;
         }
-        if (fiber.hasMounted && fiber.stateNode[gSBU]) {
-            // 执行 getSnapshotBeforeUpdate
-            // updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
+        // 执行 getSnapshotBeforeUpdate
+        let instance = fiber.stateNode;
+        if (fiber.hasMounted && fiber.effectTag % HOOK === 0 && instance[gSBU]) {
+            let updater = instance.updater;
+            updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
         }
-        if (fiber.child) {
+        if (fiber.child && (fiber.child.effectTag > 1 || scu)) {
             fiber = fiber.child;
             continue;
         }
+
         if (fiber.sibling) {
             fiber = fiber.sibling;
             continue;
         }
-        if (fiber.return) {
-            //流程开始往上寻找时，它就会执行任务
+        innerLoop:
+        while (fiber.return) {
+            //这是最底层，没有孩子
             if (fiber.effectTag > 1) {
-                //ATTR  REF HOOK  CALLBACK 
-                executeEffects(fiber);
+                commitEffects(fiber, tasks);
             }
-            if (fiber.return !== topFiber) {
-                fiber = fiber.return;
-            } else {
-                executeEffects(topFiber);
-                break;
+            fiber = fiber.return;
+            if (fiber.updateFail) {
+                delete fiber.updateFail;
+                scu = false;
+            }
+            //执行向上的节点
+            if (fiber.effectTag > 1) {
+                commitEffects(fiber, tasks);
+            }
+            if (fiber === topFiber) {
+                return;
+            }
+            if (fiber.sibling) {
+                fiber = fiber.sibling;
+                break innerLoop;
             }
         }
+    }
+}
 
-    } while (1);
+export function commitWork() {
+
+    Renderer.batchedUpdates(function () {
+        var el = effects.shift();
+        if (el) {
+            commitDFS(el, effects);
+        }
+    }, {});
+
+    let error = Renderer.catchError;
+    if (error) {
+        delete Renderer.catchError;
+        throw error;
+    }
 }
 
 
-var pendingFiber = []
+/**
+ * 执行其他任务
+ *
+ * @param {Fiber} fiber
+ */
+export function commitEffects(fiber, tasks) {
+    let instance = fiber.stateNode || emptyObject;
+    let amount = fiber.effectTag;
+    let updater = instance.updater || fakeObject;
+    for (let i = 0; i < effectLength; i++) {
+        let effectNo = effectNames[i];
+        if (effectNo > amount) {
+            break;
+        }
+        if (amount % effectNo === 0) {
+            amount /= effectNo;
+            //如果能整除
+            switch (effectNo) {
+            case CONTENT:
+                Renderer.updateContext(fiber);
+                break;
+            case ATTR:
+                Renderer.updateAttribute(fiber);
+                break;
+            case HOOK:
+                //console.log("HOOK",fiber.name);
+                if (fiber.hasMounted) {
+                    guardCallback(instance, "componentDidUpdate", [
+                        updater.prevProps,
+                        updater.prevState,
+                        updater.snapshot,
+                    ]);
+                } else {
+                    fiber.hasMounted = true;
+                    guardCallback(instance, "componentDidMount", []);
+                }
+                delete fiber._hydrating;
+                //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
+                if (fiber.hasError) {
+                    removeFormBoundaries(fiber);
+                    Renderer.diffChildren(fiber, []);
+                    tasks.push.apply(tasks, fiber.effects);
+                    delete fiber.effects;
+                    let n = Object.assign({}, fiber);
+                    fiber.effectTag = 1;
+                    n.effectTag = amount;
+                    tasks.push(n);
+                    return;
+                }
+
+                break;
+            case REF:
+                if (!instance.__isStateless) {
+                    Refs.fireRef(fiber, instance);
+                }
+                break;
+            case CALLBACK:
+                //ReactDOM.render/forceUpdate/setState callback
+                var queue = fiber.pendingCbs;
+                fiber._hydrating = true; //setState回调里再执行setState
+                queue.forEach(function (fn) {
+                    fn.call(instance);
+                });
+                delete fiber._hydrating;
+                delete fiber.pendingCbs;
+                break;
+            case CAPTURE: // 23
+                var values = fiber.capturedValues;
+                fiber.effectTag = amount;
+                fiber.hasCatch = true;
+                var a = values.shift();
+                var b = values.shift();
+                if (!values.length) {
+                    delete fiber.capturedValues;
+                }
+                instance.componentDidCatch(a, b);
+                break;
+            }
+        }
+    }
+    fiber.effectTag = 1;
+}
+
+
+export function disposeFibers(fiber) {
+    let effects = fiber.effects;
+    if (effects) {
+        effects.forEach(disposeFiber);
+        delete fiber.effects;
+    }
+    let c = fiber.oldChildren || emptyObject;
+    for (let i in c) {
+        let child = c[i];
+        if (child.disposed) {
+            continue;
+        }
+        disposeFibers(child);
+        disposeFiber(child, true);
+    }
+    delete fiber.child;
+    delete fiber.lastChild;
+    delete fiber.oldChildren;
+    fiber.children = {};
+}
+
+function disposeFiber(fiber, force) {
+    let { stateNode, effectTag } = fiber;
+    if (!stateNode.__isStateless && fiber.ref) {
+        Refs.fireRef(fiber, null);
+    }
+    if (effectTag % DETACH == 0 || force === true) {
+        if (fiber.tag > 3) {
+            Renderer.removeElement(fiber);
+        } else {
+            if (fiber.hasMounted) {
+                stateNode.updater.enqueueSetState = returnFalse;
+                guardCallback(stateNode, "componentWillUnmount", []);
+            }
+        }
+        delete fiber.alternate;
+        delete fiber.hasMounted;
+        delete fiber.stateNode;
+        fiber.disposed = true;
+    }
+    fiber.effectTag = NOWORK;
+}
+
+/*
+var pendingFiber = [];
 function reconcileDFS(fiber, topFiber, info, dl) {
     do {
 
         if (dl.timeRemaining < 1) { //时间不够，下次处理
             pendingFiber.push(fiber);
-            break
+            break;
         }
 
         //没有销毁， 就实例化或更新组件
@@ -82,11 +268,11 @@ function reconcileDFS(fiber, topFiber, info, dl) {
             let updater = instance && instance.updater;
             if (fiber.shiftContainer) {
                 delete fiber.shiftContainer;
-                info.containerStack.shift(); 
+                info.containerStack.shift();
             } else if (updater) {
                 if (fiber.shiftContext) {
                     delete fiber.shiftContext;
-                    info.contextStack.shift(); 
+                    info.contextStack.shift();
                 }
             }
             //instance为元素节点
@@ -105,3 +291,5 @@ function reconcileDFS(fiber, topFiber, info, dl) {
 
     } while (1);
 }
+
+*/

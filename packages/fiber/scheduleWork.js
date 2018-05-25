@@ -1,6 +1,6 @@
 import { updateEffects } from "./beginWork";
-import { collectWork } from "./collectWork";
-import { commitWork } from "./commitWork";
+//import { collectWork } from "./collectWork";
+import { commitWork } from "./commitWork2";
 import { Renderer } from "react-core/createRenderer";
 import { effects, isMounted, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
@@ -64,6 +64,7 @@ function performWork(deadline) {
         //优先处理异常边界的setState
         macrotasks.push(elem);
     }
+   
     topFibers.forEach(function (el) {
         let microtasks = el.microtasks;
         while ((el = microtasks.shift())) {
@@ -132,7 +133,7 @@ function workLoop(deadline) {
             fiber = updateEffects(fiber, topWork, info);
         }
 
-        arrayPush.apply(effects, collectWork(topWork, null, true));
+        // arrayPush.apply(effects, collectWork(topWork, null, true));
         effects.push(topWork);
 
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {

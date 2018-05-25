@@ -1,3 +1,4 @@
+import { PLACE } from "./effectTag";
 
 //查找它后面的节点
 export function getInsertPoint(fiber) {
@@ -23,6 +24,7 @@ export function setInsertPoints(children) {
         }
         if (child.tag > 4) {
             let p = child.parent;
+            child.effectTag = PLACE;
             child.forwardFiber = p.insertPoint;
             p.insertPoint = child;
         } else {

@@ -61,7 +61,9 @@
       render() {
         return <LetterInner char={this.props.char} />;
       }
-    
+      componentDidUpdate(){
+          console.log(this.props.char+" did update")
+      }
       componentDidMount(){
           console.log(this.props.char+" did mount")
       }
@@ -83,7 +85,8 @@
     ReactDOM.render(<Letters letters="XKwHomsNjIkBcQWFbiZU" />, container);
     expect(container.textContent).toBe('XKwHomsNjIkBcQWFbiZU');
     console.log('=====')
-    ReactDOM.render(<Letters letters="EHCjpdTUuiybDvhRJwZt" />, container);
+   var s =   ReactDOM.render(<Letters letters="EHCjpdTUuiybDvhRJwZt" />, container);
+   console.log(s)
     expect(container.textContent).toBe('EHCjpdTUuiybDvhRJwZt');
 
 	

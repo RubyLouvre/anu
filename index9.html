@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
+    <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
@@ -68,20 +68,43 @@
         return <A />
       }
     }
+    class B extends React.Component {
+        componentWillUpdate(){
+            console.log("B will update")
+        }
+        componentDidMount(){
+            console.log("B did mount")
+        }
+        componentDidUpdate(){
+            console.log("B did update")
+        }
+        render() {
+            return   <s>{this.props.value}</s>
+        }
+    }
    var index = 0;
     class A extends React.Component {
-
-      render() {
-       if(index){
-          return [<h1>h1</h1>, <strong >前面</strong>, <span />, <b>后面</b> ]
-       }
-        return [<strong >前面</strong>, <span />, <b>后面</b> ]
-      }
+        componentWillUpdate(){
+            console.log("A will update")
+        }
+        componentDidMount(){
+            console.log("A did mount")
+        }
+        componentDidUpdate(){
+            console.log("A did update")
+        }
+        render() {
+           if(index){
+                return [ <B value="22" />,  <strong >前面8</strong>, <span />, <b>后面</b>,<h1>h1</h1> ]
+            }
+            return [ <B value="11" /> ,<strong >前面</strong>,<span />, <b>后面</b> ]
+            
+        }
     }
 
     ReactDOM.render(<Top />, container)
-   console.log("re-render")
-   index = 1;
+    console.log("re-render")
+    index = 1;
 
     ReactDOM.render(<Top />, container)
 
