@@ -25,8 +25,10 @@ import { Refs } from "./Refs";
  */
 
 function commitDFS(fiber, tasks) {
-    var topFiber = fiber, scu = false;
+    let topFiber = fiber, scu = false;
+    let count = 60
     while (true) {
+
         //确保先删除后添加
         if (fiber.effects && fiber.effects.length) {
             //fiber里面是被重用的旧节点与无法重用的旧节点
@@ -71,6 +73,7 @@ function commitDFS(fiber, tasks) {
                 commitEffects(fiber, tasks);
             }
             fiber = fiber.return;
+
             if (fiber.updateFail) {
                 delete fiber.updateFail;
                 scu = false;
@@ -79,7 +82,7 @@ function commitDFS(fiber, tasks) {
             if (fiber.effectTag > 1) {
                 commitEffects(fiber, tasks);
             }
-            if (fiber === topFiber) {
+            if (fiber === topFiber || fiber.hostRoot) {
                 return;
             }
             if (fiber.sibling) {
@@ -95,6 +98,10 @@ export function commitWork() {
     Renderer.batchedUpdates(function () {
         var el = effects.shift();
         if (el) {
+            if (el.effectTag === DETACH && el.hasCatch) {
+                disposeFiber(el)
+                return
+            }
             commitDFS(el, effects);
         }
     }, {});
@@ -125,65 +132,66 @@ export function commitEffects(fiber, tasks) {
             amount /= effectNo;
             //如果能整除
             switch (effectNo) {
-            case CONTENT:
-                Renderer.updateContext(fiber);
-                break;
-            case ATTR:
-                Renderer.updateAttribute(fiber);
-                break;
-            case HOOK:
-                //console.log("HOOK",fiber.name);
-                if (fiber.hasMounted) {
-                    guardCallback(instance, "componentDidUpdate", [
-                        updater.prevProps,
-                        updater.prevState,
-                        updater.snapshot,
-                    ]);
-                } else {
-                    fiber.hasMounted = true;
-                    guardCallback(instance, "componentDidMount", []);
-                }
-                delete fiber._hydrating;
-                //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
-                if (fiber.hasError) {
-                    removeFormBoundaries(fiber);
-                    Renderer.diffChildren(fiber, []);
-                    tasks.push.apply(tasks, fiber.effects);
-                    delete fiber.effects;
-                    let n = Object.assign({}, fiber);
-                    fiber.effectTag = 1;
-                    n.effectTag = amount;
-                    tasks.push(n);
-                    return;
-                }
+                case CONTENT:
+                    Renderer.updateContext(fiber);
+                    break;
+                case ATTR:
+                    Renderer.updateAttribute(fiber);
+                    break;
+                case HOOK:
+                    //console.log("HOOK",fiber.name);
+                    if (fiber.hasMounted) {
+                        guardCallback(instance, "componentDidUpdate", [
+                            updater.prevProps,
+                            updater.prevState,
+                            updater.snapshot,
+                        ]);
+                    } else {
+                        fiber.hasMounted = true;
+                        guardCallback(instance, "componentDidMount", []);
+                    }
+                    delete fiber._hydrating;
+                    //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
+                    if (fiber.hasError) {
+                        removeFormBoundaries(fiber);
+                        Renderer.diffChildren(fiber, []);
 
-                break;
-            case REF:
-                if (!instance.__isStateless) {
-                    Refs.fireRef(fiber, instance);
-                }
-                break;
-            case CALLBACK:
-                //ReactDOM.render/forceUpdate/setState callback
-                var queue = fiber.pendingCbs;
-                fiber._hydrating = true; //setState回调里再执行setState
-                queue.forEach(function (fn) {
-                    fn.call(instance);
-                });
-                delete fiber._hydrating;
-                delete fiber.pendingCbs;
-                break;
-            case CAPTURE: // 23
-                var values = fiber.capturedValues;
-                fiber.effectTag = amount;
-                fiber.hasCatch = true;
-                var a = values.shift();
-                var b = values.shift();
-                if (!values.length) {
-                    delete fiber.capturedValues;
-                }
-                instance.componentDidCatch(a, b);
-                break;
+                        //  tasks.push.apply(tasks, fiber.effects);
+                        delete fiber.effects;
+                        let n = Object.assign({}, fiber);
+                        fiber.effectTag = 1;
+                        n.effectTag = amount;
+                        // tasks.push(n);
+                        return;
+                    }
+
+                    break;
+                case REF:
+                    if (!instance.__isStateless) {
+                        Refs.fireRef(fiber, instance);
+                    }
+                    break;
+                case CALLBACK:
+                    //ReactDOM.render/forceUpdate/setState callback
+                    var queue = fiber.pendingCbs;
+                    fiber._hydrating = true; //setState回调里再执行setState
+                    queue.forEach(function (fn) {
+                        fn.call(instance);
+                    });
+                    delete fiber._hydrating;
+                    delete fiber.pendingCbs;
+                    break;
+                case CAPTURE: // 23
+                    var values = fiber.capturedValues;
+                    fiber.effectTag = amount;
+                    fiber.hasCatch = true;
+                    var a = values.shift();
+                    var b = values.shift();
+                    if (!values.length) {
+                        delete fiber.capturedValues;
+                    }
+                    instance.componentDidCatch(a, b);
+                    break;
             }
         }
     }
@@ -192,19 +200,24 @@ export function commitEffects(fiber, tasks) {
 
 
 export function disposeFibers(fiber) {
-    let effects = fiber.effects;
-    if (effects) {
-        effects.forEach(disposeFiber);
-        delete fiber.effects;
-    }
-    let c = fiber.oldChildren || emptyObject;
-    for (let i in c) {
-        let child = c[i];
-        if (child.disposed) {
-            continue;
+    /*  let effects = fiber.effects;
+      if (effects) {
+          effects.forEach(disposeFiber);
+          delete fiber.effects;
+      }
+      */
+    let list = [fiber.oldChildren, fiber.children], count = 0;
+    while (count != 2) {
+        let c = list[count++];
+        if (c) {
+            for (let i in c) {
+                let child = c[i];
+                if (!child.disposed && child.hasMounted) {
+                    disposeFibers(child);
+                    disposeFiber(child, true);
+                }
+            }
         }
-        disposeFibers(child);
-        disposeFiber(child, true);
     }
     delete fiber.child;
     delete fiber.lastChild;
@@ -214,6 +227,9 @@ export function disposeFibers(fiber) {
 
 function disposeFiber(fiber, force) {
     let { stateNode, effectTag } = fiber;
+    if (!stateNode) {
+        return
+    }
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }

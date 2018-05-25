@@ -89,8 +89,8 @@ function findCatchComponent(fiber, names) {
                     boundary = fiber;
                 } else if (fiber.hasCatch) {
                     //防止被去重
-                    retry = Object.assign({}, fiber);
-
+                   // retry = Object.assign({}, fiber);
+                    retry = fiber;
                     retry.effectTag = DETACH;
                     retry.disposed = true;
                 }
@@ -107,8 +107,9 @@ function findCatchComponent(fiber, names) {
             boundary.effectTag *= CAPTURE;
             boundaries.unshift(boundary);
             if (retry && retry !== boundary) {
-                let arr = boundary.effects || (boundary.effects = []);
-                arr.push(retry);
+                //  新的双DFS 版本不把retry放进effects中
+                //  let arr = boundary.effects || (boundary.effects = []);
+                //  arr.push(retry);
             }
             return boundary;
         }

@@ -132,7 +132,6 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-
         // arrayPush.apply(effects, collectWork(topWork, null, true));
         effects.push(topWork);
 
