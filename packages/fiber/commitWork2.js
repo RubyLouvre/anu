@@ -23,12 +23,13 @@ import { Refs } from "./Refs";
  * @param {*} fiber 
  * @param {*} topFiber 
  */
-
+/*
 function commitDFS(fiber, tasks) {
     let topFiber = fiber, scu = false;
     let count = 60
+    console.log("topFiber", topFiber)
     while (true) {
-
+       
         //确保先删除后添加
         if (fiber.effects && fiber.effects.length) {
             //fiber里面是被重用的旧节点与无法重用的旧节点
@@ -41,8 +42,13 @@ function commitDFS(fiber, tasks) {
             removeFormBoundaries(fiber);
             disposeFibers(fiber);
         }
-        if (fiber.updateFail) {
-            scu = true;
+        if (scu) {
+            delete fiber.updateFail;
+            delete fiber.batching;
+        } else {
+            if (fiber.updateFail || fiber.batching) {
+                scu = true;
+            }
         }
 
         // 插入或移动DOM节点
@@ -66,44 +72,125 @@ function commitDFS(fiber, tasks) {
             fiber = fiber.sibling;
             continue;
         }
+        fiber = fiber.return.child;
         innerLoop:
         while (fiber.return) {
             //这是最底层，没有孩子
             if (fiber.effectTag > 1) {
                 commitEffects(fiber, tasks);
             }
-            fiber = fiber.return;
-
             if (fiber.updateFail) {
                 delete fiber.updateFail;
+                delete fiber.batching;
                 scu = false;
-            }
-            //执行向上的节点
-            if (fiber.effectTag > 1) {
-                commitEffects(fiber, tasks);
             }
             if (fiber === topFiber || fiber.hostRoot) {
                 return;
             }
             if (fiber.sibling) {
                 fiber = fiber.sibling;
+                continue innerLoop;
+            }
+
+            fiber = fiber.return;
+
+            
+         //   console.log(fiber, "YYYY")
+            //执行向上的节点
+            if (fiber.effectTag > 1) {
+                commitEffects(fiber, tasks);
+            }
+          
+          
+            if (fiber.sibling) {
+                fiber = fiber.sibling;
                 break innerLoop;
+            }
+           
+        }
+    }
+}
+*/
+function commitDFS(fiber, tasks) {
+    let topFiber = fiber, scu = false;
+    let count = 60;
+  
+    //console.log("topFiber", topFiber)
+    outerLoop:
+    while (true) {
+        //逐步向下执行所有移除与插入操作
+        if (fiber.effects && fiber.effects.length) {
+            //fiber里面是被重用的旧节点与无法重用的旧节点
+            fiber.effects.forEach(disposeFiber);
+            delete fiber.effects;
+        }
+        
+        if (fiber.effectTag % PLACE == 0) {
+            // DOM节点插入或移除
+            Renderer.insertElement(fiber);
+            fiber.hasMounted = true;
+            fiber.effectTag /= PLACE;
+        } else {
+            // 边界组件的清洗工件
+            if (fiber.hasError) {
+                removeFormBoundaries(fiber);
+                disposeFibers(fiber);
+            }
+            // 有狀态组件的getSnapshotBeforeUpdate HOOK
+            let instance = fiber.stateNode;
+            if (fiber.hasMounted && fiber.effectTag % HOOK === 0 && instance[gSBU]) {
+                let updater = instance.updater;
+                updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
+            }
+        }
+        if(fiber.updateFail){
+            delete fiber.updateFail;
+        }
+        if (fiber.child) {
+            fiber = fiber.child;
+            continue;
+        } else {
+            if (fiber.effectTag > 1) {
+                commitEffects(fiber, tasks);
+            }
+        }
+
+        if (fiber.sibling) {
+            fiber = fiber.sibling;
+            continue;
+        } else {
+
+            while (fiber.return) {
+                fiber = fiber.return;
+
+                if (fiber.effectTag > 1) {
+                    commitEffects(fiber, tasks);
+                }
+                if (fiber === topFiber || fiber.hostRoot) {
+                    break outerLoop;
+                }
+                if (fiber.sibling) {
+                    fiber = fiber.sibling;
+                    continue outerLoop;
+                }
             }
         }
     }
 }
-
 export function commitWork() {
 
     Renderer.batchedUpdates(function () {
-        var el = effects.shift();
-        if (el) {
+        var el
+        while(el = effects.shift()){
+         
             if (el.effectTag === DETACH && el.hasCatch) {
                 disposeFiber(el)
                 return
             }
             commitDFS(el, effects);
+            
         }
+       
     }, {});
 
     let error = Renderer.catchError;
@@ -155,7 +242,7 @@ export function commitEffects(fiber, tasks) {
                     if (fiber.hasError) {
                         removeFormBoundaries(fiber);
                         Renderer.diffChildren(fiber, []);
-
+                        // console.log("再次清空", fiber.name)
                         //  tasks.push.apply(tasks, fiber.effects);
                         delete fiber.effects;
                         let n = Object.assign({}, fiber);
