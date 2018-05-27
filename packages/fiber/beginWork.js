@@ -1,14 +1,49 @@
-import { extend, Fragment, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
-import { fiberizeChildren } from "react-core/createElement";
-import { AnuPortal } from "react-core/createPortal";
+import {
+    extend,
+    Fragment,
+    typeNumber,
+    isFn,
+    gDSFP,
+    gSBU
+} from "react-core/util";
+import {
+    fiberizeChildren
+} from "react-core/createElement";
+import {
+    AnuPortal
+} from "react-core/createPortal";
 
-import { Renderer } from "react-core/createRenderer";
-import { createInstance, UpdateQueue } from "./createInstance";
-import { Fiber } from "./Fiber";
-import { PLACE, ATTR, HOOK, CONTENT, REF, NULLREF, CALLBACK, NOWORK } from "./effectTag";
-import { guardCallback, detachFiber, pushError, applyCallback } from "./ErrorBoundary";
+import {
+    Renderer
+} from "react-core/createRenderer";
+import {
+    createInstance,
+    UpdateQueue
+} from "./createInstance";
+import {
+    Fiber
+} from "./Fiber";
+import {
+    PLACE,
+    ATTR,
+    HOOK,
+    CONTENT,
+    REF,
+    NULLREF,
+    CALLBACK,
+    NOWORK
+} from "./effectTag";
+import {
+    guardCallback,
+    detachFiber,
+    pushError,
+    applyCallback
+} from "./ErrorBoundary";
 
-import { getInsertPoint, setInsertPoints } from "./insertPoint";
+import {
+    getInsertPoint,
+    setInsertPoints
+} from "./insertPoint";
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -76,7 +111,11 @@ export function updateEffects(fiber, topWork, info) {
 }
 
 function updateHostComponent(fiber, info) {
-    const { props, tag, alternate: prev } = fiber;
+    const {
+        props,
+        tag,
+        alternate: prev
+    } = fiber;
 
     if (!fiber.stateNode) {
         fiber.parent = info.containerStack[0];
@@ -142,12 +181,19 @@ function mergeStates(fiber, nextProps) {
 }
 
 export function updateClassComponent(fiber, info) {
-    let { type, stateNode: instance, props } = fiber;
+    let {
+        type,
+        stateNode: instance,
+        props
+    } = fiber;
     // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
-    let { contextStack, containerStack } = info;
+    let {
+        contextStack,
+        containerStack
+    } = info;
 
     if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
-        contextStack.unshift(instance.unmaskedContext);//setState需要还原contextStack
+        contextStack.unshift(instance.unmaskedContext); //setState需要还原contextStack
     }
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
@@ -158,7 +204,7 @@ export function updateClassComponent(fiber, info) {
         }
         instance = createInstance(fiber, newContext);
     }
-    if(fiber.hasMounted && fiber.dirty && fiber.parent){
+    if (fiber.hasMounted && fiber.dirty && fiber.parent) {
         fiber.parent.insertPoint = null;
     }
 
@@ -181,7 +227,7 @@ export function updateClassComponent(fiber, info) {
             instance.state = fiber.memoizedState;
         }
     }
-    instance.unmaskedContext = contextStack[0];//存放它上面的所有context的并集
+    instance.unmaskedContext = contextStack[0]; //存放它上面的所有context的并集
     fiber.batching = updateQueue.batching;
     let cbs = updateQueue.pendingCbs;
     if (cbs.length) {
@@ -211,9 +257,10 @@ export function updateClassComponent(fiber, info) {
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
     //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
-    if (fiber.hasError) {
-        return;
-    }
+    /*  if (fiber.hasError) {
+          return;
+      }
+      */
     diffChildren(fiber, rendered);
 }
 
@@ -244,7 +291,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
             let prevState = instance.state;
 
             callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
-            if (prevState !== instance.state) {//模拟replaceState
+            if (prevState !== instance.state) { //模拟replaceState
                 fiber.memoizedState = instance.state;
             }
         }
@@ -343,6 +390,7 @@ function diffChildren(parentFiber, children) {
     } else {
         oldFibers = {};
     }
+
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
@@ -367,10 +415,12 @@ function diffChildren(parentFiber, children) {
         let oldFiber = matchFibers[i];
         let alternate = null;
         if (oldFiber) {
-            if (isSameNode(oldFiber, newFiber)) {
+            if (isSameNode(oldFiber, newFiber) && !oldFiber.disposed) {
                 alternate = new Fiber(oldFiber);
+
                 let oldRef = oldFiber.ref;
                 newFiber = extend(oldFiber, newFiber);
+
                 newFiber.alternate = alternate;
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;

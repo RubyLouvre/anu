@@ -230,50 +230,71 @@
 				log.push(`${this.props.logName} componentWillUnmount`);
 			}
 		};
+		var BrokenComponentDidUpdate = class extends React.Component {
+			static defaultProps = {
+				errorText: 'Hello',
+			};
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentDidUpdate constructor');
+			}
+			render() {
+				log.push('BrokenComponentDidUpdate render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentDidUpdate componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentDidUpdate componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentDidUpdate componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentDidUpdate componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentDidUpdate componentDidUpdate [!]');
+				throw new Error(this.props.errorText);
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentDidUpdate componentWillUnmount');
+			}
+		};
 
-      //  const container = document.createElement('div');
-        ReactDOM.render(
-          <ErrorBoundary>
-            <Normal />
-          </ErrorBoundary>,
-          container,
-        );
-    
-        log.length = 0;
-        ReactDOM.render(
-          <ErrorBoundary>
-            <Normal />
-            <Normal logName="Normal2" />
-            <BrokenComponentWillMount />
-          </ErrorBoundary>,
-          container,
-        );
-        expect(container.textContent).toBe('Caught an error: Hello.');
-        expect(log).toEqual([
-          'ErrorBoundary componentWillReceiveProps',
-          'ErrorBoundary componentWillUpdate',
-          'ErrorBoundary render success',
-          'Normal componentWillReceiveProps',
-          'Normal componentWillUpdate',
-          'Normal render',
-          // Normal2 will attempt to mount:
-          'Normal2 constructor',
-          'Normal2 componentWillMount',
-          'Normal2 render',
-          // BrokenComponentWillMount will abort rendering:
-          'BrokenComponentWillMount constructor',
-          'BrokenComponentWillMount componentWillMount [!]',
-          // Finish updating with null children
-          'Normal componentWillUnmount',
-          'ErrorBoundary componentDidUpdate',
-          // Handle the error
-          'ErrorBoundary componentDidCatch',
-          // Render the error message
-          'ErrorBoundary componentWillUpdate',
-          'ErrorBoundary render error',
-          'ErrorBoundary componentDidUpdate',
-        ]);
-    
+      ReactDOM.render(
+		  <ErrorBoundary>
+			<BrokenComponentDidUpdate />
+		  </ErrorBoundary>,
+		  container,
+		);
+	
+		log.length = 0;
+		ReactDOM.render(
+		  <ErrorBoundary>
+			<BrokenComponentDidUpdate />
+		  </ErrorBoundary>,
+		  container,
+		);
+		expect(log).toEqual([
+		  'ErrorBoundary componentWillReceiveProps',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render success',
+		  'BrokenComponentDidUpdate componentWillReceiveProps',
+		  'BrokenComponentDidUpdate componentWillUpdate',
+		  'BrokenComponentDidUpdate render',
+		  // All lifecycles run
+		  'BrokenComponentDidUpdate componentDidUpdate [!]',
+		  'ErrorBoundary componentDidUpdate',
+		  'BrokenComponentDidUpdate componentWillUnmount',
+		  // Then, error is handled
+		  'ErrorBoundary componentDidCatch',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render error',
+		  'ErrorBoundary componentDidUpdate',
+		]);
+
 	
     </script>
 

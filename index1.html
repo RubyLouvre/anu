@@ -318,109 +318,52 @@
 				this.setState({});
 			}
 		};
-
-		function child1Ref(x) {
-			log.push('Child1 ref is set to ' + x);
-		}
-		function child2Ref(x) {
-			log.push('Child2 ref is set to ' + x);
-		}
-		function errorMessageRef(x) {
-			log.push('Error message ref is set to ' + x);
-		}
-
-		const container = document.createElement('div');
-		ReactDOM.render(
-			<ErrorBoundary errorMessageRef={errorMessageRef}>
-				<div className="xxx" ref={child1Ref} />
-			</ErrorBoundary>,
-			container
-		);
-		expect(log).toEqual([
-			'ErrorBoundary constructor',
-			'ErrorBoundary componentWillMount',
-			'ErrorBoundary render success',
-			'Child1 ref is set to [object HTMLDivElement]',
-			'ErrorBoundary componentDidMount',
-		]);
-
-		log.length = 0;
-		ReactDOM.render(
-			<ErrorBoundary errorMessageRef={errorMessageRef}>
-				<div  ref={child1Ref} />
-				<span ref={child2Ref} />
-				<BrokenRender />
-			</ErrorBoundary>,
-			container
-		);
-		expect(container.textContent).toBe('Caught an error: Hello.');
-		expect(log).toEqual([
-			'ErrorBoundary componentWillReceiveProps',
-			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary render success',
-			// BrokenRender will abort rendering:
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// Finish updating with null children render及render之前的抛错在didUpdate中清空？
-			'Child1 ref is set to null',
-			'ErrorBoundary componentDidUpdate',
-			// Handle the error
-			'ErrorBoundary componentDidCatch',
-			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary render error',
-			'Error message ref is set to [object HTMLDivElement]',
-			// Child2 ref is never set because its mounting aborted
-			'ErrorBoundary componentDidUpdate',
-		]);
-
-function getChild(fiber){
-	var c = fiber.oldChildren, prev
-	if(c){
-        for(var i in c ){
-			var a = c[i]
-			if(prev){
-				prev.sibling = a
-			}else{
-				fiber.child = a
+       var NoopErrorBoundary = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('NoopErrorBoundary constructor');
 			}
-			a.return = fiber
-			prev = a
-		}
-	}
-	return fiber.child
-}
+			render() {
+				log.push('NoopErrorBoundary render');
+				return <BrokenRender />;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('NoopErrorBoundary componentWillMount');
+			}
+			componentDidMount() {
+				log.push('NoopErrorBoundary componentDidMount');
+			}
+			componentWillUnmount() {
+				log.push('NoopErrorBoundary componentWillUnmount');
+			}
+			componentDidCatch() {
+				log.push('NoopErrorBoundary componentDidCatch');
+			}
+		};
 
-function dfs(fiber) {
-	var node = getChild(fiber)
-    while (node !== null) {
-	  if(node.effects){
-		  arrayPush.apply(ret, node.effects )
-		  delete node.effects
-	  }
-      if (getChild(node) ) {
-        node = node.child;
-        continue;
-	  }
-	  console.log("没有孩子")
-	  ret.push(node)
-      if (node === fiber) {
-        return;
-	  }
-	  
-      while (node.sibling === null) {
-        if (node['return'] === null || node['return'] === fiber) {
-          return;
-		}
-		console.log("往上找")
-		ret.push(node)
-        node = node['return'];
-      }
-	  console.log("往右找")
-      node = node.sibling;
-	}
-	return ret
-  }
+		ReactDOM.render(
+		  <h1>
+			Sibling
+			<NoopErrorBoundary>
+			  <BrokenRender />
+			</NoopErrorBoundary>
+		  </h1>,
+		  container,
+		);
+		//expect(container.firstChild.textContent).toBe('Sibling');
+		expect(log).toEqual([
+		  'NoopErrorBoundary constructor',
+		  'NoopErrorBoundary componentWillMount',
+		  'NoopErrorBoundary render',
+		  'BrokenRender constructor',
+		  'BrokenRender componentWillMount',
+		  'BrokenRender render [!]',
+		  // In Fiber, noop error boundaries render null
+		  'NoopErrorBoundary componentDidMount',
+		  'NoopErrorBoundary componentDidCatch',
+		  // Nothing happens.
+		]);
+	
 
     </script>
 

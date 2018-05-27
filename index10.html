@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
 	<script type='text/javascript' src="./dist/React.js"></script>
-	<!-- <script type='text/javascript' src="./react.js"></script>
+	 <!-- <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
 	<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
 	<script type='text/javascript' src="./lib/babel.js"></script>
@@ -26,65 +26,103 @@
           var div = container;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
-		  }
-	    var log = {
-			push(a){
-				console.log(a)
-			}
-        }
-        var Fragment = React.Fragment
-        var instances = {}
-        class App extends React.Component {
-            state = {
-                value: ""
-            }
-            onChange(e) {
-                this.setState({
-                    value: e.target.value
-                })
-            }
-            render() {
-                return (
-                    <div id="root">
-                        <h1>基本使用</h1>
-                        <p>通过 dataSource 设置自动完成的数据源</p>
-                        <AutoComplete value={this.state.value} onChange={this.onChange.bind(this)} />
-                    </div>
-                    );
-            }
-        }
-        class Portal extends React.Component{
-            constructor(props){
-                super(props)
-                this.container = document.createElement("div")
-                document.body.appendChild(this.container)
-            }
-            render(){
-                return ReactDOM.createPortal(<strong>{this.props.value}</strong>, this.container)
-            }
-        }
-        class AutoComplete extends React.Component {
-            constructor(props){
-                super(props)
-            }
-            render() {
-                console.log(this)
-                var portal
-                if(this.props.value){
-                    portal = <Portal value={this.props.value} />
-                }
-                return [<div>
-                        <input value={this.props.value} onChange={this.props.onChange} />
-                    </div>,
-                 portal ]
-            }
-        }
-       
-        ReactDOM.render(<App id="a2"/>, container)
-console.log(instances)
+      }
+      var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  }
+              };
+       };
+	   /*  var log = {
+          push(a){
+            console.log(a)
+          }
+        }*/
 
+ let log;
+    const logger = function(msg) {
+      return function() {
+        // return true for shouldComponentUpdate
+        log.push(msg);
+        return true;
+      };
+    };
+    class Outer extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        logger('outer getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('outer componentDidMount');
+      shouldComponentUpdate = logger('outer shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('outer getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('outer componentDidUpdate');
+      componentWillUnmount = logger('outer componentWillUnmount');
+      render() {
+        return (
+          <div>
+            <Inner x={this.props.x} />
+          </div>
+        );
+      }
+    }
 
+    class Inner extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        logger('inner getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('inner componentDidMount');
+      shouldComponentUpdate = logger('inner shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('inner getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('inner componentDidUpdate');
+      componentWillUnmount = logger('inner componentWillUnmount');
+      render() {
+        return <span>{this.props.x}</span>;
+      }
+    }
+
+  //const container = document.createElement('div');
+    log = [];
+    ReactDOM.render(<Outer x={1} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'inner getDerivedStateFromProps',
+      'inner componentDidMount',
+      'outer componentDidMount',
+    ]);
+
+    // Dedup warnings
+    log = [];
+    ReactDOM.render(<Outer x={2} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'outer shouldComponentUpdate',
+      'inner getDerivedStateFromProps',
+      'inner shouldComponentUpdate',
+      'inner getSnapshotBeforeUpdate',
+      'outer getSnapshotBeforeUpdate',
+      'inner componentDidUpdate',
+      'outer componentDidUpdate',
+    ]);
+/*
+    log = [];
+    ReactDOM.unmountComponentAtNode(container);
+    expect(log).toEqual([
+      'outer componentWillUnmount',
+      'inner componentWillUnmount',
+    ]);
+    */
+
+   
     </script>
 
 
 </html>
+\
+

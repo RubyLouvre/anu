@@ -1,22 +1,35 @@
-import { noop, get } from "react-core/util";
-import { Renderer } from "react-core/createRenderer";
-import { fakeObject } from "react-core/Component";
-import { NOWORK, CAPTURE, DETACH, NULLREF } from "./effectTag";
+import {
+    noop,
+    get
+} from "react-core/util";
+import {
+    Renderer
+} from "react-core/createRenderer";
+import {
+    fakeObject
+} from "react-core/Component";
+import {
+    NOWORK,
+    CAPTURE,
+    DETACH,
+    NULLREF
+} from "./effectTag";
 
 export function pushError(fiber, hook, error) {
     let names = [];
-    let boundary = findCatchComponent(fiber, names);
+    let boundary = findCatchComponent(fiber, names, hook);
     let stack = describeError(names, hook);
     if (boundary) {
-        fiber.effectTag = NOWORK;
+        // 
         if (fiber.hasMounted) {
             //已经插入
         } else {
             fiber.stateNode = {
                 updater: fakeObject,
             };
+            fiber.effectTag = NOWORK;
         }
-      
+
         let values = boundary.capturedValues || (boundary.capturedValues = []);
         values.push(error, {
             componentStack: stack
@@ -32,7 +45,7 @@ export function pushError(fiber, hook, error) {
             p._hydrating = false;
             p = p.return;
         }
-        
+
         if (!Renderer.catchError) {
             Renderer.catchStack = stack;
             Renderer.catchError = error;
@@ -64,7 +77,7 @@ export function applyCallback(host, hook, args) {
 
 function describeError(names, hook) {
     let segments = [`**${hook}** method occur error `];
-    names.forEach(function (name, i) {
+    names.forEach(function(name, i) {
         if (names[i + 1]) {
             segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
@@ -73,26 +86,31 @@ function describeError(names, hook) {
 }
 
 
-function findCatchComponent(fiber, names) {
+function findCatchComponent(fiber, names, hook) {
     let instance,
         name,
-        topFiber = fiber, retry,
+        topFiber = fiber,
+        retry,
         boundary;
+    //  console.log("findCatchComponent", fiber.name, fiber)
     while (fiber) {
         name = fiber.name;
         if (fiber.tag < 4) {
             names.push(name);
             instance = fiber.stateNode || {};
+
             if (instance.componentDidCatch && !boundary) {
                 //boundary不能等于出错组件，不能已经处理过错误
                 if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
+                    // console.log("222222",fiber.name)
                 } else if (fiber.hasCatch) {
                     //防止被去重
-                   // retry = Object.assign({}, fiber);
                     retry = fiber;
                     retry.effectTag = DETACH;
                     retry.disposed = true;
+
+
                 }
             }
         } else if (fiber.tag === 5) {
@@ -100,19 +118,41 @@ function findCatchComponent(fiber, names) {
         }
 
         fiber = fiber.return;
-
         if (boundary) {
             let boundaries = Renderer.boundaries;
-            boundary.hasError = true;
-            boundary.effectTag *= CAPTURE;
-            boundaries.unshift(boundary);
-            if (retry && retry !== boundary) {
+
+            if (!retry || retry !== boundary) {
+                var effectTag = boundary.effectTag;
+                //   console.log(boundary.effectTag, !!boundary.alternate, "使用alternate")
+                //防止被多次回滚
+                var f = boundary.alternate
+                if (f && !f.hasError) {
+                    boundary = f;
+                }
+                //防止被多次重置children, oldChildren, effectTag
+                if (!boundary.hasError) {
+                    boundary.oldChildren = boundary.children;
+                    boundary.children = {};
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
+                        boundary.effectTag = CAPTURE;
+                    } else {
+                        boundary.effectTag = effectTag * CAPTURE;
+                    }
+                }
+
+
+                boundary.hasError = true;
+                boundaries.unshift(boundary);
+                //边界组件在没有componentDidCatch之前（以hasCatch为标识），可以捕捉多个冒泡上来的组件
                 //  新的双DFS 版本不把retry放进effects中
-                //  let arr = boundary.effects || (boundary.effects = []);
-                //  arr.push(retry);
+                if (retry) {
+                    let arr = boundary.effects || (boundary.effects = []);
+                    arr.push(retry);
+                }
             }
             return boundary;
         }
+
     }
 }
 
@@ -127,7 +167,7 @@ export function removeFormBoundaries(fiber) {
 
 export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
-  
+
     effects.push(fiber);
     if (fiber.ref && fiber.hasMounted) {
         fiber.effectTag *= NULLREF;

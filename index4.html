@@ -27,12 +27,12 @@
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
-		/*  var log = {
+	 var log = {
 			push(a){
 				console.log(a)
 			}
-		}*/
-        var log = []
+		}
+       var log = []
 		  var PropTypes = React.PropTypes;
 		  BrokenConstructor = class extends React.Component {
 			constructor(props) {
@@ -536,42 +536,58 @@
 //================================
 //================================
 
-	   // const container = document.createElement('div');
-	 //  const container = document.createElement('div');
-		ReactDOM.render(
-			<ErrorBoundary>
-				<Normal />
-				<BrokenRender />
-				<Normal />
-			</ErrorBoundary>,
-			container
+	  ReactDOM.render(
+		  <ErrorBoundary>
+			<BrokenComponentWillUnmount>
+			  <Normal />
+			</BrokenComponentWillUnmount>
+			<BrokenComponentDidMount />
+			<Normal logName="LastChild" />
+		  </ErrorBoundary>,
+		  container,
 		);
-		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
 		expect(log).toEqual([
-			'ErrorBoundary constructor',
-			'ErrorBoundary componentWillMount',
-			'ErrorBoundary render success',
-			// Render first child
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
-			// Render second child (it throws)
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// Render third child, even though an earlier sibling threw.
-			'Normal constructor',
-			'Normal componentWillMount',
-			'Normal render',
-			// Finish mounting with null children
-			'ErrorBoundary componentDidMount',
-			// Handle the error
-			'ErrorBoundary componentDidCatch',
-			// Render the error message
-			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary render error',
-			'ErrorBoundary componentDidUpdate',
+		  'ErrorBoundary constructor',
+		  'ErrorBoundary componentWillMount',
+		  'ErrorBoundary render success',
+		  'BrokenComponentWillUnmount constructor',
+		  'BrokenComponentWillUnmount componentWillMount',
+		  'BrokenComponentWillUnmount render',
+		  'Normal constructor',
+		  'Normal componentWillMount',
+		  'Normal render',
+		  'BrokenComponentDidMount constructor',
+		  'BrokenComponentDidMount componentWillMount',
+		  'BrokenComponentDidMount render',
+		  'LastChild constructor',
+		  'LastChild componentWillMount',
+		  'LastChild render',
+		  // Start flushing didMount queue
+		  'Normal componentDidMount',
+		  'BrokenComponentWillUnmount componentDidMount',
+		  'BrokenComponentDidMount componentDidMount [!]',
+		  // Continue despite the error
+		  'LastChild componentDidMount',
+		  'ErrorBoundary componentDidMount',
+		  // Now we are ready to handle the error
+		  // Safely unmount every child
+		  'BrokenComponentWillUnmount componentWillUnmount [!]',
+		  // Continue unmounting safely despite any errors
+		  'Normal componentWillUnmount',
+		  'BrokenComponentDidMount componentWillUnmount',
+		  'LastChild componentWillUnmount',
+		  // Handle the error
+		  'ErrorBoundary componentDidCatch',
+		  'ErrorBoundary componentWillUpdate',
+		  // The willUnmount error should be captured and logged, too.
+		  'ErrorBoundary componentDidUpdate',
+		  'ErrorBoundary componentDidCatch',
+		  'ErrorBoundary componentWillUpdate',
+		  'ErrorBoundary render error',
+		  // The update has finished
+		  'ErrorBoundary componentDidUpdate',
 		]);
+	
   
 
     </script>

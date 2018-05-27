@@ -132,9 +132,17 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
+        //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
+        if(Renderer.boundaries.length){
+            arrayPush.apply(effects, Renderer.boundaries);
+            Renderer.boundaries.length = 0;
+           // effects.push(topWork);
+        }else{
+            
+            effects.push(topWork);
+        }
         // arrayPush.apply(effects, collectWork(topWork, null, true));
-        effects.push(topWork);
-
+       
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
