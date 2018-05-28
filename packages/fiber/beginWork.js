@@ -251,11 +251,6 @@ export function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
-    //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
-    /*  if (fiber.catchError) {
-          return;
-      }
-      */
     diffChildren(fiber, rendered);
 }
 
@@ -458,6 +453,3 @@ function diffChildren(parentFiber, children) {
 
 Renderer.diffChildren = diffChildren;
 
-
-
-//明天测试ref,与tests
