@@ -54,7 +54,7 @@ function commitDFS(fiber) {
             fiber.effectTag /= PLACE;
         } else {
             // 边界组件的清洗工件
-            if (fiber.hasError) {
+            if (fiber.catchError) {
                 removeFormBoundaries(fiber);
                 disposeFibers(fiber);
             }
@@ -107,7 +107,7 @@ export function commitWork() {
         var el;
         while (el = effects.shift()) {
             //处理retry组件
-            if (el.effectTag === DETACH && el.hasCatch) {
+            if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
                 return;
             }
@@ -165,7 +165,7 @@ export function commitEffects(fiber) {
                 }
                 delete fiber._hydrating;
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
-                if (fiber.hasError) {
+                if (fiber.catchError) {
                     return;
                 }
                 break;
@@ -187,7 +187,7 @@ export function commitEffects(fiber) {
             case CAPTURE: // 23
                 // console.log("进入CAPTURE");
                 var values = fiber.capturedValues;
-                fiber.hasCatch = true;
+                fiber.caughtError = true;
                 var a = values.shift();
                 var b = values.shift();
                 if (!values.length) {

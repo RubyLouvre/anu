@@ -135,9 +135,9 @@ function workLoop(deadline) {
             fiber = updateEffects(fiber, topWork, info);
         }
         //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
-        var hasError = boundaries.length;
+        var hasBoundary = boundaries.length;
         if (topWork.type !== Unbatch) { //如果是某个组件更新
-            if (hasError) {
+            if (hasBoundary) {
                 arrayPush.apply(effects,boundaries);
                 boundaries.length = 0;
             } else {

@@ -245,14 +245,14 @@ export function updateClassComponent(fiber, info) {
     }
 
     fiber.effectTag *= HOOK;
-    if (fiber.hasError) {
+    if (fiber.catchError) {
         return;
     }
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
     //render内部出错，可能被catch掉，因此会正常执行，但我们还是需要清空它
-    /*  if (fiber.hasError) {
+    /*  if (fiber.catchError) {
           return;
       }
       */

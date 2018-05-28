@@ -99,9 +99,9 @@ function findCatchComponent(fiber, names, hook) {
 
             if (instance.componentDidCatch && !boundary) {
                 //boundary不能等于出错组件，不能已经处理过错误
-                if (!fiber.hasCatch && topFiber !== fiber) {
+                if (!fiber.caughtError && topFiber !== fiber) {
                     boundary = fiber;
-                } else if (fiber.hasCatch) {
+                } else if (fiber.caughtError) {
                     retry = fiber;
                 }
             }
@@ -118,7 +118,7 @@ function findCatchComponent(fiber, names, hook) {
                 //防止被多次回滚
                 //console.log("捕捉",boundary.name, hook);
                 var f = boundary.alternate;
-                if (f && !f.hasError) {
+                if (f && !f.catchError) {
                     f.forward = boundary.forward;
                     f.sibling = boundary.sibling;
                     if (boundary.return.child == boundary) {
@@ -127,7 +127,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 //防止被多次重置children, oldChildren, effectTag
-                if (!boundary.hasError) {
+                if (!boundary.catchError) {
                     if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
@@ -135,10 +135,10 @@ function findCatchComponent(fiber, names, hook) {
                     }
                     //防止被重复添加
                     boundaries.unshift(boundary);
-                    boundary.hasError = true;
+                    boundary.catchError = true;
                 }
 
-                //边界组件在没有componentDidCatch之前（以hasCatch为标识），可以捕捉多个冒泡上来的组件
+                //边界组件在没有componentDidCatch之前（以caughtError为标识），可以捕捉多个冒泡上来的组件
                 if (retry) {
                     let arr = boundary.effects || (boundary.effects = []);
                     arr.push(retry);
@@ -151,7 +151,7 @@ function findCatchComponent(fiber, names, hook) {
 }
 
 export function removeFormBoundaries(fiber) {
-    delete fiber.hasError;
+    delete fiber.catchError;
     let arr = Renderer.boundaries;
     let index = arr.indexOf(fiber);
     if (index !== -1) {
