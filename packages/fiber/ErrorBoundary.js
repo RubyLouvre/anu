@@ -20,7 +20,6 @@ export function pushError(fiber, hook, error) {
     let boundary = findCatchComponent(fiber, names, hook);
     let stack = describeError(names, hook);
     if (boundary) {
-        // 
         if (fiber.hasMounted) {
             //已经插入
         } else {
@@ -103,7 +102,6 @@ function findCatchComponent(fiber, names, hook) {
                 if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
                 } else if (fiber.hasCatch) {
-                    //防止被去重
                     retry = fiber;
                 }
             }
@@ -135,12 +133,12 @@ function findCatchComponent(fiber, names, hook) {
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
                     }
+                    //防止被重复添加
                     boundaries.unshift(boundary);
                     boundary.hasError = true;
                 }
 
                 //边界组件在没有componentDidCatch之前（以hasCatch为标识），可以捕捉多个冒泡上来的组件
-                //  新的双DFS 版本不把retry放进effects中
                 if (retry) {
                     let arr = boundary.effects || (boundary.effects = []);
                     arr.push(retry);

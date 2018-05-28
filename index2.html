@@ -49,7 +49,7 @@
 				console.log(a)
 			}
 		}
-        var log = []
+       // var log = []
         var BrokenRender = class extends React.Component {
 			constructor(props) {
 				super(props);
@@ -124,6 +124,38 @@
 			render() {
 				log.push('ErrorMessage render');
 				return <div>Caught an error: {this.props.message}.</div>;
+			}
+		};
+		var 	BrokenComponentWillUnmount = class extends React.Component {
+			static defaultProps = {
+				errorText: 'Hello',
+			};
+			constructor(props) {
+				super(props);
+				log.push('BrokenComponentWillUnmount constructor');
+			}
+			render() {
+				log.push('BrokenComponentWillUnmount render');
+				return <div>{this.props.children}</div>;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('BrokenComponentWillUnmount componentWillMount');
+			}
+			componentDidMount() {
+				log.push('BrokenComponentWillUnmount componentDidMount');
+			}
+			UNSAFE_componentWillReceiveProps() {
+				log.push('BrokenComponentWillUnmount componentWillReceiveProps');
+			}
+			UNSAFE_componentWillUpdate() {
+				log.push('BrokenComponentWillUnmount componentWillUpdate');
+			}
+			componentDidUpdate() {
+				log.push('BrokenComponentWillUnmount componentDidUpdate');
+			}
+			componentWillUnmount() {
+				log.push('BrokenComponentWillUnmount componentWillUnmount [!]');
+				throw new Error(this.props.errorText);
 			}
 		};
         var ErrorBoundary = class extends React.Component {
@@ -230,6 +262,29 @@
 				log.push(`${this.props.logName} componentWillUnmount`);
 			}
 		};
+		var	NoopErrorBoundary = class extends React.Component {
+			constructor(props) {
+				super(props);
+				log.push('NoopErrorBoundary constructor');
+			}
+			render() {
+				log.push('NoopErrorBoundary render');
+				return <BrokenRender />;
+			}
+			UNSAFE_componentWillMount() {
+				log.push('NoopErrorBoundary componentWillMount');
+			}
+			componentDidMount() {
+				log.push('NoopErrorBoundary componentDidMount');
+			}
+			componentWillUnmount() {
+				log.push('NoopErrorBoundary componentWillUnmount');
+			}
+			componentDidCatch() {
+				log.push('NoopErrorBoundary componentDidCatch');
+			}
+		};
+
 
 	    var	RetryErrorBoundary = class extends React.Component {
 			constructor(props) {
@@ -255,46 +310,28 @@
 				this.setState({});
 			}
 		};
-
-        ReactDOM.render(
-			<ErrorBoundary>
-				<RetryErrorBoundary>
-					<BrokenRender />
-				</RetryErrorBoundary>
-			</ErrorBoundary>,
-			container
+		ReactDOM.render(
+		  <div>
+			Sibling
+			<NoopErrorBoundary>
+			  <BrokenRender />
+			</NoopErrorBoundary>
+		  </div>,
+		  container,
 		);
-		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
-
-		var official = [
-			'ErrorBoundary constructor',
-			'ErrorBoundary componentWillMount',
-			'ErrorBoundary render success',
-			'RetryErrorBoundary constructor',
-			'RetryErrorBoundary componentWillMount',
-			'RetryErrorBoundary render',
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// In Fiber, failed error boundaries render null before attempting to recover
-			'RetryErrorBoundary componentDidMount',
-			'RetryErrorBoundary componentDidCatch [!]',
-			'ErrorBoundary componentDidMount',
-			// Retry
-			'RetryErrorBoundary render',
-			'BrokenRender constructor',
-			'BrokenRender componentWillMount',
-			'BrokenRender render [!]',
-			// This time, the error propagates to the higher boundary
-			'RetryErrorBoundary componentWillUnmount',
-			'ErrorBoundary componentDidCatch',
-			// Render the error
-			'ErrorBoundary componentWillUpdate',
-			'ErrorBoundary render error',
-			'ErrorBoundary componentDidUpdate',
-		];
-		expect(log).toEqual(official);
-
+		expect(container.firstChild.textContent).toBe('Sibling');
+		expect(log).toEqual([
+		  'NoopErrorBoundary constructor',
+		  'NoopErrorBoundary componentWillMount',
+		  'NoopErrorBoundary render',
+		  'BrokenRender constructor',
+		  'BrokenRender componentWillMount',
+		  'BrokenRender render [!]',
+		  // In Fiber, noop error boundaries render null
+		  'NoopErrorBoundary componentDidMount',
+		  'NoopErrorBoundary componentDidCatch',
+		  // Nothing happens.
+		]);
 	
     </script>
 

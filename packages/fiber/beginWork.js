@@ -190,10 +190,6 @@ export function updateClassComponent(fiber, info) {
         contextStack,
         containerStack
     } = info;
-
-    if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
-        contextStack.unshift(instance.unmaskedContext); //setState需要还原contextStack
-    }
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
@@ -206,7 +202,7 @@ export function updateClassComponent(fiber, info) {
     if (fiber.hasMounted && fiber.dirty && fiber.parent) {
         fiber.parent.insertPoint = null;
     }
-
+    delete fiber.dirty; 
     instance._reactInternalFiber = fiber; //更新rIF
     if (type === AnuPortal) {
         containerStack.unshift(fiber.parent);
