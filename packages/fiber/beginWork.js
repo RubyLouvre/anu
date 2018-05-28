@@ -1,6 +1,5 @@
 import {
     extend,
-    Fragment,
     typeNumber,
     isFn,
     gDSFP,

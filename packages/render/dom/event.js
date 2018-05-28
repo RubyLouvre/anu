@@ -25,10 +25,10 @@ export function eventAction(dom, name, val, lastProps, fiber) {
             //添加全局监听事件
             let eventName = getBrowserName(name);
             let hook = eventHooks[eventName];
-            addGlobalEvent(eventName);
             if (hook) {
                 hook(dom, eventName);
             }
+            addGlobalEvent(eventName);
         }
         //onClick --> click, onClickCapture --> clickcapture
         events[refName] = val;
@@ -166,32 +166,40 @@ String("load,error").replace(/\w+/g, function (name) {
     };
 });
 
-String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
-    let mark = "__" + name;
-    if (!document[mark]) {
-        document[mark] = globalEvents[name] = true;
-        addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
+function injectMouse(){
+    ["mouseenter","mouseleave"].forEach(function(name){
+        let mark = "__" + name;
+        if (!document[mark]) {
+            document[mark] = globalEvents[name] = true;
+            addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
+                let from = getTarget(e);
+                let to = getRelatedTarget(e);
+                var ev1 = new SyntheticEvent(e);
+                ev1.target = from;
+                ev1.relatedTarget = to;
+                ev1.type = "mouseleave";
+                var ev2 = new SyntheticEvent(e);
+                ev2.target = to;
+                ev2.relatedTarget = from;
+                ev2.type = "mouseenter";
+    
+                if (!to || (to !== from && !contains(from, to))) {
+                    let common = getLowestCommonAncestor(from, to);
+                    //由于不冒泡，因此paths长度为1
+                    dispatchEvent(ev1, null, common);
+                    dispatchEvent(ev2, null, common);
+                }
+            });
+        }
+    });
+}
+eventHooks.mouseenter = eventHooks.mouseleave = function(){
+    injectMouse();
+};
 
-            let from = getTarget(e);
-            let to = getRelatedTarget(e);
-            var ev1 = new SyntheticEvent(e);
-            ev1.target = from;
-            ev1.relatedTarget = to;
-            ev1.type = "mouseleave";
-            var ev2 = new SyntheticEvent(e);
-            ev2.target = to;
-            ev2.relatedTarget = from;
-            ev2.type = "mouseenter";
-
-            if (!to || (to !== from && !contains(from, to))) {
-                let common = getLowestCommonAncestor(from, to);
-                //由于不冒泡，因此paths长度为1
-                dispatchEvent(ev1, null, common);
-                dispatchEvent(ev2, null, common);
-            }
-        });
-    }
-});
+const input2change = /text|password|search/i;
+//react中，text,textarea,password元素的change事件实质上是input事件
+//https://segmentfault.com/a/1190000008023476
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
     addEvent(document, "input", function (e) {
@@ -246,19 +254,7 @@ export function createHandle(name, fn) {
         dispatchEvent(e, name);
     });
 }
-const input2change = /text|password|search/i;
-//react中，text,textarea,password元素的change事件实质上是input事件
-//https://segmentfault.com/a/1190000008023476
-if (!document["__input"]) {
-    globalEvents.input = document["__input"] = true;
-    addEvent(document, "input", function (e) {
-        var dom = getTarget(e);
-        if (input2change.test(dom.type)) {
-            dispatchEvent(e, "change");
-        }
-        dispatchEvent(e);
-    });
-}
+
 eventPropHooks.change = function (e) {
     enqueueDuplex(e.target);
 };
@@ -276,7 +272,6 @@ if (isTouch) {
         dom.onclick = dom.onclick || noop;
     };
 }
-
 
 
 eventPropHooks.click = function (e) {

@@ -51,43 +51,75 @@
 				return 
 			}
 		}
-        class LetterInner extends React.Component {
+    var log = []
+    const logger = function(msg) {
+      return function() {
+        // return true for shouldComponentUpdate
+        console.log(msg)
+        log.push(msg);
+        return true;
+      };
+    };
+    class Outer extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        logger('outer getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('outer componentDidMount');
+      shouldComponentUpdate = logger('outer shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('outer getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('outer componentDidUpdate');
+      componentWillUnmount = logger('outer componentWillUnmount');
       render() {
-        return <div>{this.props.char}</div>;
+        return (
+          <div>
+            <Inner x={this.props.x} />
+          </div>
+        );
       }
     }
 
-    class Letter extends React.Component {
+    class Inner extends React.Component {
+      state = {};
+      static getDerivedStateFromProps(props, prevState) {
+        logger('inner getDerivedStateFromProps')();
+        return null;
+      }
+      componentDidMount = logger('inner componentDidMount');
+      shouldComponentUpdate = logger('inner shouldComponentUpdate');
+      getSnapshotBeforeUpdate = logger('inner getSnapshotBeforeUpdate');
+      componentDidUpdate = logger('inner componentDidUpdate');
+      componentWillUnmount = logger('inner componentWillUnmount');
       render() {
-        return <LetterInner char={this.props.char} />;
-      }
-      componentDidUpdate(){
-          console.log(this.props.char+" did update")
-      }
-      componentDidMount(){
-          console.log(this.props.char+" did mount")
-      }
-      shouldComponentUpdate() {
-        return false;
+        return <span>{this.props.x}</span>;
       }
     }
 
-    class Letters extends React.Component {
-      render() {
-        const letters = this.props.letters.split('');
-        return <div>{letters.map(c => <Letter key={c} char={c} />)}</div>;
-      }
-    }
+    const container = document.createElement('div');
+    log = [];
+    ReactDOM.render(<Outer x={1} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'inner getDerivedStateFromProps',
+      'inner componentDidMount',
+      'outer componentDidMount',
+    ]);
 
-    //const container = document.createElement('div');
-
-    // Two random strings -- some additions, some removals, some moves
-    ReactDOM.render(<Letters letters="XKwHomsNjIkBcQWFbiZU" />, container);
-    expect(container.textContent).toBe('XKwHomsNjIkBcQWFbiZU');
-    console.log('=====')
-   var s =   ReactDOM.render(<Letters letters="EHCjpdTUuiybDvhRJwZt" />, container);
-   console.log(s)
-    expect(container.textContent).toBe('EHCjpdTUuiybDvhRJwZt');
+    // Dedup warnings
+    log = [];
+    console.log("====================")
+    ReactDOM.render(<Outer x={2} />, container);
+    expect(log).toEqual([
+      'outer getDerivedStateFromProps',
+      'outer shouldComponentUpdate',
+      'inner getDerivedStateFromProps',
+      'inner shouldComponentUpdate',
+      'inner getSnapshotBeforeUpdate',
+      'outer getSnapshotBeforeUpdate',
+      'inner componentDidUpdate',
+      'outer componentDidUpdate',
+    ]);
 
 	
     </script>

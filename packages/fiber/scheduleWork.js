@@ -8,6 +8,7 @@ import { Fiber } from "./Fiber";
 
 import { createInstance } from "./createInstance";
 const macrotasks = Renderer.macrotasks;
+let boundaries = Renderer.boundaries;
 const batchedtasks = [];
 
 export function render(vnode, root, callback) {
@@ -18,7 +19,7 @@ export function render(vnode, root, callback) {
             type: Unbatch,
             tag: 2,
             props: {},
-           
+
             hasMounted: true,
             memoizedState: {},
             return: container,
@@ -58,13 +59,13 @@ function performWork(deadline) {
     workLoop(deadline);
     //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
     //我们需要再做一次收集，不为空时，递归调用
-    let boundaries = Renderer.boundaries;
-    if (boundaries.length) {
-        let elem = boundaries.pop();
-        //优先处理异常边界的setState
-        macrotasks.push(elem);
-    }
    
+    if (boundaries.length) {
+        //优先处理异常边界的setState
+        macrotasks.unshift.apply(macrotasks, boundaries);
+        boundaries.length = 0;
+    }
+
     topFibers.forEach(function (el) {
         let microtasks = el.microtasks;
         while ((el = microtasks.shift())) {
@@ -129,19 +130,24 @@ function workLoop(deadline) {
                 contextStack: [fiber.stateNode.unmaskedContext],
             };
         }
+        //console.log("开始",fiber.name);
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
         //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
-        if(Renderer.boundaries.length){
-            arrayPush.apply(effects, Renderer.boundaries);
-            Renderer.boundaries.length = 0;
-           // effects.push(topWork);
-        }else{
-            
+        var hasError = boundaries.length;
+        if (topWork.type !== Unbatch) { //如果是某个组件更新
+            if (hasError) {
+                arrayPush.apply(effects,boundaries);
+                boundaries.length = 0;
+            } else {
+                effects.push(topWork);
+            }
+        } else {
+            boundaries.length = 0;
             effects.push(topWork);
         }
-        // arrayPush.apply(effects, collectWork(topWork, null, true));
+        
        
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务

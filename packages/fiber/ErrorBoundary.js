@@ -77,7 +77,7 @@ export function applyCallback(host, hook, args) {
 
 function describeError(names, hook) {
     let segments = [`**${hook}** method occur error `];
-    names.forEach(function(name, i) {
+    names.forEach(function (name, i) {
         if (names[i + 1]) {
             segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
@@ -92,7 +92,6 @@ function findCatchComponent(fiber, names, hook) {
         topFiber = fiber,
         retry,
         boundary;
-    //  console.log("findCatchComponent", fiber.name, fiber)
     while (fiber) {
         name = fiber.name;
         if (fiber.tag < 4) {
@@ -103,14 +102,9 @@ function findCatchComponent(fiber, names, hook) {
                 //boundary不能等于出错组件，不能已经处理过错误
                 if (!fiber.hasCatch && topFiber !== fiber) {
                     boundary = fiber;
-                    // console.log("222222",fiber.name)
                 } else if (fiber.hasCatch) {
                     //防止被去重
                     retry = fiber;
-                    retry.effectTag = DETACH;
-                    retry.disposed = true;
-
-
                 }
             }
         } else if (fiber.tag === 5) {
@@ -123,26 +117,28 @@ function findCatchComponent(fiber, names, hook) {
 
             if (!retry || retry !== boundary) {
                 var effectTag = boundary.effectTag;
-                //   console.log(boundary.effectTag, !!boundary.alternate, "使用alternate")
                 //防止被多次回滚
-                var f = boundary.alternate
+                //console.log("捕捉",boundary.name, hook);
+                var f = boundary.alternate;
                 if (f && !f.hasError) {
+                    f.forward = boundary.forward;
+                    f.sibling = boundary.sibling;
+                    if (boundary.return.child == boundary) {
+                        boundary.return.child = f;
+                    }
                     boundary = f;
                 }
                 //防止被多次重置children, oldChildren, effectTag
                 if (!boundary.hasError) {
-                    boundary.oldChildren = boundary.children;
-                    boundary.children = {};
                     if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
                     }
+                    boundaries.unshift(boundary);
+                    boundary.hasError = true;
                 }
 
-
-                boundary.hasError = true;
-                boundaries.unshift(boundary);
                 //边界组件在没有componentDidCatch之前（以hasCatch为标识），可以捕捉多个冒泡上来的组件
                 //  新的双DFS 版本不把retry放进effects中
                 if (retry) {
