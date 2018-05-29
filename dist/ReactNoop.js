@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2018-05-24
+ * by 司徒正美 Copyright 2018-05-29
  * IE9+
  */
 
@@ -764,15 +764,15 @@ var effectLength = effectNames.length;
 
 function pushError(fiber, hook, error) {
     var names = [];
-    var boundary = findCatchComponent(fiber, names);
+    var boundary = findCatchComponent(fiber, names, hook);
     var stack = describeError(names, hook);
     if (boundary) {
-        fiber.effectTag = NOWORK;
         if (fiber.hasMounted) {
         } else {
             fiber.stateNode = {
                 updater: fakeObject
             };
+            fiber.effectTag = NOWORK;
         }
         var values = boundary.capturedValues || (boundary.capturedValues = []);
         values.push(error, {
@@ -823,7 +823,7 @@ function describeError(names, hook) {
     });
     return segments.join("\n\r").trim();
 }
-function findCatchComponent(fiber, names) {
+function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
         name = void 0,
         topFiber = fiber,
@@ -835,12 +835,10 @@ function findCatchComponent(fiber, names) {
             names.push(name);
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch && !boundary) {
-                if (!fiber.hasCatch && topFiber !== fiber) {
+                if (!fiber.caughtError && topFiber !== fiber) {
                     boundary = fiber;
-                } else if (fiber.hasCatch) {
-                    retry = Object.assign({}, fiber);
-                    retry.effectTag = DETACH;
-                    retry.disposed = true;
+                } else if (fiber.caughtError) {
+                    retry = fiber;
                 }
             }
         } else if (fiber.tag === 5) {
@@ -849,19 +847,37 @@ function findCatchComponent(fiber, names) {
         fiber = fiber.return;
         if (boundary) {
             var boundaries = Renderer.boundaries;
-            boundary.hasError = true;
-            boundary.effectTag *= CAPTURE;
-            boundaries.unshift(boundary);
-            if (retry && retry !== boundary) {
-                var arr = boundary.effects || (boundary.effects = []);
-                arr.push(retry);
+            if (!retry || retry !== boundary) {
+                var effectTag = boundary.effectTag;
+                var f = boundary.alternate;
+                if (f && !f.catchError) {
+                    f.forward = boundary.forward;
+                    f.sibling = boundary.sibling;
+                    if (boundary.return.child == boundary) {
+                        boundary.return.child = f;
+                    }
+                    boundary = f;
+                }
+                if (!boundary.catchError) {
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
+                        boundary.effectTag = CAPTURE;
+                    } else {
+                        boundary.effectTag = effectTag * CAPTURE;
+                    }
+                    boundaries.unshift(boundary);
+                    boundary.catchError = true;
+                }
+                if (retry) {
+                    var arr = boundary.effects || (boundary.effects = []);
+                    arr.push(retry);
+                }
             }
             return boundary;
         }
     }
 }
 function removeFormBoundaries(fiber) {
-    delete fiber.hasError;
+    delete fiber.catchError;
     var arr = Renderer.boundaries;
     var index = arr.indexOf(fiber);
     if (index !== -1) {
@@ -901,6 +917,7 @@ function setInsertPoints(children) {
         }
         if (child.tag > 4) {
             var p = child.parent;
+            child.effectTag = PLACE;
             child.forwardFiber = p.insertPoint;
             p.insertPoint = child;
         } else {
@@ -1061,9 +1078,6 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    if (fiber.dirty && instance && instance.unmaskedContext && contextStack[0] !== instance.unmaskedContext) {
-        contextStack.unshift(instance.unmaskedContext);
-    }
     var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         if (type === AnuPortal) {
@@ -1076,6 +1090,7 @@ function updateClassComponent(fiber, info) {
     if (fiber.hasMounted && fiber.dirty && fiber.parent) {
         fiber.parent.insertPoint = null;
     }
+    delete fiber.dirty;
     instance._reactInternalFiber = fiber;
     if (type === AnuPortal) {
         containerStack.unshift(fiber.parent);
@@ -1115,15 +1130,12 @@ function updateClassComponent(fiber, info) {
         return;
     }
     fiber.effectTag *= HOOK;
-    if (fiber.hasError) {
+    if (fiber.catchError) {
         return;
     }
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, "render", []);
-    if (fiber.hasError) {
-        return;
-    }
     diffChildren(fiber, rendered);
 }
 function applybeforeMountHooks(fiber, instance, newProps) {
@@ -1255,11 +1267,15 @@ function diffChildren(parentFiber, children) {
         var _oldFiber = matchFibers[_i];
         var alternate = null;
         if (_oldFiber) {
-            if (isSameNode(_oldFiber, _newFiber)) {
+            if (isSameNode(_oldFiber, _newFiber) && !_oldFiber.disposed) {
                 alternate = new Fiber(_oldFiber);
                 var oldRef = _oldFiber.ref;
                 _newFiber = extend(_oldFiber, _newFiber);
                 _newFiber.alternate = alternate;
+                if (_newFiber.ref && _newFiber.deleteRef) {
+                    delete _newFiber.ref;
+                    delete _newFiber.deleteRef;
+                }
                 if (oldRef && oldRef !== _newFiber.ref) {
                     alternate.effectTag *= NULLREF;
                     effects$$1.push(alternate);
@@ -1309,6 +1325,10 @@ var Refs = {
         try {
             var number = typeNumber(ref);
             refStrategy[number](owner, ref, dom);
+            if (owner && owner.__isStateless) {
+                delete fiber.ref;
+                fiber.deleteRef = true;
+            }
         } catch (e) {
             pushError(fiber, "ref", e);
         }
@@ -1333,60 +1353,155 @@ var refStrategy = {
     }
 };
 
-function collectWork(fiber, updateFail, isTop) {
-    if (!fiber) {
-        return [];
-    }
-    if (fiber.hasError) {
-        removeFormBoundaries(fiber);
-        disposeFibers(fiber);
-        return [];
-    }
-    var effects$$1 = fiber.effects;
-    if (effects$$1) {
-        fiber.effects.forEach(disposeFiber);
-        fiber.effects.length = 0;
-        delete fiber.effects;
-    } else {
-        effects$$1 = [];
-    }
-    var c = fiber.children || {};
-    for (var i in c) {
-        var child = c[i];
-        var isHost = child.tag > 3;
-        if (updateFail || child.updateFail) {
-            if (isHost) {
-                if (!child.disposed) {
-                    child.effectTag *= PLACE;
-                    effects$$1.push(child);
-                }
-            } else {
-                delete child.updateFail;
-                arrayPush.apply(effects$$1, collectWork(child, true));
-            }
+function commitDFS(fiber) {
+    var topFiber = fiber;
+    outerLoop: while (true) {
+        if (fiber.effects && fiber.effects.length) {
+            fiber.effects.forEach(disposeFiber);
+            delete fiber.effects;
+        }
+        if (fiber.effectTag % PLACE == 0) {
+            Renderer.insertElement(fiber);
+            fiber.hasMounted = true;
+            fiber.effectTag /= PLACE;
         } else {
-            arrayPush.apply(effects$$1, collectWork(child));
+            if (fiber.catchError) {
+                removeFormBoundaries(fiber);
+                disposeFibers(fiber);
+            }
         }
-        if (child.effectTag) {
-            effects$$1.push(child);
+        if (fiber.updateFail) {
+            delete fiber.updateFail;
+        }
+        if (fiber.child) {
+            fiber = fiber.child;
+            continue;
+        } else {
+            if (fiber.effectTag > 1) {
+                commitEffects(fiber);
+                if (fiber.capturedValues) {
+                    fiber.effectTag = CAPTURE;
+                }
+            }
+        }
+        if (fiber.sibling) {
+            fiber = fiber.sibling;
+            continue;
+        } else {
+            while (fiber.return) {
+                fiber = fiber.return;
+                if (fiber.effectTag > 1) {
+                    commitEffects(fiber);
+                    if (fiber.capturedValues) {
+                        fiber.effectTag = CAPTURE;
+                    }
+                }
+                if (fiber === topFiber || fiber.hostRoot) {
+                    break outerLoop;
+                }
+                if (fiber.sibling) {
+                    fiber = fiber.sibling;
+                    continue outerLoop;
+                }
+            }
         }
     }
-    return effects$$1;
+}
+function commitWork() {
+    Renderer.batchedUpdates(function () {
+        var el;
+        while (el = effects.shift()) {
+            if (el.effectTag === DETACH && el.caughtError) {
+                disposeFiber(el);
+                return;
+            }
+            commitDFS(el, effects);
+        }
+    }, {});
+    var error = Renderer.catchError;
+    if (error) {
+        delete Renderer.catchError;
+        throw error;
+    }
+}
+function commitEffects(fiber) {
+    var instance = fiber.stateNode || emptyObject;
+    var amount = fiber.effectTag;
+    var updater = instance.updater || fakeObject;
+    for (var i = 0; i < effectLength; i++) {
+        var effectNo = effectNames[i];
+        if (effectNo > amount) {
+            break;
+        }
+        if (amount % effectNo === 0) {
+            amount /= effectNo;
+            switch (effectNo) {
+                case PLACE:
+                    Renderer.insertElement(fiber);
+                    fiber.hasMounted = true;
+                    break;
+                case CONTENT:
+                    Renderer.updateContext(fiber);
+                    break;
+                case ATTR:
+                    Renderer.updateAttribute(fiber);
+                    break;
+                case HOOK:
+                    if (fiber.hasMounted) {
+                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                    } else {
+                        fiber.hasMounted = true;
+                        guardCallback(instance, "componentDidMount", []);
+                    }
+                    delete fiber._hydrating;
+                    if (fiber.catchError) {
+                        return;
+                    }
+                    break;
+                case REF:
+                    if (!instance.__isStateless) {
+                        Refs.fireRef(fiber, instance);
+                    }
+                    break;
+                case CALLBACK:
+                    var queue = fiber.pendingCbs;
+                    fiber._hydrating = true;
+                    queue.forEach(function (fn) {
+                        fn.call(instance);
+                    });
+                    delete fiber._hydrating;
+                    delete fiber.pendingCbs;
+                    break;
+                case CAPTURE:
+                    var values = fiber.capturedValues;
+                    fiber.caughtError = true;
+                    var a = values.shift();
+                    var b = values.shift();
+                    if (!values.length) {
+                        fiber.effectTag = amount;
+                        delete fiber.capturedValues;
+                    }
+                    instance.componentDidCatch(a, b);
+                    break;
+            }
+        }
+    }
+    fiber.effectTag = 1;
 }
 function disposeFibers(fiber) {
-    var effects$$1 = fiber.effects;
-    if (effects$$1) {
-        effects$$1.forEach(disposeFiber);
-        delete fiber.effects;
-    }
-    var c = fiber.oldChildren || emptyObject;
-    for (var i in c) {
-        var child = c[i];
-        if (child.disposed) {
-            continue;
+    var list = [fiber.oldChildren, fiber.children],
+        count = 0;
+    while (count != 2) {
+        var c = list[count++];
+        if (c) {
+            for (var i in c) {
+                var child = c[i];
+                if (!child.disposed && child.hasMounted) {
+                    disposeFiber(child, true);
+                    disposeFibers(child);
+                }
+            }
         }
-        disposeFibers(child);
-        disposeFiber(child, true);
     }
     delete fiber.child;
     delete fiber.lastChild;
@@ -1396,6 +1511,9 @@ function disposeFibers(fiber) {
 function disposeFiber(fiber, force) {
     var stateNode = fiber.stateNode,
         effectTag = fiber.effectTag;
+    if (!stateNode) {
+        return;
+    }
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
@@ -1416,130 +1534,6 @@ function disposeFiber(fiber, force) {
     fiber.effectTag = NOWORK;
 }
 
-function commitWork() {
-    Renderer.batchedUpdates(function () {
-        commitPlaceEffects(effects);
-        var tasks = effects,
-            task;
-        while (task = tasks.shift()) {
-            commitOtherEffects(task, tasks);
-        }
-    }, {});
-    var error = Renderer.catchError;
-    if (error) {
-        delete Renderer.catchError;
-        throw error;
-    }
-}
-function commitPlaceEffects(tasks) {
-    var ret = [];
-    for (var i = 0, n = tasks.length; i < n; i++) {
-        var fiber = tasks[i];
-        var amount = fiber.effectTag;
-        var remainder = amount / PLACE;
-        var hasEffect = amount > 1;
-        if (hasEffect && remainder == ~~remainder) {
-            fiber.parent.insertPoint = null;
-            Renderer.insertElement(fiber);
-            fiber.hasMounted = true;
-            fiber.effectTag = remainder;
-            hasEffect = remainder > 1;
-        }
-        if (hasEffect) {
-            ret.push(fiber);
-        }
-    }
-    tasks.length = 0;
-    arrayPush.apply(tasks, ret);
-    return ret;
-}
-function commitOtherEffects(fiber, tasks) {
-    var instance = fiber.stateNode || emptyObject;
-    var amount = fiber.effectTag;
-    var updater = instance.updater || fakeObject;
-    for (var i = 0; i < effectLength; i++) {
-        var effectNo = effectNames[i];
-        if (effectNo > amount) {
-            break;
-        }
-        if (amount % effectNo === 0) {
-            amount /= effectNo;
-            switch (effectNo) {
-                case CONTENT:
-                    Renderer.updateContext(fiber);
-                    break;
-                case ATTR:
-                    Renderer.updateAttribute(fiber);
-                    break;
-                case NULLREF:
-                    if (!instance.__isStateless) {
-                        Refs.fireRef(fiber, null);
-                    }
-                    break;
-                case DETACH:
-                    if (fiber.tag > 3) {
-                        Renderer.removeElement(fiber);
-                    } else {
-                        if (fiber.hasMounted) {
-                            updater.enqueueSetState = returnFalse;
-                            guardCallback(instance, "componentWillUnmount", []);
-                        }
-                    }
-                    delete fiber.hasMounted;
-                    delete fiber.stateNode;
-                    delete fiber.alternate;
-                    break;
-                case HOOK:
-                    if (fiber.hasMounted) {
-                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
-                    } else {
-                        fiber.hasMounted = true;
-                        guardCallback(instance, "componentDidMount", []);
-                    }
-                    delete fiber._hydrating;
-                    if (fiber.hasError) {
-                        removeFormBoundaries(fiber);
-                        Renderer.diffChildren(fiber, []);
-                        tasks.push.apply(tasks, fiber.effects);
-                        delete fiber.effects;
-                        var n = Object.assign({}, fiber);
-                        fiber.effectTag = 1;
-                        n.effectTag = amount;
-                        tasks.push(n);
-                        return;
-                    }
-                    break;
-                case REF:
-                    if (!instance.__isStateless) {
-                        Refs.fireRef(fiber, instance);
-                    }
-                    break;
-                case CALLBACK:
-                    var queue = fiber.pendingCbs;
-                    fiber._hydrating = true;
-                    queue.forEach(function (fn) {
-                        fn.call(instance);
-                    });
-                    delete fiber._hydrating;
-                    delete fiber.pendingCbs;
-                    break;
-                case CAPTURE:
-                    var values = fiber.capturedValues;
-                    fiber.effectTag = amount;
-                    fiber.hasCatch = true;
-                    var a = values.shift();
-                    var b = values.shift();
-                    if (!values.length) {
-                        delete fiber.capturedValues;
-                    }
-                    instance.componentDidCatch(a, b);
-                    break;
-            }
-        }
-    }
-    fiber.effectTag = 1;
-}
-
 function Unbatch(props, context) {
     Component.call(this, props, context);
     this.state = {
@@ -1552,6 +1546,7 @@ fn$1.render = function () {
 };
 
 var macrotasks = Renderer.macrotasks;
+var boundaries = Renderer.boundaries;
 var batchedtasks = [];
 function render$1(vnode, root, callback) {
     var container = createContainer(root),
@@ -1589,10 +1584,9 @@ function wrapCb(fn, carrier) {
 }
 function performWork(deadline) {
     workLoop(deadline);
-    var boundaries = Renderer.boundaries;
     if (boundaries.length) {
-        var elem = boundaries.pop();
-        macrotasks.push(elem);
+        macrotasks.unshift.apply(macrotasks, boundaries);
+        boundaries.length = 0;
     }
     topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
@@ -1656,8 +1650,18 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-        arrayPush.apply(effects, collectWork(topWork, null, true));
-        effects.push(topWork);
+        var hasBoundary = boundaries.length;
+        if (topWork.type !== Unbatch) {
+            if (hasBoundary) {
+                arrayPush.apply(effects, boundaries);
+                boundaries.length = 0;
+            } else {
+                effects.push(topWork);
+            }
+        } else {
+            boundaries.length = 0;
+            effects.push(topWork);
+        }
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline);
         } else {

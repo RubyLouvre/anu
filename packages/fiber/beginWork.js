@@ -407,11 +407,13 @@ function diffChildren(parentFiber, children) {
         if (oldFiber) {
             if (isSameNode(oldFiber, newFiber) && !oldFiber.disposed) {
                 alternate = new Fiber(oldFiber);
-
                 let oldRef = oldFiber.ref;
                 newFiber = extend(oldFiber, newFiber);
-
                 newFiber.alternate = alternate;
+                if(newFiber.ref && newFiber.deleteRef){
+                    delete newFiber.ref;
+                    delete newFiber.deleteRef;
+                }
                 if (oldRef && oldRef !== newFiber.ref) {
                     alternate.effectTag *= NULLREF;
                     effects.push(alternate);

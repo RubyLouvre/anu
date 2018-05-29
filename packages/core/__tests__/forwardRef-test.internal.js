@@ -116,8 +116,7 @@ describe('forwardRef', () => {
   });
 
   it('should maintain child instance and ref through updates', () => {
-    console.log("以后处理")
-    return 
+  
     class Child extends React.Component {
       constructor(props) {
         super(props);

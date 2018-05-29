@@ -2299,6 +2299,10 @@ function diffChildren(parentFiber, children) {
                 var oldRef = _oldFiber.ref;
                 _newFiber = extend(_oldFiber, _newFiber);
                 _newFiber.alternate = alternate;
+                if (_newFiber.ref && _newFiber.deleteRef) {
+                    delete _newFiber.ref;
+                    delete _newFiber.deleteRef;
+                }
                 if (oldRef && oldRef !== _newFiber.ref) {
                     alternate.effectTag *= NULLREF;
                     effects$$1.push(alternate);
@@ -2348,6 +2352,10 @@ var Refs = {
         try {
             var number = typeNumber(ref);
             refStrategy[number](owner, ref, dom);
+            if (owner && owner.__isStateless) {
+                delete fiber.ref;
+                fiber.deleteRef = true;
+            }
         } catch (e) {
             pushError(fiber, "ref", e);
         }
