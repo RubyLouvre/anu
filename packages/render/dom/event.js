@@ -165,12 +165,13 @@ String("load,error").replace(/\w+/g, function (name) {
         }
     };
 });
-
+/*
 function injectMouse(){
     ["mouseenter","mouseleave"].forEach(function(name){
         let mark = "__" + name;
         if (!document[mark]) {
             document[mark] = globalEvents[name] = true;
+           
             addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
                 let from = getTarget(e);
                 let to = getRelatedTarget(e);
@@ -182,7 +183,7 @@ function injectMouse(){
                 ev2.target = to;
                 ev2.relatedTarget = from;
                 ev2.type = "mouseenter";
-    
+              
                 if (!to || (to !== from && !contains(from, to))) {
                     let common = getLowestCommonAncestor(from, to);
                     //由于不冒泡，因此paths长度为1
@@ -193,9 +194,28 @@ function injectMouse(){
         }
     });
 }
-eventHooks.mouseenter = eventHooks.mouseleave = function(){
+
+eventHooks.mouseenter = eventHooks.mouseleave = function(e, name){
     injectMouse();
 };
+*/
+String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
+    eventHooks[name] = function(dom, type) {
+        let mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            let mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function(e) {
+                let t = getRelatedTarget(e);
+                if (!t || (t !== dom && !contains(dom, t))) {
+                    let common = getLowestCommonAncestor(dom, t);
+                    //由于不冒泡，因此paths长度为1
+                    dispatchEvent(e, type, common);
+                }
+            });
+        }
+    };
+});
 
 const input2change = /text|password|search/i;
 //react中，text,textarea,password元素的change事件实质上是input事件

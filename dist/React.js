@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-28
+ * by 司徒正美 Copyright 2018-05-29
  * IE9+
  */
 
@@ -1242,34 +1242,22 @@ String("load,error").replace(/\w+/g, function (name) {
         }
     };
 });
-function injectMouse() {
-    ["mouseenter", "mouseleave"].forEach(function (name) {
-        var mark = "__" + name;
-        if (!document[mark]) {
-            document[mark] = globalEvents[name] = true;
-            addEvent(document, name == "mouseenter" ? "mouseover" : "mouseout", function (e) {
-                var from = getTarget(e);
-                var to = getRelatedTarget(e);
-                var ev1 = new SyntheticEvent(e);
-                ev1.target = from;
-                ev1.relatedTarget = to;
-                ev1.type = "mouseleave";
-                var ev2 = new SyntheticEvent(e);
-                ev2.target = to;
-                ev2.relatedTarget = from;
-                ev2.type = "mouseenter";
-                if (!to || to !== from && !contains(from, to)) {
-                    var common = getLowestCommonAncestor(from, to);
-                    dispatchEvent(ev1, null, common);
-                    dispatchEvent(ev2, null, common);
+String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    eventHooks[name] = function (dom, type) {
+        var mark = "__" + type;
+        if (!dom[mark]) {
+            dom[mark] = true;
+            var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            addEvent(dom, mask, function (e) {
+                var t = getRelatedTarget(e);
+                if (!t || t !== dom && !contains(dom, t)) {
+                    var common = getLowestCommonAncestor(dom, t);
+                    dispatchEvent(e, type, common);
                 }
             });
         }
-    });
-}
-eventHooks.mouseenter = eventHooks.mouseleave = function () {
-    injectMouse();
-};
+    };
+});
 var input2change = /text|password|search/i;
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
@@ -1875,9 +1863,9 @@ function findCatchComponent(fiber, names, hook) {
             names.push(name);
             instance = fiber.stateNode || {};
             if (instance.componentDidCatch && !boundary) {
-                if (!fiber.hasCatch && topFiber !== fiber) {
+                if (!fiber.caughtError && topFiber !== fiber) {
                     boundary = fiber;
-                } else if (fiber.hasCatch) {
+                } else if (fiber.caughtError) {
                     retry = fiber;
                 }
             }
@@ -1890,7 +1878,7 @@ function findCatchComponent(fiber, names, hook) {
             if (!retry || retry !== boundary) {
                 var effectTag = boundary.effectTag;
                 var f = boundary.alternate;
-                if (f && !f.hasError) {
+                if (f && !f.catchError) {
                     f.forward = boundary.forward;
                     f.sibling = boundary.sibling;
                     if (boundary.return.child == boundary) {
@@ -1898,14 +1886,14 @@ function findCatchComponent(fiber, names, hook) {
                     }
                     boundary = f;
                 }
-                if (!boundary.hasError) {
+                if (!boundary.catchError) {
                     if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
                     }
                     boundaries.unshift(boundary);
-                    boundary.hasError = true;
+                    boundary.catchError = true;
                 }
                 if (retry) {
                     var arr = boundary.effects || (boundary.effects = []);
@@ -1917,7 +1905,7 @@ function findCatchComponent(fiber, names, hook) {
     }
 }
 function removeFormBoundaries(fiber) {
-    delete fiber.hasError;
+    delete fiber.catchError;
     var arr = Renderer.boundaries;
     var index = arr.indexOf(fiber);
     if (index !== -1) {
@@ -2170,7 +2158,7 @@ function updateClassComponent(fiber, info) {
         return;
     }
     fiber.effectTag *= HOOK;
-    if (fiber.hasError) {
+    if (fiber.catchError) {
         return;
     }
     fiber._hydrating = true;
@@ -2397,7 +2385,7 @@ function commitDFS(fiber) {
             fiber.hasMounted = true;
             fiber.effectTag /= PLACE;
         } else {
-            if (fiber.hasError) {
+            if (fiber.catchError) {
                 removeFormBoundaries(fiber);
                 disposeFibers(fiber);
             }
@@ -2443,7 +2431,7 @@ function commitWork() {
     Renderer.batchedUpdates(function () {
         var el;
         while (el = effects.shift()) {
-            if (el.effectTag === DETACH && el.hasCatch) {
+            if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
                 return;
             }
@@ -2486,7 +2474,7 @@ function commitEffects(fiber) {
                         guardCallback(instance, "componentDidMount", []);
                     }
                     delete fiber._hydrating;
-                    if (fiber.hasError) {
+                    if (fiber.catchError) {
                         return;
                     }
                     break;
@@ -2506,7 +2494,7 @@ function commitEffects(fiber) {
                     break;
                 case CAPTURE:
                     var values = fiber.capturedValues;
-                    fiber.hasCatch = true;
+                    fiber.caughtError = true;
                     var a = values.shift();
                     var b = values.shift();
                     if (!values.length) {
@@ -2682,9 +2670,9 @@ function workLoop(deadline) {
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
-        var hasError = boundaries.length;
+        var hasBoundary = boundaries.length;
         if (topWork.type !== Unbatch) {
-            if (hasError) {
+            if (hasBoundary) {
                 arrayPush.apply(effects, boundaries);
                 boundaries.length = 0;
             } else {
