@@ -195,39 +195,41 @@ export function updateClassComponent(fiber, info) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
     }
-    if (fiber.hasMounted && fiber.dirty && fiber.parent) {
-        fiber.parent.insertPoint = null;
-    }
-    delete fiber.dirty;
-    instance._reactInternalFiber = fiber; //更新rIF
-    if (type === AnuPortal) {
-        containerStack.unshift(fiber.parent);
-        fiber.shiftContainer = true;
-    }
 
-   
-    if (!instance.__isStateless) {
+    instance._reactInternalFiber = fiber; //更新rIF
+    const isStateful = !instance.__isStateless;
+    if (isStateful) {
+        //有狀态组件
         let updateQueue = fiber.updateQueue;
-        //必须带生命周期
+        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
+            fiber.parent.insertPoint = null;
+        }
+        delete fiber.dirty;
         delete fiber.updateFail;
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
-        fiber.batching = updateQueue.batching;
+
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
         }
-
+        fiber.batching = updateQueue.batching;
         let cbs = updateQueue.pendingCbs;
         if (cbs.length) {
             fiber.pendingCbs = cbs;
             fiber.effectTag *= CALLBACK;
         }
+    } else if (type === AnuPortal) {
+        //无狀态组件中的传送门组件
+        containerStack.unshift(fiber.parent);
+        fiber.shiftContainer = true;
     }
-    instance.unmaskedContext = contextStack[0]; //存放它上面的所有context的并集
-    instance.context = newContext; //设置新context   
+    //存放它上面的所有context的并集
+    instance.unmaskedContext = contextStack[0]; 
+    //设置新context, props, state
+    instance.context = newContext; 
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
@@ -236,13 +238,16 @@ export function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    if (fiber.updateFail) {
-        cloneChildren(fiber);
-        fiber._hydrating = false;
-        return;
+
+    if (isStateful) {
+        if (fiber.updateFail) {
+            cloneChildren(fiber);
+            fiber._hydrating = false;
+            return;
+        }
+        fiber.effectTag *= HOOK;
     }
 
-    fiber.effectTag *= HOOK;
     if (fiber.catchError) {
         return;
     }

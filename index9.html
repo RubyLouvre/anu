@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+   <!--  <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
@@ -24,6 +24,7 @@
         
         var container = document.getElementById('root');
           var div = container;
+          var React = ReactNoop;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
@@ -62,53 +63,36 @@
 		 };
 
 
-
-    class Top extends React.Component {
+class Child extends React.Component {
+      constructor(props) {
+        super(props);
+      }
       render() {
-        return <A />
+       // ReactNoop.yield(this.props.value);
+        return null;
       }
     }
-    class B extends React.Component {
-        componentWillUpdate(){
-            console.log("B will update")
-        }
-        componentDidMount(){
-            console.log("B did mount")
-        }
-        componentDidUpdate(){
-            console.log("B did update")
-        }
-        render() {
-            return   <s>{this.props.value}</s>
-        }
-    }
-   var index = 0;
-    class A extends React.Component {
-        componentWillUpdate(){
-            console.log("A will update")
-        }
-        componentDidMount(){
-            console.log("A did mount")
-        }
-        componentDidUpdate(){
-            console.log("A did update")
-        }
-        render() {
-           if(index){
-                return [ <B value="22" />,  <strong >前面8</strong>, <span />, <b>后面</b>,<h1>h1</h1> ]
-            }
-            return [ <B value="11" /> ,<strong >前面</strong>,<span />, <b>后面</b> ]
-            
-        }
+
+    function Wrapper(props) {
+      return <Child {...props} ref={props.forwardedRef} />;
     }
 
-    ReactDOM.render(<Top />, container)
-    console.log("re-render")
-    index = 1;
+    const RefForwardingComponent = React.forwardRef((props, ref) => (
+      <Wrapper {...props} forwardedRef={ref} />
+    ));
 
-    ReactDOM.render(<Top />, container)
+    let setRefCount = 0;
+    let ref;
 
+    const setRef = r => {
+      setRefCount++;
+      console.log("=====")
+      ref = r;
+    };
 
+    ReactDOM.render(<RefForwardingComponent ref={setRef} value={123} />,container);
+    ReactDOM.render(<RefForwardingComponent ref={setRef} value={345} />,container);
+console.log(setRefCount)
     </script>
 
 

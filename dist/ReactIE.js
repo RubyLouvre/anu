@@ -2110,32 +2110,32 @@ function updateClassComponent(fiber, info) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
     }
-    if (fiber.hasMounted && fiber.dirty && fiber.parent) {
-        fiber.parent.insertPoint = null;
-    }
-    delete fiber.dirty;
     instance._reactInternalFiber = fiber;
-    if (type === AnuPortal) {
-        containerStack.unshift(fiber.parent);
-        fiber.shiftContainer = true;
-    }
-    if (!instance.__isStateless) {
+    var isStateful = !instance.__isStateless;
+    if (isStateful) {
         var updateQueue = fiber.updateQueue;
+        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
+            fiber.parent.insertPoint = null;
+        }
+        delete fiber.dirty;
         delete fiber.updateFail;
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
-        fiber.batching = updateQueue.batching;
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
         }
+        fiber.batching = updateQueue.batching;
         var cbs = updateQueue.pendingCbs;
         if (cbs.length) {
             fiber.pendingCbs = cbs;
             fiber.effectTag *= CALLBACK;
         }
+    } else if (type === AnuPortal) {
+        containerStack.unshift(fiber.parent);
+        fiber.shiftContainer = true;
     }
     instance.unmaskedContext = contextStack[0];
     instance.context = newContext;
@@ -2147,12 +2147,14 @@ function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    if (fiber.updateFail) {
-        cloneChildren(fiber);
-        fiber._hydrating = false;
-        return;
+    if (isStateful) {
+        if (fiber.updateFail) {
+            cloneChildren(fiber);
+            fiber._hydrating = false;
+            return;
+        }
+        fiber.effectTag *= HOOK;
     }
-    fiber.effectTag *= HOOK;
     if (fiber.catchError) {
         return;
     }
