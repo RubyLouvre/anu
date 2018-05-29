@@ -138,7 +138,8 @@ Renderer.batchedUpdates = function(callback, event) {
 };
 
 function workLoop(deadline) {
-    let topWork = getNextUnitOfWork();
+
+    let topWork = macrotasks.shift();
     if (topWork) {
         let fiber = topWork,
             info;
@@ -151,43 +152,35 @@ function workLoop(deadline) {
                 contextStack: [fiber.stateNode.unmaskedContext],
             };
         }
-        reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
-        /*
-        while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
-            fiber = updateEffects(fiber, topWork, info);
-        }
-        */
-        //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
-        var hasBoundary = boundaries.length;
-        if (topWork.type !== Unbatch) { //如果是某个组件更新
-            if (hasBoundary) {
-                arrayPush.apply(effects, boundaries);
-                boundaries.length = 0;
-            } else {
-                effects.push(topWork);
-            }
-        } else {
-            boundaries.length = 0;
-            effects.push(topWork);
-        }
 
+        reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
+        updateCommitQueue(fiber);
 
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
             resetStack(info);
-            commitDFS(); //执行任务
+            commitDFS(effects); //执行任务
         }
     }
 }
 
-function getNextUnitOfWork(fiber) {
-    fiber = macrotasks.shift();
-    if (!fiber || fiber.merged) {
-        return;
+function updateCommitQueue(fiber) {
+    var hasBoundary = boundaries.length;
+    if (fiber.type !== Unbatch) { //如果是某个组件更新
+        if (hasBoundary) {
+            //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
+            arrayPush.apply(effects, boundaries);
+        } else {
+            effects.push(fiber);
+        }
+    } else {
+
+        effects.push(fiber);
     }
-    return fiber;
+    boundaries.length = 0;
 }
+
 
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，

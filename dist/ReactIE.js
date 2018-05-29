@@ -2443,15 +2443,15 @@ function commitDFSImpl(fiber) {
         }
     }
 }
-function commitDFS() {
+function commitDFS(effects$$1) {
     Renderer.batchedUpdates(function () {
         var el;
-        while (el = effects.shift()) {
+        while (el = effects$$1.shift()) {
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
                 return;
             }
-            commitDFSImpl(el, effects);
+            commitDFSImpl(el);
         }
     }, {});
     var error = Renderer.catchError;
@@ -2670,7 +2670,7 @@ Renderer.batchedUpdates = function (callback, event) {
     }
 };
 function workLoop(deadline) {
-    var topWork = getNextUnitOfWork();
+    var topWork = macrotasks.shift();
     if (topWork) {
         var fiber = topWork,
             info = void 0;
@@ -2684,32 +2684,27 @@ function workLoop(deadline) {
             };
         }
         reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
-        var hasBoundary = boundaries.length;
-        if (topWork.type !== Unbatch) {
-            if (hasBoundary) {
-                arrayPush.apply(effects, boundaries);
-                boundaries.length = 0;
-            } else {
-                effects.push(topWork);
-            }
-        } else {
-            boundaries.length = 0;
-            effects.push(topWork);
-        }
+        updateCommitQueue(fiber);
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline);
         } else {
             resetStack(info);
-            commitDFS();
+            commitDFS(effects);
         }
     }
 }
-function getNextUnitOfWork(fiber) {
-    fiber = macrotasks.shift();
-    if (!fiber || fiber.merged) {
-        return;
+function updateCommitQueue(fiber) {
+    var hasBoundary = boundaries.length;
+    if (fiber.type !== Unbatch) {
+        if (hasBoundary) {
+            arrayPush.apply(effects, boundaries);
+        } else {
+            effects.push(fiber);
+        }
+    } else {
+        effects.push(fiber);
     }
-    return fiber;
+    boundaries.length = 0;
 }
 function mergeUpdates(fiber, state, isForced, callback) {
     var updateQueue = fiber.updateQueue;
