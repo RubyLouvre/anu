@@ -2107,11 +2107,7 @@ function updateClassComponent(fiber, info) {
         containerStack = info.containerStack;
     var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
-        if (type === AnuPortal) {
-            fiber.parent = props.parent;
-        } else {
-            fiber.parent = containerStack[0];
-        }
+        fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
     }
     if (fiber.hasMounted && fiber.dirty && fiber.parent) {
@@ -2123,25 +2119,25 @@ function updateClassComponent(fiber, info) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
     }
-    var updateQueue = fiber.updateQueue;
     if (!instance.__isStateless) {
+        var updateQueue = fiber.updateQueue;
         delete fiber.updateFail;
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
+        fiber.batching = updateQueue.batching;
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
         }
+        var cbs = updateQueue.pendingCbs;
+        if (cbs.length) {
+            fiber.pendingCbs = cbs;
+            fiber.effectTag *= CALLBACK;
+        }
     }
     instance.unmaskedContext = contextStack[0];
-    fiber.batching = updateQueue.batching;
-    var cbs = updateQueue.pendingCbs;
-    if (cbs.length) {
-        fiber.pendingCbs = cbs;
-        fiber.effectTag *= CALLBACK;
-    }
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;

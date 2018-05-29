@@ -192,25 +192,22 @@ export function updateClassComponent(fiber, info) {
     } = info;
     let newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
-        if (type === AnuPortal) {
-            fiber.parent = props.parent;
-        } else {
-            fiber.parent = containerStack[0];
-        }
+        fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
     }
     if (fiber.hasMounted && fiber.dirty && fiber.parent) {
         fiber.parent.insertPoint = null;
     }
-    delete fiber.dirty; 
+    delete fiber.dirty;
     instance._reactInternalFiber = fiber; //更新rIF
     if (type === AnuPortal) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
     }
 
-    let updateQueue = fiber.updateQueue;
+   
     if (!instance.__isStateless) {
+        let updateQueue = fiber.updateQueue;
         //必须带生命周期
         delete fiber.updateFail;
         if (fiber.hasMounted) {
@@ -218,17 +215,18 @@ export function updateClassComponent(fiber, info) {
         } else {
             applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
+        fiber.batching = updateQueue.batching;
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
         }
+
+        let cbs = updateQueue.pendingCbs;
+        if (cbs.length) {
+            fiber.pendingCbs = cbs;
+            fiber.effectTag *= CALLBACK;
+        }
     }
     instance.unmaskedContext = contextStack[0]; //存放它上面的所有context的并集
-    fiber.batching = updateQueue.batching;
-    let cbs = updateQueue.pendingCbs;
-    if (cbs.length) {
-        fiber.pendingCbs = cbs;
-        fiber.effectTag *= CALLBACK;
-    }
     instance.context = newContext; //设置新context   
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
@@ -410,7 +408,7 @@ function diffChildren(parentFiber, children) {
                 let oldRef = oldFiber.ref;
                 newFiber = extend(oldFiber, newFiber);
                 newFiber.alternate = alternate;
-                if(newFiber.ref && newFiber.deleteRef){
+                if (newFiber.ref && newFiber.deleteRef) {
                     delete newFiber.ref;
                     delete newFiber.deleteRef;
                 }
@@ -454,4 +452,3 @@ function diffChildren(parentFiber, children) {
 }
 
 Renderer.diffChildren = diffChildren;
-
