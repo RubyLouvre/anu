@@ -1,6 +1,5 @@
 import { updateEffects } from "./beginWork";
-//import { collectWork } from "./collectWork";
-import { commitWork } from "./commitWork2";
+import { commitWork } from "./commitWork";
 import { Renderer } from "react-core/createRenderer";
 import { effects, isMounted, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
 import { Unbatch } from "./unbatch";
@@ -130,7 +129,6 @@ function workLoop(deadline) {
                 contextStack: [fiber.stateNode.unmaskedContext],
             };
         }
-        //console.log("开始",fiber.name);
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
