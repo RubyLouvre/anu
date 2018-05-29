@@ -1,11 +1,33 @@
-import { updateEffects } from "./beginWork";
-import { commitWork } from "./commitWork";
-import { Renderer } from "react-core/createRenderer";
-import { effects, isMounted, resetStack, arrayPush, get, isFn, topNodes, typeNumber, topFibers } from "react-core/util";
-import { Unbatch } from "./unbatch";
-import { Fiber } from "./Fiber";
+import {
+    reconcileDFS
+} from "./beginWork";
+import {
+    commitDFS
+} from "./commitWork";
+import {
+    Renderer
+} from "react-core/createRenderer";
+import {
+    effects,
+    isMounted,
+    resetStack,
+    arrayPush,
+    get,
+    isFn,
+    topNodes,
+    typeNumber,
+    topFibers
+} from "react-core/util";
+import {
+    Unbatch
+} from "./unbatch";
+import {
+    Fiber
+} from "./Fiber";
 
-import { createInstance } from "./createInstance";
+import {
+    createInstance
+} from "./createInstance";
 const macrotasks = Renderer.macrotasks;
 let boundaries = Renderer.boundaries;
 const batchedtasks = [];
@@ -45,7 +67,7 @@ export function render(vnode, root, callback) {
 }
 
 function wrapCb(fn, carrier) {
-    return function () {
+    return function() {
         let fiber = get(this);
         let target = fiber.child ? fiber.child.stateNode : null;
         fn && fn.call(target);
@@ -58,14 +80,14 @@ function performWork(deadline) {
     workLoop(deadline);
     //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
     //我们需要再做一次收集，不为空时，递归调用
-   
+
     if (boundaries.length) {
         //优先处理异常边界的setState
         macrotasks.unshift.apply(macrotasks, boundaries);
         boundaries.length = 0;
     }
 
-    topFibers.forEach(function (el) {
+    topFibers.forEach(function(el) {
         let microtasks = el.microtasks;
         while ((el = microtasks.shift())) {
             if (!el.disposed) {
@@ -88,13 +110,13 @@ let ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
     fn(ricObj);
 }
-Renderer.scheduleWork = function () {
+Renderer.scheduleWork = function() {
     performWork(ricObj);
 };
 
 let isBatching = false;
 
-Renderer.batchedUpdates = function (callback, event) {
+Renderer.batchedUpdates = function(callback, event) {
     let keepbook = isBatching;
     isBatching = true;
     try {
@@ -129,14 +151,17 @@ function workLoop(deadline) {
                 contextStack: [fiber.stateNode.unmaskedContext],
             };
         }
+        reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
+        /*
         while (fiber && !fiber.disposed && deadline.timeRemaining() > ENOUGH_TIME) {
             fiber = updateEffects(fiber, topWork, info);
         }
+        */
         //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
         var hasBoundary = boundaries.length;
         if (topWork.type !== Unbatch) { //如果是某个组件更新
             if (hasBoundary) {
-                arrayPush.apply(effects,boundaries);
+                arrayPush.apply(effects, boundaries);
                 boundaries.length = 0;
             } else {
                 effects.push(topWork);
@@ -145,13 +170,13 @@ function workLoop(deadline) {
             boundaries.length = 0;
             effects.push(topWork);
         }
-        
-       
+
+
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
             resetStack(info);
-            commitWork(); //执行任务
+            commitDFS(); //执行任务
         }
     }
 }
@@ -205,7 +230,8 @@ function getQueue(fiber) {
 function pushChildQueue(fiber, queue) {
     //判定当前节点是否包含已进队的节点
     let maps = {};
-    for (let i = queue.length, el; (el = queue[--i]);) {
+    for (let i = queue.length, el;
+        (el = queue[--i]);) {
         //移除列队中比它小的组件
         if (fiber === el) {
             queue.splice(i, 1); //已经放进过，去掉
@@ -233,7 +259,7 @@ function pushChildQueue(fiber, queue) {
             }
         }
     }
-    hackSCU.forEach(function (el) {
+    hackSCU.forEach(function(el) {
         //如果是批量更新，必须强制更新，防止进入SCU
         el.updateQueue.batching = true;
     });

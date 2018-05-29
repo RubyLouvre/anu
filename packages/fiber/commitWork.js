@@ -37,73 +37,73 @@ import {
  * @param {*} topFiber 
  */
 
-function commitDFS(fiber) {
+function commitDFSImpl(fiber) {
     let topFiber = fiber;
     outerLoop:
-    while (true) {
-        //逐步向下执行所有移除与插入操作
-        if (fiber.effects && fiber.effects.length) {
-            //fiber里面是被重用的旧节点与无法重用的旧节点
-            fiber.effects.forEach(disposeFiber);
-            delete fiber.effects;
-        }
-        if (fiber.effectTag % PLACE == 0) {
-            // DOM节点插入或移除
-            Renderer.insertElement(fiber);
-            fiber.hasMounted = true;
-            fiber.effectTag /= PLACE;
-        } else {
-            // 边界组件的清洗工件
-            if (fiber.catchError) {
-                removeFormBoundaries(fiber);
-                disposeFibers(fiber);
+        while (true) {
+            //逐步向下执行所有移除与插入操作
+            if (fiber.effects && fiber.effects.length) {
+                //fiber里面是被重用的旧节点与无法重用的旧节点
+                fiber.effects.forEach(disposeFiber);
+                delete fiber.effects;
             }
-        }
-        if (fiber.updateFail) {
-            delete fiber.updateFail;
-        }
-        if (fiber.child) {
-            fiber = fiber.child;
-            continue;
-        } else {
-            if (fiber.effectTag > 1) {
-                commitEffects(fiber);
-                if (fiber.capturedValues) {
-                    fiber.effectTag = CAPTURE;
-                    // Renderer.boundaries.push(fiber);
+            if (fiber.effectTag % PLACE == 0) {
+                // DOM节点插入或移除
+                Renderer.insertElement(fiber);
+                fiber.hasMounted = true;
+                fiber.effectTag /= PLACE;
+            } else {
+                // 边界组件的清洗工件
+                if (fiber.catchError) {
+                    removeFormBoundaries(fiber);
+                    disposeFibers(fiber);
                 }
             }
-        }
-
-        if (fiber.sibling) {
-            fiber = fiber.sibling;
-            continue;
-        } else {
-
-            while (fiber.return) {
-                fiber = fiber.return;
-
+            if (fiber.updateFail) {
+                delete fiber.updateFail;
+            }
+            if (fiber.child) {
+                fiber = fiber.child;
+                continue;
+            } else {
                 if (fiber.effectTag > 1) {
                     commitEffects(fiber);
                     if (fiber.capturedValues) {
                         fiber.effectTag = CAPTURE;
-                        //  Renderer.boundaries.push(fiber);
+                        // Renderer.boundaries.push(fiber);
                     }
                 }
-                if (fiber === topFiber || fiber.hostRoot) {
-                    break outerLoop;
-                }
-                if (fiber.sibling) {
-                    fiber = fiber.sibling;
-                    continue outerLoop;
+            }
+
+            if (fiber.sibling) {
+                fiber = fiber.sibling;
+                continue;
+            } else {
+
+                while (fiber.return) {
+                    fiber = fiber.return;
+
+                    if (fiber.effectTag > 1) {
+                        commitEffects(fiber);
+                        if (fiber.capturedValues) {
+                            fiber.effectTag = CAPTURE;
+                            //  Renderer.boundaries.push(fiber);
+                        }
+                    }
+                    if (fiber === topFiber || fiber.hostRoot) {
+                        break outerLoop;
+                    }
+                    if (fiber.sibling) {
+                        fiber = fiber.sibling;
+                        continue outerLoop;
+                    }
                 }
             }
         }
-    }
 }
-export function commitWork() {
+export function commitDFS() {
 
-    Renderer.batchedUpdates(function () {
+    Renderer.batchedUpdates(function() {
         var el;
         while (el = effects.shift()) {
             //处理retry组件
@@ -111,7 +111,7 @@ export function commitWork() {
                 disposeFiber(el);
                 return;
             }
-            commitDFS(el, effects);
+            commitDFSImpl(el, effects);
         }
 
     }, {});
@@ -142,60 +142,60 @@ export function commitEffects(fiber) {
             amount /= effectNo;
             //如果能整除
             switch (effectNo) {
-            case PLACE:
-                Renderer.insertElement(fiber);
-                fiber.hasMounted = true;
-                break;
-            case CONTENT:
-                Renderer.updateContext(fiber);
-                break;
-            case ATTR:
-                Renderer.updateAttribute(fiber);
-                break;
-            case HOOK:
-                if (fiber.hasMounted) {
-                    guardCallback(instance, "componentDidUpdate", [
-                        updater.prevProps,
-                        updater.prevState,
-                        updater.snapshot,
-                    ]);
-                } else {
+                case PLACE:
+                    Renderer.insertElement(fiber);
                     fiber.hasMounted = true;
-                    guardCallback(instance, "componentDidMount", []);
-                }
-                delete fiber._hydrating;
-                //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
-                if (fiber.catchError) {
-                    return;
-                }
-                break;
-            case REF:
-                if (!instance.__isStateless) {
-                    Refs.fireRef(fiber, instance);
-                }
-                break;
-            case CALLBACK:
-                //ReactDOM.render/forceUpdate/setState callback
-                var queue = fiber.pendingCbs;
-                fiber._hydrating = true; //setState回调里再执行setState
-                queue.forEach(function (fn) {
-                    fn.call(instance);
-                });
-                delete fiber._hydrating;
-                delete fiber.pendingCbs;
-                break;
-            case CAPTURE: // 23
-                // console.log("进入CAPTURE");
-                var values = fiber.capturedValues;
-                fiber.caughtError = true;
-                var a = values.shift();
-                var b = values.shift();
-                if (!values.length) {
-                    fiber.effectTag = amount;
-                    delete fiber.capturedValues;
-                }
-                instance.componentDidCatch(a, b);
-                break;
+                    break;
+                case CONTENT:
+                    Renderer.updateContext(fiber);
+                    break;
+                case ATTR:
+                    Renderer.updateAttribute(fiber);
+                    break;
+                case HOOK:
+                    if (fiber.hasMounted) {
+                        guardCallback(instance, "componentDidUpdate", [
+                            updater.prevProps,
+                            updater.prevState,
+                            updater.snapshot,
+                        ]);
+                    } else {
+                        fiber.hasMounted = true;
+                        guardCallback(instance, "componentDidMount", []);
+                    }
+                    delete fiber._hydrating;
+                    //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
+                    if (fiber.catchError) {
+                        return;
+                    }
+                    break;
+                case REF:
+                    if (!instance.__isStateless) {
+                        Refs.fireRef(fiber, instance);
+                    }
+                    break;
+                case CALLBACK:
+                    //ReactDOM.render/forceUpdate/setState callback
+                    var queue = fiber.pendingCbs;
+                    fiber._hydrating = true; //setState回调里再执行setState
+                    queue.forEach(function(fn) {
+                        fn.call(instance);
+                    });
+                    delete fiber._hydrating;
+                    delete fiber.pendingCbs;
+                    break;
+                case CAPTURE: // 23
+                    // console.log("进入CAPTURE");
+                    var values = fiber.capturedValues;
+                    fiber.caughtError = true;
+                    var a = values.shift();
+                    var b = values.shift();
+                    if (!values.length) {
+                        fiber.effectTag = amount;
+                        delete fiber.capturedValues;
+                    }
+                    instance.componentDidCatch(a, b);
+                    break;
             }
         }
     }
