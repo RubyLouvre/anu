@@ -24,7 +24,7 @@ scheduleWork是performWork的封装
 
 performWork是requestIdleCallback<伪>的回调。
 
-requestIdleCallback之所以带伪，因为它不是直接使用浏览器的原生requestIdleCallback, 为了兼容nodejs平台，React伪造了这个方法，虽然参数与原生的很像，但它会视平台还有调整，并且在浏览器环境中，它的调用间隔不会像原生的那样相差太久。
+requestIdleCallback之所以带伪字，因为它不是浏览器的原生方法。 为了也能跑在nodejs端，React内置了这同名方法，虽然参数与原生的很像，但它的行为会视平台有所不同。
 
 ```javascript
 let deadline = {
@@ -42,7 +42,7 @@ Renderer.scheduleWork = function() {
 };
 ```
 
-performWork会像经典rAF 动画那样递归调整自身，直接耗尽macrotasks里面的任务.
+performWork会像经典rAF 动画那样递归调整自身，直到耗尽macrotasks里面的任务.
 ```javascript
 function performWork(deadline) {
     //更新虚拟DOM与真实DOM
@@ -56,9 +56,9 @@ function performWork(deadline) {
 }
 ```
 
-workLoop相当于浏览器中的EventLoop, 用于消费macrotasks与micotasks。
+workLoop相当于浏览器中的EventLoop, 用于执行macrotasks与micotasks里面的任务。
 
-1. macrotasks，宏列队，主进程，一个页面只有一个， ReactDOM.render就会将第一个参数丢进去。
+1. macrotasks，宏列队，主进程，一个页面只有一个。
 2. microtasks，微列队，子进程，每棵虚拟DOM树都有一个，放在根节点中。当组件执行setState后，它会找到根节点的microtasks，然后放进去。然后在下次唤起performWork时，再将它们挪到同macrotasks。
 
 workLoop里面有两个DFS 遍历，分别来自beginWork的reconcileDFS, commitWork的commitDFS。 reconcile与commit代表了React16更新时的两个阶段。
