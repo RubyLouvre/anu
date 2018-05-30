@@ -4,10 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/ReactNoop.js"></script>
+    <script type='text/javascript' src="./dist/React.js"></script>
    <!--  <script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
     <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+    <script type='text/javascript' src="./lib/createClass.js"></script>
+
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -20,79 +22,52 @@
     <div id='root' class="root">
 
     </div>
+   
     <script type='text/babel'>
         
-        var container = document.getElementById('root');
-          var div = container;
-          var React = ReactNoop;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-		  }
-	    var log = {
-			push(a){
-				console.log(a)
-			}
-		}
-        var log = []
-		  var PropTypes = React.PropTypes;
-		
-		
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-				  },
-				  toWarnDev(b){
-					try{
-                          a()
-                      }catch(e){
-                          console.log(e,"warn")
-                      }
-				  },
-                  toThrow(){
-                      try{
-                          a()
-                      }catch(e){
-                          console.log(e,"catch")
-                      }
-                  }
-              };
-		 };
+    var container = document.getElementById('root');
+    var div = container;
+    if (!window.ReactDOM) {
+        window.ReactDOM = React;
+    }
+	   
 
-
-class Child extends React.Component {
+    class A  extends React.Component {
       constructor(props) {
         super(props);
+        this.state = {
+            a: "A组件"
+        }
+      }
+      onChange(e){
+          this.setState({
+              a: e.target.value
+          })
+          store.dispatch({
+              type: "a",
+              value: e.target.value
+          })
       }
       render() {
        // ReactNoop.yield(this.props.value);
-        return null;
+        return <p><input value={this.state.a} onChange={this.onChange.bind(this)}/>
+            <b>{this.state.a}</b>
+            </p>
       }
     }
-
-    function Wrapper(props) {
-      return <Child {...props} ref={props.forwardedRef} />;
+// http://www.redux.org.cn/docs/introduction/Ecosystem.html
+    class B extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+            b: "B组件"
+        }
+      }
+      render() {
+        return <p>{this.state.b}</p>
+      }
     }
-
-    const RefForwardingComponent = React.forwardRef((props, ref) => (
-      <Wrapper {...props} forwardedRef={ref} />
-    ));
-
-    let setRefCount = 0;
-    let ref;
-
-    const setRef = r => {
-      setRefCount++;
-      console.log("=====")
-      ref = r;
-    };
-
-    ReactDOM.render(<RefForwardingComponent ref={setRef} value={123} />,container);
-    ReactDOM.render(<RefForwardingComponent ref={setRef} value={345} />,container);
-console.log(setRefCount)
+    ReactDOM.render(<div><A /><B /></div>,container);
     </script>
 
 
