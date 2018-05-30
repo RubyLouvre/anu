@@ -76,7 +76,7 @@ function wrapCb(fn, carrier) {
 }
 
 function performWork(deadline) {
-    //执行当前的所有任务，更新虚拟DOM与真实环境
+    //更新虚拟DOM与真实环境
     workLoop(deadline);
     //如果更新过程中产生新的任务（setState与gDSFP），它们会放到每棵树的microtasks
     //我们需要再做一次收集，不为空时，递归调用
@@ -100,18 +100,19 @@ function performWork(deadline) {
     }
 }
 
-let ricObj = {
+let ENOUGH_TIME = 1;
+let deadline = {
+    didTimeout: false,
     timeRemaining() {
         return 2;
     },
 };
-let ENOUGH_TIME = 1;
 
 function requestIdleCallback(fn) {
-    fn(ricObj);
+    fn(deadline);
 }
 Renderer.scheduleWork = function() {
-    performWork(ricObj);
+    performWork(deadline);
 };
 
 let isBatching = false;

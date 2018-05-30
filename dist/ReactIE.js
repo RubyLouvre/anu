@@ -2636,17 +2636,18 @@ function performWork(deadline) {
         requestIdleCallback(performWork);
     }
 }
-var ricObj = {
+var ENOUGH_TIME = 1;
+var deadline = {
+    didTimeout: false,
     timeRemaining: function timeRemaining() {
         return 2;
     }
 };
-var ENOUGH_TIME = 1;
 function requestIdleCallback(fn) {
-    fn(ricObj);
+    fn(deadline);
 }
 Renderer.scheduleWork = function () {
-    performWork(ricObj);
+    performWork(deadline);
 };
 var isBatching = false;
 Renderer.batchedUpdates = function (callback, event) {
