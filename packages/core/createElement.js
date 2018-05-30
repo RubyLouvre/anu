@@ -144,7 +144,7 @@ export function isValidElement(vnode) {
 }
 
 export function createVText(text) {
-    return ReactElement("#text", 6, { children: text + "" });
+    return ReactElement("#text", 6,   text + "" );
 }
 
 function escape(key) {
@@ -168,7 +168,7 @@ function flattenCb(context, child, key, childType) {
     }
     if (childType === 3 || childType === 4) {
         if (lastText) {
-            lastText.props.children += child;
+            lastText.props += child;
             return;
         }
         lastText = child = createVText(child);

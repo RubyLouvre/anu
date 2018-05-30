@@ -65,7 +65,7 @@ export let NoopRenderer = createRenderer({
         return {
             type: fiber.type,
             props: null,
-            children: fiber.tag === 6 ? fiber.props.children : [],
+            children: fiber.tag === 6 ? fiber.props : [],
         };
     },
     insertElement(fiber) {

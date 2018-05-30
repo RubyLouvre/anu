@@ -131,7 +131,6 @@ function updateHostComponent(fiber, info) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
     }
-    const children = props && props.children;
     const parent = fiber.parent;
     if (!parent.insertPoint && fiber.hasMounted) {
         fiber.forwardFiber = parent.insertPoint = getInsertPoint(fiber);
@@ -148,9 +147,9 @@ function updateHostComponent(fiber, info) {
         if (prev) {
             fiber.children = prev.children;
         }
-        diffChildren(fiber, children);
+        diffChildren(fiber, props.children);
     } else {
-        if (!prev || prev.props.children !== children) {
+        if (!prev || prev.props !== props) {
             fiber.effectTag *= CONTENT;
         }
     }

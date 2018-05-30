@@ -7,18 +7,18 @@ import { fireDuplex } from "./duplex";
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
-    let text = props ? props.children : "";
+  //  let text = props ? props.children : "";
     switch (type) {
     case "#text":
         //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
-            node.nodeValue = text;
+            node.nodeValue = props;
             return node;
         }
-        return document.createTextNode(text);
+        return document.createTextNode(props);
     case "#comment":
-        return document.createComment(text);
+        return document.createComment(props);
 
     case "svg":
         ns = NAMESPACE.svg;
@@ -131,7 +131,7 @@ export let DOMRenderer = createRenderer({
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
     },
     updateContext(fiber) {
-        fiber.stateNode.nodeValue = fiber.props.children;
+        fiber.stateNode.nodeValue = fiber.props;
     },
 
     createElement,

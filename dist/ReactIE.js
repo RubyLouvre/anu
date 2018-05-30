@@ -276,7 +276,7 @@ function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(text) {
-    return ReactElement("#text", 6, { children: text + "" });
+    return ReactElement("#text", 6, text + "");
 }
 function escape(key) {
     var escapeRegex = /[=:]/g;
@@ -299,7 +299,7 @@ function flattenCb(context, child, key, childType) {
     }
     if (childType === 3 || childType === 4) {
         if (lastText) {
-            lastText.props.children += child;
+            lastText.props += child;
             return;
         }
         lastText = child = createVText(child);
@@ -2058,7 +2058,6 @@ function updateHostComponent(fiber, info) {
         fiber.parent = info.containerStack[0];
         fiber.stateNode = Renderer.createElement(fiber);
     }
-    var children = props && props.children;
     var parent = fiber.parent;
     if (!parent.insertPoint && fiber.hasMounted) {
         fiber.forwardFiber = parent.insertPoint = getInsertPoint(fiber);
@@ -2073,9 +2072,9 @@ function updateHostComponent(fiber, info) {
         if (prev) {
             fiber.children = prev.children;
         }
-        diffChildren(fiber, children);
+        diffChildren(fiber, props.children);
     } else {
-        if (!prev || prev.props.children !== children) {
+        if (!prev || prev.props !== props) {
             fiber.effectTag *= CONTENT;
         }
     }
@@ -2845,17 +2844,16 @@ function createElement$1(vnode) {
     var type = vnode.type,
         props = vnode.props,
         ns = vnode.ns;
-    var text = props ? props.children : "";
     switch (type) {
         case "#text":
             var node = recyclables[type].pop();
             if (node) {
-                node.nodeValue = text;
+                node.nodeValue = props;
                 return node;
             }
-            return document.createTextNode(text);
+            return document.createTextNode(props);
         case "#comment":
-            return document.createComment(text);
+            return document.createComment(props);
         case "svg":
             ns = NAMESPACE.svg;
             break;
@@ -2956,7 +2954,7 @@ var DOMRenderer = createRenderer({
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
     },
     updateContext: function updateContext(fiber) {
-        fiber.stateNode.nodeValue = fiber.props.children;
+        fiber.stateNode.nodeValue = fiber.props;
     },
     createElement: createElement$1,
     insertElement: insertElement,
