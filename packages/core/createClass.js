@@ -108,16 +108,18 @@ function newCtor(className, spec, Component) {
     return curry(Component, NOBIND, spec);
 }
 
+let window = getWindow();
+if (!window.React || !window.React.Component) {
+    throw "Please load the React first.";
+}
+window.React.createClass = createClass;
+let Component =  window.React.Component;
+
 export default function createClass(spec) {
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
-    let window = getWindow();
-    if (!window.React || !window.React.Component) {
-        throw "Please load the React first.";
-    }
-    window.React.createClass = createClass;
-    let Component =  window.React.Component;
+    
     let Constructor = newCtor(spec.displayName || "Component", spec, Component );
     let proto = inherit(Constructor, Component);
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
