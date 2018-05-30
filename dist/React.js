@@ -1992,6 +1992,65 @@ function downward(fiber) {
     }
 }
 
+function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
+    var topWork = fiber;
+    outerLoop: while (fiber) {
+        if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
+            break;
+        }
+        var occurError = void 0;
+        if (fiber.tag < 3) {
+            var keepbook = Renderer.currentOwner;
+            try {
+                updateClassComponent(fiber, info);
+            } catch (e) {
+                occurError = true;
+                pushError(fiber, fiber.errorHook, e);
+            }
+            Renderer.currentOwner = keepbook;
+            if (fiber.batching) {
+                delete fiber.updateFail;
+                delete fiber.batching;
+            }
+        } else {
+            updateHostComponent(fiber, info);
+        }
+        if (fiber.child && !fiber.updateFail && !occurError) {
+            fiber = fiber.child;
+            continue outerLoop;
+        }
+        var f = fiber;
+        while (f) {
+            var instance = f.stateNode;
+            if (f.tag > 3 || f.shiftContainer) {
+                if (f.shiftContainer) {
+                    delete f.shiftContainer;
+                    info.containerStack.shift();
+                }
+                if (instance.insertPoint) {
+                    instance.insertPoint = null;
+                }
+            } else {
+                var updater = instance && instance.updater;
+                if (f.shiftContext) {
+                    delete f.shiftContext;
+                    info.contextStack.shift();
+                }
+                if (f.hasMounted && instance[gSBU]) {
+                    updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
+                }
+            }
+            if (f === topWork) {
+                break outerLoop;
+            }
+            if (f.sibling) {
+                fiber = f.sibling;
+                continue outerLoop;
+            }
+            f = f.return;
+        }
+    }
+}
 function updateHostComponent(fiber, info) {
     var props = fiber.props,
         tag = fiber.tag,
@@ -2290,65 +2349,6 @@ function diffChildren(parentFiber, children) {
     parentFiber.lastChild = prevFiber;
     if (prevFiber) {
         prevFiber.sibling = null;
-    }
-}
-Renderer.diffChildren = diffChildren;
-function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
-    var topWork = fiber;
-    outerLoop: while (fiber) {
-        if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
-            break;
-        }
-        if (fiber.tag < 3) {
-            var keepbook = Renderer.currentOwner;
-            try {
-                updateClassComponent(fiber, info);
-            } catch (e) {
-                fiber.occurError = true;
-                pushError(fiber, fiber.errorHook, e);
-            }
-            Renderer.currentOwner = keepbook;
-            if (fiber.batching) {
-                delete fiber.updateFail;
-                delete fiber.batching;
-            }
-        } else {
-            updateHostComponent(fiber, info);
-        }
-        if (fiber.child && !fiber.updateFail && !fiber.occurError) {
-            fiber = fiber.child;
-            continue outerLoop;
-        }
-        var f = fiber;
-        while (f) {
-            var instance = f.stateNode;
-            if (f.tag > 3 || f.shiftContainer) {
-                if (f.shiftContainer) {
-                    delete f.shiftContainer;
-                    info.containerStack.shift();
-                }
-                if (instance.insertPoint) {
-                    instance.insertPoint = null;
-                }
-            } else {
-                var updater = instance && instance.updater;
-                if (f.shiftContext) {
-                    delete f.shiftContext;
-                    info.contextStack.shift();
-                }
-                if (f.hasMounted && instance[gSBU]) {
-                    updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
-                }
-            }
-            if (f === topWork) {
-                break outerLoop;
-            }
-            if (f.sibling) {
-                fiber = f.sibling;
-                continue outerLoop;
-            }
-            f = f.return;
-        }
     }
 }
 
@@ -2685,10 +2685,10 @@ function workLoop(deadline) {
         }
         reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
         updateCommitQueue(fiber);
+        resetStack(info);
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline);
         } else {
-            resetStack(info);
             commitDFS(effects);
         }
     }

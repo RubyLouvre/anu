@@ -49,67 +49,77 @@ import {
  * 为instance/fiber添加context与parent, 并压入栈
  * 使用再路过此节点时，再弹出栈
  * 它需要对updateFail的情况进行优化
- *
- * @param {Fiber} fiber
- * @param {Fiber} topWork
  */
-/*
-export function updateEffects(fiber, topWork, info) {
-    if (fiber.tag < 3) {
-        let keepbook = Renderer.currentOwner;
-        try {
-            // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
-            // getChildContext都可能 throw Exception，因此不逐一try catch
-            // 通过fiber.errorHook得知出错的方法
-            updateClassComponent(fiber, info); // unshift context
-        } catch (e) {
-            pushError(fiber, fiber.errorHook, e);
-        }
-        Renderer.currentOwner = keepbook;
-        if (fiber.batching) {
-            delete fiber.updateFail;
-            delete fiber.batching;
-        }
-    } else {
-        updateHostComponent(fiber, info); // unshift parent
-    }
-    //如果没有阻断更新，没有出错
-    if (fiber.child && !fiber.updateFail) {
-        return fiber.child;
-    }
 
-    let f = fiber;
-    while (f) {
-        let instance = f.stateNode;
-        let updater = instance && instance.updater;
-        if (f.shiftContainer) {
-            //元素节点与AnuPortal
-            delete f.shiftContainer;
-            info.containerStack.shift(); // shift parent
-        } else if (updater) {
-            if (f.shiftContext) {
-                delete f.shiftContext;
-                info.contextStack.shift(); // shift context
-            }
-            if (f.hasMounted && instance[gSBU]) {
-                updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
-            }
-        }
-        //instance为元素节点
-        if (instance.insertPoint) {
-            instance.insertPoint = null;
-        }
-
-        if (f === topWork) {
+export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
+    var topWork = fiber;
+    outerLoop: while (fiber) {
+        if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
             break;
         }
-        if (f.sibling) {
-            return f.sibling;
+        let occurError;
+        if (fiber.tag < 3) {
+            let keepbook = Renderer.currentOwner;
+            try {
+                // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
+                // getChildContext都可能 throw Exception，因此不逐一try catch
+                // 通过fiber.errorHook得知出错的方法
+                updateClassComponent(fiber, info); // unshift context
+            } catch (e) {
+                occurError = true;
+                pushError(fiber, fiber.errorHook, e);
+            }
+            Renderer.currentOwner = keepbook;
+            if (fiber.batching) {
+                delete fiber.updateFail;
+                delete fiber.batching;
+            }
+        } else {
+            updateHostComponent(fiber, info); // unshift parent
         }
-        f = f.return;
+        //如果没有阻断更新，没有出错
+        if (fiber.child && !fiber.updateFail && !occurError) {
+            fiber = fiber.child;
+            continue outerLoop;
+        }
+
+        let f = fiber;
+        while (f) {
+            let instance = f.stateNode;
+            if (f.tag > 3 || f.shiftContainer) {
+                if (f.shiftContainer) {
+                    //元素节点与AnuPortal
+                    delete f.shiftContainer;
+                    info.containerStack.shift(); // shift parent
+                }
+                //instance为元素节点
+                if (instance.insertPoint) {
+                    instance.insertPoint = null;
+                }
+            } else {
+                let updater = instance && instance.updater;
+                if (f.shiftContext) {
+                    delete f.shiftContext;
+                    info.contextStack.shift(); // shift context
+                }
+                if (f.hasMounted && instance[gSBU]) {
+                    updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
+                }
+
+            }
+
+            if (f === topWork) {
+                break outerLoop;
+            }
+            if (f.sibling) {
+                fiber = f.sibling;
+                continue outerLoop;
+            }
+            f = f.return;
+        }
     }
 }
-*/
+
 function updateHostComponent(fiber, info) {
     const {
         props,
@@ -186,7 +196,6 @@ export function updateClassComponent(fiber, info) {
         stateNode: instance,
         props
     } = fiber;
-    // 为了让它在出错时collectEffects()还可以用，因此必须放在前面
     let {
         contextStack,
         containerStack
@@ -457,75 +466,4 @@ function diffChildren(parentFiber, children) {
     }
 }
 
-Renderer.diffChildren = diffChildren;
 
-
-
-export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
-    var topWork = fiber;
-    outerLoop: while (fiber) {
-        if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
-            break;
-        }
-
-        if (fiber.tag < 3) {
-            let keepbook = Renderer.currentOwner;
-            try {
-                // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
-                // getChildContext都可能 throw Exception，因此不逐一try catch
-                // 通过fiber.errorHook得知出错的方法
-                updateClassComponent(fiber, info); // unshift context
-            } catch (e) {
-                fiber.occurError = true;
-                pushError(fiber, fiber.errorHook, e);
-            }
-            Renderer.currentOwner = keepbook;
-            if (fiber.batching) {
-                delete fiber.updateFail;
-                delete fiber.batching;
-            }
-        } else {
-            updateHostComponent(fiber, info); // unshift parent
-        }
-        //如果没有阻断更新，没有出错
-        if (fiber.child && !fiber.updateFail && !fiber.occurError) {
-            fiber = fiber.child;
-            continue outerLoop;
-        }
-
-        let f = fiber;
-        while (f) {
-            let instance = f.stateNode;
-            if (f.tag > 3 || f.shiftContainer) {
-                if (f.shiftContainer) {
-                    //元素节点与AnuPortal
-                    delete f.shiftContainer;
-                    info.containerStack.shift(); // shift parent
-                }
-                //instance为元素节点
-                if (instance.insertPoint) {
-                    instance.insertPoint = null;
-                }
-            } else {
-                let updater = instance && instance.updater;
-                if (f.shiftContext) {
-                    delete f.shiftContext;
-                    info.contextStack.shift(); // shift context
-                }
-                if (f.hasMounted && instance[gSBU]) {
-                    updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
-                }
-
-            }
-
-            if (f === topWork) {
-                break outerLoop;
-            }
-            if (f.sibling) {
-                fiber = f.sibling;
-                continue outerLoop;
-            }
-            f = f.return;
-        }
-    }
-}

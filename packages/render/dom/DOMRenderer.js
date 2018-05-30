@@ -99,16 +99,6 @@ export function removeElement(node) {
 }
 
 
-
-/**
- *  if (insertPoint == null) {
-            if (dom !== parent.firstChild) {
-                parent.insertBefore(dom, parent.firstChild);
-            }
-            return;
-        }
- * 
- */
 function insertElement(fiber) {
     let { stateNode: dom, parent } = fiber;
 

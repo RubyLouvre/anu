@@ -138,7 +138,8 @@ Renderer.batchedUpdates = function(callback, event) {
 };
 
 function workLoop(deadline) {
-    let fiber = macrotasks.shift(), info;
+    let fiber = macrotasks.shift(),
+        info;
     if (fiber) {
         if (fiber.type === Unbatch) {
             info = fiber.return;
@@ -152,11 +153,10 @@ function workLoop(deadline) {
 
         reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
         updateCommitQueue(fiber);
-
+        resetStack(info);
         if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
             workLoop(deadline); //收集任务
         } else {
-            resetStack(info);
             commitDFS(effects); //执行任务
         }
     }
