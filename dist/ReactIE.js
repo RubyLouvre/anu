@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-05-29
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-05-30
  */
 
 (function (global, factory) {
@@ -2670,12 +2670,11 @@ Renderer.batchedUpdates = function (callback, event) {
     }
 };
 function workLoop(deadline) {
-    var topWork = macrotasks.shift();
-    if (topWork) {
-        var fiber = topWork,
-            info = void 0;
-        if (topWork.type === Unbatch) {
-            info = topWork.return;
+    var fiber = macrotasks.shift(),
+        info = void 0;
+    if (fiber) {
+        if (fiber.type === Unbatch) {
+            info = fiber.return;
         } else {
             var dom = getContainer(fiber);
             info = {

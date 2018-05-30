@@ -138,13 +138,10 @@ Renderer.batchedUpdates = function(callback, event) {
 };
 
 function workLoop(deadline) {
-
-    let topWork = macrotasks.shift();
-    if (topWork) {
-        let fiber = topWork,
-            info;
-        if (topWork.type === Unbatch) {
-            info = topWork.return;
+    let fiber = macrotasks.shift(), info;
+    if (fiber) {
+        if (fiber.type === Unbatch) {
+            info = fiber.return;
         } else {
             let dom = getContainer(fiber);
             info = {
