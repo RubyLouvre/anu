@@ -108,12 +108,13 @@ function newCtor(className, spec, Component) {
     return curry(Component, NOBIND, spec);
 }
 
-let window = getWindow();
-if (!window.React || !window.React.Component) {
+var win = getWindow();
+if (!win.React || !win.React.Component) {
     throw "Please load the React first.";
 }
-window.React.createClass = createClass;
-let Component =  window.React.Component;
+
+win.React.createClass = createClass;
+var Component = win.React.Component;
 
 export default function createClass(spec) {
     if (!isFn(spec.render)) {
