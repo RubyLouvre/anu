@@ -2045,6 +2045,7 @@ function updateHostComponent(fiber, info) {
     }
     parent.insertPoint = fiber;
     if (tag === 5) {
+        fiber.stateNode.insertPoint = null;
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;

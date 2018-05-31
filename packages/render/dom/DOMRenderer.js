@@ -7,7 +7,6 @@ import { fireDuplex } from "./duplex";
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
-  //  let text = props ? props.children : "";
     switch (type) {
     case "#text":
         //只重复利用文本节点

@@ -137,10 +137,11 @@ function updateHostComponent(fiber, info) {
     } else {
         fiber.forwardFiber = parent.insertPoint;
     }
-    parent.insertPoint = fiber;
 
+    parent.insertPoint = fiber;
     if (tag === 5) {
         // 元素节点
+        fiber.stateNode.insertPoint = null;
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
