@@ -71,6 +71,7 @@ Renderer.middleware({
     begin: noop,
     end: fireDuplex
 });
+
 export function removeElement(node) {
     if (!node) {
         return;
