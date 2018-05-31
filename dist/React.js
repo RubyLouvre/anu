@@ -728,6 +728,7 @@ var NAMESPACE = {
     svg: "http://www.w3.org/2000/svg",
     xmlns: "http://www.w3.org/2000/xmlns/",
     xlink: "http://www.w3.org/1999/xlink",
+    xhtml: "http://www.w3.org/1999/xhtml",
     math: "http://www.w3.org/1998/Math/MathML"
 };
 var fn$1 = DOMElement.prototype = {
@@ -2049,9 +2050,6 @@ function updateHostComponent(fiber, info) {
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
-        if (prev) {
-            fiber.children = prev.children;
-        }
         diffChildren(fiber, props.children);
     } else {
         if (!prev || prev.props !== props) {
@@ -2283,10 +2281,11 @@ function diffChildren(parentFiber, children) {
         var _oldFiber = matchFibers[_i];
         var alternate = null;
         if (_oldFiber) {
-            if (isSameNode(_oldFiber, _newFiber) && !_oldFiber.disposed) {
+            if (isSameNode(_oldFiber, _newFiber)) {
                 alternate = new Fiber(_oldFiber);
                 var oldRef = _oldFiber.ref;
                 _newFiber = extend(_oldFiber, _newFiber);
+                delete _newFiber.disposed;
                 _newFiber.alternate = alternate;
                 if (_newFiber.ref && _newFiber.deleteRef) {
                     delete _newFiber.ref;
@@ -2858,14 +2857,13 @@ function createElement$1(vnode) {
             vnode.namespaceURI = ns;
             return document.createElementNS(ns, type);
         }
-    } catch (e) {}
+    } catch (e1) {        }
     var elem = document.createElement(type);
     var inputType = props && props.type;
     if (inputType) {
         try {
             elem = document.createElement("<" + type + " type='" + inputType + "'/>");
-        } catch (err) {
-        }
+        } catch (e2) {        }
     }
     return elem;
 }

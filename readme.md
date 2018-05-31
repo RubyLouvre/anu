@@ -22,7 +22,7 @@ QQ交流学习群：  370262116
 1. 支持React16的各种**新功能**，Fragment, componentDidCatch, creactContext, createRef, forwardRef...
 2. 体积非常迷你(3000行相对于react+react-dom的3万行, gz为其1/3大小)
 3. 跑通**官方700多个单元测试**（其他迷你库都无法跑官方测试）
-4. 支持**React全家桶**（react-redux, react-router-dom, react-router-redux）
+4. 支持**React全家桶**（react-redux, react-router-dom, react-router-redux， react-lazy-load， react-hot-loader...）
 5. 支持99％的antd组件
 
 ### 官方脚手架 

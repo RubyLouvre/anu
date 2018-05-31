@@ -46,15 +46,13 @@ export function createElement(vnode) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-    } catch (e) { }
+    } catch (e1) { /*skip*/ }
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
         try {
             elem = document.createElement("<" + type + " type='" + inputType + "'/>");
-        } catch (err) {
-            //xxx
-        }
+        } catch (e2) {/*skip*/ }
     }
     return elem;
 }
@@ -115,7 +113,6 @@ function insertElement(fiber) {
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
-
         throw e;
     }
 

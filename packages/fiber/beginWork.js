@@ -145,9 +145,6 @@ function updateHostComponent(fiber, info) {
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
-        if (prev) {
-            fiber.children = prev.children;
-        }
         diffChildren(fiber, props.children);
     } else {
         if (!prev || prev.props !== props) {
@@ -352,6 +349,7 @@ function cloneChildren(fiber) {
     const prev = fiber.alternate;
     if (prev && prev.child) {
         let pc = prev.children;
+
         let cc = (fiber.children = {});
         fiber.child = prev.child;
         fiber.lastChild = prev.lastChild;
@@ -393,7 +391,6 @@ function diffChildren(parentFiber, children) {
     } else {
         oldFibers = {};
     }
-
     let newFibers = fiberizeChildren(children, parentFiber); // 新的
     let effects = parentFiber.effects || (parentFiber.effects = []);
     let matchFibers = {};
@@ -418,10 +415,11 @@ function diffChildren(parentFiber, children) {
         let oldFiber = matchFibers[i];
         let alternate = null;
         if (oldFiber) {
-            if (isSameNode(oldFiber, newFiber) && !oldFiber.disposed) {
+            if (isSameNode(oldFiber, newFiber)) {//&& !oldFiber.disposed
                 alternate = new Fiber(oldFiber);
                 let oldRef = oldFiber.ref;
                 newFiber = extend(oldFiber, newFiber);
+                delete newFiber.disposed;
                 newFiber.alternate = alternate;
                 if (newFiber.ref && newFiber.deleteRef) {
                     delete newFiber.ref;
