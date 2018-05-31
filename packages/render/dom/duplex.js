@@ -26,7 +26,7 @@ export var duplexMap = {
         mount(node, props, state) {
             if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
                 let stateValue = "" + state.initialValue;
-                if (node.value === "") {
+                if (node.value === "" && node.value !== stateValue) {
                     syncValue(node, "value", stateValue);
                 }
                 node.defaultValue = stateValue;
