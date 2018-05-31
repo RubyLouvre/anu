@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-30
+ * by 司徒正美 Copyright 2018-05-31
  * IE9+
  */
 
@@ -753,28 +753,6 @@ if (!inBrowser) {
     win$1.document = fakeDoc;
 }
 var document = win$1.document;
-var duplexMap = {
-    color: 1,
-    date: 1,
-    datetime: 1,
-    "datetime-local": 1,
-    email: 1,
-    month: 1,
-    number: 1,
-    password: 1,
-    range: 1,
-    search: 1,
-    tel: 1,
-    text: 1,
-    time: 1,
-    url: 1,
-    week: 1,
-    textarea: 1,
-    checkbox: 2,
-    radio: 2,
-    "select-one": 3,
-    "select-multiple": 3
-};
 var versions = {
     88: 7,
     80: 6,
@@ -851,7 +829,7 @@ function getSafeValue(value) {
             return "";
     }
 }
-var duplexMap$1 = {
+var duplexMap = {
     input: {
         init: function init(node, props) {
             var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
@@ -980,7 +958,7 @@ var duplexMap$1 = {
     option: {
         init: function init() {},
         update: function update(node, props) {
-            duplexMap$1.option.mount(node, props);
+            duplexMap.option.mount(node, props);
         },
         mount: function mount(node, props) {
             if (node.text !== node.textContent.trim()) {
@@ -1048,7 +1026,7 @@ function syncValue(dom, name, value) {
 }
 function duplexAction(dom, fiber, nextProps, lastProps) {
     var tag = fiber.name,
-        fns = duplexMap$1[tag];
+        fns = duplexMap[tag];
     if (tag !== "option") {
         enqueueDuplex(dom);
     }
@@ -1081,7 +1059,7 @@ function fireDuplex() {
                         updateOptions(dom, !!props.multiple, value, false);
                     }
                 } else {
-                    duplexMap$1[tag].update(dom, props);
+                    duplexMap[tag].update(dom, props);
                     var _name = props.name;
                     if (props.type === "radio" && _name != null && !radioMap[_name]) {
                         radioMap[_name] = 1;
@@ -1619,7 +1597,7 @@ var actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function autoFocus(dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+        if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
             dom.focus();
         }
     },

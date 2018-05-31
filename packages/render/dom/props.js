@@ -1,4 +1,4 @@
-import { NAMESPACE, duplexMap } from "./browser";
+import { NAMESPACE } from "./browser";
 import { patchStyle } from "./style";
 import { eventAction, rform } from "./event";
 import { typeNumber, emptyObject, noop } from "react-core/util";
@@ -223,7 +223,7 @@ export let actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function (dom) {
-        if (duplexMap[dom.type] < 3 || dom.contentEditable === "true") {
+        if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
             dom.focus();
         }
     },

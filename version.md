@@ -1,13 +1,16 @@
-## 1.4
+## 1.4.1(2018.04.31)
+1. 文本节点的内容直接用fiber.props代替
+
+## 1.4.0(2018.04.30)
 1. 测试全部改成jest
 2. cWU钩子在调用时必须移除
 3. 批量更新时，每个组件只能更新一次
-4. 重构整个受控组件，它们会延后在batchedUpdate中执行，跑通所有测试
+4. 重构受控组件，它们会延后在batchedUpdate中执行，跑通所有测试
 5. emptyElement不再递归移除，但会递归清空附于元素节点上的数据，以防内存泄露
 6. 将createClass移出核心库
-7. 重构错误边界，去掉根节点上的capturedValues， 本节点上的catchBoundary， capturedCount，而是使用全局的boundaries
-8. 重构contextStack，保证setStack后，从当前组件的unmaskedContext中还原之前的栈
-9. batchedUpdates时支持洋葱结构
+7. 重构错误边界，边界组件带有capturedValues，catchError, caughtError标识，并放进全局的boundaries
+8. 重构contextStack，保证setState后，从当前组件的unmaskedContext中还原之前的栈
+
 
 ## 1.3.2(2018.04.16)
 处理移动端下中文输入法的onChange事件BUG
