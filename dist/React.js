@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-05-31
+ * by 司徒正美 Copyright 2018-06-03
  * IE9+
  */
 
@@ -2390,34 +2390,23 @@ function commitDFSImpl(fiber) {
         if (fiber.child) {
             fiber = fiber.child;
             continue;
-        } else {
-            if (fiber.effectTag > 1) {
-                commitEffects(fiber);
-                if (fiber.capturedValues) {
-                    fiber.effectTag = CAPTURE;
-                }
-            }
         }
-        if (fiber.sibling) {
-            fiber = fiber.sibling;
-            continue;
-        } else {
-            while (fiber.return) {
-                fiber = fiber.return;
-                if (fiber.effectTag > 1) {
-                    commitEffects(fiber);
-                    if (fiber.capturedValues) {
-                        fiber.effectTag = CAPTURE;
-                    }
-                }
-                if (fiber === topFiber || fiber.hostRoot) {
-                    break outerLoop;
-                }
-                if (fiber.sibling) {
-                    fiber = fiber.sibling;
-                    continue outerLoop;
+        var f = fiber;
+        while (f) {
+            if (f.effectTag > 1) {
+                commitEffects(f);
+                if (f.capturedValues) {
+                    f.effectTag = CAPTURE;
                 }
             }
+            if (f === topFiber || f.hostRoot) {
+                break outerLoop;
+            }
+            if (f.sibling) {
+                fiber = f.sibling;
+                continue outerLoop;
+            }
+            f = f.return;
         }
     }
 }
@@ -2450,10 +2439,6 @@ function commitEffects(fiber) {
         if (amount % effectNo === 0) {
             amount /= effectNo;
             switch (effectNo) {
-                case PLACE:
-                    Renderer.insertElement(fiber);
-                    fiber.hasMounted = true;
-                    break;
                 case CONTENT:
                     Renderer.updateContext(fiber);
                     break;
