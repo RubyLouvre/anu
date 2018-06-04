@@ -1,6 +1,6 @@
 {
   "name": "anujs",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
@@ -10,7 +10,6 @@
     "webpack": "^1.14.0",
     "sync": "node ./scripts/build/sync.js",
     "sync2": "node ./scripts/build/shim.script.js"
-
   },
   "repository": {
     "type": "git",
