@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-06-03
+ * by 司徒正美 Copyright 2018-06-04
  * IE9+
  */
 
@@ -1237,13 +1237,32 @@ String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
         }
     };
 });
-var input2change = /text|password|search/i;
+var specialHandles = {};
+function createHandle(name, fn) {
+    return specialHandles[name] = function (e) {
+        if (fn && fn(e) === false) {
+            return;
+        }
+        dispatchEvent(e, name);
+    };
+}
+function onCompositionStart(e) {
+    e.target.__onComposition = true;
+}
+function onCompositionEnd(e) {
+    e.target.__onComposition = false;
+}
+var input2change = /text|password|search|url|email/i;
 if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
+    addEvent(document, "compositionstart", onCompositionStart);
+    addEvent(document, "compositionend", onCompositionEnd);
     addEvent(document, "input", function (e) {
         var dom = getTarget(e);
         if (input2change.test(dom.type)) {
-            dispatchEvent(e, "change");
+            if (!dom.__onComposition) {
+                dispatchEvent(e, "change");
+            }
         }
         dispatchEvent(e);
     });
@@ -1274,15 +1293,6 @@ function getLowestCommonAncestor(instA, instB) {
         instB = instB.parentNode;
     }
     return null;
-}
-var specialHandles = {};
-function createHandle(name, fn) {
-    return specialHandles[name] = function (e) {
-        if (fn && fn(e) === false) {
-            return;
-        }
-        dispatchEvent(e, name);
-    };
 }
 eventPropHooks.change = function (e) {
     enqueueDuplex(e.target);
@@ -2485,7 +2495,7 @@ function commitEffects(fiber) {
             }
         }
     }
-    fiber.effectTag = 1;
+    fiber.effectTag = NOWORK;
 }
 function disposeFibers(fiber) {
     var list = [fiber.oldChildren, fiber.children],
