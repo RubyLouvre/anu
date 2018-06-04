@@ -1,7 +1,12 @@
-## 1.4.1(2018.04.31)
+## 1.4.1(2018.06.4)
 1. 文本节点的内容直接用fiber.props代替
+2. 修正input的拼音输入法BUG
+3. 修正updateHostComponent中覆盖children对象的BUG
+4. 修正createClass BUG
+5. 修正SSR的BUG
+6. 简化commitDFS循环
 
-## 1.4.0(2018.04.30)
+## 1.4.0(2018.05.30)
 1. 测试全部改成jest
 2. cWU钩子在调用时必须移除
 3. 批量更新时，每个组件只能更新一次
