@@ -1,4 +1,4 @@
-## 1.4.1(2018.06.4)
+## 1.4.1(2018.06.04)
 1. 文本节点的内容直接用fiber.props代替
 2. 修正input的拼音输入法BUG
 3. 修正updateHostComponent中覆盖children对象的BUG
