@@ -78,7 +78,6 @@ export var duplexMap = {
                 wasMultiple: !!props.multiple
             };
         },
-        //select
         mount(node, props) {
             node.multiple = !!props.multiple;
             var value = props.value;
@@ -130,7 +129,6 @@ export var duplexMap = {
                 initialValue: "" + initialValue
             };
         },
-        //textarea
         mount(node, props, state) {
             var textContent = node.textContent;
             var stateValue = "" + state.initialValue;
