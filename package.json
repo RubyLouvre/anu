@@ -9,8 +9,8 @@
     "devtools": "rollup -c ./scripts/build/rollup.tools.js",
     "webpack": "^1.14.0",
     "sync": "node ./scripts/build/sync.js",
-    "sync2": "node ./scripts/build/shim.script.js"
-
+    "sync2": "node ./scripts/build/shim.script.js",
+    "commit": "git cz"
   },
   "repository": {
     "type": "git",
@@ -98,5 +98,14 @@
     "subjectPattern": ".+",
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
+  },
+  "dependencies": {
+    "commitizen": "^2.10.1",
+    "cz-customizable": "^5.2.0"
   }
 }
