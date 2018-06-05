@@ -19,6 +19,10 @@ var gDSFP = "getDerivedStateFromProps";
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
+var devTool = {
+    onCommitRoot: noop,
+    onCommitUnmount: noop
+};
 function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);
@@ -2344,6 +2348,17 @@ function diffChildren(parentFiber, children) {
     }
 }
 
+function Unbatch(props, context) {
+    Component.call(this, props, context);
+    this.state = {
+        child: props.child
+    };
+}
+var fn$2 = inherit(Unbatch, Component);
+fn$2.render = function () {
+    return this.state.child;
+};
+
 function getDOMNode() {
     return this;
 }
@@ -2426,6 +2441,7 @@ function commitDFSImpl(fiber) {
             f = f.return;
         }
     }
+    devTool.onCommitRoot(topFiber);
 }
 function commitDFS(effects$$1) {
     Renderer.batchedUpdates(function () {
@@ -2531,6 +2547,7 @@ function disposeFiber(fiber, force) {
     if (!stateNode) {
         return;
     }
+    devTool.onCommitUnmount(fiber);
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
@@ -2549,17 +2566,6 @@ function disposeFiber(fiber, force) {
     }
     fiber.effectTag = NOWORK;
 }
-
-function Unbatch(props, context) {
-    Component.call(this, props, context);
-    this.state = {
-        child: props.child
-    };
-}
-var fn$2 = inherit(Unbatch, Component);
-fn$2.render = function () {
-    return this.state.child;
-};
 
 var macrotasks = Renderer.macrotasks;
 var boundaries = Renderer.boundaries;
@@ -2935,6 +2941,8 @@ var DOMRenderer = createRenderer({
     },
     updateContext: function updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props;
+    },
+    injectIntoDevTools: function injectIntoDevTools(devToolsConfig) {
     },
     createElement: createElement$1,
     insertElement: insertElement,

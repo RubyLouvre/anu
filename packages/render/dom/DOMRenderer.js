@@ -120,12 +120,7 @@ function insertElement(fiber) {
 
 }
 
-
-
-
-
-
-
+/*
 function injectInternals(internals) {
     var hook = getWindow().__REACT_DEVTOOLS_GLOBAL_HOOK__;
     if (!hook || !hook.inject || hook.isDisabled || !hook.supportsFiber) {
@@ -136,18 +131,19 @@ function injectInternals(internals) {
         var rendererID = hook.inject(internals);
         devTool.onCommitRoot = function (fiber) {
             try{
-                fiber.current = fiber;
-                return hook.onCommitFiberRoot(rendererID, fiber);
-            }catch(e){ /*skip*/}
+                var root = fiber.stateNode;
+                root.current = fiber;
+                return hook.onCommitFiberRoot(rendererID, root);
+            }catch(e){ }
         };
         devTool.onCommitUnmount = function (fiber) {
             try{
                 return hook.onCommitFiberUnmount(rendererID, fiber);
-            }catch(e){ /*skip*/}
+            }catch(e){ }
         };
-    } catch (err) {/*skip*/ }
+    } catch (err) { }
     return true;
-}
+}*/
   
 
 //其他Renderer也要实现这些方法
@@ -162,7 +158,7 @@ export let DOMRenderer = createRenderer({
         fiber.stateNode.nodeValue = fiber.props;
     },
     injectIntoDevTools(devToolsConfig) {
-        return injectInternals(extend({}, devToolsConfig));
+       // return injectInternals(devToolsConfig);
     },
     createElement,
     insertElement,
