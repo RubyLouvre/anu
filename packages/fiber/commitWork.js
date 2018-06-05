@@ -1,6 +1,7 @@
 import {
     emptyObject,
-    returnFalse
+    returnFalse,
+    devTool
 } from "react-core/util";
 import {
     NOWORK,
@@ -17,6 +18,9 @@ import {
     effectNames,
 
 } from "./effectTag";
+import {
+    Unbatch
+} from "./unbatch";
 import {
     guardCallback,
     removeFormBoundaries
@@ -89,6 +93,7 @@ function commitDFSImpl(fiber) {
             f = f.return;
         }
     }
+    devTool.onCommitRoot(topFiber );
 }
 export function commitDFS(effects) {
 
@@ -219,6 +224,7 @@ function disposeFiber(fiber, force) {
     if (!stateNode) {
         return;
     }
+    devTool.onCommitUnmount(fiber);
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }

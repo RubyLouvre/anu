@@ -12,6 +12,10 @@ export let hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
 export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 export let effects = [];
+export let devTool = {
+    onCommitRoot: noop,
+    onCommitUnmount: noop
+};
 export function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);

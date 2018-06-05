@@ -1,9 +1,10 @@
 import { diffProps } from "./props";
 import { document, NAMESPACE } from "./browser";
-import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/util";
+import { get, getWindow, noop, extend, emptyObject, topNodes, topFibers, devTool } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
 import { fireDuplex } from "./duplex";
+
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
@@ -119,6 +120,36 @@ function insertElement(fiber) {
 
 }
 
+
+
+
+
+
+
+function injectInternals(internals) {
+    var hook = getWindow().__REACT_DEVTOOLS_GLOBAL_HOOK__;
+    if (!hook || !hook.inject || hook.isDisabled || !hook.supportsFiber) {
+        // DevTools exists, even though it doesn't support Fiber.
+        return true;
+    }
+    try {
+        var rendererID = hook.inject(internals);
+        devTool.onCommitRoot = function (fiber) {
+            try{
+                fiber.current = fiber;
+                return hook.onCommitFiberRoot(rendererID, fiber);
+            }catch(e){ /*skip*/}
+        };
+        devTool.onCommitUnmount = function (fiber) {
+            try{
+                return hook.onCommitFiberUnmount(rendererID, fiber);
+            }catch(e){ /*skip*/}
+        };
+    } catch (err) {/*skip*/ }
+    return true;
+}
+  
+
 //其他Renderer也要实现这些方法
 render.Render = Renderer;
 export let DOMRenderer = createRenderer({
@@ -130,7 +161,9 @@ export let DOMRenderer = createRenderer({
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props;
     },
-
+    injectIntoDevTools(devToolsConfig) {
+        return injectInternals(extend({}, devToolsConfig));
+    },
     createElement,
     insertElement,
     emptyElement(fiber) {
