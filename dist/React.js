@@ -2324,7 +2324,6 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(_oldFiber, effects$$1);
             }
-            _newFiber.effectTag = NOWORK;
         } else {
             _newFiber = new Fiber(_newFiber);
         }
@@ -2475,6 +2474,7 @@ function commitEffects(fiber) {
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
+                        fiber.effectTag = amount;
                         return;
                     }
                     break;

@@ -445,7 +445,7 @@ function diffChildren(parentFiber, children) {
             } else {
                 detachFiber(oldFiber, effects);
             }
-            newFiber.effectTag = NOWORK;
+            // newFiber.effectTag = NOWORK;
         } else {
             newFiber = new Fiber(newFiber);
         }

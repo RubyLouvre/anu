@@ -153,14 +153,12 @@ export function commitEffects(fiber) {
                 delete fiber._hydrating;
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
                 if (fiber.catchError) {
-                    //   fiber.effectTag = amount;
+                    fiber.effectTag = amount;
                     return;
                 }
                 break;
             case REF:
-                // if (!instance.__isStateless) {
                 Refs.fireRef(fiber, instance);
-                //  }
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
