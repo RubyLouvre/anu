@@ -30,7 +30,8 @@ import {
     REF,
     NULLREF,
     CALLBACK,
-    NOWORK
+    NOWORK,
+    WORKING
 } from "./effectTag";
 import {
     guardCallback,
@@ -139,12 +140,16 @@ function updateHostComponent(fiber, info) {
     }
 
     parent.insertPoint = fiber;
+    fiber.effectTag = PLACE;
     if (tag === 5) {
         // 元素节点
         fiber.stateNode.insertPoint = null;
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
+        if (fiber.ref) {
+            fiber.effectTag *= REF;
+        }
         diffChildren(fiber, props.children);
     } else {
         if (!prev || prev.props !== props) {
@@ -228,6 +233,9 @@ export function updateClassComponent(fiber, info) {
             fiber.pendingCbs = cbs;
             fiber.effectTag *= CALLBACK;
         }
+        if (fiber.ref) {
+            fiber.effectTag *= REF;
+        }
     } else if (type === AnuPortal) {
         //无狀态组件中的传送门组件
         containerStack.unshift(fiber.parent);
@@ -253,6 +261,8 @@ export function updateClassComponent(fiber, info) {
             return;
         }
         fiber.effectTag *= HOOK;
+    }else{
+        fiber.effectTag = WORKING;
     }
 
     if (fiber.catchError) {
@@ -440,12 +450,6 @@ function diffChildren(parentFiber, children) {
             newFiber = new Fiber(newFiber);
         }
         newFibers[i] = newFiber;
-        if (newFiber.tag > 3) {
-            newFiber.effectTag *= PLACE;
-        }
-        if (newFiber.ref) {
-            newFiber.effectTag *= REF;
-        }
         newFiber.index = index++;
         newFiber.return = parentFiber;
 

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width">
   <script type='text/javascript' src="./dist/React.js"></script>
   <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
-   <!-- <script type='text/javascript' src="./react.js"></script>
+ <!--<script type='text/javascript' src="./react.js"></script>
       <script type='text/javascript' src="./react-dom.js"></script>-->
   <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
   <script type='text/javascript' src="./lib/babel.js"></script>
@@ -65,18 +65,47 @@ check.isRequired = check;
               };
          }; 
 // const container = document.createElement('container');
+var o 
+class Outer extends React.Component {
+    state = {
+        xxx: 111
+    }
+  
+    render() {
+      o = this
+      return <div>{this.state.xxx}<Middle><Inner /></Middle></div>;
+    }
 
-   const log = [];
-
+}
+class Middle extends React.Component {
+    shouldComponentUpdate(){
+        return false
+    }
+    render() {
+      return this.props.children
+    }
+}
+var i 
 class Inner extends React.Component {
+  state = {
+      yyy: 222
+  }
   render() {
-   
-    return <div />;
+    i = this
+    return <div>{this.state.yyy}</div>;
   }
 
 }
 
-ReactDOM.render(<h1><Inner /></h1>, container);
+ReactDOM.render(<h1><Outer /></h1>, container);
+ReactDOM.unstable_batchedUpdates(function(){
+    o.setState({
+        xxx: 333
+    })
+    i.setState({
+        yyy: 444
+    })
+})
 
     </script>
 

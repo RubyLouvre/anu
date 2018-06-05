@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-06-04
+ * by 司徒正美 Copyright 2018-06-05
  * IE9+
  */
 
@@ -1765,15 +1765,16 @@ function Fiber(vnode) {
 }
 
 var NOWORK = 1;
-var PLACE = 2;
-var CONTENT = 3;
-var ATTR = 5;
-var NULLREF = 7;
-var DETACH = 11;
-var HOOK = 13;
-var REF = 17;
-var CALLBACK = 19;
-var CAPTURE = 23;
+var WORKING = 2;
+var PLACE = 3;
+var CONTENT = 5;
+var ATTR = 7;
+var NULLREF = 11;
+var DETACH = 13;
+var HOOK = 17;
+var REF = 19;
+var CALLBACK = 23;
+var CAPTURE = 29;
 var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
@@ -1937,6 +1938,9 @@ function setInsertPoints(children) {
             child.effectTag = PLACE;
             child.forwardFiber = p.insertPoint;
             p.insertPoint = child;
+            for (var pp = child.return; pp && pp.effectTag === NOWORK; pp = pp.return) {
+                pp.effectTag = WORKING;
+            }
         } else {
             if (child.child) {
                 setInsertPoints(child.children);
@@ -2055,11 +2059,15 @@ function updateHostComponent(fiber, info) {
         fiber.forwardFiber = parent.insertPoint;
     }
     parent.insertPoint = fiber;
+    fiber.effectTag = PLACE;
     if (tag === 5) {
         fiber.stateNode.insertPoint = null;
         info.containerStack.unshift(fiber.stateNode);
         fiber.shiftContainer = true;
         fiber.effectTag *= ATTR;
+        if (fiber.ref) {
+            fiber.effectTag *= REF;
+        }
         diffChildren(fiber, props.children);
     } else {
         if (!prev || prev.props !== props) {
@@ -2132,6 +2140,9 @@ function updateClassComponent(fiber, info) {
             fiber.pendingCbs = cbs;
             fiber.effectTag *= CALLBACK;
         }
+        if (fiber.ref) {
+            fiber.effectTag *= REF;
+        }
     } else if (type === AnuPortal) {
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
@@ -2153,6 +2164,8 @@ function updateClassComponent(fiber, info) {
             return;
         }
         fiber.effectTag *= HOOK;
+    } else {
+        fiber.effectTag = WORKING;
     }
     if (fiber.catchError) {
         return;
@@ -2316,12 +2329,6 @@ function diffChildren(parentFiber, children) {
             _newFiber = new Fiber(_newFiber);
         }
         newFibers[_i] = _newFiber;
-        if (_newFiber.tag > 3) {
-            _newFiber.effectTag *= PLACE;
-        }
-        if (_newFiber.ref) {
-            _newFiber.effectTag *= REF;
-        }
         _newFiber.index = index++;
         _newFiber.return = parentFiber;
         if (prevFiber) {
@@ -2397,13 +2404,15 @@ function commitDFSImpl(fiber) {
         if (fiber.updateFail) {
             delete fiber.updateFail;
         }
-        if (fiber.child) {
+        if (fiber.child && fiber.child.effectTag > NOWORK) {
             fiber = fiber.child;
             continue;
         }
         var f = fiber;
         while (f) {
-            if (f.effectTag > 1) {
+            if (f.effectTag === WORKING) {
+                f.effectTag = NOWORK;
+            } else if (f.effectTag > WORKING) {
                 commitEffects(f);
                 if (f.capturedValues) {
                     f.effectTag = CAPTURE;
@@ -2449,6 +2458,8 @@ function commitEffects(fiber) {
         if (amount % effectNo === 0) {
             amount /= effectNo;
             switch (effectNo) {
+                case WORKING:
+                    break;
                 case CONTENT:
                     Renderer.updateContext(fiber);
                     break;
@@ -2468,9 +2479,7 @@ function commitEffects(fiber) {
                     }
                     break;
                 case REF:
-                    if (!instance.__isStateless) {
-                        Refs.fireRef(fiber, instance);
-                    }
+                    Refs.fireRef(fiber, instance);
                     break;
                 case CALLBACK:
                     var queue = fiber.pendingCbs;
@@ -2537,7 +2546,6 @@ function disposeFiber(fiber, force) {
         }
         delete fiber.alternate;
         delete fiber.hasMounted;
-        delete fiber.stateNode;
         fiber.disposed = true;
     }
     fiber.effectTag = NOWORK;

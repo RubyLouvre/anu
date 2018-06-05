@@ -40,7 +40,6 @@ export function render(vnode, root, callback) {
             type: Unbatch,
             tag: 2,
             props: {},
-
             hasMounted: true,
             memoizedState: {},
             return: container,

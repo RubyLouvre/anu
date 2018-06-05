@@ -3,10 +3,11 @@ import {
     returnFalse
 } from "react-core/util";
 import {
+    NOWORK,
+    WORKING,
     PLACE,
     CONTENT,
     ATTR, //UPDATE
-    NOWORK,
     DETACH, //DELETION
     HOOK,
     REF,
@@ -14,6 +15,7 @@ import {
     CAPTURE,
     effectLength,
     effectNames,
+
 } from "./effectTag";
 import {
     guardCallback,
@@ -60,19 +62,23 @@ function commitDFSImpl(fiber) {
         if (fiber.updateFail) {
             delete fiber.updateFail;
         }
-        if (fiber.child) {
+        if (fiber.child && fiber.child.effectTag > NOWORK) {
             fiber = fiber.child;
             continue;
         }
 
+
         let f = fiber;
         while (f) {
-            if (f.effectTag > 1) {
+            if (f.effectTag === WORKING) {
+                f.effectTag = NOWORK;
+            } else if (f.effectTag > WORKING) {
                 commitEffects(f);
                 if (f.capturedValues) {
                     f.effectTag = CAPTURE;
                 }
             }
+
             if (f === topFiber || f.hostRoot) {
                 break outerLoop;
             }
@@ -86,7 +92,7 @@ function commitDFSImpl(fiber) {
 }
 export function commitDFS(effects) {
 
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         var el;
         while (el = effects.shift()) {
             //处理retry组件
@@ -125,6 +131,8 @@ export function commitEffects(fiber) {
             amount /= effectNo;
             //如果能整除
             switch (effectNo) {
+            case WORKING:
+                break;
             case CONTENT:
                 Renderer.updateContext(fiber);
                 break;
@@ -145,19 +153,20 @@ export function commitEffects(fiber) {
                 delete fiber._hydrating;
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
                 if (fiber.catchError) {
+                    //   fiber.effectTag = amount;
                     return;
                 }
                 break;
             case REF:
-                if (!instance.__isStateless) {
-                    Refs.fireRef(fiber, instance);
-                }
+                // if (!instance.__isStateless) {
+                Refs.fireRef(fiber, instance);
+                //  }
                 break;
             case CALLBACK:
                 //ReactDOM.render/forceUpdate/setState callback
                 var queue = fiber.pendingCbs;
                 fiber._hydrating = true; //setState回调里再执行setState
-                queue.forEach(function(fn) {
+                queue.forEach(function (fn) {
                     fn.call(instance);
                 });
                 delete fiber._hydrating;
@@ -192,7 +201,6 @@ export function disposeFibers(fiber) {
             for (let i in c) {
                 let child = c[i];
                 if (!child.disposed && child.hasMounted) {
-
                     disposeFiber(child, true);
                     disposeFibers(child);
                 }
@@ -227,7 +235,7 @@ function disposeFiber(fiber, force) {
         }
         delete fiber.alternate;
         delete fiber.hasMounted;
-        delete fiber.stateNode;
+        //  delete fiber.stateNode;
         fiber.disposed = true;
     }
     fiber.effectTag = NOWORK;
