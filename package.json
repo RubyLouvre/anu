@@ -77,7 +77,9 @@
     "rollup-plugin-re": "^1.0.6",
     "selenium-standalone": "^6.12.0",
     "semicolon-less": "^0.7.0",
-    "webpack": "^1.14.0"
+    "webpack": "^1.14.0",
+    "commitizen": "^2.10.1",
+    "cz-customizable": "^5.2.0"
   },
   "ghooks": {
     "commit-msg": "validate-commit-msg"
@@ -97,5 +99,10 @@
     "subjectPattern": ".+",
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
   }
 }
