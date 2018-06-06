@@ -4,6 +4,7 @@ import { miniCreateClass } from "react-core/util";
 
 import {
     startsWith,
+    invariant,
     pick,
     resolve,
     match,
@@ -17,11 +18,6 @@ import {
     createMemorySource
 } from "./lib/history";
 
-function invariant(condition, msg){
-    if(!condition){
-        throw msg;
-    }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill

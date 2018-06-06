@@ -4,6 +4,13 @@
 function startsWith(string, search) {
     return string.slice(0, search.length) === search;
 }
+let reservedNames = ["uri", "path"];
+
+export function invariant(condition, msg){
+    if(!condition){
+        throw msg;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // pick(routes, uri)
@@ -30,7 +37,7 @@ function pick(routes, uri) {
     let match;
     let default_;
 
-    let [uriPathname] = uri.split("?");
+    let uriPathname = uri.split("?").shift();
     let uriSegments = segmentize(uriPathname);
     let isRootUri = uriSegments[0] === "";
     let ranked = rankRoutes(routes);
@@ -49,7 +56,6 @@ function pick(routes, uri) {
         }
 
         let routeSegments = segmentize(route.path);
-        let isRootRoute = routeSegments[0] === "";
         let params = {};
         let max = Math.max(uriSegments.length, routeSegments.length);
         let index = 0;
@@ -189,7 +195,6 @@ function resolve(to, base) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// insertParams(path, params)
 function insertParams(path, params) {
     let segments = segmentize(path);
     return (
@@ -203,7 +208,7 @@ function insertParams(path, params) {
     );
 }
 
-let validateRedirect = (from, to) => {
+function validateRedirect (from, to)  {
     let filter = segment => isDynamic(segment);
     let fromString = segmentize(from)
         .filter(filter)
@@ -214,7 +219,7 @@ let validateRedirect = (from, to) => {
         .sort()
         .join("/");
     return fromString === toString;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Junk
@@ -229,8 +234,23 @@ let ROOT_POINTS = 1;
 let isRootSegment = segment => segment == "";
 let isDynamic = segment => paramRe.test(segment);
 let isSplat = segment => segment === "*";
+/**
+ * 
+Reach Router会对你的paths进行排名，因此你无需担心路径的顺序或传递props来告诉它怎么匹配。 
+一般来说，你不应该担心这一点，你不管它，它也能做到你想要的效果。
 
-let rankRoute = (route, index) => {
+但是，我知道你是一名程序员，你想知道它是如何工作的。
+
+我们将路径切割成许多段，每段算出一个分数，然后全部相加，得最高分的路由定义将获胜。
+
+1. 每个分段默认4分
+1. 静态分段再加3分
+2. 动态分段再加2分
+3. 根分段再加1
+4. 通配符分段减1分及**原来的4分**
+https://reach.tech/router/ranking
+*/
+function rankRoute(route, index) {
     let score = route.default
         ? 0
         : segmentize(route.path).reduce((score, segment) => {
@@ -241,29 +261,29 @@ let rankRoute = (route, index) => {
                 score += DYNAMIC_POINTS;
             } else if (isSplat(segment)) {
                 score -= SEGMENT_POINTS + SPLAT_PENALTY;
-            } //*
-            else {
+            } else {
                 score += STATIC_POINTS;
             }
             return score;
         }, 0);
     return { route, score, index };
-};
-
-let rankRoutes = routes =>
-    routes
-        .map(rankRoute)
-        .sort(
-            (a, b) =>
-                a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
-        );
-
+}
+function sorter(a, b) {
+    return a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index;
+}
+function rankRoutes(routes) {
+    return routes.map(rankRoute).sort(sorter);
+}
 //去除前后的斜杠，并按/切割成数组
-let segmentize = uri => uri.replace(/(^\/+|\/+$)/g, "").split("/");
+function segmentize( uri) {
+    return uri.replace(/(^\/+|\/+$)/g, "").split("/");
+}
 
-let addQuery = (pathname, query) => pathname + (query ? `?${query}` : "");
+function addQuery (pathname, query) {
+    return pathname + (query ? `?${query}` : ""); 
+}
 
-let reservedNames = ["uri", "path"];
+
 
 ////////////////////////////////////////////////////////////////////////////////
 export { startsWith, pick, match, resolve, insertParams, validateRedirect };
