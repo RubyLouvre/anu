@@ -114,10 +114,6 @@ export function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
-export function clearArray(a) {
-    return a.splice(0, a.length);
-}
-
 export function isFn(obj) {
     return __type.call(obj) === "[object Function]";
 }

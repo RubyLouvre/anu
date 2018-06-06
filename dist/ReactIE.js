@@ -97,7 +97,6 @@ var lowerCache = {};
 function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
-
 function isFn(obj) {
     return __type.call(obj) === "[object Function]";
 }
