@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import React from "react";
-import invariant from "invariant";
 import { miniCreateClass } from "react-core/util";
 
 import {
@@ -17,6 +16,12 @@ import {
     createHistory,
     createMemorySource
 } from "./lib/history";
+
+function invariant(condition, msg){
+    if(!condition){
+        throw msg;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
@@ -251,99 +256,99 @@ let initialRender = true;
 let focusHandlerCount = 0;
 
 let FocusHandlerImpl = miniCreateClass(
-  function FocusHandlerImpl(a, b, c){
-    this.state = {};
-    this.requestFocus = node => {
-        if (!this.state.shouldFocus) {
-            node.focus();
-        }
-    };
-    c.getDerivedStateFromProps = function(nextProps, prevState) {
-        let initial = prevState.uri == null;
-        if (initial) {
-            return {
-                shouldFocus: true,
-                ...nextProps
-            };
-        } else {
-            let myURIChanged = nextProps.uri !== prevState.uri;
-            let navigatedUpToMe =
+    function FocusHandlerImpl(a, b, c){
+        this.state = {};
+        this.requestFocus = node => {
+            if (!this.state.shouldFocus) {
+                node.focus();
+            }
+        };
+        c.getDerivedStateFromProps = function(nextProps, prevState) {
+            let initial = prevState.uri == null;
+            if (initial) {
+                return {
+                    shouldFocus: true,
+                    ...nextProps
+                };
+            } else {
+                let myURIChanged = nextProps.uri !== prevState.uri;
+                let navigatedUpToMe =
         prevState.location.pathname !== nextProps.location.pathname &&
         nextProps.location.pathname === nextProps.uri;
-            return {
-                shouldFocus: myURIChanged || navigatedUpToMe,
-                ...nextProps
-            };
-        }
-    };
-},Component ,{
+                return {
+                    shouldFocus: myURIChanged || navigatedUpToMe,
+                    ...nextProps
+                };
+            }
+        };
+    },Component ,{
 
-    componentDidMount() {
-        focusHandlerCount++;
-        this.focus();
-    },
-
-    componentWillUnmount() {
-        focusHandlerCount--;
-        if (focusHandlerCount === 0) {
-            initialRender = true;
-        }
-    },
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.location !== this.props.location && this.state.shouldFocus) {
+        componentDidMount() {
+            focusHandlerCount++;
             this.focus();
-        }
-    },
+        },
 
-    focus() {
-        if (process.env.NODE_ENV === "test") {
+        componentWillUnmount() {
+            focusHandlerCount--;
+            if (focusHandlerCount === 0) {
+                initialRender = true;
+            }
+        },
+
+        componentDidUpdate(prevProps, prevState) {
+            if (prevProps.location !== this.props.location && this.state.shouldFocus) {
+                this.focus();
+            }
+        },
+
+        focus() {
+            if (process.env.NODE_ENV === "test") {
             // getting cannot read property focus of null in the tests
             // and that bit of global `initialRender` state causes problems
             // should probably figure it out!
-            return;
-        }
-
-        let { requestFocus } = this.props;
-
-        if (requestFocus) {
-            requestFocus(this.node);
-        } else {
-            if (initialRender) {
-                initialRender = false;
-            } else {
-                this.node.focus();
+                return;
             }
+
+            let { requestFocus } = this.props;
+
+            if (requestFocus) {
+                requestFocus(this.node);
+            } else {
+                if (initialRender) {
+                    initialRender = false;
+                } else {
+                    this.node.focus();
+                }
+            }
+        },
+
+
+        render() {
+            let {
+                children,
+                style,
+                requestFocus,
+                role = "group",
+                component: Comp = "div",
+                uri,
+                location,
+                ...domProps
+            } = this.props;
+            return (
+                <Comp
+                    style={{ outline: "none", ...style }}
+                    tabIndex="-1"
+                    role={role}
+                    ref={n => (this.node = n)}
+                    {...domProps}
+                >
+                    <FocusContext.Provider value={this.requestFocus}>
+                        {this.props.children}
+                    </FocusContext.Provider>
+                </Comp>
+            );
         }
-    },
-
-
-    render() {
-        let {
-            children,
-            style,
-            requestFocus,
-            role = "group",
-            component: Comp = "div",
-            uri,
-            location,
-            ...domProps
-        } = this.props;
-        return (
-            <Comp
-                style={{ outline: "none", ...style }}
-                tabIndex="-1"
-                role={role}
-                ref={n => (this.node = n)}
-                {...domProps}
-            >
-                <FocusContext.Provider value={this.requestFocus}>
-                    {this.props.children}
-                </FocusContext.Provider>
-            </Comp>
-        );
-    }
-});
+    });
 
 
 let k = () => {};
@@ -394,26 +399,26 @@ let redirectTo = to => {
 };
 
 let RedirectImpl = miniCreateClass(
-  functoin RedirectImpl(){},
-  Component, {
+    function RedirectImpl(){},
+    Component, {
     // Support React < 16 with this hook
-    componentDidMount() {
-        let {
-            props: { navigate, to, from, replace = true, state, noThrow, ...props }
-        } = this;
-        navigate(insertParams(to, props), { replace, state });
-    },
+        componentDidMount() {
+            let {
+                props: { navigate, to, from, replace = true, state, noThrow, ...props }
+            } = this;
+            navigate(insertParams(to, props), { replace, state });
+        },
 
-    render() {
-        let {
-            props: { navigate, to, from, replace, state, noThrow, ...props }
-        } = this;
-        if (!noThrow) {
-            redirectTo(insertParams(to, props));
+        render() {
+            let {
+                props: { navigate, to, from, replace, state, noThrow, ...props }
+            } = this;
+            if (!noThrow) {
+                redirectTo(insertParams(to, props));
+            }
+            return null;
         }
-        return null;
-    }
-});
+    });
 
 let Redirect = props => (
     <Location>

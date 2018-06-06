@@ -1,11 +1,9 @@
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // https://www.cnblogs.com/qinxingnet/p/6022024.html
-let startsWith = (string, search) => {
-	return string.slice(0, search.length) === search;
-};
+function startsWith(string, search) {
+    return string.slice(0, search.length) === search;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // pick(routes, uri)
@@ -28,97 +26,99 @@ let startsWith = (string, search) => {
 //     { route, params, uri }
 //
 // I know, I should use TypeScript not comments for these types.
-let pick = (routes, uri) => {
-  let match;
-  let default_;
+function pick(routes, uri) {
+    let match;
+    let default_;
 
-  let [uriPathname] = uri.split("?");
-  let uriSegments = segmentize(uriPathname);
-  let isRootUri = uriSegments[0] === "";
-  let ranked = rankRoutes(routes);
+    let [uriPathname] = uri.split("?");
+    let uriSegments = segmentize(uriPathname);
+    let isRootUri = uriSegments[0] === "";
+    let ranked = rankRoutes(routes);
 
-  for (let i = 0, l = ranked.length; i < l; i++) {
-    let missed = false;
-    let route = ranked[i].route;
+    for (let i = 0, l = ranked.length; i < l; i++) {
+        let missed = false;
+        let route = ranked[i].route;
 
-    if (route.default) {
-      default_ = {
-        route,
-        params: {},
-        uri
-      };
-      continue;
+        if (route.default) {
+            default_ = {
+                route,
+                params: {},
+                uri
+            };
+            continue;
+        }
+
+        let routeSegments = segmentize(route.path);
+        let isRootRoute = routeSegments[0] === "";
+        let params = {};
+        let max = Math.max(uriSegments.length, routeSegments.length);
+        let index = 0;
+
+        for (; index < max; index++) {
+            let routeSegment = routeSegments[index];
+            let uriSegment = uriSegments[index];
+
+            let isSplat = routeSegment === "*";
+            if (isSplat) {
+                // Hit a splat, just grab the rest, and return a match
+                // uri:   /files/documents/work
+                // route: /files/*
+                params["*"] = uriSegments
+                    .slice(index)
+                    .map(decodeURIComponent)
+                    .join("/");
+                break;
+            }
+
+            if (uriSegment === undefined) {
+                // URI is shorter than the route, no match
+                // uri:   /users
+                // route: /users/:userId
+                missed = true;
+                break;
+            }
+
+            let dynamicMatch = paramRe.exec(routeSegment);
+
+            if (dynamicMatch && !isRootUri) {
+                invariant(
+                    !reservedNames.includes(dynamicMatch[1]),
+                    `<Router> dynamic segment "${
+                        dynamicMatch[1]
+                    }" is a reserved name. Please use a different name in path "${
+                        route.path
+                    }".`
+                );
+                let value = decodeURIComponent(uriSegment);
+                params[dynamicMatch[1]] = value;
+            } else if (routeSegment !== uriSegment) {
+                // Current segments don't match, not dynamic, not splat, so no match
+                // uri:   /users/123/settings
+                // route: /users/:id/profile
+                missed = true;
+                break;
+            }
+        }
+
+        if (!missed) {
+            match = {
+                route,
+                params,
+                uri: "/" + uriSegments.slice(0, index).join("/")
+            };
+            break;
+        }
     }
 
-    let routeSegments = segmentize(route.path);
-    let isRootRoute = routeSegments[0] === "";
-    let params = {};
-    let max = Math.max(uriSegments.length, routeSegments.length);
-    let index = 0;
-
-    for (; index < max; index++) {
-      let routeSegment = routeSegments[index];
-      let uriSegment = uriSegments[index];
-
-      let isSplat = routeSegment === "*";
-      if (isSplat) {
-        // Hit a splat, just grab the rest, and return a match
-        // uri:   /files/documents/work
-        // route: /files/*
-        params["*"] = uriSegments
-          .slice(index)
-          .map(decodeURIComponent)
-          .join("/");
-        break;
-      }
-
-      if (uriSegment === undefined) {
-        // URI is shorter than the route, no match
-        // uri:   /users
-        // route: /users/:userId
-        missed = true;
-        break;
-      }
-
-      let dynamicMatch = paramRe.exec(routeSegment);
-
-      if (dynamicMatch && !isRootUri) {
-        invariant(
-          !reservedNames.includes(dynamicMatch[1]),
-          `<Router> dynamic segment "${
-            dynamicMatch[1]
-          }" is a reserved name. Please use a different name in path "${
-            route.path
-          }".`
-        );
-        let value = decodeURIComponent(uriSegment);
-        params[dynamicMatch[1]] = value;
-      } else if (routeSegment !== uriSegment) {
-        // Current segments don't match, not dynamic, not splat, so no match
-        // uri:   /users/123/settings
-        // route: /users/:id/profile
-        missed = true;
-        break;
-      }
-    }
-
-    if (!missed) {
-      match = {
-        route,
-        params,
-        uri: "/" + uriSegments.slice(0, index).join("/")
-      };
-      break;
-    }
-  }
-
-  return match || default_ || null;
-};
+    return match || default_ || null;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // match(path, uri) - Matches just one path to a uri, also lol
 //分解第一个参数
-let match = (path, uri) => pick([{ path }], uri);
+function match(path, uri) {
+    return pick([{ path }], uri);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // resolve(to, basepath)
@@ -146,71 +146,74 @@ let match = (path, uri) => pick([{ path }], uri);
 //
 // By treating every path as a directory, linking to relative paths should
 // require less contextual information and (fingers crossed) be more intuitive.
-let resolve = (to, base) => {
-  // /foo/bar, /baz/qux => /foo/bar
-  if (startsWith(to, "/")) {
-    return to;
-  }
+function resolve(to, base) {
+    // /foo/bar, /baz/qux => /foo/bar
+    if (startsWith(to, "/")) {
+        return to;
+    }
 
-  let [toPathname, toQuery] = to.split("?");
-  let [basePathname] = base.split("?");
+    let [toPathname, toQuery] = to.split("?");
+    let [basePathname] = base.split("?");
 
-  let toSegments = segmentize(toPathname);
-  let baseSegments = segmentize(basePathname);
+    let toSegments = segmentize(toPathname);
+    let baseSegments = segmentize(basePathname);
 
-  // ?a=b, /users?b=c => /users?a=b
-  if (toSegments[0] === "") {
-    return addQuery(basePathname, toQuery);
-  }
+    // ?a=b, /users?b=c => /users?a=b
+    if (toSegments[0] === "") {
+        return addQuery(basePathname, toQuery);
+    }
 
-  // profile, /users/789 => /users/789/profile
-  if (!startsWith(toSegments[0], ".")) {
-    let pathname = baseSegments.concat(toSegments).join("/");
-    return addQuery((basePathname === "/" ? "" : "/") + pathname, toQuery);
-  }
+    // profile, /users/789 => /users/789/profile
+    if (!startsWith(toSegments[0], ".")) {
+        let pathname = baseSegments.concat(toSegments).join("/");
+        return addQuery((basePathname === "/" ? "" : "/") + pathname, toQuery);
+    }
 
-  // ./         /users/123  =>  /users/123
-  // ../        /users/123  =>  /users
-  // ../..      /users/123  =>  /
-  // ../../one  /a/b/c/d    =>  /a/b/one
-  // .././one   /a/b/c/d    =>  /a/b/c/one
-  let allSegments = baseSegments.concat(toSegments);
-  let segments = [];
-  for (let i = 0, l = allSegments.length; i < l; i++) {
-    let segment = allSegments[i];
-    if (segment === "..") segments.pop();
-    else if (segment !== ".") segments.push(segment);
-  }
+    // ./         /users/123  =>  /users/123
+    // ../        /users/123  =>  /users
+    // ../..      /users/123  =>  /
+    // ../../one  /a/b/c/d    =>  /a/b/one
+    // .././one   /a/b/c/d    =>  /a/b/c/one
+    let allSegments = baseSegments.concat(toSegments);
+    let segments = [];
+    for (let i = 0, l = allSegments.length; i < l; i++) {
+        let segment = allSegments[i];
+        if (segment === "..") {
+            segments.pop();
+        } else if (segment !== ".") {
+            segments.push(segment);
+        }
+    }
 
-  return addQuery("/" + segments.join("/"), toQuery);
-};
+    return addQuery("/" + segments.join("/"), toQuery);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // insertParams(path, params)
-let insertParams = (path, params) => {
-  let segments = segmentize(path);
-  return (
-    "/" +
+function insertParams(path, params) {
+    let segments = segmentize(path);
+    return (
+        "/" +
     segments
-      .map(segment => {
-        let match = paramRe.exec(segment);
-        return match ? params[match[1]] : segment;
-      })
-      .join("/")
-  );
-};
+        .map(segment => {
+            let match = paramRe.exec(segment);
+            return match ? params[match[1]] : segment;
+        })
+        .join("/")
+    );
+}
 
 let validateRedirect = (from, to) => {
-  let filter = segment => isDynamic(segment);
-  let fromString = segmentize(from)
-    .filter(filter)
-    .sort()
-    .join("/");
-  let toString = segmentize(to)
-    .filter(filter)
-    .sort()
-    .join("/");
-  return fromString === toString;
+    let filter = segment => isDynamic(segment);
+    let fromString = segmentize(from)
+        .filter(filter)
+        .sort()
+        .join("/");
+    let toString = segmentize(to)
+        .filter(filter)
+        .sort()
+        .join("/");
+    return fromString === toString;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +223,7 @@ let paramRe = /^:(.+)/;
 let SEGMENT_POINTS = 4;
 let STATIC_POINTS = 3;
 let DYNAMIC_POINTS = 2;
-let SPLAT_PENALTY = 1;//Splat Arguments 参数数组化
+let SPLAT_PENALTY = 1; //Splat Arguments 参数数组化
 let ROOT_POINTS = 1;
 
 let isRootSegment = segment => segment == "";
@@ -228,32 +231,35 @@ let isDynamic = segment => paramRe.test(segment);
 let isSplat = segment => segment === "*";
 
 let rankRoute = (route, index) => {
-  let score = route.default
-    ? 0
-    : segmentize(route.path).reduce((score, segment) => {
-        score += SEGMENT_POINTS;
-        if (isRootSegment(segment)) score += ROOT_POINTS;
-        else if (isDynamic(segment)) score += DYNAMIC_POINTS;
-        else if (isSplat(segment)) score -= SEGMENT_POINTS + SPLAT_PENALTY;//*
-        else score += STATIC_POINTS;
-        return score;
-      }, 0);
-  return { route, score, index };
+    let score = route.default
+        ? 0
+        : segmentize(route.path).reduce((score, segment) => {
+            score += SEGMENT_POINTS;
+            if (isRootSegment(segment)) {
+                score += ROOT_POINTS;
+            } else if (isDynamic(segment)) {
+                score += DYNAMIC_POINTS;
+            } else if (isSplat(segment)) {
+                score -= SEGMENT_POINTS + SPLAT_PENALTY;
+            } //*
+            else {
+                score += STATIC_POINTS;
+            }
+            return score;
+        }, 0);
+    return { route, score, index };
 };
 
 let rankRoutes = routes =>
-  routes
-    .map(rankRoute)
-    .sort(
-      (a, b) =>
-        a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
-    );
+    routes
+        .map(rankRoute)
+        .sort(
+            (a, b) =>
+                a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
+        );
 
-  //去除前后的斜杠，并按/切割成数组
-let segmentize = uri =>
-  uri
-    .replace(/(^\/+|\/+$)/g, "")
-    .split("/");
+//去除前后的斜杠，并按/切割成数组
+let segmentize = uri => uri.replace(/(^\/+|\/+$)/g, "").split("/");
 
 let addQuery = (pathname, query) => pathname + (query ? `?${query}` : "");
 

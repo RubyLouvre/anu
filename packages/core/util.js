@@ -1,23 +1,23 @@
-export let arrayPush = Array.prototype.push;
-export let innerHTML = "dangerouslySetInnerHTML";
-export let hasOwnProperty = Object.prototype.hasOwnProperty;
+export const arrayPush = Array.prototype.push;
+export const innerHTML = "dangerouslySetInnerHTML";
+export const hasOwnProperty = Object.prototype.hasOwnProperty;
+export const gSBU = "getSnapshotBeforeUpdate";
+export const gDSFP = "getDerivedStateFromProps";
+export const hasSymbol = typeof Symbol === "function" && Symbol["for"];
+export const effects = [];
+export const topFibers = [];
+export const topNodes = [];
+export const emptyArray = [];
+export const emptyObject = {};
+
+export const REACT_ELEMENT_TYPE = hasSymbol
+    ? Symbol["for"]("react.element")
+    : 0xeac7;
 
 export function Fragment(props) {
     return props.children;
 }
 
-export const gSBU = "getSnapshotBeforeUpdate";
-export const gDSFP = "getDerivedStateFromProps";
-export let hasSymbol = typeof Symbol === "function" && Symbol["for"];
-
-export const REACT_ELEMENT_TYPE = hasSymbol
-    ? Symbol["for"]("react.element")
-    : 0xeac7;
-export let effects = [];
-export let devTool = {
-    onCommitRoot: noop,
-    onCommitUnmount: noop
-};
 export function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);
@@ -30,10 +30,8 @@ function keepLast(list) {
 export function get(key) {
     return key._reactInternalFiber;
 }
-export const topFibers = [];
-export const topNodes = [];
-export const emptyArray = [];
-export const emptyObject = {};
+
+export let __type = Object.prototype.toString;
 
 var fakeWindow = {};
 export function getWindow() {
@@ -60,13 +58,6 @@ export function toWarnDev(msg, deprecated) {
     }
 }
 
-/**
- * 复制一个对象的属性到另一个对象
- *
- * @param {any} obj
- * @param {any} props
- * @returns
- */
 export function extend(obj, props) {
     for (let i in props) {
         if (hasOwnProperty.call(props, i)) {
@@ -75,28 +66,17 @@ export function extend(obj, props) {
     }
     return obj;
 }
+
 export function returnFalse() {
     return false;
 }
+
 export function returnTrue() {
     return true;
 }
-export let __type = Object.prototype.toString;
 
-/**
- * 一个空函数
- *
- * @export
- */
 export function noop() {}
 
-/**
- * 类继承
- *
- * @export
- * @param {any} SubClass
- * @param {any} SupClass
- */
 export function inherit(SubClass, SupClass) {
     function Bridge() {}
     let orig = SubClass.prototype;

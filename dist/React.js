@@ -12,15 +12,18 @@
 var arrayPush = Array.prototype.push;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-function Fragment(props) {
-    return props.children;
-}
 var gSBU = "getSnapshotBeforeUpdate";
 var gDSFP = "getDerivedStateFromProps";
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
+var topFibers = [];
+var topNodes = [];
 
+var emptyObject = {};
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+function Fragment(props) {
+    return props.children;
+}
 function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);
@@ -32,10 +35,7 @@ function keepLast(list) {
 function get(key) {
     return key._reactInternalFiber;
 }
-var topFibers = [];
-var topNodes = [];
-
-var emptyObject = {};
+var __type = Object.prototype.toString;
 var fakeWindow = {};
 function getWindow() {
     try {
@@ -73,7 +73,6 @@ function returnFalse() {
 function returnTrue() {
     return true;
 }
-var __type = Object.prototype.toString;
 function noop() {}
 function inherit(SubClass, SupClass) {
     function Bridge() {}
@@ -3022,7 +3021,6 @@ if (prevReact && prevReact.eventSystem) {
     React = win.React = win.ReactDOM = {
         eventSystem: eventSystem,
         findDOMNode: findDOMNode,
-        miniCreateClass: miniCreateClass,
         unmountComponentAtNode: unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
         version: "1.4.1",
