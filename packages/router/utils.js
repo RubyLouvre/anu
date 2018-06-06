@@ -234,7 +234,7 @@ let rankRoute = (route, index) => {
         score += SEGMENT_POINTS;
         if (isRootSegment(segment)) score += ROOT_POINTS;
         else if (isDynamic(segment)) score += DYNAMIC_POINTS;
-        else if (isSplat(segment)) score -= SEGMENT_POINTS + SPLAT_PENALTY;
+        else if (isSplat(segment)) score -= SEGMENT_POINTS + SPLAT_PENALTY;//*
         else score += STATIC_POINTS;
         return score;
       }, 0);

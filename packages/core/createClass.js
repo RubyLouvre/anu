@@ -1,4 +1,4 @@
-import { extend, isFn, getWindow, inherit, toWarnDev, __type } from "./util";
+import { extend, isFn, getWindow, miniCreateClass, toWarnDev, __type } from "./util";
 
 /**
  * 为了兼容0.13之前的版本
@@ -77,36 +77,6 @@ function applyMixins(proto, mixins) {
     }
 }
 
-//创建一个构造器
-function newCtor(className, spec, Component) {
-    let curry = Function(
-        "ReactComponent",
-        "blacklist",
-        "spec",
-        `return function ${className}(props, context) {
-      ReactComponent.call(this, props, context);
-     if(!(this instanceof ReactComponent)){
-         throw "muse new Component(...)"
-     }
-     for (var methodName in this) {
-        var method = this[methodName];
-        if (typeof method  === "function"&& !blacklist[methodName]) {
-          this[methodName] = method.bind(this);
-        }
-      }
-
-      if (spec.getInitialState) {
-        var test = this.state = spec.getInitialState.call(this);
-        if(!(test === null || ({}).toString.call(test) == "[object Object]")){
-          throw "Component.getInitialState(): must return an object or null"
-        }
-      }
-  };`
-    );
-
-
-    return curry(Component, NOBIND, spec);
-}
 
 var win = getWindow();
 if (!win.React || !win.React.Component) {
@@ -120,15 +90,32 @@ export default function createClass(spec) {
     if (!isFn(spec.render)) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
-    
-    let Constructor = newCtor(spec.displayName || "Component", spec, Component );
-    let proto = inherit(Constructor, Component);
+    //创建一个构造器,有四个参数
+    let Constructor = miniCreateClass(function (){
+        if(!(this instanceof Component)){
+            throw "must new Component(...)";
+        }
+        for (let methodName in this) {
+            let method = this[methodName];
+            if (typeof method  === "function"&& !NOBIND[methodName]) {
+                this[methodName] = method.bind(this);
+            }
+        }
+   
+        if (spec.getInitialState) {
+            let test = this.state = spec.getInitialState.call(this);
+            if(!(test === null || ({}).toString.call(test) == "[object Object]")){
+                throw "Component.getInitialState(): must return an object or null";
+            }
+        }
+
+    }, Component, spec, spec.displayName || "Component");
+
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
     }
 
-    extend(proto, spec);
 
     if (spec.statics) {
         extend(Constructor, spec.statics);

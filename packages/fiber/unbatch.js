@@ -1,14 +1,16 @@
-import { inherit } from "react-core/util";
+import { miniCreateClass } from "react-core/util";
 import { Component } from "react-core/Component";
 
-export function Unbatch(props, context) {
-    Component.call(this, props, context);
-    this.state = {
-        child: props.child,
-    };
-}
-
-let fn = inherit(Unbatch, Component);
-fn.render = function () {
-    return this.state.child;
-};
+export var Unbatch = miniCreateClass(
+    function Unbatch(props) {
+        this.state = {
+            child: props.child,
+        };
+    },
+    Component,
+    {
+        render() {
+            return this.state.child;
+        }
+    }
+);

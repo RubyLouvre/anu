@@ -83,6 +83,17 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
+function miniCreateClass(ctor, superClass, methods, four) {
+    var className = ctor.name;
+    if (four + "" === four) {
+        className = four;
+    }
+    var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.call(this, props, context);\n            ctor.call(this, props, context, " + className + ");\n      }")(superClass, ctor);
+    Ctor.displayName = className;
+    var fn = inherit(Ctor, superClass);
+    methods && extend(fn, methods);
+    return Ctor;
+}
 var lowerCache = {};
 function toLowerCase(s) {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
@@ -541,16 +552,15 @@ function shallowEqual(objA, objB) {
     return true;
 }
 
-function PureComponent(props, context) {
-    Component.call(this, props, context);
-}
-var fn = inherit(PureComponent, Component);
-fn.shouldComponentUpdate = function (nextProps, nextState) {
-    var a = shallowEqual(this.props, nextProps);
-    var b = shallowEqual(this.state, nextState);
-    return !a || !b;
-};
-fn.isPureComponent = true;
+var PureComponent = miniCreateClass(function PureComponent() {
+    this.isPureComponent = true;
+}, Component, {
+    shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+        var a = shallowEqual(this.props, nextProps);
+        var b = shallowEqual(this.state, nextState);
+        return !a || !b;
+    }
+});
 
 function createRef() {
     return {
@@ -731,11 +741,11 @@ var NAMESPACE = {
     xhtml: "http://www.w3.org/1999/xhtml",
     math: "http://www.w3.org/1998/Math/MathML"
 };
-var fn$1 = DOMElement.prototype = {
+var fn = DOMElement.prototype = {
     contains: Boolean
 };
 String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
-    fn$1[name] = function () {
+    fn[name] = function () {
         toWarnDev('need implement ' + name);
     };
 });
@@ -2349,16 +2359,15 @@ function diffChildren(parentFiber, children) {
     }
 }
 
-function Unbatch(props, context) {
-    Component.call(this, props, context);
+var Unbatch = miniCreateClass(function Unbatch(props) {
     this.state = {
         child: props.child
     };
-}
-var fn$2 = inherit(Unbatch, Component);
-fn$2.render = function () {
-    return this.state.child;
-};
+}, Component, {
+    render: function render() {
+        return this.state.child;
+    }
+});
 
 function getDOMNode() {
     return this;

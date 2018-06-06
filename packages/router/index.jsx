@@ -2,11 +2,10 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import React from "react";
 import warning from "warning";
-import PropTypes from "prop-types";
 import invariant from "invariant";
-import createContext from "create-react-context";
-import { polyfill } from "react-lifecycles-compat";
-import ReactDOM from "react-dom";
+import { miniCreateClass } from "react-core/util";
+
+
 import {
   startsWith,
   pick,
@@ -24,7 +23,7 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
-let { unstable_deferredUpdates } = ReactDOM;
+let { unstable_deferredUpdates, PropTypes, createContext, Component } = React;
 if (unstable_deferredUpdates === undefined) {
   unstable_deferredUpdates = fn => fn();
 }
@@ -48,26 +47,25 @@ let Location = ({ children }) => (
       context ? (
         children(context)
       ) : (
-        <LocationProvider>{children}</LocationProvider>
-      )
+          <LocationProvider>{children}</LocationProvider>
+        )
     }
   </LocationContext.Consumer>
 );
 
-class LocationProvider extends React.Component {
-  static defaultProps = {
-    history: globalHistory
-  };
-
-  state = {
-    context: this.getContext(),
-    refs: { unlisten: null }
-  };
-
+let LocationProvider = miniCreateClass(function LocationProvider(a, b, c){
+    this.state = {
+      context: this.getContext(),
+      refs: { unlisten: null }
+    };
+    c.defaultProps = {
+        history: globalHistory
+    };
+}, Component, {
   getContext() {
     let { props: { history: { navigate, location } } } = this;
     return { navigate, location };
-  }
+  },
 
   componentDidCatch(error, info) {
     if (isRedirect(error)) {
@@ -76,29 +74,32 @@ class LocationProvider extends React.Component {
     } else {
       throw error;
     }
-  }
+  },
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.context.location !== this.state.context.location) {
       this.props.history._onTransitionComplete();
     }
-  }
+  },
 
   componentDidMount() {
     let { state: { refs }, props: { history } } = this;
     refs.unlisten = history.listen(() => {
       Promise.resolve().then(() => {
         unstable_deferredUpdates(() => {
-          this.setState(() => ({ context: this.getContext() }));
+          if (!this.unmounted) {
+            this.setState(() => ({ context: this.getContext() }));
+          }
         });
       });
     });
-  }
+  },
 
   componentWillUnmount() {
     let { state: { refs } } = this;
+    this.unmounted = true;
     refs.unlisten();
-  }
+  },
 
   render() {
     let { state: { context }, props: { children } } = this;
@@ -108,7 +109,7 @@ class LocationProvider extends React.Component {
       </LocationContext.Provider>
     );
   }
-}
+})  
 
 ////////////////////////////////////////////////////////////////////////////////
 let ServerLocation = ({ url, children }) => (
@@ -182,8 +183,8 @@ class RouterImpl extends React.PureComponent {
         element.props.children ? (
           <Router primary={primary}>{element.props.children}</Router>
         ) : (
-          undefined
-        )
+            undefined
+          )
       );
 
       // using 'div' for < 16.3 support
@@ -330,7 +331,7 @@ class FocusHandlerImpl extends React.Component {
 
 polyfill(FocusHandlerImpl);
 
-let k = () => {};
+let k = () => { };
 
 ////////////////////////////////////////////////////////////////////////////////
 let Link = props => (
@@ -417,10 +418,10 @@ let Match = ({ path, children }) => (
             location,
             match: result
               ? {
-                  ...result.params,
-                  uri: result.uri,
-                  path
-                }
+                ...result.params,
+                uri: result.uri,
+                path
+              }
               : null
           });
         }}
@@ -437,14 +438,14 @@ let createRoute = basepath => element => {
   invariant(
     element.props.path || element.props.default || element.type === Redirect,
     `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
-      element.type
+    element.type
     }\``
   );
 
   invariant(
     !(element.type === Redirect && (!element.props.from || !element.props.to)),
     `<Redirect from="${element.props.from} to="${
-      element.props.to
+    element.props.to
     }"/> requires both "from" and "to" props when inside a <Router>.`
   );
 
@@ -454,7 +455,7 @@ let createRoute = basepath => element => {
       !validateRedirect(element.props.from, element.props.to)
     ),
     `<Redirect from="${element.props.from} to="${
-      element.props.to
+    element.props.to
     }"/> has mismatched dynamic segments, ensure both paths have the exact same dynamic segments.`
   );
 

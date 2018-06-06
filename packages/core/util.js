@@ -10,7 +10,9 @@ export const gSBU = "getSnapshotBeforeUpdate";
 export const gDSFP = "getDerivedStateFromProps";
 export let hasSymbol = typeof Symbol === "function" && Symbol["for"];
 
-export const REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+export const REACT_ELEMENT_TYPE = hasSymbol
+    ? Symbol["for"]("react.element")
+    : 0xeac7;
 export let effects = [];
 export let devTool = {
     onCommitRoot: noop,
@@ -86,7 +88,7 @@ export let __type = Object.prototype.toString;
  *
  * @export
  */
-export function noop() { }
+export function noop() {}
 
 /**
  * 类继承
@@ -96,15 +98,33 @@ export function noop() { }
  * @param {any} SupClass
  */
 export function inherit(SubClass, SupClass) {
-    function Bridge() { }
+    function Bridge() {}
     let orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
     let fn = (SubClass.prototype = new Bridge());
-
     // 避免原型链拉长导致方法查找的性能开销
     extend(fn, orig);
     fn.constructor = SubClass;
     return fn;
+}
+
+export function miniCreateClass(ctor, superClass, methods, four) {
+    let className = ctor.name;
+    if (four + "" === four) {
+        className = four;
+    }
+    let Ctor = Function(
+        "superClass",
+        "ctor",
+        `return function ${className} (props, context) {
+            superClass.call(this, props, context);
+            ctor.call(this, props, context, ${className});
+      }`
+    )(superClass, ctor);
+    Ctor.displayName = className;
+    var fn = inherit(Ctor, superClass);
+    methods && extend(fn, methods);
+    return Ctor;
 }
 
 let lowerCache = {};
@@ -124,12 +144,12 @@ let rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
     if (array + "" === array) {
-        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
+    //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     let result = {},
         //eslint-disable-next-line
-        value = val !== void 666 ? val : 1;
+    value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
@@ -143,7 +163,7 @@ export function camelize(target) {
         return target;
     }
     //转换为驼峰风格
-    let str = target.replace(rcamelize, function (match) {
+    let str = target.replace(rcamelize, function(match) {
         return match.charAt(1).toUpperCase();
     });
     return firstLetterLower(str);
@@ -152,7 +172,6 @@ export function camelize(target) {
 export function firstLetterLower(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
-
 
 let numberMap = {
     //null undefined IE6-8这里会返回[object Object]
@@ -176,11 +195,11 @@ export function typeNumber(data) {
 }
 
 export let toArray =
-    Array.from ||
-    function (a) {
-        let ret = [];
-        for (let i = 0, n = a.length; i < n; i++) {
-            ret[i] = a[i];
-        }
-        return ret;
-    };
+  Array.from ||
+  function(a) {
+      let ret = [];
+      for (let i = 0, n = a.length; i < n; i++) {
+          ret[i] = a[i];
+      }
+      return ret;
+  };
