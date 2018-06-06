@@ -6,7 +6,7 @@ import { createRef, forwardRef } from "react-core/createRef";
 import { createPortal } from "react-core/createPortal";
 import { createContext } from "react-core/createContext";
 import { createElement, cloneElement, isValidElement, createFactory } from "react-core/createElement";
-import { Fragment, getWindow, get } from "react-core/util";
+import { Fragment, getWindow } from "react-core/util";
 
 import { findDOMNode } from "./findDOMNode";
 import { DOMRenderer } from "./DOMRenderer";
