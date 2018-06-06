@@ -117,6 +117,7 @@ let pick = (routes, uri) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 // match(path, uri) - Matches just one path to a uri, also lol
+//分解第一个参数
 let match = (path, uri) => pick([{ path }], uri);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,9 +249,9 @@ let rankRoutes = routes =>
         a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index
     );
 
+  //去除前后的斜杠，并按/切割成数组
 let segmentize = uri =>
   uri
-    // strip starting/ending slashes
     .replace(/(^\/+|\/+$)/g, "")
     .split("/");
 

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-05
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-06
  */
 
 (function (global, factory) {
@@ -19,10 +19,7 @@ var gDSFP = "getDerivedStateFromProps";
 var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
-var devTool = {
-    onCommitRoot: noop,
-    onCommitUnmount: noop
-};
+
 function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);
@@ -924,7 +921,7 @@ var duplexMap = {
                 var defaultValue = props.defaultValue;
                 var children = props.children;
                 if (children != null) {
-                    defaultValue = node.textContent || node.innerText;
+                    defaultValue = getTextContent(node);
                     node.innerHTML = "";
                 }
                 if (defaultValue == null) {
@@ -937,9 +934,9 @@ var duplexMap = {
             };
         },
         mount: function mount(node, props, state) {
-            var textContent = node.textContent;
+            var text = getTextContent(node);
             var stateValue = "" + state.initialValue;
-            if (textContent !== stateValue) {
+            if (text !== stateValue) {
                 syncValue(node, "value", stateValue);
             }
         },
@@ -965,8 +962,9 @@ var duplexMap = {
             duplexMap.option.mount(node, props);
         },
         mount: function mount(node, props) {
-            if (node.text !== node.textContent.trim()) {
-                node.innerHTML = node.textContent;
+            var text = getTextContent(node);
+            if (node.text !== text.trim()) {
+                node.innerHTML = text;
             }
             if ("value" in props) {
                 node.duplexValue = node.value = props.value;
@@ -976,6 +974,9 @@ var duplexMap = {
         }
     }
 };
+function getTextContent(node) {
+    return node.textContent || node.innerText || node.innerHTML;
+}
 function setDefaultValue(node, type, value) {
     if (
     type !== "number" || node.ownerDocument.activeElement !== node) {
@@ -2441,7 +2442,6 @@ function commitDFSImpl(fiber) {
             f = f.return;
         }
     }
-    devTool.onCommitRoot(topFiber);
 }
 function commitDFS(effects$$1) {
     Renderer.batchedUpdates(function () {
@@ -2547,7 +2547,6 @@ function disposeFiber(fiber, force) {
     if (!stateNode) {
         return;
     }
-    devTool.onCommitUnmount(fiber);
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
@@ -2941,8 +2940,6 @@ var DOMRenderer = createRenderer({
     },
     updateContext: function updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props;
-    },
-    injectIntoDevTools: function injectIntoDevTools(devToolsConfig) {
     },
     createElement: createElement$1,
     insertElement: insertElement,

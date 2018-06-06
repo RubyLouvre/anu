@@ -17,6 +17,7 @@ if (prevReact && prevReact.eventSystem) {
     React = prevReact; //解决引入多个
 } else {
     let { render, eventSystem, unstable_renderSubtreeIntoContainer, unmountComponentAtNode } = DOMRenderer;
+    /*
     DOMRenderer.injectIntoDevTools({
         findFiberByHostInstance: get,
         findHostInstanceByFiber: findDOMNode,
@@ -24,7 +25,7 @@ if (prevReact && prevReact.eventSystem) {
         version: "VERSION",
         rendererPackageName: "react-dom"
     });
-      
+    */
     React = win.React = win.ReactDOM = {
         //平台相关API
         eventSystem,

@@ -1,6 +1,6 @@
 import { diffProps } from "./props";
 import { document, NAMESPACE } from "./browser";
-import { get, getWindow, noop, extend, emptyObject, topNodes, topFibers, devTool } from "react-core/util";
+import { get, noop, extend, emptyObject, topNodes, topFibers, devTool } from "react-core/util";
 import { Renderer, createRenderer } from "react-core/createRenderer";
 import { render, createContainer } from "react-fiber/scheduleWork";
 import { fireDuplex } from "./duplex";
@@ -156,9 +156,6 @@ export let DOMRenderer = createRenderer({
     },
     updateContext(fiber) {
         fiber.stateNode.nodeValue = fiber.props;
-    },
-    injectIntoDevTools(devToolsConfig) {
-       // return injectInternals(devToolsConfig);
     },
     createElement,
     insertElement,

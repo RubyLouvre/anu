@@ -112,11 +112,11 @@ export var duplexMap = {
         init(node, props) {
             var initialValue = props.value;
             if (initialValue == null) {
-                var defaultValue = props.defaultValue;
-                var children = props.children;
+                let defaultValue = props.defaultValue;
+                let children = props.children;
                 if (children != null) {
                     //移除元素节点
-                    defaultValue = node.textContent || node.innerText;
+                    defaultValue = getTextContent(node);
                     node.innerHTML = "";
                 }
                 if (defaultValue == null) {
@@ -130,16 +130,16 @@ export var duplexMap = {
             };
         },
         mount(node, props, state) {
-            var textContent = node.textContent;
-            var stateValue = "" + state.initialValue;
-            if (textContent !== stateValue) {
+            let text = getTextContent(node);
+            let stateValue = "" + state.initialValue;
+            if (text !== stateValue) {
                 syncValue(node, "value", stateValue);
             }
         },
         update(node, props) {
-            var value = props.value;
+            let value = props.value;
             if (value != null) {
-                var newValue = "" + value;
+                let newValue = "" + value;
                 if (newValue !== node.value) {
                     syncValue(node, "value", newValue);
                 }
@@ -159,8 +159,9 @@ export var duplexMap = {
             duplexMap.option.mount(node, props);
         },
         mount(node, props) {
-            if (node.text !== node.textContent.trim()) {
-                node.innerHTML = node.textContent;
+            let text = getTextContent(node);
+            if (node.text !== text.trim()) {
+                node.innerHTML = text;
             }
             if ("value" in props) {
                 node.duplexValue = node.value = props.value;
@@ -170,6 +171,10 @@ export var duplexMap = {
         }
     }
 };
+function getTextContent(node){
+    //innerText是用来对付IE6－8，innerHTML是用来对付jest
+    return node.textContent || node.innerText || node.innerHTML;
+}
 
 function setDefaultValue(node, type, value) {
     if (

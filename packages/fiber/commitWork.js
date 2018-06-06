@@ -1,7 +1,6 @@
 import {
     emptyObject,
     returnFalse,
-    devTool
 } from "react-core/util";
 import {
     NOWORK,
@@ -93,7 +92,6 @@ function commitDFSImpl(fiber) {
             f = f.return;
         }
     }
-    devTool.onCommitRoot(topFiber );
 }
 export function commitDFS(effects) {
 
@@ -224,7 +222,6 @@ function disposeFiber(fiber, force) {
     if (!stateNode) {
         return;
     }
-    devTool.onCommitUnmount(fiber);
     if (!stateNode.__isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
