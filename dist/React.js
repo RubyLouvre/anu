@@ -21,8 +21,15 @@ var topNodes = [];
 
 var emptyObject = {};
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+function noop() {}
 function Fragment(props) {
     return props.children;
+}
+function returnFalse() {
+    return false;
+}
+function returnTrue() {
+    return true;
 }
 function resetStack(info) {
     keepLast(info.containerStack);
@@ -67,13 +74,6 @@ function extend(obj, props) {
     }
     return obj;
 }
-function returnFalse() {
-    return false;
-}
-function returnTrue() {
-    return true;
-}
-function noop() {}
 function inherit(SubClass, SupClass) {
     function Bridge() {}
     var orig = SubClass.prototype;
@@ -610,41 +610,39 @@ function createEventEmitter(value) {
 }
 function createContext(defaultValue, calculateChangedBits) {
     var contextProp = "__create-react-context-" + gud() + "__";
-    function Provider(props, context) {
-        Component.call(this, props, context);
-        this.emitter = createEventEmitter(props.value);
-    }
     function create(obj, value) {
         obj[contextProp] = value;
         return obj;
     }
-    Provider.childContextTypes = create({}, PropTypes.object.isRequired);
-    var fn = inherit(Provider, Component);
-    fn.getChildContext = function () {
-        return create({}, this.emitter);
-    };
-    fn.componentWillReceiveProps = function (nextProps) {
-        if (this.props.value !== nextProps.value) {
-            var oldValue = this.props.value;
-            var newValue = nextProps.value;
-            var changedBits = void 0;
-            if (Object.is(oldValue, newValue)) {
-                changedBits = 0;
-            } else {
-                changedBits = typeof calculateChangedBits === "function" ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                changedBits |= 0;
-                if (changedBits !== 0) {
-                    this.emitter.set(nextProps.value, changedBits);
+    var Provider = miniCreateClass(function Provider(props, b, c) {
+        this.emitter = createEventEmitter(props.value);
+        c.childContextTypes = create({}, PropTypes.object.isRequired);
+    }, Component, {
+        getChildContext: function getChildContext() {
+            return create({}, this.emitter);
+        },
+        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+            if (this.props.value !== nextProps.value) {
+                var oldValue = this.props.value;
+                var newValue = nextProps.value;
+                var changedBits = void 0;
+                if (Object.is(oldValue, newValue)) {
+                    changedBits = 0;
+                } else {
+                    changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                    changedBits |= 0;
+                    if (changedBits !== 0) {
+                        this.emitter.set(nextProps.value, changedBits);
+                    }
                 }
             }
+        },
+        render: function render() {
+            return this.props.children;
         }
-    };
-    fn.render = function () {
-        return this.props.children;
-    };
-    function Consumer(props, context) {
+    });
+    var Consumer = miniCreateClass(function Consumer(a, b, c) {
         var _this = this;
-        Component.call(this, props, context);
         this.observedBits = 0;
         this.state = {
             value: this.getValue()
@@ -652,40 +650,40 @@ function createContext(defaultValue, calculateChangedBits) {
         this.onUpdate = function (newValue, changedBits) {
             var observedBits = _this.observedBits | 0;
             if ((observedBits & changedBits) !== 0) {
-                _this.setState({ value: _this.getValue() });
+                _this.setState({
+                    value: _this.getValue()
+                });
             }
         };
-    }
-    Consumer.contextTypes = create({}, PropTypes.object);
-    var fn2 = inherit(Consumer, Component);
-    fn2.componentWillReceiveProps = function (nextProps) {
-        var observedBits = nextProps.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.getValue = function () {
-        if (this.context[contextProp]) {
-            return this.context[contextProp].get();
-        } else {
-            return defaultValue;
+        c.contextTypes = create({}, PropTypes.object);
+    }, Component, {
+        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+            var observedBits = nextProps.observedBits;
+            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
+        },
+        getValue: function getValue() {
+            if (this.context[contextProp]) {
+                return this.context[contextProp].get();
+            } else {
+                return defaultValue;
+            }
+        },
+        componentDidMount: function componentDidMount() {
+            if (this.context[contextProp]) {
+                this.context[contextProp].on(this.onUpdate);
+            }
+            var observedBits = this.props.observedBits;
+            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
+        },
+        componentWillUnmount: function componentWillUnmount() {
+            if (this.context[contextProp]) {
+                this.context[contextProp].off(this.onUpdate);
+            }
+        },
+        render: function render() {
+            return this.props.children(this.state.value);
         }
-    };
-    fn2.componentDidMount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].on(this.onUpdate);
-        }
-        var observedBits = this.props.observedBits;
-        this.observedBits = observedBits === undefined || observedBits === null ? MAX_NUMBER
-        : observedBits;
-    };
-    fn2.componentWillUnmount = function () {
-        if (this.context[contextProp]) {
-            this.context[contextProp].off(this.onUpdate);
-        }
-    };
-    fn2.render = function () {
-        return this.props.children(this.state.value);
-    };
+    });
     return {
         Provider: Provider,
         Consumer: Consumer

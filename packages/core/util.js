@@ -10,18 +10,30 @@ export const topNodes = [];
 export const emptyArray = [];
 export const emptyObject = {};
 
-export const REACT_ELEMENT_TYPE = hasSymbol
-    ? Symbol["for"]("react.element")
-    : 0xeac7;
+export const REACT_ELEMENT_TYPE = hasSymbol ?
+    Symbol["for"]("react.element") :
+    0xeac7;
+
+export function noop() {}
 
 export function Fragment(props) {
     return props.children;
 }
 
+export function returnFalse() {
+    return false;
+}
+
+export function returnTrue() {
+    return true;
+}
+
+
 export function resetStack(info) {
     keepLast(info.containerStack);
     keepLast(info.containerStack);
 }
+
 function keepLast(list) {
     var n = list.length;
     list.splice(0, n - 1);
@@ -66,16 +78,6 @@ export function extend(obj, props) {
     }
     return obj;
 }
-
-export function returnFalse() {
-    return false;
-}
-
-export function returnTrue() {
-    return true;
-}
-
-export function noop() {}
 
 export function inherit(SubClass, SupClass) {
     function Bridge() {}
@@ -124,12 +126,12 @@ let rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
     if (array + "" === array) {
-    //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     let result = {},
         //eslint-disable-next-line
-    value = val !== void 666 ? val : 1;
+        value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
@@ -175,11 +177,11 @@ export function typeNumber(data) {
 }
 
 export let toArray =
-  Array.from ||
-  function(a) {
-      let ret = [];
-      for (let i = 0, n = a.length; i < n; i++) {
-          ret[i] = a[i];
-      }
-      return ret;
-  };
+    Array.from ||
+    function(a) {
+        let ret = [];
+        for (let i = 0, n = a.length; i < n; i++) {
+            ret[i] = a[i];
+        }
+        return ret;
+    };

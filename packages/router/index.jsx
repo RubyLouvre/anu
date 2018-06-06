@@ -233,7 +233,7 @@ let RouterImpl = miniCreateClass(
 );
 
 let FocusContext = createNamedContext("Focus");
-
+//用于Router组件内部
 let FocusHandler = ({ uri, location, ...domProps }) => (
     <FocusContext.Consumer>
         {requestFocus => (
@@ -346,26 +346,49 @@ let FocusHandlerImpl = miniCreateClass(
         }
     });
 
-
-let k = () => {};
-
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Link，锚点组件，用于切换页面的子视图，主要有如下属性与方法
+ * 1. to
+ * 2. replace
+ * 3. getProps({isCurrent, isPartiallyCurrent, href, location }), 用于生成更多其他属性
+ * 4. state
+ * 它实质是包了两层的A元素
+ */
+function noop(){};
 let Link = props => (
     <BaseContext.Consumer>
         {({ basepath, baseuri }) => (
             <Location>
                 {({ location, navigate }) => {
-                    let { to, state, replace, getProps = k, ...anchorProps } = props;
+                    let anchorProps = {}, to, state, replace, getProps = noop
+                    for(let key in props){
+                        let val = props[key]
+                        if(key === "to"){
+                            to = val;
+                        }else if(key === "state" ){
+                            state = val;
+                        }else if(key === "replace"){
+                            replace = val;
+                        }else if(key == "getProps" && val){
+                            getProps = val;
+                        }else{
+                            anchorProps[key] = val;
+                        }
+                    }
+                  
                     let href = resolve(to, baseuri);
                     let isCurrent = location.pathname === href;
                     let isPartiallyCurrent = startsWith(location.pathname, href);
+                    Object.assign(anchorProps, getProps({ isCurrent, isPartiallyCurrent, href, location }) );
+                    anchorProps.href = href;
+                    if(isCurrent){
+                        anchorProps["aria-current"] = "page";
+                    }
+
 
                     return (
                         <a
-                            aria-current={isCurrent ? "page" : undefined}
                             {...anchorProps}
-                            {...getProps({ isCurrent, isPartiallyCurrent, href, location })}
-                            href={href}
                             onClick={event => {
                                 if (anchorProps.onClick) {
                                     anchorProps.onClick(event);
@@ -383,7 +406,7 @@ let Link = props => (
     </BaseContext.Consumer>
 );
 
-////////////////////////////////////////////////////////////////////////////////
+// <Redirect> 可以设置重定向到其他 route 而不改变旧的 URL
 function RedirectRequest(uri) {
     this.uri = uri;
 }
@@ -415,7 +438,6 @@ let RedirectImpl = miniCreateClass(
             return null;
         }
     });
-
 let Redirect = props => (
     <Location>
         {locationContext => <RedirectImpl {...locationContext} {...props} />}
@@ -427,7 +449,9 @@ Redirect.propTypes = {
     to: PropTypes.string.isRequired
 };
 
-////////////////////////////////////////////////////////////////////////////////
+
+//<Match />有点类似于<Link/>，但当前路径匹配URL，那么就会呈现其内容
+// 原来React Router 4想实现的组件 https://zhuanlan.zhihu.com/p/22490775
 let Match = ({ path, children }) => (
     <BaseContext.Consumer>
         {({ baseuri }) => (
@@ -459,9 +483,8 @@ let stripSlashes = str => str.replace(/(^\/+|\/+$)/g, "");
 let createRoute = basepath => element => {
     invariant(
         element.props.path || element.props.default || element.type === Redirect,
-        `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
-            element.type
-        }\``
+        `<Router>: Children of <Router> must have a "path" or "default" prop, or be a "<Redirect>". 
+         None found on element type "${element.type}"`
     );
 
     invariant(
