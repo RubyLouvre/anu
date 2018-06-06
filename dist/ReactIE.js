@@ -90,7 +90,7 @@ function miniCreateClass(ctor, superClass, methods, four) {
     var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.call(this, props, context);\n            ctor.call(this, props, context, " + className + ");\n      }")(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
-    methods && extend(fn, methods);
+    extend(fn, methods);
     return Ctor;
 }
 var lowerCache = {};

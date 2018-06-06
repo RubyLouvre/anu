@@ -105,7 +105,7 @@ export function miniCreateClass(ctor, superClass, methods, four) {
     )(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
-    methods && extend(fn, methods);
+    extend(fn, methods);
     return Ctor;
 }
 
