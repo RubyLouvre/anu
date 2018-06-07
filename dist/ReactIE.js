@@ -3152,7 +3152,7 @@ if (prevReact && prevReact.eventSystem) {
         findDOMNode: findDOMNode,
         unmountComponentAtNode: unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-        version: "1.4.1",
+        version: "1.4.2",
         render: render$1,
         hydrate: render$1,
         unstable_batchedUpdates: DOMRenderer.batchedUpdates,
