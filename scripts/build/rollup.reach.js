@@ -31,8 +31,7 @@ export default {
         }),
         cleanup(),
         replace({
-            // ... do replace before commonjs
-            "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+            // ... do replace before commonjs //process.env.NODE_ENV
             patterns: [
                 {
                     test: "VERSION", 

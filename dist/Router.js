@@ -547,7 +547,7 @@ var FocusHandlerImpl = miniCreateClass(function FocusHandlerImpl(a, b, c) {
         }
     },
     focus: function focus() {
-        if (process.env.NODE_ENV === "test") {
+        if (getWindow().process) {
             return;
         }
         var requestFocus = this.props.requestFocus;

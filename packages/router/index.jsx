@@ -290,7 +290,7 @@ let FocusHandlerImpl = miniCreateClass(
         },
 
         focus() {
-            if (process.env.NODE_ENV === "test") {
+            if (getWindow().process) {
                 // getting cannot read property focus of null in the tests
                 // and that bit of global `initialRender` state causes problems
                 // should probably figure it out!

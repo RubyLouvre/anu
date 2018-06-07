@@ -6,8 +6,7 @@
   "scripts": {
     "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.reach.js ",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
-    "devtools": "rollup -c ./scripts/build/rollup.tools.js",
-    "webpack": "^1.14.0",
+    "start": "serve .",
     "sync": "node ./scripts/build/sync.js",
     "sync2": "node ./scripts/build/shim.script.js"
   },
@@ -57,27 +56,16 @@
     "husky": "^0.14.3",
     "jasmine-check": "^1.0.0-rc.0",
     "jest": "^22.4.3",
-    "karma": "^1.5",
-    "karma-chai": "^0.1.0",
-    "karma-coverage": "^1.1.1",
-    "karma-event-driver-ext": "0.0.12",
-    "karma-firefox-launcher": "^1.0.1",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.3",
-    "karma-spec-reporter": "0.0.30",
-    "karma-webpack": "^2.0.3",
     "mocha": "^3.2.0",
     "ora": "^1.3.0",
     "rollup": "^0.56.3",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-cleanup": "^2.0.0",
     "rollup-plugin-filesize": "^1.4.2",
-    "rollup-plugin-istanbul": "^1.1.0",
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",
     "selenium-standalone": "^6.12.0",
-    "semicolon-less": "^0.7.0",
-    "webpack": "^1.14.0"
+    "semicolon-less": "^0.7.0"
   },
   "ghooks": {
     "commit-msg": "validate-commit-msg"
@@ -97,5 +85,8 @@
     "subjectPattern": ".+",
     "subjectPatternErrorMsg": "请输入message信息!",
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
+  },
+  "dependencies": {
+    "serve": "^8.1.0"
   }
 }
