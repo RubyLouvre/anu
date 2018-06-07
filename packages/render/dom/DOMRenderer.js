@@ -110,6 +110,9 @@ function insertElement(fiber) {
         if (after === null && dom === parent.lastChild) {
             return;
         }
+        if(fiber.type == "blockquote"){
+            console.log(fiber, dom,  insertPoint );
+        }
         //插入**元素节点**会引发焦点丢失，触发body focus事件
         Renderer.inserting = fiber.tag === 5 && document.activeElement;
         parent.insertBefore(dom, after);
