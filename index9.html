@@ -32,42 +32,21 @@
     }
 	   
 
-    class A  extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-            a: "A组件"
-        }
-      }
-      onChange(e){
-          this.setState({
-              a: e.target.value
-          })
-          store.dispatch({
-              type: "a",
-              value: e.target.value
-          })
-      }
-      render() {
-       // ReactNoop.yield(this.props.value);
-        return <p><input value={this.state.a} onChange={this.onChange.bind(this)}/>
-            <b>{this.state.a}</b>
-            </p>
-      }
-    }
-// http://www.redux.org.cn/docs/introduction/Ecosystem.html
-    class B extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = {
-            b: "B组件"
-        }
-      }
-      render() {
-        return <p>{this.state.b}</p>
-      }
-    }
-    ReactDOM.render(<div><A /><B /></div>,container);
+  
+  ReactTestUtils.renderIntoDocument(
+        <select>
+          <option selected={true} />
+          <option selected={true} />
+        </select>,
+      ),
+    
+
+    ReactTestUtils.renderIntoDocument(
+      <select>
+        <option selected={true} />
+        <option selected={true} />
+      </select>,
+    );
     </script>
 
 

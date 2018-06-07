@@ -2,48 +2,31 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/React.js"></script>
-  <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
- <!--<script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
-  <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-  <script type='text/javascript' src="./lib/babel.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./dist/Router.js"></script>
+   
+
+    <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
+   <!-- <script type='text/javascript' src="./react.js"></script>
+      <script type='text/javascript' src="./react-dom.js"></script>
+      <script type='text/javascript' src="./dist/reach-router.js"></script>-->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
-
+Pro
 <body>
 
-  <pre>React 15 </pre>
+    <pre>React 15 </pre>
 
 
-  <div id='root' class="root">
+    <div id='root' class="root">
 
-  </div>
-  <script type='text/babel'>
+    </div>
+    <script type='text/babel'>
           var container = document.getElementById("root")
-          let check = function () {
-    return check;
-};
-check.isRequired = check;
- let PropTypes = {
-    array: check,
-    bool: check,
-    func: check,
-    number: check,
-    object: check,
-    string: check,
-    any: check,
-    arrayOf: check,
-    element: check,
-    instanceOf: check,
-    node: check,
-    objectOf: check,
-    oneOf: check,
-    oneOfType: check,
-    shape: check
-};
+      
 
           if (!window.ReactDOM) {
               window.ReactDOM = React;
@@ -64,48 +47,34 @@ check.isRequired = check;
                   }
               };
          }; 
-// const container = document.createElement('container');
-var o 
-class Outer extends React.Component {
-    state = {
-        xxx: 111
-    }
-  
-    render() {
-      o = this
-      return <div>{this.state.xxx}<Middle><Inner /></Middle></div>;
-    }
+ var { Router, Link  } = ReachRouter;
+ const Logo = () => <div>这是LOGO</div>
+ const App = ({ children }) => (
+  <div>
+    <Logo />
+    <nav>
+      <Link to="/">Home</Link> <Link to="dashboard">Dashboard</Link>
+    </nav>
+    <Router>
+      <Home path="/" />
+      <Dashboard path="dashboard" />
+    </Router>
+  </div>
+);
 
-}
-class Middle extends React.Component {
-    shouldComponentUpdate(){
-        return false
-    }
-    render() {
-      return this.props.children
-    }
-}
-var i 
-class Inner extends React.Component {
-  state = {
-      yyy: 222
-  }
-  render() {
-    i = this
-    return <div>{this.state.yyy}</div>;
-  }
+const Home = () => (
+  <div>
+    <h2>Welcome</h2>
+  </div>
+);
 
-}
+const Dashboard = () => (
+  <div>
+    <h2>Dashboard</h2>
+  </div>
+);
 
-ReactDOM.render(<h1><Outer /></h1>, container);
-ReactDOM.unstable_batchedUpdates(function(){
-    o.setState({
-        xxx: 333
-    })
-    i.setState({
-        yyy: 444
-    })
-})
+ReactDOM.render(<App />, container);
 
     </script>
 
