@@ -1,7 +1,8 @@
-## 1.4.3
+## 1.4.2(2018.06.07)
 1. remove clearArray
 2. add miniCreateClass, 并用它重构createClass, Unbatch, PureComponent, createContext
 3. 添加一个WORKING任务，避免整棵树更新
+4. 修复受控组件中option的IE8-的兼容BUG
 
 ## 1.4.1(2018.06.04)
 1. 文本节点的内容直接用fiber.props代替
