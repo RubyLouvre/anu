@@ -2064,11 +2064,10 @@ function updateHostComponent(fiber, info) {
         fiber.stateNode = Renderer.createElement(fiber);
     }
     var parent = fiber.parent;
-    if (!parent.insertPoint && fiber.hasMounted) {
-        fiber.forwardFiber = parent.insertPoint = getInsertPoint(fiber);
-    } else {
-        fiber.forwardFiber = parent.insertPoint;
+    if (!parent.insertPoint) {
+        parent.insertPoint = getInsertPoint(fiber);
     }
+    fiber.forwardFiber = parent.insertPoint;
     parent.insertPoint = fiber;
     fiber.effectTag = PLACE;
     if (tag === 5) {
@@ -2927,6 +2926,9 @@ function insertElement(fiber) {
         }
         if (after === null && dom === parent.lastChild) {
             return;
+        }
+        if (fiber.type == "blockquote") {
+            console.log(fiber, dom, insertPoint);
         }
         Renderer.inserting = fiber.tag === 5 && document.activeElement;
         parent.insertBefore(dom, after);

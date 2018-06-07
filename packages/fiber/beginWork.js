@@ -133,11 +133,11 @@ function updateHostComponent(fiber, info) {
         fiber.stateNode = Renderer.createElement(fiber);
     }
     const parent = fiber.parent;
-    if (!parent.insertPoint && fiber.hasMounted) {
-        fiber.forwardFiber = parent.insertPoint = getInsertPoint(fiber);
-    } else {
-        fiber.forwardFiber = parent.insertPoint;
+    if (!parent.insertPoint) {
+        parent.insertPoint = getInsertPoint(fiber);
     }
+    fiber.forwardFiber = parent.insertPoint;
+    
 
     parent.insertPoint = fiber;
     fiber.effectTag = PLACE;

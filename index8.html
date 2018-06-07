@@ -49,32 +49,39 @@ Pro
          }; 
  var { Router, Link  } = ReachRouter;
  const Logo = () => <div>这是LOGO</div>
+ 
+
  const App = ({ children }) => (
   <div>
     <Logo />
     <nav>
-      <Link to="/">Home</Link> <Link to="dashboard">Dashboard</Link>
+      <Link to="/">Home</Link>{" "}
+      <Link to="users/123">Bob</Link>{" "}
+      <Link to="users/abc">Sally</Link>
     </nav>
-    <Router>
-      <Home path="/" />
-      <Dashboard path="dashboard" />
-    </Router>
+    {children}
   </div>
 );
+
+const User = props => <h2>{props.userId}</h2>;
 
 const Home = () => (
-  <blockquote>
-    <h2>Welcome</h2>
-  </blockquote>
-);
-
-const Dashboard = () => (
   <div>
-    <h2>Dashboard</h2>
+    <h2>Welcome!</h2>
+    <p>
+      Select a user, their ID will be parsed from the URL and passed to the User
+      component
+    </p>
   </div>
 );
 
-ReactDOM.render(<App />, container);
+
+ReactDOM.render(<Router>
+    <App path="/">
+      <Home path="/" />
+      <User path="users/:userId" />
+    </App>
+  </Router>, container);
 
     </script>
 
