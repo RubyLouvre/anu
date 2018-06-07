@@ -81,15 +81,15 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-function miniCreateClass(ctor, superClass, methods, four) {
-    var className = ctor.name;
-    if (four + "" === four) {
-        className = four;
-    }
-    var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.call(this, props, context);\n            ctor.call(this, props, context, " + className + ");\n      }")(superClass, ctor);
+function miniCreateClass(ctor, superClass, methods, statics) {
+    var className = ctor.name || String(ctor).match(/^function\s(\w+)/)[1];
+    var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
+    if (statics) {
+        extend(Ctor, statics);
+    }
     return Ctor;
 }
 var lowerCache = {};
@@ -611,9 +611,8 @@ function createContext(defaultValue, calculateChangedBits) {
         obj[contextProp] = value;
         return obj;
     }
-    var Provider = miniCreateClass(function Provider(props, b, c) {
+    var Provider = miniCreateClass(function Provider(props) {
         this.emitter = createEventEmitter(props.value);
-        c.childContextTypes = create({}, PropTypes.object.isRequired);
     }, Component, {
         getChildContext: function getChildContext() {
             return create({}, this.emitter);
@@ -637,8 +636,10 @@ function createContext(defaultValue, calculateChangedBits) {
         render: function render() {
             return this.props.children;
         }
+    }, {
+        childContextTypes: create({}, PropTypes.object.isRequired)
     });
-    var Consumer = miniCreateClass(function Consumer(a, b, c) {
+    var Consumer = miniCreateClass(function Consumer() {
         var _this = this;
         this.observedBits = 0;
         this.state = {
@@ -652,7 +653,6 @@ function createContext(defaultValue, calculateChangedBits) {
                 });
             }
         };
-        c.contextTypes = create({}, PropTypes.object);
     }, Component, {
         UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
             var observedBits = nextProps.observedBits;
@@ -680,6 +680,8 @@ function createContext(defaultValue, calculateChangedBits) {
         render: function render() {
             return this.props.children(this.state.value);
         }
+    }, {
+        contextTypes: create({}, PropTypes.object)
     });
     return {
         Provider: Provider,

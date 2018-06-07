@@ -90,22 +90,22 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-export function miniCreateClass(ctor, superClass, methods, four) {
-    let className = ctor.name;
-    if (four + "" === four) {
-        className = four;
-    }
+export function miniCreateClass(ctor, superClass, methods, statics) {
+    let className = ctor.name || String(ctor).match(/^function\s(\w+)/)[1];
     let Ctor = Function(
         "superClass",
         "ctor",
         `return function ${className} (props, context) {
-            superClass.call(this, props, context);
-            ctor.call(this, props, context, ${className});
+            superClass.apply(this, arguments); 
+            ctor.apply(this, arguments);
       }`
     )(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
+    if(statics){
+        extend(Ctor, statics);
+    }
     return Ctor;
 }
 

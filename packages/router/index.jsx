@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-//import { React } from "react";
 import { miniCreateClass, getWindow } from "react-core/util";
 
 import {
@@ -18,11 +17,18 @@ import {
     createMemorySource
 } from "./history";
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
 let React = getWindow().React;
-let { unstable_deferredUpdates, PropTypes, cloneElement, PureComponent, createContext, Children, Component } = React;
+let {
+    unstable_deferredUpdates,
+    PropTypes,
+    cloneElement,
+    PureComponent,
+    createContext,
+    Children,
+    Component
+} = React;
 if (unstable_deferredUpdates === undefined) {
     unstable_deferredUpdates = fn => fn();
 }
@@ -53,23 +59,17 @@ let Location = ({ children }) => (
 );
 
 let LocationProvider = miniCreateClass(
-    function LocationProvider(a, b, c) {
+    function LocationProvider() {
         this.state = {
             context: this.getContext(),
             refs: { unlisten: null }
-        };
-        c.defaultProps = {
-            history: globalHistory
         };
     },
     Component,
     {
         getContext() {
-            let {
-                props: {
-                    history: { navigate, location }
-                }
-            } = this;
+            let { navigate, location } = this.props.history;
+
             return { navigate, location };
         },
 
@@ -123,15 +123,19 @@ let LocationProvider = miniCreateClass(
             } = this;
             return (
                 <LocationContext.Provider value={context}>
-                    {typeof children === "function"
+              {typeof children === "function"
                         ? children(context)
                         : children || null}
-                </LocationContext.Provider>
+          </LocationContext.Provider>
             );
+        }
+    },
+    {
+        defaultProps: {
+            history: globalHistory
         }
     }
 );
-
 ////////////////////////////////////////////////////////////////////////////////
 let ServerLocation = ({ url, children }) => (
     <LocationContext.Provider
@@ -165,11 +169,7 @@ let Router = props => (
 );
 
 let RouterImpl = miniCreateClass(
-    function RouterImpl(a, b, c) {
-        c.defaultProps = {
-            primary: true
-        };
-    },
+    function RouterImpl() {},
     PureComponent,
     {
         render() {
@@ -230,6 +230,11 @@ let RouterImpl = miniCreateClass(
                 return null;
             }
         }
+    },
+    {
+        defaultProps: {
+            primary: true
+        }
     }
 );
 
@@ -253,33 +258,16 @@ let initialRender = true;
 let focusHandlerCount = 0;
 
 let FocusHandlerImpl = miniCreateClass(
-    function FocusHandlerImpl(a, b, c){
+    function FocusHandlerImpl(a, b, c) {
         this.state = {};
         this.requestFocus = node => {
             if (!this.state.shouldFocus) {
                 node.focus();
             }
         };
-        c.getDerivedStateFromProps = function(nextProps, prevState) {
-            let initial = prevState.uri == null;
-            if (initial) {
-                return {
-                    shouldFocus: true,
-                    ...nextProps
-                };
-            } else {
-                let myURIChanged = nextProps.uri !== prevState.uri;
-                let navigatedUpToMe =
-        prevState.location.pathname !== nextProps.location.pathname &&
-        nextProps.location.pathname === nextProps.uri;
-                return {
-                    shouldFocus: myURIChanged || navigatedUpToMe,
-                    ...nextProps
-                };
-            }
-        };
-    },Component ,{
-
+    },
+    Component,
+    {
         componentDidMount() {
             focusHandlerCount++;
             this.focus();
@@ -293,16 +281,19 @@ let FocusHandlerImpl = miniCreateClass(
         },
 
         componentDidUpdate(prevProps, prevState) {
-            if (prevProps.location !== this.props.location && this.state.shouldFocus) {
+            if (
+                prevProps.location !== this.props.location &&
+        this.state.shouldFocus
+            ) {
                 this.focus();
             }
         },
 
         focus() {
             if (process.env.NODE_ENV === "test") {
-            // getting cannot read property focus of null in the tests
-            // and that bit of global `initialRender` state causes problems
-            // should probably figure it out!
+                // getting cannot read property focus of null in the tests
+                // and that bit of global `initialRender` state causes problems
+                // should probably figure it out!
                 return;
             }
 
@@ -319,7 +310,6 @@ let FocusHandlerImpl = miniCreateClass(
             }
         },
 
-
         render() {
             let {
                 children,
@@ -335,17 +325,38 @@ let FocusHandlerImpl = miniCreateClass(
                 <Comp
                     style={{ outline: "none", ...style }}
                     tabIndex="-1"
-                    role={role}
-                    ref={n => (this.node = n)}
-                    {...domProps}
+              role={role}
+              ref={n => (this.node = n)}
+              {...domProps}
                 >
                     <FocusContext.Provider value={this.requestFocus}>
-                        {this.props.children}
-                    </FocusContext.Provider>
-                </Comp>
+                {this.props.children}
+            </FocusContext.Provider>
+          </Comp>
             );
         }
-    });
+    },
+    {
+        getDerivedStateFromProps: function(nextProps, prevState) {
+            let initial = prevState.uri == null;
+            if (initial) {
+                return {
+                    shouldFocus: true,
+                    ...nextProps
+                };
+            } else {
+                let myURIChanged = nextProps.uri !== prevState.uri;
+                let navigatedUpToMe =
+          prevState.location.pathname !== nextProps.location.pathname &&
+          nextProps.location.pathname === nextProps.uri;
+                return {
+                    shouldFocus: myURIChanged || navigatedUpToMe,
+                    ...nextProps
+                };
+            }
+        }
+    }
+);
 
 /**
  * Link，锚点组件，用于切换页面的子视图，主要有如下属性与方法
@@ -355,37 +366,43 @@ let FocusHandlerImpl = miniCreateClass(
  * 4. state
  * 它实质是包了两层的A元素
  */
-function noop(){}
+function noop() {}
 let Link = props => (
     <BaseContext.Consumer>
         {({ basepath, baseuri }) => (
-            <Location>
+          <Location>
                 {({ location, navigate }) => {
-                    let anchorProps = {}, to, state, replace, getProps = noop;
-                    for(let key in props){
+                    let anchorProps = {},
+                        to,
+                        state,
+                        replace,
+                        getProps = noop;
+                    for (let key in props) {
                         let val = props[key];
-                        if(key === "to"){
+                        if (key === "to") {
                             to = val;
-                        }else if(key === "state" ){
+                        } else if (key === "state") {
                             state = val;
-                        }else if(key === "replace"){
+                        } else if (key === "replace") {
                             replace = val;
-                        }else if(key == "getProps" && val){
+                        } else if (key == "getProps" && val) {
                             getProps = val;
-                        }else{
+                        } else {
                             anchorProps[key] = val;
                         }
                     }
-                  
+
                     let href = resolve(to, baseuri);
                     let isCurrent = location.pathname === href;
                     let isPartiallyCurrent = startsWith(location.pathname, href);
-                    Object.assign(anchorProps, getProps({ isCurrent, isPartiallyCurrent, href, location }) );
+                    Object.assign(
+                        anchorProps,
+                        getProps({ isCurrent, isPartiallyCurrent, href, location })
+                    );
                     anchorProps.href = href;
-                    if(isCurrent){
+                    if (isCurrent) {
                         anchorProps["aria-current"] = "page";
                     }
-
 
                     return (
                         <a
@@ -418,27 +435,25 @@ let redirectTo = to => {
     throw new RedirectRequest(to);
 };
 
-let RedirectImpl = miniCreateClass(
-    function RedirectImpl(){},
-    Component, {
+let RedirectImpl = miniCreateClass(function RedirectImpl() {}, Component, {
     // Support React < 16 with this hook
-        componentDidMount() {
-            let {
-                props: { navigate, to, from, replace = true, state, noThrow, ...props }
-            } = this;
-            navigate(insertParams(to, props), { replace, state });
-        },
+    componentDidMount() {
+        let {
+            props: { navigate, to, from, replace = true, state, noThrow, ...props }
+        } = this;
+        navigate(insertParams(to, props), { replace, state });
+    },
 
-        render() {
-            let {
-                props: { navigate, to, from, replace, state, noThrow, ...props }
-            } = this;
-            if (!noThrow) {
-                redirectTo(insertParams(to, props));
-            }
-            return null;
+    render() {
+        let {
+            props: { navigate, to, from, replace, state, noThrow, ...props }
+        } = this;
+        if (!noThrow) {
+            redirectTo(insertParams(to, props));
         }
-    });
+        return null;
+    }
+});
 let Redirect = props => (
     <Location>
         {locationContext => <RedirectImpl {...locationContext} {...props} />}
@@ -450,14 +465,13 @@ Redirect.propTypes = {
     to: PropTypes.string.isRequired
 };
 
-
 //<Match />有点类似于<Link/>，但当前路径匹配URL，那么就会呈现其内容
 // 原来React Router 4想实现的组件 https://zhuanlan.zhihu.com/p/22490775
 let Match = ({ path, children }) => (
     <BaseContext.Consumer>
         {({ baseuri }) => (
             <Location>
-                {({ navigate, location }) => {
+            {({ navigate, location }) => {
                     let resolvedPath = resolve(path, baseuri);
                     let result = match(resolvedPath, location.pathname);
                     return children({
@@ -472,7 +486,7 @@ let Match = ({ path, children }) => (
                             : null
                     });
                 }}
-            </Location>
+        </Location>
         )}
     </BaseContext.Consumer>
 );
@@ -524,15 +538,16 @@ let createRoute = basepath => element => {
     };
 };
 
-let shouldNavigate = event =>
-    !event.defaultPrevented &&
-  event.button === 0 &&
-  !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-
+function shouldNavigate(event) {
+    return (
+        !event.defaultPrevented &&
+    event.button === 0 &&
+    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+    );
+}
 ////////////////////////////////////////////////////////////////////////
 
-
-var ReachRouter = global.ReachRouter = {
+var ReachRouter = {
     //fiber底层API
     version: "VERSION",
     Link,

@@ -1,5 +1,5 @@
 /**
- * Reach Router的anujs适配版
+ * Reach Router的anujs适配版 文档见这里 https://reach.tech/router
  */
 
 (function (global, factory) {
@@ -38,15 +38,15 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-function miniCreateClass(ctor, superClass, methods, four) {
-    var className = ctor.name;
-    if (four + "" === four) {
-        className = four;
-    }
-    var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.call(this, props, context);\n            ctor.call(this, props, context, " + className + ");\n      }")(superClass, ctor);
+function miniCreateClass(ctor, superClass, methods, statics) {
+    var className = ctor.name || String(ctor).match(/^function\s(\w+)/)[1];
+    var Ctor = Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
+    if (statics) {
+        extend(Ctor, statics);
+    }
     return Ctor;
 }
 
@@ -358,13 +358,10 @@ var Location = function Location(_ref) {
         }
     );
 };
-var LocationProvider = miniCreateClass(function LocationProvider(a, b, c) {
+var LocationProvider = miniCreateClass(function LocationProvider() {
     this.state = {
         context: this.getContext(),
         refs: { unlisten: null }
-    };
-    c.defaultProps = {
-        history: globalHistory
     };
 }, Component, {
     getContext: function getContext() {
@@ -416,6 +413,10 @@ var LocationProvider = miniCreateClass(function LocationProvider(a, b, c) {
             typeof children === "function" ? children(context) : children || null
         );
     }
+}, {
+    defaultProps: {
+        history: globalHistory
+    }
 });
 var ServerLocation = function ServerLocation(_ref2) {
     var url = _ref2.url,
@@ -449,11 +450,7 @@ var Router = function Router(props) {
         }
     );
 };
-var RouterImpl = miniCreateClass(function RouterImpl(a, b, c) {
-    c.defaultProps = {
-        primary: true
-    };
-}, PureComponent, {
+var RouterImpl = miniCreateClass(function RouterImpl() {}, PureComponent, {
     render: function render() {
         var _props = this.props,
             location = _props.location,
@@ -485,7 +482,7 @@ var RouterImpl = miniCreateClass(function RouterImpl(a, b, c) {
                 Router,
                 { primary: primary },
                 element.props.children
-            ) : undefined);
+            ) : void 666);
             var FocusWrapper = primary ? FocusHandler : component;
             var wrapperProps = primary ? Object.assign({ uri: uri, location: location }, domProps) : domProps;
             return React.createElement(
@@ -500,6 +497,10 @@ var RouterImpl = miniCreateClass(function RouterImpl(a, b, c) {
         } else {
             return null;
         }
+    }
+}, {
+    defaultProps: {
+        primary: true
     }
 });
 var FocusContext = createNamedContext("Focus");
@@ -527,20 +528,6 @@ var FocusHandlerImpl = miniCreateClass(function FocusHandlerImpl(a, b, c) {
     this.requestFocus = function (node) {
         if (!_this2.state.shouldFocus) {
             node.focus();
-        }
-    };
-    c.getDerivedStateFromProps = function (nextProps, prevState) {
-        var initial = prevState.uri == null;
-        if (initial) {
-            return Object.assign({
-                shouldFocus: true
-            }, nextProps);
-        } else {
-            var myURIChanged = nextProps.uri !== prevState.uri;
-            var navigatedUpToMe = prevState.location.pathname !== nextProps.location.pathname && nextProps.location.pathname === nextProps.uri;
-            return Object.assign({
-                shouldFocus: myURIChanged || navigatedUpToMe
-            }, nextProps);
         }
     };
 }, Component, {
@@ -603,6 +590,21 @@ var FocusHandlerImpl = miniCreateClass(function FocusHandlerImpl(a, b, c) {
                 this.props.children
             )
         );
+    }
+}, {
+    getDerivedStateFromProps: function getDerivedStateFromProps(nextProps, prevState) {
+        var initial = prevState.uri == null;
+        if (initial) {
+            return Object.assign({
+                shouldFocus: true
+            }, nextProps);
+        } else {
+            var myURIChanged = nextProps.uri !== prevState.uri;
+            var navigatedUpToMe = prevState.location.pathname !== nextProps.location.pathname && nextProps.location.pathname === nextProps.uri;
+            return Object.assign({
+                shouldFocus: myURIChanged || navigatedUpToMe
+            }, nextProps);
+        }
     }
 });
 function noop$1() {}
@@ -761,10 +763,10 @@ var createRoute = function createRoute(basepath) {
         };
     };
 };
-var shouldNavigate = function shouldNavigate(event) {
+function shouldNavigate(event) {
     return !event.defaultPrevented && event.button === 0 && !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-};
-var ReachRouter = global.ReachRouter = {
+}
+var ReachRouter = {
     version: "1.4.1",
     Link: Link,
     Location: Location,

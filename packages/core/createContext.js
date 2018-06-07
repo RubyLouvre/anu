@@ -1,13 +1,6 @@
-import {
-    miniCreateClass,
-    isFn
-} from "./util";
-import {
-    Component
-} from "./Component";
-import {
-    PropTypes
-} from "./PropTypes";
+import { miniCreateClass, isFn } from "./util";
+import { Component } from "./Component";
+import { PropTypes } from "./PropTypes";
 
 let uuid = 1;
 
@@ -47,11 +40,11 @@ export function createContext(defaultValue, calculateChangedBits) {
         return obj;
     }
     let Provider = miniCreateClass(
-        function Provider(props, b, c) {
+        function Provider(props) {
             this.emitter = createEventEmitter(props.value);
-            c.childContextTypes = create({}, PropTypes.object.isRequired);
         },
-        Component, {
+        Component,
+        {
             getChildContext() {
                 return create({}, this.emitter);
             },
@@ -63,9 +56,9 @@ export function createContext(defaultValue, calculateChangedBits) {
                     if (Object.is(oldValue, newValue)) {
                         changedBits = 0; // No change
                     } else {
-                        changedBits = isFn(calculateChangedBits) ?
-                            calculateChangedBits(oldValue, newValue) :
-                            MAX_NUMBER;
+                        changedBits = isFn(calculateChangedBits)
+                            ? calculateChangedBits(oldValue, newValue)
+                            : MAX_NUMBER;
 
                         changedBits |= 0;
 
@@ -78,10 +71,14 @@ export function createContext(defaultValue, calculateChangedBits) {
             render() {
                 return this.props.children;
             }
-        });
+        },
+        {
+            childContextTypes: create({}, PropTypes.object.isRequired)
+        }
+    );
 
     let Consumer = miniCreateClass(
-        function Consumer(a, b, c) {
+        function Consumer() {
             this.observedBits = 0;
             this.state = {
                 value: this.getValue()
@@ -94,16 +91,12 @@ export function createContext(defaultValue, calculateChangedBits) {
                     });
                 }
             };
-            c.contextTypes = create({}, PropTypes.object);
         },
-        Component, {
+        Component,
+        {
             UNSAFE_componentWillReceiveProps(nextProps) {
-                let {
-                    observedBits
-                } = nextProps;
-                this.observedBits = observedBits == null ?
-                    MAX_NUMBER :
-                    observedBits;
+                let { observedBits } = nextProps;
+                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             getValue() {
                 if (this.context[contextProp]) {
@@ -116,12 +109,9 @@ export function createContext(defaultValue, calculateChangedBits) {
                 if (this.context[contextProp]) {
                     this.context[contextProp].on(this.onUpdate);
                 }
-                let {
-                    observedBits
-                } = this.props;
+                let { observedBits } = this.props;
                 // Subscribe to all changes by default
-                this.observedBits = observedBits == null ?
-                    MAX_NUMBER : observedBits;
+                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             componentWillUnmount() {
                 if (this.context[contextProp]) {
@@ -131,6 +121,9 @@ export function createContext(defaultValue, calculateChangedBits) {
             render() {
                 return this.props.children(this.state.value);
             }
+        },
+        {
+            contextTypes: create({}, PropTypes.object)
         }
     );
 

@@ -91,6 +91,7 @@ export default function createClass(spec) {
         throw "createClass(...): Class specification must implement a `render` method.";
     }
     //创建一个构造器,有四个参数
+    let statics = spec.statics;
     let Constructor = miniCreateClass(function (){
         if(!(this instanceof Component)){
             throw "must new Component(...)";
@@ -109,19 +110,18 @@ export default function createClass(spec) {
             }
         }
 
-    }, Component, spec, spec.displayName || "Component");
+    }, Component, spec, statics);
+    if(spec.displayName){
+        Constructor.displayName = spec.displayName;
+    }
 
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
     }
 
-
-    if (spec.statics) {
-        extend(Constructor, spec.statics);
-        if (spec.statics.getDefaultProps) {
-            throw "getDefaultProps is not statics";
-        }
+    if (statics && statics.getDefaultProps) {
+        throw "getDefaultProps is not statics";
     }
 
     "propTypes,contextTypes,childContextTypes,displayName".replace(
