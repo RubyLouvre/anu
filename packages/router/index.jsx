@@ -123,10 +123,10 @@ let LocationProvider = miniCreateClass(
             } = this;
             return (
                 <LocationContext.Provider value={context}>
-              {typeof children === "function"
+                    {typeof children === "function"
                         ? children(context)
                         : children || null}
-          </LocationContext.Provider>
+                </LocationContext.Provider>
             );
         }
     },
@@ -325,14 +325,14 @@ let FocusHandlerImpl = miniCreateClass(
                 <Comp
                     style={{ outline: "none", ...style }}
                     tabIndex="-1"
-              role={role}
-              ref={n => (this.node = n)}
-              {...domProps}
+                    role={role}
+                    ref={n => (this.node = n)}
+                    {...domProps}
                 >
                     <FocusContext.Provider value={this.requestFocus}>
-                {this.props.children}
-            </FocusContext.Provider>
-          </Comp>
+                        {this.props.children}
+                    </FocusContext.Provider>
+                </Comp>
             );
         }
     },
@@ -370,7 +370,7 @@ function noop() {}
 let Link = props => (
     <BaseContext.Consumer>
         {({ basepath, baseuri }) => (
-          <Location>
+            <Location>
                 {({ location, navigate }) => {
                     let anchorProps = {},
                         to,
@@ -403,19 +403,20 @@ let Link = props => (
                     if (isCurrent) {
                         anchorProps["aria-current"] = "page";
                     }
-
+                    var fn = anchorProps.onClick;
+                    anchorProps.onClick = function(event){
+                        if (fn) {
+                            fn(event);
+                        }
+                        event.preventDefault();
+                        if (shouldNavigate(event)) {
+                            event.preventDefault();
+                            navigate(href, { state, replace });
+                        }
+                    };
                     return (
                         <a
                             {...anchorProps}
-                            onClick={event => {
-                                if (anchorProps.onClick) {
-                                    anchorProps.onClick(event);
-                                }
-                                if (shouldNavigate(event)) {
-                                    event.preventDefault();
-                                    navigate(href, { state, replace });
-                                }
-                            }}
                         />
                     );
                 }}
@@ -471,7 +472,7 @@ let Match = ({ path, children }) => (
     <BaseContext.Consumer>
         {({ baseuri }) => (
             <Location>
-            {({ navigate, location }) => {
+                {({ navigate, location }) => {
                     let resolvedPath = resolve(path, baseuri);
                     let result = match(resolvedPath, location.pathname);
                     return children({
@@ -486,7 +487,7 @@ let Match = ({ path, children }) => (
                             : null
                     });
                 }}
-        </Location>
+            </Location>
         )}
     </BaseContext.Consumer>
 );

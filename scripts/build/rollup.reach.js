@@ -27,7 +27,7 @@ export default {
         babel(),
 
         license({
-            banner: "Reach Router的anujs适配版"
+            banner: "Reach Router的anujs适配版 文档见这里 https://reach.tech/router"
         }),
         cleanup(),
         replace({

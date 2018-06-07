@@ -648,17 +648,18 @@ var Link = function Link(props) {
                     if (isCurrent) {
                         anchorProps["aria-current"] = "page";
                     }
-                    return React.createElement("a", _extends({}, anchorProps, {
-                        onClick: function onClick(event) {
-                            if (anchorProps.onClick) {
-                                anchorProps.onClick(event);
-                            }
-                            if (shouldNavigate(event)) {
-                                event.preventDefault();
-                                navigate$$1(href, { state: state, replace: replace });
-                            }
+                    var fn = anchorProps.onClick;
+                    anchorProps.onClick = function (event) {
+                        if (fn) {
+                            fn(event);
                         }
-                    }));
+                        event.preventDefault();
+                        if (shouldNavigate(event)) {
+                            event.preventDefault();
+                            navigate$$1(href, { state: state, replace: replace });
+                        }
+                    };
+                    return React.createElement("a", anchorProps);
                 }
             );
         }
