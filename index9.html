@@ -5,15 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-   <!--  <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-    <script type='text/javascript' src="./lib/createClass.js"></script>
-
+    <script type='text/javascript' src="./dist/Router.js"></script>
+   
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
-
+Pro
 <body>
 
     <pre>React 15 </pre>
@@ -22,31 +19,71 @@
     <div id='root' class="root">
 
     </div>
-   
     <script type='text/babel'>
-        
-    var container = document.getElementById('root');
-    var div = container;
-    if (!window.ReactDOM) {
-        window.ReactDOM = React;
-    }
-	   
+          var container = document.getElementById("root")
+      
 
-  
-  ReactTestUtils.renderIntoDocument(
-        <select>
-          <option selected={true} />
-          <option selected={true} />
-        </select>,
-      ),
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs\n', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs\n', b, a + '' === b + '');
+                  },
+                  toMatch(reg){
+                    console.log(a, 'vs', reg, reg.test(a)); 
+                  },
+                  toWarnDev(b){
+                    throw b
+                  }
+              };
+         }; 
+ var { Router, Link  } = ReachRouter;
+ const Logo = () => <div>这是LOGO</div>
+ 
+
+const App = () => (
+  <div>
+    <h1>Tutorial!</h1>
+    <nav>
+      <Link to="/">Home</Link>{" "}
+      <Link to="dashboard">Dashboard</Link>{" "}
+      <Link to="invoices/123">Invoice 123</Link>{" "}
+      <Link to="invoices/abc">Invoice ABC</Link>
+    </nav>
     
+    <Router>
+      <Home path="/" />
+      <Dashboard path="/dashboard" />
+      <Invoice path="invoices/:invoiceId" />
+    </Router>
+  </div>
+);
 
-    ReactTestUtils.renderIntoDocument(
-      <select>
-        <option selected={true} />
-        <option selected={true} />
-      </select>,
-    );
+const Home = () => (
+  <div>
+    <h2>Welcome</h2>
+  </div>
+);
+
+const Dashboard = () => (
+  <div>
+    <h2>Dashboard</h2>
+  </div>
+);
+
+const Invoice = (props) => (
+  <div>
+    <h2>Invoice {props.invoiceId}</h2>
+  </div>
+);
+
+ReactDOM.render(<App/>, container);
+
     </script>
 
 

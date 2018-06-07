@@ -20,6 +20,9 @@ import {
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
 let React = getWindow().React;
+if(!React || !React.eventSystem){
+   throw "请先安装anujs";
+}
 let {
     unstable_deferredUpdates,
     PropTypes,

@@ -325,6 +325,9 @@ var navigate = globalHistory.navigate;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 var React = getWindow().React;
+if (!React || !React.eventSystem) {
+    throw "请先安装anujs";
+}
 var unstable_deferredUpdates = React.unstable_deferredUpdates,
     PropTypes = React.PropTypes,
     cloneElement = React.cloneElement,
