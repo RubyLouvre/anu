@@ -7,28 +7,32 @@ const license = require("rollup-plugin-license");
 const json = require("../../package.json");
 
 export default {
-
-    input: "./packages/render/noop/index.js",
+    input: "./packages/router/index.jsx",
+    
     output: {
         strict: false,
         format: "umd",
         exports: "default",
-        file:  "./dist/ReactNoop.js",
-        name: "ReactNoop",
-      
+        file:  "./dist/Router.js",
+        name: "ReachRouter",
+        globals: {
+            react: "React",
+            "react-dom": "ReactDOM"
+        }
     },
+    external: ["react", "react-dom"],
+    
     plugins: [
 
         babel(),
 
         license({
-            banner: `此个版本专门用于测试\nby 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,"")}
-      IE9+
-      `
+            banner: "Reach Router的anujs适配版"
         }),
         cleanup(),
         replace({
             // ... do replace before commonjs
+            "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
             patterns: [
                 {
                     test: "VERSION", 
@@ -38,5 +42,7 @@ export default {
             ]
         }),
         filesize()
-    ]
+    ],
+    //moduleName: "Router",
+   
 };

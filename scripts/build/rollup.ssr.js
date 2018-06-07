@@ -1,12 +1,22 @@
 import babel from "rollup-plugin-babel";
-import cleanup from 'rollup-plugin-cleanup';
+import cleanup from "rollup-plugin-cleanup";
 //import builtins from "rollup-plugin-node-builtins";
 
 export default {
-    entry: "./server/index.js",
-    format: "umd",
-    exports: "default",
-    dest: "./dist/ReactDOMServer.js",
+ 
+
+    input: "./packages/render/server/index.js",
+    
+    output: {
+        strict: false,
+        format: "umd",
+        exports: "default",
+        file:  "./dist/ReactDOMServer.js",
+        name: "ReactDOMServer",
+      
+    },
+
+
     plugins: [babel({
         babelrc: false,
         presets: [
@@ -18,6 +28,5 @@ export default {
             ]
         ]
     }),cleanup()],
-    moduleName: "ReactDOMServer",
-    useStrict: false
+   
 };

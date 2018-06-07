@@ -10,7 +10,6 @@
 }(this, (function () {
 
 var arrayPush = Array.prototype.push;
-
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var gSBU = "getSnapshotBeforeUpdate";
 var gDSFP = "getDerivedStateFromProps";
@@ -18,7 +17,6 @@ var hasSymbol = typeof Symbol === "function" && Symbol["for"];
 var effects = [];
 var topFibers = [];
 var topNodes = [];
-
 var emptyObject = {};
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 function noop() {}
@@ -300,9 +298,9 @@ function escape(key) {
     });
     return '$' + escapedString;
 }
-var lastText = void 0;
-var flattenIndex = void 0;
-var flattenObject = void 0;
+var lastText = void 0,
+    flattenIndex = void 0,
+    flattenObject = void 0;
 function flattenCb(context, child, key, childType) {
     if (child === null) {
         lastText = null;
@@ -755,19 +753,19 @@ fakeDoc.documentElement = new DOMElement("html");
 fakeDoc.body = new DOMElement("body");
 fakeDoc.nodeName = "#document";
 fakeDoc.textContent = "";
-var win$1 = getWindow();
-var inBrowser = !!win$1.alert;
+var win = getWindow();
+var inBrowser = !!win.alert;
 if (!inBrowser) {
-    win$1.document = fakeDoc;
+    win.document = fakeDoc;
 }
-var document = win$1.document;
+var document = win.document;
 var versions = {
     88: 7,
     80: 6,
     "00": NaN,
     "08": NaN
 };
-var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win$1.XMLHttpRequest)];
+var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
 var modern = /NaN|undefined/.test(msie) || msie > 8;
 function contains(a, b) {
     if (b) {
@@ -2575,7 +2573,7 @@ function disposeFiber(fiber, force) {
 var macrotasks = Renderer.macrotasks;
 var boundaries = Renderer.boundaries;
 var batchedtasks = [];
-function render$1(vnode, root, callback) {
+function render(vnode, root, callback) {
     var container = createContainer(root),
         immediateUpdate = false;
     if (!container.hostRoot) {
@@ -2935,9 +2933,9 @@ function insertElement(fiber) {
         throw e;
     }
 }
-render$1.Render = Renderer;
+render.Render = Renderer;
 var DOMRenderer = createRenderer({
-    render: render$1,
+    render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps,
@@ -3005,24 +3003,24 @@ var DOMRenderer = createRenderer({
     }
 });
 
-var win = getWindow();
-var prevReact = win.React;
+var win$1 = getWindow();
+var prevReact = win$1.React;
 var React = void 0;
 if (prevReact && prevReact.eventSystem) {
     React = prevReact;
 } else {
-    var render = DOMRenderer.render,
+    var render$1 = DOMRenderer.render,
         eventSystem = DOMRenderer.eventSystem,
         unstable_renderSubtreeIntoContainer = DOMRenderer.unstable_renderSubtreeIntoContainer,
         unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
-    React = win.React = win.ReactDOM = {
+    React = win$1.React = win$1.ReactDOM = {
         eventSystem: eventSystem,
         findDOMNode: findDOMNode,
         unmountComponentAtNode: unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
         version: "1.4.1",
-        render: render,
-        hydrate: render,
+        render: render$1,
+        hydrate: render$1,
         unstable_batchedUpdates: DOMRenderer.batchedUpdates,
         Fragment: Fragment,
         PropTypes: PropTypes,

@@ -10,13 +10,13 @@ import {
     match,
     insertParams,
     validateRedirect
-} from "./lib/utils";
+} from "./utils";
 import {
     globalHistory,
     navigate,
     createHistory,
     createMemorySource
-} from "./lib/history";
+} from "./history";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -354,15 +354,15 @@ let FocusHandlerImpl = miniCreateClass(
  * 4. state
  * 它实质是包了两层的A元素
  */
-function noop(){};
+function noop(){}
 let Link = props => (
     <BaseContext.Consumer>
         {({ basepath, baseuri }) => (
             <Location>
                 {({ location, navigate }) => {
-                    let anchorProps = {}, to, state, replace, getProps = noop
+                    let anchorProps = {}, to, state, replace, getProps = noop;
                     for(let key in props){
-                        let val = props[key]
+                        let val = props[key];
                         if(key === "to"){
                             to = val;
                         }else if(key === "state" ){

@@ -8,10 +8,16 @@ const json = require("../../package.json");
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    entry: "./packages/render/dom/index.js",
-    format: "umd",
-    exports: "default",
-    dest: "./dist/React.js",
+
+
+    input: "./packages/render/dom/index.js",
+    output: {
+        strict: false,
+        format: "umd",
+        exports: "default",
+        file:  "./dist/React.js",
+        name: "React",
+    },
     plugins: [
 
         babel(),
@@ -34,6 +40,5 @@ export default {
         }),
         filesize()
     ],
-    moduleName: "React",
-    useStrict: false
+
 };
