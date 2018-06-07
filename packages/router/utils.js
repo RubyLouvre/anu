@@ -157,9 +157,10 @@ function resolve(to, base) {
     if (startsWith(to, "/")) {
         return to;
     }
-
-    let [toPathname, toQuery] = to.split("?");
-    let [basePathname] = base.split("?");
+    let _arr = to.split("?");
+    let toPathname = _arr[0];
+    let toQuery  = _arr[1];
+    let basePathname = base.split("?").shift();
 
     let toSegments = segmentize(toPathname);
     let baseSegments = segmentize(basePathname);
@@ -182,7 +183,7 @@ function resolve(to, base) {
     // .././one   /a/b/c/d    =>  /a/b/c/one
     let allSegments = baseSegments.concat(toSegments);
     let segments = [];
-    for (let i = 0, l = allSegments.length; i < l; i++) {
+    for (let i = 0, n = allSegments.length; i < n; i++) {
         let segment = allSegments[i];
         if (segment === "..") {
             segments.pop();

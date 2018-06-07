@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from "react";
-import { miniCreateClass } from "react-core/util";
+//import { React } from "react";
+import { miniCreateClass, getWindow } from "react-core/util";
 
 import {
     startsWith,
@@ -21,7 +21,8 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
-let { unstable_deferredUpdates, PropTypes, createContext, Component } = React;
+let React = getWindow().React;
+let { unstable_deferredUpdates, PropTypes, cloneElement, PureComponent, createContext, Children, Component } = React;
 if (unstable_deferredUpdates === undefined) {
     unstable_deferredUpdates = fn => fn();
 }
@@ -169,7 +170,7 @@ let RouterImpl = miniCreateClass(
             primary: true
         };
     },
-    React.PureComponent,
+    PureComponent,
     {
         render() {
             let {
@@ -182,7 +183,7 @@ let RouterImpl = miniCreateClass(
                 baseuri,
                 ...domProps
             } = this.props;
-            let routes = React.Children.map(children, createRoute(basepath));
+            let routes = Children.map(children, createRoute(basepath));
             let { pathname } = location;
 
             let match = pick(routes, pathname);
@@ -205,13 +206,13 @@ let RouterImpl = miniCreateClass(
                     navigate: (to, options) => navigate(resolve(to, uri), options)
                 };
 
-                let clone = React.cloneElement(
+                let clone = cloneElement(
                     element,
                     props,
                     element.props.children ? (
                         <Router primary={primary}>{element.props.children}</Router>
                     ) : (
-                        undefined
+                        void 666
                     )
                 );
 
@@ -529,7 +530,11 @@ let shouldNavigate = event =>
   !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 
 ////////////////////////////////////////////////////////////////////////
-export {
+
+
+var ReachRouter = global.ReachRouter = {
+    //fiber底层API
+    version: "VERSION",
     Link,
     Location,
     LocationProvider,
@@ -543,3 +548,5 @@ export {
     navigate,
     redirectTo
 };
+
+export default ReachRouter;

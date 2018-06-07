@@ -1,6 +1,6 @@
 import {
     getWindow
-} from "babel-core/uril";
+} from "react-core/util";
 
 //伪造一个Location对象
 function getLocation(source) {
@@ -101,30 +101,32 @@ let createMemorySource = (initialPathname = "/") => {
                 return states[index];
             },
             pushState(state, _, uri) {
-                let [pathname, search = ""] = uri.split("?");
                 index++;
-                stack.push({
-                    pathname,
-                    search
-                });
+                stack.push(uri2obj(uri));
                 states.push(state);
             },
             replaceState(state, _, uri) {
-                let [pathname, search = ""] = uri.split("?");
-                stack[index] = {
-                    pathname,
-                    search
-                };
+                stack[index] = uri2obj(uri);
                 states[index] = state;
             }
         }
     };
 };
 
+function uri2obj(uri){
+    let arr = uri.split("?");
+    let pathname = arr[0];
+    let search = arr[1] || "";
+    return {
+        pathname,
+        search
+    };
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // global history - uses window.history as the source if available, otherwise a
 // memory history
-let win = getWindow()
+let win = getWindow();
 let getSource = () => {
     return win.location ? win : createMemorySource();
 };
