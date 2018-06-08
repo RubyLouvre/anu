@@ -257,7 +257,7 @@ let initialRender = true;
 let focusHandlerCount = 0;
 
 let FocusHandlerImpl = miniCreateClass(
-    function FocusHandlerImpl(a, b, c) {
+    function FocusHandlerImpl() {
         this.state = {};
         this.requestFocus = node => {
             if (!this.state.shouldFocus) {

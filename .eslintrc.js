@@ -37,7 +37,7 @@ module.exports = {
         ],
         "quotes": [
             "error",
-            "double"
+            "single"
         ],
         "curly": "error",
         "brace-style": ["error", "1tbs"],
