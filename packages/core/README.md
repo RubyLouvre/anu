@@ -1,4 +1,4 @@
-react-core
+## react-core
 
 只涉及React的一些工厂类，不涉及虚拟DOM与界面是如何交互更新的
 

@@ -1,5 +1,4 @@
 import * as Redux from 'redux'
-import * as R from '../typings/rematch'
 import isListener from './utils/isListener'
 
 function composeEnhancersWithDevtools(devtoolOptions = {}) {
