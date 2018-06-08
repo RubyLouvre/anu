@@ -11,23 +11,20 @@ function getLocation(source) {
     };
 }
 //伪造一个History对象
-let createHistory = (source) => {
+function createHistory(source) {
     let listeners = [];
     let location = getLocation(source);
     let transitioning = false;
     let resolveTransition = () => {};
 
-    return {
-        get location() {
-            return location;
-        },
+    let target = {
+        //减少魔法，提高兼容性，将只读的访问器属性改成普通属性
+        location,
 
-        get transitioning() {
-            return transitioning;
-        },
+        transitioning,
 
         _onTransitionComplete() {
-            transitioning = false;
+            target.transitioning = transitioning = false;
             resolveTransition();
         },
 
@@ -35,7 +32,7 @@ let createHistory = (source) => {
             listeners.push(listener);
 
             let popstateListener = () => {
-                location = getLocation(source);
+                location = target.location = getLocation(source);
                 listener();
             };
 
@@ -65,55 +62,61 @@ let createHistory = (source) => {
                 source.location[replace ? "replace" : "assign"](to);
             }
 
-            location = getLocation(source);
-            transitioning = true;
+            target.location = location = getLocation(source);
+            target.transitioning = transitioning = true;
+
             let transition = new Promise(res => (resolveTransition = res));
             listeners.forEach(fn => fn());
             return transition;
         }
     };
-};
+    return target;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // 伪造一个window对象
-let createMemorySource = (initialPathname = "/") => {
+function createMemorySource(initialPathname = "/") {
     let index = 0;
+    let states = [];
     let stack = [{
         pathname: initialPathname,
         search: ""
     }];
-    let states = [];
 
-    return {
-        get location() {
-            return stack[index];
-        },
+    let target = {
+        // location
         addEventListener(name, fn) {},
         removeEventListener(name, fn) {},
         history: {
-            get entries() {
-                return stack;
-            },
-            get index() {
-                return index;
-            },
-            get state() {
-                return states[index];
-            },
+            // index
+            // entries,
+            // state
             pushState(state, _, uri) {
                 index++;
                 stack.push(uri2obj(uri));
                 states.push(state);
+                sync(target);
             },
             replaceState(state, _, uri) {
                 stack[index] = uri2obj(uri);
                 states[index] = state;
+                sync(target);
             }
         }
     };
-};
 
-function uri2obj(uri){
+    function sync(target) {
+        var history = target.history;
+        history.index = index;
+        history.entries = stack;
+        history.state = states[index];
+        target.location = stack[index];
+    }
+    sync(target);
+    return target;
+}
+
+function uri2obj(uri) {
     let arr = uri.split("?");
     let pathname = arr[0];
     let search = arr[1] || "";

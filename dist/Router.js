@@ -211,26 +211,22 @@ function getLocation(source) {
         key: source.history.state && source.history.state.key || "initial"
     });
 }
-var createHistory = function createHistory(source) {
+function createHistory(source) {
     var listeners = [];
     var location = getLocation(source);
     var transitioning = false;
     var resolveTransition = function resolveTransition() {};
-    return {
-        get location() {
-            return location;
-        },
-        get transitioning() {
-            return transitioning;
-        },
+    var target = {
+        location: location,
+        transitioning: transitioning,
         _onTransitionComplete: function _onTransitionComplete() {
-            transitioning = false;
+            target.transitioning = transitioning = false;
             resolveTransition();
         },
         listen: function listen(listener) {
             listeners.push(listener);
             var popstateListener = function popstateListener() {
-                location = getLocation(source);
+                location = target.location = getLocation(source);
                 listener();
             };
             source.addEventListener("popstate", popstateListener);
@@ -258,8 +254,8 @@ var createHistory = function createHistory(source) {
             } catch (e) {
                 source.location[replace ? "replace" : "assign"](to);
             }
-            location = getLocation(source);
-            transitioning = true;
+            target.location = location = getLocation(source);
+            target.transitioning = transitioning = true;
             var transition = new Promise(function (res) {
                 return resolveTransition = res;
             });
@@ -269,43 +265,43 @@ var createHistory = function createHistory(source) {
             return transition;
         }
     };
-};
-var createMemorySource = function createMemorySource() {
+    return target;
+}
+function createMemorySource() {
     var initialPathname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "/";
     var index = 0;
+    var states = [];
     var stack = [{
         pathname: initialPathname,
         search: ""
     }];
-    var states = [];
-    return {
-        get location() {
-            return stack[index];
-        },
+    var target = {
         addEventListener: function addEventListener(name, fn) {},
         removeEventListener: function removeEventListener(name, fn) {},
         history: {
-            get entries() {
-                return stack;
-            },
-            get index() {
-                return index;
-            },
-            get state() {
-                return states[index];
-            },
             pushState: function pushState(state, _, uri) {
                 index++;
                 stack.push(uri2obj(uri));
                 states.push(state);
+                sync(target);
             },
             replaceState: function replaceState(state, _, uri) {
                 stack[index] = uri2obj(uri);
                 states[index] = state;
+                sync(target);
             }
         }
     };
-};
+    function sync(target) {
+        var history = target.history;
+        history.index = index;
+        history.entries = stack;
+        history.state = states[index];
+        target.location = stack[index];
+    }
+    sync(target);
+    return target;
+}
 function uri2obj(uri) {
     var arr = uri.split("?");
     var pathname = arr[0];

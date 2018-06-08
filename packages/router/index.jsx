@@ -78,11 +78,7 @@ let LocationProvider = miniCreateClass(
 
         componentDidCatch(error, info) {
             if (isRedirect(error)) {
-                let {
-                    props: {
-                        history: { navigate }
-                    }
-                } = this;
+                let  { navigate } = this.props.history;
                 navigate(error.uri, { replace: true });
             } else {
                 throw error;
