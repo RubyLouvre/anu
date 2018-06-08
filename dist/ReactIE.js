@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-07
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-08
  */
 
 (function (global, factory) {
@@ -611,11 +611,12 @@ function createContext(defaultValue, calculateChangedBits) {
         obj[contextProp] = value;
         return obj;
     }
+    var emitter = void 0;
     var Provider = miniCreateClass(function Provider(props) {
-        this.emitter = createEventEmitter(props.value);
+        emitter = createEventEmitter(props.value);
     }, Component, {
         getChildContext: function getChildContext() {
-            return create({}, this.emitter);
+            return create({}, "anu");
         },
         UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
             if (this.props.value !== nextProps.value) {
@@ -628,7 +629,7 @@ function createContext(defaultValue, calculateChangedBits) {
                     changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                     changedBits |= 0;
                     if (changedBits !== 0) {
-                        this.emitter.set(nextProps.value, changedBits);
+                        emitter.set(nextProps.value, changedBits);
                     }
                 }
             }
@@ -637,7 +638,7 @@ function createContext(defaultValue, calculateChangedBits) {
             return this.props.children;
         }
     }, {
-        childContextTypes: create({}, PropTypes.object.isRequired)
+        childContextTypes: create({}, PropTypes.string.isRequired)
     });
     var Consumer = miniCreateClass(function Consumer() {
         var _this = this;
@@ -660,28 +661,28 @@ function createContext(defaultValue, calculateChangedBits) {
         },
         getValue: function getValue() {
             if (this.context[contextProp]) {
-                return this.context[contextProp].get();
+                return emitter.get();
             } else {
                 return defaultValue;
             }
         },
         componentDidMount: function componentDidMount() {
             if (this.context[contextProp]) {
-                this.context[contextProp].on(this.onUpdate);
+                emitter.on(this.onUpdate);
             }
             var observedBits = this.props.observedBits;
             this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
         },
         componentWillUnmount: function componentWillUnmount() {
             if (this.context[contextProp]) {
-                this.context[contextProp].off(this.onUpdate);
+                emitter.off(this.onUpdate);
             }
         },
         render: function render() {
             return this.props.children(this.state.value);
         }
     }, {
-        contextTypes: create({}, PropTypes.object)
+        contextTypes: create({}, PropTypes.string)
     });
     return {
         Provider: Provider,
