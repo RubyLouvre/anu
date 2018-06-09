@@ -1,4 +1,4 @@
-## react-dom
+## dom-renderer
 
 ReactDOM的迷你实现
 
