@@ -21,10 +21,8 @@ export default ({
     // combine models to generate reducers
     this.mergeReducers = (nextReducers = {}) => {
         // merge new reducers with existing reducers
-        this.reducers = { ...this.reducers,
-            ...nextReducers
-        }
-        if (!Object.keys(this.reducers).length) {
+        this.reducers = Object.assign({},this.reducers,nextReducers)
+        if (!isEmptyObject(this.reducers)) {
             // no reducers, just return state
             return (state) => state;
         }
@@ -72,4 +70,11 @@ export default ({
     this.store = createStore(rootReducer, initialState, enhancers);
 
     return this;
+}
+
+function isEmptyObject(obj){
+    for(var i in obj){
+        return false;
+    }
+    return true;
 }

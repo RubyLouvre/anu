@@ -14,9 +14,11 @@ const dispatches = {}
  * calls store.dispatch in all stores
  * @param action
  */
-export const dispatch = (action) => {
-    for (const storeName of Object.keys(stores)) {
-        stores[storeName].dispatch(action)
+export function dispatch(action) {
+    for(let name in stores){
+        if(stores.hasOwnProperty(name)){
+            stores[name].dispatch(action);
+        }
     }
 }
 
@@ -26,10 +28,12 @@ export const dispatch = (action) => {
  * loads state from all stores
  * returns an object with key: storeName, value: store.getState()
  */
-export const getState = () => {
-    const state = {}
-    for (const name of Object.keys(stores)) {
-        state[name] = stores[name].getState()
+export function getState(){
+    const state = {};
+    for(let name in stores){
+        if(stores.hasOwnProperty(name)){
+            state[name] =  stores[name].getState()
+        }
     }
     return state;
 }

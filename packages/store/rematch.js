@@ -1,5 +1,3 @@
-import * as R from '../typings/rematch';
-import pluginFactory from './pluginFactory';
 import dispatchPlugin from './plugins/dispatch';
 import effectsPlugin from './plugins/effects';
 import createRedux from './redux';
