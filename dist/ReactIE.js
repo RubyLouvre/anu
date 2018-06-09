@@ -611,12 +611,11 @@ function createContext(defaultValue, calculateChangedBits) {
         obj[contextProp] = value;
         return obj;
     }
-    var emitter = void 0;
     var Provider = miniCreateClass(function Provider(props) {
-        emitter = createEventEmitter(props.value);
+        this.emitter = createEventEmitter(props.value);
     }, Component, {
         getChildContext: function getChildContext() {
-            return create({}, "anu");
+            return create({}, this.emitter);
         },
         UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
             if (this.props.value !== nextProps.value) {
@@ -629,7 +628,7 @@ function createContext(defaultValue, calculateChangedBits) {
                     changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                     changedBits |= 0;
                     if (changedBits !== 0) {
-                        emitter.set(nextProps.value, changedBits);
+                        this.emitter.set(nextProps.value, changedBits);
                     }
                 }
             }
@@ -638,14 +637,15 @@ function createContext(defaultValue, calculateChangedBits) {
             return this.props.children;
         }
     }, {
-        childContextTypes: create({}, PropTypes.string.isRequired)
+        childContextTypes: create({}, PropTypes.object.isRequired)
     });
-    var Consumer = miniCreateClass(function Consumer() {
+    var Consumer = miniCreateClass(function Consumer(props, context) {
         var _this = this;
         this.observedBits = 0;
         this.state = {
             value: this.getValue()
         };
+        this.emitter = context[contextProp];
         this.onUpdate = function (newValue, changedBits) {
             var observedBits = _this.observedBits | 0;
             if ((observedBits & changedBits) !== 0) {
@@ -660,29 +660,29 @@ function createContext(defaultValue, calculateChangedBits) {
             this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
         },
         getValue: function getValue() {
-            if (this.context[contextProp]) {
-                return emitter.get();
+            if (this.emitter) {
+                return this.emitter.get();
             } else {
                 return defaultValue;
             }
         },
         componentDidMount: function componentDidMount() {
-            if (this.context[contextProp]) {
-                emitter.on(this.onUpdate);
+            if (this.emitter) {
+                this.emitter.on(this.onUpdate);
             }
             var observedBits = this.props.observedBits;
             this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
         },
         componentWillUnmount: function componentWillUnmount() {
-            if (this.context[contextProp]) {
-                emitter.off(this.onUpdate);
+            if (this.emitter) {
+                this.emitter.off(this.onUpdate);
             }
         },
         render: function render() {
             return this.props.children(this.state.value);
         }
     }, {
-        contextTypes: create({}, PropTypes.string)
+        contextTypes: create({}, PropTypes.object)
     });
     return {
         Provider: Provider,

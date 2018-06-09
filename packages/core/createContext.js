@@ -46,14 +46,13 @@ export function createContext(defaultValue, calculateChangedBits) {
         obj[contextProp] = value;
         return obj;
     }
-    let emitter;
     let Provider = miniCreateClass(
         function Provider(props) {
-            emitter = createEventEmitter(props.value);
+            this.emitter = createEventEmitter(props.value);
         },
         Component, {
             getChildContext() {
-                return create({}, "anu");
+                return create({}, this.emitter);
             },
             UNSAFE_componentWillReceiveProps(nextProps) {
                 if (this.props.value !== nextProps.value) {
@@ -70,7 +69,7 @@ export function createContext(defaultValue, calculateChangedBits) {
                         changedBits |= 0;
 
                         if (changedBits !== 0) {
-                            emitter.set(nextProps.value, changedBits);
+                            this.emitter.set(nextProps.value, changedBits);
                         }
                     }
                 }
@@ -79,16 +78,17 @@ export function createContext(defaultValue, calculateChangedBits) {
                 return this.props.children;
             }
         }, {
-            childContextTypes: create({}, PropTypes.string.isRequired)
+            childContextTypes: create({}, PropTypes.object.isRequired)
         }
     );
 
     let Consumer = miniCreateClass(
-        function Consumer() {
+        function Consumer(props, context) {
             this.observedBits = 0;
             this.state = {
                 value: this.getValue()
             };
+            this.emitter = context[contextProp];
             this.onUpdate = (newValue, changedBits) => {
                 const observedBits = this.observedBits | 0;
                 if ((observedBits & changedBits) !== 0) {
@@ -106,15 +106,15 @@ export function createContext(defaultValue, calculateChangedBits) {
                 this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             getValue() {
-                if (this.context[contextProp]) {
-                    return emitter.get();
+                if (this.emitter) {
+                    return this.emitter.get();
                 } else {
                     return defaultValue;
                 }
             },
             componentDidMount() {
-                if (this.context[contextProp]) {
-                    emitter.on(this.onUpdate);
+                if (this.emitter) {
+                    this.emitter.on(this.onUpdate);
                 }
                 let {
                     observedBits
@@ -123,15 +123,15 @@ export function createContext(defaultValue, calculateChangedBits) {
                 this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             componentWillUnmount() {
-                if (this.context[contextProp]) {
-                    emitter.off(this.onUpdate);
+                if (this.emitter) {
+                    this.emitter.off(this.onUpdate);
                 }
             },
             render() {
                 return this.props.children(this.state.value);
             }
         }, {
-            contextTypes: create({}, PropTypes.string)
+            contextTypes: create({}, PropTypes.object)
         }
     );
 
