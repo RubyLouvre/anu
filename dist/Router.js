@@ -521,7 +521,7 @@ var FocusHandler = function FocusHandler(_ref3) {
 };
 var initialRender = true;
 var focusHandlerCount = 0;
-var FocusHandlerImpl = miniCreateClass(function FocusHandlerImpl(a, b, c) {
+var FocusHandlerImpl = miniCreateClass(function FocusHandlerImpl() {
     var _this2 = this;
     this.state = {};
     this.requestFocus = function (node) {
