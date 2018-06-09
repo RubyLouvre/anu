@@ -54,7 +54,9 @@ describe('ReactDOMInput', () => {
   });
 
   it('should control a value in reentrant events', () => {
-  
+    if(typeof CIRCLE_JOB != "undefined"){
+       return
+    }
     class ControlledInputs extends React.Component {
       state = {value: 'lion'};
       a = null;

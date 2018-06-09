@@ -32,22 +32,13 @@ export function getState(){
     const state = {};
     for(let name in stores){
         if(stores.hasOwnProperty(name)){
-            state[name] =  stores[name].getState()
+            state[name] =  stores[name].getState();
         }
     }
     return state;
 }
 
-/**
- * global getDispatch
- *
- * Usage: const dispatch = getDispatch<models>()
- * this is for autocomplete purposes only
- * returns the dispatch object with typings information
- */
-export function getDispatch() {
-    return dispatch;
-}
+
 
 /**
  * global createModel
@@ -56,8 +47,8 @@ export function getDispatch() {
  * this is for autocomplete purposes only
  * returns the same object that was received as argument
  */
-export function createModel() {
-    return model
+export function createModel(model) {
+    return model;
 }
 
 /**
@@ -72,11 +63,11 @@ export function init(initConfig = {}) {
     const config = mergeConfig({ ...initConfig,
         name
     })
-    const store = new Rematch(config).init()
-    stores[name] = store
+    const store = new Rematch(config).init();
+    stores[name] = store;
     for (const modelName of Object.keys(store.dispatch)) {
         if (!dispatch[modelName]) {
-            dispatch[modelName] = {}
+            dispatch[modelName] = {};
         }
         for (const actionName of Object.keys(store.dispatch[modelName])) {
             if (!isListener(actionName)) {
