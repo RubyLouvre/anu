@@ -12,8 +12,8 @@ export default {
     output: {
         strict: false,
         format: "umd",
-      //  exports: "default",
-        file:  "./dist/rematch.js",
+        exports: "default",
+        file:  "./dist/Rematch.js",
         name: "Rematch",
         globals: {
             redux: "Redux",
@@ -41,6 +41,5 @@ export default {
         }),
         filesize()
     ],
-    //moduleName: "Router",
    
 };

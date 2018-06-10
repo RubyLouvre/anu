@@ -1,4 +1,6 @@
-import Rematch from './rematch'
+import {
+    Rematch as RematchCore
+} from './rematch'
 import {
     isListener,
     mergeConfig
@@ -14,9 +16,9 @@ const dispatches = {}
  * calls store.dispatch in all stores
  * @param action
  */
-export function dispatch(action) {
-    for(let name in stores){
-        if(stores.hasOwnProperty(name)){
+function dispatch(action) {
+    for (let name in stores) {
+        if (stores.hasOwnProperty(name)) {
             stores[name].dispatch(action);
         }
     }
@@ -28,11 +30,11 @@ export function dispatch(action) {
  * loads state from all stores
  * returns an object with key: storeName, value: store.getState()
  */
-export function getState(){
+function getState() {
     const state = {};
-    for(let name in stores){
-        if(stores.hasOwnProperty(name)){
-            state[name] =  stores[name].getState();
+    for (let name in stores) {
+        if (stores.hasOwnProperty(name)) {
+            state[name] = stores[name].getState();
         }
     }
     return state;
@@ -47,7 +49,7 @@ export function getState(){
  * this is for autocomplete purposes only
  * returns the same object that was received as argument
  */
-export function createModel(model) {
+function createModel(model) {
     return model;
 }
 
@@ -58,12 +60,12 @@ export function createModel(model) {
  * with a set configuration
  * @param config
  */
-export function init(initConfig = {}) {
+function init(initConfig = {}) {
     const name = initConfig.name || Object.keys(stores).length.toString()
     const config = mergeConfig({ ...initConfig,
         name
     })
-    const store = new Rematch(config).init();
+    const store = new RematchCore(config).init();
     stores[name] = store;
     for (const modelName of Object.keys(store.dispatch)) {
         if (!dispatch[modelName]) {

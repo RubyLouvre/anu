@@ -3,78 +3,12 @@
  */
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('redux')) :
-	typeof define === 'function' && define.amd ? define(['exports', 'redux'], factory) :
-	(factory((global.Rematch = {}),global.Redux));
-}(this, (function (exports,Redux) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('redux')) :
+	typeof define === 'function' && define.amd ? define(['redux'], factory) :
+	(global.Rematch = factory(global.Redux));
+}(this, (function (Redux) {
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-var dispatchPlugin = {
-    exposed: {
-        storeDispatch: function storeDispatch(action) {
-            console.warn('Warning: store not yet loaded');
-        },
-        storeGetState: function storeGetState() {
-            console.warn('Warning: store not yet loaded');
-        },
-        dispatch: function dispatch(action, state) {
-            return this.storeDispatch(action, state);
-        },
-        createDispatcher: function createDispatcher(modelName, reducerName) {
-            var _this = this;
-            return function () {
-                var _ref = _asyncToGenerator(              regeneratorRuntime.mark(function _callee(payload, meta) {
-                    var action;
-                    return regeneratorRuntime.wrap(function _callee$(_context) {
-                        while (1) {
-                            switch (_context.prev = _context.next) {
-                                case 0:
-                                    action = {
-                                        type: modelName + '/' + reducerName
-                                    };
-                                    if (typeof payload !== 'undefined') {
-                                        action.payload = payload;
-                                    }
-                                    if (typeof meta !== 'undefined') {
-                                        action.meta = meta;
-                                    }
-                                    if (!_this.dispatch[modelName][reducerName].isEffect) {
-                                        _context.next = 5;
-                                        break;
-                                    }
-                                    return _context.abrupt('return', _this.dispatch(action, _this.storeGetState()));
-                                case 5:
-                                    return _context.abrupt('return', _this.dispatch(action));
-                                case 6:
-                                case 'end':
-                                    return _context.stop();
-                            }
-                        }
-                    }, _callee, _this);
-                }));
-                return function (_x, _x2) {
-                    return _ref.apply(this, arguments);
-                };
-            }();
-        }
-    },
-    onStoreCreated: function onStoreCreated(store) {
-        this.storeDispatch = store.dispatch;
-        this.storeGetState = store.getState;
-    },
-    onModel: function onModel(model) {
-        this.dispatch[model.name] = {};
-        if (!model.reducers) {
-            return;
-        }
-        for (var reducerName in model.reducers) {
-            this.validate([[!!reducerName.match(/\/.+\//), 'Invalid reducer name (' + model.name + '/' + reducerName + ')'], [typeof model.reducers[reducerName] !== 'function', 'Invalid reducer (' + model.name + '/' + reducerName + '). Must be a function']]);
-            this.dispatch[model.name][reducerName] = this.createDispatcher.apply(this, [model.name, reducerName]);
-        }
-    }
-};
-
-function _asyncToGenerator$1(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 var effectsPlugin = {
     exposed: {
         effects: {}
@@ -94,7 +28,7 @@ var effectsPlugin = {
         var _this = this;
         return function (next) {
             return function () {
-                var _ref = _asyncToGenerator$1(              regeneratorRuntime.mark(function _callee(action, state) {
+                var _ref = _asyncToGenerator(              regeneratorRuntime.mark(function _callee(action, state) {
                     return regeneratorRuntime.wrap(function _callee$(_context) {
                         while (1) {
                             switch (_context.prev = _context.next) {
@@ -121,6 +55,70 @@ var effectsPlugin = {
                 };
             }();
         };
+    }
+};
+var dispatchPlugin = {
+    exposed: {
+        storeDispatch: function storeDispatch(action) {
+            console.warn('Warning: store not yet loaded');
+        },
+        storeGetState: function storeGetState() {
+            console.warn('Warning: store not yet loaded');
+        },
+        dispatch: function dispatch(action, state) {
+            return this.storeDispatch(action, state);
+        },
+        createDispatcher: function createDispatcher(modelName, reducerName) {
+            var _this2 = this;
+            return function () {
+                var _ref2 = _asyncToGenerator(              regeneratorRuntime.mark(function _callee2(payload, meta) {
+                    var action;
+                    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                        while (1) {
+                            switch (_context2.prev = _context2.next) {
+                                case 0:
+                                    action = {
+                                        type: modelName + '/' + reducerName
+                                    };
+                                    if (typeof payload !== 'undefined') {
+                                        action.payload = payload;
+                                    }
+                                    if (typeof meta !== 'undefined') {
+                                        action.meta = meta;
+                                    }
+                                    if (!_this2.dispatch[modelName][reducerName].isEffect) {
+                                        _context2.next = 5;
+                                        break;
+                                    }
+                                    return _context2.abrupt('return', _this2.dispatch(action, _this2.storeGetState()));
+                                case 5:
+                                    return _context2.abrupt('return', _this2.dispatch(action));
+                                case 6:
+                                case 'end':
+                                    return _context2.stop();
+                            }
+                        }
+                    }, _callee2, _this2);
+                }));
+                return function (_x3, _x4) {
+                    return _ref2.apply(this, arguments);
+                };
+            }();
+        }
+    },
+    onStoreCreated: function onStoreCreated(store) {
+        this.storeDispatch = store.dispatch;
+        this.storeGetState = store.getState;
+    },
+    onModel: function onModel(model) {
+        this.dispatch[model.name] = {};
+        if (!model.reducers) {
+            return;
+        }
+        for (var reducerName in model.reducers) {
+            this.validate([[!!reducerName.match(/\/.+\//), 'Invalid reducer name (' + model.name + '/' + reducerName + ')'], [typeof model.reducers[reducerName] !== 'function', 'Invalid reducer (' + model.name + '/' + reducerName + '). Must be a function']]);
+            this.dispatch[model.name][reducerName] = this.createDispatcher.apply(this, [model.name, reducerName]);
+        }
     }
 };
 
@@ -290,21 +288,49 @@ function isEmptyObject(obj) {
     return true;
 }
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 var corePlugins = [dispatchPlugin, effectsPlugin];
-var Rematch = function () {
-    function Rematch(config) {
-        var _this = this;
-        _classCallCheck(this, Rematch);
-        this.config = config;
+function Rematch(config) {
+    var _this = this;
+    this.config = config;
+    corePlugins.concat(this.config.plugins).forEach(function (plugin) {
+        _this.plugins.push(_this.pluginFactory.create(plugin));
+    });
+    this.forEachPlugin('middleware', function (middleware) {
+        _this.config.redux.middlewares.push(middleware);
+    });
+}
+Rematch.prototype = {
+    constructor: Rematch,
+    forEachPlugin: function forEachPlugin(method, fn) {
+        this.plugins.forEach(function (plugin) {
+            if (plugin[method]) {
+                fn(plugin[method]);
+            }
+        });
+    },
+    getModels: function getModels(models) {
+        return Object.keys(models).map(function (name) {
+            return Object.assign({
+                name: name
+            }, models[name]);
+        });
+    },
+    addModel: function addModel(model) {
+        validate([[!model, 'model config is required'], [typeof model.name !== 'string', 'model "name" [string] is required'], [model.state === undefined, 'model "state" is required']]);
+        this.forEachPlugin('onModel', function (onModel) {
+            return onModel(model);
+        });
+    },
+    init: function init() {
+        var _this2 = this;
+        this.models = this.getModels(this.config.models);
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
         var _iteratorError = undefined;
         try {
-            for (var _iterator = corePlugins.concat(this.config.plugins)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var plugin = _step.value;
-                this.plugins.push(this.pluginFactory.create(plugin));
+            for (var _iterator = this.models[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var model = _step.value;
+                this.addModel(model);
             }
         } catch (err) {
             _didIteratorError = true;
@@ -320,83 +346,24 @@ var Rematch = function () {
                 }
             }
         }
-        this.forEachPlugin('middleware', function (middleware) {
-            _this.config.redux.middlewares.push(middleware);
+        var redux = createRedux({
+            redux: this.config.redux,
+            models: this.models
         });
-    }
-    _createClass(Rematch, [{
-        key: 'forEachPlugin',
-        value: function forEachPlugin(method, fn) {
-            this.plugins.forEach(function (plugin) {
-                if (plugin[method]) {
-                    fn(plugin[method]);
-                }
-            });
-        }
-    }, {
-        key: 'getModels',
-        value: function getModels(models) {
-            return Object.keys(models).map(function (name) {
-                return Object.assign({
-                    name: name
-                }, models[name]);
-            });
-        }
-    }, {
-        key: 'addModel',
-        value: function addModel(model) {
-            validate([[!model, 'model config is required'], [typeof model.name !== 'string', 'model "name" [string] is required'], [model.state === undefined, 'model "state" is required']]);
-            this.forEachPlugin('onModel', function (onModel) {
-                return onModel(model);
-            });
-        }
-    }, {
-        key: 'init',
-        value: function init() {
-            var _this2 = this;
-            this.models = this.getModels(this.config.models);
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
-            try {
-                for (var _iterator2 = this.models[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var model = _step2.value;
-                    this.addModel(model);
-                }
-            } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                        _iterator2.return();
-                    }
-                } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
-                    }
-                }
+        var rematchStore = Object.assign({}, redux.store, {
+            model: function model(_model) {
+                _this2.addModel(_model);
+                redux.mergeReducers(redux.createModelReducer(_model));
+                redux.store.replaceReducer(redux.createRootReducer(_this2.config.redux.rootReducers));
             }
-            var redux = createRedux({
-                redux: this.config.redux,
-                models: this.models
-            });
-            var rematchStore = Object.assign({}, redux.store, {
-                model: function model(_model) {
-                    _this2.addModel(_model);
-                    redux.mergeReducers(redux.createModelReducer(_model));
-                    redux.store.replaceReducer(redux.createRootReducer(_this2.config.redux.rootReducers));
-                }
-            });
-            this.forEachPlugin('onStoreCreated', function (onStoreCreated) {
-                return onStoreCreated(rematchStore);
-            });
-            rematchStore.dispatch = this.pluginFactory.dispatch;
-            return rematchStore;
-        }
-    }]);
-    return Rematch;
-}();
+        });
+        this.forEachPlugin('onStoreCreated', function (onStoreCreated) {
+            return onStoreCreated(rematchStore);
+        });
+        rematchStore.dispatch = this.pluginFactory.dispatch;
+        return rematchStore;
+    }
+};
 
 var stores = {};
 var dispatches = {};
@@ -415,9 +382,6 @@ function getState() {
         }
     }
     return state;
-}
-function createModel(model) {
-    return model;
 }
 function init() {
     var initConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -520,12 +484,6 @@ var index = {
     init: init
 };
 
-exports.dispatch = dispatch;
-exports.getState = getState;
-exports.createModel = createModel;
-exports.init = init;
-exports.default = index;
-
-Object.defineProperty(exports, '__esModule', { value: true });
+return index;
 
 })));
