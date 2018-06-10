@@ -1,7 +1,7 @@
-import dispatchPlugin from './plugins/dispatch';
-import effectsPlugin from './plugins/effects';
+import {dispatchPlugin} from './dispatch';
+import {effectsPlugin} from './effects';
 import createRedux from './redux';
-import validate from './utils/validate';
+import {validate} from './utils';
 
 const corePlugins = [dispatchPlugin, effectsPlugin];
 

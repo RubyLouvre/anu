@@ -64,7 +64,7 @@ export const dispatchPlugin = {
         if (!model.reducers) {
             return
         }
-        for (let reducerName of model.reducers) {
+        for (let reducerName in model.reducers) {
             this.validate([
                 [!!reducerName.match(/\/.+\//),
                     `Invalid reducer name (${model.name}/${reducerName})`,

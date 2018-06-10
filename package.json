@@ -4,7 +4,7 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.reach.js ",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.rematch.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.reach.js ",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/sync.js",
@@ -87,6 +87,7 @@
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
   },
   "dependencies": {
+    "redux": "^4.0.0",
     "serve": "^8.1.0"
   }
 }

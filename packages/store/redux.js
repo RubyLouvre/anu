@@ -1,5 +1,5 @@
 import * as Redux from 'redux'
-import isListener from './utils/isListener'
+import {isListener} from './utils'
 
 function composeEnhancersWithDevtools(devtoolOptions = {}) {
     /* istanbul ignore next */
@@ -30,27 +30,28 @@ export default ({
     }
 
     this.createModelReducer = (model) => {
-        const modelReducers = {}
-        for (const modelReducer of Object.keys(model.reducers || {})) {
+        const newReducers = {};
+        const oldReducers = model.reducers || {};
+        for (const modelReducer in oldReducers) {
             const action = isListener(modelReducer) ? modelReducer : `${model.name}/${modelReducer}`
-            modelReducers[action] = model.reducers[modelReducer]
+            newReducers[action] = model.reducers[modelReducer]
         }
         this.reducers[model.name] = (state, action) => {
             // handle effects
-            if (typeof modelReducers[action.type] === 'function') {
-                return modelReducers[action.type](state, action.payload, action.meta)
+            if (typeof newReducers[action.type] === 'function') {
+                return newReducers[action.type](state, action.payload, action.meta)
             }
             return state;
         }
     }
     // initialize model reducers
-    for (const model of models) {
+    for (const model in models) {
         this.createModelReducer(model);
     }
 
     this.createRootReducer = (rootReducers = {}) => {
         const mergedReducers = this.mergeReducers()
-        if (Object.keys(rootReducers).length) {
+        if (!isEmptyObject(rootReducers)) {
             return (state, action) => {
                 const rootReducerAction = rootReducers[action.type];
                 if (rootReducers[action.type]) {
