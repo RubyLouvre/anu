@@ -12,7 +12,7 @@ export default {
     output: {
         strict: false,
         format: "umd",
-        exports: "default",
+      //  exports: "default",
         file:  "./dist/Rematch.js",
         name: "Rematch",
         globals: {

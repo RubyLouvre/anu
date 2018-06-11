@@ -4,39 +4,70 @@
  * takes an array of arrays of validations and
  * throws if an error occurs
  */
-var merge = function (original, next) {
-    return (next) ? __assign({}, next, (original || {})) : original || {};
+export let validate = function(validations) {
+    if (process.env.NODE_ENV !== 'production') {
+        validations.forEach(function(validation) {
+            let condition = validation[0];
+            let errorMessage = validation[1];
+            if (condition) {
+                throw new Error(errorMessage);
+            }
+        })
+    }
 };
-var isObject = function (obj) {
- return (Array.isArray(obj) || typeof obj !== 'object'); 
+
+
+export function isListener(reducer) {
+    return reducer.includes('/');
+}
+
+
+function merge(original, next) {
+    original = original || {}
+    return next ? Object.assign({}, next, original) : original;
+};
+let isObject = function(obj) {
+    return (typeof item === "object" && !Array.isArray(item) && item !== null);
 };
 /**
  * mergeConfig
  *
  * merge init configs together
  */
-var mergeConfig = (function (initConfig) {
-    var config = __assign({ name: initConfig.name, models: {}, plugins: [] }, initConfig, { redux: __assign({ reducers: {}, rootReducers: {}, enhancers: [], middlewares: [] }, initConfig.redux, { devtoolOptions: __assign({ name: initConfig.name }, (initConfig.redux && initConfig.redux.devtoolOptions ? initConfig.redux.devtoolOptions : {})) }) });
-    if (undefined !== 'production') {
+export let mergeConfig = function(initConfig) {
+    let config = Object.assign({
+        name: initConfig.name,
+        models: {},
+        plugins: []
+    }, initConfig, {
+        redux: Object.assign({
+                reducers: {},
+                rootReducers: {},
+                enhancers: [],
+                middlewares: []
+            },
+            initConfig.redux, {
+                devtoolOptions: Object.assign({
+                        name: initConfig.name
+                    },
+                    (initConfig.redux && initConfig.redux.devtoolOptions ? initConfig.redux.devtoolOptions : {}))
+            })
+    });
+    if (process.env.NODE_ENV !== 'production') {
         validate([
-            [
-                !Array.isArray(config.plugins),
+            [!Array.isArray(config.plugins),
                 'init config.plugins must be an array',
             ],
-            [
-                isObject(config.models),
+            [!isObject(config.models),
                 'init config.models must be an object',
             ],
-            [
-                isObject(config.redux.reducers),
+            [!isObject(config.redux.reducers),
                 'init config.redux.reducers must be an object',
             ],
-            [
-                !Array.isArray(config.redux.middlewares),
+            [!Array.isArray(config.redux.middlewares),
                 'init config.redux.middlewares must be an array',
             ],
-            [
-                !Array.isArray(config.redux.enhancers),
+            [!Array.isArray(config.redux.enhancers),
                 'init config.redux.enhancers must be an array of functions',
             ],
             [
@@ -50,8 +81,8 @@ var mergeConfig = (function (initConfig) {
         ]);
     }
     // defaults
-    for (var _i = 0, _a = config.plugins; _i < _a.length; _i++) {
-        var plugin = _a[_i];
+
+    config.plugins.forEach(function(plugin) {
         if (plugin.config) {
             // models
             config.models =
@@ -59,16 +90,18 @@ var mergeConfig = (function (initConfig) {
             // plugins
             config.plugins = config.plugins.concat((plugin.config.plugins || []));
             // redux
-            if (plugin.config.redux) {
-                config.redux.initialState = merge(config.redux.initialState, plugin.config.redux.initialState);
-                config.redux.reducers = merge(config.redux.reducers, plugin.config.redux.reducers);
-                config.redux.rootReducers = merge(config.redux.rootReducers, plugin.config.redux.reducers);
-                config.redux.enhancers = config.redux.enhancers.concat((plugin.config.redux.enhancers || []));
-                config.redux.middlewares = config.redux.middlewares.concat((plugin.config.redux.middlewares || []));
-                config.redux.combineReducers = config.redux.combineReducers || plugin.config.redux.combineReducers;
-                config.redux.createStore = config.redux.createStore || plugin.config.redux.createStore;
+            let pluginRedux = config.plugin.redux
+            if (pluginRedux) {
+                let configRedux = config.redux;
+                configRedux.initialState = merge(config.redux.initialState, pluginRedux.initialState);
+                configRedux.reducers = merge(config.redux.reducers, pluginRedux.reducers);
+                configRedux.rootReducers = merge(config.redux.rootReducers, pluginRedux.reducers);
+                configRedux.enhancers = configRedux.enhancers.concat((pluginRedux.enhancers || []));
+                configRedux.middlewares = configRedux.middlewares.concat((pluginRedux.middlewares || []));
+                configRedux.combineReducers = configRedux.combineReducers || pluginRedux.combineReducers;
+                configRedux.createStore = configRedux.createStore || pluginRedux.createStore;
             }
         }
-    }
+    })
     return config;
-});
+};

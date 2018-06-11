@@ -16,7 +16,7 @@ const dispatches = {};
  * calls store.dispatch in all stores
  * @param action
  */
-function dispatch(action) {
+export function dispatch(action) {
     for (let name in stores) {
         if (stores.hasOwnProperty(name)) {
             stores[name].dispatch(action);
@@ -30,7 +30,7 @@ function dispatch(action) {
  * loads state from all stores
  * returns an object with key: storeName, value: store.getState()
  */
-function getState() {
+export function getState() {
     const state = {};
     for (let name in stores) {
         if (stores.hasOwnProperty(name)) {
@@ -60,29 +60,26 @@ function createModel(model) {
  * with a set configuration
  * @param config
  */
-function init(initConfig = {}) {
-    const name = initConfig.name || Object.keys(stores).length.toString();
-    const config = mergeConfig({ ...initConfig,
-        name
-    });
-    const store = new RematchCore(config).init();
+export function init(initConfig = {}) {
+    if (initConfig === void 0) { initConfig = {}; }
+    let name = initConfig.name || Object.keys(stores).length.toString();
+    let config = mergeConfig(Object.assign({}, initConfig, { name: name }));
+    let store = new RematchCore(config).init();
     stores[name] = store;
-    for (const modelName of Object.keys(store.dispatch)) {
+    for (let modelName in store.dispatch){
         if (!dispatch[modelName]) {
             dispatch[modelName] = {};
         }
-        for (const actionName of Object.keys(store.dispatch[modelName])) {
+        for (let actionName in store.dispatch[modelName]) {
             if (!isListener(actionName)) {
                 const action = store.dispatch[modelName][actionName];
                 if (!dispatches[modelName]) {
                     dispatches[modelName] = {};
                 }
-                if (!dispatches[modelName][actionName]) {
-                    dispatches[modelName][actionName] = {};
-                }
-                dispatches[modelName][actionName][name] = action;
+                let curAction = dispatches[modelName][actionName] || (dispatches[modelName][actionName] = {})
+                curAction[name] = action;
                 dispatch[modelName][actionName] = (payload, meta) => {
-                    for (const storeName of Object.keys(dispatches[modelName][actionName])) {
+                    for (const storeName in curAction) {
                         stores[storeName].dispatch[modelName][actionName](payload, meta);
                     }
                 };
@@ -92,7 +89,7 @@ function init(initConfig = {}) {
     return store;
 }
 
-export {
+export let Rematch = {
     dispatch,
     getState,
     init,

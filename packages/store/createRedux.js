@@ -2,8 +2,8 @@ import * as Redux from 'redux';
 import {isListener} from './utils';
 
 
-var composeEnhancersWithDevtools = function (devtoolOptions) {
-    if (devtoolOptions === void 0) {
+let composeEnhancersWithDevtools = function (devtoolOptions) {
+    if (devtoolOptions === void 666) {
         devtoolOptions = {}; 
     }
     /* istanbul ignore next */
@@ -11,12 +11,12 @@ var composeEnhancersWithDevtools = function (devtoolOptions) {
         ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(devtoolOptions)
         : Redux.compose;
 };
-export function createRedux (_a) {
-    var _this = this;
-    var redux = _a.redux, models = _a.models;
-    var combineReducers = redux.combineReducers || Redux.combineReducers;
-    var createStore = redux.createStore || Redux.createStore;
-    var initialState = typeof redux.initialState !== 'undefined' ? redux.initialState : {};
+export function createRedux (ref) {
+    let _this = this;
+    let redux = ref.redux, models = ref.models;
+    let combineReducers = redux.combineReducers || Redux.combineReducers;
+    let createStore = redux.createStore || Redux.createStore;
+    let initialState = typeof redux.initialState !== 'undefined' ? redux.initialState : {};
     this.reducers = redux.reducers;
     // combine models to generate reducers
     this.mergeReducers = function (nextReducers) {
@@ -34,11 +34,11 @@ export function createRedux (_a) {
         return combineReducers(_this.reducers);
     };
     this.createModelReducer = function (model) {
-        var modelReducers = {};
-        var reducers = model.reducers;
+        let modelReducers = {};
+        let reducers = model.reducers;
         for(let modelReducer in reducers){
             if(reducers.hasOwnProperty(modelReducer)){
-                var action = isListener(modelReducer)
+                let action = isListener(modelReducer)
                     ? modelReducer
                     : model.name + '/' + modelReducer;
                 modelReducers[action] = model.reducers[modelReducer];
@@ -56,18 +56,17 @@ export function createRedux (_a) {
         };
     };
     // initialize model reducers
-    for (var _i = 0, models_1 = models; _i < models_1.length; _i++) {
-        var model = models_1[_i];
-        this.createModelReducer(model);
-    }
+    models.forEach(function(model){
+        _this.createModelReducer(model);
+    });
     this.createRootReducer = function (rootReducers) {
         if (rootReducers === void 0) {
             rootReducers = {}; 
         }
-        var mergedReducers = _this.mergeReducers();
-        if (Object.keys(rootReducers).length) {
+        let mergedReducers = _this.mergeReducers();
+        if (isEmptyObject(rootReducers)) {
             return function (state, action) {
-                var rootReducerAction = rootReducers[action.type];
+                let rootReducerAction = rootReducers[action.type];
                 if (rootReducers[action.type]) {
                     return mergedReducers(rootReducerAction(state, action), action);
                 }
@@ -76,15 +75,15 @@ export function createRedux (_a) {
         }
         return mergedReducers;
     };
-    var rootReducer = this.createRootReducer(redux.rootReducers);
-    var middlewares = Redux.applyMiddleware.apply(Redux, redux.middlewares);
-    var enhancers = composeEnhancersWithDevtools(redux.devtoolOptions).apply(void 0, redux.enhancers.concat([middlewares]));
+    let rootReducer = this.createRootReducer(redux.rootReducers);
+    let middlewares = Redux.applyMiddleware.apply(Redux, redux.middlewares);
+    let enhancers = composeEnhancersWithDevtools(redux.devtoolOptions).apply(void 0, redux.enhancers.concat([middlewares]));
     this.store = createStore(rootReducer, initialState, enhancers);
     return this;
 }
 
 function isEmptyObject(obj){
-    for(var k in obj){
+    for(let k in obj){
         return false;
     }
     return true;

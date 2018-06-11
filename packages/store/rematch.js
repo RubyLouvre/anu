@@ -2,7 +2,7 @@ import { pluginFactory } from './pluginFactory';
 import { dispatchPlugin, effectsPlugin } from './plugins';
 import { createRedux } from './createRedux';
 import { validate } from './utils';
-var corePlugins = [dispatchPlugin, effectsPlugin];
+let corePlugins = [dispatchPlugin, effectsPlugin];
 /**
  * Rematch class
  *
@@ -10,16 +10,16 @@ var corePlugins = [dispatchPlugin, effectsPlugin];
  */
 
 export function Rematch(config) {
-    var _this = this;
+    let _this = this;
     this.plugins = [];
     this.pluginFactory = pluginFactory();
     this.config = config;
     for (
-        var _i = 0, _a = corePlugins.concat(this.config.plugins);
+        let _i = 0, _a = corePlugins.concat(this.config.plugins);
         _i < _a.length;
         _i++
     ) {
-        var plugin = _a[_i];
+        let plugin = _a[_i];
         this.plugins.push(this.pluginFactory.create(plugin));
     }
     // preStore: middleware, model hooks
@@ -53,19 +53,19 @@ Rematch.prototype = {
         });
     },
     init() {
-        var _this = this;
+        let _this = this;
         // collect all models
         this.models = this.getModels(this.config.models);
         this.models.forEach(function(model) {
-            this.addModel(model);
-        }, this);
+            _this.addModel(model);
+        });
         // create a redux store with initialState
         // merge in additional extra reducers
-        var redux = createRedux.call(this, {
+        let redux = createRedux.call(this, {
             redux: this.config.redux,
             models: this.models
         });
-        var rematchStore = Object.assign({}, redux.store, {
+        let rematchStore = Object.assign({}, redux.store, {
             // dynamic loading of models with `replaceReducer`
             model: function(model) {
                 _this.addModel(model);
