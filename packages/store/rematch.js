@@ -1,16 +1,8 @@
-import {
-    dispatchPlugin,
-    effectsPlugin
-} from './plugins';
-import {pluginFactory} from './pluginFactory';
-
-import { createRedux} from './redux';
-import {
-    validate
-} from './utils';
-
-const corePlugins = [dispatchPlugin, effectsPlugin];
-
+import { pluginFactory } from './pluginFactory';
+import { dispatchPlugin, effectsPlugin } from './plugins';
+import { createRedux } from './createRedux';
+import { validate } from './utils';
+var corePlugins = [dispatchPlugin, effectsPlugin];
 /**
  * Rematch class
  *
@@ -18,16 +10,21 @@ const corePlugins = [dispatchPlugin, effectsPlugin];
  */
 
 export function Rematch(config) {
-    this.config = config;
-    var plugins = corePlugins.concat(this.config.plugins);
+    var _this = this;
     this.plugins = [];
     this.pluginFactory = pluginFactory();
-    plugins.forEach(plugin => {
+    this.config = config;
+    for (
+        var _i = 0, _a = corePlugins.concat(this.config.plugins);
+        _i < _a.length;
+        _i++
+    ) {
+        var plugin = _a[_i];
         this.plugins.push(this.pluginFactory.create(plugin));
-    });
+    }
     // preStore: middleware, model hooks
-    this.forEachPlugin('middleware', middleware => {
-        this.config.redux.middlewares.push(middleware);
+    this.forEachPlugin('middleware', function(middleware) {
+        _this.config.redux.middlewares.push(middleware);
     });
 }
 Rematch.prototype = {
@@ -40,46 +37,48 @@ Rematch.prototype = {
         });
     },
     getModels(models) {
-        return Object.keys(models).map(name => ({
-            name,
-            ...models[name],
-        }));
+        return Object.keys(models).map(function(name) {
+            return Object.assign({ name: name }, models[name]);
+        });
     },
     addModel(model) {
         validate([
             [!model, 'model config is required'],
             [typeof model.name !== 'string', 'model "name" [string] is required'],
-            [model.state === undefined, 'model "state" is required'],
+            [model.state === undefined, 'model "state" is required']
         ]);
         // run plugin model subscriptions
-        this.forEachPlugin('onModel', onModel => onModel(model));
+        this.forEachPlugin('onModel', function(onModel) {
+            return onModel(model);
+        });
     },
     init() {
+        var _this = this;
         // collect all models
         this.models = this.getModels(this.config.models);
-        for (const model of this.models) {
+        this.models.forEach(function(model) {
             this.addModel(model);
-        }
+        }, this);
         // create a redux store with initialState
         // merge in additional extra reducers
-        const redux =  createRedux.call(this, {
+        var redux = createRedux.call(this, {
             redux: this.config.redux,
-            models: this.models,
+            models: this.models
         });
-        const rematchStore = {
-            ...redux.store,
+        var rematchStore = Object.assign({}, redux.store, {
             // dynamic loading of models with `replaceReducer`
-            model: (model) => {
-                this.addModel(model);
+            model: function(model) {
+                _this.addModel(model);
                 redux.mergeReducers(redux.createModelReducer(model));
-                redux.store.replaceReducer(redux.createRootReducer(this.config.redux.rootReducers));
-            },
-        };
-
-        this.forEachPlugin('onStoreCreated', onStoreCreated => onStoreCreated(rematchStore));
-
+                redux.store.replaceReducer(
+                    redux.createRootReducer(_this.config.redux.rootReducers)
+                );
+            }
+        });
+        this.forEachPlugin('onStoreCreated', function(onStoreCreated) {
+            return onStoreCreated(rematchStore);
+        });
         rematchStore.dispatch = this.pluginFactory.dispatch;
-
         return rematchStore;
     }
 };

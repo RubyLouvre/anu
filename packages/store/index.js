@@ -1,14 +1,14 @@
 import {
     Rematch as RematchCore
-} from './rematch'
+} from './rematch';
 import {
     isListener,
     mergeConfig
 } from './utils';
 
 // allows for global dispatch to multiple stores
-const stores = {}
-const dispatches = {}
+const stores = {};
+const dispatches = {};
 
 /**
  * global Dispatch
@@ -61,10 +61,10 @@ function createModel(model) {
  * @param config
  */
 function init(initConfig = {}) {
-    const name = initConfig.name || Object.keys(stores).length.toString()
+    const name = initConfig.name || Object.keys(stores).length.toString();
     const config = mergeConfig({ ...initConfig,
         name
-    })
+    });
     const store = new RematchCore(config).init();
     stores[name] = store;
     for (const modelName of Object.keys(store.dispatch)) {
@@ -73,7 +73,7 @@ function init(initConfig = {}) {
         }
         for (const actionName of Object.keys(store.dispatch[modelName])) {
             if (!isListener(actionName)) {
-                const action = store.dispatch[modelName][actionName]
+                const action = store.dispatch[modelName][actionName];
                 if (!dispatches[modelName]) {
                     dispatches[modelName] = {};
                 }
@@ -83,17 +83,17 @@ function init(initConfig = {}) {
                 dispatches[modelName][actionName][name] = action;
                 dispatch[modelName][actionName] = (payload, meta) => {
                     for (const storeName of Object.keys(dispatches[modelName][actionName])) {
-                        stores[storeName].dispatch[modelName][actionName](payload, meta)
+                        stores[storeName].dispatch[modelName][actionName](payload, meta);
                     }
-                }
+                };
             }
         }
     }
     return store;
 }
 
-export default {
+export {
     dispatch,
     getState,
     init,
-}
+};

@@ -31,12 +31,8 @@ module.exports = {
                                 'moduleName': 'babel-runtime'
                             }],
                             ['transform-object-rest-spread', { 'useBuiltIns': true }],
-                            ['import', {
-                                'libraryName': 'react'
-                            },  {
-                                'libraryName': 'react-dom'
-                            },],
-                            /* ['module-resolver', {
+                      
+                            ['module-resolver', {
                                 'root': ['.'],
                                 'alias': {
                                
@@ -44,7 +40,7 @@ module.exports = {
                                  
                                     'react-dom': './dist/React',
                                 }
-                            }]*/
+                            }]
                             
                         ]
                     
@@ -56,18 +52,30 @@ module.exports = {
             },
         ]
     },
-    externals: {
+    /*  externals: {
 
         react: 'react' ,
 
         'react-dom':'react-dom' ,
-    }
-    /* resolve: {
+    },*/
+    
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    chunks: 'all'
+                }
+            }
+        }
+    },
+    resolve: {
       
         extensions: [ '.js'],
         alias: {
             react: path.resolve(__dirname, './dist/React.js'),
             'react-dom': path.resolve(__dirname, './dist/React.js'),
         }
-    },*/
+    },
 };

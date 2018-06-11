@@ -7,21 +7,21 @@ import {
  *
  * makes Plugin objects extend and inherit from a root PluginFactory
  */
-export function pluginFactory() {
+export function pluginFactory () {
     return {
-        /**
-         * validate
-         *
-         * bind validate to the store for easy access
-         */
+    /**
+	 * validate
+	 *
+	 * bind validate to the store for easy access
+	 */
         validate,
 
         /**
-         * create plugin
-         *
-         * binds plugin properties and functions to an instance of PluginFactorys
-         * @param plugin
-         */
+	 * create plugin
+	 *
+	 * binds plugin properties and functions to an instance of PluginFactorys
+	 * @param plugin
+	 */
         create(plugin) {
             validate([
                 [
@@ -45,22 +45,21 @@ export function pluginFactory() {
             const result = {};
 
             if (plugin.exposed) {
-                for (const key in plugin.exposed) {
-                    this[key] = typeof plugin.exposed[key] === 'function'
-                        // bind functions to plugin class
-                        ?
-                        plugin.exposed[key].bind(this)
-                        // add exposed to plugin class
-                        :
-                        Object.create(plugin.exposed[key])
-                }
+                Object.keys(plugin.exposed).forEach(function(key){
+                    this[key] =
+					typeof plugin.exposed[key] === 'function'
+					    ? plugin.exposed[key].bind(this) // bind functions to plugin class
+					    : Object.create(plugin.exposed[key]); // add exposed to plugin class
+                }, this);
             }
-            Array('onModel', 'middleware', 'onStoreCreated').forEach((method) => {
+            ['onModel', 'middleware', 'onStoreCreated'].forEach(function(method){
                 if (plugin[method]) {
-                    result[method] = plugin[method].bind(this)
+                    result[method] = plugin[method].bind(this);
                 }
-            })
+            },this);
             return result;
-        }
-    }
+        },
+    };
 }
+
+
