@@ -45,7 +45,7 @@ export function pluginFactory() {
             const result = {};
 
             if (plugin.exposed) {
-                for (const key of Object.keys(plugin.exposed)) {
+                for (const key in plugin.exposed) {
                     this[key] = typeof plugin.exposed[key] === 'function'
                         // bind functions to plugin class
                         ?
@@ -55,11 +55,11 @@ export function pluginFactory() {
                         Object.create(plugin.exposed[key])
                 }
             }
-            for (const method of ['onModel', 'middleware', 'onStoreCreated']) {
+            Array('onModel', 'middleware', 'onStoreCreated').forEach((method) => {
                 if (plugin[method]) {
                     result[method] = plugin[method].bind(this)
                 }
-            }
+            })
             return result;
         }
     }

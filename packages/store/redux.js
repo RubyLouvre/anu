@@ -8,14 +8,11 @@ function composeEnhancersWithDevtools(devtoolOptions = {}) {
         Redux.compose;
 }
 
-export default ({
-    redux,
-    models
-}) => {
+export function createRedux ( {redux, models} ) {
     const combineReducers = redux.combineReducers || Redux.combineReducers;
     const createStore = redux.createStore || Redux.createStore;
     const initialState = typeof redux.initialState !== 'undefined' ? redux.initialState : {}
-
+console.log(redux, "====")
     this.reducers = redux.reducers;
 
     // combine models to generate reducers

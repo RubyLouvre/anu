@@ -36,6 +36,11 @@ export default {
                     test: "VERSION", 
                     // string or function to replaced with
                     replace: json.version
+                },
+                {
+                    test: /process\.env\.NODE_ENV/g, 
+                    // string or function to replaced with
+                    replace: JSON.stringify("production")
                 }
             ]
         }),

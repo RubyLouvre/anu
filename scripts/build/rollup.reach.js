@@ -37,6 +37,11 @@ export default {
                     test: "VERSION", 
                     // string or function to replaced with
                     replace: json.version
+                },
+                {
+                    test: "VERSION", 
+                    // string or function to replaced with
+                    replace: json.version
                 }
             ]
         }),
