@@ -1,7 +1,16 @@
-import { pluginFactory } from './pluginFactory';
-import { dispatchPlugin, effectsPlugin } from './plugins';
-import { createRedux } from './createRedux';
-import { validate } from './utils';
+import {
+    pluginFactory
+} from './pluginFactory';
+import {
+    dispatchPlugin,
+    effectsPlugin
+} from './plugins';
+import {
+    createRedux
+} from './createRedux';
+import {
+    validate
+} from './utils';
 let corePlugins = [dispatchPlugin, effectsPlugin];
 /**
  * Rematch class
@@ -15,9 +24,7 @@ export function Rematch(config) {
     this.pluginFactory = pluginFactory();
     this.config = config;
     for (
-        let _i = 0, _a = corePlugins.concat(this.config.plugins);
-        _i < _a.length;
-        _i++
+        let _i = 0, _a = corePlugins.concat(this.config.plugins); _i < _a.length; _i++
     ) {
         let plugin = _a[_i];
         this.plugins.push(this.pluginFactory.create(plugin));
@@ -38,14 +45,16 @@ Rematch.prototype = {
     },
     getModels(models) {
         return Object.keys(models).map(function(name) {
-            return Object.assign({ name: name }, models[name]);
+            return Object.assign({
+                name: name
+            }, models[name]);
         });
     },
     addModel(model) {
         validate([
             [!model, 'model config is required'],
-            [typeof model.name !== 'string', 'model "name" [string] is required'],
-            [model.state === undefined, 'model "state" is required']
+            [model.name !== model.name + "", 'model "name" [string] is required'],
+            [model.state === void 666, 'model "state" is required']
         ]);
         // run plugin model subscriptions
         this.forEachPlugin('onModel', function(onModel) {

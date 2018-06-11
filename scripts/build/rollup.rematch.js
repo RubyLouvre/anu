@@ -12,7 +12,8 @@ export default {
     output: {
         strict: false,
         format: "umd",
-      //  exports: "default",
+        legacy: true,
+        // exports: "default",
         file:  "./dist/Rematch.js",
         name: "Rematch",
         globals: {

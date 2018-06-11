@@ -1,5 +1,7 @@
 import {
-    validate
+    validate,
+    isFn,
+    isNotFn
 } from './utils';
 
 /**
@@ -7,33 +9,30 @@ import {
  *
  * makes Plugin objects extend and inherit from a root PluginFactory
  */
-export function pluginFactory () {
+export function pluginFactory() {
     return {
-    /**
-	 * validate
-	 *
-	 * bind validate to the store for easy access
-	 */
+        /**
+         * validate
+         *
+         * bind validate to the store for easy access
+         */
         validate,
 
         /**
-	 * create plugin
-	 *
-	 * binds plugin properties and functions to an instance of PluginFactorys
-	 * @param plugin
-	 */
+         * create plugin
+         *
+         * binds plugin properties and functions to an instance of PluginFactorys
+         * @param plugin
+         */
         create(plugin) {
             validate([
-                [
-                    plugin.onStoreCreated && typeof plugin.onStoreCreated !== 'function',
+                [isNotFn(plugin.onStoreCreated),
                     'Plugin onStoreCreated must be a function',
                 ],
-                [
-                    plugin.onModel && typeof plugin.onModel !== 'function',
+                [isNotFn(plugin.onModel),
                     'Plugin onModel must be a function',
                 ],
-                [
-                    plugin.middleware && typeof plugin.middleware !== 'function',
+                [isNotFn(plugin.middleware),
                     'Plugin middleware must be a function',
                 ],
             ]);
@@ -45,21 +44,20 @@ export function pluginFactory () {
             const result = {};
 
             if (plugin.exposed) {
-                Object.keys(plugin.exposed).forEach(function(key){
+                Object.keys(plugin.exposed).forEach(function(key) {
                     this[key] =
-					typeof plugin.exposed[key] === 'function'
-					    ? plugin.exposed[key].bind(this) // bind functions to plugin class
-					    : Object.create(plugin.exposed[key]); // add exposed to plugin class
+                        isFn(plugin.exposed[key]) ?
+                        plugin.exposed[key].bind(this) // bind functions to plugin class
+                        :
+                        Object.create(plugin.exposed[key]); // add exposed to plugin class
                 }, this);
             }
-            ['onModel', 'middleware', 'onStoreCreated'].forEach(function(method){
+            Array('onModel', 'middleware', 'onStoreCreated').forEach(function(method) {
                 if (plugin[method]) {
                     result[method] = plugin[method].bind(this);
                 }
-            },this);
+            }, this);
             return result;
         },
     };
 }
-
-

@@ -16,7 +16,7 @@ const dispatches = {};
  * calls store.dispatch in all stores
  * @param action
  */
-export function dispatch(action) {
+ export function dispatch(action) {
     for (let name in stores) {
         if (stores.hasOwnProperty(name)) {
             stores[name].dispatch(action);
@@ -30,7 +30,7 @@ export function dispatch(action) {
  * loads state from all stores
  * returns an object with key: storeName, value: store.getState()
  */
-export function getState() {
+ export function getState() {
     const state = {};
     for (let name in stores) {
         if (stores.hasOwnProperty(name)) {
@@ -60,7 +60,7 @@ function createModel(model) {
  * with a set configuration
  * @param config
  */
-export function init(initConfig = {}) {
+ export function init(initConfig = {}) {
     if (initConfig === void 0) { initConfig = {}; }
     let name = initConfig.name || Object.keys(stores).length.toString();
     let config = mergeConfig(Object.assign({}, initConfig, { name: name }));
@@ -88,9 +88,9 @@ export function init(initConfig = {}) {
     }
     return store;
 }
-
-export let Rematch = {
+let index = {
     dispatch,
     getState,
     init,
 };
+export default index;

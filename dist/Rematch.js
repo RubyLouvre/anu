@@ -13,6 +13,13 @@ var validate = function validate(validations) {
 function isListener(reducer) {
     return reducer.includes('/');
 }
+var tos = Object.prototype.toString;
+function isFn(a) {
+    return tos.call(a) === "[object Function]";
+}
+function isNotFn(obj) {
+    return obj && isFn(obj);
+}
 function merge(original, next) {
     original = original || {};
     return next ? Object.assign({}, next, original) : original;
@@ -57,18 +64,18 @@ function pluginFactory() {
     return {
         validate: validate,
         create: function create(plugin) {
-            validate([[plugin.onStoreCreated && typeof plugin.onStoreCreated !== 'function', 'Plugin onStoreCreated must be a function'], [plugin.onModel && typeof plugin.onModel !== 'function', 'Plugin onModel must be a function'], [plugin.middleware && typeof plugin.middleware !== 'function', 'Plugin middleware must be a function']]);
+            validate([[isNotFn(plugin.onStoreCreated), 'Plugin onStoreCreated must be a function'], [isNotFn(plugin.onModel), 'Plugin onModel must be a function'], [isNotFn(plugin.middleware), 'Plugin middleware must be a function']]);
             if (plugin.onInit) {
                 plugin.onInit.call(this);
             }
             var result = {};
             if (plugin.exposed) {
                 Object.keys(plugin.exposed).forEach(function (key) {
-                    this[key] = typeof plugin.exposed[key] === 'function' ? plugin.exposed[key].bind(this)
+                    this[key] = isFn(plugin.exposed[key]) ? plugin.exposed[key].bind(this)
                     : Object.create(plugin.exposed[key]);
                 }, this);
             }
-            ['onModel', 'middleware', 'onStoreCreated'].forEach(function (method) {
+            Array('onModel', 'middleware', 'onStoreCreated').forEach(function (method) {
                 if (plugin[method]) {
                     result[method] = plugin[method].bind(this);
                 }
@@ -103,16 +110,26 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 function __generator(thisArg, body) {
-    var _ = { label: 0, sent: function sent() {
+    var _ = {
+        label: 0,
+        sent: function sent() {
             if (t[0] & 1) {
                 throw t[1];
-            }return t[1];
-        }, trys: [], ops: [] },
+            }
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    },
         f,
         y,
         t,
         g;
-    return g = { next: verb(0), 'throw': verb(1), 'return': verb(2) }, typeof Symbol === 'function' && (g[Symbol.iterator] = function () {
+    return g = {
+        next: verb(0),
+        'throw': verb(1),
+        'return': verb(2)
+    }, typeof Symbol === 'function' && (g[Symbol.iterator] = function () {
         return this;
     }), g;
     function verb(n) {
@@ -133,42 +150,65 @@ function __generator(thisArg, body) {
                     op = [op[0] & 2, t.value];
                 }
                 switch (op[0]) {
-                    case 0:case 1:
-                        t = op;break;
+                    case 0:
+                    case 1:
+                        t = op;
+                        break;
                     case 4:
-                        _.label++;return { value: op[1], done: false };
+                        _.label++;
+                        return {
+                            value: op[1],
+                            done: false
+                        };
                     case 5:
-                        _.label++;y = op[1];op = [0];continue;
+                        _.label++;
+                        y = op[1];
+                        op = [0];
+                        continue;
                     case 7:
-                        op = _.ops.pop();_.trys.pop();continue;
+                        op = _.ops.pop();
+                        _.trys.pop();
+                        continue;
                     default:
                         if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;continue;
+                            _ = 0;
+                            continue;
                         }
                         if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];break;
+                            _.label = op[1];
+                            break;
                         }
                         if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];t = op;break;
+                            _.label = t[1];
+                            t = op;
+                            break;
                         }
                         if (t && _.label < t[2]) {
-                            _.label = t[2];_.ops.push(op);break;
+                            _.label = t[2];
+                            _.ops.push(op);
+                            break;
                         }
                         if (t[2]) {
                             _.ops.pop();
                         }
-                        _.trys.pop();continue;
+                        _.trys.pop();
+                        continue;
                 }
                 op = body.call(thisArg, _);
             } catch (e) {
-                op = [6, e];y = 0;
+                op = [6, e];
+                y = 0;
             } finally {
                 f = t = 0;
             }
         }
         if (op[0] & 5) {
             throw op[1];
-        }return { value: op[0] ? op[1] : void 0, done: true };
+        }
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
     }
 }
 var dispatchPlugin = {
@@ -188,7 +228,9 @@ var dispatchPlugin = {
                 return __awaiter(_this, void 0, void 0, function () {
                     var action;
                     return __generator(this, function (_a) {
-                        action = { type: modelName + '/' + reducerName };
+                        action = {
+                            type: modelName + '/' + reducerName
+                        };
                         if (typeof payload !== 'undefined') {
                             action.payload = payload;
                         }
@@ -217,7 +259,7 @@ var dispatchPlugin = {
         }
         for (var reducerName in reducers) {
             if (reducers.hasOwnProperty(reducerName)) {
-                this.validate([[!!reducerName.match(/\/.+\//), 'Invalid reducer name (' + modelName + '/' + reducerName + ')'], [typeof reducers[reducerName] !== 'function', 'Invalid reducer (' + modelName + '/' + reducerName + '). Must be a function']]);
+                this.validate([[!!reducerName.match(/\/.+\//), 'Invalid reducer name (' + modelName + '/' + reducerName + ')'], [!isFn(reducers[reducerName]), 'Invalid reducer (' + modelName + '/' + reducerName + '). Must be a function']]);
                 this.dispatch[modelName][reducerName] = this.createDispatcher.apply(this, [modelName, reducerName]);
             }
         }
@@ -231,11 +273,11 @@ var effectsPlugin = {
         if (!model.effects) {
             return;
         }
-        var effects = typeof model.effects === 'function' ? model.effects(this.dispatch) : model.effects;
+        var effects = isFn(model.effects) ? model.effects(this.dispatch) : model.effects;
         var modelName = model.name;
         for (var effectName in effects) {
             if (effects.hasOwnProperty(effectName)) {
-                this.validate([[!!effectName.match(/\//), 'Invalid effect name (' + modelName + '/' + effectName + ')'], [typeof effects[effectName] !== 'function', 'Invalid effect (' + modelName + '/' + effectName + '). Must be a function']]);
+                this.validate([[!!effectName.match(/\//), 'Invalid effect name (' + modelName + '/' + effectName + ')'], [!isFn(effects[effectName]), 'Invalid effect (' + modelName + '/' + effectName + '). Must be a function']]);
                 this.effects[modelName + '/' + effectName] = effects[effectName].bind(this.dispatch[modelName]);
                 var effect = this.dispatch[modelName][effectName] = this.createDispatcher.apply(this, [modelName, effectName]);
                 effect.isEffect = true;
@@ -307,7 +349,7 @@ function createRedux(ref) {
             if (state === void 0) {
                 state = model.state;
             }
-            if (typeof modelReducers[action.type] === 'function') {
+            if (isFn(modelReducers[action.type])) {
                 return modelReducers[action.type](state, action.payload, action.meta);
             }
             return state;
@@ -370,11 +412,13 @@ Rematch.prototype = {
     },
     getModels: function getModels(models) {
         return Object.keys(models).map(function (name) {
-            return Object.assign({ name: name }, models[name]);
+            return Object.assign({
+                name: name
+            }, models[name]);
         });
     },
     addModel: function addModel(model) {
-        validate([[!model, 'model config is required'], [typeof model.name !== 'string', 'model "name" [string] is required'], [model.state === undefined, 'model "state" is required']]);
+        validate([[!model, 'model config is required'], [model.name !== model.name + "", 'model "name" [string] is required'], [model.state === void 666, 'model "state" is required']]);
         this.forEachPlugin('onModel', function (onModel) {
             return onModel(model);
         });
@@ -459,7 +503,7 @@ function init() {
     }
     return store;
 }
-var Rematch$1 = {
+var index = {
     dispatch: dispatch,
     getState: getState,
     init: init
@@ -468,8 +512,6 @@ var Rematch$1 = {
 exports.dispatch = dispatch;
 exports.getState = getState;
 exports.init = init;
-exports.Rematch = Rematch$1;
-
-Object.defineProperty(exports, '__esModule', { value: true });
+exports.default = index;
 
 })));

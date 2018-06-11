@@ -20,14 +20,21 @@ export let validate = function(validations) {
 export function isListener(reducer) {
     return reducer.includes('/');
 }
+const tos = Object.prototype.toString;
+export function isFn(a){
+   return tos.call(a) === "[object Function]"
+}
 
+export function isNotFn(obj){
+   return obj && !isFn(obj)
+}
 
 function merge(original, next) {
     original = original || {}
     return next ? Object.assign({}, next, original) : original;
 };
-let isObject = function(obj) {
-    return (typeof item === "object" && !Array.isArray(item) && item !== null);
+let isNotObject = function(obj) {
+    return Array.isArray(obj) || typeof obj !== "object" 
 };
 /**
  * mergeConfig
@@ -58,10 +65,10 @@ export let mergeConfig = function(initConfig) {
             [!Array.isArray(config.plugins),
                 'init config.plugins must be an array',
             ],
-            [!isObject(config.models),
+            [isNotObject(config.models),
                 'init config.models must be an object',
             ],
-            [!isObject(config.redux.reducers),
+            [isNotObject(config.redux.reducers),
                 'init config.redux.reducers must be an object',
             ],
             [!Array.isArray(config.redux.middlewares),
@@ -71,11 +78,11 @@ export let mergeConfig = function(initConfig) {
                 'init config.redux.enhancers must be an array of functions',
             ],
             [
-                config.redux.combineReducers && typeof config.redux.combineReducers !== 'function',
+                isNotFn(config.redux.combineReducers),
                 'init config.redux.combineReducers must be a function',
             ],
             [
-                config.redux.createStore && typeof config.redux.createStore !== 'function',
+                isNotFn(config.redux.createStore),
                 'init config.redux.createStore must be a function',
             ],
         ]);
