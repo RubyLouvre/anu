@@ -18,7 +18,7 @@ export let validate = function(validations) {
 
 
 export function isListener(reducer) {
-    return reducer.includes('/');
+    return reducer.indexOf('/') !== -1;
 }
 const tos = Object.prototype.toString;
 export function isFn(a){
