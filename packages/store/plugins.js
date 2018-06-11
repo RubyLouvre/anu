@@ -72,6 +72,7 @@ export const dispatchPlugin = {
          * @param action R.Action
          */
         dispatch(action, state) {
+            console.log("========",action, state)
             return this.storeDispatch(action, state)
         },
 

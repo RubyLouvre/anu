@@ -33,8 +33,9 @@
   "devDependencies": {
     "babel-core": "^6.22.1",
     "babel-jest": "^22.4.3",
-    "babel-loader": "^6.2.10",
+    "babel-loader": "^7.1.4",
     "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-import": "^1.7.0",
     "babel-plugin-istanbul": "^4.1.1",
     "babel-plugin-module-resolver": "^3.1.1",
     "babel-plugin-syntax-async-generators": "^6.13.0",
@@ -46,6 +47,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
     "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
     "babel-runtime": "^5.8.38",
     "chai": "^3.5.0",
     "cross-env": "^5.1.4",
@@ -65,7 +67,8 @@
     "rollup-plugin-license": "^0.4.0",
     "rollup-plugin-re": "^1.0.6",
     "selenium-standalone": "^6.12.0",
-    "semicolon-less": "^0.7.0"
+    "semicolon-less": "^0.7.0",
+    "webpack-cli": "^3.0.3"
   },
   "ghooks": {
     "commit-msg": "validate-commit-msg"
@@ -87,7 +90,11 @@
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
   },
   "dependencies": {
+    "@rematch/core": "^1.0.0-alpha.9",
+    "babel-polyfill": "^6.26.0",
+    "react-redux": "^5.0.7",
     "redux": "^4.0.0",
-    "serve": "^8.1.0"
+    "serve": "^8.1.0",
+    "webpack": "^4.12.0"
   }
 }

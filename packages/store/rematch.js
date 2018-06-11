@@ -2,7 +2,7 @@ import {
     dispatchPlugin,
     effectsPlugin
 } from './plugins';
-import {pluginFactory} from './pluginFactory'
+import {pluginFactory} from './pluginFactory';
 
 import { createRedux} from './redux';
 import {
@@ -19,9 +19,9 @@ const corePlugins = [dispatchPlugin, effectsPlugin];
 
 export function Rematch(config) {
     this.config = config;
-    var plugins = corePlugins.concat(this.config.plugins)
+    var plugins = corePlugins.concat(this.config.plugins);
     this.plugins = [];
-    this.pluginFactory = pluginFactory()
+    this.pluginFactory = pluginFactory();
     plugins.forEach(plugin => {
         this.plugins.push(this.pluginFactory.create(plugin));
     });
@@ -62,11 +62,10 @@ Rematch.prototype = {
         }
         // create a redux store with initialState
         // merge in additional extra reducers
-        const redux = createRedux({
+        const redux =  createRedux.call(this, {
             redux: this.config.redux,
             models: this.models,
         });
-console.log(redux,"!")
         const rematchStore = {
             ...redux.store,
             // dynamic loading of models with `replaceReducer`
@@ -83,4 +82,4 @@ console.log(redux,"!")
 
         return rematchStore;
     }
-}
+};

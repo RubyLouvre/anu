@@ -1,6 +1,6 @@
 {
     "presets": [
-        ["env",{ "modules": false }], "react"
+        ["env", { "modules": false }], "react"
     ],
    
     "plugins": [
@@ -9,6 +9,12 @@
                 "loose": true
             }
         ],
+        ["transform-runtime",{
+            "helpers": false,
+            "polyfill": false,
+            "regenerator": true,
+            "moduleName": "babel-runtime"
+        }],
         ["transform-object-rest-spread", { "useBuiltIns": true }],
         ["module-resolver", {
            "root": ["."],
