@@ -838,53 +838,53 @@
           case 0:
               return value;
           default:
-              return "";
+              return '';
       }
   }
   var duplexMap = {
       input: {
           init: function init(node, props) {
-              var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
+              var defaultValue = props.defaultValue == null ? '' : props.defaultValue;
               return node._wrapperState = {
                   initialValue: getSafeValue(props.value != null ? props.value : defaultValue)
               };
           },
           mount: function mount(node, props, state) {
-              if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
-                  var stateValue = "" + state.initialValue;
-                  if (node.value === "" && node.value !== stateValue) {
-                      syncValue(node, "value", stateValue);
+              if (props.hasOwnProperty('value') || props.hasOwnProperty('defaultValue')) {
+                  var stateValue = '' + state.initialValue;
+                  if (node.value === '' && node.value !== stateValue) {
+                      syncValue(node, 'value', stateValue);
                   }
                   node.defaultValue = stateValue;
               }
               var name = node.name;
-              if (name !== "") {
-                  node.name = "";
+              if (name !== '') {
+                  node.name = '';
               }
               node.defaultChecked = !node.defaultChecked;
               node.defaultChecked = !node.defaultChecked;
-              if (name !== "") {
+              if (name !== '') {
                   node.name = name;
               }
           },
           update: function update(node, props) {
               if (props.checked != null) {
-                  syncValue(node, "checked", !!props.checked);
+                  syncValue(node, 'checked', !!props.checked);
               }
               var value = getSafeValue(props.value);
               if (value != null) {
-                  if (props.type === "number") {
-                      if (value === 0 && node.value === "" ||
+                  if (props.type === 'number') {
+                      if (value === 0 && node.value === '' ||
                       node.value != value) {
-                          syncValue(node, "value", "" + value);
+                          syncValue(node, 'value', '' + value);
                       }
-                  } else if (node.value !== "" + value) {
-                      syncValue(node, "value", "" + value);
+                  } else if (node.value !== '' + value) {
+                      syncValue(node, 'value', '' + value);
                   }
               }
-              if (props.hasOwnProperty("value")) {
+              if (props.hasOwnProperty('value')) {
                   setDefaultValue(node, props.type, value);
-              } else if (props.hasOwnProperty("defaultValue")) {
+              } else if (props.hasOwnProperty('defaultValue')) {
                   setDefaultValue(node, props.type, getSafeValue(props.defaultValue));
               }
               if (props.checked == null && props.defaultChecked != null) {
@@ -920,7 +920,7 @@
                   if (props.defaultValue != null) {
                       updateOptions(node, !!props.multiple, props.defaultValue, true);
                   } else {
-                      updateOptions(node, !!props.multiple, props.multiple ? [] : "", false);
+                      updateOptions(node, !!props.multiple, props.multiple ? [] : '', false);
                   }
               }
           }
@@ -933,30 +933,30 @@
                   var children = props.children;
                   if (children != null) {
                       defaultValue = getTextContent(node);
-                      node.innerHTML = "";
+                      node.innerHTML = '';
                   }
                   if (defaultValue == null) {
-                      defaultValue = "";
+                      defaultValue = '';
                   }
                   initialValue = defaultValue;
               }
               return node._wrapperState = {
-                  initialValue: "" + initialValue
+                  initialValue: '' + initialValue
               };
           },
           mount: function mount(node, props, state) {
               var text = getTextContent(node);
-              var stateValue = "" + state.initialValue;
+              var stateValue = '' + state.initialValue;
               if (text !== stateValue) {
-                  syncValue(node, "value", stateValue);
+                  syncValue(node, 'value', stateValue);
               }
           },
           update: function update(node, props) {
               var value = props.value;
               if (value != null) {
-                  var newValue = "" + value;
+                  var newValue = '' + value;
                   if (newValue !== node.value) {
-                      syncValue(node, "value", newValue);
+                      syncValue(node, 'value', newValue);
                   }
                   if (props.defaultValue == null) {
                       node.defaultValue = newValue;
@@ -977,7 +977,7 @@
               if (node.text !== text.trim()) {
                   node.innerHTML = text;
               }
-              if ("value" in props) {
+              if ('value' in props) {
                   node.duplexValue = node.value = props.value;
               } else {
                   node.duplexValue = node.text;
@@ -990,11 +990,11 @@
   }
   function setDefaultValue(node, type, value) {
       if (
-      type !== "number" || node.ownerDocument.activeElement !== node) {
+      type !== 'number' || node.ownerDocument.activeElement !== node) {
           if (value == null) {
-              node.defaultValue = "" + node._wrapperState.initialValue;
-          } else if (node.defaultValue !== "" + value) {
-              node.defaultValue = "" + value;
+              node.defaultValue = '' + node._wrapperState.initialValue;
+          } else if (node.defaultValue !== '' + value) {
+              node.defaultValue = '' + value;
           }
       }
   }
@@ -1004,10 +1004,10 @@
           var selectedValues = propValue;
           var selectedValue = {};
           for (var i = 0; i < selectedValues.length; i++) {
-              selectedValue["$" + selectedValues[i]] = true;
+              selectedValue['$' + selectedValues[i]] = true;
           }
           for (var _i = 0; _i < options.length; _i++) {
-              var selected = selectedValue.hasOwnProperty("$" + options[_i].duplexValue);
+              var selected = selectedValue.hasOwnProperty('$' + options[_i].duplexValue);
               if (options[_i].selected !== selected) {
                   options[_i].selected = selected;
               }
@@ -1016,7 +1016,7 @@
               }
           }
       } else {
-          var _selectedValue = "" + propValue;
+          var _selectedValue = '' + propValue;
           var defaultSelected = null;
           for (var _i2 = 0; _i2 < options.length; _i2++) {
               if (options[_i2].duplexValue === _selectedValue) {
@@ -1040,17 +1040,20 @@
       dom[name] = value;
       dom.__anuSetValue = false;
   }
-  function duplexAction(dom, fiber, nextProps, lastProps) {
-      var tag = fiber.name,
-          fns = duplexMap[tag];
-      if (tag !== "option") {
+  function duplexAction(fiber) {
+      var dom = fiber.stateNode,
+          name = fiber.name,
+          props = fiber.props,
+          lastProps = fiber.lastProps;
+      var fns = duplexMap[name];
+      if (name !== 'option') {
           enqueueDuplex(dom);
       }
-      if (lastProps == emptyObject) {
-          var state = fns.init(dom, nextProps);
-          fns.mount(dom, nextProps, state);
+      if (!lastProps || lastProps == emptyObject) {
+          var state = fns.init(dom, props);
+          fns.mount(dom, props, state);
       } else {
-          fns.update(dom, nextProps);
+          fns.update(dom, props);
       }
   }
   var duplexNodes = [];
@@ -1069,7 +1072,7 @@
               if (fiber && !fiber.disposed) {
                   var props = fiber.props;
                   var tag = fiber.name;
-                  if (name === "select") {
+                  if (name === 'select') {
                       var value = props.value;
                       if (value != null) {
                           updateOptions(dom, !!props.multiple, value, false);
@@ -1077,7 +1080,7 @@
                   } else {
                       duplexMap[tag].update(dom, props);
                       var _name = props.name;
-                      if (props.type === "radio" && _name != null && !radioMap[_name]) {
+                      if (props.type === 'radio' && _name != null && !radioMap[_name]) {
                           radioMap[_name] = 1;
                           collectNamedCousins(dom, _name);
                       }
@@ -1091,10 +1094,10 @@
       while (queryRoot.parentNode) {
           queryRoot = queryRoot.parentNode;
       }
-      var group = queryRoot.getElementsByTagName("input");
+      var group = queryRoot.getElementsByTagName('input');
       for (var i = 0; i < group.length; i++) {
           var otherNode = group[i];
-          if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
+          if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== 'radio' || otherNode.form !== rootNode.form) {
               continue;
           }
           enqueueDuplex(otherNode);
@@ -1466,38 +1469,38 @@
       x: { c: 1 }
   };
   var specialSVGPropertyName = {
-      "overline-thickness": 2,
-      "underline-thickness": 2,
-      "overline-position": 2,
-      "underline-position": 2,
-      "stroke-miterlimit": 2,
-      "baseline-shift": 2,
-      "clip-path": 2,
-      "font-size": 2,
-      "font-size-adjust": 2,
-      "font-stretch": 2,
-      "font-style": 2,
-      "text-decoration": 2,
-      "vert-origin-x": 2,
-      "vert-origin-y": 2,
-      "paint-order": 2,
-      "fill-rule": 2,
-      "color-rendering": 2,
-      "marker-end": 2,
-      "pointer-events": 2,
-      "units-per-em": 2,
-      "strikethrough-thickness": 2,
-      "lighting-color": 2
+      'overline-thickness': 2,
+      'underline-thickness': 2,
+      'overline-position': 2,
+      'underline-position': 2,
+      'stroke-miterlimit': 2,
+      'baseline-shift': 2,
+      'clip-path': 2,
+      'font-size': 2,
+      'font-size-adjust': 2,
+      'font-stretch': 2,
+      'font-style': 2,
+      'text-decoration': 2,
+      'vert-origin-x': 2,
+      'vert-origin-y': 2,
+      'paint-order': 2,
+      'fill-rule': 2,
+      'color-rendering': 2,
+      'marker-end': 2,
+      'pointer-events': 2,
+      'units-per-em': 2,
+      'strikethrough-thickness': 2,
+      'lighting-color': 2
   };
-  var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
+  var repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
   function createRepaceFn(split) {
       return function (match) {
           return match.slice(0, 1) + split + match.slice(1).toLowerCase();
       };
   }
   var rhump = /[a-z][A-Z]/;
-  var toHyphen = createRepaceFn("-");
-  var toColon = createRepaceFn(":");
+  var toHyphen = createRepaceFn('-');
+  var toColon = createRepaceFn(':');
   function getSVGAttributeName(name) {
       if (svgCache[name]) {
           return svgCache[name];
@@ -1535,9 +1538,10 @@
       var continueProps = skipProps;
       if (!isSVG && rform.test(fiber.type)) {
           continueProps = duplexProps;
-          if (!("onChange" in nextProps)) {
-              eventAction(dom, "onChange", noop, lastProps, fiber);
+          if (!('onChange' in nextProps)) {
+              eventAction(dom, 'onChange', noop, lastProps, fiber);
           }
+          fiber.onDuplex = continueProps.onDuplex;
       }
       for (var name in nextProps) {
           if (continueProps[name]) {
@@ -1566,7 +1570,6 @@
               actionStrategy[_action](dom, _name, false, lastProps, fiber);
           }
       }
-      continueProps.onDuplex(dom, fiber, nextProps, lastProps);
   }
   function isBooleanAttr(dom, name) {
       var val = dom[name];
@@ -1577,25 +1580,25 @@
       );
   }
   function getPropAction(dom, name, isSVG) {
-      if (isSVG && name === "className") {
-          return "svgClass";
+      if (isSVG && name === 'className') {
+          return 'svgClass';
       }
       if (isSpecialAttr[name]) {
           return name;
       }
       if (isEventName(name)) {
-          return "event";
+          return 'event';
       }
       if (isSVG) {
-          return "svgAttr";
+          return 'svgAttr';
       }
-      if (name === "width" || name === "height") {
-          return "attribute";
+      if (name === 'width' || name === 'height') {
+          return 'attribute';
       }
       if (isBooleanAttr(dom, name)) {
-          return "booleanAttr";
+          return 'booleanAttr';
       }
-      return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
+      return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
   }
   var builtinStringProps = {
       className: 1,
@@ -1623,33 +1626,33 @@
           patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
       },
       autoFocus: function autoFocus(dom) {
-          if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
+          if (/input|text/i.test(dom.nodeName) || dom.contentEditable === 'true') {
               dom.focus();
           }
       },
       svgClass: function svgClass(dom, name, val) {
           if (!val) {
-              dom.removeAttribute("class");
+              dom.removeAttribute('class');
           } else {
-              dom.setAttribute("class", val);
+              dom.setAttribute('class', val);
           }
       },
       svgAttr: function svgAttr(dom, name, val) {
-          var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+          var method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
           var nameRes = getSVGAttributeName(name);
           if (nameRes.ifSpecial) {
-              var prefix = nameRes.name.split(":")[0];
-              dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
+              var prefix = nameRes.name.split(':')[0];
+              dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
           } else {
-              dom[method](nameRes, val || "");
+              dom[method](nameRes, val || '');
           }
       },
       booleanAttr: function booleanAttr(dom, name, val) {
           dom[name] = !!val;
           if (dom[name] === false) {
               dom.removeAttribute(name);
-          } else if (dom[name] === "false") {
-              dom[name] = "";
+          } else if (dom[name] === 'false') {
+              dom[name] = '';
           }
       },
       attribute: function attribute(dom, name, val) {
@@ -1666,7 +1669,7 @@
           try {
               if (!val && val !== 0) {
                   if (builtinStringProps[name]) {
-                      dom[name] = "";
+                      dom[name] = '';
                   } else {
                       dom.removeAttribute(name);
                   }
@@ -1683,7 +1686,7 @@
       dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
           var oldhtml = lastProps[name] && lastProps[name].__html;
           var html = val && val.__html;
-          html = html == null ? "" : html;
+          html = html == null ? '' : html;
           if (html !== oldhtml) {
               dom.innerHTML = html;
           }
@@ -1790,7 +1793,7 @@
   var REF = 19;
   var CALLBACK = 23;
   var CAPTURE = 29;
-  var effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+  var effectNames = [CONTENT, ATTR, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
       return a - b;
   });
   var effectLength = effectNames.length;
@@ -2417,6 +2420,9 @@
               Renderer.insertElement(fiber);
               fiber.hasMounted = true;
               fiber.effectTag /= PLACE;
+              if (fiber.effectTag % ATTR == 0) {
+                  Renderer.updateAttribute(fiber);
+              }
           } else {
               if (fiber.catchError) {
                   removeFormBoundaries(fiber);
@@ -2486,14 +2492,17 @@
                       Renderer.updateContext(fiber);
                       break;
                   case ATTR:
-                      Renderer.updateAttribute(fiber);
+                      if (fiber.onDuplex) {
+                          fiber.onDuplex(fiber);
+                          delete fiber.onDuplex;
+                      }
                       break;
                   case HOOK:
                       if (fiber.hasMounted) {
-                          guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                          guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                       } else {
                           fiber.hasMounted = true;
-                          guardCallback(instance, "componentDidMount", []);
+                          guardCallback(instance, 'componentDidMount', []);
                       }
                       delete fiber._hydrating;
                       if (fiber.catchError) {
@@ -2564,7 +2573,7 @@
           } else {
               if (fiber.hasMounted) {
                   stateNode.updater.enqueueSetState = returnFalse;
-                  guardCallback(stateNode, "componentWillUnmount", []);
+                  guardCallback(stateNode, 'componentWillUnmount', []);
               }
           }
           delete fiber.alternate;
@@ -2839,28 +2848,28 @@
           props = vnode.props,
           ns = vnode.ns;
       switch (type) {
-          case "#text":
+          case '#text':
               var node = recyclables[type].pop();
               if (node) {
                   node.nodeValue = props;
                   return node;
               }
               return document.createTextNode(props);
-          case "#comment":
+          case '#comment':
               return document.createComment(props);
-          case "svg":
+          case 'svg':
               ns = NAMESPACE.svg;
               break;
-          case "math":
+          case 'math':
               ns = NAMESPACE.math;
               break;
           default:
               do {
-                  var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                  var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
                   if (s) {
                       ns = s.namespaceURI;
-                      if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                          ns = "";
+                      if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                          ns = '';
                       }
                       break;
                   }
@@ -2877,7 +2886,7 @@
       var inputType = props && props.type;
       if (inputType) {
           try {
-              elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+              elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
           } catch (e2) {        }
       }
       return elem;
@@ -2890,7 +2899,7 @@
       }
   }
   var recyclables = {
-      "#text": []
+      '#text': []
   };
   Renderer.middleware({
       begin: noop,
@@ -2911,8 +2920,8 @@
           }
           node.__events = null;
       } else if (node.nodeType === 3) {
-          if (recyclables["#text"].length < 100) {
-              recyclables["#text"].push(node);
+          if (recyclables['#text'].length < 100) {
+              recyclables['#text'].push(node);
           }
       }
       fragment.appendChild(node);
@@ -2929,9 +2938,6 @@
           }
           if (after === null && dom === parent.lastChild) {
               return;
-          }
-          if (fiber.type == "blockquote") {
-              console.log(fiber, dom, insertPoint);
           }
           Renderer.inserting = fiber.tag === 5 && document.activeElement;
           parent.insertBefore(dom, after);
@@ -2955,7 +2961,7 @@
       createElement: createElement$1,
       insertElement: insertElement,
       emptyElement: function emptyElement(fiber) {
-          fiber.stateNode.innerHTML = "";
+          fiber.stateNode.innerHTML = '';
           _emptyElement(fiber.stateNode);
       },
       unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {

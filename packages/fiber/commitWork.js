@@ -1,7 +1,7 @@
 import {
     emptyObject,
     returnFalse,
-} from "react-core/util";
+} from 'react-core/util';
 import {
     NOWORK,
     WORKING,
@@ -16,23 +16,23 @@ import {
     effectLength,
     effectNames,
 
-} from "./effectTag";
+} from './effectTag';
 import {
     Unbatch
-} from "./unbatch";
+} from './unbatch';
 import {
     guardCallback,
     removeFormBoundaries
-} from "./ErrorBoundary";
+} from './ErrorBoundary';
 import {
     fakeObject
-} from "react-core/Component";
+} from 'react-core/Component';
 import {
     Renderer
-} from "react-core/createRenderer";
+} from 'react-core/createRenderer';
 import {
     Refs
-} from "./Refs";
+} from './Refs';
 
 /**
  * COMMIT阶段也做成深度调先遍历
@@ -55,6 +55,9 @@ function commitDFSImpl(fiber) {
             Renderer.insertElement(fiber);
             fiber.hasMounted = true;
             fiber.effectTag /= PLACE;
+            if(fiber.effectTag % ATTR == 0){
+                Renderer.updateAttribute(fiber);
+            }
         } else {
             // 边界组件的清洗工件
             if (fiber.catchError) {
@@ -140,18 +143,22 @@ export function commitEffects(fiber) {
                 Renderer.updateContext(fiber);
                 break;
             case ATTR:
-                Renderer.updateAttribute(fiber);
+          
+                if(fiber.onDuplex){
+                    fiber.onDuplex(fiber);
+                    delete fiber.onDuplex;
+                }
                 break;
             case HOOK:
                 if (fiber.hasMounted) {
-                    guardCallback(instance, "componentDidUpdate", [
+                    guardCallback(instance, 'componentDidUpdate', [
                         updater.prevProps,
                         updater.prevState,
                         updater.snapshot,
                     ]);
                 } else {
                     fiber.hasMounted = true;
-                    guardCallback(instance, "componentDidMount", []);
+                    guardCallback(instance, 'componentDidMount', []);
                 }
                 delete fiber._hydrating;
                 //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
@@ -231,7 +238,7 @@ function disposeFiber(fiber, force) {
         } else {
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, "componentWillUnmount", []);
+                guardCallback(stateNode, 'componentWillUnmount', []);
             }
         }
         delete fiber.alternate;

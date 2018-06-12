@@ -10,7 +10,8 @@ export const REF = 19; // ref 总在钩子之后
 export const CALLBACK = 23; //回调
 export const CAPTURE = 29; //出错
 //上面的副作用的功能与位置可能变化频繁，我们需确保它们从小到大排列
-export const effectNames = [PLACE, CONTENT, ATTR, NULLREF, HOOK,
+// PLACE, CONTENT, ATTR,
+export const effectNames = [ CONTENT, ATTR, NULLREF, HOOK,
     REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });

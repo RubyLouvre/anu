@@ -1,4 +1,4 @@
-import { typeNumber, emptyObject } from "react-core/util";
+import { typeNumber, emptyObject } from 'react-core/util';
 
 function getSafeValue(value) {
     switch (typeNumber(value)) {
@@ -10,58 +10,58 @@ function getSafeValue(value) {
         return value;
     default:
         // function, symbol are assigned as empty strings
-        return "";
+        return '';
     }
 }
 
 export var duplexMap = {
     input: {
         init(node, props) {
-            let defaultValue = props.defaultValue == null ? "" : props.defaultValue;
+            let defaultValue = props.defaultValue == null ? '' : props.defaultValue;
             return node._wrapperState = {
                 // initialChecked: props.checked != null ? props.checked : props.defaultChecked,
                 initialValue: getSafeValue(props.value != null ? props.value : defaultValue),
             };
         },
         mount(node, props, state) {
-            if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
-                let stateValue = "" + state.initialValue;
-                if (node.value === "" && node.value !== stateValue) {
-                    syncValue(node, "value", stateValue);
+            if (props.hasOwnProperty('value') || props.hasOwnProperty('defaultValue')) {
+                let stateValue = '' + state.initialValue;
+                if (node.value === '' && node.value !== stateValue) {
+                    syncValue(node, 'value', stateValue);
                 }
                 node.defaultValue = stateValue;
             }
             var name = node.name;
-            if (name !== "") {
-                node.name = "";
+            if (name !== '') {
+                node.name = '';
             }
             node.defaultChecked = !node.defaultChecked;
             node.defaultChecked = !node.defaultChecked;
-            if (name !== "") {
+            if (name !== '') {
                 node.name = name;
             }
         },
         update(node, props) {
             if (props.checked != null) {
-                syncValue(node, "checked", !!props.checked);
+                syncValue(node, 'checked', !!props.checked);
             }
             var value = getSafeValue(props.value);
 
             if (value != null) {
-                if (props.type === "number") {
-                    if (value === 0 && node.value === "" ||
+                if (props.type === 'number') {
+                    if (value === 0 && node.value === '' ||
                         // eslint-disable-next-line
                         node.value != value) {
-                        syncValue(node, "value", "" + value);
+                        syncValue(node, 'value', '' + value);
                     }
-                } else if (node.value !== "" + value) {
-                    syncValue(node, "value", "" + value);
+                } else if (node.value !== '' + value) {
+                    syncValue(node, 'value', '' + value);
                 }
             }
 
-            if (props.hasOwnProperty("value")) {
+            if (props.hasOwnProperty('value')) {
                 setDefaultValue(node, props.type, value);
-            } else if (props.hasOwnProperty("defaultValue")) {
+            } else if (props.hasOwnProperty('defaultValue')) {
                 setDefaultValue(node, props.type, getSafeValue(props.defaultValue));
             }
 
@@ -103,7 +103,7 @@ export var duplexMap = {
                     updateOptions(node, !!props.multiple, props.defaultValue, true);
                 } else {
                     // Revert the select back to its default unselected state.
-                    updateOptions(node, !!props.multiple, props.multiple ? [] : "", false);
+                    updateOptions(node, !!props.multiple, props.multiple ? [] : '', false);
                 }
             }
         }
@@ -117,31 +117,31 @@ export var duplexMap = {
                 if (children != null) {
                     //移除元素节点
                     defaultValue = getTextContent(node);
-                    node.innerHTML = "";
+                    node.innerHTML = '';
                 }
                 if (defaultValue == null) {
-                    defaultValue = "";
+                    defaultValue = '';
                 }
                 initialValue = defaultValue;
             }
             // 优先级：value > children(textContent) > defaultValue > ""
             return node._wrapperState = {
-                initialValue: "" + initialValue
+                initialValue: '' + initialValue
             };
         },
         mount(node, props, state) {
             let text = getTextContent(node);
-            let stateValue = "" + state.initialValue;
+            let stateValue = '' + state.initialValue;
             if (text !== stateValue) {
-                syncValue(node, "value", stateValue);
+                syncValue(node, 'value', stateValue);
             }
         },
         update(node, props) {
             let value = props.value;
             if (value != null) {
-                let newValue = "" + value;
+                let newValue = '' + value;
                 if (newValue !== node.value) {
-                    syncValue(node, "value", newValue);
+                    syncValue(node, 'value', newValue);
                 }
                 if (props.defaultValue == null) {
                     node.defaultValue = newValue;
@@ -163,7 +163,7 @@ export var duplexMap = {
             if (node.text !== text.trim()) {
                 node.innerHTML = text;
             }
-            if ("value" in props) {
+            if ('value' in props) {
                 node.duplexValue = node.value = props.value;
             } else {
                 node.duplexValue = node.text;
@@ -179,11 +179,11 @@ function getTextContent(node){
 function setDefaultValue(node, type, value) {
     if (
         // Focused number inputs synchronize on blur. See ChangeEventPlugin.js
-        type !== "number" || node.ownerDocument.activeElement !== node) {
+        type !== 'number' || node.ownerDocument.activeElement !== node) {
         if (value == null) {
-            node.defaultValue = "" + node._wrapperState.initialValue;
-        } else if (node.defaultValue !== "" + value) {
-            node.defaultValue = "" + value;
+            node.defaultValue = '' + node._wrapperState.initialValue;
+        } else if (node.defaultValue !== '' + value) {
+            node.defaultValue = '' + value;
         }
     }
 }
@@ -196,10 +196,10 @@ export function updateOptions(node, multiple, propValue, setDefaultSelected) {
         var selectedValue = {};
         for (let i = 0; i < selectedValues.length; i++) {
             // Prefix to avoid chaos with special keys.
-            selectedValue["$" + selectedValues[i]] = true;
+            selectedValue['$' + selectedValues[i]] = true;
         }
         for (let i = 0; i < options.length; i++) {
-            let selected = selectedValue.hasOwnProperty("$" + options[i].duplexValue);
+            let selected = selectedValue.hasOwnProperty('$' + options[i].duplexValue);
             if (options[i].selected !== selected) {
                 options[i].selected = selected;
             }
@@ -210,7 +210,7 @@ export function updateOptions(node, multiple, propValue, setDefaultSelected) {
     } else {
         // Do not set `select.value` as exact behavior isn't consistent across all
         // browsers for all cases.
-        var _selectedValue = "" + propValue;
+        var _selectedValue = '' + propValue;
         var defaultSelected = null;
         for (let i = 0; i < options.length; i++) {
             if (options[i].duplexValue === _selectedValue) {
@@ -236,16 +236,17 @@ function syncValue(dom, name, value) {
     dom.__anuSetValue = false;
 }
 
-export function duplexAction(dom, fiber, nextProps, lastProps) {
-    var tag = fiber.name, fns = duplexMap[tag];
-    if (tag !== "option") {
+export function duplexAction(fiber) {
+    let {stateNode: dom, name, props, lastProps} = fiber;
+    let fns = duplexMap[name];
+    if (name !== 'option') {
         enqueueDuplex(dom);
     }
-    if (lastProps == emptyObject) {
-        var state = fns.init(dom, nextProps);
-        fns.mount(dom, nextProps, state);
+    if (!lastProps || lastProps == emptyObject) {
+        let state = fns.init(dom, props);
+        fns.mount(dom, props, state);
     } else {
-        fns.update(dom, nextProps);
+        fns.update(dom, props);
     }
 }
 
@@ -266,7 +267,7 @@ export function fireDuplex() {
             if (fiber && !fiber.disposed) {
                 let props = fiber.props;
                 let tag = fiber.name;
-                if (name === "select") {
+                if (name === 'select') {
                     let value = props.value;
                     if (value != null) {
                         updateOptions(dom, !!props.multiple, value, false);
@@ -274,7 +275,7 @@ export function fireDuplex() {
                 } else {
                     duplexMap[tag].update(dom, props);
                     let name = props.name;
-                    if (props.type === "radio" && name != null && !radioMap[name]) {
+                    if (props.type === 'radio' && name != null && !radioMap[name]) {
                         radioMap[name] = 1;
                         collectNamedCousins(dom, name);
                     }
@@ -289,11 +290,11 @@ function collectNamedCousins(rootNode, name) {
     while (queryRoot.parentNode) {
         queryRoot = queryRoot.parentNode;
     }
-    let group = queryRoot.getElementsByTagName("input");
+    let group = queryRoot.getElementsByTagName('input');
     for (let i = 0; i < group.length; i++) {
         let otherNode = group[i];
         if (otherNode === rootNode || otherNode.name !== name ||
-            otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
+            otherNode.type !== 'radio' || otherNode.form !== rootNode.form) {
             continue;
         }
         enqueueDuplex(otherNode);

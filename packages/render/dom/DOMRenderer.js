@@ -1,15 +1,15 @@
-import { diffProps } from "./props";
-import { document, NAMESPACE } from "./browser";
-import { get, noop, extend, emptyObject, topNodes, topFibers } from "react-core/util";
-import { Renderer, createRenderer } from "react-core/createRenderer";
-import { render, createContainer } from "react-fiber/scheduleWork";
-import { fireDuplex } from "./duplex";
+import { diffProps } from './props';
+import { document, NAMESPACE } from './browser';
+import { get, noop, extend, emptyObject, topNodes, topFibers } from 'react-core/util';
+import { Renderer, createRenderer } from 'react-core/createRenderer';
+import { render, createContainer } from 'react-fiber/scheduleWork';
+import { fireDuplex } from './duplex';
 
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     switch (type) {
-    case "#text":
+    case '#text':
         //只重复利用文本节点
         var node = recyclables[type].pop();
         if (node) {
@@ -17,23 +17,23 @@ export function createElement(vnode) {
             return node;
         }
         return document.createTextNode(props);
-    case "#comment":
+    case '#comment':
         return document.createComment(props);
 
-    case "svg":
+    case 'svg':
         ns = NAMESPACE.svg;
         break;
-    case "math":
+    case 'math':
         ns = NAMESPACE.math;
         break;
 
     default:
         do {
-            var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+            var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
             if (s) {
                 ns = s.namespaceURI;
-                if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                    ns = "";
+                if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                    ns = '';
                 }
                 break;
             }
@@ -52,7 +52,7 @@ export function createElement(vnode) {
     let inputType = props && props.type; //IE6-8下立即设置type属性
     if (inputType) {
         try {
-            elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+            elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
         } catch (e2) {/*skip*/ }
     }
     return elem;
@@ -66,7 +66,7 @@ function emptyElement(node) {
     }
 }
 const recyclables = {
-    "#text": [],
+    '#text': [],
 };
 Renderer.middleware({
     begin: noop,
@@ -89,8 +89,8 @@ export function removeElement(node) {
         node.__events = null;
     } else if (node.nodeType === 3) {
         //只回收文本节点
-        if (recyclables["#text"].length < 100) {
-            recyclables["#text"].push(node);
+        if (recyclables['#text'].length < 100) {
+            recyclables['#text'].push(node);
         }
     }
     fragment.appendChild(node);
@@ -109,9 +109,6 @@ function insertElement(fiber) {
         }
         if (after === null && dom === parent.lastChild) {
             return;
-        }
-        if(fiber.type == "blockquote"){
-            console.log(fiber, dom,  insertPoint );
         }
         //插入**元素节点**会引发焦点丢失，触发body focus事件
         Renderer.inserting = fiber.tag === 5 && document.activeElement;
@@ -163,7 +160,7 @@ export let DOMRenderer = createRenderer({
     createElement,
     insertElement,
     emptyElement(fiber) {
-        fiber.stateNode.innerHTML = "";
+        fiber.stateNode.innerHTML = '';
         emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {

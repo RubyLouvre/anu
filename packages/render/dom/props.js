@@ -1,8 +1,8 @@
-import { NAMESPACE } from "./browser";
-import { patchStyle } from "./style";
-import { eventAction, rform } from "./event";
-import { typeNumber, emptyObject, noop } from "react-core/util";
-import { duplexAction } from "./duplex";
+import { NAMESPACE } from './browser';
+import { patchStyle } from './style';
+import { eventAction, rform } from './event';
+import { typeNumber, emptyObject, noop } from 'react-core/util';
+import { duplexAction } from './duplex';
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 
@@ -45,32 +45,32 @@ let svgCamelCase = {
 // SVG 属性列表中驼峰命名和短横线分隔命名特征值有重复
 // 列出了重复特征中的短横线命名的属性名
 let specialSVGPropertyName = {
-    "overline-thickness": 2,
-    "underline-thickness": 2,
-    "overline-position": 2,
-    "underline-position": 2,
-    "stroke-miterlimit": 2,
-    "baseline-shift": 2,
-    "clip-path": 2,
-    "font-size": 2,
-    "font-size-adjust": 2,
-    "font-stretch": 2,
-    "font-style": 2,
-    "text-decoration": 2,
-    "vert-origin-x": 2,
-    "vert-origin-y": 2,
-    "paint-order": 2,
-    "fill-rule": 2,
-    "color-rendering": 2,
-    "marker-end": 2,
-    "pointer-events": 2,
-    "units-per-em": 2,
-    "strikethrough-thickness": 2,
-    "lighting-color": 2
+    'overline-thickness': 2,
+    'underline-thickness': 2,
+    'overline-position': 2,
+    'underline-position': 2,
+    'stroke-miterlimit': 2,
+    'baseline-shift': 2,
+    'clip-path': 2,
+    'font-size': 2,
+    'font-size-adjust': 2,
+    'font-stretch': 2,
+    'font-style': 2,
+    'text-decoration': 2,
+    'vert-origin-x': 2,
+    'vert-origin-y': 2,
+    'paint-order': 2,
+    'fill-rule': 2,
+    'color-rendering': 2,
+    'marker-end': 2,
+    'pointer-events': 2,
+    'units-per-em': 2,
+    'strikethrough-thickness': 2,
+    'lighting-color': 2
 };
 
 // 重复属性名的特征值列表
-let repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
+let repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
 
 function createRepaceFn(split) {
     return function (match) {
@@ -79,8 +79,8 @@ function createRepaceFn(split) {
 }
 
 let rhump = /[a-z][A-Z]/;
-let toHyphen = createRepaceFn("-");
-let toColon = createRepaceFn(":");
+let toHyphen = createRepaceFn('-');
+let toColon = createRepaceFn(':');
 
 function getSVGAttributeName(name) {
     if (svgCache[name]) {
@@ -121,9 +121,10 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
     let continueProps = skipProps;
     if (!isSVG && rform.test(fiber.type)) {
         continueProps = duplexProps;
-        if (!("onChange" in nextProps)) {
-            eventAction(dom, "onChange", noop, lastProps, fiber);
+        if (!('onChange' in nextProps)) {
+            eventAction(dom, 'onChange', noop, lastProps, fiber);
         }
+        fiber.onDuplex =  continueProps.onDuplex;
     }
     //eslint-disable-next-line
     for (let name in nextProps) {
@@ -154,7 +155,8 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
             actionStrategy[action](dom, name, false, lastProps, fiber);
         }
     }
-    continueProps.onDuplex(dom, fiber, nextProps, lastProps);
+    //  fiber.onDuplex = continueProps.onDuplex
+    //  continueProps.onDuplex(dom, fiber, nextProps, lastProps);
 }
 
 function isBooleanAttr(dom, name) {
@@ -175,26 +177,26 @@ function isEventName(name) {
  * @returns
  */
 function getPropAction(dom, name, isSVG) {
-    if (isSVG && name === "className") {
-        return "svgClass";
+    if (isSVG && name === 'className') {
+        return 'svgClass';
     }
     if (isSpecialAttr[name]) {
         return name;
     }
     if (isEventName(name)) {
-        return "event";
+        return 'event';
     }
     if (isSVG) {
-        return "svgAttr";
+        return 'svgAttr';
     }
     //img.width = '100px'时,取img.width为0,必须用setAttribute
-    if ((name === "width" || name === "height")) {
-        return "attribute";
+    if ((name === 'width' || name === 'height')) {
+        return 'attribute';
     }
     if (isBooleanAttr(dom, name)) {
-        return "booleanAttr";
+        return 'booleanAttr';
     }
-    return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
+    return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
 }
 let builtinStringProps = {
     className: 1,
@@ -223,15 +225,15 @@ export let actionStrategy = {
         patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
     },
     autoFocus: function (dom) {
-        if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
+        if (/input|text/i.test(dom.nodeName) || dom.contentEditable === 'true') {
             dom.focus();
         }
     },
     svgClass: function (dom, name, val) {
         if (!val) {
-            dom.removeAttribute("class");
+            dom.removeAttribute('class');
         } else {
-            dom.setAttribute("class", val);
+            dom.setAttribute('class', val);
         }
     },
     svgAttr: function (dom, name, val) {
@@ -239,14 +241,14 @@ export let actionStrategy = {
         // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
         // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
         // xlinkTitle, xlinkType eslint-disable-next-line
-        let method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
+        let method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
         let nameRes = getSVGAttributeName(name);
         if (nameRes.ifSpecial) {
-            let prefix = nameRes.name.split(":")[0];
+            let prefix = nameRes.name.split(':')[0];
             // 将xlinkHref 转换为 xlink:href
-            dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
+            dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
         } else {
-            dom[method](nameRes, val || "");
+            dom[method](nameRes, val || '');
         }
     },
     booleanAttr: function (dom, name, val) {
@@ -255,9 +257,9 @@ export let actionStrategy = {
         dom[name] = !!val;
         if (dom[name] === false) {
             dom.removeAttribute(name);
-        } else if (dom[name] === "false") {
+        } else if (dom[name] === 'false') {
             //字符串属性会将它转换为false
-            dom[name] = "";
+            dom[name] = '';
         }
     },
     attribute: function (dom, name, val) {
@@ -277,7 +279,7 @@ export let actionStrategy = {
             if (!val && val !== 0) {
                 //如果是假值但不是0，就改成“”,alt不能removeAttribute
                 if (builtinStringProps[name]) {
-                    dom[name] = "";
+                    dom[name] = '';
                 } else {
                     dom.removeAttribute(name);
                 }
@@ -294,7 +296,7 @@ export let actionStrategy = {
     dangerouslySetInnerHTML: function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
         let html = val && val.__html;
-        html = html == null ? "" : html;
+        html = html == null ? '' : html;
         if (html !== oldhtml) {
             dom.innerHTML = html;
         }
