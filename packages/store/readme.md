@@ -34,14 +34,14 @@ export const count = {
   state: 0, // 它的初始值
   //reducers与effects都是各种操作count的方法，但是我们不应该有action概念，省得自己被绕进去
   reducers: {
-    //reducers你可以看作是一种纯正的setter，由于immutable的需求，要求传入旧的state, 返回新的state
+    //reducers是一种纯正的setter，由于immutable的需求，要求传入旧的state, 返回新的state
     increment(state, payload) {
       return state + payload
     }
   },
   // 
   effects: (dispatch) => ({
-    // effects可以看作是一种`异步`的setter，dispatch为访问器属性count所在的vm， 之所以单独出来，因为async/await需要特殊处理
+    // effects是一种`异步`的setter，dispatch为访问器属性count所在的vm， 之所以单独出来，因为async/await需要特殊处理
     async incrementAsync(payload, rootState) {
       await new Promise(resolve => setTimeout(resolve, 1000))
       dispatch.count.increment(payload)
@@ -122,6 +122,21 @@ Rematch/Redux还一个重要概念叫Selector， 这其实相当于MVVM的计算
 
 state来源于后端数据库，是跨页面共享的领域模型，而select或叫计属性或叫应用狀态，它是存在局部用于判定页面显示的临时数据，
 它可以是多个state的组合，或一个state与其他东西的组合。
+
+
+
+| VM中的概念               | rematch/redux中的名称          | 解释|
+|------------------------|---------------|---------------------|
+| 属性       | state      |       来自后端的领域模型， 可以多个组件或页面共享的状态
+| setter    | reducers.xxx/effects.xxx | 用于改变状态， 注意effects中的方法必须是异步的    |
+| getter    | getState() |  用于获取当前值       |
+| 计算属性    |selectors.xxx  | 只用于显示页面或简化逻辑，是1个或多个状态的组合<br/>，由reselector/Rematch select插件提供的特性       |
+| watch(props, fn)   | subscribe(fn) | 当属性发生改变触发的回调          |
+| watch("*", fn)   | middleware | 每个属性改变时会都经过的回调     |
+| =  | dispatch({type,payload}) | 解发属性，这是redux太过鸡肋的才暴露的内部机制, <br />它应该对用户不可见       |
+
+
+### 参考链接
 
 https://zhuanlan.zhihu.com/p/33985606
 
