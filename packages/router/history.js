@@ -1,25 +1,30 @@
 import {
     getWindow
 } from "react-core/util";
-
+//计划有history hash iframe三种模式
+export var modeObject = {}
 //伪造一个Location对象
 function getLocation(source) {
     return {
         ...source.location,
+        getPath() {
+            return modeObject.value === "hash" ? this.hash.slice(1) : this.pathname
+        },
         state: source.history.state,
         key: (source.history.state && source.history.state.key) || "initial"
     };
 }
+
 //伪造一个History对象
 function createHistory(source) {
     let listeners = [];
-    let location = getLocation(source);
+  
     let transitioning = false;
     let resolveTransition = () => {};
-
     let target = {
+
         //减少魔法，提高兼容性，将只读的访问器属性改成普通属性
-        location,
+        location: getLocation(source),
 
         transitioning,
 
@@ -31,15 +36,14 @@ function createHistory(source) {
         listen(listener) {
             listeners.push(listener);
 
-            let popstateListener = () => {
-                location = target.location = getLocation(source);
+            let popstateListener = (e) => {      
+                target.location = getLocation(source)
                 listener();
             };
-
-            source.addEventListener("popstate", popstateListener);
-
+            var event = modeObject.value === "hash" ? "hashchange" : "popstate"
+            addEvent(source, event, popstateListener);
             return () => {
-                source.removeEventListener("popstate", popstateListener);
+                removeEvent(source, event, popstateListener);
                 listeners = listeners.filter(fn => fn !== listener);
             };
         },
@@ -52,17 +56,27 @@ function createHistory(source) {
                 key: Date.now() + ""
             };
             // try...catch iOS Safari limits to 100 pushState calls
-            try {
-                if (transitioning || replace) {
-                    source.history.replaceState(state, null, to);
-                } else {
-                    source.history.pushState(state, null, to);
+            var slocation = source.location
+            if (modeObject.value === "hash") {
+                if (replace && slocation.hash !== newHash) {
+                    history.back()
                 }
-            } catch (e) {
-                source.location[replace ? "replace" : "assign"](to);
+                slocation.hash = to
+            } else {
+                try {
+                    if (transitioning || replace) {
+                        source.history.replaceState(state, null, to);
+                    } else {
+                        source.history.pushState(state, null, to);
+                    }
+                } catch (e) {
+                    slocation[replace ? "replace" : "assign"](to);
+                }
             }
 
-            target.location = location = getLocation(source);
+
+            target.location = getLocation(source);
+
             target.transitioning = transitioning = true;
 
             let transition = new Promise(res => (resolveTransition = res));
@@ -73,6 +87,21 @@ function createHistory(source) {
     return target;
 }
 
+function addEvent(dom, name, fn) {
+    if (dom.addEventListener) {
+        dom.addEventListener(name, fn)
+    } else if (dom.attachEvent) {
+        dom.attachEvent("on" + name, fn)
+    }
+}
+
+function removeEvent(dom, name, fn) {
+    if (dom.removeEventListener) {
+        dom.removeEventListener(name, fn)
+    } else if (dom.detachEvent) {
+        dom.detachEvent("on" + name, fn)
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // 伪造一个window对象
 function createMemorySource(initialPathname = "/") {
@@ -91,6 +120,7 @@ function createMemorySource(initialPathname = "/") {
             // index
             // entries,
             // state
+            back(){},
             pushState(state, _, uri) {
                 index++;
                 stack.push(uri2obj(uri));

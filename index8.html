@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
     <script type='text/javascript' src="./dist/Router.js"></script>
-   
+    <script type='text/javascript' src="./dist/Rematch.js"></script>
+
 
     <!--<script type='text/javascript' src="./lib/createClass.js"></script>-->
    <!-- <script type='text/javascript' src="./react.js"></script>
@@ -76,7 +77,7 @@ const Home = () => (
 );
 
 
-ReactDOM.render(<Router>
+ReactDOM.render(<Router mode="hash">
     <App path="/">
       <Home path="/" />
       <User path="users/:userId" />

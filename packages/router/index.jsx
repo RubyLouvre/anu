@@ -13,13 +13,17 @@ import {
 import {
     globalHistory,
     navigate,
+    modeObject,
     createHistory,
     createMemorySource
 } from "./history";
 
 ////////////////////////////////////////////////////////////////////////////////
 // React polyfill
-let React = getWindow().React;
+let win = getWindow()
+var supportPushState = !!win.history && win.history.pushState;
+var supportHashChange = !!("onhashchange" in win )
+let React = win.React;
 if(!React || !React.eventSystem){
    throw "请先安装anujs";
 }
@@ -155,8 +159,9 @@ let BaseContext = createNamedContext("Base", { baseuri: "/", basepath: "/" });
 
 ////////////////////////////////////////////////////////////////////////////////
 // The main event, welcome to the show everybody.
-let Router = props => (
-    <BaseContext.Consumer>
+function Router(props) {
+    modeObject.value = supportPushState && (!props.mode || props.mode === "history") ? "history": "hash"
+    return  (<BaseContext.Consumer>
         {baseContext => (
             <Location>
                 {locationContext => (
@@ -164,8 +169,8 @@ let Router = props => (
                 )}
             </Location>
         )}
-    </BaseContext.Consumer>
-);
+    </BaseContext.Consumer>)
+}
 
 let RouterImpl = miniCreateClass(
     function RouterImpl() {},
@@ -180,11 +185,13 @@ let RouterImpl = miniCreateClass(
                 children,
                 component = "div",
                 baseuri,
+                mode,
                 ...domProps
             } = this.props;
             let routes = Children.map(children, createRoute(basepath));
-            let { pathname } = location;
-
+            //** pathname改成getPath()
+            let pathname = location.getPath()
+          
             let match = pick(routes, pathname);
 
             if (match) {
@@ -209,7 +216,7 @@ let RouterImpl = miniCreateClass(
                     element,
                     props,
                     element.props.children ? (
-                        <Router primary={primary}>{element.props.children}</Router>
+                        <Router primary={primary} mode={mode}>{element.props.children}</Router>
                     ) : (
                         void 666
                     )
@@ -345,9 +352,10 @@ let FocusHandlerImpl = miniCreateClass(
                 };
             } else {
                 let myURIChanged = nextProps.uri !== prevState.uri;
-                let navigatedUpToMe =
-          prevState.location.pathname !== nextProps.location.pathname &&
-          nextProps.location.pathname === nextProps.uri;
+                //** pathname改成getPath()
+                let nextPath = nextProps.location.getPath();
+                let navigatedUpToMe = prevState.location.getPath() !== nextPath &&
+                     nextPath === nextProps.uri;
                 return {
                     shouldFocus: myURIChanged || navigatedUpToMe,
                     ...nextProps
@@ -392,8 +400,9 @@ let Link = props => (
                     }
 
                     let href = resolve(to, baseuri);
-                    let isCurrent = location.pathname === href;
-                    let isPartiallyCurrent = startsWith(location.pathname, href);
+                     //** pathname改成getPath()
+                    let isCurrent = location.getPath() === href;
+                    let isPartiallyCurrent = startsWith(location.getPath(), href);
                     Object.assign(
                         anchorProps,
                         getProps({ isCurrent, isPartiallyCurrent, href, location })
@@ -473,7 +482,9 @@ let Match = ({ path, children }) => (
             <Location>
                 {({ navigate, location }) => {
                     let resolvedPath = resolve(path, baseuri);
-                    let result = match(resolvedPath, location.pathname);
+                    //** pathname改成getPath()
+                    let result = match(resolvedPath, location.getPath());
+
                     return children({
                         navigate,
                         location,
