@@ -11,14 +11,14 @@
 var validate = function validate(validations) {
 };
 function isListener(reducer) {
-    return reducer.includes('/');
+    return reducer.indexOf('/') !== -1;
 }
 var tos = Object.prototype.toString;
 function isFn(a) {
     return tos.call(a) === "[object Function]";
 }
 function isNotFn(obj) {
-    return obj && isFn(obj);
+    return obj && !isFn(obj);
 }
 function merge(original, next) {
     original = original || {};
