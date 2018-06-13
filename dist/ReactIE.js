@@ -1450,11 +1450,11 @@ var PLACE = 3;
 var CONTENT = 5;
 var ATTR = 7;
 var DUPLEX = 11;
-var DETACH = 17;
-var HOOK = 19;
-var REF = 23;
-var CALLBACK = 29;
-var CAPTURE = 31;
+var DETACH = 13;
+var HOOK = 17;
+var REF = 19;
+var CALLBACK = 23;
+var CAPTURE = 29;
 var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
