@@ -1450,13 +1450,12 @@ var PLACE = 3;
 var CONTENT = 5;
 var ATTR = 7;
 var DUPLEX = 11;
-var NULLREF = 13;
 var DETACH = 17;
 var HOOK = 19;
 var REF = 23;
 var CALLBACK = 29;
 var CAPTURE = 31;
-var effectNames = [DUPLEX, NULLREF, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1929,9 +1928,6 @@ function removeFormBoundaries(fiber) {
 function detachFiber(fiber, effects$$1) {
     fiber.effectTag = DETACH;
     effects$$1.push(fiber);
-    if (fiber.ref && fiber.hasMounted) {
-        fiber.effectTag *= NULLREF;
-    }
     fiber.disposed = true;
     for (var child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects$$1);
@@ -2338,7 +2334,6 @@ function diffChildren(parentFiber, children) {
                     delete _newFiber.deleteRef;
                 }
                 if (oldRef && oldRef !== _newFiber.ref) {
-                    alternate.effectTag *= NULLREF;
                     effects$$1.push(alternate);
                 }
                 if (_newFiber.tag === 5) {

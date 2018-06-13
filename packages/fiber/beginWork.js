@@ -28,7 +28,7 @@ import {
     HOOK,
     CONTENT,
     REF,
-    NULLREF,
+  //  NULLREF,
     CALLBACK,
     NOWORK,
     WORKING
@@ -436,7 +436,7 @@ function diffChildren(parentFiber, children) {
                     delete newFiber.deleteRef;
                 }
                 if (oldRef && oldRef !== newFiber.ref) {
-                    alternate.effectTag *= NULLREF;
+                  //  alternate.effectTag *= NULLREF;
                     effects.push(alternate);
                 }
                 if (newFiber.tag === 5) {

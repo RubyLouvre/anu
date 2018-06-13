@@ -12,7 +12,7 @@ import {
     NOWORK,
     CAPTURE,
     DETACH,
-    NULLREF
+  //  NULLREF
 } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
@@ -163,9 +163,10 @@ export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
 
     effects.push(fiber);
-    if (fiber.ref && fiber.hasMounted) {
+ /*   if (fiber.ref && fiber.hasMounted) {
         fiber.effectTag *= NULLREF;
     }
+*/
     fiber.disposed = true;
     for (let child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects);

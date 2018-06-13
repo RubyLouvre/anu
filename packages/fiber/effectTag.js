@@ -4,7 +4,7 @@ export const PLACE = 3; //插入或移动
 export const CONTENT = 5; //设置文本
 export const ATTR = 7; //更新属性
 export const DUPLEX = 11; //delete null
-export const NULLREF = 13; //delete null
+// export const NULLREF = 13; //delete null
 export const DETACH = 17; //移出DOM树 componentWillUnmount
 export const HOOK = 19; //componentDidMount/Update/
 export const REF = 23; // ref 总在钩子之后
@@ -13,7 +13,7 @@ export const CAPTURE = 31; //出错
 
 //上面的副作用的功能与位置可能变化频繁，我们需确保它们从小到大排列
 // PLACE, CONTENT, ATTR,
-export const effectNames = [  DUPLEX, NULLREF, HOOK,
+export const effectNames = [  DUPLEX, HOOK,
     REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });

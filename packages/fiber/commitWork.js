@@ -143,9 +143,6 @@ export function commitEffects(fiber) {
             switch (effectNo) {
                 case WORKING:
                     break;
-                    //       case CONTENT:
-                    //       Renderer.updateContext(fiber);
-                    //      break;
                 case DUPLEX:
                     Renderer.updateControlled(fiber);
                     break;
