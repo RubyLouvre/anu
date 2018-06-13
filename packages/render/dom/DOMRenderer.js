@@ -3,7 +3,7 @@ import { document, NAMESPACE } from './browser';
 import { get, noop, extend, emptyObject, topNodes, topFibers } from 'react-core/util';
 import { Renderer, createRenderer } from 'react-core/createRenderer';
 import { render, createContainer } from 'react-fiber/scheduleWork';
-import { fireDuplex } from './duplex';
+import { duplexAction, fireDuplex } from './duplex';
 
 export function createElement(vnode) {
     let p = vnode.return;
@@ -154,9 +154,10 @@ export let DOMRenderer = createRenderer({
         let { props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
     },
-    updateContext(fiber) {
+    updateContent(fiber) {
         fiber.stateNode.nodeValue = fiber.props;
     },
+    updateControlled: duplexAction,
     createElement,
     insertElement,
     emptyElement(fiber) {

@@ -2,7 +2,8 @@ import { NAMESPACE } from './browser';
 import { patchStyle } from './style';
 import { eventAction, rform } from './event';
 import { typeNumber, emptyObject, noop } from 'react-core/util';
-import { duplexAction } from './duplex';
+//import { duplexAction } from './duplex';
+import { DUPLEX } from 'react-fiber/effectTag';
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 
@@ -124,6 +125,7 @@ export function diffProps(dom, lastProps, nextProps, fiber) {
         if (!('onChange' in nextProps)) {
             eventAction(dom, 'onChange', noop, lastProps, fiber);
         }
+        fiber.effectTag *= DUPLEX;
         fiber.onDuplex =  continueProps.onDuplex;
     }
     //eslint-disable-next-line
@@ -212,7 +214,7 @@ var skipProps = {
     onDuplex: noop
 };
 var duplexProps = {
-    onDuplex: duplexAction,
+   // onDuplex: duplexAction,
     value: 1,
     defaultValue: 1,
     checked: 1,

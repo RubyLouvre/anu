@@ -16,7 +16,7 @@ style.js 样式系统
 
 findDOMNode.js findHostInstance的封装
 
-DOMRenderer.js 注入各种DOM操作方法，如removeElement, createElement, insertElement, emptyElement, updateContext
+DOMRenderer.js 注入各种DOM操作方法，如removeElement, createElement, insertElement, emptyElement, updateContent
 
 index.js 入口文件
 

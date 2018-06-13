@@ -1,16 +1,19 @@
-import { typeNumber, emptyObject } from 'react-core/util';
+import {
+    typeNumber,
+    emptyObject
+} from 'react-core/util';
 
 function getSafeValue(value) {
     switch (typeNumber(value)) {
-    case 2:
-    case 3:
-    case 8:
-    case 4:
-    case 0:
-        return value;
-    default:
-        // function, symbol are assigned as empty strings
-        return '';
+        case 2:
+        case 3:
+        case 8:
+        case 4:
+        case 0:
+            return value;
+        default:
+            // function, symbol are assigned as empty strings
+            return '';
     }
 }
 
@@ -71,7 +74,7 @@ export var duplexMap = {
         }
     },
     select: {
-        init(node, props) {//select
+        init(node, props) { //select
             let value = props.value;
             return node._wrapperState = {
                 initialValue: value != null ? value : props.defaultValue,
@@ -116,7 +119,7 @@ export var duplexMap = {
                 let children = props.children;
                 if (children != null) {
                     //移除元素节点
-                    defaultValue = getTextContent(node);
+                    defaultValue = textContent(node);
                     node.innerHTML = '';
                 }
                 if (defaultValue == null) {
@@ -130,7 +133,7 @@ export var duplexMap = {
             };
         },
         mount(node, props, state) {
-            let text = getTextContent(node);
+            let text = textContent(node);
             let stateValue = '' + state.initialValue;
             if (text !== stateValue) {
                 syncValue(node, 'value', stateValue);
@@ -154,14 +157,17 @@ export var duplexMap = {
 
     },
     option: {
-        init() { },
+        init() {},
         update(node, props) {
             duplexMap.option.mount(node, props);
         },
         mount(node, props) {
-            let text = getTextContent(node);
-            if (node.text !== text.trim()) {
-                node.innerHTML = text;
+            let elems = node.getElementsByTagName("*");
+            let n = elems.length, el;
+            if (n) {
+                for (n = n - 1, el; el = elems[n--];) {
+                    node.removeChild(el)
+                }
             }
             if ('value' in props) {
                 node.duplexValue = node.value = props.value;
@@ -171,9 +177,9 @@ export var duplexMap = {
         }
     }
 };
-function getTextContent(node){
-    //innerText是用来对付IE6－8，innerHTML是用来对付jest
-    return node.textContent || node.innerText || node.innerHTML;
+
+function textContent(node) {
+    return node.textContent || node.innerText;
 }
 
 function setDefaultValue(node, type, value) {
@@ -221,7 +227,7 @@ export function updateOptions(node, multiple, propValue, setDefaultSelected) {
                 return;
             }
             if (defaultSelected === null && !options[i].disabled) {
-                defaultSelected = options[i];//存放第一个不为disabled的option
+                defaultSelected = options[i]; //存放第一个不为disabled的option
             }
         }
         if (defaultSelected !== null) {
@@ -231,13 +237,18 @@ export function updateOptions(node, multiple, propValue, setDefaultSelected) {
 }
 
 function syncValue(dom, name, value) {
-    dom.__anuSetValue = true;//抑制onpropertychange
+    dom.__anuSetValue = true; //抑制onpropertychange
     dom[name] = value;
     dom.__anuSetValue = false;
 }
 
 export function duplexAction(fiber) {
-    let {stateNode: dom, name, props, lastProps} = fiber;
+    let {
+        stateNode: dom,
+        name,
+        props,
+        lastProps
+    } = fiber;
     let fns = duplexMap[name];
     if (name !== 'option') {
         enqueueDuplex(dom);
@@ -300,7 +311,3 @@ function collectNamedCousins(rootNode, name) {
         enqueueDuplex(otherNode);
     }
 }
-
-
-
-

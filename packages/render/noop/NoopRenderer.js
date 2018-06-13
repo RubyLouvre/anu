@@ -31,7 +31,7 @@ export let NoopRenderer = createRenderer({
         return render(vnode, autoContainer);
     },
     updateAttribute() {},
-    updateContext(fiber) {
+    updateContent(fiber) {
         fiber.stateNode.children = fiber.props.children;
     },
     reset() {
