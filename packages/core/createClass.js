@@ -1,4 +1,11 @@
-import { extend, isFn, getWindow, miniCreateClass, toWarnDev, __type } from "./util";
+import {
+    extend,
+    isFn,
+    getWindow,
+    miniCreateClass,
+    toWarnDev,
+    __type
+} from "./util";
 
 /**
  * 为了兼容0.13之前的版本
@@ -49,7 +56,7 @@ function flattenHooks(key, hooks) {
         }
         return ret;
     } else if (hookType === "Function" && hooks.length > 1) {
-        return function () {
+        return function() {
             let ret = {},
                 r,
                 hasReturn = MANY_MERGED[key];
@@ -92,32 +99,28 @@ export default function createClass(spec) {
     }
     //创建一个构造器,有四个参数
     let statics = spec.statics;
-    let Constructor = miniCreateClass(function (){
-        if(!(this instanceof Component)){
+    let Constructor = miniCreateClass(function Ctor() {
+        if (!(this instanceof Component)) {
             throw "must new Component(...)";
         }
         for (let methodName in this) {
             let method = this[methodName];
-            if (typeof method  === "function"&& !NOBIND[methodName]) {
+            if (typeof method === "function" && !NOBIND[methodName]) {
                 this[methodName] = method.bind(this);
             }
         }
-   
+
         if (spec.getInitialState) {
             let test = this.state = spec.getInitialState.call(this);
-            if(!(test === null || ({}).toString.call(test) == "[object Object]")){
+            if (!(test === null || ({}).toString.call(test) == "[object Object]")) {
                 throw "Component.getInitialState(): must return an object or null";
             }
         }
-
     }, Component, spec, statics);
-    if(spec.displayName){
-        Constructor.displayName = spec.displayName;
-    }
-
     //如果mixins里面非常复杂，可能mixin还包含其他mixin
     if (spec.mixins) {
         applyMixins(spec, collectMixins(spec.mixins));
+        extend(Constructor.prototype, spec);
     }
 
     if (statics && statics.getDefaultProps) {
@@ -126,7 +129,7 @@ export default function createClass(spec) {
 
     "propTypes,contextTypes,childContextTypes,displayName".replace(
         /\w+/g,
-        function (name) {
+        function(name) {
             if (spec[name]) {
                 let props = (Constructor[name] = spec[name]);
                 if (name !== "displayName") {

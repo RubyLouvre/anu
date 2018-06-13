@@ -585,6 +585,7 @@ describe('create-react-class-integration', () => {
                     },
                 },
             ],
+            displayName: "Ctt",
             UNSAFE_componentWillMount: function () {
                 log.push('UNSAFE_componentWillMount');
             },
@@ -600,7 +601,10 @@ describe('create-react-class-integration', () => {
         });
 
         const div = document.createElement('div');
-        ReactDOM.render(<Component foo="bar" />, div);
+        var a = ReactDOM.render(<Component foo="bar" />, div);
+
+        expect(a.constructor.displayName).toBe("Ctt")
+
         expect(log).toEqual(['componentWillMount',
             'UNSAFE_componentWillMount'
         ]);

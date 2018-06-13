@@ -1,3 +1,11 @@
+## 1.4.3(2018.06.14)
+1. miniCreateClass在老式IE下取不到名字默认使用IEComponent, 
+2. 修复createClass没有继续mixin的BUG 
+3. 移除option元素下面所有元素节点
+4. 去掉NULLREF任务，添加DUPLEX任务，提前所有dom相关任务
+5. 内置的路由器支持IE8的hashchange
+6. updateContext改名updateContent，这是一直以来的笔误
+
 ## 1.4.2(2018.06.07)
 1. add miniCreateClass, 并用它重构createClass, Unbatch, PureComponent, createContext
 2. 添加一个WORKING任务，避免整棵树更新

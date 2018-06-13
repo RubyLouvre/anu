@@ -8,10 +8,14 @@ const json = require("../../package.json");
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    entry: "./packages/core/createClass.js",
-    format: "umd",
-    exports: "default",
-    dest: "./lib/createClass.js",
+    input: "./packages/core/createClass.js",
+    output: {
+        strict: false,
+        format: "umd",
+        exports: "default",
+        file:  "./lib/createClass.js",
+        name: "createReactClass",
+    },
     plugins: [
 
         babel(),
@@ -33,7 +37,5 @@ export default {
             ]
         }),
         filesize()
-    ],
-    moduleName: "createReactClass",
-    useStrict: false
+    ]
 };

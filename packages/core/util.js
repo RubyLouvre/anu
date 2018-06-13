@@ -89,11 +89,8 @@ export function inherit(SubClass, SupClass) {
     return fn;
 }
 
-inherit.getName = function(ctor) {
-    return ctor.name;
-};
 export function miniCreateClass(ctor, superClass, methods, statics) {
-    let className = inherit.getName(ctor);
+    let className = ctor.name || "IEComponent"
     let Ctor = Function(
         'superClass',
         'ctor',

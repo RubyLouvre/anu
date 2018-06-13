@@ -67,11 +67,6 @@ let IEHandleFix = {
 };
 
 if (msie < 9) {
-    const noName = ['', 'anonymous'];
-    const rname = /^function\s(\w+)/;
-    inherit.getName = function(ctor){
-        return (String(ctor).match(rname) || noName)[1];
-    };
     actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
         let html = val && val.__html;

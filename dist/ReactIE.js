@@ -81,11 +81,8 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-inherit.getName = function (ctor) {
-    return ctor.name;
-};
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = inherit.getName(ctor);
+    var className = ctor.name || "IEComponent";
     var Ctor = Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
@@ -3072,11 +3069,6 @@ var IEHandleFix = {
     }
 };
 if (msie < 9) {
-    var noName = ['', 'anonymous'];
-    var rname = /^function\s(\w+)/;
-    inherit.getName = function (ctor) {
-        return (String(ctor).match(rname) || noName)[1];
-    };
     actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
         var oldhtml = lastProps[name] && lastProps[name].__html;
         var html = val && val.__html;
@@ -3166,7 +3158,7 @@ if (prevReact && prevReact.eventSystem) {
         findDOMNode: findDOMNode,
         unmountComponentAtNode: unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-        version: "1.4.2",
+        version: "1.4.3",
         render: render$1,
         hydrate: render$1,
         unstable_batchedUpdates: DOMRenderer.batchedUpdates,

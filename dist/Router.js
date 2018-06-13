@@ -38,11 +38,8 @@ function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-inherit.getName = function (ctor) {
-    return ctor.name;
-};
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = inherit.getName(ctor);
+    var className = ctor.name || "IEComponent";
     var Ctor = Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor);
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
@@ -802,7 +799,7 @@ function shouldNavigate(event) {
     return !event.defaultPrevented && event.button === 0 && !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 var ReachRouter = {
-    version: "1.4.2",
+    version: "1.4.3",
     Link: Link,
     Location: Location,
     LocationProvider: LocationProvider,
