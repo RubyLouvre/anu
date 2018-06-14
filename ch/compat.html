@@ -3,7 +3,7 @@
       <input type="text" class="input js-input" placeholder="搜索" />
       <div class="m-search-result js-search-result"></div>
     </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item "><a class="href" href="../en/index.html">English</a></li><li class="item active"><a class="href" href="index.html">中文</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>兼容性</h1>
-<h3 id="语言补丁">语言补丁</h3>
+<h2 id="语言补丁">语言补丁</h2>
 <ol>
 <li><a href="https://github.com/juliangruber/isarray/">Array.isArray</a></li>
 <li><a href="https://github.com/ryanhefner/Object.assign">Object.assign</a></li>
@@ -25,7 +25,7 @@
 <h2 id="动画">动画</h2>
 <p>如果用户用到react-transition-group这样的动画库，请注意引入<strong>requestAnimationFrame</strong>的补丁</p>
 <p>https://github.com/darius/requestAnimationFrame</p>
-<p>###压缩</p>
+<h2 id="压缩">压缩</h2>
 <p>如果你用到压缩，就需要处理 uglify-js产生问题，因为IE6-8 ,对于<strong>map.delete(&quot;ddd&quot;)</strong>, <strong>modulex.default</strong>这样的写法会报语法错误
 因为关键字不能做属性名与方法名。我们可以用<code>es3ify-webpack-plugin</code>或<code>es3ify-loader</code>进行处理。</p>
 <pre><code class="language-javascript"><span class="token comment">//npm install uglifyjs-webpack-plugin@1.0.0-beta.2  </span>

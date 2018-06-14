@@ -1,6 +1,6 @@
 # 兼容性
 
-### 语言补丁
+## 语言补丁
 
 1. [Array.isArray](https://github.com/juliangruber/isarray/)
 2. [Object.assign](https://github.com/ryanhefner/Object.assign)
@@ -36,7 +36,7 @@ http://www.cnblogs.com/rubylouvre/p/5080464.html
 
 https://github.com/darius/requestAnimationFrame
 
-###压缩
+## 压缩
 
 如果你用到压缩，就需要处理 uglify-js产生问题，因为IE6-8 ,对于**map.delete("ddd")**, **modulex.default**这样的写法会报语法错误
 因为关键字不能做属性名与方法名。我们可以用`es3ify-webpack-plugin`或`es3ify-loader`进行处理。
