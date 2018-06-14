@@ -10,4 +10,4 @@
 
 赞助
 
-![](sponsorship.jpg)
+![](sponsorship.png)
