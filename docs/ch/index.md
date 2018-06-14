@@ -36,21 +36,21 @@ anujs是一个高级兼容React16的迷你React 框架，它兼容React16.3.0的
 
 上述代码的测量工具为gzip-size-cli， jsize 及 https://bundlephobia.com/
 
-
+![](../size.png)
 
 ## 与其他迷你react的比较 
 
 主要竞品有 inferno, preact, rax, react-lite, nervjs, 前两个是海外的， 后三个是中国的，中国由于网络的状况，对体积要来比较高。
 
-inferno, 需要加上inferno-compat， 才能与官方的API保持一致， 但组件套组件的情况下， 生命周期钩子的执行顺序与官方不一致， 因此不兼容React的绝大多数的UI库。不支持旧式IE。
+**inferno**, 需要加上inferno-compat， 才能与官方的API保持一致， 但组件套组件的情况下， 生命周期钩子的执行顺序与官方不一致， 因此不兼容React的绝大多数的UI库。不支持旧式IE。
 
-preact, 需要加上preact-compat， 才能与官方的API保持一致， 但组件套组件的情况下， 生命周期钩子的执行顺序与官方不一致， 因此不兼容React的绝大多数的UI库。 并且preact-compat内部使用了Object.definePropety，因此无法运用于IE8， 也造成它的性能严重劣化。
+**preact**, 需要加上preact-compat， 才能与官方的API保持一致， 但组件套组件的情况下， 生命周期钩子的执行顺序与官方不一致， 因此不兼容React的绝大多数的UI库。 并且preact-compat内部使用了Object.definePropety，因此无法运用于IE8， 也造成它的性能严重劣化。
 
-rax， 中国的阿里巴巴集团推出，支持React16大多数API，不支持IE8， 能跑一些React UI库。
+**rax**， 中国的阿里巴巴集团推出，支持React16大多数API，不支持IE8， 能跑一些React UI库。
 
-react-lite, 中国的携程集团推出，只兼容React15, 支持IE8，能跑一些React UI库。
+**react-lite**, 中国的携程集团推出，只兼容React15, 支持IE8，能跑一些React UI库。
 
-nervjs, 中国的京东集团推出，支持React16大多数API，代码与inferno, rax很相近， 没有case证明其兼容IE8，性能指标也很可疑。
+**nervjs**, 中国的京东集团推出，支持React16大多数API，代码与inferno, rax很相近， 没有case证明其兼容IE8，性能指标也很可疑。
 
 ## anujs优势
 

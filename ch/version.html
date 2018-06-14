@@ -1,0 +1,314 @@
+<html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="apple-touch-icon" sizes="180x180" href="../ydoc/images/apple-touch-icon.png"/><link rel="icon" type="image/png" sizes="32x32" href="../ydoc/images/favicon-32x32.png"/><link rel="icon" type="image/png" sizes="16x16" href="../ydoc/images/favicon-16x16.png"/><link rel="manifest" href="../ydoc/images/manifest.json"/><link rel="mask-icon" href="../ydoc/images/safari-pinned-tab.svg&quot;" color="#5bbad5"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>中文</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="ymfe"/><meta name="keywords"/><meta name="description" content="ydoc description"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/></head><body><div class="g-doc"><div class="m-aside"><div class="m-summary" id="js-menu"><div class="m-summary-content" id="js-menu-content"><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><a href="install.html" class="href">安装</a></li><li class="item"><a href="author.html" class="href">作者介绍</a></li><li class="item"><a href="intention.html" class="href">初衷</a></li><li class="item"><a href="compat.html" class="href">兼容性</a></li><li class="item"><a href="" class="href">版本变更</a></li><li class="item"><a href="ssr.html" class="href">后端渲染</a></li><li class="item"><a href="router.html" class="href">路由器</a></li><li class="item"><a href="store.html" class="href">状态管理</a></li></ul></div></div></div><div class="m-summary-switch" id="js-summary-switch"><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="bottom"><g transform="translate(904.92214,-879.1482)"><path d="m -673.67664,1221.6502 -231.2455,-231.24803 55.6165,-55.627 c 30.5891,-30.59485 56.1806,-55.627 56.8701,-55.627 0.6894,0 79.8637,78.60862 175.9427,174.68583 l 174.6892,174.6858 174.6892,-174.6858 c 96.079,-96.07721 175.253196,-174.68583 175.942696,-174.68583 0.6895,0 26.281,25.03215 56.8701,55.627 l 55.6165,55.627 -231.245496,231.24803 c -127.185,127.1864-231.5279,231.248 -231.873,231.248 -0.3451,0 -104.688,-104.0616 -231.873,-231.248 z" fill="#fff"></path></g></svg><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="top"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aaa" fill="#fff" fill-rule="nonzero"><path d="M231.2455,342.502 L0,111.25397 L55.6165,55.62697 C86.2056,25.03212 111.7971,-2.99999998e-05 112.4866,-2.99999998e-05 C113.176,-2.99999998e-05 192.3503,78.60859 288.4293,174.6858 L463.1185,349.3716 L637.8077,174.6858 C733.8867,78.60859 813.060896,-2.99999997e-05 813.750396,-2.99999997e-05 C814.439896,-2.99999997e-05 840.031396,25.03212 870.620496,55.62697 L926.236996,111.25397 L694.9915,342.502 C567.8065,469.6884 463.4636,573.75 463.1185,573.75 C462.7734,573.75 358.4305,469.6884 231.2455,342.502 Z" id="Shape" transform="translate(463.118498, 286.874985) scale(1, -1) translate(-463.118498, -286.874985) "></path></g></g></svg></div></div><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../ydoc/images/dog@1x.png"/><h6 class="name">anujs</h6></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item "><a class="href" href="../en/index.html">English</a></li><li class="item active"><a class="href" href="index.html">中文</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h2 id="1.4.32018.06.14">1.4.3(2018.06.14)</h2>
+<ol>
+<li>miniCreateClass在老式IE下取不到名字默认使用IEComponent,</li>
+<li>修复createClass没有继续mixin的BUG</li>
+<li>移除option元素下面所有元素节点</li>
+<li>去掉NULLREF任务，添加DUPLEX任务，提前所有dom相关任务</li>
+<li>内置的路由器支持IE8的hashchange</li>
+<li>updateContext改名updateContent，这是一直以来的笔误</li>
+</ol>
+<h2 id="1.4.22018.06.07">1.4.2(2018.06.07)</h2>
+<ol>
+<li>add miniCreateClass, 并用它重构createClass, Unbatch, PureComponent, createContext</li>
+<li>添加一个WORKING任务，避免整棵树更新</li>
+<li>修复受控组件中option的IE8-的兼容BUG</li>
+<li>添加一个内置的路由器</li>
+</ol>
+<h2 id="1.4.12018.06.04">1.4.1(2018.06.04)</h2>
+<ol>
+<li>文本节点的内容直接用fiber.props代替</li>
+<li>修正input的拼音输入法BUG</li>
+<li>修正updateHostComponent中覆盖children对象的BUG</li>
+<li>修正createClass BUG</li>
+<li>修正SSR的BUG</li>
+<li>简化commitDFS循环</li>
+</ol>
+<h2 id="1.4.02018.05.30">1.4.0(2018.05.30)</h2>
+<ol>
+<li>测试全部改成jest</li>
+<li>cWU钩子在调用时必须移除</li>
+<li>批量更新时，每个组件只能更新一次</li>
+<li>重构受控组件，它们会延后在batchedUpdate中执行，跑通所有测试</li>
+<li>emptyElement不再递归移除，但会递归清空附于元素节点上的数据，以防内存泄露</li>
+<li>将createClass移出核心库</li>
+<li>重构错误边界，边界组件带有capturedValues，catchError, caughtError标识，并放进全局的boundaries</li>
+<li>重构contextStack，保证setState后，从当前组件的unmaskedContext中还原之前的栈</li>
+</ol>
+<h2 id="1.3.22018.04.16">1.3.2(2018.04.16)</h2>
+<p>处理移动端下中文输入法的onChange事件BUG</p>
+<h2 id="1.3.12018.03.18">1.3.1(2018.03.18)</h2>
+<ol>
+<li>React.Fragment支持key属性</li>
+<li>修正有<code>生命周期的无状态组件</code>的更新BUG</li>
+<li>实现React.createRef与React.forwardRef</li>
+<li>实现createResource与createSubscription这两个处理狀态的新包，放于lib下</li>
+<li>var 集体更改为let const</li>
+</ol>
+<h2 id="1.3.02018.03.06">1.3.0(2018.03.06)</h2>
+<ol>
+<li>支持React16.3的createContext new API</li>
+<li>添加大量React.Fragment测试，修正一些边缘的BUG</li>
+<li>升级diff机制，由新旧vnode进行比较，改成fiber与新vnode进行比较，用新vnode的数据更新fiber与视图</li>
+<li>添加input[type=search]的onChange事件支持</li>
+<li>修正传送门在antd3.0的一个边缘BUG（重复插入两次，导致文本节点消失）</li>
+<li>属性名与方法名大改动，与React16的Fiber靠近
+<ul>
+<li><code>vnode.vtype</code> --&gt; fiber.tag</li>
+<li><code>instance.__isStateless</code> --&gt; fiber._isStateless</li>
+<li><code>updater</code> --&gt; fiber</li>
+<li><code>updater.vnode</code> --&gt; fiber._reactInternalFiber</li>
+<li><code>updater.willReceive</code> --&gt; fiber._willReceive</li>
+<li><code>updater.children</code> --&gt; fiber._children</li>
+<li><code>updater.isMounted()</code> --&gt; fiber._isMounted()</li>
+<li><code>updater.insertCarrier</code> --&gt; fiber._mountCarrier</li>
+<li><code>updater.insertPoint</code> --&gt; fiber._mountPoint</li>
+<li><code>updater.parentContext</code> --&gt; fiber._unmaskedContext</li>
+<li><code>getChildContext</code> --&gt; getUnmaskedContext</li>
+<li><code>getContextByTypes</code> --&gt; 为getMaskedContext</li>
+<li><code>CompositeUpdater.js</code> --&gt; ComponentFiber.js`</li>
+<li><code>DOMUpdater.js</code> --&gt; HostFiber.js</li>
+</ul>
+</li>
+</ol>
+<h2 id="1.2.92018.02.06">1.2.9(2018.02.06)</h2>
+<ol>
+<li>修正focus/blur事件的实现</li>
+<li>修正IE6－8下onchange因为是用onproperty实现，会引发无限循环的BUG</li>
+<li>修正diffProps无法修改input元素的type属性的BUG，改为在createElement方法中立即添加type属性</li>
+</ol>
+<h2 id="1.2.82018.02.02">1.2.8(2018.02.02)</h2>
+<ol>
+<li>简化focus/blur事件的实现，IE7－8的实现更加精简了</li>
+<li>修正wheel事件的属性计算方式，与官方保持一致</li>
+<li>为了支持react-hot-loader, vnode.updater.vnode更名为vnode.updater._reactInnerFiber, vtype更名为tag</li>
+<li>测试工具与调试工具进行了部分属性调整</li>
+</ol>
+<h2 id="1.2.72018.02.01">1.2.7(2018.02.01)</h2>
+<ol>
+<li>修正componentWillReceiveProps 的执行条件</li>
+<li>支持children为函数</li>
+<li>修改_disposed开关的位置</li>
+<li>修正焦点系统，它只会在browser的insertElement, removeElement中执行</li>
+<li>修正focus/blur事件的绑定方式，捕获时需要屏蔽内部的事件</li>
+<li>修正insertElement中多执行一次无效的DOM插入操作及CompositeUpdatet.hydrate的insertElement传参错误</li>
+</ol>
+<h2 id="1.2.62018.01.26">1.2.6(2018.01.26)</h2>
+<p>修正 unstable_renderSubtreeIntoContainer 中context对象的错误指向</p>
+<h2 id="1.2.52018.01.23">1.2.5(2018.01.23)</h2>
+<ol>
+<li>修正受控组件 radio的BUG，它导致无法修改value</li>
+</ol>
+<h2 id="1.2.4（2018.01.22）">1.2.4（2018.01.22）</h2>
+<ol>
+<li>解决移动端scroll事件</li>
+</ol>
+<h2 id="1.2.3（2018.01.12）">1.2.3（2018.01.12）</h2>
+<ol>
+<li>解决移动端点击事件</li>
+</ol>
+<h2 id="1.2.22018.01.05">1.2.2(2018.01.05)</h2>
+<ol>
+<li>解决PropTypes的share问题</li>
+<li>修复utils的inherit BUG</li>
+<li>添加后端渲染的renderToNodeStream支持</li>
+<li>Component添加isReactCompent方法，增强对第三方的支持</li>
+</ol>
+<h2 id="1.2.22017.12.30">1.2.2(2017.12.30)</h2>
+<ol>
+<li>cloneElement需要处理disposed元素</li>
+<li>cloneElement 对于props的虚拟DOM进行复制</li>
+<li>设置属性的时机提前</li>
+</ol>
+<h2 id="1.2.1-2017.12.27">1.2.1 (2017.12.27)</h2>
+<ol>
+<li>优化fiberizeChildren的性能</li>
+<li>修复受控组件在textarea, radio的BUG，将受控事件放到用户事件后集中执行</li>
+<li>添加焦点系统的支持（全局focus,blur事件提前监听，移除添加节点的Refs.nodeOperate开头）</li>
+<li>解决多次引入React时，事件系统的option.async有问题的BUG</li>
+<li>简化createPortal的实现</li>
+<li>支持React16.2的Fragment语法糖</li>
+</ol>
+<h2 id="1.2.02017.12.17-支持react16">1.2.0(2017.12.17) 支持React16</h2>
+<ol>
+<li>重构findDOMNode,遇到注释节点返回null</li>
+<li>支持React组件返回任何数据类型，如数组，字符串，数字，布尔,但对于undefined, null, boolean不会生成真实DOM</li>
+<li>支持componentDidCatch钩子与整个错误边界的逻辑</li>
+<li>支持createPortal</li>
+<li>分离出Vndoe模块，并且附带其节点关系属性（return, sibling, child），
+<ul>
+<li>return相当于之前的_hostParent,</li>
+<li>sibling相当于nextSibling,</li>
+<li>child相当于firstChild，</li>
+</ul>
+</li>
+<li>模仿React16，使用<code>stateNode属性</code>代替旧有的_hostNode与_instance。</li>
+<li>React.Children与flattenChilden底层依赖的方法由_flattenChildren改为operateChildren，让其更具通用性，
+flattenChilden更名为fiberizeChildren，产出一个<code>带链表结构的数组</code>。</li>
+<li>新的架构：元素虚拟DOM与组件虚拟DOM都有自己的更新对象，简化匹配算法</li>
+<li>简化Refs模块</li>
+<li>修复更新虚拟DOM时，namespaceURI丢失的BUG</li>
+<li>componentDidUpdate现在只有两个参数，lastProps与lastState</li>
+</ol>
+<h2 id="1.1.4（2017.10.20）">1.1.4（2017.10.20）</h2>
+<ol>
+<li>修正flushUpdaters中updater对象的泄露问题（需要clearArray一下）</li>
+<li>优化diffChildren的逻辑，防止出现parentNode等于null的情况（比如为文本节点取firstChild）</li>
+<li>简化ControlledComponent与dispose模块</li>
+<li>处理updateElement方法中两个虚拟DOM的引用一样时，调用flattenChildren时，旧的vchildren丢失的情况</li>
+<li>移除Refs中的createStringRef，createInsanceRef，添加fireRef,
+重构detachRef,clearRefs,cloneElement,createElement有关ref的部分，尽量减少闭包的应用</li>
+<li>将updateQueue数组移出所有diff方法，合并到调度器中</li>
+</ol>
+<h2 id="1.1.3（2017.10.08）">1.1.3（2017.10.08）</h2>
+<ol>
+<li>抽象出一个Update类，用于封装组件实例上的所有私有数据</li>
+<li>抽象出一个instantiateComponente用于同时实例化有状态与无状态组件，从此再没有mountStateless, updateStateless方法</li>
+<li>修正checkbox点一下会触发两次onChange的BUG</li>
+<li>添加ReceiveComponent检测机制，如果context,props一样，那么就不会执行receive, render, update等钩子</li>
+<li>修改检测空对象的逻辑</li>
+<li>简化任务调度系统的逻辑</li>
+</ol>
+<h2 id="1.1.2（2017.10.01）">1.1.2（2017.10.01）</h2>
+<ol>
+<li>修正 onChange 事件</li>
+<li>重构 diffProps 模块的实现</li>
+<li>支持组件的isMounted方法</li>
+<li>添加beforePatch , afterPatch钩子</li>
+<li>添加lib/ReactInputSelection.js</li>
+<li>统一所有操作虚拟DOM的方法的参数(mountXXX, updateXXX, alignXXX系列)</li>
+</ol>
+<blockquote>
+<p>1 第一个参数为旧真实DOM或旧虚拟DOM
+2 第二个参数为新虚拟DOM
+3 第三个参数为父虚拟DOM(可能不存在，那么后面直接跟第四，第五)
+4 第四个参数为上下文对象
+5 第五个参数为任务调度系系统的列队</p>
+</blockquote>
+<ol start="7">
+<li>使用全新的方式获取元素的命名空间</li>
+<li>上线全新的节点排序算法(diffChildren)</li>
+<li>renderByAnu在全局渲染后应该置空CurrentOwner.cur, 防止影响其他虚拟DOM</li>
+<li>完善createStringRef方法，应该能抛错与删除无用数据</li>
+<li>上线全新的任务调度系统</li>
+<li>重构unmountComponentAtNode方法</li>
+<li>添加对两个虚拟DOM的引用都相同的情况下，检测子组件的contextType决定是否更新的策略</li>
+<li>无状态组件支持模块模式（返回一个带生命周期钩子的纯对象，这些方法会像有状态组件那样被调用）</li>
+<li>放松shouldComponentUpdate的限制，返回任何假值都阻止子孙更新</li>
+<li>修正ref的更新方式</li>
+<li>shouldComponentUpdate返回假值时，当前的虚拟DOM应该吸纳旧虚拟DOM的有用信息</li>
+</ol>
+<h2 id="1.1.1（2017.9.9）">1.1.1（2017.9.9）</h2>
+<ol>
+<li>简化createClass</li>
+<li>修正flattenHooks BUG， 如果hooks中只有一个函数，就不用再包一层</li>
+<li>重构虚拟DOM树的实现，与官方React保持一致，即props.children现在是多种形态，延迟到diff时才创建用于比较的vchildren</li>
+<li>修正disposeElement，如果存在dangerouslySetInnerHTML的情况，需要清空元素内部，不走遍历子虚拟DOM的分支</li>
+<li>修正diffProps, SVG的元素是区分大小写 如viewBox preserveAspectRation</li>
+<li>组件更新时，要检测context是否改变</li>
+<li>为事件对象实现persist方法</li>
+<li>修正unstable_renderSubtreeIntoContainer的回调的this指向问题</li>
+<li>修正unmountComponentAtNode BUG， #text改为 #comment</li>
+<li>修正cloneElement BUG， 确保children与_owner正确传入</li>
+<li>修正ref机制，如果为字符串时，通过createStringRef方法将当前ref, owner传入，返回一个curry方法，在cloneElement时
+createStringRef创建的方法会再被整合到新ref方法的内部，确保旧的owner再次被更新</li>
+<li>修正getNs方法的实现（原先是使用hash表进行穷举，但svg文档也有a, script ,style元素，导致无法区分）</li>
+<li>用户在componentDidUpdate使用setState是不当操作，导致进入死循环，改用定时器减缓调用频率，防止页面卡死（官方React也存在类似的机制）</li>
+</ol>
+<h2 id="1.1.0（2017.08.28）">1.1.0（2017.08.28）</h2>
+<ol>
+<li>disabled的元素不能触发点击事件</li>
+<li>修正mouseenter/mouseleave在IE6－8中的BUG，涉及到relatedTarget的正确获取与LCA处理</li>
+<li>简化alignVnode的逻辑，减少插入列队的生成</li>
+<li>重构setStateImpl,</li>
+<li><code>_component</code>更名为<code>__component</code>, <code>_currentElement</code>更名为<code>__current</code></li>
+<li>react/lib中添加一些简用的外围模块，如ReactComponentWithPureRenderMixin，shallowCompare，sliceChildren</li>
+</ol>
+<h2 id="1.0.8（2017.08.18）">1.0.8（2017.08.18）</h2>
+<ol>
+<li>event.originalEvent更名为 event.nativeEvent</li>
+<li>修正polyfill中forEach的BUG</li>
+<li>移除scheduler模块</li>
+<li>移除instanceMap模块</li>
+<li>修正typeNumber在iE6－8下的BUG</li>
+<li><code>eventSystem.addGlobalEventListener</code>更名为eventSystem.addGlobalEvent</li>
+<li>规避insertBfore在IE8下第二参数不能为 undefined的问题</li>
+<li>修正ref延迟执行的BUG，组件所在的vnode如果有ref属性，那么它应该放到此组件的<code>__pendingRefs</code>数组中，而不是放在父组件的<code>__pendingRefs</code>数组
+此外<code>__pendingRefs</code>数组里的元素由对象改成函数</li>
+<li>确保组件在componentDidMount钩子执行setState后，所有回调应延迟到componentDidUpdate外执行</li>
+<li>确保mountComponent中实例应该尽快保存到vnode中</li>
+<li>修正updateElement方法中只执行一次dangerouslySetInnerHTML的BUG</li>
+<li>处理mouseenter/mouseleave的兼容问题</li>
+<li>处理focus/blur的兼容问题</li>
+</ol>
+<h2 id="1.0.7（2017.07.29）">1.0.7（2017.07.29）</h2>
+<ol>
+<li>处理用户在render方法 return this.props.children 的情况，需要将数组转换为单个虚拟DOM</li>
+<li>处理两个组件虚拟DOM都没有实例化的情况</li>
+<li>只回收文本节点</li>
+<li>支持mouseenter/mouseleave及重构事件系统</li>
+</ol>
+<h2 id="1.0.6（2017.07.24）">1.0.6（2017.07.24）</h2>
+<ol>
+<li>重新支持chrome DevTools</li>
+<li>添加对Immutable.js的支持</li>
+<li>修复用户在componentWillUpdate/shouldComponentUpdate/componentDidUpdate钩子中执行setState引发死循环的BUG</li>
+</ol>
+<h2 id="1.0.5（2017.07.14）">1.0.5（2017.07.14）</h2>
+<ol>
+<li>优化scheduler机制</li>
+<li>实现对createFactory的支持</li>
+<li>优化dispose模块</li>
+<li>使用typeNumber代替typeof关键字，减少打包后的体积</li>
+</ol>
+<h2 id="1.0.4-（2017.07.07）">1.0.4 （2017.07.07）</h2>
+<ol>
+<li>修正 unable to preventdefault inside passive event listener due to target 的错误处理，
+这是chrome51+, 为了提高性能，默认对touchmove/mousemove/mousewheel事件禁用preventDefault方法引发的问题</li>
+<li>销毁元素节点，彻底清除_component与__events引用</li>
+<li>取消refs.xxx = null 操作，确保组件销毁后可能还进行动画，这时会有DOM操作不会报错</li>
+<li>对props.children进行增强，支持更多合法的类型</li>
+<li>实现对createClass的支持</li>
+<li>实现对mixin的支持</li>
+</ol>
+<h2 id="1.0.3-（2017.07.25）">1.0.3 （2017.07.25）</h2>
+<ol>
+<li>实现unstable_renderSubtreeIntoContainer, findDOMNode, isValidElement方法</li>
+<li>实现对Children的完整支持 (only, count, forEach,map, toArray)</li>
+<li>实现focus, blur, wheel的兼容处理，</li>
+<li>修正更新组件时，没有添加defaultProps的BUG</li>
+<li>修正diffProps一些错别字</li>
+<li>实现事件对象pagex,pageY,which,currentTarget的兼容</li>
+<li>修正用户在componentWillMount时调用 setState引发的BUG</li>
+<li>cloneElement应该能处理数组并取出其第一个元素进制复制</li>
+<li>取消事务机制，改成调度任务</li>
+</ol>
+<h2 id="1.0.2-（2017.06.20）">1.0.2 （2017.06.20）</h2>
+<ol>
+<li>兼容IE，实现对应的polyfill文件</li>
+<li>实现对IE6－8的change, input, submit事件</li>
+<li>添加对select.value的处理</li>
+</ol>
+<h2 id="1.0.1-（2017.06.09）">1.0.1 （2017.06.09）</h2>
+<ol>
+<li>支持cloneElement</li>
+</ol>
+<h2 id="1.0.0-（2017.06.05）">1.0.0 （2017.06.05）</h2>
+<ol>
+<li>发布anu</li>
+</ol>
+</div><div class="m-content-container m-paging"><div class="m-paging-prev m-paging-item"><a href="compat.html" class="href"><span class="ui-font-ydoc"></span>兼容性</a></div><div class="m-paging-next m-paging-item"><a href="ssr.html" class="href">后端渲染<span class="ui-font-ydoc"></span></a></div></div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if ($menu && sessionStorage.menuScrollTop) {
+		$menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);</script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

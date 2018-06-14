@@ -32,21 +32,21 @@ Suitable for people with requirements for volume, compatibility and ease of use
 
 The measurement tools for the above code are **gzip-size-cli**, **jsize** and https://bundlephobia.com/
 
-
+![](../size.png)
 
 ## Compared to other mini reacts
 
 The main competition products are `inferno`, `preact`, `rax`, `react-lite`, `nervjs`, the first two are overseas, and the last three are Chinese. China has a relatively high volume due to the state of the Internet.
 
-Inferno, need to add inferno-compat, in order to be consistent with the official API, but in the case of component suites, the execution order of the life cycle hooks is inconsistent with the official, so it is not compatible with most of React's UI library. Older IE is not supported.
+**inferno**, need to add inferno-compat, in order to be consistent with the official API, but in the case of component suites, the execution order of the life cycle hooks is inconsistent with the official, so it is not compatible with most of React's UI library. Older IE is not supported.
 
-Preact requires preact-compat to be consistent with the official API. However, in the case of component components, the execution sequence of lifecycle hooks is inconsistent with that of the official. Therefore, it is not compatible with most of React's UI libraries. Preact-compat internally uses Object.definePropety, so it cannot be used in IE8, and it also causes its performance to be severely degraded.
+**preact** requires preact-compat to be consistent with the official API. However, in the case of component components, the execution sequence of lifecycle hooks is inconsistent with that of the official. Therefore, it is not compatible with most of React's UI libraries. Preact-compat internally uses Object.definePropety, so it cannot be used in IE8, and it also causes its performance to be severely degraded.
 
-Rax, launched by China's Alibaba Group, supports most APIs of React16, does not support IE8, can run some React UI libraries.
+**rax"", launched by China's Alibaba Group, supports most APIs of React16, does not support IE8, can run some React UI libraries.
 
-React-lite, launched by China's Ctrip Group, is only compatible with React15, supports IE8, and runs some React UI libraries.
+**react-lite"", launched by China's Ctrip Group, is only compatible with React15, supports IE8, and runs some React UI libraries.
 
-Nervjs, launched by China's Jingdong Group, supports most of the React16 APIs, code is very similar to inferno, rax, there is no case to prove that it is compatible with IE8, performance indicators are also very suspicious.
+**nervjs**, launched by China's Jingdong Group, supports most of the React16 APIs, code is very similar to inferno, rax, there is no case to prove that it is compatible with IE8, performance indicators are also very suspicious.
 
 ## anujs advantage
 

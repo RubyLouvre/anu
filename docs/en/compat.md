@@ -31,7 +31,7 @@ http://www.cnblogs.com/rubylouvre/p/5080464.html
 
 If the user uses an animation library such as react-transition-group, please note the patch that introduces **requestAnimationFrame**
 
-## 压缩
+## Uglify
 
 If you use compression, you need to deal with uglify-js, because IE6-8, for **map.delete("ddd")**, **modulex.default** will write syntax error
 Because keywords cannot be attribute names and method names. We can handle it with `es3ify-webpack-plugin` or ʻes3ify-loader`.
