@@ -1,4 +1,5 @@
 ## 1.4.3 (2018.06.14)
+
 1. miniCreateClass default to using IEComponent in the old IE,
 2. Fix bug that createClass does not continue mixin
 3. Remove all element nodes below the option element
@@ -7,12 +8,14 @@
 6. updateContext renamed updateContent, this is a mistake
 
 ## 1.4.2 (2018.06.07)
+
 1. add miniCreateClass, and use it to recreate createClass, Unbatch, PureComponent, createContext
 2. Add a WORKING task to avoid whole tree updates
 3. Fix IE8-compatible BUG for option in controlled component
 4. Add a built-in router
 
 ## 1.4.1 (2018.06.04)
+
 The content of the text node is directly replaced with fiber.props
 2. Fix input pinyin input method BUG
 3. Fix the bug in updateHostComponent that overrides the children object
@@ -21,6 +24,7 @@ The content of the text node is directly replaced with fiber.props
 6. Simplify the commitDFS loop
 
 ## 1.4.0 (2018.05.30)
+
 1. Test all changed to jest
 2. The cwu hook must be removed when calling
 3. When updating batches, each component can only be updated once
@@ -32,14 +36,15 @@ The content of the text node is directly replaced with fiber.props
 
 
 ## 1.3.2 (2018.04.16)
-Handling the onChange event BUG of the Chinese input method under the mobile terminal
+
+1. Handling the onChange event BUG of the Chinese input method under the mobile terminal
 
 ## 1.3.1 (2018.03.18)
 
 1. React.Fragment support key attribute
 2. Fixed an update bug that had a `lifecycle stateless component`
 3. Implement React.createRef and React.forwardRef
-4 new packages createResource and createSubscription processing state, put in lib
+4. new packages createResource and createSubscription processing state, put in lib
 5. Var changes collectively to let const
 
 ## 1.3.0 (2018.03.06)
@@ -49,7 +54,7 @@ Handling the onChange event BUG of the Chinese input method under the mobile ter
 3. Upgrade diff mechanism, compare old and new vnodes, change to fiber and compare new vnodes, use new vnode data to update fiber and view
 4. Added input[type=search] onChange event support
 5. Fixed an edge bug in the antd3.0 portal (repeatedly inserted twice, resulting in the text node disappearing)
-6. Major changes to property names and method names, and React16's Fiber close
+6. Major changes to property names and method names, and React16‘s Fiber close
    * `vnode.vtype` --> fiber.tag
    * `instance.__isStateless` --> fiber._isStateless
    * `updater` --> fiber
@@ -64,7 +69,6 @@ Handling the onChange event BUG of the Chinese input method under the mobile ter
    * `getContextByTypes` --> is getMaskedContext
    * `CompositeUpdater.js` --> ComponentFiber.js`
    * `DOMUpdater.js` --> HostFiber.js
-
 
 ## 1.2.9 (2018.02.06)
 
@@ -89,6 +93,7 @@ Handling the onChange event BUG of the Chinese input method under the mobile ter
 6. Fixed an invalid DOM insert operation in insertElement and insertElement passed in CompositeUpdatet.hydrate
 
 ## 1.2.6 (2018.01.26)
+
 Fixed an error pointing to the context object in unstable_renderSubtreeIntoContainer
 
 ## 1.2.5 (2018.01.23)
@@ -99,11 +104,9 @@ Fixed an error pointing to the context object in unstable_renderSubtreeIntoConta
 
 1. Solve the mobile side scroll event
 
-
 ## 1.2.3 (2018.01.12)
 
 1. Resolve mobile click events
-
 
 ## 1.2.2 (2018.01.05)
 
@@ -116,7 +119,7 @@ Fixed an error pointing to the context object in unstable_renderSubtreeIntoConta
 
 1. The cloneElement needs to handle the disposed element
 2. cloneElement copy the virtual DOM of the props
-2. Set the timing of attributes in advance
+3. Set the timing of attributes in advance
 
 
 ## 1.2.1 (2017.12.27)
@@ -125,7 +128,7 @@ Fixed an error pointing to the context object in unstable_renderSubtreeIntoConta
 2. Fix the BUG of the controlled component in the textarea, radio, and put the controlled event into the user?
 3. Add focus system support (global focus, blur event listens in advance, remove the Refs.nodeOperate start node)
 4. Resolve the bug in option.async of the event system when React is introduced multiple times.
-Simplify the implementation of createPortal
+5. Simplify the implementation of createPortal
 6. Fragment syntax sugar supporting React 16.2
 
 
@@ -134,7 +137,7 @@ Simplify the implementation of createPortal
 1. Reconstruct findDOMNode, encountered comment node returns null
 2. Support React component returns any data type, such as arrays, strings, numbers, Boolean, but for undefined, null, boolean does not generate a real DOM
 3. Support logic for componentDidCatch hooks and entire error boundaries
-4 support createPortal
+4. support createPortal
 5. Detach the Vndoe module with its node relationship attribute (return, sibling, child),
    * return is equivalent to the previous _hostParent,
    * sibling is equivalent to nextSibling,
@@ -146,14 +149,13 @@ Simplify the implementation of createPortal
 9. Simplify the Refs module
 10. Fixed bug that namespaceURI is missing when updating virtual DOM
 11. componentDidUpdate now only has two parameters, lastProps and lastState
-    
 
 
 ## 1.1.4 (2017.10.20)
 
 1. Fix updater object leaks in flushUpdaters (requires clearArray)
 2. Optimize the diffChildren's logic to prevent parentNode equal to null (like fetching firstChild for text nodes)
-Simplified ControlledComponent and dispose modules
+3. Simplified ControlledComponent and dispose modules
 4. Dealing with the same reference in the updateElement method for two virtual DOMs when the old vchildren is lost when flattenChildren is called
 5. Remove createStringRef, createInsanceRef, add fireRef in Refs,
    Refactor detachRef, clearRefs, cloneElement, createElement ref parts to minimize the use of closures
@@ -161,7 +163,7 @@ Simplified ControlledComponent and dispose modules
 
 ## 1.1.3 (2017.10.08)
 
-Abstracting an Update class that encapsulates all private data on a component instance
+1. Abstract an Update class that encapsulates all private data on a component instance
 2. Abstract an instantiateComponente for instantiating stateful and stateless components at the same time, no more mountStateless, updateStateless methods
 3. Fix the checkpoint point triggers two bugs onChange
 4. Add ReceiveComponent detection mechanism, if the context, props, then will not perform the receive, render, update hooks

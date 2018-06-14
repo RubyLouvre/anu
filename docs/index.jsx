@@ -19,7 +19,9 @@ footer:
   links:
     About:
       - { name: 'weibo', href: 'https://weibo.com/jslouvre/' }
-      - { name: 'Blog', href: 'https://www.cnblogs.com/rubylouvre/' }
+      - { name: 'blog', href: 'https://www.cnblogs.com/rubylouvre/' }
+      - { name: 'twitter', href: 'https://twitter.com/jslouvre' }
+      
     Projects:
       - { name: 'mass Framework', href: 'https://github.com/RubyLouvre/mass-Framework' }
       - { name: 'avalon', href: 'https://github.com/RubyLouvre/avalon' }
