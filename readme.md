@@ -21,12 +21,12 @@ source： https://bundlephobia.com/
 
 ### advantage：
 
-1. Support various new features of React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef...
+1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef...
 2. The size is very small (only 3000 lines, gzip only 13kb, one third of React+ReactDOM)
-3. Run more than 700 official unit tests  (other mini libraries can not run the official test)
+3. Pass more than 700 official unit tests  (other mini libraries can not run the official test)
 4. Share the huge ecology of React（React-router-dom, react-router-redux, react-lazy-load, react-hot-loader...）
 5. Supports 99% antd components (`antd`is an enterprise-class UI components in China).
-6. Excellent browser compatibility, easy to get all kinds of business under IE6-8.
+6. Excellent browser compatibility, easy to handle all kinds of business under IE6-8.
 7. It comes with a painless state manager **Rematch** and a handy router **Reach**.
 
 ### boilerplate 
