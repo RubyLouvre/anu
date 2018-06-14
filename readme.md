@@ -1,6 +1,5 @@
 
-<center><img src="https://github.com/RubyLouvre/anu/blob/master/lib/logo.png?raw=true"></center>
-
+![anujs](https://github.com/RubyLouvre/anu/blob/master/lib/logo.png?raw=true)
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Rubylouvre/anu/blob/master/LICENSE) 
 [![npm version](https://img.shields.io/npm/v/anujs.svg?style=flat)](https://www.npmjs.com/package/anujs)
