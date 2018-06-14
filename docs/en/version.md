@@ -55,20 +55,21 @@ The content of the text node is directly replaced with fiber.props
 4. Added input[type=search] onChange event support
 5. Fixed an edge bug in the antd3.0 portal (repeatedly inserted twice, resulting in the text node disappearing)
 6. Major changes to property names and method names, and React16‘s Fiber close
-   * `vnode.vtype` --> fiber.tag
-   * `instance.__isStateless` --> fiber._isStateless
-   * `updater` --> fiber
-   * `updater.vnode` --> fiber._reactInternalFiber
-   * `updater.willReceive` --> fiber._willReceive
-   * `updater.children` --> fiber._children
-   * `updater.isMounted()` --> fiber._isMounted()
-   * `updater.insertCarrier` --> fiber._mountCarrier
-   * `updater.insertPoint` --> fiber._mountPoint
-   * `updater.parentContext` --> fiber._unmaskedContext
-   * `getChildContext` --> getUnmaskedContext
-   * `getContextByTypes` --> is getMaskedContext
-   * `CompositeUpdater.js` --> ComponentFiber.js`
-   * `DOMUpdater.js` --> HostFiber.js
+>
+> * `vnode.vtype` --> fiber.tag
+> * `instance.__isStateless` --> fiber._isStateless
+> * `updater` --> fiber
+> * `updater.vnode` --> fiber._reactInternalFiber
+> * `updater.willReceive` --> fiber._willReceive
+> * `updater.children` --> fiber._children
+> * `updater.isMounted()` --> fiber._isMounted()
+> * `updater.insertCarrier` --> fiber._mountCarrier
+> * `updater.insertPoint` --> fiber._mountPoint
+> * `updater.parentContext` --> fiber._unmaskedContext
+> * `getChildContext` --> getUnmaskedContext
+> * `getContextByTypes` --> is getMaskedContext
+> * `CompositeUpdater.js` --> ComponentFiber.js`
+> * `DOMUpdater.js` --> HostFiber.js
 
 ## 1.2.9 (2018.02.06)
 
@@ -199,7 +200,7 @@ Fixed an error pointing to the context object in unstable_renderSubtreeIntoConta
 
 ## 1.1.1 (2017.9.9)
 
-Simplify createClass
+1. Simplify createClass
 2. Fixed flattenHooks BUG, ​​if there is only one function in hooks, there is no need to include a layer
 3. The implementation of the reconstructed virtual DOM tree, consistent with the official React, that props.children is now a variety of forms, only to create a vchildren for comparison when delayed to diff
 4. Fixed disposeElement. If there is dangerously setInnerHTML, it is necessary to clear the interior of the element, without going through the branch of the sub-virtual DOM.

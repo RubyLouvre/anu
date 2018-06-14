@@ -55,21 +55,26 @@
 <li>Upgrade diff mechanism, compare old and new vnodes, change to fiber and compare new vnodes, use new vnode data to update fiber and view</li>
 <li>Added input[type=search] onChange event support</li>
 <li>Fixed an edge bug in the antd3.0 portal (repeatedly inserted twice, resulting in the text node disappearing)</li>
-<li>Major changes to property names and method names, and React16‘s Fiber close
-   * <code>vnode.vtype</code> --&gt; fiber.tag
-   * <code>instance.__isStateless</code> --&gt; fiber._isStateless
-   * <code>updater</code> --&gt; fiber
-   * <code>updater.vnode</code> --&gt; fiber._reactInternalFiber
-   * <code>updater.willReceive</code> --&gt; fiber._willReceive
-   * <code>updater.children</code> --&gt; fiber._children
-   * <code>updater.isMounted()</code> --&gt; fiber._isMounted()
-   * <code>updater.insertCarrier</code> --&gt; fiber._mountCarrier
-   * <code>updater.insertPoint</code> --&gt; fiber._mountPoint
-   * <code>updater.parentContext</code> --&gt; fiber._unmaskedContext
-   * <code>getChildContext</code> --&gt; getUnmaskedContext
-   * <code>getContextByTypes</code> --&gt; is getMaskedContext
-   * <code>CompositeUpdater.js</code> --&gt; ComponentFiber.js<code>*</code>DOMUpdater.js` --&gt; HostFiber.js</li>
+<li>Major changes to property names and method names, and React16‘s Fiber close</li>
 </ol>
+<blockquote>
+<p>* <code>vnode.vtype</code> --&gt; fiber.tag</p>
+<ul>
+<li><code>instance.__isStateless</code> --&gt; fiber._isStateless</li>
+<li><code>updater</code> --&gt; fiber</li>
+<li><code>updater.vnode</code> --&gt; fiber._reactInternalFiber</li>
+<li><code>updater.willReceive</code> --&gt; fiber._willReceive</li>
+<li><code>updater.children</code> --&gt; fiber._children</li>
+<li><code>updater.isMounted()</code> --&gt; fiber._isMounted()</li>
+<li><code>updater.insertCarrier</code> --&gt; fiber._mountCarrier</li>
+<li><code>updater.insertPoint</code> --&gt; fiber._mountPoint</li>
+<li><code>updater.parentContext</code> --&gt; fiber._unmaskedContext</li>
+<li><code>getChildContext</code> --&gt; getUnmaskedContext</li>
+<li><code>getContextByTypes</code> --&gt; is getMaskedContext</li>
+<li><code>CompositeUpdater.js</code> --&gt; ComponentFiber.js`</li>
+<li><code>DOMUpdater.js</code> --&gt; HostFiber.js</li>
+</ul>
+</blockquote>
 <h2 id="1.2.9-2018.02.06">1.2.9 (2018.02.06)</h2>
 <ol>
 <li>Fix focus/blur event implementation</li>
@@ -195,20 +200,22 @@
 <li>When shouldComponentUpdate returns a false value, the current virtual DOM should absorb useful information of the old virtual DOM</li>
 </ol>
 <h2 id="1.1.1-2017.9.9">1.1.1 (2017.9.9)</h2>
-<p>Simplify createClass
-2. Fixed flattenHooks BUG, ​​if there is only one function in hooks, there is no need to include a layer
-3. The implementation of the reconstructed virtual DOM tree, consistent with the official React, that props.children is now a variety of forms, only to create a vchildren for comparison when delayed to diff
-4. Fixed disposeElement. If there is dangerously setInnerHTML, it is necessary to clear the interior of the element, without going through the branch of the sub-virtual DOM.
-5. Fixed diffProps, SVG elements are case sensitive as viewBox preserveAspectRation
-6. When the component is updated, it is detected whether the context changes
-7. Implement the persist method for the event object
-8. Fixed this pointing to the callback of unstable_renderSubtreeIntoContainer
-9. Fixed unmountComponentAtNode BUG, ​​#text changed to #comment
-10. Fix the cloneElement BUG to ensure that children and _owner are correctly passed in
-11. Fix the ref mechanism, if it is a string, pass the current ref, owner via the createStringRef method, and return a curry method when in cloneElement
-    The method created by createStringRef is then integrated into the new ref method to ensure that the old owner is updated again
-12. Fixed implementation of getNs method (originally using hash table for exhaustive, but svg document also has a, script, style elements, resulting in indistinguishable)
-13. The user is using setState in componentDidUpdate is improper operation, leading to enter the infinite loop, use the timer to slow down the call frequency, prevent the page stuck (the official React also exists a similar mechanism)</p>
+<ol>
+<li>Simplify createClass</li>
+<li>Fixed flattenHooks BUG, ​​if there is only one function in hooks, there is no need to include a layer</li>
+<li>The implementation of the reconstructed virtual DOM tree, consistent with the official React, that props.children is now a variety of forms, only to create a vchildren for comparison when delayed to diff</li>
+<li>Fixed disposeElement. If there is dangerously setInnerHTML, it is necessary to clear the interior of the element, without going through the branch of the sub-virtual DOM.</li>
+<li>Fixed diffProps, SVG elements are case sensitive as viewBox preserveAspectRation</li>
+<li>When the component is updated, it is detected whether the context changes</li>
+<li>Implement the persist method for the event object</li>
+<li>Fixed this pointing to the callback of unstable_renderSubtreeIntoContainer</li>
+<li>Fixed unmountComponentAtNode BUG, ​​#text changed to #comment</li>
+<li>Fix the cloneElement BUG to ensure that children and _owner are correctly passed in</li>
+<li>Fix the ref mechanism, if it is a string, pass the current ref, owner via the createStringRef method, and return a curry method when in cloneElement
+    The method created by createStringRef is then integrated into the new ref method to ensure that the old owner is updated again</li>
+<li>Fixed implementation of getNs method (originally using hash table for exhaustive, but svg document also has a, script, style elements, resulting in indistinguishable)</li>
+<li>The user is using setState in componentDidUpdate is improper operation, leading to enter the infinite loop, use the timer to slow down the call frequency, prevent the page stuck (the official React also exists a similar mechanism)</li>
+</ol>
 <h2 id="1.1.0-2017.08.28">1.1.0 (2017.08.28)</h2>
 <ol>
 <li>The disabled element cannot trigger a click event</li>
