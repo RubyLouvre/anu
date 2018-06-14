@@ -89,6 +89,7 @@
 6. 修正insertElement中多执行一次无效的DOM插入操作及CompositeUpdatet.hydrate的insertElement传参错误
 
 ## 1.2.6(2018.01.26)
+
 修正 unstable_renderSubtreeIntoContainer 中context对象的错误指向
 
 ## 1.2.5(2018.01.23)
@@ -146,7 +147,6 @@
 9. 简化Refs模块
 10. 修复更新虚拟DOM时，namespaceURI丢失的BUG
 11. componentDidUpdate现在只有两个参数，lastProps与lastState
-    
 
 
 ## 1.1.4（2017.10.20）

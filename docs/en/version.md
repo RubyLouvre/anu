@@ -36,7 +36,7 @@ Handling the onChange event BUG of the Chinese input method under the mobile ter
 
 ## 1.3.1 (2018.03.18)
 
-React.Fragment support key attribute
+1. React.Fragment support key attribute
 2. Fixed an update bug that had a `lifecycle stateless component`
 3. Implement React.createRef and React.forwardRef
 4 new packages createResource and createSubscription processing state, put in lib
