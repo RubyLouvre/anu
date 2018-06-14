@@ -9,7 +9,7 @@
 
 **anujs** is a highly React16-compliant Mini React framework that is compatible with the 99% React16.3.0 interface, runs through the official 788 cases, and supports 99% of the React ecosystem's components and UI libraries.
 
-Chinese users can add QQ exchange learning group: 370262116
+Chinese users can join QQ group: 370262116
 
 
 As we all know, React has always had an oversized cymbal, so I re-implemented React on the basis of reading its source code, and only one third of React+ReactDOM after gz. For detailed data, see https://bundlephobia.com/, anu@1.4.3 is only 13.1 kb, react@16.4.1 is 2.3 kb, and react-dom@16.4.1 is 30.5 kb. If a router is used, react-router-dom@4.3.1 is 11 kb and reach@1.0.1 is 4.3 kb.
@@ -30,23 +30,23 @@ Package 3: anujs + reach + redux + react-redux + rematch
 Volume is 13.1 + 6 + 2.5 + 5 + 4.3 = **31** kb
 Suitable for people with requirements for volume, compatibility and ease of use
 
-The measurement tools for the above code are gzip-size-cli, jsize and https://bundlephobia.com/
+The measurement tools for the above code are **gzip-size-cli**, **jsize** and https://bundlephobia.com/
 
 
 
 ## Compared to other mini reacts
 
-The main competition products are inferno, preact, rax, react-lite, nervjs, the first two are overseas, and the last three are Chinese. China has a relatively high volume due to the state of the Internet.
+The main competition products are `inferno`, `preact`, `rax`, `react-lite`, `nervjs`, the first two are overseas, and the last three are Chinese. China has a relatively high volume due to the state of the Internet.
 
 Inferno, need to add inferno-compat, in order to be consistent with the official API, but in the case of component suites, the execution order of the life cycle hooks is inconsistent with the official, so it is not compatible with most of React's UI library. Older IE is not supported.
 
 Preact requires preact-compat to be consistent with the official API. However, in the case of component components, the execution sequence of lifecycle hooks is inconsistent with that of the official. Therefore, it is not compatible with most of React's UI libraries. Preact-compat internally uses Object.definePropety, so it cannot be used in IE8, and it also causes its performance to be severely degraded.
 
-Rax, China's Alibaba Group launched, supports most APIs of React16, does not support IE8, can run some React UI libraries.
+Rax, launched by China's Alibaba Group, supports most APIs of React16, does not support IE8, can run some React UI libraries.
 
 React-lite, launched by China's Ctrip Group, is only compatible with React15, supports IE8, and runs some React UI libraries.
 
-Nervjs, China's Jingdong Group launched, supports most of the React16 APIs, code is very similar to inferno, rax, there is no case to prove that it is compatible with IE8, performance indicators are also very suspicious.
+Nervjs, launched by China's Jingdong Group, supports most of the React16 APIs, code is very similar to inferno, rax, there is no case to prove that it is compatible with IE8, performance indicators are also very suspicious.
 
 ## anujs advantage
 
