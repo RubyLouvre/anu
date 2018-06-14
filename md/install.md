@@ -7,6 +7,8 @@ npm i anujs
 如何在已经使用了React的项目中使用，修改webpack.config.js
 
 ```javascript
+const es3ifyPlugin = require('es3ify-webpack-plugin');
+
 resolve: {
    alias: {
       'react': 'anujs',
@@ -14,7 +16,6 @@ resolve: {
         // 若要兼容 IE 请使用以下配置
         // 'react': 'anujs/dist/ReactIE',
         // 'react-dom': 'anujs/dist/ReactIE',
-    
         // 如果引用了 prop-types 或 create-react-class
         // 需要添加如下别名
         'prop-types': 'anujs/lib/ReactPropTypes',
@@ -23,6 +24,7 @@ resolve: {
         'react-tap-event-plugin': 'anujs/lib/injectTapEventPlugin',  
    }
 },
+plugins: [ new es3ifyPlugin()]
 ```
 
 压缩的配置
