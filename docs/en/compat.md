@@ -103,4 +103,4 @@ new UglifyJsPlugin({
 
 ## React.createClass
 
-React15 uses createClass to create the class. If you need this API, you can include `anujs/lib/createClass.js' in webpack.
+React15 uses createClass to create the class. If you need this API, you can include `anujs/lib/createClass.js` in webpack.
