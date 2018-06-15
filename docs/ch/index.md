@@ -16,7 +16,7 @@ anujs是一个高级兼容React16的迷你React 框架，它兼容React16.3.0的
 中国用户可以加QQ交流学习群：  370262116
 
 
-众所周知， React 一直存在体积过大的诟， 因此我在熟读其源码的基础上，重新实现了React， gz后只有React+ReactDOM的三分之一。详细数据见 https://bundlephobia.com/, anu@1.4.3只有 13.1 kb， react@16.4.1为 2.3 kb, react-dom@16.4.1为 30.5 kb。如果使用路由器，react-router-dom@4.3.1为11 kb， reach@1.0.1为 4.3kb。
+众所周知， React 一直存在体积过大的诟病， 因此我在熟读其源码的基础上，重新实现了React， gz后只有React+ReactDOM的三分之一。详细数据见 https://bundlephobia.com/, anu@1.4.3只有 13.1 kb， react@16.4.1为 2.3 kb, react-dom@16.4.1为 30.5 kb。如果使用路由器，react-router-dom@4.3.1为11 kb， reach@1.0.1为 4.3kb。
 
 ## 体积比对
 

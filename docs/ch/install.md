@@ -19,7 +19,7 @@ resolve: {
         // 如果引用了 prop-types 或 create-react-class
         // 需要添加如下别名
         'prop-types': 'anujs/lib/ReactPropTypes',
-        'create-react-class': 'anujs/lib/createClass'
+        'create-react-class': 'anujs/lib/createClass',
         //如果你在移动端用到了onTouchTap事件
         'react-tap-event-plugin': 'anujs/lib/injectTapEventPlugin',  
    }
