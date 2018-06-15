@@ -213,10 +213,7 @@ export function updateClassComponent(fiber, info) {
     if (isStateful) {
         //有狀态组件
         let updateQueue = fiber.updateQueue;
-        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
-            fiber.parent.insertPoint = null;
-        }
-        delete fiber.dirty;
+       
         delete fiber.updateFail;
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
@@ -260,6 +257,10 @@ export function updateClassComponent(fiber, info) {
             fiber._hydrating = false;
             return;
         }
+        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
+            fiber.parent.insertPoint = null;
+        }
+        delete fiber.dirty;
         fiber.effectTag *= HOOK;
     }else{
         fiber.effectTag = WORKING;

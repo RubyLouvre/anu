@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-06-13
+ * by 司徒正美 Copyright 2018-06-15
  * IE9+
  */
 
@@ -2137,10 +2137,6 @@ function updateClassComponent(fiber, info) {
     var isStateful = !instance.__isStateless;
     if (isStateful) {
         var updateQueue = fiber.updateQueue;
-        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
-            fiber.parent.insertPoint = null;
-        }
-        delete fiber.dirty;
         delete fiber.updateFail;
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
@@ -2179,6 +2175,10 @@ function updateClassComponent(fiber, info) {
             fiber._hydrating = false;
             return;
         }
+        if (fiber.hasMounted && fiber.dirty && fiber.parent) {
+            fiber.parent.insertPoint = null;
+        }
+        delete fiber.dirty;
         fiber.effectTag *= HOOK;
     } else {
         fiber.effectTag = WORKING;
