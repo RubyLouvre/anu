@@ -1,4 +1,4 @@
-import ReactPartialRenderer from "./ReactPartialRenderer";
+import ReactPartialRenderer from './Renderer';
 
 /**
  * Render a ReactElement to its initial HTML. This should only be used on the
@@ -21,7 +21,7 @@ export function renderToStaticMarkup(element) {
     const markup = renderer.read(Infinity);
     return markup;
 }
-import {Readable} from "stream";
+import {Readable} from 'stream';
 
 
 class ReactMarkupReadableStream extends Readable {
@@ -36,7 +36,7 @@ class ReactMarkupReadableStream extends Readable {
         try {
             this.push(this.partialRenderer.read(size));
         } catch (err) {
-            this.emit("error", err);
+            this.emit('error', err);
         }
     }
 }

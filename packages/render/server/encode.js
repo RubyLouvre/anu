@@ -3,7 +3,7 @@
 var matchHtmlRegExp = /["'&<>]/;
 
 function escapeHtml(string) {
-    var str = "" + string;
+    var str = '' + string;
     var match = matchHtmlRegExp.exec(str);
 
     if (!match) {
@@ -11,7 +11,7 @@ function escapeHtml(string) {
     }
 
     var escape;
-    var html = "";
+    var html = '';
     var index = 0;
     var lastIndex = 0;
 
@@ -19,23 +19,23 @@ function escapeHtml(string) {
         switch (str.charCodeAt(index)) {
         case 34:
             // "
-            escape = "&quot;";
+            escape = '&quot;';
             break;
         case 38:
             // &
-            escape = "&amp;";
+            escape = '&amp;';
             break;
         case 39:
             // '
-            escape = "&#x27;"; // modified from escape-html; used to be '&#39'
+            escape = '&#x27;'; // modified from escape-html; used to be '&#39'
             break;
         case 60:
             // <
-            escape = "&lt;";
+            escape = '&lt;';
             break;
         case 62:
             // >
-            escape = "&gt;";
+            escape = '&gt;';
             break;
         default:
             continue;
@@ -53,8 +53,8 @@ function escapeHtml(string) {
 }
 
 export function encodeEntities(text) {
-    if (typeof text === "boolean" || typeof text === "number") {
-        return "" + text;
+    if (typeof text === 'boolean' || typeof text === 'number') {
+        return '' + text;
     }
     return escapeHtml(text);
 }
