@@ -7,14 +7,19 @@
  * @flow
  */
 
-import React from 'react';
-
 import { Children } from 'react-core/Children';
-import { isFn, emptyObject } from 'react-core/utils';
-import invariant from 'fbjs/lib/invariant';
-import {createOpenTagMarkup} from './html';
-import {duplexMap} from './duplex';
+import {
+    isFn,
+    emptyObject,
+    typeNumber,
+    miniCreateClass,
+    oneObject
+} from 'react-core/util';
+import { createOpenTagMarkup } from './html';
+import { duplexMap } from './duplex';
+import { isValidElement } from 'react-core/createElement';
 
+/*
 import {
     REACT_FORWARD_REF_TYPE,
     REACT_FRAGMENT_TYPE,
@@ -25,71 +30,39 @@ import {
     REACT_PROVIDER_TYPE,
     REACT_CONTEXT_TYPE
 } from 'shared/ReactSymbols';
+*/
+function AsyncMode(children) {
+    return children;
+}
+function StrictMode(children) {
+    return children;
+}
+function Fragment(children) {
+    return children;
+}
 
-function AsyncMode(children){
-    return children;
-}
-function StrictMode(children){
-    return children;
-}
-function Fragment(children){
-    return children;
-}
-import {encodeEntities} from './encode';
+import { encodeEntities } from './encode';
 import {
     Namespaces,
     getIntrinsicNamespace,
     getChildNamespace
 } from './namespaces';
 
-const omittedCloseTags = {
-    area: true,
-    base: true,
-    br: true,
-    col: true,
-    embed: true,
-    hr: true,
-    img: true,
-    input: true,
-    keygen: true,
-    link: true,
-    meta: true,
-    param: true,
-    source: true,
-    track: true,
-    wbr: true,
-    // NOTE: menuitem's close tag should be omitted, but that causes problems.
-};
-  
+function invariant(a, condition) {
+    if (a === false) {
+        console.warn(condition);
+    }
+}
+
+const omittedCloseTags = oneObject(
+    'area,base,br,col,embed,hr,img,input,keygen,link,meta,param,source,track,wbr'
+);
+
 // Based on reading the React.Children implementation. TODO: type this somewhere?
 const toArray = Children.toArray;
 
-
-/*
-let describeStackFrame = element => '';
-
-let validatePropertiesInDevelopment = (type, props) => {};
-let setCurrentDebugStack = (stack) => {};
-let resetCurrentDebugStack = () => {};
-
-let didWarnDefaultInputValue = false;
-let didWarnDefaultChecked = false;
-let didWarnDefaultSelectValue = false;
-let didWarnDefaultTextareaValue = false;
-let didWarnInvalidOptionChildren = false;
-const didWarnAboutNoopUpdateForComponent = {};
-const didWarnAboutBadClass = {};
-const didWarnAboutDeprecatedWillMount = {};
-const didWarnAboutUndefinedDerivedState = {};
-const didWarnAboutUninitializedState = {};
-*/
-const newlineEatingTags = {
-    listing: true,
-    pre: true,
-    textarea: true
-};
-
-
+//https://html.com/tags/listing/
+const newlineEatingTags = oneObject('listing,pre,textarea');
 
 function shouldConstruct(Component) {
     return Component.prototype && Component.prototype.isReactComponent;
@@ -112,7 +85,7 @@ function getNonChildrenInnerMarkup(props) {
 
 //数组扁平化
 function flattenTopLevelChildren(children) {
-    if (!React.isValidElement(children)) {
+    if (!isValidElement(children)) {
         return toArray(children);
     }
     const element = children;
@@ -120,12 +93,11 @@ function flattenTopLevelChildren(children) {
         return [element];
     }
     const fragmentChildren = element.props.children;
-    if (!React.isValidElement(fragmentChildren)) {
+    if (!isValidElement(fragmentChildren)) {
         return toArray(fragmentChildren);
     }
     return [fragmentChildren];
 }
-
 
 function processContext(type, context) {
     const contextTypes = type.contextTypes;
@@ -139,34 +111,33 @@ function processContext(type, context) {
     return maskedContext;
 }
 
+function ReactDOMServerRenderer(children, makeStaticMarkup) {
+    const flatChildren = flattenTopLevelChildren(children);
 
-class ReactDOMServerRenderer {
-    constructor(children, makeStaticMarkup) {
-        const flatChildren = flattenTopLevelChildren(children);
+    const topFrame = {
+        type: null,
+        // Assume all trees start in the HTML namespace (not totally true, but
+        // this is what we did historically)
+        domNamespace: Namespaces.html,
+        children: flatChildren,
+        childIndex: 0,
+        context: emptyObject,
+        footer: ''
+    };
 
-        const topFrame = {
-            type: null,
-            // Assume all trees start in the HTML namespace (not totally true, but
-            // this is what we did historically)
-            domNamespace: Namespaces.html,
-            children: flatChildren,
-            childIndex: 0,
-            context: emptyObject,
-            footer: ''
-        };
+    this.stack = [topFrame];
+    this.exhausted = false;
+    this.currentSelectValue = null;
+    this.previousWasTextNode = false;
+    this.makeStaticMarkup = makeStaticMarkup;
 
-        this.stack = [topFrame];
-        this.exhausted = false;
-        this.currentSelectValue = null;
-        this.previousWasTextNode = false;
-        this.makeStaticMarkup = makeStaticMarkup;
-
-        // Context (new API)
-        this.contextIndex = -1;
-        this.contextStack = [];
-        this.contextValueStack = [];
-    }
-
+    // Context (new API)
+    this.contextIndex = -1;
+    this.contextStack = [];
+    this.contextValueStack = [];
+}
+ReactDOMServerRenderer.prototype = {
+    constructor: ReactDOMServerRenderer,
     /**
    * Note: We use just two stacks regardless of how many context providers you have.
    * Providers are always popped in the reverse order to how they were pushed
@@ -188,7 +159,7 @@ class ReactDOMServerRenderer {
 
         // Mutate the current value.
         context._currentValue = provider.props.value;
-    }
+    },
 
     popProvider() {
         const index = this.contextIndex;
@@ -206,7 +177,7 @@ class ReactDOMServerRenderer {
 
         // Restore to the previous value we stored as we were walking down.
         context._currentValue = previousValue;
-    }
+    },
 
     read(bytes) {
         if (this.exhausted) {
@@ -244,7 +215,7 @@ class ReactDOMServerRenderer {
             out += this.render(child, frame.context, frame.domNamespace);
         }
         return out;
-    }
+    },
 
     render(child, context, parentNamespace) {
         if (typeof child === 'string' || typeof child === 'number') {
@@ -265,7 +236,7 @@ class ReactDOMServerRenderer {
             ({ child: nextChild, context } = resolve(child, context));
             if (nextChild === null || nextChild === false) {
                 return '';
-            } else if (!React.isValidElement(nextChild)) {
+            } else if (!isValidElement(nextChild)) {
                 if (nextChild != null && nextChild.$$typeof != null) {
                     // Catch unexpected special types early.
                     const $$typeof = nextChild.$$typeof;
@@ -396,7 +367,7 @@ class ReactDOMServerRenderer {
                 info
             );
         }
-    }
+    },
 
     renderDOM(element, context, parentNamespace) {
         const tag = element.type.toLowerCase();
@@ -406,13 +377,12 @@ class ReactDOMServerRenderer {
             namespace = getIntrinsicNamespace(tag);
         }
 
-
         let props = element.props;
         //input,select,textarea,option元素需要特殊处理
-        if(isFn(duplexMap[tag])){
+        if (isFn(duplexMap[tag])) {
             props = duplexMap[tag](props, this);
         }
-        
+
         let out = createOpenTagMarkup(
             element.type,
             tag,
@@ -461,11 +431,10 @@ class ReactDOMServerRenderer {
         this.previousWasTextNode = false;
         return out;
     }
-}
-
+};
 
 function resolve(child, context) {
-    while (React.isValidElement(child)) {
+    while (isValidElement(child)) {
     // Safe because we just checked it's an element.
         let element = child;
         let Component = element.type;

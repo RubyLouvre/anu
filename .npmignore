@@ -16,6 +16,7 @@ react-dom.js
 selenium-server-*
 /.vscode/*
 /.history/*
+yarn.lock
 xxx.js
 index.css
 stand.js

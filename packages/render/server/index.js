@@ -1,5 +1,5 @@
 import ReactPartialRenderer from './Renderer';
-
+import { miniCreateClass } from 'react-core/util';
 /**
  * Render a ReactElement to its initial HTML. This should only be used on the
  * server.
@@ -24,14 +24,9 @@ export function renderToStaticMarkup(element) {
 import {Readable} from 'stream';
 
 
-class ReactMarkupReadableStream extends Readable {
-    constructor(element, makeStaticMarkup) {
-        // Calls the stream.Readable(options) constructor. Consider exposing built-in
-        // features like highWaterMark in the future.
-        super({});
-        this.partialRenderer = new ReactPartialRenderer(element, makeStaticMarkup);
-    }
-  
+var ReactMarkupReadableStream = miniCreateClass(function ReactMarkupReadableStream(element, makeStaticMarkup){
+    this.partialRenderer = new ReactPartialRenderer(element, makeStaticMarkup);
+},{
     _read(size) {
         try {
             this.push(this.partialRenderer.read(size));
@@ -39,7 +34,7 @@ class ReactMarkupReadableStream extends Readable {
             this.emit('error', err);
         }
     }
-}
+} );
 
 /**
  * Render a ReactElement to its initial HTML. This should only be used on the

@@ -1,4 +1,4 @@
-import { Children } from 'babel-core/Children';
+import { Children } from 'react-core/Children';
 
 //收集option元素的文本
 function flattenOptionChildren(children) {
