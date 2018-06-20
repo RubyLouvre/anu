@@ -7,7 +7,9 @@
  * @flow
  */
 
-import { Children } from 'react-core/Children';
+import {
+    Children
+} from 'react-core/Children';
 import {
     isFn,
     emptyObject,
@@ -15,9 +17,15 @@ import {
     miniCreateClass,
     oneObject
 } from 'react-core/util';
-import { createOpenTagMarkup } from './html';
-import { duplexMap } from './duplex';
-import { isValidElement } from 'react-core/createElement';
+import {
+    createOpenTagMarkup
+} from './html';
+import {
+    duplexMap
+} from './duplex';
+import {
+    isValidElement
+} from 'react-core/createElement';
 
 /*
 import {
@@ -34,14 +42,18 @@ import {
 function AsyncMode(children) {
     return children;
 }
+
 function StrictMode(children) {
     return children;
 }
+
 function Fragment(children) {
     return children;
 }
 
-import { encodeEntities } from './encode';
+import {
+    encodeEntities
+} from './encode';
 import {
     Namespaces,
     getIntrinsicNamespace,
@@ -76,7 +88,8 @@ function getNonChildrenInnerMarkup(props) {
         }
     } else {
         const content = props.children;
-        if (typeof content === 'string' || typeof content === 'number') {
+        var n = typeNumber(content)
+        if (n === 3 || n === 4) {
             return encodeEntities(content);
         }
     }
@@ -139,14 +152,14 @@ function ReactDOMServerRenderer(children, makeStaticMarkup) {
 ReactDOMServerRenderer.prototype = {
     constructor: ReactDOMServerRenderer,
     /**
-   * Note: We use just two stacks regardless of how many context providers you have.
-   * Providers are always popped in the reverse order to how they were pushed
-   * so we always know on the way down which provider you'll encounter next on the way up.
-   * On the way down, we push the current provider, and its context value *before*
-   * we mutated it, onto the stacks. Therefore, on the way up, we always know which
-   * provider needs to be "restored" to which value.
-   * https://github.com/facebook/react/pull/12985#issuecomment-396301248
-   */
+     * Note: We use just two stacks regardless of how many context providers you have.
+     * Providers are always popped in the reverse order to how they were pushed
+     * so we always know on the way down which provider you'll encounter next on the way up.
+     * On the way down, we push the current provider, and its context value *before*
+     * we mutated it, onto the stacks. Therefore, on the way up, we always know which
+     * provider needs to be "restored" to which value.
+     * https://github.com/facebook/react/pull/12985#issuecomment-396301248
+     */
 
     pushProvider(provider) {
         const index = ++this.contextIndex;
@@ -202,8 +215,8 @@ ReactDOMServerRenderer.prototype = {
                     this.currentSelectValue = null;
                 } else if (
                     frame.type != null &&
-          frame.type.type != null &&
-          frame.type.type.$$typeof === REACT_PROVIDER_TYPE
+                    frame.type.type != null &&
+                    frame.type.type.$$typeof === REACT_PROVIDER_TYPE
                 ) {
                     const provider = frame.type;
                     this.popProvider(provider);
@@ -218,7 +231,8 @@ ReactDOMServerRenderer.prototype = {
     },
 
     render(child, context, parentNamespace) {
-        if (typeof child === 'string' || typeof child === 'number') {
+        var t  = typeNumber(child)
+        if (t === 3 || t === 4) {
             const text = '' + child;
             if (text === '') {
                 return '';
@@ -233,7 +247,10 @@ ReactDOMServerRenderer.prototype = {
             return encodeEntities(text);
         } else {
             let nextChild;
-            ({ child: nextChild, context } = resolve(child, context));
+            ({
+                child: nextChild,
+                context
+            } = resolve(child, context));
             if (nextChild === null || nextChild === false) {
                 return '';
             } else if (!isValidElement(nextChild)) {
@@ -243,14 +260,13 @@ ReactDOMServerRenderer.prototype = {
                     invariant(
                         $$typeof !== REACT_PORTAL_TYPE,
                         'Portals are not currently supported by the server renderer. ' +
-              'Render them conditionally so that they only appear on the client render.'
+                        'Render them conditionally so that they only appear on the client render.'
                     );
                     // Catch-all to prevent an infinite loop if React.Children.toArray() supports some new type.
                     invariant(
                         false,
-                        'Unknown element-like object type: %s. This is likely a bug in React. ' +
-              'Please file an issue.',
-                        $$typeof.toString()
+                        'Unknown element-like object type: ' + $$typeof + '. This is likely a bug in React. ' +
+                        'Please file an issue.'
                     );
                 }
                 const nextChildren = toArray(nextChild);
@@ -270,89 +286,93 @@ ReactDOMServerRenderer.prototype = {
             const nextElement = nextChild;
             const elementType = nextElement.type;
 
-            if (typeof elementType === 'string') {
+            if (typeNumber(elementType) === 4) {
                 return this.renderDOM(nextElement, context, parentNamespace);
             }
 
             switch (elementType) {
-            case REACT_STRICT_MODE_TYPE:
-            case REACT_ASYNC_MODE_TYPE:
-            case REACT_PROFILER_TYPE:
-            case REACT_FRAGMENT_TYPE: {
-                const nextChildren = toArray(nextChild.props.children);
-                const frame = {
-                    type: null,
-                    domNamespace: parentNamespace,
-                    children: nextChildren,
-                    childIndex: 0,
-                    context: context,
-                    footer: ''
-                };
+                case REACT_STRICT_MODE_TYPE:
+                case REACT_ASYNC_MODE_TYPE:
+                case REACT_PROFILER_TYPE:
+                case REACT_FRAGMENT_TYPE:
+                    {
+                        const nextChildren = toArray(nextChild.props.children);
+                        const frame = {
+                            type: null,
+                            domNamespace: parentNamespace,
+                            children: nextChildren,
+                            childIndex: 0,
+                            context: context,
+                            footer: ''
+                        };
 
-                this.stack.push(frame);
-                return '';
-            }
-            // eslint-disable-next-line-no-fallthrough
-            default:
-                break;
+                        this.stack.push(frame);
+                        return '';
+                    }
+                    // eslint-disable-next-line-no-fallthrough
+                default:
+                    break;
             }
             if (typeof elementType === 'object' && elementType !== null) {
                 switch (elementType.$$typeof) {
-                case REACT_FORWARD_REF_TYPE: {
-                    const element = nextChild;
-                    const nextChildren = toArray(
-                        elementType.render(element.props, element.ref)
-                    );
-                    const frame = {
-                        type: null,
-                        domNamespace: parentNamespace,
-                        children: nextChildren,
-                        childIndex: 0,
-                        context: context,
-                        footer: ''
-                    };
+                    case REACT_FORWARD_REF_TYPE:
+                        {
+                            const element = nextChild;
+                            const nextChildren = toArray(
+                                elementType.render(element.props, element.ref)
+                            );
+                            const frame = {
+                                type: null,
+                                domNamespace: parentNamespace,
+                                children: nextChildren,
+                                childIndex: 0,
+                                context: context,
+                                footer: ''
+                            };
 
-                    this.stack.push(frame);
-                    return '';
-                }
-                case REACT_PROVIDER_TYPE: {
-                    const provider = nextChild;
-                    const nextProps = provider.props;
-                    const nextChildren = toArray(nextProps.children);
-                    const frame = {
-                        type: provider,
-                        domNamespace: parentNamespace,
-                        children: nextChildren,
-                        childIndex: 0,
-                        context: context,
-                        footer: ''
-                    };
+                            this.stack.push(frame);
+                            return '';
+                        }
+                    case REACT_PROVIDER_TYPE:
+                        {
+                            const provider = nextChild;
+                            const nextProps = provider.props;
+                            const nextChildren = toArray(nextProps.children);
+                            const frame = {
+                                type: provider,
+                                domNamespace: parentNamespace,
+                                children: nextChildren,
+                                childIndex: 0,
+                                context: context,
+                                footer: ''
+                            };
 
-                    this.pushProvider(provider);
+                            this.pushProvider(provider);
 
-                    this.stack.push(frame);
-                    return '';
-                }
-                case REACT_CONTEXT_TYPE: {
-                    const consumer = nextChild;
-                    const nextProps = consumer.props;
-                    const nextValue = consumer.type._currentValue;
+                            this.stack.push(frame);
+                            return '';
+                        }
+                    case REACT_CONTEXT_TYPE:
+                        {
+                            const consumer = nextChild;
+                            const nextProps = consumer.props;
+                            const nextValue = consumer.type._currentValue;
 
-                    const nextChildren = toArray(nextProps.children(nextValue));
-                    const frame = {
-                        type: nextChild,
-                        domNamespace: parentNamespace,
-                        children: nextChildren,
-                        childIndex: 0,
-                        context: context,
-                        footer: ''
-                    };
+                            const nextChildren = toArray(nextProps.children(nextValue));
+                            const frame = {
+                                type: nextChild,
+                                domNamespace: parentNamespace,
+                                children: nextChildren,
+                                childIndex: 0,
+                                context: context,
+                                footer: ''
+                            };
 
-                    this.stack.push(frame);
-                    return '';
-                }
-                default:
-                    break;
+                            this.stack.push(frame);
+                            return '';
+                        }
+                    default:
+                        break;
                 }
             }
 
@@ -361,8 +381,8 @@ ReactDOMServerRenderer.prototype = {
             invariant(
                 false,
                 'Element type is invalid: expected a string (for built-in ' +
-          'components) or a class/function (for composite components) ' +
-          'but got: %s.%s',
+                'components) or a class/function (for composite components) ' +
+                'but got: %s.%s',
                 elementType == null ? elementType : typeof elementType,
                 info
             );
@@ -435,7 +455,7 @@ ReactDOMServerRenderer.prototype = {
 
 function resolve(child, context) {
     while (isValidElement(child)) {
-    // Safe because we just checked it's an element.
+        // Safe because we just checked it's an element.
         let element = child;
         let Component = element.type;
 
@@ -504,9 +524,9 @@ function resolve(child, context) {
             inst.state = initialState = null;
         }
         //执行componentWillMount钩子
-        var willMountHook = hasGSFP
-            ? 'UNSAFE_componentWillMount'
-            : 'componentWillMount';
+        var willMountHook = hasGSFP ?
+            'UNSAFE_componentWillMount' :
+            'componentWillMount';
 
         if (isFn(inst[willMountHook])) {
             inst[willMountHook]();
@@ -523,9 +543,9 @@ function resolve(child, context) {
                     let dontMutate = true;
                     for (let i = oldReplace ? 1 : 0; i < oldQueue.length; i++) {
                         let partial = oldQueue[i];
-                        let partialState = isFn(partial)
-                            ? partial.call(inst, nextState, element.props, publicContext)
-                            : partial;
+                        let partialState = isFn(partial) ?
+                            partial.call(inst, nextState, element.props, publicContext) :
+                            partial;
                         if (partialState != null) {
                             if (dontMutate) {
                                 dontMutate = false;
@@ -551,7 +571,10 @@ function resolve(child, context) {
             }
         }
     }
-    return { child, context };
+    return {
+        child,
+        context
+    };
 }
 
 export default ReactDOMServerRenderer;

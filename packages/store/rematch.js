@@ -21,7 +21,7 @@ let corePlugins = [dispatchPlugin, effectsPlugin];
 export function Rematch(config) {
     let _this = this;
     this.plugins = [];
-    this.pluginFactory = pluginFactory();
+    this.pluginFactory = pluginFactory(config);
     this.config = config;
     for (
         let _i = 0, _a = corePlugins.concat(this.config.plugins); _i < _a.length; _i++
