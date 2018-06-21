@@ -1,45 +1,71 @@
-import { diffProps } from './props';
-import { document, NAMESPACE } from './browser';
-import { get, noop, extend, emptyObject, topNodes, topFibers } from 'react-core/util';
-import { Renderer, createRenderer } from 'react-core/createRenderer';
-import { render, createContainer } from 'react-fiber/scheduleWork';
-import { duplexAction, fireDuplex } from './duplex';
+import {
+    diffProps
+} from './props';
+import {
+    document,
+    NAMESPACE
+} from './browser';
+import {
+    get,
+    noop,
+    extend,
+    emptyObject,
+    topNodes,
+    topFibers
+} from 'react-core/util';
+import {
+    Renderer,
+    createRenderer
+} from 'react-core/createRenderer';
+import {
+    render,
+    createContainer
+} from 'react-fiber/scheduleWork';
+import {
+    duplexAction,
+    fireDuplex
+} from './duplex';
 
+const reuseTextNodes = []; //文本节点不能加属性，样式与事件，重用没有副作用
 export function createElement(vnode) {
     let p = vnode.return;
-    let { type, props, ns } = vnode;
+    let {
+        type,
+        props,
+        ns
+    } = vnode;
     switch (type) {
-    case '#text':
-        //只重复利用文本节点
-        var node = recyclables[type].pop();
-        if (node) {
-            node.nodeValue = props;
-            return node;
-        }
-        return document.createTextNode(props);
-    case '#comment':
-        return document.createComment(props);
-
-    case 'svg':
-        ns = NAMESPACE.svg;
-        break;
-    case 'math':
-        ns = NAMESPACE.math;
-        break;
-
-    default:
-        do {
-            var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-            if (s) {
-                ns = s.namespaceURI;
-                if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
-                    ns = '';
-                }
-                break;
+        case '#text':
+            //只重复利用文本节点
+            var node = reuseTextNodes.pop();
+            if (node) {
+                node.nodeValue = props;
+                return node;
             }
-        } while ((p = p.return));
+            return document.createTextNode(props);
+        case '#comment':
+            return document.createComment(props);
 
-        break;
+        case 'svg':
+            ns = NAMESPACE.svg;
+            break;
+        case 'math':
+            ns = NAMESPACE.math;
+            break;
+
+        default:
+            do {
+                var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                if (s) {
+                    ns = s.namespaceURI;
+                    if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                        ns = '';
+                    }
+                    break;
+                }
+            } while ((p = p.return));
+
+            break;
     }
     try {
         if (ns) {
@@ -53,21 +79,19 @@ export function createElement(vnode) {
     if (inputType) {
         try {
             elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
-        } catch (e2) {/*skip*/ }
+        } catch (e2) { /*skip*/ }
     }
     return elem;
 }
 
 let fragment = document.createDocumentFragment();
+
 function emptyElement(node) {
-    let children = node.childNodes;
-    for (let i = 0, child; (child = children[i++]);) {
-        node.removeChild(child);
+    while(node.firstChild){
+        node.removeChild(node.firstChild)
     }
 }
-const recyclables = {
-    '#text': [],
-};
+
 Renderer.middleware({
     begin: noop,
     end: fireDuplex
@@ -77,21 +101,11 @@ export function removeElement(node) {
     if (!node) {
         return;
     }
-    if (node.nodeType === 1) {
-        emptyElement(node);
-        if (node._reactInternalFiber) {
-            var i = topFibers.indexOf(node._reactInternalFiber);
-            if (i !== -1) {
-                topFibers.splice(i, -1);
-                topNodes.splice(i, -1);
-            }
-        }
+    let nodeType = node.nodeType;
+    if (nodeType === 1 && node.__events) {
         node.__events = null;
-    } else if (node.nodeType === 3) {
-        //只回收文本节点
-        if (recyclables['#text'].length < 100) {
-            recyclables['#text'].push(node);
-        }
+    } else if (nodeType === 3 && reuseTextNodes.length < 100) {
+        reuseTextNodes.push(node);
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
@@ -99,7 +113,10 @@ export function removeElement(node) {
 
 
 function insertElement(fiber) {
-    let { stateNode: dom, parent } = fiber;
+    let {
+        stateNode: dom,
+        parent
+    } = fiber;
 
     try {
         let insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
@@ -144,14 +161,18 @@ function injectInternals(internals) {
     } catch (err) { }
     return true;
 }*/
-  
+
 
 //其他Renderer也要实现这些方法
 render.Render = Renderer;
 export let DOMRenderer = createRenderer({
     render,
     updateAttribute(fiber) {
-        let { props, lastProps, stateNode } = fiber;
+        let {
+            props,
+            lastProps,
+            stateNode
+        } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
     },
     updateContent(fiber) {
@@ -161,7 +182,6 @@ export let DOMRenderer = createRenderer({
     createElement,
     insertElement,
     emptyElement(fiber) {
-        fiber.stateNode.innerHTML = '';
         emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
@@ -190,17 +210,11 @@ export let DOMRenderer = createRenderer({
         let instance = container && container.hostRoot;
         if (instance) {
             Renderer.updateComponent(
-                instance,
-                {
+                instance, {
                     child: null,
                 },
-                function () {
-                    let i = topNodes.indexOf(root);
-                    if (i !== -1) {
-                        topNodes.splice(i, 1);
-                        topFibers.splice(i, 1);
-                    }
-                    root._reactInternalFiber = null;
+                function() {
+                    removeTop(root)
                 },
                 true
             );
@@ -209,17 +223,22 @@ export let DOMRenderer = createRenderer({
         return false;
     },
     removeElement(fiber) {
-        let instance = fiber.stateNode;
-        if (instance) {
-            removeElement(instance);
-            if (instance._reactInternalFiber) {
-                let j = topNodes.indexOf(instance);
-                if (j !== -1) {
-                    topFibers.splice(j, 1);
-                    topNodes.splice(j, 1);
-                }
+        let dom = fiber.stateNode;
+        if (dom) {
+            removeElement(dom);
+            delete fiber.stateNode;
+            if (dom._reactInternalFiber) {
+                removeTop(dom)
             }
         }
-
     },
 });
+
+function removeTop(dom) {
+    let j = topNodes.indexOf(dom);
+    if (j !== -1) {
+        topFibers.splice(j, 1);
+        topNodes.splice(j, 1);
+    }
+    dom._reactInternalFiber = null;
+}

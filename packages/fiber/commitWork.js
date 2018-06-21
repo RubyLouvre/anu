@@ -42,6 +42,7 @@ import {
  */
 var domFns = ["insertElement", "updateContent", "updateAttribute"];
 var domEffects = [PLACE, CONTENT, ATTR]
+var domRemoved = []
 
 function commitDFSImpl(fiber) {
     let topFiber = fiber;
@@ -108,9 +109,13 @@ export function commitDFS(effects) {
             //处理retry组件
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
-                return;
+            } else {
+                commitDFSImpl(el);
             }
-            commitDFSImpl(el);
+            if (domRemoved.length) {
+                domRemoved.forEach(Renderer.removeElement)
+                domRemoved.length = 0
+            }
         }
 
     }, {});
@@ -197,12 +202,10 @@ export function commitEffects(fiber) {
 
 
 export function disposeFibers(fiber) {
-    let list = [fiber.oldChildren, fiber.children],
-        count = 0;
-
-    while (count != 2) {
-        let c = list[count++];
-        if (c) {
+    let list = [fiber.oldChildren, fiber.children];
+    for (let i = 0; i < 2; i++) {
+        let c = list[i];
+        if(c){
             for (let i in c) {
                 let child = c[i];
                 if (!child.disposed && child.hasMounted) {
@@ -231,16 +234,17 @@ function disposeFiber(fiber, force) {
     }
     if (effectTag % DETACH == 0 || force === true) {
         if (fiber.tag > 3) {
-            Renderer.removeElement(fiber);
+            domRemoved.push(fiber)
+            //  Renderer.removeElement(fiber);
         } else {
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, 'componentWillUnmount', []);
+                delete fiber.stateNode;
             }
         }
         delete fiber.alternate;
         delete fiber.hasMounted;
-        //  delete fiber.stateNode;
         fiber.disposed = true;
     }
     fiber.effectTag = NOWORK;

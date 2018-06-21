@@ -93,7 +93,21 @@ describe('refs-destruction', () => {
         .length,
     ).toEqual(0);
   });
-
+  it("在componentWillUnmount中refs中的元素节点还能访问到父节点", ()=>{
+    const container = document.createElement('div');
+    var a 
+    class Inner extends React.Component{
+      render(){
+        return <h2 ref="zzz">xxx</h2>
+      }
+      componentWillUnmount(){
+         a  = this.refs.zzz.parentNode;
+      }
+    }
+    ReactDOM.render(<h1><Inner /></h1>, container)
+    ReactDOM.unmountComponentAtNode(container)
+    expect(!!a).toBe(true)
+  })
   it('should not error when destroying child with ref asynchronously', () => {
     class Modal extends React.Component {
       componentDidMount() {

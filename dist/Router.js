@@ -39,9 +39,8 @@ function inherit(SubClass, SupClass) {
     return fn;
 }
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || "IEComponent";
+    var className = ctor.name || 'IEComponent';
     var Ctor = Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor);
-    Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
     if (statics) {

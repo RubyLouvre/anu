@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-15
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-21
  */
 
 (function (global, factory) {
@@ -82,9 +82,8 @@ function inherit(SubClass, SupClass) {
     return fn;
 }
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || "IEComponent";
+    var className = ctor.name || 'IEComponent';
     var Ctor = Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor);
-    Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
     if (statics) {
@@ -2410,6 +2409,7 @@ var refStrategy = {
 
 var domFns = ["insertElement", "updateContent", "updateAttribute"];
 var domEffects = [PLACE, CONTENT, ATTR];
+var domRemoved = [];
 function commitDFSImpl(fiber) {
     var topFiber = fiber;
     outerLoop: while (true) {
@@ -2465,9 +2465,13 @@ function commitDFS(effects$$1) {
         while (el = effects$$1.shift()) {
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
-                return;
+            } else {
+                commitDFSImpl(el);
             }
-            commitDFSImpl(el);
+            if (domRemoved.length) {
+                domRemoved.forEach(Renderer.removeElement);
+                domRemoved.length = 0;
+            }
         }
     }, {});
     var error = Renderer.catchError;
@@ -2535,13 +2539,12 @@ function commitEffects(fiber) {
     fiber.effectTag = NOWORK;
 }
 function disposeFibers(fiber) {
-    var list = [fiber.oldChildren, fiber.children],
-        count = 0;
-    while (count != 2) {
-        var c = list[count++];
+    var list = [fiber.oldChildren, fiber.children];
+    for (var i = 0; i < 2; i++) {
+        var c = list[i];
         if (c) {
-            for (var i in c) {
-                var child = c[i];
+            for (var _i in c) {
+                var child = c[_i];
                 if (!child.disposed && child.hasMounted) {
                     disposeFiber(child, true);
                     disposeFibers(child);
@@ -2565,11 +2568,12 @@ function disposeFiber(fiber, force) {
     }
     if (effectTag % DETACH == 0 || force === true) {
         if (fiber.tag > 3) {
-            Renderer.removeElement(fiber);
+            domRemoved.push(fiber);
         } else {
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, 'componentWillUnmount', []);
+                delete fiber.stateNode;
             }
         }
         delete fiber.alternate;
@@ -2838,6 +2842,7 @@ function getContainer(p) {
     }
 }
 
+var reuseTextNodes = [];
 function createElement$1(vnode) {
     var p = vnode.return;
     var type = vnode.type,
@@ -2845,7 +2850,7 @@ function createElement$1(vnode) {
         ns = vnode.ns;
     switch (type) {
         case '#text':
-            var node = recyclables[type].pop();
+            var node = reuseTextNodes.pop();
             if (node) {
                 node.nodeValue = props;
                 return node;
@@ -2889,14 +2894,10 @@ function createElement$1(vnode) {
 }
 var fragment = document.createDocumentFragment();
 function _emptyElement(node) {
-    var children = node.childNodes;
-    for (var i = 0, child; child = children[i++];) {
-        node.removeChild(child);
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
     }
 }
-var recyclables = {
-    '#text': []
-};
 Renderer.middleware({
     begin: noop,
     end: fireDuplex
@@ -2905,20 +2906,11 @@ function _removeElement(node) {
     if (!node) {
         return;
     }
-    if (node.nodeType === 1) {
-        _emptyElement(node);
-        if (node._reactInternalFiber) {
-            var i = topFibers.indexOf(node._reactInternalFiber);
-            if (i !== -1) {
-                topFibers.splice(i, -1);
-                topNodes.splice(i, -1);
-            }
-        }
+    var nodeType = node.nodeType;
+    if (nodeType === 1 && node.__events) {
         node.__events = null;
-    } else if (node.nodeType === 3) {
-        if (recyclables['#text'].length < 100) {
-            recyclables['#text'].push(node);
-        }
+    } else if (nodeType === 3 && reuseTextNodes.length < 100) {
+        reuseTextNodes.push(node);
     }
     fragment.appendChild(node);
     fragment.removeChild(node);
@@ -2958,7 +2950,6 @@ var DOMRenderer = createRenderer({
     createElement: createElement$1,
     insertElement: insertElement,
     emptyElement: function emptyElement(fiber) {
-        fiber.stateNode.innerHTML = '';
         _emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
@@ -2987,31 +2978,31 @@ var DOMRenderer = createRenderer({
             Renderer.updateComponent(instance, {
                 child: null
             }, function () {
-                var i = topNodes.indexOf(root);
-                if (i !== -1) {
-                    topNodes.splice(i, 1);
-                    topFibers.splice(i, 1);
-                }
-                root._reactInternalFiber = null;
+                removeTop(root);
             }, true);
             return true;
         }
         return false;
     },
     removeElement: function removeElement(fiber) {
-        var instance = fiber.stateNode;
-        if (instance) {
-            _removeElement(instance);
-            if (instance._reactInternalFiber) {
-                var j = topNodes.indexOf(instance);
-                if (j !== -1) {
-                    topFibers.splice(j, 1);
-                    topNodes.splice(j, 1);
-                }
+        var dom = fiber.stateNode;
+        if (dom) {
+            _removeElement(dom);
+            delete fiber.stateNode;
+            if (dom._reactInternalFiber) {
+                removeTop(dom);
             }
         }
     }
 });
+function removeTop(dom) {
+    var j = topNodes.indexOf(dom);
+    if (j !== -1) {
+        topFibers.splice(j, 1);
+        topNodes.splice(j, 1);
+    }
+    dom._reactInternalFiber = null;
+}
 
 var noCheck = false;
 function setSelectValue(e) {
