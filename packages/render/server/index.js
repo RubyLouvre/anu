@@ -34,7 +34,7 @@ var ReactMarkupReadableStream = miniCreateClass(function ReactMarkupReadableStre
             this.emit('error', err);
         }
     }
-} );
+},Readable );
 
 /**
  * Render a ReactElement to its initial HTML. This should only be used on the

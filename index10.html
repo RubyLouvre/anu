@@ -38,16 +38,87 @@
               };
        };
 
-       class Inner extends React.Component{
-         render(){
-           return <h2 ref="zzz">xxx</h2>
-         }
-         componentWillUnmount(){
-           console.log(this.refs.zzz.parentNode)
-         }
-       }
-       ReactDOM.render(<h1><Inner /></h1>, container)
-       ReactDOM.unmountComponentAtNode(container)
+       function prev(el){
+			return el.previousSibling || {}
+		}
+		var div = document.createElement("div")
+		class InnerBox extends React.PureComponent {
+			state = {
+				current: 0,
+			}
+			componentDidMount() {
+				console.log('InnerBox render');
+				setTimeout(() => {
+					console.log('current跟上次不一样)');
+					this.setState({ current: 1 }, ()=>{
+						expect(prev(this.refs.aaa).id).toBe("a2")
+					});
+				}, 50);
+				setTimeout(() => {
+					console.log('current跟上次一样，dom位置互换');
+					this.setState({ current: 1 }, ()=>{
+						expect(prev(this.refs.aaa).id).toBe("a2")
+					});
+				}, 100);
+				setTimeout(() => {
+					console.log('current跟上次不一样，dom位置复原');
+					this.setState({ current: 2 }, ()=>{
+						expect(prev(this.refs.aaa).id).toBe("a2")
+					});
+				}, 150);
+				setTimeout(() => {
+					console.log('current跟上次一样，dom位置互换');
+					this.setState({ current: 2 }, ()=>{
+						expect(prev(this.refs.aaa).id).toBe("a2")
+					  
+					});
+				}, 200);
+			}
+			render() {
+				console.log('inner render trigger');
+				return (
+					<div id="a3" ref="aaa">
+						<div style={{ height: 100 }}>内部组件{this.state.current}</div>
+					</div>
+				);
+			}
+			
+		};
+
+		class WrapBox extends React.PureComponent {
+			state = {
+				value: 1,
+			}
+			componentDidMount() {
+				console.log('WrapBox render');
+				// 此处如果在组件创建以后，再次setState，会导致dom位置错误的现象发生
+				setTimeout(() => {
+					console.log('父容器state值改变');
+					this.setState({
+						value: 1,
+					});
+				}, 70);
+			}
+			render() {
+				console.log('wrap render trigger');
+				return (
+					<quoteblock>
+						<div id="a1">标题区域1</div>
+						<div id="a2">标题区域2</div>
+						<InnerBox />
+						<div id="a4">标题区域3</div>
+					</quoteblock>
+				);
+			}
+		}
+	
+		ReactDOM.render(
+			<div>
+				<WrapBox />
+				<div>hello anu!</div>
+			</div>,
+			div
+		);
     </script>
 
 
