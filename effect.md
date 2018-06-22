@@ -1,6 +1,5 @@
 
-
-## effectTag的所有含义与可应用的组件
+# effectTag的所有含义与可应用的组件
 
 | 操作       | 含 义          | No  | class Component | stateless | native Component | native text |
 |----------|--------------|-----|-----------------|-----------|------------------|-------------|
