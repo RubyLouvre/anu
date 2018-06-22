@@ -7,14 +7,7 @@
   <script type='text/javascript' src="./dist/React.js"></script>
   <script type='text/javascript' src="./node_modules/redux/dist/redux.js"></script>
   <script type='text/javascript' src="./node_modules/react-redux/dist/react-redux.js"></script>
-	<!--
-	<script type='text/javascript' src="./node_modules/redux/dist/redux.js"></script>
-  <script type='text/javascript' src="./node_modules/react-redux/dist/react-redux.js"></script>
-  <script type='text/javascript' src="./node_modules/babel-runtime/regenerator/index.js"></script>
 
-  <script type='text/javascript' src="./dist/Rematch.js"></script>
--->
-	<!--<script type='text/javascript' src="./lib/babel.js"></script>-->
 
 </head>
 
@@ -26,60 +19,7 @@
 	<div id='root' class="root">
 
 	</div>
-	<!--<script type='text/babel'>
-        
-        var container = document.getElementById('root');
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-		  }
- const count = {
-  state: 0, // initial state
-  reducers: {
-    // handle state changes with pure functions
-    increment(state, payload) {
-      return state + payload
-    }
-  },
-  effects: {
-    // handle state changes with impure functions.
-    // use async/await for async actions
-    async incrementAsync(payload, rootState) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      this.increment(payload)
-    }
-  }
-}
-console.log(Rematch)
-const store = Rematch.init({
-	count,
-})
 
- const Count = props => (
-  <div>
-    The count is {props.count}
-    <button onClick={props.increment}>increment</button>
-    <button onClick={props.incrementAsync}>incrementAsync</button>
-  </div>
-)
-
-const mapState = state => ({
-  count: state.count
-})
-
-const mapDispatch = ({ count: { increment, incrementAsync }}) => ({
-  increment: () => increment(1),
-  incrementAsync: () => incrementAsync(1)
-})
-
-const CountContainer = connect(mapState, mapDispatch)(Count)
-
-ReactDOM.render(
-  <Provider store={store}>
-    <CountContainer />
-  </Provider>,
-  container
-)
-    </script>-->
 <script src="./dist/bundle.js"></script>
 <script src="./dist/vendors.bundle.js"></script>
 
