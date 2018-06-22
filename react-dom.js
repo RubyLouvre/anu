@@ -1,4 +1,4 @@
-/** @license React v16.3.2
+/** @license React v16.3.2!
  * react-dom.development.js
  *
  * Copyright (c) 2013-present, Facebook, Inc.
