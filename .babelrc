@@ -9,7 +9,6 @@
                 "loose": true
             }
         ],
-       
         ["transform-object-rest-spread", { "useBuiltIns": true }],
         ["module-resolver", {
            "root": ["."],
