@@ -1,4 +1,13 @@
+
+# 变更日志
+
+## 1.4.4(2018.06.22)
+
+1. 修复插入点的BUG，现在dfs遍历过程不再查询元素节点的insertPoint是否存在，updateHostComponent方法也不会调用getInsertPoint，性能大大提升
+2. 修复componentWillUnmount钩子中访问this.refs.xxx.parentNode,其父节点不存在的BUG
+
 ## 1.4.3(2018.06.14)
+
 1. miniCreateClass在老式IE下取不到名字默认使用IEComponent, 
 2. 修复createClass没有继续mixin的BUG 
 3. 移除option元素下面所有元素节点
@@ -7,12 +16,14 @@
 6. updateContext改名updateContent，这是一直以来的笔误
 
 ## 1.4.2(2018.06.07)
+
 1. add miniCreateClass, 并用它重构createClass, Unbatch, PureComponent, createContext
 2. 添加一个WORKING任务，避免整棵树更新
 3. 修复受控组件中option的IE8-的兼容BUG
 4. 添加一个内置的路由器
 
 ## 1.4.1(2018.06.04)
+
 1. 文本节点的内容直接用fiber.props代替
 2. 修正input的拼音输入法BUG
 3. 修正updateHostComponent中覆盖children对象的BUG
@@ -21,6 +32,7 @@
 6. 简化commitDFS循环
 
 ## 1.4.0(2018.05.30)
+
 1. 测试全部改成jest
 2. cWU钩子在调用时必须移除
 3. 批量更新时，每个组件只能更新一次
@@ -32,6 +44,7 @@
 
 
 ## 1.3.2(2018.04.16)
+
 处理移动端下中文输入法的onChange事件BUG
 
 ## 1.3.1(2018.03.18)
