@@ -48,7 +48,6 @@ export function render(vnode, root, callback) {
         container.child = fiber;
         //将updateClassComponent部分逻辑放到这里，我们只需要实例化它
         let instance = createInstance(fiber, {});
-        instance.updater.isMounted = isMounted;
         container.hostRoot = instance;
         immediateUpdate = true;
         Renderer.emptyElement(container);
