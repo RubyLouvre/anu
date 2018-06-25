@@ -798,7 +798,7 @@
       return !event.defaultPrevented && event.button === 0 && !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
   }
   var ReachRouter = {
-      version: "1.4.3",
+      version: "1.4.4",
       Link: Link,
       Location: Location,
       LocationProvider: LocationProvider,

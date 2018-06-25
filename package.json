@@ -7,8 +7,8 @@
     "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.reach.js ",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
-    "sync": "node ./scripts/build/sync.js",
-    "sync2": "node ./scripts/build/shim.script.js"
+    "miniapp": "node ./packages/render/miniapp/translator/index.js",
+    "sync": "node ./scripts/build/syncAntd.js"
   },
   "repository": {
     "type": "git",

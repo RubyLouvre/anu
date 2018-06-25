@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-22
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-25
  */
 
 (function (global, factory) {
@@ -2594,7 +2594,6 @@
           fiber.index = 0;
           container.child = fiber;
           var instance = createInstance(fiber, {});
-          instance.updater.isMounted = isMounted;
           container.hostRoot = instance;
           immediateUpdate = true;
           Renderer.emptyElement(container);
@@ -3142,7 +3141,7 @@
           findDOMNode: findDOMNode,
           unmountComponentAtNode: unmountComponentAtNode,
           unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-          version: "1.4.3",
+          version: "1.4.4",
           render: render$1,
           hydrate: render$1,
           unstable_batchedUpdates: DOMRenderer.batchedUpdates,
