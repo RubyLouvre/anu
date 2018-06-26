@@ -13,7 +13,6 @@ const wxTags = require('./wx/tag');
 const parseCode = require('./utils').parseCode
 
 let cache = {};
-console.log(t)
 function assembleMapTag(tagName,fo, forItem, forIndex, nextNode) {
   const attrs = [
     t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${fo}}}`)),
