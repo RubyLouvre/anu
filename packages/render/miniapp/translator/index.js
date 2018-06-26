@@ -1,20 +1,22 @@
 
 //由于运行于nodejs环境，只能用require组织模块，并保证nodejs版本大于7
-
-console.log("当前nodejs版本为 "+process.version)
+// https://github.com/NervJS/taro/tree/master/packages/taro-cli
+//https://blog.csdn.net/liangklfang/article/details/54879672
+console.log("当前nodejs版本为 "+  process.version.match(/v(\d+)/)[1])
 
 const rollup = require("rollup");
 const resolve = require("rollup-plugin-node-resolve");
 const rBabel = require("rollup-plugin-babel");
-const chalk = require("chalk").default;
+const chalk = require("chalk");
 const path = require("path");
 const wt = require("wt");
 const fs = require("fs-extra");
 //const miniappPlugin = require("../packages/react-miniapp-tranformation-plugin");
 const transform = require("./transform").transform;
 
-const entryFolder = path.resolve(__dirname, "../src");
-const projectPath = process.cwd();
+let entryFolder = path.resolve(__dirname, "../example");
+//const projectPath = process.cwd();
+let projectPath = entryFolder
 const sourceDirPath = path.join(projectPath, "src");
 const outputDirPath = path.join(projectPath, "dist");
 
@@ -36,6 +38,7 @@ const ignoreStyles = function() {
 class Parser {
   constructor(tPath) {
     this.path = tPath;
+    console.log("tPath",tPath)
     this.inputOptions = {
       input: path.resolve(this.path),
       plugins: [
@@ -44,16 +47,18 @@ class Parser {
           exclude: ["node_modules/**"],
           babelrc: false,
           runtimeHelpers: true,
-          presets: ["@babel/preset-react"],
+          presets: ["react"],
           plugins: [
-            "@babel/plugin-proposal-object-rest-spread",
-            "@babel/plugin-proposal-class-properties",
+            "transform-class-properties",
+            "transform-object-rest-spread",
+           
             ignoreStyles
           ]
         })
       ]
     };
     this.output = path.resolve("./build");
+  
   }
 
   async parse() {
@@ -64,6 +69,7 @@ class Parser {
     ) {
       //忽略 rollupPluginBabelHelpers
       if (!/rollup/.test(id)) {
+        console.log(id)
         collect.push({
           id: id,
           code: originalCode,
@@ -76,7 +82,6 @@ class Parser {
       return collect;
     },
     []);
-
     const promises = modules.map(m => {
       this.codegen.call(this, m.id, m.dependencies, m.code, m.babeled);
     });
@@ -93,7 +98,6 @@ class Parser {
     //生成文件
     let sourcePath = id;
     let srcPath = id.replace(sourceDirPath, "");
-    console.log(this, ")))))")
     if (/node_modules/.test(srcPath)) {
       srcPath = srcPath.replace(path.resolve("node_modules"), "");
       srcPath = `nodeModules${srcPath}`;
@@ -135,12 +139,13 @@ class Parser {
 
 async function build() {
   try {
-    const parser = new Parser("./src/app.js");
+    const parser = new Parser(path.join(projectPath, "src/app.js"));
     await parser.parse();
     // 暂时关闭watch方便开发
     // parser.watch('./src')
   } catch (e) {
-    console.log(chalk.redBright(e));
+  
+  //  console.log(chalk.redBright(e));
     console.log(e);
   }
 }

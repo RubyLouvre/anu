@@ -4,10 +4,11 @@
  * @Last Modified by:   hibad 
  * @Last Modified time: 2018-06-24 10:37:08 
  */
-const traverse = require('@babel/traverse').default
-const generate = require('@babel/generator').default
-const babel = require('@babel/core')
-var t = require('@babel/types');
+// http://web.jobbole.com/91277/
+const traverse = require('babel-traverse').default
+const generate = require('babel-generator').default
+const babel = require('babel-core')
+var t = require('babel-types');
 const transformPlugin = require('./plugin/index');
 const sharedState = require('./plugin/sharedState');
 const parseCode = require('./plugin/utils').parseCode;
@@ -24,10 +25,12 @@ function transform(code, sourcePath) {
   const result = babel.transform(code, {
     babelrc: false,
     plugins: [
-      '@babel/plugin-syntax-jsx', 
+     // 'syntax-jsx', 
+      "transform-react-jsx",
+      'transform-decorators-legacy',
       transformPlugin, 
-      '@babel/plugin-proposal-object-rest-spread',  
-      ['@babel/plugin-proposal-decorators',{"legacy": true}] 
+      'transform-object-rest-spread',  
+    
     ]
   })
   // tranform后, 结果都会写入sharedState.output

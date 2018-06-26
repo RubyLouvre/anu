@@ -4,26 +4,26 @@
  * @Last Modified by:   hibad 
  * @Last Modified time: 2018-06-24 10:36:22 
  */
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default
+const t = require('babel-types');
+const generate = require('babel-generator').default;
+const traverse = require('babel-traverse').default
 const chalk = require('chalk').default;
 const WXML_EVENTS = require('./wx/events');
 const wxTags = require('./wx/tag');
 const parseCode = require('./utils').parseCode
 
 let cache = {};
-
+console.log(t)
 function assembleMapTag(tagName,fo, forItem, forIndex, nextNode) {
   const attrs = [
-    t.jSXAttribute(t.jSXIdentifier('wx:for'), t.stringLiteral(`{{${fo}}}`)),
-    t.jSXAttribute(t.jSXIdentifier('wx:for-item'), t.stringLiteral(`${forItem}`)),
+    t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${fo}}}`)),
+    t.JSXAttribute(t.JSXIdentifier('wx:for-item'), t.stringLiteral(`${forItem}`)),
   ]
   if (forIndex) 
-    attrs.push(t.jSXAttribute(t.jSXIdentifier('wx:for-index'), t.stringLiteral(`${forIndex}`)));
+    attrs.push(t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${forIndex}`)));
   
-  const jsxOpening = t.jsxOpeningElement(t.jsxIdentifier(tagName), attrs);
-  const jsxClosing = t.jsxClosingElement(t.jsxIdentifier(tagName));
+  const jsxOpening = t.JSXOpeningElement(t.JSXIdentifier(tagName), attrs);
+  const jsxClosing = t.JSXClosingElement(t.JSXIdentifier(tagName));
   let children = null;
   if (t.isCallExpression(nextNode)) { //
     children = recursivelyAssembleMapTag(nextNode);
@@ -31,7 +31,7 @@ function assembleMapTag(tagName,fo, forItem, forIndex, nextNode) {
     children = nextNode;
   }
   
-  const jsxElement = t.jsxElement(jsxOpening, jsxClosing,[children]);
+  const jsxElement = t.JSXElement(jsxOpening, jsxClosing,[children]);
 
   return jsxElement;
 }
@@ -135,10 +135,10 @@ class MapVisitor {
           const tag = path.parent.openingElement.name.name;
 
           // TODO 处理key
-          const jsx = t.jsxOpeningElement(t.jsxIdentifier(wxTags[tag]),[
-            t.jSXAttribute(t.jSXIdentifier('wx:for'), t.stringLiteral(`{{${self.object}}}`)),
-            t.jSXAttribute(t.jSXIdentifier('wx:for-item'), t.stringLiteral(`${self.item}`)),
-            t.jSXAttribute(t.jSXIdentifier('wx:for-index'), t.stringLiteral(`${self.index || 'index'}`)),
+          const jsx = t.JSXOpeningElement(t.JSXIdentifier(wxTags[tag]),[
+            t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${self.object}}}`)),
+            t.JSXAttribute(t.JSXIdentifier('wx:for-item'), t.stringLiteral(`${self.item}`)),
+            t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${self.index || 'index'}`)),
           ]);
   
           path.parent.openingElement = jsx;
@@ -166,7 +166,7 @@ const common = {
       const originName = attr.name.name;
       const attrName = attr.name.name.toLowerCase();
       if (attrName === 'classname') { // 转换className到class
-        path.node.attributes[index] = t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('app'));
+        path.node.attributes[index] = t.JSXAttribute(t.JSXIdentifier('class'), t.stringLiteral('app'));
         return;
       }
       if (WXML_EVENTS[attrName]) { // 事件转换
@@ -207,7 +207,7 @@ const common = {
     ){
       const code = generate(path.node.expression).code;
       if (code === 'this.props.children') {
-        const openningTag = t.jsxOpeningElement(t.jsxIdentifier('slot'), [], true);
+        const openningTag = t.JSXOpeningElement(t.JSXIdentifier('slot'), [], true);
         path.replaceWith(openningTag);
       } else {
         path.node.expression = t.identifier(`{${code}}`);

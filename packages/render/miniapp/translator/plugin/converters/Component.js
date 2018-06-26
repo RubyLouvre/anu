@@ -7,7 +7,7 @@
  */
 
 const sharedState = require("../sharedState");
-const t = require("@babel/types");
+const t = require("babel-types");
 
 /**
  *

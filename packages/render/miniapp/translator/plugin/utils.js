@@ -5,7 +5,7 @@
  * @Last Modified time: 2018-06-24 10:36:43 
  */
 const prettifyXml = require('prettify-xml');
-const babylon = require('@babel/parser');
+const babylon = require('babylon');
 
 module.exports = {
   prettifyXml(wxml) {

@@ -4,10 +4,10 @@
  * @Last Modified by:   hibad 
  * @Last Modified time: 2018-06-24 10:36:48 
  */
-var t = require('@babel/types');
-const wxTags = require('./wx/tag')
-const common = require('./common');
-const generate = require('@babel/generator').default;
+var t = require("babel-types");
+const wxTags = require("./wx/tag");
+const common = require("./common");
+const generate = require("babel-generator").default;
 
 module.exports = {
   JSXExpressionContainer(path) {
@@ -27,3 +27,4 @@ module.exports = {
       path.node.name = t.identifier(wxTags[tag]);
     }
   }
+};

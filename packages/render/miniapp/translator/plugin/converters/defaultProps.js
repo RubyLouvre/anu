@@ -6,8 +6,8 @@
  * @Description: 
  */
 const sharedState = require('../sharedState')
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
+const t = require('babel-types');
+const generate = require('babel-generator').default;
 
 /**
 	* properties的type: ：String, Number, Boolean, Object, Array, null

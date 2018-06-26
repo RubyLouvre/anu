@@ -4,8 +4,8 @@
  * @Last Modified by: hibad
  * @Last Modified time: 2018-06-24 22:55:01
  */
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
+const t = require('babel-types');
+const generate = require('babel-generator').default;
 const prettifyXml = require('./utils').prettifyXml;
 const nPath = require('path');
 const fs = require('fs-extra');
