@@ -28,7 +28,7 @@ function transform(code, sourcePath) {
      // 'syntax-jsx', 
       "transform-react-jsx",
       'transform-decorators-legacy',
-      transformPlugin, 
+       transformPlugin, 
       'transform-object-rest-spread',  
     
     ]

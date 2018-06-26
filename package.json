@@ -51,7 +51,6 @@
     "helpMessage": "Commit message 格式错误, \n请查看规范: http://wiki.corp.qunar.com/pages/viewpage.action?pageId=159698767"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "^7.0.0-beta.51",
     "@rematch/core": "^1.0.0-alpha.9",
     "babel-core": "^6.26.3",
     "babel-generator": "^6.26.1",

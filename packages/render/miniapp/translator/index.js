@@ -47,11 +47,11 @@ class Parser {
           exclude: ["node_modules/**"],
           babelrc: false,
           runtimeHelpers: true,
-          presets: ["react"],
+          presets: ["react","stage-0"],
           plugins: [
-            "transform-class-properties",
+          
             "transform-object-rest-spread",
-           
+            "transform-class-properties",
             ignoreStyles
           ]
         })
