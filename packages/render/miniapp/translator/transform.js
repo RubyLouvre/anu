@@ -25,8 +25,8 @@ function transform(code, sourcePath) {
   const result = babel.transform(code, {
     babelrc: false,
     plugins: [
-     // 'syntax-jsx', 
-      "transform-react-jsx",
+      'syntax-jsx', 
+    //  "transform-react-jsx",
       'transform-decorators-legacy',
       'transform-object-rest-spread',  
       transformPlugin, 
