@@ -71,9 +71,10 @@ var ClassDeclaration = {
     );
     var onInit = template(`function onInit(config){
       if(config.hasOwnProperty("constructor")){
-        config.constructor.call(config)
+        config.constructor.call(config);
       }
-      config.data = obj.state;
+      config.data = config.state;
+      delete config.state;
       return config;
     }`)({});
     //插入到最前面
@@ -205,6 +206,7 @@ module.exports = {
       sharedState.output.type === "Page" ||
       sharedState.output.type === "Component"
     ) {
+      console.log(callee)
       var property = callee.property;
       if (property && property.name === "setState") {
         property.name = "setData";

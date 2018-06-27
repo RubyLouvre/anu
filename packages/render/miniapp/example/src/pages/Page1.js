@@ -1,4 +1,4 @@
-import Page from "../wechat";
+import {Page} from "../wechat";
 import Comp from "../components/Comp1";
 import "./page.css";
 

@@ -1,5 +1,5 @@
 
-import Component from '../wechat'
+import {Component} from '../wechat'
 
 class Comp extends Component {
   static defaultProps = {
