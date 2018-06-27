@@ -1,8 +1,7 @@
-
 //由于运行于nodejs环境，只能用require组织模块，并保证nodejs版本大于7
 // https://github.com/NervJS/taro/tree/master/packages/taro-cli
-//https://blog.csdn.net/liangklfang/article/details/54879672
-console.log("当前nodejs版本为 "+  process.version.match(/v(\d+)/)[1])
+// https://blog.csdn.net/liangklfang/article/details/54879672
+// https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
 
 const rollup = require("rollup");
 const resolve = require("rollup-plugin-node-resolve");
@@ -11,14 +10,23 @@ const chalk = require("chalk");
 const path = require("path");
 const wt = require("wt");
 const fs = require("fs-extra");
-//const miniappPlugin = require("../packages/react-miniapp-tranformation-plugin");
 const transform = require("./transform").transform;
 
 let entryFolder = path.resolve(__dirname, "../example");
 //const projectPath = process.cwd();
-let projectPath = entryFolder
+let projectPath = entryFolder;
 const sourceDirPath = path.join(projectPath, "src");
-const outputDirPath = path.join(projectPath, "dist");
+const outputDirPath = path.join(projectPath, "build");
+const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
+
+if (nodejsVersion < 7) {
+  console.log(
+    "当前nodejs版本为 " +
+      chalk.red(process.version) +
+      ", 请保证 >= " +
+      chalk.bold("7")
+  );
+}
 
 const ignoreStyles = function() {
   return {
@@ -38,7 +46,6 @@ const ignoreStyles = function() {
 class Parser {
   constructor(tPath) {
     this.path = tPath;
-    console.log("tPath",tPath)
     this.inputOptions = {
       input: path.resolve(this.path),
       plugins: [
@@ -47,9 +54,8 @@ class Parser {
           exclude: ["node_modules/**"],
           babelrc: false,
           runtimeHelpers: true,
-          presets: ["react","stage-0"],
+          presets: ["react"],
           plugins: [
-          
             "transform-object-rest-spread",
             "transform-class-properties",
             ignoreStyles
@@ -57,8 +63,7 @@ class Parser {
         })
       ]
     };
-    this.output = path.resolve("./build");
-  
+    this.output = outputDirPath;
   }
 
   async parse() {
@@ -69,7 +74,6 @@ class Parser {
     ) {
       //忽略 rollupPluginBabelHelpers
       if (!/rollup/.test(id)) {
-        console.log(id)
         collect.push({
           id: id,
           code: originalCode,
@@ -106,12 +110,11 @@ class Parser {
     //类库
     if (/wechat\.js/.test(destPath)) return;
     await fs.ensureFile(path.resolve(destPath));
-
     const output = transform(code, sourcePath, destPath, dependencies);
     const srcBasePath = id.replace(".js", "");
     const basePath = destPath.replace(".js", "");
     //生成JS与JSON
-  
+
     if (/Page|App|Component/.test(output.type)) {
       fs.writeFile(destPath, output.js, () => {});
       fs.writeFile(basePath + ".json", JSON.stringify(output.json), () => {});
@@ -144,8 +147,7 @@ async function build() {
     // 暂时关闭watch方便开发
     // parser.watch('./src')
   } catch (e) {
-  
-  //  console.log(chalk.redBright(e));
+    console.log(chalk.redBright(e));
     console.log(e);
   }
 }

@@ -130,7 +130,6 @@ class MapVisitor {
       },
       JSXOpeningElement: {
         enter(path) {
-          // console.log(path.parent);
           const tag = path.parent.openingElement.name.name;
 
           // TODO 处理key

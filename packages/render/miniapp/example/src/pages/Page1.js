@@ -6,6 +6,7 @@ const e = "e";
 
 class P extends Page {
   constructor(props) {
+    super(props);
     this.state = {
       items: ["hello"],
       name: {
@@ -45,3 +46,29 @@ class P extends Page {
     );
   }
 }
+
+
+/*
+
+class P extends Page {
+  constructor(props) {
+    this.state = {
+    };
+    // this.state.name = { a: {}}
+    this.state.name.a.b = "s"; // fine
+    this.state.name.ab = "me"; // bug1
+    this.state.n = "n"; // bug2
+  }
+}
+
+function onInit(config){
+  if(config.hasOwnProperty("constructor")){
+    config.constructor.call(config)
+  }
+  config.data = obj.state;
+  return config;
+}
+
+Page(onInit({}))
+
+*/

@@ -28,9 +28,8 @@ function transform(code, sourcePath) {
      // 'syntax-jsx', 
       "transform-react-jsx",
       'transform-decorators-legacy',
-       transformPlugin, 
       'transform-object-rest-spread',  
-    
+      transformPlugin, 
     ]
   })
   // tranform后, 结果都会写入sharedState.output
