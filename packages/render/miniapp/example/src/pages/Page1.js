@@ -18,10 +18,16 @@ class P extends Page {
     this.state.name.ab = "me"; // bug1
     this.state.n = "n"; // bug2
   }
-
+  
   onClick() {
     console.log("test click1" + e);
-    this.setData({
+    var _this = this;
+    setTimeout(function(){
+      _this.setState({});
+    })
+   
+
+    this.setState({
       arr: [
         [{ id: 3 }, { id: 4 }],
         [{ id: 3 }, { id: 4 }],

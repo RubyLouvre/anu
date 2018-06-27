@@ -10,3 +10,8 @@ module.exports = function(api) {
     visitor: Object.assign({}, visitor, visitJsx)
   };
 }
+
+// https://github.com/NervJS/taro/tree/master/packages/taro-cli
+// https://blog.csdn.net/liangklfang/article/details/54879672
+// https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
+// https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/README.md

@@ -1,7 +1,4 @@
 //由于运行于nodejs环境，只能用require组织模块，并保证nodejs版本大于7
-// https://github.com/NervJS/taro/tree/master/packages/taro-cli
-// https://blog.csdn.net/liangklfang/article/details/54879672
-// https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
 
 const rollup = require("rollup");
 const resolve = require("rollup-plugin-node-resolve");
