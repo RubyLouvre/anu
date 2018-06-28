@@ -2,7 +2,7 @@
  * @Author: hibad 
  * @Date: 2018-06-24 10:36:07 
  * @Last Modified by: hibad
- * @Last Modified time: 2018-06-24 22:55:01
+ * @Last Modified time: 2018-06-28 22:53:17
  */
 const t = require("babel-types");
 const generate = require("babel-generator").default;
@@ -82,7 +82,7 @@ var ClassDeclaration = {
 
 function getJSX(path) {
   const jsx = path.node.body.body.find(i => i.type === "ReturnStatement");
-  if (jsx && jsx.argument.type === "JSXElement") {
+  if (jsx && t.isJSXElement(jsx.argument)) {
     return jsx.argument;
   }
 }
@@ -104,7 +104,7 @@ module.exports = {
       let fn;
       if (methodName === "render") {
         //获取一个提示用的函数
-        var fn2 = template(`a = function(){
+        const fn2 = template(`a = function(){
           console.log("render方法已经抽取成wxml文件")
         }`)({});
         fn = t.ObjectProperty(t.identifier(methodName), fn2.expression.right);
@@ -128,7 +128,7 @@ module.exports = {
       const methodName = path.node.key.name;
       if (methodName === "render") {
         //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
-        var jsx = getJSX(path);
+        const jsx = getJSX(path);
         if (jsx) {
           parseJSX(jsx);
         } else {
@@ -140,7 +140,7 @@ module.exports = {
   },
   FunctionDeclaration(path) {
     if (path.node.id.name === "B") {
-      var jsx = getJSX(path);
+      const jsx = getJSX(path);
       if (jsx) {
         parseJSX(jsx);
         sharedState.output.type = "Component";
