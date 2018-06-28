@@ -12,7 +12,7 @@ module.exports = function(path) {
     case "StringLiteral": // "string"
     case "BinaryExpression": // 1+ 2
     case "Identifier": // kkk undefined
-    case "NullLiteral":
+    case "NullLiteral": // null
     case "BooleanLiteral":
       if (isEvent) {
         throwEventValue(attrName, attrValue);
@@ -20,29 +20,29 @@ module.exports = function(path) {
       replaceWithExpr(path, attrValue);
       break;
     case "MemberExpression":
-      replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""));
+      replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""), isEvent);
       break;
     case "CallExpression":
       if (isEvent) {
         var match = attrValue.match(/this\.(\w+)\.bind/);
         if (match && match[1]) {
-          replaceWithExpr(path, match[1]);
+          replaceWithExpr(path, match[1], true);
         } else {
           throwEventValue(attrName, attrValue);
         }
       } else {
-        replaceWithExpr(path, attrValue);
+         replaceWithExpr(path, attrValue);
       }
       break;
     case "ObjectExpression":
       if (attrName === "style") {
         var styleValue = expr.properties
           .map(function(node) {
-            console.log(generate(node).code);
+             return generate(node).code;
           })
           .join(" ;");
-        replaceWithExpr(path, styleValue);
-        console.log(expr.properties);
+        //  path.replaceWith(t.stringLiteral(`{{${value}}`));
+        replaceWithExpr(path, styleValue, true);
       } else if (isEvent) {
         throwEventValue(attrName, attrValue);
       }
@@ -55,6 +55,7 @@ function throwEventValue(attrName, attrValue) {
     但现在的值是${attrValue}`;
 }
 
-function replaceWithExpr(path, value) {
-  path.replaceWith(t.stringLiteral(`{{${value}}`));
+function replaceWithExpr(path, value,noBracket ) {
+  var v = noBracket ? value : "{{"+ value+"}}"
+  path.replaceWith(t.stringLiteral(v));
 }
