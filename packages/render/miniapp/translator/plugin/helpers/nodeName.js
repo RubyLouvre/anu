@@ -1,9 +1,9 @@
 
 let rword = /[^, ]+/g;
 
-var builtInStr = "view,text,button,scroll-view,swiper,movable-view,cover-view,icon,rich-text,"+
-"progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,"+
-"navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view"+
+var builtInStr = "view,text,button,block,scroll-view,swiper,movable-view,cover-view,icon,rich-text,"+
+"progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,template,"+
+"navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,"+
 "slot"
 var builtIn = {}
 builtInStr.replace(rword, function(el){
@@ -14,7 +14,7 @@ var map = Object.assign({}, builtIn)
   map[el] = "view"
 });
 "span,b,s,code,quote,cite".replace(rword,function(el){
-  map[el] = "span"
+  map[el] = "text"
 })
 
 

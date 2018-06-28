@@ -260,6 +260,8 @@ module.exports = {
     exit(path) {
       if (t.isJSXAttribute(path.parent)) {
         helpers.attrValue(path);
+      }else if(path.node.expression.type === "ConditionalExpression"){
+        helpers.condition(path);
       }
     }
   }
