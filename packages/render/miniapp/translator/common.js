@@ -1,13 +1,11 @@
 /*
- * @Author: hibad 
- * @Date: 2018-06-24 10:36:22 
- * @Last Modified by:   hibad 
- * @Last Modified time: 2018-06-24 10:36:22 
+ * 这个文件以后也会删掉
  */
 const t = require('babel-types');
 const generate = require('babel-generator').default;
 const traverse = require('babel-traverse').default
 const chalk = require('chalk').default;
+//下面三个都变删了
 const WXML_EVENTS = require('./wx/events');
 const wxTags = require('./tag');
 const parseCode = require('./utils').parseCode

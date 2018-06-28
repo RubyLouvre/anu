@@ -13,7 +13,7 @@ class Comp extends Component {
   
   render(){
     return <div onTap={this.onTap} style={{font:111, xxx:333}} onClick={this.onClick.bind(this)} 
-          className="xxx">33{
+          className="xxx">3333{
            this.props.children
           }</div>
   }

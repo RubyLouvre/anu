@@ -8,10 +8,10 @@
 const traverse = require('babel-traverse').default
 const generate = require('babel-generator').default
 const babel = require('babel-core')
-var t = require('babel-types');
-const transformPlugin = require('./plugin/index');
-const sharedState = require('./plugin/sharedState');
-const parseCode = require('./plugin/utils').parseCode;
+const t = require('babel-types');
+const transformPlugin = require('./plugin');
+const sharedState = require('./sharedState');
+//const parseCode = require('./plugin/utils').parseCode;
 
 function transform(code, sourcePath) {
   let output = {
@@ -41,6 +41,6 @@ function transform(code, sourcePath) {
 }
 
 module.exports = {
-  transform,
-  parseCode
+  transform
+ // parseCode
 }

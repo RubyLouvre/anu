@@ -1,12 +1,7 @@
-/*
- * @Author: hibad 
- * @Date: 2018-06-24 10:36:07 
- * @Last Modified by: hibad
- * @Last Modified time: 2018-06-24 22:55:01
- */
+
 const t = require("babel-types");
 const generate = require("babel-generator").default;
-const prettifyXml = require("./utils").prettifyXml;
+const prettifyXml = require('prettify-xml');
 const nPath = require("path");
 const fs = require("fs-extra");
 const template = require("babel-template");
@@ -80,6 +75,8 @@ var ClassDeclaration = {
     }
 };
 
+
+
 function getJSX(path) {
     const jsx = path.node.body.body.find(i => i.type === "ReturnStatement");
     if (jsx && jsx.argument.type === "JSXElement") {
@@ -90,7 +87,7 @@ function getJSX(path) {
 function parseJSX(path) {
     // TODO 使用Dom el转换,而不是直接用小程序el转换
     const wxml = generate(path).code;
-    sharedState.output.wxml = prettifyXml(wxml);
+    sharedState.output.wxml = prettifyXml(wxml, { indent: 2 });
 }
 
 module.exports = {
