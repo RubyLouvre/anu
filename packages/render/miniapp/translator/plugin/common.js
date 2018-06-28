@@ -9,7 +9,7 @@ const generate = require('babel-generator').default;
 const traverse = require('babel-traverse').default
 const chalk = require('chalk').default;
 const WXML_EVENTS = require('./wx/events');
-const wxTags = require('./wx/tag');
+const wxTags = require('./tag');
 const parseCode = require('./utils').parseCode
 
 let cache = {};
@@ -156,7 +156,7 @@ class MapVisitor {
     }
   }
 }
-
+console.log("++++++++++")
 const common = {
   convertJSXOpeningElement: function(path) {
     path.node.name = t.identifier(wxTags[path.node.name.name]);

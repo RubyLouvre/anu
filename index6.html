@@ -48,53 +48,34 @@
 				console.log(a)
 			}
 		}
-		const log = [];
-
-const Component = createReactClass({
-		mixins: [
-				{
-						componentWillMount: function () {
-								log.push('componentWillMount');
-						},
-						componentWillReceiveProps: function () {
-								log.push('componentWillReceiveProps');
-						},
-						componentWillUpdate: function () {
-								log.push('componentWillUpdate');
-						},
-				},
-		],
-		displayName: "Ctt",
-		UNSAFE_componentWillMount: function () {
-				log.push('UNSAFE_componentWillMount');
-		},
-		UNSAFE_componentWillReceiveProps: function () {
-				log.push('UNSAFE_componentWillReceiveProps');
-		},
-		UNSAFE_componentWillUpdate: function () {
-				log.push('UNSAFE_componentWillUpdate');
-		},
-		render: function () {
-				return null;
-		},
-});
-
-const div = document.createElement('div');
-var a = ReactDOM.render(<Component foo="bar" />, div);
-console.log(a)
-expect(log).toEqual(['componentWillMount',
-		'UNSAFE_componentWillMount'
-]);
-
-log.length = 0;
-
-ReactDOM.render(<Component foo="baz" />, div);
-expect(log).toEqual([
-		'componentWillReceiveProps',
-		'UNSAFE_componentWillReceiveProps',
-		'componentWillUpdate',
-		'UNSAFE_componentWillUpdate',
-]);
+const log = [];
+var PropTypes = React.PropTypes;
+const propTypes = {
+    text: PropTypes.string,
+    show: PropTypes.bool,
+    shadeIsShow: PropTypes.bool
+};
+const defaultProps = {
+    text: '拼命加载中...',
+    img: './img/loading.gif',
+    shadeIsShow: true
+};
+var style = {}
+function Loading(props) {
+   const {text, img, show} = props;
+    return (
+        <div className={style['loading']} style={{display: show ? 'block' : 'none'}}>
+            {props.shadeIsShow?<div className={style['cover']}/>:''}
+           <div className={style['info']}>
+               <img src={img}/>
+                <p>{text}</p>
+           </div>
+        </div>
+    )
+}
+Loading.propTypes = propTypes;
+Loading.defaultProps = defaultProps;
+ReactDOM.render(<Loading show={true}/>, container)
 
 
 		//log.length = 0;

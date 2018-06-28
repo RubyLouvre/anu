@@ -1,4 +1,7 @@
 module.exports = {
     state: require("./state"),
-    defaultProps: require("./defaultProps")
+    defaultProps: require("./defaultProps"),
+    nodeName: require("./nodeName"),
+    attrName: require("./attrName"),
+    attrValue: require("./attrValue"),
 }
