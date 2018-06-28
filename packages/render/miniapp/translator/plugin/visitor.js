@@ -256,12 +256,15 @@ module.exports = {
                 helpers.attrValue(path);
             } else if (expr.type === "ConditionalExpression") {
                 helpers.condition(path, expr.test, expr.consequent, expr.alternate);
-            } else if (path.node.expression.type === "LogicalExpression" &&
-                path.node.expression.operator === "&&" && path.node.expression.right.type == "JSXElement"
+            } else if (expr.type === "LogicalExpression" &&
+                expr.operator === "&&" && expr.right.type == "JSXElement"
             ) {
-              helpers.condition(path, expr.left, expr.right);
-                //{ xxx && <div />}
-                console.log(path.node)
+                helpers.condition(path, expr.left, expr.right);
+            } else if (expr.type === "MemberExpression" &&
+                generate(expr).code === "this.props.children"
+            ) {
+                var children = t.JSXOpeningElement(t.JSXIdentifier('slot'), [], true);
+                path.replaceWith(children);
             }
         }
     }
