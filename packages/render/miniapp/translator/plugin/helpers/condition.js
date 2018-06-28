@@ -1,25 +1,19 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 
-module.exports = function condition(path) {
-    var node = path.node.expression
-    var config = {
-        test: generate(node.test).code,
-        consequent: generate(node.consequent).code,
-        alternate: generate(node.alternate).code,
-    }
-   
+module.exports = function condition(path, test , consequent, alternate ) {
+    //var node = path.node.expression
     var ifAttr = t.JSXAttribute(t.JSXIdentifier('wx:if'),
-        t.stringLiteral(`{{${generate(node.test).code}}}`))
+        t.stringLiteral(`{{${generate(test).code}}}`))
     
     var ifNode = t.JSXElement(t.JSXOpeningElement(t.JSXIdentifier("block"), [ifAttr], false),
-        t.jSXClosingElement(t.JSXIdentifier("block")), [wrapText(node.consequent)])
+        t.jSXClosingElement(t.JSXIdentifier("block")), [wrapText(consequent)])
     var args = [ifNode]
-    if (node.alternate.type !== "NullLiteral") {
+    if (alternate && alternate.type !== "NullLiteral") {
         var elseAttr = t.JSXAttribute(t.JSXIdentifier('wx:else'),
             t.stringLiteral("true"))
         var elseNode = t.JSXElement(t.JSXOpeningElement(t.JSXIdentifier("block"), [elseAttr], false),
-            t.jSXClosingElement(t.JSXIdentifier("block")), [wrapText(node.alternate)])
+            t.jSXClosingElement(t.JSXIdentifier("block")), [wrapText(alternate)])
         args.push(elseNode)
     }
 
