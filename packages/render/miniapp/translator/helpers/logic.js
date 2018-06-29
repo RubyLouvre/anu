@@ -9,6 +9,7 @@ function wrapText(node) {
 }
 
 function logic(expr) {
+  //处理条件指令
   if (expr.type === "ConditionalExpression") {
     return condition(expr.test, expr.consequent, expr.alternate);
   } else if (expr.type === "LogicalExpression" && expr.operator === "&&") {
@@ -29,8 +30,11 @@ function logic(expr) {
       throw generate(expr.callee.object).code +
         ".map 后面的必须跟匿名函数或一个函数调用";
     }
-  } else {
+  } else if(expr.type === "JSXElement"){
+      return expr
     // 其他情况
+  }else {
+   // console.log(expr);
   }
 }
 //处理test ? consequent: alternate 或 test && consequent

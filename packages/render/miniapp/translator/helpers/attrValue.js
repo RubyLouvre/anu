@@ -31,17 +31,20 @@ module.exports = function(path) {
           throwEventValue(attrName, attrValue);
         }
       } else {
-         replaceWithExpr(path, attrValue);
+        replaceWithExpr(path, attrValue);
       }
       break;
     case "ObjectExpression":
       if (attrName === "style") {
         var styleValue = expr.properties
           .map(function(node) {
-             return generate(node).code;
+            return hyphen(node.key.name) +
+              ": " +
+             ( /Expression|Identifier/.test(node.value.type)
+              ? `{{${generate(node.value).code}}}`
+              : node.value.value);
           })
           .join(" ;");
-        //  path.replaceWith(t.stringLiteral(`{{${value}}`));
         replaceWithExpr(path, styleValue, true);
       } else if (isEvent) {
         throwEventValue(attrName, attrValue);
@@ -50,12 +53,17 @@ module.exports = function(path) {
   }
 };
 
+function hyphen(target) {
+  //转换为下划线风格
+  return target.replace(/([a-z\d])([A-Z]+)/g, "$1-$2").toLowerCase();
+}
+
 function throwEventValue(attrName, attrValue) {
   throw `${attrName}的值必须是一个函数名，如this.xxx或this.xxx.bind(this),
     但现在的值是${attrValue}`;
 }
 
-function replaceWithExpr(path, value,noBracket ) {
-  var v = noBracket ? value : "{{"+ value+"}}"
+function replaceWithExpr(path, value, noBracket) {
+  var v = noBracket ? value : "{{" + value + "}}";
   path.replaceWith(t.stringLiteral(v));
 }
