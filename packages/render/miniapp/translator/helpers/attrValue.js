@@ -52,10 +52,10 @@ module.exports = function(path) {
       break;
   }
 };
-
+var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
   //转换为连字符风格
-  return target.replace(/([a-z\d])([A-Z]+)/g, "$1-$2").toLowerCase();
+  return target.replace(rhyphen, "$1-$2").toLowerCase();
 }
 
 function throwEventValue(attrName, attrValue) {

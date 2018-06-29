@@ -99,6 +99,7 @@ class Parser {
     //生成文件
     let sourcePath = id;
     let srcPath = id.replace(sourceDirPath, "");
+    console.log("id", srcPath)
     if (/node_modules/.test(srcPath)) {
       srcPath = srcPath.replace(path.resolve("node_modules"), "");
       srcPath = `nodeModules${srcPath}`;

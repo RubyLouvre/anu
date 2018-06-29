@@ -196,6 +196,7 @@ module.exports = {
   },
   ImportDeclaration(path) {
     const source = path.node.source.value;
+    console.log("当前目", sharedState.sourcePath)
     if (/wechat/.test(source)) {
     } else if (/pages/.test(source)) {
       const pagePath = source.replace("./", "");

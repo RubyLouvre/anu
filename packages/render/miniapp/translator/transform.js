@@ -11,6 +11,7 @@ const babel = require('babel-core')
 const t = require('babel-types');
 const transformPlugin = require('./plugin');
 const sharedState = require('./sharedState');
+let modules = require('./modules');
 //const parseCode = require('./plugin/utils').parseCode;
 
 function transform(code, sourcePath) {
