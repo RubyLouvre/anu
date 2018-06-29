@@ -1,14 +1,16 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
+const wrapText = require("./wrapText");
 
-module.exports = function loop(path, fn) {
-  var expr = path.node.expression;
+module.exports = function loop(path, callee, fn) {
+  // var isPath = !!path.parentPath
+  // var expr = path.node.expression;
 
   var attrs = [];
   attrs.push(
     t.JSXAttribute(
       t.JSXIdentifier("wx:for"),
-      t.stringLiteral(`{{${generate(expr.callee.object).code}}}`)
+      t.stringLiteral(`{{${generate(callee.object).code}}}`)
     )
   );
   attrs.push(
@@ -26,21 +28,30 @@ module.exports = function loop(path, fn) {
     );
   }
 
-
-  console.log(fn.body);
-
   var loopNode = t.JSXElement(
     t.JSXOpeningElement(t.JSXIdentifier("block"), attrs, false),
     t.jSXClosingElement(t.JSXIdentifier("block")),
     []
   );
 
-  path.replaceWith(loopNode);
-};
-//确保是文本节点，用JSXText包一下
-function wrapText(node) {
-  if (node.type !== "JSXElement") {
-    return t.JSXText(generate(node).code);
+  var body = fn.body.body.find(i => i.type === "ReturnStatement");
+  if (body) {
+    if (body.argument.type === "CallExpression") {
+      console.log(body.argument.callee);
+      var innLoop = loop(
+        {
+          replaceWith: function() {}
+        },
+        body.argument.callee,
+        body.argument.arguments[0]
+      );
+      loopNode.children.push(innLoop);
+    } else {
+      // console.log(body.argument.type)
+      loopNode.children.push(wrapText(body.argument));
+    }
   }
-  return node;
-}
+
+  path.replaceWith(loopNode);
+  return loopNode;
+};
