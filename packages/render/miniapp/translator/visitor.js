@@ -208,7 +208,7 @@ module.exports = {
         sharedState.importedComponent[componentName] = source;
       }
     } else if (/.css/.test(source)) {
-      loadCSSFromFile(nPath.resolve(sharedState.sourcePath, "..", source));
+      helpers.styles(source);
     }
     path.remove();
   },

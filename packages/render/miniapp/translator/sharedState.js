@@ -22,6 +22,9 @@ class SharedState {
     this.unRecognizeImportedModule = {}; //存储非Component的依赖
     this.importedComponent = {}; //导入的组件
     this.sourcePath = ""; //当前文件路径, 用于css抽取
+    this.projectConf = {
+      styleConf: {} // **请勿重置
+    }
   }
 
   reset() {
