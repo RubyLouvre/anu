@@ -7,7 +7,7 @@ const chalk = require("chalk");
 const path = require("path");
 const wt = require("wt");
 const fs = require("fs-extra");
-const transform = require("./transform").transform;
+const transform = require("./transform");
 
 let entryFolder = path.resolve(__dirname, "../example");
 //const projectPath = process.cwd();
@@ -99,7 +99,6 @@ class Parser {
     //生成文件
     let sourcePath = id;
     let srcPath = id.replace(sourceDirPath, "");
-    console.log("id", srcPath)
     if (/node_modules/.test(srcPath)) {
       srcPath = srcPath.replace(path.resolve("node_modules"), "");
       srcPath = `nodeModules${srcPath}`;
@@ -108,13 +107,13 @@ class Parser {
     //类库
     if (/wechat\.js/.test(destPath)) return;
     await fs.ensureFile(path.resolve(destPath));
-    const output = transform(code, sourcePath, destPath, dependencies);
+    const output = transform(code, sourcePath);
     const srcBasePath = id.replace(".js", "");
     const basePath = destPath.replace(".js", "");
     //生成JS与JSON
     if (/Page|App|Component/.test(output.type)) {
       fs.writeFile(destPath, output.js, () => {});
-      fs.writeFile(basePath + ".json", JSON.stringify(output.json), () => {});
+      fs.writeFile(basePath + ".json", JSON.stringify(output.json || {}), () => {});
     }
     //生成wxml与wxss
     if (/Page|Component/.test(output.type)) {

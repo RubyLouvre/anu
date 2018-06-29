@@ -5,5 +5,7 @@ module.exports = {
     attrName: require("./attrName"),
     attrValue: require("./attrValue"),
     logic: require("./logic"),
-    styles: require('./styles')
+    render: require("./render"),
+    method: require("./method"),
+    //styles: require('./styles')
 }

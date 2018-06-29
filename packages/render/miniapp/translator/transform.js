@@ -22,7 +22,10 @@ function transform(code, sourcePath) {
     json:'',
     type:''//App||page||component
   }
-  sharedState.sourcePath = sourcePath;
+  modules.current = sourcePath.replace(process.cwd(),"")
+  var ret = modules[modules.current] = {
+    useComponents: {}
+  }
   const result = babel.transform(code, {
     babelrc: false,
     plugins: [
@@ -33,15 +36,9 @@ function transform(code, sourcePath) {
       transformPlugin, 
     ]
   })
-  // tranform后, 结果都会写入sharedState.output
-  output = sharedState.output;
-  output.js = result.code;
-  sharedState.reset();
-
-  return output;
+  ret.js = result.code;
+  modules.reset();
+  return ret;
 }
 
-module.exports = {
-  transform
- // parseCode
-}
+module.exports = transform
