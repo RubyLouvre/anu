@@ -247,16 +247,6 @@ module.exports = {
       var expr = path.node.expression;
       if (t.isJSXAttribute(path.parent)) {
         helpers.attrValue(path);
-      } else if (expr.type === "ConditionalExpression") {
-        console.log(t.isConditionalExpression(expr));
-        helpers.condition(path, expr.test, expr.consequent, expr.alternate);
-      } else if (
-        expr.type === "LogicalExpression" &&
-        expr.operator === "&&" &&
-        expr.right.type == "JSXElement"
-      ) {
-        //将 ｛xxx && <jsx />｝ 转换成 <block wx:if="{{xxx}}"><jsx /></block>
-        helpers.condition(path, expr.left, expr.right);
       } else if (
         expr.type === "MemberExpression" &&
         generate(expr).code === "this.props.children"
@@ -264,21 +254,14 @@ module.exports = {
         //将 {this.props.children} 转换成 <slot />
         var children = t.JSXOpeningElement(t.JSXIdentifier("slot"), [], true);
         path.replaceWith(children);
-      } else if (
-        expr.type === "CallExpression" &&
-        expr.callee.property.name === "map"
-      ) {
-          //处理列表指令
-        if (expr.arguments.type === "ArrowFunctionExpression") {
-          helpers.loop(path, expr.callee, expr.arguments);
-        } else if (
-          expr.arguments[0] &&
-          expr.arguments[0].type === "FunctionExpression"
-        ) {
-          helpers.loop(path, expr.callee, expr.arguments[0]);
-        } else {
-          throw generate(expr.callee.object).code +
-            ".map 后面的必须跟匿名函数或一个函数调用";
+      } else {
+        var block = helpers.logic(expr);
+        if (block) {
+          if (Array.isArray(block)) {
+            path.replaceWithMultiple(block);
+          } else {
+            path.replaceWith(block);
+          }
         }
       }
     }

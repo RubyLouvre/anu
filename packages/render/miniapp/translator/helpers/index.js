@@ -4,7 +4,6 @@ module.exports = {
     nodeName: require("./nodeName"),
     attrName: require("./attrName"),
     attrValue: require("./attrValue"),
-    condition: require("./condition"),
-    loop: require("./loop"),
+    logic: require("./logic"),
 
 }
