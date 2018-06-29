@@ -29,9 +29,11 @@
 >
 > onClick: "bindtap",
 - [x] `style＝{{a:1,b:2,c:3}}` 转换成 `style="a:1; b:2; c: 3"`;
-- [x] `{ aaa ? bbb: ccc }` 转换成两个block元素，如`<block wx:if="{{aaa}}">bbb</block><block wx:else="true">ccc</block>`
+- [x] `{ aaa ? bbb: ccc }` 转换成3个block元素，如`<block><block wx:if="{{aaa}}">bbb</block><block wx:else="true">ccc</block></block>`
 - [x] `{ aaa && bbb }` 转换成1个block元素，如`<block wx:if="{{aaa}}">bbb</block>`
 - [x] `{ this.props.children }` 转换成`<slot />`
+- [x] `{ array.map(function(el, index){}) }` 转换成`<block wx:for="{{arrat}}" wx:for-item="el" wx:for-item="index" >...</block>`
+- [x]  if语句里面可以循环与其他if，map语句中可以加if语句与return**子元素的map数组**
 - [x] `xxx={ this.vvv }`, `yyy={this.aaa.bbb}` 转换成 `xxx="{{vvv}}"`,`yyy="{{aaa.bbb}}"`
 - [x] 类声明转换为小程序式的函数调用，并使用onInit方法劫持constructor，去掉里面的super语句
 ```javascript

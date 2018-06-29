@@ -133,7 +133,6 @@ module.exports = {
     }
   },
   FunctionDeclaration(path) {
-    // if (path.node.id.name === "B") {
     var jsx = getJSX(path);
     if (jsx) {
       //这是无状态组件
@@ -144,7 +143,6 @@ module.exports = {
       );
       path.replaceWith(call);
     }
-    // }
   },
   ClassProperty(path) {
     //只处理静态属性

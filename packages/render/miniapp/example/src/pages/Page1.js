@@ -45,7 +45,7 @@ class P extends Page {
         威武
         {this.state.arr.map(function(item, index) {
           return item.map(function(item2, index2) {
-            return <div>{item2.id}</div>;
+            return index2 ==1 ? <div>{item2.id}</div>: false
           });
         })}
         <p>其他元素</p>
