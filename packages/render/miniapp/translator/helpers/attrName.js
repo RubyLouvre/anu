@@ -29,6 +29,5 @@ module.exports = function mapPropName(path) {
           path.node.name.name = "class"
        }
     }
-    
 };
   
