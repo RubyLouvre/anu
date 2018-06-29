@@ -11,55 +11,6 @@ const wxTags = require('./tag');
 const parseCode = require('./utils').parseCode
 
 let cache = {};
-function assembleMapTag(tagName,fo, forItem, forIndex, nextNode) {
-  const attrs = [
-    t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${fo}}}`)),
-    t.JSXAttribute(t.JSXIdentifier('wx:for-item'), t.stringLiteral(`${forItem}`)),
-  ]
-  if (forIndex) 
-    attrs.push(t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${forIndex}`)));
-  
-  const jsxOpening = t.JSXOpeningElement(t.JSXIdentifier(tagName), attrs);
-  const jsxClosing = t.JSXClosingElement(t.JSXIdentifier(tagName));
-  let children = null;
-  if (t.isCallExpression(nextNode)) { //
-    children = recursivelyAssembleMapTag(nextNode);
-  } else {  //JSX
-    children = nextNode;
-  }
-  
-  const jsxElement = t.JSXElement(jsxOpening, jsxClosing,[children]);
-
-  return jsxElement;
-}
-
-/**
- * 递归遍历 callExpression
- * 层级结构为 callExpression => arguments<FunctionExpression> 
- *            => body<BlockStatement> => body[0]<ReturnStatement>
- *            => argment<CallExpression || JSXElement>
- * @param {*} callExpressionNode 
- */
-function recursivelyAssembleMapTag(callExpressionNode, rootConfig) {
-  if (callExpressionNode.callee.property.name !== 'map') {
-    console.log(`react-miniapp暂不支持除了map以外的渲染函数`);
-  }
-  const varibleName = rootConfig? rootConfig.rootVarName : callExpressionNode.callee.object.name;
-  const item = rootConfig? rootConfig.root1stParamName  // wx-for-item= ? (default item)
-                : callExpressionNode.arguments[0].params[0].name; 
-  const index = callExpressionNode.arguments[0].params[1]? // wx-for-index= ? (default index)
-                  callExpressionNode.arguments[0].params[1] : 'index';
-  const indexName = rootConfig ? rootConfig.rootIndex : index;
-  const jsxElement = assembleMapTag(
-    'block',
-    varibleName, 
-    item,
-    indexName,
-    callExpressionNode.arguments[0].body.body[0].argument
-  );
-
-  return jsxElement;
-}
 
 class MapVisitor {
   /**
@@ -74,6 +25,77 @@ class MapVisitor {
    */
   constructor(config) {
     this.config = Object.assign({}, config);
+    this.indexStack = [];
+    this.i = 0;
+    this.assembleMapTag = this.assembleMapTag.bind(this);
+    this.recursivelyAssembleMapTag = this.recursivelyAssembleMapTag.bind(this);
+  }
+
+  /**
+   * 递归遍历 callExpression
+   * 层级结构为 callExpression => arguments<FunctionExpression> 
+   *            => body<BlockStatement> => body[0]<ReturnStatement>
+   *            => argment<CallExpression || JSXElement>
+   * @param {*} callExpressionNode 
+   */
+  recursivelyAssembleMapTag(callExpressionNode, rootConfig) {
+    if (callExpressionNode.callee.property.name !== 'map') {
+      console.log(`react-miniapp暂不支持除了map以外的渲染函数`);
+    }
+    const varibleName = rootConfig? rootConfig.rootVarName : callExpressionNode.callee.object.name;
+    const item = rootConfig? rootConfig.root1stParamName  // wx-for-item= ? (default item)
+                  : callExpressionNode.arguments[0].params[0].name; 
+    const index = callExpressionNode.arguments[0].params[1]? // wx-for-index= ? (default index)
+                    callExpressionNode.arguments[0].params[1] : this.indexStack.pop();
+    const indexName = callExpressionNode.arguments[0].params[1]? 
+                          callExpressionNode.arguments[0].params[1].name : 
+                          index;
+    const jsxElement = this.assembleMapTag(
+      'block',
+      varibleName, 
+      item,
+      indexName,
+      callExpressionNode.arguments[0].body.body[0].argument
+    );
+
+    return jsxElement;
+  }
+
+
+  assembleMapTag(tagName,fo, forItem, forIndex, nextNode) {
+    const attrs = [
+      t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${fo}}}`)),
+      t.JSXAttribute(t.JSXIdentifier('wx:for-item'), t.stringLiteral(`${forItem}`)),
+    ]
+    if (forIndex) 
+      attrs.push(t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${forIndex}`)));
+    
+    const jsxOpening = t.JSXOpeningElement(t.JSXIdentifier(tagName), attrs);
+    const jsxClosing = t.JSXClosingElement(t.JSXIdentifier(tagName));
+    let children = null;
+    if (t.isCallExpression(nextNode)) { //
+      children = this.recursivelyAssembleMapTag(nextNode);
+    } else {  //JSX
+      children = nextNode;
+    }
+    
+    const jsxElement = t.JSXElement(jsxOpening, jsxClosing,[children]);
+  
+    return jsxElement;
+  }
+
+  generateIndex(path){
+    // 生成 index n 以循环层级为后缀
+    let fnIndex = "index" + (this.i++ === 0? '': this.i);
+    path.node.params.forEach((arg, index) => {
+      if (index === 0) {
+        this.item = generate(arg).code;
+      } else if (index === 1){
+        // self.index = generate(arg).code;
+        fnIndex = generate(arg).code
+      }
+    })
+    this.indexStack.push(fnIndex)
   }
 
   visitor() {
@@ -104,7 +126,7 @@ class MapVisitor {
               if (path.node.argument.callee.property.name !== 'map') {
                 console.log(`react-miniapp暂不支持除了map以外的渲染函数`);
               } 
-              const result = recursivelyAssembleMapTag(path.node.argument,self.config);
+              const result = self.recursivelyAssembleMapTag(path.node.argument,self.config);
               path.node.argument = result;
             }
             // return <div/>
@@ -115,16 +137,10 @@ class MapVisitor {
         }
       },
       FunctionExpression(path) {
-        path.node.params.forEach((arg, index) => {
-          if (index === 0) self.item = generate(arg).code;
-          if (index === 1) self.index = generate(arg).code;
-        })
+        self.generateIndex(path);
       },
       ArrowFunctionExpression(path) {
-        path.node.params.forEach((arg, index) => {
-          if (index === 0) self.item = generate(arg).code;
-          if (index === 1) self.index = generate(arg).code;
-        })
+        self.generateIndex(path);
       },
       JSXOpeningElement: {
         enter(path) {
@@ -134,7 +150,7 @@ class MapVisitor {
           const jsx = t.JSXOpeningElement(t.JSXIdentifier(wxTags[tag]),[
             t.JSXAttribute(t.JSXIdentifier('wx:for'), t.stringLiteral(`{{${self.object}}}`)),
             t.JSXAttribute(t.JSXIdentifier('wx:for-item'), t.stringLiteral(`${self.item}`)),
-            t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${self.index || 'index'}`)),
+            t.JSXAttribute(t.JSXIdentifier('wx:for-index'), t.stringLiteral(`${self.indexStack.pop()}`)),
           ]);
   
           path.parent.openingElement = jsx;
