@@ -111,7 +111,6 @@ class Parser {
     const srcBasePath = id.replace(".js", "");
     const basePath = destPath.replace(".js", "");
     //生成JS与JSON
-console.log(output.type, "+++++++")
     if (/Page|App|Component/.test(output.type)) {
       fs.writeFile(destPath, output.js, () => {});
       fs.writeFile(basePath + ".json", JSON.stringify(output.json), () => {});

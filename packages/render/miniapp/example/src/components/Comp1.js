@@ -13,8 +13,10 @@ class Comp extends Component {
   
   render(){
     return <div onTap={this.onTap} style={{font:111, xxx:333}} onClick={this.onClick.bind(this)} 
-          className="xxx">33{
-            1+1 ==2 ? <span>222</span>: 111
+          className="xxx">{
+          [11,222,333].map(function(el){
+             return el
+          })
           }</div>
   }
 }
