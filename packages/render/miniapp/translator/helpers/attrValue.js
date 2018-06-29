@@ -54,7 +54,7 @@ module.exports = function(path) {
 };
 
 function hyphen(target) {
-  //转换为下划线风格
+  //转换为连字符风格
   return target.replace(/([a-z\d])([A-Z]+)/g, "$1-$2").toLowerCase();
 }
 
