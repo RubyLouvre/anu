@@ -5,4 +5,6 @@ module.exports = {
     attrName: require("./attrName"),
     attrValue: require("./attrValue"),
     condition: require("./condition"),
+    loop: require("./loop"),
+
 }
