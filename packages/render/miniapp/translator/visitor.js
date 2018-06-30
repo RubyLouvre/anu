@@ -39,7 +39,7 @@ var ClassDeclaration = {
             var componentType = match[1];
             if (componentType === "Component") {
                 modules.componentName = path.node.id.name
-            }else{
+            } else {
                 modules.componentName = ""
             }
             modules.setType(componentType)
@@ -78,6 +78,32 @@ function getJSX(path) {
     }
 }
 
+function parsePath(a, b) {
+    if (b[0] !== '.' && b[0] !== '/') {
+        console.log("格式不对[ "+b+" ]",b[0])
+        return
+    }
+    var arr = a.split("/");
+    if (b[0] == '/') {
+        arr.pop()
+        return arr.join("/") + b
+    }
+    if (b.slice(0, 2) == './') {
+        arr.pop()
+        return arr.join("/") + b.slice(1)
+    }
+    var jump = b.match(/\.\.\//g)
+    if (jump) {
+        var newB = b.replace(/\.\.\//g, "")
+        arr.pop()
+        for (var i = 0; i < jump.length; i++) {
+            arr.pop()
+        }
+        return arr.join("/") + "/"+ newB
+    }
+    throw "格式不对[ "+b+" ]"
+
+}
 
 module.exports = {
     ClassDeclaration: ClassDeclaration,
@@ -86,7 +112,7 @@ module.exports = {
         enter(path) {
             var methodName = path.node.key.name;
             modules.walkingMethod = methodName;
-            var fn = helpers.method(path, method)
+            var fn = helpers.method(path, methodName)
             modules.compiledMethods.push(fn);
         },
         exit(path) {
@@ -136,7 +162,7 @@ module.exports = {
                  sharedState.output.json = config !== "" ? config : "{}";
                  */
             } else if (propName === "defaultProps" && modules.componentName) {
-                helpers.defaultProps(path.node.value.properties);
+                helpers.defaultProps(path.node.value.properties, modules);
                 path.remove();
             }
         }
@@ -161,7 +187,7 @@ module.exports = {
                 left.object.name === modules.componentName &&
                 left.property.name === "defaultProps"
             ) {
-                helpers.defaultProps(path.node.right.properties);
+                helpers.defaultProps(path.node.right.properties, modules);
                 path.remove();
             }
         }
@@ -180,11 +206,11 @@ module.exports = {
         }
         if (ext === "js") {
             var useComponents = modules[current].useComponents;
-            var obj = useComponents[nPath.resolve(current, href) + postfix] = {
+            var href2 = parsePath(current, href + postfix)
+            var obj = useComponents[href2] = {
                 name: path.node.specifiers[0].local.name,
-                value: path.node.source.value + postfix
+                value: href + postfix
             }
-            console.log(obj)
         } else {
             //  helpers.styles(href);
         }

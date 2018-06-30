@@ -1,44 +1,45 @@
-/*
- * @Author: hibad 
- * @Date: 2018-06-24 10:37:08 
- * @Last Modified by:   hibad 
- * @Last Modified time: 2018-06-24 10:37:08 
- */
-// http://web.jobbole.com/91277/
-const traverse = require('babel-traverse').default
-const generate = require('babel-generator').default
+
+const syntaxClassProperties = require("babel-plugin-syntax-class-properties")
 const babel = require('babel-core')
-const t = require('babel-types');
-const transformPlugin = require('./plugin');
-const sharedState = require('./sharedState');
+const visitor = require("./visitor");
 let modules = require('./modules');
-//const parseCode = require('./plugin/utils').parseCode;
+
+
+/**
+ * 必须符合babel-transfrom-xxx的格式，使用declare声明
+ */
+function miniappPlugin(api) {
+    return {
+        inherits: syntaxClassProperties,
+        visitor: visitor
+    };
+}
+
 
 function transform(code, sourcePath) {
-  let output = {
-    wxml:'',
-    wxss:'',
-    js:'',
-    json:'',
-    type:''//App||page||component
-  }
-  modules.current = sourcePath.replace(process.cwd(),"")
-  var ret = modules[modules.current] = {
-    useComponents: {}
-  }
-  const result = babel.transform(code, {
-    babelrc: false,
-    plugins: [
-      'syntax-jsx', 
-    //  "transform-react-jsx",
-      'transform-decorators-legacy',
-      'transform-object-rest-spread',  
-      transformPlugin, 
-    ]
-  })
-  ret.js = result.code;
-  modules.reset();
-  return ret;
+    modules.current = sourcePath.replace(process.cwd(), "")
+    var ret = modules[modules.current] = {
+        useComponents: {}
+    }
+    var result = babel.transform(code, {
+        babelrc: false,
+        plugins: [
+            'syntax-jsx',
+            //  "transform-react-jsx",
+            'transform-decorators-legacy',
+            'transform-object-rest-spread',
+            miniappPlugin,
+        ]
+    })
+    modules.reset();
+    ret.js = result.code;
+    return ret;
 }
 
 module.exports = transform
+
+
+// https://github.com/NervJS/taro/tree/master/packages/taro-cli
+// https://blog.csdn.net/liangklfang/article/details/54879672
+// https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
+// https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/README.md

@@ -12,8 +12,11 @@ var modules = {
     },
     setType(type) {
         var obj = modules[modules.current];
+        
         if (obj) {
-            obj.componentType = type;
+            obj.type = type;
+        }else{
+            console.log(modules.current, "XXXXXX")
         }
         modules.componentType = type;
     }
