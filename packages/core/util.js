@@ -30,7 +30,7 @@ export function returnTrue() {
 
 export function resetStack(info) {
     keepLast(info.containerStack);
-    keepLast(info.containerStack);
+    keepLast(info.contextStack);
 }
 
 function keepLast(list) {
