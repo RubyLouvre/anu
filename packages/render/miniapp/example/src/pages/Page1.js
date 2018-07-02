@@ -53,6 +53,7 @@ class P extends Page {
     ): false;
   }
 }
+export default P;
 // https://blog.csdn.net/qq_24734285/article/details/53911094
 
 /*

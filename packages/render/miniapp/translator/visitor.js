@@ -10,8 +10,6 @@ const parsePath = require("./utils").parsePath;
 
 //const Pages = [];
 
-
-
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
 var appValidKeys = {
   pages: 1,
@@ -35,7 +33,7 @@ var pageValidKeys = {
 module.exports = {
   ClassDeclaration: helpers.classDeclaration,
   //babel 6 没有ClassDeclaration，只有ClassExpression
-  ClassExpression: helpers.classDeclaration, 
+  ClassExpression: helpers.classDeclaration,
   ClassMethod: {
     enter(path) {
       var methodName = path.node.key.name;
@@ -48,26 +46,41 @@ module.exports = {
       if (methodName === "render") {
         //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
         var jsx = helpers.render(path, "有状态组件", modules.componentName);
-        modules.set("wxml", jsx)
+        modules.set("wxml", jsx);
         path.remove();
       }
     }
   },
-  FunctionDeclaration:{
+  FunctionDeclaration: {
     //enter里面会转换jsx中的JSXExpressionContainer
     exit(path) {
-       //函数声明转换为无状态组件
-      var name = path.node.id.name
-      if(!modules.componentType){
+      //函数声明转换为无状态组件
+      var name = path.node.id.name;
+      if (!modules.componentType) {
         modules.componentName = name;
         modules.setType("Component");
-        var jsx = helpers.render(path, "无状态组件", name);
-        modules.set("wxml", jsx);
+        var wxml = helpers.render(path, "无状态组件", name);
+        modules.set("wxml", wxml); //path.node.params
         var call = t.expressionStatement(
-          t.callExpression(t.identifier("Page"), path.node.params)
+          t.callExpression(t.identifier("Page"), [t.objectExpression([])])
         );
         path.replaceWith(call);
-        
+      }
+    }
+  },
+  ExportDefaultDeclaration: {
+    //小程序的模块不支持export 语句
+    exit(path) {
+      if (modules.componentType) {
+        path.remove();
+      }
+    }
+  },
+  ExportNamedDeclaration: {
+    //小程序在定义
+    exit(path) {
+      if (modules.componentType) {
+        path.remove();
       }
     }
   },
@@ -191,9 +204,7 @@ module.exports = {
       } else {
         var block = helpers.logic(expr);
         if (block) {
-     
-            path.replaceWith(block);
-          
+          path.replaceWith(block);
         }
       }
     }

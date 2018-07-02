@@ -1,11 +1,17 @@
 const generate = require("babel-generator").default;
 const prettifyXml = require("prettify-xml");
 const logic = require("./logic");
-
+/**
+ * 将return后面的内容进行转换，再变成wxml
+ * 
+ * @param {Path} path ast节点
+ * @param {String} type 有状态组件｜无状态组件
+ * @param {String} componentName 组件名
+ */
 module.exports = function render(path, type, componentName) {
   var expr = path.node.body.body[0];
   if (expr && expr.type == "ReturnStatement") {
-    var block = logic(a.argument);//logic最后会返回一个<block>或jsx
+    var block = logic(expr.argument);//logic最后会返回一个<block>或jsx
     var wxml = generate(block).code;
     return prettifyXml(wxml, {
       indent: 2
