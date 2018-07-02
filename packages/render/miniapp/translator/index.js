@@ -16,7 +16,6 @@ let projectPath = entryFolder;
 const sourceDirPath = path.join(projectPath, "src");
 const outputDirPath = path.join(projectPath, "build");
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
-
 if (nodejsVersion < 7) {
     console.log(
         "当前nodejs版本为 " +
@@ -102,7 +101,6 @@ class Parser {
         }
     }
     async processJSON() {
-//console.log(modules)
         this.outputs.forEach(function(el) {
           //  console.log(el.useComponents)
             console.log(el.type)
@@ -172,7 +170,7 @@ async function build() {
         // 暂时关闭watch方便开发
         // parser.watch('./src')
     } catch (e) {
-        console.log(chalk.redBright(e));
+        console.log(chalk.red(e));
         console.log(e);
     }
 }

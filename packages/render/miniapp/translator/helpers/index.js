@@ -6,5 +6,6 @@ module.exports = {
     logic: require("./logic"),
     render: require("./render"),
     method: require("./method"),
+    classDeclaration: require("./classDeclaration"),
     //styles: require('./styles')
 }

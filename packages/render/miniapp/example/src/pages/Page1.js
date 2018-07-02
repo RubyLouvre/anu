@@ -36,7 +36,7 @@ class P extends Page {
     });
   }
   render() {
-    return (
+    return a == true?(
       <div
         className="app"
         onClick={this.onClick}
@@ -50,10 +50,10 @@ class P extends Page {
         })}
         <p>其他元素</p>
       </div>
-    );
+    ): false;
   }
 }
-
+// https://blog.csdn.net/qq_24734285/article/details/53911094
 
 /*
 

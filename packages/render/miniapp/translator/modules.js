@@ -1,25 +1,24 @@
 var modules = {
-    current: "",
-    componentName: "",
-    walkingMethod: "",
-    componentType: "",
-    compiledMethods: [],
-    reset() {
-        modules.componentName = "";
-        modules.walkingMethod = "";
-        modules.componentType = "";
-        modules.compiledMethods.length = 0;
-    },
-    setType(type) {
-        var obj = modules[modules.current];
-        
-        if (obj) {
-            obj.type = type;
-        }else{
-            console.log(modules.current, "XXXXXX")
-        }
-        modules.componentType = type;
+  current: "",
+  componentName: "",
+  walkingMethod: "",
+  componentType: "",
+  compiledMethods: [],
+  reset() {
+    modules.componentName = "";
+    modules.walkingMethod = "";
+    modules.componentType = "";
+    modules.compiledMethods.length = 0;
+  },
+  set(key, value) {
+    var obj = modules[modules.current];
+    if (obj) {
+      obj[key] = value;
     }
-
-}
+  },
+  setType(type) {
+    modules.set("type", type);
+    modules.componentType = type;
+  }
+};
 module.exports = modules;
