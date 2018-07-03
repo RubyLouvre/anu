@@ -1,5 +1,6 @@
 
 import {Component} from '../wechat'
+import {Stateless} from './Stateless'
 
 class Comp extends Component {
   static defaultProps = {
@@ -10,6 +11,13 @@ class Comp extends Component {
     f: [],
     ee: {}
   }
+  constructor(props){
+    super(props)
+    this.state = {
+      a1:1,
+      a2: 11
+    }
+  }
   
   render(){
     return <div onTap={this.onTap} style={{font: aa(), xxx:333}}
@@ -18,7 +26,10 @@ class Comp extends Component {
           [11,222,333].map(function(el){
              return el
           })
-          }</div>
+          }
+          <p><Stateless aaa="1" xxx={this.state.a1} /></p>
+          <p><Stateless aaa="2" xxx={this.state.a2} /></p>
+          </div>
   }
 }
 /*

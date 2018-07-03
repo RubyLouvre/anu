@@ -4,11 +4,14 @@ var modules = {
   walkingMethod: "",
   componentType: "",
   compiledMethods: [],
+  importComponents: {},
+  uuid: 1,
   reset() {
     modules.componentName = "";
     modules.walkingMethod = "";
     modules.componentType = "";
     modules.compiledMethods.length = 0;
+    modules.importComponents = {}
   },
   set(key, value) {
     var obj = modules[modules.current];

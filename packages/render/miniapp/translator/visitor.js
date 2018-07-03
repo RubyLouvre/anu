@@ -151,8 +151,10 @@ module.exports = {
     if (ext === "js") {
       var useComponents = modules[current].useComponents;
       var href2 = parsePath(current, href + postfix);
+      var importName = path.node.specifiers[0].local.name
+      modules.importComponents[importName] = true;
       var obj = (useComponents[href2] = {
-        name: path.node.specifiers[0].local.name,
+        name: importName,
         value: href + postfix
       });
     } else {
@@ -181,6 +183,14 @@ module.exports = {
 
   //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
   JSXOpeningElement: function(path) {
+    if( modules.importComponents[path.node.name.name]){
+    
+      console.log("=====",path.node.name.name, path.node);
+      var attrName = t.JSXIdentifier("data-uuid");
+      var attrValue =  t.stringLiteral((modules.uuid++)+"")
+      path.node.attributes.push(t.JSXAttribute(attrName,attrValue))
+
+    }
     helpers.nodeName(path);
   },
   JSXClosingElement: function(path) {
