@@ -86,8 +86,8 @@ module.exports = {
   },
   ClassProperty(path) {
     //只处理静态属性
+    var key = path.node.key.name;
     if (path.node.static) {
-      var key = path.node.key.name;
       if (key == "json") {
         var json = generate(path.node.value).code;
         if (typeof json === "object") {
@@ -108,8 +108,16 @@ module.exports = {
       if (key === "defaultProps" && modules.componentType === "Component") {
         helpers.defaultProps(path.node.value.properties, modules);
       }
-      path.remove();
+    
+    }else{
+      if(key == "globalData" && modules.componentType === "App"){
+         var keyValue = t.ObjectProperty( t.identifier(key), path.node.value)
+          modules.compiledMethods.push(keyValue);
+
+      }
+  
     }
+    path.remove();
   },
   MemberExpression(path) {
     //转换constructor与render外的方法中的this.state为this.data
@@ -152,6 +160,7 @@ module.exports = {
       var useComponents = modules[current].useComponents;
       var href2 = parsePath(current, href + postfix);
       var importName = path.node.specifiers[0].local.name
+      console.log("设置importComponents",importName)
       modules.importComponents[importName] = true;
       var obj = (useComponents[href2] = {
         name: importName,
@@ -182,19 +191,32 @@ module.exports = {
   },
 
   //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-  JSXOpeningElement: function(path) {
-    if( modules.importComponents[path.node.name.name]){
+  JSXOpeningElement(path){
+     
+      if( modules.importComponents[path.node.name.name]){
     
-      console.log("=====",path.node.name.name, path.node);
-      var attrName = t.JSXIdentifier("data-uuid");
-      var attrValue =  t.stringLiteral((modules.uuid++)+"")
-      path.node.attributes.push(t.JSXAttribute(attrName,attrValue))
+        //  console.log("=====",path.node.name.name, path.node);
+          var attrName = t.JSXIdentifier("data-props");
+          console.log(attrName)
+          var attrValue =  path.node.attributes.map(function(el) {
+            return  el.name.name+":"+ (el.value.type === "StringLiteral" ?
+            `'${ el.value.value}'`:generate(el.value.expression).code)
+          }).join(",")
 
-    }
-    helpers.nodeName(path);
+
+         attrValue =  t.stringLiteral(attrValue)
+          path.node.attributes.push(t.JSXAttribute(attrName,attrValue))
+    
+        }else{
+          helpers.nodeName(path);
+        }
+        
   },
   JSXClosingElement: function(path) {
-    helpers.nodeName(path);
+    if(!modules.importComponents[path.node.name.name]){
+      helpers.nodeName(path);
+    }
+    
   },
   JSXAttribute(path) {
     helpers.attrName(path);

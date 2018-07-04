@@ -4,7 +4,7 @@ let rword = /[^, ]+/g;
 var builtInStr = "view,text,button,block,scroll-view,swiper,movable-view,cover-view,icon,rich-text,"+
 "progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,template,"+
 "navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,"+
-"slot"
+"slot,wxs"
 var builtIn = {}
 builtInStr.replace(rword, function(el){
   builtIn[el] = el;

@@ -6,4 +6,7 @@ class A extends App {
     aa: 1,
     bb: 2
   };
+  globalData = {
+    ufo:"ufo"
+  }
 }

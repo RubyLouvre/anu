@@ -106,7 +106,7 @@ class Parser {
             console.log(el.type)
             Object.keys(el.useComponents).forEach(function(href) {
               if(modules[href]){
-                console.log(href, modules[href].type, el.jsonPath, "----")
+               // console.log(href, modules[href].type, el.jsonPath, "----")
               }
              
             })
