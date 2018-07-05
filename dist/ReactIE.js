@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-06-25
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-07-05
  */
 
 (function (global, factory) {
@@ -31,7 +31,7 @@
   }
   function resetStack(info) {
       keepLast(info.containerStack);
-      keepLast(info.containerStack);
+      keepLast(info.contextStack);
   }
   function keepLast(list) {
       var n = list.length;
@@ -168,6 +168,39 @@
           }
       },
       currentOwner: null
+  };
+
+  var fakeObject = {
+      enqueueSetState: returnFalse,
+      isMounted: returnFalse
+  };
+  function Component(props, context) {
+      Renderer.currentOwner = this;
+      this.context = context;
+      this.props = props;
+      this.refs = {};
+      this.updater = fakeObject;
+      this.state = null;
+  }
+  Component.prototype = {
+      constructor: Component,
+      replaceState: function replaceState() {
+          toWarnDev("replaceState", true);
+      },
+      isReactComponent: returnTrue,
+      isMounted: function isMounted$$1() {
+          toWarnDev("isMounted", true);
+          return this.updater.isMounted(this);
+      },
+      setState: function setState(state, cb) {
+          this.updater.enqueueSetState(this, state, cb);
+      },
+      forceUpdate: function forceUpdate(cb) {
+          this.updater.enqueueSetState(this, true, cb);
+      },
+      render: function render() {
+          throw "must implement render";
+      }
   };
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -358,7 +391,7 @@
               invokeCallback = true;
               break;
           case 8:
-              if (children.$$typeof) {
+              if (children.$$typeof || children instanceof Component) {
                   invokeCallback = true;
               } else if (children.hasOwnProperty("toString")) {
                   children = children + "";
@@ -393,7 +426,7 @@
           }
           return subtreeCount;
       }
-      throw "React.createElement: type is invalid.";
+      throw "children: type is invalid.";
   }
   var REAL_SYMBOL = hasSymbol && Symbol.iterator;
   var FAKE_SYMBOL = "@@iterator";
@@ -494,39 +527,6 @@
       oneOf: check,
       oneOfType: check,
       shape: check
-  };
-
-  var fakeObject = {
-      enqueueSetState: returnFalse,
-      isMounted: returnFalse
-  };
-  function Component(props, context) {
-      Renderer.currentOwner = this;
-      this.context = context;
-      this.props = props;
-      this.refs = {};
-      this.updater = fakeObject;
-      this.state = null;
-  }
-  Component.prototype = {
-      constructor: Component,
-      replaceState: function replaceState() {
-          toWarnDev("replaceState", true);
-      },
-      isReactComponent: returnTrue,
-      isMounted: function isMounted$$1() {
-          toWarnDev("isMounted", true);
-          return this.updater.isMounted(this);
-      },
-      setState: function setState(state, cb) {
-          this.updater.enqueueSetState(this, state, cb);
-      },
-      forceUpdate: function forceUpdate(cb) {
-          this.updater.enqueueSetState(this, true, cb);
-      },
-      render: function render() {
-          throw "must implement render";
-      }
   };
 
   function shallowEqual(objA, objB) {
@@ -1794,7 +1794,7 @@
 
   function Fiber(vnode) {
       extend(this, vnode);
-      var type = vnode.type;
+      var type = vnode.type || "ProxyComponent(react-hot-loader)";
       this.name = type.displayName || type.name || type;
       this.effectTag = 1;
   }

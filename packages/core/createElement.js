@@ -1,5 +1,6 @@
 import { typeNumber, toWarnDev, hasSymbol, Fragment, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
 import { Renderer } from "./createRenderer";
+import { Component } from "./Component";
 
 
 const RESERVED_PROPS = {
@@ -232,7 +233,7 @@ export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) 
             break
         // 7 array
         case 8://object
-            if (children.$$typeof) {
+            if (children.$$typeof || children instanceof Component) {
                 invokeCallback = true
             } else if (children.hasOwnProperty("toString")) {
                 children = children + ""
@@ -282,7 +283,7 @@ export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) 
         }
         return subtreeCount
     }
-    throw "React.createElement: type is invalid.";
+    throw "children: type is invalid.";
 }
 let REAL_SYMBOL = hasSymbol && Symbol.iterator;
 let FAKE_SYMBOL = "@@iterator";
