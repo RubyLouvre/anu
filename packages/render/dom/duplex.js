@@ -48,8 +48,8 @@ export var duplexMap = {
             if (props.checked != null) {
                 syncValue(node, 'checked', !!props.checked);
             }
-            var value = getSafeValue(props.value);
-
+            const isActive = node === document.activeElement;
+            const value = isActive ? node.value: getSafeValue(props.value);
             if (value != null) {
                 if (props.type === 'number') {
                     if (value === 0 && node.value === '' ||
@@ -63,9 +63,9 @@ export var duplexMap = {
             }
 
             if (props.hasOwnProperty('value')) {
-                setDefaultValue(node, props.type, value);
+                setDefaultValue(node, props.type, value, isActive);
             } else if (props.hasOwnProperty('defaultValue')) {
-                setDefaultValue(node, props.type, getSafeValue(props.defaultValue));
+                setDefaultValue(node, props.type, getSafeValue(props.defaultValue),isActive);
             }
 
             if (props.checked == null && props.defaultChecked != null) {
@@ -182,10 +182,10 @@ function textContent(node) {
     return node.textContent || node.innerText;
 }
 
-function setDefaultValue(node, type, value) {
+function setDefaultValue(node, type, value, isActive) {
     if (
         // Focused number inputs synchronize on blur. See ChangeEventPlugin.js
-        type !== 'number' || node.ownerDocument.activeElement !== node) {
+        type !== 'number' || !isActive) {
         if (value == null) {
             node.defaultValue = '' + node._wrapperState.initialValue;
         } else if (node.defaultValue !== '' + value) {

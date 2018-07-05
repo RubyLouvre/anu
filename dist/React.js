@@ -761,14 +761,14 @@
   if (!inBrowser) {
       win.document = fakeDoc;
   }
-  var document = win.document;
+  var document$1 = win.document;
   var versions = {
       88: 7,
       80: 6,
       "00": NaN,
       "08": NaN
   };
-  var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+  var msie = document$1.documentMode || versions[typeNumber(document$1.all) + "" + typeNumber(win.XMLHttpRequest)];
   var modern = /NaN|undefined/.test(msie) || msie > 8;
   function contains(a, b) {
       if (b) {
@@ -868,7 +868,8 @@
               if (props.checked != null) {
                   syncValue(node, 'checked', !!props.checked);
               }
-              var value = getSafeValue(props.value);
+              var isActive = node === document.activeElement;
+              var value = isActive ? node.value : getSafeValue(props.value);
               if (value != null) {
                   if (props.type === 'number') {
                       if (value === 0 && node.value === '' ||
@@ -880,9 +881,9 @@
                   }
               }
               if (props.hasOwnProperty('value')) {
-                  setDefaultValue(node, props.type, value);
+                  setDefaultValue(node, props.type, value, isActive);
               } else if (props.hasOwnProperty('defaultValue')) {
-                  setDefaultValue(node, props.type, getSafeValue(props.defaultValue));
+                  setDefaultValue(node, props.type, getSafeValue(props.defaultValue), isActive);
               }
               if (props.checked == null && props.defaultChecked != null) {
                   node.defaultChecked = !!props.defaultChecked;
@@ -989,9 +990,9 @@
   function textContent(node) {
       return node.textContent || node.innerText;
   }
-  function setDefaultValue(node, type, value) {
+  function setDefaultValue(node, type, value, isActive) {
       if (
-      type !== 'number' || node.ownerDocument.activeElement !== node) {
+      type !== 'number' || !isActive) {
           if (value == null) {
               node.defaultValue = '' + node._wrapperState.initialValue;
           } else if (node.defaultValue !== '' + value) {
@@ -1132,14 +1133,14 @@
           events[refName] = val;
       }
   }
-  var isTouch = "ontouchstart" in document;
+  var isTouch = "ontouchstart" in document$1;
   function dispatchEvent(e, type, endpoint) {
       e = new SyntheticEvent(e);
       if (type) {
           e.type = type;
       }
       var bubble = e.type,
-          terminal = endpoint || document,
+          terminal = endpoint || document$1,
           hook = eventPropHooks[e.type];
       if (hook && false === hook(e)) {
           return;
@@ -1201,7 +1202,7 @@
   function addGlobalEvent(name, capture) {
       if (!globalEvents[name]) {
           globalEvents[name] = true;
-          addEvent(document, name, dispatchEvent, capture);
+          addEvent(document$1, name, dispatchEvent, capture);
       }
   }
   function addEvent(el, type, fn, bool) {
@@ -1272,11 +1273,11 @@
       e.target.__onComposition = false;
   }
   var input2change = /text|password|search|url|email/i;
-  if (!document["__input"]) {
-      globalEvents.input = document["__input"] = true;
-      addEvent(document, "compositionstart", onCompositionStart);
-      addEvent(document, "compositionend", onCompositionEnd);
-      addEvent(document, "input", function (e) {
+  if (!document$1["__input"]) {
+      globalEvents.input = document$1["__input"] = true;
+      addEvent(document$1, "compositionstart", onCompositionStart);
+      addEvent(document$1, "compositionend", onCompositionEnd);
+      addEvent(document$1, "input", function (e) {
           var dom = getTarget(e);
           if (input2change.test(dom.type)) {
               if (!dom.__onComposition) {
@@ -1330,7 +1331,7 @@
   eventPropHooks.click = function (e) {
       return !e.target.disabled;
   };
-  var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
+  var fixWheelType = document$1.onwheel !== void 666 ? "wheel" : "onmousewheel" in document$1 ? "mousewheel" : "DOMMouseScroll";
   eventHooks.wheel = function (dom) {
       addEvent(dom, fixWheelType, specialHandles.wheel);
   };
@@ -1375,9 +1376,9 @@
       globalEvents[type] = true;
       if (modern) {
           var mark = "__" + type;
-          if (!document[mark]) {
-              document[mark] = true;
-              addEvent(document, type, blurFocus, true);
+          if (!document$1[mark]) {
+              document$1[mark] = true;
+              addEvent(document$1, type, blurFocus, true);
           }
       } else {
           eventHooks[type] = function (dom, name) {
@@ -1389,7 +1390,7 @@
       addEvent(dom, name, specialHandles[name]);
   };
   eventHooks.doubleclick = function (dom, name) {
-      addEvent(document, "dblclick", specialHandles[name]);
+      addEvent(document$1, "dblclick", specialHandles[name]);
   };
   function SyntheticEvent(event) {
       if (event.nativeEvent) {
@@ -2847,9 +2848,9 @@
                   node.nodeValue = props;
                   return node;
               }
-              return document.createTextNode(props);
+              return document$1.createTextNode(props);
           case '#comment':
-              return document.createComment(props);
+              return document$1.createComment(props);
           case 'svg':
               ns = NAMESPACE.svg;
               break;
@@ -2872,19 +2873,19 @@
       try {
           if (ns) {
               vnode.namespaceURI = ns;
-              return document.createElementNS(ns, type);
+              return document$1.createElementNS(ns, type);
           }
       } catch (e1) {        }
-      var elem = document.createElement(type);
+      var elem = document$1.createElement(type);
       var inputType = props && props.type;
       if (inputType) {
           try {
-              elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
+              elem = document$1.createElement('<' + type + ' type=\'' + inputType + '\'/>');
           } catch (e2) {        }
       }
       return elem;
   }
-  var fragment = document.createDocumentFragment();
+  var fragment = document$1.createDocumentFragment();
   function _emptyElement(node) {
       while (node.firstChild) {
           node.removeChild(node.firstChild);
@@ -2919,7 +2920,7 @@
           if (after === null && dom === parent.lastChild) {
               return;
           }
-          Renderer.inserting = fiber.tag === 5 && document.activeElement;
+          Renderer.inserting = fiber.tag === 5 && document$1.activeElement;
           parent.insertBefore(dom, after);
           Renderer.inserting = null;
       } catch (e) {
