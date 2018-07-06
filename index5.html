@@ -19,65 +19,7 @@
     <div id='root' class="root">
 
     </div>
-    <script type='xxx'>
-        
-        var container = document.getElementById('root');
-          var div = container;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-          }
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  },
-                  toThrow(){
-                      try{
-                          a()
-                      }catch(e){
-                          console.log(e,"catch")
-                      }
-                  }
-              };
-		 };
-		var log = {
-			push(a){
-				console.log(a)
-			}
-        } 
- class HInput extends React.Component {
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            value: this.props.defaultValue || ''
-        }
-
-        this.onChange = this.onChange.bind(this)
-    }
-
-    onChange(e) {
-        this.setState({
-            value: e.target.value
-        })
-
-        this.props.onChange && this.props.onChange(e)
-    } 
-
-    render() {
-        return (
-            <span class="h-input-wrapper">
-                <input value={this.state.value} onChange={this.onChange} class="h-input" />
-            </span>
-        )
-    }
-}
-      ReactDOM.render(<div style={{height: 400}}><HInput /></div>, container )
-
-    </script>
+ 
 <script src="./dist/ietest.js"></script>
 
 </html>

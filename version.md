@@ -1,6 +1,14 @@
 
 # 变更日志
 
+## 1.4.5(2018.07.06)
+
+1. 调整依赖，不再添加webpack相关的模块
+2. 修复对react-hot-loader的支持
+3. 修复IE8的input onChange事件的光标问题
+4. 修复resetStack BUG
+5. 去掉diffProps中的数组解构，减少体积
+
 ## 1.4.4(2018.06.22)
 
 1. 修复插入点的BUG，现在dfs遍历过程不再查询元素节点的insertPoint是否存在，updateHostComponent方法也不会调用getInsertPoint，性能大大提升
