@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const es3ifyPlugin = require('es3ify-webpack-plugin');
 var p = path.resolve(process.cwd(), 'dist');
 module.exports = {
@@ -18,7 +17,7 @@ module.exports = {
             'prop-types': path.resolve(process.cwd(), './lib/ReactPropTypes.js'),
             'create-react-class': path.resolve(
                 process.cwd(),
-                './lib/ReactPropTypes.js'
+                './lib/createClass.js'
             )
         }
     },
@@ -38,7 +37,14 @@ module.exports = {
                                 {
                                     loose: true
                                 }
-                            ]
+                            ],
+                            ['module-resolver', {
+                                'root': ['.'],
+                                'alias': {
+                                    'react': './dist/ReactIE',
+                                    'react-dom': './dist/ReactIE',
+                                }
+                            }]
                         ]
                     }
                 }

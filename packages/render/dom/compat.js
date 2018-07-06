@@ -36,13 +36,7 @@ let fixIEChangeHandle = createHandle('change', function (e) {
         return true;
     }
     if (e.type === 'propertychange') {
-        if (e.propertyName === 'value') {
-            if (dom.__anuSetValue) {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        return e.propertyName === 'value' && !dom.__anuSetValue
     }
 });
 
@@ -65,7 +59,6 @@ let IEHandleFix = {
         }
     }
 };
-
 if (msie < 9) {
     actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
         let oldhtml = lastProps[name] && lastProps[name].__html;
@@ -150,3 +143,4 @@ if (msie < 9) {
         eventHooks[i] = eventHooks[i + 'capture'] = IEHandleFix[i];
     }
 }
+

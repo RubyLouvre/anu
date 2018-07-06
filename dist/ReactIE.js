@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-07-05
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-07-06
  */
 
 (function (global, factory) {
@@ -1457,7 +1457,6 @@
   });
   var effectLength = effectNames.length;
 
-  function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
   var isSpecialAttr = {
       style: 1,
       autoFocus: 1,
@@ -1516,23 +1515,22 @@
           return match.slice(0, 1) + split + match.slice(1).toLowerCase();
       };
   }
-  var rhump = /[a-z][A-Z]/;
+  var rhump = /([a-z])([A-Z])/;
   var toHyphen = createRepaceFn('-');
   var toColon = createRepaceFn(':');
   function getSVGAttributeName(name) {
       if (svgCache[name]) {
           return svgCache[name];
       }
-      var key = name.match(rhump);
-      if (!key) {
+      var match = name.match(rhump);
+      if (!match) {
           return svgCache[name] = name;
       }
-      var _ref = [].concat(_toConsumableArray(key[0].toLowerCase())),
-          prefix = _ref[0],
-          postfix = _ref[1];
+      var prefix = match[1];
+      var postfix = match[2].toLowerCase();
       var orig = name;
-      if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
-          var count = svgCamelCase[prefix][postfix];
+      var count = svgCamelCase[prefix] && svgCamelCase[prefix][postfix];
+      if (count) {
           if (count === -1) {
               return svgCache[orig] = {
                   name: name.replace(rhump, toColon),
@@ -3026,13 +3024,7 @@
           return true;
       }
       if (e.type === 'propertychange') {
-          if (e.propertyName === 'value') {
-              if (dom.__anuSetValue) {
-                  return false;
-              }
-          } else {
-              return false;
-          }
+          return e.propertyName === 'value' && !dom.__anuSetValue;
       }
   });
   var fixIEInputHandle = createHandle('input', function (e) {

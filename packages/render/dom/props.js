@@ -79,7 +79,7 @@ function createRepaceFn(split) {
     };
 }
 
-let rhump = /[a-z][A-Z]/;
+let rhump = /([a-z])([A-Z])/;
 let toHyphen = createRepaceFn('-');
 let toColon = createRepaceFn(':');
 
@@ -87,15 +87,15 @@ function getSVGAttributeName(name) {
     if (svgCache[name]) {
         return svgCache[name];
     }
-    const key = name.match(rhump);
-    if (!key) {
+    const match = name.match(rhump);
+    if (!match) {
         return (svgCache[name] = name);
     }
-    const [prefix, postfix] = [...key[0].toLowerCase()];
-    let orig = name;
-    if (svgCamelCase[prefix] && svgCamelCase[prefix][postfix]) {
-        const count = svgCamelCase[prefix][postfix];
-
+    const prefix = match[1];
+    const postfix = match[2].toLowerCase();
+    const orig = name;
+    const count = svgCamelCase[prefix] && svgCamelCase[prefix][postfix];
+    if (count) {
         if (count === -1) {
             return (svgCache[orig] = {
                 name: name.replace(rhump, toColon),
