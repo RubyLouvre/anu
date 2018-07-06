@@ -3134,7 +3134,7 @@
           findDOMNode: findDOMNode,
           unmountComponentAtNode: unmountComponentAtNode,
           unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-          version: "1.4.4",
+          version: "1.4.5",
           render: render$1,
           hydrate: render$1,
           unstable_batchedUpdates: DOMRenderer.batchedUpdates,
