@@ -84,7 +84,7 @@ export function createElement(vnode) {
     return elem;
 }
 
-let fragment = document.createDocumentFragment();
+let hyperspace = document.createElement("div");
 
 function emptyElement(node) {
     while(node.firstChild){
@@ -107,8 +107,8 @@ export function removeElement(node) {
     } else if (nodeType === 3 && reuseTextNodes.length < 100) {
         reuseTextNodes.push(node);
     }
-    fragment.appendChild(node);
-    fragment.removeChild(node);
+    hyperspace.appendChild(node);
+    hyperspace.removeChild(node);
 }
 
 
