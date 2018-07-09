@@ -1,9 +1,13 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 
+var rexpr = /(^|[^\w\.])this\./g
+function parseExpr(node){
+  return `{{${generate(node).code.replace(rexpr, "$1")}}}`
+}
 function wrapText(node) {
   if (node.type !== "JSXElement") {
-    return t.JSXText(generate(node).code);
+    return t.JSXText(parseExpr(node));
   }
   return node;
 }
@@ -30,18 +34,15 @@ function logic(expr) {
       throw generate(expr.callee.object).code +
         ".map 后面的必须跟匿名函数或一个函数调用";
     }
-  } else if(expr.type === "JSXElement"){
-      return expr
-    // 其他情况
   }else {
-   // console.log(expr);
+     return wrapText(expr);
   }
 }
 //处理test ? consequent: alternate 或 test && consequent
 function condition(test, consequent, alternate) {
   var ifAttr = t.JSXAttribute(
     t.JSXIdentifier("wx:if"),
-    t.stringLiteral(`{{${generate(test).code}}}`)
+    t.stringLiteral(parseExpr(test))
   );
   var ifNode = t.JSXElement(
     t.JSXOpeningElement(t.JSXIdentifier("block"), [ifAttr], false),
@@ -79,7 +80,7 @@ function loop(callee, fn) {
   attrs.push(
     t.JSXAttribute(
       t.JSXIdentifier("wx:for"),
-      t.stringLiteral(`{{${generate(callee.object).code}}}`)
+      t.stringLiteral(parseExpr(callee.object))
     )
   );
   attrs.push(

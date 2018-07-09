@@ -40,7 +40,7 @@ module.exports = function(properties, modules) {
     astList.push(propertyAst);
   });
 
-  modules.compiledMethods.push(
+  modules.thisMethods.push(
     t.objectProperty(t.identifier("properties"), t.objectPattern(astList))
   );
 };

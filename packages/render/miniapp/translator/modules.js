@@ -3,14 +3,21 @@ var modules = {
   componentName: "",
   walkingMethod: "",
   componentType: "",
-  compiledMethods: [],
+  thisMethods: [],
+  staticMethods: [],
+  thisProperties: [],
   importComponents: {},
   uuid: 1,
   reset() {
     modules.componentName = "";
     modules.walkingMethod = "";
     modules.componentType = "";
-    modules.compiledMethods.length = 0;
+    modules.className = "";
+    modules.ctorFn = null;
+    modules.parentNode = "";
+    modules.thisMethods.length = 0;
+    modules.staticMethods.length = 0;
+    modules.thisProperties.length = 0;
     modules.importComponents = {}
   },
   set(key, value) {

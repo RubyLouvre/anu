@@ -1,6 +1,7 @@
 const t = require("babel-types");
 const template = require("babel-template");
 const modules = require("../modules");
+const generate = require("babel-generator").default;
 
 
 module.exports = {
@@ -8,6 +9,9 @@ module.exports = {
       //重置数据
       let className = path.node.superClass ? path.node.superClass.name : "";
       let match = className.match(/\.?(App|Page|Component)/);
+      modules.className = path.node.id.name
+      modules.parentName = className || "Object"
+      console.log( modules.className,"111", modules.parentName )
       if (match) {
         //获取类的组件类型与名字
         var componentType = match[1];
@@ -21,27 +25,29 @@ module.exports = {
     },
     exit(path) {
       // 将类表式变成函数调用
-      const call = t.expressionStatement(
-        t.callExpression(t.identifier(modules.componentType), [
-          t.callExpression(t.identifier("onInit"), [
-            t.objectExpression(modules.compiledMethods)
-          ])
+      
+     if(!modules.ctorFn){
+        modules.ctorFn = template("function x(){b}")({
+          x: t.identifier(modules.className),
+          b:  modules.thisProperties
+        })
+     
+     }
+     path.parentPath.parentPath.insertBefore(modules.ctorFn );
+
+     console.log(modules.ctorFn,"xxxxx")
+     const call = t.expressionStatement(
+        t.callExpression(t.identifier("miniCreatClass"), [
+         t.identifier(modules.className), t.objectExpression(modules.thisMethods),
+         t.objectExpression(modules.staticMethods)
         ])
-      );
-      //onInit也是一个函数声明，但它不会跑到visitor的FunctionDeclaration里面，因为它上面已经有
-      //modules.componentType进行隔离
-      var onInit = template(`function onInit(config){
-        if(config.hasOwnProperty("constructor")){
-          config.constructor.call(config);
-        }
-        config.data = config.state;
-        delete config.state;
-        return config;
-      }`)({});
+      )
+      
       //插入到最前面
-      path.parentPath.parentPath.insertBefore(onInit);
+    //  path.parentPath.parentPath.insertBefore(onInit);
       //可以通过`console.log(generate(call).code)`验证
-      path.replaceWith(call);
+      path.replaceWithMultiple(call);
+     // path.replaceWithMultiple([modules.ctorFn,call]);
     }
   };
   
