@@ -5,6 +5,7 @@ const template = require("babel-template");
 
 const helpers = require("./helpers");
 const modules = require("./modules");
+const jsx = require("./jsx/jsx");
 
 const parsePath = require("./utils").parsePath;
 
@@ -202,49 +203,35 @@ module.exports = {
   },
 
   //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-  JSXOpeningElement(path) {
-    var nodeName = path.node.name.name
+  JSXOpeningElement: {
+    enter: function(path) {},
+    exit: function(path) {
+      var nodeName = path.node.name.name;
       if (modules.importComponents[nodeName]) {
-        console.log("移除", nodeName)
-        var attributes =  path.node.attributes
-       var ret = t.JSXElement(
-          t.JSXOpeningElement(t.JSXIdentifier("template"), path.node.attributes, false),
-          t.jSXClosingElement(t.JSXIdentifier("template")),
+        console.log("移除", nodeName);
+        var attributes = path.node.attributes;
+        var ret = jsx.createElement(
+          "template",
+          path.node.attributes,
           path.parentPath.node.children
         );
-      
-        var key = String(Math.random()).slice(2)
+
+        var key = String(Math.random()).slice(2);
         attributes.push(
-          t.JSXAttribute(
-            t.JSXIdentifier("is"),
-            t.stringLiteral(nodeName)
-          ),
-          t.JSXAttribute(
-            t.JSXIdentifier("wx:for"),
-            t.stringLiteral(`{{array${key}}}`)
-          ),
-          t.JSXAttribute(
-            t.JSXIdentifier("wx:key"),
-            t.stringLiteral(`{{key${key}}}`)
-          ),
-          t.JSXAttribute(
-            t.JSXIdentifier("wx:for-item"),
-            t.stringLiteral("item")
-          ),
-          t.JSXAttribute(
-            t.JSXIdentifier("data"),
-            t.stringLiteral("{{...item}}")
-          )
-        )
+          jsx.createAttribute("is", nodeName),
+          jsx.createAttribute("wx:for", `{{array${key}}}`),
+          jsx.createAttribute("wx:key", `{{key${key}}}`),
+          jsx.createAttribute("wx:for-item", "item"),
+          jsx.createAttribute("data", "{{...item}}")
+        );
         path.parentPath.replaceWith(ret);
-   
-     
-    }else{
-      helpers.nodeName(path);
+      } else {
+        helpers.nodeName(path);
+      }
     }
   },
   JSXClosingElement: function(path) {
-    var nodeName = path.node.name.name
+    var nodeName = path.node.name.name;
     if (!modules.importComponents[nodeName]) {
       helpers.nodeName(path);
     }
@@ -253,7 +240,7 @@ module.exports = {
     helpers.attrName(path);
   },
   JSXExpressionContainer: {
-    exit(path) {
+    enter(path) {
       var expr = path.node.expression;
       if (t.isJSXAttribute(path.parent)) {
         helpers.attrValue(path);
