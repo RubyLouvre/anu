@@ -1,5 +1,6 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
+const modules = require("../modules");
 
 var rexpr = /(^|[^\w\.])this\./g
 function parseExpr(node){
@@ -98,24 +99,41 @@ function loop(callee, fn) {
     );
   }
 
-  var loopNode = t.JSXElement(
-    t.JSXOpeningElement(t.JSXIdentifier("block"), attrs, false),
-    t.jSXClosingElement(t.JSXIdentifier("block")),
-    []
-  );
+ 
 
   var body = fn.body.body.find(i => i.type === "ReturnStatement");
   if (body) {
     //循环内部存在循环或条件
-    var block = logic(body.argument);
-    if (block) {
-      loopNode.children.push(block);
-    } else {
-      loopNode.children.push(wrapText(body.argument));
+    var child = logic(body.argument);
+    var childNodeName = child.openingElement.name.name
+    if(child.type == "JSXElement" && modules.importComponents[childNodeName]){
+      attrs.unshift( t.JSXAttribute(
+        t.JSXIdentifier("is"),
+        t.stringLiteral(childNodeName)
+      ))
+      attrs.push( t.JSXAttribute(
+        t.JSXIdentifier("data"),
+        t.stringLiteral(`{{...${fn.params[0].name}}}`)
+      ))
+      var templateElement = t.JSXElement(
+        t.JSXOpeningElement(t.JSXIdentifier("template"), attrs, false),
+        t.jSXClosingElement(t.JSXIdentifier("template")),
+        child.children
+      );
+      return templateElement
+
+    }else{
+      var blockElement = t.JSXElement(
+        t.JSXOpeningElement(t.JSXIdentifier("block"), attrs, false),
+        t.jSXClosingElement(t.JSXIdentifier("block")),
+        []
+      );
+      blockElement.children.push(child);
+      return blockElement
     }
   }
 
-  return loopNode;
+ // return loopNode;
 }
 
 module.exports = logic;

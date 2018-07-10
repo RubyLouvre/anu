@@ -1,6 +1,6 @@
-import {Page} from "../wechat";
-import Comp from "../components/Comp1";
+import { Page } from "../wechat";
 import "./page.css";
+import Dog from "../components/dog/dog";
 
 const e = "e";
 
@@ -13,19 +13,14 @@ class P extends Page {
         a: {}
       }
     };
-    // this.state.name = { a: {}}
-    this.state.name.a.b = "s"; // fine
-    this.state.name.ab = "me"; // bug1
-    this.state.n = "n"; // bug2
   }
-  
+
   onClick() {
     console.log("test click1" + e);
     var _this = this;
-    setTimeout(function(){
+    setTimeout(function() {
       _this.setState({});
-    })
-   
+    });
 
     this.setState({
       arr: [
@@ -36,47 +31,16 @@ class P extends Page {
     });
   }
   render() {
-    return a == true?(
-      <div
-        className="app"
-        onClick={this.onClick}
-        style={{ posistion: "relative" }}
-      >
-        威武
-        {this.state.arr.map(function(item, index) {
-          return item.map(function(item2, index2) {
-            return index2 ==1 ? <div>{item2.id}</div>: false
-          });
-        })}
-        <p>其他元素</p>
-      </div>
-    ): false;
+    return (
+      <view>
+        <view>
+          {this.state.array.map(function(el) {
+            return <Dog key="xxx" />;
+          })}
+        </view>
+        <Dog sex={this.props.dogsex} />
+      </view>
+    );
   }
 }
 export default P;
-// https://blog.csdn.net/qq_24734285/article/details/53911094
-
-/*
-
-class P extends Page {
-  constructor(props) {
-    this.state = {
-    };
-    // this.state.name = { a: {}}
-    this.state.name.a.b = "s"; // fine
-    this.state.name.ab = "me"; // bug1
-    this.state.n = "n"; // bug2
-  }
-}
-
-function onInit(config){
-  if(config.hasOwnProperty("constructor")){
-    config.constructor.call(config)
-  }
-  config.data = obj.state;
-  return config;
-}
-
-Page(onInit({}))
-
-*/

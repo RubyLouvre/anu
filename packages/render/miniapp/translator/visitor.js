@@ -12,89 +12,94 @@ const parsePath = require("./utils").parsePath;
 //  miniCreateClass(ctor, superClass, methods, statics)
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
 var appValidKeys = {
-    pages: 1,
-    window: 1,
-    tabBar: 1,
-    networkTimeout: 1,
-    debug: 1
+  pages: 1,
+  window: 1,
+  tabBar: 1,
+  networkTimeout: 1,
+  debug: 1
 };
 var pageValidKeys = {
-    navigationBarBackgroundColor: 1,
-    navigationBarTextStyle: 1,
-    navigationBarTitleText: 1,
-    backgroundColor: 1,
-    backgroundTextStyle: 1,
-    enablePullDownRefresh: 1,
-    disableScroll: 1,
-    onReachBottomDistance: 1,
-    component: 1,
-    usingComponents: 1
+  navigationBarBackgroundColor: 1,
+  navigationBarTextStyle: 1,
+  navigationBarTitleText: 1,
+  backgroundColor: 1,
+  backgroundTextStyle: 1,
+  enablePullDownRefresh: 1,
+  disableScroll: 1,
+  onReachBottomDistance: 1,
+  component: 1,
+  usingComponents: 1
 };
 module.exports = {
-    ClassDeclaration: helpers.classDeclaration,
-    //babel 6 没有ClassDeclaration，只有ClassExpression
-    ClassExpression: helpers.classDeclaration,
-    ClassMethod: {
-        enter(path) {
-            var methodName = path.node.key.name;
-            modules.walkingMethod = methodName;
-            if (methodName !== "constructor") {
-                var fn = helpers.method(path, methodName);
-                modules.thisMethods.push(fn);
-            } else {
-                var node = path.node
-                modules.ctorFn = t.functionDeclaration(t.identifier(modules.className),
-                    node.params, node.body, node.generator, false)
-            }
-        },
-        exit(path) {
-            const methodName = path.node.key.name;
-            if (methodName === "render") {
-                //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
-                var jsx = helpers.render(path, "有状态组件", modules.componentName);
-                modules.set("wxml", jsx);
-                path.remove();
-            }
-        }
+  ClassDeclaration: helpers.classDeclaration,
+  //babel 6 没有ClassDeclaration，只有ClassExpression
+  ClassExpression: helpers.classDeclaration,
+  ClassMethod: {
+    enter(path) {
+      var methodName = path.node.key.name;
+      modules.walkingMethod = methodName;
+      if (methodName !== "constructor") {
+        var fn = helpers.method(path, methodName);
+        modules.thisMethods.push(fn);
+      } else {
+        var node = path.node;
+        modules.ctorFn = t.functionDeclaration(
+          t.identifier(modules.className),
+          node.params,
+          node.body,
+          node.generator,
+          false
+        );
+      }
     },
-    FunctionDeclaration: {
-        //enter里面会转换jsx中的JSXExpressionContainer
-        exit(path) {
-            //函数声明转换为无状态组件
-            var name = path.node.id.name;
-            if (!modules.componentType) {
-                modules.componentName = name;
-                modules.setType("Component");
-                var wxml = helpers.render(path, "无状态组件", name);
-                modules.set("wxml", wxml); //path.node.params
-                var call = t.expressionStatement(
-                    t.callExpression(t.identifier("Page"), [t.objectExpression([])])
-                );
-                path.replaceWith(call);
-            }
-        }
-    },
-    ExportDefaultDeclaration: {
-        //小程序的模块不支持export 语句
-        exit(path) {
-            if (modules.componentType) {
-                path.remove();
-            }
-        }
-    },
-    ExportNamedDeclaration: {
-        //小程序在定义
-        exit(path) {
-            if (modules.componentType) {
-                path.remove();
-            }
-        }
-    },
-    ClassProperty(path) {
-        //只处理静态属性
-        var key = path.node.key.name;
-        if (path.node.static) {
-            /*  if (key == "json") {
+    exit(path) {
+      const methodName = path.node.key.name;
+      if (methodName === "render") {
+        //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
+        var jsx = helpers.render(path, "有状态组件", modules.componentName);
+        modules.set("wxml", jsx);
+        path.remove();
+      }
+    }
+  },
+  FunctionDeclaration: {
+    //enter里面会转换jsx中的JSXExpressionContainer
+    exit(path) {
+      //函数声明转换为无状态组件
+      var name = path.node.id.name;
+      if (!modules.componentType) {
+        modules.componentName = name;
+        modules.setType("Component");
+        var wxml = helpers.render(path, "无状态组件", name);
+        modules.set("wxml", wxml); //path.node.params
+        var call = t.expressionStatement(
+          t.callExpression(t.identifier("Page"), [t.objectExpression([])])
+        );
+        path.replaceWith(call);
+      }
+    }
+  },
+  ExportDefaultDeclaration: {
+    //小程序的模块不支持export 语句
+    exit(path) {
+      if (modules.componentType) {
+        path.remove();
+      }
+    }
+  },
+  ExportNamedDeclaration: {
+    //小程序在定义
+    exit(path) {
+      if (modules.componentType) {
+        path.remove();
+      }
+    }
+  },
+  ClassProperty(path) {
+    //只处理静态属性
+    var key = path.node.key.name;
+    if (path.node.static) {
+      /*  if (key == "json") {
                   var json = generate(path.node.value).code;
                   if (typeof json === "object") {
                       var validKeys =
@@ -114,140 +119,156 @@ module.exports = {
               if (key === "defaultProps" && modules.componentType === "Component") {
                   helpers.defaultProps(path.node.value.properties, modules);
               }*/
-            var keyValue = t.ObjectProperty(t.identifier(key), path.node.value)
-            modules.staticMethods.push(
-                keyValue
-            )
-
-        } else {
-            if (key == "globalData" && modules.componentType === "App") {
-                var thisMember = t.assignmentExpression("=",
-                    t.memberExpression(t.identifier("this"), t.identifier(key)),
-                    path.node.value)
-                modules.thisProperties.push(thisMember);
-            }
-
-        }
-        path.remove();
-    },
-    MemberExpression(path) {
-        //转换constructor与render外的方法中的this.state为this.data
-        if (
-            modules.walkingMethod !== "render"
-        ) {
-            const code = generate(path.node).code;
-            if (code === "this.state") {
-                path.node.property.name = "data";
-            }
-        }
-    },
-    AssignmentExpression(path) {
-        // 转换微信小程序component的properties对象为defaultProps
-        if (modules.componentName) {
-            const left = path.node.left;
-            if (
-                left.object.name === modules.componentName &&
-                left.property.name === "defaultProps"
-            ) {
-                helpers.defaultProps(path.node.right.properties, modules);
-                path.remove();
-            }
-        }
-    },
-    ImportDeclaration(path) {
-        var href = path.node.source.value;
-        var basename = nPath.basename(href);
-        var current = modules.current;
-        var ext = nPath.extname(basename),
-            postfix = "";
-        if (ext) {
-            basename = basename.slice(-1 * (ext.length + 1));
-        } else {
-            ext = "js";
-            postfix = ".js";
-        }
-        if (ext === "js") {
-            var useComponents = modules[current].useComponents;
-            var href2 = parsePath(current, href + postfix);
-            var importName = path.node.specifiers[0].local.name
-            // console.log("设置importComponents", importName)
-            modules.importComponents[importName] = true;
-            var obj = (useComponents[href2] = {
-                name: importName,
-                value: href + postfix
-            });
-        } else {
-            //  helpers.styles(href);
-        }
-        path.remove();
-    },
-    CallExpression(path) {
-        var callee = path.node.callee || Object;
-        if (modules.walkingMethod == "constructor") {
-            //构造器里面不能执行setState，因此无需转换setData
-            if (callee.type === "Super") {
-                //移除super()语句
-                //  path.remove();
-            }
-        } else if (
-            modules.componentType === "Page" ||
-            modules.componentType === "Component"
-        ) {
-            var property = callee.property;
-            if (property && property.name === "setState") {
-                property.name = "setData";
-            }
-        }
-    },
-
-    //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    JSXOpeningElement(path) {
-
-        if (modules.importComponents[path.node.name.name]) {
-
-            //  console.log("=====",path.node.name.name, path.node);
-            var attrName = t.JSXIdentifier("data-props");
-            var attrValue = path.node.attributes.map(function(el) {
-                return el.name.name + ":" + (el.value.type === "StringLiteral" ?
-                    `'${ el.value.value}'` : generate(el.value.expression).code)
-            }).join(",")
-
-
-            attrValue = t.stringLiteral(attrValue)
-            path.node.attributes.push(t.JSXAttribute(attrName, attrValue))
-
-        } else {
-            helpers.nodeName(path);
-        }
-
-    },
-    JSXClosingElement: function(path) {
-        if (!modules.importComponents[path.node.name.name]) {
-            helpers.nodeName(path);
-        }
-
-    },
-    JSXAttribute(path) {
-        helpers.attrName(path);
-    },
-    JSXExpressionContainer: {
-        exit(path) {
-            var expr = path.node.expression;
-            if (t.isJSXAttribute(path.parent)) {
-                helpers.attrValue(path);
-            } else if (
-                expr.type === "MemberExpression" &&
-                generate(expr).code === "this.props.children"
-            ) {
-                //将 {this.props.children} 转换成 <slot />
-                var children = t.JSXOpeningElement(t.JSXIdentifier("slot"), [], true);
-                path.replaceWith(children);
-            } else {
-                var block = helpers.logic(expr);
-                if (block) {
-                    path.replaceWith(block);
-                }
-            }
-        }
+      var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
+      modules.staticMethods.push(keyValue);
+    } else {
+      if (key == "globalData" && modules.componentType === "App") {
+        var thisMember = t.assignmentExpression(
+          "=",
+          t.memberExpression(t.identifier("this"), t.identifier(key)),
+          path.node.value
+        );
+        modules.thisProperties.push(thisMember);
+      }
     }
+    path.remove();
+  },
+  MemberExpression(path) {
+    //转换constructor与render外的方法中的this.state为this.data
+    if (modules.walkingMethod !== "render") {
+      const code = generate(path.node).code;
+      if (code === "this.state") {
+        path.node.property.name = "data";
+      }
+    }
+  },
+  AssignmentExpression(path) {
+    // 转换微信小程序component的properties对象为defaultProps
+    if (modules.componentName) {
+      const left = path.node.left;
+      if (
+        left.object.name === modules.componentName &&
+        left.property.name === "defaultProps"
+      ) {
+        helpers.defaultProps(path.node.right.properties, modules);
+        path.remove();
+      }
+    }
+  },
+  ImportDeclaration(path) {
+    var href = path.node.source.value;
+    var basename = nPath.basename(href);
+    var current = modules.current;
+    var ext = nPath.extname(basename),
+      postfix = "";
+    if (ext) {
+      basename = basename.slice(-1 * (ext.length + 1));
+    } else {
+      ext = "js";
+      postfix = ".js";
+    }
+    if (ext === "js") {
+      var useComponents = modules[current].useComponents;
+      var href2 = parsePath(current, href + postfix);
+      var importName = path.node.specifiers[0].local.name;
+      // console.log("设置importComponents", importName)
+      modules.importComponents[importName] = true;
+      var obj = (useComponents[href2] = {
+        name: importName,
+        value: href + postfix
+      });
+    } else {
+      //  helpers.styles(href);
+    }
+    path.remove();
+  },
+  CallExpression(path) {
+    var callee = path.node.callee || Object;
+    if (modules.walkingMethod == "constructor") {
+      //构造器里面不能执行setState，因此无需转换setData
+      if (callee.type === "Super") {
+        //移除super()语句
+        path.remove();
+      }
+    } else if (
+      modules.componentType === "Page" ||
+      modules.componentType === "Component"
+    ) {
+      var property = callee.property;
+      if (property && property.name === "setState") {
+        property.name = "setData";
+      }
+    }
+  },
+
+  //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+  JSXOpeningElement(path) {
+    var nodeName = path.node.name.name
+      if (modules.importComponents[nodeName]) {
+        console.log("移除", nodeName)
+        var attributes =  path.node.attributes
+       var ret = t.JSXElement(
+          t.JSXOpeningElement(t.JSXIdentifier("template"), path.node.attributes, false),
+          t.jSXClosingElement(t.JSXIdentifier("template")),
+          path.parentPath.node.children
+        );
+      
+        var key = String(Math.random()).slice(2)
+        attributes.push(
+          t.JSXAttribute(
+            t.JSXIdentifier("is"),
+            t.stringLiteral(nodeName)
+          ),
+          t.JSXAttribute(
+            t.JSXIdentifier("wx:for"),
+            t.stringLiteral(`{{array${key}}}`)
+          ),
+          t.JSXAttribute(
+            t.JSXIdentifier("wx:key"),
+            t.stringLiteral(`{{key${key}}}`)
+          ),
+          t.JSXAttribute(
+            t.JSXIdentifier("wx:for-item"),
+            t.stringLiteral("item")
+          ),
+          t.JSXAttribute(
+            t.JSXIdentifier("data"),
+            t.stringLiteral("{{...item}}")
+          )
+        )
+        path.parentPath.replaceWith(ret);
+   
+     
+    }else{
+      helpers.nodeName(path);
+    }
+  },
+  JSXClosingElement: function(path) {
+    var nodeName = path.node.name.name
+    if (!modules.importComponents[nodeName]) {
+      helpers.nodeName(path);
+    }
+  },
+  JSXAttribute(path) {
+    helpers.attrName(path);
+  },
+  JSXExpressionContainer: {
+    exit(path) {
+      var expr = path.node.expression;
+      if (t.isJSXAttribute(path.parent)) {
+        helpers.attrValue(path);
+      } else if (
+        expr.type === "MemberExpression" &&
+        generate(expr).code === "this.props.children"
+      ) {
+        //将 {this.props.children} 转换成 <slot />
+        var children = t.JSXOpeningElement(t.JSXIdentifier("slot"), [], true);
+        path.replaceWith(children);
+      } else {
+        //返回block元素或template元素
+        var block = helpers.logic(expr);
+        path.replaceWith(block);
+      }
+    }
+  }
 };

@@ -102,7 +102,6 @@ class Parser {
     }
     async processJSON() {
         this.outputs.forEach(function(el) {
-          //  console.log(el.useComponents)
             console.log(el.type)
             Object.keys(el.useComponents).forEach(function(href) {
               if(modules[href]){
@@ -125,7 +124,6 @@ class Parser {
         if (/wechat\.js/.test(destPath)) return;
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
-        // console.log(output, "+++++++++")
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
         //生成JS与JSON
@@ -133,7 +131,6 @@ class Parser {
             fs.writeFile(destPath, output.js, () => {});
             delete output.js
             output.jsonPath = basePath + ".json"
-         //   console.log("===================")
             this.outputs.push(output)
             /*
 

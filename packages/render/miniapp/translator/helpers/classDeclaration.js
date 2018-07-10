@@ -11,7 +11,6 @@ module.exports = {
       let match = className.match(/\.?(App|Page|Component)/);
       modules.className = path.node.id.name
       modules.parentName = className || "Object"
-      console.log( modules.className,"111", modules.parentName )
       if (match) {
         //获取类的组件类型与名字
         var componentType = match[1];
@@ -35,7 +34,6 @@ module.exports = {
      }
      path.parentPath.parentPath.insertBefore(modules.ctorFn );
 
-     console.log(modules.ctorFn,"xxxxx")
      const call = t.expressionStatement(
         t.callExpression(t.identifier("miniCreatClass"), [
          t.identifier(modules.className), t.objectExpression(modules.thisMethods),

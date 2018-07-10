@@ -17,6 +17,5 @@ module.exports = function(source) {
     replace: true
   }, sharedState.projectConf.styleConf);
   const compiledStyle = postcss(pxtorem(targetConf)).process(content).css;
-  console.log(compiledStyle)
   sharedState.output.wxss += compiledStyle;
 }
