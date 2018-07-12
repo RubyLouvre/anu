@@ -7,6 +7,7 @@ var modules = {
   staticMethods: [],
   thisProperties: [],
   importComponents: {},
+  usedComponents: {},
   uuid: 1,
   reset() {
     modules.componentName = "";
@@ -19,6 +20,7 @@ var modules = {
     modules.staticMethods.length = 0;
     modules.thisProperties.length = 0;
     modules.importComponents = {}
+    modules.usedComponents = {}
   },
   set(key, value) {
     var obj = modules[modules.current];

@@ -58,6 +58,11 @@ module.exports = {
       if (methodName === "render") {
         //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
         var jsx = helpers.render(path, "有状态组件", modules.componentName);
+        for(var i in modules.importComponents){
+          if(modules.usedComponents[i]){
+            jsx = `<import src="${modules.importComponents[i]}.wxml" />\n` + jsx
+          }
+        }
         modules.set("wxml", jsx);
         path.remove();
       }
@@ -83,12 +88,10 @@ module.exports = {
 
   ExportDefaultDeclaration: {
     //小程序的模块不支持export 语句,
-    enter() {},
     exit(path) {
       if (path.node.declaration.type == "Identifier") {
         path.replaceWith(helpers.exportExpr(path.node.declaration.name, true));
       }
-      // console.log(path.node.declaration)
     }
   },
 
@@ -206,6 +209,7 @@ module.exports = {
     exit: function(path) {
       var nodeName = path.node.name.name;
       if (modules.importComponents[nodeName]) {
+        modules.usedComponents[nodeName] = true;
         console.log("移除", nodeName);
         var attributes = path.node.attributes;
         var ret = jsx.createElement(

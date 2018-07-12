@@ -3,7 +3,6 @@ import "./page.css";
 import Dog from "../components/dog/dog";
 
 const e = "e";
-
 class P extends Page {
   constructor(props) {
     super(props);
@@ -43,4 +42,4 @@ class P extends Page {
     );
   }
 }
-export default P;
+//export default P;
