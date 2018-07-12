@@ -7,5 +7,7 @@ module.exports = {
     render: require("./render"),
     method: require("./method"),
     classDeclaration: require("./classDeclaration"),
+    exportExpr: require("./exportExpr"),
+    method: require("./method"),
     //styles: require('./styles')
 }

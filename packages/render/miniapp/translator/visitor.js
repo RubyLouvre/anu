@@ -80,46 +80,48 @@ module.exports = {
       }
     }
   },
+
   ExportDefaultDeclaration: {
-    //小程序的模块不支持export 语句
+    //小程序的模块不支持export 语句,
+    enter() {},
     exit(path) {
-      if (modules.componentType) {
-        path.remove();
+      if (path.node.declaration.type == "Identifier") {
+        path.replaceWith(helpers.exportExpr(path.node.declaration.name, true));
       }
+      // console.log(path.node.declaration)
     }
   },
+
   ExportNamedDeclaration: {
     //小程序在定义
+    enter() {},
     exit(path) {
-      if (modules.componentType) {
-        path.remove();
+      var declaration = path.node.declaration;
+      if (!declaration) {
+        var map = path.node.specifiers.map(function(el) {
+          return helpers.exportExpr(el.local.name);
+        });
+        path.replaceWithMultiple(map);
+      } else if (declaration.type === "Identifier") {
+        path.replaceWith(
+          helpers.exportExpr(declaration.name, declaration.name)
+        );
+      } else if (declaration.type === "VariableDeclaration") {
+        var id = declaration.declarations[0].id.name;
+
+        declaration.kind = "var"; //转换const,let为var
+        path.replaceWithMultiple([declaration, helpers.exportExpr(id)]);
+      } else if (declaration.type === "FunctionDeclaration") {
+        var id = declaration.id.name;
+        path.replaceWithMultiple([declaration, helpers.exportExpr(id)]);
       }
     }
   },
+
   ClassProperty(path) {
     //只处理静态属性
     var key = path.node.key.name;
     if (path.node.static) {
-      /*  if (key == "json") {
-                  var json = generate(path.node.value).code;
-                  if (typeof json === "object") {
-                      var validKeys =
-                          testmodules.componentType === "App" ? appValidKeys : pageValidKeys;
-                      //普通的组件也有json，表示其引用的子组件
-                      for (var i in json) {
-                          if (validKeys[i] != 1) {
-                              console.warn("app.json只不存在" + i + "配置项");
-                          }
-                      }
-                      if (/App|Component|Page/.testmodules.componentType) {
-                          modules.set("json", json);
-                      }
-                  }
-              }
-              //如果是组件
-              if (key === "defaultProps" && modules.componentType === "Component") {
-                  helpers.defaultProps(path.node.value.properties, modules);
-              }*/
       var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
       modules.staticMethods.push(keyValue);
     } else {
@@ -156,32 +158,28 @@ module.exports = {
       }
     }
   },
+
   ImportDeclaration(path) {
     var href = path.node.source.value;
-    var basename = nPath.basename(href);
-    var current = modules.current;
-    var ext = nPath.extname(basename),
-      postfix = "";
-    if (ext) {
-      basename = basename.slice(-1 * (ext.length + 1));
-    } else {
-      ext = "js";
-      postfix = ".js";
-    }
+    var ext = nPath.extname(href);
+    var isJS = false;
     if (ext === "js") {
-      var useComponents = modules[current].useComponents;
-      var href2 = parsePath(current, href + postfix);
-      var importName = path.node.specifiers[0].local.name;
-      // console.log("设置importComponents", importName)
-      modules.importComponents[importName] = true;
-      var obj = (useComponents[href2] = {
-        name: importName,
-        value: href + postfix
-      });
-    } else {
-      //  helpers.styles(href);
+      href = href.slice(0, -3);
+      isJS = true;
+    } else if (!ext) {
+      isJS = true;
     }
-    path.remove();
+    var paths = path.node.specifiers.map(function(node) {
+      var importName = node.local.name;
+      var requireStatement = `var ${importName} = require("${href}")${
+        node.type == "ImportDefaultSpecifier" ? ".default" : ""
+      };`;
+      if (isJS) {
+        modules.importComponents[importName] = href;
+      }
+      return template(requireStatement)({});
+    });
+    path.replaceWithMultiple(paths);
   },
   CallExpression(path) {
     var callee = path.node.callee || Object;
@@ -240,6 +238,7 @@ module.exports = {
     helpers.attrName(path);
   },
   JSXExpressionContainer: {
+    enter() {},
     enter(path) {
       var expr = path.node.expression;
       if (t.isJSXAttribute(path.parent)) {

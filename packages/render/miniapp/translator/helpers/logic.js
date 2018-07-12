@@ -80,9 +80,17 @@ function loop(callee, fn) {
     var child = logic(body.argument);
     var childNodeName = child.openingElement.name.name;
     if (child.type == "JSXElement" && modules.importComponents[childNodeName]) {
+
       attrs.unshift(createAttribute("is", childNodeName));
       attrs.push(createAttribute("data", `{{...${fn.params[0].name}}}`));
-      var templateElement = createElement("template", attrs, child.children);
+      
+      var origAttrs = child.openingElement.attributes.map(function(el){
+        if(el.name.name === "key"){
+          el.name.name = "wx:key"
+        }
+        return el
+      })
+      var templateElement = createElement("template", attrs.concat(origAttrs), child.children);
       return templateElement;
     } else {
       var blockElement = createElement("block", attrs, [child]);

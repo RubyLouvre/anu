@@ -35,7 +35,7 @@ class P extends Page {
       <view>
         <view>
           {this.state.array.map(function(el) {
-            return <Dog key="xxx" />;
+            return <Dog key={xxx} />;
           })}
         </view>
         <Dog sex={this.props.dogsex} />
