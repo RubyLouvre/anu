@@ -35,7 +35,7 @@ module.exports = {
      path.parentPath.parentPath.insertBefore(modules.ctorFn );
 
      const call = t.expressionStatement(
-        t.callExpression(t.identifier("miniCreatClass"), [
+        t.callExpression(t.identifier("React.miniCreateClass"), [
          t.identifier(modules.className), t.objectExpression(modules.thisMethods),
          t.objectExpression(modules.staticMethods)
         ])
