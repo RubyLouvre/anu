@@ -7,6 +7,7 @@ const modules = require("../modules");
 const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
+
 const jsx = require("../jsx/jsx");
 
 /**
@@ -69,9 +70,10 @@ var visitor = {
   JSXAttribute(path) {
     attrNameHelper(path);
   },
+
   JSXExpressionContainer: {
     enter() {},
-    enter(path) {
+    exit(path) {
       var expr = path.node.expression;
       if (t.isJSXAttribute(path.parent)) {
         attrValueHelper(path);
@@ -85,6 +87,7 @@ var visitor = {
       } else {
         //返回block元素或template元素
         var block = logicHelper(expr);
+
         path.replaceWith(block);
       }
     }

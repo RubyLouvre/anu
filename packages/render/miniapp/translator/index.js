@@ -123,7 +123,6 @@ class Parser {
         //类库
         if (/wechat\.js/.test(destPath)) return;
         await fs.ensureFile(path.resolve(destPath));
-        console.log("sourcePath",sourcePath)
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");

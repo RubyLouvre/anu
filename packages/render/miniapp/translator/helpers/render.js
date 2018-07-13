@@ -14,16 +14,21 @@ const wxmlHelper = require("./wxml");
 module.exports = function render(path, type, componentName, modules) {
   var expr = path.node.body.body[0];
   if (expr && expr.type == "ReturnStatement") {
-    //   var block = logic(expr.argument);//logic最后会返回一个<block>或jsx
-    var jsx = generate(expr.argument).code
-    var wxml = wxmlHelper(jsx).replace(/;$/, "");
+    var needWrap = expr.argument.type !== "JSXElement";
+    var jsx = generate(expr.argument).code;
+    jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
+    var wxml = wxmlHelper(jsx);
+    if (needWrap) {
+      wxml = wxml.slice(7, -9); //去掉<block> </block>;
+    } else {
+      wxml = wxml.slice(0, -1); //去掉最后的;
+    }
     if (modules.componentType === "Component") {
       wxml = `<template name="${componentName}">${wxml}</template>`;
     }
     wxml = prettifyXml(wxml, {
       indent: 2
-    })
-
+    });
     for (var i in modules.importComponents) {
       if (modules.usedComponents[i]) {
         wxml = `<import src="${modules.importComponents[i]}.wxml" />\n` + wxml;

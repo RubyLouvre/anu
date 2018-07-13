@@ -6,11 +6,11 @@ class P extends Page {
   constructor(props) {
     super(props);
     this.state = {
-      name: 'hehe',
+      name: "hehe",
       array: [
-        {name: "dog1",text: "text1"},
-        {name: "dog2",text: "text2"},
-        {name: "dog3",text: "text3"},
+        { name: "dog1", text: "text1" },
+        { name: "dog2", text: "text2" },
+        { name: "dog3", text: "text3" }
       ]
     };
   }
@@ -18,16 +18,20 @@ class P extends Page {
     console.log("test click1" + e);
   }
   render() {
-    return (
-      <div>
-        <div>
-          {this.state.array.map(function(el) {
-            return <Dog key={el.name} name={el.name}>{el.text}</Dog>;
-          })}
+    return a == 1 ?( <div>
+          <div>
+            {this.state.array.map(function(el) {
+              return (
+                <Dog key={el.name} name={el.name}>
+                  {el.text}
+                </Dog>
+              );
+            })}
+          </div>
+          <Dog name={this.state.name} />
         </div>
-        <Dog name={this.state.name} />
-      </div>
-    );
+      ): <div></div>
+      
   }
 }
 export default P;
