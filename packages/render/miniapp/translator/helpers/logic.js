@@ -79,24 +79,23 @@ function loop(callee, fn) {
     //循环内部存在循环或条件
     var child = logic(body.argument);
     var childNodeName = child.openingElement.name.name;
-    if (child.type == "JSXElement" && modules.importComponents[childNodeName]) {
+    // if (child.type == "JSXElement" && modules.importComponents[childNodeName]) {
 
-      attrs.unshift(createAttribute("is", childNodeName));
-      attrs.push(createAttribute("data", `{{...${fn.params[0].name}}}`));
+    //   attrs.unshift(createAttribute("is", childNodeName));
+    //   attrs.push(createAttribute("data", `{{...${fn.params[0].name}}}`));
       
-      var origAttrs = child.openingElement.attributes.map(function(el){
-        if(el.name.name === "key"){
-          el.name.name = "wx:key"
-        }
-        return el
-      })
-      var templateElement = createElement("template", attrs.concat(origAttrs), child.children);
-      return templateElement;
-    } else {
+    //   var origAttrs = child.openingElement.attributes.map(function(el){
+    //     if(el.name.name === "key"){
+    //       el.name.name = "wx:key"
+    //     }
+    //     return el
+    //   })
+    //   var templateElement = createElement("template", attrs.concat(origAttrs), child.children);
+    //   return templateElement;
+    // } else {
       var blockElement = createElement("block", attrs, [child]);
-      //blockElement.children.push(child);
       return blockElement;
-    }
+   // }
   }
 
   // return loopNode;

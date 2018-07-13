@@ -7,7 +7,7 @@ class Dog extends Component {
    }
   
   render(){
-    return <div>{this.state.sex}</div>
+    return <div>{this.props.name}-{this.props.children}</div>
   } 
 }
 

@@ -10,5 +10,8 @@ module.exports = {
   },
   createAttribute: function(name, value) {
     return t.JSXAttribute(t.JSXIdentifier(name), t.stringLiteral(value));
+  },
+  createDataId: function(){
+    return "data"+ String( Math.random()+ Math.random()).slice(2)
   }
 };

@@ -57,14 +57,9 @@ module.exports = {
       const methodName = path.node.key.name;
       if (methodName === "render") {
         //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
-        var jsx = helpers.render(path, "有状态组件", modules.componentName);
-        for(var i in modules.importComponents){
-          if(modules.usedComponents[i]){
-            jsx = `<import src="${modules.importComponents[i]}.wxml" />\n` + jsx
-          }
-        }
-        modules.set("wxml", jsx);
-        path.remove();
+        helpers.render(path, "有状态组件", modules.componentName, modules);
+       
+       // path.remove();
       }
     }
   },
@@ -76,8 +71,9 @@ module.exports = {
       if (!modules.componentType) {
         modules.componentName = name;
         modules.setType("Component");
-        var wxml = helpers.render(path, "无状态组件", name);
-        modules.set("wxml", wxml); //path.node.params
+        //转译模板
+       helpers.render(path, "无状态组件", name, modules);
+     
         var call = t.expressionStatement(
           t.callExpression(t.identifier("Page"), [t.objectExpression([])])
         );
@@ -210,25 +206,15 @@ module.exports = {
       var nodeName = path.node.name.name;
       if (modules.importComponents[nodeName]) {
         modules.usedComponents[nodeName] = true;
-        console.log("移除", nodeName);
-        var attributes = path.node.attributes;
-        var ret = jsx.createElement(
-          "template",
-          path.node.attributes,
-          path.parentPath.node.children
-        );
-
-        var key = String(Math.random()).slice(2);
-        attributes.push(
-          jsx.createAttribute("is", nodeName),
-          jsx.createAttribute("wx:for", `{{array${key}}}`),
-          jsx.createAttribute("wx:key", `{{key${key}}}`),
-          jsx.createAttribute("wx:for-item", "item"),
-          jsx.createAttribute("data", "{{...item}}")
-        );
-        path.parentPath.replaceWith(ret);
-      } else {
-        helpers.nodeName(path);
+         path.node.name.name = "React.template"
+         var attributes = path.node.attributes;
+         attributes.push(
+           jsx.createAttribute("templatedata",jsx.createDataId()),
+           t.JSXAttribute(t.JSXIdentifier("is"), t.jSXExpressionContainer(
+            t.identifier(nodeName)
+          )))
+      }else{
+         helpers.nodeName(path);
       }
     }
   },
@@ -236,29 +222,8 @@ module.exports = {
     var nodeName = path.node.name.name;
     if (!modules.importComponents[nodeName]) {
       helpers.nodeName(path);
+    }else{
+      path.node.name.name = "React.template"
     }
   },
-  JSXAttribute(path) {
-    helpers.attrName(path);
-  },
-  JSXExpressionContainer: {
-    enter() {},
-    enter(path) {
-      var expr = path.node.expression;
-      if (t.isJSXAttribute(path.parent)) {
-        helpers.attrValue(path);
-      } else if (
-        expr.type === "MemberExpression" &&
-        generate(expr).code === "this.props.children"
-      ) {
-        //将 {this.props.children} 转换成 <slot />
-        var children = t.JSXOpeningElement(t.JSXIdentifier("slot"), [], true);
-        path.replaceWith(children);
-      } else {
-        //返回block元素或template元素
-        var block = helpers.logic(expr);
-        path.replaceWith(block);
-      }
-    }
-  }
 };

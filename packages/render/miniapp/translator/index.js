@@ -123,6 +123,7 @@ class Parser {
         //类库
         if (/wechat\.js/.test(destPath)) return;
         await fs.ensureFile(path.resolve(destPath));
+        console.log("sourcePath",sourcePath)
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
@@ -140,7 +141,7 @@ class Parser {
         //生成wxml与wxss
         if (/Page|Component/.test(output.type)) {
             fs.writeFile(basePath + ".wxml", output.wxml, () => {});
-            fs.writeFile(basePath + ".wxss", output.wxss, () => {});
+            fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }
     }
 

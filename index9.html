@@ -2,88 +2,57 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <script type='text/javascript' src="./dist/React.js"></script>
-    <script type='text/javascript' src="./dist/Router.js"></script>
-    <script type='text/javascript' src="./lib/babel.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
 
 </head>
 Pro
+
 <body>
 
-    <pre>React 15 </pre>
+  <pre>React 15 </pre>
 
 
-    <div id='root' class="root">
+  <div id='root' class="root">
 
-    </div>
-    <script type='text/babel'>
-          var container = document.getElementById("root")
-      
-
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-          }
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs\n', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs\n', b, a + '' === b + '');
-                  },
-                  toMatch(reg){
-                    console.log(a, 'vs', reg, reg.test(a)); 
-                  },
-                  toWarnDev(b){
-                    throw b
-                  }
-              };
-         }; 
- var { Router, Link  } = ReachRouter;
- const Logo = () => <div>这是LOGO</div>
- 
-
-const App = () => (
-  <div>
-    <h1>Tutorial!</h1>
-    <nav>
-      <Link to="/">Home</Link>{" "}
-      <Link to="dashboard">Dashboard</Link>{" "}
-      <Link to="invoices/123">Invoice 123</Link>{" "}
-      <Link to="invoices/abc">Invoice ABC</Link>
-    </nav>
-    
-    <Router>
-      <Home path="/" />
-      <Dashboard path="/dashboard" />
-      <Invoice path="invoices/:invoiceId" />
-    </Router>
   </div>
-);
+  <script>
+    var b = [1, 5, 8, 9, 19, 33]
+    function search(array, min, max, target) {
+      var index = Math.floor(min + (max - min) / 2);
 
-const Home = () => (
-  <div>
-    <h2>Welcome</h2>
-  </div>
-);
+      var middle = array[index]
+      console.log(index, middle, target)
+      if (middle === target) { //index命中
+        return target
+      } else if (middle < target) {//index已排除，从[min, index-1]来找
+        return search(array, min, index - 1, target)
+      } else if (middle > target) {//index已排除，从[index+1, max]来找
+        console.log("====", index + 1, max)
+        return search(array, index + 1, max, target)
+      }
 
-const Dashboard = () => (
-  <div>
-    <h2>Dashboard</h2>
-  </div>
-);
+      return null
+    }
 
-const Invoice = (props) => (
-  <div>
-    <h2>Invoice {props.invoiceId}</h2>
-  </div>
-);
+    function binarySearch(arr, low, high, key) {
+      if (low > high) {
+        return -1;
+      }
+      var mid = parseInt((high + low) / 2);
+      if (arr[mid] == key) {
+        return mid;
+      } else if (arr[mid] > key) {
+        return binarySearch(arr, low, mid - 1, key);
+      } else if (arr[mid] < key) {
+        return binarySearch(arr, mid + 1, high, key);
+      }
+    }
 
-ReactDOM.render(<App/>, container);
-
-    </script>
+    var has = binarySearch(b, 0, b.length - 1, 19)
+    console.log(has)
+  </script>
 
 
 </html>

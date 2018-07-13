@@ -1,45 +1,33 @@
 import { Page } from "../wechat";
 import "./page.css";
 import Dog from "../components/dog/dog";
-
 const e = "e";
 class P extends Page {
   constructor(props) {
     super(props);
     this.state = {
-      items: ["hello"],
-      name: {
-        a: {}
-      }
+      name: 'hehe',
+      array: [
+        {name: "dog1",text: "text1"},
+        {name: "dog2",text: "text2"},
+        {name: "dog3",text: "text3"},
+      ]
     };
   }
-
   onClick() {
     console.log("test click1" + e);
-    var _this = this;
-    setTimeout(function() {
-      _this.setState({});
-    });
-
-    this.setState({
-      arr: [
-        [{ id: 3 }, { id: 4 }],
-        [{ id: 3 }, { id: 4 }],
-        [{ id: 3 }, { id: 4 }]
-      ]
-    });
   }
   render() {
     return (
-      <view>
-        <view>
+      <div>
+        <div>
           {this.state.array.map(function(el) {
-            return <Dog key={xxx} />;
+            return <Dog key={el.name} name={el.name}>{el.text}</Dog>;
           })}
-        </view>
-        <Dog sex={this.props.dogsex} />
-      </view>
+        </div>
+        <Dog name={this.state.name} />
+      </div>
     );
   }
 }
-//export default P;
+export default P;
