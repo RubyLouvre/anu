@@ -15,14 +15,15 @@ function miniappPlugin(api) {
 
 function transform(code, sourcePath) {
   modules.current = sourcePath.replace(process.cwd(), "");
-  var ret = (modules[modules.current] = {
-    useComponents: {}
-  });
+
   if (/\/components\//.test(sourcePath)) {
     modules.componentType = "Component";
   } else if (/\/pages\//.test(sourcePath)) {
     modules.componentType = "Page";
+  } else if(/app\.js/.test(sourcePath)){
+    modules.componentType = "App";
   }
+  console.log(sourcePath, modules.componentType)
   var result = babel.transform(code, {
     babelrc: false,
     plugins: [
@@ -33,7 +34,9 @@ function transform(code, sourcePath) {
       miniappPlugin
     ]
   });
+  var ret = Object.assign({}, modules )
   modules.reset();
+  
   ret.js = result.code;
   return ret;
 }

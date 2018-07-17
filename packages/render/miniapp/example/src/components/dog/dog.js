@@ -1,7 +1,7 @@
 
-import React,{Component} from '../../reactWX'
+import React from '../../reactWX'
 
-class Dog extends Component {
+class Dog extends React.Component {
    state = {
      sex: "男"
    }

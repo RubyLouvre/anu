@@ -45,7 +45,7 @@ module.exports = function render(path, type, componentName, modules) {
         wxml = `<import src="${modules.importComponents[i]}.wxml" />\n` + wxml;
       }
     }
-    modules.set("wxml", wxml); //path.node.params
+    modules.wxml = wxml; //path.node.params
   } else {
     var msg = type + componentName;
     var statement =

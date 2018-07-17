@@ -6,20 +6,10 @@ const generate = require("babel-generator").default;
 module.exports = {
   enter(path) {
     //重置数据
-    let className = path.node.superClass ? path.node.superClass.name : "";
-    let match = className.match(/\.?(App|Page|Component)/);
+
     modules.className = path.node.id.name;
-    modules.parentName = className || "Object";
-    if (match) {
-      //获取类的组件类型与名字
-      var componentType = match[1];
-      if (componentType === "Component") {
-        modules.componentName = path.node.id.name;
-      } else {
-        modules.componentName = "";
-      }
-      modules.setType(componentType);
-    }
+    modules.parentName = generate(path.node.superClass).code || "Object";
+   
   },
   exit(path) {
     // 将类表式变成函数调用

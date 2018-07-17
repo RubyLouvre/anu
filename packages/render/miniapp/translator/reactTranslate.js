@@ -68,16 +68,17 @@ module.exports = {
     exit(path) {
       //函数声明转换为无状态组件
       var name = path.node.id.name;
-      if (!modules.componentType) {
-        modules.componentName = name;
-        modules.setType("Component");
+      if (modules.componentType === "Component") {
+      /*  modules.componentName = name;
         //转译模板
+        console.log("无状态组件!!",modules.componentType, name)
         helpers.render(path, "无状态组件", name, modules);
 
         var call = t.expressionStatement(
           t.callExpression(t.identifier("Page"), [t.objectExpression([])])
         );
         path.replaceWith(call);
+        */
       }
     }
   },
@@ -204,7 +205,6 @@ module.exports = {
     //  enter: function(path) {},
     enter: function(path) {
       var nodeName = path.node.name.name;
-      console.log(nodeName, "))))");
       if (modules.importComponents[nodeName]) {
         modules.usedComponents[nodeName] = true;
         path.node.name.name = "React.template";

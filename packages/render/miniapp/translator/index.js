@@ -3,6 +3,9 @@
 const rollup = require("rollup");
 const resolve = require("rollup-plugin-node-resolve");
 const rBabel = require("rollup-plugin-babel");
+const commonjs = require('rollup-plugin-commonjs');
+
+
 const chalk = require("chalk");
 const path = require("path");
 const wt = require("wt");
@@ -59,6 +62,9 @@ class Parser {
                         "transform-class-properties",
                         ignoreStyles
                     ]
+                }),
+                commonjs({
+
                 })
             ]
         };
@@ -103,12 +109,7 @@ class Parser {
     async processJSON() {
         this.outputs.forEach(function(el) {
             console.log(el.type)
-            Object.keys(el.useComponents).forEach(function(href) {
-              if(modules[href]){
-               // console.log(href, modules[href].type, el.jsonPath, "----")
-              }
-             
-            })
+          
         })
     }
     async codegen(id, dependencies, code, babeled) {
@@ -121,13 +122,16 @@ class Parser {
         }
         const destPath = path.join(this.output, srcPath);
         //类库
-        if (/wechat\.js/.test(destPath)) return;
+        if (/reactWX/i.test(destPath)){
+            //拷贝
+            return;
+        } 
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
         //生成JS与JSON
-        if (/Page|App|Component/.test(output.type)) {
+        if (/Page|App|Component/.test(output.componentType)) {
             fs.writeFile(destPath, output.js, () => {});
             delete output.js
             output.jsonPath = basePath + ".json"
@@ -138,7 +142,7 @@ class Parser {
               */
         }
         //生成wxml与wxss
-        if (/Page|Component/.test(output.type)) {
+        if (/Page|Component/.test(output.componentType)) {
             fs.writeFile(basePath + ".wxml", output.wxml, () => {});
             fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }

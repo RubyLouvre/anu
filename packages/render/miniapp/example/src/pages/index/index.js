@@ -1,8 +1,8 @@
-import React, { Component } from "../../reactWX";
+import React  from "../../reactWX";
 import "./page.css";
 import Dog from "../../components/dog/dog";
 const e = "e";
-class P extends Component {
+class P extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
