@@ -1,6 +1,8 @@
-export function createPageConfig(PageClass) {
+export function createPage(PageClass) {
     var instance = ReactDOM.render(React.createElement(PageClass), {
-      type: "div",
+      type: "view",
+      props:{},
+      children: [],
       root: true
     });
     var config = {

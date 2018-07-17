@@ -1,4 +1,4 @@
-function template(props) {
+export function template(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
     var clazz = props.is;
     if (!clazz.hackByMiniApp) {

@@ -2,12 +2,10 @@ const syntaxJSX = require("babel-plugin-syntax-jsx");
 const babel = require("babel-core");
 const t = require("babel-types");
 const generate = require("babel-generator").default;
-
 const modules = require("../modules");
 const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
-
 const jsx = require("../jsx/jsx");
 
 /**

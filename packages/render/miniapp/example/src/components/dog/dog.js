@@ -1,5 +1,5 @@
 
-import {Component} from '../../wechat'
+import React,{Component} from '../../reactWX'
 
 class Dog extends Component {
    state = {

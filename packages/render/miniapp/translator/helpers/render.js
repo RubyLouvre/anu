@@ -2,6 +2,8 @@ const generate = require("babel-generator").default;
 const prettifyXml = require("prettify-xml");
 const logic = require("./logic");
 const wxmlHelper = require("./wxml");
+const babel = require("babel-core");
+const jsx = require("babel-plugin-transform-react-jsx");
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -16,6 +18,15 @@ module.exports = function render(path, type, componentName, modules) {
   if (expr && expr.type == "ReturnStatement") {
     var needWrap = expr.argument.type !== "JSXElement";
     var jsx = generate(expr.argument).code;
+    var jsxAst = babel.transform(jsx,{
+      babelrc: false,
+      plugins: [
+        "transform-react-jsx"
+      ]
+    })
+
+    expr.argument =  jsxAst.ast.program.body[0]
+
     jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
     var wxml = wxmlHelper(jsx);
     if (needWrap) {

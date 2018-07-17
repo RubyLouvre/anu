@@ -58,8 +58,8 @@ module.exports = {
       if (methodName === "render") {
         //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
         helpers.render(path, "有状态组件", modules.componentName, modules);
-       
-       // path.remove();
+
+        // path.remove();
       }
     }
   },
@@ -72,8 +72,8 @@ module.exports = {
         modules.componentName = name;
         modules.setType("Component");
         //转译模板
-       helpers.render(path, "无状态组件", name, modules);
-     
+        helpers.render(path, "无状态组件", name, modules);
+
         var call = t.expressionStatement(
           t.callExpression(t.identifier("Page"), [t.objectExpression([])])
         );
@@ -201,29 +201,34 @@ module.exports = {
 
   //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
   JSXOpeningElement: {
-    enter: function(path) {},
-    exit: function(path) {
+    //  enter: function(path) {},
+    enter: function(path) {
       var nodeName = path.node.name.name;
+      console.log(nodeName, "))))");
       if (modules.importComponents[nodeName]) {
         modules.usedComponents[nodeName] = true;
-         path.node.name.name = "React.template"
-         var attributes = path.node.attributes;
-         attributes.push(
-           jsx.createAttribute("templatedata",jsx.createDataId()),
-           t.JSXAttribute(t.JSXIdentifier("is"), t.jSXExpressionContainer(
-            t.identifier(nodeName)
-          )))
-      }else{
-         helpers.nodeName(path);
+        path.node.name.name = "React.template";
+        var attributes = path.node.attributes;
+        attributes.push(
+          jsx.createAttribute("templatedata", jsx.createDataId()),
+          t.JSXAttribute(
+            t.JSXIdentifier("is"),
+            t.jSXExpressionContainer(t.identifier(nodeName))
+          )
+        );
+      } else {
+        if (nodeName != "React.template") {
+          helpers.nodeName(path);
+        }
       }
     }
   },
   JSXClosingElement: function(path) {
     var nodeName = path.node.name.name;
-    if (!modules.importComponents[nodeName]) {
+    if (!modules.importComponents[nodeName] && nodeName !== "React.template") {
       helpers.nodeName(path);
-    }else{
-      path.node.name.name = "React.template"
+    } else {
+      path.node.name.name = "React.template";
     }
-  },
+  }
 };
