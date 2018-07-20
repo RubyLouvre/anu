@@ -4,11 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<script type='text/javascript' src="./dist/React.js"></script>
-<!--  <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
-	<script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
-	<script type='text/javascript' src="./lib/babel.js"></script>
+
 
 </head>
 
@@ -18,108 +14,98 @@
 	<div id='root' class="root">
 
 	</div>
-	<script type='text/babel'>
-        
-        var container = document.getElementById('root');
-          var div = container;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-      }
-      var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  }
-              };
-       };
+	<script>
 
-       function prev(el){
-			return el.previousSibling || {}
-		}
-		var div = document.createElement("div")
-		class InnerBox extends React.PureComponent {
-			state = {
-				current: 0,
-			}
-			componentDidMount() {
-				console.log('InnerBox render');
-				setTimeout(() => {
-					console.log('current跟上次不一样)');
-					this.setState({ current: 1 }, ()=>{
-						expect(prev(this.refs.aaa).id).toBe("a2")
-					});
-				}, 50);
-				setTimeout(() => {
-					console.log('current跟上次一样，dom位置互换');
-					this.setState({ current: 1 }, ()=>{
-						expect(prev(this.refs.aaa).id).toBe("a2")
-					});
-				}, 100);
-				setTimeout(() => {
-					console.log('current跟上次不一样，dom位置复原');
-					this.setState({ current: 2 }, ()=>{
-						expect(prev(this.refs.aaa).id).toBe("a2")
-					});
-				}, 150);
-				setTimeout(() => {
-					console.log('current跟上次一样，dom位置互换');
-					this.setState({ current: 2 }, ()=>{
-						expect(prev(this.refs.aaa).id).toBe("a2")
-					  
-					});
-				}, 200);
-			}
-			render() {
-				console.log('inner render trigger');
-				return (
-					<div id="a3" ref="aaa">
-						<div style={{ height: 100 }}>内部组件{this.state.current}</div>
-					</div>
-				);
-			}
-			
-		};
-
-		class WrapBox extends React.PureComponent {
-			state = {
-				value: 1,
-			}
-			componentDidMount() {
-				console.log('WrapBox render');
-				// 此处如果在组件创建以后，再次setState，会导致dom位置错误的现象发生
-				setTimeout(() => {
-					console.log('父容器state值改变');
-					this.setState({
-						value: 1,
-					});
-				}, 70);
-			}
-			render() {
-				console.log('wrap render trigger');
-				return (
-					<quoteblock>
-						<div id="a1">标题区域1</div>
-						<div id="a2">标题区域2</div>
-						<InnerBox />
-						<div id="a4">标题区域3</div>
-					</quoteblock>
-				);
+		function HeapSort(data) {
+			for (var i = 0, size = data.length; i < size; i++) {
+				createMaxHeap(data, size - 1 - i);
+				swap(data, 0, size - 1 - i);
+				console.log(data.concat())
 			}
 		}
-	
-		ReactDOM.render(
-			<div>
-				<WrapBox />
-				<div>hello anu!</div>
-			</div>,
-			div
-		);
-    </script>
+
+
+		/**
+		 * 其实只要把初始化堆的这个函数搞清楚
+		 * 以后堆排序就十分的简单了
+		 * @param data
+		 * @param lastIndex
+		 */
+		function createMaxHeap(data, lastIndex) {
+			/**传入的这个参数lastIndex就是无序区的最后一个元素的位置*/
+			for (var i = (lastIndex - 1) >> 1; i >= 0; i--) {
+				//用于保存当前节点的位置
+				var k = i;//取得某一点的父节点索引
+				//如果当前节点存在子节点
+				while (k * 2 + 1 <= lastIndex) {
+					//这个循环是保证将破坏后的最大堆恢复，
+					//就是交换以后有些堆结构会被破坏掉需要重新初始化
+					var biggerIndex = k * 2 + 1;
+					//这里默认左子树上面的是较大的值
+					if (biggerIndex < lastIndex) {
+						if (data[biggerIndex] < data[biggerIndex + 1]) {
+							biggerIndex++;
+						}
+					}
+					//如果子树上面的值比父节点中的大，那么就会将之交换，并且以交换的字节点为根的最大堆就会有改变，需要进一步进行初始化，如果
+					//如果子树上的值小于父节点的值就进行交换,并且将biggerIndex的值赋给k.否则的话退出while循环
+					if (data[biggerIndex] > data[k]) {
+						swap(data, biggerIndex, k);
+						k = biggerIndex;
+					} else {//如果子树上的值比父节点的小，那么就不用进行交换，并且以子节点为根结点的最大堆结构不会改变，可以直接退出
+						break;
+					}
+				}
+			}
+		}
+		//https://blog.csdn.net/zhangfeng12345677/article/details/78165097
+		function shik(array, i, size) {
+			var left = 2 * i + 1; //左孩子
+			var right = 2 * i + 2; //右孩子
+			var max = i; //临时变量
+			if (i < size / 2) { //如果i是叶子节点就结束
+				if (left < size && array[max] < array[left]) {
+					max = left;
+				}
+				if (right < size && array[max] < array[right]) {
+					max = right;
+				}
+				if (max != i) {
+					swap(array, max, i); //交换后破环了子树的堆结构
+					shik(array, max, size); //递归，调节子树为堆
+				}
+			}
+		}
+		function swap(array, a, b) {
+			var temp = array[a];
+			array[a] = array[b];
+			array[b] = temp;
+		}
+		function buildHeap(array, size) {
+			//注意:这里只是经过一次堆调整之后,并不是将这些数完全用堆排序完成排序
+			for (var i = size >> 1; i >= 0; i--) {
+				shik(array, i, size);
+			}
+		}
+		function heapSort(array) {
+			var size = array.length;
+			buildHeap(array, size);
+			//i为无序区的长度，经过如下两步，长度递减
+			for (var i = size - 1; i > 0; i--) {
+				//1.每次将堆顶元素和无序区最后一个元素交换即将无序区最大元素放入有序区
+				swap(array, i, 0);  //堆顶即下标为0的元素
+				//2.将无序区调整为大顶堆，即选择出最大的元素。
+				shik(array, i, 0);
+				console.log("-----")
+			}
+		}
+
+
+		HeapSort([3, 2, 4, 5, 9, 7, 8, 1, 6, 17])
+		console.log("=========")
+		heapSort([3, 2, 4, 5, 9, 7, 8, 1, 6, 17])
+
+	</script>
 
 
 </html>
-
-
