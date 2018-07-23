@@ -1786,15 +1786,18 @@
       }
   }
 
-  function createPage(PageClass) {
+  function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     var instance = render(React.createElement(PageClass), {
-      type: "view",
-      props: {},
+      type: "page",
+      props: {
+        path: path
+      },
       children: [],
       root: true,
       appendChild: function appendChild() {}
     });
+    console.log(instance, "instance");
     var config = {
       data: {
         state: instance.state,
@@ -1808,7 +1811,7 @@
         instance.componentWillUnmount && instance.componentWillUnmount();
       }
     };
-    instance.allTemplateData.forEach(function (el) {
+    (instance.allTemplateData || []).forEach(function (el) {
       if (config.data[el.templatedata]) {
         config.data[el.templatedata].push(el);
       } else {
