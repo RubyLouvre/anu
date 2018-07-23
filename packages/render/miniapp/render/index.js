@@ -11,36 +11,38 @@ import {
   isValidElement,
   createFactory
 } from "react-core/createElement";
-import { Fragment, getWindow } from "react-core/util";
+import { Fragment, getWindow, miniCreateClass } from "react-core/util";
 import { createPage } from "./createPage";
 import { template } from "./template";
+import { eventSystem } from "./eventSystem";
 
 import { Renderer } from "./wxrender";
 let win = getWindow();
 let prevReact = win.React;
 let React;
+//用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
+let classCache = eventSystem.classCache;
 
 let { render } = Renderer;
-/*
-    DOMRenderer.injectIntoDevTools({
-        findFiberByHostInstance: get,
-        findHostInstanceByFiber: findDOMNode,
-        bundleType: 1,
-        version: "VERSION",
-        rendererPackageName: "react-dom"
-    });
-    */
+
 React = win.React = win.ReactDOM = {
   //平台相关API
   eventSystem,
-
+  miniCreateClass: function(a, b, c, d){
+   var clazz = miniCreateClass.apply(null, arguments);
+   var uuid = ("c" + Math.random()).replace(/0\./,"")
+   classCache[uuid] = clazz;
+   clazz.discernID = uuid;
+   return clazz;
+  },
+  
   //fiber底层API
   version: "VERSION",
   render: render,
   hydrate: render,
   template,
   createPage,
-  unstable_batchedUpdates: DOMRenderer.batchedUpdates,
+//  unstable_batchedUpdates: DOMRenderer.batchedUpdates,
   Fragment,
   PropTypes,
   Children,

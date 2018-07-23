@@ -103,6 +103,7 @@ class Parser {
         //拷贝project.config.json
         const filePath = path.resolve(sourceDirPath, "project.config.json");
         if (fs.existsSync(filePath)) {
+          
             fs.copyFile(filePath, this.output + "/project.config.json", () => {});
         }
     }
@@ -132,6 +133,7 @@ class Parser {
         const basePath = destPath.replace(".js", "");
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
+           
             fs.writeFile(destPath, output.js, () => {});
             delete output.js
             output.jsonPath = basePath + ".json"
@@ -143,7 +145,8 @@ class Parser {
         }
         //生成wxml与wxss
         if (/Page|Component/.test(output.componentType)) {
-            fs.writeFile(basePath + ".wxml", output.wxml, () => {});
+            console.log(output.wxml == null)
+            fs.writeFile(basePath + ".wxml", output.wxml || "", () => {});
             fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }
     }

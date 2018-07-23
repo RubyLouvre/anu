@@ -25,6 +25,7 @@ module.exports = {
     const call = t.expressionStatement(
       t.callExpression(t.identifier("React.miniCreateClass"), [
         t.identifier(modules.className),
+        t.identifier(modules.parentName),
         t.objectExpression(modules.thisMethods),
         t.objectExpression(modules.staticMethods)
       ])

@@ -1,7 +1,6 @@
 import { noop, topNodes, topFibers } from "react-core/util";
 import { createRenderer } from "react-core/createRenderer";
 import { render } from "react-fiber/scheduleWork";
-import { eventSystem } from "./eventSystem";
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
@@ -27,14 +26,11 @@ var autoContainer = {
   children: []
 };
 export let Renderer = createRenderer({
-  render(vnode) {
-    return render(vnode, autoContainer);
-  },
+  render: render,
   updateAttribute() {},
   updateContent(fiber) {
     fiber.stateNode.props = fiber.props;
   },
-  eventSystem,
 
   getRoot() {
     return autoContainer;
@@ -82,7 +78,7 @@ export let Renderer = createRenderer({
     let dom = fiber.stateNode;
     let children = dom && dom.children;
     if (dom && Array.isArray(children)) {
-      children.forEach(NoopRenderer.removeElement);
+      children.forEach(Renderer.removeElement);
     }
   },
   removeElement(fiber) {

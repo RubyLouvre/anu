@@ -141,7 +141,7 @@ module.exports = {
     if (modules.walkingMethod !== "render") {
       const code = generate(path.node).code;
       if (code === "this.state") {
-        path.node.property.name = "data";
+        //  path.node.property.name = "data";
       }
     }
   },
@@ -195,7 +195,7 @@ module.exports = {
     ) {
       var property = callee.property;
       if (property && property.name === "setState") {
-        property.name = "setData";
+       // property.name = "setData";
       }
     }
   },
