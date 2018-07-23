@@ -19,7 +19,7 @@ class P extends React.Component {
   }
   render() {
     return (
-      <div>
+      <div onClick={this.onClick}>
         <div>
           {this.state.array.map(function(el) {
             return (

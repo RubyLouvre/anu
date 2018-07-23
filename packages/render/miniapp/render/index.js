@@ -36,9 +36,9 @@ React = win.React = win.ReactDOM = {
   eventSystem,
   miniCreateClass: function(a, b, c, d) {
     var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = ("c" + Math.random()).replace(/0\./, "");
-    classCache[uuid] = clazz;
-    clazz.discernID = uuid;
+  //  var uuid = ("c" + Math.random()).replace(/0\./, "");
+    classCache[uuid] = clazz.prototype.classId
+   // clazz.discernID = uuid;
     return clazz;
   },
   findDOMNode: function(fiber) {

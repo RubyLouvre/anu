@@ -9,7 +9,7 @@ module.exports = {
 
     modules.className = path.node.id.name;
     modules.parentName = generate(path.node.superClass).code || "Object";
-   
+    modules.classId = ("c" + Math.random()).replace(/0\./, "");
   },
   exit(path) {
     // 将类表式变成函数调用
@@ -22,6 +22,10 @@ module.exports = {
     }
     var parent = path.parentPath.parentPath;
     parent.insertBefore(modules.ctorFn);
+    //用于绑定事件
+    modules.thisMethods.push(t.objectProperty(
+      t.identifier("classId"), t.stringLiteral(modules.classId)
+    ))
     const call = t.expressionStatement(
       t.callExpression(t.identifier("React.miniCreateClass"), [
         t.identifier(modules.className),
@@ -36,7 +40,6 @@ module.exports = {
     path.replaceWith(call);
     if (path.type == "CallExpression") {
       if (path.parentPath.type === "VariableDeclarator") {
-       
         if (parent.type == "VariableDeclaration") {
           parent.node.kind = "";
         }

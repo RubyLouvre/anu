@@ -67,6 +67,7 @@ var visitor = {
   },
   JSXAttribute(path) {
     attrNameHelper(path);
+  
   },
 
   JSXExpressionContainer: {
@@ -74,7 +75,7 @@ var visitor = {
     exit(path) {
       var expr = path.node.expression;
       if (t.isJSXAttribute(path.parent)) {
-        attrValueHelper(path);
+        attrValueHelper(path, modules);
       } else if (
         expr.type === "MemberExpression" &&
         generate(expr).code === "this.props.children"

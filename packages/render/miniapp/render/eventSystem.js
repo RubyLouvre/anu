@@ -1,6 +1,5 @@
-
 export var eventSystem = {
-    classCache: {},
+  classCache: {},
   dispatchEvent: function(e) {
     //在存在bindxxx的元素中，添加一个data-eventid="xxx$yyy"的属性，
     //bindxxx的回调名统一改成dispatchEvent;

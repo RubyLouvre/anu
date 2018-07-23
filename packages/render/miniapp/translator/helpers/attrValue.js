@@ -1,8 +1,9 @@
 //将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
 const t = require("babel-types");
 const generate = require("babel-generator").default;
+const jsx = require("../jsx/jsx");
 
-module.exports = function(path) {
+module.exports = function(path, modules) {
   var expr = path.node.expression;
   var attrName = path.parent.name.name;
   var isEvent = /^bind/.test(attrName);
@@ -17,15 +18,30 @@ module.exports = function(path) {
       if (isEvent) {
         throwEventValue(attrName, attrValue);
       }
+
       replaceWithExpr(path, attrValue);
       break;
     case "MemberExpression":
-      replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""), isEvent);
+      if (isEvent) {
+        replaceWithExpr(path, "dispatchEvent", isEvent);
+        var parent = path.parentPath.parent;
+        if (parent) {
+          parent.attributes.push(
+            jsx.createAttribute(
+              "data-eventid",
+              modules.classId + "$" + attrValue.replace(/^\s*this\./, "")
+            )
+          );
+        }
+      } else {
+        replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""));
+      }
       break;
     case "CallExpression":
       if (isEvent) {
         var match = attrValue.match(/this\.(\w+)\.bind/);
         if (match && match[1]) {
+          console.log(match[1]);
           replaceWithExpr(path, match[1], true);
         } else {
           throwEventValue(attrName, attrValue);
@@ -38,17 +54,23 @@ module.exports = function(path) {
       if (attrName === "style") {
         var styleValue = expr.properties
           .map(function(node) {
-            return hyphen(node.key.name) +
+            return (
+              hyphen(node.key.name) +
               ": " +
-             ( /Expression|Identifier/.test(node.value.type)
-              ? `{{${generate(node.value).code}}}`
-              : node.value.value);
+              (/Expression|Identifier/.test(node.value.type)
+                ? `{{${generate(node.value).code}}}`
+                : node.value.value)
+            );
           })
           .join(" ;");
         replaceWithExpr(path, styleValue, true);
       } else if (isEvent) {
         throwEventValue(attrName, attrValue);
       }
+      break;
+    default:
+      console.log("===0000=", path.node.expression.type);
+
       break;
   }
 };
