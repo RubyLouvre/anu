@@ -1797,7 +1797,6 @@
       root: true,
       appendChild: function appendChild() {}
     });
-    console.log(instance, "instance");
     var config = {
       data: {
         state: instance.state,
@@ -1811,7 +1810,9 @@
         instance.componentWillUnmount && instance.componentWillUnmount();
       }
     };
-    (instance.allTemplateData || []).forEach(function (el) {
+    var list = instance.allTemplateData || [];
+    console.log("list", list.length, list);
+    list.forEach(function (el) {
       if (config.data[el.templatedata]) {
         config.data[el.templatedata].push(el);
       } else {
@@ -1821,6 +1822,9 @@
     return config;
   }
 
+  function getData(instance) {
+    return instance.allTemplateData || (instance.allTemplateData = []);
+  }
   function template(props) {
     var clazz = props.is;
     if (!clazz.hackByMiniApp) {
@@ -1831,14 +1835,23 @@
           var old = a[method] || noop;
           a[method] = function () {
             var fiber = this._reactInternalFiber;
-            var parentComponent = fiber._owner;
-            var arr = parentComponent.allTemplateData || (parentComponent.allTemplateData = []);
-            arr.push({
-              props: this.props,
-              state: this.state,
-              templatedata: props.templatedata
-            });
-            old.call(this);
+            var inputProps = fiber._owner.props;
+            var p = fiber.return;
+            do {
+              if (p && isFn(p.type) && p.type !== template) {
+                break;
+              }
+            } while (p = p.return);
+            var parentInstance = p && p.stateNode;
+            if (parentInstance) {
+              var arr = getData(parentInstance);
+              arr.push({
+                props: this.props,
+                state: this.state,
+                templatedata: inputProps.templatedata
+              });
+              old.call(this);
+            }
           };
         });
       }
@@ -1935,6 +1948,30 @@
     }
   }
 
+  function findHostInstance(fiber) {
+      if (!fiber) {
+          return null;
+      } else if (fiber.nodeType) {
+          return fiber;
+      } else if (fiber.tag > 3) {
+          return fiber.stateNode;
+      } else if (fiber.tag < 3) {
+          return findHostInstance(fiber.stateNode);
+      } else if (fiber.refs && fiber.render) {
+          fiber = get(fiber);
+          var childrenMap = fiber.children;
+          if (childrenMap) {
+              for (var i in childrenMap) {
+                  var dom = findHostInstance(childrenMap[i]);
+                  if (dom) {
+                      return dom;
+                  }
+              }
+          }
+      }
+      return null;
+  }
+
   var win = getWindow();
   var prevReact = win.React;
   var React$1 = void 0;
@@ -1948,6 +1985,18 @@
       classCache$1[uuid] = clazz;
       clazz.discernID = uuid;
       return clazz;
+    },
+    findDOMNode: function findDOMNode(fiber) {
+      if (fiber == null) {
+        return null;
+      }
+      if (fiber.type + "" === fiber.type) {
+        return fiber;
+      }
+      if (!fiber.render) {
+        throw "findDOMNode:invalid type";
+      }
+      return findHostInstance(fiber);
     },
     version: "1.4.5",
     render: render$1,
