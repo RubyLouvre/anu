@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/ReactWX.js"></script>
+	<script type='text/javascript' src="./dist/ReactWX.js"></script>
 
 
 </head>
@@ -18,62 +18,63 @@
 
 	</div>
 
-<script>
+	<script>
 
-function Dog() {}
+		function Dog() { }
 
-Dog = React.miniCreateClass(Dog, React.Component, {
- render: function () {
-   return React.createElement(
-	 "view",
-	 null,
-	 this.props.name,
-	 "-",
-	 this.props.children
-   );;
- }
-}, {});
+		Dog = React.miniCreateClass(Dog, React.Component, {
+			render: function () {
+				return React.createElement(
+					"view",
+					null,
+					this.props.name,
+					"-",
+					this.props.children
+				);;
+			}
+		}, {});
 
-const e = "e";
+		const e = "e";
 
-function P(props) {
-  this.state = {
-    name: "hehe",
-	array: [{ name: "dog1", text: "text1" },
-	 { name: "dog2", text: "text2" }, 
-	 { name: "dog3", text: "text3" }]
-  };
-}
+		function Page1(props) {
+			this.state = {
+				name: "hehe",
+				array: [{ name: "dog1", text: "text1" },
+				{ name: "dog2", text: "text2" },
+				{ name: "dog3", text: "text3" }]
+			};
+		}
 
- P = React.miniCreateClass(P, React.Component, {
-  onClick: function () {
-    console.log("test click1" + e);
-  },
-  
-  render: function () {
-    return React.createElement(
-      "view",
-      null,
-      React.createElement(
-        "view",
-        {className:"wrap"},
-        this.state.array.map(function (el) {
-          return React.createElement(
-            React.template,
-            { key: el.name, name: el.name, templatedata: "data1019994691472739", is: Dog
-            },
-            el.text
-          );
-        })
-      ),
-      React.createElement(React.template, { name: this.state.name, templatedata: "data22616031518449997", is: Dog })
-    );;
-  }
-}, {});
+		Page1 = React.miniCreateClass(Page1, React.Component, {
+			onClick: function () {
+				console.log("test click1" + e);
+			},
 
-React.createPage(P, "pages/index/index");
+			render: function () {
+				return React.createElement(
+					"view",
+					null,
+					React.createElement(
+						"view",
+						{ className: "wrap" },
+						this.state.array.map(function (el) {
+							return React.createElement(
+								React.template,
+								{
+									key: el.name, name: el.name, templatedata: "data1019994691472739", is: Dog
+								},
+								el.text
+							);
+						})
+					),
+					React.createElement(React.template, { name: this.state.name, templatedata: "data22616031518449997", is: Dog })
+				);;
+			}
+		}, {});
+
+		React.createPage(Page1, "pages/index/index");
 
 
-</script>
+	</script>
 
 </html>

@@ -43,7 +43,7 @@ export let Renderer = createRenderer({
       ? {
           type: fiber.type,
           props: fiber.props || {},
-          children: fiber.props.children
+          children: []
         }
       : {
           type: fiber.type,
@@ -56,6 +56,7 @@ export let Renderer = createRenderer({
       forwardFiber = fiber.forwardFiber,
       before = forwardFiber ? forwardFiber.stateNode : null,
       children = parentNode.children;
+
     try {
       if (before == null) {
         //要插入最前面

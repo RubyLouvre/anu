@@ -1884,7 +1884,7 @@
       return fiber.tag === 5 ? {
         type: fiber.type,
         props: fiber.props || {},
-        children: fiber.props.children
+        children: []
       } : {
         type: fiber.type,
         props: fiber.props
