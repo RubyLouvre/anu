@@ -52,6 +52,9 @@ class Parser {
             input: path.resolve(this.path),
             plugins: [
                 resolve(),
+                commonjs({
+                    include: 'node_modules/**'
+                }),
                 rBabel({
                     exclude: ["node_modules/**"],
                     babelrc: false,
@@ -63,9 +66,7 @@ class Parser {
                         ignoreStyles
                     ]
                 }),
-                commonjs({
-
-                })
+                
             ]
         };
         this.output = outputDirPath;
