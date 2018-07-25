@@ -123,15 +123,18 @@ class Parser {
             srcPath = `nodeModules${srcPath}`;
         }
         const destPath = path.join(this.output, srcPath);
-        //类库
-        if (/reactWX/i.test(destPath)){
-            //拷贝
-            return;
-        } 
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
+
+        //将cjs规范的reactWX库写入到build目录中
+        if(/reactWX/i.test(destPath)){
+            fs.writeFile(destPath, output.js, () => {});
+            delete output.js
+            this.outputs.push(output)
+        }
+
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
            
