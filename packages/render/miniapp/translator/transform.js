@@ -31,6 +31,7 @@ function transform(code, sourcePath) {
       //  "transform-react-jsx",
       "transform-decorators-legacy",
       "transform-object-rest-spread",
+      "transform-es2015-modules-commonjs",
       miniappPlugin
     ]
   });
