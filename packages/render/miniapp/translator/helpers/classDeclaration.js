@@ -9,7 +9,7 @@ module.exports = {
 
     modules.className = path.node.id.name;
     modules.parentName = generate(path.node.superClass).code || "Object";
-    modules.classId = ("c" + Math.random()).replace(/0\./, "");
+    modules.classCode = ("c" + Math.random()).replace(/0\./, "");
   },
   exit(path) {
     // 将类表式变成函数调用
@@ -24,7 +24,7 @@ module.exports = {
     parent.insertBefore(modules.ctorFn);
     //用于绑定事件
     modules.thisMethods.push(t.objectProperty(
-      t.identifier("classId"), t.stringLiteral(modules.classId)
+      t.identifier("classCode"), t.stringLiteral(modules.classCode)
     ))
     const call = t.expressionStatement(
       t.callExpression(t.identifier("React.miniCreateClass"), [

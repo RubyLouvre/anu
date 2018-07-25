@@ -7,16 +7,26 @@ export function template(props) {
   var clazz = props.is;
   if (!clazz.hackByMiniApp) {
     clazz.hackByMiniApp = true;
+    clazz.instances = clazz.instances || [];
     //如果是有狀态组件
     var a = clazz.prototype;
     if (a && a.isReactComponent) {
       Array("componentWillMount", "componentWillUpdate").forEach(function(
         method
       ) {
-        var old = a[method] || noop;
+        var oldHook = a[method] || noop;
         a[method] = function() {
           var fiber = this._reactInternalFiber;
           var inputProps = fiber._owner.props;
+          if (!this.instanceCode) {
+            this.instanceCode = Math.random();
+          }
+
+          this.props.instanceCode = this.instanceCode;
+          var instances = this.constructor.instances;
+          if (instances.indexOf(this) === -1) {
+            instances.push(this);
+          }
 
           var p = fiber.return;
           do {
@@ -27,16 +37,25 @@ export function template(props) {
           var parentInstance = p && p.stateNode;
           if (parentInstance) {
             var arr = getData(parentInstance);
-            //console.log(props.templatedata, "+++++++")
             arr.push({
               props: this.props,
               state: this.state,
               templatedata: inputProps.templatedata
             });
-            old.call(this);
+            oldHook.call(this, arguments);
           }
         };
       });
+      //重写componentWillUnmount
+      var oldUnmount = a.componentWillUnmount || noop
+      a.componentWillUnmount = function() {
+        var instances = this.constructor.instances;
+        var index = instances.indexOf(this);
+        if (index !== -1) {
+          instances.splice(index, 1);
+        }
+        oldUnmount.call(this);
+      };
     } else {
     }
   }
