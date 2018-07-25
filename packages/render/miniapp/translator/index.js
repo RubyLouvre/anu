@@ -52,6 +52,9 @@ class Parser {
             input: path.resolve(this.path),
             plugins: [
                 resolve(),
+                commonjs({
+                    include: 'node_modules/**'
+                }),
                 rBabel({
                     exclude: ["node_modules/**"],
                     babelrc: false,
@@ -62,10 +65,8 @@ class Parser {
                         "transform-class-properties",
                         ignoreStyles
                     ]
-                }),
-                commonjs({
-
                 })
+                
             ]
         };
         this.output = outputDirPath;
