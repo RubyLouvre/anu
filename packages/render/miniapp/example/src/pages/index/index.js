@@ -17,9 +17,12 @@ class P extends React.Component {
   onClick() {
     console.log("test click1" + e);
   }
+  onClick() {
+    console.log("test keydown");
+  }
   render() {
     return (
-      <div onClick={this.onClick}>
+      <div onClick={this.onClick} onKeyDown={this.onKeyDown}>
         <div>
           {this.state.array.map(function(el) {
             return (

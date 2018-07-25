@@ -36,6 +36,7 @@ React = win.React = win.ReactDOM = {
   eventSystem,
   miniCreateClass: function(a, b, c, d) {
     var clazz = miniCreateClass.apply(null, arguments);
+    var uuid = clazz.prototype.classId;
   //  var uuid = ("c" + Math.random()).replace(/0\./, "");
     classCache[uuid] = clazz.prototype.classId
    // clazz.discernID = uuid;

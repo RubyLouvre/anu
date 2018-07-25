@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-07-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-07-25
  * IE9+
  */
 
@@ -664,7 +664,7 @@
     classCache: {},
     dispatchEvent: function dispatchEvent(e) {
       var dataset = e.target.dataset || {};
-      var eventId = dataset.eventid;
+      var eventId = dataset[e.type + "Fn"];
       var classId = eventid.match(/[^$]+/)[0];
       var eventName = eventid.slice(classId.length + 1);
       var clazz = classCache[classId];
@@ -1981,9 +1981,8 @@
     eventSystem: eventSystem,
     miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
       var clazz = miniCreateClass.apply(null, arguments);
-      var uuid = ("c" + Math.random()).replace(/0\./, "");
-      classCache$1[uuid] = clazz;
-      clazz.discernID = uuid;
+      var uuid = clazz.prototype.classId;
+      classCache$1[uuid] = clazz.prototype.classId;
       return clazz;
     },
     findDOMNode: function findDOMNode(fiber) {

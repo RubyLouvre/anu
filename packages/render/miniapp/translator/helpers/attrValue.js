@@ -2,7 +2,17 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const jsx = require("../jsx/jsx");
-
+function addDataFn(path, attrName, attrValue, modules) {
+  var parent = path.parentPath.parent;
+  if (parent) {
+    parent.attributes.push(
+      jsx.createAttribute(
+        `data-${attrName.slice(4)}-fn`,
+        modules.classId + "$" + attrValue.replace(/^\s*this\./, "")
+      )
+    );
+  }
+}
 module.exports = function(path, modules) {
   var expr = path.node.expression;
   var attrName = path.parent.name.name;
@@ -24,15 +34,17 @@ module.exports = function(path, modules) {
     case "MemberExpression":
       if (isEvent) {
         replaceWithExpr(path, "dispatchEvent", isEvent);
-        var parent = path.parentPath.parent;
+        addDataFn(path, attrName, attrValue.replace(/^\s*this\./, ""), modules);
+        /* var parent = path.parentPath.parent;
         if (parent) {
           parent.attributes.push(
             jsx.createAttribute(
-              "data-eventid",
+              `data-${attrName.slice(0, 4)}-fn`,
               modules.classId + "$" + attrValue.replace(/^\s*this\./, "")
             )
           );
         }
+        */
       } else {
         replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""));
       }
@@ -41,8 +53,8 @@ module.exports = function(path, modules) {
       if (isEvent) {
         var match = attrValue.match(/this\.(\w+)\.bind/);
         if (match && match[1]) {
-          console.log(match[1]);
-          replaceWithExpr(path, match[1], true);
+          addDataFn(path, attrName, match[1], modules);
+          // replaceWithExpr(path, match[1], true);
         } else {
           throwEventValue(attrName, attrValue);
         }
