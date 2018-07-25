@@ -17,7 +17,7 @@ class P extends React.Component {
   onClick() {
     console.log("test click1" + e);
   }
-  onClick() {
+  onKeyDown() {
     console.log("test keydown");
   }
   render() {

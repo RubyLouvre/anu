@@ -11,11 +11,7 @@ import {
   isValidElement,
   createFactory
 } from "react-core/createElement";
-import {
-  Fragment,
-  getWindow,
-  miniCreateClass,
-} from "react-core/util";
+import { Fragment, getWindow, miniCreateClass } from "react-core/util";
 import { createPage } from "./createPage";
 import { template } from "./template";
 import { eventSystem } from "./eventSystem";
@@ -35,11 +31,10 @@ React = win.React = win.ReactDOM = {
   //平台相关API
   eventSystem,
   miniCreateClass: function(a, b, c, d) {
+    //保存所有class到classCache中，方便在事件回调中找到对应实例
     var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = clazz.prototype.classId;
-  //  var uuid = ("c" + Math.random()).replace(/0\./, "");
-    classCache[uuid] = clazz.prototype.classId
-   // clazz.discernID = uuid;
+    var uuid = clazz.prototype.classCode;
+    classCache[uuid] = clazz;
     return clazz;
   },
   findDOMNode: function(fiber) {
