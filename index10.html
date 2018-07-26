@@ -2,8 +2,8 @@
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
 
 
 </head>
@@ -11,101 +11,84 @@
 <body>
 
 
-	<div id='root' class="root">
+    <div id='root' class="root">
 
-	</div>
-	<script>
+    </div>
+    <script>
+        function swap(arr, i, j) {
+            var tmp = arr[i];
+            arr[i] = arr[j]
+            arr[j] = tmp;
+        }
 
-		function HeapSort(data) {
-			for (var i = 0, size = data.length; i < size; i++) {
-				createMaxHeap(data, size - 1 - i);
-				swap(data, 0, size - 1 - i);
-				console.log(data.concat())
+        function shik(array, i, n) {
+            var temp = array[i]; //保存父元素
+            for (var k = i * 2 + 1; k < n; k = k * 2 + 1) { //从i结点的左孩子开始
+                if (k + 1 < n && array[k] < array[k + 1]) { //挑出最大的孩子
+                    k++;
+                }
+                if (k < n && temp < array[k]) { //如果子节点大于父节点，将子节点值赋给父节点（不用进行交换）
+                    array[i] = array[k];
+                    i = k;
+                } else {
+                    break;
+                }
+            }
+            array[i] = temp; //将temp值放到最终的位置
+        }
+
+        function swap(arr, i, j) {
+            var tmp = arr[i];
+            arr[i] = arr[j]
+            arr[j] = tmp;
+        }
+
+        function Adjustdown(top, root, K) {
+            var parent = root;
+            var child = 2 * parent + 1;
+            while (parent < K) {
+                //右孩子存在且小于K且右孩子小于左孩子
+                if (child + 1 < K && top[child + 1] < top[child])
+                    child++; //将child指向更小的结点
+                //当前较小孩子小于父节点时交换，并下滤
+                if (child < K && top[child] < top[parent]) {
+                    swap(top, child, parent);
+                    parent = child;
+                    child = (child << 1) + 1;
+                } else
+                    break;
+            }
+        }
+
+       
+
+        function findBargests(array, k) {
+            var top = [],
+                n = array.length
+            for (var i = 0; i < k; i++) {
+                top[i] = array[i];
 			}
-		}
-
-
-		/**
-		 * 其实只要把初始化堆的这个函数搞清楚
-		 * 以后堆排序就十分的简单了
-		 * @param data
-		 * @param lastIndex
-		 */
-		function createMaxHeap(data, lastIndex) {
-			/**传入的这个参数lastIndex就是无序区的最后一个元素的位置*/
-			for (var i = (lastIndex - 1) >> 1; i >= 0; i--) {
-				//用于保存当前节点的位置
-				var k = i;//取得某一点的父节点索引
-				//如果当前节点存在子节点
-				while (k * 2 + 1 <= lastIndex) {
-					//这个循环是保证将破坏后的最大堆恢复，
-					//就是交换以后有些堆结构会被破坏掉需要重新初始化
-					var biggerIndex = k * 2 + 1;
-					//这里默认左子树上面的是较大的值
-					if (biggerIndex < lastIndex) {
-						if (data[biggerIndex] < data[biggerIndex + 1]) {
-							biggerIndex++;
-						}
-					}
-					//如果子树上面的值比父节点中的大，那么就会将之交换，并且以交换的字节点为根的最大堆就会有改变，需要进一步进行初始化，如果
-					//如果子树上的值小于父节点的值就进行交换,并且将biggerIndex的值赋给k.否则的话退出while循环
-					if (data[biggerIndex] > data[k]) {
-						swap(data, biggerIndex, k);
-						k = biggerIndex;
-					} else {//如果子树上的值比父节点的小，那么就不用进行交换，并且以子节点为根结点的最大堆结构不会改变，可以直接退出
-						break;
-					}
-				}
+			console.log(top.concat())
+            //下调
+            for (var j = k >> 1; j >= 0; --j) {
+                Adjustdown(top, j, k);
+            }
+            for (var j = k; j < n; j++) {
+                if (top[0] < array[j]) { //堆顶小于新比较的元素交换
+                    swap(top, 0, j);
+                    Adjustdown(top, 0, k); //调整最大堆的结构
+                }
 			}
-		}
-		//https://blog.csdn.net/zhangfeng12345677/article/details/78165097
-		function shik(array, i, size) {
-			var left = 2 * i + 1; //左孩子
-			var right = 2 * i + 2; //右孩子
-			var max = i; //临时变量
-			if (i < size / 2) { //如果i是叶子节点就结束
-				if (left < size && array[max] < array[left]) {
-					max = left;
-				}
-				if (right < size && array[max] < array[right]) {
-					max = right;
-				}
-				if (max != i) {
-					swap(array, max, i); //交换后破环了子树的堆结构
-					shik(array, max, size); //递归，调节子树为堆
-				}
-			}
-		}
-		function swap(array, a, b) {
-			var temp = array[a];
-			array[a] = array[b];
-			array[b] = temp;
-		}
-		function buildHeap(array, size) {
-			//注意:这里只是经过一次堆调整之后,并不是将这些数完全用堆排序完成排序
-			for (var i = size >> 1; i >= 0; i--) {
-				shik(array, i, size);
-			}
-		}
-		function heapSort(array) {
-			var size = array.length;
-			buildHeap(array, size);
-			//i为无序区的长度，经过如下两步，长度递减
-			for (var i = size - 1; i > 0; i--) {
-				//1.每次将堆顶元素和无序区最后一个元素交换即将无序区最大元素放入有序区
-				swap(array, i, 0);  //堆顶即下标为0的元素
-				//2.将无序区调整为大顶堆，即选择出最大的元素。
-				shik(array, i, 0);
-				console.log("-----")
-			}
-		}
-
-
-		HeapSort([3, 2, 4, 5, 9, 7, 8, 1, 6, 17])
-		console.log("=========")
-		heapSort([3, 2, 4, 5, 9, 7, 8, 1, 6, 17])
-
-	</script>
+			console.log(top)
+            //遍历完成，top数据内存储的就是最大的前K个数
+            for (var idx = 0; idx < k; ++idx) {
+               console.log(  top[idx]  )
+            }
+        }
+      
+        var el = findBargests([3, 11, 1, 5, 6, 9, 7, 8], 4)
+       
+    </script>
 
 
 </html>
