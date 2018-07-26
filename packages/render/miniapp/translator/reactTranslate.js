@@ -82,16 +82,6 @@ module.exports = {
       }
     }
   },
-
-  ExportDefaultDeclaration: {
-    //小程序的模块不支持export 语句,
-    exit(path) {
-      if (path.node.declaration.type == "Identifier") {
-        path.replaceWith(helpers.exportExpr(path.node.declaration.name, true));
-      }
-    }
-  },
-
   ExportNamedDeclaration: {
     //小程序在定义
     enter() {},
@@ -157,29 +147,6 @@ module.exports = {
         path.remove();
       }
     }
-  },
-
-  ImportDeclaration(path) {
-    var href = path.node.source.value;
-    var ext = nPath.extname(href);
-    var isJS = false;
-    if (ext === "js") {
-      href = href.slice(0, -3);
-      isJS = true;
-    } else if (!ext) {
-      isJS = true;
-    }
-    var paths = path.node.specifiers.map(function(node) {
-      var importName = node.local.name;
-      var requireStatement = `var ${importName} = require("${href}")${
-        node.type == "ImportDefaultSpecifier" ? ".default" : ""
-      };`;
-      if (isJS) {
-        modules.importComponents[importName] = href;
-      }
-      return template(requireStatement)({});
-    });
-    path.replaceWithMultiple(paths);
   },
   CallExpression(path) {
     var callee = path.node.callee || Object;
