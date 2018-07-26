@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-07-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-07-25
  * IE9+
  */
 
@@ -664,13 +664,16 @@
     classCache: {},
     dispatchEvent: function dispatchEvent(e) {
       var dataset = e.target.dataset || {};
-      var eventId = dataset.eventid;
-      var classId = eventid.match(/[^$]+/)[0];
-      var eventName = eventid.slice(classId.length + 1);
-      var clazz = classCache[classId];
-      var fn = clazz && clazz.prototype[eventName];
+      var eventName = dataset[e.type + "Fn"];
+      var classCode = dataset.classCode;
+      var componentClass = classCache[classCode];
+      var fn = componentClass && componentClass.prototype[eventName];
       if (fn) {
-        fn.call(e.target, e);
+        var instanceCode = dataset.instanceCode;
+        var instance = componentClass.instances.find(function (el) {
+          return el.instanceCode === instanceCode;
+        });
+        fn.call(instance || e.target, e);
       }
     }
   };
@@ -1797,6 +1800,9 @@
       root: true,
       appendChild: function appendChild() {}
     });
+    if (!instance.instanceCode) {
+      instance.instanceCode = Math.random();
+    }
     var config = {
       data: {
         state: instance.state,
@@ -1811,7 +1817,6 @@
       }
     };
     var list = instance.allTemplateData || [];
-    console.log("list", list.length, list);
     list.forEach(function (el) {
       if (config.data[el.templatedata]) {
         config.data[el.templatedata].push(el);
@@ -1829,13 +1834,22 @@
     var clazz = props.is;
     if (!clazz.hackByMiniApp) {
       clazz.hackByMiniApp = true;
+      clazz.instances = clazz.instances || [];
       var a = clazz.prototype;
       if (a && a.isReactComponent) {
         Array("componentWillMount", "componentWillUpdate").forEach(function (method) {
-          var old = a[method] || noop;
+          var oldHook = a[method] || noop;
           a[method] = function () {
             var fiber = this._reactInternalFiber;
             var inputProps = fiber._owner.props;
+            if (!this.instanceCode) {
+              this.instanceCode = Math.random();
+            }
+            this.props.instanceCode = this.instanceCode;
+            var instances = this.constructor.instances;
+            if (instances.indexOf(this) === -1) {
+              instances.push(this);
+            }
             var p = fiber.return;
             do {
               if (p && isFn(p.type) && p.type !== template) {
@@ -1850,10 +1864,19 @@
                 state: this.state,
                 templatedata: inputProps.templatedata
               });
-              old.call(this);
+              oldHook.call(this, arguments);
             }
           };
         });
+        var oldUnmount = a.componentWillUnmount || noop;
+        a.componentWillUnmount = function () {
+          var instances = this.constructor.instances;
+          var index = instances.indexOf(this);
+          if (index !== -1) {
+            instances.splice(index, 1);
+          }
+          oldUnmount.call(this);
+        };
       }
     }
     return React.createElement(clazz, props);
@@ -1981,9 +2004,8 @@
     eventSystem: eventSystem,
     miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
       var clazz = miniCreateClass.apply(null, arguments);
-      var uuid = ("c" + Math.random()).replace(/0\./, "");
-      classCache$1[uuid] = clazz;
-      clazz.discernID = uuid;
+      var uuid = clazz.prototype.classId;
+      classCache$1[uuid] = clazz.prototype.classId;
       return clazz;
     },
     findDOMNode: function findDOMNode(fiber) {

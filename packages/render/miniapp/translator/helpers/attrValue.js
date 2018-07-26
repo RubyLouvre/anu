@@ -2,7 +2,29 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const jsx = require("../jsx/jsx");
-
+function bindEvent(path, attrName, attrValue, modules) {
+  replaceWithExpr(path, "dispatchEvent", true);
+  var parent = path.parentPath.parent;
+  if (parent) {
+    parent.attributes.push(
+      jsx.createAttribute(
+        `data-${attrName.slice(4)}-fn`,
+        attrValue.replace(/^\s*this\./, "")
+      )
+    );
+    var hasInstanceCode = parent.attributes.find(function(el) {
+      return el.name.name === "data-instance-code";
+    });
+    if (!hasInstanceCode) {
+      parent.attributes.push(
+        jsx.createAttribute("data-class-code", modules.classCode)
+      );
+      parent.attributes.push(
+        jsx.createAttribute("data-instance-code", "{{props.instanceCode}}")
+      );
+    }
+  }
+}
 module.exports = function(path, modules) {
   var expr = path.node.expression;
   var attrName = path.parent.name.name;
@@ -18,21 +40,12 @@ module.exports = function(path, modules) {
       if (isEvent) {
         throwEventValue(attrName, attrValue);
       }
-
       replaceWithExpr(path, attrValue);
       break;
     case "MemberExpression":
       if (isEvent) {
-        replaceWithExpr(path, "dispatchEvent", isEvent);
-        var parent = path.parentPath.parent;
-        if (parent) {
-          parent.attributes.push(
-            jsx.createAttribute(
-              "data-eventid",
-              modules.classId + "$" + attrValue.replace(/^\s*this\./, "")
-            )
-          );
-        }
+       // replaceWithExpr(path, "dispatchEvent", isEvent);
+        bindEvent(path, attrName, attrValue.replace(/^\s*this\./, ""), modules);
       } else {
         replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""));
       }
@@ -41,8 +54,8 @@ module.exports = function(path, modules) {
       if (isEvent) {
         var match = attrValue.match(/this\.(\w+)\.bind/);
         if (match && match[1]) {
-          console.log(match[1]);
-          replaceWithExpr(path, match[1], true);
+         
+          bindEvent(path, attrName, match[1], modules);
         } else {
           throwEventValue(attrName, attrValue);
         }

@@ -25,6 +25,8 @@ module.exports = function render(path, type, componentName, modules) {
       ]
     })
 
+  
+
     expr.argument =  jsxAst.ast.program.body[0]
 
     jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
