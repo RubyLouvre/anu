@@ -11,7 +11,7 @@ export default {
     input: './packages/render/miniapp/render/index.js',
     output: {
         strict: false,
-        format: 'umd',
+        format: 'es',
         exports: 'default',
         file: './dist/ReactWX.js',
         name: 'React'

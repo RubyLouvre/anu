@@ -34,6 +34,14 @@ function transform(code, sourcePath) {
             miniappPlugin
         ]
     });
+
+    result = babel.transform(result.code, {
+        babelrc: false,
+        plugins: [
+            "transform-es2015-modules-commonjs"
+        ]
+    })
+
     var ret = Object.assign({}, modules);
     modules.reset();
 
