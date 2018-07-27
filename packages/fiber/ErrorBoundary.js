@@ -1,18 +1,11 @@
-import {
-    noop,
-    get
-} from "react-core/util";
-import {
-    Renderer
-} from "react-core/createRenderer";
-import {
-    fakeObject
-} from "react-core/Component";
+import { noop, get } from "react-core/util";
+import { Renderer } from "react-core/createRenderer";
+import { fakeObject } from "react-core/Component";
 import {
     NOWORK,
     CAPTURE,
-    DETACH,
-  //  NULLREF
+    DETACH
+    //  NULLREF
 } from "./effectTag";
 
 export function pushError(fiber, hook, error) {
@@ -24,7 +17,7 @@ export function pushError(fiber, hook, error) {
             //已经插入
         } else {
             fiber.stateNode = {
-                updater: fakeObject,
+                updater: fakeObject
             };
             fiber.effectTag = NOWORK;
         }
@@ -52,7 +45,6 @@ export function pushError(fiber, hook, error) {
     }
 }
 
-
 export function guardCallback(host, hook, args) {
     try {
         return applyCallback(host, hook, args);
@@ -76,14 +68,13 @@ export function applyCallback(host, hook, args) {
 
 function describeError(names, hook) {
     let segments = [`**${hook}** method occur error `];
-    names.forEach(function (name, i) {
+    names.forEach(function(name, i) {
         if (names[i + 1]) {
             segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
     return segments.join("\n\r").trim();
 }
-
 
 function findCatchComponent(fiber, names, hook) {
     let instance,
@@ -128,7 +119,10 @@ function findCatchComponent(fiber, names, hook) {
                 }
                 //防止被多次重置children, oldChildren, effectTag
                 if (!boundary.catchError) {
-                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
+                    if (
+                        hook == "componentWillUnmount" ||
+                        hook == "componentDidUpdate"
+                    ) {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -146,7 +140,6 @@ function findCatchComponent(fiber, names, hook) {
             }
             return boundary;
         }
-
     }
 }
 
@@ -163,10 +156,7 @@ export function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
 
     effects.push(fiber);
- /*   if (fiber.ref && fiber.hasMounted) {
-        fiber.effectTag *= NULLREF;
-    }
-*/
+
     fiber.disposed = true;
     for (let child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects);

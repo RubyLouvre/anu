@@ -1,4 +1,4 @@
-import React from "./reactWX";
+import React from "./ReactWX";
 import "./pages/index/index";
 
 class App extends React.Component {

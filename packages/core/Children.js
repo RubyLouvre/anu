@@ -1,7 +1,6 @@
 import { traverseAllChildren, isValidElement } from "./createElement";
 import { extend, noop } from "./util";
 
-
 export const Children = {
     only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -22,7 +21,7 @@ export const Children = {
     forEach(children, func, context) {
         return proxyIt(children, func, null, context);
     },
-    toArray: function (children) {
+    toArray: function(children) {
         return proxyIt(children, K, []);
     }
 };
@@ -65,21 +64,16 @@ function traverseCallback(bookKeeping, child, childKey) {
         return;
     }
     if (Array.isArray(mappedChild)) {
-        mapChildren(
-            mappedChild,
-            childKey,
-            K,
-            result
-        );
+        mapChildren(mappedChild, childKey, K, result);
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key = keyPrefix +
+            mappedChild.key =
+                keyPrefix +
                 (mappedChild.key && (!child || child.key !== mappedChild.key)
                     ? escapeUserProvidedKey(mappedChild.key) + "/"
                     : "") +
                 childKey;
-
         }
         result.push(mappedChild);
     }

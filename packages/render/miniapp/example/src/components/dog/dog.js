@@ -1,5 +1,5 @@
 
-import React from '../../reactWX'
+import React from '../../ReactWX'
 
 class Dog extends React.Component {
    state = {
@@ -12,3 +12,4 @@ class Dog extends React.Component {
 }
 
 export default Dog;
+

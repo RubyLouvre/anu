@@ -1,5 +1,3 @@
-
-
 import { findHostInstance } from "react-fiber/findHostInstance";
 
 // [Top API] ReactDOM.findDOMNode

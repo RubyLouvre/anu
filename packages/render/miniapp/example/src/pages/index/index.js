@@ -2,6 +2,8 @@ import React  from "../../reactWX";
 import "./page.css";
 import Dog from "../../components/dog/dog";
 const e = "e";
+
+
 class P extends React.Component {
   constructor(props) {
     super(props);
@@ -37,5 +39,5 @@ class P extends React.Component {
     );
   }
 }
-React.createPage(P, "pages/index/index")
+Page(React.createPage(P, "pages/index/index"))
 export default P;

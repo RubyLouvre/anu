@@ -4,7 +4,7 @@ import { Component } from "react-core/Component";
 export var Unbatch = miniCreateClass(
     function Unbatch(props) {
         this.state = {
-            child: props.child,
+            child: props.child
         };
     },
     Component,

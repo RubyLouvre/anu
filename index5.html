@@ -5,13 +5,10 @@
     <title>example</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-   <!-- <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>-->
-
-   
-    <!-- <script type='text/javascript' src="./react.js"></script>
-      <script type='text/javascript' src="./react-dom.js"></script>-->
-   <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>-->
-
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <script type='text/javascript' src="./lib/babel.js"></script>
+   <!-- <script type='text/javascript' src="./react.js"></script>
+    <script type='text/javascript' src="./react-dom.js"></script>-->
 </head>
 
 <body>
@@ -19,8 +16,48 @@
     <div id='root' class="root">
 
     </div>
- 
-<script src="./dist/ietest.js"></script>
+    <script type='text/babel'>
+        
+        var container = document.getElementById('root');
+          var div = container;
+          if (!window.ReactDOM) {
+              window.ReactDOM = React;
+          }
+          var expect = function(a) {
+              return {
+                  toBe: function(b) {
+                      console.log(a, 'vs', b, a === b);
+                  },
+                  toEqual(b) {
+                      console.log(a, 'vs', b, a + '' === b + '');
+                  },
+                  toThrow(){
+                      try{
+                          a()
+                      }catch(e){
+                          console.log(e,"catch")
+                      }
+                  }
+              };
+		 };
+		var log = {
+			push(a){
+				console.log(a)
+			}
+		}
+		function emptyFunction(){}
+   // const container = document.createElement('div');
+    let stub = <input type="text" value="yolo" onChange={emptyFunction} />;
+    var node = ReactDOM.render(stub, container);
 
+    expect(node.value).toBe('yolo');
+
+    var ddd = ReactDOM.render(
+      <input type="text" value={false} onChange={emptyFunction} />,
+      container,
+    );
+    console.log(ddd === node)
+    expect(node.value).toEqual('false');
+   </script>
 </html>
 

@@ -1,10 +1,5 @@
-import {
-    diffProps
-} from './props';
-import {
-    document,
-    NAMESPACE
-} from './browser';
+import { diffProps } from "./props";
+import { document, NAMESPACE } from "./browser";
 import {
     get,
     noop,
@@ -12,30 +7,17 @@ import {
     emptyObject,
     topNodes,
     topFibers
-} from 'react-core/util';
-import {
-    Renderer,
-    createRenderer
-} from 'react-core/createRenderer';
-import {
-    render,
-    createContainer
-} from 'react-fiber/scheduleWork';
-import {
-    duplexAction,
-    fireDuplex
-} from './duplex';
+} from "react-core/util";
+import { Renderer, createRenderer } from "react-core/createRenderer";
+import { render, createContainer } from "react-fiber/scheduleWork";
+import { duplexAction, fireDuplex } from "./duplex";
 
 const reuseTextNodes = []; //文本节点不能加属性，样式与事件，重用没有副作用
 export function createElement(vnode) {
     let p = vnode.return;
-    let {
-        type,
-        props,
-        ns
-    } = vnode;
+    let { type, props, ns } = vnode;
     switch (type) {
-        case '#text':
+        case "#text":
             //只重复利用文本节点
             var node = reuseTextNodes.pop();
             if (node) {
@@ -43,23 +25,28 @@ export function createElement(vnode) {
                 return node;
             }
             return document.createTextNode(props);
-        case '#comment':
+        case "#comment":
             return document.createComment(props);
 
-        case 'svg':
+        case "svg":
             ns = NAMESPACE.svg;
             break;
-        case 'math':
+        case "math":
             ns = NAMESPACE.math;
             break;
 
         default:
             do {
-                var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                var s =
+                    p.name == "AnuPortal"
+                        ? p.props.parent
+                        : p.tag === 5
+                            ? p.stateNode
+                            : null;
                 if (s) {
                     ns = s.namespaceURI;
-                    if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
-                        ns = '';
+                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
+                        ns = "";
                     }
                     break;
                 }
@@ -73,13 +60,19 @@ export function createElement(vnode) {
             return document.createElementNS(ns, type);
         }
         //eslint-disable-next-line
-    } catch (e1) { /*skip*/ }
+    } catch (e1) {
+        /*skip*/
+    }
     let elem = document.createElement(type);
     let inputType = props && props.type; //IE6-8下立即设置type属性
-    if (inputType) {
+    if (inputType && elem.uniqueID) {
         try {
-            elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
-        } catch (e2) { /*skip*/ }
+            elem = document.createElement(
+                "<" + type + " type='" + inputType + "'/>"
+            );
+        } catch (e2) {
+            /*skip*/
+        }
     }
     return elem;
 }
@@ -87,8 +80,8 @@ export function createElement(vnode) {
 let hyperspace = document.createElement("div");
 
 function emptyElement(node) {
-    while(node.firstChild){
-        node.removeChild(node.firstChild)
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
     }
 }
 
@@ -111,15 +104,13 @@ export function removeElement(node) {
     hyperspace.removeChild(node);
 }
 
-
 function insertElement(fiber) {
-    let {
-        stateNode: dom,
-        parent
-    } = fiber;
+    let { stateNode: dom, parent } = fiber;
 
     try {
-        let insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
+        let insertPoint = fiber.forwardFiber
+            ? fiber.forwardFiber.stateNode
+            : null;
         let after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
         if (after == dom) {
             return;
@@ -134,45 +125,17 @@ function insertElement(fiber) {
     } catch (e) {
         throw e;
     }
-
 }
-
-/*
-function injectInternals(internals) {
-    var hook = getWindow().__REACT_DEVTOOLS_GLOBAL_HOOK__;
-    if (!hook || !hook.inject || hook.isDisabled || !hook.supportsFiber) {
-        // DevTools exists, even though it doesn't support Fiber.
-        return true;
-    }
-    try {
-        var rendererID = hook.inject(internals);
-        devTool.onCommitRoot = function (fiber) {
-            try{
-                var root = fiber.stateNode;
-                root.current = fiber;
-                return hook.onCommitFiberRoot(rendererID, root);
-            }catch(e){ }
-        };
-        devTool.onCommitUnmount = function (fiber) {
-            try{
-                return hook.onCommitFiberUnmount(rendererID, fiber);
-            }catch(e){ }
-        };
-    } catch (err) { }
-    return true;
-}*/
-
 
 //其他Renderer也要实现这些方法
 render.Render = Renderer;
+function mergeContext(container, context) {
+    container.contextStack[0] = Object.assign({}, context);
+}
 export let DOMRenderer = createRenderer({
     render,
     updateAttribute(fiber) {
-        let {
-            props,
-            lastProps,
-            stateNode
-        } = fiber;
+        let { props, lastProps, stateNode } = fiber;
         diffProps(stateNode, lastProps || emptyObject, props, fiber);
     },
     updateContent(fiber) {
@@ -185,22 +148,25 @@ export let DOMRenderer = createRenderer({
         emptyElement(fiber.stateNode);
     },
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
+        //看root上面有没有根虚拟DOM，没有就创建
         let container = createContainer(root),
             context = container.contextStack[0],
             fiber = get(instance),
-            childContext;
-        while (fiber.return) {
+            backup;
+        do {
             var inst = fiber.stateNode;
-            if (inst && inst.getChildContext) {
-                childContext = inst.getChildContext();
-                extend(context, childContext);
+            if (inst.getChildContext) {
+                backup = mergeContext(container, inst.getChildContext());
                 break;
+            } else {
+                backup = fiber;
             }
-            fiber = fiber.return;
+        } while ((fiber = fiber.return));
+
+        if (backup && backup.contextStack) {
+            mergeContext(container, backup.contextStack[0]);
         }
-        if (!childContext && fiber.contextStack) {
-            extend(context, fiber.contextStack[0]);
-        }
+
         return Renderer.render(vnode, root, callback);
     },
 
@@ -210,11 +176,12 @@ export let DOMRenderer = createRenderer({
         let instance = container && container.hostRoot;
         if (instance) {
             Renderer.updateComponent(
-                instance, {
-                    child: null,
+                instance,
+                {
+                    child: null
                 },
                 function() {
-                    removeTop(root)
+                    removeTop(root);
                 },
                 true
             );
@@ -228,10 +195,10 @@ export let DOMRenderer = createRenderer({
             removeElement(dom);
             delete fiber.stateNode;
             if (dom._reactInternalFiber) {
-                removeTop(dom)
+                removeTop(dom);
             }
         }
-    },
+    }
 });
 
 function removeTop(dom) {

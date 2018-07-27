@@ -1,13 +1,13 @@
 import { oneObject, camelize } from "react-core/util";
 export let rnumber = /^-?\d+(\.\d+)?$/;
 /**
-     * 为元素样子设置样式
-     * 
-     * @export
-     * @param {any} dom 
-     * @param {any} lastStyle 
-     * @param {any} nextStyle 
-     */
+ * 为元素样子设置样式
+ *
+ * @export
+ * @param {any} dom
+ * @param {any} lastStyle
+ * @param {any} nextStyle
+ */
 export function patchStyle(dom, lastStyle, nextStyle) {
     if (lastStyle === nextStyle) {
         return;
@@ -50,9 +50,9 @@ export let cssMap = oneObject("float", "cssFloat");
 
 /**
  * 转换成当前浏览器可用的样式名
- * 
- * @param {any} name 
- * @returns 
+ *
+ * @param {any} name
+ * @returns
  */
 export function cssName(name, dom) {
     if (cssMap[name]) {

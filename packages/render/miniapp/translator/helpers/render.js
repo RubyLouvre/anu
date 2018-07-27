@@ -14,49 +14,47 @@ const jsx = require("babel-plugin-transform-react-jsx");
  */
 
 module.exports = function render(path, type, componentName, modules) {
-  var expr = path.node.body.body[0];
-  if (expr && expr.type == "ReturnStatement") {
-    var needWrap = expr.argument.type !== "JSXElement";
-    var jsx = generate(expr.argument).code;
-    var jsxAst = babel.transform(jsx,{
-      babelrc: false,
-      plugins: [
-        "transform-react-jsx"
-      ]
-    })
+    var expr = path.node.body.body[0];
+    if (expr && expr.type == "ReturnStatement") {
+        var needWrap = expr.argument.type !== "JSXElement";
+        var jsx = generate(expr.argument).code;
+        var jsxAst = babel.transform(jsx, {
+            babelrc: false,
+            plugins: ["transform-react-jsx"]
+        });
 
-  
+        expr.argument = jsxAst.ast.program.body[0];
 
-    expr.argument =  jsxAst.ast.program.body[0]
-
-    jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
-    var wxml = wxmlHelper(jsx);
-    if (needWrap) {
-      wxml = wxml.slice(7, -9); //去掉<block> </block>;
+        jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
+        var wxml = wxmlHelper(jsx);
+        if (needWrap) {
+            wxml = wxml.slice(7, -9); //去掉<block> </block>;
+        } else {
+            wxml = wxml.slice(0, -1); //去掉最后的;
+        }
+        if (modules.componentType === "Component") {
+            wxml = `<template name="${componentName}">${wxml}</template>`;
+        }
+        wxml = prettifyXml(wxml, {
+            indent: 2
+        });
+        for (var i in modules.importComponents) {
+            if (modules.usedComponents[i]) {
+                wxml =
+                    `<import src="${modules.importComponents[i]}.wxml" />\n` +
+                    wxml;
+            }
+        }
+        modules.wxml = wxml; //path.node.params
     } else {
-      wxml = wxml.slice(0, -1); //去掉最后的;
+        var msg = type + componentName;
+        var statement =
+            "不能有其他语句。你可以在里面使用三元表达式a?b:c或&&实现条件分支";
+        if (type === "有状态组件") {
+            msg += "的render方法只能存在return语句，" + statement;
+        } else {
+            msg += "的函数体必须立即return, " + statement;
+        }
+        throw msg;
     }
-    if (modules.componentType === "Component") {
-      wxml = `<template name="${componentName}">${wxml}</template>`;
-    }
-    wxml = prettifyXml(wxml, {
-      indent: 2
-    });
-    for (var i in modules.importComponents) {
-      if (modules.usedComponents[i]) {
-        wxml = `<import src="${modules.importComponents[i]}.wxml" />\n` + wxml;
-      }
-    }
-    modules.wxml = wxml; //path.node.params
-  } else {
-    var msg = type + componentName;
-    var statement =
-      "不能有其他语句。你可以在里面使用三元表达式a?b:c或&&实现条件分支";
-    if (type === "有状态组件") {
-      msg += "的render方法只能存在return语句，" + statement;
-    } else {
-      msg += "的函数体必须立即return, " + statement;
-    }
-    throw msg;
-  }
 };

@@ -5,82 +5,89 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script type='text/javascript' src="./dist/React.js"></script>
-    <!-- <script type='text/javascript' src="./react.js"></script>
-			<script type='text/javascript' src="./react-dom.js"></script>-->
-			<script type='text/javascript' src="./lib/createClass.js"></script>
-
-    <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <!--  <script type='text/javascript' src="./react.js"></script>
+   <script type='text/javascript' src="./react-dom.js"></script>-->
+   <script type='text/javascript' src="./lib/ReactPropTypes.js"></script>
     <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
+
     <div id='root' class="root">
 
     </div>
     <script type='text/babel'>
-        
-        var container = document.getElementById('root');
-          var div = container;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
-          }
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  },
-                  toThrow(){
-                      try{
-                          a()
-                      }catch(e){
-                          console.log(e,"catch")
-                      }
-                  }
-              };
-		 };
-		var log = {
-			push(a){
-				console.log(a)
-			}
-		}
-const log = [];
-var PropTypes = React.PropTypes;
-const propTypes = {
-    text: PropTypes.string,
-    show: PropTypes.bool,
-    shadeIsShow: PropTypes.bool
-};
-const defaultProps = {
-    text: '拼命加载中...',
-    img: './img/loading.gif',
-    shadeIsShow: true
-};
-var style = {}
-function Loading(props) {
-   const {text, img, show} = props;
-    return (
-        <div className={style['loading']} style={{display: show ? 'block' : 'none'}}>
-            {props.shadeIsShow?<div className={style['cover']}/>:''}
-           <div className={style['info']}>
-               <img src={img}/>
-                <p>{text}</p>
-           </div>
-        </div>
-    )
-}
-Loading.propTypes = propTypes;
-Loading.defaultProps = defaultProps;
-ReactDOM.render(<Loading show={true}/>, container)
 
+        // bug说明：更新Hello的state不应该触发componentWillReceiveProps。
 
-		//log.length = 0;
-		//ReactDOM.unmountComponentAtNode(container);
-		//expect(log).toEqual(['ErrorBoundary componentWillUnmount']);
+        if (!window.ReactDOM) {
+            window.ReactDOM = React;
+        }
+        var PropTypes = ReactPropTypes
+        class ListViewDemo extends React.Component {
+            static childContextTypes = {
+             testItems: PropTypes.array
+            }
+            constructor(props) {
+                super(props);
+                this.state = {
+                    testItems: [1,2,3]
+                };
+            }
+            getChildContext() {
+                return { testItems: this.state.testItems };
+            }
+            render() {
+                return (
+                    <div>
+                        <ul>
+                        {this.state.testItems.map(function(el){
+                           return <li>{el}</li>
+                        })}
+                        </ul>
+                        <Hello />
+                    </div>
+                );
+            }
+        }
+console.log("======")
+        class Hello extends React.Component {
+            static contextTypes = {
+                testItems: PropTypes.array
+            }
+            constructor(props) {
+                super(props);
+                this.state = {
+                    hello: "world"
+                };
+
+            }
+            componentWillReceiveProps(nextProps) {
+                console.log("componentWillReceiveProps");
+                console.log(this.context);
+            }
+            componentDidUpdate() {
+                console.log("componentDidUpdate");
+                console.log(this.context);
+            }
+            changeHello() {
+                this.setState({
+                    hello: "woooo"
+                });
+            }
+            render() {
+                return (
+                    <div onClick={this.changeHello.bind(this)}>
+                        {this.state.hello}
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<ListViewDemo />, document.getElementById('root'));
+
     </script>
 
 

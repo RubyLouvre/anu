@@ -1,6 +1,6 @@
 import { createElement } from "./createElement";
 
-export function AnuPortal(props){
+export function AnuPortal(props) {
     return props.children;
 }
 

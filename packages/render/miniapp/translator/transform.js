@@ -7,38 +7,38 @@ let modules = require("./modules");
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
 function miniappPlugin(api) {
-  return {
-    inherits: syntaxClassProperties,
-    visitor: visitor
-  };
+    return {
+        inherits: syntaxClassProperties,
+        visitor: visitor
+    };
 }
 
 function transform(code, sourcePath) {
-  modules.current = sourcePath.replace(process.cwd(), "");
+    modules.current = sourcePath.replace(process.cwd(), "");
 
-  if (/\/components\//.test(sourcePath)) {
-    modules.componentType = "Component";
-  } else if (/\/pages\//.test(sourcePath)) {
-    modules.componentType = "Page";
-  } else if(/app\.js/.test(sourcePath)){
-    modules.componentType = "App";
-  }
-  console.log(sourcePath, modules.componentType)
-  var result = babel.transform(code, {
-    babelrc: false,
-    plugins: [
-      "syntax-jsx",
-      //  "transform-react-jsx",
-      "transform-decorators-legacy",
-      "transform-object-rest-spread",
-      miniappPlugin
-    ]
-  });
-  var ret = Object.assign({}, modules )
-  modules.reset();
-  
-  ret.js = result.code;
-  return ret;
+    if (/\/components\//.test(sourcePath)) {
+        modules.componentType = "Component";
+    } else if (/\/pages\//.test(sourcePath)) {
+        modules.componentType = "Page";
+    } else if (/app\.js/.test(sourcePath)) {
+        modules.componentType = "App";
+    }
+    console.log(sourcePath, modules.componentType);
+    var result = babel.transform(code, {
+        babelrc: false,
+        plugins: [
+            "syntax-jsx",
+            //  "transform-react-jsx",
+            "transform-decorators-legacy",
+            "transform-object-rest-spread",
+            miniappPlugin
+        ]
+    });
+    var ret = Object.assign({}, modules);
+    modules.reset();
+
+    ret.js = result.code;
+    return ret;
 }
 
 module.exports = transform;

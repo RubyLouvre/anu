@@ -12,7 +12,7 @@ export function createInstance(fiber, context) {
     let updater = {
         mountOrder: Renderer.mountOrder++,
         enqueueSetState: returnFalse,
-        isMounted: isMounted,
+        isMounted: isMounted
     };
     let { props, type, tag, ref } = fiber,
         isStateless = tag === 1,
@@ -48,16 +48,16 @@ export function createInstance(fiber, context) {
                     } else if (this.__init) {
                         this.__keep = {
                             //可能返回一个对象
-                            value: a,
+                            value: a
                         };
                     }
                     return a;
-                },
+                }
             });
             Renderer.currentOwner = instance;
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.render = function () {
+                instance.render = function() {
                     return type.render(this.props, this.ref);
                 };
             } else {
@@ -83,7 +83,6 @@ export function createInstance(fiber, context) {
             instance.__useNewHooks = true;
         }
     }
-
 
     return instance;
 }

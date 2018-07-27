@@ -1,12 +1,6 @@
-import {
-    reconcileDFS
-} from "./beginWork";
-import {
-    commitDFS
-} from "./commitWork";
-import {
-    Renderer
-} from "react-core/createRenderer";
+import { reconcileDFS } from "./beginWork";
+import { commitDFS } from "./commitWork";
+import { Renderer } from "react-core/createRenderer";
 import {
     effects,
     isMounted,
@@ -18,16 +12,10 @@ import {
     typeNumber,
     topFibers
 } from "react-core/util";
-import {
-    Unbatch
-} from "./unbatch";
-import {
-    Fiber
-} from "./Fiber";
+import { Unbatch } from "./unbatch";
+import { Fiber } from "./Fiber";
 
-import {
-    createInstance
-} from "./createInstance";
+import { createInstance } from "./createInstance";
 const macrotasks = Renderer.macrotasks;
 let boundaries = Renderer.boundaries;
 const batchedtasks = [];
@@ -42,7 +30,7 @@ export function render(vnode, root, callback) {
             props: {},
             hasMounted: true,
             memoizedState: {},
-            return: container,
+            return: container
         });
         fiber.index = 0;
         container.child = fiber;
@@ -54,8 +42,9 @@ export function render(vnode, root, callback) {
     }
     let carrier = {};
     updateComponent(
-        container.hostRoot, {
-            child: vnode,
+        container.hostRoot,
+        {
+            child: vnode
         },
         wrapCb(callback, carrier),
         immediateUpdate
@@ -103,7 +92,7 @@ let deadline = {
     didTimeout: false,
     timeRemaining() {
         return 2;
-    },
+    }
 };
 
 function requestIdleCallback(fn) {
@@ -146,7 +135,7 @@ function workLoop(deadline) {
             let dom = getContainer(fiber);
             info = {
                 containerStack: [dom],
-                contextStack: [fiber.stateNode.unmaskedContext],
+                contextStack: [fiber.stateNode.__unmaskedContext]
             };
         }
 
@@ -163,7 +152,8 @@ function workLoop(deadline) {
 
 function updateCommitQueue(fiber) {
     var hasBoundary = boundaries.length;
-    if (fiber.type !== Unbatch) { //如果是某个组件更新
+    if (fiber.type !== Unbatch) {
+        //如果是某个组件更新
         if (hasBoundary) {
             //如果在reconcile阶段发生异常，那么commit阶段就不会从原先的topFiber出发，而是以边界组件的alternate出发
             arrayPush.apply(effects, boundaries);
@@ -171,12 +161,10 @@ function updateCommitQueue(fiber) {
             effects.push(fiber);
         }
     } else {
-
         effects.push(fiber);
     }
     boundaries.length = 0;
 }
-
 
 /**
  * 这是一个深度优先过程，beginWork之后，对其孩子进行任务收集，然后再对其兄弟进行类似操作，
@@ -219,8 +207,7 @@ function getQueue(fiber) {
 function pushChildQueue(fiber, queue) {
     //判定当前节点是否包含已进队的节点
     let maps = {};
-    for (let i = queue.length, el;
-        (el = queue[--i]);) {
+    for (let i = queue.length, el; (el = queue[--i]); ) {
         //移除列队中比它小的组件
         if (fiber === el) {
             queue.splice(i, 1); //已经放进过，去掉
@@ -319,7 +306,7 @@ export function createContainer(root, onlyGet, validate) {
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
-        type: root.nodeName || root.type,
+        type: root.nodeName || root.type
     });
     if (useProp) {
         root._reactInternalFiber = container;
@@ -340,4 +327,3 @@ export function getContainer(p) {
         }
     }
 }
-// https://github.com/215566435/react-wechat

@@ -27,10 +27,13 @@ export function setInsertPoints(children) {
             child.effectTag = PLACE;
             child.forwardFiber = p.insertPoint;
             p.insertPoint = child;
-            for(let pp = child.return; pp && pp.effectTag === NOWORK; pp = pp.return){
+            for (
+                let pp = child.return;
+                pp && pp.effectTag === NOWORK;
+                pp = pp.return
+            ) {
                 pp.effectTag = WORKING;
             }
-
         } else {
             if (child.child) {
                 setInsertPoints(child.children);
@@ -38,7 +41,6 @@ export function setInsertPoints(children) {
         }
     }
 }
-
 
 function forward(fiber) {
     var found;

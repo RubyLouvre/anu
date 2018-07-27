@@ -11,7 +11,7 @@ export let eventHooks = {}; //用于在元素上绑定特定的事件
 let eventLowerCache = {
     onClick: "click",
     onChange: "change",
-    onWheel: "wheel",
+    onWheel: "wheel"
 };
 
 export function eventAction(dom, name, val, lastProps, fiber) {
@@ -50,7 +50,7 @@ export function dispatchEvent(e, type, endpoint) {
         return;
     }
 
-    Renderer.batchedUpdates(function () {
+    Renderer.batchedUpdates(function() {
         let paths = collectPaths(e.target, terminal, {});
         let captured = bubble + "capture";
         triggerEventFlow(paths, captured, e);
@@ -98,7 +98,7 @@ function collectPaths(begin, end, unique) {
 }
 
 function triggerEventFlow(paths, prop, e) {
-    for (let i = paths.length; i--;) {
+    for (let i = paths.length; i--; ) {
         let path = paths[i];
         let fn = path.events[prop];
         if (isFn(fn)) {
@@ -125,7 +125,6 @@ export function addEvent(el, type, fn, bool) {
         el.attachEvent("on" + type, fn);
     }
 }
-
 
 let rcapture = /Capture$/;
 export function getBrowserName(onStr) {
@@ -155,8 +154,8 @@ function getRelatedTarget(e) {
 function getTarget(e) {
     return e.target || e.srcElement;
 }
-String("load,error").replace(/\w+/g, function (name) {
-    eventHooks[name] = function (dom, type) {
+String("load,error").replace(/\w+/g, function(name) {
+    eventHooks[name] = function(dom, type) {
         let mark = "__" + type;
 
         if (!dom[mark]) {
@@ -186,7 +185,7 @@ String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
 
 let specialHandles = {};
 export function createHandle(name, fn) {
-    return (specialHandles[name] = function (e) {
+    return (specialHandles[name] = function(e) {
         if (fn && fn(e) === false) {
             return;
         }
@@ -208,10 +207,10 @@ if (!document["__input"]) {
     globalEvents.input = document["__input"] = true;
     addEvent(document, "compositionstart", onCompositionStart);
     addEvent(document, "compositionend", onCompositionEnd);
-    addEvent(document, "input", function (e) {
+    addEvent(document, "input", function(e) {
         var dom = getTarget(e);
         if (input2change.test(dom.type)) {
-            if(!dom.__onComposition){
+            if (!dom.__onComposition) {
                 dispatchEvent(e, "change");
             }
         }
@@ -253,9 +252,7 @@ function getLowestCommonAncestor(instA, instB) {
     return null;
 }
 
-
-
-eventPropHooks.change = function (e) {
+eventPropHooks.change = function(e) {
     enqueueDuplex(e.target);
 };
 
@@ -266,47 +263,49 @@ globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
 
-
 if (isTouch) {
-    eventHooks.click = eventHooks.clickcapture = function (dom) {
+    eventHooks.click = eventHooks.clickcapture = function(dom) {
         dom.onclick = dom.onclick || noop;
     };
 }
 
-
-eventPropHooks.click = function (e) {
+eventPropHooks.click = function(e) {
     return !e.target.disabled;
 };
 
 const fixWheelType =
-    document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
-eventHooks.wheel = function (dom) {
+    document.onwheel !== void 666
+        ? "wheel"
+        : "onmousewheel" in document
+            ? "mousewheel"
+            : "DOMMouseScroll";
+eventHooks.wheel = function(dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 
-eventPropHooks.wheel = function (event) {
+eventPropHooks.wheel = function(event) {
     event.deltaX =
         "deltaX" in event
             ? event.deltaX
             : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
-            "wheelDeltaX" in event
+              "wheelDeltaX" in event
                 ? -event.wheelDeltaX
                 : 0;
     event.deltaY =
         "deltaY" in event
             ? event.deltaY
             : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
-            "wheelDeltaY" in event
+              "wheelDeltaY" in event
                 ? -event.wheelDeltaY
                 : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
-                "wheelDelta" in event
+                  "wheelDelta" in event
                     ? -event.wheelDelta
                     : 0;
 };
 
 export let focusMap = {
     focus: "focus",
-    blur: "blur",
+    blur: "blur"
 };
 let innerFocus;
 function blurFocus(e) {
@@ -336,7 +335,7 @@ function blurFocus(e) {
     } while ((dom = dom.parentNode));
 }
 
-"blur,focus".replace(/\w+/g, function (type) {
+"blur,focus".replace(/\w+/g, function(type) {
     globalEvents[type] = true;
     if (modern) {
         let mark = "__" + type;
@@ -345,17 +344,17 @@ function blurFocus(e) {
             addEvent(document, type, blurFocus, true);
         }
     } else {
-        eventHooks[type] = function (dom, name) {
+        eventHooks[type] = function(dom, name) {
             addEvent(dom, focusMap[name], blurFocus);
         };
     }
 });
 
-eventHooks.scroll = function (dom, name) {
+eventHooks.scroll = function(dom, name) {
     addEvent(dom, name, specialHandles[name]);
 };
 
-eventHooks.doubleclick = function (dom, name) {
+eventHooks.doubleclick = function(dom, name) {
     addEvent(document, "dblclick", specialHandles[name]);
 };
 
@@ -380,27 +379,27 @@ let eventProto = (SyntheticEvent.prototype = {
     fixEvent: noop, //留给以后扩展用
     fixHooks: noop,
     persist: noop,
-    preventDefault: function () {
+    preventDefault: function() {
         let e = this.nativeEvent || {};
         e.returnValue = this.returnValue = false;
         if (e.preventDefault) {
             e.preventDefault();
         }
     },
-    stopPropagation: function () {
+    stopPropagation: function() {
         let e = this.nativeEvent || {};
         e.cancelBubble = this._stopPropagation = true;
         if (e.stopPropagation) {
             e.stopPropagation();
         }
     },
-    stopImmediatePropagation: function () {
+    stopImmediatePropagation: function() {
         this.stopPropagation();
         this.stopImmediate = true;
     },
-    toString: function () {
+    toString: function() {
         return "[object Event]";
-    },
+    }
 });
 
 Renderer.eventSystem = {

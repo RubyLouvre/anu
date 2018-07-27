@@ -18,40 +18,331 @@ Pro
 
   </div>
   <script>
-    var b = [1, 5, 8, 9, 19, 33]
-    function search(array, min, max, target) {
-      var index = Math.floor(min + (max - min) / 2);
-
-      var middle = array[index]
-      console.log(index, middle, target)
-      if (middle === target) { //index命中
-        return target
-      } else if (middle < target) {//index已排除，从[min, index-1]来找
-        return search(array, min, index - 1, target)
-      } else if (middle > target) {//index已排除，从[index+1, max]来找
-        console.log("====", index + 1, max)
-        return search(array, index + 1, max, target)
-      }
-
-      return null
-    }
-
-    function binarySearch(arr, low, high, key) {
-      if (low > high) {
-        return -1;
-      }
-      var mid = parseInt((high + low) / 2);
-      if (arr[mid] == key) {
-        return mid;
-      } else if (arr[mid] > key) {
-        return binarySearch(arr, low, mid - 1, key);
-      } else if (arr[mid] < key) {
-        return binarySearch(arr, mid + 1, high, key);
+    function shuffle(a) {
+      var len = a.length;
+      for (var i = 0; i < len - 1; i++) {
+        var index = parseInt(Math.random() * (len - i));
+        var temp = a[index];
+        a[index] = a[len - i - 1];
+        a[len - i - 1] = temp;
       }
     }
+    function test(sortFn, name) {
+      var array = []
+      //向数组写入10000个数据 前1000倒序 ， 后9000顺序。
+      for (var i = 0; i < 10000; i++) {
+        if (i <= 1000) {
+          array[i] = 1000 - i;
+        } else {
+          array[i] = i;
+        }
+      }
+      var start = new Date - 0;
+      sortFn(array);
+      console.log("========")
+      console.log("部分有序的情况", sortFn.name, new Date - start)
+      shuffle(array)
+      start = new Date - 0;
+      sortFn(array);
+      console.log("完全乱序的情况", sortFn.name, new Date - start)
+    }
+    function swap(array, a, b) {
+      var temp = array[a];
+      array[a] = array[b];
+      array[b] = temp;
+    }
+    function cocktailSort(array) {
+      var left, right, index, i;
+      left = 0;//数组起始索引
+      right = array.length - 1;//数组索引最大值
+      index = left//临时变量
 
-    var has = binarySearch(b, 0, b.length - 1, 19)
-    console.log(has)
+      //判断数组中是否有多个元素
+      while (right > left) {
+        var isSorted = false;
+        //每一次进入while循环都会找出相应范围内最大最小的元素并分别放到相应的位置
+        //大的排到后面
+        for (i = left; i < right; i++) {//从左向右扫描
+          if (array[i] > array[i + 1]) {
+            swap(array, i, i + 1);
+            index = i;//记录当前索引
+            isSorted = true
+          }
+        }
+        right = index;//记录最后一个交换的位置
+        //小的放到前面
+        for (i = right; i > left; i--) {//从最后一个交换位置从右往左扫描
+          if (array[i] < array[i - 1]) {
+            swap(array, i, i - 1);
+            index = i;
+            isSorted = true
+          }
+        }
+        left = index;//记录最后一个交换的位置
+        if (!isSorted) {
+          break
+        }
+      }
+    }
+    function bubbleSort1(array) {
+      var n = array.length;
+      for (var i = 1; i < n; i++) {
+        for (var j = 0; j < n - 1; j++) {
+          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
+            swap(array, j, j + 1)
+          }
+        }
+      }
+    }
+    function bubbleSort2(array) {
+      var n = array.length;
+      for (var i = 1; i < n; i++) {
+        var hasSort = true;
+        for (var j = 0; j < n - 1; j++) {
+          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
+            swap(array, j, j + 1);
+            hasSort = false
+          }
+        }
+        if (hasSort) {
+          break;
+        }
+      }
+    }
+    function bubbleSort3(array) {
+      var n = array.length, k = n - 1, swapPos = 0;
+      for (var i = 1; i < n; i++) {
+        var hasSort = true;
+        for (var j = 0; j < k; j++) {
+          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
+            swap(array, j, j + 1);
+            hasSort = false;
+            swapPos = j; //记录交换位置，直接到内部循环最后一个被交换的元素
+          }
+        }
+        if (hasSort) {
+          break;
+        }
+        k = swapPos;//重写内部循环的最后边界
+      }
+    }
+
+    function selectSort(array) {
+      var n = array.length;
+      for (var i = 0; i < n; i++) {
+        var minIndex = i;
+        for (var j = i + 1; j < n; j++) {
+          if (array[j] < array[minIndex]) { // 如果发现当前最小元素竟然比其他元素大
+            minIndex = j;
+          }
+        }
+        if (i !== minIndex) {
+          swap(array, i, minIndex)
+        }
+      }
+    }
+
+    function selectSort2(array) {
+      var left = 0;
+      var right = array.length - 1;
+      var min = left;//存储最小值的下标
+      var max = left;//存储最大值的下标
+      while (left <= right) {
+        min = left;
+        max = left;
+        //这里只能用<=，因为要取arrsay[right]
+        for (var i = left; i <= right; i++) {
+          if (array[i] < array[min]) {
+            min = i;
+          }
+          if (array[i] > array[max]) {
+            max = i;
+          }
+        }
+        swap(array, left, min);
+        if (left == max) {
+          max = min;
+        }
+        swap(array, right, max);
+        left++;
+        right--;
+      }
+    }
+
+    function insertSort(array) {
+      var n = array.length
+      for (var i = 1; i < n; i++) {
+        var target = array[i]
+        //为array[i]找到要插入的位置
+        for (var j = i - 1; j >= 0; j--) {
+          if (target > array[j]) {
+            break;
+          }
+        }
+        if (j !== i - 1) {
+          //将比target大的所有元素都后移一位
+          for (var k = i - 1; k > j; k--) {
+            array[k + 1] = array[k];
+          }
+          array[j + 1] = target;
+        }
+      }
+    }
+    function insertSort2(array) {
+      //［i,n－1］是无序区
+      for (var i = 1, n = array.length; i < n; i++) {
+        var target = array[i];
+        //［0， i-1］是有序区
+        //从后向前比较，不断挪出坑位
+        if (target < array[i - 1]) {//如果前面的数比大，说明要处理
+          for (var j = i - 1; j >= 0 && array[j] > target; j--) {
+            array[j + 1] = array[j];
+          }
+          array[j + 1] = target;
+        }
+      }
+    }
+    function insertSort2(array) {
+      //［i,n－1］是无序区
+      for (var i = 1, n = array.length; i < n; i++) {
+        var target = array[i];
+        if (target < array[i - 1]) {
+          //如果无序区的元素小于有序区的元素
+          var j = i;
+          while (j > 0 && array[j - 1] > target) {
+            array[j] = array[j - 1];
+            j--;
+          }
+          array[j] = target;//将target移动有序区的某一位
+        }
+      }
+    }
+    function shellSort(array) {
+      //生成递增序列 3x+1 [1, 4, 13, 40, 121, 364, 1093, 3280, 9841] 
+      var n = array.length,
+        gaps = [1],
+        gap = 1;
+      while (gap < n / 3) {
+        gap = gap * 3 + 1
+        gaps.push(gap)
+      }
+      while (gap = gaps.pop()) {
+        //对每个子数组进行排序
+        for (var g = 0; g < gap; g++) {
+          //****************正常的插入排序***************
+          for (var i = g + gap; i < n; i += gap) {
+            var target = array[i]; //从无序区取元素
+            if (target < array[i - gap]) {
+              //无序区的元素比有序区的小
+              var j = i;
+              while (j > 0 && array[j - gap] > target) {
+                array[j] = array[j - gap]; //将前面的元素覆盖后面的
+                j -= gap;//不是－1而是－gap
+              }
+              array[j] = target;
+            }
+          }
+          //****************正常的插入排序***************
+        }
+      }
+    };
+    function shellSort2(array) {
+      //希尔序列 [1, 2, 4, 9, 19, 39, 78, 156, 312, 625, 1250, 2500, 5000] 
+      var n = array.length,
+        gaps = [],
+        gap = n;
+      while (gap != 1) {
+        gap = gap >> 1; //相当于 Math.floor(n/2)
+        gaps.unshift(gap)
+      }
+      while (gap = gaps.pop()) {
+        //对每个子数组进行排序
+        for (var g = 0; g < gap; g++) {
+          //****************正常的插入排序***************
+          for (var i = g + gap; i < n; i += gap) {
+            var target = array[i]; //从无序区取元素
+            if (target < array[i - gap]) { //无序区的元素比有序区的小
+              var j = i;
+              while (j > 0 && array[j - gap] > target) {
+                array[j] = array[j - gap]; //将前面的元素覆盖后面的
+                j -= gap;//不是－1而是－gap
+              }
+              array[j] = target;
+            }
+          }
+          //****************正常的插入排序***************
+        }
+      }
+    };
+
+
+
+    function mergeSort(array, begin, end) {
+      //如果数组还可以分割，并且处于分割模式
+      if (begin !== end) {
+        var mid = begin + ((end - begin) >> 1);
+        mergeSort(array, begin, mid);
+        mergeSort(array, mid + 1, end);
+        var temp = new Array(n)
+        mergeArray(array, begin, mid, mid + 1, end, temp);
+        for (var i = 0, n = temp.length; i < n; i++) {
+          array[begin + i] = temp[i];
+        }
+      }
+    }
+    function mergeArray(a, begin, end, begin2, end2, c) {
+      //n, m分别为a,b的最后索引; i为a的索引，j为b的索引，k为c的索引
+      var n = end, m = end2, i = begin, j = begin2, k = 0
+      while (i <= n && j <= m) {
+        //先比较两个数组等长的部分，看谁的元素较先，谁就先进c数组
+        if (a[i] < a[j]) {
+          c[k++] = a[i++]
+        } else {
+          //ap[i] > a[j], 说明a[i＋1], a[i+2]...a[n]这几个数也大于a[j]
+          //它们与a[j]都构成 逆向数
+          var oppositeIndex = i
+          while (oppositeIndex <= n) {
+            answers.push([a[oppositeIndex], a[j]])
+            oppositeIndex++
+          }
+          c[k++] = a[j++];
+
+        }
+      }
+      //可能a数组长些，那么将a数组剩下的元素一古脑儿全部扔进去
+      while (i <= n) {
+        c[k++] = a[i++];
+      }
+      //也可能是b数组长些，那么b数组的剩下的元素扔进去
+      while (j <= m) {
+        c[k++] = a[j++];
+      }
+    }
+
+    /*
+        test(bubbleSort1)
+        test(bubbleSort2)
+        test(bubbleSort3)
+        test(selectSort)
+        test(insertSort)
+        test(insertSort2)
+        test(shellSort)
+        test(shellSort2)
+        test(shellSort2)
+        test(mergeSort)
+    */
+
+   
+
+    var array = [2,4,3,1];
+    var answers = []
+    mergeSort(array, 0, array.length - 1)
+    console.log(answers.length + "对,分别", answers.map(function (el) {
+      return el.join("与")
+    }))
+
+
+
   </script>
 
 

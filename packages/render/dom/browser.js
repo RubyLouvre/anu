@@ -19,17 +19,19 @@ let fn = (DOMElement.prototype = {
 });
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
-		",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
-		",detachEvent"
+        ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
+        ",detachEvent"
 ).replace(/\w+/g, function(name) {
     fn[name] = function() {
-		toWarnDev('need implement ' + name); // eslint-disable-line
+        toWarnDev("need implement " + name); // eslint-disable-line
     };
 });
 
 //用于后端的document
 export let fakeDoc = new DOMElement();
-fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(type) {
+fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function(
+    type
+) {
     return new DOMElement(type);
 };
 fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
@@ -47,7 +49,6 @@ if (!inBrowser) {
 
 export let document = win.document;
 
-
 const versions = {
     88: 7, //IE7-8 objectobject
     80: 6, //IE6 objectundefined
@@ -55,7 +56,9 @@ const versions = {
     "08": NaN
 };
 /* istanbul ignore next  */
-export let msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+export let msie =
+    document.documentMode ||
+    versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
 
 export let modern = /NaN|undefined/.test(msie) || msie > 8;
 

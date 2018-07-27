@@ -1,9 +1,9 @@
 export const arrayPush = Array.prototype.push;
-export const innerHTML = 'dangerouslySetInnerHTML';
+export const innerHTML = "dangerouslySetInnerHTML";
 export const hasOwnProperty = Object.prototype.hasOwnProperty;
-export const gSBU = 'getSnapshotBeforeUpdate';
-export const gDSFP = 'getDerivedStateFromProps';
-export const hasSymbol = typeof Symbol === 'function' && Symbol['for'];
+export const gSBU = "getSnapshotBeforeUpdate";
+export const gDSFP = "getDerivedStateFromProps";
+export const hasSymbol = typeof Symbol === "function" && Symbol["for"];
 export const effects = [];
 export const topFibers = [];
 export const topNodes = [];
@@ -11,7 +11,7 @@ export const emptyArray = [];
 export const emptyObject = {};
 
 export const REACT_ELEMENT_TYPE = hasSymbol
-    ? Symbol['for']('react.element')
+    ? Symbol["for"]("react.element")
     : 0xeac7;
 
 export function noop() {}
@@ -62,9 +62,9 @@ export function isMounted(instance) {
 }
 
 export function toWarnDev(msg, deprecated) {
-    msg = deprecated ? msg + ' is deprecated' : msg;
+    msg = deprecated ? msg + " is deprecated" : msg;
     let process = getWindow().process;
-    if (process && process.env.NODE_ENV === 'development') {
+    if (process && process.env.NODE_ENV === "development") {
         throw msg;
     }
 }
@@ -88,17 +88,26 @@ export function inherit(SubClass, SupClass) {
     fn.constructor = SubClass;
     return fn;
 }
-
+try {
+    //微信小程序不支持Function
+    var supportEval = Function("a", "return a + 1")(2) == 3;
+} catch (e) {}
 export function miniCreateClass(ctor, superClass, methods, statics) {
-    let className = ctor.name || 'IEComponent';
-    let Ctor = Function(
-        'superClass',
-        'ctor',
-        `return function ${className} (props, context) {
+    let className = ctor.name || "IEComponent";
+    let Ctor = supportEval
+        ? Function(
+              "superClass",
+              "ctor",
+              `return function ${className} (props, context) {
             superClass.apply(this, arguments); 
             ctor.apply(this, arguments);
       }`
-    )(superClass, ctor);
+          )(superClass, ctor)
+        : function Ctor() {
+              superClass.apply(this, arguments);
+              ctor.apply(this, arguments);
+          };
+    Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
     extend(fn, methods);
     if (statics) {
@@ -113,19 +122,19 @@ export function toLowerCase(s) {
 }
 
 export function isFn(obj) {
-    return __type.call(obj) === '[object Function]';
+    return __type.call(obj) === "[object Function]";
 }
 
 let rword = /[^, ]+/g;
 
 export function oneObject(array, val) {
-    if (array + '' === array) {
-    //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
+    if (array + "" === array) {
+        //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
     }
     let result = {},
         //eslint-disable-next-line
-    value = val !== void 666 ? val : 1;
+        value = val !== void 666 ? val : 1;
     for (let i = 0, n = array.length; i < n; i++) {
         result[array[i]] = value;
     }
@@ -135,7 +144,7 @@ export function oneObject(array, val) {
 let rcamelize = /[-_][^-_]/g;
 export function camelize(target) {
     //提前判断，提高getStyle等的效率
-    if (!target || (target.indexOf('-') < 0 && target.indexOf('_') < 0)) {
+    if (!target || (target.indexOf("-") < 0 && target.indexOf("_") < 0)) {
         return target;
     }
     //转换为驼峰风格
@@ -151,12 +160,12 @@ export function firstLetterLower(str) {
 
 let numberMap = {
     //null undefined IE6-8这里会返回[object Object]
-    '[object Boolean]': 2,
-    '[object Number]': 3,
-    '[object String]': 4,
-    '[object Function]': 5,
-    '[object Symbol]': 6,
-    '[object Array]': 7
+    "[object Boolean]": 2,
+    "[object Number]": 3,
+    "[object String]": 4,
+    "[object Function]": 5,
+    "[object Symbol]": 6,
+    "[object Array]": 7
 };
 // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, symbol:6, array: 7, object:8
 export function typeNumber(data) {
@@ -171,11 +180,11 @@ export function typeNumber(data) {
 }
 
 export let toArray =
-  Array.from ||
-  function(a) {
-      let ret = [];
-      for (let i = 0, n = a.length; i < n; i++) {
-          ret[i] = a[i];
-      }
-      return ret;
-  };
+    Array.from ||
+    function(a) {
+        let ret = [];
+        for (let i = 0, n = a.length; i < n; i++) {
+            ret[i] = a[i];
+        }
+        return ret;
+    };

@@ -44,3 +44,4 @@ export function createPage(PageClass, path) {
   });
   return config;
 }
+

@@ -22,7 +22,7 @@ export function template(props) {
             this.instanceCode = Math.random();
           }
 
-          this.props.instanceCode = this.instanceCode;
+          this.props.instanceCode = this.instanceCode; 
           var instances = this.constructor.instances;
           if (instances.indexOf(this) === -1) {
             instances.push(this);
@@ -57,6 +57,7 @@ export function template(props) {
         oldUnmount.call(this);
       };
     } else {
+
     }
   }
   //...再上面一样
