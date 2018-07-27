@@ -1,6 +1,12 @@
 
 # 变更日志
 
+## 1.4.6(2018.07.27)
+
+1. 添加cacheContext, mergeContext等方法，如果上面的context不变，那么下方的也不会，这样就阻止了无效的cwrp钩子的触发
+2. miniCreateClass添加对微信小程序无法动态执行代码的处理
+3. createElement添加对input的处理，高级浏览器不会进行最下面的分支
+
 ## 1.4.5(2018.07.06)
 
 1. 调整依赖，不再添加webpack相关的模块
