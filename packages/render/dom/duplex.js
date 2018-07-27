@@ -93,41 +93,30 @@ export var duplexMap = {
             });
         },
         mount(node, props) {
-            node.multiple = !!props.multiple;
-            var value = props.value;
+            let multiple = (node.multiple = !!props.multiple);
+            let value = props.value;
             if (value != null) {
-                updateOptions(node, !!props.multiple, value, false);
+                updateOptions(node, multiple, value, false);
             } else if (props.defaultValue != null) {
-                updateOptions(node, !!props.multiple, props.defaultValue, true);
+                updateOptions(node, multiple, props.defaultValue, true);
             }
         },
         update(node, props) {
             // mount后这个属性没用
             node._wrapperState.initialValue = void 666;
 
-            var wasMultiple = node._wrapperState.wasMultiple;
-            node._wrapperState.wasMultiple = !!props.multiple;
-
-            var value = props.value;
+            let wasMultiple = node._wrapperState.wasMultiple;
+            let multiple = (node._wrapperState.wasMultiple = !!props.multiple);
+            let value = props.value;
             if (value != null) {
-                updateOptions(node, !!props.multiple, value, false);
-            } else if (wasMultiple !== !!props.multiple) {
+                updateOptions(node, multiple, value, false);
+            } else if (wasMultiple !== multiple) {
                 // 切换multiple后，需要重新计算
                 if (props.defaultValue != null) {
-                    updateOptions(
-                        node,
-                        !!props.multiple,
-                        props.defaultValue,
-                        true
-                    );
+                    updateOptions(node, multiple, props.defaultValue, true);
                 } else {
                     // Revert the select back to its default unselected state.
-                    updateOptions(
-                        node,
-                        !!props.multiple,
-                        props.multiple ? [] : "",
-                        false
-                    );
+                    updateOptions(node, multiple, multiple ? [] : "", false);
                 }
             }
         }

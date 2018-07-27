@@ -905,26 +905,26 @@
                 };
             },
             mount: function mount(node, props) {
-                node.multiple = !!props.multiple;
+                var multiple = node.multiple = !!props.multiple;
                 var value = props.value;
                 if (value != null) {
-                    updateOptions(node, !!props.multiple, value, false);
+                    updateOptions(node, multiple, value, false);
                 } else if (props.defaultValue != null) {
-                    updateOptions(node, !!props.multiple, props.defaultValue, true);
+                    updateOptions(node, multiple, props.defaultValue, true);
                 }
             },
             update: function update(node, props) {
                 node._wrapperState.initialValue = void 666;
                 var wasMultiple = node._wrapperState.wasMultiple;
-                node._wrapperState.wasMultiple = !!props.multiple;
+                var multiple = node._wrapperState.wasMultiple = !!props.multiple;
                 var value = props.value;
                 if (value != null) {
-                    updateOptions(node, !!props.multiple, value, false);
-                } else if (wasMultiple !== !!props.multiple) {
+                    updateOptions(node, multiple, value, false);
+                } else if (wasMultiple !== multiple) {
                     if (props.defaultValue != null) {
-                        updateOptions(node, !!props.multiple, props.defaultValue, true);
+                        updateOptions(node, multiple, props.defaultValue, true);
                     } else {
-                        updateOptions(node, !!props.multiple, props.multiple ? [] : "", false);
+                        updateOptions(node, multiple, multiple ? [] : "", false);
                     }
                 }
             }
@@ -3158,7 +3158,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.5",
+            version: "1.4.6",
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
