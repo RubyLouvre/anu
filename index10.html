@@ -15,79 +15,155 @@
 
     </div>
     <script>
-        function swap(arr, i, j) {
-            var tmp = arr[i];
-            arr[i] = arr[j]
-            arr[j] = tmp;
-        }
-
-        function shik(array, i, n) {
-            var temp = array[i]; //保存父元素
-            for (var k = i * 2 + 1; k < n; k = k * 2 + 1) { //从i结点的左孩子开始
-                if (k + 1 < n && array[k] < array[k + 1]) { //挑出最大的孩子
-                    k++;
+        function insertSort(array) {
+            //［i,n－1］是无序区
+            for (var i = 1, n = array.length; i < n; i++) {
+                var target = array[i];
+                if (target < array[i - 1]) {
+                    //如果无序区的元素小于有序区的元素
+                    var j = i;
+                    while (j > 0 && array[j - 1] > target) {
+                        array[j] = array[j - 1];// 前面的覆盖后面的
+                        j--;
+                    }
+                    array[j] = target;//将target移动有序区的某一位
                 }
-                if (k < n && temp < array[k]) { //如果子节点大于父节点，将子节点值赋给父节点（不用进行交换）
-                    array[i] = array[k];
-                    i = k;
+            }
+        }
+        class BlockList {
+            constructor() {
+                this.length = 0;
+                this.list = null;
+            }
+            split(list) {
+                var next = list.next;
+                var n = list.length;
+                var half = n >> 1
+                var newList = [];
+                for (var i = half; i < n; i++) {
+                    newList[i] = list[i]
+                }
+                console.log("slit", list, newList)
+                list.length = half;
+                list.next = newList;
+                newList.next = next;
+            }
+            merge(list, next) {
+                var n = list.length;
+                var m = next.length;
+                for (var i = 0; i < m; i++) {
+                    list[n + i] = next[i];
+                }
+                list.next = next.next;
+            }
+            size(){
+                return this.length;
+            }
+            remove(el, list) {
+                if (!list) {
+                    if (!this.list) {
+                        return false
+                    }
+                    list = this.list;
+                }
+                if (el <= list[list.length - 1]) {
+                    var hasRemove = false
+                    for (var i = 0, n = list.length; i < n; i++) {
+                        var elem = list[i];
+                        if (elem === el) {//后面的覆盖前面的
+                            list[i] = list[i + 1]
+                            hasRemove = true
+                            break;
+                        }
+                    }
+                    if (hasRemove) {
+                        for (; i < n; i++) {
+                            list[i] = list[i + 1]
+                        }
+                        this.length--;//减少块的长度
+                        list.length--;//减少总长度
+                        var max = Math.sqrt(this.length) / 2
+                        if (list.length < max && list.next) {
+                            this.merge(list, list.next)
+                        }
+                    }
                 } else {
-                    break;
+                    var next = list.next;
+                    if (next) {
+                        this.remove(el, next)
+                    }
                 }
             }
-            array[i] = temp; //将temp值放到最终的位置
-        }
-
-        function swap(arr, i, j) {
-            var tmp = arr[i];
-            arr[i] = arr[j]
-            arr[j] = tmp;
-        }
-
-        function Adjustdown(top, root, K) {
-            var parent = root;
-            var child = 2 * parent + 1;
-            while (parent < K) {
-                //右孩子存在且小于K且右孩子小于左孩子
-                if (child + 1 < K && top[child + 1] < top[child])
-                    child++; //将child指向更小的结点
-                //当前较小孩子小于父节点时交换，并下滤
-                if (child < K && top[child] < top[parent]) {
-                    swap(top, child, parent);
-                    parent = child;
-                    child = (child << 1) + 1;
-                } else
-                    break;
-            }
-        }
-
-       
-
-        function findBargests(array, k) {
-            var top = [],
-                n = array.length
-            for (var i = 0; i < k; i++) {
-                top[i] = array[i];
-			}
-			console.log(top.concat())
-            //下调
-            for (var j = k >> 1; j >= 0; --j) {
-                Adjustdown(top, j, k);
-            }
-            for (var j = k; j < n; j++) {
-                if (top[0] < array[j]) { //堆顶小于新比较的元素交换
-                    swap(top, 0, j);
-                    Adjustdown(top, 0, k); //调整最大堆的结构
+            forEach(cb, list, index) {
+                list = list || this.list;
+                index = index || 0
+                if (!list) {
+                    return
                 }
-			}
-			console.log(top)
-            //遍历完成，top数据内存储的就是最大的前K个数
-            for (var idx = 0; idx < k; ++idx) {
-               console.log(  top[idx]  )
+                for (var i = 0; i < list.length; i++) {
+                    cb(list[i], index)
+                    index++
+                }
+                if (list.next) {
+                    this.forEach(cb, list.next, index)
+                }
+            }
+            insert(el, list) {
+                if (!list) {
+                    list = this.list;
+                }
+                if (!list) {
+                    this.list = [el];
+                    this.length = 1;
+                } else {
+                    //每个子组数最好在 Math.sqrt(this.length) / 2 ~ Math.sqrt(this.length) *2之间
+                    //我们选择 Math.sqrt(this.length) ＋ 1
+                    var max = Math.sqrt(this.length) + 1;
+                    var beyondLengthLimit = list.length < max
+                    if (el < list[list.length - 1]) { //如果值大小位于这区间内
+                        var m = 0
+                        for (var i = 0, n = list.length; i < n; i++) {
+                            if (el < list[i]) {
+                                m = i;
+                                break;
+                            }
+                        }
+                        for (i = list.length - 1; i >= m; i--) {
+                            list[i + 1] = list[i]
+                        }
+                        list[m] = el;
+                        // list[list.length] = el;
+                        //  insertSort(list)
+                        this.length++;
+                        if (list.length >= max && list.length > 3) {
+                            this.split(list)
+                        }
+                    } else { //如果值超大或list是最后一个块
+                        if (beyondLengthLimit && !list.next) {
+                            list[list.length] = el;
+                            this.length++;
+                            if (list.length >= max && list.length > 3) {
+                                this.split(list)
+                            }
+                        } else {
+                            this.insert(el, list.next || (list.next = []))
+                        }
+                    }
+                }
             }
         }
-      
-        var el = findBargests([3, 11, 1, 5, 6, 9, 7, 8], 4)
-       
+        var array = [2, 3, 7, 1, 8, 7, 9, 6, 0, 10]
+
+        var list = new BlockList
+
+        array.forEach(function (el) {
+            list.insert(el)
+        })
+
+        console.log(list)
+        list.remove(7)
+
+
     </script>
 
 
