@@ -106,7 +106,7 @@ export function miniCreateClass(ctor, superClass, methods, statics) {
             ctor.apply(this, arguments);
       }`
           )(superClass, ctor)
-        : function Ctor() {
+        : function ReactInstance() {
               superClass.apply(this, arguments);
               ctor.apply(this, arguments);
           };

@@ -108,11 +108,12 @@ module.exports = {
         exit(path) {
             const methodName = path.node.key.name;
             if (methodName === "render") {
+                console.log("生成组件", modules.className, !! modules.className)
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
                 helpers.render(
                     path,
                     "有状态组件",
-                    modules.componentName,
+                    modules.className,
                     modules
                 );
             }
@@ -129,8 +130,6 @@ module.exports = {
         }
     },
     ImportDeclaration(path){
-
-
         //是否是绝对路径，小程序不支持绝对路径
         //是否是nodejs内置模块
         //是否是npm 模块
@@ -241,10 +240,10 @@ module.exports = {
     MemberExpression(path) {},
     AssignmentExpression(path) {
         // 转换微信小程序component的properties对象为defaultProps
-        if (modules.componentName) {
+        if (modules.className) {
             const left = path.node.left;
             if (
-                left.object.name === modules.componentName &&
+                left.object.name === modules.className &&
                 left.property.name === "defaultProps"
             ) {
                 helpers.defaultProps(path.node.right.properties, modules);

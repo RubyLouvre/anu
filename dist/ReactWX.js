@@ -83,7 +83,7 @@ try {
 } catch (e) {}
 function miniCreateClass(ctor, superClass, methods, statics) {
     var className = ctor.name || "IEComponent";
-    var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function Ctor() {
+    var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
     };
