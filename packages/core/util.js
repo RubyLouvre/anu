@@ -47,6 +47,9 @@ export let __type = Object.prototype.toString;
 var fakeWindow = {};
 export function getWindow() {
     try {
+        if(!window){
+            throw "no window"
+        }
         return window;
     } catch (e) {
         try {

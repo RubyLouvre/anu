@@ -666,21 +666,24 @@ function createContext(defaultValue, calculateChangedBits) {
 }
 
 var eventSystem = {
-  classCache: {},
-  dispatchEvent: function dispatchEvent(e) {
-    var dataset = e.target.dataset || {};
-    var eventName = dataset[e.type + "Fn"];
-    var classCode = dataset.classCode;
-    var componentClass = classCache[classCode];
-    var fn = componentClass && componentClass.prototype[eventName];
-    if (fn) {
-      var instanceCode = dataset.instanceCode;
-      var instance = componentClass.instances.find(function (el) {
-        return el.instanceCode === instanceCode;
-      });
-      fn.call(instance || e.target, e);
+    classCache: {},
+    dispatchEvent: function dispatchEvent(e) {
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        var eventName = dataset[e.type + "Fn"];
+        var classCode = dataset.classCode;
+        var componentClass = eventSystem.classCache[classCode];
+        var fn = componentClass && componentClass.prototype[eventName];
+        if (fn) {
+            var instanceCode = dataset.instanceCode;
+            for (var i = 0, el; el = componentClass.instances[i++];) {
+                if (el.instanceCode === instanceCode) {
+                    fn.call(el || e.target, e);
+                    break;
+                }
+            }
+        }
     }
-  }
 };
 
 function UpdateQueue() {
@@ -1837,41 +1840,49 @@ function getContainer(p) {
 }
 
 function createPage(PageClass, path) {
-  PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-  var instance = render(createElement(PageClass), {
-    type: "page",
-    props: {
-      path: path
-    },
-    children: [],
-    root: true,
-    appendChild: function appendChild() {}
-  });
-  if (!instance.instanceCode) {
-    instance.instanceCode = Math.random();
-  }
-  var config = {
-    data: {
-      state: instance.state,
-      props: instance.props
-    },
-    dispatchEvent: eventSystem.dispatchEvent,
-    onLoad: function onLoad() {
-      instance.$wxPage = this;
-    },
-    onUnload: function onUnload() {
-      instance.componentWillUnmount && instance.componentWillUnmount();
+    PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
+    var instance = render(createElement(PageClass), {
+        type: "page",
+        props: {
+            path: path
+        },
+        children: [],
+        root: true,
+        appendChild: function appendChild() {}
+    });
+    if (!instance.instanceCode) {
+        instance.instanceCode = Math.random();
     }
-  };
-  var list = instance.allTemplateData || [];
-  list.forEach(function (el) {
-    if (config.data[el.templatedata]) {
-      config.data[el.templatedata].push(el);
-    } else {
-      config.data[el.templatedata] = [el];
+    if (!PageClass.instances) {
+        PageClass.instances = [];
     }
-  });
-  return config;
+    PageClass.instances.push(instance);
+    if (!instance.instanceCode) {
+        instance.instanceCode = Math.random();
+    }
+    instance.props.instanceCode = instance.instanceCode;
+    var config = {
+        data: {
+            state: instance.state,
+            props: instance.props
+        },
+        dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad() {
+            instance.$wxPage = this;
+        },
+        onUnload: function onUnload() {
+            instance.componentWillUnmount && instance.componentWillUnmount();
+        }
+    };
+    var list = instance.allTemplateData || [];
+    list.forEach(function (el) {
+        if (config.data[el.templatedata]) {
+            config.data[el.templatedata].push(el);
+        } else {
+            config.data[el.templatedata] = [el];
+        }
+    });
+    return config;
 }
 
 function getData(instance) {
@@ -2045,14 +2056,14 @@ function findHostInstance(fiber) {
 var win = getWindow();
 var prevReact = win.React;
 var React$1 = void 0;
-var classCache$1 = eventSystem.classCache;
+var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React$1 = win.React = win.ReactDOM = {
   eventSystem: eventSystem,
   miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
     var clazz = miniCreateClass.apply(null, arguments);
     var uuid = clazz.prototype.classCode;
-    classCache$1[uuid] = clazz;
+    classCache[uuid] = clazz;
     return clazz;
   },
   findDOMNode: function findDOMNode(fiber) {
