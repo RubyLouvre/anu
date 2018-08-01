@@ -1,6 +1,6 @@
 import React  from "../../../../dist/ReactWX";
-
-
+import Dog from '../../components/dog/dog';
+const e = 'e';
 class P extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +21,7 @@ class P extends React.Component {
   }
   render() {
     return (
-      <div onClick={this.onClick} onKeyDown={this.onKeyDown}>
+      <div onTap = {this.onClick} onKeyDown={this.onKeyDown}>
         <div>
           {this.state.array.map(function(el) {
             return (
