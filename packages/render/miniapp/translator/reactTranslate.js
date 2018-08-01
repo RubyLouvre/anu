@@ -148,6 +148,9 @@ module.exports = {
         }
 
         specifiers.forEach((item)=>{
+            //重点，保持所有引入的组件名及它们的路径，用于<import />
+            modules.importComponents[item.local.name] = source
+         
             if(item.local.name === 'React'){
                let from = nPath.dirname(modules.current.replace('src', 'build'));
                let to = '/build/mi/';
@@ -156,6 +159,7 @@ module.exports = {
                if(relativePath === ''){
                  pathStart = './';
                }
+   
                node.source.value =  `${pathStart}${nPath.join(relativePath, nPath.basename(node.source.value))}`
             }
         });
