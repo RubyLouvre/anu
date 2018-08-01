@@ -2,56 +2,20 @@
 
 测试例子：npm run miniapp
 
-- [x] 组件的render方法或无状态组件的JSX部分会抽取出来变成wxml文件
-- [x] 支持将`<span>`, `<b>`, `<cite>`，`<div>`, `<h1>`等原本是html的标签转换成`<view>` , `<text>`
-- [x] `this.data`转换成`this.state`, `this.setState`转换成`this.setData`
-- [x] `style＝{{color: this.state.color, fontWeight: 16,position:"relative"  }}` 转换成 `style="color: {{color}}; font-weight: 16; position: relative "`; 支持样式名由驼峰风格变成连字符风格，变量自动转成插值，值为字符串的情况下去掉引号....
-- [x] `{ aaa ? bbb: ccc }` 转换成3个block元素，如`<block><block wx:if="{{aaa}}">bbb</block><block wx:else="true">ccc</block></block>`
-- [x] `{ aaa && bbb }` 转换成1个block元素，如`<block wx:if="{{aaa}}">bbb</block>`
-- [x] `{ this.props.children }` 转换成`<slot />`
-- [x] `{ array.map(function(el, index){}) }` 转换成`<block wx:for="{{arrat}}" wx:for-item="el" wx:for-item="index" >...</block>`
-- [x]  if语句里面可以循环与其他if，map语句中可以加if语句与return**子元素的map数组**
-- [x] `xxx={ this.vvv }`, `yyy={this.aaa.bbb}` 转换成 `xxx="{{vvv}}"`,`yyy="{{aaa.bbb}}"`
-- [x] 移除定义Component/Page/App的JS文件中的export语句
-- [x] 收集定义Component/Page/App的类中的静态属性json，转换成独立的json文件
-- [x] 类声明转换为小程序式的函数调用，并使用onInit方法劫持constructor，去掉里面的super语句
 
-```javascript
-class AAA extends Component {
-    constructor(){}
-    onClick(){}
-}
 
-Component(onInit({
-   constructor: function(){},
-   onClick: function(){}
-}))
-```
+index.js parse方法利用rollup解析得到整个工程的所有文件
+index.js codegen方法的transform方法处理所有JS文件
+transform的实现是在transform.js文件中，它先根据目录名与文件，给当前modules对象添加一个moduleType属性Page/Component/App
 
-- [x] 组件的静态属性defaultProps与或类名后面的**defaultProps**自动转换为**properties**对象
-- [x] onXXX转换bindxxxx, 如 `onClick={this.onClick}`或`onClick={this.onClick.bind(this)}`转换成`bindtap="onClick"`, 不支持在JSX写一个函数体，即 `onClick={()=>{ console.log(1)}}`
-> onTap: "bindtap",
->
-> onTouchStart: "bindtouchstart",
->
-> onTouchMove: "bindtouchmove",
->
-> onTouchCancel: "bindtouchcancel",
->
-> onTouchEnd: "bindtouchend",
->
-> onLongpress: "bindtongpress",
->
-> onLongtap: "bindlongtap",
->
-> onTransitionEnd: "bindtransitionend",
->
-> onAnimationStart: "bindanimationstart",
->
-> onAnimationIteration: "bindanimationiteration",
->
-> onAnimationEnd: "bindanimationend",
->
-> onTouchForceChange: "bindtouchforcechange",
->
-> onClick: "bindtap",
+ransform利用babel.core来进行解析文件，需要用到已有或自己定义的babel插件， 已有插件是"syntax-jsx",
+"transform-decorators-legacy",  "transform-object-rest-spread",自定义插件是miniappPlugin。
+
+miniappPlugin的主体是定义在reactTranslate.js中
+
+reactTranslate.js 就是一个AST遍历器的集合，包含了ClassDeclaration，FunctionDeclaration，ExportNamedDeclaration，ClassProperty，CallExpression，JSXOpeningElement，JSXClosingElement等表达式的转译操作
+
+ClassDeclaration会将用户的es6转换React.miniCreateClass的方法创建类，
+
+ClassMethod是用来 处理render方法，会转换成两套模块，一个是JSX的纯JS形式即React.createElement，一套是wxml
+

@@ -129,7 +129,7 @@ class Parser {
         const basePath = destPath.replace(".js", "");
 
         //将cjs规范的reactWX库写入到build目录中
-        if(/reactWX/i.test(destPath)){
+        if(/ReactWX/i.test(destPath)){
             fs.writeFile(destPath, output.js, () => {});
             delete output.js
             this.outputs.push(output)

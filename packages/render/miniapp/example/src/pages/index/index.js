@@ -1,4 +1,4 @@
-import React  from "../../reactWX";
+import React  from "../../ReactWX";
 import "./page.css";
 import Dog from "../../components/dog/dog";
 const e = "e";
