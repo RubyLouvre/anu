@@ -99,7 +99,16 @@ class Parser {
             return collect;
         }, []);
         const promises = modules.map(m => {
-            return this.codegen.call(this, m.id, m.dependencies, m.code, m.babeled);
+
+            /**
+             * TypeError [ERR_INVALID_ARG_VALUE]: The argument 'path' must be a string or Uint8Array without null bytes. Received 'path/anu/build/\u0000commonjsHelpers'
+             * 总报这个错误，咱未查找到原因，暂时先屏蔽
+             */
+
+            if(!/commonjsHelpers/g.test(m.id)){
+                return this.codegen.call(this, m.id, m.dependencies, m.code, m.babeled);
+            }
+            
         });
         await Promise.all(promises)
         await this.processJSON();
@@ -120,6 +129,9 @@ class Parser {
         })
     }
     async codegen(id, dependencies, code, babeled) {
+
+        if(/node_modules/g.test(id)) return; //不写入npm资源。
+
         //生成文件
         let sourcePath = id;
         let srcPath = '';
@@ -130,7 +142,10 @@ class Parser {
             srcPath = id.replace(sourceDirPath, "");
         }
 
+       
+
         const destPath = path.join(this.output, srcPath);
+
 
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
@@ -144,6 +159,8 @@ class Parser {
             delete output.js
             this.outputs.push(output)
         }
+
+        
 
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
