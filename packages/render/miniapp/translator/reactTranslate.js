@@ -140,6 +140,12 @@ module.exports = {
         let node = path.node;
         let source = node.source.value; 
         let specifiers = node.specifiers;
+        if(modules.componentType === "App") {
+            if(/\/pages\//.test(source)){
+                path.remove();//移除分析依赖用的引用
+                return
+            }
+        }
 
         specifiers.forEach((item)=>{
             if(item.local.name === 'React'){

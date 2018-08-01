@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-07-27
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-01
  * IE9+
  */
 
@@ -38,6 +38,9 @@ var __type = Object.prototype.toString;
 var fakeWindow = {};
 function getWindow() {
     try {
+        if (!window) {
+            throw "no window";
+        }
         return window;
     } catch (e) {
         try {
@@ -1835,7 +1838,7 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
   PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-  var instance = render(React.createElement(PageClass), {
+  var instance = render(createElement(PageClass), {
     type: "page",
     props: {
       path: path

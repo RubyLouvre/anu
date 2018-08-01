@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-07-27
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-08-01
  */
 
 (function (global, factory) {
@@ -43,6 +43,9 @@
     var fakeWindow = {};
     function getWindow() {
         try {
+            if (!window) {
+                throw "no window";
+            }
             return window;
         } catch (e) {
             try {
@@ -1492,38 +1495,38 @@
         x: { c: 1 }
     };
     var specialSVGPropertyName = {
-        'overline-thickness': 2,
-        'underline-thickness': 2,
-        'overline-position': 2,
-        'underline-position': 2,
-        'stroke-miterlimit': 2,
-        'baseline-shift': 2,
-        'clip-path': 2,
-        'font-size': 2,
-        'font-size-adjust': 2,
-        'font-stretch': 2,
-        'font-style': 2,
-        'text-decoration': 2,
-        'vert-origin-x': 2,
-        'vert-origin-y': 2,
-        'paint-order': 2,
-        'fill-rule': 2,
-        'color-rendering': 2,
-        'marker-end': 2,
-        'pointer-events': 2,
-        'units-per-em': 2,
-        'strikethrough-thickness': 2,
-        'lighting-color': 2
+        "overline-thickness": 2,
+        "underline-thickness": 2,
+        "overline-position": 2,
+        "underline-position": 2,
+        "stroke-miterlimit": 2,
+        "baseline-shift": 2,
+        "clip-path": 2,
+        "font-size": 2,
+        "font-size-adjust": 2,
+        "font-stretch": 2,
+        "font-style": 2,
+        "text-decoration": 2,
+        "vert-origin-x": 2,
+        "vert-origin-y": 2,
+        "paint-order": 2,
+        "fill-rule": 2,
+        "color-rendering": 2,
+        "marker-end": 2,
+        "pointer-events": 2,
+        "units-per-em": 2,
+        "strikethrough-thickness": 2,
+        "lighting-color": 2
     };
-    var repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
+    var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
     function createRepaceFn(split) {
         return function (match) {
             return match.slice(0, 1) + split + match.slice(1).toLowerCase();
         };
     }
     var rhump = /([a-z])([A-Z])/;
-    var toHyphen = createRepaceFn('-');
-    var toColon = createRepaceFn(':');
+    var toHyphen = createRepaceFn("-");
+    var toColon = createRepaceFn(":");
     function getSVGAttributeName(name) {
         if (svgCache[name]) {
             return svgCache[name];
@@ -1560,8 +1563,8 @@
         var continueProps = skipProps;
         if (!isSVG && rform.test(fiber.type)) {
             continueProps = duplexProps;
-            if (!('onChange' in nextProps)) {
-                eventAction(dom, 'onChange', noop, lastProps, fiber);
+            if (!("onChange" in nextProps)) {
+                eventAction(dom, "onChange", noop, lastProps, fiber);
             }
             fiber.effectTag *= DUPLEX;
             fiber.onDuplex = continueProps.onDuplex;
@@ -1603,25 +1606,25 @@
         );
     }
     function getPropAction(dom, name, isSVG) {
-        if (isSVG && name === 'className') {
-            return 'svgClass';
+        if (isSVG && name === "className") {
+            return "svgClass";
         }
         if (isSpecialAttr[name]) {
             return name;
         }
         if (isEventName(name)) {
-            return 'event';
+            return "event";
         }
         if (isSVG) {
-            return 'svgAttr';
+            return "svgAttr";
         }
-        if (name === 'width' || name === 'height') {
-            return 'attribute';
+        if (name === "width" || name === "height") {
+            return "attribute";
         }
         if (isBooleanAttr(dom, name)) {
-            return 'booleanAttr';
+            return "booleanAttr";
         }
-        return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
+        return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
     }
     var builtinStringProps = {
         className: 1,
@@ -1648,33 +1651,33 @@
             patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
         },
         autoFocus: function autoFocus(dom) {
-            if (/input|text/i.test(dom.nodeName) || dom.contentEditable === 'true') {
+            if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
                 dom.focus();
             }
         },
         svgClass: function svgClass(dom, name, val) {
             if (!val) {
-                dom.removeAttribute('class');
+                dom.removeAttribute("class");
             } else {
-                dom.setAttribute('class', val);
+                dom.setAttribute("class", val);
             }
         },
         svgAttr: function svgAttr(dom, name, val) {
-            var method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
+            var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
             var nameRes = getSVGAttributeName(name);
             if (nameRes.ifSpecial) {
-                var prefix = nameRes.name.split(':')[0];
-                dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
+                var prefix = nameRes.name.split(":")[0];
+                dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
             } else {
-                dom[method](nameRes, val || '');
+                dom[method](nameRes, val || "");
             }
         },
         booleanAttr: function booleanAttr(dom, name, val) {
             dom[name] = !!val;
             if (dom[name] === false) {
                 dom.removeAttribute(name);
-            } else if (dom[name] === 'false') {
-                dom[name] = '';
+            } else if (dom[name] === "false") {
+                dom[name] = "";
             }
         },
         attribute: function attribute(dom, name, val) {
@@ -1691,7 +1694,7 @@
             try {
                 if (!val && val !== 0) {
                     if (builtinStringProps[name]) {
-                        dom[name] = '';
+                        dom[name] = "";
                     } else {
                         dom.removeAttribute(name);
                     }
@@ -1701,14 +1704,15 @@
             } catch (e) {
                 try {
                     dom.setAttribute(name, val);
-                } catch (e) {          }
+                } catch (e) {
+                }
             }
         },
         event: eventAction,
         dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
             var oldhtml = lastProps[name] && lastProps[name].__html;
             var html = val && val.__html;
-            html = html == null ? '' : html;
+            html = html == null ? "" : html;
             if (html !== oldhtml) {
                 dom.innerHTML = html;
             }
