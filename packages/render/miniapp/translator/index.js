@@ -13,12 +13,15 @@ const fs = require("fs-extra");
 const transform = require("./transform");
 const modules = require("./modules");
 
-let entryFolder = path.resolve(__dirname, "../example");
-//const projectPath = process.cwd();
+let cwd = process.cwd();
+let entryFolder = path.join(cwd, 'src', 'mi');
 let projectPath = entryFolder;
-const sourceDirPath = path.join(projectPath, "src");
-const outputDirPath = path.join(projectPath, "build");
+const sourceDirPath = path.join(cwd, 'src');
+const outputDirPath = path.resolve(projectPath, '../../build');
+
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
+
+var log = console.log;
 if (nodejsVersion < 7) {
     console.log(
         "当前nodejs版本为 " +
@@ -102,42 +105,48 @@ class Parser {
         await this.processJSON();
      
         //拷贝project.config.json
-        const filePath = path.resolve(sourceDirPath, "project.config.json");
+        const filePath = path.resolve(sourceDirPath, 'mi', "project.config.json");
+
+
         if (fs.existsSync(filePath)) {
-          
-            fs.copyFile(filePath, this.output + "/project.config.json", () => {});
+            
+            fs.copyFile(filePath, path.join(this.output, 'mi')  + "/project.config.json", () => {});
         }
     }
     async processJSON() {
         this.outputs.forEach(function(el) {
-            console.log(el.type)
+           // console.log(el.type)
           
         })
     }
     async codegen(id, dependencies, code, babeled) {
         //生成文件
         let sourcePath = id;
-        let srcPath = id.replace(sourceDirPath, "");
-        if (/node_modules/.test(srcPath)) {
-            srcPath = srcPath.replace(path.resolve("node_modules"), "");
-            srcPath = `nodeModules${srcPath}`;
+        let srcPath = '';
+
+        if(/reactWX/i.test(id)){
+            srcPath = id.replace(process.cwd(), '');
+        }else{
+            srcPath = id.replace(sourceDirPath, "");
         }
+
         const destPath = path.join(this.output, srcPath);
+
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
 
+
         //将cjs规范的reactWX库写入到build目录中
-        if(/ReactWX/i.test(destPath)){
-            fs.writeFile(destPath, output.js, () => {});
+        if(/reactWX/i.test(destPath)){
+            fs.writeFile(destPath.replace('dist', 'mi'), output.js, () => {});
             delete output.js
             this.outputs.push(output)
         }
 
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
-           
             fs.writeFile(destPath, output.js, () => {});
             delete output.js
             output.jsonPath = basePath + ".json"
@@ -149,7 +158,6 @@ class Parser {
         }
         //生成wxml与wxss
         if (/Page|Component/.test(output.componentType)) {
-            console.log(output.wxml == null)
             fs.writeFile(basePath + ".wxml", output.wxml || "", () => {});
             fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }
@@ -173,7 +181,7 @@ class Parser {
 
 async function build() {
     try {
-        const parser = new Parser(path.join(projectPath, "src/app.js"));
+        const parser = new Parser(path.join(projectPath, "app.js"));
         await parser.parse();
         // 暂时关闭watch方便开发
         // parser.watch('./src')

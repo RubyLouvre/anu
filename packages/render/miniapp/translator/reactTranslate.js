@@ -9,9 +9,61 @@ const jsx = require("./jsx/jsx");
 
 const parsePath = require("./utils").parsePath;
 
+const fs = require('fs');
+const fs_extra = require('fs-extra');
+const chalk = require('chalk');
+
+
+
+const log = console.log;
+
+
+
 //const Pages = [];
 //  miniCreateClass(ctor, superClass, methods, statics)
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
+
+const isNpm = function(path){
+    const _toString = Object.prototype.toString;
+    if(_toString.call(path) !== '[object String]' || !path) return false;
+    return !/^\/|\./.test(path);
+
+}
+const isAbsolute = function(path){
+    return nPath.isAbsolute(path);
+}
+const isBuildInLibs = function(name){
+    let libs = new Set(require('repl')._builtinLibs);
+    return libs.has(name);
+}
+const copy_Node_Modules_To_Build_Npm = function(source){
+
+    let node_modules_sources_path = nPath.join(process.cwd(), 'node_modules', source);
+
+    let node_modeles_build_sources_path = nPath.join(process.cwd(), `/build/mi/npm/${source}`);
+
+    fs_extra.copy(
+        node_modules_sources_path,
+        node_modeles_build_sources_path,
+        {
+            overwrite: true,
+            errorOnExist:true,
+        },
+        function(err){
+            if(err) throw err;
+        }
+    );
+
+}
+
+
+const get_mini_node_module_path = function(fileSourcePath){
+    let from = nPath.dirname(fileSourcePath.replace('src', 'build'));
+    let to = '/build/mi/npm/';
+    return nPath.relative(from, to);
+}
+
+
 var appValidKeys = {
     pages: 1,
     window: 1,
@@ -76,8 +128,46 @@ module.exports = {
             }
         }
     },
+    ImportDeclaration(path){
 
-    
+
+        //是否是绝对路径，小程序不支持绝对路径
+        //是否是nodejs内置模块
+        //是否是npm 模块
+        //是否是本地模块
+        //to do 打包路径
+
+        let node = path.node;
+        let source = node.source.value; 
+        let specifiers = node.specifiers;
+
+        specifiers.forEach((item)=>{
+            if(item.local.name === 'React'){
+               let from = nPath.dirname(modules.current.replace('src', 'build'));
+               let to = '/build/mi/';
+               let relativePath = nPath.relative(from, to);
+               let pathStart = '';
+               if(relativePath === ''){
+                 pathStart = './';
+               }
+               node.source.value =  `${pathStart}${nPath.join(relativePath, nPath.basename(node.source.value))}`
+            }
+        });
+
+
+        //to do: 抛错提示
+        if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
+
+        //复制到build npm目录
+        copy_Node_Modules_To_Build_Npm(source);    
+
+        //修改ast中 import(path)声明中的path路径
+        node.source.value = nPath.join(get_mini_node_module_path(modules.current), source);
+
+
+
+
+    },
 
     ExportNamedDeclaration: {
         //小程序在定义
@@ -107,10 +197,26 @@ module.exports = {
     ClassProperty(path) {
         //只处理静态属性
         var key = path.node.key.name;
+        
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
             modules.staticMethods.push(keyValue);
-        } else {
+        } 
+        else if(modules.componentType === "App" && key === 'config'){
+            //写入config到app.json中
+            //to do 路径问题
+            const code = generate(path.node.value).code;
+
+            fs.writeFile(
+                nPath.join(process.cwd(), 'build', 'mi', 'app.json'),
+                code,
+                (err)=>{
+                    if(err) throw "生成app.json配置文件出错";
+                }
+            );
+
+        }
+        else {
             if (key == "globalData" && modules.componentType === "App") {
                 var thisMember = t.assignmentExpression(
                     "=",
@@ -153,6 +259,14 @@ module.exports = {
                 // property.name = "setData";
             }
         }
+
+        //to do: 解析 require(mode_modules)
+        // if(callee.name === 'require') {
+        //     if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
+        //     copy_Node_Modules_To_Build_Npm(source); 
+        //     node.arguments[0].value = nPath.join(get_mini_node_module_path(modules.current), source);
+        // }
+
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝

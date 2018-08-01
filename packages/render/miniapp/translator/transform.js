@@ -3,6 +3,7 @@ const babel = require("babel-core");
 const visitor = require("./reactTranslate");
 let modules = require("./modules");
 
+
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -13,8 +14,11 @@ function miniappPlugin(api) {
     };
 }
 
+
 function transform(code, sourcePath) {
     modules.current = sourcePath.replace(process.cwd(), "");
+
+    //console.log(sourcePath, '===sourcePath');
 
     if (/\/components\//.test(sourcePath)) {
         modules.componentType = "Component";
@@ -23,7 +27,6 @@ function transform(code, sourcePath) {
     } else if (/app\.js/.test(sourcePath)) {
         modules.componentType = "App";
     }
-    console.log(sourcePath, modules.componentType);
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
