@@ -50,7 +50,7 @@ const copy_Node_Modules_To_Build_Npm = function(source){
             errorOnExist:true,
         },
         function(err){
-            if(err) throw err;
+            if(err) console.log(err);
         }
     );
 
