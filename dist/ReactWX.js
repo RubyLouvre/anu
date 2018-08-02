@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-01
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-02
  * IE9+
  */
 
@@ -1937,7 +1937,7 @@ function template(props) {
       };
     }
   }
-  return React.createElement(clazz, props);
+  return createElement(clazz, props);
 }
 
 function cleanChildren(array) {
@@ -2055,10 +2055,10 @@ function findHostInstance(fiber) {
 
 var win = getWindow();
 var prevReact = win.React;
-var React$1 = void 0;
+var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
-React$1 = win.React = win.ReactDOM = {
+React = win.React = win.ReactDOM = {
   eventSystem: eventSystem,
   miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
     var clazz = miniCreateClass.apply(null, arguments);
@@ -2097,6 +2097,6 @@ React$1 = win.React = win.ReactDOM = {
   isValidElement: isValidElement,
   createFactory: createFactory
 };
-var React$2 = React$1;
+var React$1 = React;
 
-export default React$2;
+export default React$1;

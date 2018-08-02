@@ -1,4 +1,6 @@
 import { noop, isFn } from "react-core/util";
+import { createElement } from "react-core/createElement";
+
 function getData(instance) {
   return instance.allTemplateData || (instance.allTemplateData = []);
 }
@@ -61,5 +63,5 @@ export function template(props) {
     }
   }
   //...再上面一样
-  return React.createElement(clazz, props);
+  return createElement(clazz, props);
 }
