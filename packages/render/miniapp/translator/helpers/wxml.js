@@ -27,8 +27,8 @@ function wxml(code) {
 }
 var visitor = {
     JSXOpeningElement: {
-        enter: function(path) {},
         exit: function(path) {
+            //   enter: function(path) {
             var openTag = path.node.name;
             if (
                 openTag.type === "JSXMemberExpression" &&
@@ -52,17 +52,45 @@ var visitor = {
                 });
                 var attributes = [];
                 var template = jsx.createElement("template", attributes, []);
-                attributes.push(
-                    jsx.createAttribute("is", is),
-                    jsx.createAttribute("wx:for", `{{${array}}}`),
-                    jsx.createAttribute("wx:for-item", "data"),
-                    jsx.createAttribute("data", "{{...data}}")
-                );
-                if (key) {
-                    attributes.push(
-                        jsx.createAttribute("wx:key", `{{${key}}}`)
-                    );
+                var p = path.parentPath.parentPath,
+                    inLoop,
+                    dataName = "data";
+                while (p.parentPath) {
+                    p = p.parentPath;
+                    if (p.type === "CallExpression") {
+                        inLoop = p.node.callee.property.name === "map";
+                        dataName = p.node.arguments[0].params[0].name;
+                        break;
+                    }
                 }
+                //将组件变成template标签
+                attributes.push();
+                if (!inLoop) {
+                    attributes.push(
+                        jsx.createAttribute("is", is),
+                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
+                        //   jsx.createAttribute("wx:for-item", "data"),
+                        jsx.createAttribute("data", `{{...${dataName}}}`),
+                        jsx.createAttribute("wx:for", `{{${array}}}`),
+                        jsx.createAttribute("wx:for-item", dataName),
+                        jsx.createAttribute("wx:for-index", "index")
+                    );
+                } else {
+                    attributes.push(
+                        jsx.createAttribute("is", is),
+                        jsx.createAttribute("wx:if", `{{${array}[index]}}`),
+                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
+                        //   jsx.createAttribute("wx:for-item", "data"),
+                        jsx.createAttribute("data", `{{...${array}[index]}}`)
+                        //   jsx.createAttribute("wx:for-item", dataName)
+                    );
+                    if (key) {
+                        attributes.push(
+                            jsx.createAttribute("wx:key", `{{${key}}}`)
+                        );
+                    }
+                }
+
                 path.parentPath.replaceWith(template);
             }
         }
