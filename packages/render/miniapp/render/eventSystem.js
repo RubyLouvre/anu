@@ -1,19 +1,17 @@
 export var eventSystem = {
     classCache: {},
     dispatchEvent: function(e) {
-        //在存在bindxxx的元素中，添加一个data-eventid="xxx$yyy"的属性，
-        //bindxxx的回调名统一改成dispatchEvent;
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventName = dataset[e.type + "Fn"];
-        var classCode = dataset.classCode;
-        var componentClass = eventSystem.classCache[classCode];
-        var fn = componentClass && componentClass.prototype[eventName];
+        var eventName = dataset[e.type + "Fn"];//函数名
+        var classCode = dataset.classCode;//类ID
+        var componentClass = eventSystem.classCache[classCode];//类
+        var fn = componentClass && componentClass.prototype[eventName];//函数
         if (fn) {
-            var instanceCode = dataset.instanceCode;
+            var instanceCode = dataset.instanceCode;//实例ID
             for (var i = 0, el; (el = componentClass.instances[i++]); ) {
-                if (el.instanceCode === instanceCode) {
-                    fn.call(el || e.target, e);
+                if (el.instanceCode === instanceCode) {//对应的实例
+                    fn.call(el, e);
                     break;
                 }
             }

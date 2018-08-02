@@ -68,8 +68,7 @@ var visitor = {
                 if (!inLoop) {
                     attributes.push(
                         jsx.createAttribute("is", is),
-                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
-                        //   jsx.createAttribute("wx:for-item", "data"),
+                      
                         jsx.createAttribute("data", `{{...${dataName}}}`),
                         jsx.createAttribute("wx:for", `{{${array}}}`),
                         jsx.createAttribute("wx:for-item", dataName),
@@ -79,10 +78,7 @@ var visitor = {
                     attributes.push(
                         jsx.createAttribute("is", is),
                         jsx.createAttribute("wx:if", `{{${array}[index]}}`),
-                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
-                        //   jsx.createAttribute("wx:for-item", "data"),
                         jsx.createAttribute("data", `{{...${array}[index]}}`)
-                        //   jsx.createAttribute("wx:for-item", dataName)
                     );
                     if (key) {
                         attributes.push(
