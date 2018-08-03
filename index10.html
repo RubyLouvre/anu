@@ -148,23 +148,20 @@
         }
         }
 
-        var tree = new Tree()
-        var array = "ADEFGHMZ".split("")
-        array.forEach(function (el) {
-            tree.insert(el)
-        })
-        console.log(tree)
-        var str = ""
-        tree.inOrder(function(el){
-           str += el.data
-        })
-        console.log("中序",str)
+       var preArr =  "GDAFEMHZ".split("")
+       var inArr = "ADEFGHMZ".split("")
+       function getPostArr(preArr, inArr){
+          var root = preArr[0]
+          var leftTree = [], rightTree = []
+          for(var i = 0, n = inArr.length; i < n; i++){
+              if(inArr[i] !== root){
+             
+              }
+          }
 
-        var str = ""
-        tree.preOrder(function(el){
-           str += el.data
-        })
-        console.log("先序",str)
+          var index = inArr.indexOf(root);
+          var 
+       }
     </script>
 
 
