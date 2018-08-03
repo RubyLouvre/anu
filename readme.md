@@ -32,11 +32,10 @@ source： https://bundlephobia.com/
 ### boilerplate 
 
 
-
+* https://github.com/RubyLouvre/anu-ie8-example (IE8)
 * https://github.com/magicapple/anujs-webpack4-ie7-8
 * https://gitee.com/menhal/React_IE8_boilerplate
 * https://github.com/meeteason/react-webpack-ie6-boilerplate
-* https://github.com/RubyLouvre/create-anu-app
 
 ### License
 
