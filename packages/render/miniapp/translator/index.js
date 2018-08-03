@@ -134,28 +134,25 @@ class Parser {
 
         //生成文件
         let sourcePath = id;
-        let srcPath = '';
+        let baseDir = /reactWX/i.test(id) ? cwd : sourceDirPath;
+        let srcPath = id.replace(baseDir, '');
+        let destPath = path.join(this.output, srcPath);
 
-        if(/reactWX/i.test(id)){
-            srcPath = id.replace(process.cwd(), '');
-        }else{
-            srcPath = id.replace(sourceDirPath, "");
+        if(/reactWX/i.test(destPath)){
+            destPath = destPath.replace('dist', 'mi');
         }
-
-       
-
-        const destPath = path.join(this.output, srcPath);
-
-
+        
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
         const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
 
+        
 
-        //将cjs规范的reactWX库写入到build目录中
+        
+        //生成ReactWX
         if(/reactWX/i.test(destPath)){
-            fs.writeFile(destPath.replace('dist', 'mi'), output.js, () => {});
+            fs.writeFile(destPath, output.js, () => {});
             delete output.js
             this.outputs.push(output)
         }
@@ -168,13 +165,11 @@ class Parser {
             delete output.js
             output.jsonPath = basePath + ".json"
             this.outputs.push(output)
-            /*
-
-              fs.writeFile(basePath + ".json", JSON.stringify(output.json || {}), () => {});
-              */
+            
         }
         //生成wxml与wxss
         if (/Page|Component/.test(output.componentType)) {
+           
             fs.writeFile(basePath + ".wxml", output.wxml || "", () => {});
             fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }
