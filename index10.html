@@ -15,155 +15,156 @@
 
     </div>
     <script>
-        function insertSort(array) {
-            //［i,n－1］是无序区
-            for (var i = 1, n = array.length; i < n; i++) {
-                var target = array[i];
-                if (target < array[i - 1]) {
-                    //如果无序区的元素小于有序区的元素
-                    var j = i;
-                    while (j > 0 && array[j - 1] > target) {
-                        array[j] = array[j - 1];// 前面的覆盖后面的
-                        j--;
-                    }
-                    array[j] = target;//将target移动有序区的某一位
-                }
+        class Node {
+            constructor(data) {
+                this.parent = null
+                this.data = data;
+                this.left = null;
+                this.right = null
             }
         }
-        class BlockList {
+        class Tree {
             constructor() {
-                this.length = 0;
-                this.list = null;
+                this.root = null;
+
             }
-            split(list) {
-                var next = list.next;
-                var n = list.length;
-                var half = n >> 1
-                var newList = [];
-                for (var i = half; i < n; i++) {
-                    newList[i] = list[i]
-                }
-                console.log("slit", list, newList)
-                list.length = half;
-                list.next = newList;
-                newList.next = next;
-            }
-            merge(list, next) {
-                var n = list.length;
-                var m = next.length;
-                for (var i = 0; i < m; i++) {
-                    list[n + i] = next[i];
-                }
-                list.next = next.next;
-            }
-            size(){
-                return this.length;
-            }
-            remove(el, list) {
-                if (!list) {
-                    if (!this.list) {
-                        return false
-                    }
-                    list = this.list;
-                }
-                if (el <= list[list.length - 1]) {
-                    var hasRemove = false
-                    for (var i = 0, n = list.length; i < n; i++) {
-                        var elem = list[i];
-                        if (elem === el) {//后面的覆盖前面的
-                            list[i] = list[i + 1]
-                            hasRemove = true
-                            break;
-                        }
-                    }
-                    if (hasRemove) {
-                        for (; i < n; i++) {
-                            list[i] = list[i + 1]
-                        }
-                        this.length--;//减少块的长度
-                        list.length--;//减少总长度
-                        var max = Math.sqrt(this.length) / 2
-                        if (list.length < max && list.next) {
-                            this.merge(list, list.next)
-                        }
-                    }
-                } else {
-                    var next = list.next;
-                    if (next) {
-                        this.remove(el, next)
-                    }
-                }
-            }
-            forEach(cb, list, index) {
-                list = list || this.list;
-                index = index || 0
-                if (!list) {
-                    return
-                }
-                for (var i = 0; i < list.length; i++) {
-                    cb(list[i], index)
-                    index++
-                }
-                if (list.next) {
-                    this.forEach(cb, list.next, index)
-                }
-            }
-            insert(el, list) {
-                if (!list) {
-                    list = this.list;
-                }
-                if (!list) {
-                    this.list = [el];
-                    this.length = 1;
-                } else {
-                    //每个子组数最好在 Math.sqrt(this.length) / 2 ~ Math.sqrt(this.length) *2之间
-                    //我们选择 Math.sqrt(this.length) ＋ 1
-                    var max = Math.sqrt(this.length) + 1;
-                    var beyondLengthLimit = list.length < max
-                    if (el < list[list.length - 1]) { //如果值大小位于这区间内
-                        var m = 0
-                        for (var i = 0, n = list.length; i < n; i++) {
-                            if (el < list[i]) {
-                                m = i;
-                                break;
-                            }
-                        }
-                        for (i = list.length - 1; i >= m; i--) {
-                            list[i + 1] = list[i]
-                        }
-                        list[m] = el;
-                        // list[list.length] = el;
-                        //  insertSort(list)
-                        this.length++;
-                        if (list.length >= max && list.length > 3) {
-                            this.split(list)
-                        }
-                    } else { //如果值超大或list是最后一个块
-                        if (beyondLengthLimit && !list.next) {
-                            list[list.length] = el;
-                            this.length++;
-                            if (list.length >= max && list.length > 3) {
-                                this.split(list)
-                            }
+            insert(data) {
+                this._insertLeft = !this._insertLeft;
+                var dir = this._insertLeft;
+                var insertd = false, goLeft = true;
+                function insertIt(node, data) {
+                    if (node.data === data) {
+                        return false;
+                    } else if (!node.left) {
+                        node.left = new Node(data);
+                        node.left.parent = node;
+                        return true;
+                    } else if (!node.right) {
+                        node.right = new Node(data);
+                        node.right.parent = node;
+                        return true;
+                    } else {
+                        if (dir === true) {
+                            return insertIt(node.left, data);//递归
                         } else {
-                            this.insert(el, list.next || (list.next = []))
+                            return insertIt(node.right, data);//递归
                         }
                     }
+                }
+                if (!this.root) {
+                    this.root = new Node(data);
+                    return true;
+                } else {
+                    return insertIt(this.root, data);
+                }
+            }
+
+            find(data) {
+                var ret = null
+                function findIt(node, data) {
+                    if (node) {
+                        if (node.data === data) {
+                            ret = node;
+                        } else {
+                            findIt(node.left, data);//递归
+                            findIt(node.right, data);//递归
+                        }
+                    }
+                }
+                findIt(this.root, data);
+                return ret;
+            }
+
+            remove(data) {
+                var node = this.find(data);
+                if (node) {
+                    var left = node.left,
+                        right = node.right,//左右孩子
+                        parent = node.parent,
+                        isLeft = parent && parent.left === node;
+                    if (!left && !right) {
+                        if (node == this.root) {
+                            this.root = null;
+                        } else if (isLeft) {
+                            parent.left = null;
+                        } else {
+                            parent.right = null;
+                        }
+                    } else if (left && !right) {
+                        if (node == this.root) {
+                            this.root = left;
+                        } else if (isLeft) {
+                            parent.left = left;
+                        } else {
+                            parent.right = left;
+                        }
+                    } else if (!left && right) {
+                        if (node == this.root) {
+                            this.root = right;
+                        } else if (isLeft) {
+                            parent.left = right;
+                        } else {
+                            parent.right = right;
+                        }
+                    } else if (left && right) {
+                        var child = left;//找到left下面的叶子节点
+                        while (child.left) {
+                            child = child.left
+                        }
+                        child.parent.left = null;//移出DOM树
+                        child.parent = parent;//替换
+                        if (child !== left) {
+                            child.left = left;
+                            child.right = right;
+                        }
+                    }
+                }
+            }
+        inOrder(callback) {
+            this._forEach(this.root, callback, "middle");
+        }
+        preOrder(callback) {
+            this._forEach(this.root, callback, "pre");
+        }
+        postOrder(callback) {
+            this._forEach(this.root, callback, "post");
+        }
+        _forEach(node, callback, type) {
+            if (node) {
+                if (type === "middle") {//中序遍历
+                    this._forEach(node.left, callback, type);
+                    callback(node);
+                    this._forEach(node.right, callback, type);
+                } else if (type === "pre") {//先序遍历
+                    callback(node);
+                    this._forEach(node.left, callback, type);
+                    this._forEach(node.right, callback, type);
+                } else if (type === "post") {//后序遍历
+                    this._forEach(node.left, callback, type);
+                    this._forEach(node.right, callback, type);
+                    callback(node);
                 }
             }
         }
-        var array = [2, 3, 7, 1, 8, 7, 9, 6, 0, 10]
+        }
 
-        var list = new BlockList
-
+        var tree = new Tree()
+        var array = "ADEFGHMZ".split("")
         array.forEach(function (el) {
-            list.insert(el)
+            tree.insert(el)
         })
+        console.log(tree)
+        var str = ""
+        tree.inOrder(function(el){
+           str += el.data
+        })
+        console.log("中序",str)
 
-        console.log(list)
-        list.remove(7)
-
-
+        var str = ""
+        tree.preOrder(function(el){
+           str += el.data
+        })
+        console.log("先序",str)
     </script>
 
 
