@@ -2,348 +2,469 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <script type='text/javascript' src="./dist/React.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
 
 </head>
-Pro
 
 <body>
 
-  <pre>React 15 </pre>
 
+    <div id='root' class="root">
 
-  <div id='root' class="root">
+    </div>
+    <script>
+        var Node = function(key, value) {
+            this.left = null;
+            this.right = null;
+            this.height = null;
+            this.key = key;
+            this.value = value;
+        };
 
-  </div>
-  <script>
-    function shuffle(a) {
-      var len = a.length;
-      for (var i = 0; i < len - 1; i++) {
-        var index = parseInt(Math.random() * (len - i));
-        var temp = a[index];
-        a[index] = a[len - i - 1];
-        a[len - i - 1] = temp;
-      }
-    }
-    function test(sortFn, name) {
-      var array = []
-      //向数组写入10000个数据 前1000倒序 ， 后9000顺序。
-      for (var i = 0; i < 10000; i++) {
-        if (i <= 1000) {
-          array[i] = 1000 - i;
-        } else {
-          array[i] = i;
-        }
-      }
-      var start = new Date - 0;
-      sortFn(array);
-      console.log("========")
-      console.log("部分有序的情况", sortFn.name, new Date - start)
-      shuffle(array)
-      start = new Date - 0;
-      sortFn(array);
-      console.log("完全乱序的情况", sortFn.name, new Date - start)
-    }
-    function swap(array, a, b) {
-      var temp = array[a];
-      array[a] = array[b];
-      array[b] = temp;
-    }
-    function cocktailSort(array) {
-      var left, right, index, i;
-      left = 0;//数组起始索引
-      right = array.length - 1;//数组索引最大值
-      index = left//临时变量
+        /**
+         * Performs a right rotate on this node.
+         *
+         *       b                           a
+         *      / \                         / \
+         *     a   e -> b.rotateRight() -> c   b
+         *    / \                             / \
+         *   c   d                           d   e
+         *
+         * @return {Node} The root of the sub-tree; the node where this node used to be.
+         */
+        Node.prototype.rotateRight = function() {
+            var other = this.left;
+            this.left = other.right;
+            other.right = this;
+            this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
+            other.height = Math.max(other.leftHeight(), this.height) + 1;
+            return other;
+        };
 
-      //判断数组中是否有多个元素
-      while (right > left) {
-        var isSorted = false;
-        //每一次进入while循环都会找出相应范围内最大最小的元素并分别放到相应的位置
-        //大的排到后面
-        for (i = left; i < right; i++) {//从左向右扫描
-          if (array[i] > array[i + 1]) {
-            swap(array, i, i + 1);
-            index = i;//记录当前索引
-            isSorted = true
-          }
-        }
-        right = index;//记录最后一个交换的位置
-        //小的放到前面
-        for (i = right; i > left; i--) {//从最后一个交换位置从右往左扫描
-          if (array[i] < array[i - 1]) {
-            swap(array, i, i - 1);
-            index = i;
-            isSorted = true
-          }
-        }
-        left = index;//记录最后一个交换的位置
-        if (!isSorted) {
-          break
-        }
-      }
-    }
-    function bubbleSort1(array) {
-      var n = array.length;
-      for (var i = 1; i < n; i++) {
-        for (var j = 0; j < n - 1; j++) {
-          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
-            swap(array, j, j + 1)
-          }
-        }
-      }
-    }
-    function bubbleSort2(array) {
-      var n = array.length;
-      for (var i = 1; i < n; i++) {
-        var hasSort = true;
-        for (var j = 0; j < n - 1; j++) {
-          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
-            swap(array, j, j + 1);
-            hasSort = false
-          }
-        }
-        if (hasSort) {
-          break;
-        }
-      }
-    }
-    function bubbleSort3(array) {
-      var n = array.length, k = n - 1, swapPos = 0;
-      for (var i = 1; i < n; i++) {
-        var hasSort = true;
-        for (var j = 0; j < k; j++) {
-          if (array[j] > array[j + 1]) { //注意这里的索引变量都是j
-            swap(array, j, j + 1);
-            hasSort = false;
-            swapPos = j; //记录交换位置，直接到内部循环最后一个被交换的元素
-          }
-        }
-        if (hasSort) {
-          break;
-        }
-        k = swapPos;//重写内部循环的最后边界
-      }
-    }
+        /**
+         * Performs a left rotate on this node.
+         *
+         *     a                              b
+         *    / \                            / \
+         *   c   b   -> a.rotateLeft() ->   a   e
+         *      / \                        / \
+         *     d   e                      c   d
+         *
+         * @return {Node} The root of the sub-tree; the node where this node used to be.
+         */
+        Node.prototype.rotateLeft = function() {
+            var other = this.right;
+            this.right = other.left;
+            other.left = this;
+            this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
+            other.height = Math.max(other.rightHeight(), this.height) + 1;
+            return other;
+        };
 
-    function selectSort(array) {
-      var n = array.length;
-      for (var i = 0; i < n; i++) {
-        var minIndex = i;
-        for (var j = i + 1; j < n; j++) {
-          if (array[j] < array[minIndex]) { // 如果发现当前最小元素竟然比其他元素大
-            minIndex = j;
-          }
-        }
-        if (i !== minIndex) {
-          swap(array, i, minIndex)
-        }
-      }
-    }
-
-    function selectSort2(array) {
-      var left = 0;
-      var right = array.length - 1;
-      var min = left;//存储最小值的下标
-      var max = left;//存储最大值的下标
-      while (left <= right) {
-        min = left;
-        max = left;
-        //这里只能用<=，因为要取arrsay[right]
-        for (var i = left; i <= right; i++) {
-          if (array[i] < array[min]) {
-            min = i;
-          }
-          if (array[i] > array[max]) {
-            max = i;
-          }
-        }
-        swap(array, left, min);
-        if (left == max) {
-          max = min;
-        }
-        swap(array, right, max);
-        left++;
-        right--;
-      }
-    }
-
-    function insertSort(array) {
-      var n = array.length
-      for (var i = 1; i < n; i++) {
-        var target = array[i]
-        //为array[i]找到要插入的位置
-        for (var j = i - 1; j >= 0; j--) {
-          if (target > array[j]) {
-            break;
-          }
-        }
-        if (j !== i - 1) {
-          //将比target大的所有元素都后移一位
-          for (var k = i - 1; k > j; k--) {
-            array[k + 1] = array[k];
-          }
-          array[j + 1] = target;
-        }
-      }
-    }
-    function insertSort2(array) {
-      //［i,n－1］是无序区
-      for (var i = 1, n = array.length; i < n; i++) {
-        var target = array[i];
-        //［0， i-1］是有序区
-        //从后向前比较，不断挪出坑位
-        if (target < array[i - 1]) {//如果前面的数比大，说明要处理
-          for (var j = i - 1; j >= 0 && array[j] > target; j--) {
-            array[j + 1] = array[j];
-          }
-          array[j + 1] = target;
-        }
-      }
-    }
-    function insertSort2(array) {
-      //［i,n－1］是无序区
-      for (var i = 1, n = array.length; i < n; i++) {
-        var target = array[i];
-        if (target < array[i - 1]) {
-          //如果无序区的元素小于有序区的元素
-          var j = i;
-          while (j > 0 && array[j - 1] > target) {
-            array[j] = array[j - 1];
-            j--;
-          }
-          array[j] = target;//将target移动有序区的某一位
-        }
-      }
-    }
-    function shellSort(array) {
-      //生成递增序列 3x+1 [1, 4, 13, 40, 121, 364, 1093, 3280, 9841] 
-      var n = array.length,
-        gaps = [1],
-        gap = 1;
-      while (gap < n / 3) {
-        gap = gap * 3 + 1
-        gaps.push(gap)
-      }
-      while (gap = gaps.pop()) {
-        //对每个子数组进行排序
-        for (var g = 0; g < gap; g++) {
-          //****************正常的插入排序***************
-          for (var i = g + gap; i < n; i += gap) {
-            var target = array[i]; //从无序区取元素
-            if (target < array[i - gap]) {
-              //无序区的元素比有序区的小
-              var j = i;
-              while (j > 0 && array[j - gap] > target) {
-                array[j] = array[j - gap]; //将前面的元素覆盖后面的
-                j -= gap;//不是－1而是－gap
-              }
-              array[j] = target;
+        /**
+         * Convenience function to get the height of the left child of the node,
+         * returning -1 if the node is null.
+         *
+         * @return {number} The height of the left child, or -1 if it doesn't exist.
+         */
+        Node.prototype.leftHeight = function() {
+            if (!this.left) {
+                return -1;
             }
-          }
-          //****************正常的插入排序***************
-        }
-      }
-    };
-    function shellSort2(array) {
-      //希尔序列 [1, 2, 4, 9, 19, 39, 78, 156, 312, 625, 1250, 2500, 5000] 
-      var n = array.length,
-        gaps = [],
-        gap = n;
-      while (gap != 1) {
-        gap = gap >> 1; //相当于 Math.floor(n/2)
-        gaps.unshift(gap)
-      }
-      while (gap = gaps.pop()) {
-        //对每个子数组进行排序
-        for (var g = 0; g < gap; g++) {
-          //****************正常的插入排序***************
-          for (var i = g + gap; i < n; i += gap) {
-            var target = array[i]; //从无序区取元素
-            if (target < array[i - gap]) { //无序区的元素比有序区的小
-              var j = i;
-              while (j > 0 && array[j - gap] > target) {
-                array[j] = array[j - gap]; //将前面的元素覆盖后面的
-                j -= gap;//不是－1而是－gap
-              }
-              array[j] = target;
+            return this.left.height;
+        };
+
+        /**
+         * Convenience function to get the height of the right child of the node,
+         * returning -1 if the node is null.
+         *
+         * @return {number} The height of the right child, or -1 if it doesn't exist.
+         */
+        Node.prototype.rightHeight = function() {
+            if (!this.right) {
+                return -1;
             }
-          }
-          //****************正常的插入排序***************
+            return this.right.height;
+        };
+        var AvlTree = function(customCompare) {
+            this._root = null;
+            this._size = 0;
+
+            if (customCompare) {
+                this._compare = customCompare;
+            }
+        };
+
+        /**
+         * Compares two keys with each other.
+         *
+         * @private
+         * @param {Object} a The first key to compare.
+         * @param {Object} b The second key to compare.
+         * @return {number} -1, 0 or 1 if a < b, a == b or a > b respectively.
+         */
+        AvlTree.prototype._compare = function(a, b) {
+            if (a > b) {
+                return 1;
+            }
+            if (a < b) {
+                return -1;
+            }
+            return 0;
+        };
+
+        /**
+         * Inserts a new node with a specific key into the tree.
+         *
+         * @param {Object} key The key being inserted.
+         * @param {Object} value The value being inserted.
+         */
+        AvlTree.prototype.insert = function(key, value) {
+            this._root = this._insert(key, value, this._root);
+            this._size++;
+        };
+
+        /**
+         * Inserts a new node with a specific key into the tree.
+         *
+         * @private
+         * @param {Object} key The key being inserted.
+         * @param {Object} value The value being inserted.
+         * @param {Node} root The root of the tree to insert in.
+         * @return {Node} The new tree root.
+         */
+        AvlTree.prototype._insert = function(key, value, root) {
+            // Perform regular BST insertion
+            if (root === null) {
+                return new Node(key, value);
+            }
+
+            if (this._compare(key, root.key) < 0) {
+                root.left = this._insert(key, value, root.left);
+            } else if (this._compare(key, root.key) > 0) {
+                root.right = this._insert(key, value, root.right);
+            } else {
+                // It's a duplicate so insertion failed, decrement size to make up for it
+                this._size--;
+                return root;
+            }
+
+            // Update height and rebalance tree
+            root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
+            var balanceState = getBalanceState(root);
+
+            if (balanceState === BalanceState.UNBALANCED_LEFT) {
+                if (this._compare(key, root.left.key) < 0) {
+                    // Left left case
+                    root = root.rotateRight();
+                } else {
+                    // Left right case
+                    root.left = root.left.rotateLeft();
+                    return root.rotateRight();
+                }
+            }
+
+            if (balanceState === BalanceState.UNBALANCED_RIGHT) {
+                if (this._compare(key, root.right.key) > 0) {
+                    // Right right case
+                    root = root.rotateLeft();
+                } else {
+                    // Right left case
+                    root.right = root.right.rotateRight();
+                    return root.rotateLeft();
+                }
+            }
+
+            return root;
+        };
+
+        /**
+         * Deletes a node with a specific key from the tree.
+         *
+         * @param {Object} key The key being deleted.
+         */
+        AvlTree.prototype.delete = function(key) {
+            this._root = this._delete(key, this._root);
+            this._size--;
+        };
+
+        /**
+         * Deletes a node with a specific key from the tree.
+         *
+         * @private
+         * @param {Object} key The key being deleted.
+         * @param {Node} root The root of the tree to delete from.
+         * @return {Node} The new tree root.
+         */
+        AvlTree.prototype._delete = function(key, root) {
+            // Perform regular BST deletion
+            if (root === null) {
+                this._size++;
+                return root;
+            }
+
+            if (this._compare(key, root.key) < 0) {
+                // The key to be deleted is in the left sub-tree
+                root.left = this._delete(key, root.left);
+            } else if (this._compare(key, root.key) > 0) {
+                // The key to be deleted is in the right sub-tree
+                root.right = this._delete(key, root.right);
+            } else {
+                // root is the node to be deleted
+                if (!root.left && !root.right) {
+                    root = null;
+                } else if (!root.left && root.right) {
+                    root = root.right;
+                } else if (root.left && !root.right) {
+                    root = root.left;
+                } else {
+                    // Node has 2 children, get the in-order successor
+                    var inOrderSuccessor = minValueNode(root.right);
+                    root.key = inOrderSuccessor.key;
+                    root.value = inOrderSuccessor.value;
+                    root.right = this._delete(inOrderSuccessor.key, root.right);
+                }
+            }
+
+            if (root === null) {
+                return root;
+            }
+
+            // Update height and rebalance tree
+            root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
+            var balanceState = getBalanceState(root);
+
+            if (balanceState === BalanceState.UNBALANCED_LEFT) {
+                // Left left case
+                if (getBalanceState(root.left) === BalanceState.BALANCED ||
+                    getBalanceState(root.left) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
+                    return root.rotateRight();
+                }
+                // Left right case
+                if (getBalanceState(root.left) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
+                    root.left = root.left.rotateLeft();
+                    return root.rotateRight();
+                }
+            }
+
+            if (balanceState === BalanceState.UNBALANCED_RIGHT) {
+                // Right right case
+                if (getBalanceState(root.right) === BalanceState.BALANCED ||
+                    getBalanceState(root.right) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
+                    return root.rotateLeft();
+                }
+                // Right left case
+                if (getBalanceState(root.right) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
+                    root.right = root.right.rotateRight();
+                    return root.rotateLeft();
+                }
+            }
+
+            return root;
+        };
+
+        /**
+         * Gets the value of a node within the tree with a specific key.
+         *
+         * @param {Object} key The key being searched for.
+         * @return {Object} The value of the node or null if it doesn't exist.
+         */
+        AvlTree.prototype.get = function(key) {
+            if (this._root === null) {
+                return null;
+            }
+
+            return this._get(key, this._root).value;
+        };
+
+        /**
+         * Gets the value of a node within the tree with a specific key.
+         *
+         * @private
+         * @param {Object} key The key being searched for.
+         * @param {Node} root The root of the tree to search in.
+         * @return {Object} The node or null if it doesn't exist.
+         */
+        AvlTree.prototype._get = function(key, root) {
+            var result = this._compare(key, root.key);
+
+            if (result === 0) {
+                return root;
+            }
+
+            if (result < 0) {
+                if (!root.left) {
+                    return null;
+                }
+                return this._get(key, root.left);
+            }
+
+            if (!root.right) {
+                return null;
+            }
+            return this._get(key, root.right);
+        };
+
+        /**
+         * Gets whether a node with a specific key is within the tree.
+         *
+         * @param {Object} key The key being searched for.
+         * @return {boolean} Whether a node with the key exists.
+         */
+        AvlTree.prototype.contains = function(key) {
+            if (this._root === null) {
+                return false;
+            }
+
+            return !!this._get(key, this._root);
+        };
+
+        /**
+         * @return {Object} The minimum key in the tree.
+         */
+        AvlTree.prototype.findMinimum = function() {
+            return minValueNode(this._root).key;
+        };
+
+        /**
+         * Gets the minimum value node, rooted in a particular node.
+         *
+         * @private
+         * @param {Node} root The node to search.
+         * @return {Node} The node with the minimum key in the tree.
+         */
+        function minValueNode(root) {
+            var current = root;
+            while (current.left) {
+                current = current.left;
+            }
+            return current;
         }
-      }
-    };
 
+        /**
+         * @return {Object} The maximum key in the tree.
+         */
+        AvlTree.prototype.findMaximum = function() {
+            return maxValueNode(this._root).key;
+        };
 
-
-    function mergeSort(array, begin, end) {
-      //如果数组还可以分割，并且处于分割模式
-      if (begin !== end) {
-        var mid = begin + ((end - begin) >> 1);
-        mergeSort(array, begin, mid);
-        mergeSort(array, mid + 1, end);
-        var temp = new Array(n)
-        mergeArray(array, begin, mid, mid + 1, end, temp);
-        for (var i = 0, n = temp.length; i < n; i++) {
-          array[begin + i] = temp[i];
+        /**
+         * Gets the maximum value node, rooted in a particular node.
+         *
+         * @private
+         * @param {Node} root The node to search.
+         * @return {Node} The node with the maximum key in the tree.
+         */
+        function maxValueNode(root) {
+            var current = root;
+            while (current.right) {
+                current = current.right;
+            }
+            return current;
         }
-      }
-    }
-    function mergeArray(a, begin, end, begin2, end2, c) {
-      //n, m分别为a,b的最后索引; i为a的索引，j为b的索引，k为c的索引
-      var n = end, m = end2, i = begin, j = begin2, k = 0
-      while (i <= n && j <= m) {
-        //先比较两个数组等长的部分，看谁的元素较先，谁就先进c数组
-        if (a[i] < a[j]) {
-          c[k++] = a[i++]
-        } else {
-          //ap[i] > a[j], 说明a[i＋1], a[i+2]...a[n]这几个数也大于a[j]
-          //它们与a[j]都构成 逆向数
-          var oppositeIndex = i
-          while (oppositeIndex <= n) {
-            answers.push([a[oppositeIndex], a[j]])
-            oppositeIndex++
-          }
-          c[k++] = a[j++];
 
+        /**
+         * @return {number} The size of the tree.
+         */
+        AvlTree.prototype.size = function() {
+            return this._size;
+        };
+
+        AvlTree.prototype.show = function(node, parentNode) {
+            node = node || this._root
+            if (!parentNode) {
+                parentNode = document.createElement("div");
+                document.body.appendChild(parentNode);
+                var top = parentNode.appendChild(document.createElement("center"));
+                top.style.cssText = "background:" + bg();
+                top.innerHTML = node.key;
+            }
+            var a = parentNode.appendChild(document.createElement("div"))
+            a.style.cssText = "overflow:hidden";
+            if (node.left) {
+                var b = a.appendChild(document.createElement("div"))
+                b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg();
+                b.innerHTML = node.left.key;
+                this.show(node.left, b);
+            }
+            if (node.right) {
+                var c = a.appendChild(document.createElement("div"))
+                c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg();
+                c.innerHTML = node.right.key;
+                this.show(node.right, c);
+            }
         }
-      }
-      //可能a数组长些，那么将a数组剩下的元素一古脑儿全部扔进去
-      while (i <= n) {
-        c[k++] = a[i++];
-      }
-      //也可能是b数组长些，那么b数组的剩下的元素扔进去
-      while (j <= m) {
-        c[k++] = a[j++];
-      }
-    }
-
-    /*
-        test(bubbleSort1)
-        test(bubbleSort2)
-        test(bubbleSort3)
-        test(selectSort)
-        test(insertSort)
-        test(insertSort2)
-        test(shellSort)
-        test(shellSort2)
-        test(shellSort2)
-        test(mergeSort)
-    */
-
-   
-
-    var array = [2,4,3,1];
-    var answers = []
-    mergeSort(array, 0, array.length - 1)
-    console.log(answers.length + "对,分别", answers.map(function (el) {
-      return el.join("与")
-    }))
 
 
 
-  </script>
+        /**
+         * Represents how balanced a node's left and right children are.
+         *
+         * @private
+         */
+        var BalanceState = {
+            UNBALANCED_RIGHT: 1,
+            SLIGHTLY_UNBALANCED_RIGHT: 2,
+            BALANCED: 3,
+            SLIGHTLY_UNBALANCED_LEFT: 4,
+            UNBALANCED_LEFT: 5
+        };
+
+        /**
+         * Gets the balance state of a node, indicating whether the left or right
+         * sub-trees are unbalanced.
+         *
+         * @private
+         * @param {Node} node The node to get the difference from.
+         * @return {BalanceState} The BalanceState of the node.
+         */
+        function getBalanceState(node) {
+            var heightDifference = node.leftHeight() - node.rightHeight();
+            switch (heightDifference) {
+                case -2:
+                    return BalanceState.UNBALANCED_RIGHT;
+                case -1:
+                    return BalanceState.SLIGHTLY_UNBALANCED_RIGHT;
+                case 1:
+                    return BalanceState.SLIGHTLY_UNBALANCED_LEFT;
+                case 2:
+                    return BalanceState.UNBALANCED_LEFT;
+                default:
+                    return BalanceState.BALANCED;
+            }
+        }
+
+
+
+
+
+
+        function bg() {
+            return '#' + (Math.random() * 0xffffff << 0).toString(16);
+        }
+        var tree = new AvlTree() //一会儿改成AVL
+        //  String("14,12,10,8,9").split(",").forEach(function(a) {
+        //      tree.insert(~~a)
+        //   })
+        tree.insert(Math.random())
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+
+        tree.insert(Math.random())
+        tree.insert(Math.random())
+        tree.show()
+    </script>
 
 
 </html>
