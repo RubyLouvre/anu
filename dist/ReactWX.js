@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-02
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-06
  * IE9+
  */
 
@@ -678,7 +678,7 @@ var eventSystem = {
             var instanceCode = dataset.instanceCode;
             for (var i = 0, el; el = componentClass.instances[i++];) {
                 if (el.instanceCode === instanceCode) {
-                    fn.call(el || e.target, e);
+                    fn.call(el, e);
                     break;
                 }
             }
@@ -1357,16 +1357,6 @@ function diffChildren(parentFiber, children) {
     }
 }
 
-var Unbatch = miniCreateClass(function Unbatch(props) {
-    this.state = {
-        child: props.child
-    };
-}, Component, {
-    render: function render() {
-        return this.state.child;
-    }
-});
-
 function getDOMNode() {
     return this;
 }
@@ -1580,6 +1570,16 @@ function disposeFiber(fiber, force) {
     }
     fiber.effectTag = NOWORK;
 }
+
+var Unbatch = miniCreateClass(function Unbatch(props) {
+    this.state = {
+        child: props.child
+    };
+}, Component, {
+    render: function render() {
+        return this.state.child;
+    }
+});
 
 var macrotasks = Renderer.macrotasks;
 var boundaries = Renderer.boundaries;
@@ -1841,6 +1841,11 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
+    var lockObj = {
+        lock: true
+    };
+    hijack(PageClass, "componentWillMount", lockObj);
+    hijack(PageClass, "componentWillUpdate", lockObj);
     var instance = render(createElement(PageClass), {
         type: "page",
         props: {
@@ -1857,10 +1862,24 @@ function createPage(PageClass, path) {
         PageClass.instances = [];
     }
     PageClass.instances.push(instance);
-    if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-    }
     instance.props.instanceCode = instance.instanceCode;
+    var setState = instance.setState;
+    instance.setState = function (a, b) {
+        if (!lockObj.lock) {
+            lockObj.lock = true;
+            instance.allTemplateData = [];
+        }
+        setState.call(this, a, function () {
+            b && b.call(instance);
+            var data = {
+                state: instance.state,
+                props: instance.props
+            };
+            applyChildComponentData(data, instance.allTemplateData || []);
+            instance.$wxPage.setData(data);
+        });
+    };
+    var unmountHook = "componentWillUnmount";
     var config = {
         data: {
             state: instance.state,
@@ -1871,73 +1890,82 @@ function createPage(PageClass, path) {
             instance.$wxPage = this;
         },
         onUnload: function onUnload() {
-            instance.componentWillUnmount && instance.componentWillUnmount();
+            var index = PageClass.instances.indexOf(instance);
+            if (index !== -1) {
+                PageClass.instances.splice(index, 1);
+            }
+            if (isFn(instance[unmountHook])) {
+                instance[unmountHook]();
+            }
         }
     };
-    var list = instance.allTemplateData || [];
-    list.forEach(function (el) {
-        if (config.data[el.templatedata]) {
-            config.data[el.templatedata].push(el);
-        } else {
-            config.data[el.templatedata] = [el];
-        }
-    });
+    applyChildComponentData(config.data, instance.allTemplateData || []);
     return config;
 }
-
-function getData(instance) {
-  return instance.allTemplateData || (instance.allTemplateData = []);
+function applyChildComponentData(data, list) {
+    list.forEach(function (el) {
+        if (data[el.templatedata]) {
+            data[el.templatedata].push(el);
+        } else {
+            data[el.templatedata] = [el];
+        }
+    });
 }
+function hijack(component, method, lockObj) {
+    var fn = component.prototype[method] || function () {};
+    component.prototype[method] = function () {
+        lockObj.lock = false;
+        fn.call(this);
+    };
+}
+
 function template(props) {
-  var clazz = props.is;
-  if (!clazz.hackByMiniApp) {
-    clazz.hackByMiniApp = true;
-    clazz.instances = clazz.instances || [];
-    var a = clazz.prototype;
-    if (a && a.isReactComponent) {
-      Array("componentWillMount", "componentWillUpdate").forEach(function (method) {
-        var oldHook = a[method] || noop;
-        a[method] = function () {
-          var fiber = this._reactInternalFiber;
-          var inputProps = fiber._owner.props;
-          if (!this.instanceCode) {
+    var clazz = props.is;
+    if (!clazz.hackByMiniApp) {
+        clazz.hackByMiniApp = true;
+        clazz.instances = clazz.instances || [];
+        var proto = clazz.prototype;
+        if (proto && proto.isReactComponent) {
+            hijackStatefulHooks(proto, "componentWillMount");
+            hijackStatefulHooks(proto, "componentWillUpdate");
+        }
+    }
+    return createElement(clazz, props);
+}
+function getData(instance) {
+    return instance.allTemplateData || (instance.allTemplateData = []);
+}
+function hijackStatefulHooks(proto, method) {
+    var oldHook = proto[method] || noop;
+    proto[method] = function () {
+        var fiber = this._reactInternalFiber;
+        var inputProps = fiber._owner.props;
+        if (!this.instanceCode) {
             this.instanceCode = Math.random();
-          }
-          this.props.instanceCode = this.instanceCode;
-          var instances = this.constructor.instances;
-          if (instances.indexOf(this) === -1) {
+        }
+        this.props.instanceCode = this.instanceCode;
+        var instances = this.constructor.instances;
+        if (instances.indexOf(this) === -1) {
             instances.push(this);
-          }
-          var p = fiber.return;
-          do {
+        }
+        var p = fiber.return;
+        do {
             if (p && isFn(p.type) && p.type !== template) {
-              break;
+                break;
             }
-          } while (p = p.return);
-          var parentInstance = p && p.stateNode;
-          if (parentInstance) {
+        } while (p = p.return);
+        var parentInstance = p && p.stateNode;
+        if (parentInstance) {
             var arr = getData(parentInstance);
+            var isUpdate = method === "componentWillUpdate";
             arr.push({
-              props: this.props,
-              state: this.state,
-              templatedata: inputProps.templatedata
+                props: isUpdate ? arguments[0] : this.props,
+                state: isUpdate ? arguments[1] : this.state,
+                templatedata: inputProps.templatedata
             });
             oldHook.call(this, arguments);
-          }
-        };
-      });
-      var oldUnmount = a.componentWillUnmount || noop;
-      a.componentWillUnmount = function () {
-        var instances = this.constructor.instances;
-        var index = instances.indexOf(this);
-        if (index !== -1) {
-          instances.splice(index, 1);
         }
-        oldUnmount.call(this);
-      };
-    }
-  }
-  return createElement(clazz, props);
+    };
 }
 
 function cleanChildren(array) {

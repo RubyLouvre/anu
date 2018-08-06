@@ -14,7 +14,6 @@ import {
     effectLength,
     effectNames
 } from "./effectTag";
-import { Unbatch } from "./unbatch";
 import { guardCallback, removeFormBoundaries } from "./ErrorBoundary";
 import { fakeObject } from "react-core/Component";
 import { Renderer } from "react-core/createRenderer";
