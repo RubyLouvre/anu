@@ -1,6 +1,0 @@
-<view bindtap="dispatchEvent" bindkeydown="dispatchEvent" data-tap-fn="onClick" data-class-code="c3501433516345096" data-instance-code="{{props.instanceCode}}" data-keydown-fn="onKeyDown">
-  <view class="welcome">
-    <view class="welcome-text">{{state.welcome}}</view>
-  </view>
-  
-</view>
