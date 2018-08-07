@@ -14,12 +14,21 @@ export function template(props) {
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
         var setState = clazz.prototype.setState;
+        var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function() {
             var pageInst = this.$pageComponent;
             if (pageInst) {
                 pageInst.setState.apply(this, arguments);
             } else {
                 setState.apply(this, arguments);
+            }
+        };
+        clazz.prototype.forceUpdate = function() {
+            var pageInst = this.$pageComponent;
+            if (pageInst) {
+                pageInst.forceUpdate.apply(this, arguments);
+            } else {
+                forceUpdate.apply(this, arguments);
             }
         };
     }

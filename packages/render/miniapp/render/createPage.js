@@ -31,25 +31,51 @@ export function createPage(PageClass, path) {
     //用于事件委托中
     instance.props.instanceCode = instance.instanceCode;
     //劫持setState
-    var setState = instance.setState;
+    var anuSetState = instance.setState;
+    var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.setState = function(a, b) {
+    instance.forceUpdate = instance.setState = function(a) {
+        var updateMethod = anuSetState;
+        var cbIndex = 1;
+        if (isFn(a) || a == null) {
+            updateMethod = anuForceUpdate;
+            cbIndex = 0;
+        }
         var pageInst = this.$pageComponent || this;
         if (updating === false) {
-            if(pageInst == this){
+            //如果这是页面组件，则直接清空所有子组件
+            if (pageInst == this) {
                 pageInst.allTemplateData = []; //清空子组件
-            }else{
-                var props = this.props
-                pageInst.allTemplateData = pageInst.allTemplateData.filter(function(el){
-                   return el.props !== props
-                })
+            } else {
+                //如果是页面的子组件，通过template收集
+                var props = this.props;
+                pageInst.allTemplateData = pageInst.allTemplateData.filter(
+                    function(el) {
+                        return el.props !== props;
+                    }
+                );
             }
-          
             canSetData = true;
             updating = true;
         }
-        var inst = this;
+        var inst = this,
+            cb = arguments[cbIndex];
+        arguments[cbIndex] = function() {
+            cb && cb.call(inst);
+            if (canSetData) {
+                canSetData = false;
+                updating = false;
+                var data = {
+                    state: pageInst.state,
+                    props: pageInst.props
+                };
+                applyChildComponentData(data, pageInst.allTemplateData || []);
+                pageInst.$wxPage.setData(data);
+            }
+        };
+        updateMethod.apply(this, arguments);
+        /*
         setState.call(this, a, function() {
             b && b.call(inst);
             if (canSetData) {
@@ -62,8 +88,9 @@ export function createPage(PageClass, path) {
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 pageInst.$wxPage.setData(data);
             }
-        });
+        });*/
     };
+
     var unmountHook = "componentWillUnmount";
     var config = {
         data: {
@@ -98,4 +125,3 @@ function applyChildComponentData(data, list) {
         }
     });
 }
-
