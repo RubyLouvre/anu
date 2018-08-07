@@ -24,8 +24,6 @@ export function template(props) {
         };
     }
 
-   // console.log(!!setState, "*****");
-
     //...再上面一样
     return createElement(clazz, props);
 }

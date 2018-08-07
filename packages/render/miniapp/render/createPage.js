@@ -7,9 +7,6 @@ export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     //劫持页面组件的生命周期，与setState进行联动
-
-    hijack(PageClass, "componentWillMount");
-    hijack(PageClass, "componentWillUpdate");
     //获取页面的组件实例
     var instance = render(
         createElement(PageClass, {
@@ -35,21 +32,38 @@ export function createPage(PageClass, path) {
     instance.props.instanceCode = instance.instanceCode;
     //劫持setState
     var setState = instance.setState;
+    var updating = false,
+        canSetData = false;
     instance.setState = function(a, b) {
-        var pageInst = this.$pageComponent || this
-        if (pageInst.$pageLock) {
-            pageInst.$pageLock = false;
-            instance.allTemplateData = []; //清空子组件
+        var pageInst = this.$pageComponent || this;
+   
+        if (updating === false) {
+
+            if(pageInst == this){
+                pageInst.allTemplateData = []; //清空子组件
+            }else{
+                var props = this.props
+                pageInst.allTemplateData = pageInst.allTemplateData.filter(function(el){
+                   return el.props !== props
+                })
+            }
+          
+            canSetData = true;
+            updating = true;
         }
         var inst = this;
         setState.call(this, a, function() {
             b && b.call(inst);
-            var data = {
-                state: pageInst.state,
-                props: pageInst.props
-            };
-            applyChildComponentData(data, pageInst.allTemplateData || []);
-            pageInst.$wxPage.setData(data);
+            if (canSetData) {
+                canSetData = false;
+                updating = false;
+                var data = {
+                    state: pageInst.state,
+                    props: pageInst.props
+                };
+                applyChildComponentData(data, pageInst.allTemplateData || []);
+                pageInst.$wxPage.setData(data);
+            }
         });
     };
     var unmountHook = "componentWillUnmount";
@@ -87,10 +101,3 @@ function applyChildComponentData(data, list) {
     });
 }
 
-function hijack(component, method) {
-    var fn = component.prototype[method] || function() {};
-    component.prototype[method] = function() {
-        this.$pageLock = true;
-        fn.call(this);
-    };
-}
