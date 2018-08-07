@@ -1841,8 +1841,11 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    hijack(PageClass, "componentWillMount");
-    hijack(PageClass, "componentWillUpdate");
+    var $pageLock = {
+        locked: true
+    };
+    hijack(PageClass, "componentWillMount", $pageLock);
+    hijack(PageClass, "componentWillUpdate", $pageLock);
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
@@ -1862,10 +1865,9 @@ function createPage(PageClass, path) {
     PageClass.instances.push(instance);
     instance.props.instanceCode = instance.instanceCode;
     var setState = instance.setState;
-    instance.$pageLock = true;
     instance.setState = function (a, b) {
-        if (!this.$pageLock) {
-            this.$pageLock = true;
+        if (this.$pageLock && !this.$pageLock.locked) {
+            this.$pageLock.locked = true;
             instance.allTemplateData = [];
         }
         setState.call(this, a, function () {
@@ -1910,10 +1912,11 @@ function applyChildComponentData(data, list) {
         }
     });
 }
-function hijack(component, method) {
+function hijack(component, method, pageLock) {
     var fn = component.prototype[method] || function () {};
     component.prototype[method] = function () {
-        this.$pageLock = false;
+        this.$pageLock = pageLock;
+        this.$pageLock.locked = false;
         fn.call(this);
     };
 }

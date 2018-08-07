@@ -4,11 +4,12 @@ const generate = require("babel-generator").default;
 const jsx = require("../jsx/jsx");
 function bindEvent(path, attrName, attrValue, modules) {
     replaceWithExpr(path, "dispatchEvent", true);
+    var n = attrName.charAt(0) == "b" ? 4: 5
     var parent = path.parentPath.parent;
     if (parent) {
         parent.attributes.push(
             jsx.createAttribute(
-                `data-${attrName.slice(4)}-fn`,
+                `data-${attrName.slice(n)}-fn`,
                 attrValue.replace(/^\s*this\./, "")
             )
         );
@@ -31,7 +32,7 @@ function bindEvent(path, attrName, attrValue, modules) {
 module.exports = function(path, modules) {
     var expr = path.node.expression;
     var attrName = path.parent.name.name;
-    var isEvent = /^bind/.test(attrName);
+    var isEvent = /^(bind|catch)/.test(attrName);
     var attrValue = generate(expr).code;
     switch (path.node.expression.type) {
         case "NumericLiteral": //11
@@ -90,7 +91,6 @@ module.exports = function(path, modules) {
             break;
         default:
             console.log("===0000=", path.node.expression.type);
-
             break;
     }
 };

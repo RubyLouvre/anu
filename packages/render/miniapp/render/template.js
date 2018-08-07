@@ -13,9 +13,18 @@ export function template(props) {
             hijackStatefulHooks(proto, "componentWillMount");
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
+        var setState = clazz.prototype.setState;
+        clazz.prototype.setState = function() {
+            var pageInst = this.$pageComponent;
+            if (pageInst) {
+                pageInst.setState.apply(this, arguments);
+            } else {
+                setState.apply(this, arguments);
+            }
+        };
     }
-    var setState = clazz.prototype.setState;
-    console.log(!!setState, "*****");
+
+   // console.log(!!setState, "*****");
 
     //...再上面一样
     return createElement(clazz, props);
@@ -30,7 +39,6 @@ function hijackStatefulHooks(proto, method) {
     var oldHook = proto[method] || noop;
     proto[method] = function() {
         var fiber = this._reactInternalFiber;
-
         if (!this.instanceCode) {
             this.instanceCode = Math.random();
             var instances = this.constructor.instances;
@@ -46,25 +54,28 @@ function hijackStatefulHooks(proto, method) {
                 }
             }
         }
-        console.log(this);
         var inputProps = fiber._owner.props;
         this.props.instanceCode = this.instanceCode;
-
-        var p = fiber.return;
-        do {
-            if (p && isFn(p.type) && p.type !== template) {
+        var f = fiber.return;
+        var pageComponent = null;
+        while (f) {
+            var exited = f._owner && f._owner.$pageComponent;
+            if (exited) {
+                pageComponent = exited;
+                break;
+            } else if (f.props && f.props.isPageComponent) {
+                pageComponent = f.stateNode;
                 break;
             }
-        } while ((p = p.return));
-        var parentInstance = p && p.stateNode;
-
-        if (parentInstance) {
-            var arr = getData(parentInstance);
+            f = f.return;
+        }
+        if (pageComponent) {
+            var arr = getData(pageComponent);
             var isUpdate = method === "componentWillUpdate";
             arr.push({
                 props: isUpdate ? arguments[0] : this.props,
                 state: isUpdate ? arguments[1] : this.state,
-                templatedata: inputProps.templatedata
+                templatedata: inputProps.templatedata //template元素的
             });
             oldHook.call(this, arguments);
         }
