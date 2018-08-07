@@ -1,4 +1,0 @@
-<template name="Dog">
-  <view>{{props.name}}-<slot />
-  </view>
-</template>
