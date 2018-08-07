@@ -673,14 +673,12 @@ var eventSystem = {
         var eventName = dataset[e.type + "Fn"];
         var classCode = dataset.classCode;
         var componentClass = eventSystem.classCache[classCode];
-        var fn = componentClass && componentClass.prototype[eventName];
-        if (fn) {
-            var instanceCode = dataset.instanceCode;
-            for (var i = 0, el; el = componentClass.instances[i++];) {
-                if (el.instanceCode === instanceCode) {
-                    fn.call(el, e);
-                    break;
-                }
+        var instanceCode = dataset.instanceCode;
+        for (var i = 0, el; el = componentClass.instances[i++];) {
+            if (el.instanceCode === instanceCode) {
+                var fn = el[eventName];
+                fn && fn.call(el, e);
+                break;
             }
         }
     }
