@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-08-01
+ * by 司徒正美 Copyright 2018-08-07
  * IE9+
  */
 
@@ -88,7 +88,7 @@
     } catch (e) {}
     function miniCreateClass(ctor, superClass, methods, statics) {
         var className = ctor.name || "IEComponent";
-        var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function Ctor() {
+        var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function ReactInstance() {
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
@@ -2374,16 +2374,6 @@
         }
     }
 
-    var Unbatch = miniCreateClass(function Unbatch(props) {
-        this.state = {
-            child: props.child
-        };
-    }, Component, {
-        render: function render() {
-            return this.state.child;
-        }
-    });
-
     function getDOMNode() {
         return this;
     }
@@ -2597,6 +2587,16 @@
         }
         fiber.effectTag = NOWORK;
     }
+
+    var Unbatch = miniCreateClass(function Unbatch(props) {
+        this.state = {
+            child: props.child
+        };
+    }, Component, {
+        render: function render() {
+            return this.state.child;
+        }
+    });
 
     var macrotasks = Renderer.macrotasks;
     var boundaries = Renderer.boundaries;

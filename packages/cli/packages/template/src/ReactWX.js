@@ -673,14 +673,12 @@ var eventSystem = {
         var eventName = dataset[e.type + "Fn"];
         var classCode = dataset.classCode;
         var componentClass = eventSystem.classCache[classCode];
-        var fn = componentClass && componentClass.prototype[eventName];
-        if (fn) {
-            var instanceCode = dataset.instanceCode;
-            for (var i = 0, el; el = componentClass.instances[i++];) {
-                if (el.instanceCode === instanceCode) {
-                    fn.call(el, e);
-                    break;
-                }
+        var instanceCode = dataset.instanceCode;
+        for (var i = 0, el; el = componentClass.instances[i++];) {
+            if (el.instanceCode === instanceCode) {
+                var fn = el[eventName];
+                fn && fn.call(el, e);
+                break;
             }
         }
     }
@@ -1841,8 +1839,6 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    hijack(PageClass, "componentWillMount");
-    hijack(PageClass, "componentWillUpdate");
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
@@ -1866,9 +1862,15 @@ function createPage(PageClass, path) {
         canSetData = false;
     instance.setState = function (a, b) {
         var pageInst = this.$pageComponent || this;
-        if (pageInst.$pageLock) ;
         if (updating === false) {
-            instance.allTemplateData = [];
+            if (pageInst == this) {
+                pageInst.allTemplateData = [];
+            } else {
+                var props = this.props;
+                pageInst.allTemplateData = pageInst.allTemplateData.filter(function (el) {
+                    return el.props !== props;
+                });
+            }
             canSetData = true;
             updating = true;
         }
@@ -1876,8 +1878,8 @@ function createPage(PageClass, path) {
         setState.call(this, a, function () {
             b && b.call(inst);
             if (canSetData) {
-                canSetData = true;
-                updating = true;
+                canSetData = false;
+                updating = false;
                 var data = {
                     state: pageInst.state,
                     props: pageInst.props
@@ -1918,13 +1920,6 @@ function applyChildComponentData(data, list) {
             data[el.templatedata] = [el];
         }
     });
-}
-function hijack(component, method) {
-    var fn = component.prototype[method] || function () {};
-    component.prototype[method] = function () {
-        this.$pageLock = true;
-        fn.call(this);
-    };
 }
 
 function template(props) {

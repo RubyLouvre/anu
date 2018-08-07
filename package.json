@@ -4,10 +4,11 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.wx.js ",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.wx.js && npm run syncReactWX",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
+    "syncReactWX": "node ./scripts/build/syncReactWX.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js"
   },
   "repository": {

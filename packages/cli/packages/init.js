@@ -18,6 +18,7 @@ const ignore = new Set([
 
 const pkgJsonTemplate = {
     "license": "MIT",
+    "version": "1.0.0",
     "name": "{{appName}}",
     "devDependencies": {
       "babel-plugin-transform-class-properties": "^6.24.1",
@@ -32,32 +33,35 @@ const pkgJsonTemplate = {
 
 const init = (appName)=>{
     checkNameIsOk(appName)
-    .then((ok)=>{
-        if(ok){
-            writeDir(appName);
+    .then((res)=>{
+        if(res.ok){
+            writeDir(res.appName);
         }
         // if(ok){
         //     return handleUserSelectedParams();
         // }
     })
-    // .then((res)=>{
-    //     if(res.isOk){
-    //         writeDir(appName, res.data);
-    //     }
-    // });
 }
 
 
 const checkNameIsOk = (appName)=>{
     return new Promise((resolve, reject)=>{
-        const checkNameResult = validateProjectName(appName);
+        
+        let absoluteAppNamePath = path.resolve(appName);
+        let baseName = path.basename(absoluteAppNamePath);
+
+        const checkNameResult = validateProjectName(baseName);
+
         if(!checkNameResult.validForNewPackages){
             console.log();
-            chalk.bold.red(`创建${appName}失败，请检查命名规范!`)
+            chalk.bold.red(`创建${absoluteAppNamePath}失败，请检查命名规范!`)
             console.log();
             process.exit(1);
         }else{
-            resolve(true);
+            resolve({
+                ok: true,
+                appName: absoluteAppNamePath
+            });
         }
     })  
 
@@ -96,14 +100,6 @@ const handleUserSelectedParams = ()=>{
             .then((answers)=>{
                 return new Promise((resolve, reject)=>{
                     let choice = answers['css'];
-                    // if(choice === 'less'){
-            
-                    // }else if(choice === 'sass'){
-            
-                    // }else{
-            
-                    // }
-                    
                     resolve({
                         isOk: true,
                         data: {
@@ -119,21 +115,20 @@ const handleUserSelectedParams = ()=>{
 const writePkgJson = (appName)=>{
     let template = Handlebars.compile(JSON.stringify(pkgJsonTemplate));
     let data = {
-        appName: appName,
+        appName: path.basename(appName)
     };
     let result =JSON.parse(template(data));
     fs.writeFileSync(
-        path.join(root, appName, 'package.json'),
+        path.join(appName, 'package.json'),
         JSON.stringify(result, null, 4)
     )
 }
 
 
 const writeDir = (appName)=>{
-
-    if(exists(path.join(root, appName))){
+    if(exists(appName)){
         console.log();
-        console.log(chalk.bold.red(`当前目录已存在${appName}项目,请检查!`));
+        console.log(chalk.bold.red(`目录${appName}已存在,请检查!`));
         console.log();
         process.exit(1);
     }
@@ -144,7 +139,7 @@ const writeDir = (appName)=>{
     templates.forEach((item)=>{
         if(ignore.has(item)) return;
         let src = path.join(ownRoot, 'packages', 'template', item);
-        let dest = path.join(root, appName, item);
+        let dest = path.join(appName);
         fs.copySync(src,dest)
     });
 
@@ -165,7 +160,7 @@ const writeDir = (appName)=>{
     
 
     console.log();
-    console.log(`项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(path.join(root, appName))}.`);
+    console.log(`项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(appName)}`);
    
     //写入package.json
     writePkgJson(appName);
@@ -173,7 +168,7 @@ const writeDir = (appName)=>{
     console.log(chalk.green('开始安装依赖,请稍候...'));
     console.log();
     //安装依赖
-    install(path.join(root, appName));
+    install(appName);
 }
 
 const install = (projectRoot, useYarn)=>{
