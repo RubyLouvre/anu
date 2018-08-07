@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-07
  * IE9+
  */
 
@@ -1841,16 +1841,17 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    var lockObj = {
-        lock: true
+    var $pageLock = {
+        locked: true
     };
-    hijack(PageClass, "componentWillMount", lockObj);
-    hijack(PageClass, "componentWillUpdate", lockObj);
-    var instance = render(createElement(PageClass), {
+    hijack(PageClass, "componentWillMount", $pageLock);
+    hijack(PageClass, "componentWillUpdate", $pageLock);
+    var instance = render(createElement(PageClass, {
+        path: path,
+        isPageComponent: true
+    }), {
         type: "page",
-        props: {
-            path: path
-        },
+        props: {},
         children: [],
         root: true,
         appendChild: function appendChild() {}
@@ -1865,8 +1866,8 @@ function createPage(PageClass, path) {
     instance.props.instanceCode = instance.instanceCode;
     var setState = instance.setState;
     instance.setState = function (a, b) {
-        if (!lockObj.lock) {
-            lockObj.lock = true;
+        if (this.$pageLock && !this.$pageLock.locked) {
+            this.$pageLock.locked = true;
             instance.allTemplateData = [];
         }
         setState.call(this, a, function () {
@@ -1911,10 +1912,11 @@ function applyChildComponentData(data, list) {
         }
     });
 }
-function hijack(component, method, lockObj) {
+function hijack(component, method, pageLock) {
     var fn = component.prototype[method] || function () {};
     component.prototype[method] = function () {
-        lockObj.lock = false;
+        this.$pageLock = pageLock;
+        this.$pageLock.locked = false;
         fn.call(this);
     };
 }
@@ -1930,6 +1932,8 @@ function template(props) {
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
     }
+    var setState = clazz.prototype.setState;
+    console.log(!!setState, "*****");
     return createElement(clazz, props);
 }
 function getData(instance) {
@@ -1939,15 +1943,24 @@ function hijackStatefulHooks(proto, method) {
     var oldHook = proto[method] || noop;
     proto[method] = function () {
         var fiber = this._reactInternalFiber;
-        var inputProps = fiber._owner.props;
         if (!this.instanceCode) {
             this.instanceCode = Math.random();
+            var instances = this.constructor.instances;
+            if (instances.indexOf(this) === -1) {
+                instances.push(this);
+            }
+            var p = fiber.return;
+            while (p) {
+                var inst = p._owner;
+                if (inst && inst.props && inst.props.isPageComponent) {
+                    this.$pageComponent = inst;
+                    break;
+                }
+            }
         }
+        console.log(this);
+        var inputProps = fiber._owner.props;
         this.props.instanceCode = this.instanceCode;
-        var instances = this.constructor.instances;
-        if (instances.indexOf(this) === -1) {
-            instances.push(this);
-        }
         var p = fiber.return;
         do {
             if (p && isFn(p.type) && p.type !== template) {

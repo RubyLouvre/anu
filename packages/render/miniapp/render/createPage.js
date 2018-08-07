@@ -6,11 +6,12 @@ import { isFn } from "react-core/util";
 export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    //旋转所有类实例
-
     //劫持页面组件的生命周期，与setState进行联动
-    hijack(PageClass, "componentWillMount");
-    hijack(PageClass, "componentWillUpdate");
+    var $pageLock = {
+        locked: true
+    }
+    hijack(PageClass, "componentWillMount", $pageLock);
+    hijack(PageClass, "componentWillUpdate", $pageLock);
     //获取页面的组件实例
     var instance = render(
         createElement(PageClass, {
@@ -36,11 +37,10 @@ export function createPage(PageClass, path) {
     instance.props.instanceCode = instance.instanceCode;
     //劫持setState
     var setState = instance.setState;
-    instance.$pageLock = true;
     instance.setState = function(a, b) {
-        if (!this.$pageLock) {
-            this.$pageLock = true;
-            instance.allTemplateData = [];
+        if (this.$pageLock && !this.$pageLock.locked) {
+            this.$pageLock.locked = true;
+            instance.allTemplateData = [];//清空子组件
         }
         setState.call(this, a, function() {
             b && b.call(instance);
@@ -87,10 +87,11 @@ function applyChildComponentData(data, list) {
     });
 }
 
-function hijack(component, method) {
+function hijack(component, method, pageLock) {
     var fn = component.prototype[method] || function() {};
     component.prototype[method] = function() {
-        this.$pageLock = false;
+        this.$pageLock = pageLock
+        this.$pageLock.locked = false;
         fn.call(this);
     };
 }
