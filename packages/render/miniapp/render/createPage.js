@@ -36,9 +36,7 @@ export function createPage(PageClass, path) {
         canSetData = false;
     instance.setState = function(a, b) {
         var pageInst = this.$pageComponent || this;
-   
         if (updating === false) {
-
             if(pageInst == this){
                 pageInst.allTemplateData = []; //清空子组件
             }else{

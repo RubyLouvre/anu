@@ -1841,11 +1841,8 @@ function getContainer(p) {
 
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    var $pageLock = {
-        locked: true
-    };
-    hijack(PageClass, "componentWillMount", $pageLock);
-    hijack(PageClass, "componentWillUpdate", $pageLock);
+    hijack(PageClass, "componentWillMount");
+    hijack(PageClass, "componentWillUpdate");
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
@@ -1865,19 +1862,29 @@ function createPage(PageClass, path) {
     PageClass.instances.push(instance);
     instance.props.instanceCode = instance.instanceCode;
     var setState = instance.setState;
+    var updating = false,
+        canSetData = false;
     instance.setState = function (a, b) {
-        if (this.$pageLock && !this.$pageLock.locked) {
-            this.$pageLock.locked = true;
+        var pageInst = this.$pageComponent || this;
+        if (pageInst.$pageLock) ;
+        if (updating === false) {
             instance.allTemplateData = [];
+            canSetData = true;
+            updating = true;
         }
+        var inst = this;
         setState.call(this, a, function () {
-            b && b.call(instance);
-            var data = {
-                state: instance.state,
-                props: instance.props
-            };
-            applyChildComponentData(data, instance.allTemplateData || []);
-            instance.$wxPage.setData(data);
+            b && b.call(inst);
+            if (canSetData) {
+                canSetData = true;
+                updating = true;
+                var data = {
+                    state: pageInst.state,
+                    props: pageInst.props
+                };
+                applyChildComponentData(data, pageInst.allTemplateData || []);
+                pageInst.$wxPage.setData(data);
+            }
         });
     };
     var unmountHook = "componentWillUnmount";
@@ -1912,11 +1919,10 @@ function applyChildComponentData(data, list) {
         }
     });
 }
-function hijack(component, method, pageLock) {
+function hijack(component, method) {
     var fn = component.prototype[method] || function () {};
     component.prototype[method] = function () {
-        this.$pageLock = pageLock;
-        this.$pageLock.locked = false;
+        this.$pageLock = true;
         fn.call(this);
     };
 }
@@ -1931,9 +1937,16 @@ function template(props) {
             hijackStatefulHooks(proto, "componentWillMount");
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
+        var setState = clazz.prototype.setState;
+        clazz.prototype.setState = function () {
+            var pageInst = this.$pageComponent;
+            if (pageInst) {
+                pageInst.setState.apply(this, arguments);
+            } else {
+                setState.apply(this, arguments);
+            }
+        };
     }
-    var setState = clazz.prototype.setState;
-    console.log(!!setState, "*****");
     return createElement(clazz, props);
 }
 function getData(instance) {
@@ -1958,18 +1971,23 @@ function hijackStatefulHooks(proto, method) {
                 }
             }
         }
-        console.log(this);
         var inputProps = fiber._owner.props;
         this.props.instanceCode = this.instanceCode;
-        var p = fiber.return;
-        do {
-            if (p && isFn(p.type) && p.type !== template) {
+        var f = fiber.return;
+        var pageComponent = null;
+        while (f) {
+            var exited = f._owner && f._owner.$pageComponent;
+            if (exited) {
+                pageComponent = exited;
+                break;
+            } else if (f.props && f.props.isPageComponent) {
+                pageComponent = f.stateNode;
                 break;
             }
-        } while (p = p.return);
-        var parentInstance = p && p.stateNode;
-        if (parentInstance) {
-            var arr = getData(parentInstance);
+            f = f.return;
+        }
+        if (pageComponent) {
+            var arr = getData(pageComponent);
             var isUpdate = method === "componentWillUpdate";
             arr.push({
                 props: isUpdate ? arguments[0] : this.props,
