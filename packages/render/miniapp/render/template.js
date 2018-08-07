@@ -14,6 +14,9 @@ export function template(props) {
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
     }
+    var setState = clazz.prototype.setState;
+    console.log(!!setState, "*****");
+
     //...再上面一样
     return createElement(clazz, props);
 }
@@ -21,20 +24,32 @@ export function template(props) {
 function getData(instance) {
     return instance.allTemplateData || (instance.allTemplateData = []);
 }
+//var oldsetState =  instance.setState;
+
 function hijackStatefulHooks(proto, method) {
     var oldHook = proto[method] || noop;
     proto[method] = function() {
         var fiber = this._reactInternalFiber;
-        var inputProps = fiber._owner.props;
+
         if (!this.instanceCode) {
             this.instanceCode = Math.random();
+            var instances = this.constructor.instances;
+            if (instances.indexOf(this) === -1) {
+                instances.push(this);
+            }
+            var p = fiber.return;
+            while (p) {
+                var inst = p._owner;
+                if (inst && inst.props && inst.props.isPageComponent) {
+                    this.$pageComponent = inst;
+                    break;
+                }
+            }
         }
-
+        console.log(this);
+        var inputProps = fiber._owner.props;
         this.props.instanceCode = this.instanceCode;
-        var instances = this.constructor.instances;
-        if (instances.indexOf(this) === -1) {
-            instances.push(this);
-        }
+
         var p = fiber.return;
         do {
             if (p && isFn(p.type) && p.type !== template) {
@@ -42,6 +57,7 @@ function hijackStatefulHooks(proto, method) {
             }
         } while ((p = p.return));
         var parentInstance = p && p.stateNode;
+
         if (parentInstance) {
             var arr = getData(parentInstance);
             var isUpdate = method === "componentWillUpdate";

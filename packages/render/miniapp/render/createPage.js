@@ -7,22 +7,24 @@ export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     //旋转所有类实例
-    var lockObj = {
-        lock: true
-    };
+
     //劫持页面组件的生命周期，与setState进行联动
-    hijack(PageClass, "componentWillMount", lockObj);
-    hijack(PageClass, "componentWillUpdate", lockObj);
+    hijack(PageClass, "componentWillMount");
+    hijack(PageClass, "componentWillUpdate");
     //获取页面的组件实例
-    var instance = render(createElement(PageClass), {
-        type: "page",
-        props: {
-            path: path
-        },
-        children: [],
-        root: true,
-        appendChild: function() {}
-    });
+    var instance = render(
+        createElement(PageClass, {
+            path: path,
+            isPageComponent: true
+        }),
+        {
+            type: "page",
+            props: {},
+            children: [],
+            root: true,
+            appendChild: function() {}
+        }
+    );
     if (!instance.instanceCode) {
         instance.instanceCode = Math.random();
     }
@@ -34,9 +36,10 @@ export function createPage(PageClass, path) {
     instance.props.instanceCode = instance.instanceCode;
     //劫持setState
     var setState = instance.setState;
+    instance.$pageLock = true;
     instance.setState = function(a, b) {
-        if (!lockObj.lock) {
-            lockObj.lock = true;
+        if (!this.$pageLock) {
+            this.$pageLock = true;
             instance.allTemplateData = [];
         }
         setState.call(this, a, function() {
@@ -84,10 +87,10 @@ function applyChildComponentData(data, list) {
     });
 }
 
-function hijack(component, method, lockObj) {
+function hijack(component, method) {
     var fn = component.prototype[method] || function() {};
     component.prototype[method] = function() {
-        lockObj.lock = false;
+        this.$pageLock = false;
         fn.call(this);
     };
 }
