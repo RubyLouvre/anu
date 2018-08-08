@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-08
  * IE9+
  */
 
@@ -1857,26 +1857,32 @@ function createPage(PageClass, path) {
     }
     PageClass.instances.push(instance);
     instance.props.instanceCode = instance.instanceCode;
-    var setState = instance.setState;
+    var anuSetState = instance.setState;
+    var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.setState = function (a, b) {
+    instance.forceUpdate = instance.setState = function (a) {
+        var updateMethod = anuSetState;
+        var cbIndex = 1;
+        if (isFn(a) || a == null) {
+            updateMethod = anuForceUpdate;
+            cbIndex = 0;
+        }
         var pageInst = this.$pageComponent || this;
         if (updating === false) {
             if (pageInst == this) {
                 pageInst.allTemplateData = [];
             } else {
-                var props = this.props;
-                pageInst.allTemplateData = pageInst.allTemplateData.filter(function (el) {
-                    return el.props !== props;
-                });
+                this.updateWXData = true;
             }
             canSetData = true;
             updating = true;
         }
-        var inst = this;
-        setState.call(this, a, function () {
-            b && b.call(inst);
+        var inst = this,
+            cb = arguments[cbIndex],
+            args = Array.prototype.slice.call(arguments);
+        args[cbIndex] = function () {
+            cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
                 updating = false;
@@ -1887,7 +1893,8 @@ function createPage(PageClass, path) {
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 pageInst.$wxPage.setData(data);
             }
-        });
+        };
+        updateMethod.apply(this, args);
     };
     var unmountHook = "componentWillUnmount";
     var config = {
@@ -1933,12 +1940,21 @@ function template(props) {
             hijackStatefulHooks(proto, "componentWillUpdate");
         }
         var setState = clazz.prototype.setState;
+        var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function () {
             var pageInst = this.$pageComponent;
             if (pageInst) {
                 pageInst.setState.apply(this, arguments);
             } else {
                 setState.apply(this, arguments);
+            }
+        };
+        clazz.prototype.forceUpdate = function () {
+            var pageInst = this.$pageComponent;
+            if (pageInst) {
+                pageInst.forceUpdate.apply(this, arguments);
+            } else {
+                forceUpdate.apply(this, arguments);
             }
         };
     }
@@ -1982,13 +1998,24 @@ function hijackStatefulHooks(proto, method) {
             f = f.return;
         }
         if (pageComponent) {
-            var arr = getData(pageComponent);
+            var arr = getData(pageComponent),
+                props = this.props;
             var isUpdate = method === "componentWillUpdate";
-            arr.push({
-                props: isUpdate ? arguments[0] : this.props,
+            var newData = {
+                props: isUpdate ? arguments[0] : props,
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata
-            });
+            };
+            if (this.updateWXData) {
+                for (var i = 0, el; el = arr[i++];) {
+                    if (el.props === props) {
+                        extend(el, newData);
+                    }
+                }
+                delete this.updateWXData;
+            } else {
+                arr.push(newData);
+            }
             oldHook.call(this, arguments);
         }
     };

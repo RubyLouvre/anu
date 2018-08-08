@@ -1,4 +1,4 @@
-import { noop, isFn } from "react-core/util";
+import { noop, isFn, extend, get } from "react-core/util";
 import { createElement } from "react-core/createElement";
 
 export function template(props) {
@@ -12,6 +12,26 @@ export function template(props) {
         if (proto && proto.isReactComponent) {
             hijackStatefulHooks(proto, "componentWillMount");
             hijackStatefulHooks(proto, "componentWillUpdate");
+            var oldUnmount = proto.componentWillUnmount;
+            proto.componentWillUnmount = function() {
+                oldUnmount && oldUnmount.call(this);
+                var pageComponent = this.$pageComponent;
+                if (pageComponent) {
+                    var instances = get(this).type.instances;
+                    var i = instances.indexOf(this);
+                    if (i !== -1) {
+                        instances.push(i, 1);
+                    }
+                    var props = this.props;
+                    var arr = getData(pageComponent);
+                    for (var i = 0, el; (el = arr[i++]); ) {
+                        if (el.props === props) {
+                            arr.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            };
         }
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
@@ -40,7 +60,6 @@ export function template(props) {
 function getData(instance) {
     return instance.allTemplateData || (instance.allTemplateData = []);
 }
-//var oldsetState =  instance.setState;
 
 function hijackStatefulHooks(proto, method) {
     var oldHook = proto[method] || noop;
@@ -77,13 +96,25 @@ function hijackStatefulHooks(proto, method) {
             f = f.return;
         }
         if (pageComponent) {
-            var arr = getData(pageComponent);
+            var arr = getData(pageComponent),
+                props = this.props;
             var isUpdate = method === "componentWillUpdate";
-            arr.push({
-                props: isUpdate ? arguments[0] : this.props,
+            var newData = {
+                props: isUpdate ? arguments[0] : props,
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata //template元素的
-            });
+            };
+            if (this.updateWXData) {
+                for (var i = 0, el; (el = arr[i++]); ) {
+                    if (el.props === props) {
+                        extend(el, newData);
+                        break;
+                    }
+                }
+                delete this.updateWXData;
+            } else {
+                arr.push(newData);
+            }
             oldHook.call(this, arguments);
         }
     };

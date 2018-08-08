@@ -49,19 +49,15 @@ export function createPage(PageClass, path) {
                 pageInst.allTemplateData = []; //清空子组件
             } else {
                 //如果是页面的子组件，通过template收集
-                var props = this.props;
-                pageInst.allTemplateData = pageInst.allTemplateData.filter(
-                    function(el) {
-                        return el.props !== props;
-                    }
-                );
+                this.updateWXData = true;
             }
             canSetData = true;
             updating = true;
         }
         var inst = this,
-            cb = arguments[cbIndex];
-        arguments[cbIndex] = function() {
+            cb = arguments[cbIndex],
+            args = Array.prototype.slice.call(arguments);
+        args[cbIndex] = function() {
             cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
@@ -74,7 +70,7 @@ export function createPage(PageClass, path) {
                 pageInst.$wxPage.setData(data);
             }
         };
-        updateMethod.apply(this, arguments);
+        updateMethod.apply(this, args);
         /*
         setState.call(this, a, function() {
             b && b.call(inst);
