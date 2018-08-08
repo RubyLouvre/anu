@@ -1,0 +1,12 @@
+<import src="../../components/dog/dog.wxml" />
+<view bindtap="dispatchEvent" bindkeydown="dispatchEvent" data-tap-fn="onClick" data-class-code="c9251515237845342" data-instance-code="{{props.instanceCode}}" data-keydown-fn="onKeyDown">
+  <view>{{state.name}}</view>
+  <view>
+    <block wx:for="{{state.array}}" wx:for-item="el">
+      <template is="Dog" wx:if="{{data24086479044368514[index]}}" data="{{...data24086479044368514[index]}}" wx:key="{{el.name}}">
+      </template>
+    </block>
+  </view>
+  <template is="Dog" data="{{...data}}" wx:for="{{data2717982581407381}}" wx:for-item="data" wx:for-index="index">
+  </template>
+</view>

@@ -134,12 +134,15 @@ const writeDir = (appName)=>{
     }
 
     //复制模板
+
+   
+
     fs.ensureDirSync(appName);
     const templates = fs.readdirSync(path.join(ownRoot, 'packages', 'template'));
     templates.forEach((item)=>{
         if(ignore.has(item)) return;
         let src = path.join(ownRoot, 'packages', 'template', item);
-        let dest = path.join(appName);
+        let dest = path.join(appName, item);
         fs.copySync(src,dest)
     });
 

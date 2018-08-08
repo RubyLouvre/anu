@@ -1,0 +1,6 @@
+.welcome {
+  padding-top: 150px; }
+  .welcome .welcome-text {
+    color: #333;
+    text-align: center;
+    padding: 10px; }

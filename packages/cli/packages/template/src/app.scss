@@ -1,0 +1,31 @@
+.page-guide-text{
+    color: #333;
+    text-align: center;
+    padding: 10px;
+}
+
+.container{
+    padding: 20px;
+    .page_hd{
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+    }
+}
+
+.btn{
+    background-color: #0088a4;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.navigation{
+    .item{
+        background: #f8f8f8;
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+    .navigator-hover{
+        background: #c5c5c5;
+    }
+}
