@@ -71,20 +71,7 @@ export function createPage(PageClass, path) {
             }
         };
         updateMethod.apply(this, args);
-        /*
-        setState.call(this, a, function() {
-            b && b.call(inst);
-            if (canSetData) {
-                canSetData = false;
-                updating = false;
-                var data = {
-                    state: pageInst.state,
-                    props: pageInst.props
-                };
-                applyChildComponentData(data, pageInst.allTemplateData || []);
-                pageInst.$wxPage.setData(data);
-            }
-        });*/
+       
     };
 
     var unmountHook = "componentWillUnmount";

@@ -1,11 +1,16 @@
 # React转微信小程序的转码器
 
-测试例子：npm run miniapp
+## 使用
+命令行定义到cli目录下，执行npm link
+使用mpreact <project-name> 创建工程
+定位到  <project-name> 目录下 mpreact start 开始监听文件变化，
+用微信开发工具打开当中的dist目录，自己收在src目录中进行开发
 
 ## 与React的差异
 
 1. 微信小程序的事件机制有瑕疵，不支持stopPropagation与preventDefault。我们将e.detail当成事件对象，在它基础上添加type,target,touches,timeStamp等属性
 2. 事件的绑定，不要使用this.props.fn或this.state.fn，要用this.fn这种形式，微信在给模板填数据时，会对数据进行JSON.stringify，清掉所有事件。
+3. 组件系统是基于小程序的template元素，由于不支持slot，因此无法使用`{this.props.children}`实现显式的组件套嵌
 
 ## 内部运行机制
 
