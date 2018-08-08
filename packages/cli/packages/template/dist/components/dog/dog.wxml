@@ -1,4 +1,5 @@
 <template name="Dog">
-  <view>{{props.name}}-<slot />
+  <view bindtap="dispatchEvent" data-tap-fn="props.eventTapHandler" data-class-code="c7199167959956871" data-instance-code="{{props.instanceCode}}">
+    {{props.name}}-{{props.age}}
   </view>
 </template>

@@ -16,7 +16,7 @@ Demo = _ReactWX2.default.miniCreateClass(Demo, _ReactWX2.default.Component, {
   onLaunch: function () {
     console.log('onLaunch===');
   },
-  classCode: "c07762259330112253"
+  classCode: "c41624487076133665"
 }, {});
 
 App(new Demo());

@@ -672,26 +672,29 @@ var eventSystem = {
         var dataset = target.dataset || {};
         var eventName = dataset[e.type + "Fn"];
         var classCode = dataset.classCode;
-        var event = e.detail || {};
-        event.stopPropagation = function () {
-            console.warn("小程序不支持这方法，请使用catchXXX");
-        };
-        event.preventDefault = function () {};
-        event.type = e.type;
-        event.target = target;
-        event.touches = e.touches;
-        event.timeStamp = e.timeStamp;
         var componentClass = eventSystem.classCache[classCode];
         var instanceCode = dataset.instanceCode;
         for (var i = 0, el; el = componentClass.instances[i++];) {
             if (el.instanceCode === instanceCode) {
                 var fn = el[eventName];
-                fn && fn.call(el, event);
+                fn && fn.call(el, createEvent(e, target));
                 break;
             }
         }
     }
 };
+function createEvent(e, target) {
+    var event = e.detail || {};
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.preventDefault = returnFalse;
+    event.type = e.type;
+    event.target = target;
+    event.touches = e.touches;
+    event.timeStamp = e.timeStamp;
+    return event;
+}
 
 function UpdateQueue() {
     return {

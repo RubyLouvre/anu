@@ -1,5 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-08
  * IE9+
  */
 
@@ -178,7 +183,11 @@ Component.prototype = {
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+} : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -376,8 +385,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
             break;
     }
     if (invokeCallback) {
-        callback(bookKeeping, children,
-        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        callback(bookKeeping, children, nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -673,18 +681,28 @@ var eventSystem = {
         var eventName = dataset[e.type + "Fn"];
         var classCode = dataset.classCode;
         var componentClass = eventSystem.classCache[classCode];
-        var fn = componentClass && componentClass.prototype[eventName];
-        if (fn) {
-            var instanceCode = dataset.instanceCode;
-            for (var i = 0, el; el = componentClass.instances[i++];) {
-                if (el.instanceCode === instanceCode) {
-                    fn.call(el, e);
-                    break;
-                }
+        var instanceCode = dataset.instanceCode;
+        for (var i = 0, el; el = componentClass.instances[i++];) {
+            if (el.instanceCode === instanceCode) {
+                var fn = el[eventName];
+                fn && fn.call(el, createEvent(e, target));
+                break;
             }
         }
     }
 };
+function createEvent(e, target) {
+    var event = e.detail || {};
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.preventDefault = returnFalse;
+    event.type = e.type;
+    event.target = target;
+    event.touches = e.touches;
+    event.timeStamp = e.timeStamp;
+    return event;
+}
 
 function UpdateQueue() {
     return {
@@ -796,7 +814,7 @@ function pushError(fiber, hook, error) {
     var boundary = findCatchComponent(fiber, names, hook);
     var stack = describeError(names, hook);
     if (boundary) {
-        if (fiber.hasMounted) ; else {
+        if (fiber.hasMounted) ;else {
             fiber.stateNode = {
                 updater: fakeObject
             };
@@ -1859,26 +1877,32 @@ function createPage(PageClass, path) {
     }
     PageClass.instances.push(instance);
     instance.props.instanceCode = instance.instanceCode;
-    var setState = instance.setState;
+    var anuSetState = instance.setState;
+    var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.setState = function (a, b) {
+    instance.forceUpdate = instance.setState = function (a) {
+        var updateMethod = anuSetState;
+        var cbIndex = 1;
+        if (isFn(a) || a == null) {
+            updateMethod = anuForceUpdate;
+            cbIndex = 0;
+        }
         var pageInst = this.$pageComponent || this;
         if (updating === false) {
             if (pageInst == this) {
                 pageInst.allTemplateData = [];
             } else {
-                var props = this.props;
-                pageInst.allTemplateData = pageInst.allTemplateData.filter(function (el) {
-                    return el.props !== props;
-                });
+                this.updateWXData = true;
             }
             canSetData = true;
             updating = true;
         }
-        var inst = this;
-        setState.call(this, a, function () {
-            b && b.call(inst);
+        var inst = this,
+            cb = arguments[cbIndex],
+            args = Array.prototype.slice.call(arguments);
+        args[cbIndex] = function () {
+            cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
                 updating = false;
@@ -1889,7 +1913,8 @@ function createPage(PageClass, path) {
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 pageInst.$wxPage.setData(data);
             }
-        });
+        };
+        updateMethod.apply(this, args);
     };
     var unmountHook = "componentWillUnmount";
     var config = {
@@ -1933,14 +1958,43 @@ function template(props) {
         if (proto && proto.isReactComponent) {
             hijackStatefulHooks(proto, "componentWillMount");
             hijackStatefulHooks(proto, "componentWillUpdate");
+            var oldUnmount = proto.componentWillUnmount;
+            proto.componentWillUnmount = function () {
+                oldUnmount && oldUnmount.call(this);
+                var pageComponent = this.$pageComponent;
+                if (pageComponent) {
+                    var instances = get(this).type.instances;
+                    var i = instances.indexOf(this);
+                    if (i !== -1) {
+                        instances.push(i, 1);
+                    }
+                    var props = this.props;
+                    var arr = getData(pageComponent);
+                    for (var i = 0, el; el = arr[i++];) {
+                        if (el.props === props) {
+                            arr.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            };
         }
         var setState = clazz.prototype.setState;
+        var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function () {
             var pageInst = this.$pageComponent;
             if (pageInst) {
                 pageInst.setState.apply(this, arguments);
             } else {
                 setState.apply(this, arguments);
+            }
+        };
+        clazz.prototype.forceUpdate = function () {
+            var pageInst = this.$pageComponent;
+            if (pageInst) {
+                pageInst.forceUpdate.apply(this, arguments);
+            } else {
+                forceUpdate.apply(this, arguments);
             }
         };
     }
@@ -1984,105 +2038,117 @@ function hijackStatefulHooks(proto, method) {
             f = f.return;
         }
         if (pageComponent) {
-            var arr = getData(pageComponent);
+            var arr = getData(pageComponent),
+                props = this.props;
             var isUpdate = method === "componentWillUpdate";
-            arr.push({
-                props: isUpdate ? arguments[0] : this.props,
+            var newData = {
+                props: isUpdate ? arguments[0] : props,
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata
-            });
+            };
+            if (this.updateWXData) {
+                for (var i = 0, el; el = arr[i++];) {
+                    if (el.props === props) {
+                        extend(el, newData);
+                        break;
+                    }
+                }
+                delete this.updateWXData;
+            } else {
+                arr.push(newData);
+            }
             oldHook.call(this, arguments);
         }
     };
 }
 
 function cleanChildren(array) {
-  if (!Array.isArray(array)) {
-    return array;
-  }
-  return array.map(function (el) {
-    if (el.type == "#text") {
-      return el.props;
-    } else {
-      return {
-        type: el.type,
-        props: el.props,
-        children: cleanChildren(el.children)
-      };
+    if (!Array.isArray(array)) {
+        return array;
     }
-  });
+    return array.map(function (el) {
+        if (el.type == "#text") {
+            return el.props;
+        } else {
+            return {
+                type: el.type,
+                props: el.props,
+                children: cleanChildren(el.children)
+            };
+        }
+    });
 }
 var autoContainer = {
-  type: "root",
-  appendChild: noop,
-  props: null,
-  children: []
+    type: "root",
+    appendChild: noop,
+    props: null,
+    children: []
 };
 var Renderer$1 = createRenderer({
-  render: render,
-  updateAttribute: function updateAttribute() {},
-  updateContent: function updateContent(fiber) {
-    fiber.stateNode.props = fiber.props;
-  },
-  getRoot: function getRoot() {
-    return autoContainer;
-  },
-  getChildren: function getChildren() {
-    return cleanChildren(autoContainer.children || []);
-  },
-  createElement: function createElement(fiber) {
-    return fiber.tag === 5 ? {
-      type: fiber.type,
-      props: fiber.props || {},
-      children: []
-    } : {
-      type: fiber.type,
-      props: fiber.props
-    };
-  },
-  insertElement: function insertElement(fiber) {
-    var dom = fiber.stateNode,
-        parentNode = fiber.parent,
-        forwardFiber = fiber.forwardFiber,
-        before = forwardFiber ? forwardFiber.stateNode : null,
-        children = parentNode.children;
-    try {
-      if (before == null) {
-        if (dom !== children[0]) {
-          remove(children, dom);
-          children.unshift(dom);
+    render: render,
+    updateAttribute: function updateAttribute() {},
+    updateContent: function updateContent(fiber) {
+        fiber.stateNode.props = fiber.props;
+    },
+    getRoot: function getRoot() {
+        return autoContainer;
+    },
+    getChildren: function getChildren() {
+        return cleanChildren(autoContainer.children || []);
+    },
+    createElement: function createElement(fiber) {
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
+    },
+    insertElement: function insertElement(fiber) {
+        var dom = fiber.stateNode,
+            parentNode = fiber.parent,
+            forwardFiber = fiber.forwardFiber,
+            before = forwardFiber ? forwardFiber.stateNode : null,
+            children = parentNode.children;
+        try {
+            if (before == null) {
+                if (dom !== children[0]) {
+                    remove(children, dom);
+                    children.unshift(dom);
+                }
+            } else {
+                if (dom !== children[children.length - 1]) {
+                    remove(children, dom);
+                    var i = children.indexOf(before);
+                    children.splice(i + 1, 0, dom);
+                }
+            }
+        } catch (e) {
+            throw e;
         }
-      } else {
-        if (dom !== children[children.length - 1]) {
-          remove(children, dom);
-          var i = children.indexOf(before);
-          children.splice(i + 1, 0, dom);
+    },
+    emptyElement: function emptyElement(fiber) {
+        var dom = fiber.stateNode;
+        var children = dom && dom.children;
+        if (dom && Array.isArray(children)) {
+            children.forEach(Renderer$1.removeElement);
         }
-      }
-    } catch (e) {
-      throw e;
+    },
+    removeElement: function removeElement(fiber) {
+        if (fiber.parent) {
+            var parent = fiber.parent;
+            var node = fiber.stateNode;
+            remove(parent.children, node);
+        }
     }
-  },
-  emptyElement: function emptyElement(fiber) {
-    var dom = fiber.stateNode;
-    var children = dom && dom.children;
-    if (dom && Array.isArray(children)) {
-      children.forEach(Renderer$1.removeElement);
-    }
-  },
-  removeElement: function removeElement(fiber) {
-    if (fiber.parent) {
-      var parent = fiber.parent;
-      var node = fiber.stateNode;
-      remove(parent.children, node);
-    }
-  }
 });
 function remove(children, node) {
-  var index = children.indexOf(node);
-  if (index !== -1) {
-    children.splice(index, 1);
-  }
+    var index = children.indexOf(node);
+    if (index !== -1) {
+        children.splice(index, 1);
+    }
 }
 
 function findHostInstance(fiber) {
@@ -2115,44 +2181,44 @@ var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-  eventSystem: eventSystem,
-  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-    var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = clazz.prototype.classCode;
-    classCache[uuid] = clazz;
-    return clazz;
-  },
-  findDOMNode: function findDOMNode(fiber) {
-    if (fiber == null) {
-      return null;
-    }
-    if (fiber.type + "" === fiber.type) {
-      return fiber;
-    }
-    if (!fiber.render) {
-      throw "findDOMNode:invalid type";
-    }
-    return findHostInstance(fiber);
-  },
-  version: "1.4.6",
-  render: render$1,
-  hydrate: render$1,
-  template: template,
-  createPage: createPage,
-  Fragment: Fragment,
-  PropTypes: PropTypes,
-  Children: Children,
-  createPortal: createPortal,
-  createContext: createContext,
-  Component: Component,
-  createRef: createRef,
-  forwardRef: forwardRef,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  createFactory: createFactory
+    eventSystem: eventSystem,
+    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+        var clazz = miniCreateClass.apply(null, arguments);
+        var uuid = clazz.prototype.classCode;
+        classCache[uuid] = clazz;
+        return clazz;
+    },
+    findDOMNode: function findDOMNode(fiber) {
+        if (fiber == null) {
+            return null;
+        }
+        if (fiber.type + "" === fiber.type) {
+            return fiber;
+        }
+        if (!fiber.render) {
+            throw "findDOMNode:invalid type";
+        }
+        return findHostInstance(fiber);
+    },
+    version: "1.4.6",
+    render: render$1,
+    hydrate: render$1,
+    template: template,
+    createPage: createPage,
+    Fragment: Fragment,
+    PropTypes: PropTypes,
+    Children: Children,
+    createPortal: createPortal,
+    createContext: createContext,
+    Component: Component,
+    createRef: createRef,
+    forwardRef: forwardRef,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    createFactory: createFactory
 };
 var React$1 = React;
 
-export default React$1;
+exports.default = React$1;

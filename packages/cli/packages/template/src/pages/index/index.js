@@ -1,6 +1,4 @@
 import React from "../../ReactWX";
-import Dog from "../../components/dog/dog";
-import "./index.scss";
 const var1 = "游离变量";
 class P extends React.Component {
     constructor(props) {
@@ -14,29 +12,41 @@ class P extends React.Component {
             ]
         };
     }
+    config = {
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "#fff",
+        "navigationBarBackgroundColor": "#0088a4",
+        "navigationBarTitleText": "Demo",
+        "backgroundColor": "#eeeeee",
+        "backgroundTextStyle": "light"
+    }
     onClick() {
-        console.log("test click1" + var1);
-        this.setState({
-            name: new Date() - 0
-        });
+        console.log('click event trigger from container...');
     }
     onKeyDown() {
         console.log("test keydown");
     }
     render() {
         return (
-            <div onTap={this.onClick} onKeyDown={this.onKeyDown}>
-                <div>{this.state.name}</div>
-                <div>
-                    {this.state.array.map(function(el) {
-                        return (
-                            <Dog key={el.name} name={el.name} age={el.age}>
-                                {el.text}
-                            </Dog>
-                        );
-                    }, true)}
+            <div class='container' onTap={this.onClick} onKeyDown={this.onKeyDown}>
+                <div class='page_hd'>{this.state.name}</div>
+                <div class='page_bd'>
+                    <div class='navigation'>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage1/index">组件化</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage2/index">事件</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/form/index">Form</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/test/index">for a test</navigator>
+                    </div>
+                    {/* <div>
+                        {this.state.array.map(function(el) {
+                            return (
+                                <Dog key={el.name} name={el.name} age={el.age}>
+                                    {el.text}
+                                </Dog>
+                            );
+                        }, true)}
+                    </div> */}
                 </div>
-                <Dog name={this.state.name}>欢迎</Dog>
             </div>
         );
     }
