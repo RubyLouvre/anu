@@ -194,27 +194,27 @@ module.exports = {
     },
 
     ClassProperty(path) {
-        //只处理静态属性
         var key = path.node.key.name;
-        
+        if(key === 'config'){
+            //写入page config json
+            let curPath = modules.current;
+            let dest = nPath.dirname(curPath).replace('src', 'dist');
+            let baseName = nPath.basename(curPath).replace(/\.(js)$/, '');
+            let destJSON = nPath.join(process.cwd(), dest,  `${baseName}.json`);
+            const code = generate(path.node.value).code;
+            fs_extra.ensureFileSync(destJSON)
+            fs.writeFileSync(
+                destJSON,
+                code,
+                (err)=>{
+                    if(err) throw `生成${baseName}.json配置文件出错`;
+                }
+            );
+        }
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
             modules.staticMethods.push(keyValue);
         } 
-        else if(modules.componentType === "App" && key === 'config'){
-            //写入config到app.json中
-            //to do 路径问题
-            const code = generate(path.node.value).code;
-            fs_extra.ensureFileSync(nPath.join(process.cwd(), 'dist', 'app.json'))
-            fs.writeFileSync(
-                nPath.join(process.cwd(), 'dist', 'app.json'),
-                code,
-                (err)=>{
-                    if(err) throw "生成app.json配置文件出错";
-                }
-            );
-
-        }
         else {
             if (key == "globalData" && modules.componentType === "App") {
                 var thisMember = t.assignmentExpression(
