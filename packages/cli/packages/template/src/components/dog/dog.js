@@ -2,20 +2,25 @@ import React from "../../ReactWX";
 
 class Dog extends React.Component {
     constructor(props){
-        //this.props = props;
-        console.log(this.props.eventTapHandler, '----');
-      
+       this.state = {
+           name: props.name,
+           age: props.age
+       }
     }
-    state = {
-        name: "xxx"
-    };
+
     static defaultProps = {
         age: 77
     };
+    changeAge(e){
+        this.setState({
+            age: ~~(Math.random() * 10)
+        })
+    }
+    
     render() {
         return (
-            <div onTap = {this.props.eventTapHandler}>
-                {this.props.name}-{this.props.age}
+            <div catchTap={this.changeAge.bind(this)}>
+                {this.state.name}-{this.state.age}
             </div>
         );
     }

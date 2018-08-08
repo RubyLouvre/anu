@@ -2143,30 +2143,6 @@ function remove(children, node) {
   }
 }
 
-function findHostInstance(fiber) {
-    if (!fiber) {
-        return null;
-    } else if (fiber.nodeType) {
-        return fiber;
-    } else if (fiber.tag > 3) {
-        return fiber.stateNode;
-    } else if (fiber.tag < 3) {
-        return findHostInstance(fiber.stateNode);
-    } else if (fiber.refs && fiber.render) {
-        fiber = get(fiber);
-        var childrenMap = fiber.children;
-        if (childrenMap) {
-            for (var i in childrenMap) {
-                var dom = findHostInstance(childrenMap[i]);
-                if (dom) {
-                    return dom;
-                }
-            }
-        }
-    }
-    return null;
-}
-
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
@@ -2181,16 +2157,7 @@ React = win.React = win.ReactDOM = {
     return clazz;
   },
   findDOMNode: function findDOMNode(fiber) {
-    if (fiber == null) {
-      return null;
-    }
-    if (fiber.type + "" === fiber.type) {
-      return fiber;
-    }
-    if (!fiber.render) {
-      throw "findDOMNode:invalid type";
-    }
-    return findHostInstance(fiber);
+    console.log("小程序不支持findDOMNode");
   },
   version: "1.4.6",
   render: render$1,
