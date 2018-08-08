@@ -2,7 +2,12 @@
 
 测试例子：npm run miniapp
 
+## 与React的差异
 
+1. 微信小程序的事件机制有瑕疵，不支持stopPropagation与preventDefault。我们将e.detail当成事件对象，在它基础上添加type,target,touches,timeStamp等属性
+2. 事件的绑定，不要使用this.props.fn或this.state.fn，要用this.fn这种形式，微信在给模板填数据时，会对数据进行JSON.stringify，清掉所有事件。
+
+## 内部运行机制
 
 index.js parse方法利用rollup解析得到整个工程的所有文件
 index.js codegen方法的transform方法处理所有JS文件

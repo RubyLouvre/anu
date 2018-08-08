@@ -672,12 +672,21 @@ var eventSystem = {
         var dataset = target.dataset || {};
         var eventName = dataset[e.type + "Fn"];
         var classCode = dataset.classCode;
+        var event = e.detail || {};
+        event.stopPropagation = function () {
+            console.warn("小程序不支持这方法，请使用catchXXX");
+        };
+        event.preventDefault = function () {};
+        event.type = e.type;
+        event.target = target;
+        event.touches = e.touches;
+        event.timeStamp = e.timeStamp;
         var componentClass = eventSystem.classCache[classCode];
         var instanceCode = dataset.instanceCode;
         for (var i = 0, el; el = componentClass.instances[i++];) {
             if (el.instanceCode === instanceCode) {
                 var fn = el[eventName];
-                fn && fn.call(el, e);
+                fn && fn.call(el, event);
                 break;
             }
         }
@@ -1938,6 +1947,26 @@ function template(props) {
         if (proto && proto.isReactComponent) {
             hijackStatefulHooks(proto, "componentWillMount");
             hijackStatefulHooks(proto, "componentWillUpdate");
+            var oldUnmount = proto.componentWillUnmount;
+            proto.componentWillUnmount = function () {
+                oldUnmount && oldUnmount.call(this);
+                var pageComponent = this.$pageComponent;
+                if (pageComponent) {
+                    var instances = get(this).type.instances;
+                    var i = instances.indexOf(this);
+                    if (i !== -1) {
+                        instances.push(i, 1);
+                    }
+                    var props = this.props;
+                    var arr = getData(pageComponent);
+                    for (var i = 0, el; el = arr[i++];) {
+                        if (el.props === props) {
+                            arr.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            };
         }
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
@@ -2010,6 +2039,7 @@ function hijackStatefulHooks(proto, method) {
                 for (var i = 0, el; el = arr[i++];) {
                     if (el.props === props) {
                         extend(el, newData);
+                        break;
                     }
                 }
                 delete this.updateWXData;
