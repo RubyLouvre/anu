@@ -8,7 +8,7 @@ const json = require('../../package.json');
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    input: './packages/render/miniapp/render/index.js',
+    input: './packages/render/miniapp/index.js',
     output: {
         strict: false,
         format: 'es',
