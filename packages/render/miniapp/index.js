@@ -25,7 +25,6 @@ let classCache = eventSystem.classCache;
 
 let { render } = Renderer;
 
-import { findHostInstance } from "react-fiber/findHostInstance";
 
 React = win.React = win.ReactDOM = {
   //平台相关API
@@ -38,16 +37,7 @@ React = win.React = win.ReactDOM = {
     return clazz;
   },
   findDOMNode: function(fiber) {
-    if (fiber == null) {
-      return null;
-    }
-    if (fiber.type + "" === fiber.type) {
-      return fiber;
-    }
-    if (!fiber.render) {
-      throw "findDOMNode:invalid type";
-    }
-    return findHostInstance(fiber);
+    console.log("小程序不支持findDOMNode")
   },
   //fiber底层API
   version: "VERSION",

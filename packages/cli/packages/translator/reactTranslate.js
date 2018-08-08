@@ -7,7 +7,6 @@ const helpers = require("./helpers");
 const modules = require("./modules");
 const jsx = require("./jsx/jsx");
 
-const parsePath = require("./utils").parsePath;
 
 const fs = require('fs');
 const fs_extra = require('fs-extra');
