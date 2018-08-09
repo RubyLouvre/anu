@@ -1,5 +1,5 @@
 <import src="../../components/dog/dog.wxml" />
 <view class="container">
-  <template is="Dog" data="{{...data}}" wx:for="{{data7107365634267293}}" wx:for-item="data" wx:for-index="index">
+  <template is="Dog" data="{{...data}}" wx:for="{{data6204908233034727}}" wx:for-item="data" wx:for-index="index">
   </template>
 </view>

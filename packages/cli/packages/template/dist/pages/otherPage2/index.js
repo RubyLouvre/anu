@@ -30,7 +30,7 @@ P = _ReactWX2.default.miniCreateClass(P, _ReactWX2.default.Component, {
     render: function () {
         return _ReactWX2.default.createElement("view", { "class": "container" }, _ReactWX2.default.createElement("view", { "class": "page-guide-text" }, this.state.name), _ReactWX2.default.createElement("button", { "class": "btn", onTap: this.updateText }, "\u66F4\u6539\u6587\u5B57"), _ReactWX2.default.createElement("button", { "class": "btn", onTap: this.resetText }, "\u91CD\u7F6E"));;
     },
-    classCode: "c3018475813957737"
+    classCode: "c33960053324413697"
 }, {});
 
 Page(_ReactWX2.default.createPage(P, "pages/otherPage2/index"));

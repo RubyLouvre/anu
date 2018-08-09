@@ -1,0 +1,36 @@
+<view class="container">
+  <view class="section">
+    <input placeholder="sdfsd22_\\u8FD9\\u662F\\u4E00\\u4E2A\\u53EF\\u4EE5\\u81EA\\u52A8\\u805A\\u7126\\u7684input" auto-focus />
+  </view>
+  <view class="section">
+    <input placeholder="\\u8FD9\\u4E2A\\u53EA\\u6709\\u5728\\u6309\\u94AE\\u70B9\\u51FB\\u7684\\u65F6\\u5019\\u624D\\u805A\\u7126" focus="{{state.focus}}" />
+    <view class="btn-area">
+      <button bindtap="dispatchEvent" data-tap-fn="bindButtonTap" data-class-code="c7222120785851909" data-instance-code="{{props.instanceCode}}">使得输入框获取焦点</button>
+    </view>
+  </view>
+  <view class="section">
+    <input maxlength="10" placeholder="\\u6700\\u5927\\u8F93\\u5165\\u957F\\u5EA610" />
+  </view>
+  <view class="section">
+    <view class="section__title">你输入的是: {{state.inputValue}}</view>
+    <input bindinput="dispatchEvent" placeholder="\\u8F93\\u5165\\u540C\\u6B65\\u5230div\\u4E2D" data-input-fn="bindKeyInput" data-class-code="c7222120785851909" data-instance-code="{{props.instanceCode}}" />
+  </view>
+  <view class="section">
+    <input bindinput="dispatchEvent" placeholder="\\u8FDE\\u7EED\\u7684\\u4E24\\u4E2A1\\u4F1A\\u53D8\\u62102" data-input-fn="bindReplaceInput" data-class-code="c7222120785851909" data-instance-code="{{props.instanceCode}}" />
+  </view>
+  <view class="section">
+    <input password type="number" />
+  </view>
+  <view class="section">
+    <input password type="text" />
+  </view>
+  <view class="section">
+    <input type="digit" placeholder="\\u5E26\\u5C0F\\u6570\\u70B9\\u7684\\u6570\\u5B57\\u952E\\u76D8" />
+  </view>
+  <view class="section">
+    <input type="idcard" placeholder="\\u8EAB\\u4EFD\\u8BC1\\u8F93\\u5165\\u952E\\u76D8" />
+  </view>
+  <view class="section">
+    <input placeholder-style="color:red" placeholder="\\u5360\\u4F4D\\u7B26\\u5B57\\u4F53\\u662F\\u7EA2\\u8272\\u7684" />
+  </view>
+</view>

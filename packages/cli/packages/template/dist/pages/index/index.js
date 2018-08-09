@@ -29,10 +29,9 @@ P = _ReactWX2.default.miniCreateClass(P, _ReactWX2.default.Component, {
     render: function () {
         return _ReactWX2.default.createElement("view", { "class": "container", onTap: this.onClick, onKeyDown: this.onKeyDown }, _ReactWX2.default.createElement("view", { "class": "page_hd" }, this.state.name), _ReactWX2.default.createElement("view", { "class": "page_bd" }, _ReactWX2.default.createElement("view", { "class": "navigation" }, _ReactWX2.default.createElement("navigator", { "open-type": "navigate", "class": "item",
             "hover-class": "navigator-hover", url: "/pages/otherPage1/index" }, "\u7EC4\u4EF6\u5316"), _ReactWX2.default.createElement("navigator", { "open-type": "navigate",
-            "class": "item", "hover-class": "navigator-hover", url: "/pages/otherPage2/index" }, "\u4E8B\u4EF6"), _ReactWX2.default.createElement("navigator", { "open-type": "navigate", "class": "item", "hover-class": "navigator-hover", url: "/pages/form/index" }, "Form"), _ReactWX2.default.createElement("navigator", { "open-type": "navigate",
-            "class": "item", "hover-class": "navigator-hover", url: "/pages/test/index" }, "for a test"))));;
+            "class": "item", "hover-class": "navigator-hover", url: "/pages/otherPage2/index" }, "\u4E8B\u4EF6"), _ReactWX2.default.createElement("navigator", { "open-type": "navigate", "class": "item", "hover-class": "navigator-hover", url: "/pages/demo/form/index/index" }, "form"), _ReactWX2.default.createElement("navigator", { "open-type": "navigate", "class": "item", "hover-class": "navigator-hover", url: "/pages/test/index" }, "for a test"))));;
     },
-    classCode: "c9396052002770876"
+    classCode: "c5706137641758695"
 }, {});
 
 Page(_ReactWX2.default.createPage(P, "pages/index/index"));
