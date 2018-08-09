@@ -19,7 +19,17 @@ export var eventSystem = {
         }
     }
 };
-
+/**
+ * 
+for (var i = 0, el; (el = componentClass.instances[i++]); ) {
+            if (el.instanceCode === instanceCode && el.$$eventCached ) {
+                //事件句柄可能是在构造器中添加的，不存在于原型
+                var fn = $$eventCached[eventName]
+                fn && fn.call(el, createEvent(e, target));
+                break;
+            }
+        }
+ */
 function createEvent(e, target) {
     var event = e.detail || {};
     event.stopPropagation = function() {

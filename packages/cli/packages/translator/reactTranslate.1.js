@@ -7,56 +7,54 @@ const helpers = require("./helpers");
 const modules = require("./modules");
 const jsx = require("./jsx/jsx");
 
-
-const fs = require('fs');
-const fs_extra = require('fs-extra');
-const chalk = require('chalk');
-
-
-
-
+const fs = require("fs");
+const fs_extra = require("fs-extra");
+const chalk = require("chalk");
 
 //const Pages = [];
 //  miniCreateClass(ctor, superClass, methods, statics)
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
 
-const isNpm = function(path){
+const isNpm = function(path) {
     const _toString = Object.prototype.toString;
-    if(_toString.call(path) !== '[object String]' || !path) return false;
+    if (_toString.call(path) !== "[object String]" || !path) return false;
     return !/^\/|\./.test(path);
-
-}
-const isAbsolute = function(path){
+};
+const isAbsolute = function(path) {
     return nPath.isAbsolute(path);
-}
-const isBuildInLibs = function(name){
-    let libs = new Set(require('repl')._builtinLibs);
+};
+const isBuildInLibs = function(name) {
+    let libs = new Set(require("repl")._builtinLibs);
     return libs.has(name);
-}
-const copy_Node_Modules_To_Build_Npm = function(source){
-    let node_modules_sources_path = nPath.join(process.cwd(), 'node_modules', source);
-    let node_modeles_build_sources_path = nPath.join(process.cwd(), `/dist/npm/${source}`);
+};
+const copy_Node_Modules_To_Build_Npm = function(source) {
+    let node_modules_sources_path = nPath.join(
+        process.cwd(),
+        "node_modules",
+        source
+    );
+    let node_modeles_build_sources_path = nPath.join(
+        process.cwd(),
+        `/dist/npm/${source}`
+    );
     fs_extra.copy(
         node_modules_sources_path,
         node_modeles_build_sources_path,
         {
             overwrite: true,
-            errorOnExist:true,
+            errorOnExist: true
         },
-        function(err){
-            if(err) console.log(err);
+        function(err) {
+            if (err) console.log(err);
         }
     );
+};
 
-}
-
-
-const get_mini_node_module_path = function(fileSourcePath){
-    let from = nPath.dirname(fileSourcePath.replace('src', 'build'));
-    let to = '/dist/npm/';
+const get_mini_node_module_path = function(fileSourcePath) {
+    let from = nPath.dirname(fileSourcePath.replace("src", "build"));
+    let to = "/dist/npm/";
     return nPath.relative(from, to);
-}
-
+};
 
 var appValidKeys = {
     pages: 1,
@@ -102,14 +100,9 @@ module.exports = {
         exit(path) {
             const methodName = path.node.key.name;
             if (methodName === "render") {
-               // console.log("生成组件", modules.className, !! modules.className)
+                // console.log("生成组件", modules.className, !! modules.className)
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
-                helpers.render(
-                    path,
-                    "有状态组件",
-                    modules.className,
-                    modules
-                );
+                helpers.render(path, "有状态组件", modules.className, modules);
             }
         }
     },
@@ -123,35 +116,39 @@ module.exports = {
             }
         }
     },
-    ImportDeclaration(path){
+    ImportDeclaration(path) {
         let node = path.node;
-        let source = node.source.value; 
+        let source = node.source.value;
         let specifiers = node.specifiers;
-        if(modules.componentType === "App") {
-            if(/\/pages\//.test(source)){
-                path.remove();//移除分析依赖用的引用
+        if (modules.componentType === "App") {
+            if (/\/pages\//.test(source)) {
+                path.remove(); //移除分析依赖用的引用
             }
         }
-        if(/\.(less|scss)$/.test( nPath.extname(source) )){
-           path.remove(); 
+        if (/\.(less|scss)$/.test(nPath.extname(source))) {
+            path.remove();
         }
 
-        specifiers.forEach((item)=>{
+        specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
-            modules.importComponents[item.local.name] = source
-            if(item.local.name === 'React'){
-               let from = nPath.dirname(modules.current.replace('src', 'dist'));
-               let to = '/dist/';
-               let relativePath = nPath.relative(from, to);
-               let pathStart = '';
-               if(relativePath === ''){
-                 pathStart = './';
-               }
-   
-               node.source.value =  `${pathStart}${nPath.join(relativePath, nPath.basename(node.source.value))}`
+            modules.importComponents[item.local.name] = source;
+            if (item.local.name === "React") {
+                let from = nPath.dirname(
+                    modules.current.replace("src", "dist")
+                );
+                let to = "/dist/";
+                let relativePath = nPath.relative(from, to);
+                let pathStart = "";
+                if (relativePath === "") {
+                    pathStart = "./";
+                }
+
+                node.source.value = `${pathStart}${nPath.join(
+                    relativePath,
+                    nPath.basename(node.source.value)
+                )}`;
             }
         });
-
 
         //是否是绝对路径，小程序不支持绝对路径
         //是否是nodejs内置模块
@@ -159,12 +156,15 @@ module.exports = {
         //是否是本地模块
 
         //to do: 抛错提示
-        if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
+        if (isAbsolute(source) || isBuildInLibs(source) || !isNpm(source))
+            return;
         //复制到build npm目录
-        copy_Node_Modules_To_Build_Npm(source);    
+        copy_Node_Modules_To_Build_Npm(source);
         //修改ast中 import(path)声明中的path路径
-        node.source.value = nPath.join(get_mini_node_module_path(modules.current), source);
-
+        node.source.value = nPath.join(
+            get_mini_node_module_path(modules.current),
+            source
+        );
     },
 
     ExportNamedDeclaration: {
@@ -194,27 +194,22 @@ module.exports = {
 
     ClassProperty(path) {
         var key = path.node.key.name;
-        if(key === 'config'){
+        if (key === "config") {
             //写入page config json
             let curPath = modules.current;
-            let dest = nPath.dirname(curPath).replace('src', 'dist');
-            let baseName = nPath.basename(curPath).replace(/\.(js)$/, '');
-            let destJSON = nPath.join(process.cwd(), dest,  `${baseName}.json`);
+            let dest = nPath.dirname(curPath).replace("src", "dist");
+            let baseName = nPath.basename(curPath).replace(/\.(js)$/, "");
+            let destJSON = nPath.join(process.cwd(), dest, `${baseName}.json`);
             const code = generate(path.node.value).code;
-            fs_extra.ensureFileSync(destJSON)
-            fs.writeFileSync(
-                destJSON,
-                code,
-                (err)=>{
-                    if(err) throw `生成${baseName}.json配置文件出错`;
-                }
-            );
+            fs_extra.ensureFileSync(destJSON);
+            fs.writeFileSync(destJSON, code, err => {
+                if (err) throw `生成${baseName}.json配置文件出错`;
+            });
         }
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
             modules.staticMethods.push(keyValue);
-        } 
-        else {
+        } else {
             if (key == "globalData" && modules.componentType === "App") {
                 var thisMember = t.assignmentExpression(
                     "=",
@@ -261,10 +256,9 @@ module.exports = {
         //to do: 解析 require(mode_modules)
         // if(callee.name === 'require') {
         //     if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
-        //     copy_Node_Modules_To_Build_Npm(source); 
+        //     copy_Node_Modules_To_Build_Npm(source);
         //     node.arguments[0].value = nPath.join(get_mini_node_module_path(modules.current), source);
         // }
-
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -277,7 +271,10 @@ module.exports = {
                 path.node.name.name = "React.template";
                 var attributes = path.node.attributes;
                 attributes.push(
-                    jsx.createAttribute("templatedata", "data"+ jsx.createUUID()),
+                    jsx.createAttribute(
+                        "templatedata",
+                        "data" + jsx.createUUID()
+                    ),
                     t.JSXAttribute(
                         t.JSXIdentifier("is"),
                         t.jSXExpressionContainer(t.identifier(nodeName))
@@ -288,6 +285,18 @@ module.exports = {
                     helpers.nodeName(path);
                 }
             }
+        }
+    },
+    JSXAttribute: function(path) {
+        var attrName = path.node.name.name;
+        if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+            var n = attrName.charAt(0) == "o" ? 2 : 5;
+            var value = jsx.createUUID();
+            var name = `data-${attrName.slice(n).toLowerCase()}-fn`;
+          
+            path.parentPath.node.attributes.push(
+                jsx.createAttribute(name, value)
+            );
         }
     },
     JSXClosingElement: function(path) {

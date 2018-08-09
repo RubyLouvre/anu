@@ -1,4 +1,4 @@
-import { noop } from "react-core/util";
+import { noop, isFn } from "react-core/util";
 import { createRenderer } from "react-core/createRenderer";
 import { render } from "react-fiber/scheduleWork";
 import { template, onComponentDispose, onComponentUpdate } from "./template";
@@ -27,9 +27,35 @@ var autoContainer = {
     props: null,
     children: []
 };
+var onEvent = /(?:on|catch)[A-Z]/;
+function getEventCode(name, props) {
+    var n = name.charAt(0) == "o" ? 2 : 5;
+    var type = name.slice(n).toLowerCase();
+    return props["data-" + type + "-fn"];
+}
+
 export let Renderer = createRenderer({
     render: render,
-    updateAttribute() {},
+    updateAttribute(fiber) {
+       /* let { props, lastProps } = fiber;
+        var owner = fiber._owner;
+        var cached = owner.$$eventCached || (owner.$$eventCached = {});
+        for (var name in props) {
+            if (onEvent.test(name) && isFn(props[name])) {
+                var code = getEventCode(name, props);
+                cached[code] = props[name];
+            }
+        }
+        if (lastProps) {
+            for (var name in lastProps) {
+                if (onEvent.test(i) && !props[name]) {
+                    var code = getEventCode(name, lastProps);
+                    delete cached[code];
+                }
+            }
+        }*/
+    },
+
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },

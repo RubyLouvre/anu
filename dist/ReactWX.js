@@ -1942,7 +1942,6 @@ function createPage(PageClass, path) {
             }
         },
         onUnload: function onUnload() {
-            console.log("移除");
             var fn = instance.componentWillUnmount();
             if (isFn(fn)) {
                 fn.call(instance);
@@ -2426,7 +2425,8 @@ var autoContainer = {
 };
 var Renderer$1 = createRenderer({
     render: render,
-    updateAttribute: function updateAttribute() {},
+    updateAttribute: function updateAttribute(fiber) {
+    },
     updateContent: function updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
