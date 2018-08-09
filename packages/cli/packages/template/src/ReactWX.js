@@ -2060,6 +2060,330 @@ function hijackStatefulHooks(proto, method) {
     };
 }
 
+var onAndSyncApis = {
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
+};
+var noPromiseApis = {
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
+};
+var otherApis = {
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
+};
+
+function initPxTransform(config) {
+    var _config$designWidth = config.designWidth,
+        designWidth = _config$designWidth === undefined ? 700 : _config$designWidth,
+        _config$deviceRatio = config.deviceRatio,
+        deviceRatio = _config$deviceRatio === undefined ? {
+        "640": 2.34 / 2,
+        "750": 1,
+        "828": 1.81 / 2
+    } : _config$deviceRatio;
+    this.config = this.config || {};
+    this.config.designWidth = designWidth;
+    this.config.deviceRatio = deviceRatio;
+}
+var RequestQueue = {
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        var _arguments = arguments,
+            _this = this;
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            options.complete = function () {
+                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
+                _this.run();
+            };
+            wx.request(options);
+        }
+    }
+};
+function request(options) {
+    options = options || {};
+    if (typeof options === "string") {
+        options = {
+            url: options
+        };
+    }
+    var originSuccess = options["success"];
+    var originFail = options["fail"];
+    var originComplete = options["complete"];
+    var p = new Promise(function (resolve, reject) {
+        options["success"] = function (res) {
+            originSuccess && originSuccess(res);
+            resolve(res);
+        };
+        options["fail"] = function (res) {
+            originFail && originFail(res);
+            reject(res);
+        };
+        options["complete"] = function (res) {
+            originComplete && originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
+}
+function processApis(ReactWX) {
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.wx[key] = function (options) {
+                options = options || {};
+                var task = null;
+                var obj = Object.assign({}, options);
+                if (typeof options === "string") {
+                    return wx[key](options);
+                }
+                var p = new Promise(function (resolve, reject) {
+                    ["fail", "success", "complete"].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === "success") {
+                                if (key === "connectSocket") {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === "fail") {
+                                reject(res);
+                            }
+                        };
+                    });
+                    task = wx[key](obj);
+                });
+                if (key === "uploadFile" || key === "downloadFile") {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
+            };
+        } else {
+            ReactWX.wx[key] = function () {
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                    args[_key] = arguments[_key];
+                }
+                return wx[key].apply(wx, args);
+            };
+        }
+    });
+}
+function pxTransform(size) {
+    var _config = this.config,
+        designWidth = _config.designWidth,
+        deviceRatio = _config.deviceRatio;
+    if (!(designWidth in deviceRatio)) {
+        throw new Error("deviceRatio \u914D\u7F6E\u4E2D\u4E0D\u5B58\u5728 " + designWidth + " \u7684\u8BBE\u7F6E\uFF01");
+    }
+    return parseInt(size, 10) / deviceRatio[designWidth] + "rpx";
+}
+function initNativeApi(ReactWX) {
+    ReactWX.wx = {};
+    processApis(ReactWX);
+    ReactWX.request = request;
+    if (typeof getCurrentPages == "function") {
+        ReactWX.getCurrentPages = getCurrentPages;
+    }
+    if (typeof getApp == "function") {
+        ReactWX.getApp = getApp;
+    }
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX);
+    ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+
 function cleanChildren(array) {
   if (!Array.isArray(array)) {
     return array;
@@ -2155,35 +2479,36 @@ var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-  eventSystem: eventSystem,
-  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-    var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = clazz.prototype.classCode;
-    classCache[uuid] = clazz;
-    return clazz;
-  },
-  findDOMNode: function findDOMNode(fiber) {
-    console.log("小程序不支持findDOMNode");
-  },
-  version: "1.4.6",
-  render: render$1,
-  hydrate: render$1,
-  template: template,
-  createPage: createPage,
-  Fragment: Fragment,
-  PropTypes: PropTypes,
-  Children: Children,
-  createPortal: createPortal,
-  createContext: createContext,
-  Component: Component,
-  createRef: createRef,
-  forwardRef: forwardRef,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  createFactory: createFactory
+    eventSystem: eventSystem,
+    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+        var clazz = miniCreateClass.apply(null, arguments);
+        var uuid = clazz.prototype.classCode;
+        classCache[uuid] = clazz;
+        return clazz;
+    },
+    findDOMNode: function findDOMNode(fiber) {
+        console.log("小程序不支持findDOMNode");
+    },
+    version: "1.4.6",
+    render: render$1,
+    hydrate: render$1,
+    template: template,
+    createPage: createPage,
+    Fragment: Fragment,
+    PropTypes: PropTypes,
+    Children: Children,
+    createPortal: createPortal,
+    createContext: createContext,
+    Component: Component,
+    createRef: createRef,
+    forwardRef: forwardRef,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    createFactory: createFactory
 };
+initNativeApi(React);
 var React$1 = React;
 
 export default React$1;
