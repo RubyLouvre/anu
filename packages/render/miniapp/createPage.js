@@ -42,7 +42,7 @@ export function createPage(PageClass, path) {
             updateMethod = anuForceUpdate;
             cbIndex = 0;
         }
-        var pageInst = this.$pageComponent || this;
+        var pageInst = this.$pageInst || this;
         if (updating === false) {
             //如果这是页面组件，则直接清空所有子组件
             if (pageInst == this) {

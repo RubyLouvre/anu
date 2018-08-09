@@ -1880,7 +1880,7 @@ function createPage(PageClass, path) {
             updateMethod = anuForceUpdate;
             cbIndex = 0;
         }
-        var pageInst = this.$pageComponent || this;
+        var pageInst = this.$pageInst || this;
         if (updating === false) {
             if (pageInst == this) {
                 pageInst.allTemplateData = [];
@@ -1959,7 +1959,7 @@ function template(props) {
             var oldUnmount = proto.componentWillUnmount;
             proto.componentWillUnmount = function () {
                 oldUnmount && oldUnmount.call(this);
-                var pageComponent = this.$pageComponent;
+                var pageComponent = this.$pageInst;
                 if (pageComponent) {
                     var instances = get(this).type.instances;
                     var i = instances.indexOf(this);
@@ -1980,7 +1980,7 @@ function template(props) {
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function () {
-            var pageInst = this.$pageComponent;
+            var pageInst = this.$pageInst;
             if (pageInst) {
                 pageInst.setState.apply(this, arguments);
             } else {
@@ -1988,7 +1988,7 @@ function template(props) {
             }
         };
         clazz.prototype.forceUpdate = function () {
-            var pageInst = this.$pageComponent;
+            var pageInst = this.$pageInst;
             if (pageInst) {
                 pageInst.forceUpdate.apply(this, arguments);
             } else {
@@ -2015,27 +2015,27 @@ function hijackStatefulHooks(proto, method) {
             while (p) {
                 var inst = p._owner;
                 if (inst && inst.props && inst.props.isPageComponent) {
-                    this.$pageComponent = inst;
+                    this.$pageInst = inst;
                     break;
                 }
             }
         }
         var inputProps = fiber._owner.props;
         var f = fiber.return;
-        var pageComponent = null;
+        var pageInst = null;
         while (f) {
-            var exited = f._owner && f._owner.$pageComponent;
+            var exited = f._owner && f._owner.$pageInst;
             if (exited) {
-                pageComponent = exited;
+                pageInst = exited;
                 break;
             } else if (f.props && f.props.isPageComponent) {
-                pageComponent = f.stateNode;
+                pageInst = f.stateNode;
                 break;
             }
             f = f.return;
         }
-        if (pageComponent) {
-            var arr = getData(pageComponent),
+        if (pageInst) {
+            var arr = getData(pageInst),
                 props = this.props;
             var isUpdate = method === "componentWillUpdate";
             var newData = {
