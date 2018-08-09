@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-09
  * IE9+
  */
 
@@ -1951,6 +1951,12 @@ function applyChildComponentData(data, list) {
 
 function template(props) {
     var clazz = props.is;
+    var componentProps = {};
+    for (var i in props) {
+        if (i !== "is" && i != "templatedata") {
+            componentProps[i] = props[i];
+        }
+    }
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || [];
@@ -1998,7 +2004,7 @@ function template(props) {
             }
         };
     }
-    return createElement(clazz, props);
+    return createElement(clazz, componentProps);
 }
 function getData(instance) {
     return instance.allTemplateData || (instance.allTemplateData = []);
@@ -2023,7 +2029,6 @@ function hijackStatefulHooks(proto, method) {
             }
         }
         var inputProps = fiber._owner.props;
-        this.props.instanceCode = this.instanceCode;
         var f = fiber.return;
         var pageComponent = null;
         while (f) {
@@ -2046,6 +2051,7 @@ function hijackStatefulHooks(proto, method) {
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata
             };
+            newData.props.instanceCode = this.instanceCode;
             if (this.updateWXData) {
                 for (var i = 0, el; el = arr[i++];) {
                     if (el.props === props) {
@@ -2151,30 +2157,6 @@ function remove(children, node) {
     }
 }
 
-function findHostInstance(fiber) {
-    if (!fiber) {
-        return null;
-    } else if (fiber.nodeType) {
-        return fiber;
-    } else if (fiber.tag > 3) {
-        return fiber.stateNode;
-    } else if (fiber.tag < 3) {
-        return findHostInstance(fiber.stateNode);
-    } else if (fiber.refs && fiber.render) {
-        fiber = get(fiber);
-        var childrenMap = fiber.children;
-        if (childrenMap) {
-            for (var i in childrenMap) {
-                var dom = findHostInstance(childrenMap[i]);
-                if (dom) {
-                    return dom;
-                }
-            }
-        }
-    }
-    return null;
-}
-
 var win = getWindow();
 var prevReact = win.React;
 var React = void 0;
@@ -2189,16 +2171,7 @@ React = win.React = win.ReactDOM = {
         return clazz;
     },
     findDOMNode: function findDOMNode(fiber) {
-        if (fiber == null) {
-            return null;
-        }
-        if (fiber.type + "" === fiber.type) {
-            return fiber;
-        }
-        if (!fiber.render) {
-            throw "findDOMNode:invalid type";
-        }
-        return findHostInstance(fiber);
+        console.log("小程序不支持findDOMNode");
     },
     version: "1.4.6",
     render: render$1,

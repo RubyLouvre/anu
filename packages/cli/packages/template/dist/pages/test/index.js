@@ -35,10 +35,10 @@ P = _ReactWX2.default.miniCreateClass(P, _ReactWX2.default.Component, {
     },
     render: function () {
         return _ReactWX2.default.createElement("view", { onTap: this.onClick, onKeyDown: this.onKeyDown }, _ReactWX2.default.createElement("view", null, this.state.name), _ReactWX2.default.createElement("view", null, this.state.array.map(function (el) {
-            return _ReactWX2.default.createElement(_ReactWX2.default.template, { key: el.name, name: el.name, age: el.age, templatedata: "data24086479044368514", is: _dog2.default }, el.text);
-        }, true)), _ReactWX2.default.createElement(_ReactWX2.default.template, { name: this.state.name, templatedata: "data2717982581407381", is: _dog2.default }, "\u6B22\u8FCE"));;
+            return _ReactWX2.default.createElement(_ReactWX2.default.template, { key: el.name, name: el.name, age: el.age, templatedata: "data6412929555607421", is: _dog2.default }, el.text);
+        }, true)), _ReactWX2.default.createElement(_ReactWX2.default.template, { name: this.state.name, templatedata: "data20643159717846626", is: _dog2.default }, "\u6B22\u8FCE"));;
     },
-    classCode: "c9251515237845342"
+    classCode: "c7675471903928701"
 }, {});
 
 Page(_ReactWX2.default.createPage(P, "pages/index/index"));

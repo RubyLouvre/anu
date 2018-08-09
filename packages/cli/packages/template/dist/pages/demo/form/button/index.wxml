@@ -1,0 +1,11 @@
+<view class="container">
+  <button type="default" size="{{state.defaultSize}}" loading="{{state.loading}}" plain="{{state.plain}}" disabled="{{state.disabled}}" bindtap="default" hover-class="other-button-hover"> default </button>
+  <button type="primary" size="{{state.primarySize}}" loading="{{state.loading}}" plain="{{state.plain}}" disabled="{{state.disabled}}" bindtap="primary"> primary </button>
+  <button type="warn" size="{{state.warnSize}}" loading="{{state.loading}}" plain="{{state.plain}}" disabled="{{state.disabled}}" bindtap="warn"> warn </button>
+  <button bindtap="setDisabled">点击设置以上按钮disabled属性</button>
+  <button bindtap="setPlain">点击设置以上按钮plain属性</button>
+  <button bindtap="setLoading">点击设置以上按钮loading属性</button>
+  <button open-type="contact">进入客服会话</button>
+  <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="onGotUserInfo">获取用户信息</button>
+  <button open-type="openSetting">打开授权设置页</button>
+</view>

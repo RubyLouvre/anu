@@ -25,9 +25,9 @@ P = _ReactWX2.default.miniCreateClass(P, _ReactWX2.default.Component, {
         console.log('event from parent component');
     },
     render: function () {
-        return _ReactWX2.default.createElement("view", { "class": "container" }, _ReactWX2.default.createElement(_ReactWX2.default.template, { eventTapHandler: this.tapEventHandler, name: this.state.name, templatedata: "data7107365634267293", is: _dog2.default }, "\u6211\u662F\u4E00\u4E2A\u7EC4\u4EF6"));;
+        return _ReactWX2.default.createElement("view", { "class": "container" }, _ReactWX2.default.createElement(_ReactWX2.default.template, { eventTapHandler: this.tapEventHandler, name: this.state.name, templatedata: "data6204908233034727", is: _dog2.default }, "\u6211\u662F\u4E00\u4E2A\u7EC4\u4EF6"));;
     },
-    classCode: "c4022392193674651"
+    classCode: "c4949449512061217"
 }, {});
 
 Page(_ReactWX2.default.createPage(P, "pages/otherPage1/index"));

@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/index/index", "pages/otherPage1/index", "pages/otherPage2/index", "pages/test/index"],
+  "pages": ["pages/index/index", "pages/otherPage1/index", "pages/otherPage2/index", "pages/test/index", "pages/demo/form/index/index", "pages/demo/form/button/index", "pages/demo/form/checkbox/index", "pages/demo/form/input/index"],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#0088a4",

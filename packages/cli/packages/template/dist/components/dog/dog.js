@@ -11,15 +11,22 @@ var _ReactWX2 = _interopRequireDefault(_ReactWX);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function Dog(props) {
-    //this.props = props;
-    console.log(this.props.eventTapHandler, '----');
+    this.state = {
+        name: props.name,
+        age: props.age
+    };
 }
 
 Dog = _ReactWX2.default.miniCreateClass(Dog, _ReactWX2.default.Component, {
-    render: function () {
-        return _ReactWX2.default.createElement("view", { onTap: this.props.eventTapHandler }, this.props.name, "-", this.props.age);;
+    changeAge: function (e) {
+        this.setState({
+            age: ~~(Math.random() * 10)
+        });
     },
-    classCode: "c7199167959956871"
+    render: function () {
+        return _ReactWX2.default.createElement("view", { catchTap: this.changeAge.bind(this) }, this.state.name, "-", this.state.age);;
+    },
+    classCode: "c39874194970132004"
 }, {
     defaultProps: {
         age: 77

@@ -34,7 +34,7 @@ class P extends React.Component {
                     <div class='navigation'>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage1/index">组件化</navigator>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage2/index">事件</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/form/index">Form</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/form/index/index">form</navigator>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/test/index">for a test</navigator>
                     </div>
                     {/* <div>

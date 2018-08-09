@@ -1,0 +1,7 @@
+<view class="container">
+  <block wx:for="{{state.nv}}" wx:for-item="item">
+    <view>
+      <navigator open-type="navigate" class="item" hover-class="navigator-hover" url="{{item.url}}">{{item.name}}</navigator>
+    </view>
+  </block>
+</view>

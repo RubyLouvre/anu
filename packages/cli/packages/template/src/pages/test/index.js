@@ -23,18 +23,6 @@ class P extends React.Component {
     onKeyDown() {
         console.log("test keydown");
     }
-    componentWillMount(){
-        console.log("page will mount")
-    }
-    componentDidMount(){
-        console.log("page did mount")
-    }
-    componentWillUpdate(){
-        console.log("page will update")
-    }
-    componentDidUpdate(){
-        console.log("page did update")
-    }
     render() {
         return (
             <div onTap={this.onClick} onKeyDown={this.onKeyDown}>
