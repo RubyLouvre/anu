@@ -24,33 +24,33 @@
                 this.data = data;
             }
             /**
-        * 右旋
-        *
-        *       b                           a
-        *      / \                         / \
-        *     a   e -> b.rotateRight() -> c   b
-        *    / \                             / \
-        *   c   d                           d   e
-        *
-        */
+             * 右旋
+             *
+             *       b                           a
+             *      / \                         / \
+             *     a   e . b.rotateRight() . c   b
+             *    / \                             / \
+             *   c   d                           d   e
+             *
+             */
             rotateRight() {
-                var other = this.left;//a
-                this.left = other.right;//d
+                var other = this.left; //a
+                this.left = other.right; //d
                 other.right = this;
                 this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
                 other.height = Math.max(other.leftHeight(), this.height) + 1;
                 return other;
             }
             /**
-        * 左旋
-        *
-        *     a                              b
-        *    / \                            / \
-        *   c   b   -> a.rotateLeft() ->   a   e
-        *      / \                        / \
-        *     d   e                      c   d
-        *
-        */
+             * 左旋
+             *
+             *     a                              b
+             *    / \                            / \
+             *   c   b   . a.rotateLeft() .   a   e
+             *      / \                        / \
+             *     d   e                      c   d
+             *
+             */
             rotateLeft() {
                 var other = this.right;
                 this.right = other.left;
@@ -74,62 +74,196 @@
         };
 
 
+        function leftRotate(node) {
+            var child = node.right;
+            //node下降了，将为补偿，将child.left给node
+            node.right = child.left;
+            if (child.left) {
+                child.left.parent = node;
+            }
+            var parent = node.parent; //保持之前的父节点
+            child.left = node; //左旋
+
+            node.parent = child;
+            child.parent = parent;
+            if (parent == null) {
+                tree.root = child; //如果原来是树，那么child变成根
+            } else {
+                //如果是原父节点的左节点
+                if (node == parent.left) {
+                    parent.left = child;
+                } else {
+                    parent.right = child;
+                }
+            }
+        }
+
+        function rightRotate(node) {
+            var child = node.left;
+            //node下降了，将为补偿，将child.left给node
+            node.left = child.right;
+            if (child.right) {
+                child.right.parent = node;
+            }
+            var parent = node.parent; //保持之前的父节点
+            child.right = node; //左旋
+
+            node.parent = child;
+            child.parent = parent;
+            if (parent == null) {
+                tree.root = child; //如果原来是树，那么child变成根
+            } else {
+                //如果是原父节点的左节点
+                if (node == parent.left) {
+                    parent.left = child;
+                } else {
+                    parent.right = child;
+                }
+            }
+        }
+
         class AVL {
             constructor() {
                 this.root = null;
                 this._size = 0;
             }
             insert(data) {
-                var parent = this.root
-                this.root = this._insert(data, parent);
-                if (this.root) {
-                    this.root.parent = parent;
+                if (!this.root) {
+                    this.root = new Node(data)
+                    this.root.color = "black";
+                    this._size = 1
+                    return
                 }
+                var t = this.root,
+                    parent, diff;
+                do {
+                    parent = t;
+                    diff = data - t.data
+                    //找到适合的位置
+                    if (diff < 0) {
+                        t = t.left;
+                    } else if (diff > 0) {
+                        t = t.right;
+                    } else {
+                        return t;
+                    }
+                } while (t);
+                var node = new Node(data)
+                node.parent = parent;
                 this._size++;
+                if (diff < 0) {
+                    parent.left = node;
+                } else {
+                    parent.right = node;
+                }
+
+                this.fixAfterInsertion(node);
+            }
+            fixAfterInsertion(node) {
+                if (node.parent == null) {
+                    this.root = node;
+                    node.color = BLACK;
+                    return
+                }
+                // https://blog.csdn.net/leetcode8023/article/details/51865628
+                //  x.color = "red";
+                while (node.parent.color == RED) {
+                    if (node.uncle().color === RED) {
+                        node.parent.color = node.uncle().color = BLACK;
+                        node.grandparent().color = RED;
+                        this.fixAfterInsertion(node.grandparent())
+                    } else {
+                        if (node.parent.right === node && node.grandparent().left === node.parent) {
+                            rotateLeft(node);
+                            rotateRight(node);
+                            node.color = BLACK;
+                            node.left.color = p.right.color = RED;
+                        } else if (node.parent.left == node && node.grandparent().right == node.parent) {
+                            rotateRight(node);
+                            rotateLeft(node);
+                            node.color = BLACK;
+                            node.left.color = p.right.color = RED;
+                        } else if(node.parent.left === node && node.grandparent().left == node.parent) {
+                            node.parent.color = BLACK;
+                            node.grandparent().color = RED;
+                            rotateRight(node.parent);
+                        } else if(node.parent.right === node && node.grandparent().right == node.parent) {
+                            node.parent.color = BLACK;
+                            node.grandparent().color = RED;
+                            rotateLeft(node.parent);
+                        }
+
+                    }
+                    var parent = node.parent
+                    if (parent.parent) {
+                        break
+                    }
+                    if (parent == parent.parent.left) {
+                        //父亲与叔叔都是红色
+                        var uncle = parent.parent.right
+                        if (uncle.color == "red") { //情况1
+                            parent.color = "black";
+                            uncle.color = "black";
+                            node = parent.parent
+                            node.color = "red"
+                        } else { // 父亲是红色，叔叔是黑色，自己是父亲的右孩子
+                            if (node == parent.right) { //情况4
+                                node = node.parent;
+                                rotateLeft(node);
+                            } //情况5
+                            node.parent.color = "black"
+                            node.parent.parent.color = "red";
+                            rotateRight(node.parent.parent);
+                        }
+                    } else {
+                        uncle = parent.parent.left
+                        if (uncle.color == "red") {
+                            parent.color = "black";
+                            uncle.color = "black";
+                            node = parent.parent
+                            node.color = "red"
+                        } else {
+                            if (node == parent.left) { //情况4
+                                node = node.parent;
+                                rotateRight(node);
+                            }
+                            node.parent.color = "black"
+                            node.parent.parent.color = "red";
+                            rotateLeft(node.parent.parent);
+                        }
+                    }
+                }
+                root.color = "black";
             }
             _insert(data, root) {
+                var node
                 if (root === null) { //如果不存在根节点
-                    return new Node(data);
+                    node = new Node(data);
                 }
+                if (this._size === 0) {
+                    node.color = "black";
+                    return node;
+                } else if (this._size == 1) {
+
+                }
+                //console.log(this._size, data, root)
                 var diff = data - root.data;
                 if (diff < 0) {
-                    root.left = this._insert(data, root.left);
+                    console.log("=========", root.left)
+                    node = root.left = this._insert(data, root);
                 } else if (diff > 0) {
-                    root.right = this._insert(data, root.right);
+                    console.log("111111111", root.right)
+                    node = root.right = this._insert(data, root);
                 } else {
-                    this._size--;//不能重复插入相同值，size减一（因为外面会加－）
+                    this._size--; //不能重复插入相同值，size减一（因为外面会加－）
                     return root;
                 }
-
-                //修正高度
-                root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
-                var balanceState = getBalance(root);
-
-                if (balanceState === BalanceState.UNBALANCED_LEFT) {
-
-                    if (data < root.left.data) {
-                        // Left left case
-                        root = root.rotateRight();
-                    } else {
-                        // Left right case
-                        root.left = root.left.rotateLeft();
-                        return root.rotateRight();
-                    }
+                if (root.color == "red") {
+                    this._fix(node, root) //修正3，4，5
                 }
-
-                if (balanceState === BalanceState.UNBALANCED_RIGHT) {
-                    if (data > root.right.data) {
-                        // Right right case
-                        root = root.rotateLeft();
-                    } else {
-                        // Right left case
-                        root.right = root.right.rotateRight();
-                        return root.rotateLeft();
-                    }
-                }
-
-                return root;
+                return node;
             }
+
             remove(data) {
                 var parent = this.root;
                 this.root = this._remove(data, parent);
@@ -263,68 +397,19 @@
 
 
 
-        var BalanceState = {
-            UNBALANCED_RIGHT: 1,
-            SLIGHTLY_UNBALANCED_RIGHT: 2,
-            BALANCED: 3,
-            SLIGHTLY_UNBALANCED_LEFT: 4,
-            UNBALANCED_LEFT: 5
-        };
-
-
-        function getBalance(node) {
-            var heightDifference = node.leftHeight() - node.rightHeight();
-            switch (heightDifference) {
-                case -2:
-                    return BalanceState.UNBALANCED_RIGHT;
-                case -1:
-                    return BalanceState.SLIGHTLY_UNBALANCED_RIGHT;
-                case 1:
-                    return BalanceState.SLIGHTLY_UNBALANCED_LEFT;
-                case 2:
-                    return BalanceState.UNBALANCED_LEFT;
-                default:
-                    return BalanceState.BALANCED;
-            }
-        }
 
 
         function bg() {
             return '#' + (Math.random() * 0xffffff << 0).toString(16);
         }
         var tree = new AVL() //一会儿改成AVL
-        /*
-        var arr = []
-        var id = setInterval(function () {
-            arr.push(Math.random())
-            tree.insert(arr[arr.length - 1])
-            tree.clearNode()
-            tree.show()
-            if (arr.length == 25) {
-                console.log("=====开始移除=======")
-                clearInterval(id)
 
-                console.log(tree)
-                id = setInterval(function () {
-                    tree.remove(arr.pop())
-                    tree.clearNode()
-                    tree.show()
-                    if (arr.length == 0) {
-                        clearInterval(id)
-                    }
-                }, 1000)
 
-            }
-        }, 1000)
-*/
-
-        Array(16, 10, 17, 8, 13, 11, 12).forEach(function (el) {
+        Array(16, 10, 17, 8, 13, 11, 12).forEach(function(el) {
             tree.insert(el)
-           
+
         })
         tree.show()
-
-
     </script>
 
 
