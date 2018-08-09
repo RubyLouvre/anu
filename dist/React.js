@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-08-08
+ * by 司徒正美 Copyright 2018-08-09
  * IE9+
  */
 
@@ -160,6 +160,8 @@
         mountOrder: 1,
         macrotasks: [],
         boundaries: [],
+        onUpdate: noop,
+        onDispose: noop,
         middleware: function middleware(obj) {
             if (obj.begin && obj.end) {
                 middlewares.push(obj);
@@ -2187,6 +2189,7 @@
         if (fiber.catchError) {
             return;
         }
+        Renderer.onUpdate(fiber);
         fiber._hydrating = true;
         Renderer.currentOwner = instance;
         var rendered = applyCallback(instance, "render", []);
@@ -2575,6 +2578,7 @@
             if (fiber.tag > 3) {
                 domRemoved.push(fiber);
             } else {
+                Renderer.onDispose(fiber);
                 if (fiber.hasMounted) {
                     stateNode.updater.enqueueSetState = returnFalse;
                     guardCallback(stateNode, "componentWillUnmount", []);

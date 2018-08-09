@@ -1914,23 +1914,38 @@ function createPage(PageClass, path) {
         };
         updateMethod.apply(this, args);
     };
-    var unmountHook = "componentWillUnmount";
     var config = {
         data: {
             state: instance.state,
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad() {
+        onShow: function onShow() {
             instance.$wxPage = this;
+            var index = PageClass.instances.indexOf(instance);
+            if (index !== -1) {
+                PageClass.instances.push(instance);
+            }
+            var fn = instance.componentDidShow();
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
         },
-        onUnload: function onUnload() {
+        onHide: function onShow() {
             var index = PageClass.instances.indexOf(instance);
             if (index !== -1) {
                 PageClass.instances.splice(index, 1);
             }
-            if (isFn(instance[unmountHook])) {
-                instance[unmountHook]();
+            var fn = instance.componentDidHide();
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
+        },
+        onUnload: function onUnload() {
+            console.log("移除");
+            var fn = instance.componentWillUnmount();
+            if (isFn(fn)) {
+                fn.call(instance);
             }
         }
     };

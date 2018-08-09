@@ -10,7 +10,6 @@ export function onPageUpdate(fiber) {
         instance.instanceCode = Math.random();
         type.instances.push(instance);
         //用于事件委托中
-      
     }
     instance.props.instanceCode = instance.instanceCode;
 
@@ -35,17 +34,6 @@ export function createPage(PageClass, path) {
             appendChild: function() {}
         }
     );
-    /*
-    if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-    }
-    if (!PageClass.instances) {
-        PageClass.instances = [];
-    }
-    PageClass.instances.push(instance);
-    //用于事件委托中
-    instance.props.instanceCode = instance.instanceCode;
-    */
     //劫持setState
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
@@ -89,23 +77,37 @@ export function createPage(PageClass, path) {
         updateMethod.apply(this, args);
     };
 
-    var unmountHook = "componentWillUnmount";
     var config = {
         data: {
             state: instance.state,
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function() {
+        onShow: function onShow() {
             instance.$wxPage = this;
+            var index = PageClass.instances.indexOf(instance);
+            if (index !== -1) {
+                PageClass.instances.push(instance);
+            }
+            var fn = instance.componentDidShow()
+            if (isFn(fn)) {
+               fn.call(instance);
+            }
         },
-        onUnload: function() {
+        onHide: function onShow() {
             var index = PageClass.instances.indexOf(instance);
             if (index !== -1) {
                 PageClass.instances.splice(index, 1);
             }
-            if (isFn(instance[unmountHook])) {
-                instance[unmountHook]();
+            var fn = instance.componentDidHide()
+            if (isFn(fn)) {
+               fn.call(instance);
+            }
+        },
+        onUnload: function onUnload() {
+            var fn = instance.componentWillUnmount()
+            if (isFn(fn)) {
+                fn.call(instance);
             }
         }
     };
