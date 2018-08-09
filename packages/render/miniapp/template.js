@@ -4,6 +4,12 @@ import { createElement } from "react-core/createElement";
 export function template(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
     var clazz = props.is;
+    var componentProps = {};//必须将is移除，防止在setData中被序列化
+    for(var i in props){
+        if(i !== "is" && i != "templatedata"){
+            componentProps[i] = props[i]
+        }
+    }
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || [];
@@ -53,8 +59,7 @@ export function template(props) {
         };
     }
 
-    //...再上面一样
-    return createElement(clazz, props);
+    return createElement(clazz, componentProps);
 }
 
 function getData(instance) {
@@ -81,7 +86,6 @@ function hijackStatefulHooks(proto, method) {
             }
         }
         var inputProps = fiber._owner.props;
-        this.props.instanceCode = this.instanceCode;
         var f = fiber.return;
         var pageComponent = null;
         while (f) {
@@ -104,6 +108,8 @@ function hijackStatefulHooks(proto, method) {
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata //template元素的
             };
+            //注入
+            newData.props.instanceCode = this.instanceCode;
             if (this.updateWXData) {
                 for (var i = 0, el; (el = arr[i++]); ) {
                     if (el.props === props) {

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-09
  * IE9+
  */
 
@@ -1943,6 +1943,12 @@ function applyChildComponentData(data, list) {
 
 function template(props) {
     var clazz = props.is;
+    var componentProps = {};
+    for (var i in props) {
+        if (i !== "is" && i != "templatedata") {
+            componentProps[i] = props[i];
+        }
+    }
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || [];
@@ -1990,7 +1996,7 @@ function template(props) {
             }
         };
     }
-    return createElement(clazz, props);
+    return createElement(clazz, componentProps);
 }
 function getData(instance) {
     return instance.allTemplateData || (instance.allTemplateData = []);
@@ -2015,7 +2021,6 @@ function hijackStatefulHooks(proto, method) {
             }
         }
         var inputProps = fiber._owner.props;
-        this.props.instanceCode = this.instanceCode;
         var f = fiber.return;
         var pageComponent = null;
         while (f) {
@@ -2038,6 +2043,7 @@ function hijackStatefulHooks(proto, method) {
                 state: isUpdate ? arguments[1] : this.state,
                 templatedata: inputProps.templatedata
             };
+            newData.props.instanceCode = this.instanceCode;
             if (this.updateWXData) {
                 for (var i = 0, el; el = arr[i++];) {
                     if (el.props === props) {
