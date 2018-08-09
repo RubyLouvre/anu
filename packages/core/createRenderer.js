@@ -1,4 +1,4 @@
-import { extend } from "./util";
+import { extend, noop } from "./util";
 export function createRenderer(methods) {
     return extend(Renderer, methods);
 }
@@ -8,6 +8,8 @@ export const Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
+    onUpdate: noop,
+    onDispose: noop,
     middleware(obj) {
         if (obj.begin && obj.end) {
             middlewares.push(obj);

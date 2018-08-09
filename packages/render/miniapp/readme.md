@@ -16,6 +16,7 @@
 6. 无状态组件还没有实现
 7. 还没有支持findDOMNode
 8. 不支持render props
+9. 不支持dangerouslySetInnerHTML属性
 
 ## 内部运行机制
 

@@ -211,6 +211,7 @@ function disposeFiber(fiber, force) {
         if (fiber.tag > 3) {
             domRemoved.push(fiber);
         } else {
+            Renderer.onDispose(fiber)
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, "componentWillUnmount", []);

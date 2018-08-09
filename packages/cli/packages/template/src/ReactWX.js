@@ -126,6 +126,8 @@ var Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
+    onUpdate: noop,
+    onDispose: noop,
     middleware: function middleware(obj) {
         if (obj.begin && obj.end) {
             middlewares.push(obj);
@@ -1180,6 +1182,7 @@ function updateClassComponent(fiber, info) {
     if (fiber.catchError) {
         return;
     }
+    Renderer.onUpdate(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, "render", []);
@@ -1568,6 +1571,7 @@ function disposeFiber(fiber, force) {
         if (fiber.tag > 3) {
             domRemoved.push(fiber);
         } else {
+            Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, "componentWillUnmount", []);
@@ -1849,8 +1853,18 @@ function getContainer(p) {
     }
 }
 
+function onPageUpdate(fiber) {
+    var instance = fiber.stateNode;
+    var type = fiber.type;
+    if (!instance.instanceCode) {
+        instance.instanceCode = Math.random();
+        type.instances.push(instance);
+    }
+    instance.props.instanceCode = instance.instanceCode;
+}
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
+    PageClass.instances = PageClass.instances || [];
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
@@ -1861,14 +1875,6 @@ function createPage(PageClass, path) {
         root: true,
         appendChild: function appendChild() {}
     });
-    if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-    }
-    if (!PageClass.instances) {
-        PageClass.instances = [];
-    }
-    PageClass.instances.push(instance);
-    instance.props.instanceCode = instance.instanceCode;
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
@@ -1941,6 +1947,86 @@ function applyChildComponentData(data, list) {
     });
 }
 
+function onComponentUpdate(fiber) {
+    var instance = fiber.stateNode;
+    var type = fiber.type;
+    var instances = type.instances;
+    if (!instances) {
+        return;
+    }
+    if (!instance.instanceCode) {
+        instance.instanceCode = Math.random();
+        if (instances.indexOf(instance) === -1) {
+            instances.push(instance);
+        }
+        var p = fiber.return;
+        while (p) {
+            var inst = p._owner;
+            if (inst && inst.props && inst.props.isPageComponent) {
+                instance.$pageInst = inst;
+                break;
+            }
+        }
+    }
+    var inputProps = fiber._owner.props;
+    var f = fiber.return;
+    var pageInst = null;
+    while (f) {
+        var exited = f._owner && f._owner.$pageInst;
+        if (exited) {
+            pageInst = exited;
+            break;
+        } else if (f.props && f.props.isPageComponent) {
+            pageInst = f.stateNode;
+            break;
+        }
+        f = f.return;
+    }
+    if (pageInst) {
+        var arr = getData(pageInst);
+        var newData = {
+            props: instance.props,
+            state: instance.state,
+            templatedata: inputProps.templatedata
+        };
+        newData.props.instanceCode = instance.instanceCode;
+        if (instance.updateWXData) {
+            var checkProps = fiber.memoizedProps;
+            for (var i = 0, el; el = arr[i++];) {
+                if (el.props === checkProps) {
+                    extend(el, newData);
+                    break;
+                }
+            }
+            delete instance.updateWXData;
+        } else {
+            arr.push(newData);
+        }
+    }
+}
+function onComponentDispose(fiber) {
+    var instance = fiber.stateNode;
+    var type = fiber.type;
+    var instances = type.instances;
+    if (!instances) {
+        return;
+    }
+    var pageInst = instance.$pageInst;
+    if (pageInst) {
+        var i = instances.indexOf(instance);
+        if (i !== -1) {
+            instances.push(i, 1);
+        }
+        var props = fiber.props;
+        var arr = getData(pageInst);
+        for (var i = 0, el; el = arr[i++];) {
+            if (el.props === props) {
+                arr.splice(i, 1);
+                break;
+            }
+        }
+    }
+}
 function template(props) {
     var clazz = props.is;
     var componentProps = {};
@@ -1952,31 +2038,6 @@ function template(props) {
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || [];
-        var proto = clazz.prototype;
-        if (proto && proto.isReactComponent) {
-            hijackStatefulHooks(proto, "componentWillMount");
-            hijackStatefulHooks(proto, "componentWillUpdate");
-            var oldUnmount = proto.componentWillUnmount;
-            proto.componentWillUnmount = function () {
-                oldUnmount && oldUnmount.call(this);
-                var pageComponent = this.$pageInst;
-                if (pageComponent) {
-                    var instances = get(this).type.instances;
-                    var i = instances.indexOf(this);
-                    if (i !== -1) {
-                        instances.push(i, 1);
-                    }
-                    var props = this.props;
-                    var arr = getData(pageComponent);
-                    for (var i = 0, el; el = arr[i++];) {
-                        if (el.props === props) {
-                            arr.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
-            };
-        }
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function () {
@@ -2000,64 +2061,6 @@ function template(props) {
 }
 function getData(instance) {
     return instance.allTemplateData || (instance.allTemplateData = []);
-}
-function hijackStatefulHooks(proto, method) {
-    var oldHook = proto[method] || noop;
-    proto[method] = function () {
-        var fiber = this._reactInternalFiber;
-        if (!this.instanceCode) {
-            this.instanceCode = Math.random();
-            var instances = this.constructor.instances;
-            if (instances.indexOf(this) === -1) {
-                instances.push(this);
-            }
-            var p = fiber.return;
-            while (p) {
-                var inst = p._owner;
-                if (inst && inst.props && inst.props.isPageComponent) {
-                    this.$pageInst = inst;
-                    break;
-                }
-            }
-        }
-        var inputProps = fiber._owner.props;
-        var f = fiber.return;
-        var pageInst = null;
-        while (f) {
-            var exited = f._owner && f._owner.$pageInst;
-            if (exited) {
-                pageInst = exited;
-                break;
-            } else if (f.props && f.props.isPageComponent) {
-                pageInst = f.stateNode;
-                break;
-            }
-            f = f.return;
-        }
-        if (pageInst) {
-            var arr = getData(pageInst),
-                props = this.props;
-            var isUpdate = method === "componentWillUpdate";
-            var newData = {
-                props: isUpdate ? arguments[0] : props,
-                state: isUpdate ? arguments[1] : this.state,
-                templatedata: inputProps.templatedata
-            };
-            newData.props.instanceCode = this.instanceCode;
-            if (this.updateWXData) {
-                for (var i = 0, el; el = arr[i++];) {
-                    if (el.props === props) {
-                        extend(el, newData);
-                        break;
-                    }
-                }
-                delete this.updateWXData;
-            } else {
-                arr.push(newData);
-            }
-            oldHook.call(this, arguments);
-        }
-    };
 }
 
 var onAndSyncApis = {
@@ -2385,92 +2388,108 @@ function initNativeApi(ReactWX) {
 }
 
 function cleanChildren(array) {
-  if (!Array.isArray(array)) {
-    return array;
-  }
-  return array.map(function (el) {
-    if (el.type == "#text") {
-      return el.props;
-    } else {
-      return {
-        type: el.type,
-        props: el.props,
-        children: cleanChildren(el.children)
-      };
+    if (!Array.isArray(array)) {
+        return array;
     }
-  });
+    return array.map(function (el) {
+        if (el.type == "#text") {
+            return el.props;
+        } else {
+            return {
+                type: el.type,
+                props: el.props,
+                children: cleanChildren(el.children)
+            };
+        }
+    });
 }
 var autoContainer = {
-  type: "root",
-  appendChild: noop,
-  props: null,
-  children: []
+    type: "root",
+    appendChild: noop,
+    props: null,
+    children: []
 };
 var Renderer$1 = createRenderer({
-  render: render,
-  updateAttribute: function updateAttribute() {},
-  updateContent: function updateContent(fiber) {
-    fiber.stateNode.props = fiber.props;
-  },
-  getRoot: function getRoot() {
-    return autoContainer;
-  },
-  getChildren: function getChildren() {
-    return cleanChildren(autoContainer.children || []);
-  },
-  createElement: function createElement(fiber) {
-    return fiber.tag === 5 ? {
-      type: fiber.type,
-      props: fiber.props || {},
-      children: []
-    } : {
-      type: fiber.type,
-      props: fiber.props
-    };
-  },
-  insertElement: function insertElement(fiber) {
-    var dom = fiber.stateNode,
-        parentNode = fiber.parent,
-        forwardFiber = fiber.forwardFiber,
-        before = forwardFiber ? forwardFiber.stateNode : null,
-        children = parentNode.children;
-    try {
-      if (before == null) {
-        if (dom !== children[0]) {
-          remove(children, dom);
-          children.unshift(dom);
+    render: render,
+    updateAttribute: function updateAttribute() {},
+    updateContent: function updateContent(fiber) {
+        fiber.stateNode.props = fiber.props;
+    },
+    onUpdate: function onUpdate(fiber) {
+        if (fiber.type.instances) {
+            if (fiber.props.isPageComponent) {
+                onPageUpdate(fiber);
+            } else {
+                onComponentUpdate(fiber);
+            }
         }
-      } else {
-        if (dom !== children[children.length - 1]) {
-          remove(children, dom);
-          var i = children.indexOf(before);
-          children.splice(i + 1, 0, dom);
+    },
+    onDispose: function onDispose(fiber) {
+        if (fiber.type.instances) {
+            if (!fiber.props.isPageComponent) {
+                onComponentDispose(fiber);
+            }
         }
-      }
-    } catch (e) {
-      throw e;
+    },
+    getRoot: function getRoot() {
+        return autoContainer;
+    },
+    getChildren: function getChildren() {
+        return cleanChildren(autoContainer.children || []);
+    },
+    createElement: function createElement(fiber) {
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
+    },
+    insertElement: function insertElement(fiber) {
+        var dom = fiber.stateNode,
+            parentNode = fiber.parent,
+            forwardFiber = fiber.forwardFiber,
+            before = forwardFiber ? forwardFiber.stateNode : null,
+            children = parentNode.children;
+        try {
+            if (before == null) {
+                if (dom !== children[0]) {
+                    remove(children, dom);
+                    children.unshift(dom);
+                }
+            } else {
+                if (dom !== children[children.length - 1]) {
+                    remove(children, dom);
+                    var i = children.indexOf(before);
+                    children.splice(i + 1, 0, dom);
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    },
+    emptyElement: function emptyElement(fiber) {
+        var dom = fiber.stateNode;
+        var children = dom && dom.children;
+        if (dom && Array.isArray(children)) {
+            children.forEach(Renderer$1.removeElement);
+        }
+    },
+    removeElement: function removeElement(fiber) {
+        if (fiber.parent) {
+            var parent = fiber.parent;
+            var node = fiber.stateNode;
+            remove(parent.children, node);
+        }
     }
-  },
-  emptyElement: function emptyElement(fiber) {
-    var dom = fiber.stateNode;
-    var children = dom && dom.children;
-    if (dom && Array.isArray(children)) {
-      children.forEach(Renderer$1.removeElement);
-    }
-  },
-  removeElement: function removeElement(fiber) {
-    if (fiber.parent) {
-      var parent = fiber.parent;
-      var node = fiber.stateNode;
-      remove(parent.children, node);
-    }
-  }
 });
 function remove(children, node) {
-  var index = children.indexOf(node);
-  if (index !== -1) {
-    children.splice(index, 1);
-  }
+    var index = children.indexOf(node);
+    if (index !== -1) {
+        children.splice(index, 1);
+    }
 }
 
 var win = getWindow();

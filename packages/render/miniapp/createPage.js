@@ -3,11 +3,25 @@ import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { isFn } from "react-core/util";
 
+export function onPageUpdate(fiber) {
+    var instance = fiber.stateNode;
+    var type = fiber.type;
+    if (!instance.instanceCode) {
+        instance.instanceCode = Math.random();
+        type.instances.push(instance);
+        //用于事件委托中
+      
+    }
+    instance.props.instanceCode = instance.instanceCode;
+
+}
+
 export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     //劫持页面组件的生命周期，与setState进行联动
     //获取页面的组件实例
+    PageClass.instances =  PageClass.instances || []
     var instance = render(
         createElement(PageClass, {
             path: path,
@@ -21,6 +35,7 @@ export function createPage(PageClass, path) {
             appendChild: function() {}
         }
     );
+    /*
     if (!instance.instanceCode) {
         instance.instanceCode = Math.random();
     }
@@ -30,6 +45,7 @@ export function createPage(PageClass, path) {
     PageClass.instances.push(instance);
     //用于事件委托中
     instance.props.instanceCode = instance.instanceCode;
+    */
     //劫持setState
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
@@ -71,7 +87,6 @@ export function createPage(PageClass, path) {
             }
         };
         updateMethod.apply(this, args);
-       
     };
 
     var unmountHook = "componentWillUnmount";

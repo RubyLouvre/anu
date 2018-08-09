@@ -112,6 +112,7 @@ function updateHostComponent(fiber, info) {
         parent.insertPoint = getInsertPoint(fiber);
     }
     */
+
     fiber.forwardFiber = parent.insertPoint;
 
     parent.insertPoint = fiber;
@@ -229,6 +230,7 @@ export function updateClassComponent(fiber, info) {
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
+   
     if (instance.getChildContext) {
         let context = instance.getChildContext();
         context = Object.assign({}, contextStack[0], context);
@@ -255,6 +257,7 @@ export function updateClassComponent(fiber, info) {
     if (fiber.catchError) {
         return;
     }
+    Renderer.onUpdate(fiber)
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
