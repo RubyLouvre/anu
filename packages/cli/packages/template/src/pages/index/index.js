@@ -13,7 +13,6 @@ class P extends React.Component {
         };
     }
     config = {
-        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "#fff",
         "navigationBarBackgroundColor": "#0088a4",
         "navigationBarTitleText": "Demo",
@@ -35,6 +34,8 @@ class P extends React.Component {
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage1/index">组件化</navigator>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage2/index">事件</navigator>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/form/index/index">form</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/view/index/index">view</navigator>
+                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/base_content/base/index">基础内容</navigator>
                         <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/test/index">for a test</navigator>
                     </div>
                     {/* <div>

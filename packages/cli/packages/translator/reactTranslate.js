@@ -238,10 +238,18 @@ module.exports = {
             let baseName = nPath.basename(curPath).replace(/\.(js)$/, '');
             let destJSON = nPath.join(process.cwd(), dest,  `${baseName}.json`);
             const code = generate(path.node.value).code;
+            let jsonStr = '';
+
+            try{
+                jsonStr = JSON.stringify(JSON.parse(code), null ,4);
+            }catch(err){
+                jsonStr = JSON.stringify(eval('(' + code + ')'), null , 4)  
+            }
+
             fs_extra.ensureFileSync(destJSON)
             fs.writeFileSync(
                 destJSON,
-                code,
+                jsonStr,
                 (err)=>{
                     if(err) throw `生成${baseName}.json配置文件出错`;
                 }

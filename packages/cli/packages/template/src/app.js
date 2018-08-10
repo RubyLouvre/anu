@@ -7,8 +7,17 @@ import "./pages/demo/form/index/index";
 import "./pages/demo/form/button/index";
 import "./pages/demo/form/checkbox/index";
 import "./pages/demo/form/input/index";
+import "./pages/demo/form/slider/index";
+import "./pages/demo/form/picker/index";
+import "./pages/demo/form/radio/index";
 
-import "./app.scss";
+
+import "./pages/demo/base_content/base/index";
+import "./pages/demo/view/index/index";
+import "./pages/demo/view/view/index";
+import "./pages/demo/view/scroll_view/index";
+
+import "./app.less";
 
 class Demo extends React.Component {
   config = {
@@ -17,10 +26,31 @@ class Demo extends React.Component {
       "pages/otherPage1/index",
       "pages/otherPage2/index",
       "pages/test/index",
-      "pages/demo/form/index/index",
+      "pages/demo/form/index/index",      
       "pages/demo/form/button/index",
       "pages/demo/form/checkbox/index",
-      "pages/demo/form/input/index"
+      "pages/demo/form/input/index",
+      "pages/demo/form/slider/index",
+      "pages/demo/form/picker/index",
+      "pages/demo/form/radio/index",
+      "pages/demo/base_content/base/index",
+      "pages/demo/view/index/index",
+      "pages/demo/view/view/index",
+      "pages/demo/view/scroll_view/index"
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
     ],
     "window": {
       "backgroundTextStyle": "light",
