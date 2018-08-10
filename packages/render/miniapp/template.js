@@ -5,8 +5,8 @@ export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     var instances = type.instances;
+     //不是使用miniCreateClass创建的组件直接返回
     if (!instances) {
-        //不是使用创建的
         return;
     }
     var instanceCode = instance.instanceCode;
@@ -57,7 +57,6 @@ export function onComponentUpdate(fiber) {
         } else {
             arr.push(newData);
         }
-        //  oldHook.call(this, arguments);
     }
 }
 

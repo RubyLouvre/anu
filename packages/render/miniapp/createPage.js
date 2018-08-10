@@ -87,20 +87,20 @@ export function createPage(PageClass, path) {
         onShow: function onShow() {
             instance.$wxPage = this;
             PageClass.instances[instance.instanceCode] = instance;
-            var fn = instance.componentDidShow();
+            var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
             delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide();
+            var fn = instance.componentDidHide;;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount();
+            var fn = instance.componentWillUnmount;
             if (isFn(fn)) {
                 fn.call(instance);
             }

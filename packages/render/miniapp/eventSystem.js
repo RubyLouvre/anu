@@ -11,12 +11,16 @@ export var eventSystem = {
         var instanceCode = dataset.instanceCode; //实例ID
         var instance = componentClass.instances[instanceCode];
         if (instance) {
-            var fn = instance.$$eventCached && instance.$$eventCached[eventName];
-            fn && fn.call(instance, createEvent(e, target));
+            try {
+                var fn = instance.$$eventCached[eventName];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (e) {
+                console.log(e.stack);
+            }
         }
     }
 };
-
+//创建事件对象
 function createEvent(e, target) {
     var event = e.detail || {};
     event.stopPropagation = function() {
@@ -24,7 +28,7 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.target = target;
+    event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = e.timeStamp;
     return event;

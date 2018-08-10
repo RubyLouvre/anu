@@ -46,6 +46,7 @@ export let Renderer = createRenderer({
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
+                    //保存用户创建的事件在实例上
                     var cached =
                         instance.$$eventCached || (instance.$$eventCached = {});
                     for (let name in props) {
@@ -65,7 +66,6 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        //  var owner = fiber._owner;
     },
 
     updateContent(fiber) {

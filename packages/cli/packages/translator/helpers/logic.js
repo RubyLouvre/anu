@@ -78,7 +78,7 @@ function loop(callee, fn) {
     if (body) {
         //循环内部存在循环或条件
         var child = logic(body.argument);
-        var childNodeName = child.openingElement.name.name;
+        //  var childNodeName = child.openingElement.name.name;
         // if (child.type == "JSXElement" && modules.importComponents[childNodeName]) {
 
         //   attrs.unshift(createAttribute("is", childNodeName));

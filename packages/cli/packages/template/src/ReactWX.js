@@ -678,8 +678,12 @@ var eventSystem = {
         var instanceCode = dataset.instanceCode;
         var instance = componentClass.instances[instanceCode];
         if (instance) {
-            var fn = instance.$$eventCached && instance.$$eventCached[eventName];
-            fn && fn.call(instance, createEvent(e, target));
+            try {
+                var fn = instance.$$eventCached[eventName];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (e) {
+                console.log(e.stack);
+            }
         }
     }
 };
@@ -690,7 +694,7 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.target = target;
+    event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = e.timeStamp;
     return event;
@@ -1929,20 +1933,19 @@ function createPage(PageClass, path) {
         onShow: function onShow() {
             instance.$wxPage = this;
             PageClass.instances[instance.instanceCode] = instance;
-            var fn = instance.componentDidShow();
+            var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
             delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide();
-            if (isFn(fn)) {
+            var fn = instance.componentDidHide;            if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount();
+            var fn = instance.componentWillUnmount;
             if (isFn(fn)) {
                 fn.call(instance);
             }
