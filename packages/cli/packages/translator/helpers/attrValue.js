@@ -1,36 +1,14 @@
 //将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
+
+
+
+
 const t = require("babel-types");
+
 const generate = require("babel-generator").default;
-const jsx = require("../jsx/jsx");
-function bindEvent(path, attrName, attrValue, modules) {
+
+function bindEvent(path) {
     replaceWithExpr(path, "dispatchEvent", true);
-    var n = attrName.charAt(0) == "b" ? 4: 5
-    var parent = path.parentPath.parent;
-    if (parent) {
-       /*
-        parent.attributes.push(
-            jsx.createAttribute(
-                `data-${attrName.slice(n)}-fn2`,
-                attrValue.replace(/^\s*this\./, "")
-            )
-        );
-       
-        var hasInstanceCode = parent.attributes.find(function(el) {
-            return el.name.name === "data-instance-code";
-        });
-        if (!hasInstanceCode) {
-            parent.attributes.push(
-                jsx.createAttribute("data-class-code", modules.classCode)
-            );
-            parent.attributes.push(
-                jsx.createAttribute(
-                    "data-instance-code",
-                    "{{props.instanceCode}}"
-                )
-            );
-        }
-        */
-    }
 }
 module.exports = function(path, modules) {
     var expr = path.node.expression;

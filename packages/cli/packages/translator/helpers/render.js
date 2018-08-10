@@ -1,6 +1,5 @@
 const generate = require("babel-generator").default;
 const prettifyXml = require("prettify-xml");
-const logic = require("./logic");
 const wxmlHelper = require("./wxml");
 const babel = require("babel-core");
 const jsx = require("babel-plugin-transform-react-jsx");
