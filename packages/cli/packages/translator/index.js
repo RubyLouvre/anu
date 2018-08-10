@@ -69,6 +69,7 @@ class Parser {
                     output: function(code, file){
                       let dist = file.replace('src', 'dist')
                                      .replace('less', 'wxss')
+                      fs.ensureFileSync(dist);
                       fs.writeFileSync(dist, code, 'utf-8');
                       return code;
                     }
