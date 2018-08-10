@@ -7,7 +7,10 @@ const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
 const jsx = require("../jsx/jsx");
-
+var runicode = /\\u[a-f\d]{4}/,
+    unicodeArray = [],
+    unicodeNumber = 0,
+    unicodeMather;
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -23,7 +26,14 @@ function wxml(code) {
             }
         ]
     });
-    return result.code;
+    var str = result.code;
+    if (unicodeNumber) {
+        str = str.replace(unicodeMather, function(a) {
+            return unicodeArray.shift()
+        })
+        unicodeNumber = 0
+    }
+    return str;
 }
 var visitor = {
     JSXOpeningElement: {
@@ -96,6 +106,15 @@ var visitor = {
         }
     },
     JSXAttribute(path) {
+        var valueNode = path.node.value;
+        if (valueNode.type === "StringLiteral" && runicode.test(valueNode.value)) {
+            if (!unicodeNumber) {
+                unicodeNumber = Math.random().toString().slice(-10)
+                unicodeMather = RegExp(unicodeNumber, "g")
+            }
+            unicodeArray.push(valueNode.value)
+            valueNode.value = unicodeNumber
+        }
         attrNameHelper(path);
     },
 
@@ -111,8 +130,7 @@ var visitor = {
             ) {
                 //将 {this.props.children} 转换成 <slot />
                 var children = t.JSXOpeningElement(
-                    t.JSXIdentifier("slot"),
-                    [],
+                    t.JSXIdentifier("slot"), [],
                     true
                 );
                 path.replaceWith(children);
