@@ -34,11 +34,32 @@ const isBuildInLibs = function(name){
     return libs.has(name);
 }
 const copy_Node_Modules_To_Build_Npm = function(source){
+
+
     let node_modules_sources_path = nPath.join(process.cwd(), 'node_modules', source);
     let node_modeles_build_sources_path = nPath.join(process.cwd(), `/dist/npm/${source}`);
-    fs_extra.copy(
-        node_modules_sources_path,
-        node_modeles_build_sources_path,
+    let pkg = nPath.join(node_modules_sources_path, 'package.json');
+    let mainFild = require(pkg).main;
+    
+
+    /**
+     * 定向拷贝
+     */
+
+    //拷贝package.json
+    let packageDest = nPath.join(node_modeles_build_sources_path, 'package.json');
+    fs_extra.ensureFileSync(packageDest);
+    fs_extra.copySync(
+        pkg,
+        packageDest
+    )
+    //拷贝package.json中main字段指向的模块
+    let libSrc = nPath.join( node_modules_sources_path,  mainFild );
+    let libDest = nPath.join(node_modeles_build_sources_path, mainFild);
+    fs_extra.ensureFileSync(libDest)
+    fs_extra.copySync(
+        libSrc,
+        libDest,
         {
             overwrite: true,
             errorOnExist:true,
@@ -47,14 +68,28 @@ const copy_Node_Modules_To_Build_Npm = function(source){
             if(err) console.log(err);
         }
     );
+    
 
 }
 
 
-const get_mini_node_module_path = function(fileSourcePath){
-    let from = nPath.dirname(fileSourcePath.replace('src', 'build'));
-    let to = '/dist/npm/';
-    return nPath.relative(from, to);
+const get_mini_node_module_path = function(fileSourcePath, source){
+   let from = nPath.dirname(fileSourcePath.replace('src', 'dist'));
+   let to = '/dist/npm/';
+   let _relative = nPath.relative(from, to);
+   let node_modeles_build_sources_path = nPath.join(process.cwd(), `/dist/npm/${source}`);
+   let pkg = nPath.join(node_modeles_build_sources_path, 'package.json');
+   let mainFild = require(pkg).main;
+   if(!mainFild){
+       console.log(`无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`);
+       process.exit(1);
+    }
+   let ast_value = nPath.join(
+        _relative, 
+        source, 
+        mainFild.replace(/\.(js)/, '')
+    )
+   return ast_value;
 }
 
 
@@ -161,9 +196,11 @@ module.exports = {
         //to do: 抛错提示
         if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
         //复制到build npm目录
-        copy_Node_Modules_To_Build_Npm(source);    
+        copy_Node_Modules_To_Build_Npm(source); 
+
+       
         //修改ast中 import(path)声明中的path路径
-        node.source.value = nPath.join(get_mini_node_module_path(modules.current), source);
+        node.source.value = get_mini_node_module_path(modules.current, source);
 
     },
 
