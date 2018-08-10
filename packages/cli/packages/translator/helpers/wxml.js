@@ -15,6 +15,8 @@ var runicode = /\\u[a-f\d]{4}/,
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
 function wxml(code) {
+    unicodeNumber = 0;
+  
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
@@ -26,14 +28,15 @@ function wxml(code) {
             }
         ]
     });
-    var str = result.code;
+    var html = result.code;
     if (unicodeNumber) {
-        str = str.replace(unicodeMather, function(a) {
+        console.log("恢复中文",unicodeArray.concat(), unicodeMather)
+        html = html.replace(unicodeMather, function(a) {
             return unicodeArray.shift()
         })
         unicodeNumber = 0
     }
-    return str;
+    return html;
 }
 var visitor = {
     JSXOpeningElement: {
@@ -78,8 +81,6 @@ var visitor = {
                 if (!inLoop) {
                     attributes.push(
                         jsx.createAttribute("is", is),
-                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
-                        //   jsx.createAttribute("wx:for-item", "data"),
                         jsx.createAttribute("data", `{{...${dataName}}}`),
                         jsx.createAttribute("wx:for", `{{${array}}}`),
                         jsx.createAttribute("wx:for-item", dataName),
@@ -89,10 +90,7 @@ var visitor = {
                     attributes.push(
                         jsx.createAttribute("is", is),
                         jsx.createAttribute("wx:if", `{{${array}[index]}}`),
-                        //    jsx.createAttribute("wx:for", `{{${array}}}`),
-                        //   jsx.createAttribute("wx:for-item", "data"),
                         jsx.createAttribute("data", `{{...${array}[index]}}`)
-                        //   jsx.createAttribute("wx:for-item", dataName)
                     );
                     if (key) {
                         attributes.push(
@@ -107,12 +105,12 @@ var visitor = {
     },
     JSXAttribute(path) {
         var valueNode = path.node.value;
-        if (valueNode.type === "StringLiteral" && runicode.test(valueNode.value)) {
+        if (valueNode && valueNode.type === "StringLiteral" && runicode.test(valueNode.value)) {
             if (!unicodeNumber) {
                 unicodeNumber = Math.random().toString().slice(-10)
                 unicodeMather = RegExp(unicodeNumber, "g")
             }
-            unicodeArray.push(valueNode.value)
+            unicodeArray.push( unescape(valueNode.value.replace(/\\/g, "%")))
             valueNode.value = unicodeNumber
         }
         attrNameHelper(path);
@@ -137,7 +135,6 @@ var visitor = {
             } else {
                 //返回block元素或template元素
                 var block = logicHelper(expr);
-
                 path.replaceWith(block);
             }
         }

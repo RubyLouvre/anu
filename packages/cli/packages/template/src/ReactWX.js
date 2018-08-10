@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-10
  * IE9+
  */
 
@@ -676,11 +676,13 @@ var eventSystem = {
         var classCode = dataset.classCode;
         var componentClass = eventSystem.classCache[classCode];
         var instanceCode = dataset.instanceCode;
-        for (var i = 0, el; el = componentClass.instances[i++];) {
-            if (el.instanceCode === instanceCode) {
-                var fn = el[eventName];
-                fn && fn.call(el, createEvent(e, target));
-                break;
+        var instance = componentClass.instances[instanceCode];
+        if (instance) {
+            try {
+                var fn = instance.$$eventCached[eventName];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (e) {
+                console.log(e.stack);
             }
         }
     }
@@ -692,7 +694,7 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.target = target;
+    event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = e.timeStamp;
     return event;
@@ -1853,18 +1855,26 @@ function getContainer(p) {
     }
 }
 
+function _uuid() {
+   return (Math.random() + "").slice(-4);
+}
+function getUUID() {
+   return _uuid() + _uuid();
+}
+
 function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-        type.instances.push(instance);
+        var uuid = "i" + getUUID();
+        instance.instanceCode = uuid;
+        type.instances[uuid] = instance;
     }
     instance.props.instanceCode = instance.instanceCode;
 }
 function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    PageClass.instances = PageClass.instances || [];
+    PageClass.instances = PageClass.instances || {};
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
@@ -1914,23 +1924,30 @@ function createPage(PageClass, path) {
         };
         updateMethod.apply(this, args);
     };
-    var unmountHook = "componentWillUnmount";
     var config = {
         data: {
             state: instance.state,
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad() {
+        onShow: function onShow() {
             instance.$wxPage = this;
+            PageClass.instances[instance.instanceCode] = instance;
+            var fn = instance.componentDidShow;
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
+        },
+        onHide: function onShow() {
+            delete PageClass.instances[instance.instanceCode];
+            var fn = instance.componentDidHide;            if (isFn(fn)) {
+                fn.call(instance);
+            }
         },
         onUnload: function onUnload() {
-            var index = PageClass.instances.indexOf(instance);
-            if (index !== -1) {
-                PageClass.instances.splice(index, 1);
-            }
-            if (isFn(instance[unmountHook])) {
-                instance[unmountHook]();
+            var fn = instance.componentWillUnmount;
+            if (isFn(fn)) {
+                fn.call(instance);
             }
         }
     };
@@ -1954,11 +1971,10 @@ function onComponentUpdate(fiber) {
     if (!instances) {
         return;
     }
-    if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-        if (instances.indexOf(instance) === -1) {
-            instances.push(instance);
-        }
+    var instanceCode = instance.instanceCode;
+    if (!instanceCode) {
+        instanceCode = instance.instanceCode = getUUID();
+        instances[instanceCode] = instance;
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
@@ -1989,7 +2005,7 @@ function onComponentUpdate(fiber) {
             state: instance.state,
             templatedata: inputProps.templatedata
         };
-        newData.props.instanceCode = instance.instanceCode;
+        newData.props.instanceCode = instanceCode;
         if (instance.updateWXData) {
             var checkProps = fiber.memoizedProps;
             for (var i = 0, el; el = arr[i++];) {
@@ -2013,10 +2029,7 @@ function onComponentDispose(fiber) {
     }
     var pageInst = instance.$pageInst;
     if (pageInst) {
-        var i = instances.indexOf(instance);
-        if (i !== -1) {
-            instances.push(i, 1);
-        }
+        delete instances[instance.instanceCode];
         var props = fiber.props;
         var arr = getData(pageInst);
         for (var i = 0, el; el = arr[i++];) {
@@ -2037,7 +2050,7 @@ function template(props) {
     }
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
-        clazz.instances = clazz.instances || [];
+        clazz.instances = clazz.instances || {};
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
         clazz.prototype.setState = function () {
@@ -2409,9 +2422,43 @@ var autoContainer = {
     props: null,
     children: []
 };
+var onEvent = /(?:on|catch)[A-Z]/;
+function getEventCode(name, props) {
+    var n = name.charAt(0) == "o" ? 2 : 5;
+    var type = name.slice(n).toLowerCase();
+    return props["data-" + type + "-fn"];
+}
 var Renderer$1 = createRenderer({
     render: render,
-    updateAttribute: function updateAttribute() {},
+    updateAttribute: function updateAttribute(fiber) {
+        var props = fiber.props,
+            lastProps = fiber.lastProps;
+        var classId = props["data-class-code"];
+        var instanceId = props["data-instance-code"];
+        if (classId) {
+            var clazz = eventSystem.classCache[classId];
+            if (clazz && clazz.instances) {
+                var instance = clazz.instances[instanceId];
+                if (instance) {
+                    var cached = instance.$$eventCached || (instance.$$eventCached = {});
+                    for (var name in props) {
+                        if (onEvent.test(name) && isFn(props[name])) {
+                            var code = getEventCode(name, props);
+                            cached[code] = props[name];
+                        }
+                    }
+                    if (lastProps) {
+                        for (var _name in lastProps) {
+                            if (onEvent.test(_name) && !props[_name]) {
+                                var code = getEventCode(_name, lastProps);
+                                delete cached[code];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
     updateContent: function updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
@@ -2493,7 +2540,6 @@ function remove(children, node) {
 }
 
 var win = getWindow();
-var prevReact = win.React;
 var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
