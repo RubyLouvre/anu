@@ -17,6 +17,7 @@
 7. 还没有支持findDOMNode
 8. 不支持render props
 9. 不支持dangerouslySetInnerHTML属性
+10. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
 
 ## 内部运行机制
 
