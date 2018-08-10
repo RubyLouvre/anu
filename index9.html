@@ -15,114 +15,44 @@
 
     </div>
     <script>
+        var RED = "red";
+        var BLACK = "black";
         class Node {
             constructor(data) {
                 this.left = null;
                 this.parent = null;
                 this.right = null;
-                this.height = 0;
+                this.color = RED;
                 this.data = data;
             }
-            /**
-             * 右旋
-             *
-             *       b                           a
-             *      / \                         / \
-             *     a   e . b.rotateRight() . c   b
-             *    / \                             / \
-             *   c   d                           d   e
-             *
-             */
-            rotateRight() {
-                var other = this.left; //a
-                this.left = other.right; //d
-                other.right = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.leftHeight(), this.height) + 1;
-                return other;
-            }
-            /**
-             * 左旋
-             *
-             *     a                              b
-             *    / \                            / \
-             *   c   b   . a.rotateLeft() .   a   e
-             *      / \                        / \
-             *     d   e                      c   d
-             *
-             */
-            rotateLeft() {
-                var other = this.right;
-                this.right = other.left;
-                other.left = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.rightHeight(), this.height) + 1;
-                return other;
-            }
-            leftHeight() {
-                if (!this.left) {
-                    return -1;
+            grandparent() {
+                if (this.parent == null) {
+                    return null;
                 }
-                return this.left.height;
+                return this.parent.parent;
             }
-            rightHeight() {
-                if (!this.right) {
-                    return -1;
+            uncle() {
+                var grandparent = this.grandparent();
+                if (!grandparent) {
+                    return null;
                 }
-                return this.right.height;
+                if (this.parent == grandparent.right) {
+                    return grandparent.left;
+                } else {
+                    return grandparent.right;
+                }
             }
+            sibling() {
+                if (this.parent.left == this) {
+                    return this.parent.right
+                } else {
+                    return this.parent.left
+                }
+            }
+
         };
 
-
-        function leftRotate(node) {
-            var child = node.right;
-            //node下降了，将为补偿，将child.left给node
-            node.right = child.left;
-            if (child.left) {
-                child.left.parent = node;
-            }
-            var parent = node.parent; //保持之前的父节点
-            child.left = node; //左旋
-
-            node.parent = child;
-            child.parent = parent;
-            if (parent == null) {
-                tree.root = child; //如果原来是树，那么child变成根
-            } else {
-                //如果是原父节点的左节点
-                if (node == parent.left) {
-                    parent.left = child;
-                } else {
-                    parent.right = child;
-                }
-            }
-        }
-
-        function rightRotate(node) {
-            var child = node.left;
-            //node下降了，将为补偿，将child.left给node
-            node.left = child.right;
-            if (child.right) {
-                child.right.parent = node;
-            }
-            var parent = node.parent; //保持之前的父节点
-            child.right = node; //左旋
-
-            node.parent = child;
-            child.parent = parent;
-            if (parent == null) {
-                tree.root = child; //如果原来是树，那么child变成根
-            } else {
-                //如果是原父节点的左节点
-                if (node == parent.left) {
-                    parent.left = child;
-                } else {
-                    parent.right = child;
-                }
-            }
-        }
-
-        class AVL {
+        class RBTree {
             constructor() {
                 this.root = null;
                 this._size = 0;
@@ -130,13 +60,13 @@
             insert(data) {
                 if (!this.root) {
                     this.root = new Node(data)
-                    this.root.color = "black";
+                    this.root.color = BLACK;
                     this._size = 1
                     return
                 }
                 var t = this.root,
                     parent, diff;
-                do {
+                while (t) {
                     parent = t;
                     diff = data - t.data
                     //找到适合的位置
@@ -147,122 +77,185 @@
                     } else {
                         return t;
                     }
-                } while (t);
+                }
                 var node = new Node(data)
                 node.parent = parent;
                 this._size++;
                 if (diff < 0) {
                     parent.left = node;
+                    console.log("left")
                 } else {
                     parent.right = node;
+                    console.log("right")
                 }
-
-                this.fixAfterInsertion(node);
+                console.log(node, ")))")
+                this.insertFixup(node);
             }
-            fixAfterInsertion(node) {
-                if (node.parent == null) {
-                    this.root = node;
-                    node.color = BLACK;
+            leftRotate(node) {
+                // Since we are doing the left rotation, the right child should *NOT* nil.
+                if (!node.right) {
                     return
                 }
-                // https://blog.csdn.net/leetcode8023/article/details/51865628
-                //  x.color = "red";
-                while (node.parent.color == RED) {
-                    if (node.uncle().color === RED) {
-                        node.parent.color = node.uncle().color = BLACK;
-                        node.grandparent().color = RED;
-                        this.fixAfterInsertion(node.grandparent())
-                    } else {
-                        if (node.parent.right === node && node.grandparent().left === node.parent) {
-                            rotateLeft(node);
-                            rotateRight(node);
-                            node.color = BLACK;
-                            node.left.color = p.right.color = RED;
-                        } else if (node.parent.left == node && node.grandparent().right == node.parent) {
-                            rotateRight(node);
-                            rotateLeft(node);
-                            node.color = BLACK;
-                            node.left.color = p.right.color = RED;
-                        } else if(node.parent.left === node && node.grandparent().left == node.parent) {
-                            node.parent.color = BLACK;
-                            node.grandparent().color = RED;
-                            rotateRight(node.parent);
-                        } else if(node.parent.right === node && node.grandparent().right == node.parent) {
-                            node.parent.color = BLACK;
-                            node.grandparent().color = RED;
-                            rotateLeft(node.parent);
-                        }
 
-                    }
-                    var parent = node.parent
-                    if (parent.parent) {
-                        break
-                    }
-                    if (parent == parent.parent.left) {
-                        //父亲与叔叔都是红色
-                        var uncle = parent.parent.right
-                        if (uncle.color == "red") { //情况1
-                            parent.color = "black";
-                            uncle.color = "black";
-                            node = parent.parent
-                            node.color = "red"
-                        } else { // 父亲是红色，叔叔是黑色，自己是父亲的右孩子
-                            if (node == parent.right) { //情况4
-                                node = node.parent;
-                                rotateLeft(node);
-                            } //情况5
-                            node.parent.color = "black"
-                            node.parent.parent.color = "red";
-                            rotateRight(node.parent.parent);
-                        }
-                    } else {
-                        uncle = parent.parent.left
-                        if (uncle.color == "red") {
-                            parent.color = "black";
-                            uncle.color = "black";
-                            node = parent.parent
-                            node.color = "red"
-                        } else {
-                            if (node == parent.left) { //情况4
-                                node = node.parent;
-                                rotateRight(node);
-                            }
-                            node.parent.color = "black"
-                            node.parent.parent.color = "red";
-                            rotateLeft(node.parent.parent);
-                        }
-                    }
+                //
+                // The illation of left rotation
+                //
+                //          |                                  |
+                //          X                                  Y
+                //         / \         left rotate            / \
+                //        α  Y       ------------->         X   γ
+                //           / \                            / \
+                //          β  γ                         α  β
+                //
+                // It should be note that during the rotating we do not change
+                // the Nodes' color.
+                //
+                var child = node.right
+                node.right = child.left
+                if (child.left) {
+                    child.left.parent = node
                 }
-                root.color = "black";
-            }
-            _insert(data, root) {
-                var node
-                if (root === null) { //如果不存在根节点
-                    node = new Node(data);
-                }
-                if (this._size === 0) {
-                    node.color = "black";
-                    return node;
-                } else if (this._size == 1) {
+                child.parent = node.parent
 
-                }
-                //console.log(this._size, data, root)
-                var diff = data - root.data;
-                if (diff < 0) {
-                    console.log("=========", root.left)
-                    node = root.left = this._insert(data, root);
-                } else if (diff > 0) {
-                    console.log("111111111", root.right)
-                    node = root.right = this._insert(data, root);
+                if (!node.parent) {
+                    this.root = child
+                } else if (node == node.parent.left) {
+                    node.parent.left = child
                 } else {
-                    this._size--; //不能重复插入相同值，size减一（因为外面会加－）
-                    return root;
+                    node.parent.right = child
                 }
-                if (root.color == "red") {
-                    this._fix(node, root) //修正3，4，5
-                }
-                return node;
+
+                child.left = node
+                node.parent = child
             }
+
+            rightRotate(node) {
+                // Since we are doing the right rotation, the left child should *NOT* nil.
+                if (!node.left) {
+                    return
+                }
+
+                //
+                // The illation of right rotation
+                //
+                //          |                                  |
+                //          X                                  Y
+                //         / \         right rotate           / \
+                //        Y   γ      ------------->         α    X
+                //       / \                                    / \
+                //      α  β                                   β   γ
+                //
+                // It should be note that during the rotating we do not change
+                // the Nodes' color.
+                //
+                var child = node.left
+                node.left = child.right
+                if (child.right) {
+                    child.right.parent = node
+                }
+                child.parent = node.parent
+
+                if (!node.parent) {
+                    this.root = child
+                } else if (node == node.parent.left) {
+                    node.parent.left = child
+                } else {
+                    node.parent.right = child
+                }
+
+                child.right = node;
+                node.parent = child;
+            }
+            insertFixup(node) {
+
+                while (node && node != this.root && node.parent.color == RED) {
+                    //
+                    // Howerver, we do not need the assertion of non-nil grandparent
+                    // because
+                    //
+                    //  2) The root is black
+                    //
+                    // Since the color of the parent is RED, so the parent is not root
+                    // and the grandparent must be exist.
+                    //
+                    if (node.parent == node.parent.parent.left) {
+                        // Take y as the uncle, although it can be NIL, in that case
+                        // its color is BLACK
+                        var uncle = node.parent.parent.right
+                        //uncle不存在当作黑
+                        if (uncle && uncle.color == RED) {
+                            //
+                            // Case 1:
+                            // parent and uncle are both RED, the grandparent must be BLACK
+                            // due to
+                            //
+                            //  4) Both children of every red node are black
+                            //
+                            // Since the current node and its parent are all RED, we still
+                            // in violation of 4), So repaint both the parent and the uncle
+                            // to BLACK and grandparent to RED(to maintain 5)
+                            //
+                            //  5) Every simple path from root to leaves contains the same
+                            //     number of black nodes.
+                            //
+                            node.parent.color = BLACK
+                            uncle.color = BLACK
+                            node.parent.parent.color = RED
+                            node = node.parent.parent
+                        } else {
+                            if (node == node.parent.right) {
+                                //
+                                // Case 2:
+                                // parent is RED and uncle is BLACK and the current node
+                                // is right child
+                                //
+                                // A left rotation on the parent of the current node will
+                                // switch the roles of each other. This still leaves us in
+                                // violation of 4).
+                                // The continuation into Case 3 will fix that.
+                                //
+                                node = node.parent
+                                this.leftRotate(node)
+                            }
+                            //
+                            // Case 3:
+                            // parent is RED and uncle is BLACK and the current node is
+                            // left child
+                            //
+                            // At the very beginning of Case 3, current node and parent are
+                            // both RED, thus we violate 4).
+                            // Repaint parent to BLACK will fix it, but 5) does not allow
+                            // this because all paths that go through the parent will get
+                            // 1 more black node. Then repaint grandparent to RED (as we
+                            // discussed before, the grandparent is BLACK) and do a right
+                            // rotation will fix that.
+                            //
+                            node.parent.color = BLACK
+                            node.parent.parent.color = RED
+                            this.rightRotate(node.parent.parent)
+                        }
+                    } else { // same as then clause with "right" and "left" exchanged
+                        uncle = node.parent.parent.left
+                        if (uncle && uncle.color == RED) {
+                            node.parent.color = BLACK
+                            uncle.color = BLACK
+
+                            node.parent.parent.color = RED
+                            node = node.parent.parent
+                        } else {
+                            if (node == node.parent.left) {
+                                node = node.parent
+                                this.rightRotate(node)
+                            }
+                            node.parent.color = BLACK
+                            node.parent.parent.color = RED
+                            this.leftRotate(node.parent.parent)
+                        }
+                    }
+                }
+                this.root.color = BLACK
+            }
+
 
             remove(data) {
                 var parent = this.root;
@@ -272,75 +265,7 @@
                 }
                 this._size--;
             }
-            _remove(data, root) {
-                // Perform regular BST deletion
-                if (root === null) {
-                    this._size++;
-                    return root;
-                }
-                var diff = data - root.data
 
-                if (diff < 0) {
-                    // The data to be deleted is in the left sub-tree
-                    root.left = this._remove(data, root.left);
-                } else if (diff > 0) {
-                    // The data to be deleted is in the right sub-tree
-                    root.right = this._remove(data, root.right);
-                } else {
-                    // root is the node to be deleted
-                    if (!root.left && !root.right) {
-                        root = null;
-                    } else if (!root.left && root.right) {
-                        root = root.right;
-                    } else if (root.left && !root.right) {
-                        root = root.left;
-                    } else {
-                        // Node has 2 children, get the in-order successor
-                        var inOrderSuccessor = this.minNode(root.right);
-                        root.data = inOrderSuccessor.data;
-                        root.right = this._remove(inOrderSuccessor.data, root.right);
-                    }
-                }
-
-                if (root === null) {
-                    return root;
-                }
-
-                // Update height and rebalance tree
-                root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
-                var balanceState = getBalance(root);
-
-                if (balanceState === BalanceState.UNBALANCED_LEFT) {
-                    // Left left case
-                    if (getBalance(root.left) === BalanceState.BALANCED ||
-                        getBalance(root.left) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
-                        return root.rotateRight();
-                    }
-                    // Left right case
-                    if (getBalance(root.left) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
-                        root.left = root.left.rotateLeft();
-                        return root.rotateRight();
-                    }
-                }
-
-                if (balanceState === BalanceState.UNBALANCED_RIGHT) {
-                    // Right right case
-                    if (getBalance(root.right) === BalanceState.BALANCED ||
-                        getBalance(root.right) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
-                        return root.rotateLeft();
-                    }
-                    // Right left case
-                    if (getBalance(root.right) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
-                        root.right = root.right.rotateRight();
-                        return root.rotateLeft();
-                    }
-                }
-
-                return root;
-            }
-            find(data) {
-                //....
-            }
             minNode(node) {
                 var current = node || this.root;
                 while (current && current.left) {
@@ -366,21 +291,28 @@
                     parentNode.id = this.uuid;
                     document.body.appendChild(parentNode);
                     var top = parentNode.appendChild(document.createElement("center"));
-                    top.style.cssText = "background:" + bg();
+                    top.style.cssText = "background:" + bg(node.color)
                     top.innerHTML = node.data;
+                    
                 }
-                var a = parentNode.appendChild(document.createElement("div"))
-                a.style.cssText = "overflow:hidden";
+              
+                    var a = parentNode.appendChild(document.createElement("div"))
+                    a.style.cssText = "overflow:hidden";
+             
+             
                 if (node.left) {
                     var b = a.appendChild(document.createElement("div"))
-                    b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg();
+                    b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg(node.left.color)
                     b.innerHTML = node.left.data;
+                
                     this.show(node.left, b);
                 }
                 if (node.right) {
                     var c = a.appendChild(document.createElement("div"))
-                    c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg();
+
+                    c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg(node.right.color)
                     c.innerHTML = node.right.data;
+                  
                     this.show(node.right, c);
                 }
             }
@@ -395,21 +327,28 @@
 
 
 
-
-
-
-
-        function bg() {
-            return '#' + (Math.random() * 0xffffff << 0).toString(16);
+        function bg(color) {
+            return color === "red" ? "pink; border:1px solid red;" : "gray; border:1px solid black;"
         }
-        var tree = new AVL() //一会儿改成AVL
+        var tree = new RBTree() //一会儿改成AVL
 
+        //  Array(16, 10, 17, 8, 13, 11, 12).forEach(function(el) {
+        //var arr = [16, 10, 19, 8, 13, 11, 12, 17, 15]
+        var id = setInterval(function() {
+            var el = ~~(Math.random() + "").slice(-3)
 
-        Array(16, 10, 17, 8, 13, 11, 12).forEach(function(el) {
+            if (tree._size > 30) {
+                clearInterval(id)
+                tree.show()
+                return
+            }
+            // tree.clearNode()
             tree.insert(el)
 
-        })
-        tree.show()
+        }, 100)
+        // https://www.cnblogs.com/xrq730/p/6867924.html
+        // https://blog.csdn.net/u011240877/article/details/53329023
+        // https://www.cnblogs.com/skywang12345/p/3624343.html
     </script>
 
 
