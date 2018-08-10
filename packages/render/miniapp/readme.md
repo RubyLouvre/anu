@@ -6,18 +6,24 @@
 定位到  <project-name> 目录下 mpreact start 开始监听文件变化，
 用微信开发工具打开当中的dist目录，自己收在src目录中进行开发
 
+## 与原生小程序的优势
+
+1. 使用rollup进行编译，天然支持 Tree Shaking
+2. 支持在视图中写事件回调的函数体，支持复杂的传参
+3. ReactWX.wx拥有小程序的wx的所有方法，但是对回调风格的方法全部转换成Promise风格
+4. 支持组件继承
+
 ## 与React的差异
 
 1. 微信小程序的事件机制有瑕疵，不支持stopPropagation与preventDefault。我们将e.detail当成事件对象，在它基础上添加type,target,touches,timeStamp等属性
 2. 事件的绑定，不要使用this.props.fn或this.state.fn，要用this.fn这种形式，微信在给模板填数据时，会对数据进行JSON.stringify，清掉所有事件。
 3. 组件系统是基于小程序的template元素，由于不支持slot，因此无法使用`{this.props.children}`实现显式的组件套嵌
-4. ReactWX.wx拥有小程序的wx的所有方法，但是对回调风格的方法全部转换成Promise风格
-5. 不完整支持ref机制（refs可以放入组件实例，但不能放DOM，因为没有DOM）
-6. 无状态组件还没有实现
-7. 还没有支持findDOMNode
-8. 不支持render props
-9. 不支持dangerouslySetInnerHTML属性
-10. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
+4. 不完整支持ref机制（refs可以放入组件实例，但不能放DOM，因为没有DOM）
+5. 无状态组件还没有实现
+6. 还没有支持findDOMNode
+7. 不支持render props
+8. 不支持dangerouslySetInnerHTML属性
+9. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
 
 ## 内部运行机制
 
