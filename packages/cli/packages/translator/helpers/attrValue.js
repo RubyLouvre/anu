@@ -7,12 +7,14 @@ function bindEvent(path, attrName, attrValue, modules) {
     var n = attrName.charAt(0) == "b" ? 4: 5
     var parent = path.parentPath.parent;
     if (parent) {
+       /*
         parent.attributes.push(
             jsx.createAttribute(
-                `data-${attrName.slice(n)}-fn`,
+                `data-${attrName.slice(n)}-fn2`,
                 attrValue.replace(/^\s*this\./, "")
             )
         );
+       
         var hasInstanceCode = parent.attributes.find(function(el) {
             return el.name.name === "data-instance-code";
         });
@@ -27,6 +29,7 @@ function bindEvent(path, attrName, attrValue, modules) {
                 )
             );
         }
+        */
     }
 }
 module.exports = function(path, modules) {

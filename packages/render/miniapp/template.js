@@ -1,18 +1,18 @@
-import { noop, isFn, extend, get } from "react-core/util";
+import { extend } from "react-core/util";
 import { createElement } from "react-core/createElement";
-
+import { getUUID } from "./getUUID";
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     var instances = type.instances;
-    if(!instances){//不是使用创建的
-        return
+    if (!instances) {
+        //不是使用创建的
+        return;
     }
-    if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-        if (instances.indexOf(instance) === -1) {
-            instances.push(instance);
-        }
+    var instanceCode = instance.instanceCode;
+    if (!instanceCode) {
+        instanceCode = instance.instanceCode = getUUID();
+        instances[instanceCode] = instance;
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
@@ -44,7 +44,7 @@ export function onComponentUpdate(fiber) {
             templatedata: inputProps.templatedata //template元素的
         };
         //注入
-        newData.props.instanceCode = instance.instanceCode;
+        newData.props.instanceCode = instanceCode;
         if (instance.updateWXData) {
             var checkProps = fiber.memoizedProps;
             for (var i = 0, el; (el = arr[i++]); ) {
@@ -61,19 +61,16 @@ export function onComponentUpdate(fiber) {
     }
 }
 
-export function onComponentDispose(fiber){
+export function onComponentDispose(fiber) {
     var instance = fiber.stateNode;
-    var type = fiber.type
+    var type = fiber.type;
     var instances = type.instances;
-    if(!instances){
-        return
+    if (!instances) {
+        return;
     }
     var pageInst = instance.$pageInst;
     if (pageInst) {
-        var i = instances.indexOf(instance);
-        if (i !== -1) {
-            instances.push(i, 1);
-        }
+        delete instances[instance.instanceCode];
         var props = fiber.props;
         var arr = getData(pageInst);
         for (var i = 0, el; (el = arr[i++]); ) {
@@ -96,7 +93,7 @@ export function template(props) {
     }
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
-        clazz.instances = clazz.instances || [];
+        clazz.instances = clazz.instances || {};
         //如果是有狀态组件
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;

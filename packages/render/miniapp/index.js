@@ -19,7 +19,6 @@ import { initNativeApi } from "./api";
 
 import { Renderer } from "./wxrender";
 let win = getWindow();
-let prevReact = win.React;
 let React;
 //用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
 let classCache = eventSystem.classCache;

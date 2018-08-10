@@ -9,27 +9,14 @@ export var eventSystem = {
         var classCode = dataset.classCode; //类ID
         var componentClass = eventSystem.classCache[classCode]; //类
         var instanceCode = dataset.instanceCode; //实例ID
-        for (var i = 0, el; (el = componentClass.instances[i++]); ) {
-            if (el.instanceCode === instanceCode) {
-                //事件句柄可能是在构造器中添加的，不存在于原型
-                var fn = el[eventName];
-                fn && fn.call(el, createEvent(e, target));
-                break;
-            }
+        var instance = componentClass.instances[instanceCode];
+        if (instance) {
+            var fn = instance.$$eventCached && instance.$$eventCached[eventName];
+            fn && fn.call(instance, createEvent(e, target));
         }
     }
 };
-/**
- * 
-for (var i = 0, el; (el = componentClass.instances[i++]); ) {
-            if (el.instanceCode === instanceCode && el.$$eventCached ) {
-                //事件句柄可能是在构造器中添加的，不存在于原型
-                var fn = $$eventCached[eventName]
-                fn && fn.call(el, createEvent(e, target));
-                break;
-            }
-        }
- */
+
 function createEvent(e, target) {
     var event = e.detail || {};
     event.stopPropagation = function() {

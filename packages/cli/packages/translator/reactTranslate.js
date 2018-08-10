@@ -290,6 +290,29 @@ module.exports = {
             }
         }
     },
+    JSXAttribute: function(path) {
+        var attrName = path.node.name.name;
+        if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+            var n = attrName.charAt(0) == "o" ? 2 : 5;
+            var value = jsx.createUUID();
+            var name = `data-${attrName.slice(n).toLowerCase()}-fn`;
+            var attrs = path.parentPath.node.attributes
+            attrs.push(
+                jsx.createAttribute(name, value)
+            );
+            if(!attrs.setClassCode){
+                attrs.setClassCode = true;
+                attrs.push(
+                    jsx.createAttribute("data-class-code", modules.classCode),
+                    t.JSXAttribute(
+                        t.JSXIdentifier("data-instance-code"),
+                        t.jSXExpressionContainer(t.identifier("this.props.instanceCode"))
+                    )
+                );
+                
+            }
+        }
+    },
     JSXClosingElement: function(path) {
         var nodeName = path.node.name.name;
         if (

@@ -1,8 +1,9 @@
 import { noop, isFn } from "react-core/util";
 import { createRenderer } from "react-core/createRenderer";
 import { render } from "react-fiber/scheduleWork";
-import { template, onComponentDispose, onComponentUpdate } from "./template";
+import { onComponentDispose, onComponentUpdate } from "./template";
 import { onPageUpdate } from "./createPage";
+import { eventSystem } from "./eventSystem";
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
@@ -37,23 +38,34 @@ function getEventCode(name, props) {
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
-       /* let { props, lastProps } = fiber;
-        var owner = fiber._owner;
-        var cached = owner.$$eventCached || (owner.$$eventCached = {});
-        for (var name in props) {
-            if (onEvent.test(name) && isFn(props[name])) {
-                var code = getEventCode(name, props);
-                cached[code] = props[name];
-            }
-        }
-        if (lastProps) {
-            for (var name in lastProps) {
-                if (onEvent.test(i) && !props[name]) {
-                    var code = getEventCode(name, lastProps);
-                    delete cached[code];
+        let { props, lastProps } = fiber;
+        let classId = props["data-class-code"];
+        var instanceId = props["data-instance-code"];
+        if (classId) {
+            var clazz = eventSystem.classCache[classId];
+            if (clazz && clazz.instances) {
+                var instance = clazz.instances[instanceId];
+                if (instance) {
+                    var cached =
+                        instance.$$eventCached || (instance.$$eventCached = {});
+                    for (let name in props) {
+                        if (onEvent.test(name) && isFn(props[name])) {
+                            var code = getEventCode(name, props);
+                            cached[code] = props[name];
+                        }
+                    }
+                    if (lastProps) {
+                        for (let name in lastProps) {
+                            if (onEvent.test(name) && !props[name]) {
+                                var code = getEventCode(name, lastProps);
+                                delete cached[code];
+                            }
+                        }
+                    }
                 }
             }
-        }*/
+        }
+        //  var owner = fiber._owner;
     },
 
     updateContent(fiber) {

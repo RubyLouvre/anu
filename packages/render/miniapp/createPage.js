@@ -2,17 +2,18 @@ import { eventSystem } from "./eventSystem";
 import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { isFn } from "react-core/util";
+import { getUUID } from "./getUUID";
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     if (!instance.instanceCode) {
-        instance.instanceCode = Math.random();
-        type.instances.push(instance);
+        var uuid = "i" + getUUID();
+        instance.instanceCode = uuid;
+        type.instances[uuid] = instance;
         //用于事件委托中
     }
     instance.props.instanceCode = instance.instanceCode;
-
 }
 
 export function createPage(PageClass, path) {
@@ -20,7 +21,7 @@ export function createPage(PageClass, path) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     //劫持页面组件的生命周期，与setState进行联动
     //获取页面的组件实例
-    PageClass.instances =  PageClass.instances || []
+    PageClass.instances = PageClass.instances || {};
     var instance = render(
         createElement(PageClass, {
             path: path,
@@ -85,27 +86,21 @@ export function createPage(PageClass, path) {
         dispatchEvent: eventSystem.dispatchEvent,
         onShow: function onShow() {
             instance.$wxPage = this;
-            var index = PageClass.instances.indexOf(instance);
-            if (index !== -1) {
-                PageClass.instances.push(instance);
-            }
-            var fn = instance.componentDidShow()
+            PageClass.instances[instance.instanceCode] = instance;
+            var fn = instance.componentDidShow();
             if (isFn(fn)) {
-               fn.call(instance);
+                fn.call(instance);
             }
         },
         onHide: function onShow() {
-            var index = PageClass.instances.indexOf(instance);
-            if (index !== -1) {
-                PageClass.instances.splice(index, 1);
-            }
-            var fn = instance.componentDidHide()
+            delete PageClass.instances[instance.instanceCode];
+            var fn = instance.componentDidHide();
             if (isFn(fn)) {
-               fn.call(instance);
+                fn.call(instance);
             }
         },
         onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount()
+            var fn = instance.componentWillUnmount();
             if (isFn(fn)) {
                 fn.call(instance);
             }
