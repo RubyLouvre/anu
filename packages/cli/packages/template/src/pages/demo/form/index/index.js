@@ -16,6 +16,18 @@ class P extends React.Component {
                 url: `${ROOT_PATH}/input/index`,
                 name: 'input'
             },
+            {
+                url: `${ROOT_PATH}/slider/index`,
+                name: 'slider'
+            },
+            {
+                url: `${ROOT_PATH}/picker/index`,
+                name: 'picker'
+            },
+            {
+                url: `${ROOT_PATH}/radio/index`,
+                name: 'radio'
+            },
             // {
             //     url: '',
             //     name: 'label'
@@ -32,10 +44,7 @@ class P extends React.Component {
             //     url: '',
             //     name: 'radio'
             // },
-            // {
-            //     url: '',
-            //     name: 'slider'
-            // },
+            
             // {
             //     url: '',
             //     name: 'switch'

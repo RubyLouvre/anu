@@ -1,6 +1,6 @@
 import React from "../../ReactWX";
 import Dog from "../../components/dog/dog";
-import "./index.scss";
+import "./index.less";
 const var1 = "游离变量";
 class P extends React.Component {
     constructor(props) {
