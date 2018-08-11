@@ -27,6 +27,7 @@ function transform(code, sourcePath) {
     } else if (/app\.js/.test(sourcePath)) {
         modules.componentType = "App";
     }
+
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
@@ -46,9 +47,10 @@ function transform(code, sourcePath) {
     })
 
     var ret = Object.assign({}, modules);
+   
     modules.reset();
 
-    ret.js = result.code;
+    ret.js = result.code
     return ret;
 }
 

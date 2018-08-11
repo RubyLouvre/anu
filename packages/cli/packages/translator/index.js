@@ -29,8 +29,6 @@ const outputDirPath = path.resolve(projectPath, '../dist');
 
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 
-var log = console.log;
-
 
 
 if (nodejsVersion < 7) {
@@ -142,7 +140,6 @@ class Parser {
             return collect;
         }, []);
         const promises = modules.map(m => {
-           
             /**
              * TypeError [ERR_INVALID_ARG_VALUE]: The argument 'path' must be a string or Uint8Array without null bytes. Received 'path/anu/build/\u0000commonjsHelpers'
              * 总报这个错误，咱未查找到原因，暂时先屏蔽
@@ -154,7 +151,7 @@ class Parser {
             
         });
         await Promise.all(promises)
-        await this.processJSON();
+       
      
         //拷贝project.config.json
         const filePath = path.resolve(sourceDirPath, "project.config.json");
@@ -165,12 +162,7 @@ class Parser {
             fs.copyFile(filePath, path.join(this.output)  + "/project.config.json", () => {});
         }
     }
-    async processJSON() {
-        this.outputs.forEach(function(el) {
-           // console.log(el.type)
-          
-        })
-    }
+
     async codegen(id, dependencies, code, babeled) {
 
         if(/node_modules/g.test(id)) return; //不写入npm资源。
@@ -188,11 +180,9 @@ class Parser {
 
         await fs.ensureFile(path.resolve(destPath));
         const output = transform(code, sourcePath);
-        const srcBasePath = id.replace(".js", "");
         const basePath = destPath.replace(".js", "");
 
-        
-
+    
         
         //生成ReactWX
         if(/reactWX/i.test(destPath)){

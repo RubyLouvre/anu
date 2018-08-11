@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-10
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-11
  * IE9+
  */
 
@@ -1919,10 +1919,13 @@ function createPage(PageClass, path) {
                     props: pageInst.props
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                pageInst.$wxPage.setData(data);
+                $wxPage.setData(data);
             }
         };
         updateMethod.apply(this, args);
+    };
+    var $wxPage = {
+        setData: noop
     };
     var config = {
         data: {
@@ -1930,8 +1933,11 @@ function createPage(PageClass, path) {
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad() {
+            $wxPage = this;
+        },
         onShow: function onShow() {
-            instance.$wxPage = this;
+            $wxPage = this;
             PageClass.instances[instance.instanceCode] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {

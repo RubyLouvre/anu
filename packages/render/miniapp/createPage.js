@@ -1,8 +1,18 @@
-import { eventSystem } from "./eventSystem";
-import { render } from "react-fiber/scheduleWork";
-import { createElement } from "react-core/createElement";
-import { isFn } from "react-core/util";
-import { getUUID } from "./getUUID";
+import {
+    eventSystem
+} from "./eventSystem";
+import {
+    render
+} from "react-fiber/scheduleWork";
+import {
+    createElement
+} from "react-core/createElement";
+import {
+    isFn, noop
+} from "react-core/util";
+import {
+    getUUID
+} from "./getUUID";
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -26,13 +36,12 @@ export function createPage(PageClass, path) {
         createElement(PageClass, {
             path: path,
             isPageComponent: true
-        }),
-        {
+        }), {
             type: "page",
             props: {},
             children: [],
             root: true,
-            appendChild: function() {}
+            appendChild: function () {}
         }
     );
     //劫持setState
@@ -40,7 +49,7 @@ export function createPage(PageClass, path) {
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.forceUpdate = instance.setState = function(a) {
+    instance.forceUpdate = instance.setState = function (a) {
         var updateMethod = anuSetState;
         var cbIndex = 1;
         if (isFn(a) || a == null) {
@@ -62,7 +71,7 @@ export function createPage(PageClass, path) {
         var inst = this,
             cb = arguments[cbIndex],
             args = Array.prototype.slice.call(arguments);
-        args[cbIndex] = function() {
+        args[cbIndex] = function () {
             cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
@@ -72,20 +81,25 @@ export function createPage(PageClass, path) {
                     props: pageInst.props
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                pageInst.$wxPage.setData(data);
+                $wxPage.setData(data);
             }
         };
         updateMethod.apply(this, args);
     };
-
+    var $wxPage = {
+        setData: noop
+    }
     var config = {
         data: {
             state: instance.state,
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function () {
+            $wxPage = this;
+        },
         onShow: function onShow() {
-            instance.$wxPage = this;
+            $wxPage = this;
             PageClass.instances[instance.instanceCode] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
@@ -112,7 +126,7 @@ export function createPage(PageClass, path) {
 }
 
 function applyChildComponentData(data, list) {
-    list.forEach(function(el) {
+    list.forEach(function (el) {
         if (data[el.templatedata]) {
             data[el.templatedata].push(el);
         } else {

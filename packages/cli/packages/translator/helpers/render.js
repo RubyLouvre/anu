@@ -19,7 +19,11 @@ module.exports = function render(path, type, componentName, modules) {
         var jsx = generate(expr.argument).code;
         var jsxAst = babel.transform(jsx, {
             babelrc: false,
-            plugins: ["transform-react-jsx"]
+            plugins: ["transform-react-jsx"
+               // ["transform-react-jsx", {
+              //      "pragma": "h"
+              //  }]
+            ]
         });
 
         expr.argument = jsxAst.ast.program.body[0];

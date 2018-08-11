@@ -1,7 +1,6 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const nPath = require("path");
-const template = require("babel-template");
 
 const helpers = require("./helpers");
 const modules = require("./modules");
@@ -9,8 +8,7 @@ const jsx = require("./jsx/jsx");
 
 
 const fs = require('fs');
-const fs_extra = require('fs-extra');
-const chalk = require('chalk');
+const fsExtra = require('fs-extra');
 
 
 
@@ -33,7 +31,7 @@ const isBuildInLibs = function(name){
     let libs = new Set(require('repl')._builtinLibs);
     return libs.has(name);
 }
-const copy_Node_Modules_To_Build_Npm = function(source){
+const copyNodeModuleToBuildNpm = function(source){
 
 
     let node_modules_sources_path = nPath.join(process.cwd(), 'node_modules', source);
@@ -48,16 +46,16 @@ const copy_Node_Modules_To_Build_Npm = function(source){
 
     //拷贝package.json
     let packageDest = nPath.join(node_modeles_build_sources_path, 'package.json');
-    fs_extra.ensureFileSync(packageDest);
-    fs_extra.copySync(
+    fsExtra.ensureFileSync(packageDest);
+    fsExtra.copySync(
         pkg,
         packageDest
     )
     //拷贝package.json中main字段指向的模块
     let libSrc = nPath.join( node_modules_sources_path,  mainFild );
     let libDest = nPath.join(node_modeles_build_sources_path, mainFild);
-    fs_extra.ensureFileSync(libDest)
-    fs_extra.copySync(
+    fsExtra.ensureFileSync(libDest)
+    fsExtra.copySync(
         libSrc,
         libDest,
         {
@@ -73,7 +71,7 @@ const copy_Node_Modules_To_Build_Npm = function(source){
 }
 
 
-const get_mini_node_module_path = function(fileSourcePath, source){
+const getNodeModulePath = function(fileSourcePath, source){
    let from = nPath.dirname(fileSourcePath.replace('src', 'dist'));
    let to = '/dist/npm/';
    let _relative = nPath.relative(from, to);
@@ -84,34 +82,14 @@ const get_mini_node_module_path = function(fileSourcePath, source){
        console.log(`无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`);
        process.exit(1);
     }
-   let ast_value = nPath.join(
+   let astValue = nPath.join(
         _relative, 
         source, 
         mainFild.replace(/\.(js)/, '')
     )
-   return ast_value;
+   return astValue;
 }
 
-
-var appValidKeys = {
-    pages: 1,
-    window: 1,
-    tabBar: 1,
-    networkTimeout: 1,
-    debug: 1
-};
-var pageValidKeys = {
-    navigationBarBackgroundColor: 1,
-    navigationBarTextStyle: 1,
-    navigationBarTitleText: 1,
-    backgroundColor: 1,
-    backgroundTextStyle: 1,
-    enablePullDownRefresh: 1,
-    disableScroll: 1,
-    onReachBottomDistance: 1,
-    component: 1,
-    usingComponents: 1
-};
 module.exports = {
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
@@ -196,11 +174,11 @@ module.exports = {
         //to do: 抛错提示
         if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
         //复制到build npm目录
-        copy_Node_Modules_To_Build_Npm(source); 
+        copyNodeModuleToBuildNpm(source); 
 
        
         //修改ast中 import(path)声明中的path路径
-        node.source.value = get_mini_node_module_path(modules.current, source);
+        node.source.value = getNodeModulePath(modules.current, source);
 
     },
 
@@ -246,7 +224,7 @@ module.exports = {
                 jsonStr = JSON.stringify(eval('(' + code + ')'), null , 4)  
             }
 
-            fs_extra.ensureFileSync(destJSON)
+            fsExtra.ensureFileSync(destJSON)
             fs.writeFileSync(
                 destJSON,
                 jsonStr,
@@ -306,8 +284,8 @@ module.exports = {
         //to do: 解析 require(mode_modules)
         // if(callee.name === 'require') {
         //     if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
-        //     copy_Node_Modules_To_Build_Npm(source); 
-        //     node.arguments[0].value = nPath.join(get_mini_node_module_path(modules.current), source);
+        //     copyNodeModuleToBuildNpm(source); 
+        //     node.arguments[0].value = nPath.join(getNodeModulePath(modules.current), source);
         // }
 
     },
@@ -354,7 +332,6 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier("this.props.instanceCode"))
                     )
                 );
-                
             }
         }
     },

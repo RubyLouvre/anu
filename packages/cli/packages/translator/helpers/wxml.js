@@ -7,16 +7,20 @@ const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
 const jsx = require("../jsx/jsx");
+const chineseHelper = require("./chinese")
+/*
 var runicode = /\\u[a-f\d]{4}/,
     unicodeArray = [],
     unicodeNumber = 0,
     unicodeMather;
+*/
+var chineseHack = chineseHelper()
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
 function wxml(code) {
-    unicodeNumber = 0;
-  
+   
+
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
@@ -29,18 +33,20 @@ function wxml(code) {
         ]
     });
     var html = result.code;
-    if (unicodeNumber) {
-        console.log("恢复中文",unicodeArray.concat(), unicodeMather)
-        html = html.replace(unicodeMather, function(a) {
+    if (chineseHack.unicodeNumber) {
+       return chineseHack.recovery(html)
+      /*  console.log("恢复中文", unicodeArray.concat(), unicodeMather)
+        html = html.replace(unicodeMather, function (a) {
             return unicodeArray.shift()
         })
         unicodeNumber = 0
+        */
     }
     return html;
 }
 var visitor = {
     JSXOpeningElement: {
-        exit: function(path) {
+        exit: function (path) {
             //   enter: function(path) {
             var openTag = path.node.name;
             if (
@@ -49,7 +55,7 @@ var visitor = {
                 openTag.property.name === "template"
             ) {
                 var array, is, key;
-                path.node.attributes.forEach(function(el) {
+                path.node.attributes.forEach(function (el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
                     if (/^\{\{.+\}\}/.test(attrValue)) {
@@ -104,15 +110,29 @@ var visitor = {
         }
     },
     JSXAttribute(path) {
+        chineseHack.collect(path);
+        /*
         var valueNode = path.node.value;
-        if (valueNode && valueNode.type === "StringLiteral" && runicode.test(valueNode.value)) {
-            if (!unicodeNumber) {
-                unicodeNumber = Math.random().toString().slice(-10)
-                unicodeMather = RegExp(unicodeNumber, "g")
+        if (valueNode) {
+            if (valueNode.type === "StringLiteral") {
+                // placeholder="中文"
+                target = valueNode
+            } else if (valueNode.type === "JSXExpressionContainer" &&
+                valueNode.expression.type === "StringLiteral"
+            ) {
+                // placeholder={"中文"}
+                target = valueNode.expression
             }
-            unicodeArray.push( unescape(valueNode.value.replace(/\\/g, "%")))
-            valueNode.value = unicodeNumber
+            if (target && runicode.test(target.value)) {
+                if (!unicodeNumber) {
+                    unicodeNumber = Math.random().toString().slice(-10)
+                    unicodeMather = RegExp(unicodeNumber, "g")
+                }
+                unicodeArray.push(unescape(valueNode.value.replace(/\\/g, "%")))
+                target.value = unicodeNumber
+            }
         }
+        */
         attrNameHelper(path);
     },
 
