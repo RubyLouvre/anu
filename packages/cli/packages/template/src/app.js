@@ -10,12 +10,15 @@ import "./pages/demo/form/input/index";
 import "./pages/demo/form/slider/index";
 import "./pages/demo/form/picker/index";
 import "./pages/demo/form/radio/index";
-
+import "./pages/demo/form/textarea/index";
+import "./pages/demo/form/label/index";
 
 import "./pages/demo/base_content/base/index";
 import "./pages/demo/view/index/index";
 import "./pages/demo/view/view/index";
 import "./pages/demo/view/scroll_view/index";
+import "./pages/demo/view/swiper/index";
+import "./pages/demo/view/movable_view/index";
 
 import "./app.less";
 
@@ -33,11 +36,15 @@ class Demo extends React.Component {
       "pages/demo/form/slider/index",
       "pages/demo/form/picker/index",
       "pages/demo/form/radio/index",
+      "pages/demo/form/textarea/index",
+      "pages/demo/form/label/index",
       "pages/demo/base_content/base/index",
       "pages/demo/view/index/index",
       "pages/demo/view/view/index",
-      "pages/demo/view/scroll_view/index"
-
+      "pages/demo/view/scroll_view/index",
+      "pages/demo/view/swiper/index",
+      "pages/demo/view/movable_view/index",
+      
 
 
 

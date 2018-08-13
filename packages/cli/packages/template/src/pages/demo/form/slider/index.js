@@ -8,7 +8,7 @@ class P extends React.Component {
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "#fff",
         "navigationBarBackgroundColor": "#0088a4",
-        "navigationBarTitleText": "button demo",
+        "navigationBarTitleText": "slider and switch demo",
         "backgroundColor": "#eeeeee",
         "backgroundTextStyle": "light"
     }

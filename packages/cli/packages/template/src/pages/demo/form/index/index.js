@@ -28,6 +28,14 @@ class P extends React.Component {
                 url: `${ROOT_PATH}/radio/index`,
                 name: 'radio'
             },
+            {
+                url: `${ROOT_PATH}/textarea/index`,
+                name: 'textarea'
+            },
+            {
+                url: `${ROOT_PATH}/label/index`,
+                name: 'label'
+            }
             // {
             //     url: '',
             //     name: 'label'
@@ -67,14 +75,16 @@ class P extends React.Component {
     render() {
         return (
             <div class='container'>
-                {   
-                    //issues, 渲染class上非state数据
-                    this.state.nv.map(function(item){
-                        return (
-                            <div><navigator open-type="navigate" class='item' hover-class="navigator-hover" url={item.url}>{item.name}</navigator></div>
-                        ) 
-                    }, true)
-                }
+                <ul class='item-list'>
+                    {   
+                        //issues, 渲染class上非state数据
+                        this.state.nv.map(function(item){
+                            return (
+                                <li class='item'><navigator open-type="navigate" hover-class="navigator-hover" url={item.url}>{item.name}</navigator></li>
+                            ) 
+                        }, true)
+                    }
+                </ul>
             </div>
         );
     }

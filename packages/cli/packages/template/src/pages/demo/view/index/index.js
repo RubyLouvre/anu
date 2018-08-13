@@ -8,9 +8,17 @@ class P extends React.Component {
                 url: `${ROOT_PATH}/view/index`,
                 name: 'view'
             },
+            // {
+            //     url: `${ROOT_PATH}/scroll_view/index`,
+            //     name: 'scroll view'
+            // },
             {
-                url: `${ROOT_PATH}/scroll_view/index`,
-                name: 'scroll view'
+                url: `${ROOT_PATH}/swiper/index`,
+                name: 'swiper'
+            },
+            {
+                url: `${ROOT_PATH}/movable_view/index`,
+                name: 'movable view'
             }
            ]
         }
@@ -26,14 +34,16 @@ class P extends React.Component {
     render() {
         return (
             <div class='container'>
-                {   
-                    //issues, 渲染class上非state数据
-                    this.state.nv.map(function(item){
-                        return (
-                            <div><navigator open-type="navigate" class='item' hover-class="navigator-hover" url={item.url}>{item.name}</navigator></div>
-                        ) 
-                    }, true)
-                }
+                <ul class='item-list'>
+                    {   
+                        //issues, 渲染class上非state数据
+                        this.state.nv.map(function(item){
+                            return (
+                                <li class='item'><navigator open-type="navigate"  hover-class="navigator-hover" url={item.url}>{item.name}</navigator></li>
+                            ) 
+                        }, true)
+                    }
+                </ul>
             </div>
         );
     }
