@@ -29,12 +29,12 @@ var autoContainer = {
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventCode(name, props) {
+function getEventHashCode(name, props,key) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    return props["data-" + type + "-fn"];
+    var eventCode =  props[ "data-" + type + "-fn"]
+    return eventCode + (key ? "-" + key : "");
 }
-
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
@@ -46,19 +46,20 @@ export let Renderer = createRenderer({
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
+                    var key = fiber.key !== null?  fiber.key+"" : ""
                     //保存用户创建的事件在实例上
                     var cached =
                         instance.$$eventCached || (instance.$$eventCached = {});
                     for (let name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventCode(name, props);
+                            var code = getEventHashCode(name,props, key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (let name in lastProps) {
                             if (onEvent.test(name) && !props[name]) {
-                                var code = getEventCode(name, lastProps);
+                                var code = getEventHashCode(name,lastProps, key);
                                 delete cached[code];
                             }
                         }

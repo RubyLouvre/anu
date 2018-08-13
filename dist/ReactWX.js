@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-10
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-13
  * IE9+
  */
 
@@ -677,9 +677,11 @@ var eventSystem = {
         var componentClass = eventSystem.classCache[classCode];
         var instanceCode = dataset.instanceCode;
         var instance = componentClass.instances[instanceCode];
+        var key = dataset["key"];
         if (instance) {
             try {
-                var fn = instance.$$eventCached[eventName];
+                console.log(instance.$$eventCached, eventName + (key ? "-" + key : ""));
+                var fn = instance.$$eventCached[eventName + (key ? "-" + key : "")];
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);
@@ -1919,10 +1921,13 @@ function createPage(PageClass, path) {
                     props: pageInst.props
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                pageInst.$wxPage.setData(data);
+                $wxPage.setData(data);
             }
         };
         updateMethod.apply(this, args);
+    };
+    var $wxPage = {
+        setData: noop
     };
     var config = {
         data: {
@@ -1930,8 +1935,11 @@ function createPage(PageClass, path) {
             props: instance.props
         },
         dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad() {
+            $wxPage = this;
+        },
         onShow: function onShow() {
-            instance.$wxPage = this;
+            $wxPage = this;
             PageClass.instances[instance.instanceCode] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
@@ -2423,10 +2431,11 @@ var autoContainer = {
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventCode(name, props) {
+function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    return props["data-" + type + "-fn"];
+    var eventCode = props["data-" + type + "-fn"];
+    return eventCode + (key ? "-" + key : "");
 }
 var Renderer$1 = createRenderer({
     render: render,
@@ -2440,17 +2449,18 @@ var Renderer$1 = createRenderer({
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
+                    var key = fiber.key !== null ? fiber.key + "" : "";
                     var cached = instance.$$eventCached || (instance.$$eventCached = {});
                     for (var name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventCode(name, props);
+                            var code = getEventHashCode(name, props, key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (var _name in lastProps) {
                             if (onEvent.test(_name) && !props[_name]) {
-                                var code = getEventCode(_name, lastProps);
+                                var code = getEventHashCode(_name, lastProps, key);
                                 delete cached[code];
                             }
                         }

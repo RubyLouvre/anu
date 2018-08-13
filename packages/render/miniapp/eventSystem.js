@@ -10,9 +10,12 @@ export var eventSystem = {
         var componentClass = eventSystem.classCache[classCode]; //类
         var instanceCode = dataset.instanceCode; //实例ID
         var instance = componentClass.instances[instanceCode];
+        var key = dataset["key"];
         if (instance) {
             try {
-                var fn = instance.$$eventCached[eventName];
+                console.log(instance.$$eventCached, eventName + (key ? "-" + key : ""))
+                var fn = instance.$$eventCached[eventName + (key ? "-" + key : "")];
+
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);
