@@ -33,6 +33,7 @@
                 this.root = null;
                 this._size = 0;
             }
+            
             insert(data) {
                 if (!this.root) {
                     this.root = new Node(data)
@@ -64,7 +65,6 @@
                 }
                 this.insertFixup(node);
             }
-
             leftRotate(node) {
                 if (!node.right) {
                     return;
@@ -112,6 +112,7 @@
                 child.right = node; //旋转
             }
             insertFixup(node) {
+
 
                 while (node && node != this.root && node.parent.color == RED) {
                     //
@@ -168,14 +169,7 @@
             }
 
 
-            remove(data) {
-                var parent = this.root;
-                this.root = this._remove(data, parent);
-                if (this.root) {
-                    this.root = parent;
-                }
-                this._size--;
-            }
+
             size() {
                 return this._size;
             }
@@ -209,31 +203,212 @@
                 }
             }
 
+            transplant(node, child) {
+                if (node.parent == null) {
+                    this.root = child
+                } else if (node == node.parent.left) {
+                    node.parent.left = child;
+                } else {
+                    node.parent.right = child;
+                }
+                if (child) {
+                    child.parent = node.parent;
+                }
+            }
+            transplant2(parent, grandson) {
+                console.log(parent)
+                if (!parent) {
+                    this.root = child
+                } else {
+                    if (parent.data > grandson.data) {
+                        parent.left = grandson
+                    } else {
+                        parent.right = grandson
+                    }
+                }
+                if (grandson) {
+                    grandson.parent = parent;
+                }
+
+            }
+            find(data) {
+                var node = this.root;
+                while (node) {
+                    if (node.data === data) {
+                        return node
+                    } else if (node.data < data) {
+                        node = node.right
+                    } else if (node.data > data) {
+                        node = node.left
+                    }
+                }
+                return node;
+            }
+            remove(data) {
+                var p = this.find(data);
+                if (p) {
+                    this.removeNode(p)
+                    this._size--;
+                }
+            }
+
+            removeNode(node) {
+                //replace表示删除之后顶替上来的结点
+                //parent为replace结点的父结点
+                var replace = null,
+                    parent = null;
+                // 如果删除的结点左右孩子都有
+                if (node.left != null && node.right != null) {
+                    var succ = null;
+                    for (succ = node.right; succ.left != null; succ = succ.left); //找到后继
+                    node.data = succ.data; //覆盖值
+                    this.removeNode(succ); //递归删除，只可能递归一次
+                    return;
+                } else {
+                    // 叶子或只有一个孩子的情况
+                    var child = node.left || node.right || null
+                    this.transplant(node, child);
+                    replace = child;
+                }
+                //如果待删除结点为红色，直接结束
+                if (node.color == BLACK && replace) {
+                    this.deleteFixUp(replace);
+                }
+            }
+            deleteFixUp(replace) {
+                var brother = null;
+                var parent = replace.parent
+                //https://blog.csdn.net/m0_37589327/article/details/78518324
+                // 如果顶替结点是黑色结点，并且不是根结点。
+                //由于经过了上面的deleteNode方法，这里面parent是一定不为null的
+                while ((replace == null || replace.color == BLACK) && replace != this.root) {
+                    //左孩子位置的所有情况，
+                    if (parent.left == replace) {
+                        brother = parent.right;
+                        // case1 红兄，brother涂黑，parent涂红，parent左旋，replace的兄弟改变了，变成了黑兄的情况
+                        if (brother.color == RED) {
+                            brother.color = BLACK;
+                            parent.color = RED;
+                            this.leftRotate(parent);
+                            brother = parent.right;
+                        }
+                        // 经过上面，不管进没进if，兄弟都成了黑色
+                        // case2 黑兄，且兄弟的两个孩子都为黑
+                        if ((brother.left == null || brother.left.color == BLACK) &&
+                            (brother.right == null || brother.right.color == BLACK)) {
+                            brother.color = RED;
+                            replace = parent;
+                            parent = replace.parent
+                        } else {
+                            // case3 黑兄，兄弟的左孩子为红色
+                            if (brother.right == null || brother.right.color == BLACK) {
+                                if (brother.left) {
+                                    brother.left.color = BLACK;
+                                }
+                                brother.color = RED;
+                                this.rightRotate(brother);
+                                brother = parent.right
+                                // case4 黑兄，兄弟的右孩子为红色
+                            }
+                            brother.color = parent.color;
+                            parent.color = BLACK;
+                            if (brother.right) {
+                                brother.right.color = BLACK;
+                            }
+                            this.leftRotate(parent);
+                            break;
+                        }
+                    } else { //对称位置的情况，把旋转方向反回来
+                        brother = parent.left;
+                        // case1 红兄，brother涂黑，parent涂红，parent左旋，replace的兄弟改变了，变成了黑兄的情况
+                        if (brother.color == RED) {
+                            brother.color = BLACK;
+                            replace.parent.color = RED;
+                            this.rightRotate(parent)
+                            brother = parent.left;
+                        }
+                        // 经过上面，不管进没进if，兄弟都成了黑色
+                        // case2 黑兄，且兄弟的两个孩子都为黑
+                        if ((brother.left == null || brother.left.color == BLACK) &&
+                            (brother.right == null || brother.right.color == BLACK)) {
+                            brother.color = RED;
+                            replace = parent;
+                            parent = replace.parent
+                        } else {
+                            // case3 黑兄，兄弟的左孩子为红色，右孩子随意
+                            if (brother.left == null || brother.left.color == BLACK) {
+                                if (brother.right) {
+                                    brother.right.color = BLACK;
+                                }
+                                brother.color = RED;
+                                this.leftRotate(brother);
+                                brother = parent.left
+                                // case4 黑兄，兄弟的右孩子为红色，左孩子随意
+                            }
+                            brother.color = parent.color;
+                            parent.color = BLACK;
+                            if (brother.left) {
+                                brother.left.color = BLACK;
+                            }
+                            this.rightRotate(parent);
+                            break;
+                        }
+                    }
+                }
+                //这里可以处理到删除结点为只有一个孩子结点的情况，如果是根，也会将其涂黑。
+                if (replace != null) {
+                    replace.color = BLACK;
+                }
+            }
+
+
         }
 
 
         function style(dir) {
-            return `box-sizing: border-box;float:${dir}; width:49%;text-align:center;background:`
+            return `box-sizing: brother-box;float:${dir}; width:49%;text-align:center;background:`
         }
 
         function bg(node) {
-            return node.color === "red" ? "pink;border:1px solid red;" : "gray;border:1px solid black"
+            return node.color === "red" ? "pink;brother:1px solid red;" : "gray;brother:1px solid black"
         }
         var tree = new RBTree() //一会儿改成AVL
 
 
-        var id = setInterval(function () {
-            var el = ~~(Math.random() + "").slice(-3)
+        /*  var id = setInterval(function () {
+              var el = ~~(Math.random() + "").slice(-3)
 
-            if (tree._size > 35) {
-                clearInterval(id)
-                tree.show()
-                return
-            }
-            // tree.clearNode()
+              if (tree._size > 35) {
+                  clearInterval(id)
+                  tree.show()
+                  return
+              }
+              // tree.clearNode()
+              tree.insert(el)
+
+          }, 30)
+          */
+        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
+        arr.forEach(function (el) {
             tree.insert(el)
+        })
 
-        }, 30)
+        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
+        var step = 7;
+        try {
+            arr.forEach(function (el, i) {
+                tree.remove(el)
+                if (i == step) {
+                    throw step
+                }
+            })
+        } catch (e) {
+            console.log(e)
+        }
+        tree.show()
+
+
+
         // https://www.cnblogs.com/xrq730/p/6867924.html
         // https://blog.csdn.net/u011240877/article/details/53329023
         // https://www.cnblogs.com/skywang12345/p/3624343.html
