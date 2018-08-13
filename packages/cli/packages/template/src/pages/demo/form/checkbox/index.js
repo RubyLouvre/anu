@@ -21,7 +21,7 @@ class P extends React.Component {
         "backgroundTextStyle": "light"
     }
     checkboxChange(e){
-        console.log('checkbox发生change事件，携带value值为：', e.detail.value)
+        console.log('checkbox发生change事件，携带value值为：', e.value)
     }
     render() {
         return (

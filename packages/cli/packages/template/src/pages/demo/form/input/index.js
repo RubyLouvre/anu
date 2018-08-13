@@ -48,7 +48,7 @@ class P extends React.Component {
                     <input value='呵呵呵' placeholder='这是一个可以自动聚焦的input' auto-focus/>
                 </div>
                 <div class="section">
-                <input placeholder={'--这个只有在按钮点击的时候才聚焦'} focus={this.state.focus} />
+                <input placeholder='--这个只有在按钮点击的时候才聚焦' focus={this.state.focus} />
                 <div class="btn-area">
                     <button onTap={this.bindButtonTap}>使得输入框获取焦点</button>
                 </div>

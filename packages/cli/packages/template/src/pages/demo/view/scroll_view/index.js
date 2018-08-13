@@ -37,8 +37,9 @@ class P extends React.Component {
         }
     }
     tapMove(e) {
+        var _self = this;
         this.setState({
-            scrollTop: this.state.scrollTop + 10
+            scrollTop: _self.state.scrollTop + 10
         })
     }
     render() {
@@ -46,7 +47,7 @@ class P extends React.Component {
             <div class='container'>
                 <div class="section">
                     <div class="section__title">vertical scroll</div>
-                    <scroll-div scroll-y style="height: 200px;" onScrolltoupper={this.upper} onScrolltolower={this.lower} onScroll={this.scroll} scroll-into-div={this.state.todiv} scroll-top={this.state.scrollTop}>
+                    <scroll-div scroll-y style="height: 200px; overflow: hidden;" onScrolltoupper={this.upper} onScrolltolower={this.lower} onScroll={this.scroll} scroll-into-div={this.state.todiv} scroll-top={this.state.scrollTop}>
                         <div id="green" class="scroll-div-item bc_green"></div>
                         <div id="red"  class="scroll-div-item bc_red"></div>
                         <div id="yellow" class="scroll-div-item bc_yellow"></div>
@@ -71,5 +72,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/div/scroll_view/index"));
+Page(React.createPage(P, "pages/demo/view/scroll_view/index"));
 export default P;
