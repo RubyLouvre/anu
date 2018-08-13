@@ -21,74 +21,43 @@
             constructor(data) {
                 this.parent = null
                 this.data = data;
-                this.color = RED;
                 this.left = null;
                 this.right = null
             }
-            grandparent() {
-                if (parent == null) {
-                    return null;
-                }
-                return parent.parent;
-            }
-            uncle() {
-                var grandparent = this.grandparent();
-                if (!grandparent) {
-                    return null;
-                }
-                if (this.parent == grandparent.right) {
-                    return grandparent.left;
-                } else {
-                    return grandparent.right;
-                }
-            }
-            sibling() {
-                if (this.parent.left == this) {
-                    return this.parent.right
-                } else {
-                    return this.parent.left
-                }
-            }
+
         }
         class Tree {
             constructor() {
                 this.root = null;
+                this._size = 0
             }
             insert(data) {
-                if (!this.root) {
-                    this.root = new Node(data)
-                    this.root.color = "black";
-                    this._size = 1
-                    return
-                }
-                var t = this.root,
-                    parent, diff;
-                do {
-                    parent = t;
-                    diff = data - t.data
-                    //找到适合的位置
-                    if (diff < 0) {
-                        t = t.left;
-                    } else if (diff > 0) {
-                        t = t.right;
-                    } else {
-                        return t;
+                var parent = null, node = this.root, diff
+                while (node) {
+                    parent = node;
+                    diff = data - node.data
+                    if (diff === 0) {
+                        return
+                    } else if (diff < 0) {//data小些，往左找
+                        node = node.left
+                    } else {//data小些，往右找
+                        node = node.right
                     }
-                } while (t);
-                var node = new Node(data)
+                }
                 node.parent = parent;
                 this._size++;
-                if (diff < 0) {
-                    parent.left = node;
+                if (!parent) {
+                    this.root = node
+                } else if (diff < 0) {
+                    parent.left = node
                 } else {
-                    parent.right = node;
+                    parent.right = node
                 }
-                this.fixAfterInsertion(node);
-
             }
-
             find(data) {
                 var ret = null
+
+
 
                 function findIt(node, data) {
                     if (node) {
@@ -107,6 +76,7 @@
             remove(data) {
                 var node = this.find(data);
                 if (node) {
+                    this._size--;
                     var left = node.left,
                         right = node.right, //左右孩子
                         parent = node.parent,
@@ -136,16 +106,12 @@
                             parent.right = right;
                         }
                     } else if (left && right) {
-                        var child = left; //找到left下面的叶子节点
+                        var child = right; //找到left下面的叶子节点
                         while (child.left) {
-                            child = child.left
+                            child = child.left;
                         }
-                        child.parent.left = null; //移出DOM树
-                        child.parent = parent; //替换
-                        if (child !== left) {
-                            child.left = left;
-                            child.right = right;
-                        }
+                        node.data = child.data;
+                        this.remove(node.data);
                     }
                 }
             }

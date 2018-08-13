@@ -33,7 +33,7 @@
                 this.root = null;
                 this._size = 0;
             }
-            
+
             insert(data) {
                 if (!this.root) {
                     this.root = new Node(data)
@@ -255,8 +255,7 @@
             removeNode(node) {
                 //replace表示删除之后顶替上来的结点
                 //parent为replace结点的父结点
-                var replace = null,
-                    parent = null;
+                var replace = null;
                 // 如果删除的结点左右孩子都有
                 if (node.left != null && node.right != null) {
                     var succ = null;
@@ -269,11 +268,12 @@
                     var child = node.left || node.right || null
                     this.transplant(node, child);
                     replace = child;
+                    //如果待删除结点为红色，直接结束
+                    if (node.color == BLACK && replace) {
+                        this.deleteFixUp(replace);
+                    }
                 }
-                //如果待删除结点为红色，直接结束
-                if (node.color == BLACK && replace) {
-                    this.deleteFixUp(replace);
-                }
+
             }
             deleteFixUp(replace) {
                 var brother = null;
