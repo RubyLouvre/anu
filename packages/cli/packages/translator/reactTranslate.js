@@ -6,89 +6,14 @@ const helpers = require("./helpers");
 const modules = require("./modules");
 const jsx = require("./jsx/jsx");
 
-
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 
-
-
-
+const copyNpmModules = require('./helpers/copyModules');
 
 //const Pages = [];
 //  miniCreateClass(ctor, superClass, methods, statics)
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
-
-const isNpm = function(path){
-    const _toString = Object.prototype.toString;
-    if(_toString.call(path) !== '[object String]' || !path) return false;
-    return !/^\/|\./.test(path);
-
-}
-const isAbsolute = function(path){
-    return nPath.isAbsolute(path);
-}
-const isBuildInLibs = function(name){
-    let libs = new Set(require('repl')._builtinLibs);
-    return libs.has(name);
-}
-const copyNodeModuleToBuildNpm = function(source){
-
-
-    let node_modules_sources_path = nPath.join(process.cwd(), 'node_modules', source);
-    let node_modeles_build_sources_path = nPath.join(process.cwd(), `/dist/npm/${source}`);
-    let pkg = nPath.join(node_modules_sources_path, 'package.json');
-    let mainFild = require(pkg).main;
-    
-
-    /**
-     * 定向拷贝
-     */
-
-    //拷贝package.json
-    let packageDest = nPath.join(node_modeles_build_sources_path, 'package.json');
-    fsExtra.ensureFileSync(packageDest);
-    fsExtra.copySync(
-        pkg,
-        packageDest
-    )
-    //拷贝package.json中main字段指向的模块
-    let libSrc = nPath.join( node_modules_sources_path,  mainFild );
-    let libDest = nPath.join(node_modeles_build_sources_path, mainFild);
-    fsExtra.ensureFileSync(libDest)
-    fsExtra.copySync(
-        libSrc,
-        libDest,
-        {
-            overwrite: true,
-            errorOnExist:true,
-        },
-        function(err){
-            if(err) console.log(err);
-        }
-    );
-    
-
-}
-
-
-const getNodeModulePath = function(fileSourcePath, source){
-   let from = nPath.dirname(fileSourcePath.replace('src', 'dist'));
-   let to = '/dist/npm/';
-   let _relative = nPath.relative(from, to);
-   let node_modeles_build_sources_path = nPath.join(process.cwd(), `/dist/npm/${source}`);
-   let pkg = nPath.join(node_modeles_build_sources_path, 'package.json');
-   let mainFild = require(pkg).main;
-   if(!mainFild){
-       console.log(`无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`);
-       process.exit(1);
-    }
-   let astValue = nPath.join(
-        _relative, 
-        source, 
-        mainFild.replace(/\.(js)/, '')
-    )
-   return astValue;
-}
 
 module.exports = {
     ClassDeclaration: helpers.classDeclaration,
@@ -160,25 +85,11 @@ module.exports = {
                if(relativePath === ''){
                  pathStart = './';
                }
-   
                node.source.value =  `${pathStart}${nPath.join(relativePath, nPath.basename(node.source.value))}`
             }
         });
 
-
-        //是否是绝对路径，小程序不支持绝对路径
-        //是否是nodejs内置模块
-        //是否是npm 模块
-        //是否是本地模块
-
-        //to do: 抛错提示
-        if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
-        //复制到build npm目录
-        copyNodeModuleToBuildNpm(source); 
-
-       
-        //修改ast中 import(path)声明中的path路径
-        node.source.value = getNodeModulePath(modules.current, source);
+        copyNpmModules(modules.current, source, node)
 
     },
 
