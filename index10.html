@@ -15,150 +15,355 @@
 
     </div>
     <script>
-        const RED = 1;
-        const BLACK = 0
         class Node {
             constructor(data) {
-                this.parent = null
-                this.data = data;
                 this.left = null;
-                this.right = null
+                this.parent = null;
+                this.right = null;
+                this.height = 0;
+                this.data = data;
             }
-
+            /**
+        * 右旋
+        *
+        *       b                           a
+        *      / \                         / \
+        *     a   e -> b.rotateRight() -> c   b
+        *    / \                             / \
+        *   c   d                           d   e
+        *
+        */
+            rotateRight() {
+                //让它的左孩子的右孩子，成为它的左孩子，
+                //它本身成为左孩子的右孩子。
+                //自己是往右下沉，叫右旋
+                var other = this.left;//a
+                this.left = other.right;//d
+                other.right = this;
+                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
+                other.height = Math.max(other.leftHeight(), this.height) + 1;
+                return other;
+            }
+            /**
+        * 左旋
+        *
+        *     a                              b
+        *    / \                            / \
+        *   c   b   -> a.rotateLeft() ->   a   e
+        *      / \                        / \
+        *     d   e                      c   d
+        *
+        */
+            rotateLeft() {
+                //让它的右孩子的左孩子，成为它的右孩子，
+                //它本身成为右孩子的左孩子。
+                //自己是往左下沉，叫左旋
+                var other = this.right;
+                this.right = other.left;
+                other.left = this;
+                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
+                other.height = Math.max(other.rightHeight(), this.height) + 1;
+                return other;
+            }
+            leftHeight() {
+                if (!this.left) {
+                    return -1;
+                }
+                return this.left.height;
+            }
+            rightHeight() {
+                if (!this.right) {
+                    return -1;
+                }
+                return this.right.height;
+            }
+        };
+        function getData(node) {
+            return node ? node.data : 0
         }
-        class Tree {
+        class AVL {
             constructor() {
                 this.root = null;
-                this._size = 0
+                this._size = 0;
             }
             insert(data) {
-                var parent = null, node = this.root, diff
-                while (node) {
-                    parent = node;
-                    diff = data - node.data
-                    if (diff === 0) {
-                        return
-                    } else if (diff < 0) {//data小些，往左找
-                        node = node.left
-                    } else {//data小些，往右找
-                        node = node.right
-                    }
+                this.root = this.insertNode(this.root, data);
+                this._size++
+            }
+            insertNode(node, data) {
+
+                // The current root node is empty. Create a new node here
+                if (node == null) {
+                    return new Node(data);
                 }
-                node.parent = parent;
-                this._size++;
-                if (!parent) {
-                    this.root = node
-                } else if (diff < 0) {
-                    parent.left = node
+
+                // Is data to insert smaller than the current key value.
+                // Go to the left.
+                if (data == node.data) {
+                    this._size--
+                    return node
+                } else if (data < node.data) {
+                    node.left = this.insertNode(node.left, data);
                 } else {
-                    parent.right = node
+                    node.right = this.insertNode(node.right, data);
                 }
+
+                node = this.balanceTree(node, data);
+
+                // Finally, update the height calculateTreeHeight(rootNode)
+                node.height = this.calculateTreeHeight(node);
+
+                return node;
             }
-            find(data) {
-                var ret = null
+            balanceTree(node, data) {
 
-
-
-                function findIt(node, data) {
-                    if (node) {
-                        if (node.data === data) {
-                            ret = node;
-                        } else {
-                            findIt(node.left, data); //递归
-                            findIt(node.right, data); //递归
-                        }
+                var bf = this.getBalanceValue(node);
+                if (bf > 1) {
+                    // LL
+                    if (data - getData(node.left) < 0) {
+                        return this.rightRotation(node);
+                    }
+                    // LR
+                    if (data - getData(node.left) > 0) {
+                        node.left = this.insertNode(node.left, data)
+                        return this.rightRotation(node);
                     }
                 }
-                findIt(this.root, data);
-                return ret;
+                if (bf < -1) {
+                    // RR
+                    if (data - getData(node.right) > 0) {
+                        return this.leftRotation(node);
+                    }
+                    // RL
+                    if (data - getData(node.left) < 0) {
+                        node.right = this.insertNode(node.right, data);
+                        return this.leftRotation(node);
+                    }
+                }
+
+
+                return node;
+            }
+            rightRotation(node) {
+
+                var newRootNode = node.left
+                var rightChildOfLeft = newRootNode.right
+
+                // Step 1. Set newRootNode as the new root node.
+                newRootNode.right = node;
+
+                // Step 2. Set the right child of the new left child of the new root node. Quite a tongue twister right?
+                node.left = rightChildOfLeft;
+
+                // Step 3. Update the height of the trees that were updated.
+                newRootNode.height = this.calculateTreeHeight(newRootNode);
+                node.height = this.calculateTreeHeight(node);
+
+                return newRootNode;
+            }
+            leftRotation(node) {
+
+                var newRootNode = node.right
+                var leftChildOfRight = newRootNode.left
+
+                // Step 1. set the left child of the new root node
+                newRootNode.left = node
+
+                // Step 2. set the right child of the new left child
+                node.right = leftChildOfRight
+
+                // Step 3. Update the height of the trees that were updated.
+                newRootNode.height = this.calculateTreeHeight(newRootNode);
+                node.height = this.calculateTreeHeight(node);
+
+                return newRootNode;
             }
 
+            getBalanceValue(node) {
+                if (node == null) {
+                    return 0;
+                }
+                var l = node.left ? node.left.height : 0
+                var r = node.right ? node.right.height : 0
+                return l - r;
+            }
+
+            calculateTreeHeight(node) {
+                return Math.max(node.left && node.left.height,
+                    node.right && node.right.height) + 1;
+
+            }
             remove(data) {
-                var node = this.find(data);
-                if (node) {
-                    this._size--;
-                    var left = node.left,
-                        right = node.right, //左右孩子
-                        parent = node.parent,
-                        isLeft = parent && parent.left === node;
-                    if (!left && !right) {
-                        if (node == this.root) {
-                            this.root = null;
-                        } else if (isLeft) {
-                            parent.left = null;
-                        } else {
-                            parent.right = null;
-                        }
-                    } else if (left && !right) {
-                        if (node == this.root) {
-                            this.root = left;
-                        } else if (isLeft) {
-                            parent.left = left;
-                        } else {
-                            parent.right = left;
-                        }
-                    } else if (!left && right) {
-                        if (node == this.root) {
-                            this.root = right;
-                        } else if (isLeft) {
-                            parent.left = right;
-                        } else {
-                            parent.right = right;
-                        }
-                    } else if (left && right) {
-                        var child = right; //找到left下面的叶子节点
-                        while (child.left) {
-                            child = child.left;
-                        }
-                        node.data = child.data;
-                        this.remove(node.data);
-                    }
+                if (!this.root) {
+                    return;
                 }
+                this.root = this.removeNode(this.root, data);
+                this._size--;
             }
-            inOrder(callback) {
-                this._forEach(this.root, callback, "middle");
-            }
-            preOrder(callback) {
-                this._forEach(this.root, callback, "pre");
-            }
-            postOrder(callback) {
-                this._forEach(this.root, callback, "post");
-            }
-            _forEach(node, callback, type) {
-                if (node) {
-                    if (type === "middle") { //中序遍历
-                        this._forEach(node.left, callback, type);
-                        callback(node);
-                        this._forEach(node.right, callback, type);
-                    } else if (type === "pre") { //先序遍历
-                        callback(node);
-                        this._forEach(node.left, callback, type);
-                        this._forEach(node.right, callback, type);
-                    } else if (type === "post") { //后序遍历
-                        this._forEach(node.left, callback, type);
-                        this._forEach(node.right, callback, type);
-                        callback(node);
+            removeNode(node, dataToRemove) {
+                // Base case
+                if (node == null) {
+                    return null;
+                }
+
+                var leftChild = node.left;
+                var rightChild = node.right
+                var currentData = node.data
+                var diff = dataToRemove - currentData
+                if (diff == 0) {
+
+                    //   System.out.println("Found the data that we want to remove: " + currentData);
+
+                    if (leftChild == null && rightChild == null) {
+
+                        return null;
+                    } else if (leftChild == null) {
+
+                        node = null;
+                        return rightChild;
+                    } else if (rightChild == null) {
+                        node = null;
+                        return leftChild;
+                    } else {
+                        // Find the largest node on the left sub-tree
+                        var succ = this.maxNode(leftChild);
+
+                        // Swap the root node with the largest in left sub-tree
+                        node.data = succ.data
+                        // Set left-child recursively. Remove the copy left of the largest left child
+                        node.left = this.removeNode(node.left, succ.data);
+
                     }
+                } else if (diff < 0) {
+                    node.left = this.removeNode(leftChild, dataToRemove);
+                } else {
+                    node.right = this.removeNode(rightChild, dataToRemove);
+                }
+
+                // Update the height parameter
+                node.height = this.calculateTreeHeight(node);
+
+                // Check on every delete operation whether tree has become unbalanced
+                return this.balanceTreeAfterDeletion(node);
+            }
+            balanceTreeAfterDeletion(node) {
+
+                var balanceValue = this.getBalanceValue(node);
+
+                // Left heavy situation. Can be left-left or left-right
+                if (balanceValue > 1) {
+                    // Left-right rotation required. Left rotation on the right child of the root node.
+                    if (this.getBalanceValue(node.left) < 0) {
+                        node.left = this.leftRotation(node.left);
+                    }
+
+                    return this.rightRotation(node);
+                }
+
+                // Right heavy situation. Can be right-right or right-left
+                if (balanceValue < -1) {
+                    // right - left situation. Left rotation on the right child of the root node.
+                    if (this.getBalanceValue(node.right) > 0) {
+                        node.right = this.rightRotation(node.right);
+                    }
+                    // left rotation on the root node
+                    return this.leftRotation(node);
+                }
+
+                return node;
+            }
+            minNode(node) {
+                var current = node || this.root;
+                while (current && current.left) {
+                    current = current.left;
+                }
+                return current;
+            }
+            find(data) {/**略**/ }
+            maxNode(node) {
+                while (node.right) {
+                    node = node.right
+                }
+                return node;
+            }
+            inOrder(cb) {/**略**/ }
+            preOrder(cb) {/**略**/ }
+            postOrder(cb) {/**略**/ }
+            size() {
+                return this._size;
+            }
+            show(node, parentNode) {
+                node = node || this.root
+                if (!parentNode) {
+                    parentNode = document.createElement("div");
+                    document.body.appendChild(parentNode);
+                    this.uuid = this.uuid || "uuid" + (new Date - 0)
+                    parentNode.id = this.uuid;
+                    var top = parentNode.appendChild(document.createElement("center"));
+                    top.style.cssText = "background:" + bg();
+                    top.innerHTML = node.data;
+                }
+                var a = parentNode.appendChild(document.createElement("div"))
+                a.style.cssText = "overflow:hidden";
+                if (node.left) {
+                    var b = a.appendChild(document.createElement("div"))
+                    b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg();
+                    b.innerHTML = node.left.data;
+                    this.show(node.left, b);
+                }
+                if (node.right) {
+                    var c = a.appendChild(document.createElement("div"))
+                    c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg();
+                    c.innerHTML = node.right.data;
+                    this.show(node.right, c);
                 }
             }
         }
-
-        var preArr = "GDAFEMHZ".split("")
-        var inArr = "ADEFGHMZ".split("")
-
-        function getPostArr(preArr, inArr) {
-            var root = preArr[0]
-            var leftTree = [],
-                rightTree = []
-            for (var i = 0, n = inArr.length; i < n; i++) {
-                if (inArr[i] !== root) {
-
-                }
-            }
-
-            var index = inArr.indexOf(root);
-            var
+        function bg() {
+            return '#' + (Math.random() * 0xffffff << 0).toString(16);
         }
+
+
+
+
+        var tree = new AVL() //一会儿改成AVL
+
+
+      /*  var id = setInterval(function () {
+            var el = ~~(Math.random() + "").slice(-3)
+
+            if (tree._size > 35) {
+                clearInterval(id)
+                tree.show()
+                return
+            }
+            // tree.clearNode()
+            tree.insert(el)
+
+        }, 30)
+        */
+        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
+        arr.forEach(function (el) {
+            tree.insert(el)
+        })
+       
+        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
+        var step = 9;
+        try {
+            arr.forEach(function (el, i) {
+                tree.remove(el)
+                if (i == step) {
+                    throw step
+                }
+            })
+        } catch (e) {
+            console.log(e)
+        }
+        tree.show()
+        /*
+        https://github.com/JWLee89/The-Coding-Delight/blob/master/Java/data-structures/AVL-tree/AvlTree.java
+        https://github.com/GodTamIt/java-iterative-avl-tree/blob/master/src/AVL.java
+        */
     </script>
 
 
