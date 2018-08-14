@@ -15,6 +15,7 @@ const transform = require("./transform");
 const modules = require("./modules");
 const less = require('rollup-plugin-less');
 const sass = require('node-sass');
+const throttle = require('throttleit');
 
 let cwd = process.cwd();
 let entryFolder = path.join(cwd, 'src');
@@ -207,17 +208,20 @@ class Parser {
 
     watch(dir) {
         const watcher = wt.watch([dir]);
-        watcher.on("all", info => {
-            console.warn(`文件变化: ${info.path} 重新编译`);
-            const p = info.path;
-            if (/.js|.jsx/.test(p)) {
-                //暂时不编译css
-                this.outputOptions = { ...this.outputOptions,
-                    input: p
-                };
-            }
-            this.parse();
-        });
+        watcher.on("all", throttle(
+            info => {
+                console.warn(`文件变化: ${info.path} 重新编译`);
+                const p = info.path;
+                if (/.js|.jsx/.test(p)) {
+                    //暂时不编译css
+                    this.outputOptions = {
+                        ...this.outputOptions,
+                        input: p
+                    };
+                }
+                this.parse();
+            }, 500
+        ));
     }
 }
 
