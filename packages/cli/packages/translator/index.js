@@ -14,7 +14,6 @@ const fs = require("fs-extra");
 const transform = require("./transform");
 const modules = require("./modules");
 const less = require('rollup-plugin-less');
-const scss = require('rollup-plugin-scss');
 const sass = require('node-sass');
 
 let cwd = process.cwd();
@@ -71,9 +70,6 @@ class Parser {
                       fs.writeFileSync(dist, code, 'utf-8');
                       return code;
                     }
-                }),
-                scss({
-                    output: function(){}
                 }),
                 resolve(),
                 commonjs({

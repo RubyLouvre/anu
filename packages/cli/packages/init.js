@@ -128,15 +128,12 @@ const writePkgJson = (appName)=>{
 const writeDir = (appName)=>{
     if(exists(appName)){
         console.log();
-        console.log(chalk.bold.red(`目录${appName}已存在,请检查!`));
+        console.log(chalk.bold.red(`目录 ${appName} 已存在,请检查!`));
         console.log();
         process.exit(1);
     }
 
     //复制模板
-
-   
-
     fs.ensureDirSync(appName);
     const templates = fs.readdirSync(path.join(ownRoot, 'packages', 'template'));
     templates.forEach((item)=>{
@@ -145,20 +142,6 @@ const writeDir = (appName)=>{
         let dest = path.join(appName, item);
         fs.copySync(src,dest)
     });
-
-    
-
-    // let styleSrc =  path.join(process.cwd(), appName, 'src', 'pages', 'index', 'index.style');
-    // let styleDest =  path.join(process.cwd(), appName, 'src', 'pages', 'index', `index.${meta.style}`);
-    // child_process.exec(
-    //     `mv ${styleSrc} ${styleDest}`,
-    //     (err)=>{
-    //         if(err){
-    //             console.error(` ${err}`);
-    //             return;
-    //         }
-    //     }
-    // );
 
     
 
@@ -175,16 +158,29 @@ const writeDir = (appName)=>{
 }
 
 const install = (projectRoot, useYarn)=>{
-   //to do: yarn 安装
+   
+   let bin = '';
+   let option = ['install'];
    process.chdir(projectRoot);
+   if(utils.useYarn()){
+       bin = 'yarn';
+   }else if(utils.useCnpm()){
+       bin = 'cnpm';
+   }else {
+       bin = 'npm'
+   }
+
    var result =  spawn.sync(
-        'yarn',
-        ['install'],
+        bin,
+        option,
         { stdio: 'inherit' }
     )
     if(!result.error){
-        console.log();
         console.log(chalk.green('依赖安装完毕!🍺'));
+        console.log();
+    }else{
+        console.log(chalk.red('依赖安装出错，请自行安装!'));
+        console.log();
     }
 
 }
