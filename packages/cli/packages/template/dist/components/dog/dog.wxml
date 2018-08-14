@@ -1,5 +1,0 @@
-<template name="Dog">
-  <view catchtap="dispatchEvent" data-tap-fn="changeAge" data-class-code="c39874194970132004" data-instance-code="{{props.instanceCode}}">
-    {{state.name}}-{{state.age}}
-  </view>
-</template>

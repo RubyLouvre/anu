@@ -1,14 +1,27 @@
 import React from "../../ReactWX";
-const var1 = "游离变量";
-class P extends React.Component {
+
+class Index extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            name: "欢迎使用React转小程序",
-            array: [
-                { name: "dog1", text: "text1", age: 11 },
-                { name: "dog2", text: "text2", age: 8 },
-                { name: "dog3", text: "text3", age: 6 }
+            title: "使用 React 编写小程序",
+            pages: [
+                {
+                    title: '表单组件',
+                    url: '/pages/demo/form/index/index'
+                },
+                {
+                    title: '视图组件',
+                    url: '/pages/demo/view/index/index'
+                },
+                {
+                    title: '媒体组件',
+                    url: '/pages/demo/media/index/index'
+                },
+                {
+                    title: '基础内容',
+                    url: '/pages/demo/baseContent/base/index'
+                }
             ]
         };
     }
@@ -19,38 +32,22 @@ class P extends React.Component {
         "backgroundColor": "#eeeeee",
         "backgroundTextStyle": "light"
     }
-    onClick() {
-        console.log('click event trigger from container...');
-    }
-    onKeyDown() {
-        console.log("test keydown");
-    }
     render() {
         return (
-            <div class='container' onTap={this.onClick} onKeyDown={this.onKeyDown}>
-                <div class='page_hd'>{this.state.name}</div>
+            <div class='container'>
+                <div class='page_hd'>{this.state.title}</div>
                 <div class='page_bd'>
                     <div class='navigation'>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage1/index">组件化</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/otherPage2/index">事件</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/form/index/index">form</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/view/index/index">view</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/demo/base_content/base/index">基础内容</navigator>
-                        <navigator open-type="navigate" class='item' hover-class="navigator-hover" url="/pages/test/index">for a test</navigator>
+                        {
+                            this.state.pages.map(function(page) {
+                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>
+                            })
+                        }
                     </div>
-                    {/* <div>
-                        {this.state.array.map(function(el) {
-                            return (
-                                <Dog key={el.name} name={el.name} age={el.age}>
-                                    {el.text}
-                                </Dog>
-                            );
-                        }, true)}
-                    </div> */}
                 </div>
             </div>
         );
     }
 }
-Page(React.createPage(P, "pages/index/index"));
-export default P;
+Page(React.createPage(Index, "pages/index/index"));
+export default Index;
