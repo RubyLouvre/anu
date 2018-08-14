@@ -157,15 +157,15 @@ module.exports = {
     MemberExpression(path) {},
     AssignmentExpression(path) {
         // 转换微信小程序component的properties对象为defaultProps
-        if (modules.className) {
-            const left = path.node.left;
-            if (
-                left.object.name === modules.className &&
-                left.property.name === "defaultProps"
-            ) {
-                helpers.defaultProps(path.node.right.properties, modules);
-                path.remove();
-            }
+        let left = path.node.left;
+        if (
+            modules.className
+            && t.isMemberExpression(left)
+            && left.object.name === modules.className
+            && left.property.name === 'defaultProps'
+        ) {
+            helpers.defaultProps(path.node.right.properties, modules);
+            path.remove();
         }
     },
     CallExpression(path) {
