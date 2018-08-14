@@ -1,5 +1,0 @@
-<view class="container">
-  <view class="page-guide-text">{{state.name}}</view>
-  <button class="btn" bindtap="dispatchEvent" data-tap-fn="updateText" data-class-code="c33960053324413697" data-instance-code="{{props.instanceCode}}">更改文字</button>
-  <button class="btn" bindtap="dispatchEvent" data-tap-fn="resetText" data-class-code="c33960053324413697" data-instance-code="{{props.instanceCode}}">重置</button>
-</view>
