@@ -23,97 +23,148 @@
                 this.height = 0;
                 this.data = data;
             }
-            /**
-        * 右旋
-        *
-        *       b                           a
-        *      / \                         / \
-        *     a   e -> b.rotateRight() -> c   b
-        *    / \                             / \
-        *   c   d                           d   e
-        *
-        */
-            rotateRight() {
-                //让它的左孩子的右孩子，成为它的左孩子，
-                //它本身成为左孩子的右孩子。
-                //自己是往右下沉，叫右旋
-                var other = this.left;//a
-                this.left = other.right;//d
-                other.right = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.leftHeight(), this.height) + 1;
-                return other;
-            }
-            /**
-        * 左旋
-        *
-        *     a                              b
-        *    / \                            / \
-        *   c   b   -> a.rotateLeft() ->   a   e
-        *      / \                        / \
-        *     d   e                      c   d
-        *
-        */
-            rotateLeft() {
-                //让它的右孩子的左孩子，成为它的右孩子，
-                //它本身成为右孩子的左孩子。
-                //自己是往左下沉，叫左旋
-                var other = this.right;
-                this.right = other.left;
-                other.left = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.rightHeight(), this.height) + 1;
-                return other;
-            }
-            leftHeight() {
-                if (!this.left) {
-                    return -1;
-                }
-                return this.left.height;
-            }
-            rightHeight() {
-                if (!this.right) {
-                    return -1;
-                }
-                return this.right.height;
-            }
+
         };
         function getData(node) {
             return node ? node.data : 0
         }
-        class AVL {
+        class SplayTree {
             constructor() {
                 this.root = null;
                 this._size = 0;
+            }
+            leftRotate(node) {
+                if (!node.right) {
+                    return;
+                }
+                var child = node.right;
+                node.right = child.left;
+                if (child.left) {
+                    //过继孩子
+                    child.left.parent = node; //父属性修正1
+                }
+                child.parent = node.parent; //父属性修正2
+                //下面都一样
+                if (!node.parent) {
+                    this.root = child;
+                } else if (node == node.parent.left) {
+                    node.parent.left = child;
+                } else {
+                    node.parent.right = child;
+                }
+                node.parent = child; //父属性修正3
+                child.left = node; //旋转
+            }
+            rightRotate(node) {
+                if (!node.left) {
+                    return;
+                }
+                var child = node.left;
+                node.left = child.right;
+                if (child.right) {
+                    //过继孩子
+                    child.right.parent = node; //父属性修正1
+                }
+                child.parent = node.parent; //父属性修正2
+
+                //下面都一样
+                if (!node.parent) {
+                    this.root = child;
+                } else if (node == node.parent.left) {
+                    node.parent.left = child;
+                } else {
+                    node.parent.right = child;
+                }
+                node.parent = child; //父属性修正3
+                child.right = node; //旋转
+            }
+            splayNode(node) {
+                while (node !== this.root) {
+                    var parent = parent;
+                    if (parent == this.root) {
+                        if (parent.left == node) {
+                            this.rightRotate(parent)
+                        } else {
+                            this.leftRotate(parent)
+                        }
+                        break
+                    } else {
+                        var grandpa = parent.parent;
+                        var case1 = grandpa.left === parent ? "zig-" : "zag-";
+                        var case2 = parent.left === node ? "zig" : "zag";
+                        switch (case1 + case2) {
+                            case "zig-zig":  // 一字型，先父后子，由于我们的旋转操作都是针对于根，
+                                // 那么操作node，即操作parent
+                                this.rightRotate(grandpa);
+                                this.rightRotate(parent);
+                                continue;
+                            case "zag-zag": // 一字型，先父后子
+                                this.leftRotate(parent);
+                                this.leftRotate(grandpa);
+                                continue;
+                            case "zig-zag": // 之字型
+                                this.rightRotate(parent);
+                                this.leftRotate(grandpa);
+                                continue;
+                            case "zag-zig": // 之字型
+                                this.rightRotate(parent);
+                                this.leftRotate(grandpa);
+                                continue;
+                        }
+                    }
+                }
+            }
+            find(data, stop) {
+                var node = this.root;
+                while (node) {
+                    var diff = data - node.data
+                    if (diff == 0) {
+                        break
+                    } else if (diff < 0) {
+                        node = node.left;
+                    } else {
+                        node = node.right;
+                    }
+                }
+                if (node) {
+                    !stop && this.splayNode(node)
+                    return node
+                }
+                return null
             }
             insert(data) {
                 this.root = this.insertNode(this.root, data);
                 this._size++
             }
-            insertNode(node, data) {
-
+            insertNode(data) {
                 // The current root node is empty. Create a new node here
-                if (node == null) {
-                    return new Node(data);
+                if (!this.root) {
+                    this.root = new Node(data);
+                    this._size++
+                    return true
                 }
-
-                // Is data to insert smaller than the current key value.
-                // Go to the left.
-                if (data == node.data) {
-                    this._size--
-                    return node
-                } else if (data < node.data) {
-                    node.left = this.insertNode(node.left, data);
+                var node = this.root, parent = null
+                while (node) {
+                    parent = node; //保存要插入的父节点
+                    var diff = data - node.data
+                    if (diff == 0) {
+                        return false
+                    } else if (diff < 0) {
+                        node = node.left;
+                    } else {
+                        node = node.right;
+                    }
+                }
+                var node = new Node(data);
+                node.parent = parent;
+                this._size++;
+                if (diff < 0) {
+                    parent.left = node
                 } else {
-                    node.right = this.insertNode(node.right, data);
+                    parent.right = node
                 }
-
-                node = this.balanceTree(node, data);
-
-                // Finally, update the height calculateTreeHeight(rootNode)
-                node.height = this.calculateTreeHeight(node);
-
-                return node;
+                this.splayNode(node)
+                return true;
             }
             balanceTree(node, data) {
 
@@ -329,24 +380,24 @@
         var tree = new AVL() //一会儿改成AVL
 
 
-      /*  var id = setInterval(function () {
-            var el = ~~(Math.random() + "").slice(-3)
-
-            if (tree._size > 35) {
-                clearInterval(id)
-                tree.show()
-                return
-            }
-            // tree.clearNode()
-            tree.insert(el)
-
-        }, 30)
-        */
+        /*  var id = setInterval(function () {
+              var el = ~~(Math.random() + "").slice(-3)
+  
+              if (tree._size > 35) {
+                  clearInterval(id)
+                  tree.show()
+                  return
+              }
+              // tree.clearNode()
+              tree.insert(el)
+  
+          }, 30)
+          */
         var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
         arr.forEach(function (el) {
             tree.insert(el)
         })
-       
+
         var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
         var step = 9;
         try {
