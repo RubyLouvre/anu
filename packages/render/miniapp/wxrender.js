@@ -33,7 +33,7 @@ function getEventHashCode(name, props,key) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = name.slice(n).toLowerCase();
     var eventCode =  props[ "data-" + type + "-fn"]
-    return eventCode + (key ? "-" + key : "");
+    return eventCode + (key != null ? "-" + key : "");
 }
 export let Renderer = createRenderer({
     render: render,
