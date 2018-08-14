@@ -22,11 +22,15 @@ class P extends React.Component {
     }
     checkboxChange(e){
         console.log('checkbox发生change事件，携带value值为：', e.value)
+        React.wx.showModal({
+            title: '提示',
+            content: JSON.stringify(e.value)
+        })
+        
     }
     render() {
         return (
             <div class='container'>
-                {/* //issues, onchange? */}
                 <checkbox-group onChange={this.checkboxChange}>
                    {
                        this.state.items.map(function(item){

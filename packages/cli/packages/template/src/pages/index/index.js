@@ -1,5 +1,4 @@
 import React from "../../ReactWX";
-
 class Index extends React.Component {
     constructor(props) {
         super(props);
@@ -21,7 +20,15 @@ class Index extends React.Component {
                 {
                     title: '基础内容',
                     url: '/pages/demo/baseContent/base/index'
-                }
+                },
+                {
+                    title: 'API',
+                    url: '/pages/demo/api/index'
+                },
+                // {
+                //     name: 'For a test',
+                //     url: '/pages/test/index'
+                // }
             ]
         };
     }
