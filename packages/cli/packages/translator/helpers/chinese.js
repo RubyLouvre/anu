@@ -5,6 +5,7 @@ module.exports = function createChineseHack() {
     return {
         collect(path) {
             var valueNode = path.node.value;
+            var target;
             if (valueNode) {
                 if (valueNode.type === "StringLiteral") {
                     // placeholder="中文"

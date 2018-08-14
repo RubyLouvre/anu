@@ -1,10 +1,5 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-13
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-14
  * IE9+
  */
 
@@ -185,11 +180,7 @@ Component.prototype = {
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-} : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -387,7 +378,8 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
             break;
     }
     if (invokeCallback) {
-        callback(bookKeeping, children, nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        callback(bookKeeping, children,
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -689,8 +681,7 @@ var eventSystem = {
         if (instance) {
             try {
                 console.log(instance.$$eventCached, eventName + (key ? "-" + key : ""));
-                var fn = instance.$$eventCached[eventName + (key ? "-" + key : "")];
-
+                var fn = instance.$$eventCached[eventName + (key != null ? "-" + key : "")];
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);
@@ -821,7 +812,7 @@ function pushError(fiber, hook, error) {
     var boundary = findCatchComponent(fiber, names, hook);
     var stack = describeError(names, hook);
     if (boundary) {
-        if (fiber.hasMounted) ;else {
+        if (fiber.hasMounted) ; else {
             fiber.stateNode = {
                 updater: fakeObject
             };
@@ -1867,10 +1858,10 @@ function getContainer(p) {
 }
 
 function _uuid() {
-    return (Math.random() + "").slice(-4);
+   return (Math.random() + "").slice(-4);
 }
 function getUUID() {
-    return _uuid() + _uuid();
+   return _uuid() + _uuid();
 }
 
 function onPageUpdate(fiber) {
@@ -1957,7 +1948,7 @@ function createPage(PageClass, path) {
         },
         onHide: function onShow() {
             delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide;if (isFn(fn)) {
+            var fn = instance.componentDidHide;            if (isFn(fn)) {
                 fn.call(instance);
             }
         },
@@ -2094,187 +2085,187 @@ function getData(instance) {
 }
 
 var onAndSyncApis = {
-    onSocketOpen: true,
-    onSocketError: true,
-    onSocketMessage: true,
-    onSocketClose: true,
-    onBackgroundAudioPlay: true,
-    onBackgroundAudioPause: true,
-    onBackgroundAudioStop: true,
-    onNetworkStatusChange: true,
-    onAccelerometerChange: true,
-    onCompassChange: true,
-    onBluetoothAdapterStateChange: true,
-    onBluetoothDeviceFound: true,
-    onBLEConnectionStateChange: true,
-    onBLECharacteristicValueChange: true,
-    onBeaconUpdate: true,
-    onBeaconServiceChange: true,
-    onUserCaptureScreen: true,
-    onHCEMessage: true,
-    onGetWifiList: true,
-    onWifiConnected: true,
-    setStorageSync: true,
-    getStorageSync: true,
-    getStorageInfoSync: true,
-    removeStorageSync: true,
-    clearStorageSync: true,
-    getSystemInfoSync: true,
-    getExtConfigSync: true,
-    getLogManager: true
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
 };
 var noPromiseApis = {
-    stopRecord: true,
-    getRecorderManager: true,
-    pauseVoice: true,
-    stopVoice: true,
-    pauseBackgroundAudio: true,
-    stopBackgroundAudio: true,
-    getBackgroundAudioManager: true,
-    createAudioContext: true,
-    createInnerAudioContext: true,
-    createVideoContext: true,
-    createCameraContext: true,
-    navigateBack: true,
-    createMapContext: true,
-    canIUse: true,
-    startAccelerometer: true,
-    stopAccelerometer: true,
-    startCompass: true,
-    stopCompass: true,
-    hideToast: true,
-    hideLoading: true,
-    showNavigationBarLoading: true,
-    hideNavigationBarLoading: true,
-    createAnimation: true,
-    pageScrollTo: true,
-    createSelectorQuery: true,
-    createCanvasContext: true,
-    createContext: true,
-    drawCanvas: true,
-    hideKeyboard: true,
-    stopPullDownRefresh: true,
-    arrayBufferToBase64: true,
-    base64ToArrayBuffer: true,
-    getUpdateManager: true,
-    createWorker: true
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
 };
 var otherApis = {
-    uploadFile: true,
-    downloadFile: true,
-    connectSocket: true,
-    sendSocketMessage: true,
-    closeSocket: true,
-    chooseImage: true,
-    previewImage: true,
-    getImageInfo: true,
-    saveImageToPhotosAlbum: true,
-    startRecord: true,
-    playVoice: true,
-    getBackgroundAudioPlayerState: true,
-    playBackgroundAudio: true,
-    seekBackgroundAudio: true,
-    chooseVideo: true,
-    saveVideoToPhotosAlbum: true,
-    loadFontFace: true,
-    saveFile: true,
-    getFileInfo: true,
-    getSavedFileList: true,
-    getSavedFileInfo: true,
-    removeSavedFile: true,
-    openDocument: true,
-    setStorage: true,
-    getStorage: true,
-    getStorageInfo: true,
-    removeStorage: true,
-    clearStorage: true,
-    navigateTo: true,
-    redirectTo: true,
-    switchTab: true,
-    reLaunch: true,
-    getLocation: true,
-    chooseLocation: true,
-    openLocation: true,
-    getSystemInfo: true,
-    getNetworkType: true,
-    makePhoneCall: true,
-    scanCode: true,
-    setClipboardData: true,
-    getClipboardData: true,
-    openBluetoothAdapter: true,
-    closeBluetoothAdapter: true,
-    getBluetoothAdapterState: true,
-    startBluetoothDevicesDiscovery: true,
-    stopBluetoothDevicesDiscovery: true,
-    getBluetoothDevices: true,
-    getConnectedBluetoothDevices: true,
-    createBLEConnection: true,
-    closeBLEConnection: true,
-    getBLEDeviceServices: true,
-    getBLEDeviceCharacteristics: true,
-    readBLECharacteristicValue: true,
-    writeBLECharacteristicValue: true,
-    notifyBLECharacteristicValueChange: true,
-    startBeaconDiscovery: true,
-    stopBeaconDiscovery: true,
-    getBeacons: true,
-    setScreenBrightness: true,
-    getScreenBrightness: true,
-    setKeepScreenOn: true,
-    vibrateLong: true,
-    vibrateShort: true,
-    addPhoneContact: true,
-    getHCEState: true,
-    startHCE: true,
-    stopHCE: true,
-    sendHCEMessage: true,
-    startWifi: true,
-    stopWifi: true,
-    connectWifi: true,
-    getWifiList: true,
-    setWifiList: true,
-    getConnectedWifi: true,
-    showToast: true,
-    showLoading: true,
-    showModal: true,
-    showActionSheet: true,
-    setNavigationBarTitle: true,
-    setNavigationBarColor: true,
-    setTabBarBadge: true,
-    removeTabBarBadge: true,
-    showTabBarRedDot: true,
-    hideTabBarRedDot: true,
-    setTabBarStyle: true,
-    setTabBarItem: true,
-    showTabBar: true,
-    hideTabBar: true,
-    setTopBarText: true,
-    startPullDownRefresh: true,
-    canvasToTempFilePath: true,
-    canvasGetImageData: true,
-    canvasPutImageData: true,
-    getExtConfig: true,
-    login: true,
-    checkSession: true,
-    authorize: true,
-    getUserInfo: true,
-    requestPayment: true,
-    showShareMenu: true,
-    hideShareMenu: true,
-    updateShareMenu: true,
-    getShareInfo: true,
-    chooseAddress: true,
-    addCard: true,
-    openCard: true,
-    openSetting: true,
-    getSetting: true,
-    getWeRunData: true,
-    navigateToMiniProgram: true,
-    navigateBackMiniProgram: true,
-    chooseInvoiceTitle: true,
-    checkIsSupportSoterAuthentication: true,
-    startSoterAuthentication: true,
-    checkIsSoterEnrolledInDevice: true
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
 };
 
 function initPxTransform(config) {
@@ -2443,7 +2434,8 @@ var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    return props["data-" + type + "-fn"] + (key ? "-" + key : "");
+    var eventCode = props["data-" + type + "-fn"];
+    return eventCode + (key ? "-" + key : "");
 }
 var Renderer$1 = createRenderer({
     render: render,
@@ -2594,4 +2586,4 @@ React = win.React = win.ReactDOM = {
 initNativeApi(React);
 var React$1 = React;
 
-exports.default = React$1;
+export default React$1;

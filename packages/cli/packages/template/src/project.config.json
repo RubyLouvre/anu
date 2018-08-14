@@ -1,5 +1,5 @@
 {
-    "description": "项目配置文件。临时",
+    "description": "使用 React 来写小程序",
     "packOptions": {
       "ignore": []
     },
