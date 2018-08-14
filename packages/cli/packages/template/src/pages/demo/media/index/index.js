@@ -23,14 +23,6 @@ class Audio extends React.Component {
                     title: 'image'
                 },
                 {
-                    url: '/pages/demo/media/live-player/index',
-                    title: 'live-player'
-                },
-                {
-                    url: '/pages/demo/media/live-pusher/index',
-                    title: 'live-pusher'
-                },
-                {
                     url: '/pages/demo/media/video/index',
                     title: 'video'
                 }

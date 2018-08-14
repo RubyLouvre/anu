@@ -20,8 +20,6 @@ import './pages/demo/media/audio/index';
 import './pages/demo/media/image/index';
 import './pages/demo/media/video/index';
 import './pages/demo/media/camera/index';
-import './pages/demo/media/live-player/index';
-import './pages/demo/media/live-pusher/index';
 
 import './app.less';
 
@@ -48,9 +46,7 @@ class Demo extends React.Component {
             'pages/demo/media/audio/index',
             'pages/demo/media/image/index',
             'pages/demo/media/video/index',
-            'pages/demo/media/camera/index',
-            'pages/demo/media/live-player/index',
-            'pages/demo/media/live-pusher/index'
+            'pages/demo/media/camera/index'
         ],
         window: {
             backgroundTextStyle: 'light',
