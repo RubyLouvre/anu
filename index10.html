@@ -114,7 +114,7 @@
                     }
                 }
             }
-            find(data, stop) {
+            find(data) {
                 var node = this.root;
                 while (node) {
                     var diff = data - node.data
@@ -127,17 +127,12 @@
                     }
                 }
                 if (node) {
-                    !stop && this.splayNode(node)
+                    this.splayNode(node)
                     return node
                 }
                 return null
             }
             insert(data) {
-                this.root = this.insertNode(this.root, data);
-                this._size++
-            }
-            insertNode(data) {
-                // The current root node is empty. Create a new node here
                 if (!this.root) {
                     this.root = new Node(data);
                     this._size++
@@ -166,183 +161,25 @@
                 this.splayNode(node)
                 return true;
             }
-            balanceTree(node, data) {
-
-                var bf = this.getBalanceValue(node);
-                if (bf > 1) {
-                    // LL
-                    if (data - getData(node.left) < 0) {
-                        return this.rightRotation(node);
-                    }
-                    // LR
-                    if (data - getData(node.left) > 0) {
-                        node.left = this.insertNode(node.left, data)
-                        return this.rightRotation(node);
-                    }
-                }
-                if (bf < -1) {
-                    // RR
-                    if (data - getData(node.right) > 0) {
-                        return this.leftRotation(node);
-                    }
-                    // RL
-                    if (data - getData(node.left) < 0) {
-                        node.right = this.insertNode(node.right, data);
-                        return this.leftRotation(node);
-                    }
-                }
-
-
-                return node;
-            }
-            rightRotation(node) {
-
-                var newRootNode = node.left
-                var rightChildOfLeft = newRootNode.right
-
-                // Step 1. Set newRootNode as the new root node.
-                newRootNode.right = node;
-
-                // Step 2. Set the right child of the new left child of the new root node. Quite a tongue twister right?
-                node.left = rightChildOfLeft;
-
-                // Step 3. Update the height of the trees that were updated.
-                newRootNode.height = this.calculateTreeHeight(newRootNode);
-                node.height = this.calculateTreeHeight(node);
-
-                return newRootNode;
-            }
-            leftRotation(node) {
-
-                var newRootNode = node.right
-                var leftChildOfRight = newRootNode.left
-
-                // Step 1. set the left child of the new root node
-                newRootNode.left = node
-
-                // Step 2. set the right child of the new left child
-                node.right = leftChildOfRight
-
-                // Step 3. Update the height of the trees that were updated.
-                newRootNode.height = this.calculateTreeHeight(newRootNode);
-                node.height = this.calculateTreeHeight(node);
-
-                return newRootNode;
-            }
-
-            getBalanceValue(node) {
-                if (node == null) {
-                    return 0;
-                }
-                var l = node.left ? node.left.height : 0
-                var r = node.right ? node.right.height : 0
-                return l - r;
-            }
-
-            calculateTreeHeight(node) {
-                return Math.max(node.left && node.left.height,
-                    node.right && node.right.height) + 1;
-
-            }
             remove(data) {
                 if (!this.root) {
-                    return;
+                    return false
                 }
-                this.root = this.removeNode(this.root, data);
-                this._size--;
-            }
-            removeNode(node, dataToRemove) {
-                // Base case
-                if (node == null) {
-                    return null;
-                }
-
-                var leftChild = node.left;
-                var rightChild = node.right
-                var currentData = node.data
-                var diff = dataToRemove - currentData
-                if (diff == 0) {
-
-                    //   System.out.println("Found the data that we want to remove: " + currentData);
-
-                    if (leftChild == null && rightChild == null) {
-
-                        return null;
-                    } else if (leftChild == null) {
-
-                        node = null;
-                        return rightChild;
-                    } else if (rightChild == null) {
-                        node = null;
-                        return leftChild;
-                    } else {
-                        // Find the largest node on the left sub-tree
-                        var succ = this.maxNode(leftChild);
-
-                        // Swap the root node with the largest in left sub-tree
-                        node.data = succ.data
-                        // Set left-child recursively. Remove the copy left of the largest left child
-                        node.left = this.removeNode(node.left, succ.data);
-
+                var node = this.find(data); //如果找到，内部会进行伸展
+                if (node) {
+                    if (data == this.root.data) {
+                        if (!node.left) {
+                            this.root = node.right;
+                        } else {
+                            var succ = this.maxNode(node.left);
+                            this.splayNode(suss);
+                            suss.right = node.right;
+                        }
                     }
-                } else if (diff < 0) {
-                    node.left = this.removeNode(leftChild, dataToRemove);
-                } else {
-                    node.right = this.removeNode(rightChild, dataToRemove);
                 }
-
-                // Update the height parameter
-                node.height = this.calculateTreeHeight(node);
-
-                // Check on every delete operation whether tree has become unbalanced
-                return this.balanceTreeAfterDeletion(node);
             }
-            balanceTreeAfterDeletion(node) {
 
-                var balanceValue = this.getBalanceValue(node);
 
-                // Left heavy situation. Can be left-left or left-right
-                if (balanceValue > 1) {
-                    // Left-right rotation required. Left rotation on the right child of the root node.
-                    if (this.getBalanceValue(node.left) < 0) {
-                        node.left = this.leftRotation(node.left);
-                    }
-
-                    return this.rightRotation(node);
-                }
-
-                // Right heavy situation. Can be right-right or right-left
-                if (balanceValue < -1) {
-                    // right - left situation. Left rotation on the right child of the root node.
-                    if (this.getBalanceValue(node.right) > 0) {
-                        node.right = this.rightRotation(node.right);
-                    }
-                    // left rotation on the root node
-                    return this.leftRotation(node);
-                }
-
-                return node;
-            }
-            minNode(node) {
-                var current = node || this.root;
-                while (current && current.left) {
-                    current = current.left;
-                }
-                return current;
-            }
-            find(data) {/**略**/ }
-            maxNode(node) {
-                while (node.right) {
-                    node = node.right
-                }
-                return node;
-            }
-            inOrder(cb) {/**略**/ }
-            preOrder(cb) {/**略**/ }
-            postOrder(cb) {/**略**/ }
-            size() {
-                return this._size;
-            }
             show(node, parentNode) {
                 node = node || this.root
                 if (!parentNode) {
@@ -369,11 +206,26 @@
                     this.show(node.right, c);
                 }
             }
+            toString(printNode) {
+                if (printNode === void 0) printNode = function (n) { return n.data; };
+
+                var out = [];
+                printRow(this.root, '', true, function (v) { return out.push(v); }, printNode);
+                return out.join('');
+            };
         }
         function bg() {
             return '#' + (Math.random() * 0xffffff << 0).toString(16);
         }
-
+        // https://github.com/w8r/splay-tree/blob/master/dist/splay.js
+        function printRow(root, prefix, isTail, out, printNode) {
+            if (root) {
+                out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+                var indent = prefix + (isTail ? '    ' : '│   ');
+                if (root.left) { printRow(root.left, indent, false, out, printNode); }
+                if (root.right) { printRow(root.right, indent, true, out, printNode); }
+            }
+        }
 
 
 

@@ -680,8 +680,7 @@ var eventSystem = {
         var key = dataset["key"];
         if (instance) {
             try {
-                console.log(instance.$$eventCached, eventName + (key ? "-" + key : ""));
-                var fn = instance.$$eventCached[eventName + (key ? "-" + key : "")];
+                var fn = instance.$$eventCached[eventName + (key != null ? "-" + key : "")];
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);
@@ -2435,7 +2434,7 @@ function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = name.slice(n).toLowerCase();
     var eventCode = props["data-" + type + "-fn"];
-    return eventCode + (key ? "-" + key : "");
+    return eventCode + (key != null ? "-" + key : "");
 }
 var Renderer$1 = createRenderer({
     render: render,
