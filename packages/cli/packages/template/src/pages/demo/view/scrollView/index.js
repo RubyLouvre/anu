@@ -72,5 +72,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/view/scroll_view/index"));
+Page(React.createPage(P, "pages/demo/view/scrollView/index"));
 export default P;
