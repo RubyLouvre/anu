@@ -21,6 +21,9 @@ import './pages/demo/media/image/index';
 import './pages/demo/media/video/index';
 import './pages/demo/media/camera/index';
 import "./pages/demo/api/index";
+import './pages/demo/extend/index';
+import './pages/demo/extend/Dog';
+import './pages/demo/extend/Husky';
 
 import './app.less';
 
@@ -48,7 +51,10 @@ class Demo extends React.Component {
             'pages/demo/media/image/index',
             'pages/demo/media/video/index',
             'pages/demo/media/camera/index',
-            "pages/demo/api/index"
+            "pages/demo/api/index",
+            'pages/demo/extend/index',
+            'pages/demo/extend/Dog',
+            'pages/demo/extend/Husky'
         ],
         window: {
             backgroundTextStyle: 'light',

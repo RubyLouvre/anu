@@ -71,6 +71,8 @@ function loop(callee, fn) {
     attrs.push(createAttribute("wx:for", parseExpr(callee.object)));
     attrs.push(createAttribute("wx:for-item", fn.params[0].name));
     if (fn.params[1]) {
+        // 用于将key={index}改成wx:key="*this"
+        modules.indexName = fn.params[1].name;
         attrs.push(createAttribute("wx:for-index", fn.params[1].name));
     }
 
