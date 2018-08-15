@@ -25,10 +25,10 @@ class Index extends React.Component {
                     title: 'API',
                     url: '/pages/demo/api/index'
                 },
-                // {
-                //     name: 'For a test',
-                //     url: '/pages/test/index'
-                // }
+                {
+                    title: '继承',
+                    url: '/pages/demo/extend/index'
+                }
             ]
         };
     }

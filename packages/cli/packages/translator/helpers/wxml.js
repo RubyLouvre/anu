@@ -65,9 +65,10 @@ var visitor = {
                         array = attrValue;
                     } else if (attrName === "is") {
                         is = attrValue;
-                    } else if (attrName === "key") {
-                        key = attrValue;
                     }
+                    //  else if (attrName === "key") {
+                    //     key = attrValue;
+                    // }
                 });
                 var attributes = [];
                 var template = jsx.createElement("template", attributes, []);
@@ -90,7 +91,8 @@ var visitor = {
                         jsx.createAttribute("data", `{{...${dataName}}}`),
                         jsx.createAttribute("wx:for", `{{${array}}}`),
                         jsx.createAttribute("wx:for-item", dataName),
-                        jsx.createAttribute("wx:for-index", "index")
+                        jsx.createAttribute("wx:for-index", "index"),
+                        jsx.createAttribute("wx:key", "*this")
                     );
                 } else {
                     attributes.push(
@@ -98,11 +100,11 @@ var visitor = {
                         jsx.createAttribute("wx:if", `{{${array}[index]}}`),
                         jsx.createAttribute("data", `{{...${array}[index]}}`)
                     );
-                    if (key) {
-                        attributes.push(
-                            jsx.createAttribute("wx:key", `{{${key}}}`)
-                        );
-                    }
+                    // if (key) {
+                    //     attributes.push(
+                    //         jsx.createAttribute("wx:key", `{{${key}}}`)
+                    //     );
+                    // }
                 }
 
                 path.parentPath.replaceWith(template);
@@ -111,6 +113,26 @@ var visitor = {
     },
     JSXAttribute(path) {
         chineseHack.collect(path);
+        if (path.node.name.name === 'key') {
+            let node = path.node.value;
+            let value;
+
+            
+            if (t.isStringLiteral(node)) {
+                value = node.value;
+            } else {
+                if (node.expression.value === modules.indexName) {
+                    value = '*this';
+                } else {
+                    value = `{{${generate(node.expression).code}}}`;
+                }
+            }
+            path.parentPath.node.attributes.push(
+                jsx.createAttribute("wx:key", value)
+            );
+            path.remove();
+            return;
+        }
         /*
         var valueNode = path.node.value;
         if (valueNode) {
