@@ -1,17 +1,13 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from "./apiList";
-
- function initPxTransform(config) {
-    const {
-        designWidth = 700,
-        deviceRatio = {
-            "640": 2.34 / 2,
-            "750": 1,
-            "828": 1.81 / 2
-        }
-    } = config;
-    this.config = this.config || {};
-    this.config.designWidth = designWidth;
-    this.config.deviceRatio = deviceRatio;
+var defaultDeviceRatio = {
+    "640": 2.34 / 2,
+    "750": 1,
+    "828": 1.81 / 2
+}
+function initPxTransform(config) {
+    this.config = this.config || {}
+    this.config.designWidth = config.designWidth || 700;
+    this.config.deviceRatio = config.deviceRatio || defaultDeviceRatio;
 }
 
 const RequestQueue = {
@@ -113,8 +109,8 @@ function processApis(ReactWX) {
                 return p;
             };
         } else {
-            ReactWX.wx[key] = (...args) => {
-                return wx[key].apply(wx, args);
+            ReactWX.wx[key] = function() {
+                return wx[key].apply(wx, arguments);
             };
         }
     });
@@ -124,7 +120,6 @@ function pxTransform(size) {
     const { designWidth, deviceRatio } = this.config;
     if (!(designWidth in deviceRatio)) {
         throw new Error(`deviceRatio 配置中不存在 ${designWidth} 的设置！`);
-       
     }
     return parseInt(size, 10) / deviceRatio[designWidth] + "rpx";
 }
@@ -133,10 +128,10 @@ export function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
     ReactWX.request = request;
-    if(typeof getCurrentPages == "function" ){
+    if (typeof getCurrentPages == "function") {
         ReactWX.getCurrentPages = getCurrentPages;
     }
-    if(typeof getApp == "function" ){
+    if (typeof getApp == "function") {
         ReactWX.getApp = getApp;
     }
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX);
