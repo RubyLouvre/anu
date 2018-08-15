@@ -13,7 +13,7 @@ class P extends React.Component {
                 name: 'swiper'
             },
             {
-                url: `${ROOT_PATH}/movable_view/index`,
+                url: `${ROOT_PATH}/movableView/index`,
                 name: 'movable view'
             }
            ]
