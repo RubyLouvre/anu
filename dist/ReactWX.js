@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-14
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-15
  * IE9+
  */
 
@@ -2267,18 +2267,15 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
+var defaultDeviceRatio = {
+    "640": 2.34 / 2,
+    "750": 1,
+    "828": 1.81 / 2
+};
 function initPxTransform(config) {
-    var _config$designWidth = config.designWidth,
-        designWidth = _config$designWidth === undefined ? 700 : _config$designWidth,
-        _config$deviceRatio = config.deviceRatio,
-        deviceRatio = _config$deviceRatio === undefined ? {
-        "640": 2.34 / 2,
-        "750": 1,
-        "828": 1.81 / 2
-    } : _config$deviceRatio;
     this.config = this.config || {};
-    this.config.designWidth = designWidth;
-    this.config.deviceRatio = deviceRatio;
+    this.config.designWidth = config.designWidth || 700;
+    this.config.deviceRatio = config.deviceRatio || defaultDeviceRatio;
 }
 var RequestQueue = {
     MAX_REQUEST: 5,
@@ -2376,10 +2373,7 @@ function processApis(ReactWX) {
             };
         } else {
             ReactWX.wx[key] = function () {
-                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-                    args[_key] = arguments[_key];
-                }
-                return wx[key].apply(wx, args);
+                return wx[key].apply(wx, arguments);
             };
         }
     });
@@ -2448,18 +2442,17 @@ var Renderer$1 = createRenderer({
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
-                    var key = fiber.key !== null ? fiber.key + "" : "";
                     var cached = instance.$$eventCached || (instance.$$eventCached = {});
                     for (var name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name, props, key);
+                            var code = getEventHashCode(name, props, fiber.key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (var _name in lastProps) {
                             if (onEvent.test(_name) && !props[_name]) {
-                                var code = getEventHashCode(_name, lastProps, key);
+                                var code = getEventHashCode(_name, lastProps, fiber.key);
                                 delete cached[code];
                             }
                         }

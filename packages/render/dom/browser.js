@@ -1,4 +1,4 @@
-import { typeNumber, getWindow, toWarnDev } from "react-core/util";
+import { typeNumber, getWindow, noop } from "react-core/util";
 //用于后端的元素节点
 export function DOMElement(type) {
     this.nodeName = type;
@@ -17,14 +17,13 @@ export const NAMESPACE = {
 let fn = (DOMElement.prototype = {
     contains: Boolean
 });
+
 String(
     "replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" +
         ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" +
         ",detachEvent"
 ).replace(/\w+/g, function(name) {
-    fn[name] = function() {
-        toWarnDev("need implement " + name); // eslint-disable-line
-    };
+    fn[name] = noop
 });
 
 //用于后端的document

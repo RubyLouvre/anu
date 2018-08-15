@@ -2,8 +2,8 @@
 
 ## 使用
 命令行定义到cli目录下，执行npm link
-使用mpreact <project-name> 创建工程
-定位到  <project-name> 目录下 mpreact start 开始监听文件变化，
+使用mpreact `<project-name>` 创建工程
+定位到  `<project-name>` 目录下 `mpreact start` 开始监听文件变化，
 用微信开发工具打开当中的dist目录，自己收在src目录中进行开发
 
 ## 与原生小程序的优势
@@ -24,6 +24,7 @@
 7. 不支持render props
 8. 不支持dangerouslySetInnerHTML属性
 9. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
+10. src目录下面有components与pages目录，components是集中定义组件，可以用继承，pages里面是页面，只能继承React.Component
 
 ## 内部运行机制
 

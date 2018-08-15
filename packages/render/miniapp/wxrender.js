@@ -46,20 +46,19 @@ export let Renderer = createRenderer({
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
-                    var key = fiber.key !== null?  fiber.key+"" : ""
                     //保存用户创建的事件在实例上
                     var cached =
                         instance.$$eventCached || (instance.$$eventCached = {});
                     for (let name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name,props, key);
+                            var code = getEventHashCode(name,props, fiber.key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (let name in lastProps) {
                             if (onEvent.test(name) && !props[name]) {
-                                var code = getEventHashCode(name,lastProps, key);
+                                var code = getEventHashCode(name,lastProps, fiber.key);
                                 delete cached[code];
                             }
                         }
