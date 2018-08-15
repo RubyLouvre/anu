@@ -6,7 +6,6 @@ const rBabel = require("rollup-plugin-babel");
 const commonjs = require('rollup-plugin-commonjs');
 
 
-
 const chalk = require("chalk");
 const path = require("path");
 const wt = require("wt");
@@ -18,14 +17,9 @@ const sass = require('node-sass');
 const chokidar = require('chokidar');
 let cwd = process.cwd();
 let entryFolder = path.join(cwd, 'src');
-
-
 let projectPath = entryFolder;
-
-
 const sourceDirPath = path.join(cwd, 'src');
 const outputDirPath = path.resolve(projectPath, '../dist');
-
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 
 
@@ -188,7 +182,7 @@ class Parser {
 
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
-            fs.writeFile(destPath, output.js, () => {});
+            fs.writeFile(destPath, output.js , () => {});
             delete output.js
             output.jsonPath = basePath + ".json"
             this.outputs.push(output)
@@ -213,12 +207,20 @@ class Parser {
             console.warn(`文件变化: ${filePath} 重新编译`);
             if (/.js|.jsx/.test(filePath)) {
                 //暂时不编译css
-                this.outputOptions = {
-                    ...this.outputOptions,
-                    input: filePath
-                };
+                Object.assign(
+                    this.outputOptions || {},
+                    {
+                        input: filePath
+                    }
+                );
             }
             await this.parse();
+            console.log();
+            console.log(
+                chalk.green('构建完毕')
+            );
+            console.log();
+            
         })
 
 
