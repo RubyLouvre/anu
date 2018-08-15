@@ -1,25 +1,17 @@
 import React from '../../../ReactWX';
-import Animal from '../../../components/Animal/index';
+import Dog from '../../../components/Dog/index';
 
-class Dog extends Animal {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            name: props.name,
-            age: props.age
-        };
-    }
-
+class DogPage extends React.Component{
+   
     render() {
         return (
             <div>
-                <div>Dog 继承自 Animal</div>
-                <Animal name="Dog" age={1} />
+                <div>Dog测试</div>
+                <Dog age={12} />
             </div>
         );
     }
 }
 
-Page(React.createPage(Dog, '/pages/demo/extend/Dog'));
+Page(React.createPage(DogPage, '/pages/demo/extend/Dog'));
 export default Dog;
