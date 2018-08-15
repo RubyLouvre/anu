@@ -4,7 +4,7 @@
 
 
 const t = require("babel-types");
-
+const CSSProperty = require('../shared/CSSProperty');
 const generate = require("babel-generator").default;
 
 function bindEvent(path) {
@@ -56,15 +56,19 @@ module.exports = function(path, modules) {
             if (attrName === "style") {
                 var styleValue = expr.properties
                     .map(function(node) {
+                        const key = node.key.name;
+                        if (CSSProperty.hasLengthUnit[key]) {
+                            node.value.value += 'rpx';
+                        }
                         return (
                             hyphen(node.key.name) +
                             ": " +
                             (/Expression|Identifier/.test(node.value.type)
-                                ? `{{${generate(node.value).code}}}`
+                                ? `{{${generate(node.value).code.replace(/this\./,'')}}}`
                                 : node.value.value)
                         );
                     })
-                    .join(" ;");
+                    .join(";");
                 replaceWithExpr(path, styleValue, true);
             } else if (isEvent) {
                 throwEventValue(attrName, attrValue);
