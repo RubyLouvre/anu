@@ -15,8 +15,7 @@ const transform = require("./transform");
 const modules = require("./modules");
 const less = require('rollup-plugin-less');
 const sass = require('node-sass');
-const throttle = require('throttleit');
-
+const chokidar = require('chokidar');
 let cwd = process.cwd();
 let entryFolder = path.join(cwd, 'src');
 
@@ -149,13 +148,9 @@ class Parser {
         });
         await Promise.all(promises)
        
-     
         //拷贝project.config.json
         const filePath = path.resolve(sourceDirPath, "project.config.json");
-
-
         if (fs.existsSync(filePath)) {
-            
             fs.copyFile(filePath, path.join(this.output)  + "/project.config.json", () => {});
         }
     }
@@ -205,23 +200,28 @@ class Parser {
            // fs.writeFile(basePath + ".wxss", output.wxss||"", () => {});
         }
     }
-
     watch(dir) {
-        const watcher = wt.watch([dir]);
-        watcher.on("all", throttle(
-            info => {
-                console.warn(`文件变化: ${info.path} 重新编译`);
-                const p = info.path;
-                if (/.js|.jsx/.test(p)) {
-                    //暂时不编译css
-                    this.outputOptions = {
-                        ...this.outputOptions,
-                        input: p
-                    };
-                }
-                this.parse();
-            }, 500
-        ));
+
+        const watcher = chokidar.watch(dir, {
+            awaitWriteFinish: {
+                stabilityThreshold: 1000,
+                pollInterval: 200
+            }
+        });
+       
+        watcher.on('change', async (filePath)=>{
+            console.warn(`文件变化: ${filePath} 重新编译`);
+            if (/.js|.jsx/.test(filePath)) {
+                //暂时不编译css
+                this.outputOptions = {
+                    ...this.outputOptions,
+                    input: filePath
+                };
+            }
+            await this.parse();
+        })
+
+
     }
 }
 
@@ -235,10 +235,8 @@ async function build(arg) {
             console.log(
                 chalk.green('watching files...')
             );
-            console.log();
             parser.watch('./src')
         }
-        // 
     } catch (e) {
         console.log(chalk.red(e));
         console.log(e);
